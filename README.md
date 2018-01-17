@@ -1,4 +1,4 @@
-Welcome to Hoist
+Hoist React
 =======
 
 Hoist is an application development toolkit developed by Extremely Heavy Industries. 
