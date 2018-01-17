@@ -30,7 +30,7 @@ class HoistReactGrailsPlugin extends Plugin {
     def organization = [name: 'Extremely Heavy Industries', url: 'http://xh.io']
     def scm = [url: 'https://github.com/exhi/hoist-react']
     def observe = ["services"]
-    def loadAfter = ['hoist']
+    def loadAfter = ['hoist-core']
 
 
     Closure doWithSpring() {
