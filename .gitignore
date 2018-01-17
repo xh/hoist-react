@@ -1,0 +1,18 @@
+# IDE Files
+.idea
+!/.idea/scopes/
+!/.idea/copyright/
+*.iml
+
+# Build / Libs
+.gradle/
+build/
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+.DS_Store?
+ehthumbs.db
+Thumbs.db

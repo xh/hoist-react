@@ -1,0 +1,171 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        jcenter()
+        maven { url "https://repo.grails.org/grails/core" }
+    }
+    dependencies {
+        classpath "org.grails:grails-gradle-plugin:$grailsVersion"
+    }
+}
+
+version hasProperty('xhReleaseVersion') ? xhReleaseVersion : '1.0-SNAPSHOT'
+group 'io.xh'
+
+apply plugin:'idea'
+apply plugin:'org.grails.grails-plugin'
+apply plugin:'org.grails.grails-gsp'
+
+repositories {
+    mavenLocal()
+    jcenter()
+    maven { url 'https://repo.grails.org/grails/core' }
+    maven {
+        url "https://repo.xh.io/content/groups/public/"
+        credentials {
+            username xhRepoReadUser
+            password xhRepoReadPassword
+        }
+    }
+}
+
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
+boolean inlineHoist = runHoistInline == 'true'
+println "Hoist React: running with Hoist ${inlineHoist ? 'INLINE' : 'PACKAGED at version ' + hoistVersion}...."
+
+dependencies {
+    compile "org.springframework.boot:spring-boot-starter-logging"
+    compile "org.springframework.boot:spring-boot-autoconfigure"
+    compile "org.grails:grails-core"
+    compile "org.springframework.boot:spring-boot-starter-actuator"
+    provided "org.springframework.boot:spring-boot-starter-tomcat"
+
+    compile "org.grails:grails-web-boot"
+    compile "org.grails:grails-logging"
+    compile "org.grails:grails-plugin-rest"
+    compile "org.grails:grails-plugin-databinding"
+    compile "org.grails:grails-plugin-i18n"
+    compile "org.grails:grails-plugin-services"
+    compile "org.grails:grails-plugin-url-mappings"
+    compile "org.grails:grails-plugin-interceptors"
+    compile "org.grails.plugins:async"
+    compile "org.grails.plugins:events"
+    compile "org.grails.plugins:gsp"
+
+    console "org.grails:grails-console"
+    profile "org.grails.profiles:web-plugin"
+
+    provided "org.grails:grails-plugin-services"
+    provided "org.grails:grails-plugin-domain-class"
+
+    if (!inlineHoist) {
+        // Include core Hoist as versioned external dependency when building a WAR for release
+        compile "io.xh:hoist-core:$hoistVersion"
+    }
+}
+
+if (inlineHoist) {
+    // Include core Hoist as an inline plugin in multi-project mode when running in development
+    grails {
+        plugins {
+            compile project(":hoist-core")
+        }
+    }
+}
+
+
+bootRun {
+    jvmArgs('-Dspring.output.ansi.enabled=always')
+    addResources = true
+}
+
+bootRepackage.enabled = false
+
+//------------------------
+// Maven publishing
+// This is a modified version of the gradle configs setup by the Grails plugin publishing plugin
+// https://github.com/grails/grails-core/blob/master/grails-gradle-plugin/src/main/groovy/org/grails/gradle/plugin/publishing/GrailsCentralPublishGradlePlugin.groovy
+// The default behavior assumes publishing of non-snapshot builds only to the paid (if private) Bintray system
+//------------------------
+apply plugin:'maven-publish'
+publishing {
+    publications {
+        hoistReact(MavenPublication) {
+            artifactId 'hoist-react'
+
+            pom.withXml {
+                Node pomNode = asNode()
+                if (pomNode.dependencyManagement) {
+                    pomNode.dependencyManagement[0].replaceNode {}
+                }
+
+                pomNode.children().last() + {
+                    delegate.name 'hoist-react'
+                    delegate.description 'Hoist extension for building and deploying React web applications'
+                    delegate.url 'https://xh.io'
+                    delegate.organization {
+                        delegate.name 'Extremely Heavy Industries'
+                        delegate.url 'https://xh.io'
+                    }
+                    delegate.scm {
+                        delegate.url "https://github.com/exhi/hoist-react"
+                        delegate.connection "scm:git@github.com:exhi/hoist-react.git"
+                        delegate.developerConnection "scm:git@github.com:exhi/hoist-react.git"
+                    }
+                    delegate.issueManagement {
+                        delegate.system "GitHub"
+                        delegate.url "https://github.com/exhi/hoist-react/issues"
+                    }
+                    delegate.developers {
+                        delegate.developer {
+                            delegate.id 'exhi'
+                            delegate.name 'Extremely Heavy Industries'
+                            delegate.email 'info@xh.io'
+                        }
+                    }
+                }
+
+                pomNode.dependencies.dependency.findAll {
+                    it.version.text().isEmpty()
+                }.each {
+                    it.replaceNode {}
+                }
+            }
+
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+
+            // TODO - there is almost certainly a better way to get a handle on our groovy sourceSet output
+            def groovyOutputDir = sourceSets.main.output.classesDirs.files.find{it.path.contains('/groovy/')}
+            artifact source: "${groovyOutputDir}/META-INF/grails-plugin.xml",
+                    classifier: 'plugin',
+                    extension: 'xml'
+
+            repositories {
+                maven {
+                    if (version.endsWith('-SNAPSHOT')) {
+                        url "https://repo.xh.io/content/repositories/snapshots/"
+                    } else {
+                        url "https://repo.xh.io/content/repositories/releases/"
+                    }
+                    credentials {
+                        username xhRepoDeployUser
+                        password xhRepoDeployPassword
+                    }
+                }
+            }
+        }
+    }
+}
+
+task publishHoist(dependsOn: 'publishHoistPublicationToMavenRepository') {
+    group 'xhio'
+    description 'Publishes a build to repo.xh.io'
+    doLast {
+        println "Hoist React $version published to repo.xh.io!"
+    }
+}
