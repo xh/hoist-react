@@ -5,16 +5,17 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {observable, when, setter} from 'hoist/mobx';
+import {observable, when, setter, action} from 'hoist/mobx';
 import {XH} from 'hoist';
 
 class HoistAppStore {
 
-    @setter @observable authUsername = null;
+    @observable authCompleted = false;
+    @observable authUsername = null;
     @setter @observable isInitialized = false;
 
-    async initAsync() {
-        this.setAuthUsername(await this.loadAuthUsernameAsync());
+    initApp() {
+        this.loadAuthUsername();
 
         when(
             () => this.authUsername,
@@ -29,15 +30,19 @@ class HoistAppStore {
     //---------------------------------
     // Implementation
     //-----------------------------------
-    async loadAuthUsernameAsync() {
-        return XH.fetchJson({
-            url: 'auth/authUser'
-        }).then(response => {
-            return response.authUser;
-        }).catch(() => {
-            return null;
-        });
+    loadAuthUsername() {
+        XH.fetchJson({url: 'auth/authUser'})
+            .then(r => r.authUser)
+            .catch(() => null)
+            .then(username => this.setAuthUsername(username));
     }
+
+    @action
+    setAuthUsername(authUsername) {
+        this.authCompleted = true;
+        this.authUsername = authUsername;
+    }
+
 }
 
 export const hoistAppStore = new HoistAppStore();

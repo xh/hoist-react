@@ -31,12 +31,13 @@ export function hoistApp(C) {
     const ret = class extends Component {
 
         componentDidMount() {
-            hoistAppStore.initAsync().catchDefault();
+            hoistAppStore.initApp();
         }
 
         render() {
-            const {authUsername, isInitialized} = hoistAppStore;
+            const {authUsername, authCompleted, isInitialized} = hoistAppStore;
 
+            if (!authCompleted) return loadMask();
             if (!authUsername)  return elem(LoginPanel);
             if (!isInitialized) return loadMask();
 

@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {XH, identityService} from 'hoist';
-import {hbox, spacer, filler, div} from 'hoist/layout';
+import {hbox, vbox, spacer, filler, div} from 'hoist/layout';
 import {Classes, button, suggest, icon, popover2, menuItem} from 'hoist/blueprint';
 
 import {observable, action, observer} from 'hoist/mobx';
@@ -58,7 +58,8 @@ export class ImpersonationBar extends Component {
             popoverClassName: 'pt-popover-content-sizing',
             backdropProps: {style: {backgroundColor: 'rgba(255,255,255,0.5)'}},
             onClose: s.toggleTargetDialog,
-            content: div({
+            content: vbox({
+                justifyContent: 'right',
                 items: [
                     suggest({
                         inputProps: {value: s.selectedTarget},
@@ -71,13 +72,14 @@ export class ImpersonationBar extends Component {
                         },
                         $items: s.targets || []
                     }),
-                    div({
-                        items: div({
-                            items: [
-                                button({text: 'Close', onClick: s.toggleTargetDialog}),
-                                button({text: 'OK', onClick: s.doImpersonate, disabled: !s.selectedTarget})
-                            ]
-                        })
+                    spacer({height: 5}),
+                    hbox({
+                        items: [
+                            filler(),
+                            button({text: 'Close', onClick: s.toggleTargetDialog}),
+                            spacer({width: 5}),
+                            button({text: 'OK', onClick: s.doImpersonate, disabled: !s.selectedTarget})
+                        ]
                     })
                 ]
             })
