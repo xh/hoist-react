@@ -8,6 +8,7 @@ import '@blueprintjs/core/dist/blueprint.css';
 
 import {Component} from 'react';
 import {elem, Ref} from 'hoist';
+import {hocDisplayName} from 'hoist/utils/ReactUtils';
 import {box} from 'hoist/layout';
 import {autorun, computed, observer} from 'hoist/mobx';
 import {appStore} from '../AppStore';
@@ -32,6 +33,7 @@ export function adminTab(tabLabel, tabId) {
     return function(C) {
         const ret = class extends Component {
 
+            static displayName = hocDisplayName('AdminTab', C);
             static tabLabel = tabLabel;
             static tabId = tabId;
 

@@ -10,6 +10,7 @@ import 'babel-polyfill';
 import {Component} from 'react';
 import {elem} from 'hoist';
 import {loadMask} from 'hoist/cmp';
+import {hocDisplayName} from 'hoist/utils/ReactUtils';
 import {box, viewport, vbox} from 'hoist/layout';
 import {useStrict, observer} from 'hoist/mobx';
 
@@ -29,6 +30,8 @@ useStrict(true);
 export function hoistApp(C) {
 
     const ret = class extends Component {
+
+        static displayName = hocDisplayName('HoistApp', C);
 
         componentDidMount() {
             hoistAppStore.initApp();
@@ -55,6 +58,8 @@ export function hoistApp(C) {
                 })
             });
         }
+
+
     };
 
     return observer(ret);

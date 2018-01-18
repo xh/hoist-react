@@ -75,6 +75,6 @@ export class LoginPanel extends Component {
         });
     }
 
-    onUsernameChange = (ev) => {console.log(ev.target.value);this.setUsername(ev.target.value)}
+    onUsernameChange = (ev) => {this.setUsername(ev.target.value)}
     onPasswordChange = (ev) => {this.setPassword(ev.target.value)}
 }
