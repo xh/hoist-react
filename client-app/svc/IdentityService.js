@@ -41,7 +41,7 @@ export class IdentityService extends BaseService {
 
     async logoutAsync() {
         return XH
-            .fetchJson({url: '/hoistImpl/logout'})
+            .fetchJson({url: 'hoistImpl/logout'})
             .then(() => window.location = '/')
             .catchDefault();
     }
@@ -68,7 +68,7 @@ export class IdentityService extends BaseService {
 
     async endImpersonateAsync() {
         return XH.fetchJson({
-            url: '/hoistImpl/endImpersonate'
+            url: 'hoistImpl/endImpersonate'
         }).then(() => {
             window.location = '/';
         }).catchDefault({
