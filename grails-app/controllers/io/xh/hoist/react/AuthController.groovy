@@ -16,8 +16,11 @@ class AuthController extends BaseController {
 
     def authenticationService
 
-    def loginIfNeeded(String username, String password) {
-        def success = identityService.getAuthUser() ?: authenticationService.login(request, username, password)
-        renderJSON(success: success)
+    def authUser(String username, String password) {
+        renderJSON(authUser: identityService.getAuthUser())
+    }
+
+    def login(String username, String password) {
+        renderJSON(success: authenticationService.login(request, username, password))
     }
 }

@@ -8,8 +8,7 @@ import {Component} from 'react';
 import {XH} from 'hoist';
 import {baseCol, boolCheckCol} from 'hoist/columns/Core';
 import {gridPanel} from 'hoist/ag-grid/GridPanel';
-import {observer} from 'mobx-react';
-import {observable, action, toJS} from 'mobx';
+import {observer, observable, action, toJS} from 'hoist/mobx';
 
 import {adminTab} from '../AdminTab';
 import {usernameCol} from '../../columns/Columns';

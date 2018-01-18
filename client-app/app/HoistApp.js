@@ -6,13 +6,15 @@
  */
 import '@blueprintjs/core/dist/blueprint.css';
 
+import 'babel-polyfill';
 import {Component} from 'react';
-import {XH, elem} from 'hoist';
+import {elem} from 'hoist';
 import {loadMask} from 'hoist/cmp';
-import {box, vbox} from 'hoist/layout';
-import {useStrict, observable, action} from 'mobx';
-import {observer} from 'mobx-react';
+import {box, viewport, vbox} from 'hoist/layout';
+import {useStrict, observer} from 'hoist/mobx';
 
+import {hoistAppStore} from './HoistAppStore';
+import {LoginPanel} from './LoginPanel';
 import {ImpersonationBar} from './ImpersonationBar';
 import {VersionBar} from './VersionBar';
 
@@ -28,38 +30,28 @@ export function hoistApp(C) {
 
     const ret = class extends Component {
 
-        @observable isLoaded = false;
-
-        @action
-        markReady = () => {
-            this.isLoaded = true;
-        }
-
         componentDidMount() {
-            XH.initAsync()
-                .then(this.markReady)
-                .catchDefault();
+            hoistAppStore.initAsync().catchDefault();
         }
 
         render() {
-            if (!this.isLoaded) return loadMask();
+            const {authUsername, isInitialized} = hoistAppStore;
 
-            return vbox({
-                style: {
-                    width: '100%',
-                    height: '100%',
-                    top: 0,
-                    left: 0,
-                    position: 'fixed'
-                },
-                items: [
-                    elem(ImpersonationBar),
-                    box({
-                        flex: 1,
-                        items: elem(C)
-                    }),
-                    elem(VersionBar)
-                ]
+            if (!authUsername)  return elem(LoginPanel);
+            if (!isInitialized) return loadMask();
+
+            return viewport({
+                items: vbox({
+                    flex: 1,
+                    items: [
+                        elem(ImpersonationBar),
+                        box({
+                            flex: 1,
+                            items: elem(C)
+                        }),
+                        elem(VersionBar)
+                    ]
+                })
             });
         }
     };

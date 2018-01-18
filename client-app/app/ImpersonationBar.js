@@ -10,8 +10,7 @@ import {XH, identityService} from 'hoist';
 import {hbox, spacer, filler, div} from 'hoist/layout';
 import {Classes, button, suggest, icon, popover2, menuItem} from 'hoist/blueprint';
 
-import {observable, action} from 'mobx';
-import {observer} from 'mobx-react';
+import {observable, action, observer} from 'hoist/mobx';
 
 @observer
 export class ImpersonationBar extends Component {

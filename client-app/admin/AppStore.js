@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {observable, action} from 'mobx';
+import {observable, action} from 'hoist/mobx';
 
 class AppStore {
     @observable activeTabId = 'Services';

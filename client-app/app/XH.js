@@ -5,11 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import 'babel-polyfill';
+
 import {isPlainObject, camelCase} from 'lodash';
 import {Exception} from 'hoist/exception/Exception';
 import {BaseService} from 'hoist/svc/BaseService';
-import {AuthService} from 'hoist/svc/AuthService';
 import {ConfigService} from 'hoist/svc/ConfigService';
 import {EnvironmentService} from 'hoist/svc/EnvironmentService';
 import {ExceptionHandlerService} from 'hoist/svc/ExceptionHandlerService';
@@ -24,7 +23,6 @@ import {EventService} from 'hoist/svc/EventService';
 // Core services. Will be initialized by XH.initAsync() below.
 //----------------------------------------------------------
 export let
-    authService,
     configService,
     environmentService,
     exceptionHandlerService,
@@ -63,7 +61,6 @@ class _XH {
         const ensureReady = BaseService.ensureSvcsReadyAsync.bind(BaseService);
 
         await ensureReady(fetchService);
-        await ensureReady(authService);
         await ensureReady(configService, prefService);
         await ensureReady(
             environmentService,
@@ -84,7 +81,6 @@ class _XH {
             return this[nm] = overrides[nm] || new svc();
         };
 
-        authService = inject(AuthService);
         configService = inject(ConfigService);
         environmentService = inject(EnvironmentService);
         exceptionHandlerService = inject(ExceptionHandlerService);

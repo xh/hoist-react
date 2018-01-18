@@ -42,6 +42,22 @@ export function Filler(props) {
     return div(getProps(props, {flex: '1 1 auto'}));
 }
 
+/**
+ * A container for the top level of the application.
+ * Will stretch to encompass the entire browser
+ */
+export function Viewport(props) {
+    return div(getProps(props, {
+        style: {
+            width: '100%',
+            height: '100%',
+            top: 0,
+            left: 0,
+            position: 'fixed'
+        }
+    }));
+}
+
 //-----------------------
 // Implementation
 //-----------------------

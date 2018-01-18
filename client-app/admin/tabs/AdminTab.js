@@ -9,8 +9,7 @@ import '@blueprintjs/core/dist/blueprint.css';
 import {Component} from 'react';
 import {elem, Ref} from 'hoist';
 import {box} from 'hoist/layout';
-import {autorun, computed} from 'mobx';
-import {observer} from 'mobx-react';
+import {autorun, computed, observer} from 'hoist/mobx';
 import {appStore} from '../AppStore';
 
 
