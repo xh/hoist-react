@@ -8,7 +8,7 @@
 import {observable, action} from 'hoist/mobx';
 
 class AppStore {
-    @observable activeTabId = 'Services';
+    @observable activeTabId = 'About';
     @observable lastRefreshRequest = null;
 
     @action

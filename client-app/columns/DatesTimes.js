@@ -28,7 +28,7 @@ export const dateTimeCol = colFactory({
     text: 'Date',
     // renderer: dateTimeRenderer(),
     width: 140
-})
+});
 
 export const compactDateCol = colFactory({
     text: 'Date',

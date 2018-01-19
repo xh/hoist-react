@@ -23,3 +23,4 @@ export const viewport = elemFactory(Viewport);
 export const div = elemFactory('div');
 export const span = elemFactory('span');
 export const nav = elemFactory('nav');
+export const h1 = elemFactory('h1');
