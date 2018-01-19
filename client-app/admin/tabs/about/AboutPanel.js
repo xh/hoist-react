@@ -6,7 +6,7 @@
  */
 import React, {Component} from 'react';
 import {XH, environmentService} from 'hoist';
-import {div} from 'hoist/layout';
+import {div, h1} from 'hoist/layout';
 
 import {adminTab} from '../AdminTab';
 
@@ -19,14 +19,14 @@ export class AboutPanel extends Component {
             cls: 'xh-admin-about-panel',
             items: [
                 <h1>About This Application</h1>,
-                this.buildTable(),
-                this.buildAboutBlurb()
+                this.renderTable(),
+                this.renderBlurb()
             ]
         });
 
     }
 
-    buildTable() {
+    renderTable() {
         const svc = environmentService,
             row = (label, data) => <tr><th>{label}</th><td>{data}</td></tr>;
         return (
@@ -35,7 +35,8 @@ export class AboutPanel extends Component {
                     {row('App Name', XH.appName)}
                     {row('Environment', svc.get('appEnvironment'))}
                     {row('App Version', svc.get('appVersion'))}
-                    {row('Hoist Version', svc.get('hoistCoreVersion'))}
+                    {row('Hoist Core Version', svc.get('hoistCoreVersion'))}
+                    {row('Hoist React Version', svc.get('hoistReactVersion'))}
                     {row('Grails Version', svc.get('grailsVersion'))}
                     {row('Java Version', svc.get('javaVersion'))}
                 </tbody>
@@ -43,16 +44,11 @@ export class AboutPanel extends Component {
         );
     }
 
-    buildAboutBlurb() {
-        const imgStyle = { display: 'table-cell', verticalAlign: 'middle' },
-            blurbStyle = { display: 'table-cell', verticalAlign: 'middle', width: '100%' };
+    renderBlurb() {
+        const blurbStyle = {display: 'table-cell', verticalAlign: 'middle', width: '100%' };
 
-        // image no good at the moment
         return (
             <div style={{marginTop: '10px'}}>
-                <div style={imgStyle}>
-                    <img src={'/assets/xh/xh.io-120px.png'} className='xh-admin-xhio-logo' alt='Extremely Heavy Industries' />
-                </div>
                 <div style={blurbStyle}>
                     <p>
                         <b>This application is built with Hoist</b>,

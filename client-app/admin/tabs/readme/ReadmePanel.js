@@ -25,15 +25,6 @@ export class ReadmePanel extends Component {
 
     @action
     loadAsync() {
-        this.isLoading = true;
-        return XH
-            .fetchJson({url: 'assets/readme.md'}) // no bueno (asset pipeline?)
-            .then(rows => {
-                this.completeLoad(true, rows.data);
-            }).catch(e => {
-                this.completeLoad(false, e);
-                // throw e; // Temporarily disable throw for known missing asset
-            }).catchDefault();
     }
 
     @action
