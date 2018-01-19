@@ -32,10 +32,6 @@ export const usernameCol = colFactory({
 // Activity
 //----------------------
 
-//----------------------
-// Activity
-//----------------------
-
 export const msg = colFactory({
     text: 'Message',
     field: 'msg',
