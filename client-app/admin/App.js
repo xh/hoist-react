@@ -14,15 +14,17 @@ import {observer} from 'hoist/mobx';
 
 import {appStore} from './AppStore';
 import {AboutPanel} from './tabs/about/AboutPanel';
-import {UserPanel} from './tabs/users/UserPanel';
-import {ServicePanel} from './tabs/services/ServicePanel';
 import {ConfigPanel} from './tabs/configs/ConfigPanel';
+import {ServicePanel} from './tabs/services/ServicePanel';
+import {EhCachePanel} from './tabs/ehcache/CachePanel';
+import {UserPanel} from './tabs/users/UserPanel';
+
 
 @hoistApp
 @observer
 export class App extends Component {
 
-    tabs = [AboutPanel, UserPanel, ServicePanel, ConfigPanel];
+    tabs = [AboutPanel, ConfigPanel, ServicePanel, EhCachePanel, UserPanel];
 
     render() {
         return vbox({

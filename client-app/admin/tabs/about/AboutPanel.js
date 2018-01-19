@@ -65,7 +65,7 @@ export class AboutPanel extends Component {
         );
     }
 
-    // @adminTab required this be defined, however we have no use of it here
+    // @adminTab requires this be defined, however we have no use of it here
     loadAsync() {
 
     }

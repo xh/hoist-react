@@ -51,3 +51,25 @@ export const noteCol = colFactory({
     field: 'note',
     flex: 1
 });
+
+//----------------------
+// EhCache
+//----------------------
+
+export const heapSize = colFactory({
+    text: 'Heap Size (MB)',
+    field: 'heapSize',
+    width: 130
+});
+
+export const entries = colFactory({
+    text: 'Entries',
+    field: 'entries',
+    width: 130
+});
+
+export const status = colFactory({
+    text: 'Status',
+    field: 'status',
+    flex: 0.25
+});
