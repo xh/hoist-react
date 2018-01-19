@@ -6,13 +6,12 @@
  */
 import React, {Component} from 'react';
 import {XH} from 'hoist';
-import {gridPanel} from 'hoist/ag-grid/GridPanel';
 import {observer, observable, action, toJS} from 'hoist/mobx';
 
 import {adminTab} from '../AdminTab';
 
 
-@adminTab('Read Me')
+@adminTab('Readme')
 @observer
 export class ReadmePanel extends Component {
 
