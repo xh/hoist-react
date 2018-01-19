@@ -1,21 +1,22 @@
 /*
-* This file belongs to Hoist, an application development toolkit
-* developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
-*
-* Copyright © 2018 Extremely Heavy Industries Inc.
-*/
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2018 Extremely Heavy Industries Inc.
+ */
 import {Component} from 'react';
 import {XH} from 'hoist';
 import {gridPanel} from 'hoist/ag-grid/GridPanel';
 import {observer, observable, action, toJS} from 'hoist/mobx';
 
 import {adminTab} from '../AdminTab';
-import {nameCol, heapSizeCol, entriesCol, statusCol} from '../../columns/Columns';
+import {dateCol} from 'hoist/columns/DatesTimes';
+import {appCodeCol, usernameCol, definitionCol} from '../../columns/Columns';
 
 
-@adminTab('EhCache')
+@adminTab('Dashboards')
 @observer
-export class EhCachePanel extends Component {
+export class DashboardPanel extends Component {
 
     @observable rows = null;
     @observable isLoading = false;
@@ -26,10 +27,10 @@ export class EhCachePanel extends Component {
             title: 'EhCache',
             rows: toJS(this.rows),
             columns: [
-                nameCol(),
-                heapSizeCol(),
-                entriesCol(),
-                statusCol()
+                appCodeCol(),
+                usernameCol(),
+                dateCol({field: 'lastUpdated'}),
+                definitionCol()
             ]
         });
     }
@@ -38,9 +39,9 @@ export class EhCachePanel extends Component {
     loadAsync() {
         this.isLoading = true;
         return XH
-            .fetchJson({url: 'ehCacheAdmin/listCaches'})
+            .fetchJson({url: 'rest/dashboardAdmin'})
             .then(rows => {
-                this.completeLoad(true, rows);
+                this.completeLoad(true, rows.data);
             }).catch(e => {
                 this.completeLoad(false, e);
                 throw e;

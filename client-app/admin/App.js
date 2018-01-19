@@ -17,6 +17,7 @@ import {AboutPanel} from './tabs/about/AboutPanel';
 import {ConfigPanel} from './tabs/configs/ConfigPanel';
 import {ServicePanel} from './tabs/services/ServicePanel';
 import {EhCachePanel} from './tabs/ehcache/CachePanel';
+import {DashboardPanel} from './tabs/dashboards/DashboardPanel';
 import {UserPanel} from './tabs/users/UserPanel';
 
 
@@ -24,7 +25,7 @@ import {UserPanel} from './tabs/users/UserPanel';
 @observer
 export class App extends Component {
 
-    tabs = [AboutPanel, ConfigPanel, ServicePanel, EhCachePanel, UserPanel];
+    tabs = [AboutPanel, ConfigPanel, ServicePanel, EhCachePanel, DashboardPanel, UserPanel];
 
     render() {
         return vbox({

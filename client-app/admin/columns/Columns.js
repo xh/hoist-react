@@ -56,20 +56,34 @@ export const noteCol = colFactory({
 // EhCache
 //----------------------
 
-export const heapSize = colFactory({
+export const heapSizeCol = colFactory({
     text: 'Heap Size (MB)',
     field: 'heapSize',
     width: 130
 });
 
-export const entries = colFactory({
+export const entriesCol = colFactory({
     text: 'Entries',
     field: 'entries',
     width: 130
 });
 
-export const status = colFactory({
+export const statusCol = colFactory({
     text: 'Status',
     field: 'status',
     flex: 0.25
+});
+
+//----------------------
+// Dashboard
+//----------------------
+export const appCodeCol = colFactory({
+    text: 'App Code',
+    field: 'appCode',
+    width: 100
+});
+
+export const definitionCol = colFactory({
+    field: 'definition',
+    flex: 1
 });
