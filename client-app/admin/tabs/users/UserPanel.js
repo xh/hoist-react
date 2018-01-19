@@ -30,7 +30,7 @@ export class UserPanel extends Component {
                 usernameCol({width: 175}),
                 baseCol({text: 'Email', field: 'email', width: 175}),
                 baseCol({text: 'Display Name', field: 'displayName', width: 150}),
-                boolCheckCol({text: 'Active?', field: 'active', width: 75}), // text property not being respected
+                boolCheckCol({text: 'Active?', field: 'active', width: 75}),
                 baseCol({text: 'Roles', field: 'roles', flex: 1})
             ]
         });
