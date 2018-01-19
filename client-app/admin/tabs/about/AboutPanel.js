@@ -57,7 +57,7 @@ export class AboutPanel extends Component {
                     <p>
                         <b>This application is built with Hoist</b>,
                         a plugin for rich web-application development provided by
-                        <a href="http://xh.io" target="_blank"> Extremely Heavy Industries</a>.
+                        <a href="http://xh.io" target="_blank" rel="noopener noreferrer"> Extremely Heavy Industries</a>.
                     </p>
                     <p>Please contact <a href="mailto:support@xh.io">support@xh.io</a> with any questions.</p>
                 </div>
