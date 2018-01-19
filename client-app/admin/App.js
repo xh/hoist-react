@@ -13,6 +13,7 @@ import {button, tabs2, tab2, icon} from 'hoist/blueprint';
 import {observer} from 'hoist/mobx';
 
 import {appStore} from './AppStore';
+import {AboutPanel} from './tabs/about/AboutPanel';
 import {UserPanel} from './tabs/users/UserPanel';
 import {ServicePanel} from './tabs/services/ServicePanel';
 import {ConfigPanel} from './tabs/configs/ConfigPanel';
@@ -21,7 +22,7 @@ import {ConfigPanel} from './tabs/configs/ConfigPanel';
 @observer
 export class App extends Component {
 
-    tabs = [UserPanel, ServicePanel, ConfigPanel];
+    tabs = [AboutPanel, UserPanel, ServicePanel, ConfigPanel];
 
     render() {
         return vbox({
