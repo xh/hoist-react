@@ -33,7 +33,7 @@ export class ConfigPanel extends Component {
                 confValCol({text: 'Beta Value', field: 'betaValue'}),
                 confValCol({text: 'Stage Value', field: 'stageValue'}),
                 confValCol({text: 'Dev Value', field: 'devValue'}),
-                boolCheckCol({text: 'Client?', field: 'clientVisible', width: 90}), // text property not being respected
+                boolCheckCol({text: 'Client?', field: 'clientVisible', width: 90}),
                 noteCol()
             ]
         });
