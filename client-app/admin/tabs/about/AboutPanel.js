@@ -33,7 +33,6 @@ export class AboutPanel extends Component {
 
     }
 
-
     buildTable() {
         const svc = environmentService,
             row = (label, data) => <tr><th>{label}</th><td>{data}</td></tr>;
