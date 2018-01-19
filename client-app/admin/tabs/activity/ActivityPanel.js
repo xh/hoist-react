@@ -57,7 +57,6 @@ export class ActivityPanel extends Component {
         return XH
             .fetchJson({url: 'trackLogAdmin'})
             .then(rows => {
-                console.log(rows[0]);
                 this.completeLoad(true, rows);
             }).catch(e => {
                 this.completeLoad(false, e);
