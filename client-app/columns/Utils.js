@@ -19,7 +19,7 @@ const globalVals = {};
 export function fileColFactory(fileVals = {}) {
     return function(colVals = {}) {
         return function(instanceVals = {}) {
-            // Do addition pre-processing here
+            // Do additional pre-processing here
             return defaults(instanceVals, colVals, fileVals, globalVals);
             // Do additional post-processing here
         };

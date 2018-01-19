@@ -13,14 +13,21 @@ import {button, tabs2, tab2, icon} from 'hoist/blueprint';
 import {observer} from 'hoist/mobx';
 
 import {appStore} from './AppStore';
-import {UserPanel} from './tabs/users/UserPanel';
+import {AboutPanel} from './tabs/about/AboutPanel';
+import {ActivityPanel} from './tabs/activity/ActivityPanel';
+import {ConfigPanel} from './tabs/configs/ConfigPanel';
 import {ServicePanel} from './tabs/services/ServicePanel';
+import {EhCachePanel} from './tabs/ehcache/CachePanel';
+import {DashboardPanel} from './tabs/dashboards/DashboardPanel';
+import {UserPanel} from './tabs/users/UserPanel';
+import {ReadmePanel} from './tabs/readme/ReadmePanel';
+
 
 @hoistApp
 @observer
 export class App extends Component {
 
-    tabs = [UserPanel, ServicePanel];
+    tabs = [AboutPanel, ActivityPanel, ConfigPanel, ServicePanel, EhCachePanel, DashboardPanel, UserPanel, ReadmePanel];
 
     render() {
         return vbox({
