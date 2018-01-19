@@ -27,3 +27,27 @@ export const usernameCol = colFactory({
     field: 'username',
     width: 120
 });
+
+//----------------------
+// Configs
+//----------------------
+
+export const valueTypeCol = colFactory({
+    text: 'Type',
+    field: 'valueType',
+    width: 60
+});
+
+export const confValCol = colFactory({
+    width: 175
+});
+
+export const groupNameCol = colFactory({
+    width: 80
+});
+
+export const noteCol = colFactory({
+    text: 'Type',
+    field: 'note',
+    flex: 1
+});

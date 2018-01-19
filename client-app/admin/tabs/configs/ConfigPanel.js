@@ -6,32 +6,35 @@
  */
 import {Component} from 'react';
 import {XH} from 'hoist';
-import {baseCol, boolCheckCol} from 'hoist/columns/Core';
+import {boolCheckCol} from 'hoist/columns/Core';
 import {gridPanel} from 'hoist/ag-grid/GridPanel';
 import {observer, observable, action, toJS} from 'hoist/mobx';
 
 import {adminTab} from '../AdminTab';
-import {usernameCol} from '../../columns/Columns';
+import {nameCol, valueTypeCol, confValCol, noteCol} from '../../columns/Columns';
 
 
-@adminTab('Users')
+@adminTab('Configs')
 @observer
-export class UserPanel extends Component {
-    
+export class ConfigPanel extends Component {
+
     @observable rows = null;
     @observable isLoading = false;
     @observable lastLoaded = null;
 
     render() {
         return gridPanel({
-            title: 'Users',
+            title: 'Configs',
             rows: toJS(this.rows),
             columns: [
-                usernameCol({width: 175}),
-                baseCol({text: 'Email', field: 'email', width: 175}),
-                baseCol({text: 'Display Name', field: 'displayName', width: 150}),
-                boolCheckCol({text: 'Active?', field: 'active', width: 75}), // text property not being respected
-                baseCol({text: 'Roles', field: 'roles', flex: 1})
+                nameCol(),
+                valueTypeCol(),
+                confValCol({text: 'Prod Value', field: 'prodValue'}),
+                confValCol({text: 'Beta Value', field: 'betaValue'}),
+                confValCol({text: 'Stage Value', field: 'stageValue'}),
+                confValCol({text: 'Dev Value', field: 'devValue'}),
+                boolCheckCol({text: 'Client?', field: 'clientVisible', width: 90}), // text property not being respected
+                noteCol()
             ]
         });
     }
@@ -40,9 +43,9 @@ export class UserPanel extends Component {
     loadAsync() {
         this.isLoading = true;
         return XH
-            .fetchJson({url: 'userAdmin'})
+            .fetchJson({url: 'rest/configAdmin'})
             .then(rows => {
-                this.completeLoad(true, rows);
+                this.completeLoad(true, rows.data);
             }).catch(e => {
                 this.completeLoad(false, e);
                 throw e;
