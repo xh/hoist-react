@@ -19,13 +19,14 @@ import {ServicePanel} from './tabs/services/ServicePanel';
 import {EhCachePanel} from './tabs/ehcache/CachePanel';
 import {DashboardPanel} from './tabs/dashboards/DashboardPanel';
 import {UserPanel} from './tabs/users/UserPanel';
+import {ReadmePanel} from './tabs/readme/ReadmePanel';
 
 
 @hoistApp
 @observer
 export class App extends Component {
 
-    tabs = [AboutPanel, ConfigPanel, ServicePanel, EhCachePanel, DashboardPanel, UserPanel];
+    tabs = [AboutPanel, ConfigPanel, ServicePanel, EhCachePanel, DashboardPanel, UserPanel, ReadmePanel];
 
     render() {
         return vbox({
