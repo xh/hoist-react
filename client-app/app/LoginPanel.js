@@ -69,9 +69,9 @@ export class LoginPanel extends Component {
                 password: this.password
             }
         }).then(r => {
-            hoistAppStore.setAuthUsername(r.success ? this.username : null);
+            hoistAppStore.markAuthenticatedUser(r.success ? this.username : null);
         }).catch(() => {
-            hoistAppStore.setAuthUsername(null);
+            hoistAppStore.markAuthenticatedUser(null);
         });
     }
 

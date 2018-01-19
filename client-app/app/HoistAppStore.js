@@ -5,44 +5,50 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {observable, when, setter, action} from 'hoist/mobx';
+import {observable, setter, action} from 'hoist/mobx';
 import {XH} from 'hoist';
 
+/**
+ * Main Store for Managing the loading of a HoistApp
+ */
 class HoistAppStore {
 
+    /** Has the authentication step completed? **/
     @observable authCompleted = false;
+
+    /** Currently authenticated user. **/
     @observable authUsername = null;
+
+    /** Are all Hoist app service successfully initialized? */
     @setter @observable isInitialized = false;
 
+    /**
+     * Call this once when application mounted in order to
+     * trigger initial authentication and initialization of application.
+     */
     initApp() {
-        this.loadAuthUsername();
-
-        when(
-            () => this.authUsername,
-            () => {
-                XH.initAsync()
-                    .then(() => this.setIsInitialized(true))
-                    .catchDefault();
-            }
-        );
-    }
-
-    //---------------------------------
-    // Implementation
-    //-----------------------------------
-    loadAuthUsername() {
         XH.fetchJson({url: 'auth/authUser'})
-            .then(r => r.authUser)
-            .catch(() => null)
-            .then(username => this.setAuthUsername(username));
+            .then(r => this.markAuthenticatedUser(r.username))
+            .catch(e => this.markAuthenticatedUser(null));
     }
 
+
+    /**
+     * Call to mark the authenticated user.
+     *
+     * @param username of verified user. Use null to indicate an
+     * authentication failure and an unidentified user.
+     */
     @action
-    setAuthUsername(authUsername) {
-        this.authCompleted = true;
-        this.authUsername = authUsername;
+    markAuthenticatedUser(username) {
+        this.authUsername = username;
+
+        if (!this.authCompleted) {
+            this.authCompleted = true;
+            XH.initAsync()
+                .then(() => this.setIsInitialized(true))
+                .catchDefault();
+        }
     }
-
 }
-
 export const hoistAppStore = new HoistAppStore();
