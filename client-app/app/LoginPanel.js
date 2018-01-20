@@ -47,12 +47,10 @@ export class LoginPanel extends Component {
                         onChange: this.onPasswordChange,
                         style: {marginBottom: 5}
                     }),
-                    hbox({
-                        items: [
-                            filler(),
-                            button({text: 'Go', disabled: !this.isValid, onClick: this.onSubmit})
-                        ]
-                    })
+                    hbox(
+                        filler(),
+                        button({text: 'Go', disabled: !this.isValid, onClick: this.onSubmit})
+                    )
                 ]
             })
         });

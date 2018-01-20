@@ -37,7 +37,7 @@ export class ImpersonationBar extends Component {
             items: [
                 icon({iconName: 'person'}),
                 spacer({width: 10}),
-                div({items: `${impersonating ? 'Impersonating' : ''} ${username}`}),
+                div(`${impersonating ? 'Impersonating' : ''} ${username}`),
                 filler(),
                 this.switchButton(),
                 spacer({width: 4}),
@@ -73,14 +73,12 @@ export class ImpersonationBar extends Component {
                         $items: s.targets || []
                     }),
                     spacer({height: 5}),
-                    hbox({
-                        items: [
-                            filler(),
-                            button({text: 'Close', onClick: s.toggleTargetDialog}),
-                            spacer({width: 5}),
-                            button({text: 'OK', onClick: s.doImpersonate, disabled: !s.selectedTarget})
-                        ]
-                    })
+                    hbox(
+                        filler(),
+                        button({text: 'Close', onClick: s.toggleTargetDialog}),
+                        spacer({width: 5}),
+                        button({text: 'OK', onClick: s.doImpersonate, disabled: !s.selectedTarget})
+                    )
                 ]
             })
         });

@@ -28,10 +28,9 @@ class HoistAppStore {
      */
     initApp() {
         XH.fetchJson({url: 'auth/authUser'})
-            .then(r => this.markAuthenticatedUser(r.username))
+            .then(r => this.markAuthenticatedUser(r.authUser.username))
             .catch(e => this.markAuthenticatedUser(null));
     }
-
 
     /**
      * Call to mark the authenticated user.
@@ -42,9 +41,9 @@ class HoistAppStore {
     @action
     markAuthenticatedUser(username) {
         this.authUsername = username;
+        this.authCompleted = true;
 
-        if (!this.authCompleted) {
-            this.authCompleted = true;
+        if (username && !this.isInitialized) {
             XH.initAsync()
                 .then(() => this.setIsInitialized(true))
                 .catchDefault();

@@ -6,7 +6,6 @@
  */
 import {Component} from 'react';
 import {XH} from 'hoist';
-import {boolCheckCol} from 'hoist/columns/Core';
 import {gridPanel} from 'hoist/ag-grid/GridPanel';
 import {observer, observable, action, toJS} from 'hoist/mobx';
 

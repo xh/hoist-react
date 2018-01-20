@@ -55,7 +55,7 @@ export class App extends Component {
             items: [
                 icon({iconName: 'eye-open'}),
                 spacer({width: 10}),
-                div({items: `${XH.appName} Admin`}),
+                div(`${XH.appName} Admin`),
                 filler(),
                 button({iconName: 'refresh', onClick: appStore.requestRefresh})
             ]

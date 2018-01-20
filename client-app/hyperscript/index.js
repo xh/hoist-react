@@ -8,19 +8,20 @@
 import {asArray} from 'hoist/utils/JsUtils';
 import {defaults, isPlainObject, isString} from 'lodash';
 import React from 'react';
-
 //------------------------------------------
 // Factory generator, and default factories
 //------------------------------------------
 /**
- * Generate a 'hyperscript' element factory for a given react Component or HTML node
+ * Convenience method for creating React Elements with native javascript.  This method is designed
+ * to provide a well-formatted, declarative native javascript alternative to JSX.
  *
  * @param type, string representing html element, or React Component
- * @returns React Element.
+ * @param args, additional arguments to populate the component.
  *
- * This method will create an element function that takes a single object of the following
- * form and returns a React elements.  All inputs below are optional.
- *          {
+ * args can take of the following two forms:
+ *
+ * 1) a single config object with the following structure:
+ *      {
  *              cls: String, css classes for this element  (alias for React 'className')
  *
  *              items: single or array of child elements.  These may be specified as React Elements, or raw js objects
@@ -36,37 +37,26 @@ import React from 'react';
  *                      }
  *
  *               ...props:  other properties to apply to this element
- *          }
- */
-
-/**
- * Create a factory/function that can be used to create a React Element
- * using hyperscript above.
+ *        }
  *
- * @param C, React Component for which to create the element.
- * @return {Function}
+ *  OR
+ *
+ *  2) a series of children objects to be directly passed to the new element.  Equivalent
+ *  to {items: args}.  Useful when no attributes need to be applied directly to the Element.
  */
-export function elemFactory(C) {
-    return function(obj) {
-        return elem(C, obj);
-    };
-}
+export function elem(type, ...args) {
 
-//---------------------------------
-// Implementation
-//----------------------------------
-const defaultChildFactory = elemFactory('div');
-export function elem(type, {items, itemSpec, cls, ...props} = {}) {
+    // 0) Normalize args into well-specified configs.
+    let {items, itemSpec, cls, ...props} = normalizeArgs(args);
     items = asArray(items);
 
-    // 0) Handle basic renames
+    // 1) Handle basic renames
     if (cls) props.className = cls;
 
-    // 1) Special handling for actual property 'items' (apps must use $items)
-    // TODO: consider renaming this to: 'has'? 'children'?  Will items often collide?
+    // 2) Special handling for 'items' (must use $items for an 'items' API property)
     if (props.$items) props.items = props.$items;
 
-    // 2) process children with itemSpecs
+    // 3) process children with itemSpecs
     itemSpec = isPlainObject(itemSpec) ? itemSpec : {factory: itemSpec};
     const {factory, preCls, postCls, ...defaultParams} = itemSpec;
     items = items
@@ -85,6 +75,39 @@ export function elem(type, {items, itemSpec, cls, ...props} = {}) {
                 return fct(defaults(item, defaultParams));
             }
         });
-    
+
     return React.createElement(type, props, ...items);
 }
+
+
+/**
+ * Create a factory/function that can be used to create a React Element
+ * using native javascript.
+ *
+ * This is a 'curried' version of the raw elem() method.  See that method,
+ * and the documentation for its rest arguments for details on how to call
+ * the function returned by this method.
+ *
+ * @param C, React Component for which to create the element.
+ * @return {Function}
+ */
+export function elemFactory(C) {
+    return function(...args) {
+        return elem(C, ...args);
+    };
+}
+
+//---------------------------------
+// Implementation
+//----------------------------------
+function normalizeArgs(args) {
+    const len = args.length;
+    if (len === 0) return {};
+    if (len === 1) {
+        const arg = args[0];
+        if (isPlainObject(arg) && !arg.$$typeof) return arg;
+    }
+    return {items: args};
+}
+
+const defaultChildFactory = elemFactory('div');

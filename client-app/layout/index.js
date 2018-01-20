@@ -24,3 +24,9 @@ export const div = elemFactory('div');
 export const span = elemFactory('span');
 export const nav = elemFactory('nav');
 export const h1 = elemFactory('h1');
+export const table = elemFactory('table');
+export const tbody = elemFactory('tbody');
+export const tr = elemFactory('tr');
+export const td = elemFactory('td');
+export const th = elemFactory('th');
+

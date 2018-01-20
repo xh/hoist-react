@@ -5,8 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import React, {Component} from 'react';
-import {XH} from 'hoist';
-import {observer, observable, action, toJS} from 'hoist/mobx';
+import {observer, observable, action} from 'hoist/mobx';
 
 import {adminTab} from '../AdminTab';
 
@@ -25,12 +24,5 @@ export class ReadmePanel extends Component {
 
     @action
     loadAsync() {
-    }
-
-    @action
-    completeLoad = (success, vals) => {
-        this.rows = success ? vals : [];
-        this.lastLoaded = Date.now();
-        this.isLoading = false;
     }
 }
