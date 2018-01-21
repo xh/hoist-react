@@ -8,12 +8,8 @@ import {Component} from 'react';
 import {XH} from 'hoist';
 import {gridPanel} from 'hoist/ag-grid/GridPanel';
 import {observer, observable, action, toJS} from 'hoist/mobx';
-
-import {adminTab} from '../AdminTab';
 import {nameCol, heapSizeCol, entriesCol, statusCol} from '../../columns/Columns';
 
-
-@adminTab('EhCache')
 @observer
 export class EhCachePanel extends Component {
 
@@ -23,7 +19,6 @@ export class EhCachePanel extends Component {
 
     render() {
         return gridPanel({
-            title: 'EhCache',
             rows: toJS(this.rows),
             columns: [
                 nameCol(),

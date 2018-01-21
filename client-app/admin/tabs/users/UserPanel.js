@@ -10,11 +10,8 @@ import {baseCol, boolCheckCol} from 'hoist/columns/Core';
 import {gridPanel} from 'hoist/ag-grid/GridPanel';
 import {observer, observable, action, toJS} from 'hoist/mobx';
 
-import {adminTab} from '../AdminTab';
 import {usernameCol} from '../../columns/Columns';
 
-
-@adminTab('Users')
 @observer
 export class UserPanel extends Component {
     
@@ -24,7 +21,6 @@ export class UserPanel extends Component {
 
     render() {
         return gridPanel({
-            title: 'Users',
             rows: toJS(this.rows),
             columns: [
                 usernameCol({width: 175}),

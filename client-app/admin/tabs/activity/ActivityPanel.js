@@ -9,7 +9,6 @@ import {XH} from 'hoist';
 import {gridPanel} from 'hoist/ag-grid/GridPanel';
 import {observer, observable, action, toJS} from 'hoist/mobx';
 
-import {adminTab} from '../AdminTab';
 import {dateCol} from 'hoist/columns/DatesTimes';
 import {
     usernameCol,
@@ -23,7 +22,6 @@ import {
     severity
 } from '../../columns/Columns';
 
-@adminTab('Activity')
 @observer
 export class ActivityPanel extends Component {
 
@@ -33,7 +31,6 @@ export class ActivityPanel extends Component {
 
     render() {
         return gridPanel({
-            title: 'Configs',
             rows: toJS(this.rows),
             columns: [
                 severity(),

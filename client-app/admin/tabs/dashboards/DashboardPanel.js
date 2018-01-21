@@ -9,12 +9,9 @@ import {XH} from 'hoist';
 import {gridPanel} from 'hoist/ag-grid/GridPanel';
 import {observer, observable, action, toJS} from 'hoist/mobx';
 
-import {adminTab} from '../AdminTab';
 import {dateCol} from 'hoist/columns/DatesTimes';
 import {appCodeCol, usernameCol, definitionCol} from '../../columns/Columns';
 
-
-@adminTab('Dashboards')
 @observer
 export class DashboardPanel extends Component {
 
@@ -24,7 +21,6 @@ export class DashboardPanel extends Component {
 
     render() {
         return gridPanel({
-            title: 'EhCache',
             rows: toJS(this.rows),
             columns: [
                 appCodeCol(),

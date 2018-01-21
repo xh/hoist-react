@@ -8,14 +8,15 @@ import {Component} from 'react';
 import {observer, observable, action} from 'hoist/mobx';
 import {h2} from 'hoist/layout';
 
+
 @observer
-export class ReadmePanel extends Component {
+export class FeedbackPanel extends Component {
 
     @observable isLoading = false;
     @observable lastLoaded = null;
 
     render() {
-        return h2('Readme Here');
+        return h2('Feedback Here');
     }
 
     @action

@@ -12,29 +12,25 @@ import {vbox, hbox, box, div, filler, spacer} from 'hoist/layout';
 import {button, tabs2, tab2, icon} from 'hoist/blueprint';
 import {observer} from 'hoist/mobx';
 
+import {Tab} from './tabs/Tab';
+import {TabSetStore} from './tabs/TabSetStore';
 import {appStore} from './AppStore';
-import {AboutPanel} from './tabs/about/AboutPanel';
-import {ActivityPanel} from './tabs/activity/ActivityPanel';
-import {ConfigPanel} from './tabs/configs/ConfigPanel';
-import {ServicePanel} from './tabs/services/ServicePanel';
-import {EhCachePanel} from './tabs/ehcache/CachePanel';
-import {DashboardPanel} from './tabs/dashboards/DashboardPanel';
-import {UserPanel} from './tabs/users/UserPanel';
-import {ReadmePanel} from './tabs/readme/ReadmePanel';
 
 
 @hoistApp
 @observer
 export class App extends Component {
 
-    tabs = [AboutPanel, ActivityPanel, ConfigPanel, ServicePanel, EhCachePanel, DashboardPanel, UserPanel, ReadmePanel];
-
     render() {
         return vbox({
             flex: 1,
             items: [
                 this.renderNavBar(),
-                this.renderTabs()
+                box({
+                    padding: 5,
+                    flex: 1,
+                    items: this.renderTabs(appStore.tabs)
+                })
             ]
         });
     }
@@ -62,17 +58,18 @@ export class App extends Component {
         });
     }
 
-    renderTabs() {
-        return box({
-            padding: 5,
-            flex: 1,
-            items: tabs2({
-                selectedTabId: appStore.activeTabId,
-                onChange: appStore.changeTab,
-                items: this.tabs.map(C => {
-                    return tab2({title: C.tabLabel, id: C.tabId, panel: elem(C)});
-                })
+    renderTabs(store) {
+        return tabs2({
+            id: store.id,
+            onChange: store.changeTab,
+            selectedTabId: store.selectedTabId,
+            // Blueprint totally bust with vertical tabs, sadly.
+            // vertical: store.orientation === 'v'
+            items: store.children.map(child => {
+                const panel = child instanceof TabSetStore ? this.renderTabs(child) : elem(Tab, {store: child});
+                return tab2({id: child.id, title: child.id, panel});
             })
         });
     }
 }
+

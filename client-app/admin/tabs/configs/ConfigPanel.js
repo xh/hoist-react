@@ -10,11 +10,8 @@ import {boolCheckCol} from 'hoist/columns/Core';
 import {gridPanel} from 'hoist/ag-grid/GridPanel';
 import {observer, observable, action, toJS} from 'hoist/mobx';
 
-import {adminTab} from '../AdminTab';
 import {nameCol, valueTypeCol, confValCol, noteCol} from '../../columns/Columns';
 
-
-@adminTab('Configs')
 @observer
 export class ConfigPanel extends Component {
 
@@ -24,7 +21,6 @@ export class ConfigPanel extends Component {
 
     render() {
         return gridPanel({
-            title: 'Configs',
             rows: toJS(this.rows),
             columns: [
                 nameCol(),

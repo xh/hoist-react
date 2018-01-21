@@ -9,9 +9,7 @@ import {XH} from 'hoist';
 import {baseCol} from 'hoist/columns/Core';
 import {gridPanel} from 'hoist/ag-grid/GridPanel';
 import {observer, observable, action, toJS} from 'hoist/mobx';
-import {adminTab} from '../AdminTab';
 
-@adminTab('Services')
 @observer
 export class ServicePanel extends Component {
 

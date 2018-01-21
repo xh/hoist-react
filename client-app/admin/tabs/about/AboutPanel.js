@@ -6,19 +6,17 @@
  */
 import React, {Component} from 'react';
 import {XH, environmentService} from 'hoist';
-import {div, h1, table, tbody, tr, th, td} from 'hoist/layout';
+import {div, h2, table, tbody, tr, th, td} from 'hoist/layout';
+import {observer} from 'hoist/mobx';
 
-import {adminTab} from '../AdminTab';
-
-
-@adminTab('About')
+@observer
 export class AboutPanel extends Component {
 
     render() {
         return div({
             cls: 'xh-admin-about-panel',
             items: [
-                h1('About This Application'),
+                h2('About This Application'),
                 this.renderTable(),
                 this.renderBlurb()
             ]
