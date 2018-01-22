@@ -18,7 +18,7 @@ import React from 'react';
  * @param type, string representing html element, or React Component
  * @param args, additional arguments to populate the component.
  *
- * args can take of the following two forms:
+ * args can take one of the following two forms:
  *
  * 1) a single config object with the following structure:
  *      {
