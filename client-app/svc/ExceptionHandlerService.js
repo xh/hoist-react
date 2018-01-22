@@ -4,6 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+import {errorTrackingService} from 'hoist';
 import {BaseService} from './BaseService';
 import {isString} from 'lodash';
 
@@ -21,6 +22,7 @@ export class ExceptionHandlerService extends BaseService {
      *      title {String} - optional title for modal alert
      *      alertKey {String} - optional key for modal alert, when specified only one modal will be allowed to be
      *                  created with that key. If one is already created, it will be replaced with a new instance.
+     *      logOnServer {Boolean} - default true, send the exception to the server to be stored in DB for analysis.
      *      showAlert {Boolean} - display a modal alert - default true, excepting 'isAutoRefresh' request exceptions.
      *      showAsError {Boolean} - display to user/log as "error" - default true.  If true, error details and
      *                  reporting affordances will be shown. Apps should set to false for "expected" exceptions.
@@ -34,8 +36,12 @@ export class ExceptionHandlerService extends BaseService {
         options = this.parseOptions(e, options);
 
         this.logException(e, options);
+
         if (options.showAlert) {
             this.alertException(e, options);
+        }
+        if (options.logOnServer) {
+            this.logErrorOnServer(e);
         }
     }
 
@@ -76,6 +82,7 @@ export class ExceptionHandlerService extends BaseService {
         const ret = Object.assign({}, options),
             isAutoRefresh = e.requestOptions && e.requestOptions.isAutoRefresh;
 
+        ret.logOnServer = ret.logOnServer != null ? ret.logOnServer : true;
         ret.showAlert = ret.showAlert != null ? ret.showAlert : !isAutoRefresh;
         ret.showAsError = ret.showAsError != null ? ret.showAsError : true;
         ret.requireReload = !!ret.requireReload;
@@ -90,6 +97,10 @@ export class ExceptionHandlerService extends BaseService {
         }
 
         return ret;
+    }
+
+    logErrorOnServer(e) {
+        errorTrackingService.submitAsync({exception: e});
     }
 
     sessionExpired(e) {
