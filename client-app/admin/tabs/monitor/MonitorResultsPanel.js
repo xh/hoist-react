@@ -20,7 +20,6 @@ export class MonitorResultsPanel extends Component {
     isLoading = false;
 
     render() {
-        const results = this.results;
         return box({
             items: [
                 loadMask({isShowing: this.isLoading}),
