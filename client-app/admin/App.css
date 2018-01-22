@@ -32,3 +32,7 @@
   text-align: right;
   width: 200px;
 }
+
+input[type="textarea"] {
+  height: 50px;
+}

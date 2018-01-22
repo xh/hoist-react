@@ -14,7 +14,7 @@ import {gridPanel} from 'hoist/ag-grid/GridPanel';
 import {observer, observable, action, toJS} from 'hoist/mobx';
 
 import {nameFlexCol, noteCol} from '../../columns/Columns';
-import {RestForm} from 'hoist/rest/RestEditor';
+import {restForm, RestForm} from 'hoist/rest/RestEditor';
 
 
 @observer
@@ -22,6 +22,23 @@ export class MonitorEditorPanel extends Component {
 
     @observable rows = null;
     @observable _rec = null;
+
+    url = 'rest/monitorAdmin';
+
+    editors = [
+        {name: 'code', allowBlank: false},
+        {name: 'name', allowBlank: false},
+        {name: 'metricType', editable: false}, // must select for none/ceiling/false
+        {name: 'warnThreshold'},
+        {name: 'failThreshold'},
+        {name: 'metricUnit'},
+        {name: 'params', type: 'textarea'},
+        {name: 'notes', type: 'textarea'},
+        {name: 'active'},
+        {name: 'sortOrder'},
+        {name: 'lastUpdated', readOnly: true},
+        {name: 'lastUpdatedBy', readOnly: true}
+    ];
 
     render() {
         return div({
@@ -43,7 +60,7 @@ export class MonitorEditorPanel extends Component {
                         onRowDoubleClicked: this.onRowDoubleClicked.bind(this)
                     }
                 }),
-                restForm({rec: this._rec})
+                restForm({rec: this._rec, editors: this.editors, url: this.url})
             ]
 
         });
@@ -71,5 +88,3 @@ export class MonitorEditorPanel extends Component {
         this._rec = rec;
     }
 }
-
-const restForm = elemFactory(RestForm);

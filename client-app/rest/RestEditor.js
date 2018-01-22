@@ -6,9 +6,10 @@
  */
 
 import {Component} from 'react';
-import {div, h2, vbox} from 'hoist/layout';
+import {div, hbox, filler, h2, vbox} from 'hoist/layout';
 import {observer, observable, action, toJS} from 'hoist/mobx';
-
+import {inputGroup, button} from 'hoist/blueprint';
+import {elemFactory} from 'hoist';
 
 @observer
 export class RestForm extends Component {
@@ -17,7 +18,7 @@ export class RestForm extends Component {
     @observable isOpen = true;
 
     render() {
-        if (this.isOpen) {
+        if (this.rec && this.isOpen) {
             return div({
                 style: {
                     width: '100%',
@@ -32,20 +33,17 @@ export class RestForm extends Component {
                     vbox({
                         style: {
                             width: '300px',
-                            height: '300px',
+                            padding: '10px',
                             position: 'absolute',
                             top: '50%',
                             left: '50%',
-                            marginTop: '-150px',
+                            marginTop: '-300px',
                             marginLeft: '-150px',
                             zIndex: '9999',
-                            background: 'yellow'
+                            background: 'darkgrey'
                         },
                         onClick: this.onFormClick,
-                        items: [
-                            h2('Im a rest editor'),
-                            h2('with fields and stuff')
-                        ]
+                        items: this.buildForm()
                     })
                 ]
             });
@@ -53,11 +51,60 @@ export class RestForm extends Component {
         return null;
     }
 
-    @action
-    updateRec(rec) {
-        this.rec = rec;
+    buildForm() {
+        const ret = [],
+            editors = this.props.editors;
+
+        // should use editor properties to set specific input field types
+        editors.forEach(it => {
+            ret.push(
+                inputGroup({
+                    placeholder: it.name,
+                    autoFocus: ret.length == 0,
+                    value: this.rec[it.name] || '',
+                    type: it.type || 'text',
+                    onChange: () => {}, // inputGroup requires but no need for it at the moment
+                    // readOnly: this.readOnly || false,
+                    style: {marginBottom: 5}
+                })
+            );
+        });
+
+        ret.push(
+            button({text: 'Submit', onClick: this.onSubmit})
+        );
+        // inputGroup({
+        //     placeholder: 'Username...',
+        //     autoFocus: true,
+        //     value: this.username,
+        //     onChange: this.onUsernameChange,
+        //     style: {marginBottom: 5}
+        // })
+        return ret;
     }
 
+    //--------------------------------
+    // Implementation
+    //--------------------------------
+    // onSubmit = (params) => {
+    //     return XH.fetchJson({
+    //         url: this.props.url,
+    //         params: params // we'll see about this
+    //     }).then(r => {
+    //
+    //     }).catch(() => {
+    //
+    //     });
+    // }
+    //
+    // these will need to be generated dynamically. Input group requires handlers, but this general component doesn't know it's fields ahead of time
+    // onUsernameChange = (ev) => {this.setUsername(ev.target.value)}
+    // onPasswordChange = (ev) => {this.setPassword(ev.target.value)}
+    
+    onSubmit() {
+        console.log('submitting');
+    }
+    
     @action
     onBackgroundClick() {
         this.isOpen = false;
@@ -72,4 +119,7 @@ export class RestForm extends Component {
     onFormClick(e) {
         e.stopPropagation();
     }
+
 }
+
+export const restForm = elemFactory(RestForm);

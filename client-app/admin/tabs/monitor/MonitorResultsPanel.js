@@ -17,7 +17,7 @@ import {Tile} from './Tile';
 export class MonitorResultsPanel extends Component {
 
     @observable results = [];
-    isLoading = false;
+    isLoading = true;
 
     render() {
         return box({
@@ -39,6 +39,7 @@ export class MonitorResultsPanel extends Component {
         });
     }
 
+    @action
     loadAsync() {
         this.isLoading = true;
         return XH
