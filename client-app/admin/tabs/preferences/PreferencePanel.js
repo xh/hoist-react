@@ -5,21 +5,12 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {observer, observable, action} from 'hoist/mobx';
+import {observer} from 'hoist/mobx';
 import {h2} from 'hoist/layout';
-
 
 @observer
 export class PreferencePanel extends Component {
-
-    @observable isLoading = false;
-    @observable lastLoaded = null;
-
     render() {
         return h2('Preferences Here');
-    }
-
-    @action
-    loadAsync() {
     }
 }

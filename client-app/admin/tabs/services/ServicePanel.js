@@ -14,9 +14,7 @@ import {observer, observable, action, toJS} from 'hoist/mobx';
 export class ServicePanel extends Component {
 
     @observable rows = null;
-    @observable isLoading = false;
-    @observable lastLoaded = null;
-
+    
     render() {
         return gridPanel({
             rows: toJS(this.rows),
@@ -26,24 +24,22 @@ export class ServicePanel extends Component {
             ]
         });
     }
-    
-    @action
+
     loadAsync() {
-        XH.fetchJson({url: 'serviceAdmin/listServices'})
+        return XH
+            .fetchJson({url: 'serviceAdmin/listServices'})
             .then(rows => {
                 this.preprocessRows(rows);
                 this.completeLoad(true, rows);
             }).catch(e => {
                 this.completeLoad(false, e);
-                throw e;
-            }).catchDefault();
+                XH.handleException(e);
+            });
     }
 
     @action
-    completeLoad = (success, vals) => {
+    completeLoad(success, vals) {
         this.rows = success ? vals : [];
-        this.lastLoaded = Date.now();
-        this.isLoading = false;
     }
     
     preprocessRows(rows) {

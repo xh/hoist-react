@@ -14,8 +14,6 @@ import {nameCol, heapSizeCol, entriesCol, statusCol} from '../../columns/Columns
 export class EhCachePanel extends Component {
 
     @observable rows = null;
-    @observable isLoading = false;
-    @observable lastLoaded = null;
 
     render() {
         return gridPanel({
@@ -29,23 +27,19 @@ export class EhCachePanel extends Component {
         });
     }
 
-    @action
     loadAsync() {
-        this.isLoading = true;
         return XH
             .fetchJson({url: 'ehCacheAdmin/listCaches'})
             .then(rows => {
                 this.completeLoad(true, rows);
             }).catch(e => {
                 this.completeLoad(false, e);
-                throw e;
-            }).catchDefault();
+                XH.handleException(e);
+            });
     }
 
     @action
     completeLoad = (success, vals) => {
         this.rows = success ? vals : [];
-        this.lastLoaded = Date.now();
-        this.isLoading = false;
     }
 }

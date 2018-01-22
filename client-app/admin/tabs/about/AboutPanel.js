@@ -56,8 +56,4 @@ export class AboutPanel extends Component {
             })
         );
     }
-
-    loadAsync() {
-
-    }
 }
