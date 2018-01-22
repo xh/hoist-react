@@ -9,6 +9,7 @@ import 'ag-grid/dist/styles/ag-grid.css';
 import 'ag-grid/dist/styles/ag-theme-fresh.css';
 
 import {Component} from 'react';
+import {merge} from 'lodash';
 import {elem, elemFactory} from 'hoist';
 import {div} from 'hoist/layout';
 import {AgGridReact} from 'ag-grid-react';
@@ -23,15 +24,18 @@ LicenseManager.setLicenseKey(
 class GridPanel extends Component {
 
     render() {
+        const opts = {
+                enableSorting: true,
+                rowSelection: 'single'
+            },
+            gridOptions = merge(opts, this.props.gridOptions);
+
         return div({
             style: {flex: '1 1 auto'},
             cls: 'ag-theme-fresh',
             items: elem(AgGridReact, {
                 onRowDataChanged: this.onRowDataChanged,
-                gridOptions: {
-                    enableSorting: true,
-                    rowSelection: 'single'
-                },
+                gridOptions: gridOptions,
                 rowData: this.props.rows,
                 items: this.props.columns
             })
