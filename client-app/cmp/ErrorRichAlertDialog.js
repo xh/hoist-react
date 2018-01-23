@@ -9,11 +9,16 @@ import {Component} from 'react';
 import {div} from 'hoist/layout';
 
 import {button, dialog } from 'hoist/blueprint';
-import {observer} from 'hoist/mobx';
+import {action, observer, observable} from 'hoist/mobx';
+import {errorDetailsDialog} from 'hoist/cmp';
 import {hoistAppStore} from '../app/HoistAppStore';
 
 @observer
 export class ErrorRichAlertDialog extends Component {
+
+    @observable detailsDialog = {
+        isVisible: false
+    }
 
     render() {
         if (!hoistAppStore.clientError) return null;
@@ -34,7 +39,8 @@ export class ErrorRichAlertDialog extends Component {
                     cls: 'pt-dialog-footer',
                     style: {textAlign: 'right'},
                     items: this.renderButtons()
-                })
+                }),
+                errorDetailsDialog({visManager: this.detailsDialog, e: hoistAppStore.clientError.e})
             ]
         });
     }
@@ -47,14 +53,17 @@ export class ErrorRichAlertDialog extends Component {
             btns = [
                 button({
                     text: 'Show/Report Details...',
-                    onClick: this.showErrorDetails
+                    rightIconName: 'search',
+                    onClick: this.onShowErrorDetails
                 }),
                 button({
                     text: this.getReloadBtnText(),
+                    rightIconName: 'refresh',
                     onClick: this.onReload
                 }),
                 button({
                     text: 'Close',
+                    rightIconName: 'cross',
                     intent: 'Intent.PRIMARY',
                     onClick: this.onClose
                 })
@@ -63,6 +72,11 @@ export class ErrorRichAlertDialog extends Component {
         if (this.sessionExpired() || !showAsError) {btns.shift()}
 
         return btns;
+    }
+
+    @action
+    onShowErrorDetails = () => {
+        this.detailsDialog.isVisible = true;
     }
 
     onClose = () => {
@@ -75,10 +89,6 @@ export class ErrorRichAlertDialog extends Component {
 
     getReloadBtnText() {
         return this.sessionExpired() ? 'Login' : 'Reload';
-    }
-
-    showErrorDetails() {
-        alert('details forthcoming');
     }
 
     sessionExpired() {
