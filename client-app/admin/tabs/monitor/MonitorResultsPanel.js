@@ -7,7 +7,6 @@
 import {Component} from 'react';
 
 import {XH, elem} from 'hoist';
-import {loadMask} from 'hoist/cmp';
 import {box} from 'hoist/layout';
 import {observable, action, observer} from 'hoist/mobx';
 

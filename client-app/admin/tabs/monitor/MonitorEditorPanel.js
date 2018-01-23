@@ -24,7 +24,7 @@ export class MonitorEditorPanel extends Component {
         baseCol({field: 'metricUnit', width: 100}),
         noteCol({field: 'notes'}),
         baseCol({field: 'sortOrder', width: 100})
-    ]
+    ];
 
     editors = [
         {name: 'code', allowBlank: false},
