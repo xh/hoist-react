@@ -143,3 +143,21 @@ export const definitionCol = colFactory({
     field: 'definition',
     flex: 1
 });
+
+//----------------------
+// Log Levels
+//----------------------
+export const defaultLevel = colFactory({
+    field: 'defaultLevel',
+    width: 80
+});
+
+export const level = colFactory({
+    field: 'level',
+    width: 80
+});
+
+export const effectiveLevel = colFactory({
+    field: 'effectiveLevel',
+    width: 80
+});
