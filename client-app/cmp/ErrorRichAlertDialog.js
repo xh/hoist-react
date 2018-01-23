@@ -22,7 +22,7 @@ export class ErrorRichAlertDialog extends Component {
 
         return dialog({
             isOpen: !!hoistAppStore.clientError,
-            onClose: this.closeHandler,
+            onClose: this.onClose,
             title: options.title,
             iconName: 'error',
             items: [
@@ -33,16 +33,16 @@ export class ErrorRichAlertDialog extends Component {
                 div({
                     cls: 'pt-dialog-footer',
                     style: {textAlign: 'right'},
-                    items: this.getButtons()
+                    items: this.renderButtons()
                 })
             ]
         });
-    };
+    }
 
     //--------------------------------
     // Implementation
     //--------------------------------
-    getButtons = () => {
+    renderButtons() {
         const showAsError = hoistAppStore.clientError.options.showAsError,
             btns = [
                 button({
@@ -51,34 +51,38 @@ export class ErrorRichAlertDialog extends Component {
                 }),
                 button({
                     text: this.getReloadBtnText(),
-                    onClick: () => window.location.reload(true)
+                    onClick: this.onReload
                 }),
                 button({
                     text: 'Close',
                     intent: 'Intent.PRIMARY',
-                    onClick: this.closeHandler
+                    onClick: this.onClose
                 })
             ];
 
         if (this.sessionExpired() || !showAsError) {btns.shift()}
 
         return btns;
-    };
+    }
 
-    getReloadBtnText = () => {
-        return this.sessionExpired() ? 'Login' : 'Reload';
-    };
-
-    showErrorDetails = () => {
-        alert('details forthcoming');
-    };
-
-    closeHandler = () => {
+    onClose = () => {
         hoistAppStore.setClientError(null);
-    };
+    }
+
+    onReload = () => {
+        window.location.reload(true);
+    }
+
+    getReloadBtnText() {
+        return this.sessionExpired() ? 'Login' : 'Reload';
+    }
+
+    showErrorDetails() {
+        alert('details forthcoming');
+    }
 
     sessionExpired() {
         const {e} = hoistAppStore.clientError;
         return e && e.httpStatus === 401;
-    };
+    }
 }
