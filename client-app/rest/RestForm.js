@@ -9,6 +9,7 @@ import {Component} from 'react';
 import {div, viewport, hbox, filler, h1, vbox} from 'hoist/layout';
 import {observer, observable, action, computed} from 'hoist/mobx';
 import {inputGroup, button, label} from 'hoist/blueprint';
+import {modal} from 'hoist/mui';
 import {merge} from 'lodash';
 import {XH, elemFactory} from 'hoist';
 
@@ -28,24 +29,10 @@ export class RestForm extends Component {
     render() {
         if (!this.rec || !this.isOpen) return null;
 
-        return viewport({
-            style: {background: 'rgba(0,0,0,0.5)'},
+        return modal({
+            open: true,
             onClick: this.onClose,
-            items: vbox({
-                cls: 'rest-form',
-                width: 400,
-                padding: 10,
-                position: 'absolute',
-                left: '50%',
-                marginTop: 50,
-                marginLeft: -150,
-                style: {
-                    zIndex: '9999',
-                    background: 'darkgrey'
-                },
-                onClick: this.onFormClick,
-                items: this.renderForm()
-            })
+            items: this.renderForm()
         });
     }
 
@@ -85,7 +72,20 @@ export class RestForm extends Component {
             )
         );
 
-        return ret;
+        return vbox({
+            cls: 'rest-form',
+            width: 400,
+            padding: 10,
+            position: 'absolute',
+            left: '50%',
+            marginTop: 50,
+            marginLeft: -150,
+            style: {
+                zIndex: '9999',
+                background: 'darkgrey'
+            },
+            items: ret
+        });
     }
 
     //--------------------------------
@@ -113,11 +113,6 @@ export class RestForm extends Component {
         this.isOpen = true;
         this.rec = nextProps.rec;
         this.recClone = merge({}, this.rec);
-    }
-
-
-    onFormClick(e) {
-        e.stopPropagation();
     }
 
     @action

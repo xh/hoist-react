@@ -17,12 +17,10 @@ import {Tile} from './Tile';
 export class MonitorResultsPanel extends Component {
 
     @observable results = [];
-    isLoading = true;
 
     render() {
         return box({
             items: [
-                loadMask({isShowing: this.isLoading}),
                 box({
                     overflow: 'scroll',
                     flexDirection: 'row',
@@ -41,7 +39,6 @@ export class MonitorResultsPanel extends Component {
 
     @action
     loadAsync() {
-        this.isLoading = true;
         return XH
             .fetchJson({url: 'monitorAdmin/results'})
             .then(rows => {
@@ -55,6 +52,5 @@ export class MonitorResultsPanel extends Component {
     @action
     completeLoad = (success, vals) => {
         this.results = success ? Object.values(vals) : [];
-        this.isLoading = false;
     }
 }

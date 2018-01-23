@@ -8,18 +8,10 @@ import {Component} from 'react';
 import {observer, observable, action} from 'hoist/mobx';
 import {h2} from 'hoist/layout';
 
-
 @observer
 export class ClientErrorPanel extends Component {
 
-    @observable isLoading = false;
-    @observable lastLoaded = null;
-
     render() {
         return h2('Client Errors Here');
-    }
-
-    @action
-    loadAsync() {
     }
 }
