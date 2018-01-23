@@ -5,47 +5,33 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {XH} from 'hoist';
+import {observer} from 'hoist/mobx';
 import {boolCheckCol} from 'hoist/columns/Core';
-import {gridPanel} from 'hoist/ag-grid/GridPanel';
-import {observer, observable, action, toJS} from 'hoist/mobx';
-
 import {nameCol, valueTypeCol, confValCol, noteCol} from '../../columns/Columns';
+import {Ref, resolve} from 'hoist';
+import {restGrid} from 'hoist/rest/RestGrid';
 
 @observer
 export class ConfigPanel extends Component {
-
-    @observable rows = null;
+    url = 'rest/configAdmin';
+    columns = [
+        nameCol(),
+        valueTypeCol(),
+        confValCol({text: 'Prod Value', field: 'prodValue'}),
+        confValCol({text: 'Beta Value', field: 'betaValue'}),
+        confValCol({text: 'Stage Value', field: 'stageValue'}),
+        confValCol({text: 'Dev Value', field: 'devValue'}),
+        boolCheckCol({text: 'Client?', field: 'clientVisible', width: 90}),
+        noteCol()
+    ]
+    ref = new Ref();
 
     render() {
-        return gridPanel({
-            rows: toJS(this.rows),
-            columns: [
-                nameCol(),
-                valueTypeCol(),
-                confValCol({text: 'Prod Value', field: 'prodValue'}),
-                confValCol({text: 'Beta Value', field: 'betaValue'}),
-                confValCol({text: 'Stage Value', field: 'stageValue'}),
-                confValCol({text: 'Dev Value', field: 'devValue'}),
-                boolCheckCol({text: 'Client?', field: 'clientVisible', width: 90}),
-                noteCol()
-            ]
-        });
+        return restGrid({columns: this.columns, url: this.url, ref: this.ref.callback});
     }
 
     loadAsync() {
-        return XH
-            .fetchJson({url: 'rest/configAdmin'})
-            .then(rows => {
-                this.completeLoad(true, rows.data);
-            }).catch(e => {
-                this.completeLoad(false, e);
-                XH.handleException(e);
-            });
+        return this.ref.value ? this.ref.value.loadAsync() : resolve();
     }
 
-    @action
-    completeLoad = (success, vals) => {
-        this.rows = success ? vals : [];
-    }
 }
