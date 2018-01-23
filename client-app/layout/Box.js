@@ -48,13 +48,11 @@ export function Filler(props) {
  */
 export function Viewport(props) {
     return div(getProps(props, {
-        style: {
-            width: '100%',
-            height: '100%',
-            top: 0,
-            left: 0,
-            position: 'fixed'
-        }
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        position: 'fixed'
     }));
 }
 
@@ -63,6 +61,7 @@ export function Viewport(props) {
 //-----------------------
 const styleKeys = [
     'display',
+    'top', 'left', 'position',
     'alignItems', 'alignSelf', 'alignContent',
     'flex', 'flexBasis', 'flexDirection', 'flexGrow', 'flexShrink', 'flexWrap',
     'overflow', 'overflowX', 'overflowY',
@@ -96,7 +95,7 @@ function getProps(props, defaultProps = {}) {
     const style = ret.style || {};
     styleKeys.forEach(k => {
         const val = ret[k];
-        if (val) {
+        if (val !== undefined) {
             style[k] = val;
             delete ret[k];
         }
