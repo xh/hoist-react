@@ -147,17 +147,36 @@ export const definitionCol = colFactory({
 //----------------------
 // Log Levels
 //----------------------
-export const defaultLevel = colFactory({
+export const defaultLevelCol = colFactory({
     field: 'defaultLevel',
     width: 80
 });
 
-export const level = colFactory({
+export const levelCol = colFactory({
     field: 'level',
     width: 80
 });
 
-export const effectiveLevel = colFactory({
+export const effectiveLevelCol = colFactory({
     field: 'effectiveLevel',
     width: 80
+});
+
+//----------------------
+// Preferences
+//----------------------
+
+export const notesCol = colFactory({
+    field: 'notes',
+    flex: 2
+});
+
+export const typeCol = colFactory({
+    field: 'type',
+    width: 80
+});
+
+export const prefValueCol = colFactory({
+    feild: 'prefValue',
+    flex: 1
 });

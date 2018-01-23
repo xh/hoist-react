@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {observer} from 'hoist/mobx';
-import {nameCol, defaultLevel, level, effectiveLevel} from '../../columns/Columns';
+import {nameCol, defaultLevelCol, levelCol, effectiveLevelCol} from '../../columns/Columns';
 import {Ref, resolve} from 'hoist';
 import {restGrid} from 'hoist/rest/RestGrid';
 
@@ -15,9 +15,9 @@ export class LogLevelPanel extends Component {
     url = 'rest/logLevelAdmin';
     columns = [
         nameCol(),
-        defaultLevel(),
-        level(),
-        effectiveLevel()
+        defaultLevelCol(),
+        levelCol(),
+        effectiveLevelCol()
     ]
     ref = new Ref();
 
