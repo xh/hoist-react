@@ -63,7 +63,7 @@ export class IdentityService extends BaseService {
             window.location = '/';
         }).catchDefault({
             message: 'Failed to impersonate'
-        }).mask();
+        });
     }
 
     async endImpersonateAsync() {
@@ -73,7 +73,7 @@ export class IdentityService extends BaseService {
             window.location = '/';
         }).catchDefault({
             message: 'Failed to end impersonation'
-        }).mask();
+        });
     }
 
     //------------------------

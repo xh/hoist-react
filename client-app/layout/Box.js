@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {elemFactory} from 'hoist';
-import {isNumber, forOwn, isEmpty, merge} from 'lodash';
+import {isNumber, forOwn, isEmpty} from 'lodash';
 
 const div = elemFactory('div');
 
@@ -47,14 +47,13 @@ export function Filler(props) {
  * Will stretch to encompass the entire browser
  */
 export function Viewport(props) {
+    console.log(props);
     return div(getProps(props, {
-        style: {
-            width: '100%',
-            height: '100%',
-            top: 0,
-            left: 0,
-            position: 'fixed'
-        }
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        position: 'fixed'
     }));
 }
 
@@ -63,6 +62,7 @@ export function Viewport(props) {
 //-----------------------
 const styleKeys = [
     'display',
+    'top', 'left', 'position',
     'alignItems', 'alignSelf', 'alignContent',
     'flex', 'flexBasis', 'flexDirection', 'flexGrow', 'flexShrink', 'flexWrap',
     'overflow', 'overflowX', 'overflowY',
@@ -76,7 +76,7 @@ const dimFragments = ['margin', 'padding', 'height', 'width'];
 const flexVals = ['flex', 'flexGrow', 'flexShrink'];
 
 function getProps(props, defaultProps = {}) {
-    const ret = merge({display: 'flex'}, defaultProps, props);
+    const ret = Object.assign({display: 'flex'}, defaultProps, props);
 
     // 1) Convert raw 'flex' number to string
     flexVals.forEach(k => {
@@ -96,7 +96,7 @@ function getProps(props, defaultProps = {}) {
     const style = ret.style || {};
     styleKeys.forEach(k => {
         const val = ret[k];
-        if (val) {
+        if (val !== undefined) {
             style[k] = val;
             delete ret[k];
         }
