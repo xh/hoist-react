@@ -1,19 +1,38 @@
 import {Component} from 'react';
 import {XH, elemFactory} from 'hoist';
-import {boolCheckCol} from 'hoist/columns/Core';
 import {gridPanel} from 'hoist/ag-grid/GridPanel';
 import {observer, observable, action, toJS} from 'hoist/mobx';
+import {div} from 'hoist/layout';
+
+import {restForm} from 'hoist/rest/RestForm';
 
 
 @observer
 export class RestGrid extends Component {
 
     @observable rows = null;
+    @observable _rec = null;
 
     render() {
-        return gridPanel({
-            rows: toJS(this.rows),
-            columns: this.props.columns
+        const formProps = { // define on grid and pass as prop?
+            rec: this._rec,
+            title: this._rec ? this._rec.name : 'Record',
+            editors: this.props.editors,
+            url: this.url
+        };
+
+        return div({
+            style: {display: 'flex', width: '100%'},
+            items: [
+                gridPanel({
+                    rows: toJS(this.rows),
+                    columns: this.props.columns,
+                    gridOptions: {
+                        onRowDoubleClicked: this.onRowDoubleClicked.bind(this)
+                    }
+                }),
+                restForm(formProps)
+            ]
         });
     }
 
@@ -33,5 +52,12 @@ export class RestGrid extends Component {
     completeLoad = (success, vals) => {
         this.rows = success ? vals : [];
     }
+
+    @action
+    onRowDoubleClicked(arg) {
+        const rec = arg.data;
+        this._rec = rec;
+    }
 }
+
 export const restGrid = elemFactory(RestGrid);
