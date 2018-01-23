@@ -5,17 +5,25 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
-import {div, hbox, filler, h2, vbox} from 'hoist/layout';
-import {observer, observable, action, toJS} from 'hoist/mobx';
-import {inputGroup, button} from 'hoist/blueprint';
-import {elemFactory} from 'hoist';
+import {React, Component} from 'react';
+import {div, hbox, filler, h1, vbox} from 'hoist/layout';
+import {observer, observable, action, computed, toJS} from 'hoist/mobx';
+import {inputGroup, button, label} from 'hoist/blueprint';
+import {merge} from 'lodash';
+import {XH, elemFactory} from 'hoist';
 
 @observer
 export class RestForm extends Component {
 
     @observable rec = null;
+    @observable recClone = null;
     @observable isOpen = true;
+
+    @computed get isValid() {
+        // how can we dynamically set the logic here? maybe loop through editors prop
+        // and check it's corresponding value against the editors type property (or required/allowblank ect ect) in the recClone?
+        return true;
+    }
 
     render() {
         if (this.rec && this.isOpen) {
@@ -28,22 +36,22 @@ export class RestForm extends Component {
                     top: '0',
                     left: '0'
                 },
-                onClick: this.onBackgroundClick.bind(this),
+                onClick: this.closeForm.bind(this),
                 items: [
                     vbox({
+                        cls: 'rest-form',
                         style: {
-                            width: '300px',
+                            width: '400px',
                             padding: '10px',
                             position: 'absolute',
-                            top: '50%',
                             left: '50%',
-                            marginTop: '-300px',
+                            marginTop: '50px',
                             marginLeft: '-150px',
                             zIndex: '9999',
                             background: 'darkgrey'
                         },
                         onClick: this.onFormClick,
-                        items: this.buildForm()
+                        items: this.renderForm()
                     })
                 ]
             });
@@ -51,26 +59,45 @@ export class RestForm extends Component {
         return null;
     }
 
-    buildForm() {
+    renderForm() {
         const ret = [],
             editors = this.props.editors;
+
+        ret.push(
+            hbox({
+                cls: 'rest-form-header',
+                items: [
+                    h1(this.props.title),
+                    filler(),
+                    button({onClick: this.closeForm.bind(this), text: 'Close'})
+                ]
+            })
+        );
 
         // should use editor properties to set specific input field types
         editors.forEach(it => {
             ret.push(
+                label({
+                    text: it.name
+                }),
                 inputGroup({
                     placeholder: it.name,
-                    autoFocus: ret.length == 0,
                     defaultValue: this.rec[it.name] || '',
+                    onChange: (ev) => this.setCloneProp(it.name, ev.target.value), // needs to be an action
                     type: it.type || 'text',
-                    readOnly: this.readOnly || false,
+                    disabled: it.readOnly,
                     style: {marginBottom: 5}
                 })
             );
         });
 
         ret.push(
-            button({text: 'Submit', onClick: this.onSubmit})
+            hbox({
+                items: [
+                    filler(),
+                    button({text: 'Submit', disabled: !this.isValid, onClick: this.onSubmit.bind(this)}) // 'this' was undefined? What gives? Lee defined as fat arrow, could work for other binding probs
+                ]
+            })
         );
 
         return ret;
@@ -79,27 +106,21 @@ export class RestForm extends Component {
     //--------------------------------
     // Implementation
     //--------------------------------
-    // onSubmit = (params) => {
-    //     return XH.fetchJson({
-    //         url: this.props.url,
-    //         params: params // we'll see about this
-    //     }).then(r => {
-    //
-    //     }).catch(() => {
-    //
-    //     });
-    // }
-    //
-    // these will need to be generated dynamically. Input group requires handlers, but this general component doesn't know it's fields ahead of time
-    // onUsernameChange = (ev) => {this.setUsername(ev.target.value)}
-    // onPasswordChange = (ev) => {this.setPassword(ev.target.value)}
-    
     onSubmit() {
         console.log('submitting');
+        return XH.fetchJson({
+            url: this.props.url,
+            method: 'POST',  // PUT?
+            data: this.recClone
+        }).then(r => {
+            console.log(r);
+        }).catch((e) => {
+            console.log(e);
+        });
     }
     
     @action
-    onBackgroundClick() {
+    closeForm() {
         this.isOpen = false;
     }
 
@@ -107,10 +128,22 @@ export class RestForm extends Component {
     componentWillReceiveProps(nextProps) {
         this.isOpen = true;
         this.rec = nextProps.rec;
+        this.recClone = merge({}, this.rec);
+    }
+
+
+    // probably don't actually need. Fires before render. Return false to not
+    shouldComponentUpdate(nextProps, nextState) {
+        return true;
     }
 
     onFormClick(e) {
         e.stopPropagation();
+    }
+
+    @action
+    setCloneProp(prop, newVal) {
+        this.recClone[prop] = newVal;
     }
 
 }

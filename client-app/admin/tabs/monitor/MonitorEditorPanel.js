@@ -28,7 +28,7 @@ export class MonitorEditorPanel extends Component {
     editors = [
         {name: 'code', allowBlank: false},
         {name: 'name', allowBlank: false},
-        {name: 'metricType', editable: false}, // must select for none/ceiling/false
+        {name: 'metricType', editable: false}, // must select one of none/ceiling/false
         {name: 'warnThreshold'},
         {name: 'failThreshold'},
         {name: 'metricUnit'},
@@ -41,6 +41,13 @@ export class MonitorEditorPanel extends Component {
     ];
 
     render() {
+        const formProps = {
+            rec: this._rec,
+            title: this._rec ? this._rec.name : 'Record',
+            editors: this.editors,
+            url: this.url
+        };
+
         return div({
             style: {display: 'flex', width: '100%'},
             items: [
@@ -60,7 +67,7 @@ export class MonitorEditorPanel extends Component {
                         onRowDoubleClicked: this.onRowDoubleClicked.bind(this)
                     }
                 }),
-                restForm({rec: this._rec, editors: this.editors, url: this.url})
+                restForm(formProps)
             ]
 
         });
