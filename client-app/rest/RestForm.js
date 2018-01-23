@@ -5,9 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {React, Component} from 'react';
+import {Component} from 'react';
 import {div, hbox, filler, h1, vbox} from 'hoist/layout';
-import {observer, observable, action, computed, toJS} from 'hoist/mobx';
+import {observer, observable, action, computed} from 'hoist/mobx';
 import {inputGroup, button, label} from 'hoist/blueprint';
 import {merge} from 'lodash';
 import {XH, elemFactory} from 'hoist';
@@ -75,21 +75,24 @@ export class RestForm extends Component {
         );
 
         // should use editor properties to set specific input field types
-        editors.forEach(it => {
-            ret.push(
-                label({
-                    text: it.name
-                }),
-                inputGroup({
-                    placeholder: it.name,
-                    defaultValue: this.rec[it.name] || '',
-                    onChange: (ev) => this.setCloneProp(it.name, ev.target.value), // needs to be an action
-                    type: it.type || 'text',
-                    disabled: it.readOnly,
-                    style: {marginBottom: 5}
-                })
-            );
-        });
+        // do we need an if? Will all rest grids have a form/editors?
+        if (editors) {
+            editors.forEach(it => {
+                ret.push(
+                    label({
+                        text: it.name
+                    }),
+                    inputGroup({
+                        placeholder: it.name,
+                        defaultValue: this.rec[it.name] || '',
+                        onChange: (ev) => this.setCloneProp(it.name, ev.target.value), // needs to be an action
+                        type: it.type || 'text',
+                        disabled: it.readOnly,
+                        style: {marginBottom: 5}
+                    })
+                );
+            });
+        }
 
         ret.push(
             hbox({
