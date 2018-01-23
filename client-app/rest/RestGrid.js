@@ -24,7 +24,6 @@ export class RestGrid extends Component {
                 console.log(this.props.url, rows);
                 this.completeLoad(true, rows.data);
             }).catch(e => {
-                console.log('exp');
                 this.completeLoad(false, e);
                 XH.handleException(e);
             });
