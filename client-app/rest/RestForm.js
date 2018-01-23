@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {div, hbox, filler, h1, vbox} from 'hoist/layout';
+import {div, viewport, hbox, filler, h1, vbox} from 'hoist/layout';
 import {observer, observable, action, computed} from 'hoist/mobx';
 import {inputGroup, button, label} from 'hoist/blueprint';
 import {merge} from 'lodash';
@@ -26,42 +26,32 @@ export class RestForm extends Component {
     }
 
     render() {
-        if (this.rec && this.isOpen) {
-            return div({
+        if (!this.rec || !this.isOpen) return null;
+
+        return viewport({
+            style: {background: 'rgba(0,0,0,0.5)'},
+            onClick: this.onClose,
+            items: vbox({
+                cls: 'rest-form',
+                width: 400,
+                padding: 10,
+                position: 'absolute',
+                left: '50%',
+                marginTop: 50,
+                marginLeft: -150,
                 style: {
-                    width: '100%',
-                    height: '100%',
-                    background: 'rgba(0,0,0,0.5)',
-                    position: 'absolute',
-                    top: '0',
-                    left: '0'
+                    zIndex: '9999',
+                    background: 'darkgrey'
                 },
-                onClick: this.closeForm.bind(this),
-                items: [
-                    vbox({
-                        cls: 'rest-form',
-                        style: {
-                            width: '400px',
-                            padding: '10px',
-                            position: 'absolute',
-                            left: '50%',
-                            marginTop: '50px',
-                            marginLeft: '-150px',
-                            zIndex: '9999',
-                            background: 'darkgrey'
-                        },
-                        onClick: this.onFormClick,
-                        items: this.renderForm()
-                    })
-                ]
-            });
-        }
-        return null;
+                onClick: this.onFormClick,
+                items: this.renderForm()
+            })
+        });
     }
 
     renderForm() {
         const ret = [],
-            editors = this.props.editors;
+            editors = this.props.editors || [];
 
         ret.push(
             hbox({
@@ -69,38 +59,30 @@ export class RestForm extends Component {
                 items: [
                     h1(this.props.title),
                     filler(),
-                    button({onClick: this.closeForm.bind(this), text: 'Close'})
+                    button({text: 'Close', onClick: this.onClose})
                 ]
             })
         );
 
-        // should use editor properties to set specific input field types
-        // do we need an if? Will all rest grids have a form/editors?
-        if (editors) {
-            editors.forEach(it => {
-                ret.push(
-                    label({
-                        text: it.name
-                    }),
-                    inputGroup({
-                        placeholder: it.name,
-                        defaultValue: this.rec[it.name] || '',
-                        onChange: (ev) => this.setCloneProp(it.name, ev.target.value), // needs to be an action
-                        type: it.type || 'text',
-                        disabled: it.readOnly,
-                        style: {marginBottom: 5}
-                    })
-                );
-            });
-        }
+        editors.forEach(editor => {
+            ret.push(label({text: editor.name}));
+            ret.push(
+                inputGroup({
+                    placeholder: editor.name,
+                    defaultValue: this.rec[editor.name] || '',
+                    onChange: (e) => this.setCloneProp(editor.name, e.target.value),
+                    type: editor.type || 'text',
+                    disabled: editor.readOnly,
+                    style: {marginBottom: 5}
+                })
+            );
+        });
 
         ret.push(
-            hbox({
-                items: [
-                    filler(),
-                    button({text: 'Submit', disabled: !this.isValid, onClick: this.onSubmit.bind(this)}) // 'this' was undefined? What gives? Lee defined as fat arrow, could work for other binding probs
-                ]
-            })
+            hbox(
+                filler(),
+                button({text: 'Submit', disabled: !this.isValid, onClick: this.onSubmit})
+            )
         );
 
         return ret;
@@ -109,8 +91,7 @@ export class RestForm extends Component {
     //--------------------------------
     // Implementation
     //--------------------------------
-    onSubmit() {
-        console.log('submitting');
+    onSubmit = () => {
         return XH.fetchJson({
             url: this.props.url,
             method: 'POST',  // PUT?
@@ -123,7 +104,7 @@ export class RestForm extends Component {
     }
     
     @action
-    closeForm() {
+    onClose = () => {
         this.isOpen = false;
     }
 
@@ -135,11 +116,6 @@ export class RestForm extends Component {
     }
 
 
-    // probably don't actually need. Fires before render. Return false to not
-    shouldComponentUpdate(nextProps, nextState) {
-        return true;
-    }
-
     onFormClick(e) {
         e.stopPropagation();
     }
@@ -148,7 +124,6 @@ export class RestForm extends Component {
     setCloneProp(prop, newVal) {
         this.recClone[prop] = newVal;
     }
-
 }
 
 export const restForm = elemFactory(RestForm);

@@ -29,7 +29,7 @@ export class MonitorEditorPanel extends Component {
     editors = [
         {name: 'code', allowBlank: false},
         {name: 'name', allowBlank: false},
-        {name: 'metricType', editable: false}, // must select one of none/ceiling/false
+        {name: 'metricType', editable: false}, // must select one of none/ceiling/floor
         {name: 'warnThreshold'},
         {name: 'failThreshold'},
         {name: 'metricUnit'},

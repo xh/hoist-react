@@ -2,7 +2,7 @@ import {Component} from 'react';
 import {XH, elemFactory} from 'hoist';
 import {gridPanel} from 'hoist/ag-grid/GridPanel';
 import {observer, observable, action, toJS} from 'hoist/mobx';
-import {div} from 'hoist/layout';
+import {box} from 'hoist/layout';
 
 import {restForm} from 'hoist/rest/RestForm';
 
@@ -21,14 +21,14 @@ export class RestGrid extends Component {
             url: this.url
         };
 
-        return div({
-            style: {display: 'flex', width: '100%'},
+        return box({
+            flex: 1,
             items: [
                 gridPanel({
                     rows: toJS(this.rows),
                     columns: this.props.columns,
                     gridOptions: {
-                        onRowDoubleClicked: this.onRowDoubleClicked.bind(this)
+                        onRowDoubleClicked: this.onRowDoubleClicked
                     }
                 }),
                 restForm(formProps)
@@ -40,7 +40,6 @@ export class RestGrid extends Component {
         return XH
             .fetchJson({url: this.props.url})
             .then(rows => {
-                console.log(this.props.url, rows);
                 this.completeLoad(true, rows.data);
             }).catch(e => {
                 this.completeLoad(false, e);
@@ -54,7 +53,7 @@ export class RestGrid extends Component {
     }
 
     @action
-    onRowDoubleClicked(arg) {
+    onRowDoubleClicked = (arg) => {
         const rec = arg.data;
         this._rec = rec;
     }
