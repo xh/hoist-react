@@ -11,7 +11,7 @@ import {Component} from 'react';
 import {elem} from 'hoist';
 import {loadMask} from 'hoist/cmp';
 import {hocDisplayName} from 'hoist/utils/ReactUtils';
-import {box, div, viewport, vbox} from 'hoist/layout';
+import {box, viewport, vbox} from 'hoist/layout';
 import {useStrict, observer} from 'hoist/mobx';
 
 import {hoistAppStore} from './HoistAppStore';
