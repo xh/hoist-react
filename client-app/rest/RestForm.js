@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {div, viewport, hbox, filler, h1, vbox} from 'hoist/layout';
+import {hbox, filler, h1, vbox} from 'hoist/layout';
 import {observer, observable, action, computed} from 'hoist/mobx';
 import {inputGroup, button, label} from 'hoist/blueprint';
 import {modal} from 'hoist/mui';
@@ -31,7 +31,7 @@ export class RestForm extends Component {
 
         return modal({
             open: true,
-            onClick: this.onClose,
+            onBackdropClick: this.onClose,
             items: this.renderForm()
         });
     }
