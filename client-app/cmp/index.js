@@ -5,6 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {elemFactory} from 'hoist';
+import {ErrorRichAlertDialog} from './ErrorRichAlertDialog';
 import {LoadMask} from './LoadMask';
 
+export const errorRichAlertDialog = elemFactory(ErrorRichAlertDialog);
 export const loadMask = elemFactory(LoadMask);

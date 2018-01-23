@@ -22,6 +22,8 @@ class HoistAppStore {
     /** Are all Hoist app service successfully initialized? */
     @setter @observable isInitialized = false;
 
+    @observable clientError = null;
+
     /**
      * Call this once when application mounted in order to
      * trigger initial authentication and initialization of application.
@@ -48,6 +50,11 @@ class HoistAppStore {
                 .then(() => this.setIsInitialized(true))
                 .catchDefault();
         }
+    }
+
+    @action
+    setClientError(obj) {
+        this.clientError = obj;
     }
 }
 export const hoistAppStore = new HoistAppStore();

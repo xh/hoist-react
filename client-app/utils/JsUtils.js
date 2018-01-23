@@ -5,7 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {isArray} from 'lodash';
-import {stripTags} from 'hoist/utils/HtmlUtils';
 
 export function findByProperty(arr, property, value) {
     return arr.find(it => it[property] === value);
