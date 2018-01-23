@@ -11,7 +11,7 @@ import {Component} from 'react';
 import {elem} from 'hoist';
 import {loadMask} from 'hoist/cmp';
 import {hocDisplayName} from 'hoist/utils/ReactUtils';
-import {box, viewport, vbox} from 'hoist/layout';
+import {box, div, viewport, vbox} from 'hoist/layout';
 import {useStrict, observer} from 'hoist/mobx';
 
 import {hoistAppStore} from './HoistAppStore';
@@ -40,12 +40,12 @@ export function hoistApp(C) {
         render() {
             const {authUsername, authCompleted, isInitialized} = hoistAppStore;
 
-            if (!authCompleted) return loadMask();
+            if (!authCompleted) return loadMask({isDisplayed: true});
             if (!authUsername)  return elem(LoginPanel);
-            if (!isInitialized) return loadMask();
+            if (!isInitialized) return loadMask({isDisplayed: true});
 
-            return viewport({
-                items: vbox({
+            return viewport(
+                vbox({
                     flex: 1,
                     items: [
                         elem(ImpersonationBar),
@@ -56,10 +56,8 @@ export function hoistApp(C) {
                         elem(VersionBar)
                     ]
                 })
-            });
+            );
         }
-
-
     };
 
     return observer(ret);

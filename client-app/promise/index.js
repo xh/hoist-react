@@ -17,12 +17,12 @@ import RSVP from 'rsvp';
  * This method serves as a lightweight way to start a promise chain for any code.
  * It is useful for combining promise based calls with non-promise based calls,
  * especially when the first step may be synchronous.  In these case, we often want
- * to ensure the use of common exception, tracking, or masking within a single
+ * to ensure the use of common exception, tracking, state management within a single
  * promise chain.
  *
  * Note: This method will start executing its input function only after a minimal (1ms) delay.
  * This establishes a minimal level of asynchronicity for the entire chain, and is especially
- * important if the chain contains calls to 'mask', 'track' or 'timeout'
+ * important if the chain contains calls to 'bindState', 'track' or 'timeout'
  *
  * @param fn, fn appropriate as an argument to 'then()'. Default to null.
  * @returns {Promise}
@@ -178,6 +178,18 @@ Object.assign(Promise.prototype, {
         const deadline = wait(config.interval).then(() => {throw XH.exception(config.message)});
         return Promise.race([deadline, this]);
     },
+
+
+    /**
+     * Bind this promise to an instance of PromiseState.
+     *
+     * @param state PromiseState
+     */
+    bind(state) {
+        state.bind(this);
+        return this;
+    },
+
 
     //--------------------------------
     // Implementation

@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {elemFactory} from 'hoist';
-import {isNumber, forOwn, isEmpty} from 'lodash';
+import {isNumber, forOwn, isEmpty, merge} from 'lodash';
 
 const div = elemFactory('div');
 
@@ -76,7 +76,7 @@ const dimFragments = ['margin', 'padding', 'height', 'width'];
 const flexVals = ['flex', 'flexGrow', 'flexShrink'];
 
 function getProps(props, defaultProps = {}) {
-    const ret = Object.assign({display: 'flex'}, defaultProps, props);
+    const ret = merge({display: 'flex'}, defaultProps, props);
 
     // 1) Convert raw 'flex' number to string
     flexVals.forEach(k => {
