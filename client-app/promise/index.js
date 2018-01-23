@@ -22,7 +22,7 @@ import RSVP from 'rsvp';
  *
  * Note: This method will start executing its input function only after a minimal (1ms) delay.
  * This establishes a minimal level of asynchronicity for the entire chain, and is especially
- * important if the chain contains calls to 'bindState', 'track' or 'timeout'
+ * important if the chain contains calls to 'bind', 'track' or 'timeout'
  *
  * @param fn, fn appropriate as an argument to 'then()'. Default to null.
  * @returns {Promise}

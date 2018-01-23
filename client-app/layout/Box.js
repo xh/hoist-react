@@ -47,7 +47,6 @@ export function Filler(props) {
  * Will stretch to encompass the entire browser
  */
 export function Viewport(props) {
-    console.log(props);
     return div(getProps(props, {
         top: 0,
         left: 0,
