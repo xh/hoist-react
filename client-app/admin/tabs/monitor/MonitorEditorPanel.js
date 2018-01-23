@@ -5,25 +5,26 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {React, Component} from 'react';
-import {XH, elemFactory} from 'hoist';
-import {popover2} from 'hoist/blueprint';
-import {div} from 'hoist/layout';
-import {baseCol, boolCheckCol} from 'hoist/columns/Core';
-import {gridPanel} from 'hoist/ag-grid/GridPanel';
-import {observer, observable, action, toJS} from 'hoist/mobx';
-
+import {Component} from 'react';
+import {observer} from 'hoist/mobx';
+import {Ref, resolve} from 'hoist';
 import {nameFlexCol, noteCol} from '../../columns/Columns';
-import {restForm, RestForm} from 'hoist/rest/RestEditor';
-
+import {baseCol, boolCheckCol} from 'hoist/columns/Core';
+import {restGrid} from 'hoist/rest/RestGrid';
 
 @observer
 export class MonitorEditorPanel extends Component {
-
-    @observable rows = null;
-    @observable _rec = null;
-
     url = 'rest/monitorAdmin';
+    columns = [
+        boolCheckCol({field: 'active', width: 60}),
+        baseCol({field: 'code', width: 150}),
+        nameFlexCol(),
+        baseCol({field: 'warnThreshold', width: 120}),
+        baseCol({field: 'failThreshold', width: 120}),
+        baseCol({field: 'metricUnit', width: 100}),
+        noteCol({field: 'notes'}),
+        baseCol({field: 'sortOrder', width: 100})
+    ]
 
     editors = [
         {name: 'code', allowBlank: false},
@@ -40,58 +41,14 @@ export class MonitorEditorPanel extends Component {
         {name: 'lastUpdatedBy', readOnly: true}
     ];
 
+    ref = new Ref();
+
     render() {
-        const formProps = {
-            rec: this._rec,
-            title: this._rec ? this._rec.name : 'Record',
-            editors: this.editors,
-            url: this.url
-        };
-
-        return div({
-            style: {display: 'flex', width: '100%'},
-            items: [
-                gridPanel({
-                    rows: toJS(this.rows),
-                    columns: [
-                        boolCheckCol({field: 'active', width: 60}),
-                        baseCol({field: 'code', width: 150}),
-                        nameFlexCol(),
-                        baseCol({field: 'warnThreshold', width: 120}),
-                        baseCol({field: 'failThreshold', width: 120}),
-                        baseCol({field: 'metricUnit', width: 100}),
-                        noteCol({field: 'notes'}),
-                        baseCol({field: 'sortOrder', width: 100})
-                    ],
-                    gridOptions: {
-                        onRowDoubleClicked: this.onRowDoubleClicked.bind(this)
-                    }
-                }),
-                restForm(formProps)
-            ]
-
-        });
+        return restGrid({columns: this.columns, url: this.url, editors: this.editors, ref: this.ref.callback});
     }
 
     loadAsync() {
-        return XH
-            .fetchJson({url: 'rest/monitorAdmin'})
-            .then(rows => {
-                this.completeLoad(true, rows.data);
-            }).catch(e => {
-                this.completeLoad(false, e);
-                XH.handleException(e);
-            });
+        return this.ref.value ? this.ref.value.loadAsync() : resolve();
     }
 
-    @action
-    completeLoad = (success, vals) => {
-        this.rows = success ? vals : [];
-    }
-
-    @action
-    onRowDoubleClicked(arg) {
-        const rec = arg.data;
-        this._rec = rec;
-    }
 }
