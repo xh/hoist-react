@@ -61,10 +61,9 @@ export class RestForm extends Component {
                 inputGroup({
                     placeholder: it.name,
                     autoFocus: ret.length == 0,
-                    value: this.rec[it.name] || '',
+                    defaultValue: this.rec[it.name] || '',
                     type: it.type || 'text',
-                    onChange: () => {}, // inputGroup requires but no need for it at the moment
-                    // readOnly: this.readOnly || false,
+                    readOnly: this.readOnly || false,
                     style: {marginBottom: 5}
                 })
             );
@@ -73,13 +72,7 @@ export class RestForm extends Component {
         ret.push(
             button({text: 'Submit', onClick: this.onSubmit})
         );
-        // inputGroup({
-        //     placeholder: 'Username...',
-        //     autoFocus: true,
-        //     value: this.username,
-        //     onChange: this.onUsernameChange,
-        //     style: {marginBottom: 5}
-        // })
+
         return ret;
     }
 
