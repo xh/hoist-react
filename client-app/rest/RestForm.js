@@ -44,7 +44,7 @@ export class RestForm extends Component {
             hbox({
                 cls: 'rest-form-header',
                 items: [
-                    h1(this.props.title),
+                    h1(this.props.title), // dashboard not getting this, why?
                     filler(),
                     button({text: 'Close', onClick: this.onClose})
                 ]

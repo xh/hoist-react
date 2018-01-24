@@ -14,9 +14,9 @@ export class RestGrid extends Component {
     @observable _rec = null;
 
     render() {
-        const formProps = { // define on grid and pass as prop?
+        const formProps = { // define on grid and pass as prop? Yes.
             rec: this._rec,
-            title: this._rec ? this._rec.name : 'Record',
+            title: this._rec ? this._rec.name : 'Record', // some recs don't have names. Move this to specific grids for more granular control
             editors: this.props.editors,
             url: this.url
         };
