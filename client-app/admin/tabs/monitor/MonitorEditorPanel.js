@@ -4,7 +4,6 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
 import {Component} from 'react';
 import {observer} from 'hoist/mobx';
 import {Ref, resolve} from 'hoist';

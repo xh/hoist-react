@@ -38,8 +38,8 @@ export class ConfigPanel extends Component {
             confValCol({text: 'Stage Value', field: 'stageValue', env: 'Staging'}),
             confValCol({text: 'Dev Value', field: 'devValue', env: 'Development'}),
             boolCheckCol({text: 'Client?', field: 'clientVisible', width: 90}),
-            noteCol()]
-        );
+            noteCol()
+        ]);
     }
 
     buildEditors() {
