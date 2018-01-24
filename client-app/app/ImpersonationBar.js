@@ -6,7 +6,8 @@
  */
 
 import {Component} from 'react';
-import {XH, identityService} from 'hoist';
+import {wait} from 'hoist/promise';
+import {XH, identityService, hoistAppStore} from 'hoist';
 import {hbox, vbox, spacer, filler, div} from 'hoist/layout';
 import {Classes, button, suggest, icon, popover2, menuItem} from 'hoist/blueprint';
 
@@ -119,12 +120,18 @@ class Store {
 
     @action
     doImpersonate = () => {
-        if (this.selectedTarget) identityService.impersonateAsync(this.selectedTarget);
+        if (this.selectedTarget) {
+            wait(1000)
+                .then(() => identityService.impersonateAsync(this.selectedTarget))
+                .bind(hoistAppStore.appLoadState);
+        }
     }
 
     doExit = () => {
         if (identityService.impersonating) {
-            identityService.endImpersonateAsync();
+            wait(1000)
+                .then(() => identityService.endImpersonateAsync())
+                .bind(hoistAppStore.appLoadState);
         } else {
             this.toggleVisibility();
         }

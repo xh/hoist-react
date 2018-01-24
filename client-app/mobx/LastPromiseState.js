@@ -9,20 +9,20 @@ import {observable, action, computed} from 'hoist/mobx';
 
 
 /**
- * Tracks the resoloution state of one or more promises
+ * Tracks the resoloution state of the last of a series of promise invocations.
  *
  * Currently it only tracks the *last* invocation, but could
  * be enhanced to maintain historical statistics.
+ *
+ * See also MultiPromiseState.
  */
-export class PromiseState {
+export class LastPromiseState {
 
     @observable value = null;
     @observable reason = null;
     @observable state = 'resolved';
 
-    executionCount = 0;
     lastCall = null;
-
 
     @computed get isPending() {
         return this.state === 'pending';
@@ -30,7 +30,6 @@ export class PromiseState {
     
     @action
     bind(promise) {
-        this.executionCount++;
         this.lastCall = promise;
         this.state = 'pending';
         promise.then(v => {

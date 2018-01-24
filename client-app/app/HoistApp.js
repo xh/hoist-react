@@ -40,9 +40,9 @@ export function hoistApp(C) {
         render() {
             const {authUsername, authCompleted, isInitialized} = hoistAppStore;
 
-            if (!authCompleted) return loadMask({isDisplayed: true});
+            if (!authCompleted) return this.renderPreloadMask();
             if (!authUsername)  return elem(LoginPanel);
-            if (!isInitialized) return loadMask({isDisplayed: true});
+            if (!isInitialized) return this.renderPreloadMask();
 
             return viewport(
                 vbox({
@@ -55,8 +55,13 @@ export function hoistApp(C) {
                         }),
                         elem(VersionBar)
                     ]
-                })
+                }),
+                loadMask({promiseState: hoistAppStore.appLoadState})
             );
+        }
+
+        renderPreloadMask() {
+            return loadMask({isDisplayed: true});
         }
     };
 
