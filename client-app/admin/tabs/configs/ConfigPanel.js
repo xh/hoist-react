@@ -52,9 +52,9 @@ export class ConfigPanel extends Component {
             {name: 'stageValue', env: 'Staging'},
             {name: 'devValue', env: 'Development'},
             {name: 'clientVisible'},
-            {name: 'note', xtype: 'textarea'},
-            {name: 'lastUpdated', xtype: 'displayfield'},
-            {name: 'lastUpdatedBy', xtype: 'displayfield'}
+            {name: 'note', type: 'textarea'},
+            {name: 'lastUpdated', readOnly: true},
+            {name: 'lastUpdatedBy', readOnly: true}
         ]);
     }
 
