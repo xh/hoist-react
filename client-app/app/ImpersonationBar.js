@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {wait} from 'hoist/promise';
 import {XH, identityService, hoistAppStore} from 'hoist';
 import {hbox, vbox, spacer, filler, div} from 'hoist/layout';
-import {Classes, button, suggest, icon, popover, menuItem} from 'hoist/blueprint';
+import {Classes, button, suggest, icon, popover, menuItem} from 'hoist/kit/blueprint';
 
 import {observable, action, observer} from 'hoist/mobx';
 

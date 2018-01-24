@@ -6,11 +6,12 @@
  */
 
 import {Component} from 'react';
-import {box} from 'hoist/layout';
-import {circularProgress, modal} from 'hoist/mui';
-import {overlay, spinner} from 'hoist/blueprint';
-import {viewport} from 'hoist/layout';
+import {box, viewport} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
+
+import {modal, circularProgress} from 'hoist/kit/material';
+import {overlay, spinner} from 'hoist/kit/blueprint';
+import {dimmer, loader} from 'hoist/kit/semantic';
 
 
 /**
@@ -32,7 +33,7 @@ export class LoadMask extends Component {
     };
 
     render() {
-        return this.renderBlueprint();
+        return this.renderSemantic();
     }
 
     renderBlueprint() {
@@ -52,7 +53,16 @@ export class LoadMask extends Component {
         });
     }
 
-    renderMui() {
+    renderSemantic() {
+        const {isDisplayed, promiseState} = this.props;
+        return dimmer({
+            active: isDisplayed || promiseState.isPending,
+            page: true,
+            items: loader()
+        });
+    }
+
+    renderMaterial() {
         const {isDisplayed, promiseState} = this.props;
         return modal({
             open: isDisplayed || promiseState.isPending,

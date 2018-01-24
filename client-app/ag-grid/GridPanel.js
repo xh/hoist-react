@@ -13,7 +13,7 @@ import {merge} from 'lodash';
 import {elem, elemFactory} from 'hoist';
 import {div} from 'hoist/layout';
 import {AgGridReact} from 'ag-grid-react';
-import {LicenseManager} from 'ag-grid-enterprise/main';
+import {LicenseManager} from 'ag-grid-enterprise';
 import {observer} from 'hoist/mobx';
 
 LicenseManager.setLicenseKey(
