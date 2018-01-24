@@ -2,7 +2,8 @@ import {Component} from 'react';
 import {XH, elemFactory} from 'hoist';
 import {gridPanel} from 'hoist/ag-grid/GridPanel';
 import {observer, observable, action, toJS} from 'hoist/mobx';
-import {box} from 'hoist/layout';
+import {box, vbox, hbox} from 'hoist/layout';
+import {button} from 'hoist/blueprint';
 
 import {restForm} from 'hoist/rest/RestForm';
 
@@ -21,17 +22,23 @@ export class RestGrid extends Component {
             updateRec: this.updateRec
         };
 
-        return box({
+        return vbox({
             flex: 1,
             items: [
-                gridPanel({
-                    rows: toJS(this.rows),
-                    columns: this.props.columns,
-                    gridOptions: {
-                        onRowDoubleClicked: this.onRowDoubleClicked
-                    }
-                }),
-                restForm(formProps)
+                this.renderToolbar(),
+                box({
+                    flex: 1,
+                    items: [
+                        gridPanel({
+                            rows: toJS(this.rows),
+                            columns: this.props.columns,
+                            gridOptions: {
+                                onRowDoubleClicked: this.onRowDoubleClicked
+                            }
+                        }),
+                        restForm(formProps)
+                    ]
+                })
             ]
         });
     }
@@ -47,6 +54,38 @@ export class RestGrid extends Component {
             });
     }
 
+    renderToolbar() {
+        return hbox({
+            style: {
+                background: 'lightgray'
+            },
+            items: [
+                button({
+                    text: 'Add',
+                    style: {
+                        marginTop: 5,
+                        marginBottom: 5,
+                        marginLeft: 5
+                    },
+                    onClick: this.addRec
+                }),
+                button({
+                    text: 'Delete',
+                    style: {
+                        marginTop: 5,
+                        marginBottom: 5,
+                        marginLeft: 5
+                    }
+                })
+            ]
+        });
+    }
+
+    @action
+    addRec = () => {
+        this._rec = {};
+    }
+    
     @action
     completeLoad = (success, vals) => {
         this.rows = success ? vals : [];
@@ -59,8 +98,12 @@ export class RestGrid extends Component {
 
     @action
     updateRec = (rec) => {
-        let idx = this.rows.findIndex(it => it.id == rec.id);
-        this.rows[idx] = rec;
+        const idx = this.rows.findIndex(it => it.id == rec.id);
+        if (idx >= 0) {
+            this.rows[idx] = rec;
+        } else {
+            this.rows.push(rec);
+        }
     }
 }
 

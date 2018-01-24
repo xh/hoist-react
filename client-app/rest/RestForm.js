@@ -10,7 +10,7 @@ import {hbox, filler, h1, vbox} from 'hoist/layout';
 import {observer, observable, action, computed} from 'hoist/mobx';
 import {inputGroup, button, label} from 'hoist/blueprint';
 import {modal} from 'hoist/mui';
-import {merge} from 'lodash';
+import {merge, isEmpty} from 'lodash';
 import {XH, elemFactory} from 'hoist';
 
 @observer
@@ -20,9 +20,13 @@ export class RestForm extends Component {
     @observable recClone = null;
     @observable isOpen = true;
 
+    @computed get isAdd() {
+        return isEmpty(this.rec);
+    }
+
     @computed get isValid() {
         // how can we dynamically set the logic here? maybe loop through editors prop
-        // and check it's corresponding value against the editors type property (or required/allowblank ect ect) in the recClone?
+        // and check its corresponding recClone values against the editors type property (or required/allowblank ect ect)?
         // maybe only validate the field that just changed to trigger this?
         return true;
     }
@@ -37,14 +41,14 @@ export class RestForm extends Component {
         });
     }
 
-    renderForm() {
+    renderForm = () => {
         const ret = [],
             editors = this.props.editors || [];
 
         ret.push(
             hbox({
                 items: [
-                    h1('Edit Record'), // support for adding records coming soon
+                    h1(this.isAdd ? 'Add Record' : 'Edit Record'),
                     filler(),
                     button({text: 'Close', onClick: this.onClose})
                 ]
@@ -97,7 +101,7 @@ export class RestForm extends Component {
     onSubmit = () => {
         return XH.fetchJson({
             url: this.props.url,
-            method: 'PUT',  // POST for new rec  // Rest urls are mapped based on type of request. POST gets us Create, PUT gets us Update
+            method: this.isAdd ? 'POST' : 'PUT', // RestController's actions are mapped based on type of request. POST gets us Create, PUT gets us Update
             params: {data: JSON.stringify(this.recClone)} // for update maybe only send dirty fields
         }).then(r => {
             this.props.updateRec(r.data);
