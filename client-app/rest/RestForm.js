@@ -97,10 +97,11 @@ export class RestForm extends Component {
     onSubmit = () => {
         return XH.fetchJson({
             url: this.props.url,
-            method: 'POST',  // PUT?
-            data: this.recClone
+            method: 'PUT',  // POST for new rec  // Rest urls are mapped based on type of request. POST gets us Create, PUT gets us Update
+            params: {data: JSON.stringify(this.recClone)} // for update maybe only send dirty fields
         }).then(r => {
-            console.log(r);
+            this.props.updateRec(r.data);
+            this.onClose();
         }).catch((e) => {
             console.log(e);
         });

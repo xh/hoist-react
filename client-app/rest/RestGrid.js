@@ -17,7 +17,8 @@ export class RestGrid extends Component {
         const formProps = {
             rec: this._rec,
             editors: this.props.editors,
-            url: this.props.url
+            url: this.props.url,
+            updateRec: this.updateRec
         };
 
         return box({
@@ -54,6 +55,12 @@ export class RestGrid extends Component {
     @action
     onRowDoubleClicked = (e) => {
         this._rec = e.data;
+    }
+
+    @action
+    updateRec = (rec) => {
+        let idx = this.rows.findIndex(it => it.id == rec.id);
+        this.rows[idx] = rec;
     }
 }
 
