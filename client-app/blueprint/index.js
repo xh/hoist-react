@@ -10,7 +10,7 @@ import '@blueprintjs/select/lib/css/blueprint-select.css';
 import '@blueprintjs/icons/lib/css/blueprint-icons.css';
 
 import {elemFactory} from 'hoist/hyperscript';
-import {Button, Icon, MenuItem, Tab, Tabs, Overlay, Spinner, InputGroup, Popover} from '@blueprintjs/core';
+import {Button, Icon, MenuItem, Tab, Tabs, Overlay, Spinner, InputGroup, Popover, Label} from '@blueprintjs/core';
 import {Suggest, Select} from '@blueprintjs/select';
 export {Classes} from '@blueprintjs/core';
 
@@ -24,6 +24,7 @@ export const button = elemFactory(Button),
     tab = elemFactory(Tab),
     overlay = elemFactory(Overlay),
     spinner = elemFactory(Spinner),
-    inputGroup = elemFactory(InputGroup);
+    inputGroup = elemFactory(InputGroup),
+    label = elemFactory(Label);
     
 

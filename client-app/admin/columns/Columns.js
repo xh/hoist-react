@@ -80,7 +80,7 @@ export const elapsed = colFactory({
 });
 
 export const severity = colFactory({
-    width: 40,
+    width: 60,
     field: 'severity'
 });
 
@@ -141,5 +141,42 @@ export const appCodeCol = colFactory({
 
 export const definitionCol = colFactory({
     field: 'definition',
+    flex: 1
+});
+
+//----------------------
+// Log Levels
+//----------------------
+export const defaultLevelCol = colFactory({
+    field: 'defaultLevel',
+    width: 80
+});
+
+export const levelCol = colFactory({
+    field: 'level',
+    width: 80
+});
+
+export const effectiveLevelCol = colFactory({
+    field: 'effectiveLevel',
+    width: 80
+});
+
+//----------------------
+// Preferences
+//----------------------
+
+export const notesCol = colFactory({
+    field: 'notes',
+    flex: 2
+});
+
+export const typeCol = colFactory({
+    field: 'type',
+    width: 80
+});
+
+export const prefValueCol = colFactory({
+    field: 'prefValue',
     flex: 1
 });
