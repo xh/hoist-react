@@ -14,7 +14,9 @@ const colFactory = fileColFactory({
 
 export const dateCol = colFactory({
     text: 'Date',
-    // renderer: dateRenderer(),
+    valueFormatter: (params) => {
+        return new Date(params.value).toString();
+    },
     width: 120
 });
 
