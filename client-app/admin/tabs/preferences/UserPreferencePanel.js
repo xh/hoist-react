@@ -32,7 +32,7 @@ export class UserPreferencePanel extends Component {
     ref = new Ref();
 
     render() {
-        return restGrid({columns: this.columns, url: this.url, editors: this.editors, ref: this.ref.callback});
+        return restGrid({url: this.url, columns: this.columns, editors: this.editors, ref: this.ref.callback});
     }
 
     loadAsync() {

@@ -14,7 +14,9 @@ import {restGrid} from 'hoist/rest/RestGrid';
 
 @observer
 export class PreferencePanel extends Component {
+
     url = 'rest/preferenceAdmin';
+
     columns = [
         boolCheckCol({field: 'local', width: 60}),
         nameFlexCol(),
@@ -36,7 +38,7 @@ export class PreferencePanel extends Component {
     ref = new Ref();
 
     render() {
-        return restGrid({columns: this.columns, url: this.url, editors: this.editors, ref: this.ref.callback});
+        return restGrid({url: this.url, columns: this.columns, editors: this.editors, ref: this.ref.callback});
     }
 
     loadAsync() {

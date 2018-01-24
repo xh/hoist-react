@@ -14,7 +14,9 @@ import {restGrid} from 'hoist/rest/RestGrid';
 
 @observer
 export class MonitorEditorPanel extends Component {
+
     url = 'rest/monitorAdmin';
+
     columns = [
         boolCheckCol({field: 'active', width: 60}),
         baseCol({field: 'code', width: 150}),
@@ -44,7 +46,7 @@ export class MonitorEditorPanel extends Component {
     ref = new Ref();
 
     render() {
-        return restGrid({columns: this.columns, url: this.url, editors: this.editors, ref: this.ref.callback});
+        return restGrid({url: this.url, columns: this.columns, editors: this.editors, ref: this.ref.callback});
     }
 
     loadAsync() {
