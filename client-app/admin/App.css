@@ -1,16 +1,4 @@
-.pt-tabs {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-}
-
-.pt-tab-panel {
-  display: flex;
-  flex: 1 1 auto;
-}
-
 /*About*/
-
 .xh-admin-about-panel table {
   border-spacing: 0;
   border-collapse: collapse;
@@ -36,7 +24,6 @@
 }
 
 /*Rest Form*/
-
 .rest-form h1 {
   font-size: 12px;
 }

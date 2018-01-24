@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {wait} from 'hoist/promise';
 import {XH, identityService, hoistAppStore} from 'hoist';
 import {hbox, vbox, spacer, filler, div} from 'hoist/layout';
-import {Classes, button, suggest, icon, popover2, menuItem} from 'hoist/blueprint';
+import {Classes, button, suggest, icon, popover, menuItem} from 'hoist/blueprint';
 
 import {observable, action, observer} from 'hoist/mobx';
 
@@ -50,15 +50,15 @@ export class ImpersonationBar extends Component {
     switchButton() {
         const s = this.store;
 
-        return popover2({
-            target: button({text: 'Switch User', iconName: 'random', style: {minWidth: 130}, onClick: s.toggleTargetDialog}),
+        return popover({
+            target: button({text: 'Switch User', iconName: 'random', style: {minWidth: 130}, onClick: s.openTargetDialog}),
             isOpen: s.targetDialogOpen,
             hasBackdrop: true,
             minimal: true,
             placement: 'bottom-end',
             popoverClassName: 'pt-popover-content-sizing',
             backdropProps: {style: {backgroundColor: 'rgba(255,255,255,0.5)'}},
-            onClose: s.toggleTargetDialog,
+            onClose: s.closeTargetDialog,
             content: vbox({
                 justifyContent: 'right',
                 items: [
@@ -76,7 +76,7 @@ export class ImpersonationBar extends Component {
                     spacer({height: 5}),
                     hbox(
                         filler(),
-                        button({text: 'Close', onClick: s.toggleTargetDialog}),
+                        button({text: 'Close', onClick: s.closeTargetDialog}),
                         spacer({width: 5}),
                         button({text: 'OK', onClick: s.doImpersonate, disabled: !s.selectedTarget})
                     )
@@ -156,13 +156,20 @@ class Store {
             .filter(t => t !== identityService.username);
     }
 
+
     @action
-    toggleTargetDialog = () => {
-        this.targetDialogOpen = !this.targetDialogOpen;
+    closeTargetDialog = () => {
+        this.targetDialogOpen = false;
+    }
+
+    @action
+    openTargetDialog = () => {
+        this.targetDialogOpen = true;
     }
 
     @action
     setSelectedTarget = (target) => {
         this.selectedTarget = target;
     }
+
 }

@@ -4,7 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import '@blueprintjs/core/dist/blueprint.css';
+
+import './HoistApp.css';
 
 import 'babel-polyfill';
 import {Component} from 'react';
