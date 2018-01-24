@@ -1,5 +1,6 @@
 import {Component} from 'react';
 import {XH, elemFactory} from 'hoist';
+import {isEmpty} from 'lodash';
 import {gridPanel} from 'hoist/ag-grid/GridPanel';
 import {observer, observable, action, toJS} from 'hoist/mobx';
 import {box, vbox, hbox} from 'hoist/layout';
@@ -13,7 +14,7 @@ export class RestGrid extends Component {
 
     @observable rows = null;
     @observable _rec = null;
-    @observable selectionModel = null;
+    @observable selectionModel = [];
 
     render() {
         const formProps = {
@@ -79,7 +80,7 @@ export class RestGrid extends Component {
                         marginBottom: 5,
                         marginLeft: 5
                     },
-                    disabled: !this.selectionModel,
+                    disabled: isEmpty(this.selectionModel),
                     onClick: this.deleteRec
                 })
             ]
