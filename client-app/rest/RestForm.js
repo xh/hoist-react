@@ -52,7 +52,7 @@ export class RestForm extends Component {
         );
 
         editors.forEach(editor => {
-            ret.push(label({text: editor.name}));
+            ret.push(label({text: editor.name})); // need to incorporate a label prop in the editors, label should be able to be difference from the name/field in rec
             ret.push(
                 inputGroup({
                     placeholder: editor.name,
