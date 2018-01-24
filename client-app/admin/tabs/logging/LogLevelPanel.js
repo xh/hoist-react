@@ -12,17 +12,25 @@ import {restGrid} from 'hoist/rest/RestGrid';
 
 @observer
 export class LogLevelPanel extends Component {
+
     url = 'rest/logLevelAdmin';
+
     columns = [
         nameCol(),
         defaultLevelCol(),
         levelCol(),
         effectiveLevelCol()
-    ]
+    ];
+
+    editors = [
+        {name: 'name', allowBlank: false},
+        {name: 'level', editable: false} // must choose from a predefined list (functionality not yet implemented into restForm)
+    ];
+
     ref = new Ref();
 
     render() {
-        return restGrid({columns: this.columns, url: this.url, ref: this.ref.callback});
+        return restGrid({url: this.url, columns: this.columns, editors: this.editors, ref: this.ref.callback});
     }
 
     loadAsync() {
