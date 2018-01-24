@@ -43,7 +43,6 @@ export class RestForm extends Component {
 
         ret.push(
             hbox({
-                cls: 'rest-form-header',
                 items: [
                     h1('Edit Record'), // support for adding records coming soon
                     filler(),
