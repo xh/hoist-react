@@ -5,43 +5,38 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {XH} from 'hoist';
-import {gridPanel} from 'hoist/ag-grid/GridPanel';
-import {observer, observable, action, toJS} from 'hoist/mobx';
-
+import {observer} from 'hoist/mobx';
 import {dateCol} from 'hoist/columns/DatesTimes';
+import {Ref, resolve} from 'hoist';
 import {appCodeCol, usernameCol, definitionCol} from '../../columns/Columns';
+import {restGrid} from 'hoist/rest/RestGrid';
 
 @observer
 export class DashboardPanel extends Component {
 
-    @observable rows = null;
+    url = 'rest/dashboardAdmin';
+
+    columns = [
+        appCodeCol(),
+        usernameCol(),
+        dateCol({field: 'lastUpdated'}),
+        definitionCol()
+    ];
+
+    editors = [
+        {name: 'appCode', allowBlank: false},
+        {name: 'username', allowBlank: true},
+        {name: 'definition', allowBlank: false, flex: 1},
+        {name: 'lastUpdated', readOnly: true}
+    ];
+
+    ref = new Ref();
 
     render() {
-        return gridPanel({
-            rows: toJS(this.rows),
-            columns: [
-                appCodeCol(),
-                usernameCol(),
-                dateCol({field: 'lastUpdated'}),
-                definitionCol()
-            ]
-        });
+        return restGrid({url: this.url, columns: this.columns, editors: this.editors, ref: this.ref.callback});
     }
 
     loadAsync() {
-        return XH
-            .fetchJson({url: 'rest/dashboardAdmin'})
-            .then(rows => {
-                this.completeLoad(true, rows.data);
-            }).catch(e => {
-                this.completeLoad(false, e);
-                XH.handleException(e);
-            });
-    }
-
-    @action
-    completeLoad = (success, vals) => {
-        this.rows = success ? vals : [];
+        return this.ref.value ? this.ref.value.loadAsync() : resolve();
     }
 }

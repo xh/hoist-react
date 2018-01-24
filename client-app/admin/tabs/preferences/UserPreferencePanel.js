@@ -6,11 +6,36 @@
  */
 import {Component} from 'react';
 import {observer} from 'hoist/mobx';
-import {h2} from 'hoist/layout';
+import {Ref, resolve} from 'hoist';
+import {nameFlexCol, typeCol, prefValueCol, usernameCol} from '../../columns/Columns';
+import {restGrid} from 'hoist/rest/RestGrid';
 
 @observer
 export class UserPreferencePanel extends Component {
+    url = 'rest/userPreferenceAdmin'
+
+    columns = [
+        nameFlexCol(),
+        typeCol(),
+        usernameCol(),
+        prefValueCol({field: 'userValue'})
+    ]
+
+    editors = [
+        {name: 'name', allowBlank: false, additionsOnly: true}, // means read only?
+        {name: 'username', allowBlank: false},
+        {name: 'userValue', allowBlank: false},
+        {name: 'lastUpdated', xtype: 'displayfield'},
+        {name: 'lastUpdatedBy', xtype: 'displayfield'}
+    ]
+
+    ref = new Ref();
+
     render() {
-        return h2('User Preferences Here');
+        return restGrid({url: this.url, columns: this.columns, editors: this.editors, ref: this.ref.callback});
+    }
+
+    loadAsync() {
+        return this.ref.value ? this.ref.value.loadAsync() : resolve();
     }
 }
