@@ -23,6 +23,7 @@ export class RestForm extends Component {
     @computed get isValid() {
         // how can we dynamically set the logic here? maybe loop through editors prop
         // and check it's corresponding value against the editors type property (or required/allowblank ect ect) in the recClone?
+        // maybe only validate the field that just changed to trigger this?
         return true;
     }
 
@@ -44,7 +45,7 @@ export class RestForm extends Component {
             hbox({
                 cls: 'rest-form-header',
                 items: [
-                    h1(this.props.title), // dashboard not getting this, why?
+                    h1('Edit Record'), // support for adding records coming soon
                     filler(),
                     button({text: 'Close', onClick: this.onClose})
                 ]
@@ -52,7 +53,10 @@ export class RestForm extends Component {
         );
 
         editors.forEach(editor => {
-            ret.push(label({text: editor.name})); // need to incorporate a label prop in the editors, label should be able to be difference from the name/field in rec
+            // need to incorporate a label prop in the editors
+            // label should be able to be different from the name/field in rec
+            // e.g. 'level' in logs should be labeld 'override'
+            ret.push(label({text: editor.name}));
             ret.push(
                 inputGroup({
                     placeholder: editor.name,

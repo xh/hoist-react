@@ -14,7 +14,7 @@ import {restGrid} from 'hoist/rest/RestGrid';
 @observer
 export class DashboardPanel extends Component {
 
-    url = 'rest/dashboardAdmin'
+    url = 'rest/dashboardAdmin';
 
     columns = [
         appCodeCol(),
@@ -23,13 +23,12 @@ export class DashboardPanel extends Component {
         definitionCol()
     ];
 
-    editors =[
+    editors = [
         {name: 'appCode', allowBlank: false},
         {name: 'username', allowBlank: true},
         {name: 'definition', allowBlank: false, flex: 1},
         {name: 'lastUpdated', readOnly: true}
-    ]
-
+    ];
 
     ref = new Ref();
 
