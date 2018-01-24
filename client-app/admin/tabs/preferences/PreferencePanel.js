@@ -21,7 +21,7 @@ export class PreferencePanel extends Component {
         boolCheckCol({field: 'local', width: 60}),
         nameFlexCol(),
         typeCol(),
-        prefValueCol(),
+        prefValueCol({field: 'defaultValue'}),
         notesCol()
     ];
 

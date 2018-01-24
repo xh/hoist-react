@@ -80,7 +80,7 @@ export const elapsed = colFactory({
 });
 
 export const severity = colFactory({
-    width: 40,
+    width: 60,
     field: 'severity'
 });
 
@@ -177,6 +177,6 @@ export const typeCol = colFactory({
 });
 
 export const prefValueCol = colFactory({
-    feild: 'prefValue',
+    field: 'prefValue',
     flex: 1
 });
