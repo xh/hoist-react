@@ -7,7 +7,6 @@
 import {Component} from 'react';
 import {observer} from 'hoist/mobx';
 import {Ref, resolve} from 'hoist';
-import {h2} from 'hoist/layout';
 import {boolCheckCol} from 'hoist/columns/Core';
 import {nameFlexCol, typeCol, prefValueCol, notesCol} from '../../columns/Columns';
 import {restGrid} from 'hoist/rest/RestGrid';
