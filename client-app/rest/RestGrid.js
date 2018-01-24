@@ -13,6 +13,7 @@ export class RestGrid extends Component {
 
     @observable rows = null;
     @observable _rec = null;
+    @observable selectionModel = null;
 
     render() {
         const formProps = {
@@ -32,8 +33,10 @@ export class RestGrid extends Component {
                         gridPanel({
                             rows: toJS(this.rows),
                             columns: this.props.columns,
+                            onGridReady: this.onGridReady,
                             gridOptions: {
-                                onRowDoubleClicked: this.onRowDoubleClicked
+                                onRowDoubleClicked: this.onRowDoubleClicked,
+                                onSelectionChanged: this.onSelectionChanged
                             }
                         }),
                         restForm(formProps)
@@ -75,10 +78,22 @@ export class RestGrid extends Component {
                         marginTop: 5,
                         marginBottom: 5,
                         marginLeft: 5
-                    }
+                    },
+                    disabled: !this.selectionModel,
+                    onClick: this.deleteRec
                 })
             ]
         });
+    }
+
+
+    deleteRec = () => {
+        console.log(this.selectionModel[0]);
+    }
+
+    @action
+    onSelectionChanged = (ev) => {
+        this.selectionModel = ev.api.getSelectedRows();
     }
 
     @action
