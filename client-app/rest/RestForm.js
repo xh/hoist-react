@@ -54,7 +54,7 @@ export class RestForm extends Component {
         editors.forEach(editor => {
             // need to incorporate a label prop in the editors
             // label should be able to be different from the name/field in rec
-            // e.g. 'level' in logs should be labeld 'override'
+            // e.g. 'level' in logs should be labeled 'override'
             ret.push(label({text: editor.name}));
             ret.push(
                 inputGroup({

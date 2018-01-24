@@ -17,7 +17,7 @@ export class RestGrid extends Component {
         const formProps = {
             rec: this._rec,
             editors: this.props.editors,
-            url: this.url
+            url: this.props.url
         };
 
         return box({
