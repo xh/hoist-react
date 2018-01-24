@@ -1,24 +1,3 @@
-.pt-tabs {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-}
-
-.pt-tab-panel {
-  display: flex;
-  flex: 1 1 auto;
-}
-
-.xh-admin-about-panel table {
-  border-spacing: 0;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-
-.xh-admin-about-panel tr {
-  border: 1px solid black;
-}
-
 .xh-admin-about-panel th {
   background-color: #106ba3;
   color: white;
