@@ -99,12 +99,13 @@ export class RestForm extends Component {
     // Implementation
     //--------------------------------
     onSubmit = () => {
+        const method = this.isAdd ? 'POST' : 'PUT';  // RestController's actions are mapped based on type of request. POST gets us Create, PUT gets us Update
         return XH.fetchJson({
             url: this.props.url,
-            method: this.isAdd ? 'POST' : 'PUT', // RestController's actions are mapped based on type of request. POST gets us Create, PUT gets us Update
+            method: method,
             params: {data: JSON.stringify(this.recClone)} // for update maybe only send dirty fields
         }).then(resp => {
-            this.props.updateRows(resp.data);
+            this.props.updateRows(resp.data, method);
             this.onClose();
         }).catch((e) => {
             console.log(e);

@@ -92,16 +92,14 @@ export class RestGrid extends Component {
         });
     }
 
-
     deleteRec = () => {
-        const selection = this.selectionState.firstRow;
+        const selection = this.selectionState.firstRow,
+            method = 'DELETE';
         return XH.fetchJson({
-            url: this.props.url,
-            method: 'DELETE',
-            params: {data: selection.id.toString()}
+            url: `${this.props.url}/${selection.id}`,
+            method: method
         }).then(resp => {
-            // this.props.updateRows(r.data); // TODO figure out delete logic in updateRows
-            this.onClose();
+            this.updateRows(selection, method);
         }).catch((e) => {
             console.log(e);
         });
@@ -123,12 +121,16 @@ export class RestGrid extends Component {
     }
 
     @action
-    updateRows = (rec) => {
-        const idx = this.rows.findIndex(it => it.id == rec.id);
-        if (idx >= 0) {
-            this.rows[idx] = rec;
-        } else {
-            this.rows.push(rec);
+    updateRows = (resp, method) => {
+        const idx = this.rows.findIndex(it => it.id == resp.id);
+        if (method == 'POST') {
+            this.rows.push(resp);
+        }
+        if (method == 'PUT') {
+            this.rows[idx] = resp;
+        }
+        if (method == 'DELETE') {
+            this.rows.splice(idx, 1);
         }
     }
 }
