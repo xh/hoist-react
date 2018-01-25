@@ -4,7 +4,7 @@ import {SelectionState} from '../utils/SelectionState';
 import {gridPanel} from 'hoist/ag-grid/GridPanel';
 import {observer, observable, action, toJS} from 'hoist/mobx';
 import {box, vbox, hbox} from 'hoist/layout';
-import {button} from 'hoist/blueprint';
+import {button} from 'hoist/kit/blueprint';
 
 import {restForm} from 'hoist/rest/RestForm';
 
@@ -22,7 +22,7 @@ export class RestGrid extends Component {
             rec: this._rec,
             editors: this.props.editors,
             url: this.props.url,
-            updateRec: this.updateRows
+            updateRows: this.updateRows
         };
 
         return vbox({
