@@ -50,7 +50,7 @@ export class RestForm extends Component {
                 items: [
                     h1(this.isAdd ? 'Add Record' : 'Edit Record'),
                     filler(),
-                    button({text: 'Close', onClick: this.onClose})
+                    button({text: 'Close', iconName: 'cross', onClick: this.onClose})
                 ]
             })
         );
@@ -75,7 +75,7 @@ export class RestForm extends Component {
         ret.push(
             hbox(
                 filler(),
-                button({text: 'Submit', disabled: !this.isValid, onClick: this.onSubmit})
+                button({text: 'Save', iconName: 'tick', disabled: !this.isValid, onClick: this.onSubmit})
             )
         );
 

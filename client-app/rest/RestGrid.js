@@ -69,6 +69,7 @@ export class RestGrid extends Component {
             items: [
                 button({
                     text: 'Add',
+                    iconName: 'add',
                     style: {
                         marginTop: 5,
                         marginBottom: 5,
@@ -78,6 +79,7 @@ export class RestGrid extends Component {
                 }),
                 button({
                     text: 'Delete',
+                    iconName: 'cross',
                     style: {
                         marginTop: 5,
                         marginBottom: 5,
