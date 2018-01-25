@@ -13,8 +13,8 @@ import {merge} from 'lodash';
 import {elem, elemFactory} from 'hoist';
 import {div} from 'hoist/layout';
 import {AgGridReact} from 'ag-grid-react';
-import {LicenseManager} from 'ag-grid-enterprise/main';
-import {observer, action} from 'hoist/mobx';
+import {LicenseManager} from 'ag-grid-enterprise';
+import {observer} from 'hoist/mobx';
 
 LicenseManager.setLicenseKey(
     'ag-Grid_Evaluation_License_Key_Not_for_Production_100Devs15_February_2018__MTUxODY1MjgwMDAwMA==600d5a723b746ad55afff76eb446f0ad'

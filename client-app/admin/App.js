@@ -9,7 +9,7 @@ import './App.css';
 import {Component} from 'react';
 import {XH, elem, hoistApp} from 'hoist';
 import {vbox, hbox, box, div, filler, spacer} from 'hoist/layout';
-import {button, tabs, tab, icon} from 'hoist/blueprint';
+import {button, tabs, tab, icon} from 'hoist/kit/blueprint';
 import {observer} from 'hoist/mobx';
 
 import {Tab} from './tabs/Tab';

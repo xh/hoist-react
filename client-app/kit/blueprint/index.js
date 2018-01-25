@@ -26,5 +26,3 @@ export const button = elemFactory(Button),
     spinner = elemFactory(Spinner),
     inputGroup = elemFactory(InputGroup),
     label = elemFactory(Label);
-    
-

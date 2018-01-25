@@ -8,9 +8,9 @@
 import {Component} from 'react';
 import {hbox, filler, h1, vbox} from 'hoist/layout';
 import {observer, observable, action, computed} from 'hoist/mobx';
-import {inputGroup, button, label} from 'hoist/blueprint';
-import {modal} from 'hoist/mui';
-import {merge, isEmpty} from 'lodash';
+import {inputGroup, button, label} from 'hoist/kit/blueprint';
+import {modal} from 'hoist/kit/material';
+import {merge} from 'lodash';
 import {XH, elemFactory} from 'hoist';
 
 @observer
