@@ -7,6 +7,7 @@ import {box, vbox, hbox} from 'hoist/layout';
 import {button} from 'hoist/kit/blueprint';
 
 import {restForm} from 'hoist/rest/RestForm';
+import {semanticRestForm} from 'hoist/rest/SemanticRestForm';
 
 
 @observer
@@ -41,7 +42,8 @@ export class RestGrid extends Component {
                                 onRowDoubleClicked: this.onRowDoubleClicked
                             }
                         }),
-                        restForm(formProps)
+                        // restForm(formProps)
+                        semanticRestForm(formProps)
                     ]
                 })
             ]
