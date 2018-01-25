@@ -14,7 +14,7 @@ import {elem, elemFactory} from 'hoist';
 import {div} from 'hoist/layout';
 import {AgGridReact} from 'ag-grid-react';
 import {LicenseManager} from 'ag-grid-enterprise/main';
-import {observer} from 'hoist/mobx';
+import {observer, action} from 'hoist/mobx';
 
 LicenseManager.setLicenseKey(
     'ag-Grid_Evaluation_License_Key_Not_for_Production_100Devs15_February_2018__MTUxODY1MjgwMDAwMA==600d5a723b746ad55afff76eb446f0ad'
@@ -35,6 +35,7 @@ class GridPanel extends Component {
             cls: 'ag-theme-fresh',
             items: elem(AgGridReact, {
                 onRowDataChanged: this.onRowDataChanged,
+                onSelectionChanged: this.onSelectionChanged,
                 gridOptions: gridOptions,
                 rowData: this.props.rows,
                 items: this.props.columns
@@ -44,6 +45,12 @@ class GridPanel extends Component {
 
     onRowDataChanged = (ev) => {
         ev.api.sizeColumnsToFit();
+    }
+
+    @action
+    onSelectionChanged = (ev) => {
+        const sel = this.props.selectionState;
+        if (sel) sel.selection = ev.api.getSelectedRows();
     }
 }
 

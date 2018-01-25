@@ -103,8 +103,8 @@ export class RestForm extends Component {
             url: this.props.url,
             method: this.isAdd ? 'POST' : 'PUT', // RestController's actions are mapped based on type of request. POST gets us Create, PUT gets us Update
             params: {data: JSON.stringify(this.recClone)} // for update maybe only send dirty fields
-        }).then(r => {
-            this.props.updateRec(r.data);
+        }).then(resp => {
+            this.props.updateRows(resp.data);
             this.onClose();
         }).catch((e) => {
             console.log(e);

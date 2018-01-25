@@ -1,6 +1,6 @@
 import {Component} from 'react';
 import {XH, elemFactory} from 'hoist';
-import {isEmpty} from 'lodash';
+import {SelectionState} from '../utils/SelectionState';
 import {gridPanel} from 'hoist/ag-grid/GridPanel';
 import {observer, observable, action, toJS} from 'hoist/mobx';
 import {box, vbox, hbox} from 'hoist/layout';
@@ -14,14 +14,15 @@ export class RestGrid extends Component {
 
     @observable rows = null;
     @observable _rec = null;
-    @observable selectionModel = [];
+
+    @observable selectionState = new SelectionState();
 
     render() {
         const formProps = {
             rec: this._rec,
             editors: this.props.editors,
             url: this.props.url,
-            updateRec: this.updateRec
+            updateRec: this.updateRows
         };
 
         return vbox({
@@ -35,9 +36,9 @@ export class RestGrid extends Component {
                             rows: toJS(this.rows),
                             columns: this.props.columns,
                             onGridReady: this.onGridReady,
+                            selectionState: this.selectionState,
                             gridOptions: {
-                                onRowDoubleClicked: this.onRowDoubleClicked,
-                                onSelectionChanged: this.onSelectionChanged
+                                onRowDoubleClicked: this.onRowDoubleClicked
                             }
                         }),
                         restForm(formProps)
@@ -58,8 +59,10 @@ export class RestGrid extends Component {
             });
     }
 
+    // factor into own component
     renderToolbar() {
         return hbox({
+            // selectionState: this.selectionState, add as prop once this is a stand alone component
             style: {
                 background: 'lightgray'
             },
@@ -80,7 +83,7 @@ export class RestGrid extends Component {
                         marginBottom: 5,
                         marginLeft: 5
                     },
-                    disabled: isEmpty(this.selectionModel),
+                    disabled: !this.selectionState.firstRow,
                     onClick: this.deleteRec
                 })
             ]
@@ -89,12 +92,17 @@ export class RestGrid extends Component {
 
 
     deleteRec = () => {
-        console.log(this.selectionModel[0]);
-    }
-
-    @action
-    onSelectionChanged = (ev) => {
-        this.selectionModel = ev.api.getSelectedRows();
+        const selection = this.selectionState.firstRow;
+        return XH.fetchJson({
+            url: this.props.url,
+            method: 'DELETE',
+            params: {data: selection.id.toString()}
+        }).then(resp => {
+            // this.props.updateRows(r.data); // TODO figure out delete logic in updateRows
+            this.onClose();
+        }).catch((e) => {
+            console.log(e);
+        });
     }
 
     @action
@@ -113,7 +121,7 @@ export class RestGrid extends Component {
     }
 
     @action
-    updateRec = (rec) => {
+    updateRows = (rec) => {
         const idx = this.rows.findIndex(it => it.id == rec.id);
         if (idx >= 0) {
             this.rows[idx] = rec;
