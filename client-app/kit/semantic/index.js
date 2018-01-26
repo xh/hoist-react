@@ -7,7 +7,10 @@
 import 'semantic-ui-css/semantic.min.css';
 
 import {elemFactory} from 'hoist/hyperscript';
-import {Loader, Dimmer} from 'semantic-ui-react';
+import {Loader, Dimmer, Input, Button, Icon} from 'semantic-ui-react';
 
 export const loader = elemFactory(Loader),
-    dimmer = elemFactory(Dimmer);
+    dimmer = elemFactory(Dimmer),
+    input = elemFactory(Input),
+    icon = elemFactory(Icon),
+    button = elemFactory(Button);
