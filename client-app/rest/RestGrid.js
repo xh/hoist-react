@@ -28,13 +28,13 @@ export class RestGrid extends Component {
     @observable selectionState = new SelectionState();
 
     render() {
-        const toolbarProp = this.createToolbarProps(),
+        const toolbarProps = this.createToolbarProps(),
             formProps = this.createFormProps();
 
         return vbox({
             flex: 1,
             items: [
-                toolbar(toolbarProp),
+                toolbar(toolbarProps),
                 box({
                     flex: 1,
                     items: [
