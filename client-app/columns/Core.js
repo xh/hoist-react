@@ -4,7 +4,9 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+
 import {fileColFactory} from './Utils.js';
+import {icon} from 'hoist/kit/semantic';
 
 const colFactory = fileColFactory({
     xhId: null,
@@ -16,6 +18,9 @@ export const baseCol = colFactory();
 export const boolCheckCol = colFactory({
     align: 'center',
     width: 34,
+    cellRendererFramework: (params) => {
+        return params.value == true ? icon({name: 'check', color: 'green'}) : icon({name: 'x', color: 'red'});
+    },
     xhExportRenderer: val => !!val
 });
 
