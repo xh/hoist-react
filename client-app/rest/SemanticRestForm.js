@@ -8,8 +8,7 @@
 import {Component} from 'react';
 import {hbox, filler, h1, vbox} from 'hoist/layout';
 import {observer, observable, action, computed} from 'hoist/mobx';
-import {inputGroup, button, label} from 'hoist/kit/blueprint';
-import {semButton, icon} from 'hoist/kit/semantic';
+import {button, input} from 'hoist/kit/semantic';
 import {modal} from 'hoist/kit/material';
 import {merge, isEmpty} from 'lodash';
 import {XH, elemFactory} from 'hoist';
@@ -51,7 +50,12 @@ export class SemanticRestForm extends Component {
                 items: [
                     h1(this.isAdd ? 'Add Record' : 'Edit Record'),
                     filler(),
-                    semButton({items: [icon({name: 'close'}), 'Close'], onClick: this.onClose})
+                    button({
+                        icon: {name: 'close', color: 'red'},
+                        style: {background: 'none'},
+                        compact: true,
+                        onClick: this.onClose
+                    })
                 ]
             })
         );
@@ -60,13 +64,13 @@ export class SemanticRestForm extends Component {
             // need to incorporate a label prop in the editors
             // label should be able to be different from the name/field in rec
             // e.g. 'level' in logs should be labeled 'override'
-            ret.push(label({text: editor.name}));
             ret.push(
-                inputGroup({
+                input({
                     placeholder: editor.name,
                     defaultValue: this.rec[editor.name] || '',
                     onChange: (e) => this.setCloneProp(editor.name, e.target.value),
                     type: editor.type || 'text',
+                    label: {content: editor.name, style: {width: '115px', verticalAlign: 'middle'}},
                     disabled: editor.readOnly,
                     style: {marginBottom: 5}
                 })
@@ -76,7 +80,13 @@ export class SemanticRestForm extends Component {
         ret.push(
             hbox(
                 filler(),
-                button({text: 'Save', iconName: 'tick', disabled: !this.isValid, onClick: this.onSubmit})
+                button({
+                    content: 'Save',
+                    icon: {name: 'check', color: 'green'},
+                    compact: true,
+                    disabled: !this.isValid,
+                    onClick: this.onSubmit
+                })
             )
         );
 
