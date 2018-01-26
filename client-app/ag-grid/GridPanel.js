@@ -36,6 +36,7 @@ class GridPanel extends Component {
             items: elem(AgGridReact, {
                 onRowDataChanged: this.onRowDataChanged,
                 onSelectionChanged: this.onSelectionChanged,
+                onGridSizeChanged: this.onGridSizeChanged,
                 gridOptions: gridOptions,
                 rowData: this.props.rows,
                 items: this.props.columns
@@ -52,6 +53,12 @@ class GridPanel extends Component {
         const sel = this.props.selectionState;
         if (sel) sel.selection = ev.api.getSelectedRows();
     }
+
+    @action
+    onGridSizeChanged = (ev) => {
+        ev.api.sizeColumnsToFit();
+    }
+
 }
 
 export const gridPanel = elemFactory(GridPanel);
