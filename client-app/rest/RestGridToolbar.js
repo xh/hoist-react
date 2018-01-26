@@ -29,7 +29,7 @@ export class RestGridToolbar extends Component {
                         marginBottom: 5,
                         marginLeft: 5
                     },
-                    onClick: this.props.addRec
+                    onClick: this.props.addRecord
                 }),
                 button({
                     text: 'Delete',
@@ -39,14 +39,14 @@ export class RestGridToolbar extends Component {
                         marginBottom: 5,
                         marginLeft: 5
                     },
-                    disabled: !this.props.selectionState.firstRow,
-                    onClick: this.deleteRec
+                    onClick: this.deleteRecord,
+                    disabled: !this.props.selectionState.firstRow
                 })
             ]
         });
     }
 
-    deleteRec = () => {
+    deleteRecord = () => {
         const selection = this.props.selectionState.firstRow,
             method = 'DELETE';
         return XH.fetchJson({

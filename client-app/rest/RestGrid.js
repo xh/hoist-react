@@ -44,7 +44,7 @@ export class RestGrid extends Component {
                             onGridReady: this.onGridReady,
                             selectionState: this.selectionState,
                             gridOptions: {
-                                onRowDoubleClicked: this.onRowDoubleClicked
+                                onRowDoubleClicked: this.editRecord
                             }
                         }),
                         this.useSemantic ? semanticRestForm(formProps) : restForm(formProps)
@@ -58,7 +58,7 @@ export class RestGrid extends Component {
         return {
             selectionState: this.selectionState,
             rec: this.rec,
-            addRec: this.addRec,
+            addRec: this.addRecord,
             url: this.props.url,
             updateRows: this.updateRows
         };
@@ -85,17 +85,17 @@ export class RestGrid extends Component {
     }
 
     @action
-    addRec = () => {
-        this._rec = {};
-    }
-    
-    @action
     completeLoad = (success, vals) => {
         this.rows = success ? vals : [];
     }
 
     @action
-    onRowDoubleClicked = (e) => {
+    addRecord = () => {
+        this._rec = {};
+    }
+
+    @action
+    editRecord= (e) => {
         this._rec = e.data;
     }
 
