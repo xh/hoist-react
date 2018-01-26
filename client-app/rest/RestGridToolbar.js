@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {XH, elemFactory} from 'hoist';
 import {observer} from 'hoist/mobx';
 import {hbox} from 'hoist/layout';
-import {button} from 'hoist/kit/blueprint';
+import {button} from 'hoist/kit/semantic';
 
 
 @observer
@@ -17,13 +17,17 @@ export class RestGridToolbar extends Component {
 
     render() {
         return hbox({
+            cls: 'rest-toolbar',
             style: {
-                background: 'lightgray'
+                background: '#106ba3'
             },
             items: [
                 button({
-                    text: 'Add',
-                    iconName: 'add',
+                    content: 'Add',
+                    size: 'small',
+                    compact: true,
+                    color: 'white',
+                    icon: {name: 'add', color: 'blue'},
                     style: {
                         marginTop: 5,
                         marginBottom: 5,
@@ -32,8 +36,10 @@ export class RestGridToolbar extends Component {
                     onClick: this.props.addRecord
                 }),
                 button({
-                    text: 'Delete',
-                    iconName: 'cross',
+                    content: 'Delete',
+                    size: 'small',
+                    compact: true,
+                    icon: {name: 'x', color: 'red'},
                     style: {
                         marginTop: 5,
                         marginBottom: 5,
