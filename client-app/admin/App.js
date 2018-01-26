@@ -9,7 +9,7 @@ import './App.css';
 import {Component} from 'react';
 import {XH, elem, hoistApp} from 'hoist';
 import {vbox, hbox, box, div, filler, spacer} from 'hoist/layout';
-import {button, tabs2, tab2, icon} from 'hoist/blueprint';
+import {button, tabs, tab, icon} from 'hoist/kit/blueprint';
 import {observer} from 'hoist/mobx';
 
 import {Tab} from './tabs/Tab';
@@ -59,15 +59,14 @@ export class App extends Component {
     }
 
     renderTabs(store) {
-        return tabs2({
+        return tabs({
             id: store.id,
             onChange: store.changeTab,
             selectedTabId: store.selectedTabId,
-            // Blueprint totally bust with vertical tabs, sadly.
-            // vertical: store.orientation === 'v'
+            vertical: store.orientation === 'v',
             items: store.children.map(child => {
                 const panel = child instanceof TabSetStore ? this.renderTabs(child) : elem(Tab, {store: child});
-                return tab2({id: child.id, title: child.id, panel});
+                return tab({id: child.id, title: child.id, panel});
             })
         });
     }

@@ -4,7 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import '@blueprintjs/core/dist/blueprint.css';
+
+import './HoistApp.css';
 
 import 'babel-polyfill';
 import {Component} from 'react';
@@ -40,29 +41,30 @@ export function hoistApp(C) {
         render() {
             const {authUsername, authCompleted, isInitialized} = hoistAppStore;
 
-            if (!authCompleted) return loadMask();
-            if (!authUsername) return elem(LoginPanel);
-            if (!isInitialized) return loadMask();
+            if (!authCompleted) return this.renderPreloadMask();
+            if (!authUsername)  return elem(LoginPanel);
+            if (!isInitialized) return this.renderPreloadMask();
 
-            return viewport({
-                items: [
-                    vbox({
-                        flex: 1,
-                        items: [
-                            elem(ImpersonationBar),
-                            box({
-                                flex: 1,
-                                items: elem(C)
-                            }),
-                            elem(VersionBar)
-                        ]
-                    }),
-                    errorRichAlertDialog()
-                ]
-            });
+            return viewport(
+                vbox({
+                    flex: 1,
+                    items: [
+                        elem(ImpersonationBar),
+                        box({
+                            flex: 1,
+                            items: elem(C)
+                        }),
+                        elem(VersionBar)
+                    ]
+                }),
+                loadMask({promiseState: hoistAppStore.appLoadState}),
+                errorRichAlertDialog()
+            );
         }
 
-
+        renderPreloadMask() {
+            return loadMask({isDisplayed: true});
+        }
     };
 
     return observer(ret);

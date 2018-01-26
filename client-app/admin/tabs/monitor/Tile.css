@@ -1,0 +1,40 @@
+.tile {
+  color: white;
+  min-width: 300px;
+  height:250px;
+  border: 1px solid white;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.tile-name {
+  padding: 8px 10px;
+  font-size: 16px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid white;
+}
+
+.tile-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 8px 10px;
+  position: relative;
+}
+
+.tile-message {
+  flex: 1;
+  margin-top: 4px;
+  padding: 4px 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 1px solid white;
+  border-radius: 3px;
+}
+
+.tile-ok        { background-color: green}
+.tile-warn      { background-color: orange}
+.tile-fail      { background-color: red}
+.tile-inactive  { background-color: gray}
+.tile-unknown   { background-color: gray}

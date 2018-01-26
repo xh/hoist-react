@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {observable, setter, action} from 'hoist/mobx';
+import {observable, setter, action, MultiPromiseState} from 'hoist/mobx';
 import {XH} from 'hoist';
 
 /**
@@ -19,10 +19,18 @@ class HoistAppStore {
     /** Currently authenticated user. **/
     @observable authUsername = null;
 
-    /** Are all Hoist app service successfully initialized? */
+    /** Are all Hoist app services successfully initialized? */
     @setter @observable isInitialized = false;
 
     @observable clientError = null;
+
+    /**
+     * Tracks globally loading promises.
+     *
+     * Applications should bind any async operations that should mask
+     * the entire application to this state.
+     **/
+    @observable appLoadState = new MultiPromiseState();
 
     /**
      * Call this once when application mounted in order to
