@@ -32,6 +32,7 @@ export class SemanticRestForm extends Component {
     }
 
     render() {
+        console.log(this.rec);
         if (!this.rec || !this.isOpen) return null;
 
         return modal({

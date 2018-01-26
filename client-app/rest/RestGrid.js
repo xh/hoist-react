@@ -1,3 +1,10 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2018 Extremely Heavy Industries Inc.
+ */
+
 import {Component} from 'react';
 import {XH, elemFactory} from 'hoist';
 import {SelectionState} from '../utils/SelectionState';
@@ -6,6 +13,7 @@ import {observer, observable, action, toJS} from 'hoist/mobx';
 import {box, vbox, hbox} from 'hoist/layout';
 import {button} from 'hoist/kit/blueprint';
 
+import {toolbar} from 'hoist/rest/RestGridToolbar';
 import {restForm} from 'hoist/rest/RestForm';
 import {semanticRestForm} from 'hoist/rest/SemanticRestForm';
 
@@ -13,23 +21,20 @@ import {semanticRestForm} from 'hoist/rest/SemanticRestForm';
 @observer
 export class RestGrid extends Component {
 
+    useSemantic = true; // temp convenience prop to toggle between semantic ui and blueprint
+
     @observable rows = null;
     @observable _rec = null;
-
     @observable selectionState = new SelectionState();
 
     render() {
-        const formProps = {
-            rec: this._rec,
-            editors: this.props.editors,
-            url: this.props.url,
-            updateRows: this.updateRows
-        };
+        const toolbarProp = this.createToolbarProps(),
+            formProps = this.createFormProps();
 
         return vbox({
             flex: 1,
             items: [
-                this.renderToolbar(),
+                toolbar(toolbarProp),
                 box({
                     flex: 1,
                     items: [
@@ -42,12 +47,30 @@ export class RestGrid extends Component {
                                 onRowDoubleClicked: this.onRowDoubleClicked
                             }
                         }),
-                        // restForm(formProps)
-                        semanticRestForm(formProps)
+                        this.useSemantic ? semanticRestForm(formProps) : restForm(formProps)
                     ]
                 })
             ]
         });
+    }
+
+    createToolbarProps = () => {
+        return {
+            selectionState: this.selectionState,
+            rec: this.rec,
+            addRec: this.addRec,
+            url: this.props.url,
+            updateRows: this.updateRows
+        };
+    }
+
+    createFormProps = () => {
+        return {
+            rec: this._rec,
+            editors: this.props.editors,
+            url: this.props.url,
+            updateRows: this.updateRows
+        };
     }
 
     loadAsync() {
@@ -59,52 +82,6 @@ export class RestGrid extends Component {
                 this.completeLoad(false, e);
                 XH.handleException(e);
             });
-    }
-
-    // factor into own component
-    renderToolbar() {
-        return hbox({
-            // selectionState: this.selectionState, add as prop once this is a stand alone component
-            style: {
-                background: 'lightgray'
-            },
-            items: [
-                button({
-                    text: 'Add',
-                    iconName: 'add',
-                    style: {
-                        marginTop: 5,
-                        marginBottom: 5,
-                        marginLeft: 5
-                    },
-                    onClick: this.addRec
-                }),
-                button({
-                    text: 'Delete',
-                    iconName: 'cross',
-                    style: {
-                        marginTop: 5,
-                        marginBottom: 5,
-                        marginLeft: 5
-                    },
-                    disabled: !this.selectionState.firstRow,
-                    onClick: this.deleteRec
-                })
-            ]
-        });
-    }
-
-    deleteRec = () => {
-        const selection = this.selectionState.firstRow,
-            method = 'DELETE';
-        return XH.fetchJson({
-            url: `${this.props.url}/${selection.id}`,
-            method: method
-        }).then(resp => {
-            this.updateRows(selection, method);
-        }).catch((e) => {
-            console.log(e);
-        });
     }
 
     @action
