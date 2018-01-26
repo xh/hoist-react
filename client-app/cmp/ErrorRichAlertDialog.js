@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {div} from 'hoist/layout';
 
-import {button, dialog } from 'hoist/blueprint';
+import {button, dialog } from 'hoist/kit/blueprint';
 import {action, observer, observable} from 'hoist/mobx';
 import {errorDetailsDialog} from 'hoist/cmp';
 import {hoistAppStore} from '../app/HoistAppStore';
