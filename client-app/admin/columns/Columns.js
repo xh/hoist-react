@@ -91,7 +91,7 @@ export const severity = colFactory({
 export const valueTypeCol = colFactory({
     text: 'Type',
     field: 'valueType',
-    width: 60
+    maxWidth: 60
 });
 
 export const confValCol = colFactory({
