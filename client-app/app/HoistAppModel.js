@@ -5,13 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {observable, setter, action, MultiPromiseState} from 'hoist/mobx';
+import {observable, setter, action, MultiPromiseModel} from 'hoist/mobx';
 import {XH} from 'hoist';
 
 /**
- * Main Store for Managing the loading of a HoistApp
+ * Main Model for Managing the loading of a HoistApp
  */
-class HoistAppStore {
+class HoistAppModel {
 
     /** Has the authentication step completed? **/
     @observable authCompleted = false;
@@ -26,9 +26,9 @@ class HoistAppStore {
      * Tracks globally loading promises.
      *
      * Applications should bind any async operations that should mask
-     * the entire application to this state.
+     * the entire application to this model.
      **/
-    @observable appLoadState = new MultiPromiseState();
+    @observable appLoadModel = new MultiPromiseModel();
 
     /**
      * Call this once when application mounted in order to
@@ -58,4 +58,4 @@ class HoistAppStore {
         }
     }
 }
-export const hoistAppStore = new HoistAppStore();
+export const hoistAppModel = new HoistAppModel();

@@ -15,7 +15,7 @@ import {hocDisplayName} from 'hoist/utils/ReactUtils';
 import {box, viewport, vbox} from 'hoist/layout';
 import {useStrict, observer} from 'hoist/mobx';
 
-import {hoistAppStore} from './HoistAppStore';
+import {hoistAppModel} from './HoistAppModel';
 import {LoginPanel} from './LoginPanel';
 import {ImpersonationBar} from './ImpersonationBar';
 import {VersionBar} from './VersionBar';
@@ -35,11 +35,11 @@ export function hoistApp(C) {
         static displayName = hocDisplayName('HoistApp', C);
 
         componentDidMount() {
-            hoistAppStore.initApp();
+            hoistAppModel.initApp();
         }
 
         render() {
-            const {authUsername, authCompleted, isInitialized} = hoistAppStore;
+            const {authUsername, authCompleted, isInitialized} = hoistAppModel;
 
             if (!authCompleted) return this.renderPreloadMask();
             if (!authUsername)  return elem(LoginPanel);
@@ -57,7 +57,7 @@ export function hoistApp(C) {
                         elem(VersionBar)
                     ]
                 }),
-                loadMask({promiseState: hoistAppStore.appLoadState})
+                loadMask({model: hoistAppModel.appLoadModel})
             );
         }
 

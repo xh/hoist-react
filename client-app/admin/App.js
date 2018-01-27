@@ -13,8 +13,8 @@ import {button, tabs, tab, icon} from 'hoist/kit/blueprint';
 import {observer} from 'hoist/mobx';
 
 import {Tab} from './tabs/Tab';
-import {TabSetStore} from './tabs/TabSetStore';
-import {appStore} from './AppStore';
+import {TabSetModel} from './tabs/TabSetModel';
+import {appModel} from './AppModel';
 
 
 @hoistApp
@@ -29,7 +29,7 @@ export class App extends Component {
                 box({
                     padding: 5,
                     flex: 1,
-                    items: this.renderTabs(appStore.tabs)
+                    items: this.renderTabs(appModel.tabs)
                 })
             ]
         });
@@ -53,19 +53,19 @@ export class App extends Component {
                 spacer({width: 10}),
                 div(`${XH.appName} Admin`),
                 filler(),
-                button({iconName: 'refresh', onClick: appStore.requestRefresh})
+                button({iconName: 'refresh', onClick: appModel.requestRefresh})
             ]
         });
     }
 
-    renderTabs(store) {
+    renderTabs(model) {
         return tabs({
-            id: store.id,
-            onChange: store.changeTab,
-            selectedTabId: store.selectedTabId,
-            vertical: store.orientation === 'v',
-            items: store.children.map(child => {
-                const panel = child instanceof TabSetStore ? this.renderTabs(child) : elem(Tab, {store: child});
+            id: model.id,
+            onChange: model.changeTab,
+            selectedTabId: model.selectedTabId,
+            vertical: model.orientation === 'v',
+            items: model.children.map(child => {
+                const panel = child instanceof TabSetModel ? this.renderTabs(child) : elem(Tab, {model: child});
                 return tab({id: child.id, title: child.id, panel});
             })
         });

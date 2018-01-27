@@ -20,7 +20,7 @@ import {dimmer, loader} from 'hoist/kit/semantic';
  * This Mask currently will occupy the entire viewport.
  * Localized masking will be provided by a future option.
  *
- * The mask can be explicitly shown, or reactively bound to a PromiseState.
+ * The mask can be explicitly shown, or reactively bound to a PromiseModel.
  */
 @observer
 export class LoadMask extends Component {
@@ -29,7 +29,7 @@ export class LoadMask extends Component {
 
     static defaultProps = {
         isDisplayed: false,
-        promiseState: null
+        model: null
     };
 
     render() {
@@ -37,9 +37,9 @@ export class LoadMask extends Component {
     }
 
     renderBlueprint() {
-        const {isDisplayed, promiseState} = this.props;
+        const {isDisplayed, model} = this.props;
         return overlay({
-            isOpen: isDisplayed || promiseState.isPending,
+            isOpen: isDisplayed || model.isPending,
             canEscapeKeyClose: false,
             backdropProps: {
                 style: {backgroundColor: this.BACKGROUND}
@@ -54,18 +54,18 @@ export class LoadMask extends Component {
     }
 
     renderSemantic() {
-        const {isDisplayed, promiseState} = this.props;
+        const {isDisplayed, model} = this.props;
         return dimmer({
-            active: isDisplayed || promiseState.isPending,
+            active: isDisplayed || model.isPending,
             page: true,
             items: loader()
         });
     }
 
     renderMaterial() {
-        const {isDisplayed, promiseState} = this.props;
+        const {isDisplayed, model} = this.props;
         return modal({
-            open: isDisplayed || promiseState.isPending,
+            open: isDisplayed || model.isPending,
             disableEscapeKeyDown: true,
             BackdropProps: {
                 style: {backgroundColor: this.BACKGROUND}

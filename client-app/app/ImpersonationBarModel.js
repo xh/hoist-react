@@ -5,10 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {wait} from 'hoist/promise';
-import {XH, identityService, hoistAppStore} from 'hoist';
+import {XH, identityService, hoistAppModel} from 'hoist';
 import {observable, action} from 'hoist/mobx';
 
-export class ImpersonationBarStore {
+export class ImpersonationBarModel {
     @observable isVisible = false;
 
     @observable targets = null;
@@ -32,7 +32,7 @@ export class ImpersonationBarStore {
         if (this.selectedTarget) {
             wait(1000)
                 .then(() => identityService.impersonateAsync(this.selectedTarget))
-                .bind(hoistAppStore.appLoadState);
+                .bind(hoistAppModel.appLoadModel);
         }
     }
 
@@ -40,7 +40,7 @@ export class ImpersonationBarStore {
         if (identityService.impersonating) {
             wait(1000)
                 .then(() => identityService.endImpersonateAsync())
-                .bind(hoistAppStore.appLoadState);
+                .bind(hoistAppModel.appLoadModel);
         } else {
             this.toggleVisibility();
         }

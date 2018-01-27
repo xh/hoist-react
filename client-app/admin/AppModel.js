@@ -6,8 +6,8 @@
  */
 import {observable, action} from 'hoist/mobx';
 
-import {TabSetStore} from './tabs/TabSetStore';
-import {TabStore} from './tabs/TabStore';
+import {TabSetModel} from './tabs/TabSetModel';
+import {TabModel} from './tabs/TabModel';
 import {AboutPanel} from './tabs/about/AboutPanel';
 import {ActivityPanel} from './tabs/activity/ActivityPanel';
 import {ConfigPanel} from './tabs/configs/ConfigPanel';
@@ -25,7 +25,7 @@ import {ReadmePanel} from './tabs/readme/ReadmePanel';
 import {ServicePanel} from './tabs/services/ServicePanel';
 import {UserPanel} from './tabs/users/UserPanel';
 
-class AppStore {
+class AppModel {
 
     @observable tabs = this.createTabs();
     @observable lastRefreshRequest = null;
@@ -39,35 +39,35 @@ class AppStore {
     // Implementation
     //------------------------
     createTabs() {
-        return new TabSetStore('Root', 'h',
-            new TabSetStore('General', 'v',
-                new TabStore('About', AboutPanel),
-                new TabStore('Config', ConfigPanel),
-                new TabStore('Services', ServicePanel),
-                new TabStore('EhCache', EhCachePanel),
-                new TabStore('Dashboards', DashboardPanel),
-                new TabStore('Users', UserPanel),
-                new TabStore('Readme', ReadmePanel)
+        return new TabSetModel('Root', 'h',
+            new TabSetModel('General', 'v',
+                new TabModel('About', AboutPanel),
+                new TabModel('Config', ConfigPanel),
+                new TabModel('Services', ServicePanel),
+                new TabModel('EhCache', EhCachePanel),
+                new TabModel('Dashboards', DashboardPanel),
+                new TabModel('Users', UserPanel),
+                new TabModel('Readme', ReadmePanel)
             ),
-            new TabSetStore('Logging', 'v',
-                new TabStore('Viewer', LogViewerPanel),
-                new TabStore('Levels', LogLevelPanel)
+            new TabSetModel('Logging', 'v',
+                new TabModel('Viewer', LogViewerPanel),
+                new TabModel('Levels', LogLevelPanel)
             ),
-            new TabSetStore('Monitor', 'v',
-                new TabStore('Current Status', MonitorResultsPanel),
-                new TabStore('Edit Monitors', MonitorEditorPanel)
+            new TabSetModel('Monitor', 'v',
+                new TabModel('Current Status', MonitorResultsPanel),
+                new TabModel('Edit Monitors', MonitorEditorPanel)
             ),
-            new TabSetStore('Client Activity', 'v',
-                new TabStore('Activity', ActivityPanel),
-                new TabStore('Client Errors', ClientErrorPanel),
-                new TabStore('Feedback', FeedbackPanel)
+            new TabSetModel('Client Activity', 'v',
+                new TabModel('Activity', ActivityPanel),
+                new TabModel('Client Errors', ClientErrorPanel),
+                new TabModel('Feedback', FeedbackPanel)
             ),
-            new TabSetStore('Preferences', 'v',
-                new TabStore('Preferences', PreferencePanel),
-                new TabStore('User Preferences', UserPreferencePanel)
+            new TabSetModel('Preferences', 'v',
+                new TabModel('Preferences', PreferencePanel),
+                new TabModel('User Preferences', UserPreferencePanel)
             )
         );
     }
 }
 
-export const appStore = new AppStore();
+export const appModel = new AppModel();

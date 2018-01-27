@@ -9,7 +9,7 @@ import {computed, action, setter, observable} from 'hoist/mobx';
 /**
  * Model for a Tab, representing its content's active load state.
  */
-export class TabStore {
+export class TabModel {
     id = null;
     componentClass = null;
     parent = null;

@@ -11,7 +11,7 @@ import {vbox, hbox, filler, viewport} from 'hoist/layout';
 import {inputGroup, button} from 'hoist/kit/blueprint';
 import {observable, computed, observer, setter} from 'hoist/mobx';
 
-import {hoistAppStore} from './HoistAppStore';
+import {hoistAppModel} from './HoistAppModel';
 
 @observer
 export class LoginPanel extends Component {
@@ -67,9 +67,9 @@ export class LoginPanel extends Component {
                 password: this.password
             }
         }).then(r => {
-            hoistAppStore.markAuthenticatedUser(r.success ? this.username : null);
+            hoistAppModel.markAuthenticatedUser(r.success ? this.username : null);
         }).catch(() => {
-            hoistAppStore.markAuthenticatedUser(null);
+            hoistAppModel.markAuthenticatedUser(null);
         });
     }
 

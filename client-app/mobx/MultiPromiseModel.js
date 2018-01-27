@@ -11,7 +11,7 @@ import {observable, action, computed} from 'hoist/mobx';
 /**
  * Tracks the resoloution state of a stream of promise invocations.
  */
-export class MultiPromiseState {
+export class MultiPromiseModel {
 
     @observable pendingCount = 0;
 
