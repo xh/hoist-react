@@ -10,12 +10,11 @@ import {XH, elemFactory} from 'hoist';
 import {SelectionState} from '../utils/SelectionState';
 import {gridPanel} from 'hoist/ag-grid/GridPanel';
 import {observer, observable, action, toJS} from 'hoist/mobx';
-import {box, vbox, hbox} from 'hoist/layout';
-import {button} from 'hoist/kit/blueprint';
+import {box, vbox} from 'hoist/layout';
 
-import {toolbar} from 'hoist/rest/RestGridToolbar';
-import {restForm} from 'hoist/rest/RestForm';
-import {semanticRestForm} from 'hoist/rest/SemanticRestForm';
+import {toolbar} from './RestGridToolbar';
+import {restForm} from './RestForm';
+import {semanticRestForm} from './SemanticRestForm';
 
 
 @observer
@@ -54,7 +53,7 @@ export class RestGrid extends Component {
         });
     }
 
-    createToolbarProps = () => {
+    createToolbarProps() {
         return {
             selectionState: this.selectionState,
             rec: this.rec,
@@ -64,7 +63,7 @@ export class RestGrid extends Component {
         };
     }
 
-    createFormProps = () => {
+    createFormProps() {
         return {
             rec: this._rec,
             editors: this.props.editors,
@@ -95,20 +94,20 @@ export class RestGrid extends Component {
     }
 
     @action
-    editRecord= (e) => {
+    editRecord = (e) => {
         this._rec = e.data;
     }
 
     @action
     updateRows = (resp, method) => {
-        const idx = this.rows.findIndex(it => it.id == resp.id);
-        if (method == 'POST') {
+        const idx = this.rows.findIndex(it => it.id === resp.id);
+        if (method === 'POST') {
             this.rows.push(resp);
         }
-        if (method == 'PUT') {
+        if (method === 'PUT') {
             this.rows[idx] = resp;
         }
-        if (method == 'DELETE') {
+        if (method === 'DELETE') {
             this.rows.splice(idx, 1);
         }
     }

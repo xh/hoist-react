@@ -41,23 +41,21 @@ export class SemanticRestForm extends Component {
         });
     }
 
-    renderForm = () => {
+    renderForm() {
         const ret = [],
             editors = this.props.editors || [];
 
         ret.push(
-            hbox({
-                items: [
-                    h1(this.isAdd ? 'Add Record' : 'Edit Record'),
-                    filler(),
-                    button({
-                        icon: {name: 'close', color: 'red'},
-                        style: {background: 'none'},
-                        compact: true,
-                        onClick: this.onClose
-                    })
-                ]
-            })
+            hbox(
+                h1(this.isAdd ? 'Add Record' : 'Edit Record'),
+                filler(),
+                button({
+                    icon: {name: 'close', color: 'red'},
+                    style: {background: 'none'},
+                    compact: true,
+                    onClick: this.onClose
+                })
+            )
         );
 
         editors.forEach(editor => {
