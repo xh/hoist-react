@@ -6,11 +6,10 @@
  */
 
 import {Component} from 'react';
-import {XH, elemFactory} from 'hoist';
+import {XH} from 'hoist';
 import {observer} from 'hoist/mobx';
 import {hbox} from 'hoist/layout';
 import {button} from 'hoist/kit/semantic';
-
 
 @observer
 export class RestGridToolbar extends Component {
@@ -26,7 +25,6 @@ export class RestGridToolbar extends Component {
                     content: 'Add',
                     size: 'small',
                     compact: true,
-                    color: 'white',
                     icon: {name: 'add', color: 'blue'},
                     style: {
                         marginTop: 5,
@@ -60,11 +58,6 @@ export class RestGridToolbar extends Component {
             method: method
         }).then(resp => {
             this.props.updateRows(selection, method);
-        }).catch((e) => {
-            console.log(e);
-        });
+        }).catchDefault();
     }
-
 }
-
-export const toolbar = elemFactory(RestGridToolbar);

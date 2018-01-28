@@ -6,21 +6,21 @@
  */
 
 import {Component} from 'react';
-import {XH, elemFactory} from 'hoist';
-import {SelectionState} from '../utils/SelectionState';
+import {XH, elemFactory, elem} from 'hoist';
+import {SelectionState} from 'hoist/utils/SelectionState';
 import {gridPanel} from 'hoist/ag-grid/GridPanel';
 import {observer, observable, action, toJS} from 'hoist/mobx';
 import {box, vbox} from 'hoist/layout';
 
-import {toolbar} from './RestGridToolbar';
-import {restForm} from './RestForm';
-import {semanticRestForm} from './SemanticRestForm';
+import {RestGridToolbar} from './RestGridToolbar';
+import {RestFormBlueprint} from './RestFormBlueprint';
+import {RestFormSemantic} from './RestFormSemantic';
 
 
 @observer
 export class RestGrid extends Component {
 
-    useSemantic = true; // temp convenience prop to toggle between semantic ui and blueprint
+    useSemantic = false;
 
     @observable rows = null;
     @observable _rec = null;
@@ -33,7 +33,7 @@ export class RestGrid extends Component {
         return vbox({
             flex: 1,
             items: [
-                toolbar(toolbarProps),
+                elem(RestGridToolbar, toolbarProps),
                 box({
                     flex: 1,
                     items: [
@@ -46,7 +46,7 @@ export class RestGrid extends Component {
                                 onRowDoubleClicked: this.editRecord
                             }
                         }),
-                        this.useSemantic ? semanticRestForm(formProps) : restForm(formProps)
+                        elem(this.useSemantic ? RestFormSemantic : RestFormBlueprint, formProps)
                     ]
                 })
             ]
@@ -100,15 +100,19 @@ export class RestGrid extends Component {
 
     @action
     updateRows = (resp, method) => {
-        const idx = this.rows.findIndex(it => it.id === resp.id);
-        if (method === 'POST') {
-            this.rows.push(resp);
-        }
-        if (method === 'PUT') {
-            this.rows[idx] = resp;
-        }
-        if (method === 'DELETE') {
-            this.rows.splice(idx, 1);
+        const rows = this.row,
+            idx = rows.findIndex(it => it.id === resp.id);
+        switch (method) {
+            case 'POST':
+                rows.push(resp);
+                break;
+            case 'PUT':
+                rows[idx] = resp;
+                break;
+            case 'DELETE':
+                rows.splice(idx, 1);
+                break;
+            default:
         }
     }
 }

@@ -6,15 +6,14 @@
  */
 
 import {Component} from 'react';
-import {hbox, filler, h1, vbox} from 'hoist/layout';
+import {vbox, div} from 'hoist/layout';
 import {observer, observable, action, computed} from 'hoist/mobx';
-import {inputGroup, button, label} from 'hoist/kit/blueprint';
-import {modal} from 'hoist/kit/material';
+import {inputGroup, button, label, dialog} from 'hoist/kit/blueprint';
 import {merge, isEmpty} from 'lodash';
-import {XH, elemFactory} from 'hoist';
+import {XH} from 'hoist';
 
 @observer
-export class RestForm extends Component {
+export class RestFormBlueprint extends Component {
 
     @observable rec = null;
     @observable recClone = null;
@@ -34,24 +33,32 @@ export class RestForm extends Component {
     render() {
         if (!this.rec || !this.isOpen) return null;
 
-        return modal({
-            open: true,
-            onBackdropClick: this.onClose,
-            items: this.renderForm()
+        return dialog({
+            iconName: 'inbox',
+            isOpen: this.isOpen,
+            onClose: this.onClose,
+            title: this.isAdd ? 'Add Record' : 'Edit Record',
+            items: [
+                div({
+                    cls: 'pt-dialog-body',
+                    items: this.renderForm()
+                }),
+                div({
+                    cls: 'pt-dialog-footer',
+                    items: div({
+                        cls: 'pt-dialog-footer-actions',
+                        items: [
+                            button({text: 'Save', iconName: 'tick', disabled: !this.isValid, onClick: this.onSubmit})
+                        ]
+                    })
+                })
+            ]
         });
     }
 
     renderForm() {
         const ret = [],
             editors = this.props.editors || [];
-
-        ret.push(
-            hbox(
-                h1(this.isAdd ? 'Add Record' : 'Edit Record'),
-                filler(),
-                button({text: 'Close', iconName: 'cross', onClick: this.onClose})
-            )
-        );
 
         editors.forEach(editor => {
             // need to incorporate a label prop in the editors
@@ -70,25 +77,10 @@ export class RestForm extends Component {
             );
         });
 
-        ret.push(
-            hbox(
-                filler(),
-                button({text: 'Save', iconName: 'tick', disabled: !this.isValid, onClick: this.onSubmit})
-            )
-        );
-
         return vbox({
             cls: 'rest-form',
             width: 400,
             padding: 10,
-            position: 'absolute',
-            left: '50%',
-            marginTop: 50,
-            marginLeft: -150,
-            style: {
-                zIndex: '9999',
-                background: 'darkgrey'
-            },
             items: ret
         });
     }
@@ -105,9 +97,7 @@ export class RestForm extends Component {
         }).then(resp => {
             this.props.updateRows(resp.data, method);
             this.onClose();
-        }).catch((e) => {
-            console.log(e);
-        });
+        }).catchDefault();
     }
     
     @action
@@ -127,5 +117,3 @@ export class RestForm extends Component {
         this.recClone[prop] = newVal;
     }
 }
-
-export const restForm = elemFactory(RestForm);

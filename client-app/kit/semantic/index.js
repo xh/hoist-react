@@ -7,7 +7,7 @@
 import 'semantic-ui-css/semantic.min.css';
 
 import {elemFactory} from 'hoist/hyperscript';
-import {Loader, Dimmer, Button, Input, Icon, Popup, Dropdown} from 'semantic-ui-react';
+import {Loader, Dimmer, Button, Input, Icon, Popup, Dropdown, Modal} from 'semantic-ui-react';
 
 export const loader = elemFactory(Loader),
     dimmer = elemFactory(Dimmer),
@@ -15,4 +15,8 @@ export const loader = elemFactory(Loader),
     icon = elemFactory(Icon),
     input = elemFactory(Input),
     popup = elemFactory(Popup),
-    dropdown = elemFactory(Dropdown);
+    dropdown = elemFactory(Dropdown),
+    modal = elemFactory(Modal),
+    modalContent = elemFactory(Modal.Content),
+    modalHeader = elemFactory(Modal.Header),
+    modalActions = elemFactory(Modal.Actions);

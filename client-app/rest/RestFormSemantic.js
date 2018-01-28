@@ -6,15 +6,14 @@
  */
 
 import {Component} from 'react';
-import {hbox, filler, h1, vbox} from 'hoist/layout';
+import {XH} from 'hoist';
+import {vbox} from 'hoist/layout';
 import {observer, observable, action, computed} from 'hoist/mobx';
-import {button, input} from 'hoist/kit/semantic';
-import {modal} from 'hoist/kit/material';
+import {button, input, modal, modalContent, modalActions, modalHeader} from 'hoist/kit/semantic';
 import {merge, isEmpty} from 'lodash';
-import {XH, elemFactory} from 'hoist';
 
 @observer
-export class SemanticRestForm extends Component {
+export class RestFormSemantic extends Component {
 
     @observable rec = null;
     @observable recClone = null;
@@ -36,70 +35,46 @@ export class SemanticRestForm extends Component {
 
         return modal({
             open: true,
-            onBackdropClick: this.onClose,
-            items: this.renderForm()
+            onClose: this.onClose,
+            closeIcon: true,
+            size: 'small',
+            items: [
+                modalHeader(this.isAdd ? 'Add Record' : 'Edit Record'),
+                modalContent(this.renderForm()),
+                modalActions(
+                    button({
+                        content: 'Save',
+                        icon: {name: 'check', color: 'green'},
+                        compact: true,
+                        disabled: !this.isValid,
+                        onClick: this.onSubmit
+                    })
+                )
+            ]
         });
     }
 
     renderForm() {
-        const ret = [],
-            editors = this.props.editors || [];
+        const editors = this.props.editors || [];
 
-        ret.push(
-            hbox(
-                h1(this.isAdd ? 'Add Record' : 'Edit Record'),
-                filler(),
-                button({
-                    icon: {name: 'close', color: 'red'},
-                    style: {background: 'none'},
-                    compact: true,
-                    onClick: this.onClose
-                })
-            )
-        );
-
-        editors.forEach(editor => {
+        const ret = editors.map(editor => {
             // need to incorporate a label prop in the editors
             // label should be able to be different from the name/field in rec
             // e.g. 'level' in logs should be labeled 'override'
-            ret.push(
-                input({
-                    placeholder: editor.name,
-                    defaultValue: this.rec[editor.name] || '',
-                    onChange: (e) => this.setCloneProp(editor.name, e.target.value),
-                    type: editor.type || 'text',
-                    label: {content: editor.name, style: {width: '115px', verticalAlign: 'middle'}},
-                    disabled: editor.readOnly,
-                    style: {marginBottom: 5}
-                })
-            );
+            return input({
+                placeholder: editor.name,
+                defaultValue: this.rec[editor.name] || '',
+                onChange: (e) => this.setCloneProp(editor.name, e.target.value),
+                type: editor.type || 'text',
+                label: {content: editor.name, style: {width: '115px', verticalAlign: 'middle'}},
+                disabled: editor.readOnly,
+                style: {marginBottom: 5}
+            });
         });
-
-        ret.push(
-            hbox(
-                filler(),
-                button({
-                    content: 'Save',
-                    icon: {name: 'check', color: 'green'},
-                    compact: true,
-                    disabled: !this.isValid,
-                    onClick: this.onSubmit
-                })
-            )
-        );
 
         return vbox({
             cls: 'rest-form',
-            width: 400,
             padding: 10,
-            position: 'absolute',
-            left: '50%',
-            marginTop: 50,
-            marginLeft: -150,
-            style: {
-                zIndex: '9999',
-                background: 'darkgrey'
-            },
             items: ret
         });
     }
@@ -109,16 +84,14 @@ export class SemanticRestForm extends Component {
     //--------------------------------
     onSubmit = () => {
         const method = this.isAdd ? 'POST' : 'PUT';  // RestController's actions are mapped based on type of request. POST gets us Create, PUT gets us Update
-        return XH.fetchJson({
+        XH.fetchJson({
             url: this.props.url,
             method: method,
             params: {data: JSON.stringify(this.recClone)} // for update maybe only send dirty fields
         }).then(resp => {
             this.props.updateRows(resp.data, method);
             this.onClose();
-        }).catch((e) => {
-            console.log(e);
-        });
+        }).catchDefault();
     }
 
     @action
@@ -138,5 +111,3 @@ export class SemanticRestForm extends Component {
         this.recClone[prop] = newVal;
     }
 }
-
-export const semanticRestForm = elemFactory(SemanticRestForm);

@@ -6,10 +6,9 @@
  */
 
 import {Component} from 'react';
-import {box, viewport} from 'hoist/layout';
+import {viewport} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
 
-import {modal, circularProgress} from 'hoist/kit/material';
 import {overlay, spinner} from 'hoist/kit/blueprint';
 import {dimmer, loader} from 'hoist/kit/semantic';
 
@@ -59,23 +58,6 @@ export class LoadMask extends Component {
             active: isDisplayed || model.isPending,
             page: true,
             items: loader()
-        });
-    }
-
-    renderMaterial() {
-        const {isDisplayed, model} = this.props;
-        return modal({
-            open: isDisplayed || model.isPending,
-            disableEscapeKeyDown: true,
-            BackdropProps: {
-                style: {backgroundColor: this.BACKGROUND}
-            },
-            items: box({
-                flex: 1,
-                alignItems: 'center',
-                justifyContent: 'center',
-                items: circularProgress()
-            })
         });
     }
 }
