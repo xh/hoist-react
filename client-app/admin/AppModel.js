@@ -6,8 +6,8 @@
  */
 import {observable, action} from 'hoist/mobx';
 
-import {TabSetModel} from './tabs/TabSetModel';
-import {TabModel} from './tabs/TabModel';
+import {TabContainerModel} from './tabs/TabContainerModel';
+import {TabPaneModel} from './tabs/TabPaneModel';
 import {AboutPanel} from './tabs/about/AboutPanel';
 import {ActivityPanel} from './tabs/activity/ActivityPanel';
 import {ConfigPanel} from './tabs/configs/ConfigPanel';
@@ -39,32 +39,32 @@ class AppModel {
     // Implementation
     //------------------------
     createTabs() {
-        return new TabSetModel('Root', 'h',
-            new TabSetModel('General', 'v',
-                new TabModel('About', AboutPanel),
-                new TabModel('Config', ConfigPanel),
-                new TabModel('Services', ServicePanel),
-                new TabModel('EhCache', EhCachePanel),
-                new TabModel('Dashboards', DashboardPanel),
-                new TabModel('Users', UserPanel),
-                new TabModel('Readme', ReadmePanel)
+        return new TabContainerModel('Root', 'h',
+            new TabContainerModel('General', 'v',
+                new TabPaneModel('About', AboutPanel),
+                new TabPaneModel('Config', ConfigPanel),
+                new TabPaneModel('Services', ServicePanel),
+                new TabPaneModel('EhCache', EhCachePanel),
+                new TabPaneModel('Dashboards', DashboardPanel),
+                new TabPaneModel('Users', UserPanel),
+                new TabPaneModel('Readme', ReadmePanel)
             ),
-            new TabSetModel('Logging', 'v',
-                new TabModel('Viewer', LogViewerPanel),
-                new TabModel('Levels', LogLevelPanel)
+            new TabContainerModel('Logging', 'v',
+                new TabPaneModel('Viewer', LogViewerPanel),
+                new TabPaneModel('Levels', LogLevelPanel)
             ),
-            new TabSetModel('Monitor', 'v',
-                new TabModel('Current Status', MonitorResultsPanel),
-                new TabModel('Edit Monitors', MonitorEditorPanel)
+            new TabContainerModel('Monitor', 'v',
+                new TabPaneModel('Current Status', MonitorResultsPanel),
+                new TabPaneModel('Edit Monitors', MonitorEditorPanel)
             ),
-            new TabSetModel('Client Activity', 'v',
-                new TabModel('Activity', ActivityPanel),
-                new TabModel('Client Errors', ClientErrorPanel),
-                new TabModel('Feedback', FeedbackPanel)
+            new TabContainerModel('Client Activity', 'v',
+                new TabPaneModel('Activity', ActivityPanel),
+                new TabPaneModel('Client Errors', ClientErrorPanel),
+                new TabPaneModel('Feedback', FeedbackPanel)
             ),
-            new TabSetModel('Preferences', 'v',
-                new TabModel('Preferences', PreferencePanel),
-                new TabModel('User Preferences', UserPreferencePanel)
+            new TabContainerModel('Preferences', 'v',
+                new TabPaneModel('Preferences', PreferencePanel),
+                new TabPaneModel('User Preferences', UserPreferencePanel)
             )
         );
     }

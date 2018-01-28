@@ -8,13 +8,11 @@
 import {Component} from 'react';
 import {XH, elem, hoistApp} from 'hoist';
 import {vbox, hbox, box, div, filler, spacer} from 'hoist/layout';
-import {button, tabs, tab, icon} from 'hoist/kit/blueprint';
+import {button, icon} from 'hoist/kit/blueprint';
 import {observer} from 'hoist/mobx';
 
-import {Tab} from './tabs/Tab';
-import {TabSetModel} from './tabs/TabSetModel';
+import {TabContainer} from './tabs/TabContainer';
 import {appModel} from './AppModel';
-
 
 @hoistApp
 @observer
@@ -28,7 +26,7 @@ export class App extends Component {
                 box({
                     padding: 5,
                     flex: 1,
-                    items: this.renderTabs(appModel.tabs)
+                    items: elem(TabContainer, {model: appModel.tabs})
                 })
             ]
         });
@@ -54,19 +52,6 @@ export class App extends Component {
                 filler(),
                 button({iconName: 'refresh', onClick: appModel.requestRefresh})
             ]
-        });
-    }
-
-    renderTabs(model) {
-        return tabs({
-            id: model.id,
-            onChange: model.changeTab,
-            selectedTabId: model.selectedTabId,
-            vertical: model.orientation === 'v',
-            items: model.children.map(child => {
-                const panel = child instanceof TabSetModel ? this.renderTabs(child) : elem(Tab, {model: child});
-                return tab({id: child.id, title: child.id, panel});
-            })
         });
     }
 }

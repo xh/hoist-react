@@ -7,9 +7,9 @@
 import {computed, action, observable} from 'hoist/mobx';
 
 /**
- * Model for a TabSet, representing its items, layout, and currently selected Tab.
+ * Model for a TabContainer, representing its , layout, and currently selected Tab.
  */
-export class TabSetModel {
+export class TabContainerModel {
     id = null;
     orientation = 'v';
     children = [];

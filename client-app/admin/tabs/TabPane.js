@@ -8,6 +8,7 @@ import {Component} from 'react';
 import {elem, Ref} from 'hoist';
 import {box} from 'hoist/layout';
 import {autorun, observer} from 'hoist/mobx';
+
 import {appModel} from '../AppModel';
 
 /**
@@ -22,7 +23,7 @@ import {appModel} from '../AppModel';
  * generally leave the calling of that method to this class.
  */
 @observer
-export class Tab extends Component {
+export class TabPane extends Component {
 
     ref = new Ref();
 
