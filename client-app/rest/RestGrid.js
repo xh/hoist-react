@@ -5,6 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import './styles.css';
+
 import {Component} from 'react';
 import {XH, elemFactory, elem} from 'hoist';
 import {SelectionState} from 'hoist/utils/SelectionState';
@@ -20,7 +22,7 @@ import {RestFormSemantic} from './RestFormSemantic';
 @observer
 export class RestGrid extends Component {
 
-    useSemantic = false;
+    useSemantic = true;
 
     @observable rows = null;
     @observable _rec = null;

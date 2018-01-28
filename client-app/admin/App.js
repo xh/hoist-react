@@ -4,7 +4,6 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import './App.css';
 
 import {Component} from 'react';
 import {XH, elem, hoistApp} from 'hoist';
