@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {XH} from 'hoist';
 import {vbox} from 'hoist/layout';
-import {observer, observable, action, computed} from 'hoist/mobx';
+import {setter, observer, observable, action, computed} from 'hoist/mobx';
 import {button, input, modal, modalContent, modalActions, modalHeader} from 'hoist/kit/semantic';
 import {merge, isEmpty} from 'lodash';
 
@@ -17,7 +17,7 @@ export class RestFormSemantic extends Component {
 
     @observable rec = null;
     @observable recClone = null;
-    @observable isOpen = true;
+    @setter @observable isOpen = true;
 
     @computed get isAdd() {
         return isEmpty(this.rec);
@@ -35,7 +35,7 @@ export class RestFormSemantic extends Component {
 
         return modal({
             open: true,
-            onClose: this.onClose,
+            onClose: this.close,
             closeIcon: true,
             size: 'small',
             items: [
@@ -90,18 +90,18 @@ export class RestFormSemantic extends Component {
             params: {data: JSON.stringify(this.recClone)} // for update maybe only send dirty fields
         }).then(resp => {
             this.props.updateRows(resp.data, method);
-            this.onClose();
+            this.close();
         }).catchDefault();
     }
 
     @action
-    onClose = () => {
-        this.isOpen = false;
+    close = () => {
+        this.setIsOpen(false);
     }
 
     @action
     componentWillReceiveProps(nextProps) {
-        this.isOpen = true;
+        this.setIsOpen(true);
         this.rec = nextProps.rec;
         this.recClone = merge({}, this.rec);
     }

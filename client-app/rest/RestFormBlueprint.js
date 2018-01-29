@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {vbox, div} from 'hoist/layout';
-import {observer, observable, action, computed} from 'hoist/mobx';
+import {setter, observer, observable, action, computed} from 'hoist/mobx';
 import {inputGroup, button, label, dialog} from 'hoist/kit/blueprint';
 import {merge, isEmpty} from 'lodash';
 import {XH} from 'hoist';
@@ -17,7 +17,7 @@ export class RestFormBlueprint extends Component {
 
     @observable rec = null;
     @observable recClone = null;
-    @observable isOpen = true;
+    @setter @observable isOpen = true;
 
     @computed get isAdd() {
         return isEmpty(this.rec);
@@ -36,7 +36,7 @@ export class RestFormBlueprint extends Component {
         return dialog({
             iconName: 'inbox',
             isOpen: this.isOpen,
-            onClose: this.onClose,
+            onClose: this.close,
             title: this.isAdd ? 'Add Record' : 'Edit Record',
             items: [
                 div({
@@ -96,18 +96,18 @@ export class RestFormBlueprint extends Component {
             params: {data: JSON.stringify(this.recClone)} // for update maybe only send dirty fields
         }).then(resp => {
             this.props.updateRows(resp.data, method);
-            this.onClose();
+            this.close();
         }).catchDefault();
     }
     
     @action
-    onClose = () => {
-        this.isOpen = false;
+    close = () => {
+        this.setIsOpen(false);
     }
 
     @action
     componentWillReceiveProps(nextProps) {
-        this.isOpen = true;
+        this.setIsOpen(true);
         this.rec = nextProps.rec;
         this.recClone = merge({}, this.rec);
     }
