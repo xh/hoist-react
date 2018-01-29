@@ -9,7 +9,7 @@ import './styles.css';
 
 import {Component} from 'react';
 import {XH, elemFactory, elem} from 'hoist';
-import {SelectionState} from 'hoist/utils/SelectionState';
+import {SelectionModel} from 'hoist/utils/SelectionModel';
 import {gridPanel} from 'hoist/ag-grid/GridPanel';
 import {observer, observable, action, toJS} from 'hoist/mobx';
 import {box, vbox} from 'hoist/layout';
@@ -26,7 +26,7 @@ export class RestGrid extends Component {
 
     @observable rows = null;
     @observable _rec = null;
-    @observable selectionState = new SelectionState();
+    @observable selectionModel = new SelectionModel();
 
     render() {
         const toolbarProps = this.createToolbarProps(),
@@ -43,7 +43,7 @@ export class RestGrid extends Component {
                             rows: toJS(this.rows),
                             columns: this.props.columns,
                             onGridReady: this.onGridReady,
-                            selectionState: this.selectionState,
+                            selectionModel: this.selectionModel,
                             gridOptions: {
                                 onRowDoubleClicked: this.editRecord
                             }
@@ -57,7 +57,7 @@ export class RestGrid extends Component {
 
     createToolbarProps() {
         return {
-            selectionState: this.selectionState,
+            selectionModel: this.selectionModel,
             addRec: this.addRecord,
             url: this.props.url,
             updateRows: this.updateRows

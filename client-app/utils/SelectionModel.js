@@ -10,11 +10,11 @@ import {setter, observable, computed} from 'hoist/mobx';
 /**
  * Tracks the selection in a GridPanel.
  */
-export class SelectionState {
+export class SelectionModel {
 
     @setter @observable selection = [];
 
     @computed get firstRow() {
-        return this.selection[0];
+        return this.selection.length > 0 ? this.selection[0] : null;
     }
 }

@@ -54,7 +54,7 @@ class GridPanel extends Component {
 
     @action
     onSelectionChanged = (ev) => {
-        const selState = this.props.selectionState;
+        const selState = this.props.selectionModel;
         if (selState) selState.setSelection(ev.api.getSelectedRows());
     }
 

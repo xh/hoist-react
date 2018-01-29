@@ -44,14 +44,14 @@ export class RestGridToolbar extends Component {
                         marginLeft: 5
                     },
                     onClick: this.deleteRecord,
-                    disabled: !this.props.selectionState.firstRow
+                    disabled: !this.props.selectionModel.firstRow
                 })
             ]
         });
     }
 
     deleteRecord = () => {
-        const selection = this.props.selectionState.firstRow,
+        const selection = this.props.selectionModel.firstRow,
             method = 'DELETE';
         return XH.fetchJson({
             url: `${this.props.url}/${selection.id}`,
