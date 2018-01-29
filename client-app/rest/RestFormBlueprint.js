@@ -9,19 +9,14 @@ import {Component} from 'react';
 import {vbox, div} from 'hoist/layout';
 import {setter, observer, observable, action, computed} from 'hoist/mobx';
 import {inputGroup, button, label, dialog} from 'hoist/kit/blueprint';
-import {merge, isEmpty} from 'lodash';
-import {XH} from 'hoist';
+import {merge} from 'lodash';
 
 @observer
 export class RestFormBlueprint extends Component {
 
-    @observable rec = null;
     @observable recClone = null;
     @setter @observable isOpen = true;
 
-    @computed get isAdd() {
-        return isEmpty(this.rec);
-    }
 
     @computed get isValid() {
         // how can we dynamically set the logic here? maybe loop through editors prop
@@ -31,13 +26,15 @@ export class RestFormBlueprint extends Component {
     }
 
     render() {
-        if (!this.rec || !this.isOpen) return null;
+        if (!this.props.rec || !this.isOpen) return null;
+
+        const restModel = this.props.restModel;
 
         return dialog({
             iconName: 'inbox',
             isOpen: this.isOpen,
             onClose: this.close,
-            title: this.isAdd ? 'Add Record' : 'Edit Record',
+            title: restModel.isAdd ? 'Add Record' : 'Edit Record',
             items: [
                 div({
                     cls: 'pt-dialog-body',
@@ -48,7 +45,12 @@ export class RestFormBlueprint extends Component {
                     items: div({
                         cls: 'pt-dialog-footer-actions',
                         items: [
-                            button({text: 'Save', iconName: 'tick', disabled: !this.isValid, onClick: this.saveRecord})
+                            button({
+                                text: 'Save',
+                                iconName: 'tick',
+                                disabled: !this.isValid,
+                                onClick: () => restModel.saveRecord(this.recClone)
+                            })
                         ]
                     })
                 })
@@ -68,7 +70,7 @@ export class RestFormBlueprint extends Component {
             ret.push(
                 inputGroup({
                     placeholder: editor.name,
-                    defaultValue: this.rec[editor.name] || '',
+                    defaultValue: this.props.rec[editor.name] || '',
                     onChange: (e) => this.setCloneProp(editor.name, e.target.value),
                     type: editor.type || 'text',
                     disabled: editor.readOnly,
@@ -88,19 +90,6 @@ export class RestFormBlueprint extends Component {
     //--------------------------------
     // Implementation
     //--------------------------------
-    saveRecord = () => {
-        const method = this.isAdd ? 'POST' : 'PUT';  // RestController's actions are mapped based on type of request. POST gets us Create, PUT gets us Update
-        return XH.fetchJson({
-            url: this.props.url,
-            method: method,
-            params: {data: JSON.stringify(this.recClone)} // for update maybe only send dirty fields
-        }).then(resp => {
-            this.props.updateRows(resp.data, method);
-            this.close();
-        }).catchDefault();
-    }
-    
-    @action
     close = () => {
         this.setIsOpen(false);
     }
@@ -108,8 +97,7 @@ export class RestFormBlueprint extends Component {
     @action
     componentWillReceiveProps(nextProps) {
         this.setIsOpen(true);
-        this.rec = nextProps.rec;
-        this.recClone = merge({}, this.rec);
+        this.recClone = merge({}, nextProps.rec);
     }
 
     @action

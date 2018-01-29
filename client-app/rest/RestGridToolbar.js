@@ -6,7 +6,6 @@
  */
 
 import {Component} from 'react';
-import {XH} from 'hoist';
 import {observer} from 'hoist/mobx';
 import {hbox} from 'hoist/layout';
 import {button} from 'hoist/kit/semantic';
@@ -15,6 +14,8 @@ import {button} from 'hoist/kit/semantic';
 export class RestGridToolbar extends Component {
 
     render() {
+        const selModel = this.props.selectionModel,
+            restModel = this.props.restModel;
         return hbox({
             cls: 'rest-toolbar',
             style: {
@@ -31,7 +32,7 @@ export class RestGridToolbar extends Component {
                         marginBottom: 5,
                         marginLeft: 5
                     },
-                    onClick: this.props.addRecord
+                    onClick: restModel.addRecord
                 }),
                 button({
                     content: 'Delete',
@@ -43,21 +44,10 @@ export class RestGridToolbar extends Component {
                         marginBottom: 5,
                         marginLeft: 5
                     },
-                    onClick: this.deleteRecord,
-                    disabled: !this.props.selectionModel.firstRow
+                    onClick: () => restModel.deleteRecord(selModel.firstRow),
+                    disabled: !selModel.firstRow
                 })
             ]
         });
-    }
-
-    deleteRecord = () => {
-        const selection = this.props.selectionModel.firstRow,
-            method = 'DELETE';
-        return XH.fetchJson({
-            url: `${this.props.url}/${selection.id}`,
-            method: method
-        }).then(resp => {
-            this.props.updateRows(selection, method);
-        }).catchDefault();
     }
 }

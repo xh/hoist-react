@@ -6,22 +6,16 @@
  */
 
 import {Component} from 'react';
-import {XH} from 'hoist';
 import {vbox} from 'hoist/layout';
 import {setter, observer, observable, action, computed} from 'hoist/mobx';
 import {button, input, modal, modalContent, modalActions, modalHeader} from 'hoist/kit/semantic';
-import {merge, isEmpty} from 'lodash';
+import {merge} from 'lodash';
 
 @observer
 export class RestFormSemantic extends Component {
 
-    @observable rec = null;
     @observable recClone = null;
     @setter @observable isOpen = true;
-
-    @computed get isAdd() {
-        return isEmpty(this.rec);
-    }
 
     @computed get isValid() {
         // how can we dynamically set the logic here? maybe loop through editors prop
@@ -31,7 +25,9 @@ export class RestFormSemantic extends Component {
     }
 
     render() {
-        if (!this.rec || !this.isOpen) return null;
+        if (!this.props.rec || !this.isOpen) return null;
+
+        const restModel = this.props.restModel;
 
         return modal({
             open: true,
@@ -39,7 +35,7 @@ export class RestFormSemantic extends Component {
             closeIcon: true,
             size: 'small',
             items: [
-                modalHeader(this.isAdd ? 'Add Record' : 'Edit Record'),
+                modalHeader(restModel.isAdd ? 'Add Record' : 'Edit Record'),
                 modalContent(this.renderForm()),
                 modalActions(
                     button({
@@ -47,7 +43,7 @@ export class RestFormSemantic extends Component {
                         icon: {name: 'check', color: 'green'},
                         compact: true,
                         disabled: !this.isValid,
-                        onClick: this.saveRecord
+                        onClick: () => restModel.saveRecord(this.recClone)
                     })
                 )
             ]
@@ -63,7 +59,7 @@ export class RestFormSemantic extends Component {
             // e.g. 'level' in logs should be labeled 'override'
             return input({
                 placeholder: editor.name,
-                defaultValue: this.rec[editor.name] || '',
+                defaultValue: this.props.rec[editor.name] || '',
                 onChange: (e) => this.setCloneProp(editor.name, e.target.value),
                 type: editor.type || 'text',
                 label: {content: editor.name, style: {width: '115px', verticalAlign: 'middle'}},
@@ -82,19 +78,6 @@ export class RestFormSemantic extends Component {
     //--------------------------------
     // Implementation
     //--------------------------------
-    saveRecord = () => {
-        const method = this.isAdd ? 'POST' : 'PUT';  // RestController's actions are mapped based on type of request. POST gets us Create, PUT gets us Update
-        XH.fetchJson({
-            url: this.props.url,
-            method: method,
-            params: {data: JSON.stringify(this.recClone)} // for update maybe only send dirty fields
-        }).then(resp => {
-            this.props.updateRows(resp.data, method);
-            this.close();
-        }).catchDefault();
-    }
-
-    @action
     close = () => {
         this.setIsOpen(false);
     }
@@ -102,8 +85,7 @@ export class RestFormSemantic extends Component {
     @action
     componentWillReceiveProps(nextProps) {
         this.setIsOpen(true);
-        this.rec = nextProps.rec;
-        this.recClone = merge({}, this.rec);
+        this.recClone = merge({}, nextProps.rec);
     }
 
     @action

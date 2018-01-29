@@ -10,8 +10,9 @@ import './styles.css';
 import {Component} from 'react';
 import {XH, elemFactory, elem} from 'hoist';
 import {SelectionModel} from 'hoist/utils/SelectionModel';
+import {RestModel} from './RestModel';
 import {gridPanel} from 'hoist/ag-grid/GridPanel';
-import {observer, observable, action, toJS} from 'hoist/mobx';
+import {observer, observable, toJS} from 'hoist/mobx';
 import {box, vbox} from 'hoist/layout';
 
 import {RestGridToolbar} from './RestGridToolbar';
@@ -24,8 +25,7 @@ export class RestGrid extends Component {
 
     useSemantic = true;
 
-    @observable rows = null;
-    @observable _rec = null;
+    @observable restModel = new RestModel({url: this.props.url});
     @observable selectionModel = new SelectionModel();
 
     render() {
@@ -35,17 +35,20 @@ export class RestGrid extends Component {
         return vbox({
             flex: 1,
             items: [
+                // wouldn't it be cleaner/clearer to use the elemFactory at the bottom of files,
+                // then just pass the props to the clearly named variable on inclusion
+                // e.g. restGridToolbar(toolbarProps)
                 elem(RestGridToolbar, toolbarProps),
                 box({
                     flex: 1,
                     items: [
                         gridPanel({
-                            rows: toJS(this.rows),
+                            rows: toJS(this.restModel.rows),
                             columns: this.props.columns,
                             onGridReady: this.onGridReady,
                             selectionModel: this.selectionModel,
                             gridOptions: {
-                                onRowDoubleClicked: this.editRecord
+                                onRowDoubleClicked: this.restModel.editRecord
                             }
                         }),
                         elem(this.useSemantic ? RestFormSemantic : RestFormBlueprint, formProps)
@@ -53,24 +56,6 @@ export class RestGrid extends Component {
                 })
             ]
         });
-    }
-
-    createToolbarProps() {
-        return {
-            selectionModel: this.selectionModel,
-            addRec: this.addRecord,
-            url: this.props.url,
-            updateRows: this.updateRows
-        };
-    }
-
-    createFormProps() {
-        return {
-            rec: this._rec,
-            editors: this.props.editors,
-            url: this.props.url,
-            updateRows: this.updateRows
-        };
     }
 
     loadAsync() {
@@ -84,38 +69,28 @@ export class RestGrid extends Component {
             });
     }
 
-    @action
+    //-----------------
+    // Implementation
+    //-----------------
     completeLoad = (success, vals) => {
-        this.rows = success ? vals : [];
+        this.restModel.setRows(success ? vals : []);
     }
 
-    @action
-    addRecord = () => {
-        this._rec = {};
+    createToolbarProps() {
+        return {
+            restModel: this.restModel,
+            selectionModel: this.selectionModel
+        };
     }
 
-    @action
-    editRecord = (e) => {
-        this._rec = e.data;
-    }
-
-    @action
-    updateRows = (resp, method) => {
-        const rows = this.rows,
-            idx = rows.findIndex(it => it.id === resp.id);
-        switch (method) {
-            case 'POST':
-                rows.push(resp);
-                break;
-            case 'PUT':
-                rows[idx] = resp;
-                break;
-            case 'DELETE':
-                rows.splice(idx, 1);
-                break;
-            default:
-        }
+    createFormProps() {
+        const restModel = this.restModel;
+        return {
+            restModel: restModel,
+            rec: restModel.rec, // this is key to getting mobx to rerender on change
+            editors: this.props.editors
+        };
     }
 }
 
-export const restGrid = elemFactory(RestGrid);
+export const restGrid = elemFactory(RestGrid); // like this
