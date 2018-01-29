@@ -15,6 +15,6 @@ export class SelectionModel {
     @setter @observable selection = [];
 
     @computed get firstRow() {
-        return this.selection.length > 0 ? this.selection[0] : null;
+        return this.selection.length ? this.selection[0] : null;
     }
 }
