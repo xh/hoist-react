@@ -18,20 +18,13 @@ export class MonitorResultsPanel extends Component {
     @observable results = [];
 
     render() {
-        return box(
-            box({
-                overflow: 'scroll',
-                flexDirection: 'row',
-                flexWrap: 'wrap',
-                alignContent: 'flex-start',
-                style: {
-                    color: 'white',
-                    border: '1px solid white',
-                    borderRadius: '3px'
-                },
-                items: this.results.map(it => elem(Tile, {check: it, key: it.name}))
-            })
-        );
+        return box({
+            overflow: 'auto',
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            alignContent: 'flex-start',
+            items: this.results.map(it => elem(Tile, {check: it, key: it.name}))
+        });
     }
 
     @action
