@@ -5,14 +5,14 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {observable, computed} from 'hoist/mobx';
+import {setter, observable, computed} from 'hoist/mobx';
 
 /**
  * Tracks the selection in a GridPanel.
  */
 export class SelectionState {
 
-    @observable selection = [];
+    @setter @observable selection = [];
 
     @computed get firstRow() {
         return this.selection[0];

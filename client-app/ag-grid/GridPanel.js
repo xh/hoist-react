@@ -48,15 +48,14 @@ class GridPanel extends Component {
         ev.api.sizeColumnsToFit();
     }
 
-    @action
-    onSelectionChanged = (ev) => {
-        const sel = this.props.selectionState;
-        if (sel) sel.selection = ev.api.getSelectedRows();
+    onGridSizeChanged = (ev) => {
+        ev.api.sizeColumnsToFit();
     }
 
     @action
-    onGridSizeChanged = (ev) => {
-        ev.api.sizeColumnsToFit();
+    onSelectionChanged = (ev) => {
+        const selState = this.props.selectionState;
+        if (selState) selState.setSelection(ev.api.getSelectedRows());
     }
 
 }

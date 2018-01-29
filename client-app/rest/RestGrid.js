@@ -58,7 +58,6 @@ export class RestGrid extends Component {
     createToolbarProps() {
         return {
             selectionState: this.selectionState,
-            rec: this.rec,
             addRec: this.addRecord,
             url: this.props.url,
             updateRows: this.updateRows
@@ -102,7 +101,7 @@ export class RestGrid extends Component {
 
     @action
     updateRows = (resp, method) => {
-        const rows = this.row,
+        const rows = this.rows,
             idx = rows.findIndex(it => it.id === resp.id);
         switch (method) {
             case 'POST':
