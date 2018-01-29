@@ -13,5 +13,5 @@
 export * from 'hoist/hyperscript';
 export * from 'hoist/utils/Ref';
 export * from 'hoist/app/HoistApp';
-export * from 'hoist/app/HoistAppStore';
+export * from 'hoist/app/HoistAppModel';
 export * from 'hoist/app/XH';

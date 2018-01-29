@@ -5,23 +5,24 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import './styles.css';
+
 import {Component} from 'react';
-import {XH, elemFactory} from 'hoist';
-import {SelectionState} from '../utils/SelectionState';
+import {XH, elemFactory, elem} from 'hoist';
+import {SelectionState} from 'hoist/utils/SelectionState';
 import {gridPanel} from 'hoist/ag-grid/GridPanel';
 import {observer, observable, action, toJS} from 'hoist/mobx';
-import {box, vbox, hbox} from 'hoist/layout';
-import {button} from 'hoist/kit/blueprint';
+import {box, vbox} from 'hoist/layout';
 
-import {toolbar} from 'hoist/rest/RestGridToolbar';
-import {restForm} from 'hoist/rest/RestForm';
-import {semanticRestForm} from 'hoist/rest/SemanticRestForm';
+import {RestGridToolbar} from './RestGridToolbar';
+import {RestFormBlueprint} from './RestFormBlueprint';
+import {RestFormSemantic} from './RestFormSemantic';
 
 
 @observer
 export class RestGrid extends Component {
 
-    useSemantic = true; // temp convenience prop to toggle between semantic ui and blueprint
+    useSemantic = true;
 
     @observable rows = null;
     @observable _rec = null;
@@ -34,7 +35,7 @@ export class RestGrid extends Component {
         return vbox({
             flex: 1,
             items: [
-                toolbar(toolbarProps),
+                elem(RestGridToolbar, toolbarProps),
                 box({
                     flex: 1,
                     items: [
@@ -47,14 +48,14 @@ export class RestGrid extends Component {
                                 onRowDoubleClicked: this.editRecord
                             }
                         }),
-                        this.useSemantic ? semanticRestForm(formProps) : restForm(formProps)
+                        elem(this.useSemantic ? RestFormSemantic : RestFormBlueprint, formProps)
                     ]
                 })
             ]
         });
     }
 
-    createToolbarProps = () => {
+    createToolbarProps() {
         return {
             selectionState: this.selectionState,
             rec: this.rec,
@@ -64,7 +65,7 @@ export class RestGrid extends Component {
         };
     }
 
-    createFormProps = () => {
+    createFormProps() {
         return {
             rec: this._rec,
             editors: this.props.editors,
@@ -95,21 +96,25 @@ export class RestGrid extends Component {
     }
 
     @action
-    editRecord= (e) => {
+    editRecord = (e) => {
         this._rec = e.data;
     }
 
     @action
     updateRows = (resp, method) => {
-        const idx = this.rows.findIndex(it => it.id == resp.id);
-        if (method == 'POST') {
-            this.rows.push(resp);
-        }
-        if (method == 'PUT') {
-            this.rows[idx] = resp;
-        }
-        if (method == 'DELETE') {
-            this.rows.splice(idx, 1);
+        const rows = this.row,
+            idx = rows.findIndex(it => it.id === resp.id);
+        switch (method) {
+            case 'POST':
+                rows.push(resp);
+                break;
+            case 'PUT':
+                rows[idx] = resp;
+                break;
+            case 'DELETE':
+                rows.splice(idx, 1);
+                break;
+            default:
         }
     }
 }

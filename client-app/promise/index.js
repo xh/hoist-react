@@ -181,12 +181,12 @@ Object.assign(Promise.prototype, {
 
 
     /**
-     * Bind this promise to an instance of PromiseState.
+     * Bind this promise to an instance of PromiseModel.
      *
-     * @param state PromiseState
+     * @param model PromiseModel
      */
-    bind(state) {
-        state.bind(this);
+    bind(model) {
+        model.bind(this);
         return this;
     },
 

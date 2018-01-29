@@ -1,0 +1,12 @@
+.rest-form h1 {
+    font-size: 12px;
+}
+
+.rest-form input[type="textarea"] {
+    height: 50px;
+}
+
+.rest-toolbar .ui.button {
+    color: #182026;
+    background: white;
+}

@@ -4,18 +4,15 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import './App.css';
 
 import {Component} from 'react';
 import {XH, elem, hoistApp} from 'hoist';
 import {vbox, hbox, box, div, filler, spacer} from 'hoist/layout';
-import {button, tabs, tab, icon} from 'hoist/kit/blueprint';
+import {button, icon} from 'hoist/kit/blueprint';
 import {observer} from 'hoist/mobx';
 
-import {Tab} from './tabs/Tab';
-import {TabSetStore} from './tabs/TabSetStore';
-import {appStore} from './AppStore';
-
+import {TabContainer} from './tabs/TabContainer';
+import {appModel} from './AppModel';
 
 @hoistApp
 @observer
@@ -29,7 +26,7 @@ export class App extends Component {
                 box({
                     padding: 5,
                     flex: 1,
-                    items: this.renderTabs(appStore.tabs)
+                    items: elem(TabContainer, {model: appModel.tabs})
                 })
             ]
         });
@@ -53,21 +50,8 @@ export class App extends Component {
                 spacer({width: 10}),
                 div(`${XH.appName} Admin`),
                 filler(),
-                button({iconName: 'refresh', onClick: appStore.requestRefresh})
+                button({iconName: 'refresh', onClick: appModel.requestRefresh})
             ]
-        });
-    }
-
-    renderTabs(store) {
-        return tabs({
-            id: store.id,
-            onChange: store.changeTab,
-            selectedTabId: store.selectedTabId,
-            vertical: store.orientation === 'v',
-            items: store.children.map(child => {
-                const panel = child instanceof TabSetStore ? this.renderTabs(child) : elem(Tab, {store: child});
-                return tab({id: child.id, title: child.id, panel});
-            })
         });
     }
 }
