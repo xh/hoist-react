@@ -4,20 +4,29 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {computed, action, observable} from 'hoist/mobx';
+import {computed, action, observable, setter} from 'hoist/mobx';
 
 /**
  * Model for a TabContainer, representing its , layout, and currently selected Tab.
  */
 export class TabContainerModel {
     id = null;
-    orientation = 'v';
+    vertical = false;
     children = [];
 
-    @observable
-    selectedId = null;
+    @setter @observable
+    selectedIndex = -1;
 
     parent = null;   // For sub-tabs only
+
+    @computed get selectedId() {
+        const selectedIndex = this.selectedIndex;
+        return selectedIndex >= 0 ? this.children[selectedIndex].id : null;
+    }
+    @action setSelectedId(id) {
+        const index = this.children.findIndex(it => it.id === id);
+        this.setSelectedIndex(index);
+    }
 
     @computed get isActive() {
         const parent = this.parent;
@@ -26,14 +35,9 @@ export class TabContainerModel {
 
     constructor(id, orientation, ...children) {
         this.id = id;
-        this.orientation = orientation;
+        this.vertical = orientation === 'v';
         this.children = children;
-        this.selectedId = children.length ? children[0].id : null;
+        this.selectedIndex = children.length ? 0 : -1;
         children.forEach(child => child.parent = this);
-    }
-
-    @action
-    changeTab = (id) => {
-        this.selectedId = id;
     }
 }

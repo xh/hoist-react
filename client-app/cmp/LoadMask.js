@@ -11,7 +11,7 @@ import {observer} from 'hoist/mobx';
 
 import {overlay, spinner} from 'hoist/kit/blueprint';
 import {dimmer, loader} from 'hoist/kit/semantic';
-
+import {hoistAppModel} from 'hoist/app/HoistAppModel';
 
 /**
  * Simple LoadMask.
@@ -32,7 +32,7 @@ export class LoadMask extends Component {
     };
 
     render() {
-        return this.renderSemantic();
+        return hoistAppModel.useSemantic ? this.renderSemantic() : this.renderBlueprint();
     }
 
     renderBlueprint() {

@@ -9,9 +9,10 @@ import {Component} from 'react';
 import {identityService} from 'hoist';
 import {hbox, vbox, spacer, filler, div} from 'hoist/layout';
 import {Classes, button, suggest, icon, popover, menuItem} from 'hoist/kit/blueprint';
-
 import {icon as semanticIcon, button as semanticButton, popup, dropdown} from 'hoist/kit/semantic';
 import {observer} from 'hoist/mobx';
+import {hoistAppModel} from 'hoist/app/HoistAppModel';
+
 
 import {ImpersonationBarModel} from './ImpersonationBarModel';
 
@@ -27,7 +28,7 @@ export class ImpersonationBar extends Component {
 
     render() {
         if (!this.model.isVisible) return null;
-        return this.blueprint.render();
+        return hoistAppModel.useSemantic ? this.semantic.render() : this.blueprint.render();
     }
 
     onKeyDown = (e) => {

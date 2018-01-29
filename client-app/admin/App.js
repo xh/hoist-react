@@ -6,12 +6,13 @@
  */
 
 import {Component} from 'react';
-import {XH, elem, hoistApp} from 'hoist';
+import {XH, hoistApp, hoistAppModel} from 'hoist';
 import {vbox, hbox, box, div, filler, spacer} from 'hoist/layout';
 import {button, icon} from 'hoist/kit/blueprint';
+import {button as semanticButton, icon as semanticIcon} from 'hoist/kit/semantic';
 import {observer} from 'hoist/mobx';
 
-import {TabContainer} from './tabs/TabContainer';
+import {tabContainer} from './tabs/TabContainer';
 import {appModel} from './AppModel';
 
 @hoistApp
@@ -26,7 +27,7 @@ export class App extends Component {
                 box({
                     padding: 5,
                     flex: 1,
-                    items: elem(TabContainer, {model: appModel.tabs})
+                    items: tabContainer({model: appModel.tabs})
                 })
             ]
         });
@@ -45,14 +46,29 @@ export class App extends Component {
                 backgroundColor: 'black'
             },
             alignItems: 'center',
-            items: [
-                icon({iconName: 'eye-open'}),
-                spacer({width: 10}),
-                div(`${XH.appName} Admin`),
-                filler(),
-                button({iconName: 'refresh', onClick: appModel.requestRefresh})
-            ]
+            items: hoistAppModel.useSemantic ? this.semanticNavItems() : this.blueprintNavItems()
         });
+    }
+
+
+    blueprintNavItems() {
+        return [
+            icon({iconName: 'eye-open'}),
+            spacer({width: 10}),
+            div(`${XH.appName} Admin`),
+            filler(),
+            button({iconName: 'refresh', onClick: appModel.requestRefresh})
+        ];
+    }
+    
+    semanticNavItems() {
+        return [
+            semanticIcon({name: 'eye'}),
+            spacer({width: 10}),
+            div(`${XH.appName} Admin`),
+            filler(),
+            semanticButton({icon: 'refresh', size: 'small', compact: true, onClick: appModel.requestRefresh})
+        ];
     }
 }
 

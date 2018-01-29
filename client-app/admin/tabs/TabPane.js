@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elem, Ref} from 'hoist';
+import {elem, elemFactory, Ref} from 'hoist';
 import {box} from 'hoist/layout';
 import {autorun, observer} from 'hoist/mobx';
 
@@ -51,7 +51,9 @@ export class TabPane extends Component {
             null :
             box({
                 flex: 1,
-                items: elem(model.componentClass, {...this.props, ref: this.ref.callback})
+                display: model.isActive ? 'flex' : 'none',
+                margin: 4,
+                items: elem(model.componentClass, {...this.props, flex: 1, ref: this.ref.callback})
             });
     }
 
@@ -65,3 +67,5 @@ export class TabPane extends Component {
         }
     }
 }
+
+export const tabPane = elemFactory(TabPane);
