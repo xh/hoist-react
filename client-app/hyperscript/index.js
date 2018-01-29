@@ -54,7 +54,10 @@ export function elem(type, ...args) {
     if (cls) props.className = cls;
 
     // 2) Special handling for 'items' (must use $items for an 'items' API property)
-    if (props.$items) props.items = props.$items;
+    if (props.$items) {
+        props.items = props.$items;
+        delete props.$items;
+    }
 
     // 3) process children with itemSpecs
     itemSpec = isPlainObject(itemSpec) ? itemSpec : {factory: itemSpec};

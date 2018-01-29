@@ -14,16 +14,14 @@ import {RestModel} from './RestModel';
 import {gridPanel} from 'hoist/ag-grid/GridPanel';
 import {observer, observable, toJS} from 'hoist/mobx';
 import {box, vbox} from 'hoist/layout';
+import {hoistAppModel} from 'hoist/app/HoistAppModel';
 
 import {RestGridToolbar} from './RestGridToolbar';
 import {RestFormBlueprint} from './RestFormBlueprint';
 import {RestFormSemantic} from './RestFormSemantic';
 
-
 @observer
 export class RestGrid extends Component {
-
-    useSemantic = true;
 
     @observable restModel = new RestModel({url: this.props.url});
     @observable selectionModel = new SelectionModel();
@@ -51,7 +49,10 @@ export class RestGrid extends Component {
                                 onRowDoubleClicked: this.restModel.editRecord
                             }
                         }),
-                        elem(this.useSemantic ? RestFormSemantic : RestFormBlueprint, formProps)
+                        elem(
+                            hoistAppModel.useSemantic ? RestFormSemantic : RestFormBlueprint,
+                            formProps
+                        )
                     ]
                 })
             ]
