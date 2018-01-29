@@ -48,7 +48,7 @@ export class RestFormBlueprint extends Component {
                     items: div({
                         cls: 'pt-dialog-footer-actions',
                         items: [
-                            button({text: 'Save', iconName: 'tick', disabled: !this.isValid, onClick: this.onSubmit})
+                            button({text: 'Save', iconName: 'tick', disabled: !this.isValid, onClick: this.saveRecord})
                         ]
                     })
                 })
@@ -88,7 +88,7 @@ export class RestFormBlueprint extends Component {
     //--------------------------------
     // Implementation
     //--------------------------------
-    onSubmit = () => {
+    saveRecord = () => {
         const method = this.isAdd ? 'POST' : 'PUT';  // RestController's actions are mapped based on type of request. POST gets us Create, PUT gets us Update
         return XH.fetchJson({
             url: this.props.url,

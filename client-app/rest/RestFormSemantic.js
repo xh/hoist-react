@@ -47,7 +47,7 @@ export class RestFormSemantic extends Component {
                         icon: {name: 'check', color: 'green'},
                         compact: true,
                         disabled: !this.isValid,
-                        onClick: this.onSubmit
+                        onClick: this.saveRecord
                     })
                 )
             ]
@@ -82,7 +82,7 @@ export class RestFormSemantic extends Component {
     //--------------------------------
     // Implementation
     //--------------------------------
-    onSubmit = () => {
+    saveRecord = () => {
         const method = this.isAdd ? 'POST' : 'PUT';  // RestController's actions are mapped based on type of request. POST gets us Create, PUT gets us Update
         XH.fetchJson({
             url: this.props.url,
