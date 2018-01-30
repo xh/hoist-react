@@ -44,11 +44,11 @@ class GridPanel extends Component {
         });
     }
 
-    onRowDataChanged = (ev) => {
+    onRowDataChanged(ev) {
         ev.api.sizeColumnsToFit();
     }
 
-    onGridSizeChanged = (ev) => {
+    onGridSizeChanged(ev) {
         ev.api.sizeColumnsToFit();
     }
 
