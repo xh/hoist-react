@@ -1,4 +1,4 @@
-import {applyIf} from './JsUtils';
+import {defaults} from 'lodash';
 import moment from 'moment';
 
 const DATE_FMT = 'YYYY-=MM-DD',
@@ -49,7 +49,7 @@ export const date = function(v, opts = {}) {
     if (typeof opts == 'string') opts = {fmt: opts};
 
     saveOriginal(v, opts);
-    applyIf(opts, {fmt: DATE_FMT, tipFn: null});
+    defaults(opts, {fmt: DATE_FMT, tipFn: null});
 
     let ret = moment(v).format(opts.fmt);
 
@@ -60,19 +60,13 @@ export const date = function(v, opts = {}) {
     return ret;
 };
 
-// this move might be of less use now. The grid doesn't pass the pure value to the renderer
-// The arg is of the form {value: 1510085748000, node: RowNode, data: {…}, colDef: {…}, ...etc}
-// we could convert our formatters to look for v.value, but that I think limits the usefulness of them outside of the grid context
-// or do something like const val = v.value || at the top
-// however the straightFwd thing seems to be to mine the value and pass to the fmter
-// e.g. valueFormatter: (params) => date(params.value, {opts})
 export const dateRenderer = createRenderer(date);
 
 export const dateTime = function(v, opts = {}) {
     if (typeof opts == 'string') opts = {fmt: opts};
 
     saveOriginal(v, opts);
-    applyIf(opts, {fmt: DATETIME_FMT});
+    defaults(opts, {fmt: DATETIME_FMT});
 
     return date(v, opts);
 };
@@ -80,21 +74,24 @@ export const dateTime = function(v, opts = {}) {
 export const dateTimeRenderer = createRenderer(dateTime);
 
 /**
- * Generate a renderer of the form formatterNameRenderer.
+ * Generate a renderer.
  * Renderers return a given formatter function.
  *
  * Renderers take a config for its formatter method
  * If this config is an object it will be cloned before being passed to its formatter.
  * Cloning ensures that the formatter gets a clean config object each time it is called.
  *
- * @param formatterName - name of an existing method on this class
+ * To account for ag-grid behavior, renderers will check it's input for a value property before passing to formatter
+ *
+ * @param formatter - an existing method
  */
 function createRenderer(formatter) {
     return function(config) {
         const isObj = (typeof config == 'object');
         return (v) => {
-            const formatterConfig = isObj ? applyIf({}, config) : config;
-            return formatter(v, formatterConfig);
+            const formatterConfig = isObj ? defaults({}, config) : config,
+                val = v.value || v;
+            return formatter(val, formatterConfig);
         };
     };
 };
