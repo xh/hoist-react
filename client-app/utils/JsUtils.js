@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {isArray, mergeWith} from 'lodash';
+import {isArray} from 'lodash';
 
 export function findByProperty(arr, property, value) {
     return arr.find(it => it[property] === value);
@@ -22,14 +22,4 @@ export function asArray(val) {
     if (val === undefined || val === null) return [];
     if (isArray(val)) return val;
     return [val];
-}
-
-export function applyIf(object, other) {
-    const customizer = function(objValue, srcValue, key, obj) {
-        if (obj[key]) {
-            return obj[key];
-        }
-    };
-
-    mergeWith(object, other, customizer);
 }
