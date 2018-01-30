@@ -13,7 +13,6 @@ import {icon as semanticIcon, button as semanticButton, popup, dropdown} from 'h
 import {observer} from 'hoist/mobx';
 import {hoistAppModel} from 'hoist/app/HoistAppModel';
 
-
 import {ImpersonationBarModel} from './ImpersonationBarModel';
 
 @observer
@@ -157,6 +156,7 @@ export class ImpersonationBar extends Component {
                     items: [
                         dropdown({
                             search: true,
+                            placeholder: 'Target User',
                             fluid: true,
                             value: model.selectedTarget,
                             onChange: (ev, data) => model.setSelectedTarget(data),
@@ -173,8 +173,7 @@ export class ImpersonationBar extends Component {
                 })
             });
         }, 
-
-
+        
         exitButton() {
             const content = identityService.impersonating ? 'Exit Impersonation' : 'Close';
             return this.button({content, icon: 'close', onClick: this.model.doExit});
@@ -183,6 +182,5 @@ export class ImpersonationBar extends Component {
         button(props) {
             return semanticButton({...props, size: 'tiny', compact: true});
         }
-
     }
 }
