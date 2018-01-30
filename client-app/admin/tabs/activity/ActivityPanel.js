@@ -9,7 +9,7 @@ import {XH} from 'hoist';
 import {gridPanel} from 'hoist/ag-grid/GridPanel';
 import {observer, observable, action, toJS} from 'hoist/mobx';
 
-import {dateCol} from 'hoist/columns/DatesTimes';
+import {dateTimeCol} from 'hoist/columns/DatesTimes';
 import {
     usernameCol,
     msg,
@@ -32,7 +32,7 @@ export class ActivityPanel extends Component {
             rows: toJS(this.rows),
             columns: [
                 severity(),
-                dateCol({field: 'dateCreated'}),
+                dateTimeCol({field: 'dateCreated'}),
                 usernameCol(),
                 msg(),
                 category(),
