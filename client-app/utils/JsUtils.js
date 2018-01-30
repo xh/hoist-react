@@ -23,3 +23,13 @@ export function asArray(val) {
     if (isArray(val)) return val;
     return [val];
 }
+
+export function applyIf(object, other) {
+    const customizer = function(objValue, srcValue, key, obj) {
+        if(obj[key]) {
+            return obj[key]
+        }
+    };
+
+    mergeWith(object, other, customizer)
+}
