@@ -12,7 +12,7 @@ import {Component} from 'react';
 import {elem} from 'hoist';
 import {loadMask} from 'hoist/cmp';
 import {hocDisplayName} from 'hoist/utils/ReactUtils';
-import {box, viewport, vbox} from 'hoist/layout';
+import {frame, viewport, vframe} from 'hoist/layout';
 import {useStrict, observer} from 'hoist/mobx';
 
 import {hoistAppModel} from './HoistAppModel';
@@ -46,17 +46,11 @@ export function hoistApp(C) {
             if (!isInitialized) return this.renderPreloadMask();
 
             return viewport(
-                vbox({
-                    flex: 1,
-                    items: [
-                        elem(ImpersonationBar),
-                        box({
-                            flex: 1,
-                            items: elem(C)
-                        }),
-                        elem(VersionBar)
-                    ]
-                }),
+                vframe(
+                    elem(ImpersonationBar),
+                    frame(elem(C)),
+                    elem(VersionBar)
+                ),
                 loadMask({model: hoistAppModel.appLoadModel})
             );
         }
