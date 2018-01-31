@@ -158,6 +158,29 @@ export function billions(v, opts = {})  {
 }
 
 /**
+ * Render a quantity value, handling highly variable amounts by using 2dp millions for values > 1m
+ *
+ * @param v - int or float to format
+ * @param opts - see number() method
+ */
+export function quantity(v, opts = {}) {
+    saveOriginal(v, opts);
+
+    if (v == null) return number(v, opts);
+
+    const lessThanM = Math.abs(v) < _MILLION;
+
+    defaults(opts, {
+        ledger: true,
+        label: true,
+        precision: lessThanM ? 0 : 2
+    });
+
+    return lessThanM ? number(v, opts) : millions(v, opts);
+}
+
+
+/**
  * Wrap values in a custom span
  *
  * @param v - value to be place in span
@@ -289,6 +312,7 @@ export const numberRenderer = createRenderer(number);
 export const thousandsRenderer = createRenderer(thousands);
 export const millionsRenderer = createRenderer(millions);
 export const billionsRenderer = createRenderer(billions);
+export const quantityRenderer = createRenderer(quantity);
 export const dateRenderer = createRenderer(date);
 export const dateTimeRenderer = createRenderer(dateTime);
 export const timeRenderer = createRenderer(time);
@@ -401,90 +425,90 @@ export function numberTests() {
     console.log('NUMBERS');
     console.log('');
 
-    test('number {precision: 2})', number(100.00000, {precision: 2}) == '100.00');
-    test('number {precision: 2, zeroPad: false})', number(100.00000, {
-        precision: 2,
-        zeroPad: false
-    }) == '100');
-    test('number(long decimal) {precision: 2}', number(100.012345678910111213, {
-        precision: 2
-    }) == '100.01');
-    test('number(over max precision) {precision: 15}', number(100.012345678910111213, {
-        precision: 15
-    }) == '100.012345678910');
-    test('number(over max precision) {precision: 15}!!!', number(100.012345678910111213, {
-        precision: 15
-    }) == '100.012345678910');
-    test('number(auto)', number(100.012345678910111213) == '100.01');
-    test('number(commas for 1000000)', number(1000000) == '1,000,000');
-    test('number(commas for 1000000000)', number(1000000000) == '1,000,000,000');
-    test('numberRenderer {precision: 4, zeroPad: true}', numberRenderer({
-        precision: 4
-    })(100.012345678910111213) == '100.0123');
-
-
-    test('thousands', thousands(1550, {label: true}) == '1.5500<span class=\"xh-units-label\">k</span>');
-    test('thousands', thousands(1550, {label: true, zeroPad: false}) == '1.55<span class=\"xh-units-label\">k</span>');
-    test('thousands (zero)', thousands(0, {label: true}) == '0.00<span class=\"xh-units-label\">k</span>');
-    test('thousands (no label)', thousands(1550) == '1.5500');
-    // need a much better zero pad test
-    test('thousands (no label larger value, zeroPad)', thousands(1234567, {precision: 4, zeroPad: true}) == '1,234.5670');
-    test('thousands(pos) {colorSpec: true}', thousands(1000, {
-        label: false,
-        colorSpec: true
-    }) == '<span class=\"green\">1.0000</span>');
-    test('thousands(neg) label color and ledger)', thousands(-1000, {
-        colorSpec: true,
-        ledger: true,
-        ledgerAlign: false
-    }) == '<span class=\"red\">(1.0000)</span>');
-    test('thousands(zero) (colorSpec: true)', thousands(0, {
-        label: false,
-        colorSpec: true
-    }) == '<span class=\"gray\">0.00</span>');
-
-    test('millions', millions(1000000, {label: true}) == '1.0000<span class="xh-units-label">m</span>');
-    test('millions', millions(1000000, {label: 'M'}) == '1.0000<span class=\"xh-units-label\">M</span>');
-    test('millions (zero)', millions(0, {label: true}) == '0.00<span class=\"xh-units-label\">m</span>');
-    test('millions (no label)', millions(1555555) == '1.5556');
-    test('millions (precision: 2)', millions(1555555, {
-        precision: 2
-    }) == '1.56');
-    test('millions (huge number)', millions(1555555778877) == '1,555,556');
-    test('millions(pos) (colorSpec: true)', millions(1555555, {
-        colorSpec: true
-    }) == '<span class=\"green\">1.5556</span>');
-    test('millions(neg) (colorSpec: true)', millions(-1555555, {
-        colorSpec: true
-    }) == '<span class=\"red\">-1.5556</span>');
-    test('millions(neg) (colorSpec: true, ledger: true)', millions(-1555555, {
-        colorSpec: true,
-        ledger: true,
-        ledgerAlign: false
-    }) == '<span class=\"red\">(1.5556)</span>');
-    test('millions(zero) (colorSpec: true)', millions(0, {
-        colorSpec: true
-    }) == '<span class=\"gray\">0.00</span>');
-
-    test('billions with default label', billions(1000000000, {label: true}) == '1.0000<span class=\"xh-units-label\">b</span>');
-    test('billions with custom label', billions(1000000000, {label: 'B'}) == '1.0000<span class=\"xh-units-label\">B</span>');
-    test('billions (zero, label)', billions(0, {label: true}) == '0.00<span class=\"xh-units-label\">b</span>');
-    test('billions (with no label)', billions(1555555000) == '1.5556');
-    test('billions (precision: 2)', billions(1555555000, {
-        precision: 2
-    }) == '1.56');
-    test('billions (huge number)', billions(1555555778877999) == '1,555,556');
-    test('billions(pos) (colorSpec: true)', billions(1555555000, {
-        colorSpec: true
-    }) == '<span class=\"green\">1.5556</span>');
-    test('billions(neg) (colorSpec: true, ledger: true)', billions(-1555555000, {
-        ledger: true,
-        ledgerAlign: false,
-        colorSpec: true
-    }) == '<span class=\"red\">(1.5556)</span>');
-    test('billions(zero) (colorSpec: true)', billions(0, {
-        colorSpec: true
-    }) == '<span class=\"gray\">0.00</span>');
+    // test('number {precision: 2})', number(100.00000, {precision: 2}) == '100.00');
+    // test('number {precision: 2, zeroPad: false})', number(100.00000, {
+    //     precision: 2,
+    //     zeroPad: false
+    // }) == '100');
+    // test('number(long decimal) {precision: 2}', number(100.012345678910111213, {
+    //     precision: 2
+    // }) == '100.01');
+    // test('number(over max precision) {precision: 15}', number(100.012345678910111213, {
+    //     precision: 15
+    // }) == '100.012345678910');
+    // test('number(over max precision) {precision: 15}!!!', number(100.012345678910111213, {
+    //     precision: 15
+    // }) == '100.012345678910');
+    // test('number(auto)', number(100.012345678910111213) == '100.01');
+    // test('number(commas for 1000000)', number(1000000) == '1,000,000');
+    // test('number(commas for 1000000000)', number(1000000000) == '1,000,000,000');
+    // test('numberRenderer {precision: 4, zeroPad: true}', numberRenderer({
+    //     precision: 4
+    // })(100.012345678910111213) == '100.0123');
+    //
+    //
+    // test('thousands', thousands(1550, {label: true}) == '1.5500<span class=\"xh-units-label\">k</span>');
+    // test('thousands', thousands(1550, {label: true, zeroPad: false}) == '1.55<span class=\"xh-units-label\">k</span>');
+    // test('thousands (zero)', thousands(0, {label: true}) == '0.00<span class=\"xh-units-label\">k</span>');
+    // test('thousands (no label)', thousands(1550) == '1.5500');
+    // // need a much better zero pad test
+    // test('thousands (no label larger value, zeroPad)', thousands(1234567, {precision: 4, zeroPad: true}) == '1,234.5670');
+    // test('thousands(pos) {colorSpec: true}', thousands(1000, {
+    //     label: false,
+    //     colorSpec: true
+    // }) == '<span class=\"green\">1.0000</span>');
+    // test('thousands(neg) label color and ledger)', thousands(-1000, {
+    //     colorSpec: true,
+    //     ledger: true,
+    //     ledgerAlign: false
+    // }) == '<span class=\"red\">(1.0000)</span>');
+    // test('thousands(zero) (colorSpec: true)', thousands(0, {
+    //     label: false,
+    //     colorSpec: true
+    // }) == '<span class=\"gray\">0.00</span>');
+    //
+    // test('millions', millions(1000000, {label: true}) == '1.0000<span class="xh-units-label">m</span>');
+    // test('millions', millions(1000000, {label: 'M'}) == '1.0000<span class=\"xh-units-label\">M</span>');
+    // test('millions (zero)', millions(0, {label: true}) == '0.00<span class=\"xh-units-label\">m</span>');
+    // test('millions (no label)', millions(1555555) == '1.5556');
+    // test('millions (precision: 2)', millions(1555555, {
+    //     precision: 2
+    // }) == '1.56');
+    // test('millions (huge number)', millions(1555555778877) == '1,555,556');
+    // test('millions(pos) (colorSpec: true)', millions(1555555, {
+    //     colorSpec: true
+    // }) == '<span class=\"green\">1.5556</span>');
+    // test('millions(neg) (colorSpec: true)', millions(-1555555, {
+    //     colorSpec: true
+    // }) == '<span class=\"red\">-1.5556</span>');
+    // test('millions(neg) (colorSpec: true, ledger: true)', millions(-1555555, {
+    //     colorSpec: true,
+    //     ledger: true,
+    //     ledgerAlign: false
+    // }) == '<span class=\"red\">(1.5556)</span>');
+    // test('millions(zero) (colorSpec: true)', millions(0, {
+    //     colorSpec: true
+    // }) == '<span class=\"gray\">0.00</span>');
+    //
+    // test('billions with default label', billions(1000000000, {label: true}) == '1.0000<span class=\"xh-units-label\">b</span>');
+    // test('billions with custom label', billions(1000000000, {label: 'B'}) == '1.0000<span class=\"xh-units-label\">B</span>');
+    // test('billions (zero, label)', billions(0, {label: true}) == '0.00<span class=\"xh-units-label\">b</span>');
+    // test('billions (with no label)', billions(1555555000) == '1.5556');
+    // test('billions (precision: 2)', billions(1555555000, {
+    //     precision: 2
+    // }) == '1.56');
+    // test('billions (huge number)', billions(1555555778877999) == '1,555,556');
+    // test('billions(pos) (colorSpec: true)', billions(1555555000, {
+    //     colorSpec: true
+    // }) == '<span class=\"green\">1.5556</span>');
+    // test('billions(neg) (colorSpec: true, ledger: true)', billions(-1555555000, {
+    //     ledger: true,
+    //     ledgerAlign: false,
+    //     colorSpec: true
+    // }) == '<span class=\"red\">(1.5556)</span>');
+    // test('billions(zero) (colorSpec: true)', billions(0, {
+    //     colorSpec: true
+    // }) == '<span class=\"gray\">0.00</span>');
 
     // test('percent default label', percent(50, {label: true}) == '50%');
     // test('percent (zero)', percent(0) == '0');
@@ -530,68 +554,40 @@ export function numberTests() {
     //
     // expectedEquity = '0<span class=\"units-label\">m</span>';
     // test('equity (zero w/label)', equity(0, {label: true}) == expectedEquity);
-    //
-    // let expectedBasisPoints = '10,111,111,111<span class=\"units-label\">bp</span>';
-    // test('basisPoints', basisPoints(10111111111.111111) == expectedBasisPoints);
-    // test('basisPoints (zero)', basisPoints(0) == '0<span class=\"units-label\">bp</span>');
-    //
-    // expectedBasisPoints = '10,111,111,112<span class=\"units-label\">bp</span>';
-    // test('basisPoints (decimal)', basisPoints(10111111111.9) == expectedBasisPoints);
-    //
-    // expectedBasisPoints = '10.11<span class=\"units-label\">bp</span>';
-    // test('basisPoints ({precision: 2})', basisPoints(10.11, {precision: 2}) == expectedBasisPoints);
-    // test('basisPoints ({precision: 4, label: false})', basisPoints(10.11, {
-    //         precision: 4,
-    //         label: false
-    //     }) == '10.1100');
 
-    test('number as ledger (zero) {precision: 0}', number(0, {ledger: true, precision: 0}) == '0<span style="visibility:hidden">)</span>');
-    test('number as ledger (zero) {ledgerAlign: false, precision: 0}', number(0, {ledger: true, forceLedgerAlign: false, precision: 0}) == '0');
-    test('number as ledger (pos) {ledgerAlign: false}', number(123456789, {ledger: true, forceLedgerAlign: false}) == '123,456,789');
-    test('number as ledger (neg) {ledgerAlign: false}', number(-987654321, {ledger: true, forceLedgerAlign: false}) == '(987,654,321)');
-    test('number as ledger (with label, no label class) {ledgerAlign: false}', number(99500, {
-        ledger: true,
-        forceLedgerAlign: false,
-        label: '$',
-        labelCls: null
-    }) == '99,500$');
-    test('number as ledger (pos)(colorSpec)', number(120000, {
-        ledger: true,
-        forceLedgerAlign: false,
-        colorSpec: true
-    }) == '<span class=\"green\">120,000</span>');
-    test('number as ledger (neg)(colorSpec)', number(-90, {
-        ledger: true,
-        forceLedgerAlign: false,
-        colorSpec: true
-    }) == '<span class=\"red\">(90.0000)</span>');
+    // test('number as ledger (zero) {precision: 0}', number(0, {ledger: true, precision: 0}) == '0<span style="visibility:hidden">)</span>');
+    // test('number as ledger (zero) {ledgerAlign: false, precision: 0}', number(0, {ledger: true, forceLedgerAlign: false, precision: 0}) == '0');
+    // test('number as ledger (pos) {ledgerAlign: false}', number(123456789, {ledger: true, forceLedgerAlign: false}) == '123,456,789');
+    // test('number as ledger (neg) {ledgerAlign: false}', number(-987654321, {ledger: true, forceLedgerAlign: false}) == '(987,654,321)');
+    // test('number as ledger (with label, no label class) {ledgerAlign: false}', number(99500, {
+    //     ledger: true,
+    //     forceLedgerAlign: false,
+    //     label: '$',
+    //     labelCls: null
+    // }) == '99,500$');
+    // test('number as ledger (pos)(colorSpec)', number(120000, {
+    //     ledger: true,
+    //     forceLedgerAlign: false,
+    //     colorSpec: true
+    // }) == '<span class=\"green\">120,000</span>');
+    // test('number as ledger (neg)(colorSpec)', number(-90, {
+    //     ledger: true,
+    //     forceLedgerAlign: false,
+    //     colorSpec: true
+    // }) == '<span class=\"red\">(90.0000)</span>');
 
-    // test('quantity < billion, with unitlabel', quantity(123456789, {
-    //         unitsLabel: '@'
-    //     }) == '123.46<span class=\"units-label\">m</span><span class=\"units-label\"> @</span>');
-    //
-    // test('quantity > billion, allowBillions: false', quantity(12345678910, {
-    //         allowBillions: false
-    //     }) == '12,345.68<span class=\"units-label\">m</span>');
-    //
-    // test('quantity > billion, allowBillions: true', quantity(12345678910, {
-    //         allowBillions: true
-    //     }) == '12.35<span class=\"units-label\">b</span>');
-    //
-    // test('quantity, float, > billion, allowBillions: true', quantity(12345678910.1, {
-    //         allowBillions: true
-    //     }) == '12.35<span class=\"units-label\">b</span>');
-    //
-    // test('quantity, neg, > billion, allowBillions: true', quantity(-12345678910.1, {
-    //         allowBillions: true
-    //     }) == '-12.35<span class=\"units-label\">b</span>');
-    //
-    // test('quantity, neg with ledger, > billion, allowBillions: true', quantity(-12345678910.1, {
-    //         allowBillions: true,
-    //         ledger: true
-    //     }) == '(12.35<span class=\"units-label\">b</span>)');
-    //
-    // test('quantity, small float', quantity(-2.15678) == '-2.1568');
+    test('quantity < billion', quantity(123456789, {
+    }) == '123.46<span class="xh-units-label">m</span><span style="visibility:hidden">)</span>');
+
+    test('quantity < billion, with label', quantity(123456789, {
+        label: '@'
+    }) == '123.46<span class="xh-units-label">@</span><span style="visibility:hidden">)</span>');
+
+    test('quantity > billion', quantity(12345678910, {forceLedgerAlign: false}) == '12,345.68<span class="xh-units-label">m</span>');
+    test('quantity > billion', quantity(-112345678910, {forceLedgerAlign: false}) == '(112,345.68<span class="xh-units-label">m</span>)');
+    test('quantity > billion', quantity(12345678910, {ledger: false}) == '12,345.68<span class=\"xh-units-label\">m</span>');
+
+    test('quantity, small float', quantity(-2.15678) == '(2)');
 
     // test('losslessQuantity, allowed rounding', losslessQuantity(10000000) == '10<span class=\"units-label\">m</span>');
     // test('losslessQuantity, allowed rounding', losslessQuantity(12340000) == '12.34<span class=\"units-label\">m</span>');
