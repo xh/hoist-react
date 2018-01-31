@@ -126,6 +126,22 @@ export function millions(v, opts = {})  {
     return number(v, opts);
 }
 
+
+/**
+ * Render number in billions.
+ *
+ * @param v - int or float to format
+ * @param opts - see number() method
+ */
+export function billions(v, opts = {})  {
+    saveOriginal(v, opts);
+
+    if (v == null) return number(v, opts);
+    v = v / _BILLION;
+    if (opts.label === true) opts.label = 'b';
+    return number(v, opts);
+}
+
 /**
  * Wrap values in a custom span
  *
@@ -256,6 +272,7 @@ export function compactDate(v, {
 
 export const numberRenderer = createRenderer(number);
 export const millionsRenderer = createRenderer(millions);
+export const billionsRenderer = createRenderer(billions);
 export const dateRenderer = createRenderer(date);
 export const dateTimeRenderer = createRenderer(dateTime);
 export const timeRenderer = createRenderer(time);
@@ -432,25 +449,26 @@ export function numberTests() {
         colorSpec: true
     }) == '<span class=\"gray\">0.00</span>');
 
-    // test('billions with default label', billions(1000000000, {label: true}) == '1<span class=\"units-label\">b</span>');
-    // test('billions with custom label', billions(1000000000, {label: 'B'}) == '1<span class=\"units-label\">B</span>');
-    // test('billions (zero, label)', billions(0, {label: true}) == '0<span class=\"units-label\">b</span>');
-    // test('billions (with no label)', billions(1555555000) == '1.56');
-    // test('billions (precision: 4)', billions(1555555000, {
-    //         precision: 4
-    //     }) == '1.5556');
-    // test('billions (huge number)', billions(1555555778877999) == '1,555,555.78');
-    // test('billions(pos) (colorSpec: true)', billions(1555555000, {
-    //         colorSpec: true
-    //     }) == '<span class=\"green\">1.56</span>');
-    // test('billions(neg) (colorSpec: true, ledger: true)', billions(-1555555000, {
-    //         ledger: true,
-    //         colorSpec: true
-    //     }) == '<span class=\"red\">(1.56)</span>');
-    // test('billions(zero) (colorSpec: true)', billions(0, {
-    //         colorSpec: true
-    //     }) == '<span class=\"gray\">0</span>');
-    //
+    test('billions with default label', billions(1000000000, {label: true}) == '1.0000<span class=\"xh-units-label\">b</span>');
+    test('billions with custom label', billions(1000000000, {label: 'B'}) == '1.0000<span class=\"xh-units-label\">B</span>');
+    test('billions (zero, label)', billions(0, {label: true}) == '0.00<span class=\"xh-units-label\">b</span>');
+    test('billions (with no label)', billions(1555555000) == '1.5556');
+    test('billions (precision: 2)', billions(1555555000, {
+        precision: 2
+    }) == '1.56');
+    test('billions (huge number)', billions(1555555778877999) == '1,555,556');
+    test('billions(pos) (colorSpec: true)', billions(1555555000, {
+        colorSpec: true
+    }) == '<span class=\"green\">1.5556</span>');
+    test('billions(neg) (colorSpec: true, ledger: true)', billions(-1555555000, {
+        ledger: true,
+        ledgerAlign: false,
+        colorSpec: true
+    }) == '<span class=\"red\">(1.5556)</span>');
+    test('billions(zero) (colorSpec: true)', billions(0, {
+        colorSpec: true
+    }) == '<span class=\"gray\">0.00</span>');
+
     // test('percent default label', percent(50, {label: true}) == '50%');
     // test('percent (zero)', percent(0) == '0');
     // test('percent}', percent(51.1) == '51.1');
