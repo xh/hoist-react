@@ -15,8 +15,12 @@ const DATE_FMT = 'YYYY-MM-DD',
     TIME_FMT = 'h:mma',
     MONTH_DAY_FMT = 'MMM D';
 
-const UP_TICK = '&#9652;',
+const DBL_SPC = '&nbsp;&nbsp;',
+    BULLET = '&nbsp;&bull;&nbsp;',
+    DELTA = '&#916;',
+    UP_TICK = '&#9652;',
     DOWN_TICK = '&#9662;',
+    DBL_SPC = '&nbsp;&nbsp;',
     LEDGER_ALIGN_PLACEHOLDER = '<span style="visibility:hidden">)</span>';
 
 
