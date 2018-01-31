@@ -199,6 +199,25 @@ export function price(v, opts = {}) {
 }
 
 /**
+ * Render a number as a percent
+ *
+ * @param v - int or float to format,
+ * @param opts - see number() method - may also include:
+ *          withParens, surround return with parenthesis
+ */
+export function percent(v, opts = {}) {
+    saveOriginal(v, opts);
+
+    if (v == null) return number(v, opts);
+
+    defaults(opts, {precision: 2, label: '%', labelCls: null});
+
+    let ret = number(v, opts);
+    if (opts.withParens) ret = '(' + ret + ')';
+    return ret;
+}
+
+/**
  * Wrap values in a custom span
  *
  * @param v - value to be place in span
@@ -332,10 +351,15 @@ export const millionsRenderer = createRenderer(millions);
 export const billionsRenderer = createRenderer(billions);
 export const quantityRenderer = createRenderer(quantity);
 export const priceRenderer = createRenderer(price);
+export const percentRenderer = createRenderer(percent);
 export const dateRenderer = createRenderer(date);
 export const dateTimeRenderer = createRenderer(dateTime);
 export const timeRenderer = createRenderer(time);
 export const compactDateRenderer = createRenderer(compactDate);
+
+//---------------
+// Implementation
+//---------------
 
 /**
  * Generate a renderer.
@@ -365,10 +389,6 @@ function saveOriginal(v, opts) {
         opts.originalValue = v;
     }
 }
-
-//---------------
-// Implementation
-//---------------
 
 function signGlyph(v) {
     if (isNumber(v)) return '';
@@ -529,21 +549,20 @@ export function numberTests() {
     //     colorSpec: true
     // }) == '<span class=\"gray\">0.00</span>');
 
-    // test('percent default label', percent(50, {label: true}) == '50%');
-    // test('percent (zero)', percent(0) == '0');
-    // test('percent}', percent(51.1) == '51.1');
-    // test('percent(pos, with label and color)', percent(51.1, {
-    //         label: true,
-    //         colorSpec: true
-    //     }) == '<span class=\"green\">51.1%</span>');
-    // test('percent(neg) {colorSpec: true, label: true}', percent(-51.1, {
-    //         label: true,
-    //         colorSpec: true
-    //     }) == '<span class=\"red\">-51.1%</span>');
-    // test('percent(zero) {colorSpec: true}', percent(0, {
-    //         colorSpec: true
-    //     }) == '<span class=\"gray\">0</span>');
-    //
+    test('percent default label', percent(50) == '50.00%');
+    test('percent (zero)', percent(0) == '0.00%');
+    test('percent}', percent(51.1) == '51.10%');
+    test('percent}', percent(51.1, {withParens: true}) == '(51.10%)');
+    test('percent(pos, with label and color)', percent(51.1, {
+        colorSpec: true
+    }) == '<span class=\"green\">51.10%</span>');
+    test('percent(neg) {colorSpec: true, label: true}', percent(-51.1, {
+        colorSpec: true
+    }) == '<span class=\"red\">-51.10%</span>');
+    test('percent(zero) {colorSpec: true}', percent(0, {
+        colorSpec: true
+    }) == '<span class=\"gray\">0.00%</span>');
+
     // let expectedPercentChange = '0.00%';
     // test('percentChange (zero label)', percentChange(0, {label: true}) == expectedPercentChange);
     //
