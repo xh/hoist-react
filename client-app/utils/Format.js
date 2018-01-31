@@ -3,6 +3,7 @@ import {defaults} from 'lodash';
 import moment from 'moment';
 import numeral from 'numeral';
 import numberFormatter from 'number-formatter';
+import {isNumber} from './JsUtils';
 
 const _THOUSAND = 1000,
     _MILLION  = 1000000,
@@ -47,7 +48,7 @@ const UP_TICK = '&#9652;',
  * If no options are given, a heuristic based auto-rounding will occur
  */
 
-export const number = function(v, {
+function number(v, {
     nullDisplay = '',
     formatPattern = null,
     precision = 'auto',
@@ -101,7 +102,7 @@ export const number = function(v, {
     }
 
     return ret;
-};
+}
 
 // export const number = function(v, opts = {}) {
 //
@@ -110,7 +111,6 @@ export const number = function(v, {
 //     return numeral(1234567.890000).format('0,0.000[0]'); // 1,234,567.890
 // };
 
-export const numberRenderer = createRenderer(number);
 /**
  * Wrap values in a custom span
  *
@@ -122,7 +122,7 @@ export const numberRenderer = createRenderer(number);
  *   @param trailSpc - set to true to add a space after the span to be returned
  *
  */
-export const span = function(v, {
+export function span(v, {
     cls = null,
     title = null,
     leadSpc = false,
@@ -139,7 +139,7 @@ export const span = function(v, {
     ret += `>${txt}</span>`;
 
     return trailSpc ? ret + ' ' : ret;
-};
+}
 
 /**
  * Render dates and times with specified format
@@ -155,7 +155,7 @@ export const span = function(v, {
  *
  *  For convenience opts may be provided as a an Ext.Date format string.
  */
-export const date = function(v, opts = {}) {
+export function date(v, opts = {}) {
     if (typeof opts == 'string') opts = {fmt: opts};
 
     saveOriginal(v, opts);
@@ -168,26 +168,26 @@ export const date = function(v, opts = {}) {
     }
 
     return ret;
-};
+}
 
-export const dateTime = function(v, opts = {}) {
+export function dateTime(v, opts = {}) {
     if (typeof opts == 'string') opts = {fmt: opts};
 
     saveOriginal(v, opts);
     defaults(opts, {fmt: DATETIME_FMT});
 
     return date(v, opts);
-};
+}
 
 
-export const time = function(v, opts = {}) {
+export function time(v, opts = {}) {
     if (typeof opts == 'string') opts = {fmt: opts};
 
     saveOriginal(v, opts);
     defaults(opts, {fmt: TIME_FMT});
 
     return date(v, opts);
-};
+}
 
 /**
  * Render dates formatted based on distance in time from current day
@@ -203,7 +203,7 @@ export const time = function(v, opts = {}) {
  *                             Not typically used by applications.
  *
  */
-export const compactDate = function(v, {
+export function compactDate(v, {
     sameDayFmt = TIME_FMT,
     nearFmt = MONTH_DAY_FMT,
     distantFmt = DATE_FMT,
@@ -237,9 +237,9 @@ export const compactDate = function(v, {
     }
 
     return date(v, dateOpts);
-};
+}
 
-
+export const numberRenderer = createRenderer(number);
 export const dateRenderer = createRenderer(date);
 export const dateTimeRenderer = createRenderer(dateTime);
 export const timeRenderer = createRenderer(time);
@@ -266,13 +266,13 @@ function createRenderer(formatter) {
             return formatter(val, formatterConfig);
         };
     };
-};
+}
 
 function saveOriginal(v, opts) {
     if (opts.originalValue === undefined) {
         opts.originalValue = v;
     }
-};
+}
 
 //---------------
 // Implementation
@@ -281,7 +281,7 @@ function saveOriginal(v, opts) {
 function signGlyph(v) {
     if (isNumber(v)) return '';
     return v === 0 ? span(UP_TICK, 'transparent-color') :  v > 0 ? UP_TICK : DOWN_TICK;
-};
+}
 
 function valueColor(v, colorSpec) {
     if (!isNumber(v)) return '';
@@ -297,7 +297,7 @@ function valueColor(v, colorSpec) {
     if (v > 0) return colorSpec.pos;
 
     return colorSpec.neutral;
-};
+}
 
 // numeralJS: '0.00[0]' - this is the kill trailing zero pattern 1234567.890 => 1,234,567.89"
 // number-formatter: numberFormatter( "#,##0.####", 1234567.890 );  // output: "1,234,567.89" // using this for now
@@ -337,19 +337,13 @@ function buildFormatPattern(v, precision, zeroPad) {
     }
 
     return pattern;
-};
-
-// move to JSUtils?
-function isNumber(value) {
-    return typeof value === 'number' && isFinite(value);
-};
-
+}
 
 // /////////////////////////////////
 // TESTS
 // ///////////////////////////////
 
-// run tests in hoist-sencha too. Some might fail now due to legit changes, not just klost in translation
+// run tests in hoist-sencha too. Some might fail now due to legit changes, not just lost in translation
 
 export function numberTests() {
 
@@ -630,10 +624,10 @@ function badInputNumberTests() {
     // test('priceChange (null)', priceChange(null) == empty);
     // test('priceChange (undefined)', priceChange(undefined) == empty);
     // test('priceChange (\'\')', priceChange('') == empty);
-};
+}
 
 
 function test(testTitle, testCondition, output) {
     if (output) console.log(output);
     console.log(testCondition ? 'passed: ' : '!!!!FAILED!!!!: ', testTitle);
-};
+}
