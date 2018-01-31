@@ -7,6 +7,7 @@
 import './Tile.css';
 
 import {Component} from 'react';
+import {elemFactory} from 'hoist';
 import {div} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
 
@@ -35,3 +36,5 @@ export class Tile extends Component {
         });
     }
 }
+
+export const tile = elemFactory(Tile);

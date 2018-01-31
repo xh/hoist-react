@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {XH} from 'hoist';
+import {XH, elemFactory} from 'hoist';
 import {vbox, hbox, filler, viewport} from 'hoist/layout';
 import {inputGroup, button} from 'hoist/kit/blueprint';
 import {observable, computed, observer, setter} from 'hoist/mobx';
@@ -76,3 +76,5 @@ export class LoginPanel extends Component {
     onUsernameChange = (ev) => {this.setUsername(ev.target.value)}
     onPasswordChange = (ev) => {this.setPassword(ev.target.value)}
 }
+
+export const loginPanel = elemFactory(LoginPanel);

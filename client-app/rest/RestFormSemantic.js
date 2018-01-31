@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {XH} from 'hoist';
+import {XH, elemFactory} from 'hoist';
 import {vbox} from 'hoist/layout';
 import {observer, observable, action, computed} from 'hoist/mobx';
 import {button, input, modal, modalContent, modalActions, modalHeader} from 'hoist/kit/semantic';
@@ -111,3 +111,5 @@ export class RestFormSemantic extends Component {
         this.recClone[prop] = newVal;
     }
 }
+
+export const restFormSemantic = elemFactory(RestFormSemantic);

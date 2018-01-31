@@ -10,7 +10,7 @@ import {vbox, div} from 'hoist/layout';
 import {observer, observable, action, computed} from 'hoist/mobx';
 import {inputGroup, button, label, dialog} from 'hoist/kit/blueprint';
 import {merge, isEmpty} from 'lodash';
-import {XH} from 'hoist';
+import {XH, elemFactory} from 'hoist';
 
 @observer
 export class RestFormBlueprint extends Component {
@@ -117,3 +117,5 @@ export class RestFormBlueprint extends Component {
         this.recClone[prop] = newVal;
     }
 }
+
+export const restFormBlueprint = elemFactory(RestFormBlueprint);

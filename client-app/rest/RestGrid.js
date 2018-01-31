@@ -8,16 +8,16 @@
 import './styles.css';
 
 import {Component} from 'react';
-import {XH, elemFactory, elem} from 'hoist';
+import {XH, elemFactory} from 'hoist';
 import {SelectionState} from 'hoist/utils/SelectionState';
 import {gridPanel} from 'hoist/ag-grid/GridPanel';
 import {observer, observable, action, toJS} from 'hoist/mobx';
 import {frame, vframe} from 'hoist/layout';
 import {hoistAppModel} from 'hoist/app/HoistAppModel';
 
-import {RestGridToolbar} from './RestGridToolbar';
-import {RestFormBlueprint} from './RestFormBlueprint';
-import {RestFormSemantic} from './RestFormSemantic';
+import {restGridToolbar} from './RestGridToolbar';
+import {restFormBlueprint} from './RestFormBlueprint';
+import {restFormSemantic} from './RestFormSemantic';
 
 @observer
 export class RestGrid extends Component {
@@ -31,7 +31,7 @@ export class RestGrid extends Component {
             formProps = this.createFormProps();
 
         return vframe(
-            elem(RestGridToolbar, toolbarProps),
+            restGridToolbar(toolbarProps),
             frame(
                 gridPanel({
                     rows: toJS(this.rows),
@@ -43,7 +43,7 @@ export class RestGrid extends Component {
                     }
                 })
             ),
-            elem(hoistAppModel.useSemantic ? RestFormSemantic : RestFormBlueprint, formProps)
+            hoistAppModel.useSemantic ? restFormSemantic(formProps) : restFormBlueprint(formProps)
         );
     }
 

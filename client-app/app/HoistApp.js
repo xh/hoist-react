@@ -16,9 +16,9 @@ import {frame, viewport, vframe} from 'hoist/layout';
 import {useStrict, observer} from 'hoist/mobx';
 
 import {hoistAppModel} from './HoistAppModel';
-import {LoginPanel} from './LoginPanel';
-import {ImpersonationBar} from './ImpersonationBar';
-import {VersionBar} from './VersionBar';
+import {loginPanel} from './LoginPanel';
+import {impersonationBar} from './ImpersonationBar';
+import {versionBar} from './VersionBar';
 
 useStrict(true);
 
@@ -42,14 +42,14 @@ export function hoistApp(C) {
             const {authUsername, authCompleted, isInitialized} = hoistAppModel;
 
             if (!authCompleted) return this.renderPreloadMask();
-            if (!authUsername)  return elem(LoginPanel);
+            if (!authUsername)  return loginPanel();
             if (!isInitialized) return this.renderPreloadMask();
 
             return viewport(
                 vframe(
-                    elem(ImpersonationBar),
+                    impersonationBar(),
                     frame(elem(C)),
-                    elem(VersionBar)
+                    versionBar()
                 ),
                 loadMask({model: hoistAppModel.appLoadModel})
             );

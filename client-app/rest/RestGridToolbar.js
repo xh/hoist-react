@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {XH} from 'hoist';
+import {XH, elemFactory} from 'hoist';
 import {observer} from 'hoist/mobx';
 import {hbox} from 'hoist/layout';
 import {button} from 'hoist/kit/semantic';
@@ -61,3 +61,5 @@ export class RestGridToolbar extends Component {
         }).catchDefault();
     }
 }
+
+export const restGridToolbar = elemFactory(RestGridToolbar);
