@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {fileColFactory} from './Utils.js';
-import {dateRenderer, dateTimeRenderer} from '../utils/Format.js';
+import {dateRenderer, dateTimeRenderer, timeRenderer} from '../utils/Format.js';
 
 const colFactory = fileColFactory({
     xtype: 'datecolumn',
@@ -21,7 +21,7 @@ export const dateCol = colFactory({
 
 export const timeCol = colFactory({
     text: 'Time',
-    // renderer: timeRenderer(),
+    valueFormatter: timeRenderer(),
     width: 90
 });
 

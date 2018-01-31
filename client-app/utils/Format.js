@@ -2,7 +2,8 @@ import {defaults} from 'lodash';
 import moment from 'moment';
 
 const DATE_FMT = 'YYYY-=MM-DD',
-    DATETIME_FMT = 'YYYY-MM-DD hh:mma';
+    DATETIME_FMT = 'YYYY-MM-DD h:mma',
+    TIME_FMT = 'h:mma';
 
 /**
  * Wrap values in a custom span
@@ -38,6 +39,9 @@ export const span = function(v, {
  * Render dates and times with specified format
  *
  * @param v - date to format
+ *                (new to react-hoist: accepts Dates, date strings, or millis, as well as other supported inputs,
+ *                see momentJS docs for details)
+ *
  * @param opts - Options object that may include
  *   @param fmt - Ext.Date format string
  *   @param tipFn - function, use to place formatted date in span with title property set to returned string
@@ -51,7 +55,7 @@ export const date = function(v, opts = {}) {
     saveOriginal(v, opts);
     defaults(opts, {fmt: DATE_FMT, tipFn: null});
 
-    let ret = moment(v).format(opts.fmt);
+    let ret = moment(v).format(opts.fmt); // invalid input will produce a 'Invalid Date' string. Do we want to short circuit this with an empty string?
 
     if (opts.tipFn) {
         ret = span(ret, {cls: 'xh-title-tip', title: opts.tipFn(opts.originalValue)});
@@ -59,8 +63,6 @@ export const date = function(v, opts = {}) {
 
     return ret;
 };
-
-export const dateRenderer = createRenderer(date);
 
 export const dateTime = function(v, opts = {}) {
     if (typeof opts == 'string') opts = {fmt: opts};
@@ -71,7 +73,19 @@ export const dateTime = function(v, opts = {}) {
     return date(v, opts);
 };
 
+
+export const time = function(v, opts = {}) {
+    if (typeof opts == 'string') opts = {fmt: opts};
+
+    saveOriginal(v, opts);
+    defaults(opts, {fmt: TIME_FMT});
+
+    return date(v, opts);
+};
+
+export const dateRenderer = createRenderer(date);
 export const dateTimeRenderer = createRenderer(dateTime);
+export const timeRenderer = createRenderer(time);
 
 /**
  * Generate a renderer.
