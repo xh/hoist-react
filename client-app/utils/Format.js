@@ -179,6 +179,24 @@ export function quantity(v, opts = {}) {
     return lessThanM ? number(v, opts) : millions(v, opts);
 }
 
+/**
+ * Render market price
+ *
+ * @param v - int or float to format
+ * @param opts - see number() method
+ */
+export function price(v, opts = {}) {
+    saveOriginal(v, opts);
+
+    if (v == null) return number(v, opts);
+
+    if (opts.precision === undefined) {
+        const absVal = Math.abs(v);
+        opts.precision = absVal < 1000 && absVal != 0 ? 2 : 0;
+    }
+
+    return number(v, opts);
+}
 
 /**
  * Wrap values in a custom span
@@ -313,6 +331,7 @@ export const thousandsRenderer = createRenderer(thousands);
 export const millionsRenderer = createRenderer(millions);
 export const billionsRenderer = createRenderer(billions);
 export const quantityRenderer = createRenderer(quantity);
+export const priceRenderer = createRenderer(price);
 export const dateRenderer = createRenderer(date);
 export const dateTimeRenderer = createRenderer(dateTime);
 export const timeRenderer = createRenderer(time);
@@ -598,12 +617,13 @@ export function numberTests() {
     // test('quantityChange pos allow billions', quantityChange(12345678910, {allowBillions: true}) == '+12.35<span class="units-label">b</span>');
     // test('quantityChange neg allow billions', quantityChange(-12345678910, {allowBillions: true}) == '-12.35<span class="units-label">b</span>');
     // test('quantityChange zero', quantityChange(0, {allowBillions: true}) == '-');
-    //
-    // test('price: (zero)', price(0) == '0.0000');
-    // test('price: (1)', price(1) == '1.0000');
-    // test('price: (10)', price(10) == '10.00');
-    // test('price: (1000)', price(1000) == '1,000');
-    //
+
+    test('price: (zero)', price(0) == '0');
+    test('price: (1)', price(1) == '1.00');
+    test('price: (10)', price(10) == '10.00');
+    test('price: (1000)', price(1000) == '1,000');
+    test('price: (1000)', price(10000) == '10,000');
+
     // let expPrcChange = '0.0000';
     // test('priceChange (zero)', priceChange(0) == expPrcChange);
     //
