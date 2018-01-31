@@ -108,13 +108,6 @@ export function number(v, {
     return ret;
 }
 
-// export const number = function(v, opts = {}) {
-//
-//     // both worked as expected
-//     // return numberFormatter('#,##0.000#', 1234567.890000); // 1,234,567.890
-//     return numeral(1234567.890000).format('0,0.000[0]'); // 1,234,567.890
-// };
-
 /**
  * Render number in thousands.
  *
