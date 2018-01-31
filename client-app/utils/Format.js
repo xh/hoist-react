@@ -112,6 +112,21 @@ function number(v, {
 // };
 
 /**
+ * Render number in thousands.
+ *
+ * @param v - int or float to format
+ * @param opts - see number() method
+ */
+export function thousands(v, opts = {})  {
+    saveOriginal(v, opts);
+
+    if (v == null) return number(v, opts);
+    v = v / _THOUSAND;
+    if (opts.label === true) opts.label = 'k';
+    return number(v, opts);
+}
+
+/**
  * Render number in millions.
  *
  * @param v - int or float to format
@@ -271,6 +286,7 @@ export function compactDate(v, {
 }
 
 export const numberRenderer = createRenderer(number);
+export const thousandsRenderer = createRenderer(thousands);
 export const millionsRenderer = createRenderer(millions);
 export const billionsRenderer = createRenderer(billions);
 export const dateRenderer = createRenderer(date);
@@ -379,6 +395,7 @@ function buildFormatPattern(v, precision, zeroPad) {
 // run tests in hoist-sencha too. Some might fail now due to legit changes, not just lost in translation
 
 export function numberTests() {
+    // need tests for formatter patterns and hueristic based formatting
 
     console.log('');
     console.log('NUMBERS');
@@ -405,27 +422,27 @@ export function numberTests() {
         precision: 4
     })(100.012345678910111213) == '100.0123');
 
-    // need tests for formatter patterns and hueristic
 
+    test('thousands', thousands(1550, {label: true}) == '1.5500<span class=\"xh-units-label\">k</span>');
+    test('thousands', thousands(1550, {label: true, zeroPad: false}) == '1.55<span class=\"xh-units-label\">k</span>');
+    test('thousands (zero)', thousands(0, {label: true}) == '0.00<span class=\"xh-units-label\">k</span>');
+    test('thousands (no label)', thousands(1550) == '1.5500');
+    // need a much better zero pad test
+    test('thousands (no label larger value, zeroPad)', thousands(1234567, {precision: 4, zeroPad: true}) == '1,234.5670');
+    test('thousands(pos) {colorSpec: true}', thousands(1000, {
+        label: false,
+        colorSpec: true
+    }) == '<span class=\"green\">1.0000</span>');
+    test('thousands(neg) label color and ledger)', thousands(-1000, {
+        colorSpec: true,
+        ledger: true,
+        ledgerAlign: false
+    }) == '<span class=\"red\">(1.0000)</span>');
+    test('thousands(zero) (colorSpec: true)', thousands(0, {
+        label: false,
+        colorSpec: true
+    }) == '<span class=\"gray\">0.00</span>');
 
-    //
-    // test('thousands', thousands(1550, {label: true}) == '1.55<span class=\"units-label\">k</span>');
-    // test('thousands (zero)', thousands(0, {label: true}) == '0<span class=\"units-label\">k</span>');
-    // test('thousands (no label)', thousands(1550) == '1.55');
-    // test('thousands (no label larger value, zeroPad)', thousands(1234567, {zeroPad: true}) == '1,234.57');
-    // test('thousands(pos) {colorSpec: true}', thousands(1000, {
-    //         label: false,
-    //         colorSpec: true
-    //     }) == '<span class=\"green\">1</span>');
-    // test('thousands(neg) label color and ledger)', thousands(-1000, {
-    //         colorSpec: true,
-    //         ledger: true
-    //     }) == '<span class=\"red\">(1)</span>');
-    // test('thousands(zero) (colorSpec: true)', thousands(0, {
-    //         label: false,
-    //         colorSpec: true
-    //     }) == '<span class=\"gray\">0</span>');
-    //
     test('millions', millions(1000000, {label: true}) == '1.0000<span class="xh-units-label">m</span>');
     test('millions', millions(1000000, {label: 'M'}) == '1.0000<span class=\"xh-units-label\">M</span>');
     test('millions (zero)', millions(0, {label: true}) == '0.00<span class=\"xh-units-label\">m</span>');
