@@ -75,6 +75,6 @@ export class ImpersonationBarModel {
 
     @action
     setSelectedTarget = (data) => {
-        this.selectedTarget = data.value;
+        this.selectedTarget = data;
     }
 }

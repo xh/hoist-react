@@ -5,17 +5,22 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {elemFactory} from 'hoist/hyperscript/index';
-import {Box, HBox, VBox, Filler, Spacer, Viewport} from './Box';
+import * as Containers from './Containers';
 
 //------------------------------
 // Standard container factories
 //-------------------------------
-export const box = elemFactory(Box);
-export const hbox = elemFactory(HBox);
-export const vbox = elemFactory(VBox);
-export const spacer = elemFactory(Spacer);
-export const filler = elemFactory(Filler);
-export const viewport = elemFactory(Viewport);
+export const box = elemFactory(Containers.Box);
+export const hbox = elemFactory(Containers.HBox);
+export const vbox = elemFactory(Containers.VBox);
+
+export const frame = elemFactory(Containers.Frame);
+export const hframe = elemFactory(Containers.HFrame);
+export const vframe = elemFactory(Containers.VFrame);
+
+export const viewport = elemFactory(Containers.Viewport);
+export const spacer = elemFactory(Containers.Spacer);
+export const filler = elemFactory(Containers.Filler);
 
 //--------------------------------
 // Standard HTML

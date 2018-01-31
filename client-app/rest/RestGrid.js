@@ -12,7 +12,7 @@ import {XH, elemFactory, elem} from 'hoist';
 import {SelectionState} from 'hoist/utils/SelectionState';
 import {gridPanel} from 'hoist/ag-grid/GridPanel';
 import {observer, observable, action, toJS} from 'hoist/mobx';
-import {box, vbox} from 'hoist/layout';
+import {frame, vframe} from 'hoist/layout';
 import {hoistAppModel} from 'hoist/app/HoistAppModel';
 
 import {RestGridToolbar} from './RestGridToolbar';
@@ -30,30 +30,21 @@ export class RestGrid extends Component {
         const toolbarProps = this.createToolbarProps(),
             formProps = this.createFormProps();
 
-        return vbox({
-            flex: 1,
-            items: [
-                elem(RestGridToolbar, toolbarProps),
-                box({
-                    flex: 1,
-                    items: [
-                        gridPanel({
-                            rows: toJS(this.rows),
-                            columns: this.props.columns,
-                            onGridReady: this.onGridReady,
-                            selectionState: this.selectionState,
-                            gridOptions: {
-                                onRowDoubleClicked: this.editRecord
-                            }
-                        }),
-                        elem(
-                            hoistAppModel.useSemantic ? RestFormSemantic : RestFormBlueprint,
-                            formProps
-                        )
-                    ]
+        return vframe(
+            elem(RestGridToolbar, toolbarProps),
+            frame(
+                gridPanel({
+                    rows: toJS(this.rows),
+                    columns: this.props.columns,
+                    onGridReady: this.onGridReady,
+                    selectionState: this.selectionState,
+                    gridOptions: {
+                        onRowDoubleClicked: this.editRecord
+                    }
                 })
-            ]
-        });
+            ),
+            elem(hoistAppModel.useSemantic ? RestFormSemantic : RestFormBlueprint, formProps)
+        );
     }
 
     createToolbarProps() {
