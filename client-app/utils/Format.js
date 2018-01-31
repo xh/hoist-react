@@ -1,9 +1,10 @@
 import {defaults} from 'lodash';
 import moment from 'moment';
 
-const DATE_FMT = 'YYYY-=MM-DD',
+const DATE_FMT = 'YYYY-MM-DD',
     DATETIME_FMT = 'YYYY-MM-DD h:mma',
-    TIME_FMT = 'h:mma';
+    TIME_FMT = 'h:mma',
+    MONTH_DAY_FMT = 'MMM D';
 
 /**
  * Wrap values in a custom span
@@ -83,9 +84,61 @@ export const time = function(v, opts = {}) {
     return date(v, opts);
 };
 
+/**
+ * Render dates formatted based on distance in time from current day
+ *
+ * @param v - date to format
+ * @param opts - Ext.Date format string options, may include:
+ *      @param sameDayFmt - format for dates matching current day, defaults to 'g:ia'
+ *      @param nearFmt - format for dates within the number of months determined by the recentTheshold, defaults to 'M d'
+ *      @param distantFmt - format for dates outside of the number of months specified by the recentTheshold, defaults to 'Y-m-d'
+ *      @param distantThreshold - int used to determined the number of months away from the current month to be considered 'recent'
+ *      @param tipFn - function, use to place formatted date in span with title property set to string returned by this function
+ *      @param originalValue - used to retain an unaltered reference to the original value to be formatted
+ *                             Not typically used by applications.
+ *
+ */
+export const compactDate = function(v, {
+    sameDayFmt = TIME_FMT,
+    nearFmt = MONTH_DAY_FMT,
+    distantFmt = DATE_FMT,
+    distantThreshold = 6,
+    tipFn = null,
+    originalValue = v
+} = {}) {
+
+    // Note from moment docs:
+    // moments are mutable. Calling any of the manipulation methods will change the original moment.
+
+    const now = moment(),
+        today = date(now),
+        valueDay = date(v),
+        // // DEPRECATED: recentPast = ED.add(ED.getLastDateOfMonth(ED.add(now, ED.MONTH, -distantThreshold)), ED.DAY, 1),
+        // now returns last of the month following the threshold, one day earlier from old arg
+        // because moment's isBetween is exclusive without somewhat onerous extra args
+        recentPast = now.clone().subtract(distantThreshold, 'months').endOf('month'),
+        // // DEPRECATED: nearFuture = ED.getFirstDateOfMonth(ED.add(now, ED.MONTH, distantThreshold)),
+        // same as old, think this is good, we should excluded the first of this month
+        // ie why format the first day of this month differently from the rest
+        nearFuture = now.clone().add(distantThreshold, 'months').date(1),
+        dateOpts = {tipFn: tipFn, originalValue: originalValue};
+
+    if (today == valueDay) {
+        dateOpts.fmt = sameDayFmt;
+    } else if (moment(v).isBetween(recentPast, nearFuture)) {
+        dateOpts.fmt = nearFmt;
+    } else {
+        dateOpts.fmt = distantFmt;
+    }
+
+    return date(v, dateOpts);
+};
+
+
 export const dateRenderer = createRenderer(date);
 export const dateTimeRenderer = createRenderer(dateTime);
 export const timeRenderer = createRenderer(time);
+export const compactDateRenderer = createRenderer(compactDate);
 
 /**
  * Generate a renderer.
