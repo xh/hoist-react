@@ -52,7 +52,7 @@ const DBL_SPC = '&nbsp;&nbsp;',
  * If no options are given, a heuristic based auto-rounding will occur
  */
 
-function number(v, {
+export function number(v, {
     nullDisplay = '',
     formatPattern = null,
     precision = 'auto',
