@@ -217,6 +217,12 @@ export function percent(v, opts = {}) {
     return ret;
 }
 
+// intended for use with our percent format strings in XH.util.Export (which expects v / 100)
+export function exportPercent(v, {precision = 4} = {}) {
+    if (v == null || isNaN(v)) return '';
+    return number((v / 100), {precision: precision, zeroPad: true});
+}
+
 /**
  * Wrap values in a custom span
  *
@@ -352,6 +358,7 @@ export const billionsRenderer = createRenderer(billions);
 export const quantityRenderer = createRenderer(quantity);
 export const priceRenderer = createRenderer(price);
 export const percentRenderer = createRenderer(percent);
+export const exportPercentRenderer = createRenderer(exportPercent);
 export const dateRenderer = createRenderer(date);
 export const dateTimeRenderer = createRenderer(dateTime);
 export const timeRenderer = createRenderer(time);
