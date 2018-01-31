@@ -26,6 +26,7 @@ class GridPanel extends Component {
     render() {
         const opts = {
                 enableSorting: true,
+                enableColResize: true,
                 rowSelection: 'single'
             },
             gridOptions = merge(opts, this.props.gridOptions);
