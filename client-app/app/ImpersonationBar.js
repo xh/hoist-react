@@ -13,7 +13,6 @@ import {icon as semanticIcon, button as semanticButton, popup, dropdown} from 'h
 import {observer} from 'hoist/mobx';
 import {hoistAppModel} from 'hoist/app/HoistAppModel';
 
-
 import {ImpersonationBarModel} from './ImpersonationBarModel';
 
 @observer
@@ -81,19 +80,18 @@ export class ImpersonationBar extends Component {
                 placement: 'bottom-end',
                 popoverClassName: 'pt-popover-content-sizing',
                 backdropProps: {style: {backgroundColor: 'rgba(255,255,255,0.5)'}},
-                onClose: model.closeTargetDialog,
                 content: vbox({
                     justifyContent: 'right',
                     items: [
                         suggest({
-                            inputProps: {value: model.selectedTarget},
                             onItemSelect: model.setSelectedTarget,
                             popoverProps: {popoverClassName: Classes.MINIMAL},
                             inputValueRenderer: s => s,
-                            itemPredicate: (q, v, index) => v.includes(q),
+                            itemPredicate: (q, v, index) => !v || v.includes(q),
                             itemRenderer: ({handleClick, isActive, item}) => {
                                 return menuItem({key: item, onClick: handleClick, text: item});
                             },
+                            noResults: menuItem({text: 'No Results'}),
                             $items: model.targets || []
                         }),
                         spacer({height: 5}),
@@ -157,9 +155,10 @@ export class ImpersonationBar extends Component {
                     items: [
                         dropdown({
                             search: true,
+                            placeholder: 'Target User',
                             fluid: true,
                             value: model.selectedTarget,
-                            onChange: (ev, data) => model.setSelectedTarget(data),
+                            onChange: (ev, data) => model.setSelectedTarget(data.value),
                             options: targets.map(it => ({text: it, key: it, value: it}))
                         }),
                         spacer({height: 5}),
@@ -173,8 +172,7 @@ export class ImpersonationBar extends Component {
                 })
             });
         }, 
-
-
+        
         exitButton() {
             const content = identityService.impersonating ? 'Exit Impersonation' : 'Close';
             return this.button({content, icon: 'close', onClick: this.model.doExit});
@@ -183,6 +181,5 @@ export class ImpersonationBar extends Component {
         button(props) {
             return semanticButton({...props, size: 'tiny', compact: true});
         }
-
     }
 }

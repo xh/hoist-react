@@ -43,6 +43,15 @@ class HoistAppModel {
     }
 
     /**
+     * Trigger a full reload of the app.
+     */
+    @action
+    reloadApp() {
+        this.appLoadModel.bind(new Promise(() => {}));
+        window.location.reload(true);
+    }
+
+    /**
      * Call to mark the authenticated user.
      *
      * @param username of verified user. Use null to indicate an

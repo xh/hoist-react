@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {elem, elemFactory, Ref} from 'hoist';
-import {box} from 'hoist/layout';
+import {frame} from 'hoist/layout';
 import {autorun, observer} from 'hoist/mobx';
 
 import {appModel} from '../AppModel';
@@ -49,8 +49,7 @@ export class TabPane extends Component {
 
         return model.isLazyMode ?
             null :
-            box({
-                flex: 1,
+            frame({
                 display: model.isActive ? 'flex' : 'none',
                 margin: 4,
                 items: elem(model.componentClass, {...this.props, flex: 1, ref: this.ref.callback})

@@ -4,8 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {wait} from 'hoist/promise';
-import {XH, identityService, hoistAppModel} from 'hoist';
+import {XH, identityService} from 'hoist';
 import {observable, action} from 'hoist/mobx';
 
 export class ImpersonationBarModel {
@@ -30,17 +29,15 @@ export class ImpersonationBarModel {
     @action
     doImpersonate = () => {
         if (this.selectedTarget) {
-            wait(1000)
-                .then(() => identityService.impersonateAsync(this.selectedTarget))
-                .bind(hoistAppModel.appLoadModel);
+            this.closeTargetDialog();
+            identityService.impersonateAsync(this.selectedTarget);
         }
     }
 
     doExit = () => {
         if (identityService.impersonating) {
-            wait(1000)
-                .then(() => identityService.endImpersonateAsync())
-                .bind(hoistAppModel.appLoadModel);
+            this.closeTargetDialog();
+            identityService.endImpersonateAsync();
         } else {
             this.toggleVisibility();
         }
@@ -64,8 +61,7 @@ export class ImpersonationBarModel {
             .map(t => t.username)
             .filter(t => t !== identityService.username);
     }
-
-
+    
     @action
     closeTargetDialog = () => {
         this.targetDialogOpen = false;
@@ -73,11 +69,12 @@ export class ImpersonationBarModel {
 
     @action
     openTargetDialog = () => {
+        this.selectedTarget = '';
         this.targetDialogOpen = true;
     }
 
     @action
     setSelectedTarget = (data) => {
-        this.selectedTarget = data.value;
+        this.selectedTarget = data;
     }
 }

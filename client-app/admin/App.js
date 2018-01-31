@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {XH, hoistApp, hoistAppModel} from 'hoist';
-import {vbox, hbox, box, div, filler, spacer} from 'hoist/layout';
+import {vframe, hbox, frame, div, filler, spacer} from 'hoist/layout';
 import {button, icon} from 'hoist/kit/blueprint';
 import {button as semanticButton, icon as semanticIcon} from 'hoist/kit/semantic';
 import {observer} from 'hoist/mobx';
@@ -20,17 +20,13 @@ import {appModel} from './AppModel';
 export class App extends Component {
 
     render() {
-        return vbox({
-            flex: 1,
-            items: [
-                this.renderNavBar(),
-                box({
-                    padding: 5,
-                    flex: 1,
-                    items: tabContainer({model: appModel.tabs})
-                })
-            ]
-        });
+        return vframe(
+            this.renderNavBar(),
+            frame({
+                padding: 5,
+                items: tabContainer({model: appModel.tabs})
+            })
+        );
     }
 
     //------------------

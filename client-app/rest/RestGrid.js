@@ -13,7 +13,7 @@ import {SelectionModel} from 'hoist/utils/SelectionModel';
 import {RestModel} from './RestModel';
 import {gridPanel} from 'hoist/ag-grid/GridPanel';
 import {observer, observable, toJS} from 'hoist/mobx';
-import {box, vbox} from 'hoist/layout';
+import {frame, vframe} from 'hoist/layout';
 import {hoistAppModel} from 'hoist/app/HoistAppModel';
 
 import {RestGridToolbar} from './RestGridToolbar';
@@ -30,33 +30,21 @@ export class RestGrid extends Component {
         const toolbarProps = this.createToolbarProps(),
             formProps = this.createFormProps();
 
-        return vbox({
-            flex: 1,
-            items: [
-                // wouldn't it be cleaner/clearer to use the elemFactory at the bottom of files,
-                // then just pass the props to the clearly named variable on inclusion
-                // e.g. restGridToolbar(toolbarProps)
-                elem(RestGridToolbar, toolbarProps),
-                box({
-                    flex: 1,
-                    items: [
-                        gridPanel({
-                            rows: toJS(this.restModel.rows),
-                            columns: this.props.columns,
-                            onGridReady: this.onGridReady,
-                            selectionModel: this.selectionModel,
-                            gridOptions: {
-                                onRowDoubleClicked: this.restModel.editRecord
-                            }
-                        }),
-                        elem(
-                            hoistAppModel.useSemantic ? RestFormSemantic : RestFormBlueprint,
-                            formProps
-                        )
-                    ]
+        return vframe(
+            elem(RestGridToolbar, toolbarProps),
+            frame(
+                gridPanel({
+                    rows: toJS(this.restModel.rows),
+                    columns: this.props.columns,
+                    onGridReady: this.onGridReady,
+                    selectionModel: this.selectionModel,
+                    gridOptions: {
+                        onRowDoubleClicked: this.restModel.editRecord
+                    }
                 })
-            ]
-        });
+            ),
+            elem(hoistAppModel.useSemantic ? RestFormSemantic : RestFormBlueprint, formProps)
+        );
     }
 
     loadAsync() {
@@ -94,4 +82,4 @@ export class RestGrid extends Component {
     }
 }
 
-export const restGrid = elemFactory(RestGrid); // like this
+export const restGrid = elemFactory(RestGrid);
