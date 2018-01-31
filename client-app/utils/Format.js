@@ -112,6 +112,21 @@ function number(v, {
 // };
 
 /**
+ * Render number in millions.
+ *
+ * @param v - int or float to format
+ * @param opts - see number() method
+ */
+export function millions(v, opts = {})  {
+    saveOriginal(v, opts);
+
+    if (v == null) return number(v, opts);
+    v = v / _MILLION;
+    if (opts.label === true) opts.label = 'm';
+    return number(v, opts);
+}
+
+/**
  * Wrap values in a custom span
  *
  * @param v - value to be place in span
@@ -240,6 +255,7 @@ export function compactDate(v, {
 }
 
 export const numberRenderer = createRenderer(number);
+export const millionsRenderer = createRenderer(millions);
 export const dateRenderer = createRenderer(date);
 export const dateTimeRenderer = createRenderer(dateTime);
 export const timeRenderer = createRenderer(time);
@@ -391,30 +407,31 @@ export function numberTests() {
     // test('thousands(zero) (colorSpec: true)', thousands(0, {
     //         label: false,
     //         colorSpec: true
-    //     }) == '<span class=\"ium-gray\">0</span>');
+    //     }) == '<span class=\"gray\">0</span>');
     //
-    // test('millions', millions(1000000, {label: true}) == '1<span class=\"units-label\">m</span>');
-    // test('millions', millions(1000000, {label: 'M'}) == '1<span class=\"units-label\">M</span>');
-    // test('millions (zero)', millions(0, {label: true}) == '0<span class=\"units-label\">m</span>');
-    // test('millions no label)', millions(1555555) == '1.56');
-    // test('millions (precision: 4)', millions(1555555, {
-    //         precision: 4
-    //     }) == '1.5556');
-    // test('millions (huge number)', millions(1555555778877) == '1,555,555.78');
-    // test('millions(pos) (colorSpec: true)', millions(1555555, {
-    //         colorSpec: true
-    //     }) == '<span class=\"green\">1.56</span>');
-    // test('millions(neg) (colorSpec: true)', millions(-1555555, {
-    //         colorSpec: true
-    //     }) == '<span class=\"red\">-1.56</span>');
-    // test('millions(neg) (colorSpec: true, ledger: true)', millions(-1555555, {
-    //         colorSpec: true,
-    //         ledger: true
-    //     }) == '<span class=\"red\">(1.56)</span>');
-    // test('millions(zero) (colorSpec: true)', millions(0, {
-    //         colorSpec: true
-    //     }) == '<span class=\"ium-gray\">0</span>');
-    //
+    test('millions', millions(1000000, {label: true}) == '1.0000<span class="xh-units-label">m</span>');
+    test('millions', millions(1000000, {label: 'M'}) == '1.0000<span class=\"xh-units-label\">M</span>');
+    test('millions (zero)', millions(0, {label: true}) == '0.00<span class=\"xh-units-label\">m</span>');
+    test('millions (no label)', millions(1555555) == '1.5556');
+    test('millions (precision: 2)', millions(1555555, {
+        precision: 2
+    }) == '1.56');
+    test('millions (huge number)', millions(1555555778877) == '1,555,556');
+    test('millions(pos) (colorSpec: true)', millions(1555555, {
+        colorSpec: true
+    }) == '<span class=\"green\">1.5556</span>');
+    test('millions(neg) (colorSpec: true)', millions(-1555555, {
+        colorSpec: true
+    }) == '<span class=\"red\">-1.5556</span>');
+    test('millions(neg) (colorSpec: true, ledger: true)', millions(-1555555, {
+        colorSpec: true,
+        ledger: true,
+        ledgerAlign: false
+    }) == '<span class=\"red\">(1.5556)</span>');
+    test('millions(zero) (colorSpec: true)', millions(0, {
+        colorSpec: true
+    }) == '<span class=\"gray\">0.00</span>');
+
     // test('billions with default label', billions(1000000000, {label: true}) == '1<span class=\"units-label\">b</span>');
     // test('billions with custom label', billions(1000000000, {label: 'B'}) == '1<span class=\"units-label\">B</span>');
     // test('billions (zero, label)', billions(0, {label: true}) == '0<span class=\"units-label\">b</span>');
@@ -432,7 +449,7 @@ export function numberTests() {
     //     }) == '<span class=\"red\">(1.56)</span>');
     // test('billions(zero) (colorSpec: true)', billions(0, {
     //         colorSpec: true
-    //     }) == '<span class=\"ium-gray\">0</span>');
+    //     }) == '<span class=\"gray\">0</span>');
     //
     // test('percent default label', percent(50, {label: true}) == '50%');
     // test('percent (zero)', percent(0) == '0');
@@ -447,7 +464,7 @@ export function numberTests() {
     //     }) == '<span class=\"red\">-51.1%</span>');
     // test('percent(zero) {colorSpec: true}', percent(0, {
     //         colorSpec: true
-    //     }) == '<span class=\"ium-gray\">0</span>');
+    //     }) == '<span class=\"gray\">0</span>');
     //
     // let expectedPercentChange = '0.00%';
     // test('percentChange (zero label)', percentChange(0, {label: true}) == expectedPercentChange);
@@ -494,7 +511,7 @@ export function numberTests() {
     //     }) == '10.1100');
 
     test('number as ledger (zero) {precision: 0}', number(0, {ledger: true, precision: 0}) == '0<span style="visibility:hidden">)</span>');
-    test('number as ledger (zero) {ledgerAlign: false, precision: 0}', number(0, {ledger: true, forceLedgerAlign: false, precision: 0}) == '0', number(0, {ledger: true, ledgerAlign: false, precision: 0}));
+    test('number as ledger (zero) {ledgerAlign: false, precision: 0}', number(0, {ledger: true, forceLedgerAlign: false, precision: 0}) == '0');
     test('number as ledger (pos) {ledgerAlign: false}', number(123456789, {ledger: true, forceLedgerAlign: false}) == '123,456,789');
     test('number as ledger (neg) {ledgerAlign: false}', number(-987654321, {ledger: true, forceLedgerAlign: false}) == '(987,654,321)');
     test('number as ledger (with label, no label class) {ledgerAlign: false}', number(99500, {
@@ -565,7 +582,7 @@ export function numberTests() {
     // expPrcChange = '<span style=\"font-size:1.1em\" class=\" tud-glyph\">&#xe612;</span>5.6543';
     // test('priceChange (neg)', priceChange(-5.654321) == expPrcChange);
     //
-    // expPrcChange = '<span class=\"ium-gray\">0.0000</span>';
+    // expPrcChange = '<span class=\"gray\">0.0000</span>';
     // test('priceChange (zero) {colorSpec: true}', priceChange(0, {colorSpec: true}) == expPrcChange);
     //
     // expPrcChange = '<span class=\"green\"><span style=\"font-size:1.1em\" class=\" tud-glyph\">&#xe613;</span>112,345</span>';
