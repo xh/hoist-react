@@ -6,7 +6,6 @@
  */
 import './styles.css';
 
-
 import React, {Component} from 'react';
 import {XH, environmentService} from 'hoist';
 import {div, h2, table, tbody, tr, th, td} from 'hoist/layout';
