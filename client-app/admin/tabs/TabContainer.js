@@ -92,5 +92,4 @@ export class TabContainer extends Component {
         this.props.model.setSelectedId(activeId);
     }
 }
-
 export const tabContainer = elemFactory(TabContainer);

@@ -66,5 +66,4 @@ export class TabPane extends Component {
         }
     }
 }
-
 export const tabPane = elemFactory(TabPane);

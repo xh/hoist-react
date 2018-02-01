@@ -5,43 +5,41 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {observer} from 'hoist/mobx';
-import {Ref, resolve} from 'hoist';
+import {observer, observable} from 'hoist/mobx';
 import {boolCheckCol} from 'hoist/columns/Core';
+import {restGrid, RestGridModel} from 'hoist/rest';
+
 import {nameFlexCol, typeCol, prefValueCol, notesCol} from '../../columns/Columns';
-import {restGrid} from 'hoist/rest/RestGrid';
 
 @observer
 export class PreferencePanel extends Component {
 
-    url = 'rest/preferenceAdmin';
-
-    columns = [
-        boolCheckCol({field: 'local', width: 60}),
-        nameFlexCol(),
-        typeCol(),
-        prefValueCol({field: 'defaultValue'}),
-        notesCol()
-    ];
-
-    editors = [
-        {name: 'name', allowBlank: false},
-        {name: 'type', allowBlank: false, additionsOnly: true},
-        {name: 'defaultValue'},
-        {name: 'local'},
-        {name: 'notes', type: 'textarea'},
-        {name: 'lastUpdated', readOnly: true},
-        {name: 'lastUpdatedBy', readOnly: true}
-    ];
-
-    ref = new Ref();
+    @observable
+    model = new RestGridModel({
+        url: 'rest/preferenceAdmin',
+        columns: [
+            boolCheckCol({field: 'local', width: 60}),
+            nameFlexCol(),
+            typeCol(),
+            prefValueCol({field: 'defaultValue'}),
+            notesCol()
+        ],
+        editors: [
+            {name: 'name', allowBlank: false},
+            {name: 'type', allowBlank: false, additionsOnly: true},
+            {name: 'defaultValue'},
+            {name: 'local'},
+            {name: 'notes', type: 'textarea'},
+            {name: 'lastUpdated', readOnly: true},
+            {name: 'lastUpdatedBy', readOnly: true}
+        ]
+    });
 
     render() {
-        return restGrid({url: this.url, columns: this.columns, editors: this.editors, ref: this.ref.callback});
+        return restGrid({model: this.model});
     }
 
     loadAsync() {
-        return this.ref.value ? this.ref.value.loadAsync() : resolve();
+        return this.model.loadAsync();
     }
-
 }
