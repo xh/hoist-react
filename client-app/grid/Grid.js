@@ -9,55 +9,59 @@ import 'ag-grid/dist/styles/ag-grid.css';
 import 'ag-grid/dist/styles/ag-theme-fresh.css';
 
 import {Component} from 'react';
-import {merge} from 'lodash';
-import {elem, elemFactory} from 'hoist';
+import {elemFactory} from 'hoist';
 import {div} from 'hoist/layout';
+import {observer, action, toJS} from 'hoist/mobx';
+
+import {defaults} from 'lodash';
 import {AgGridReact} from 'ag-grid-react';
 import {LicenseManager} from 'ag-grid-enterprise';
-import {observer, action} from 'hoist/mobx';
 
 LicenseManager.setLicenseKey(
     'ag-Grid_Evaluation_License_Key_Not_for_Production_100Devs15_February_2018__MTUxODY1MjgwMDAwMA==600d5a723b746ad55afff76eb446f0ad'
 );
+const agGridReact = elemFactory(AgGridReact);
 
+/**
+ * Grid Component
+ */
 @observer
-class GridPanel extends Component {
+class Grid extends Component {
 
+    static gridDefaults = {
+        enableSorting: true,
+        rowSelection: 'single'
+    };
+    
     render() {
-        const opts = {
-                enableSorting: true,
-                rowSelection: 'single'
-            },
-            gridOptions = merge(opts, this.props.gridOptions);
-
+        const props = this.props,
+            model = props.model,
+            gridOptions = defaults(props.gridOptions || {}, Grid.gridDefaults);
+        
         return div({
             style: {flex: '1 1 auto'},
             cls: 'ag-theme-fresh',
-            items: elem(AgGridReact, {
-                onRowDataChanged: this.onRowDataChanged,
+            items: agGridReact({
+                rowData: toJS(model.records),
+                columnDefs: model.columns,
                 onSelectionChanged: this.onSelectionChanged,
                 onGridSizeChanged: this.onGridSizeChanged,
-                gridOptions: gridOptions,
-                rowData: this.props.rows,
-                items: this.props.columns
+                gridOptions
             })
         });
     }
 
-    onRowDataChanged(ev) {
-        ev.api.sizeColumnsToFit();
-    }
-
-    onGridSizeChanged(ev) {
+    //----------------
+    // Implementation
+    //-----------------
+    onGridSizeChanged = (ev) => {
         ev.api.sizeColumnsToFit();
     }
 
     @action
     onSelectionChanged = (ev) => {
-        const selModel = this.props.selectionModel;
-        if (selModel) selModel.setSelection(ev.api.getSelectedRows());
+        const selection = this.props.model.selection;
+        selection.setRecords(ev.api.getSelectedRows());
     }
-
 }
-
-export const gridPanel = elemFactory(GridPanel);
+export const grid = elemFactory(Grid);

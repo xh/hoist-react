@@ -6,72 +6,50 @@
  */
 
 import {Component} from 'react';
+import {elemFactory} from 'hoist';
 import {vbox, div} from 'hoist/layout';
-import {setter, observer, observable, action, computed} from 'hoist/mobx';
+import {observer} from 'hoist/mobx';
 import {inputGroup, button, label, dialog} from 'hoist/kit/blueprint';
-import {merge} from 'lodash';
 
 @observer
 export class RestFormBlueprint extends Component {
 
-    @observable recClone = null;
-    @setter @observable isOpen = true;
-
-
-    @computed get isValid() {
-        // how can we dynamically set the logic here? maybe loop through editors prop
-        // and check its corresponding recClone values against the editors type property (or required/allowblank ect ect)?
-        // maybe only validate the field that just changed to trigger this?
-        return true;
-    }
-
     render() {
-        if (!this.props.rec || !this.isOpen) return null;
-
-        const restModel = this.props.restModel;
+        const {formRecord, formIsAdd} = this.props.model;
+        if (!formRecord) return null;
 
         return dialog({
             iconName: 'inbox',
-            isOpen: this.isOpen,
-            onClose: this.close,
-            title: restModel.isAdd ? 'Add Record' : 'Edit Record',
+            isOpen: true,
+            onClose: this.onClose,
+            title: formIsAdd ? 'Add Record' : 'Edit Record',
             items: [
                 div({
                     cls: 'pt-dialog-body',
-                    items: this.renderForm()
+                    items: this.getForm()
                 }),
                 div({
                     cls: 'pt-dialog-footer',
                     items: div({
                         cls: 'pt-dialog-footer-actions',
-                        items: [
-                            button({
-                                text: 'Save',
-                                iconName: 'tick',
-                                disabled: !this.isValid,
-                                onClick: () => restModel.saveRecord(this.recClone)
-                            })
-                        ]
+                        items: this.getButtons()
                     })
                 })
             ]
         });
     }
 
-    renderForm() {
-        const ret = [],
-            editors = this.props.editors || [];
+    getForm() {
+        const {editors, formRecord} = this.props.model,
+            items = [];
 
         editors.forEach(editor => {
-            // need to incorporate a label prop in the editors
-            // label should be able to be different from the name/field in rec
-            // e.g. 'level' in logs should be labeled 'override'
-            ret.push(label({text: editor.name}));
-            ret.push(
+            const field = editor.name;
+            items.push(label({text: field}));
+            items.push(
                 inputGroup({
-                    placeholder: editor.name,
-                    defaultValue: this.props.rec[editor.name] || '',
-                    onChange: (e) => this.setCloneProp(editor.name, e.target.value),
+                    value: formRecord[field] || '',
+                    onChange: (e) => console.log(e),
                     type: editor.type || 'text',
                     disabled: editor.readOnly,
                     style: {marginBottom: 5}
@@ -83,25 +61,54 @@ export class RestFormBlueprint extends Component {
             cls: 'rest-form',
             width: 400,
             padding: 10,
-            items: ret
+            items
         });
     }
 
     //--------------------------------
     // Implementation
     //--------------------------------
-    close = () => {
-        this.setIsOpen(false);
+    getButtons() {
+        const {formIsValid, formIsWritable, enableDelete, formIsAdd} = this.props.model,
+            ret = [];
+
+        if (formIsWritable) {
+            ret.push(
+                button({
+                    text: 'Save',
+                    iconName: 'tick',
+                    disabled: !formIsValid,
+                    onClick: this.onSaveClick
+                })
+            );
+        }
+
+        if (enableDelete && !formIsAdd) {
+            ret.push(
+                button({
+                    text: 'Delete',
+                    iconName: 'cross',
+                    disabled: !formIsValid,
+                    onClick: this.onDeleteClick
+                })
+            );
+        }
+
+        return ret;
     }
 
-    @action
-    componentWillReceiveProps(nextProps) {
-        this.setIsOpen(true);
-        this.recClone = merge({}, nextProps.rec);
+    onClose = () => {
+        this.props.model.closeForm();
     }
 
-    @action
-    setCloneProp(prop, newVal) {
-        this.recClone[prop] = newVal;
+    onDeleteClick = () => {
+        const model = this.props.model;
+        model.deleteRecord(model.formRecord);
+    }
+
+    onSaveClick = () => {
+        const model = this.props.model;
+        model.saveRecord(model.formRecord);
     }
 }
+export const restFormBlueprint = elemFactory(RestFormBlueprint);

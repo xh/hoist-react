@@ -6,61 +6,43 @@
  */
 
 import {Component} from 'react';
+import {elemFactory} from 'hoist';
 import {vbox} from 'hoist/layout';
-import {setter, observer, observable, action, computed} from 'hoist/mobx';
+import {observer} from 'hoist/mobx';
 import {button, input, modal, modalContent, modalActions, modalHeader} from 'hoist/kit/semantic';
-import {merge} from 'lodash';
 
 @observer
 export class RestFormSemantic extends Component {
 
-    @observable recClone = null;
-    @setter @observable isOpen = true;
-
-    @computed get isValid() {
-        // how can we dynamically set the logic here? maybe loop through editors prop
-        // and check its corresponding recClone values against the editors type property (or required/allowblank ect ect)?
-        // maybe only validate the field that just changed to trigger this?
-        return true;
-    }
-
     render() {
-        if (!this.props.rec || !this.isOpen) return null;
+        const {formRecord, formIsAdd} = this.props.model;
 
-        const restModel = this.props.restModel;
+        if (!formRecord) return null;
 
         return modal({
             open: true,
-            onClose: this.close,
+            onClose: this.onClose,
             closeIcon: true,
             size: 'small',
             items: [
-                modalHeader(restModel.isAdd ? 'Add Record' : 'Edit Record'),
-                modalContent(this.renderForm()),
-                modalActions(
-                    button({
-                        content: 'Save',
-                        icon: {name: 'check', color: 'green'},
-                        compact: true,
-                        disabled: !this.isValid,
-                        onClick: () => restModel.saveRecord(this.recClone)
-                    })
-                )
+                modalHeader(formIsAdd ? 'Add Record' : 'Edit Record'),
+                modalContent(this.getForm()),
+                modalActions(this.getButtons())
             ]
         });
     }
 
-    renderForm() {
-        const editors = this.props.editors || [];
+    //--------------------------
+    // Implementation
+    //---------------------------
+    getForm() {
+        const {editors, formRecord} = this.props.model;
 
-        const ret = editors.map(editor => {
-            // need to incorporate a label prop in the editors
-            // label should be able to be different from the name/field in rec
-            // e.g. 'level' in logs should be labeled 'override'
+        const items = editors.map(editor => {
+            const field = editor.name;
             return input({
-                placeholder: editor.name,
-                defaultValue: this.props.rec[editor.name] || '',
-                onChange: (e) => this.setCloneProp(editor.name, e.target.value),
+                value: formRecord[field] || '',
+                onChange: (e) => console.log(e),
                 type: editor.type || 'text',
                 label: {content: editor.name, style: {width: '115px', verticalAlign: 'middle'}},
                 disabled: editor.readOnly,
@@ -71,25 +53,53 @@ export class RestFormSemantic extends Component {
         return vbox({
             cls: 'rest-form',
             padding: 10,
-            items: ret
+            items
         });
     }
 
-    //--------------------------------
-    // Implementation
-    //--------------------------------
-    close = () => {
-        this.setIsOpen(false);
+    getButtons() {
+        const {formIsValid, formIsWritable, enableDelete, formIsAdd} = this.props.model,
+            ret = [];
+        
+        if (enableDelete && !formIsAdd) {
+            ret.push(
+                button({
+                    content: 'Delete',
+                    icon: {name: 'x', color: 'red'},
+                    compact: true,
+                    disabled: !formIsValid,
+                    onClick: this.onDeleteClick
+                })
+            );
+        }
+
+        if (formIsWritable) {
+            ret.push(
+                button({
+                    content: 'Save',
+                    icon: {name: 'check', color: 'green'},
+                    compact: true,
+                    disabled: !formIsValid,
+                    onClick: this.onSaveClick
+                })
+            );
+        }
+
+        return ret;
     }
 
-    @action
-    componentWillReceiveProps(nextProps) {
-        this.setIsOpen(true);
-        this.recClone = merge({}, nextProps.rec);
+    onClose = () => {
+        this.props.model.closeForm();
     }
 
-    @action
-    setCloneProp(prop, newVal) {
-        this.recClone[prop] = newVal;
+    onDeleteClick = () => {
+        const model = this.props.model;
+        model.deleteRecord(model.formRecord);
+    }
+
+    onSaveClick = () => {
+        const model = this.props.model;
+        model.saveRecord(model.formRecord);
     }
 }
+export const restFormSemantic = elemFactory(RestFormSemantic);

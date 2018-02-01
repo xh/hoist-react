@@ -8,78 +8,35 @@
 import './styles.css';
 
 import {Component} from 'react';
-import {XH, elemFactory, elem} from 'hoist';
-import {SelectionModel} from 'hoist/utils/SelectionModel';
-import {RestModel} from './RestModel';
-import {gridPanel} from 'hoist/ag-grid/GridPanel';
-import {observer, observable, toJS} from 'hoist/mobx';
+import {elemFactory} from 'hoist';
+import {grid} from 'hoist/grid';
+import {observer} from 'hoist/mobx';
 import {frame, vframe} from 'hoist/layout';
-import {hoistAppModel} from 'hoist/app/HoistAppModel';
 
-import {RestGridToolbar} from './RestGridToolbar';
-import {RestFormBlueprint} from './RestFormBlueprint';
-import {RestFormSemantic} from './RestFormSemantic';
+import {restGridToolbar} from './RestGridToolbar';
+import {restForm} from './RestForm';
 
 @observer
 export class RestGrid extends Component {
 
-    @observable restModel = new RestModel({url: this.props.url});
-    @observable selectionModel = new SelectionModel();
-
     render() {
-        const toolbarProps = this.createToolbarProps(),
-            formProps = this.createFormProps();
-
+        const model = this.props.model;
         return vframe(
-            elem(RestGridToolbar, toolbarProps),
+            restGridToolbar({model}),
             frame(
-                gridPanel({
-                    rows: toJS(this.restModel.rows),
-                    columns: this.props.columns,
-                    onGridReady: this.onGridReady,
-                    selectionModel: this.selectionModel,
+                grid({
+                    model,
                     gridOptions: {
-                        onRowDoubleClicked: this.restModel.editRecord
+                        onRowDoubleClicked: this.onRowDoubleClicked
                     }
                 })
             ),
-            elem(hoistAppModel.useSemantic ? RestFormSemantic : RestFormBlueprint, formProps)
+            restForm({model})
         );
     }
 
-    loadAsync() {
-        return XH
-            .fetchJson({url: this.props.url})
-            .then(rows => {
-                this.completeLoad(true, rows.data);
-            }).catch(e => {
-                this.completeLoad(false, e);
-                XH.handleException(e);
-            });
-    }
-
-    //-----------------
-    // Implementation
-    //-----------------
-    completeLoad = (success, vals) => {
-        this.restModel.setRows(success ? vals : []);
-    }
-
-    createToolbarProps() {
-        return {
-            restModel: this.restModel,
-            selectionModel: this.selectionModel
-        };
-    }
-
-    createFormProps() {
-        const restModel = this.restModel;
-        return {
-            restModel: restModel,
-            rec: restModel.rec, // this is key to getting mobx to rerender on change
-            editors: this.props.editors
-        };
+    onRowDoubleClicked = (row) => {
+        this.props.model.openEditForm(row.data);
     }
 }
-
 export const restGrid = elemFactory(RestGrid);

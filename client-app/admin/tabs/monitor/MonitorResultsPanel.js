@@ -6,11 +6,11 @@
  */
 import {Component} from 'react';
 
-import {XH, elem} from 'hoist';
+import {XH} from 'hoist';
 import {box} from 'hoist/layout';
 import {observable, action, observer} from 'hoist/mobx';
 
-import {Tile} from './Tile';
+import {tile} from './Tile';
 
 @observer
 export class MonitorResultsPanel extends Component {
@@ -23,7 +23,7 @@ export class MonitorResultsPanel extends Component {
             flexDirection: 'row',
             flexWrap: 'wrap',
             alignContent: 'flex-start',
-            items: this.results.map(it => elem(Tile, {check: it, key: it.name}))
+            items: this.results.map(it => tile({check: it, key: it.name}))
         });
     }
 
@@ -40,7 +40,7 @@ export class MonitorResultsPanel extends Component {
     }
 
     @action
-    completeLoad = (success, vals) => {
+    completeLoad(success, vals) {
         this.results = success ? Object.values(vals) : [];
     }
 }
