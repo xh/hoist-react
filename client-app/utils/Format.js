@@ -1,20 +1,27 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2017 Extremely Heavy Industries Inc.
+ */
+
 import {Exception} from 'hoist/exception/Exception';
 import {defaults, isFinite, isString, capitalize} from 'lodash';
 import moment from 'moment';
 import numeral from 'numeral';
 import numberFormatter from 'number-formatter';
 
-const _THOUSAND = 1000,
+export const _THOUSAND = 1000,
     _MILLION  = 1000000,
     _BILLION  = 1000000000,
     _MAX_NUMERIC_PRECISION = 12;
 
-const DATE_FMT = 'YYYY-MM-DD',
+export const DATE_FMT = 'YYYY-MM-DD',
     DATETIME_FMT = 'YYYY-MM-DD h:mma',
     TIME_FMT = 'h:mma',
     MONTH_DAY_FMT = 'MMM D';
 
-const DBL_SPC = '&nbsp;&nbsp;',
+export const DBL_SPC = '&nbsp;&nbsp;',
     BULLET = '&nbsp;&bull;&nbsp;',
     DELTA = '&#916;',
     UP_TICK = '&#9652;',
@@ -187,7 +194,7 @@ export function price(v, opts = {}) {
 
     if (opts.precision === undefined) {
         const absVal = Math.abs(v);
-        opts.precision = absVal < 1000 && absVal != 0 ? 2 : 0;
+        opts.precision = absVal < 1000 && absVal !== 0 ? 2 : 0;
     }
 
     return number(v, opts);
@@ -263,7 +270,7 @@ export function span(v, {
  *  For convenience opts may be provided as a an MomentJs format string.
  */
 export function date(v, opts = {}) {
-    if (typeof opts == 'string') opts = {fmt: opts};
+    if (typeof opts === 'string') opts = {fmt: opts};
 
     saveOriginal(v, opts);
     defaults(opts, {fmt: DATE_FMT, tipFn: null});
@@ -278,7 +285,7 @@ export function date(v, opts = {}) {
 }
 
 export function dateTime(v, opts = {}) {
-    if (typeof opts == 'string') opts = {fmt: opts};
+    if (typeof opts === 'string') opts = {fmt: opts};
 
     saveOriginal(v, opts);
     defaults(opts, {fmt: DATETIME_FMT});
@@ -288,7 +295,7 @@ export function dateTime(v, opts = {}) {
 
 
 export function time(v, opts = {}) {
-    if (typeof opts == 'string') opts = {fmt: opts};
+    if (typeof opts === 'string') opts = {fmt: opts};
 
     saveOriginal(v, opts);
     defaults(opts, {fmt: TIME_FMT});
@@ -334,7 +341,7 @@ export function compactDate(v, {
         nearFuture = now.clone().add(distantThreshold, 'months').date(1),
         dateOpts = {tipFn: tipFn, originalValue: originalValue};
 
-    if (today == valueDay) {
+    if (today === valueDay) {
         dateOpts.fmt = sameDayFmt;
     } else if (moment(v).isBetween(recentPast, nearFuture)) {
         dateOpts.fmt = nearFmt;
@@ -404,7 +411,7 @@ export function capitalizeWords(str) {
  */
 function createRenderer(formatter) {
     return function(config) {
-        const isObj = (typeof config == 'object');
+        const isObj = (typeof config === 'object');
         return (v) => {
             const formatterConfig = isObj ? defaults({}, config) : config,
                 val = v.value || v;
@@ -428,7 +435,7 @@ function valueColor(v, colorSpec) {
     if (!isFinite(v)) return '';
 
     const defaultColors = {pos: 'green', neg: 'red', neutral: 'gray'};
-    colorSpec = typeof colorSpec == 'object' ? colorSpec : defaultColors;
+    colorSpec = typeof colorSpec === 'object' ? colorSpec : defaultColors;
 
     if (!colorSpec.pos || !colorSpec.neg || !colorSpec.neutral) {
         throw Exception('Invalid color spec: ' + colorSpec);
@@ -454,11 +461,11 @@ function buildFormatPattern(v, precision, zeroPad) {
 
     let pattern = '';
 
-    if (precision % 1 == 0) {
+    if (precision % 1 === 0) {
         precision = precision < _MAX_NUMERIC_PRECISION ? precision : _MAX_NUMERIC_PRECISION;
-        pattern = precision == 0 ? '#,##0.' : '#,##0.' + '0'.repeat(precision);
+        pattern = precision === 0 ? '#,##0.' : '#,##0.' + '0'.repeat(precision);
     } else {
-        if (num == 0) {
+        if (num === 0) {
             pattern = '0.00';
         } else if (num < .01) {
             pattern = '#,##0.000000';
