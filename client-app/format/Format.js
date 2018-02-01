@@ -11,20 +11,17 @@ import moment from 'moment';
 import numeral from 'numeral';
 import numberFormatter from 'number-formatter';
 
-export const _THOUSAND = 1000,
+const _THOUSAND = 1000,
     _MILLION  = 1000000,
     _BILLION  = 1000000000,
     _MAX_NUMERIC_PRECISION = 12;
 
-export const DATE_FMT = 'YYYY-MM-DD',
+const DATE_FMT = 'YYYY-MM-DD',
     DATETIME_FMT = 'YYYY-MM-DD h:mma',
     TIME_FMT = 'h:mma',
     MONTH_DAY_FMT = 'MMM D';
 
-export const DBL_SPC = '&nbsp;&nbsp;',
-    BULLET = '&nbsp;&bull;&nbsp;',
-    DELTA = '&#916;',
-    UP_TICK = '&#9652;',
+const UP_TICK = '&#9652;',
     DOWN_TICK = '&#9662;',
     LEDGER_ALIGN_PLACEHOLDER = '<span style="visibility:hidden">)</span>';
 
@@ -267,7 +264,7 @@ export function span(v, {
  *   @param tipFn - function, use to place formatted date in span with title property set to returned string
  *                            will be passed the originalValue param
  *
- *  For convenience opts may be provided as a an MomentJs format string.
+ *  For convenience opts may be provided as a MomentJs format string.
  */
 export function date(v, opts = {}) {
     if (typeof opts === 'string') opts = {fmt: opts};

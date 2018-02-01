@@ -6,7 +6,7 @@
  */
 
 import {fileColFactory} from 'hoist/columns/Utils.js';
-import {numberRenderer} from '../../utils/Format.js';
+import {numberRenderer} from '../../format/Format.js';
 
 const colFactory = fileColFactory();
 
