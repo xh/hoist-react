@@ -1,0 +1,45 @@
+.expanded, .collapsed {
+    max-width: 0;
+    overflow-x: hidden;
+    -webkit-transition: max-width 0.5s ease-in-out;
+    -moz-transition: max-width 0.5s ease-in-out;
+    -o-transition: max-width 0.5s ease-in-out;
+    transition: max-width 0.5s ease-in-out;
+}
+
+.expanded {
+    max-width: 250px;
+    width: 250px;
+}
+
+.ui.small.button.resizer {
+    font-size: 0.7em;
+}
+
+.log-display {
+    overflow-y: auto;
+    background-color: lightgray;
+}
+
+.log-display .line {
+    font-size: 11px;
+    font-family: Monaco, monospace;
+}
+
+.line div {
+    display: inline-block;
+    white-space: pre;
+}
+
+.log-display .line .row-number {
+    padding-right: 6px;
+    margin-right: 6px;
+    width: 50px;
+    text-align: right;
+    color: #859900;
+    border-right: 1px dotted #859900;
+}
+
+.log-display .line .row-content {
+
+}
