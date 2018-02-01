@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {identityService} from 'hoist';
+import {identityService, elemFactory} from 'hoist';
 import {hbox, vbox, spacer, filler, div} from 'hoist/layout';
 import {Classes, button, suggest, icon, popover, menuItem} from 'hoist/kit/blueprint';
 import {icon as semanticIcon, button as semanticButton, popup, dropdown} from 'hoist/kit/semantic';
@@ -183,3 +183,4 @@ export class ImpersonationBar extends Component {
         }
     }
 }
+export const impersonationBar = elemFactory(ImpersonationBar);

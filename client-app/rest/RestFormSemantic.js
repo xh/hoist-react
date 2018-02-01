@@ -60,7 +60,7 @@ export class RestFormSemantic extends Component {
     getButtons() {
         const {formIsValid, formIsWritable, enableDelete, formIsAdd} = this.props.model,
             ret = [];
-        
+
         if (enableDelete && !formIsAdd) {
             ret.push(
                 button({
