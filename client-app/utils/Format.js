@@ -110,7 +110,6 @@ export function number(v, {
         ret = span(ret, {cls: 'xh-title-tip', title: tipFn(originalValue)});
     }
 
-    if (ret == '[object Object]') debugger;
     return ret;
 }
 
