@@ -20,7 +20,6 @@ const DBL_SPC = '&nbsp;&nbsp;',
     DELTA = '&#916;',
     UP_TICK = '&#9652;',
     DOWN_TICK = '&#9662;',
-    DBL_SPC = '&nbsp;&nbsp;',
     LEDGER_ALIGN_PLACEHOLDER = '<span style="visibility:hidden">)</span>';
 
 
