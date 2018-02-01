@@ -5,7 +5,7 @@
  * Copyright © 2017 Extremely Heavy Industries Inc.
  */
 
-import {Exception} from 'hoist/exception/Exception';
+import {XH} from 'hoist/exception/Exception';
 import {defaults, isFinite, isString, capitalize} from 'lodash';
 import moment from 'moment';
 import numeral from 'numeral';
@@ -24,7 +24,6 @@ const DATE_FMT = 'YYYY-MM-DD',
 const UP_TICK = '&#9652;',
     DOWN_TICK = '&#9662;',
     LEDGER_ALIGN_PLACEHOLDER = '<span style="visibility:hidden">)</span>';
-
 
 /**
  * Standard number formatting for Hoist
@@ -118,9 +117,8 @@ export function number(v, {
  */
 export function thousands(v, opts = {})  {
     saveOriginal(v, opts);
-
-    if (v == null || v === '') return number(v, opts); // should probably add this check in hoist-sencha, see below
-    v = v / _THOUSAND; // empty string input would return 0.00 even in our existing sencha implementations because '' / 1000 == 0
+    if (v == null || v === '') return number(v, opts);
+    v = v / _THOUSAND;
     if (opts.label === true) opts.label = 'k';
     return number(v, opts);
 }
@@ -133,8 +131,8 @@ export function thousands(v, opts = {})  {
  */
 export function millions(v, opts = {})  {
     saveOriginal(v, opts);
-
     if (v == null || v === '') return number(v, opts);
+
     v = v / _MILLION;
     if (opts.label === true) opts.label = 'm';
     return number(v, opts);
@@ -149,8 +147,8 @@ export function millions(v, opts = {})  {
  */
 export function billions(v, opts = {})  {
     saveOriginal(v, opts);
-
     if (v == null || v === '') return number(v, opts);
+
     v = v / _BILLION;
     if (opts.label === true) opts.label = 'b';
     return number(v, opts);
@@ -164,7 +162,6 @@ export function billions(v, opts = {})  {
  */
 export function quantity(v, opts = {}) {
     saveOriginal(v, opts);
-
     if (v == null) return number(v, opts);
 
     const lessThanM = Math.abs(v) < _MILLION;
@@ -186,7 +183,6 @@ export function quantity(v, opts = {}) {
  */
 export function price(v, opts = {}) {
     saveOriginal(v, opts);
-
     if (v == null || v === '') return number(v, opts);
 
     if (opts.precision === undefined) {
@@ -206,8 +202,7 @@ export function price(v, opts = {}) {
  */
 export function percent(v, opts = {}) {
     saveOriginal(v, opts);
-
-    if (v == null || v === '') return number(v, opts); // empty string in hoist-sencha => '%' or '(%)'
+    if (v == null || v === '') return number(v, opts);
 
     defaults(opts, {precision: 2, label: '%', labelCls: null});
 
@@ -256,8 +251,6 @@ export function span(v, {
  * Render dates and times with specified format
  *
  * @param v - date to format
- *                (new to react-hoist: accepts Dates, date strings, or millis, as well as other supported inputs,
- *                see momentJS docs for details)
  *
  * @param opts - Options object that may include
  *   @param fmt - MomentJs format string
@@ -267,12 +260,12 @@ export function span(v, {
  *  For convenience opts may be provided as a MomentJs format string.
  */
 export function date(v, opts = {}) {
+    if (typeof v === 'string') return v;
     if (typeof opts === 'string') opts = {fmt: opts};
-
-    saveOriginal(v, opts);
     defaults(opts, {fmt: DATE_FMT, tipFn: null});
+    saveOriginal(v, opts);
 
-    let ret = moment(v).format(opts.fmt); // invalid input will produce a 'Invalid Date' string. Do we want to short circuit this with an empty string?
+    let ret = moment(v).format(opts.fmt);
 
     if (opts.tipFn) {
         ret = span(ret, {cls: 'xh-title-tip', title: opts.tipFn(opts.originalValue)});
@@ -283,9 +276,9 @@ export function date(v, opts = {}) {
 
 export function dateTime(v, opts = {}) {
     if (typeof opts === 'string') opts = {fmt: opts};
-
-    saveOriginal(v, opts);
     defaults(opts, {fmt: DATETIME_FMT});
+    saveOriginal(v, opts);
+
 
     return date(v, opts);
 }
@@ -293,9 +286,8 @@ export function dateTime(v, opts = {}) {
 
 export function time(v, opts = {}) {
     if (typeof opts === 'string') opts = {fmt: opts};
-
-    saveOriginal(v, opts);
     defaults(opts, {fmt: TIME_FMT});
+    saveOriginal(v, opts);
 
     return date(v, opts);
 }
@@ -313,6 +305,7 @@ export function time(v, opts = {}) {
  *      @param originalValue - used to retain an unaltered reference to the original value to be formatted
  *                             Not typically used by applications.
  *
+ * Note: Moments are mutable. Calling any of the manipulation methods will change the original moment.
  */
 export function compactDate(v, {
     sameDayFmt = TIME_FMT,
@@ -323,18 +316,10 @@ export function compactDate(v, {
     originalValue = v
 } = {}) {
 
-    // Note from moment docs:
-    // moments are mutable. Calling any of the manipulation methods will change the original moment.
     const now = moment(),
-        today = date(now),
+        today = date(Date.now()),
         valueDay = date(v),
-        // // DEPRECATED: recentPast = ED.add(ED.getLastDateOfMonth(ED.add(now, ED.MONTH, -distantThreshold)), ED.DAY, 1),
-        // now returns last of the month following the threshold, one day earlier from old arg
-        // because moment's isBetween is exclusive without somewhat onerous extra args
         recentPast = now.clone().subtract(distantThreshold, 'months').endOf('month'),
-        // // DEPRECATED: nearFuture = ED.getFirstDateOfMonth(ED.add(now, ED.MONTH, distantThreshold)),
-        // same as old, think this is good, we should excluded the first of this month
-        // ie why format the first day of this month differently from the rest
         nearFuture = now.clone().add(distantThreshold, 'months').date(1),
         dateOpts = {tipFn: tipFn, originalValue: originalValue};
 
@@ -366,18 +351,6 @@ export const dateTimeRenderer = createRenderer(dateTime);
 export const timeRenderer = createRenderer(time);
 export const compactDateRenderer = createRenderer(compactDate);
 
-
-/**
- * DOMParser is the browser's parser.
- * It decodes HTML entities into their unicode equivalent without regex and is safe against XSS.
- * See: http://stackoverflow.com/questions/1912501/unescape-html-entities-in-javascript/34064434#34064434
- */
-export function htmlDecode(v) {
-    if (!isString(v) || v == null || !v.length) return v;
-    const domParser = new DOMParser();
-    return domParser.parseFromString(v, 'text/html').documentElement.textContent;
-}
-
 /**
  * Basic util for splitting a string (via ' ') and capitalizing each word - e.g. for names.
  * Not intended to handle more advanced usages such as HTML or other word boundary characters.
@@ -401,8 +374,6 @@ export function capitalizeWords(str) {
  * Renderers take a config for its formatter method
  * If this config is an object it will be cloned before being passed to its formatter.
  * Cloning ensures that the formatter gets a clean config object each time it is called.
- *
- * To account for ag-grid behavior, renderers will check it's input for a value property before passing to formatter
  *
  * @param formatter - an existing method
  */
@@ -435,7 +406,7 @@ function valueColor(v, colorSpec) {
     colorSpec = typeof colorSpec === 'object' ? colorSpec : defaultColors;
 
     if (!colorSpec.pos || !colorSpec.neg || !colorSpec.neutral) {
-        throw Exception('Invalid color spec: ' + colorSpec);
+        throw XH.exception('Invalid color spec: ' + colorSpec);
     }
 
     if (v < 0) return colorSpec.neg;
