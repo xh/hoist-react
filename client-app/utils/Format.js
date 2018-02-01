@@ -110,6 +110,7 @@ export function number(v, {
         ret = span(ret, {cls: 'xh-title-tip', title: tipFn(originalValue)});
     }
 
+    if (ret == '[object Object]') debugger;
     return ret;
 }
 
@@ -414,7 +415,7 @@ function createRenderer(formatter) {
         const isObj = (typeof config === 'object');
         return (v) => {
             const formatterConfig = isObj ? defaults({}, config) : config,
-                val = v.value || v;
+                val = (typeof v === 'object') ? v.value : v;
             return formatter(val, formatterConfig);
         };
     };

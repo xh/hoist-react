@@ -6,6 +6,7 @@
  */
 
 import {fileColFactory} from 'hoist/columns/Utils.js';
+import {numberRenderer} from '../../utils/Format.js';
 
 const colFactory = fileColFactory();
 
@@ -76,7 +77,8 @@ export const impersonating = colFactory({
 export const elapsed = colFactory({
     text: 'Elapsed (ms)',
     field: 'elapsed',
-    width: 60
+    width: 60,
+    valueFormatter: numberRenderer({precision: 0})
 });
 
 export const severity = colFactory({
