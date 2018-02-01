@@ -36,5 +36,4 @@ export class Tile extends Component {
         });
     }
 }
-
 export const tile = elemFactory(Tile);

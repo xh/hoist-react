@@ -8,7 +8,6 @@ import {Component} from 'react';
 import {observer} from 'hoist/mobx';
 import {h2} from 'hoist/layout';
 
-
 @observer
 export class FeedbackPanel extends Component {
     render() {

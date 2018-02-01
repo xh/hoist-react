@@ -40,7 +40,7 @@ export class MonitorResultsPanel extends Component {
     }
 
     @action
-    completeLoad = (success, vals) => {
+    completeLoad(success, vals) {
         this.results = success ? Object.values(vals) : [];
     }
 }

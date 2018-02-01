@@ -6,7 +6,7 @@
  */
 
 import {asArray} from 'hoist/utils/JsUtils';
-import {defaults, isPlainObject, isString} from 'lodash';
+import {defaults, isPlainObject, isString, isArray} from 'lodash';
 import React from 'react';
 //------------------------------------------
 // Factory generator, and default factories
@@ -109,8 +109,9 @@ function normalizeArgs(args) {
     if (len === 1) {
         const arg = args[0];
         if (isPlainObject(arg) && !arg.$$typeof) return arg;
+        if (isArray(arg)) return {items: arg};
     }
-    return {items: args};
+    return {items: args};  // Assume > 1 args are all children
 }
 
 const defaultChildFactory = elemFactory('div');
