@@ -1,5 +1,5 @@
 import {Exception} from 'hoist/exception/Exception';
-import {defaults, isBoolean, isArray, isNumber, isString, capitalize} from 'lodash';
+import {defaults, isFinite, isString, capitalize} from 'lodash';
 import moment from 'moment';
 import numeral from 'numeral';
 import numberFormatter from 'number-formatter';
@@ -115,8 +115,8 @@ export function number(v, {
 export function thousands(v, opts = {})  {
     saveOriginal(v, opts);
 
-    if (v == null || v === '') return number(v, opts);
-    v = v / _THOUSAND;
+    if (v == null || v === '') return number(v, opts); // should probably add this check in hoist-sencha, see below
+    v = v / _THOUSAND; // empty string input would return 0.00 even in our existing sencha implementations because '' / 1000 == 0
     if (opts.label === true) opts.label = 'k';
     return number(v, opts);
 }
@@ -183,7 +183,7 @@ export function quantity(v, opts = {}) {
 export function price(v, opts = {}) {
     saveOriginal(v, opts);
 
-    if (v == null) return number(v, opts);
+    if (v == null || v === '') return number(v, opts);
 
     if (opts.precision === undefined) {
         const absVal = Math.abs(v);
@@ -203,7 +203,7 @@ export function price(v, opts = {}) {
 export function percent(v, opts = {}) {
     saveOriginal(v, opts);
 
-    if (v == null) return number(v, opts);
+    if (v == null || v === '') return number(v, opts); // empty string in hoist-sencha => '%' or '(%)'
 
     defaults(opts, {precision: 2, label: '%', labelCls: null});
 
@@ -301,9 +301,9 @@ export function time(v, opts = {}) {
  *
  * @param v - date to format
  * @param opts - MomentJs format string options, may include:
- *      @param sameDayFmt - format for dates matching current day, defaults to 'g:ia'
- *      @param nearFmt - format for dates within the number of months determined by the recentTheshold, defaults to 'M d'
- *      @param distantFmt - format for dates outside of the number of months specified by the recentTheshold, defaults to 'Y-m-d'
+ *      @param sameDayFmt - format for dates matching current day, defaults to 'hh:mma'
+ *      @param nearFmt - format for dates within the number of months determined by the recentTheshold, defaults to 'MMM D'
+ *      @param distantFmt - format for dates outside of the number of months specified by the recentTheshold, defaults to 'YYYY-MM-DD'
  *      @param distantThreshold - int used to determined the number of months away from the current month to be considered 'recent'
  *      @param tipFn - function, use to place formatted date in span with title property set to string returned by this function
  *      @param originalValue - used to retain an unaltered reference to the original value to be formatted
@@ -321,7 +321,6 @@ export function compactDate(v, {
 
     // Note from moment docs:
     // moments are mutable. Calling any of the manipulation methods will change the original moment.
-
     const now = moment(),
         today = date(now),
         valueDay = date(v),
@@ -371,8 +370,8 @@ export const compactDateRenderer = createRenderer(compactDate);
  */
 export function htmlDecode(v) {
     if (!isString(v) || v == null || !v.length) return v;
-    const _domParser = new DOMParser();
-    return _domParser.parseFromString(v, 'text/html').documentElement.textContent;
+    const domParser = new DOMParser();
+    return domParser.parseFromString(v, 'text/html').documentElement.textContent;
 }
 
 /**
@@ -421,12 +420,12 @@ function saveOriginal(v, opts) {
 }
 
 function signGlyph(v) {
-    if (isNumber(v)) return '';
+    if (isFinite(v)) return '';
     return v === 0 ? span(UP_TICK, 'transparent-color') :  v > 0 ? UP_TICK : DOWN_TICK;
 }
 
 function valueColor(v, colorSpec) {
-    if (!isNumber(v)) return '';
+    if (!isFinite(v)) return '';
 
     const defaultColors = {pos: 'green', neg: 'red', neutral: 'gray'};
     colorSpec = typeof colorSpec == 'object' ? colorSpec : defaultColors;
@@ -479,268 +478,4 @@ function buildFormatPattern(v, precision, zeroPad) {
     }
 
     return pattern;
-}
-
-// /////////////////////////////////
-// TESTS
-// ///////////////////////////////
-
-// run tests in hoist-sencha too. Some might fail now due to legit changes, not just lost in translation
-
-export function numberTests() {
-    // need tests for formatter patterns and hueristic based formatting
-
-    console.log('');
-    console.log('NUMBERS');
-    console.log('');
-
-    // test('number {precision: 2})', number(100.00000, {precision: 2}) == '100.00');
-    // test('number {precision: 2, zeroPad: false})', number(100.00000, {
-    //     precision: 2,
-    //     zeroPad: false
-    // }) == '100');
-    // test('number(long decimal) {precision: 2}', number(100.012345678910111213, {
-    //     precision: 2
-    // }) == '100.01');
-    // test('number(over max precision) {precision: 15}', number(100.012345678910111213, {
-    //     precision: 15
-    // }) == '100.012345678910');
-    // test('number(over max precision) {precision: 15}!!!', number(100.012345678910111213, {
-    //     precision: 15
-    // }) == '100.012345678910');
-    // test('number(auto)', number(100.012345678910111213) == '100.01');
-    // test('number(commas for 1000000)', number(1000000) == '1,000,000');
-    // test('number(commas for 1000000000)', number(1000000000) == '1,000,000,000');
-    // test('numberRenderer {precision: 4, zeroPad: true}', numberRenderer({
-    //     precision: 4
-    // })(100.012345678910111213) == '100.0123');
-    //
-    //
-    // test('thousands', thousands(1550, {label: true}) == '1.5500<span class=\"xh-units-label\">k</span>');
-    // test('thousands', thousands(1550, {label: true, zeroPad: false}) == '1.55<span class=\"xh-units-label\">k</span>');
-    // test('thousands (zero)', thousands(0, {label: true}) == '0.00<span class=\"xh-units-label\">k</span>');
-    // test('thousands (no label)', thousands(1550) == '1.5500');
-    // // need a much better zero pad test
-    // test('thousands (no label larger value, zeroPad)', thousands(1234567, {precision: 4, zeroPad: true}) == '1,234.5670');
-    // test('thousands(pos) {colorSpec: true}', thousands(1000, {
-    //     label: false,
-    //     colorSpec: true
-    // }) == '<span class=\"green\">1.0000</span>');
-    // test('thousands(neg) label color and ledger)', thousands(-1000, {
-    //     colorSpec: true,
-    //     ledger: true,
-    //     ledgerAlign: false
-    // }) == '<span class=\"red\">(1.0000)</span>');
-    // test('thousands(zero) (colorSpec: true)', thousands(0, {
-    //     label: false,
-    //     colorSpec: true
-    // }) == '<span class=\"gray\">0.00</span>');
-    //
-    // test('millions', millions(1000000, {label: true}) == '1.0000<span class="xh-units-label">m</span>');
-    // test('millions', millions(1000000, {label: 'M'}) == '1.0000<span class=\"xh-units-label\">M</span>');
-    // test('millions (zero)', millions(0, {label: true}) == '0.00<span class=\"xh-units-label\">m</span>');
-    // test('millions (no label)', millions(1555555) == '1.5556');
-    // test('millions (precision: 2)', millions(1555555, {
-    //     precision: 2
-    // }) == '1.56');
-    // test('millions (huge number)', millions(1555555778877) == '1,555,556');
-    // test('millions(pos) (colorSpec: true)', millions(1555555, {
-    //     colorSpec: true
-    // }) == '<span class=\"green\">1.5556</span>');
-    // test('millions(neg) (colorSpec: true)', millions(-1555555, {
-    //     colorSpec: true
-    // }) == '<span class=\"red\">-1.5556</span>');
-    // test('millions(neg) (colorSpec: true, ledger: true)', millions(-1555555, {
-    //     colorSpec: true,
-    //     ledger: true,
-    //     ledgerAlign: false
-    // }) == '<span class=\"red\">(1.5556)</span>');
-    // test('millions(zero) (colorSpec: true)', millions(0, {
-    //     colorSpec: true
-    // }) == '<span class=\"gray\">0.00</span>');
-    //
-    // test('billions with default label', billions(1000000000, {label: true}) == '1.0000<span class=\"xh-units-label\">b</span>');
-    // test('billions with custom label', billions(1000000000, {label: 'B'}) == '1.0000<span class=\"xh-units-label\">B</span>');
-    // test('billions (zero, label)', billions(0, {label: true}) == '0.00<span class=\"xh-units-label\">b</span>');
-    // test('billions (with no label)', billions(1555555000) == '1.5556');
-    // test('billions (precision: 2)', billions(1555555000, {
-    //     precision: 2
-    // }) == '1.56');
-    // test('billions (huge number)', billions(1555555778877999) == '1,555,556');
-    // test('billions(pos) (colorSpec: true)', billions(1555555000, {
-    //     colorSpec: true
-    // }) == '<span class=\"green\">1.5556</span>');
-    // test('billions(neg) (colorSpec: true, ledger: true)', billions(-1555555000, {
-    //     ledger: true,
-    //     ledgerAlign: false,
-    //     colorSpec: true
-    // }) == '<span class=\"red\">(1.5556)</span>');
-    // test('billions(zero) (colorSpec: true)', billions(0, {
-    //     colorSpec: true
-    // }) == '<span class=\"gray\">0.00</span>');
-
-    test('percent default label', percent(50) == '50.00%');
-    test('percent (zero)', percent(0) == '0.00%');
-    test('percent}', percent(51.1) == '51.10%');
-    test('percent}', percent(51.1, {withParens: true}) == '(51.10%)');
-    test('percent(pos, with label and color)', percent(51.1, {
-        colorSpec: true
-    }) == '<span class=\"green\">51.10%</span>');
-    test('percent(neg) {colorSpec: true, label: true}', percent(-51.1, {
-        colorSpec: true
-    }) == '<span class=\"red\">-51.10%</span>');
-    test('percent(zero) {colorSpec: true}', percent(0, {
-        colorSpec: true
-    }) == '<span class=\"gray\">0.00%</span>');
-
-    // let expectedPercentChange = '0.00%';
-    // test('percentChange (zero label)', percentChange(0, {label: true}) == expectedPercentChange);
-    //
-    // expectedPercentChange = '<span style=\"font-size:1.1em\" class=\" tud-glyph\">&#xe613;</span>51.00%';
-    // test('percentChange (51 label)', percentChange(51, {label: true}) == expectedPercentChange);
-    //
-    // expectedPercentChange = '<span style=\"font-size:1.1em\" class=\" tud-glyph\">&#xe612;</span>51.00%';
-    // test('percentChange (-51 label)', percentChange(-51, {label: true}) == expectedPercentChange);
-    //
-    // expectedPercentChange = '<span style=\"font-size:1.1em\" class=\" tud-glyph\">&#xe613;</span>51.11';
-    // test('percentChange (51.11, no label)', percentChange(51.11, {}) == expectedPercentChange);
-    // test('percentChange (51.11, colorSpec: true} no label)', percentChange(51.11, {
-    //         colorSpec: true
-    //     }) == '<span class=\"green\">' + expectedPercentChange + '</span>');
-    //
-    // let expectedEquity = '0<span class=\"units-label\">m</span>';
-    // test('equity (zero w/label)', equity(0, {label: true}) == expectedEquity);
-    //
-    // expectedEquity = '9.88<span class=\"units-label\">m</span>';
-    // test('equity (under 10mil w/label)', equity(9876540, {label: true}) == expectedEquity);
-    //
-    // expectedEquity = '10.9<span class=\"units-label\">m</span>';
-    // test('equity: (under 100mil w/label)', equity(10876540, {label: true}) == expectedEquity);
-    //
-    // expectedEquity = '1,235<span class=\"units-label\">m</span>';
-    // test('equity: (over 100mil w/label)', equity(1234567890, {label: true}) == expectedEquity);
-    //
-    // expectedEquity = '0<span class=\"units-label\">m</span>';
-    // test('equity (zero w/label)', equity(0, {label: true}) == expectedEquity);
-
-    // test('number as ledger (zero) {precision: 0}', number(0, {ledger: true, precision: 0}) == '0<span style="visibility:hidden">)</span>');
-    // test('number as ledger (zero) {ledgerAlign: false, precision: 0}', number(0, {ledger: true, forceLedgerAlign: false, precision: 0}) == '0');
-    // test('number as ledger (pos) {ledgerAlign: false}', number(123456789, {ledger: true, forceLedgerAlign: false}) == '123,456,789');
-    // test('number as ledger (neg) {ledgerAlign: false}', number(-987654321, {ledger: true, forceLedgerAlign: false}) == '(987,654,321)');
-    // test('number as ledger (with label, no label class) {ledgerAlign: false}', number(99500, {
-    //     ledger: true,
-    //     forceLedgerAlign: false,
-    //     label: '$',
-    //     labelCls: null
-    // }) == '99,500$');
-    // test('number as ledger (pos)(colorSpec)', number(120000, {
-    //     ledger: true,
-    //     forceLedgerAlign: false,
-    //     colorSpec: true
-    // }) == '<span class=\"green\">120,000</span>');
-    // test('number as ledger (neg)(colorSpec)', number(-90, {
-    //     ledger: true,
-    //     forceLedgerAlign: false,
-    //     colorSpec: true
-    // }) == '<span class=\"red\">(90.0000)</span>');
-
-    test('quantity < billion', quantity(123456789, {
-    }) == '123.46<span class="xh-units-label">m</span><span style="visibility:hidden">)</span>');
-
-    test('quantity < billion, with label', quantity(123456789, {
-        label: '@'
-    }) == '123.46<span class="xh-units-label">@</span><span style="visibility:hidden">)</span>');
-
-    test('quantity > billion', quantity(12345678910, {forceLedgerAlign: false}) == '12,345.68<span class="xh-units-label">m</span>');
-    test('quantity > billion', quantity(-112345678910, {forceLedgerAlign: false}) == '(112,345.68<span class="xh-units-label">m</span>)');
-    test('quantity > billion', quantity(12345678910, {ledger: false}) == '12,345.68<span class=\"xh-units-label\">m</span>');
-
-    test('quantity, small float', quantity(-2.15678) == '(2)');
-
-    // test('losslessQuantity, allowed rounding', losslessQuantity(10000000) == '10<span class=\"units-label\">m</span>');
-    // test('losslessQuantity, allowed rounding', losslessQuantity(12340000) == '12.34<span class=\"units-label\">m</span>');
-    // test('losslessQuantity, no rounding', losslessQuantity(123456789) == '123,456,789');
-    //
-    // test('quantityChange pos', quantityChange(123456789) == '+123.46<span class="units-label">m</span>');
-    // test('quantityChange neg', quantityChange(-123456789) == '-123.46<span class="units-label">m</span>');
-    // test('quantityChange pos allow billions', quantityChange(12345678910, {allowBillions: true}) == '+12.35<span class="units-label">b</span>');
-    // test('quantityChange neg allow billions', quantityChange(-12345678910, {allowBillions: true}) == '-12.35<span class="units-label">b</span>');
-    // test('quantityChange zero', quantityChange(0, {allowBillions: true}) == '-');
-
-    test('price: (zero)', price(0) == '0');
-    test('price: (1)', price(1) == '1.00');
-    test('price: (10)', price(10) == '10.00');
-    test('price: (1000)', price(1000) == '1,000');
-    test('price: (1000)', price(10000) == '10,000');
-
-    // let expPrcChange = '0.0000';
-    // test('priceChange (zero)', priceChange(0) == expPrcChange);
-    //
-    // expPrcChange = '<span style=\"font-size:1.1em\" class=\" tud-glyph\">&#xe613;</span>1.1235';
-    // test('priceChange (pos)', priceChange(1.12345) == expPrcChange);
-    //
-    // expPrcChange = '<span style=\"font-size:1.1em\" class=\" tud-glyph\">&#xe612;</span>5.6543';
-    // test('priceChange (neg)', priceChange(-5.654321) == expPrcChange);
-    //
-    // expPrcChange = '<span class=\"gray\">0.0000</span>';
-    // test('priceChange (zero) {colorSpec: true}', priceChange(0, {colorSpec: true}) == expPrcChange);
-    //
-    // expPrcChange = '<span class=\"green\"><span style=\"font-size:1.1em\" class=\" tud-glyph\">&#xe613;</span>112,345</span>';
-    // test('priceChange (pos) {colorSpec: true}', priceChange(112345, {colorSpec: true}) == expPrcChange);
-    //
-    // expPrcChange = '<span class=\"red\"><span style=\"font-size:1.1em\" class=\" tud-glyph\">&#xe612;</span>321.99</span>';
-    // test('priceChange (neg) {colorSpec: true}', priceChange(-321.9875, {colorSpec: true}) == expPrcChange);
-
-};
-
-export function badInputNumberTests() {
-    console.log('');
-    console.log('Numbers (Out of Bounds)');
-    console.log('');
-
-    const empty = '';
-
-    test('number (null)', number(null) == empty);
-    test('number (undefined)', number(undefined) == empty);
-    test('number (\'\')', number('') == empty);
-    test('thousands (null)', thousands(null) == empty);
-    test('thousands (undefined)', thousands(undefined) == empty);
-    test('thousands (\'\')', thousands('') == empty, thousands(''));
-    test('millions (null)', millions(null) == empty);
-    test('millions (undefined)', millions(undefined) == empty);
-    test('millions (\'\')', millions('') == empty);
-    test('billions (null)', billions(null) == empty);
-    test('billions (undefined)', billions(undefined) == empty);
-    test('billions (\'\')', billions('') == empty);
-    test('percent (null)', percent(null) == empty);
-    test('percent (undefined)', percent(undefined) == empty);
-    test('percent (\'\')', percent('') == empty);
-    test('percent (undefined)', percent(undefined) == empty);
-    test('percent (\'\')', percent('') == empty);
-    // test('equity (null)', equity(null) == '');
-    // test('equity (undefined)', equity(undefined) == '');
-    // test('equity (\'\')', equity('') == '');
-    // test('basisPoints (null)', equity(null) == '');
-    // test('basisPoints (undefined)', equity(undefined) == '');
-    // test('basisPoints (\'\')', equity('') == '');
-
-    test('quantity(null)', quantity(null) == '');
-    test('quantity(undefined)', quantity(undefined) == '');
-    test('quantity(\'\')', quantity('') == '');
-    // test('quantityChange (null)', quantityChange(null) == '');
-    // test('quantityChange (undefined)', quantityChange(undefined) == '');
-    // test('quantityChange (\'\')', quantityChange('') == '');
-    // test('losslessQuantity(null)', losslessQuantity(null) == '');
-    // test('losslessQuantity(undefined)', losslessQuantity(undefined) == '');
-    // test('losslessQuantity (\'\')', losslessQuantity('') == '');
-    //
-    test('price (null)', price(null) == empty);
-    test('price (undefined)', price(undefined) == empty);
-    test('price (\'\')', price('') == empty);
-}
-
-
-function test(testTitle, testCondition, output) {
-    console.log(output);
-    console.log(testCondition ? 'passed: ' : '!!!!FAILED!!!!: ', testTitle);
 }
