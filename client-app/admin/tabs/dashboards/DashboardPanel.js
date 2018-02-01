@@ -5,38 +5,37 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {observer} from 'hoist/mobx';
+import {observer, observable} from 'hoist/mobx';
 import {dateCol} from 'hoist/columns/DatesTimes';
-import {Ref, resolve} from 'hoist';
+import {restGrid, RestGridModel} from 'hoist/rest';
+
 import {appCodeCol, usernameCol, definitionCol} from '../../columns/Columns';
-import {restGrid} from 'hoist/rest/RestGrid';
 
 @observer
 export class DashboardPanel extends Component {
 
-    url = 'rest/dashboardAdmin';
-
-    columns = [
-        appCodeCol(),
-        usernameCol(),
-        dateCol({field: 'lastUpdated'}),
-        definitionCol()
-    ];
-
-    editors = [
-        {name: 'appCode', allowBlank: false},
-        {name: 'username', allowBlank: true},
-        {name: 'definition', allowBlank: false, flex: 1},
-        {name: 'lastUpdated', readOnly: true}
-    ];
-
-    ref = new Ref();
+    @observable
+    model = new RestGridModel({
+        url: 'rest/dashboardAdmin',
+        columns: [
+            appCodeCol(),
+            usernameCol(),
+            dateCol({field: 'lastUpdated'}),
+            definitionCol()
+        ],
+        editors: [
+            {name: 'appCode', allowBlank: false},
+            {name: 'username', allowBlank: true},
+            {name: 'definition', allowBlank: false, flex: 1},
+            {name: 'lastUpdated', readOnly: true}
+        ]
+    });
 
     render() {
-        return restGrid({url: this.url, columns: this.columns, editors: this.editors, ref: this.ref.callback});
+        return restGrid({model: this.model});
     }
 
     loadAsync() {
-        return this.ref.value ? this.ref.value.loadAsync() : resolve();
+        return this.model.loadAsync();
     }
 }

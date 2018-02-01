@@ -5,35 +5,34 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {observer} from 'hoist/mobx';
+import {observer, observable} from 'hoist/mobx';
+import {restGrid, RestGridModel} from 'hoist/rest';
+
 import {nameCol, defaultLevelCol, levelCol, effectiveLevelCol} from '../../columns/Columns';
-import {Ref, resolve} from 'hoist';
-import {restGrid} from 'hoist/rest/RestGrid';
 
 @observer
 export class LogLevelPanel extends Component {
 
-    url = 'rest/logLevelAdmin';
-
-    columns = [
-        nameCol(),
-        defaultLevelCol(),
-        levelCol(),
-        effectiveLevelCol()
-    ];
-
-    editors = [
-        {name: 'name', allowBlank: false},
-        {name: 'level', editable: false} // must choose from a predefined list (functionality not yet implemented into restForm)
-    ];
-
-    ref = new Ref();
-
+    @observable
+    model = new RestGridModel({
+        url: 'rest/logLevelAdmin',
+        columns: [
+            nameCol(),
+            defaultLevelCol(),
+            levelCol(),
+            effectiveLevelCol()
+        ],
+        editors: [
+            {name: 'name', allowBlank: false},
+            {name: 'level', editable: false}
+        ]
+    });
+    
     render() {
-        return restGrid({url: this.url, columns: this.columns, editors: this.editors, ref: this.ref.callback});
+        return restGrid({model: this.model});
     }
 
     loadAsync() {
-        return this.ref.value ? this.ref.value.loadAsync() : resolve();
+        return this.model.loadAsync();
     }
 }
