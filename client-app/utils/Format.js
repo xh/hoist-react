@@ -1,9 +1,8 @@
 import {Exception} from 'hoist/exception/Exception';
-import {defaults} from 'lodash';
+import {defaults, isBoolean, isArray, isNumber, isString, capitalize} from 'lodash';
 import moment from 'moment';
 import numeral from 'numeral';
 import numberFormatter from 'number-formatter';
-import {isNumber} from './JsUtils';
 
 const _THOUSAND = 1000,
     _MILLION  = 1000000,
@@ -67,7 +66,7 @@ export function number(v, {
     originalValue = v
 } = {}) {
 
-    if (v == null) return nullDisplay;
+    if (v == null || v === '') return nullDisplay;
 
     formatPattern = formatPattern || buildFormatPattern(v, precision, zeroPad);
 
@@ -116,7 +115,7 @@ export function number(v, {
 export function thousands(v, opts = {})  {
     saveOriginal(v, opts);
 
-    if (v == null) return number(v, opts);
+    if (v == null || v === '') return number(v, opts);
     v = v / _THOUSAND;
     if (opts.label === true) opts.label = 'k';
     return number(v, opts);
@@ -131,7 +130,7 @@ export function thousands(v, opts = {})  {
 export function millions(v, opts = {})  {
     saveOriginal(v, opts);
 
-    if (v == null) return number(v, opts);
+    if (v == null || v === '') return number(v, opts);
     v = v / _MILLION;
     if (opts.label === true) opts.label = 'm';
     return number(v, opts);
@@ -147,7 +146,7 @@ export function millions(v, opts = {})  {
 export function billions(v, opts = {})  {
     saveOriginal(v, opts);
 
-    if (v == null) return number(v, opts);
+    if (v == null || v === '') return number(v, opts);
     v = v / _BILLION;
     if (opts.label === true) opts.label = 'b';
     return number(v, opts);
@@ -257,11 +256,11 @@ export function span(v, {
  *                see momentJS docs for details)
  *
  * @param opts - Options object that may include
- *   @param fmt - Ext.Date format string
+ *   @param fmt - MomentJs format string
  *   @param tipFn - function, use to place formatted date in span with title property set to returned string
  *                            will be passed the originalValue param
  *
- *  For convenience opts may be provided as a an Ext.Date format string.
+ *  For convenience opts may be provided as a an MomentJs format string.
  */
 export function date(v, opts = {}) {
     if (typeof opts == 'string') opts = {fmt: opts};
@@ -301,7 +300,7 @@ export function time(v, opts = {}) {
  * Render dates formatted based on distance in time from current day
  *
  * @param v - date to format
- * @param opts - Ext.Date format string options, may include:
+ * @param opts - MomentJs format string options, may include:
  *      @param sameDayFmt - format for dates matching current day, defaults to 'g:ia'
  *      @param nearFmt - format for dates within the number of months determined by the recentTheshold, defaults to 'M d'
  *      @param distantFmt - format for dates outside of the number of months specified by the recentTheshold, defaults to 'Y-m-d'
@@ -347,6 +346,10 @@ export function compactDate(v, {
     return date(v, dateOpts);
 }
 
+
+//-------------
+// Renderers
+//-------------
 export const numberRenderer = createRenderer(number);
 export const thousandsRenderer = createRenderer(thousands);
 export const millionsRenderer = createRenderer(millions);
@@ -359,6 +362,30 @@ export const dateRenderer = createRenderer(date);
 export const dateTimeRenderer = createRenderer(dateTime);
 export const timeRenderer = createRenderer(time);
 export const compactDateRenderer = createRenderer(compactDate);
+
+
+/**
+ * DOMParser is the browser's parser.
+ * It decodes HTML entities into their unicode equivalent without regex and is safe against XSS.
+ * See: http://stackoverflow.com/questions/1912501/unescape-html-entities-in-javascript/34064434#34064434
+ */
+export function htmlDecode(v) {
+    if (!isString(v) || v == null || !v.length) return v;
+    const _domParser = new DOMParser();
+    return _domParser.parseFromString(v, 'text/html').documentElement.textContent;
+}
+
+/**
+ * Basic util for splitting a string (via ' ') and capitalizing each word - e.g. for names.
+ * Not intended to handle more advanced usages such as HTML or other word boundary characters.
+ * @param str
+ */
+export function capitalizeWords(str) {
+    if (str == null || !str.length) return str;
+    return str.split(' ')
+        .map(s => capitalize(s))
+        .join(' ');
+}
 
 //---------------
 // Implementation
@@ -666,7 +693,7 @@ export function numberTests() {
 
 };
 
-function badInputNumberTests() {
+export function badInputNumberTests() {
     console.log('');
     console.log('Numbers (Out of Bounds)');
     console.log('');
@@ -676,21 +703,20 @@ function badInputNumberTests() {
     test('number (null)', number(null) == empty);
     test('number (undefined)', number(undefined) == empty);
     test('number (\'\')', number('') == empty);
-    // test('thousands (null)', thousands(null) == empty);
-    // test('thousands (undefined)', thousands(undefined) == empty);
-    // test('thousands (\'\')', thousands('') == empty);
-    // test('millions (null)', millions(null) == empty);
-    // test('millions (undefined)', millions(undefined) == empty);
-    // test('millions (\'\')', millions('') == empty);
-    // test('billions (null)', billions(null) == empty);
-    // test('billions (undefined)', billions(undefined) == empty);
-    // test('billions (\'\')', billions('') == empty);
-    // test('percent (null)', percent(null) == empty);
-    // test('percent (undefined)', percent(undefined) == empty);
-    // test('percent (\'\')', percent('') == empty);
-    // test('percentChange (null)', percentChange(null) == empty);
-    // test('percent (undefined)', percent(undefined) == empty);
-    // test('percent (\'\')', percent('') == empty);
+    test('thousands (null)', thousands(null) == empty);
+    test('thousands (undefined)', thousands(undefined) == empty);
+    test('thousands (\'\')', thousands('') == empty, thousands(''));
+    test('millions (null)', millions(null) == empty);
+    test('millions (undefined)', millions(undefined) == empty);
+    test('millions (\'\')', millions('') == empty);
+    test('billions (null)', billions(null) == empty);
+    test('billions (undefined)', billions(undefined) == empty);
+    test('billions (\'\')', billions('') == empty);
+    test('percent (null)', percent(null) == empty);
+    test('percent (undefined)', percent(undefined) == empty);
+    test('percent (\'\')', percent('') == empty);
+    test('percent (undefined)', percent(undefined) == empty);
+    test('percent (\'\')', percent('') == empty);
     // test('equity (null)', equity(null) == '');
     // test('equity (undefined)', equity(undefined) == '');
     // test('equity (\'\')', equity('') == '');
@@ -698,9 +724,9 @@ function badInputNumberTests() {
     // test('basisPoints (undefined)', equity(undefined) == '');
     // test('basisPoints (\'\')', equity('') == '');
 
-    // test('quantity(null)', quantity(null) == '');
-    // test('quantity(undefined)', quantity(undefined) == '');
-    // test('quantity(\'\')', quantity('') == '');
+    test('quantity(null)', quantity(null) == '');
+    test('quantity(undefined)', quantity(undefined) == '');
+    test('quantity(\'\')', quantity('') == '');
     // test('quantityChange (null)', quantityChange(null) == '');
     // test('quantityChange (undefined)', quantityChange(undefined) == '');
     // test('quantityChange (\'\')', quantityChange('') == '');
@@ -708,16 +734,13 @@ function badInputNumberTests() {
     // test('losslessQuantity(undefined)', losslessQuantity(undefined) == '');
     // test('losslessQuantity (\'\')', losslessQuantity('') == '');
     //
-    // test('price (null)', price(null) == empty);
-    // test('price (undefined)', price(undefined) == empty);
-    // test('price (\'\')', price('') == empty);
-    // test('priceChange (null)', priceChange(null) == empty);
-    // test('priceChange (undefined)', priceChange(undefined) == empty);
-    // test('priceChange (\'\')', priceChange('') == empty);
+    test('price (null)', price(null) == empty);
+    test('price (undefined)', price(undefined) == empty);
+    test('price (\'\')', price('') == empty);
 }
 
 
 function test(testTitle, testCondition, output) {
-    if (output) console.log(output);
+    console.log(output);
     console.log(testCondition ? 'passed: ' : '!!!!FAILED!!!!: ', testTitle);
 }
