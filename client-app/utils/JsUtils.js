@@ -23,7 +23,3 @@ export function asArray(val) {
     if (isArray(val)) return val;
     return [val];
 }
-
-export function isNumber(value) {
-    return typeof value === 'number' && isFinite(value);
-}
