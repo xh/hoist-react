@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {elemFactory} from 'hoist';
 import {vbox, div} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
-import {inputGroup, button, label, dialog} from 'hoist/kit/blueprint';
+import {inputGroup, select, button, label, dialog} from 'hoist/kit/blueprint';
 
 @observer
 export class RestFormBlueprint extends Component {
@@ -40,21 +40,34 @@ export class RestFormBlueprint extends Component {
     }
 
     getForm() {
-        const {editors, formRecord} = this.props.model,
+        const {editors, formRecord, setFormValue} = this.props.model,
             items = [];
 
         editors.forEach(editor => {
             const field = editor.name;
-            items.push(label({text: field}));
-            items.push(
-                inputGroup({
-                    value: formRecord[field] || '',
-                    onChange: (e) => console.log(e),
+            let input;
+            items.push(label({text: editor.label || field}));
+
+            // case statement? Factor into getInput() method?
+            if (editor.type === 'bool') {
+                input = select({
+                    defaultValue: formRecord[field] || '',
+                    $items: [true, false],
+                    itemRenderer: (v) => {return v},
+                    disabled: editor.readOnly
+                });
+            } else {
+                input = inputGroup({
+                    defaultValue: formRecord[field] || '',
+                    onChange: (e) => setFormValue(field, e.target.value),
                     type: editor.type || 'text',
                     disabled: editor.readOnly,
                     style: {marginBottom: 5}
-                })
-            );
+                });
+
+            }
+
+            items.push(input);
         });
 
         return vbox({
@@ -108,7 +121,7 @@ export class RestFormBlueprint extends Component {
 
     onSaveClick = () => {
         const model = this.props.model;
-        model.saveRecord(model.formRecord);
+        model.saveForm();
     }
 }
 export const restFormBlueprint = elemFactory(RestFormBlueprint);

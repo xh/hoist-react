@@ -36,7 +36,7 @@ export class ConfigPanel extends Component {
             {name: 'betaValue', env: 'Beta'},
             {name: 'stageValue', env: 'Staging'},
             {name: 'devValue', env: 'Development'},
-            {name: 'clientVisible'},
+            {name: 'clientVisible', type: 'bool'},
             {name: 'note', type: 'textarea'},
             {name: 'lastUpdated', readOnly: true},
             {name: 'lastUpdatedBy', readOnly: true}

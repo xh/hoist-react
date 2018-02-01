@@ -44,7 +44,7 @@ export class RestFormSemantic extends Component {
                 value: formRecord[field] || '',
                 onChange: (e) => console.log(e),
                 type: editor.type || 'text',
-                label: {content: editor.name, style: {width: '115px', verticalAlign: 'middle'}},
+                label: {content: editor.label || editor.name, style: {width: '115px', verticalAlign: 'middle'}},
                 disabled: editor.readOnly,
                 style: {marginBottom: 5}
             });

@@ -71,7 +71,7 @@ export class RestGridModel extends GridModel {
     }
 
     @action
-    setFormValue(field, value) {
+    setFormValue = (field, value) => {
         this.formRecord[field] = value;
     }
 
@@ -100,7 +100,7 @@ export class RestGridModel extends GridModel {
             method: formIsAdd ? 'POST' : 'PUT',
             params: {data: JSON.stringify(formRecord)}
         }).then(response => {
-            this.formRecord = null;
+            this.closeForm();
             this.noteRecordUpdated(response.data);
         }).bind(
             this.loadModel
