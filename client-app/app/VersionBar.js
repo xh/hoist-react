@@ -40,5 +40,4 @@ export class VersionBar extends Component {
         }
     }
 }
-
 export const versionBar = elemFactory(VersionBar);

@@ -76,5 +76,4 @@ export class LoginPanel extends Component {
     onUsernameChange = (ev) => {this.setUsername(ev.target.value)}
     onPasswordChange = (ev) => {this.setPassword(ev.target.value)}
 }
-
 export const loginPanel = elemFactory(LoginPanel);

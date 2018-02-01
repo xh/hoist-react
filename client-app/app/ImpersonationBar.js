@@ -183,5 +183,4 @@ export class ImpersonationBar extends Component {
         }
     }
 }
-
 export const impersonationBar = elemFactory(ImpersonationBar);
