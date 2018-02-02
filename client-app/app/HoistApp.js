@@ -11,6 +11,7 @@ import 'babel-polyfill';
 import {Component} from 'react';
 import {elem} from 'hoist';
 import {loadMask} from 'hoist/cmp';
+import {errorRichAlertDialog} from 'hoist/error';
 import {hocDisplayName} from 'hoist/utils/ReactUtils';
 import {frame, viewport, vframe} from 'hoist/layout';
 import {useStrict, observer} from 'hoist/mobx';
@@ -51,7 +52,8 @@ export function hoistApp(C) {
                     frame(elem(C)),
                     versionBar()
                 ),
-                loadMask({model: hoistAppModel.appLoadModel})
+                loadMask({model: hoistAppModel.appLoadModel}),
+                errorRichAlertDialog()
             );
         }
 

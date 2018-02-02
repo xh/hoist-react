@@ -7,12 +7,12 @@
 import {Component} from 'react';
 import {baseCol} from 'hoist/columns/Core';
 import {grid, GridModel} from 'hoist/grid';
-import {observer, observable} from 'hoist/mobx';
+import {observer} from 'hoist/mobx';
 
 @observer
 export class ServicePanel extends Component {
 
-    @observable model = new GridModel({
+    model = new GridModel({
         url: 'serviceAdmin/listServices',
         columns: [
             baseCol({headerName: 'Provider', field: 'provider', width: 150, maxWidth: 150}),

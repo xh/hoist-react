@@ -7,14 +7,13 @@
 import {Component} from 'react';
 import {baseCol, boolCheckCol} from 'hoist/columns/Core';
 import {grid, GridModel} from 'hoist/grid';
-import {observer, observable} from 'hoist/mobx';
+import {observer} from 'hoist/mobx';
 
 import {usernameCol} from '../../columns/Columns';
 
 @observer
 export class UserPanel extends Component {
 
-    @observable
     model = new GridModel({
         url: 'userAdmin',
         columns: [

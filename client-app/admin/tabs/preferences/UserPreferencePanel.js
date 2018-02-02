@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {observer, observable} from 'hoist/mobx';
+import {observer} from 'hoist/mobx';
 import {restGrid, RestGridModel} from 'hoist/rest';
 
 import {nameFlexCol, typeCol, prefValueCol, usernameCol} from '../../columns/Columns';
@@ -13,7 +13,6 @@ import {nameFlexCol, typeCol, prefValueCol, usernameCol} from '../../columns/Col
 @observer
 export class UserPreferencePanel extends Component {
 
-    @observable
     model = new RestGridModel({
         url: 'rest/userPreferenceAdmin',
         columns: [

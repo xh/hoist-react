@@ -5,21 +5,21 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {BaseService} from './BaseService';
-import {XH} from 'hoist';
+import {XH, environmentService} from 'hoist';
 import {stripTags} from 'hoist/utils/HtmlUtils';
 
 export class FeedbackService extends BaseService {
 
     /**
      * Create a feedback entry. Username, browser info, environment info, and datetime will be set automatically.
-     * @param options - Map with msg & stack - both optional, although at least one should be provided!
+     * @param options - Map with msg.
      */
-    async submitAsync({msg, stack} = {}) {
+    async submitAsync({msg} = {}) {
         await XH.fetchJson({
             url: 'hoistImpl/submitFeedback',
             params: {
-                msg: msg ? stripTags(msg) : '[No message provided]',
-                stack: stack ? stripTags(stack) : null
+                msg: stripTags(msg),
+                appVersion: environmentService.get('appVersion')
             }
         });
     }

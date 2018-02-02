@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {observer, observable} from 'hoist/mobx';
+import {observer} from 'hoist/mobx';
 import {dateCol} from 'hoist/columns/DatesTimes';
 import {restGrid, RestGridModel} from 'hoist/rest';
 
@@ -14,7 +14,6 @@ import {appCodeCol, usernameCol, definitionCol} from '../../columns/Columns';
 @observer
 export class DashboardPanel extends Component {
 
-    @observable
     model = new RestGridModel({
         url: 'rest/dashboardAdmin',
         columns: [
