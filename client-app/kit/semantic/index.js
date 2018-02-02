@@ -28,6 +28,7 @@ import {
 export const
     button = elemFactory(Button),
     buttonContent = elemFactory(Button.Content),
+    card = elemFactory(Card),
     dimmer = elemFactory(Dimmer),
     dropdown = elemFactory(Dropdown),
     form = elemFactory(Form),
