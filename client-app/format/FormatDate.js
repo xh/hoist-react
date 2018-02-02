@@ -84,7 +84,7 @@ export function fmtCompactDate(v, {
 } = {}) {
 
     const now = moment(),
-        today = fmtDate(Date.now()), // probably in millis. v is probably a Date obj. maybe use new Date(), check.
+        today = fmtDate(new Date()),
         valueDay = fmtDate(v),
         recentPast = now.clone().subtract(distantThreshold, 'months').endOf('month'),
         nearFuture = now.clone().add(distantThreshold, 'months').date(1),
