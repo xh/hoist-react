@@ -53,7 +53,7 @@ const UP_TICK = '&#9652;',
  * If no options are given, a heuristic based auto-rounding will occur
  */
 
-export function number(v, {
+export function fmtNumber(v, {
     nullDisplay = '',
     formatPattern = null,
     precision = 'auto',
@@ -73,7 +73,7 @@ export function number(v, {
 
     formatPattern = formatPattern || buildFormatPattern(v, precision, zeroPad);
 
-    let ret = numberFormatter(formatPattern, v);
+    let ret = numberFormatter(formatPattern, v);  // replace with numeralJS
 
     if (ledger || withSignGlyph) ret = ret.replace('-', '');
 
@@ -83,7 +83,7 @@ export function number(v, {
 
     if (typeof label === 'string') {
         if (labelCls) {
-            ret += span(label, {cls: labelCls});
+            ret += fmtSpan(label, {cls: labelCls});
         } else {
             ret += label;
         }
@@ -99,11 +99,11 @@ export function number(v, {
     }
 
     if (colorSpec) {
-        ret = span(ret, {cls: valueColor(v, colorSpec)});
+        ret = fmtSpan(ret, {cls: valueColor(v, colorSpec)});
     }
 
     if (tipFn) {
-        ret = span(ret, {cls: 'xh-title-tip', title: tipFn(originalValue)});
+        ret = fmtSpan(ret, {cls: 'xh-title-tip', title: tipFn(originalValue)});
     }
 
     return ret;
@@ -115,12 +115,12 @@ export function number(v, {
  * @param v - int or float to format
  * @param opts - see number() method
  */
-export function thousands(v, opts = {})  {
+export function fmtThousands(v, opts = {})  {
     saveOriginal(v, opts);
-    if (v == null || v === '') return number(v, opts);
+    if (v == null || v === '') return fmtNumber(v, opts);
     v = v / _THOUSAND;
     if (opts.label === true) opts.label = 'k';
-    return number(v, opts);
+    return fmtNumber(v, opts);
 }
 
 /**
@@ -129,13 +129,13 @@ export function thousands(v, opts = {})  {
  * @param v - int or float to format
  * @param opts - see number() method
  */
-export function millions(v, opts = {})  {
+export function fmtMillions(v, opts = {})  {
     saveOriginal(v, opts);
-    if (v == null || v === '') return number(v, opts);
+    if (v == null || v === '') return fmtNumber(v, opts);
 
     v = v / _MILLION;
     if (opts.label === true) opts.label = 'm';
-    return number(v, opts);
+    return fmtNumber(v, opts);
 }
 
 
@@ -145,13 +145,13 @@ export function millions(v, opts = {})  {
  * @param v - int or float to format
  * @param opts - see number() method
  */
-export function billions(v, opts = {})  {
+export function fmtBillions(v, opts = {})  {
     saveOriginal(v, opts);
-    if (v == null || v === '') return number(v, opts);
+    if (v == null || v === '') return fmtNumber(v, opts);
 
     v = v / _BILLION;
     if (opts.label === true) opts.label = 'b';
-    return number(v, opts);
+    return fmtNumber(v, opts);
 }
 
 /**
@@ -160,9 +160,9 @@ export function billions(v, opts = {})  {
  * @param v - int or float to format
  * @param opts - see number() method
  */
-export function quantity(v, opts = {}) {
+export function fmtQuantity(v, opts = {}) {
     saveOriginal(v, opts);
-    if (v == null) return number(v, opts);
+    if (v == null || v === '') return fmtNumber(v, opts);
 
     const lessThanM = Math.abs(v) < _MILLION;
 
@@ -172,7 +172,7 @@ export function quantity(v, opts = {}) {
         precision: lessThanM ? 0 : 2
     });
 
-    return lessThanM ? number(v, opts) : millions(v, opts);
+    return lessThanM ? fmtNumber(v, opts) : fmtMillions(v, opts);
 }
 
 /**
@@ -181,16 +181,16 @@ export function quantity(v, opts = {}) {
  * @param v - int or float to format
  * @param opts - see number() method
  */
-export function price(v, opts = {}) {
+export function fmtPrice(v, opts = {}) {
     saveOriginal(v, opts);
-    if (v == null || v === '') return number(v, opts);
+    if (v == null || v === '') return fmtNumber(v, opts);
 
     if (opts.precision === undefined) {
         const absVal = Math.abs(v);
         opts.precision = absVal < 1000 && absVal !== 0 ? 2 : 0;
     }
 
-    return number(v, opts);
+    return fmtNumber(v, opts);
 }
 
 /**
@@ -200,21 +200,21 @@ export function price(v, opts = {}) {
  * @param opts - see number() method - may also include:
  *          withParens, surround return with parenthesis
  */
-export function percent(v, opts = {}) {
+export function fmtPercent(v, opts = {}) {
     saveOriginal(v, opts);
-    if (v == null || v === '') return number(v, opts);
+    if (v == null || v === '') return fmtNumber(v, opts);
 
     defaults(opts, {precision: 2, label: '%', labelCls: null});
 
-    let ret = number(v, opts);
+    let ret = fmtNumber(v, opts);
     if (opts.withParens) ret = '(' + ret + ')';
     return ret;
 }
 
 // intended for use with our percent format strings in XH.util.Export (which expects v / 100)
-export function exportPercent(v, {precision = 4} = {}) {
+export function fmtExportPercent(v, {precision = 4} = {}) {
     if (v == null || isNaN(v)) return '';
-    return number((v / 100), {precision: precision, zeroPad: true});
+    return fmtNumber((v / 100), {precision: precision, zeroPad: true});
 }
 
 /**
@@ -228,7 +228,7 @@ export function exportPercent(v, {precision = 4} = {}) {
  *   @param trailSpc - set to true to add a space after the span to be returned
  *
  */
-export function span(v, {
+export function fmtSpan(v, {
     cls = null,
     title = null,
     leadSpc = false,
@@ -259,7 +259,7 @@ export function span(v, {
  *
  *  For convenience opts may be provided as a MomentJs format string.
  */
-export function date(v, opts = {}) {
+export function fmtDate(v, opts = {}) {
     if (typeof v === 'string') return v;
     if (typeof opts === 'string') opts = {fmt: opts};
     defaults(opts, {fmt: DATE_FMT, tipFn: null});
@@ -268,28 +268,28 @@ export function date(v, opts = {}) {
     let ret = moment(v).format(opts.fmt);
 
     if (opts.tipFn) {
-        ret = span(ret, {cls: 'xh-title-tip', title: opts.tipFn(opts.originalValue)});
+        ret = fmtSpan(ret, {cls: 'xh-title-tip', title: opts.tipFn(opts.originalValue)});
     }
 
     return ret;
 }
 
-export function dateTime(v, opts = {}) {
+export function fmtDateTime(v, opts = {}) {
     if (typeof opts === 'string') opts = {fmt: opts};
     defaults(opts, {fmt: DATETIME_FMT});
     saveOriginal(v, opts);
 
 
-    return date(v, opts);
+    return fmtDate(v, opts);
 }
 
 
-export function time(v, opts = {}) {
+export function fmtTime(v, opts = {}) {
     if (typeof opts === 'string') opts = {fmt: opts};
     defaults(opts, {fmt: TIME_FMT});
     saveOriginal(v, opts);
 
-    return date(v, opts);
+    return fmtDate(v, opts);
 }
 
 /**
@@ -307,7 +307,7 @@ export function time(v, opts = {}) {
  *
  * Note: Moments are mutable. Calling any of the manipulation methods will change the original moment.
  */
-export function compactDate(v, {
+export function fmtCompactDate(v, {
     sameDayFmt = TIME_FMT,
     nearFmt = MONTH_DAY_FMT,
     distantFmt = DATE_FMT,
@@ -317,8 +317,8 @@ export function compactDate(v, {
 } = {}) {
 
     const now = moment(),
-        today = date(Date.now()),
-        valueDay = date(v),
+        today = fmtDate(Date.now()), // probably in millis. v is probably a Date obj. maybe use new Date(), check.
+        valueDay = fmtDate(v),
         recentPast = now.clone().subtract(distantThreshold, 'months').endOf('month'),
         nearFuture = now.clone().add(distantThreshold, 'months').date(1),
         dateOpts = {tipFn: tipFn, originalValue: originalValue};
@@ -331,25 +331,25 @@ export function compactDate(v, {
         dateOpts.fmt = distantFmt;
     }
 
-    return date(v, dateOpts);
+    return fmtDate(v, dateOpts);
 }
 
 
 //-------------
 // Renderers
 //-------------
-export const numberRenderer = createRenderer(number);
-export const thousandsRenderer = createRenderer(thousands);
-export const millionsRenderer = createRenderer(millions);
-export const billionsRenderer = createRenderer(billions);
-export const quantityRenderer = createRenderer(quantity);
-export const priceRenderer = createRenderer(price);
-export const percentRenderer = createRenderer(percent);
-export const exportPercentRenderer = createRenderer(exportPercent);
-export const dateRenderer = createRenderer(date);
-export const dateTimeRenderer = createRenderer(dateTime);
-export const timeRenderer = createRenderer(time);
-export const compactDateRenderer = createRenderer(compactDate);
+export const numberRenderer = createRenderer(fmtNumber);
+export const thousandsRenderer = createRenderer(fmtThousands);
+export const millionsRenderer = createRenderer(fmtMillions);
+export const billionsRenderer = createRenderer(fmtBillions);
+export const quantityRenderer = createRenderer(fmtQuantity);
+export const priceRenderer = createRenderer(fmtPrice);
+export const percentRenderer = createRenderer(fmtPercent);
+export const exportPercentRenderer = createRenderer(fmtExportPercent);
+export const dateRenderer = createRenderer(fmtDate);
+export const dateTimeRenderer = createRenderer(fmtDateTime);
+export const timeRenderer = createRenderer(fmtTime);
+export const compactDateRenderer = createRenderer(fmtCompactDate);
 
 /**
  * Basic util for splitting a string (via ' ') and capitalizing each word - e.g. for names.
@@ -396,7 +396,7 @@ function saveOriginal(v, opts) {
 
 function signGlyph(v) {
     if (isFinite(v)) return '';
-    return v === 0 ? span(UP_TICK, 'transparent-color') :  v > 0 ? UP_TICK : DOWN_TICK;
+    return v === 0 ? fmtSpan(UP_TICK, 'transparent-color') :  v > 0 ? UP_TICK : DOWN_TICK;
 }
 
 function valueColor(v, colorSpec) {
