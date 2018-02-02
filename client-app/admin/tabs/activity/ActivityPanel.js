@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {grid, GridModel} from 'hoist/grid';
 import {observer} from 'hoist/mobx';
 
-import {dateCol} from 'hoist/columns/DatesTimes';
+import {dateTimeCol} from 'hoist/columns/DatesTimes';
 import {
     usernameCol,
     msg,
@@ -28,7 +28,7 @@ export class ActivityPanel extends Component {
         url: 'trackLogAdmin',
         columns: [
             severity(),
-            dateCol({field: 'dateCreated'}),
+            dateTimeCol({field: 'dateCreated'}),
             usernameCol(),
             msg(),
             category(),
