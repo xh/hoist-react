@@ -30,7 +30,7 @@ export class LoadMask extends Component {
         isDisplayed: false,
         model: null
     };
-
+    
     render() {
         return hoistAppModel.useSemantic ? this.renderSemantic() : this.renderBlueprint();
     }
@@ -38,7 +38,7 @@ export class LoadMask extends Component {
     renderBlueprint() {
         const {isDisplayed, model} = this.props;
         return overlay({
-            isOpen: isDisplayed || model.isPending,
+            isOpen: isDisplayed || (model && model.isPending),
             canEscapeKeyClose: false,
             backdropProps: {
                 style: {backgroundColor: this.BACKGROUND}
@@ -55,9 +55,10 @@ export class LoadMask extends Component {
     renderSemantic() {
         const {isDisplayed, model} = this.props;
         return dimmer({
-            active: isDisplayed || model.isPending,
+            active: isDisplayed || (model && model.isPending),
             page: true,
             items: loader()
         });
     }
 }
+
