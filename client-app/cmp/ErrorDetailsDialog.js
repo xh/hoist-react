@@ -6,9 +6,9 @@
  */
 
 import {Component} from 'react';
-import {div} from 'hoist/layout';
+import {button, buttonContent, card, form, header, icon, modal, modalActions, modalContent, textArea} from 'hoist/kit/semantic';
 
-import {button, dialog } from 'hoist/kit/blueprint';
+import {stringifyErrorSafely} from 'hoist/utils/ErrorUtils';
 import {action, observer} from 'hoist/mobx';
 
 @observer
@@ -16,35 +16,57 @@ export class ErrorDetailsDialog extends Component {
 
     render() {
         if (!this.props.visManager.isVisible) return null;
-
-        return dialog({
-            isOpen: true,
+        return modal({
+            open: true,
             onClose: this.onClose,
-            title: 'Error Details',
-            iconName: 'search',
             items: [
-                div({
-                    cls: 'pt-dialog-body'
-                    // items: options.message
+                header({
+                    icon: 'search',
+                    content: 'Error Details'
                 }),
-                div({
-                    cls: 'pt-dialog-footer',
+                modalContent({
+                    items: [
+                        card({
+                            fluid: true,
+                            description: stringifyErrorSafely(this.props.e)
+                        }),
+                        form({
+                            items: textArea({
+                                autoHeight: true,
+                                rows: 3,
+                                placeholder: 'Add message here...'
+                            })
+                        })
+                    ]
+                }),
+                modalActions({
                     style: {textAlign: 'right'},
                     items: [
                         button({
-                            text: 'Send',
-                            rightIconName: 'envelope',
+                            cls: 'icon',
+                            labelPosition: 'left',
+                            items: [
+                                icon({name: 'envelope'}),
+                                buttonContent({content: 'Send'})
+                            ],
                             onClick: this.onSend
                         }),
                         button({
-                            text: 'Copy',
-                            rightIconName: 'clipboard',
+                            cls: 'icon',
+                            labelPosition: 'left',
+                            items: [
+                                icon({name: 'clipboard'}),
+                                buttonContent({content: 'Copy'})
+                            ],
                             onClick: this.onCopy
                         }),
                         button({
-                            text: 'Close',
-                            rightIconName: 'cross',
-                            intent: 'Intent.PRIMARY',
+                            cls: 'icon',
+                            labelPosition: 'left',
+                            items: [
+                                icon({name: 'close'}),
+                                buttonContent({content: 'Close'})
+                            ],
                             onClick: this.onClose
                         })
                     ]

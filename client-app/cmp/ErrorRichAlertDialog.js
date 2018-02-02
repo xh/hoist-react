@@ -6,12 +6,12 @@
  */
 
 import {Component} from 'react';
-import {div} from 'hoist/layout';
 
-import {button, dialog } from 'hoist/kit/blueprint';
+import {button, buttonContent, header, icon, modal, modalActions, modalContent} from 'hoist/kit/semantic';
 import {action, observer, observable} from 'hoist/mobx';
 import {errorDetailsDialog} from 'hoist/cmp';
 import {hoistAppStore} from '../app/HoistAppStore';
+
 
 @observer
 export class ErrorRichAlertDialog extends Component {
@@ -25,18 +25,18 @@ export class ErrorRichAlertDialog extends Component {
 
         const {options} = hoistAppStore.clientError;
 
-        return dialog({
-            isOpen: !!hoistAppStore.clientError,
+        return modal({
+            open: !!hoistAppStore.clientError,
             onClose: this.onClose,
-            title: options.title,
-            iconName: 'error',
             items: [
-                div({
-                    cls: 'pt-dialog-body',
+                header({
+                    icon: 'attention',
+                    content: options.title
+                }),
+                modalContent({
                     items: options.message
                 }),
-                div({
-                    cls: 'pt-dialog-footer',
+                modalActions({
                     style: {textAlign: 'right'},
                     items: this.renderButtons()
                 }),
@@ -52,19 +52,30 @@ export class ErrorRichAlertDialog extends Component {
         const showAsError = hoistAppStore.clientError.options.showAsError,
             btns = [
                 button({
-                    text: 'Show/Report Details...',
-                    rightIconName: 'search',
+                    cls: 'icon',
+                    labelPosition: 'left',
+                    items: [
+                        icon({name: 'search'}),
+                        buttonContent({content: 'Show/Report Details...'})
+                    ],
                     onClick: this.onShowErrorDetails
                 }),
                 button({
-                    text: this.getReloadBtnText(),
-                    rightIconName: 'refresh',
+                    cls: 'icon',
+                    labelPosition: 'left',
+                    items: [
+                        icon({name: 'refresh'}),
+                        buttonContent({content: this.getReloadBtnText()})
+                    ],
                     onClick: this.onReload
                 }),
                 button({
-                    text: 'Close',
-                    rightIconName: 'cross',
-                    intent: 'Intent.PRIMARY',
+                    cls: 'icon',
+                    labelPosition: 'left',
+                    items: [
+                        icon({name: 'close'}),
+                        buttonContent({content: 'Close'})
+                    ],
                     onClick: this.onClose
                 })
             ];
