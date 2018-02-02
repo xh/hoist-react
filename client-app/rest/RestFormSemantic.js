@@ -121,7 +121,7 @@ export class RestFormSemantic extends Component {
 
     onSaveClick = () => {
         const model = this.props.model;
-        model.saveRecord(model.formRecord);
+        model.saveFormRecord();
     }
 }
 export const restFormSemantic = elemFactory(RestFormSemantic);

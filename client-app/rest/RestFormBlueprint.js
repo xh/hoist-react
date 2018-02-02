@@ -121,7 +121,7 @@ export class RestFormBlueprint extends Component {
 
     onSaveClick = () => {
         const model = this.props.model;
-        model.saveForm();
+        model.saveFormRecord();
     }
 }
 export const restFormBlueprint = elemFactory(RestFormBlueprint);

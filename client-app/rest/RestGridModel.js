@@ -95,7 +95,7 @@ export class RestGridModel extends GridModel {
     }
 
     @action
-    saveForm() {
+    saveFormRecord() {
         const {url, formRecord, formIsWritable, formIsAdd} = this;
 
         if (!formIsWritable) throw XH.exception('Record save not enabled.');
