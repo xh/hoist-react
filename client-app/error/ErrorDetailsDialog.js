@@ -44,20 +44,17 @@ export class ErrorDetailsDialog extends Component {
                 modalActions({
                     style: {textAlign: 'right'},
                     items: [
-                        button({
-                            labelPosition: 'left',
+                        this.btnFactory({
                             icon: 'envelope',
                             content: 'Send',
                             onClick: this.onSendClick
                         }),
-                        button({
-                            labelPosition: 'left',
+                        this.btnFactory({
                             icon: 'clipboard',
                             content: 'Copy',
                             onClick: this.onCopyClick
                         }),
-                        button({
-                            labelPosition: 'left',
+                        this.btnFactory({
                             icon: 'close',
                             content: 'Close',
                             onClick: this.onErrorDetailsCloseClick
@@ -89,4 +86,6 @@ export class ErrorDetailsDialog extends Component {
         this.setMsg('');
         this.props.visManager.isVisible = false;
     }
+
+    btnFactory = (props) => button({labelPosition: 'left', ...props})
 }

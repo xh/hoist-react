@@ -48,20 +48,17 @@ export class ErrorRichAlertDialog extends Component {
     renderButtons() {
         const showAsError = hoistAppModel.clientError.options.showAsError,
             btns = [
-                button({
-                    labelPosition: 'left',
+                this.btnFactory({
                     icon: 'search',
                     content: 'Show/Report Details',
                     onClick: this.onShowErrorDetailsClick
                 }),
-                button({
-                    labelPosition: 'left',
+                this.btnFactory({
                     icon: 'refresh',
                     content: this.getReloadBtnText(),
                     onClick: this.onReloadClick
                 }),
-                button({
-                    labelPosition: 'left',
+                this.btnFactory({
                     icon: 'close',
                     content: 'Close',
                     onClick: this.onClose
@@ -94,4 +91,6 @@ export class ErrorRichAlertDialog extends Component {
         const {exception} = hoistAppModel.clientError;
         return exception && exception.httpStatus === 401;
     }
+
+    btnFactory = (props) => button({labelPosition: 'left', ...props})
 }
