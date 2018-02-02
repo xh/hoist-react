@@ -175,7 +175,10 @@ Object.assign(Promise.prototype, {
         if (isNumber(config)) config = {interval: config};
         config.message = config.message || 'Operation timed out';
 
-        const deadline = wait(config.interval).then(() => {throw XH.exception(config.message)});
+        const deadline = new Promise((resolve, reject) => {
+            setTimeout(reject, config.interval, config.message);
+        });
+
         return Promise.race([deadline, this]);
     },
 
