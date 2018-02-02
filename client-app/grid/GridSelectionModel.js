@@ -20,6 +20,6 @@ export class GridSelectionModel {
     }
 
     @computed get isEmpty() {
-        return this.records.length === 1;
+        return this.records.length === 0;
     }
 }

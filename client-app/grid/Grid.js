@@ -30,14 +30,15 @@ class Grid extends Component {
 
     static gridDefaults = {
         enableSorting: true,
+        enableColResize: true,
         rowSelection: 'single'
     };
-    
+
     render() {
         const props = this.props,
             model = props.model,
             gridOptions = defaults(props.gridOptions || {}, Grid.gridDefaults);
-        
+
         return div({
             style: {flex: '1 1 auto'},
             cls: 'ag-theme-fresh',

@@ -13,7 +13,7 @@ import {XH} from 'hoist';
  */
 class HoistAppModel {
 
-    @observable useSemantic = false;
+    @observable useSemantic = true;
 
     /** Has the authentication step completed? **/
     @observable authCompleted = false;
@@ -23,6 +23,9 @@ class HoistAppModel {
 
     /** Are all Hoist app services successfully initialized? */
     @setter @observable isInitialized = false;
+
+    /** A non-null value causes the error to appear in a modal. */
+    @setter @observable clientError = null;
 
     /**
      * Tracks globally loading promises.

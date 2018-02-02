@@ -7,25 +7,25 @@
 
 import {XH} from 'hoist';
 import {observable, action, LastPromiseModel} from 'hoist/mobx';
-import {isArray} from 'lodash';
 import {GridSelectionModel} from './GridSelectionModel';
 
-
 /**
- * Model for Managing the loading of a Grid.
+ * Core Model for a Grid.
  */
 export class GridModel {
 
-    url = ''
-    processRawData = null
+    url = '';
+    dataRoot = null;
+    processRawData = null;
 
-    @observable records = [];
     @observable columns = [];
-    @observable selection = new GridSelectionModel();
-    @observable loadModel = new LastPromiseModel();
+    @observable records = [];
+    selection = new GridSelectionModel();
+    loadModel = new LastPromiseModel();
 
-    constructor({url, columns, processRawData}) {
+    constructor({url, dataRoot, columns, processRawData}) {
         this.url = url;
+        this.dataRoot = dataRoot;
         this.columns = columns;
         this.processRawData = processRawData;
     }
@@ -44,9 +44,9 @@ export class GridModel {
     //--------------------------
     @action
     completeLoad = (records) => {
-        const process = this.processRawData;
-
-        records = isArray(records) ? records : records.data;
-        this.records = process ? process(records) : records;
+        const {processRawData, dataRoot} = this;
+        if (dataRoot) records = records[dataRoot];
+        if (processRawData) records = processRawData(records);
+        this.records = records;
     }
 }

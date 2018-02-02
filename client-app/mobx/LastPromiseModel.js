@@ -18,8 +18,6 @@ import {observable, action, computed} from 'hoist/mobx';
  */
 export class LastPromiseModel {
 
-    @observable value = null;
-    @observable reason = null;
     @observable state = 'resolved';
 
     lastCall = null;
@@ -44,15 +42,11 @@ export class LastPromiseModel {
     //-----------------------------
     @action
     onSuccess(value) {
-        this.value = value;
-        this.reason = null;
         this.state = 'resolved';
     }
 
     @action
     onReject(reason) {
-        this.reason = reason;
-        this.value = null;
         this.state = 'rejected';
     }
 }

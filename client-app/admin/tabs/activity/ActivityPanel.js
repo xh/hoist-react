@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {grid, GridModel} from 'hoist/grid';
-import {observer, observable} from 'hoist/mobx';
+import {observer} from 'hoist/mobx';
 
 import {dateTimeCol} from 'hoist/columns/DatesTimes';
 import {
@@ -24,7 +24,7 @@ import {
 @observer
 export class ActivityPanel extends Component {
 
-    @observable model = new GridModel({
+    model = new GridModel({
         url: 'trackLogAdmin',
         columns: [
             severity(),

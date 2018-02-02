@@ -6,14 +6,14 @@
 */
 import {Component} from 'react';
 import {grid, GridModel} from 'hoist/grid';
-import {observer, observable} from 'hoist/mobx';
+import {observer} from 'hoist/mobx';
 
 import {nameCol, heapSizeCol, entriesCol, statusCol} from '../../columns/Columns';
 
 @observer
 export class EhCachePanel extends Component {
 
-    @observable model = new GridModel({
+    model = new GridModel({
         url: 'ehCacheAdmin/listCaches',
         columns: [
             nameCol(),
