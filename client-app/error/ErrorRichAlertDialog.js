@@ -61,7 +61,7 @@ export class ErrorRichAlertDialog extends Component {
                 this.button({
                     icon: 'close',
                     content: 'Close',
-                    onClick: this.onClose
+                    onClick: this.onCloseClick
                 })
             ];
 
@@ -79,7 +79,7 @@ export class ErrorRichAlertDialog extends Component {
         window.location.reload(true);
     }
 
-    onClose = () => {
+    onCloseClick = () => {
         hoistAppModel.setClientError(null);
     }
 

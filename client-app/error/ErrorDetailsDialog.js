@@ -57,7 +57,7 @@ export class ErrorDetailsDialog extends Component {
                         this.button({
                             icon: 'close',
                             content: 'Close',
-                            onClick: this.onErrorDetailsCloseClick
+                            onClick: this.onCloseClick
                         })
                     ]
                 })
@@ -74,7 +74,7 @@ export class ErrorDetailsDialog extends Component {
 
     onSendClick = () => {
         errorTrackingService.submitAsync({exception: this.props.exception, msg: this.msg})
-            .then(() => this.onErrorDetailsCloseClick());
+            .then(() => this.onCloseClick());
     }
 
     onCopyClick = () => {
@@ -82,7 +82,7 @@ export class ErrorDetailsDialog extends Component {
     }
 
     @action
-    onErrorDetailsCloseClick = () => {
+    onCloseClick = () => {
         this.setMsg('');
         this.props.visManager.isVisible = false;
     }
