@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {fileColFactory} from './Utils.js';
-import {dateRenderer, dateTimeRenderer, timeRenderer, compactDateRenderer} from '../format/index.js';
+import {dateRenderer, dateTimeRenderer, timeRenderer, compactDateRenderer} from '../format';
 
 const colFactory = fileColFactory({
     xtype: 'datecolumn',
