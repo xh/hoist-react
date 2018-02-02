@@ -24,7 +24,8 @@ class HoistAppModel {
     /** Are all Hoist app services successfully initialized? */
     @setter @observable isInitialized = false;
 
-    @observable clientError = null;
+    /** A non-null value causes the error to appear in a modal. */
+    @setter @observable clientError = null;
 
     /**
      * Tracks globally loading promises.
@@ -69,11 +70,6 @@ class HoistAppModel {
                 .then(() => this.setIsInitialized(true))
                 .catchDefault();
         }
-    }
-
-    @action
-    setClientError(obj) {
-        this.clientError = obj;
     }
 }
 export const hoistAppModel = new HoistAppModel();

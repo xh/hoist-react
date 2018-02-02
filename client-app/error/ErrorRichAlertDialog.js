@@ -7,10 +7,10 @@
 
 import {Component} from 'react';
 
-import {button, buttonContent, header, icon, modal, modalActions, modalContent} from 'hoist/kit/semantic';
+import {button, header, modal, modalActions, modalContent} from 'hoist/kit/semantic';
 import {action, observer, observable} from 'hoist/mobx';
-import {errorDetailsDialog} from 'hoist/cmp';
-import {hoistAppModel} from '../app/HoistAppModel';
+import {errorDetailsDialog} from 'hoist/error';
+import {hoistAppModel} from 'hoist/app/HoistAppModel';
 
 
 @observer
@@ -26,21 +26,18 @@ export class ErrorRichAlertDialog extends Component {
         const {options} = hoistAppModel.clientError;
 
         return modal({
-            open: !!hoistAppModel.clientError,
-            onClose: this.onClose,
+            open: true,
             items: [
                 header({
                     icon: 'attention',
                     content: options.title
                 }),
-                modalContent({
-                    items: options.message
-                }),
-                modalActions({
-                    style: {textAlign: 'right'},
-                    items: this.renderButtons()
-                }),
-                errorDetailsDialog({visManager: this.detailsDialog, e: hoistAppModel.clientError.e})
+                modalContent(options.message),
+                modalActions(this.renderButtons()),
+                errorDetailsDialog({
+                    visManager: this.detailsDialog,
+                    exception: hoistAppModel.clientError.exception
+                })
             ]
         });
     }
@@ -52,30 +49,21 @@ export class ErrorRichAlertDialog extends Component {
         const showAsError = hoistAppModel.clientError.options.showAsError,
             btns = [
                 button({
-                    cls: 'icon',
                     labelPosition: 'left',
-                    items: [
-                        icon({name: 'search'}),
-                        buttonContent({content: 'Show/Report Details...'})
-                    ],
-                    onClick: this.onShowErrorDetails
+                    icon: 'search',
+                    content: 'Show/Report Details',
+                    onClick: this.onShowErrorDetailsClick
                 }),
                 button({
-                    cls: 'icon',
                     labelPosition: 'left',
-                    items: [
-                        icon({name: 'refresh'}),
-                        buttonContent({content: this.getReloadBtnText()})
-                    ],
-                    onClick: this.onReload
+                    icon: 'refresh',
+                    content: this.getReloadBtnText(),
+                    onClick: this.onReloadClick
                 }),
                 button({
-                    cls: 'icon',
                     labelPosition: 'left',
-                    items: [
-                        icon({name: 'close'}),
-                        buttonContent({content: 'Close'})
-                    ],
+                    icon: 'close',
+                    content: 'Close',
                     onClick: this.onClose
                 })
             ];
@@ -86,16 +74,16 @@ export class ErrorRichAlertDialog extends Component {
     }
 
     @action
-    onShowErrorDetails = () => {
+    onShowErrorDetailsClick = () => {
         this.detailsDialog.isVisible = true;
+    }
+
+    onReloadClick = () => {
+        window.location.reload(true);
     }
 
     onClose = () => {
         hoistAppModel.setClientError(null);
-    }
-
-    onReload = () => {
-        window.location.reload(true);
     }
 
     getReloadBtnText() {
@@ -103,7 +91,7 @@ export class ErrorRichAlertDialog extends Component {
     }
 
     sessionExpired() {
-        const {e} = hoistAppModel.clientError;
-        return e && e.httpStatus === 401;
+        const {exception} = hoistAppModel.clientError;
+        return exception && exception.httpStatus === 401;
     }
 }
