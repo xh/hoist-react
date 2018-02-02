@@ -9,7 +9,6 @@ import {XH} from 'hoist/exception/Exception';
 import {defaults, isFinite, isString, capitalize} from 'lodash';
 import moment from 'moment';
 import numeral from 'numeral';
-import numberFormatter from 'number-formatter';
 
 const _THOUSAND = 1000,
     _MILLION  = 1000000,
@@ -73,7 +72,7 @@ export function fmtNumber(v, {
 
     formatPattern = formatPattern || buildFormatPattern(v, precision, zeroPad);
 
-    let ret = numberFormatter(formatPattern, v);  // replace with numeralJS
+    let ret = numeral(v).format(formatPattern);
 
     if (ledger || withSignGlyph) ret = ret.replace('-', '');
 
@@ -431,24 +430,24 @@ function buildFormatPattern(v, precision, zeroPad) {
 
     if (precision % 1 === 0) {
         precision = precision < _MAX_NUMERIC_PRECISION ? precision : _MAX_NUMERIC_PRECISION;
-        pattern = precision === 0 ? '#,##0.' : '#,##0.' + '0'.repeat(precision);
+        pattern = precision === 0 ? '0,0' : '0,0.' + '0'.repeat(precision);
     } else {
         if (num === 0) {
             pattern = '0.00';
         } else if (num < .01) {
-            pattern = '#,##0.000000';
+            pattern = '0,0.000000';
         } else if (num < 100) {
-            pattern = '#,##0.0000';
+            pattern = '0,0.0000';
         } else if (num < 10000) {
-            pattern = '#,##0.00';
+            pattern = '0,0.00';
         } else {
-            pattern = '#,##0.';
+            pattern = '0,0';
         }
     }
 
     if (!zeroPad) {
         const arr = pattern.split('.');
-        if (arr[1]) arr[1] = arr[1].replace(/0/g, '#');
+        if (arr[1]) arr[1] = `[${arr[1]}]`;
         pattern = arr.join('.');
     }
 
@@ -456,5 +455,5 @@ function buildFormatPattern(v, precision, zeroPad) {
 }
 
 function isInvalidInput(v) {
-    return v == null || v === ''
+    return v == null || v === '';
 }
