@@ -69,7 +69,7 @@ export function fmtNumber(v, {
     originalValue = v
 } = {}) {
 
-    if (v == null || v === '') return nullDisplay;
+    if (isInvalidInput(v)) return nullDisplay;
 
     formatPattern = formatPattern || buildFormatPattern(v, precision, zeroPad);
 
@@ -117,7 +117,7 @@ export function fmtNumber(v, {
  */
 export function fmtThousands(v, opts = {})  {
     saveOriginal(v, opts);
-    if (v == null || v === '') return fmtNumber(v, opts);
+    if (isInvalidInput(v)) return fmtNumber(v, opts);
     v = v / _THOUSAND;
     if (opts.label === true) opts.label = 'k';
     return fmtNumber(v, opts);
@@ -131,7 +131,7 @@ export function fmtThousands(v, opts = {})  {
  */
 export function fmtMillions(v, opts = {})  {
     saveOriginal(v, opts);
-    if (v == null || v === '') return fmtNumber(v, opts);
+    if (isInvalidInput(v)) return fmtNumber(v, opts);
 
     v = v / _MILLION;
     if (opts.label === true) opts.label = 'm';
@@ -147,7 +147,7 @@ export function fmtMillions(v, opts = {})  {
  */
 export function fmtBillions(v, opts = {})  {
     saveOriginal(v, opts);
-    if (v == null || v === '') return fmtNumber(v, opts);
+    if (isInvalidInput(v)) return fmtNumber(v, opts);
 
     v = v / _BILLION;
     if (opts.label === true) opts.label = 'b';
@@ -162,7 +162,7 @@ export function fmtBillions(v, opts = {})  {
  */
 export function fmtQuantity(v, opts = {}) {
     saveOriginal(v, opts);
-    if (v == null || v === '') return fmtNumber(v, opts);
+    if (isInvalidInput(v)) return fmtNumber(v, opts);
 
     const lessThanM = Math.abs(v) < _MILLION;
 
@@ -183,7 +183,7 @@ export function fmtQuantity(v, opts = {}) {
  */
 export function fmtPrice(v, opts = {}) {
     saveOriginal(v, opts);
-    if (v == null || v === '') return fmtNumber(v, opts);
+    if (isInvalidInput(v)) return fmtNumber(v, opts);
 
     if (opts.precision === undefined) {
         const absVal = Math.abs(v);
@@ -202,7 +202,7 @@ export function fmtPrice(v, opts = {}) {
  */
 export function fmtPercent(v, opts = {}) {
     saveOriginal(v, opts);
-    if (v == null || v === '') return fmtNumber(v, opts);
+    if (isInvalidInput(v)) return fmtNumber(v, opts);
 
     defaults(opts, {precision: 2, label: '%', labelCls: null});
 
@@ -213,7 +213,7 @@ export function fmtPercent(v, opts = {}) {
 
 // intended for use with our percent format strings in XH.util.Export (which expects v / 100)
 export function fmtExportPercent(v, {precision = 4} = {}) {
-    if (v == null || isNaN(v)) return '';
+    if (!isFinite(v)) return '';
     return fmtNumber((v / 100), {precision: precision, zeroPad: true});
 }
 
@@ -453,4 +453,8 @@ function buildFormatPattern(v, precision, zeroPad) {
     }
 
     return pattern;
+}
+
+function isInvalidInput(v) {
+    return v == null || v === ''
 }
