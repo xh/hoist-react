@@ -8,11 +8,14 @@
 import {Component} from 'react';
 import {button, buttonContent, card, form, header, icon, modal, modalActions, modalContent, textArea} from 'hoist/kit/semantic';
 
+import {errorTrackingService} from 'hoist';
 import {stringifyErrorSafely} from 'hoist/utils/ErrorUtils';
 import {action, observer} from 'hoist/mobx';
 
 @observer
 export class ErrorDetailsDialog extends Component {
+
+    msg = '';
 
     render() {
         if (!this.props.visManager.isVisible) return null;
@@ -34,7 +37,9 @@ export class ErrorDetailsDialog extends Component {
                             items: textArea({
                                 autoHeight: true,
                                 rows: 3,
-                                placeholder: 'Add message here...'
+                                placeholder: 'Add message here...',
+                                // value: this.msg,
+                                onChange: (evt, data) => this.msg = data.value
                             })
                         })
                     ]
@@ -79,7 +84,7 @@ export class ErrorDetailsDialog extends Component {
     // Implementation
     //--------------------------------
     onSend = () => {
-
+        errorTrackingService.submitAsync({exception: this.props.e, msg: this.msg});
     }
 
     onCopy = () => {
