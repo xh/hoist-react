@@ -7,15 +7,14 @@
 import './LogViewerPanel.css';
 import React, {Component} from 'react';
 import {XH} from 'hoist';
-import {observer, observable, autorun, action, toJS} from 'hoist/mobx';
+import {observer, observable, autorun, action} from 'hoist/mobx';
 import {box, vbox, hbox, div} from 'hoist/layout';
 import {baseCol} from 'hoist/columns/Core';
-import {gridPanel} from 'hoist/ag-grid/GridPanel';
+import {grid, GridModel} from 'hoist/grid';
 import {button} from 'hoist/kit/semantic';
 
 @observer
 export class LogViewerPanel extends Component {
-    @observable rows = null;
     @observable direction = 'left';
     @observable collapsed = false;
     @observable tail = true;
@@ -24,6 +23,14 @@ export class LogViewerPanel extends Component {
     @observable maxLines = 1000;
     @observable pattern = '';
     @observable fileContent = [];
+
+    @observable model = new GridModel({
+        url: 'logViewerAdmin/listFiles',
+        columns: [
+            baseCol({headerName: 'Log File', field: 'filename', width: 250})
+        ],
+        dataRoot: 'files'
+    });
 
     render() {
         return hbox({
@@ -34,11 +41,8 @@ export class LogViewerPanel extends Component {
                 box({
                     className: this.collapsed ? 'collapsed' : 'expanded',
                     items: [
-                        gridPanel({
-                            rows: toJS(this.rows),
-                            columns: [
-                                baseCol({headerName: 'Log File', field: 'filename', width: 250})
-                            ],
+                        grid({
+                            model: this.model,
                             gridOptions: {
                                 onCellClicked: this.loadFile
                             }
@@ -50,7 +54,7 @@ export class LogViewerPanel extends Component {
                     style: {
                         background: '#959b9e'
                     },
-                    verticalAlign: 'middle',
+                    verticalalign: 'middle',
                     justifyContent: 'center',
                     alignItems: 'center',
                     items: [
@@ -87,16 +91,7 @@ export class LogViewerPanel extends Component {
     }
 
     loadAsync() {
-        return XH
-            .fetchJson({url: 'logViewerAdmin/listFiles'})
-            .then(rows => {
-                const files = rows.files;
-                // this.preprocessRows(files);
-                this.completeLoad(true, files);
-            }).catch(e => {
-                this.completeLoad(false, e);
-                XH.handleException(e);
-            });
+        return this.model.loadAsync();
     }
 
     loadLines = autorun(() => {
@@ -140,17 +135,8 @@ export class LogViewerPanel extends Component {
     }
 
     @action
-    completeLoad(success, vals) {
-        this.rows = success ? vals : [];
-    }
-
-    @action
     toggleLogPanel = () => {
         this.direction = this.direction === 'left' ? 'right' : 'left';
         this.collapsed = !this.collapsed;
-    }
-
-    preprocessRows(rows) {
-        // Maybe return the date only ???
     }
 }
