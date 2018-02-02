@@ -10,7 +10,7 @@ import {Component} from 'react';
 import {button, buttonContent, header, icon, modal, modalActions, modalContent} from 'hoist/kit/semantic';
 import {action, observer, observable} from 'hoist/mobx';
 import {errorDetailsDialog} from 'hoist/cmp';
-import {hoistAppStore} from '../app/HoistAppStore';
+import {hoistAppModel} from '../app/HoistAppModel';
 
 
 @observer
@@ -21,12 +21,12 @@ export class ErrorRichAlertDialog extends Component {
     }
 
     render() {
-        if (!hoistAppStore.clientError) return null;
+        if (!hoistAppModel.clientError) return null;
 
-        const {options} = hoistAppStore.clientError;
+        const {options} = hoistAppModel.clientError;
 
         return modal({
-            open: !!hoistAppStore.clientError,
+            open: !!hoistAppModel.clientError,
             onClose: this.onClose,
             items: [
                 header({
@@ -40,7 +40,7 @@ export class ErrorRichAlertDialog extends Component {
                     style: {textAlign: 'right'},
                     items: this.renderButtons()
                 }),
-                errorDetailsDialog({visManager: this.detailsDialog, e: hoistAppStore.clientError.e})
+                errorDetailsDialog({visManager: this.detailsDialog, e: hoistAppModel.clientError.e})
             ]
         });
     }
@@ -49,7 +49,7 @@ export class ErrorRichAlertDialog extends Component {
     // Implementation
     //--------------------------------
     renderButtons() {
-        const showAsError = hoistAppStore.clientError.options.showAsError,
+        const showAsError = hoistAppModel.clientError.options.showAsError,
             btns = [
                 button({
                     cls: 'icon',
@@ -91,7 +91,7 @@ export class ErrorRichAlertDialog extends Component {
     }
 
     onClose = () => {
-        hoistAppStore.setClientError(null);
+        hoistAppModel.setClientError(null);
     }
 
     onReload = () => {
@@ -103,7 +103,7 @@ export class ErrorRichAlertDialog extends Component {
     }
 
     sessionExpired() {
-        const {e} = hoistAppStore.clientError;
+        const {e} = hoistAppModel.clientError;
         return e && e.httpStatus === 401;
     }
 }

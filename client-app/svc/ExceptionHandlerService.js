@@ -7,7 +7,7 @@
 import {errorTrackingService} from 'hoist';
 import {BaseService} from './BaseService';
 import {isString} from 'lodash';
-import {hoistAppStore} from '../app/HoistAppStore';
+import {hoistAppModel} from '../app/HoistAppModel';
 
 export class ExceptionHandlerService extends BaseService {
 
@@ -70,7 +70,7 @@ export class ExceptionHandlerService extends BaseService {
      * @param options, see handleException().  These options will already be parsed and defaults applied.
      */
     alertException(e, options) {
-        hoistAppStore.setClientError({e: e, options: options});
+        hoistAppModel.setClientError({e: e, options: options});
     }
 
     /**
