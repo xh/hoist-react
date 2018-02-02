@@ -6,16 +6,19 @@
  */
 
 import {Component} from 'react';
-import {XH, identityService} from 'hoist';
+import {identityService} from 'hoist';
 import {hbox, vbox, spacer, filler, div} from 'hoist/layout';
-import {Classes, button, suggest, icon, popover2, menuItem} from 'hoist/blueprint';
+import {Classes, button, suggest, icon, popover, menuItem} from 'hoist/kit/blueprint';
+import {icon as semanticIcon, button as semanticButton, popup, dropdown} from 'hoist/kit/semantic';
+import {observer} from 'hoist/mobx';
+import {hoistAppModel} from 'hoist/app/HoistAppModel';
 
-import {observable, action, observer} from 'hoist/mobx';
+import {ImpersonationBarModel} from './ImpersonationBarModel';
 
 @observer
 export class ImpersonationBar extends Component {
 
-    store = new Store();
+    model = new ImpersonationBarModel();
 
     constructor() {
         super();
@@ -23,141 +26,160 @@ export class ImpersonationBar extends Component {
     }
 
     render() {
-        if (!this.store.isVisible) return null;
-
-        const {impersonating, username} = identityService;
-        
-        return hbox({
-            padding: 5,
-            style: {
-                color: 'white',
-                backgroundColor: 'midnightblue'
-            },
-            alignItems: 'center',
-            items: [
-                icon({iconName: 'person'}),
-                spacer({width: 10}),
-                div({items: `${impersonating ? 'Impersonating' : ''} ${username}`}),
-                filler(),
-                this.switchButton(),
-                spacer({width: 4}),
-                this.exitButton()
-            ]
-        });
+        if (!this.model.isVisible) return null;
+        return hoistAppModel.useSemantic ? this.semantic.render() : this.blueprint.render();
     }
 
-    switchButton() {
-        const s = this.store;
-
-        return popover2({
-            target: button({text: 'Switch User', iconName: 'random', style: {minWidth: 130}, onClick: s.toggleTargetDialog}),
-            isOpen: s.targetDialogOpen,
-            hasBackdrop: true,
-            minimal: true,
-            placement: 'bottom-end',
-            popoverClassName: 'pt-popover-content-sizing',
-            backdropProps: {style: {backgroundColor: 'rgba(255,255,255,0.5)'}},
-            onClose: s.toggleTargetDialog,
-            content: vbox({
-                justifyContent: 'right',
-                items: [
-                    suggest({
-                        inputProps: {value: s.selectedTarget},
-                        onItemSelect: s.setSelectedTarget,
-                        popoverProps: {popoverClassName: Classes.MINIMAL},
-                        inputValueRenderer: s => s,
-                        itemPredicate: (q, v, index) => v.includes(q),
-                        itemRenderer: ({handleClick, isActive, item}) => {
-                            return menuItem({key: item, onClick: handleClick, text: item});
-                        },
-                        $items: s.targets || []
-                    }),
-                    spacer({height: 5}),
-                    hbox({
-                        items: [
-                            filler(),
-                            button({text: 'Close', onClick: s.toggleTargetDialog}),
-                            spacer({width: 5}),
-                            button({text: 'OK', onClick: s.doImpersonate, disabled: !s.selectedTarget})
-                        ]
-                    })
-                ]
-            })
-        });
-    }
-
-    exitButton() {
-        const text = identityService.impersonating ?  'Exit Impersonation' : 'Cancel';
-        return button({text: text, iconName: 'cross', onClick: this.store.doExit});
-    }
-    
     onKeyDown = (e) => {
         if (e.ctrlKey && e.key === 'i') {
-            this.store.toggleVisibility();
-            e.stopPropagation();       
-        }
-    }
-}
-
-
-class Store {
-    @observable isVisible = false;
-
-    @observable targets = null;
-    @observable selectedTarget = '';
-    @observable targetDialogOpen = false;
-
-    constructor() {
-        this.isVisible = identityService.impersonating;
-        if (this.isVisible) this.ensureTargetsLoaded();
-    }
-
-    @action
-    toggleVisibility = () => {
-        this.targetDialogOpen = false;
-        this.isVisible = !this.isVisible || identityService.isImpersonating;
-        if (this.isVisible) this.ensureTargetsLoaded();
-    }
-
-    @action
-    doImpersonate = () => {
-        if (this.selectedTarget) identityService.impersonateAsync(this.selectedTarget);
-    }
-
-    doExit = () => {
-        if (identityService.impersonating) {
-            identityService.endImpersonateAsync();
-        } else {
-            this.toggleVisibility();
+            this.model.toggleVisibility();
+            e.stopPropagation();
         }
     }
 
-    //--------------------------
-    // Target dialog management
-    //--------------------------
-    ensureTargetsLoaded() {
-        if (this.targets != null) return;
-        XH.fetchJson({
-            url: 'hoistImpl/impersonationTargets'
-        }).then(
-            this.setTargets
-        ).catchDefault();
+    //---------------------
+    // Blueprint
+    //---------------------
+    blueprint = {
+        model: this.model,
+
+        render() {
+            const {impersonating, username} = identityService;
+            return hbox({
+                padding: 5,
+                style: {
+                    color: 'white',
+                    backgroundColor: 'midnightblue'
+                },
+                alignItems: 'center',
+                items: [
+                    icon({iconName: 'person'}),
+                    spacer({width: 10}),
+                    div(`${impersonating ? 'Impersonating' : ''} ${username}`),
+                    filler(),
+                    this.switchButton(),
+                    spacer({width: 4}),
+                    this.exitButton()
+                ]
+            });
+        },
+
+        switchButton() {
+            const model = this.model;
+
+            return popover({
+                target: button({
+                    text: 'Switch User',
+                    iconName: 'random',
+                    style: {minWidth: 130},
+                    onClick: model.openTargetDialog
+                }),
+                isOpen: model.targetDialogOpen,
+                hasBackdrop: true,
+                minimal: true,
+                placement: 'bottom-end',
+                popoverClassName: 'pt-popover-content-sizing',
+                backdropProps: {style: {backgroundColor: 'rgba(255,255,255,0.5)'}},
+                content: vbox({
+                    justifyContent: 'right',
+                    items: [
+                        suggest({
+                            onItemSelect: model.setSelectedTarget,
+                            popoverProps: {popoverClassName: Classes.MINIMAL},
+                            inputValueRenderer: s => s,
+                            itemPredicate: (q, v, index) => !v || v.includes(q),
+                            itemRenderer: ({handleClick, isActive, item}) => {
+                                return menuItem({key: item, onClick: handleClick, text: item});
+                            },
+                            noResults: menuItem({text: 'No Results'}),
+                            $items: model.targets || []
+                        }),
+                        spacer({height: 5}),
+                        hbox(
+                            filler(),
+                            button({text: 'Close', onClick: model.closeTargetDialog}),
+                            spacer({width: 5}),
+                            button({text: 'OK', onClick: model.doImpersonate, disabled: !model.selectedTarget})
+                        )
+                    ]
+                })
+            });
+        },
+
+        exitButton() {
+            const text = identityService.impersonating ? 'Exit Impersonation' : 'Close';
+            return button({text, iconName: 'cross', onClick: this.model.doExit});
+        }
     }
 
-    @action
-    setTargets = (targets) => {
-        this.targets = targets
-            .map(t => t.username)
-            .filter(t => t !== identityService.username);
-    }
+    //--------------------------------
+    // Semantic
+    //--------------------------------
+    semantic = {
+        model: this.model,
 
-    @action
-    toggleTargetDialog = () => {
-        this.targetDialogOpen = !this.targetDialogOpen;
-    }
+        render() {
+            const {impersonating, username} = identityService;
+            return hbox({
+                padding: 5,
+                style: {
+                    color: 'white',
+                    backgroundColor: 'midnightblue'
+                },
+                alignItems: 'center',
+                items: [
+                    semanticIcon({name: 'user'}),
+                    spacer({width: 10}),
+                    div(`${impersonating ? 'Impersonating' : ''} ${username}`),
+                    filler(),
+                    this.switchButton(),
+                    spacer({width: 4}),
+                    this.exitButton()
+                ]
+            });
+        },
 
-    @action
-    setSelectedTarget = (target) => {
-        this.selectedTarget = target;
+        switchButton() {
+            const model = this.model,
+                targets = model.targets || [];
+            return popup({
+                trigger: this.button({content: 'Switch User', icon: 'random'}),
+                open: model.targetDialogOpen,
+                disabled: !model.targets,
+                position: 'bottom right',
+                on: ['click'],
+                onOpen: model.openTargetDialog,
+                onClose: model.closeTargetDialog,
+                content: vbox({
+                    justifyContent: 'right',
+                    items: [
+                        dropdown({
+                            search: true,
+                            placeholder: 'Target User',
+                            fluid: true,
+                            value: model.selectedTarget,
+                            onChange: (ev, data) => model.setSelectedTarget(data.value),
+                            options: targets.map(it => ({text: it, key: it, value: it}))
+                        }),
+                        spacer({height: 5}),
+                        hbox(
+                            filler(),
+                            this.button({content: 'Close', onClick: model.closeTargetDialog}),
+                            spacer({width: 5}),
+                            this.button({content: 'OK', onClick: model.doImpersonate, disabled: !model.selectedTarget})
+                        )
+                    ]
+                })
+            });
+        }, 
+        
+        exitButton() {
+            const content = identityService.impersonating ? 'Exit Impersonation' : 'Close';
+            return this.button({content, icon: 'close', onClick: this.model.doExit});
+        },
+
+        button(props) {
+            return semanticButton({...props, size: 'tiny', compact: true});
+        }
     }
 }

@@ -5,13 +5,15 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {observable, setter, action} from 'hoist/mobx';
+import {observable, setter, action, MultiPromiseModel} from 'hoist/mobx';
 import {XH} from 'hoist';
 
 /**
- * Main Store for Managing the loading of a HoistApp
+ * Main Model for Managing the loading of a HoistApp
  */
-class HoistAppStore {
+class HoistAppModel {
+
+    @observable useSemantic = false;
 
     /** Has the authentication step completed? **/
     @observable authCompleted = false;
@@ -19,8 +21,16 @@ class HoistAppStore {
     /** Currently authenticated user. **/
     @observable authUsername = null;
 
-    /** Are all Hoist app service successfully initialized? */
+    /** Are all Hoist app services successfully initialized? */
     @setter @observable isInitialized = false;
+
+    /**
+     * Tracks globally loading promises.
+     *
+     * Applications should bind any async operations that should mask
+     * the entire application to this model.
+     **/
+    @observable appLoadModel = new MultiPromiseModel();
 
     /**
      * Call this once when application mounted in order to
@@ -28,10 +38,18 @@ class HoistAppStore {
      */
     initApp() {
         XH.fetchJson({url: 'auth/authUser'})
-            .then(r => this.markAuthenticatedUser(r.username))
+            .then(r => this.markAuthenticatedUser(r.authUser.username))
             .catch(e => this.markAuthenticatedUser(null));
     }
 
+    /**
+     * Trigger a full reload of the app.
+     */
+    @action
+    reloadApp() {
+        this.appLoadModel.bind(new Promise(() => {}));
+        window.location.reload(true);
+    }
 
     /**
      * Call to mark the authenticated user.
@@ -42,13 +60,13 @@ class HoistAppStore {
     @action
     markAuthenticatedUser(username) {
         this.authUsername = username;
+        this.authCompleted = true;
 
-        if (!this.authCompleted) {
-            this.authCompleted = true;
+        if (username && !this.isInitialized) {
             XH.initAsync()
                 .then(() => this.setIsInitialized(true))
                 .catchDefault();
         }
     }
 }
-export const hoistAppStore = new HoistAppStore();
+export const hoistAppModel = new HoistAppModel();

@@ -4,17 +4,18 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import '@blueprintjs/core/dist/blueprint.css';
+
+import './HoistApp.css';
 
 import 'babel-polyfill';
 import {Component} from 'react';
 import {elem} from 'hoist';
 import {loadMask} from 'hoist/cmp';
 import {hocDisplayName} from 'hoist/utils/ReactUtils';
-import {box, viewport, vbox} from 'hoist/layout';
+import {frame, viewport, vframe} from 'hoist/layout';
 import {useStrict, observer} from 'hoist/mobx';
 
-import {hoistAppStore} from './HoistAppStore';
+import {hoistAppModel} from './HoistAppModel';
 import {LoginPanel} from './LoginPanel';
 import {ImpersonationBar} from './ImpersonationBar';
 import {VersionBar} from './VersionBar';
@@ -34,32 +35,29 @@ export function hoistApp(C) {
         static displayName = hocDisplayName('HoistApp', C);
 
         componentDidMount() {
-            hoistAppStore.initApp();
+            hoistAppModel.initApp();
         }
 
         render() {
-            const {authUsername, authCompleted, isInitialized} = hoistAppStore;
+            const {authUsername, authCompleted, isInitialized} = hoistAppModel;
 
-            if (!authCompleted) return loadMask();
+            if (!authCompleted) return this.renderPreloadMask();
             if (!authUsername)  return elem(LoginPanel);
-            if (!isInitialized) return loadMask();
+            if (!isInitialized) return this.renderPreloadMask();
 
-            return viewport({
-                items: vbox({
-                    flex: 1,
-                    items: [
-                        elem(ImpersonationBar),
-                        box({
-                            flex: 1,
-                            items: elem(C)
-                        }),
-                        elem(VersionBar)
-                    ]
-                })
-            });
+            return viewport(
+                vframe(
+                    elem(ImpersonationBar),
+                    frame(elem(C)),
+                    elem(VersionBar)
+                ),
+                loadMask({model: hoistAppModel.appLoadModel})
+            );
         }
 
-
+        renderPreloadMask() {
+            return loadMask({isDisplayed: true});
+        }
     };
 
     return observer(ret);

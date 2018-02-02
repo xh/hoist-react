@@ -8,5 +8,6 @@
 export {useStrict, observable, action, autorun, computed, when, toJS} from 'mobx';
 export {observer} from 'mobx-react';
 export {setter} from 'mobx-decorators';
-
+export {LastPromiseModel} from './LastPromiseModel';
+export {MultiPromiseModel} from './MultiPromiseModel';
 
