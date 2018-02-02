@@ -5,9 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {saveOriginal, fmtSpan} from './FormatUtils';
 import {defaults, isString} from 'lodash';
 import moment from 'moment';
+
+import {saveOriginal, createRenderer} from './FormatUtils';
+import {fmtSpan} from './FormatMisc';
 
 const DATE_FMT = 'YYYY-MM-DD',
     DATETIME_FMT = 'YYYY-MM-DD h:mma',
@@ -100,3 +102,8 @@ export function fmtCompactDate(v, {
 
     return fmtDate(v, dateOpts);
 }
+
+export const dateRenderer = createRenderer(fmtDate),
+    dateTimeRenderer = createRenderer(fmtDateTime),
+    timeRenderer = createRenderer(fmtTime),
+    compactDateRenderer = createRenderer(fmtCompactDate);
