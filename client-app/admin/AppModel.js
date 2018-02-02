@@ -27,7 +27,7 @@ import {UserPanel} from './tabs/users/UserPanel';
 
 class AppModel {
 
-    @observable tabs = this.createTabs();
+    tabs = this.createTabs();
     @observable lastRefreshRequest = null;
     
     @action

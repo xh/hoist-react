@@ -10,8 +10,7 @@ import {GridModel} from 'hoist/grid';
 import {remove} from 'lodash';
 
 /**
- * Grid model supporting additional state and options
- * for REST editing operations.
+ * * Core Model for a RestGrid
  */
 export class RestGridModel extends GridModel {
 
@@ -21,8 +20,7 @@ export class RestGridModel extends GridModel {
     enableAdd = true;
     enableEdit = true;
     enableDelete = true;
-
-    editors = null;
+    editors = [];
 
     // If not null, this will be displayed in (modal) dialog.
     @observable formRecord = null;   
@@ -44,12 +42,19 @@ export class RestGridModel extends GridModel {
         return (formIsAdd && enableAdd) || (!formIsAdd  && enableEdit);
     }
 
-    constructor(config) {
-        super(config);
-        this.enableAdd = config.hasOwnProperty('enableAdd') ? config.enableAdd : true;
-        this.enableEdit = config.hasOwnProperty('enableEdit') ? config.enableEdit : true;
-        this.enableDelete = config.hasOwnProperty('enableDelete') ? config.enableDelete : true;
-        this.editors = config.editors || [];
+    constructor({
+        enableAdd = true,
+        enableEdit = true,
+        enableDelete = true,
+        editors = [],
+        dataRoot = 'data',
+        ...rest
+    }) {
+        super({...rest, dataRoot});
+        this.enableAdd = enableAdd;
+        this.enableEdit = enableEdit;
+        this.enableDelete = enableDelete;
+        this.editors = editors;
     }
 
     //-----------------

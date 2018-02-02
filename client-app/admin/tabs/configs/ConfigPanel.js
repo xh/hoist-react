@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {observer, observable} from 'hoist/mobx';
+import {observer} from 'hoist/mobx';
 import {environmentService} from 'hoist';
 import {boolCheckCol} from 'hoist/columns/Core';
 import {restGrid, RestGridModel} from 'hoist/rest';
@@ -15,7 +15,6 @@ import {nameCol, valueTypeCol, confValCol, noteCol} from '../../columns/Columns'
 @observer
 export class ConfigPanel extends Component {
 
-    @observable
     model = new RestGridModel({
         url: 'rest/configAdmin',
         columns: this.filterForEnv([

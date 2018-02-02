@@ -5,15 +5,14 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {observer, observable} from 'hoist/mobx';
+import {observer} from 'hoist/mobx';
 import {nameFlexCol, noteCol} from '../../columns/Columns';
 import {baseCol, boolCheckCol} from 'hoist/columns/Core';
-import {restGrid, RestGridModel} from 'hoist/rest/RestGrid';
+import {restGrid, RestGridModel} from 'hoist/rest';
 
 @observer
 export class MonitorEditorPanel extends Component {
 
-    @observable
     model = new RestGridModel({
         url: 'rest/monitorAdmin',
         columns: [
