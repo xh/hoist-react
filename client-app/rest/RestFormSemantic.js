@@ -7,9 +7,10 @@
 
 import {Component} from 'react';
 import {elemFactory} from 'hoist';
+import {capitalize} from 'lodash';
 import {vbox} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
-import {button, input, modal, modalContent, modalActions, modalHeader} from 'hoist/kit/semantic';
+import {button, dropdown, input, label, modal, modalContent, modalActions, modalHeader} from 'hoist/kit/semantic';
 
 @observer
 export class RestFormSemantic extends Component {
@@ -36,24 +37,45 @@ export class RestFormSemantic extends Component {
     // Implementation
     //---------------------------
     getForm() {
-        const {editors, formRecord} = this.props.model;
+        const {editors, formRecord, setFormValue} = this.props.model,
+            ret = [];
 
-        const items = editors.map(editor => {
+        editors.forEach(editor => {
+
             const field = editor.name;
-            return input({
-                value: formRecord[field] || '',
-                onChange: (e) => console.log(e),
-                type: editor.type || 'text',
-                label: {content: editor.label || editor.name, style: {width: '115px', verticalAlign: 'middle'}},
-                disabled: editor.readOnly,
-                style: {marginBottom: 5}
-            });
+            if (editor.type === 'bool') {
+                ret.push(label({content: editor.label || field, style: {width: '115px', textAlign: 'center', paddingBottom: 5}}));
+                ret.push(
+                    dropdown({
+                        className: 'rest-form-dropdown',
+                        fluid: true,
+                        inline: true,
+                        options: [{text: 'True', value: 'true', key: 'True'}, {text: 'False', value: 'false', key: 'False'}],
+                        placeholder: capitalize(formRecord[field].toString()),
+                        onChange: (e, data) => setFormValue(field, data.value === 'true'),
+                        disabled: editor.readOnly,
+                        style: {marginBottom: 5}
+                    })
+                );
+            } else {
+                ret.push(label({content: editor.label || field, style: {width: '115px', textAlign: 'center', paddingBottom: 5}}));
+                ret.push(
+                    input({
+                        defaultValue: formRecord[field] || '',
+                        onChange: (e) => setFormValue(field, e.target.value),
+                        type: editor.type || 'text',
+                        disabled: editor.readOnly,
+                        style: {marginBottom: 5}
+                    })
+                );
+            }
+
         });
 
         return vbox({
             cls: 'rest-form',
             padding: 10,
-            items
+            items: ret
         });
     }
 
