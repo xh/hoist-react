@@ -168,25 +168,30 @@ Object.assign(Promise.prototype, {
      *
      * @param config, either an interval value (in ms) or an object of the form
      *       {interval: value, message: message (optional)}
-     *
      */
     timeout(config) {
         if (config == null) return this;
         if (isNumber(config)) config = {interval: config};
         config.message = config.message || 'Operation timed out';
 
-        const deadline = wait(config.interval).then(() => {throw XH.exception(config.message)});
-        return Promise.race([deadline, this]);
+        let completed = false;
+        const promise = this.finally(() => completed = true);
+
+        const deadline = wait(config.interval).then(() => {
+            if (!completed) throw XH.exception(config.message);
+        });
+
+        return Promise.race([deadline, promise]);
     },
 
 
     /**
-     * Bind this promise to an instance of PromiseState.
+     * Bind this promise to an instance of PromiseModel.
      *
-     * @param state PromiseState
+     * @param model PromiseModel
      */
-    bind(state) {
-        state.bind(this);
+    bind(model) {
+        model.bind(this);
         return this;
     },
 

@@ -4,35 +4,29 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import './App.css';
 
 import {Component} from 'react';
-import {XH, elem, hoistApp} from 'hoist';
-import {vbox, hbox, box, div, filler, spacer} from 'hoist/layout';
-import {button, tabs, tab, icon} from 'hoist/kit/blueprint';
+import {XH, hoistApp, hoistAppModel} from 'hoist';
+import {vframe, hbox, frame, div, filler, spacer} from 'hoist/layout';
+import {button, icon} from 'hoist/kit/blueprint';
+import {button as semanticButton, icon as semanticIcon} from 'hoist/kit/semantic';
 import {observer} from 'hoist/mobx';
 
-import {Tab} from './tabs/Tab';
-import {TabSetStore} from './tabs/TabSetStore';
-import {appStore} from './AppStore';
-
+import {tabContainer} from './tabs/TabContainer';
+import {appModel} from './AppModel';
 
 @hoistApp
 @observer
 export class App extends Component {
 
     render() {
-        return vbox({
-            flex: 1,
-            items: [
-                this.renderNavBar(),
-                box({
-                    padding: 5,
-                    flex: 1,
-                    items: this.renderTabs(appStore.tabs)
-                })
-            ]
-        });
+        return vframe(
+            this.renderNavBar(),
+            frame({
+                padding: 5,
+                items: tabContainer({model: appModel.tabs})
+            })
+        );
     }
 
     //------------------
@@ -48,27 +42,29 @@ export class App extends Component {
                 backgroundColor: 'black'
             },
             alignItems: 'center',
-            items: [
-                icon({iconName: 'eye-open'}),
-                spacer({width: 10}),
-                div(`${XH.appName} Admin`),
-                filler(),
-                button({iconName: 'refresh', onClick: appStore.requestRefresh})
-            ]
+            items: hoistAppModel.useSemantic ? this.semanticNavItems() : this.blueprintNavItems()
         });
     }
 
-    renderTabs(store) {
-        return tabs({
-            id: store.id,
-            onChange: store.changeTab,
-            selectedTabId: store.selectedTabId,
-            vertical: store.orientation === 'v',
-            items: store.children.map(child => {
-                const panel = child instanceof TabSetStore ? this.renderTabs(child) : elem(Tab, {store: child});
-                return tab({id: child.id, title: child.id, panel});
-            })
-        });
+
+    blueprintNavItems() {
+        return [
+            icon({iconName: 'eye-open'}),
+            spacer({width: 10}),
+            div(`${XH.appName} Admin`),
+            filler(),
+            button({iconName: 'refresh', onClick: appModel.requestRefresh})
+        ];
+    }
+    
+    semanticNavItems() {
+        return [
+            semanticIcon({name: 'eye'}),
+            spacer({width: 10}),
+            div(`${XH.appName} Admin`),
+            filler(),
+            semanticButton({icon: 'refresh', size: 'small', compact: true, onClick: appModel.requestRefresh})
+        ];
     }
 }
 

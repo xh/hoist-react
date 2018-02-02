@@ -1,60 +1,42 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2018 Extremely Heavy Industries Inc.
+ */
+
+import './styles.css';
+
 import {Component} from 'react';
-import {XH, elemFactory} from 'hoist';
-import {gridPanel} from 'hoist/ag-grid/GridPanel';
-import {observer, observable, action, toJS} from 'hoist/mobx';
-import {box} from 'hoist/layout';
+import {elemFactory} from 'hoist';
+import {grid} from 'hoist/grid';
+import {observer} from 'hoist/mobx';
+import {frame, vframe} from 'hoist/layout';
 
-import {restForm} from 'hoist/rest/RestForm';
-
+import {restGridToolbar} from './RestGridToolbar';
+import {restForm} from './RestForm';
 
 @observer
 export class RestGrid extends Component {
 
-    @observable rows = null;
-    @observable _rec = null;
-
     render() {
-        const formProps = {
-            rec: this._rec,
-            editors: this.props.editors,
-            url: this.url
-        };
-
-        return box({
-            flex: 1,
-            items: [
-                gridPanel({
-                    rows: toJS(this.rows),
-                    columns: this.props.columns,
+        const model = this.props.model;
+        return vframe(
+            restGridToolbar({model}),
+            frame(
+                grid({
+                    model,
                     gridOptions: {
                         onRowDoubleClicked: this.onRowDoubleClicked
                     }
-                }),
-                restForm(formProps)
-            ]
-        });
+                })
+            ),
+            restForm({model})
+        );
     }
 
-    loadAsync() {
-        return XH
-            .fetchJson({url: this.props.url})
-            .then(rows => {
-                this.completeLoad(true, rows.data);
-            }).catch(e => {
-                this.completeLoad(false, e);
-                XH.handleException(e);
-            });
-    }
-
-    @action
-    completeLoad = (success, vals) => {
-        this.rows = success ? vals : [];
-    }
-
-    @action
-    onRowDoubleClicked = (e) => {
-        this._rec = e.data;
+    onRowDoubleClicked = (row) => {
+        this.props.model.openEditForm(row.data);
     }
 }
-
 export const restGrid = elemFactory(RestGrid);

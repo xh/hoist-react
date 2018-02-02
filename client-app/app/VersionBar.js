@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {XH, environmentService, prefService} from 'hoist';
+import {XH, elemFactory, environmentService, prefService} from 'hoist';
 import {box} from 'hoist/layout';
 
 export class VersionBar extends Component {
@@ -40,3 +40,4 @@ export class VersionBar extends Component {
         }
     }
 }
+export const versionBar = elemFactory(VersionBar);

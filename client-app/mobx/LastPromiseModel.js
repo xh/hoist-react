@@ -14,9 +14,9 @@ import {observable, action, computed} from 'hoist/mobx';
  * Currently it only tracks the *last* invocation, but could
  * be enhanced to maintain historical statistics.
  *
- * See also MultiPromiseState.
+ * See also MultiPromiseModel.
  */
-export class LastPromiseState {
+export class LastPromiseModel {
 
     @observable value = null;
     @observable reason = null;

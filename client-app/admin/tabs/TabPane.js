@@ -5,10 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elem, Ref} from 'hoist';
-import {box} from 'hoist/layout';
+import {elem, elemFactory, Ref} from 'hoist';
+import {frame} from 'hoist/layout';
 import {autorun, observer} from 'hoist/mobx';
-import {appStore} from '../AppStore';
+
+import {appModel} from '../AppModel';
 
 /**
  * Container for an Admin Tab
@@ -22,20 +23,20 @@ import {appStore} from '../AppStore';
  * generally leave the calling of that method to this class.
  */
 @observer
-export class Tab extends Component {
+export class TabPane extends Component {
 
     ref = new Ref();
 
     componentDidMount() {
         autorun(() => {
-            const store = this.props.store,
-                {isActive, isLoading, lastLoaded} = store;
+            const model = this.props.model,
+                {isActive, isLoading, lastLoaded} = model;
 
             if (isActive) {
-                store.setIsLazyMode(false);
+                model.setIsLazyMode(false);
                 const child = this.ref.value;
                 if (child && !isLoading) {
-                    if (!lastLoaded || lastLoaded < appStore.lastRefreshRequest) {
+                    if (!lastLoaded || lastLoaded < appModel.lastRefreshRequest) {
                         this.loadChild(child);
                     }
                 }
@@ -44,23 +45,25 @@ export class Tab extends Component {
     }
 
     render() {
-        const store = this.props.store;
+        const model = this.props.model;
 
-        return store.isLazyMode ?
+        return model.isLazyMode ?
             null :
-            box({
-                flex: 1,
-                items: elem(store.componentClass, {...this.props, ref: this.ref.callback})
+            frame({
+                display: model.isActive ? 'flex' : 'none',
+                margin: 4,
+                items: elem(model.componentClass, {...this.props, flex: 1, ref: this.ref.callback})
             });
     }
 
     loadChild(child) {
-        const store = this.props.store;
+        const model = this.props.model;
         if (child.loadAsync) {
-            store.setIsLoading(true);
-            child.loadAsync().finally(() => store.markLoaded());
+            model.setIsLoading(true);
+            child.loadAsync().finally(() => model.markLoaded());
         } else {
-            store.markLoaded();
+            model.markLoaded();
         }
     }
 }
+export const tabPane = elemFactory(TabPane);

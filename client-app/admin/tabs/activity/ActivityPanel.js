@@ -5,9 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {XH} from 'hoist';
-import {gridPanel} from 'hoist/ag-grid/GridPanel';
-import {observer, observable, action, toJS} from 'hoist/mobx';
+import {grid, GridModel} from 'hoist/grid';
+import {observer, observable} from 'hoist/mobx';
 
 import {dateCol} from 'hoist/columns/DatesTimes';
 import {
@@ -25,39 +24,27 @@ import {
 @observer
 export class ActivityPanel extends Component {
 
-    @observable rows = null;
+    @observable model = new GridModel({
+        url: 'trackLogAdmin',
+        columns: [
+            severity(),
+            dateCol({field: 'dateCreated'}),
+            usernameCol(),
+            msg(),
+            category(),
+            device(),
+            browser(),
+            data(),
+            impersonating(),
+            elapsed()
+        ]
+    });
 
     render() {
-        return gridPanel({
-            rows: toJS(this.rows),
-            columns: [
-                severity(),
-                dateCol({field: 'dateCreated'}),
-                usernameCol(),
-                msg(),
-                category(),
-                device(),
-                browser(),
-                data(),
-                impersonating(),
-                elapsed()
-            ]
-        });
+        return grid({model: this.model});
     }
 
     loadAsync() {
-        return XH
-            .fetchJson({url: 'trackLogAdmin'})
-            .then(rows => {
-                this.completeLoad(true, rows);
-            }).catch(e => {
-                this.completeLoad(false, e);
-                XH.handleException(e);
-            });
-    }
-
-    @action
-    completeLoad = (success, vals) => {
-        this.rows = success ? vals : [];
+        return this.model.loadAsync();
     }
 }

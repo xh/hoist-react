@@ -7,26 +7,40 @@
 import 'semantic-ui-css/semantic.min.css';
 
 import {elemFactory} from 'hoist/hyperscript';
-import {Loader,
-    Button, ButtonContent,
+
+import {
+    Button,
     Card,
     Dimmer,
+    Dropdown,
     Form,
     Header,
+    Input,
     Icon,
-    Modal, ModalActions, ModalContent,
+    Loader,
+    Popup,
+    Menu,
+    Modal,
+    Tab,
     TextArea
 } from 'semantic-ui-react';
 
-export const loader = elemFactory(Loader),
+export const
     button = elemFactory(Button),
-    buttonContent = elemFactory(ButtonContent),
-    card = elemFactory(Card),
+    buttonContent = elemFactory(Button.Content),
     dimmer = elemFactory(Dimmer),
+    dropdown = elemFactory(Dropdown),
     form = elemFactory(Form),
     header = elemFactory(Header),
     icon = elemFactory(Icon),
+    input = elemFactory(Input),
+    loader = elemFactory(Loader),
+    menu = elemFactory(Menu),
     modal = elemFactory(Modal),
-    modalActions = elemFactory(ModalActions),
-    modalContent = elemFactory(ModalContent),
+    modalActions = elemFactory(Modal.Actions),
+    modalContent = elemFactory(Modal.Content),
+    modalHeader = elemFactory(Modal.Header),
+    popup = elemFactory(Popup),
+    tab = elemFactory(Tab),
+    tabPane = elemFactory(Tab.Pane),
     textArea = elemFactory(TextArea);

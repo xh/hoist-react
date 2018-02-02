@@ -6,11 +6,11 @@
  */
 import {Component} from 'react';
 
-import {XH, elem} from 'hoist';
+import {XH} from 'hoist';
 import {box} from 'hoist/layout';
 import {observable, action, observer} from 'hoist/mobx';
 
-import {Tile} from './Tile';
+import {tile} from './Tile';
 
 @observer
 export class MonitorResultsPanel extends Component {
@@ -18,20 +18,13 @@ export class MonitorResultsPanel extends Component {
     @observable results = [];
 
     render() {
-        return box(
-            box({
-                overflow: 'scroll',
-                flexDirection: 'row',
-                flexWrap: 'wrap',
-                alignContent: 'flex-start',
-                style: {
-                    color: 'white',
-                    border: '1px solid white',
-                    borderRadius: '3px'
-                },
-                items: this.results.map(it => elem(Tile, {check: it, key: it.name}))
-            })
-        );
+        return box({
+            overflow: 'auto',
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            alignContent: 'flex-start',
+            items: this.results.map(it => tile({check: it, key: it.name}))
+        });
     }
 
     @action
@@ -47,7 +40,7 @@ export class MonitorResultsPanel extends Component {
     }
 
     @action
-    completeLoad = (success, vals) => {
+    completeLoad(success, vals) {
         this.results = success ? Object.values(vals) : [];
     }
 }

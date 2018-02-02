@@ -12,13 +12,13 @@ import {Component} from 'react';
 import {elem} from 'hoist';
 import {loadMask, errorRichAlertDialog} from 'hoist/cmp';
 import {hocDisplayName} from 'hoist/utils/ReactUtils';
-import {box, viewport, vbox} from 'hoist/layout';
+import {frame, viewport, vframe} from 'hoist/layout';
 import {useStrict, observer} from 'hoist/mobx';
 
-import {hoistAppStore} from './HoistAppStore';
-import {LoginPanel} from './LoginPanel';
-import {ImpersonationBar} from './ImpersonationBar';
-import {VersionBar} from './VersionBar';
+import {hoistAppModel} from './HoistAppModel';
+import {loginPanel} from './LoginPanel';
+import {impersonationBar} from './ImpersonationBar';
+import {versionBar} from './VersionBar';
 
 useStrict(true);
 
@@ -35,29 +35,23 @@ export function hoistApp(C) {
         static displayName = hocDisplayName('HoistApp', C);
 
         componentDidMount() {
-            hoistAppStore.initApp();
+            hoistAppModel.initApp();
         }
 
         render() {
-            const {authUsername, authCompleted, isInitialized} = hoistAppStore;
+            const {authUsername, authCompleted, isInitialized} = hoistAppModel;
 
             if (!authCompleted) return this.renderPreloadMask();
-            if (!authUsername)  return elem(LoginPanel);
+            if (!authUsername)  return loginPanel();
             if (!isInitialized) return this.renderPreloadMask();
 
             return viewport(
-                vbox({
-                    flex: 1,
-                    items: [
-                        elem(ImpersonationBar),
-                        box({
-                            flex: 1,
-                            items: elem(C)
-                        }),
-                        elem(VersionBar)
-                    ]
-                }),
-                loadMask({promiseState: hoistAppStore.appLoadState}),
+                vframe(
+                    impersonationBar(),
+                    frame(elem(C)),
+                    versionBar()
+                ),
+                loadMask({model: hoistAppModel.appLoadModel}),
                 errorRichAlertDialog()
             );
         }

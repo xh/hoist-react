@@ -5,45 +5,30 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {observer} from 'hoist/mobx';
+import {observer, observable} from 'hoist/mobx';
 import {environmentService} from 'hoist';
 import {boolCheckCol} from 'hoist/columns/Core';
+import {restGrid, RestGridModel} from 'hoist/rest';
+
 import {nameCol, valueTypeCol, confValCol, noteCol} from '../../columns/Columns';
-import {Ref, resolve} from 'hoist';
-import {restGrid} from 'hoist/rest/RestGrid';
 
 @observer
 export class ConfigPanel extends Component {
 
-    url = 'rest/configAdmin';
-    columns = this.buildColumns();
-    editors = this.buildEditors();
-
-    ref = new Ref();
-
-    render() {
-        return restGrid({url: this.url, columns: this.columns, editors: this.editors, ref: this.ref.callback});
-    }
-
-    loadAsync() {
-        return this.ref.value ? this.ref.value.loadAsync() : resolve();
-    }
-
-    buildColumns() {
-        return this.filterForEnv([
+    @observable
+    model = new RestGridModel({
+        url: 'rest/configAdmin',
+        columns: this.filterForEnv([
             nameCol(),
             valueTypeCol(),
             confValCol({text: 'Prod Value', field: 'prodValue', env: 'Production'}),
             confValCol({text: 'Beta Value', field: 'betaValue', env: 'Beta'}),
             confValCol({text: 'Stage Value', field: 'stageValue', env: 'Staging'}),
             confValCol({text: 'Dev Value', field: 'devValue', env: 'Development'}),
-            boolCheckCol({text: 'Client?', field: 'clientVisible', width: 90}),
+            boolCheckCol({text: 'Client?', field: 'clientVisible', minWidth: 40, maxWidth: 90}),
             noteCol()
-        ]);
-    }
-
-    buildEditors() {
-        return this.filterForEnv([
+        ]),
+        editors: this.filterForEnv([
             {name: 'name'},
             {name: 'groupName', label: 'Group', forceSelection: false},
             {name: 'valueType', additionsOnly: true},
@@ -55,16 +40,25 @@ export class ConfigPanel extends Component {
             {name: 'note', type: 'textarea'},
             {name: 'lastUpdated', readOnly: true},
             {name: 'lastUpdatedBy', readOnly: true}
-        ]);
+        ])
+    });
+
+    render() {
+        return restGrid({model: this.model});
     }
 
+    loadAsync() {
+        return this.model.loadAsync();
+    }
+
+    //-------------------------
+    // Implementation
+    //-------------------------
     filterForEnv(vals) {
         const envs = environmentService.get('supportedEnvironments'),
             ret = vals.filter(it => !it.env || envs.includes(it.env));
 
         ret.forEach(it => delete it.env);
-
         return ret;
     }
-
 }
