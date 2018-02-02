@@ -12,6 +12,7 @@ import {BaseService} from 'hoist/svc/BaseService';
 import {ConfigService} from 'hoist/svc/ConfigService';
 import {EnvironmentService} from 'hoist/svc/EnvironmentService';
 import {ExceptionHandlerService} from 'hoist/svc/ExceptionHandlerService';
+import {ErrorTrackingService} from 'hoist/svc/ErrorTrackingService';
 import {FeedbackService} from 'hoist/svc/FeedbackService';
 import {FetchService} from 'hoist/svc/FetchService';
 import {IdentityService} from 'hoist/svc/IdentityService';
@@ -26,6 +27,7 @@ export let
     configService,
     environmentService,
     exceptionHandlerService,
+    errorTrackingService,
     feedbackService,
     fetchService,
     identityService,
@@ -65,6 +67,7 @@ class _XH {
         await ensureReady(
             environmentService,
             exceptionHandlerService,
+            errorTrackingService,
             feedbackService,
             identityService,
             trackService,
@@ -84,6 +87,7 @@ class _XH {
         configService = inject(ConfigService);
         environmentService = inject(EnvironmentService);
         exceptionHandlerService = inject(ExceptionHandlerService);
+        errorTrackingService = inject(ErrorTrackingService);
         feedbackService = inject(FeedbackService);
         fetchService = inject(FetchService);
         identityService = inject(IdentityService);

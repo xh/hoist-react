@@ -23,3 +23,16 @@ export function asArray(val) {
     if (isArray(val)) return val;
     return [val];
 }
+
+export function trimToDepth(obj, depth) {
+    if (depth < 1) return null;
+
+    const ret = {};
+    Object.entries(obj).forEach(([key, val]) => {
+        if (typeof val === 'object') {
+            val = depth > 1 ? trimToDepth(val, depth - 1) : '{...}';
+        }
+        ret[key] = val;
+    });
+    return ret;
+}
