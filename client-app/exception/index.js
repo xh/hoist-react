@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+export * from './Exception';
+export * from './Stringify';
 
-export * from './Promise';
-export * from './LastPromiseModel';
-export * from './MultiPromiseModel';
+

@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {elemFactory} from 'hoist';
 import {vbox} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
-import {button, input, modal, modalContent, modalActions, modalHeader} from 'hoist/kit/semantic';
+import {hoistButton, input, modal, modalContent, modalActions, modalHeader} from 'hoist/kit/semantic';
 
 @observer
 export class RestFormSemantic extends Component {
@@ -63,10 +63,9 @@ export class RestFormSemantic extends Component {
 
         if (enableDelete && !formIsAdd) {
             ret.push(
-                button({
+                hoistButton({
                     content: 'Delete',
                     icon: {name: 'x', color: 'red'},
-                    compact: true,
                     disabled: !formIsValid,
                     onClick: this.onDeleteClick
                 })
@@ -75,10 +74,9 @@ export class RestFormSemantic extends Component {
 
         if (formIsWritable) {
             ret.push(
-                button({
+                hoistButton({
                     content: 'Save',
                     icon: {name: 'check', color: 'green'},
-                    compact: true,
                     disabled: !formIsValid,
                     onClick: this.onSaveClick
                 })

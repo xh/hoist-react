@@ -5,15 +5,17 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {observable, setter, action, MultiPromiseModel} from 'hoist/mobx';
 import {XH} from 'hoist';
+import {observable, setter, action} from 'hoist/mobx';
+import {MultiPromiseModel} from 'hoist/promise';
+import {ErrorDialogModel} from 'hoist/error';
 
 /**
  * Main Model for Managing the loading of a HoistApp
  */
 class HoistAppModel {
 
-    @observable useSemantic = false;
+    useSemantic = true;
 
     /** Has the authentication step completed? **/
     @observable authCompleted = false;
@@ -24,8 +26,8 @@ class HoistAppModel {
     /** Are all Hoist app services successfully initialized? */
     @setter @observable isInitialized = false;
 
-    /** A non-null value causes the error to appear in a modal. */
-    @setter @observable clientError = null;
+    /** Tracks recent errors for troubleshooting/display */
+    errorDialogModel = new ErrorDialogModel();
 
     /**
      * Tracks globally loading promises.
@@ -33,7 +35,7 @@ class HoistAppModel {
      * Applications should bind any async operations that should mask
      * the entire application to this model.
      **/
-    @observable appLoadModel = new MultiPromiseModel();
+    appLoadModel = new MultiPromiseModel();
 
     /**
      * Call this once when application mounted in order to

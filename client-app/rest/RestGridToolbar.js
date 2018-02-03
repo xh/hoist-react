@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {elemFactory} from 'hoist';
 import {observer} from 'hoist/mobx';
 import {hbox} from 'hoist/layout';
-import {button} from 'hoist/kit/semantic';
+import {hoistButton} from 'hoist/kit/semantic';
 
 @observer
 export class RestGridToolbar extends Component {
@@ -76,8 +76,7 @@ export class RestGridToolbar extends Component {
     }
 
     button(props) {
-        return button({
-            compact: true,
+        return hoistButton({
             style: {
                 marginTop: 5,
                 marginBottom: 5,

@@ -19,10 +19,10 @@ import {observable, action, computed} from 'hoist/mobx';
 export class LastPromiseModel {
 
     @observable state = 'resolved';
-
     lastCall = null;
 
-    @computed get isPending() {
+    @computed
+    get isPending() {
         return this.state === 'pending';
     }
     

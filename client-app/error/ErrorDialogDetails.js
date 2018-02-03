@@ -6,19 +6,20 @@
  */
 
 import {Component} from 'react';
-import {button, card, form, header, modal, modalActions, modalContent, textArea} from 'hoist/kit/semantic';
-
-import {errorTrackingService} from 'hoist';
-import {stringifyErrorSafely} from 'hoist/error/Utils';
-import {action, observable, observer, setter} from 'hoist/mobx';
+import {elemFactory} from 'hoist';
+import {hoistButton, card, form, header, modal, modalActions, modalContent, textArea} from 'hoist/kit/semantic';
+import {observer} from 'hoist/mobx';
+import {stringifyErrorSafely} from 'hoist/exception';
 
 @observer
-export class ErrorDetailsDialog extends Component {
-
-    @setter @observable msg = '';
+export class ErrorDialogDetails extends Component {
 
     render() {
-        if (!this.props.visManager.isVisible) return null;
+        const model = this.model,
+            {detailsVisible, exception} = model;
+
+        if (!detailsVisible || !exception) return null;
+
         return modal({
             open: true,
             items: [
@@ -30,31 +31,33 @@ export class ErrorDetailsDialog extends Component {
                     items: [
                         card({
                             fluid: true,
-                            description: stringifyErrorSafely(this.props.exception)
+                            description: stringifyErrorSafely(exception)
                         }),
-                        form(textArea({
-                            autoHeight: true,
-                            rows: 3,
-                            placeholder: 'Add message here...',
-                            value: this.msg,
-                            onChange: this.onTextAreaChange
-                        }))
+                        form(
+                            textArea({
+                                autoHeight: true,
+                                rows: 3,
+                                placeholder: 'Add message here...',
+                                value: model.msg,
+                                onChange: this.onMessageChange
+                            })
+                        )
                     ]
                 }),
                 modalActions({
                     style: {textAlign: 'right'},
                     items: [
-                        this.button({
+                        hoistButton({
                             icon: 'envelope',
                             content: 'Send',
                             onClick: this.onSendClick
                         }),
-                        this.button({
+                        hoistButton({
                             icon: 'clipboard',
                             content: 'Copy',
                             onClick: this.onCopyClick
                         }),
-                        this.button({
+                        hoistButton({
                             icon: 'close',
                             content: 'Close',
                             onClick: this.onCloseClick
@@ -68,24 +71,20 @@ export class ErrorDetailsDialog extends Component {
     //--------------------------------
     // Implementation
     //--------------------------------
-    onTextAreaChange = (evt, data) => {
-        this.setMsg(data.value);
+    get model() {return this.props.model}
+
+    onMessageChange = (evt, data) => {
+        this.model.setMsg(data.value);
     }
 
     onSendClick = () => {
-        errorTrackingService.submitAsync({exception: this.props.exception, msg: this.msg})
-            .then(() => this.onCloseClick());
+        this.model.sendReport();
     }
 
-    onCopyClick = () => {
+    onCopyClick = () => {}
 
-    }
-
-    @action
     onCloseClick = () => {
-        this.setMsg('');
-        this.props.visManager.isVisible = false;
+        this.model.close();
     }
-
-    button(props) {return button({labelPosition: 'left', ...props})}
 }
+export const errorDialogDetails = elemFactory(ErrorDialogDetails);

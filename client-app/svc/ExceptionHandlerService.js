@@ -72,7 +72,7 @@ export class ExceptionHandlerService extends BaseService {
      * @param options, see handleException().  These options will already be parsed and defaults applied.
      */
     alertException(exception, options) {
-        hoistAppModel.setClientError({exception, options});
+        hoistAppModel.errorDialogModel.showException(exception, options);
     }
 
     /**

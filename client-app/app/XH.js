@@ -7,7 +7,7 @@
 
 
 import {isPlainObject, camelCase} from 'lodash';
-import {Exception} from 'hoist/exception/Exception';
+import {Exception} from 'hoist/exception';
 import {BaseService} from 'hoist/svc/BaseService';
 import {ConfigService} from 'hoist/svc/ConfigService';
 import {EnvironmentService} from 'hoist/svc/EnvironmentService';

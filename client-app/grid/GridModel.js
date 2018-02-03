@@ -6,7 +6,8 @@
  */
 
 import {XH} from 'hoist';
-import {observable, action, LastPromiseModel} from 'hoist/mobx';
+import {observable, action} from 'hoist/mobx';
+import {LastPromiseModel} from 'hoist/promise';
 import {GridSelectionModel} from './GridSelectionModel';
 
 /**
