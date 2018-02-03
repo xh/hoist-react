@@ -6,7 +6,7 @@
  */
 import 'semantic-ui-css/semantic.min.css';
 
-import {elemFactory} from 'hoist/hyperscript';
+import {elemFactory} from 'hoist';
 
 import {
     Button,

@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {elemFactory} from 'hoist/hyperscript';
+import {elemFactory} from 'hoist';
 import Button from 'material-ui/Button';
 import {CircularProgress} from 'material-ui/Progress';
 import Modal from 'material-ui/Modal';

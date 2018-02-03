@@ -10,7 +10,7 @@
 //
 // This is for application convenience.
 //----------------------------------------------------------
-export * from 'hoist/hyperscript';
+export * from 'hoist/element';
 export * from 'hoist/utils/Ref';
 export * from 'hoist/app/HoistApp';
 export * from 'hoist/app/HoistAppModel';

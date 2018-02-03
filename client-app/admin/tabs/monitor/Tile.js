@@ -20,18 +20,18 @@ export class Tile extends Component {
         return div({
             cls: tileClass,
             items: [
-                {
+                div({
                     cls: 'tile-name',
-                    items: name
-                },
-                {
+                    item: name
+                }),
+                div({
                     cls: 'tile-content',
                     items: [
-                        {cls: 'tile-metric', items: `Metric: ${metric}`},
-                        {cls: 'tile-elapsed', items: `Elapsed: ${elapsed}ms`},
-                        {cls: 'tile-message', items: `${message}`}
+                        div({cls: 'tile-metric', item: `Metric: ${metric}`}),
+                        div({cls: 'tile-elapsed', item: `Elapsed: ${elapsed}ms`}),
+                        div({cls: 'tile-message', item: `${message}`})
                     ]
-                }
+                })
             ]
         });
     }

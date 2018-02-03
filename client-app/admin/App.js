@@ -24,7 +24,7 @@ export class App extends Component {
             this.renderNavBar(),
             frame({
                 padding: 5,
-                items: tabContainer({model: appModel.tabs})
+                item: tabContainer({model: appModel.tabs})
             })
         );
     }

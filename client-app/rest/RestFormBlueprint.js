@@ -26,11 +26,11 @@ export class RestFormBlueprint extends Component {
             items: [
                 div({
                     cls: 'pt-dialog-body',
-                    items: this.getForm()
+                    item: this.getForm()
                 }),
                 div({
                     cls: 'pt-dialog-footer',
-                    items: div({
+                    item: div({
                         cls: 'pt-dialog-footer-actions',
                         items: this.getButtons()
                     })

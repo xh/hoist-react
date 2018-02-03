@@ -42,7 +42,7 @@ class Grid extends Component {
         return div({
             style: {flex: '1 1 auto'},
             cls: 'ag-theme-fresh',
-            items: agGridReact({
+            item: agGridReact({
                 rowData: toJS(model.records),
                 columnDefs: model.columns,
                 onSelectionChanged: this.onSelectionChanged,

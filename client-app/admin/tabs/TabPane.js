@@ -52,7 +52,7 @@ export class TabPane extends Component {
             frame({
                 display: model.isActive ? 'flex' : 'none',
                 margin: 4,
-                items: elem(model.componentClass, {...this.props, flex: 1, ref: this.ref.callback})
+                item: elem(model.componentClass, {...this.props, flex: 1, ref: this.ref.callback})
             });
     }
 

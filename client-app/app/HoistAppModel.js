@@ -13,7 +13,7 @@ import {XH} from 'hoist';
  */
 class HoistAppModel {
 
-    @observable useSemantic = true;
+    @observable useSemantic = false;
 
     /** Has the authentication step completed? **/
     @observable authCompleted = false;
