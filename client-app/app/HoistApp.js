@@ -9,10 +9,9 @@ import './HoistApp.css';
 
 import 'babel-polyfill';
 import {Component} from 'react';
-import {elem} from 'hoist';
+import {elem, hocDisplayName} from 'hoist/react';
 import {loadMask} from 'hoist/cmp';
 import {errorDialog} from 'hoist/error';
-import {hocDisplayName} from 'hoist/utils/ReactUtils';
 import {frame, viewport, vframe} from 'hoist/layout';
 import {useStrict, observer} from 'hoist/mobx';
 

@@ -10,8 +10,5 @@
 //
 // This is for application convenience.
 //----------------------------------------------------------
-export * from 'hoist/element';
-export * from 'hoist/utils/Ref';
-export * from 'hoist/app/HoistApp';
-export * from 'hoist/app/HoistAppModel';
-export * from 'hoist/app/XH';
+export * from 'hoist/react';
+export * from 'hoist/app';
