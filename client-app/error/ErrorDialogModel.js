@@ -19,7 +19,7 @@ export class ErrorDialogModel {
     @setter @observable detailsVisible = true;
 
     /** Message the user would like to transmit with the error report. */
-    @observable msg = '';
+    @setter @observable msg = '';
 
     /**
      * Options to be used for the display of the error.
@@ -33,14 +33,14 @@ export class ErrorDialogModel {
         this.exception = exception;
         this.options = options;
         this.detailsVisible = false;
-        this.msg = null;
+        this.msg = '';
     }
 
     @action
     sendReport() {
         errorTrackingService
             .submitAsync({exception: this.exception, msg: this.msg})
-            .then(() => this.dismiss());
+            .then(() => this.close());
     }
 
 
@@ -49,6 +49,6 @@ export class ErrorDialogModel {
         this.exception = null;
         this.options = null;
         this.detailsVisible = false;
-        this.msg = null;
+        this.msg = '';
     }
 }

@@ -46,23 +46,20 @@ export class ErrorDialogDetails extends Component {
                 }),
                 modalActions({
                     style: {textAlign: 'right'},
-                    items: [
-                        hoistButton({
-                            icon: 'envelope',
-                            content: 'Send',
-                            onClick: this.onSendClick
-                        }),
-                        hoistButton({
-                            icon: 'clipboard',
-                            content: 'Copy',
-                            onClick: this.onCopyClick
-                        }),
-                        hoistButton({
-                            icon: 'close',
-                            content: 'Close',
-                            onClick: this.onCloseClick
-                        })
-                    ]
+                    itemSpec: hoistButton,
+                    items: [{
+                        icon: 'envelope',
+                        content: 'Send',
+                        onClick: this.onSendClick
+                    }, {
+                        icon: 'clipboard',
+                        content: 'Copy',
+                        onClick: this.onCopyClick
+                    }, {
+                        icon: 'close',
+                        content: 'Close',
+                        onClick: this.onCloseClick
+                    }]
                 })
             ]
         });
