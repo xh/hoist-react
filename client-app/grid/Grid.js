@@ -36,7 +36,7 @@ class Grid extends Component {
 
     render() {
         const props = this.props,
-            model = props.model,
+            model = this.model,
             gridOptions = defaults(props.gridOptions || {}, Grid.gridDefaults);
 
         return div({
@@ -55,13 +55,15 @@ class Grid extends Component {
     //----------------
     // Implementation
     //-----------------
+    get model() {return this.props.model}
+
     onGridSizeChanged = (ev) => {
         ev.api.sizeColumnsToFit();
     }
 
     @action
     onSelectionChanged = (ev) => {
-        const selection = this.props.model.selection;
+        const selection = this.model.selection;
         selection.setRecords(ev.api.getSelectedRows());
     }
 }

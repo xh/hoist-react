@@ -29,7 +29,7 @@ export class TabPane extends Component {
 
     componentDidMount() {
         autorun(() => {
-            const model = this.props.model,
+            const model = this.model,
                 {isActive, isLoading, lastLoaded} = model;
 
             if (isActive) {
@@ -45,7 +45,7 @@ export class TabPane extends Component {
     }
 
     render() {
-        const model = this.props.model;
+        const model = this.model;
 
         return model.isLazyMode ?
             null :
@@ -56,8 +56,13 @@ export class TabPane extends Component {
             });
     }
 
+    //------------------------------
+    // Implementation
+    //-----------------------------
+    get model() {return this.props.model}
+
     loadChild(child) {
-        const model = this.props.model;
+        const model = this.model;
         if (child.loadAsync) {
             model.setIsLoading(true);
             child.loadAsync().finally(() => model.markLoaded());

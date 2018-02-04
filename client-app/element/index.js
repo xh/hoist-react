@@ -35,7 +35,6 @@ import {asArray} from 'hoist/utils/JsUtils';
  *                          factory: factory to be used for creating child elements, if none specified.
  *                          ...props: other properties to serve as defaults for children.
  *                      }
- *
  *               ...props:  other properties to apply to this element
  *        }
  *
@@ -45,33 +44,41 @@ import {asArray} from 'hoist/utils/JsUtils';
  *  Equivalent to specifying {items: args} in [1].  Useful when no attributes need to be applied directly
  *  to the Element.
  *
+ *  One important feature of this factory is that children with property 'omit' set to true will be skipped.
+ *  This allows for conditional inclusion of elements in the virtual dom in a declarative style.
+ *
  *  Note that if a React Component has a native property that conflicts with this API, it should be specified as
  *  with a $ prefix (e.g. '$items'). This method will recognize and pass the property appropriately.
+ *
  */
 export function elem(type, ...args) {
 
     // 0) Normalize args into well-specified configs.
-    let {cls, item, items, itemSpec, ...props} = normalizeArgs(args);
+    let {cls, item, items, itemSpec, omit, ...props} = normalizeArgs(args);
 
-    // 1) Handle basic renames
+    // 1) Handle basic rename
     if (cls) props.className = cls;
 
-    // 2) Special handling to recapture '$items'/'$item'
-    ['$items', '$item', '$cls', '$itemSpec'].forEach(key => {
+    // 2) Mark element to be skipped with a special key in props.  This element should never see the light of day
+    // if its *parent* is created using this method, but this should be safe and truthy attribute to use.
+    if (omit) props.xhOmit = 'true';
+
+    // 3) Special handling to recapture API props that conflicted.
+    ['$items', '$item', '$cls', '$itemSpec', '$omit'].forEach(key => {
         if (props.hasOwnProperty(key)) {
             props[key.substring(1)] = props[key];
             delete props.$items;
         }
     });
 
-    // 3) process children
+    // 4) process children
     items = item || items;
     items = asArray(items);
     
     itemSpec = isPlainObject(itemSpec) ? itemSpec : {factory: itemSpec};
     const {factory, ...defaultParams} = itemSpec;
     items = items
-        .filter(it => !!it)
+        .filter(it => it != null)
         .map(it => {
             if (it.$$typeof || isString(it)) {
                 return it;
@@ -83,6 +90,9 @@ export function elem(type, ...args) {
                 return fct(defaults(it, defaultParams));
             }
         });
+
+    // 4a) Remove omitted children last, after elements generated from configs have been created.
+    items = items.filter(it => !it.props || !it.props.xhOmit);
 
     return React.createElement(type, props, ...items);
 }

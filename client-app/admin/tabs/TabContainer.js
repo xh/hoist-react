@@ -26,8 +26,7 @@ export class TabContainer extends Component {
     }
 
     renderBlueprint() {
-        const model = this.props.model,
-            {id, children, selectedId, vertical} = model;
+        const {id, children, selectedId, vertical} = this.model;
 
         return tabs({
             id,
@@ -48,8 +47,7 @@ export class TabContainer extends Component {
     }
 
     renderSemantic() {
-        const model = this.props.model,
-            {children, selectedIndex, vertical, isActive} = model;
+        const {children, selectedIndex, vertical, isActive} = this.model;
 
         // 0) Construct Selectors.
         const $items = children.map(it => ({key: it.id, name: it.id})),
@@ -84,12 +82,17 @@ export class TabContainer extends Component {
         return vertical ? hbox(conf) : vbox(conf);
     }
 
+    //--------------------------
+    // Implementation
+    //--------------------------
+    get model() {return this.props.model}
+
     onSemanticTabChange = (e, {index}) => {
-        this.props.model.setSelectedIndex(index);
+        this.model.setSelectedIndex(index);
     }
 
     onBlueprintTabChange = (activeId) => {
-        this.props.model.setSelectedId(activeId);
+        this.model.setSelectedId(activeId);
     }
 }
 export const tabContainer = elemFactory(TabContainer);

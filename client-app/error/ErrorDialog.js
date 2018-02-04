@@ -48,19 +48,19 @@ export class ErrorDialog extends Component {
                 icon: 'search',
                 content: 'Show/Report Details',
                 onClick: this.onShowDetailsClick,
-                hidden: sessionExpired|| !showAsError
+                omit: sessionExpired || !showAsError
             }),
             hoistButton({
                 icon: 'refresh',
                 content: this.sessionExpired() ? 'Login' : 'Reload App',
-                onClick: this.onReloadClick
+                omit: this.onReloadClick
             }),
             hoistButton({
                 icon: 'close',
                 content: 'Close',
                 onClick: this.onCloseClick
             })
-        ].filter(it => !it.hidden);
+        ];
     }
 
     onShowDetailsClick = () => {

@@ -14,41 +14,31 @@ import {hoistButton} from 'hoist/kit/semantic';
 export class RestGridToolbar extends Component {
 
     render() {
-        const model = this.props.model,
+        const model = this.model,
             singleRecord = model.selection.singleRecord;
 
-        const items = [];
-        if (model.enableAdd) {
-            items.push(
-                this.button({
-                    content: 'Add',
-                    icon: {name: 'add', color: 'blue'},
-                    onClick: this.onAddClick
-                })
-            );
-        }
-
-        if (model.enableEdit) {
-            items.push(
-                this.button({
-                    content: 'Edit',
-                    icon: {name: 'edit', color: 'blue'},
-                    onClick: this.onEditClick,
-                    disabled: !singleRecord
-                })
-            );
-        }
-
-        if (model.enableDelete) {
-            items.push(
-                this.button({
-                    content: 'Delete',
-                    icon: {name: 'x', color: 'red'},
-                    onClick: this.onDeleteClick,
-                    disabled: !singleRecord
-                })
-            );
-        }
+        const items = [
+            this.button({
+                content: 'Add',
+                icon: {name: 'add', color: 'blue'},
+                onClick: this.onAddClick,
+                omit: !model.enableAdd
+            }),
+            this.button({
+                content: 'Edit',
+                icon: {name: 'edit', color: 'blue'},
+                onClick: this.onEditClick,
+                disabled: !singleRecord,
+                omit: !model.enableEdit
+            }),
+            this.button({
+                content: 'Delete',
+                icon: {name: 'x', color: 'red'},
+                onClick: this.onDeleteClick,
+                disabled: !singleRecord,
+                omit: !model.enableDelete
+            })
+        ];
 
         return hbox({
             cls: 'rest-toolbar',
@@ -60,18 +50,19 @@ export class RestGridToolbar extends Component {
     //-----------------------------
     // Implementation
     //-----------------------------
+    get model() {return this.props.model}
+
     onAddClick = () => {
-        const model = this.props.model;
-        model.openAddForm();
+        this.model.openAddForm();
     }
 
     onDeleteClick = () => {
-        const model = this.props.model;
+        const model = this.model;
         model.deleteRecord(model.selection.singleRecord);
     }
 
     onEditClick = () => {
-        const model = this.props.model;
+        const model = this.model;
         model.openEditForm(model.selection.singleRecord);
     }
 

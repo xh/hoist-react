@@ -15,7 +15,7 @@ import {inputGroup, button, label, dialog} from 'hoist/kit/blueprint';
 export class RestFormBlueprint extends Component {
 
     render() {
-        const {formRecord, formIsAdd} = this.props.model;
+        const {formRecord, formIsAdd} = this.model;
         if (!formRecord) return null;
 
         return dialog({
@@ -40,7 +40,7 @@ export class RestFormBlueprint extends Component {
     }
 
     getForm() {
-        const {editors, formRecord} = this.props.model,
+        const {editors, formRecord} = this.model,
             items = [];
 
         editors.forEach(editor => {
@@ -68,46 +68,40 @@ export class RestFormBlueprint extends Component {
     //--------------------------------
     // Implementation
     //--------------------------------
+    get model() {return this.props.model}
+
     getButtons() {
-        const {formIsValid, formIsWritable, enableDelete, formIsAdd} = this.props.model,
-            ret = [];
+        const {formIsValid, formIsWritable, enableDelete, formIsAdd} = this.model;
 
-        if (formIsWritable) {
-            ret.push(
-                button({
-                    text: 'Save',
-                    iconName: 'tick',
-                    disabled: !formIsValid,
-                    onClick: this.onSaveClick
-                })
-            );
-        }
-
-        if (enableDelete && !formIsAdd) {
-            ret.push(
-                button({
-                    text: 'Delete',
-                    iconName: 'cross',
-                    disabled: !formIsValid,
-                    onClick: this.onDeleteClick
-                })
-            );
-        }
-
-        return ret;
+        return [
+            button({
+                text: 'Delete',
+                iconName: 'cross',
+                disabled: !formIsValid,
+                onClick: this.onDeleteClick,
+                omit: !enableDelete || formIsAdd
+            }),
+            button({
+                text: 'Save',
+                iconName: 'tick',
+                disabled: !formIsValid,
+                onClick: this.onSaveClick,
+                omit: !formIsWritable
+            })
+        ];
     }
 
     onClose = () => {
-        this.props.model.closeForm();
+        this.model.closeForm();
     }
 
     onDeleteClick = () => {
-        const model = this.props.model;
+        const model = this.model;
         model.deleteRecord(model.formRecord);
     }
 
     onSaveClick = () => {
-        const model = this.props.model;
+        const model = this.model;
         model.saveRecord(model.formRecord);
     }
 }
