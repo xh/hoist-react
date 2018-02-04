@@ -52,6 +52,15 @@ export async function resolve(value) {
 }
 
 /**
+ * Return a promise that never resolves.
+ * @return {Promise}
+ */
+export async function never() {
+    return new Promise(() => {});
+}
+
+
+/**
  * Resolve when all promises are settled.
  *
  * Inspired and implemented by RSVP.allSettled, but returns a native Promise.
@@ -186,12 +195,12 @@ Object.assign(Promise.prototype, {
 
 
     /**
-     * Bind this promise to an instance of PromiseModel.
+     * Link this promise to an instance of PromiseModel.
      *
      * @param model PromiseModel
      */
-    bind(model) {
-        model.bind(this);
+    linkTo(model) {
+        model.link(this);
         return this;
     },
 

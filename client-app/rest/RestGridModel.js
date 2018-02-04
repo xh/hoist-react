@@ -89,7 +89,7 @@ export class RestGridModel extends GridModel {
             method: 'DELETE'
         }).then(() => {
             this.noteRecordDeleted(rec);
-        }).bind(
+        }).linkTo(
             this.loadModel
         ).catchDefault();
     }
@@ -107,7 +107,7 @@ export class RestGridModel extends GridModel {
         }).then(response => {
             this.formRecord = null;
             this.noteRecordUpdated(response.data);
-        }).bind(
+        }).linkTo(
             this.loadModel
         ).catchDefault();
     }

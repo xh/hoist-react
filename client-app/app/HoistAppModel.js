@@ -7,7 +7,7 @@
 
 import {XH} from 'hoist';
 import {observable, setter, action} from 'hoist/mobx';
-import {MultiPromiseModel} from 'hoist/promise';
+import {MultiPromiseModel, never} from 'hoist/promise';
 import {ErrorDialogModel} from 'hoist/error';
 
 /**
@@ -52,7 +52,7 @@ class HoistAppModel {
      */
     @action
     reloadApp() {
-        this.appLoadModel.bind(new Promise(() => {}));
+        this.appLoadModel.linkTo(never());
         window.location.reload(true);
     }
 

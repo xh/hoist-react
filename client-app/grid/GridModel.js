@@ -36,7 +36,7 @@ export class GridModel {
         return XH
             .fetchJson({url: this.url})
             .then(this.completeLoad)
-            .bind(this.loadModel)
+            .linkTo(this.loadModel)
             .catchDefault();
     }
 

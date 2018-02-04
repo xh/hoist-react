@@ -27,7 +27,7 @@ export class LastPromiseModel {
     }
     
     @action
-    bind(promise) {
+    link(promise) {
         this.lastCall = promise;
         this.state = 'pending';
         promise.then(v => {
