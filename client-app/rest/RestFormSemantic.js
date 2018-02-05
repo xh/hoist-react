@@ -39,37 +39,17 @@ export class RestFormSemantic extends Component {
     get model() {return this.props.model}
 
     getForm() {
-        const {editors, formRecord, setFormValue} = this.model,
+        const {editors} = this.model,
             ret = [];
 
         editors.forEach(editor => {
+            ret.push(this.createFieldLabel(editor));
 
-            const field = editor.name;
+            // this will probably turn into a switch statement
             if (editor.type === 'bool') {
-                ret.push(label({content: editor.label || field, style: {width: '115px', textAlign: 'center', paddingBottom: 5}}));
-                ret.push(
-                    dropdown({
-                        className: 'rest-form-dropdown',
-                        fluid: true,
-                        inline: true,
-                        options: [{text: 'True', value: 'true', key: 'True'}, {text: 'False', value: 'false', key: 'False'}],
-                        placeholder: capitalize(formRecord[field].toString()),
-                        onChange: (e, data) => setFormValue(field, data.value === 'true'),
-                        disabled: editor.readOnly,
-                        style: {marginBottom: 5}
-                    })
-                );
+                ret.push(this.createBooleanField(editor));
             } else {
-                ret.push(label({content: editor.label || field, style: {width: '115px', textAlign: 'center', paddingBottom: 5}}));
-                ret.push(
-                    input({
-                        defaultValue: formRecord[field] || '',
-                        onChange: (e) => setFormValue(field, e.target.value),
-                        type: editor.type || 'text',
-                        disabled: editor.readOnly,
-                        style: {marginBottom: 5}
-                    })
-                );
+                ret.push(this.createTextField(editor));
             }
 
         });
@@ -113,6 +93,37 @@ export class RestFormSemantic extends Component {
     onSaveClick = () => {
         const model = this.model;
         model.saveFormRecord();
+    }
+
+    createFieldLabel(editor) {
+        return label({content: editor.label || editor.name, style: {width: '115px', textAlign: 'center', paddingBottom: 5}});
+    }
+
+    createBooleanField(editor) {
+        const {formRecord, setFormValue} = this.model,
+            field = editor.name;
+        return  dropdown({
+            className: 'rest-form-dropdown',
+            fluid: true,
+            inline: true,
+            options: [{text: 'True', value: 'true', key: 'True'}, {text: 'False', value: 'false', key: 'False'}],
+            placeholder: capitalize(formRecord[field].toString()),
+            onChange: (e, data) => setFormValue(field, data.value === 'true'),
+            disabled: editor.readOnly,
+            style: {marginBottom: 5}
+        });
+    }
+
+    createTextField(editor) {
+        const {formRecord, setFormValue} = this.model,
+            field = editor.name;
+        return input({
+            defaultValue: formRecord[field] || '',
+            onChange: (e) => setFormValue(field, e.target.value),
+            type: 'text',
+            disabled: editor.readOnly,
+            style: {marginBottom: 5}
+        });
     }
 }
 export const restFormSemantic = elemFactory(RestFormSemantic);

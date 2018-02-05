@@ -9,6 +9,7 @@ import {observer} from 'hoist/mobx';
 import {environmentService} from 'hoist';
 import {boolCheckCol} from 'hoist/columns/Core';
 import {restGrid, RestGridModel} from 'hoist/rest';
+import {dateTimeRenderer} from '../../../format';
 
 import {nameCol, valueTypeCol, confValCol, noteCol} from '../../columns/Columns';
 
@@ -29,15 +30,15 @@ export class ConfigPanel extends Component {
         ]),
         editors: this.filterForEnv([
             {name: 'name'},
-            {name: 'groupName', label: 'Group', forceSelection: false},
-            {name: 'valueType', additionsOnly: true},
+            {name: 'groupName', label: 'Group', forceSelection: false}, // force selection false means select from choice OR add your own?
+            {name: 'valueType', additionsOnly: true}, // additions only means you can select from a list if adding a rec, if editing this is read only?
             {name: 'prodValue', env: 'Production'},
             {name: 'betaValue', env: 'Beta'},
             {name: 'stageValue', env: 'Staging'},
             {name: 'devValue', env: 'Development'},
             {name: 'clientVisible', type: 'bool'},
             {name: 'note', type: 'textarea'},
-            {name: 'lastUpdated', readOnly: true},
+            {name: 'lastUpdated', readOnly: true, renderer: dateTimeRenderer()}, // make the the renderer work
             {name: 'lastUpdatedBy', readOnly: true}
         ])
     });
