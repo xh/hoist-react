@@ -26,8 +26,8 @@ export class ConfigPanel extends Component {
             {name: 'betaValue', label: 'Beta Value', allowNull: true, env: 'Beta'},
             {name: 'stageValue', label: 'Stage Value', allowNull: true, env: 'Staging'},
             {name: 'devValue', label: 'Dev Value', allowNull: true, env: 'Development'},
-            {name: 'note', label: 'Note', allowNull: true},
             {name: 'clientVisible', label: 'Client?', type: 'bool'},
+            {name: 'note', label: 'Note', allowNull: true},
             {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true},
             {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true}
         ]),
@@ -44,15 +44,15 @@ export class ConfigPanel extends Component {
         ]),
         editors: this.filterForEnv([
             {name: 'name'},
-            {name: 'groupName', forceSelection: false}, // force selection false means select from choice OR add your own?
-            {name: 'valueType', additionsOnly: true}, // additions only means you can select from a list if adding a rec, if editing this is read only?
+            {name: 'groupName', forceSelection: false}, // force selection: false means select from existing OR add your own.
+            {name: 'valueType', additionsOnly: true}, // additionsOnly means you can select from existing if adding a rec, if editing this is read only.
             {name: 'prodValue', env: 'Production'},
             {name: 'betaValue', env: 'Beta'},
             {name: 'stageValue', env: 'Staging'},
             {name: 'devValue', env: 'Development'},
             {name: 'clientVisible', type: 'bool'},
             {name: 'note', type: 'textarea'},
-            {name: 'lastUpdated', renderer: dateTimeRenderer()}, // make the the renderer work
+            {name: 'lastUpdated', renderer: dateTimeRenderer()},
             {name: 'lastUpdatedBy'}
         ])
     });
