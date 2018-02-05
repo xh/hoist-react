@@ -29,8 +29,8 @@ export class LogLevelPanel extends Component {
             baseCol({field: 'effectiveLevel', width: 80})
         ],
         editors: [
-            {name: 'name'},
-            {name: 'level'}
+            {field: 'name'},
+            {field: 'level'}
         ]
     });
     

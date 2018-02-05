@@ -34,10 +34,10 @@ export class DashboardPanel extends Component {
         ],
 
         editors: [
-            {name: 'appCode'},
-            {name: 'username'},
-            {name: 'definition'},
-            {name: 'lastUpdated'}
+            {fields: 'appCode'},
+            {fields: 'username'},
+            {fields: 'definition'},
+            {fields: 'lastUpdated'}
         ]
     });
 

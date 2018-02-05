@@ -42,18 +42,18 @@ export class MonitorEditorPanel extends Component {
             baseCol({field: 'sortOrder', width: 100})
         ],
         editors: [
-            {name: 'code'},
-            {name: 'name'},
-            {name: 'metricType'},
-            {name: 'warnThreshold'},
-            {name: 'failThreshold'},
-            {name: 'metricUnit'},
-            {name: 'params', type: 'textarea'},
-            {name: 'notes', type: 'textarea'},
-            {name: 'active'},
-            {name: 'sortOrder'},
-            {name: 'lastUpdated'},
-            {name: 'lastUpdatedBy'}
+            {field: 'code'},
+            {field: 'name'},
+            {field: 'metricType'},
+            {field: 'warnThreshold'},
+            {field: 'failThreshold'},
+            {field: 'metricUnit'},
+            {field: 'params', type: 'textarea'},
+            {field: 'notes', type: 'textarea'},
+            {field: 'active'},
+            {field: 'sortOrder'},
+            {field: 'lastUpdated'},
+            {field: 'lastUpdatedBy'}
         ]
     });
 
