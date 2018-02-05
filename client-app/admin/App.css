@@ -1,0 +1,11 @@
+html, body {
+    max-width: 100%;
+    max-height: 100%;
+    position: fixed;
+}
+
+body ::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 10px;
+    height: 10px;
+}

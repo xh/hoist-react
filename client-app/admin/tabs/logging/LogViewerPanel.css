@@ -1,45 +1,60 @@
-.expanded, .collapsed {
-    max-width: 0;
-    overflow-x: hidden;
-    -webkit-transition: max-width 0.5s ease-in-out;
-    -moz-transition: max-width 0.5s ease-in-out;
-    -o-transition: max-width 0.5s ease-in-out;
-    transition: max-width 0.5s ease-in-out;
+.logviewer-panel {
+    display: flex;
+    width: calc(100% - 104px);
+    flex-direction: row;
 }
 
-.expanded {
-    max-width: 250px;
-    width: 250px;
+.logviewer-panel .collapsible-panel {
+    flex: 0 0 auto;
+    overflow: hidden;
+    width: 0;
+    -webkit-transition: width 0.5s ease-in-out;
+    -moz-transition: width 0.5s ease-in-out;
+    -o-transition: width 0.5s ease-in-out;
+    transition: width 0.5s ease-in-out;
 }
 
-.ui.small.button.resizer {
+.logviewer-panel .collapsible-panel.expanded {
+    width: 220px;
+}
+
+.logviewer-panel .ui.small.button.resizer {
     font-size: 0.7em;
 }
 
-.log-display {
-    overflow-y: auto;
-    background-color: lightgray;
+.logviewer-panel .logviewer-container {
+    border: 1px solid darkgrey;
+    min-width: 0;
 }
 
-.log-display .line {
+.logviewer-panel .toolbar {
+    background-color: #106ba3;
+    flex: 0 0 auto;
+    height: 25px;
+}
+
+.logviewer-panel .log-display {
+    flex: 1;
+    overflow: auto;
+    background-color: #f6f6f6;
+}
+
+.logviewer-panel .log-display .line {
+    flex: 0 0 auto;
+    height: 16px;
     font-size: 11px;
     font-family: Monaco, monospace;
 }
 
-.line div {
-    display: inline-block;
-    white-space: pre;
-}
-
-.log-display .line .row-number {
+.logviewer-panel .log-display .line .row-number {
     padding-right: 6px;
     margin-right: 6px;
-    width: 50px;
-    text-align: right;
-    color: #859900;
-    border-right: 1px dotted #859900;
+    min-width: 50px;
+    color: #3764ab;
+    border-right: 1px dotted #929292;
+    text-align: end;
 }
 
-.log-display .line .row-content {
-
+.logviewer-panel .log-display .line .row-content {
+    white-space: pre;
 }

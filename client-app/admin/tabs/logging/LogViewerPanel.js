@@ -5,26 +5,19 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import './LogViewerPanel.css';
-import React, {Component} from 'react';
-import {XH} from 'hoist';
-import {observer, observable, autorun, action} from 'hoist/mobx';
-import {box, vbox, hbox, div} from 'hoist/layout';
+import {Component} from 'react';
+import {observer, toJS} from 'hoist/mobx';
+import {box, vbox, hbox} from 'hoist/layout';
 import {baseCol} from 'hoist/columns/Core';
 import {grid, GridModel} from 'hoist/grid';
 import {button} from 'hoist/kit/semantic';
 
+import {LogViewerPanelModel} from './LogViewerPanelModel';
+
 @observer
 export class LogViewerPanel extends Component {
-    @observable direction = 'left';
-    @observable collapsed = false;
-    @observable tail = true;
-    @observable file = null;
-    @observable startLine = 1;
-    @observable maxLines = 1000;
-    @observable pattern = '';
-    @observable fileContent = [];
-
-    @observable model = new GridModel({
+    logViewerModel = new LogViewerPanelModel();
+    gridModel = new GridModel({
         url: 'logViewerAdmin/listFiles',
         columns: [
             baseCol({headerName: 'Log File', field: 'filename', width: 250})
@@ -32,111 +25,63 @@ export class LogViewerPanel extends Component {
         dataRoot: 'files'
     });
 
+
+    loadAsync() {
+        return this.gridModel.loadAsync();
+    }
+
     render() {
         return hbox({
-            style: {
-                flexBasis: '100%'
-            },
+            cls: 'logviewer-panel',
             items: [
                 box({
-                    className: this.collapsed ? 'collapsed' : 'expanded',
-                    items: [
-                        grid({
-                            model: this.model,
-                            gridOptions: {
-                                onCellClicked: this.loadFile
-                            }
-                        })
-                    ]
+                    cls: this.model.collapsed ? 'collapsible-panel collapsed' : 'collapsible-panel expanded',
+                    items: grid({
+                        model: this.gridModel,
+                        gridOptions: {
+                            onCellClicked: this.model.loadFile
+                        }
+                    })
                 }),
                 vbox({
                     width: 10,
                     style: {
                         background: '#959b9e'
                     },
-                    verticalalign: 'middle',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    items: [
-                        button({
-                            size: 'small',
-                            className: 'resizer',
-                            compact: true,
-                            icon: {name: `${this.direction} chevron`, color: 'blue'},
-                            style: {
-                                margin: 0,
-                                padding: 0,
-                                width: '10px',
-                                height: '70px'
-                            },
-                            onClick: this.toggleLogPanel
-                        })
-                    ]
+                    items: button({
+                        size: 'small',
+                        cls: 'resizer',
+                        compact: true,
+                        icon: {name: `${this.model.collapsed ? 'right': 'left'} chevron`, color: 'blue'},
+                        style: {
+                            margin: 0,
+                            padding: 0,
+                            width: '10px',
+                            height: '70px'
+                        },
+                        onClick: this.model.toggleLogPanel
+                    })
                 }),
                 vbox({
-                    flexBasis: '100%',
-                    items: [{
-                        style: {
-                            background: '#106ba3',
-                            height: '40px'
-                        }
-                    },
-                    <div className="log-display">
-                        {this.fileContent}
-                    </div>
+                    cls: 'logviewer-container',
+                    items: [
+                        hbox({
+                            cls: 'toolbar'
+                        }),
+                        vbox({
+                            cls: 'log-display',
+                            items: toJS(this.model.fileContent)
+                        })
                     ]
                 })
             ]
         });
     }
 
-    loadAsync() {
-        return this.model.loadAsync();
-    }
-
-    loadLines = autorun(() => {
-        if (!this.file) return;
-
-        return XH
-            .fetchJson({
-                url: 'logViewerAdmin/getFile',
-                params: {
-                    filename: this.file,
-                    startLine: this.startLine,
-                    maxLines: this.maxLines,
-                    pattern: this.pattern
-                }
-            })
-            .then(this.updateFileContent).catch(e => {
-                XH.handleException(e);
-            });
-    })
-
-    @action
-    loadFile = (ctx) => {
-        const data = ctx.data;
-
-        this.file = data.filename;
-    }
-
-    @action
-    updateFileContent = (rows) => {
-        this.fileContent = [];
-        const content = rows.content;
-
-        content.forEach(row => {
-            this.fileContent.push(
-                <div className="line">
-                    <div className="row-number">{row[0]}</div>
-                    <div className="row-content">{row[1]}</div>
-                </div>
-            );
-        });
-    }
-
-    @action
-    toggleLogPanel = () => {
-        this.direction = this.direction === 'left' ? 'right' : 'left';
-        this.collapsed = !this.collapsed;
-    }
+    //--------------------------
+    // Implementation
+    //--------------------------
+    get model() {return this.logViewerModel}
 }
