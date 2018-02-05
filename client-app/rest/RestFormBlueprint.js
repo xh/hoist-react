@@ -44,28 +44,17 @@ export class RestFormBlueprint extends Component {
             items = [];
 
         editors.forEach(editor => {
-            const field = editor.name;
+            const field = editor.field;
             let input;
             items.push(label({text: editor.label || field}));
 
-            // case statement? Factor into getInput() method?
-            if (editor.type === 'bool') {
-                input = select({
-                    defaultValue: formRecord[field] || '',
-                    $items: [true, false],
-                    itemRenderer: (v) => {return v},
-                    disabled: editor.readOnly
-                });
-            } else {
-                input = inputGroup({
-                    defaultValue: formRecord[field] || '',
-                    onChange: (e) => setFormValue(field, e.target.value),
-                    type: editor.type || 'text',
-                    disabled: editor.readOnly,
-                    style: {marginBottom: 5}
-                });
-
-            }
+            input = inputGroup({
+                defaultValue: formRecord[field] || '',
+                onChange: (e) => setFormValue(field, e.target.value),
+                type: editor.type || 'text',
+                disabled: editor.readOnly,
+                style: {marginBottom: 5}
+            });
 
             items.push(input);
         });
