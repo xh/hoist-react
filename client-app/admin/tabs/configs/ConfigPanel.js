@@ -45,17 +45,17 @@ export class ConfigPanel extends Component {
             baseCol({field: 'note', flex: 1})
         ]),
         editors: this.filterForEnv([
-            {name: 'name'},
-            {name: 'groupName', forceSelection: false}, // force selection: false means select from existing OR add your own.
-            {name: 'valueType', additionsOnly: true}, // additionsOnly means you can select from existing if adding a rec, if editing this is read only.
-            {name: 'prodValue', env: 'Production'},
-            {name: 'betaValue', env: 'Beta'},
-            {name: 'stageValue', env: 'Staging'},
-            {name: 'devValue', env: 'Development'},
-            {name: 'clientVisible', type: 'bool'},
-            {name: 'note', type: 'textarea'},
-            {name: 'lastUpdated', renderer: dateTimeRenderer()},
-            {name: 'lastUpdatedBy'}
+            {field: 'name'},
+            {field: 'groupName', forceSelection: false}, // force selection: false means select from existing OR add your own.
+            {field: 'valueType', additionsOnly: true}, // additionsOnly means you can select from existing if adding a rec, if editing this is read only.
+            {field: 'prodValue', env: 'Production'},
+            {field: 'betaValue', env: 'Beta'},
+            {field: 'stageValue', env: 'Staging'},
+            {field: 'devValue', env: 'Development'},
+            {field: 'clientVisible', type: 'bool'},
+            {field: 'note', type: 'textarea'},
+            {field: 'lastUpdated', renderer: dateTimeRenderer()},
+            {field: 'lastUpdatedBy'}
         ])
     });
 

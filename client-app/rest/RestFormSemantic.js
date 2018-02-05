@@ -96,18 +96,19 @@ export class RestFormSemantic extends Component {
     }
 
     createFieldLabel(editor) {
-        return label({content: editor.label || editor.name, style: {width: '115px', textAlign: 'center', paddingBottom: 5}});
+        return label({content: editor.label || editor.field, style: {width: '115px', textAlign: 'center', paddingBottom: 5}});
     }
 
     createBooleanField(editor) {
         const {formRecord, setFormValue} = this.model,
             field = editor.field;
-        return  dropdown({
+
+        return dropdown({
             className: 'rest-form-dropdown',
             fluid: true,
             inline: true,
             options: [{text: 'True', value: 'true', key: 'True'}, {text: 'False', value: 'false', key: 'False'}],
-            placeholder: capitalize(formRecord[field].toString()),
+            placeholder: formRecord[field] ? capitalize(formRecord[field].toString()) : '',
             onChange: (e, data) => setFormValue(field, data.value === 'true'),
             disabled: editor.readOnly,
             style: {marginBottom: 5}
@@ -116,7 +117,7 @@ export class RestFormSemantic extends Component {
 
     createTextField(editor) {
         const {formRecord, setFormValue} = this.model,
-            field = editor.name,
+            field = editor.field,
             renderer = editor.renderer,
             currentVal = renderer ? renderer(formRecord[field]) : formRecord[field];
         return input({

@@ -34,6 +34,8 @@ export class RestGridModel {
 
     get url()       {return this.gridModel.url}
     get selection() {return this.gridModel.selection}
+    get loadModel() {return this.gridModel.loadModel}
+    get records() {return this.gridModel.records}
 
     @computed
     get formIsAdd() {
