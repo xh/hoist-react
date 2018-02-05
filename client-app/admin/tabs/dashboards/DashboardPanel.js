@@ -18,26 +18,25 @@ export class DashboardPanel extends Component {
     model = new RestGridModel({
         url: 'rest/dashboardAdmin',
         editWarning: 'Are you sure you want to edit this user\'s dashboard?',
-
-        fields: [
-            {name: 'appCode', label: 'App Code', allowNull: false},
-            {name: 'username', label: 'User'},
-            {name: 'definition', label: 'Definition', type: 'json', allowNull: false},
-            {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true}
-        ],
-
+        recordSpec: {
+            fields: [
+                {name: 'appCode', label: 'App Code', allowNull: false},
+                {name: 'username', label: 'User'},
+                {name: 'definition', label: 'Definition', type: 'json', allowNull: false},
+                {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true}
+            ]
+        },
         columns: [
             baseCol({field: 'appCode', width: 100}),
             usernameCol(),
             dateCol({field: 'lastUpdated'}),
             baseCol({field: 'definition', flex: 1})
         ],
-
         editors: [
-            {fields: 'appCode'},
-            {fields: 'username'},
-            {fields: 'definition'},
-            {fields: 'lastUpdated'}
+            {field: 'appCode'},
+            {field: 'username'},
+            {field: 'definition'},
+            {field: 'lastUpdated'}
         ]
     });
 

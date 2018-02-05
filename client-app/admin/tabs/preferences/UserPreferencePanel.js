@@ -24,14 +24,16 @@ export class UserPreferencePanel extends Component {
             return `Are you sure you want to delete ${countMsg}? Deleting preferences can break running apps!`;
         },
 
-        fields: [
-            {name: 'name', label: 'Pref', lookup: 'names'},
-            {name: 'type', label: 'Type'},
-            {name: 'username', label: 'User'},
-            {name: 'userValue', typeField: 'type', label: 'User Value'},
-            {name: 'lastUpdated', type: 'date', dateFormat: 'time', label: 'Last Updated'},
-            {name: 'lastUpdatedBy', label: 'Last Updated By'}
-        ],
+        recordSpec: {
+            fields: [
+                {name: 'name', label: 'Pref', lookup: 'names'},
+                {name: 'type', label: 'Type'},
+                {name: 'username', label: 'User'},
+                {name: 'userValue', typeField: 'type', label: 'User Value'},
+                {name: 'lastUpdated', type: 'date', dateFormat: 'time', label: 'Last Updated'},
+                {name: 'lastUpdatedBy', label: 'Last Updated By'}
+            ]
+        },
         columns: [
             nameFlexCol(),
             baseCol({field: 'type', width: 80}),

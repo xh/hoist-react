@@ -17,15 +17,17 @@ export class PreferencePanel extends Component {
     model = new RestGridModel({
         url: 'rest/preferenceAdmin',
         editWarning: 'Are you sure you want to edit? Editing preferences can break running apps!',
-        fields: [
-            {name: 'name', label: 'Name'},
-            {name: 'type', label: 'Type', lookup: 'types'},
-            {name: 'defaultValue', label: 'Default Value'},
-            {name: 'notes', label: 'Notes'},
-            {name: 'local', label: 'Local', type: 'bool'},
-            {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true},
-            {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true}
-        ],
+        recordSpec: {
+            fields: [
+                {name: 'name', label: 'Name'},
+                {name: 'type', label: 'Type', lookup: 'types'},
+                {name: 'defaultValue', label: 'Default Value'},
+                {name: 'notes', label: 'Notes'},
+                {name: 'local', label: 'Local', type: 'bool'},
+                {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true},
+                {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true}
+            ]
+        },
         columns: [
             boolCheckCol({field: 'local', width: 60}),
             nameFlexCol(),

@@ -16,12 +16,14 @@ export class LogLevelPanel extends Component {
 
     model = new RestGridModel({
         url: 'rest/logLevelAdmin',
-        fields: [
-            {name: 'name', label: 'Log Name'},
-            {name: 'defaultLevel', label: 'Initial'},
-            {name: 'level', label: 'Override', lookup: 'levels'},
-            {name: 'effectiveLevel', label: 'Effective'}
-        ],
+        recordSpec: {
+            fields: [
+                {name: 'name', label: 'Log Name'},
+                {name: 'defaultLevel', label: 'Initial'},
+                {name: 'level', label: 'Override', lookup: 'levels'},
+                {name: 'effectiveLevel', label: 'Effective'}
+            ]
+        },
         columns: [
             nameCol(),
             baseCol({field: 'defaultLevel', width: 80}),

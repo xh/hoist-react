@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {elemFactory} from 'hoist';
 import {vbox, div} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
-import {inputGroup, select, button, label, dialog} from 'hoist/kit/blueprint';
+import {inputGroup, button, label, dialog} from 'hoist/kit/blueprint';
 
 @observer
 export class RestFormBlueprint extends Component {
