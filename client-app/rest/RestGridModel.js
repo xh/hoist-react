@@ -7,12 +7,13 @@
 import {XH} from 'hoist';
 import {observable, computed, action} from 'hoist/mobx';
 import {GridModel} from 'hoist/grid';
+import {RecordSpec} from 'hoist/data';
 import {remove} from 'lodash';
 
 /**
- * * Core Model for a RestGrid
+ * Core Model for a RestGrid
  */
-export class RestGridModel extends GridModel {
+export class RestGridModel {
 
     //---------------
     // Properties
@@ -20,11 +21,22 @@ export class RestGridModel extends GridModel {
     enableAdd = true;
     enableEdit = true;
     enableDelete = true;
+
+    gridModel = null;
+    recordSpec = null;
     editors = [];
+    
+    _lookupsLoaded = false;
 
     // If not null, this will be displayed in (modal) dialog.
-    @observable formRecord = null;   
-    
+    @observable formRecord = null;
+
+
+    get url()       {return this.gridModel.url}
+    get selection() {return this.gridModel.selection}
+    get loadModel() {return this.gridModel.loadModel}
+    get records() {return this.gridModel.records}
+
     @computed
     get formIsAdd() {
         const rec = this.formRecord;
@@ -46,15 +58,33 @@ export class RestGridModel extends GridModel {
         enableAdd = true,
         enableEdit = true,
         enableDelete = true,
+        recordSpec,
         editors = [],
         dataRoot = 'data',
         ...rest
     }) {
-        super({...rest, dataRoot});
         this.enableAdd = enableAdd;
         this.enableEdit = enableEdit;
         this.enableDelete = enableDelete;
         this.editors = editors;
+        this.recordSpec = recordSpec instanceof RecordSpec ? recordSpec : new RecordSpec(recordSpec);
+
+        this.gridModel = new GridModel({dataRoot, ...rest});
+    }
+
+    async loadAsync() {
+        if (!this._lookupsLoaded) {
+            const lookupFields = this.recordSpec.fields.filter(it => !!it.lookup);
+            if (lookupFields.length) {
+                const lookupData = await XH.fetchJson({url: `${this.url}/lookups`});
+                lookupFields.forEach(f => {
+                    f.lookupValues = lookupData[f.lookup];
+                });
+                this._lookupsLoaded = true;
+            }
+        }
+
+        return this.gridModel.loadAsync();
     }
 
     //-----------------
@@ -76,7 +106,7 @@ export class RestGridModel extends GridModel {
     }
 
     @action
-    setFormValue(field, value) {
+    setFormValue = (field, value) => {
         this.formRecord[field] = value;
     }
 
@@ -95,7 +125,7 @@ export class RestGridModel extends GridModel {
     }
 
     @action
-    saveForm() {
+    saveFormRecord() {
         const {url, formRecord, formIsWritable, formIsAdd} = this;
 
         if (!formIsWritable) throw XH.exception('Record save not enabled.');
@@ -105,7 +135,7 @@ export class RestGridModel extends GridModel {
             method: formIsAdd ? 'POST' : 'PUT',
             params: {data: JSON.stringify(formRecord)}
         }).then(response => {
-            this.formRecord = null;
+            this.closeForm();
             this.noteRecordUpdated(response.data);
         }).linkTo(
             this.loadModel
