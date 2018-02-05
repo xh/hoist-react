@@ -5,57 +5,59 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {XH} from 'hoist';
+import {observer} from 'hoist/mobx';
+import {environmentService} from 'hoist';
 import {boolCheckCol} from 'hoist/columns/Core';
-import {gridPanel} from 'hoist/ag-grid/GridPanel';
-import {observer, observable, action, toJS} from 'hoist/mobx';
+import {restGrid, RestGridModel} from 'hoist/rest';
 
-import {adminTab} from '../AdminTab';
 import {nameCol, valueTypeCol, confValCol, noteCol} from '../../columns/Columns';
 
-
-@adminTab('Configs')
 @observer
 export class ConfigPanel extends Component {
 
-    @observable rows = null;
-    @observable isLoading = false;
-    @observable lastLoaded = null;
+    model = new RestGridModel({
+        url: 'rest/configAdmin',
+        columns: this.filterForEnv([
+            nameCol(),
+            valueTypeCol(),
+            confValCol({text: 'Prod Value', field: 'prodValue', env: 'Production'}),
+            confValCol({text: 'Beta Value', field: 'betaValue', env: 'Beta'}),
+            confValCol({text: 'Stage Value', field: 'stageValue', env: 'Staging'}),
+            confValCol({text: 'Dev Value', field: 'devValue', env: 'Development'}),
+            boolCheckCol({text: 'Client?', field: 'clientVisible', minWidth: 40, maxWidth: 90}),
+            noteCol()
+        ]),
+        editors: this.filterForEnv([
+            {name: 'name'},
+            {name: 'groupName', label: 'Group', forceSelection: false},
+            {name: 'valueType', additionsOnly: true},
+            {name: 'prodValue', env: 'Production'},
+            {name: 'betaValue', env: 'Beta'},
+            {name: 'stageValue', env: 'Staging'},
+            {name: 'devValue', env: 'Development'},
+            {name: 'clientVisible'},
+            {name: 'note', type: 'textarea'},
+            {name: 'lastUpdated', readOnly: true},
+            {name: 'lastUpdatedBy', readOnly: true}
+        ])
+    });
 
     render() {
-        return gridPanel({
-            title: 'Configs',
-            rows: toJS(this.rows),
-            columns: [
-                nameCol(),
-                valueTypeCol(),
-                confValCol({text: 'Prod Value', field: 'prodValue'}),
-                confValCol({text: 'Beta Value', field: 'betaValue'}),
-                confValCol({text: 'Stage Value', field: 'stageValue'}),
-                confValCol({text: 'Dev Value', field: 'devValue'}),
-                boolCheckCol({text: 'Client?', field: 'clientVisible', width: 90}),
-                noteCol()
-            ]
-        });
+        return restGrid({model: this.model});
     }
 
-    @action
     loadAsync() {
-        this.isLoading = true;
-        return XH
-            .fetchJson({url: 'rest/configAdmin'})
-            .then(rows => {
-                this.completeLoad(true, rows.data);
-            }).catch(e => {
-                this.completeLoad(false, e);
-                throw e;
-            }).catchDefault();
+        return this.model.loadAsync();
     }
 
-    @action
-    completeLoad = (success, vals) => {
-        this.rows = success ? vals : [];
-        this.lastLoaded = Date.now();
-        this.isLoading = false;
+    //-------------------------
+    // Implementation
+    //-------------------------
+    filterForEnv(vals) {
+        const envs = environmentService.get('supportedEnvironments'),
+            ret = vals.filter(it => !it.env || envs.includes(it.env));
+
+        ret.forEach(it => delete it.env);
+        return ret;
     }
 }

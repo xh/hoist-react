@@ -6,12 +6,12 @@
  */
 
 import {Component} from 'react';
-import {XH} from 'hoist';
+import {XH, elemFactory} from 'hoist';
 import {vbox, hbox, filler, viewport} from 'hoist/layout';
-import {inputGroup, button} from 'hoist/blueprint';
+import {inputGroup, button} from 'hoist/kit/blueprint';
 import {observable, computed, observer, setter} from 'hoist/mobx';
 
-import {hoistAppStore} from './HoistAppStore';
+import {hoistAppModel} from './HoistAppModel';
 
 @observer
 export class LoginPanel extends Component {
@@ -27,7 +27,7 @@ export class LoginPanel extends Component {
         return viewport({
             alignItems: 'center',
             justifyContent: 'center',
-            items: vbox({
+            item: vbox({
                 padding: 15,
                 style: {border: 'solid 1px'},
                 justifyContent: 'right',
@@ -47,12 +47,10 @@ export class LoginPanel extends Component {
                         onChange: this.onPasswordChange,
                         style: {marginBottom: 5}
                     }),
-                    hbox({
-                        items: [
-                            filler(),
-                            button({text: 'Go', disabled: !this.isValid, onClick: this.onSubmit})
-                        ]
-                    })
+                    hbox(
+                        filler(),
+                        button({text: 'Go', disabled: !this.isValid, onClick: this.onSubmit})
+                    )
                 ]
             })
         });
@@ -69,12 +67,13 @@ export class LoginPanel extends Component {
                 password: this.password
             }
         }).then(r => {
-            hoistAppStore.markAuthenticatedUser(r.success ? this.username : null);
+            hoistAppModel.markAuthenticatedUser(r.success ? this.username : null);
         }).catch(() => {
-            hoistAppStore.markAuthenticatedUser(null);
+            hoistAppModel.markAuthenticatedUser(null);
         });
     }
 
     onUsernameChange = (ev) => {this.setUsername(ev.target.value)}
     onPasswordChange = (ev) => {this.setPassword(ev.target.value)}
 }
+export const loginPanel = elemFactory(LoginPanel);

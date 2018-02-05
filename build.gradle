@@ -162,7 +162,7 @@ publishing {
     }
 }
 
-task publishHoist(dependsOn: 'publishHoistPublicationToMavenRepository') {
+task publishHoistReact(dependsOn: 'publishHoistReactPublicationToMavenRepository') {
     group 'xhio'
     description 'Publishes a build to repo.xh.io'
     doLast {

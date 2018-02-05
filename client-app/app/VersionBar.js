@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {XH, environmentService, prefService} from 'hoist';
+import {XH, elemFactory, environmentService, prefService} from 'hoist';
 import {box} from 'hoist/layout';
 
 export class VersionBar extends Component {
@@ -22,12 +22,14 @@ export class VersionBar extends Component {
             justifyContent: 'center',
             alignItems: 'center',
             padding: 2,
+            height: 25,
+            flex: '0 0 auto',
             style: {
                 fontSize: '0.8em',
                 color: 'white',
                 backgroundColor: this.getFooterColor(env)
             },
-            items: `${XH.appName} | ${env} | ${version}`
+            item: `${XH.appName} | ${env} | ${version}`
         });
     }
 
@@ -40,3 +42,4 @@ export class VersionBar extends Component {
         }
     }
 }
+export const versionBar = elemFactory(VersionBar);

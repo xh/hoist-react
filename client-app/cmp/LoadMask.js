@@ -6,27 +6,59 @@
  */
 
 import {Component} from 'react';
-import {div} from 'hoist/layout';
-import {overlay, spinner} from 'hoist/blueprint';
+import {viewport} from 'hoist/layout';
+import {observer} from 'hoist/mobx';
 
+import {overlay, spinner} from 'hoist/kit/blueprint';
+import {dimmer, loader} from 'hoist/kit/semantic';
+import {hoistAppModel} from 'hoist/app/HoistAppModel';
+
+/**
+ * Simple LoadMask.
+ *
+ * This Mask currently will occupy the entire viewport.
+ * Localized masking will be provided by a future option.
+ *
+ * The mask can be explicitly shown, or reactively bound to a PromiseModel.
+ */
+@observer
 export class LoadMask extends Component {
 
-    static defaultProps = {isShowing: false};
+    BACKGROUND = 'rgba(0,0,0, 0.25)';
 
+    static defaultProps = {
+        isDisplayed: false,
+        model: null
+    };
+    
     render() {
+        return hoistAppModel.useSemantic ? this.renderSemantic() : this.renderBlueprint();
+    }
+
+    renderBlueprint() {
+        const {isDisplayed, model} = this.props;
         return overlay({
-            isOpen: this.props.isShowing,
-            inline: true,
-            items: div({
-                style: {
-                    display: 'flex',
-                    width: '100%',
-                    height: '100%',
-                    justifyContent: 'center',
-                    alignItems: 'center'
-                },
-                items: spinner()
+            isOpen: isDisplayed || (model && model.isPending),
+            canEscapeKeyClose: false,
+            backdropProps: {
+                style: {backgroundColor: this.BACKGROUND}
+            },
+            item: viewport({
+                flex: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+                item: spinner()
             })
         });
     }
+
+    renderSemantic() {
+        const {isDisplayed, model} = this.props;
+        return dimmer({
+            active: isDisplayed || (model && model.isPending),
+            page: true,
+            item: loader()
+        });
+    }
 }
+

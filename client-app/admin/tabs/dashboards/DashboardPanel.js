@@ -5,53 +5,36 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {XH} from 'hoist';
-import {gridPanel} from 'hoist/ag-grid/GridPanel';
-import {observer, observable, action, toJS} from 'hoist/mobx';
-
-import {adminTab} from '../AdminTab';
+import {observer} from 'hoist/mobx';
 import {dateCol} from 'hoist/columns/DatesTimes';
+import {restGrid, RestGridModel} from 'hoist/rest';
+
 import {appCodeCol, usernameCol, definitionCol} from '../../columns/Columns';
 
-
-@adminTab('Dashboards')
 @observer
 export class DashboardPanel extends Component {
 
-    @observable rows = null;
-    @observable isLoading = false;
-    @observable lastLoaded = null;
+    model = new RestGridModel({
+        url: 'rest/dashboardAdmin',
+        columns: [
+            appCodeCol(),
+            usernameCol(),
+            dateCol({field: 'lastUpdated'}),
+            definitionCol()
+        ],
+        editors: [
+            {name: 'appCode', allowBlank: false},
+            {name: 'username', allowBlank: true},
+            {name: 'definition', allowBlank: false, flex: 1},
+            {name: 'lastUpdated', readOnly: true}
+        ]
+    });
 
     render() {
-        return gridPanel({
-            title: 'EhCache',
-            rows: toJS(this.rows),
-            columns: [
-                appCodeCol(),
-                usernameCol(),
-                dateCol({field: 'lastUpdated'}),
-                definitionCol()
-            ]
-        });
+        return restGrid({model: this.model});
     }
 
-    @action
     loadAsync() {
-        this.isLoading = true;
-        return XH
-            .fetchJson({url: 'rest/dashboardAdmin'})
-            .then(rows => {
-                this.completeLoad(true, rows.data);
-            }).catch(e => {
-                this.completeLoad(false, e);
-                throw e;
-            }).catchDefault();
-    }
-
-    @action
-    completeLoad = (success, vals) => {
-        this.rows = success ? vals : [];
-        this.lastLoaded = Date.now();
-        this.isLoading = false;
+        return this.model.loadAsync();
     }
 }
