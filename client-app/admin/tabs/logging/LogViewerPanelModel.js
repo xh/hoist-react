@@ -1,5 +1,12 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2018 Extremely Heavy Industries Inc.
+ */
+
 /**
- * Model for the LogViewerPanel, representing its layout, and currently selected Tab.
+ * Model for the LogViewerPanel
  */
 import {XH} from 'hoist';
 import {observable, autorun, action, setter} from 'hoist/mobx';
@@ -57,7 +64,12 @@ export class LogViewerPanelModel {
                     pattern: this.pattern
                 }
             })
-            .then(rows => this.setRows(rows))
+            .then(rows => this.setRows(rows.content))
             .catchDefault();
     });
+
+    @action
+    refreshValues() {
+
+    }
 }

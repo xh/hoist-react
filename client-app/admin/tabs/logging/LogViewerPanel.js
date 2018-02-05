@@ -12,6 +12,7 @@ import {grid} from 'hoist/grid';
 import {button} from 'hoist/kit/semantic';
 
 import {LogViewerPanelModel} from './LogViewerPanelModel';
+import {logViewerPanelToolbar} from './LogViewerPanelToolbar';
 
 @observer
 export class LogViewerPanel extends Component {
@@ -61,13 +62,16 @@ export class LogViewerPanel extends Component {
                     cls: 'logviewer-container',
                     items: [
                         hbox({
-                            cls: 'toolbar'
+                            cls: 'toolbar',
+                            items: logViewerPanelToolbar({
+                                model: this.model
+                            })
                         }),
                         vbox({
                             cls: 'log-display',
-                            items: rows.map((row, idx) => {
+                            items: toJS(rows).map((row, idx) => {
                                 return hbox({
-                                    cls: 'line',
+                                    cls: 'row',
                                     items: [
                                         div({
                                             key: idx,
@@ -90,7 +94,7 @@ export class LogViewerPanel extends Component {
     }
 
     onGridCellClicked = (ctx) => {
-        this.model.loadFile(ctx.filename);
+        this.model.loadFile(ctx.data.filename);
     }
 
     onResizerClicked = (ctx) => {

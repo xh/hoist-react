@@ -12,6 +12,7 @@ import {defaults} from 'lodash';
 import {
     Button,
     Card,
+    Checkbox,
     Dimmer,
     Dropdown,
     Form,
@@ -31,6 +32,7 @@ export const
     button = elemFactory(Button),
     buttonContent = elemFactory(Button.Content),
     card = elemFactory(Card),
+    checkbox = elemFactory(Checkbox),
     dimmer = elemFactory(Dimmer),
     dropdown = elemFactory(Dropdown),
     form = elemFactory(Form),
