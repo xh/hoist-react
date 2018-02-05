@@ -10,7 +10,7 @@ import {elemFactory} from 'hoist';
 import {capitalize} from 'lodash';
 import {vbox} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
-import {hoistButton, input, label, modal, modalContent, modalActions, modalHeader} from 'hoist/kit/semantic';
+import {dropdown, hoistButton, input, label, modal, modalContent, modalActions, modalHeader} from 'hoist/kit/semantic';
 
 @observer
 export class RestFormSemantic extends Component {
@@ -39,7 +39,8 @@ export class RestFormSemantic extends Component {
     get model() {return this.props.model}
 
     getForm() {
-        const {editors, formRecord, setFormValue} = this.model;
+        const {editors, formRecord, setFormValue} = this.model,
+            ret = [];
 
         editors.forEach(editor => {
 
