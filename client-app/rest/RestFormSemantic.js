@@ -46,9 +46,12 @@ export class RestFormSemantic extends Component {
         editors.forEach(editor => {
             const fieldSpec = fields.find(it => it.name === editor.field);
 
+
             ret.push(this.createFieldLabel(fieldSpec));
             // this will probably turn into a switch statement
-            if (fieldSpec.type === 'bool' || fieldSpec.type === 'boolean') {
+            if (fieldSpec.lookupValues) {
+                ret.push(this.createDropDown(fieldSpec, editor));
+            } else if (fieldSpec.type === 'bool' || fieldSpec.type === 'boolean') {
                 ret.push(this.createBooleanInput(fieldSpec));
             } else {
                 ret.push(this.createTextInput(fieldSpec, editor));
@@ -102,6 +105,26 @@ export class RestFormSemantic extends Component {
         return label({content: content, style: {width: '115px', textAlign: 'center', paddingBottom: 5}});
     }
 
+    createDropDown(fieldSpec, editor) {
+        const {formRecord, setFormValue} = this.model,
+            field = fieldSpec.name,
+            options = fieldSpec.lookupValues.map(v => {
+                return {text: v, value: v, key: v};
+            }),
+            isDisabled = fieldSpec.readOnly || (editor.additionsOnly && !this.model.formIsAdd);
+
+        return dropdown({
+            className: 'rest-form-dropdown',
+            fluid: true,
+            inline: true,
+            options: options,
+            placeholder: formRecord[field] != null ? capitalize(formRecord[field].toString()) : '',
+            onChange: (e, data) => setFormValue(field, data.value),
+            disabled: isDisabled,
+            style: {marginBottom: 5}
+        });
+    }
+
     createBooleanInput(fieldSpec) {
         const {formRecord, setFormValue} = this.model,
             field = fieldSpec.name;
@@ -123,14 +146,13 @@ export class RestFormSemantic extends Component {
             field = fieldSpec.name,
             renderer = editor.renderer,
             currentVal = renderer ? renderer(formRecord[field]) : formRecord[field],
-            isTextArea = fieldSpec.type === 'textarea' || fieldSpec.type === 'json',
-            isDisabled = fieldSpec.readOnly || (editor.additionsOnly && !this.model.formIsAdd);
+            isTextArea = fieldSpec.type === 'textarea' || fieldSpec.type === 'json';
 
         return input({
             defaultValue: currentVal || '',
             onChange: (e) => setFormValue(field, e.target.value),
             type: isTextArea ? 'textarea' : 'text',
-            disabled: isDisabled,
+            disabled: fieldSpec.readOnly,
             style: {marginBottom: 5}
         });
     }
