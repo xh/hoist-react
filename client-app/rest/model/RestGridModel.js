@@ -10,7 +10,7 @@ import {GridModel} from 'hoist/grid';
 import {remove} from 'lodash';
 
 /**
- * * Core Model for a RestGrid
+ * Core Model for a RestGrid
  */
 export class RestGridModel extends GridModel {
 
@@ -21,6 +21,9 @@ export class RestGridModel extends GridModel {
     enableEdit = true;
     enableDelete = true;
     editors = [];
+    fields = [];
+
+    _lookupsLoaded = false;
 
     // If not null, this will be displayed in (modal) dialog.
     @observable formRecord = null;   
@@ -46,6 +49,7 @@ export class RestGridModel extends GridModel {
         enableAdd = true,
         enableEdit = true,
         enableDelete = true,
+        fields = [],
         editors = [],
         dataRoot = 'data',
         ...rest
@@ -55,6 +59,14 @@ export class RestGridModel extends GridModel {
         this.enableEdit = enableEdit;
         this.enableDelete = enableDelete;
         this.editors = editors;
+    }
+
+    async loadAsync() {
+        if (!this.lookupsLoaded) {
+            await Promise.all(this.fields.map(f => f.loadLookupAsync()));
+        }
+
+        return super.loadAsync();
     }
 
     //-----------------

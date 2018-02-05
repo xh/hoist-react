@@ -4,6 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+export * from './model/RestGridModel';
+export * from './model/RestField';
 export * from './RestGrid';
-export * from './RestGridModel';
 export * from './RestForm';

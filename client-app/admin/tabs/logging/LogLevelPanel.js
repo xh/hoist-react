@@ -7,23 +7,30 @@
 import {Component} from 'react';
 import {observer} from 'hoist/mobx';
 import {restGrid, RestGridModel} from 'hoist/rest';
+import {baseCol} from 'hoist/columns';
 
-import {nameCol, defaultLevelCol, levelCol, effectiveLevelCol} from '../../columns/Columns';
+import {nameCol} from '../../columns/Columns';
 
 @observer
 export class LogLevelPanel extends Component {
 
     model = new RestGridModel({
         url: 'rest/logLevelAdmin',
+        fields: [
+            {name: 'name', label: 'Log Name'},
+            {name: 'defaultLevel', label: 'Initial'},
+            {name: 'level', label: 'Override', lookup: 'levels'},
+            {name: 'effectiveLevel', label: 'Effective'}
+        ],
         columns: [
             nameCol(),
-            defaultLevelCol(),
-            levelCol(),
-            effectiveLevelCol()
+            baseCol({field: 'defaultLevel', width: 80}),
+            baseCol({field: 'level', width: 80}),
+            baseCol({field: 'effectiveLevel', width: 80})
         ],
         editors: [
-            {name: 'name', allowBlank: false},
-            {name: 'level', editable: false}
+            {name: 'name'},
+            {name: 'level'}
         ]
     });
     

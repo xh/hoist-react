@@ -7,38 +7,52 @@
 import {Component} from 'react';
 import {observer} from 'hoist/mobx';
 import {environmentService} from 'hoist';
-import {boolCheckCol} from 'hoist/columns/Core';
+import {boolCheckCol, baseCol} from 'hoist/columns/Core';
 import {restGrid, RestGridModel} from 'hoist/rest';
 
-import {nameCol, valueTypeCol, confValCol, noteCol} from '../../columns/Columns';
+import {nameCol} from '../../columns/Columns';
 
 @observer
 export class ConfigPanel extends Component {
 
     model = new RestGridModel({
         url: 'rest/configAdmin',
+        fields: this.filterForEnv([
+            {name: 'name', label: 'Name', allowNull: false},
+            {name: 'groupName', label: 'Group', lookup: 'groupNames', allowNull: false},
+            {name: 'valueType', label: 'Type', lookup: 'valueTypes', allowNull: false},
+            {name: 'prodValue', label: 'Prod Value', allowNull: false, env: 'Production'},
+            {name: 'betaValue', label: 'Beta Value', allowNull: true, env: 'Beta'},
+            {name: 'stageValue', label: 'Stage Value', allowNull: true, env: 'Staging'},
+            {name: 'devValue', label: 'Dev Value', allowNull: true, env: 'Development'},
+            {name: 'note', label: 'Note', allowNull: true},
+            {name: 'clientVisible', label: 'Client?', type: 'bool'},
+            {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true},
+            {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true}
+        ]),
         columns: this.filterForEnv([
             nameCol(),
-            valueTypeCol(),
-            confValCol({text: 'Prod Value', field: 'prodValue', env: 'Production'}),
-            confValCol({text: 'Beta Value', field: 'betaValue', env: 'Beta'}),
-            confValCol({text: 'Stage Value', field: 'stageValue', env: 'Staging'}),
-            confValCol({text: 'Dev Value', field: 'devValue', env: 'Development'}),
-            boolCheckCol({text: 'Client?', field: 'clientVisible', minWidth: 40, maxWidth: 90}),
-            noteCol()
+            baseCol({field: 'valueType', maxWidth: 60}),
+            baseCol({field: 'groupName', width: 80}),
+            this.valCol({field: 'prodValue', env: 'Production'}),
+            this.valCol({field: 'betaValue', env: 'Beta'}),
+            this.valCol({field: 'stageValue', env: 'Staging'}),
+            this.valCol({field: 'devValue', env: 'Development'}),
+            boolCheckCol({field: 'clientVisible', minWidth: 40, maxWidth: 90}),
+            this.baseCol({field: 'notes', flex: 1})
         ]),
         editors: this.filterForEnv([
             {name: 'name'},
-            {name: 'groupName', label: 'Group', forceSelection: false},
-            {name: 'valueType', additionsOnly: true},
+            {name: 'groupName'},
+            {name: 'valueType'},
             {name: 'prodValue', env: 'Production'},
             {name: 'betaValue', env: 'Beta'},
             {name: 'stageValue', env: 'Staging'},
             {name: 'devValue', env: 'Development'},
             {name: 'clientVisible'},
             {name: 'note', type: 'textarea'},
-            {name: 'lastUpdated', readOnly: true},
-            {name: 'lastUpdatedBy', readOnly: true}
+            {name: 'lastUpdated'},
+            {name: 'lastUpdatedBy'}
         ])
     });
 
@@ -59,5 +73,9 @@ export class ConfigPanel extends Component {
 
         ret.forEach(it => delete it.env);
         return ret;
+    }
+
+    valCol(params) {
+        return baseCol({...params, width: 175});
     }
 }

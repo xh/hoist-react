@@ -6,27 +6,37 @@
  */
 import {Component} from 'react';
 import {observer} from 'hoist/mobx';
-import {dateCol} from 'hoist/columns/DatesTimes';
+import {dateCol, baseCol} from 'hoist/columns/DatesTimes';
 import {restGrid, RestGridModel} from 'hoist/rest';
 
-import {appCodeCol, usernameCol, definitionCol} from '../../columns/Columns';
+import {usernameCol} from '../../columns/Columns';
 
 @observer
 export class DashboardPanel extends Component {
 
     model = new RestGridModel({
         url: 'rest/dashboardAdmin',
+        editWarning: 'Are you sure you want to edit this user\'s dashboard?',
+
+        fields: [
+            {name: 'appCode', label: 'App Code', allowNull: false},
+            {name: 'username', label: 'User'},
+            {name: 'definition', label: 'Definition', type: 'json', allowNull: false},
+            {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true}
+        ],
+
         columns: [
-            appCodeCol(),
+            baseCol({field: 'appCode', width: 100}),
             usernameCol(),
             dateCol({field: 'lastUpdated'}),
-            definitionCol()
+            baseCol({field: 'definition', flex: 1})
         ],
+
         editors: [
-            {name: 'appCode', allowBlank: false},
-            {name: 'username', allowBlank: true},
-            {name: 'definition', allowBlank: false, flex: 1},
-            {name: 'lastUpdated', readOnly: true}
+            {name: 'appCode'},
+            {name: 'username'},
+            {name: 'definition'},
+            {name: 'lastUpdated'}
         ]
     });
 

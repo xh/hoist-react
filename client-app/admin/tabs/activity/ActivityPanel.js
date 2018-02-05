@@ -7,19 +7,10 @@
 import {Component} from 'react';
 import {grid, GridModel} from 'hoist/grid';
 import {observer} from 'hoist/mobx';
+import {numberRenderer} from 'hoist/format';
+import {dateTimeCol, baseCol} from 'hoist/columns';
 
-import {dateTimeCol} from 'hoist/columns/DatesTimes';
-import {
-    usernameCol,
-    msg,
-    category,
-    device,
-    browser,
-    data,
-    impersonating,
-    elapsed,
-    severity
-} from '../../columns/Columns';
+import {usernameCol} from '../../columns/Columns';
 
 @observer
 export class ActivityPanel extends Component {
@@ -27,16 +18,21 @@ export class ActivityPanel extends Component {
     model = new GridModel({
         url: 'trackLogAdmin',
         columns: [
-            severity(),
-            dateTimeCol({field: 'dateCreated'}),
+            baseCol({field: 'severity', width: 60}),
+            dateTimeCol({field: 'dateCreated', text: 'Date Created'}),
             usernameCol(),
-            msg(),
-            category(),
-            device(),
-            browser(),
-            data(),
-            impersonating(),
-            elapsed()
+            baseCol({field: 'msg', text: 'Message', width: 60}),
+            baseCol({field: 'category', text: 'Category', width: 100}),
+            baseCol({field: 'device', text: 'Device', width: 60}),
+            baseCol({field: 'browser', text: 'Browser', width: 100}),
+            baseCol({field: 'data', text: 'Data', flex: 1}),
+            baseCol({field: 'impersonating', text: 'Impersonating', width: 120}),
+            baseCol({
+                field: 'elapsed',
+                text: 'Elapsed (ms)',
+                width: 60,
+                valueFormatter: numberRenderer({precision: 0})
+            })
         ]
     });
 
