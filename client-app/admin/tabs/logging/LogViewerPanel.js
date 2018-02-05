@@ -7,7 +7,7 @@
 import './LogViewerPanel.css';
 import {Component} from 'react';
 import {observer, toJS} from 'hoist/mobx';
-import {box, vbox, hbox} from 'hoist/layout';
+import {box, vbox, hbox, div} from 'hoist/layout';
 import {grid} from 'hoist/grid';
 import {button} from 'hoist/kit/semantic';
 
@@ -18,19 +18,21 @@ export class LogViewerPanel extends Component {
     model = new LogViewerPanelModel();
 
     loadAsync() {
-        return this.model.files.loadAsync();
+        return this.model.loadAsync();
     }
 
     render() {
+        const {files, filesCollapsed, rows} = this.model;
+
         return hbox({
             cls: 'logviewer-panel',
             items: [
                 box({
-                    cls: this.model.collapsed ? 'collapsible-panel collapsed' : 'collapsible-panel expanded',
+                    cls: filesCollapsed ? 'collapsible-panel collapsed' : 'collapsible-panel expanded',
                     items: grid({
-                        model: this.model.files,
+                        model: files,
                         gridOptions: {
-                            onCellClicked: this.model.loadFile
+                            onCellClicked: this.onGridCellClicked
                         }
                     })
                 }),
@@ -45,14 +47,14 @@ export class LogViewerPanel extends Component {
                         size: 'small',
                         cls: 'resizer',
                         compact: true,
-                        icon: {name: `${this.model.collapsed ? 'right': 'left'} chevron`, color: 'blue'},
+                        icon: {name: `${filesCollapsed ? 'right': 'left'} chevron`, color: 'blue'},
                         style: {
                             margin: 0,
                             padding: 0,
                             width: '10px',
                             height: '70px'
                         },
-                        onClick: this.model.toggleLogPanel
+                        onClick: this.onResizerClicked
                     })
                 }),
                 vbox({
@@ -63,11 +65,35 @@ export class LogViewerPanel extends Component {
                         }),
                         vbox({
                             cls: 'log-display',
-                            items: toJS(this.model.fileContent)
+                            items: rows.map((row, idx) => {
+                                return hbox({
+                                    cls: 'line',
+                                    items: [
+                                        div({
+                                            key: idx,
+                                            cls: 'row-number',
+                                            items: row[0].toString()
+                                        }),
+                                        div({
+                                            key: idx,
+                                            cls: 'row-content',
+                                            items: row[1]
+                                        })
+                                    ]
+                                });
+                            })
                         })
                     ]
                 })
             ]
         });
+    }
+
+    onGridCellClicked = (ctx) => {
+        this.model.loadFile(ctx.filename);
+    }
+
+    onResizerClicked = (ctx) => {
+        this.model.toggleFilePanel();
     }
 }

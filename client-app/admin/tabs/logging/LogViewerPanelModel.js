@@ -2,30 +2,50 @@
  * Model for the LogViewerPanel, representing its layout, and currently selected Tab.
  */
 import {XH} from 'hoist';
-import {observable, autorun, action} from 'hoist/mobx';
-import {hbox, div} from 'hoist/layout';
+import {observable, autorun, action, setter} from 'hoist/mobx';
 import {baseCol} from 'hoist/columns/Core';
 import {GridModel} from 'hoist/grid';
 
 export class LogViewerPanelModel {
-    @observable collapsed = false;
+    @observable filesCollapsed = false;
     @observable tail = true;
     @observable file = null;
     @observable startLine = 1;
     @observable maxLines = 1000;
     @observable pattern = '';
-    @observable fileContent = [];
+    @setter @observable rows = [];
 
     files = new GridModel({
         url: 'logViewerAdmin/listFiles',
+        dataRoot: 'files',
         columns: [
             baseCol({headerName: 'Log File', field: 'filename', width: 250})
-        ],
-        dataRoot: 'files'
+        ]
     });
 
+    @action
+    async loadAsync() {
+        this.files.loadAsync();
+    }
+
+    @action
+    loadFile(file) {
+        this.file = file;
+    }
+
+    @action
+    toggleFilePanel() {
+        this.filesCollapsed = !this.filesCollapsed;
+    }
+
+    //--------------------------------
+    // Implementation
+    //---------------------------------
     loadLines = autorun(() => {
-        if (!this.file) return;
+        if (!this.file) {
+            this.setRows([]);
+            return;
+        }
 
         return XH
             .fetchJson({
@@ -36,37 +56,8 @@ export class LogViewerPanelModel {
                     maxLines: this.maxLines,
                     pattern: this.pattern
                 }
-            }).then(this.updateFileContent).catch(e => {
-                XH.handleException(e);
-            });
+            })
+            .then(rows => this.setRows(rows))
+            .catchDefault();
     });
-
-    @action
-    loadFile = (ctx) => {
-        const data = ctx.data;
-
-        this.file = data.filename;
-    };
-
-    @action
-    updateFileContent = (rows) => {
-        this.fileContent = rows.content.map(row => hbox({
-            cls: 'line',
-            items: [
-                div({
-                    cls: 'row-number',
-                    items: row[0].toString()
-                }),
-                div({
-                    cls: 'row-content',
-                    items: row[1]
-                })
-            ]
-        }));
-    };
-
-    @action
-    toggleLogPanel = () => {
-        this.collapsed = !this.collapsed;
-    }
 }
