@@ -39,17 +39,19 @@ export class RestFormSemantic extends Component {
     get model() {return this.props.model}
 
     getForm() {
-        const {editors} = this.model,
+        const {editors, recordSpec} = this.model,
+            fields = recordSpec.fields,
             ret = [];
 
         editors.forEach(editor => {
-            ret.push(this.createFieldLabel(editor));
+            const fieldSpec = fields.find(it => it.name === editor.field);
 
+            ret.push(this.createFieldLabel(fieldSpec));
             // this will probably turn into a switch statement
-            if (editor.type === 'bool') {
-                ret.push(this.createBooleanField(editor));
+            if (fieldSpec.type === 'bool' || fieldSpec.type === 'boolean') {
+                ret.push(this.createBooleanInput(fieldSpec));
             } else {
-                ret.push(this.createTextField(editor));
+                ret.push(this.createTextInput(fieldSpec, editor));
             }
 
         });
@@ -95,36 +97,40 @@ export class RestFormSemantic extends Component {
         model.saveFormRecord();
     }
 
-    createFieldLabel(editor) {
-        return label({content: editor.label || editor.field, style: {width: '115px', textAlign: 'center', paddingBottom: 5}});
+    createFieldLabel(fieldSpec) {
+        const content = fieldSpec.label || fieldSpec.name;
+        return label({content: content, style: {width: '115px', textAlign: 'center', paddingBottom: 5}});
     }
 
-    createBooleanField(editor) {
+    createBooleanInput(fieldSpec) {
         const {formRecord, setFormValue} = this.model,
-            field = editor.field;
+            field = fieldSpec.name;
 
         return dropdown({
             className: 'rest-form-dropdown',
             fluid: true,
             inline: true,
             options: [{text: 'True', value: 'true', key: 'True'}, {text: 'False', value: 'false', key: 'False'}],
-            placeholder: formRecord[field] ? capitalize(formRecord[field].toString()) : '',
+            placeholder: formRecord[field] != null ? capitalize(formRecord[field].toString()) : '',
             onChange: (e, data) => setFormValue(field, data.value === 'true'),
-            disabled: editor.readOnly,
+            disabled: fieldSpec.readOnly,
             style: {marginBottom: 5}
         });
     }
 
-    createTextField(editor) {
+    createTextInput(fieldSpec, editor) {
         const {formRecord, setFormValue} = this.model,
-            field = editor.field,
+            field = fieldSpec.name,
             renderer = editor.renderer,
-            currentVal = renderer ? renderer(formRecord[field]) : formRecord[field];
+            currentVal = renderer ? renderer(formRecord[field]) : formRecord[field],
+            isTextArea = fieldSpec.type === 'textarea' || fieldSpec.type === 'json',
+            isDisabled = fieldSpec.readOnly || (editor.additionsOnly && !this.model.formIsAdd);
+
         return input({
             defaultValue: currentVal || '',
             onChange: (e) => setFormValue(field, e.target.value),
-            type: 'text',
-            disabled: editor.readOnly, // should be on corresponding feild now
+            type: isTextArea ? 'textarea' : 'text',
+            disabled: isDisabled,
             style: {marginBottom: 5}
         });
     }

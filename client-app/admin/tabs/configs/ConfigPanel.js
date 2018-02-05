@@ -23,12 +23,12 @@ export class ConfigPanel extends Component {
                 {name: 'name', label: 'Name', allowNull: false},
                 {name: 'groupName', label: 'Group', lookup: 'groupNames', allowNull: false},
                 {name: 'valueType', label: 'Type', lookup: 'valueTypes', allowNull: false},
-                {name: 'prodValue', label: 'Prod Value', allowNull: false, env: 'Production'},
-                {name: 'betaValue', label: 'Beta Value', allowNull: true, env: 'Beta'},
-                {name: 'stageValue', label: 'Stage Value', allowNull: true, env: 'Staging'},
-                {name: 'devValue', label: 'Dev Value', allowNull: true, env: 'Development'},
+                {name: 'prodValue', label: 'Prod Value', allowNull: false, typeField: 'valueType', env: 'Production'}, // typeField not implememnted yet, only relevant if editing
+                {name: 'betaValue', label: 'Beta Value', allowNull: true, typeField: 'valueType', env: 'Beta'},
+                {name: 'stageValue', label: 'Stage Value', allowNull: true, typeField: 'valueType', env: 'Staging'},
+                {name: 'devValue', label: 'Dev Value', allowNull: true, typeField: 'valueType', env: 'Development'},
                 {name: 'clientVisible', label: 'Client?', type: 'bool'},
-                {name: 'note', label: 'Note', allowNull: true},
+                {name: 'note', label: 'Note', allowNull: true, type: 'textarea'},
                 {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true},
                 {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true}
             ])
@@ -53,7 +53,7 @@ export class ConfigPanel extends Component {
             {field: 'stageValue', env: 'Staging'},
             {field: 'devValue', env: 'Development'},
             {field: 'clientVisible', type: 'bool'},
-            {field: 'note', type: 'textarea'},
+            {field: 'note'},
             {field: 'lastUpdated', renderer: dateTimeRenderer()},
             {field: 'lastUpdatedBy'}
         ])
