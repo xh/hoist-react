@@ -8,7 +8,8 @@ import {Component} from 'react';
 import {observer} from 'hoist/mobx';
 import {restGrid, RestGridModel} from 'hoist/rest';
 
-import {nameFlexCol, baseCol, usernameCol} from '../../columns/Columns';
+import {baseCol} from 'hoist/columns/Core';
+import {nameFlexCol, usernameCol} from '../../columns/Columns';
 
 @observer
 export class UserPreferencePanel extends Component {

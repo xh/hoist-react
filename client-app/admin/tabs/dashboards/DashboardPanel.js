@@ -6,7 +6,8 @@
  */
 import {Component} from 'react';
 import {observer} from 'hoist/mobx';
-import {dateCol, baseCol} from 'hoist/columns/DatesTimes';
+import {baseCol} from 'hoist/columns/Core';
+import {dateCol} from 'hoist/columns/DatesTimes';
 import {restGrid, RestGridModel} from 'hoist/rest';
 
 import {usernameCol} from '../../columns/Columns';
