@@ -27,7 +27,7 @@ export class VersionBar extends Component {
                 color: 'white',
                 backgroundColor: this.getFooterColor(env)
             },
-            items: `${XH.appName} | ${env} | ${version}`
+            item: `${XH.appName} | ${env} | ${version}`
         });
     }
 

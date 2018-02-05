@@ -20,7 +20,7 @@ export class MultiPromiseModel {
     }
     
     @action
-    bind(promise) {
+    link(promise) {
         this.pendingCount++;
         promise.finally(() => this.onComplete());
     }

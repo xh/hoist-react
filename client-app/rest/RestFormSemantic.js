@@ -10,13 +10,13 @@ import {elemFactory} from 'hoist';
 import {capitalize} from 'lodash';
 import {vbox} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
-import {button, dropdown, input, label, modal, modalContent, modalActions, modalHeader} from 'hoist/kit/semantic';
+import {hoistButton, input, label, modal, modalContent, modalActions, modalHeader} from 'hoist/kit/semantic';
 
 @observer
 export class RestFormSemantic extends Component {
 
     render() {
-        const {formRecord, formIsAdd} = this.props.model;
+        const {formRecord, formIsAdd} = this.model;
 
         if (!formRecord) return null;
 
@@ -36,9 +36,10 @@ export class RestFormSemantic extends Component {
     //--------------------------
     // Implementation
     //---------------------------
+    get model() {return this.props.model}
+
     getForm() {
-        const {editors, formRecord, setFormValue} = this.props.model,
-            ret = [];
+        const {editors, formRecord, setFormValue} = this.model;
 
         editors.forEach(editor => {
 
@@ -80,47 +81,36 @@ export class RestFormSemantic extends Component {
     }
 
     getButtons() {
-        const {formIsValid, formIsWritable, enableDelete, formIsAdd} = this.props.model,
-            ret = [];
-
-        if (enableDelete && !formIsAdd) {
-            ret.push(
-                button({
-                    content: 'Delete',
-                    icon: {name: 'x', color: 'red'},
-                    compact: true,
-                    disabled: !formIsValid,
-                    onClick: this.onDeleteClick
-                })
-            );
-        }
-
-        if (formIsWritable) {
-            ret.push(
-                button({
-                    content: 'Save',
-                    icon: {name: 'check', color: 'green'},
-                    compact: true,
-                    disabled: !formIsValid,
-                    onClick: this.onSaveClick
-                })
-            );
-        }
-
-        return ret;
+        const {formIsValid, formIsWritable, enableDelete, formIsAdd} = this.model;
+        return [
+            hoistButton({
+                content: 'Delete',
+                icon: {name: 'x', color: 'red'},
+                disabled: !formIsValid,
+                onClick: this.onDeleteClick,
+                omit: !enableDelete || formIsAdd
+            }),
+            hoistButton({
+                content: 'Save',
+                icon: {name: 'check', color: 'green'},
+                disabled: !formIsValid,
+                onClick: this.onSaveClick,
+                omit: !formIsWritable
+            })
+        ];
     }
 
     onClose = () => {
-        this.props.model.closeForm();
+        this.model.closeForm();
     }
 
     onDeleteClick = () => {
-        const model = this.props.model;
+        const model = this.model;
         model.deleteRecord(model.formRecord);
     }
 
     onSaveClick = () => {
-        const model = this.props.model;
+        const model = this.model;
         model.saveFormRecord();
     }
 }

@@ -43,11 +43,11 @@ export class LoadMask extends Component {
             backdropProps: {
                 style: {backgroundColor: this.BACKGROUND}
             },
-            items: viewport({
+            item: viewport({
                 flex: 1,
                 alignItems: 'center',
                 justifyContent: 'center',
-                items: spinner()
+                item: spinner()
             })
         });
     }
@@ -57,7 +57,7 @@ export class LoadMask extends Component {
         return dimmer({
             active: isDisplayed || (model && model.isPending),
             page: true,
-            items: loader()
+            item: loader()
         });
     }
 }

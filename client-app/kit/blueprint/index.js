@@ -9,7 +9,7 @@ import '@blueprintjs/core/lib/css/blueprint.css';
 import '@blueprintjs/select/lib/css/blueprint-select.css';
 import '@blueprintjs/icons/lib/css/blueprint-icons.css';
 
-import {elemFactory} from 'hoist/hyperscript';
+import {elemFactory} from 'hoist';
 import {Button, Icon, MenuItem, Tab, Tabs, Overlay, Spinner, InputGroup, Popover, Label, Dialog} from '@blueprintjs/core';
 import {Suggest, Select} from '@blueprintjs/select';
 export {Classes} from '@blueprintjs/core';

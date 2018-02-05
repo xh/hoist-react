@@ -6,7 +6,7 @@
  */
 import {BaseService} from './BaseService';
 import {XH} from 'hoist';
-import {Exception} from 'hoist/exception/Exception';
+import {Exception} from 'hoist/exception';
 
 export class FetchService extends BaseService {
     

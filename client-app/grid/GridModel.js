@@ -6,7 +6,8 @@
  */
 
 import {XH} from 'hoist';
-import {observable, action, LastPromiseModel} from 'hoist/mobx';
+import {observable, action} from 'hoist/mobx';
+import {LastPromiseModel} from 'hoist/promise';
 import {GridSelectionModel} from './GridSelectionModel';
 
 /**
@@ -35,7 +36,7 @@ export class GridModel {
         return XH
             .fetchJson({url: this.url})
             .then(this.completeLoad)
-            .bind(this.loadModel)
+            .linkTo(this.loadModel)
             .catchDefault();
     }
 

@@ -7,18 +7,20 @@
 
 
 import {isPlainObject, camelCase} from 'lodash';
-import {Exception} from 'hoist/exception/Exception';
-import {BaseService} from 'hoist/svc/BaseService';
-import {ConfigService} from 'hoist/svc/ConfigService';
-import {EnvironmentService} from 'hoist/svc/EnvironmentService';
-import {ExceptionHandlerService} from 'hoist/svc/ExceptionHandlerService';
-import {ErrorTrackingService} from 'hoist/svc/ErrorTrackingService';
-import {FeedbackService} from 'hoist/svc/FeedbackService';
-import {FetchService} from 'hoist/svc/FetchService';
-import {IdentityService} from 'hoist/svc/IdentityService';
-import {PrefService} from 'hoist/svc/PrefService';
-import {TrackService} from 'hoist/svc/TrackService';
-import {EventService} from 'hoist/svc/EventService';
+import {Exception} from 'hoist/exception';
+import {
+    BaseService,
+    ConfigService,
+    EnvironmentService,
+    ExceptionHandlerService,
+    ErrorTrackingService,
+    FeedbackService,
+    FetchService,
+    IdentityService,
+    PrefService,
+    TrackService,
+    EventService
+} from 'hoist/svc';
 
 //----------------------------------------------------------
 // Core services. Will be initialized by XH.initAsync() below.

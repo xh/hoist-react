@@ -6,7 +6,8 @@
  */
 import 'semantic-ui-css/semantic.min.css';
 
-import {elemFactory} from 'hoist/hyperscript';
+import {elemFactory} from 'hoist';
+import {defaults} from 'lodash';
 
 import {
     Button,
@@ -47,3 +48,11 @@ export const
     tab = elemFactory(Tab),
     tabPane = elemFactory(Tab.Pane),
     textArea = elemFactory(TextArea);
+
+
+// TODO:  how to establish defaults like this appropriately for hoist and apps.
+
+export function hoistButton(args) {
+    defaults(args, {labelPosition: 'left', size: 'tiny', compact: true});
+    return button(args);
+}

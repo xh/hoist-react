@@ -27,7 +27,7 @@ export class LoginPanel extends Component {
         return viewport({
             alignItems: 'center',
             justifyContent: 'center',
-            items: vbox({
+            item: vbox({
                 padding: 15,
                 style: {border: 'solid 1px'},
                 justifyContent: 'right',

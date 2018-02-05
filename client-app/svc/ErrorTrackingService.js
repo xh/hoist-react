@@ -7,7 +7,7 @@
 
 import {XH, environmentService} from 'hoist';
 import {stripTags} from 'hoist/utils/HtmlUtils';
-import {stringifyErrorSafely} from 'hoist/error/Utils';
+import {stringifyErrorSafely} from 'hoist/exception';
 
 import {BaseService} from './BaseService';
 

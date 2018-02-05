@@ -8,7 +8,7 @@
 import {defaults, isFinite, isString} from 'lodash';
 import numeral from 'numeral';
 
-import {XH} from 'hoist/exception/Exception';
+import {XH} from 'hoist/exception';
 
 import {createRenderer, saveOriginal} from './FormatUtils';
 import {fmtSpan} from './FormatMisc';

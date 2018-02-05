@@ -5,6 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-export * from './Promise';
-export * from './LastPromiseModel';
-export * from './MultiPromiseModel';
+export * from './elem';
+export * from './Ref';
+export * from './Utils';
