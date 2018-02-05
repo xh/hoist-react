@@ -8,26 +8,17 @@ import './LogViewerPanel.css';
 import {Component} from 'react';
 import {observer, toJS} from 'hoist/mobx';
 import {box, vbox, hbox} from 'hoist/layout';
-import {baseCol} from 'hoist/columns/Core';
-import {grid, GridModel} from 'hoist/grid';
+import {grid} from 'hoist/grid';
 import {button} from 'hoist/kit/semantic';
 
 import {LogViewerPanelModel} from './LogViewerPanelModel';
 
 @observer
 export class LogViewerPanel extends Component {
-    logViewerModel = new LogViewerPanelModel();
-    gridModel = new GridModel({
-        url: 'logViewerAdmin/listFiles',
-        columns: [
-            baseCol({headerName: 'Log File', field: 'filename', width: 250})
-        ],
-        dataRoot: 'files'
-    });
-
+    model = new LogViewerPanelModel();
 
     loadAsync() {
-        return this.gridModel.loadAsync();
+        return this.model.files.loadAsync();
     }
 
     render() {
@@ -37,7 +28,7 @@ export class LogViewerPanel extends Component {
                 box({
                     cls: this.model.collapsed ? 'collapsible-panel collapsed' : 'collapsible-panel expanded',
                     items: grid({
-                        model: this.gridModel,
+                        model: this.model.files,
                         gridOptions: {
                             onCellClicked: this.model.loadFile
                         }
@@ -79,9 +70,4 @@ export class LogViewerPanel extends Component {
             ]
         });
     }
-
-    //--------------------------
-    // Implementation
-    //--------------------------
-    get model() {return this.logViewerModel}
 }

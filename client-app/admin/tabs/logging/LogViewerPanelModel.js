@@ -4,6 +4,8 @@
 import {XH} from 'hoist';
 import {observable, autorun, action} from 'hoist/mobx';
 import {hbox, div} from 'hoist/layout';
+import {baseCol} from 'hoist/columns/Core';
+import {GridModel} from 'hoist/grid';
 
 export class LogViewerPanelModel {
     @observable collapsed = false;
@@ -13,6 +15,14 @@ export class LogViewerPanelModel {
     @observable maxLines = 1000;
     @observable pattern = '';
     @observable fileContent = [];
+
+    files = new GridModel({
+        url: 'logViewerAdmin/listFiles',
+        columns: [
+            baseCol({headerName: 'Log File', field: 'filename', width: 250})
+        ],
+        dataRoot: 'files'
+    });
 
     loadLines = autorun(() => {
         if (!this.file) return;
