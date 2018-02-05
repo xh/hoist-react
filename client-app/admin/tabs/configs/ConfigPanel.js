@@ -18,19 +18,21 @@ export class ConfigPanel extends Component {
 
     model = new RestGridModel({
         url: 'rest/configAdmin',
-        fields: this.filterForEnv([
-            {name: 'name', label: 'Name', allowNull: false},
-            {name: 'groupName', label: 'Group', lookup: 'groupNames', allowNull: false},
-            {name: 'valueType', label: 'Type', lookup: 'valueTypes', allowNull: false},
-            {name: 'prodValue', label: 'Prod Value', allowNull: false, env: 'Production'},
-            {name: 'betaValue', label: 'Beta Value', allowNull: true, env: 'Beta'},
-            {name: 'stageValue', label: 'Stage Value', allowNull: true, env: 'Staging'},
-            {name: 'devValue', label: 'Dev Value', allowNull: true, env: 'Development'},
-            {name: 'clientVisible', label: 'Client?', type: 'bool'},
-            {name: 'note', label: 'Note', allowNull: true},
-            {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true},
-            {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true}
-        ]),
+        recordSpec: {
+            fields: this.filterForEnv([
+                {name: 'name', label: 'Name', allowNull: false},
+                {name: 'groupName', label: 'Group', lookup: 'groupNames', allowNull: false},
+                {name: 'valueType', label: 'Type', lookup: 'valueTypes', allowNull: false},
+                {name: 'prodValue', label: 'Prod Value', allowNull: false, env: 'Production'},
+                {name: 'betaValue', label: 'Beta Value', allowNull: true, env: 'Beta'},
+                {name: 'stageValue', label: 'Stage Value', allowNull: true, env: 'Staging'},
+                {name: 'devValue', label: 'Dev Value', allowNull: true, env: 'Development'},
+                {name: 'clientVisible', label: 'Client?', type: 'bool'},
+                {name: 'note', label: 'Note', allowNull: true},
+                {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true},
+                {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true}
+            ])
+        },
         columns: this.filterForEnv([
             nameCol(),
             baseCol({field: 'valueType', maxWidth: 60}),

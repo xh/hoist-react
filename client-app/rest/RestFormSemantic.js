@@ -101,7 +101,7 @@ export class RestFormSemantic extends Component {
 
     createBooleanField(editor) {
         const {formRecord, setFormValue} = this.model,
-            field = editor.name;
+            field = editor.field;
         return  dropdown({
             className: 'rest-form-dropdown',
             fluid: true,
@@ -115,7 +115,6 @@ export class RestFormSemantic extends Component {
     }
 
     createTextField(editor) {
-        debugger;
         const {formRecord, setFormValue} = this.model,
             field = editor.name,
             renderer = editor.renderer,

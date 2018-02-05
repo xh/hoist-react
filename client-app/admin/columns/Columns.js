@@ -7,6 +7,10 @@
 
 import {fileColFactory} from 'hoist/columns/Utils.js';
 
+
+/**
+ * Shared columns for the adming client.
+ */
 const colFactory = fileColFactory();
 
 export const nameCol = colFactory({

@@ -25,7 +25,7 @@ export class RestGrid extends Component {
             restGridToolbar({model}),
             frame(
                 grid({
-                    model,
+                    model: model.gridModel,
                     gridOptions: {
                         onRowDoubleClicked: this.onRowDoubleClicked
                     }
