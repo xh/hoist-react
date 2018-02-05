@@ -7,9 +7,9 @@
 import {Component} from 'react';
 import {grid, GridModel} from 'hoist/grid';
 import {observer} from 'hoist/mobx';
-import {baseCol} from 'hoist/columns';
+import {baseCol} from 'hoist/columns/Core';
 
-import {nameCol} from '../../columns';
+import {nameCol} from '../../columns/Columns';
 
 @observer
 export class EhCachePanel extends Component {

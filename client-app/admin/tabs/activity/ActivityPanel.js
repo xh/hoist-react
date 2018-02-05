@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {grid, GridModel} from 'hoist/grid';
 import {observer} from 'hoist/mobx';
 import {numberRenderer} from 'hoist/format';
-import {dateTimeCol, baseCol} from 'hoist/columns';
+import {dateTimeCol, baseCol} from 'hoist/columns/Core';
 
 import {usernameCol} from '../../columns/Columns';
 
