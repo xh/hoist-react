@@ -6,15 +6,31 @@
  */
 import {Component} from 'react';
 import {observer} from 'hoist/mobx';
-import {nameFlexCol, noteCol} from '../../columns/Columns';
 import {baseCol, boolCheckCol} from 'hoist/columns/Core';
 import {restGrid, RestGridModel} from 'hoist/rest';
+
+import {nameFlexCol} from '../../columns/Columns';
+
 
 @observer
 export class MonitorEditorPanel extends Component {
 
     model = new RestGridModel({
         url: 'rest/monitorAdmin',
+        fields: [
+            {name: 'code', label: 'Code'},
+            {name: 'name', label: 'Name'},
+            {name: 'metricType', label: 'Metric Type', lookup: 'metricTypes'},
+            {name: 'metricUnit', label: 'Metric Unit', allowNull: true},
+            {name: 'warnThreshold', label: 'Warn Threshold', type: 'int', allowNull: true},
+            {name: 'failThreshold', label: 'Fail Threshold', type: 'int', allowNull: true},
+            {name: 'params', label: 'Params'},
+            {name: 'notes', label: 'Notes'},
+            {name: 'active', label: 'Active', type: 'boolean'},
+            {name: 'sortOrder', label: 'Sort', type: 'int', allowNull: true},
+            {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true},
+            {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true}
+        ],
         columns: [
             boolCheckCol({field: 'active', width: 60}),
             baseCol({field: 'code', width: 150}),
@@ -22,13 +38,13 @@ export class MonitorEditorPanel extends Component {
             baseCol({field: 'warnThreshold', width: 120}),
             baseCol({field: 'failThreshold', width: 120}),
             baseCol({field: 'metricUnit', width: 100}),
-            noteCol({field: 'notes'}),
+            baseCol({field: 'notes', flex: 1}),
             baseCol({field: 'sortOrder', width: 100})
         ],
         editors: [
-            {name: 'code', allowBlank: false},
-            {name: 'name', allowBlank: false},
-            {name: 'metricType', editable: false}, // must select one of none/ceiling/floor
+            {name: 'code'},
+            {name: 'name'},
+            {name: 'metricType'},
             {name: 'warnThreshold'},
             {name: 'failThreshold'},
             {name: 'metricUnit'},
@@ -36,8 +52,8 @@ export class MonitorEditorPanel extends Component {
             {name: 'notes', type: 'textarea'},
             {name: 'active'},
             {name: 'sortOrder'},
-            {name: 'lastUpdated', readOnly: true},
-            {name: 'lastUpdatedBy', readOnly: true}
+            {name: 'lastUpdated'},
+            {name: 'lastUpdatedBy'}
         ]
     });
 
