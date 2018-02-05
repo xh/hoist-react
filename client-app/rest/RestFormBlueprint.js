@@ -40,21 +40,23 @@ export class RestFormBlueprint extends Component {
     }
 
     getForm() {
-        const {editors, formRecord} = this.model,
+        const {editors, formRecord, setFormValue} = this.model,
             items = [];
 
         editors.forEach(editor => {
-            const field = editor.name;
-            items.push(label({text: field}));
-            items.push(
-                inputGroup({
-                    value: formRecord[field] || '',
-                    onChange: (e) => console.log(e),
-                    type: editor.type || 'text',
-                    disabled: editor.readOnly,
-                    style: {marginBottom: 5}
-                })
-            );
+            const field = editor.field;
+            let input;
+            items.push(label({text: editor.label || field}));
+
+            input = inputGroup({
+                defaultValue: formRecord[field] || '',
+                onChange: (e) => setFormValue(field, e.target.value),
+                type: editor.type || 'text',
+                disabled: editor.readOnly,
+                style: {marginBottom: 5}
+            });
+
+            items.push(input);
         });
 
         return vbox({
@@ -102,7 +104,7 @@ export class RestFormBlueprint extends Component {
 
     onSaveClick = () => {
         const model = this.model;
-        model.saveRecord(model.formRecord);
+        model.saveFormRecord();
     }
 }
 export const restFormBlueprint = elemFactory(RestFormBlueprint);
