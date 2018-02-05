@@ -40,7 +40,7 @@ export class ConfigPanel extends Component {
             this.valCol({field: 'stageValue', env: 'Staging'}),
             this.valCol({field: 'devValue', env: 'Development'}),
             boolCheckCol({field: 'clientVisible', minWidth: 40, maxWidth: 90}),
-            baseCol({field: 'notes', flex: 1})
+            baseCol({field: 'note', flex: 1})
         ]),
         editors: this.filterForEnv([
             {name: 'name'},
