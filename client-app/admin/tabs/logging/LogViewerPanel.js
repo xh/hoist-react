@@ -61,11 +61,8 @@ export class LogViewerPanel extends Component {
                 vbox({
                     cls: 'logviewer-container',
                     items: [
-                        hbox({
-                            cls: 'toolbar',
-                            items: logViewerPanelToolbar({
-                                model: this.model
-                            })
+                        logViewerPanelToolbar({
+                            model: this.model
                         }),
                         vbox({
                             cls: 'log-display',
@@ -74,12 +71,12 @@ export class LogViewerPanel extends Component {
                                     cls: 'row',
                                     items: [
                                         div({
-                                            key: idx,
+                                            key: `row-number-${idx}`,
                                             cls: 'row-number',
                                             items: row[0].toString()
                                         }),
                                         div({
-                                            key: idx,
+                                            key: `row-content-${idx}`,
                                             cls: 'row-content',
                                             items: row[1]
                                         })

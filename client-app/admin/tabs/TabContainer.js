@@ -60,7 +60,7 @@ export class TabContainer extends Component {
                 vertical,
                 pointing: !vertical,
                 secondary: true,
-                style: vertical ? {flex: '0 0 auto', width: '100px', margin: 0} : {margin: 0},
+                style: vertical ? {flex: 'none', width: '100px', margin: 0} : {margin: 0},
                 $items
             });
 

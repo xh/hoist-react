@@ -8,53 +8,58 @@ import {Component} from 'react';
 import {elemFactory} from 'hoist';
 import {button, input, checkbox} from 'hoist/kit/semantic';
 import {observer} from 'hoist/mobx';
+import {hbox} from 'hoist/layout';
 
 @observer
 class LogViewerPanelToolbar extends Component {
     render() {
         const {startLine, maxLines, tail, refreshValues} = this.model;
-        return [
-            input({
-                label: 'Start Line',
-                defaultValue: startLine,
-                size: 'mini',
-                input: {
-                    style: {
-                        width: '70px'
+        return hbox({
+            cls: 'toolbar',
+            items: [
+                input({
+                    label: 'Start Line',
+                    defaultValue: startLine,
+                    size: 'mini',
+                    input: {
+                        style: {
+                            width: '70px'
+                        }
                     }
-                }
-            }),
-            input({
-                label: 'Max Lines',
-                defaultValue: maxLines,
-                size: 'mini',
-                input: {
-                    style: {
-                        width: '70px'
+                }),
+                input({
+                    label: 'Max Lines',
+                    defaultValue: maxLines,
+                    size: 'mini',
+                    input: {
+                        style: {
+                            width: '70px'
+                        }
                     }
-                }
-            }),
-            input({
-                icon: {name: 'search'},
-                placeholder: 'Search...',
-                size: 'mini'
-            }),
-            button({
-                icon: {name: 'refresh'},
-                size: 'mini',
-                onClick: refreshValues()
-            }),
-            checkbox({
-                label: 'Tail',
-                size: 'mini',
-                checked: tail
-            })
-        ];
+                }),
+                input({
+                    icon: {name: 'search'},
+                    placeholder: 'Search...',
+                    size: 'mini'
+                }),
+                button({
+                    icon: {name: 'refresh'},
+                    size: 'mini',
+                    onClick: refreshValues()
+                }),
+                checkbox({
+                    label: 'Tail',
+                    size: 'mini',
+                    checked: tail
+                })
+            ]
+        });
     }
 
-    get model() {
-        return this.props.model;
-    }
+    //-----------------------------
+    // Implementation
+    //-----------------------------
+    get model() {return this.props.model}
 }
 
 export const logViewerPanelToolbar = elemFactory(LogViewerPanelToolbar);

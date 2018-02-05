@@ -5,7 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import './App.css';
 import {Component} from 'react';
 import {XH, hoistApp, hoistAppModel} from 'hoist';
 import {vframe, hbox, frame, div, filler, spacer} from 'hoist/layout';
@@ -37,7 +36,7 @@ export class App extends Component {
         return hbox({
             padding: 5,
             height: 50,
-            flex: '0 0 auto',
+            flex: 'none',
             style: {
                 fontSize: 20,
                 color: 'white',

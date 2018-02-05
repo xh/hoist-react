@@ -1,11 +1,13 @@
 .logviewer-panel {
     display: flex;
-    width: calc(100% - 104px);
+    width: 100%;
+    height: 100%;
+    position: absolute;
     flex-direction: row;
 }
 
 .logviewer-panel .collapsible-panel {
-    flex: 0 0 auto;
+    flex: none;
     overflow: hidden;
     width: 0;
     -webkit-transition: width 0.5s ease-in-out;
@@ -23,13 +25,15 @@
 }
 
 .logviewer-panel .logviewer-container {
+    flex: 1;
     border: 1px solid darkgrey;
     min-width: 0;
+    max-width: 100%;
 }
 
 .logviewer-panel .toolbar {
     background-color: #106ba3;
-    flex: 0 0 auto;
+    flex: none;
     height: 45px;
     align-items: center;
 }
@@ -49,7 +53,7 @@
 }
 
 .logviewer-panel .log-display .row {
-    flex: 0 0 auto;
+    flex: none;
     height: 16px;
     font-size: 11px;
     font-family: Monaco, monospace;

@@ -23,7 +23,7 @@ export class VersionBar extends Component {
             alignItems: 'center',
             padding: 2,
             height: 25,
-            flex: '0 0 auto',
+            flex: 'none',
             style: {
                 fontSize: '0.8em',
                 color: 'white',
