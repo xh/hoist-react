@@ -76,7 +76,7 @@ export class RestGridModel {
         if (!this._lookupsLoaded) {
             const lookupFields = this.recordSpec.fields.filter(it => !!it.lookup);
             if (lookupFields.length) {
-                const lookupData = await XH.fetchJson({url: `${this.url}/lookups`});
+                const lookupData = await XH.fetchJson({url: `${this.url}/lookupData`});
                 lookupFields.forEach(f => {
                     f.lookupValues = lookupData[f.lookup];
                 });
