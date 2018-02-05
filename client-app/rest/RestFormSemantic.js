@@ -115,6 +115,7 @@ export class RestFormSemantic extends Component {
     }
 
     createTextField(editor) {
+        debugger;
         const {formRecord, setFormValue} = this.model,
             field = editor.name,
             renderer = editor.renderer,
@@ -123,7 +124,7 @@ export class RestFormSemantic extends Component {
             defaultValue: currentVal || '',
             onChange: (e) => setFormValue(field, e.target.value),
             type: 'text',
-            disabled: editor.readOnly, // on the RestField now
+            disabled: editor.readOnly, // should be on corresponding feild now
             style: {marginBottom: 5}
         });
     }
