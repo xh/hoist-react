@@ -6,8 +6,8 @@
  */
 
 import {Component} from 'react';
-import {elemFactory} from 'hoist';
 import {capitalize} from 'lodash';
+import {elemFactory} from 'hoist';
 import {vbox} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
 import {
@@ -57,7 +57,7 @@ export class RestFormSemantic extends Component {
             const fieldSpec = fields.find(it => it.name === editor.field);
 
             ret.push(this.createFieldLabel(fieldSpec));
-            // this will probably turn into a switch statement
+
             if (fieldSpec.lookupValues) {
                 ret.push(this.createDropdown(fieldSpec, editor));
             } else if (fieldSpec.type === 'bool' || fieldSpec.type === 'boolean') {
@@ -69,8 +69,23 @@ export class RestFormSemantic extends Component {
             } else {
                 ret.push(this.createTextInput(fieldSpec, editor));
             }
-
         });
+
+        // editors.forEach(editor => {
+        //     const field = editor.field;
+        //     let input;
+        //     items.push(label({text: editor.label || field}));
+        //
+        //     input = inputGroup({
+        //         defaultValue: formRecord[field] || '',
+        //         onChange: (e) => setFormValue(field, e.target.value),
+        //         type: editor.type || 'text',
+        //         disabled: editor.readOnly,
+        //         style: {marginBottom: 5}
+        //     });
+        //
+        //     items.push(input);
+        // });
 
         return vbox({
             cls: 'rest-form',
@@ -114,8 +129,8 @@ export class RestFormSemantic extends Component {
     }
 
     createFieldLabel(fieldSpec) {
-        const content = fieldSpec.label || fieldSpec.name;
-        return label({content: content, style: {width: '115px', textAlign: 'center', paddingBottom: 5}});
+        const text = fieldSpec.label || fieldSpec.name;
+        return label({text: text, style: {width: '115px', textAlign: 'center', paddingBottom: 5}});
     }
 
     createDropdown(fieldSpec, editor) {
@@ -217,10 +232,6 @@ export class RestFormSemantic extends Component {
             model: this.model
         });
     }
-
-    //----------------
-    // Implementation
-    //----------------
 
     onAddItemToDropDown(e, data) {
         data.options.push({text: data.value, value: data.value, key: data.value});

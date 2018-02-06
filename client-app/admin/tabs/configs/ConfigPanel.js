@@ -21,9 +21,9 @@ export class ConfigPanel extends Component {
         recordSpec: {
             fields: this.filterForEnv([
                 {name: 'name', label: 'Name', allowNull: false},
-                {name: 'groupName', label: 'Group', lookup: 'groupNames', allowNull: false}, // use allowNull for validation
+                {name: 'groupName', label: 'Group', lookup: 'groupNames', allowNull: false},
                 {name: 'valueType', label: 'Type', lookup: 'valueTypes', allowNull: false},
-                {name: 'prodValue', label: 'Prod Value', allowNull: false, typeField: 'valueType', env: 'Production'}, // typeField not implemented yet, only relevant if editing
+                {name: 'prodValue', label: 'Prod Value', allowNull: false, typeField: 'valueType', env: 'Production'}, // typeField not implemented yet, relevant for editing(to create correct form field) or validating input type
                 {name: 'betaValue', label: 'Beta Value', allowNull: true, typeField: 'valueType', env: 'Beta'},
                 {name: 'stageValue', label: 'Stage Value', allowNull: true, typeField: 'valueType', env: 'Staging'},
                 {name: 'devValue', label: 'Dev Value', allowNull: true, typeField: 'valueType', env: 'Development'},
@@ -46,8 +46,8 @@ export class ConfigPanel extends Component {
         ]),
         editors: this.filterForEnv([
             {field: 'name'},
-            {field: 'groupName', allowAdditions: true}, // inverse of forceSelection in ext, see semantic docs: Requires the use of `selection`, `options` and `search`.
-            {field: 'valueType', additionsOnly: true}, // additionsOnly means you can select from existing if adding a rec, if editing this is read only.
+            {field: 'groupName', allowAdditions: true},
+            {field: 'valueType', additionsOnly: true},
             {field: 'prodValue', env: 'Production'},
             {field: 'betaValue', env: 'Beta'},
             {field: 'stageValue', env: 'Staging'},
