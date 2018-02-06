@@ -42,7 +42,7 @@
     margin-left: 5px;
 }
 
-.logviewer-panel .toolbar .ui label, .logviewer-panel .toolbar .ui label:focus  {
+.logviewer-panel .toolbar .ui label, .logviewer-panel .toolbar .ui input:focus~label  {
     color: white;
 }
 
@@ -53,6 +53,7 @@
 }
 
 .logviewer-panel .log-display .row {
+    display: flex;
     flex: none;
     height: 16px;
     font-size: 11px;
