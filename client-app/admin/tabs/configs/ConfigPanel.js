@@ -21,14 +21,14 @@ export class ConfigPanel extends Component {
         recordSpec: {
             fields: this.filterForEnv([
                 {name: 'name', label: 'Name', allowNull: false},
-                {name: 'groupName', label: 'Group', lookup: 'groupNames', allowNull: false},
+                {name: 'groupName', label: 'Group', lookup: 'groupNames', allowNull: false}, // use allowNull for validation
                 {name: 'valueType', label: 'Type', lookup: 'valueTypes', allowNull: false},
-                {name: 'prodValue', label: 'Prod Value', allowNull: false, typeField: 'valueType', env: 'Production'}, // typeField not implememnted yet, only relevant if editing
+                {name: 'prodValue', label: 'Prod Value', allowNull: false, typeField: 'valueType', env: 'Production'}, // typeField not implemented yet, only relevant if editing
                 {name: 'betaValue', label: 'Beta Value', allowNull: true, typeField: 'valueType', env: 'Beta'},
                 {name: 'stageValue', label: 'Stage Value', allowNull: true, typeField: 'valueType', env: 'Staging'},
                 {name: 'devValue', label: 'Dev Value', allowNull: true, typeField: 'valueType', env: 'Development'},
                 {name: 'clientVisible', label: 'Client?', type: 'bool'},
-                {name: 'note', label: 'Note', allowNull: true, type: 'textarea'},
+                {name: 'note', label: 'Note', allowNull: true},
                 {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true},
                 {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true}
             ])
@@ -46,14 +46,14 @@ export class ConfigPanel extends Component {
         ]),
         editors: this.filterForEnv([
             {field: 'name'},
-            {field: 'groupName', forceSelection: false}, // force selection: false means select from existing OR add your own.
+            {field: 'groupName', allowAdditions: true}, // inverse of forceSelection in ext, see semantic docs: Requires the use of `selection`, `options` and `search`.
             {field: 'valueType', additionsOnly: true}, // additionsOnly means you can select from existing if adding a rec, if editing this is read only.
             {field: 'prodValue', env: 'Production'},
             {field: 'betaValue', env: 'Beta'},
             {field: 'stageValue', env: 'Staging'},
             {field: 'devValue', env: 'Development'},
             {field: 'clientVisible', type: 'bool'},
-            {field: 'note'},
+            {field: 'note', type: 'textarea'},
             {field: 'lastUpdated', renderer: dateTimeRenderer()},
             {field: 'lastUpdatedBy'}
         ])
