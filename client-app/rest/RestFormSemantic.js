@@ -152,18 +152,20 @@ export class RestFormSemantic extends Component {
     }
 
     createTextInput(fieldSpec, editor) {
-        const {formRecord, setFormValue} = this.model,
+        const {formRecord} = this.model,
             field = fieldSpec.name,
             renderer = editor.renderer,
             currentVal = renderer ? renderer(formRecord[field]) : formRecord[field],
             isTextArea = fieldSpec.type === 'textarea' || fieldSpec.type === 'json';
 
         return input({
+            style: {marginBottom: 5},
             defaultValue: currentVal || '',
-            onChange: (e) => setFormValue(field, e.target.value),
+            onChange: this.onTextFieldChange,
             type: isTextArea ? 'textarea' : 'text',
             disabled: fieldSpec.readOnly,
-            style: {marginBottom: 5}
+            field: field,
+            model: this.model
         });
     }
 
@@ -189,6 +191,14 @@ export class RestFormSemantic extends Component {
             value = data.value;
 
         setFormValue(field, value === 'true');
+    }
+
+    onTextFieldChange(e, data) {
+        const {setFormValue} = data.model,
+            field = data.field,
+            value = data.value;
+
+        setFormValue(field, value);
     }
 }
 export const restFormSemantic = elemFactory(RestFormSemantic);
