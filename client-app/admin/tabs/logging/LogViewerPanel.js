@@ -6,6 +6,7 @@
  */
 import './LogViewerPanel.css';
 import {Component} from 'react';
+import {elem} from 'hoist';
 import {observer, toJS} from 'hoist/mobx';
 import {box, vbox, hbox, div} from 'hoist/layout';
 import {grid} from 'hoist/grid';
@@ -64,29 +65,26 @@ export class LogViewerPanel extends Component {
                         logViewerPanelToolbar({
                             model: this.model
                         }),
-                        vbox({
-                            cls: 'log-display',
-                            items: toJS(rows).map((row, idx) => {
-                                return hbox({
-                                    cls: 'row',
-                                    items: [
-                                        div({
-                                            key: `row-number-${idx}`,
-                                            cls: 'row-number',
-                                            items: row[0].toString()
-                                        }),
-                                        div({
-                                            key: `row-content-${idx}`,
-                                            cls: 'row-content',
-                                            items: row[1]
-                                        })
-                                    ]
-                                });
-                            })
-                        })
+                        this.buildLogDisplay(rows)
                     ]
                 })
             ]
+        });
+    }
+
+    buildLogDisplay(rows) {
+        return vbox({
+            cls: 'log-display',
+            items: toJS(rows).map((row, idx) => {
+                return elem('div', {
+                    cls: 'row',
+                    ref: idx === rows.length - 1 ? (el) => {this.model.setLastRow(el)}: undefined,
+                    items: [
+                        div({key: `row-number-${idx}`,  cls: 'row-number',  items: row[0].toString()}),
+                        div({key: `row-content-${idx}`, cls: 'row-content', items: row[1]})
+                    ]
+                });
+            })
         });
     }
 

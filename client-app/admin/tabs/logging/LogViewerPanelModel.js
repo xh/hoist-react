@@ -9,7 +9,7 @@
  * Model for the LogViewerPanel
  */
 import {XH} from 'hoist';
-import {observable, action, setter} from 'hoist/mobx';
+import {action, autorun, observable, setter} from 'hoist/mobx';
 import {baseCol} from 'hoist/columns/Core';
 import {GridModel} from 'hoist/grid';
 
@@ -20,7 +20,10 @@ export class LogViewerPanelModel {
     @observable startLine = 1;
     @observable maxLines = 1000;
     @observable pattern = '';
+    @setter @observable lastRow = null;
     @setter @observable rows = [];
+
+    intervalId = null;
 
     files = new GridModel({
         url: 'logViewerAdmin/listFiles',
@@ -46,9 +49,6 @@ export class LogViewerPanelModel {
         this.filesCollapsed = !this.filesCollapsed;
     }
 
-    //--------------------------------
-    // Implementation
-    //---------------------------------
     loadLines() {
         if (!this.file) {
             this.setRows([]);
@@ -69,8 +69,22 @@ export class LogViewerPanelModel {
             .catchDefault();
     }
 
-    @action
-    refreshValues() {
+    //--------------------------------
+    // Implementation
+    //--------------------------------
+    toggleTail = autorun(() => {
+        if (this.intervalId) this.resetTailInterval();
 
+        if (this.tail && this.lastRow) {
+            this.lastRow.scrollIntoView({behavior: 'smooth'});
+            this.intervalId = setInterval(() => {
+                this.lastRow.scrollIntoView({behavior: 'smooth'});
+            }, 5000);
+        }
+    });
+
+    resetTailInterval() {
+        clearInterval(this.intervalId);
+        this.intervalId = null;
     }
 }

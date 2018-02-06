@@ -64,7 +64,9 @@ class LogViewerPanelToolbar extends Component {
                 checkbox({
                     label: 'Tail',
                     size: 'mini',
-                    checked: tail
+                    name: 'tail',
+                    checked: tail,
+                    onChange: this.handleChange
                 })
             ]
         });
@@ -75,8 +77,8 @@ class LogViewerPanelToolbar extends Component {
     };
 
     @action
-    handleChange = (e, {name, value}) => {
-        this.model[name] = value;
+    handleChange = (e, {name, value, checked}) => {
+        this.model[name] = name === 'tail' ? checked : value;
     };
 
     //-----------------------------
