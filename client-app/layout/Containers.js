@@ -38,15 +38,15 @@ export function HBox(props) {
  * This class is useful for creating nested layouts.  See also VFrame, and HFrame.
  */
 export function Frame(props) {
-    return createDiv(props, {flex: 'auto', maxWidth: '100%', maxHeight: '100%'});
+    return createDiv(props, {flex: 'auto'});
 }
 
 export function VFrame(props) {
-    return createDiv(props, {flex: 'auto', flexDirection: 'column', maxWidth: '100%', maxHeight: '100%'});
+    return createDiv(props, {flex: 'auto', flexDirection: 'column'});
 }
 
 export function HFrame(props) {
-    return createDiv(props, {flex: 'auto', flexDirection: 'row', maxWidth: '100%', maxHeight: '100%'});
+    return createDiv(props, {flex: 'auto', flexDirection: 'row'});
 }
 
 /**
