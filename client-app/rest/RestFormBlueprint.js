@@ -123,7 +123,7 @@ export class RestFormBlueprint extends Component {
     }
 
     createDropdown(fieldSpec, editor) {
-        const {formRecord} = this.model,
+        const {formRecord, setFormValue} = this.model,
             field = fieldSpec.name,
             options = fieldSpec.lookupValues,
             defaultValue = formRecord[field],
@@ -143,7 +143,7 @@ export class RestFormBlueprint extends Component {
             itemPredicate: (q, v, index) => !v || v.includes(q),
             style: {marginBottom: 5},
             $items: options,
-            onItemSelect: this.onDropDownChange,
+            onItemSelect: (value) => this.onDropDownChange(value, field, setFormValue),
             itemRenderer: ({handleClick, isActive, item}) => {
                 return menuItem({key: item, onClick: handleClick, text: item, disabled: isDisabled});
             },
@@ -155,7 +155,7 @@ export class RestFormBlueprint extends Component {
     }
 
     createBooleanDropdown(fieldSpec) {
-        const {formRecord} = this.model,
+        const {formRecord, setFormValue} = this.model,
             field = fieldSpec.name,
             defaultValue = formRecord[field],
             isDisabled = fieldSpec.readOnly;
@@ -237,11 +237,7 @@ export class RestFormBlueprint extends Component {
         setFormValue(field, value);
     }
 
-    onDropDownChange = (value, e) => {
-        debugger;
-        const {setFormValue} = this.model,
-            field = e.target.attributes.field.value;
-
+    onDropDownChange(value, field, setFormValue) {
         setFormValue(field, value);
     }
 
