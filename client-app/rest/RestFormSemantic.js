@@ -46,13 +46,12 @@ export class RestFormSemantic extends Component {
         editors.forEach(editor => {
             const fieldSpec = fields.find(it => it.name === editor.field);
 
-
             ret.push(this.createFieldLabel(fieldSpec));
             // this will probably turn into a switch statement
             if (fieldSpec.lookupValues) {
-                ret.push(this.createDropDown(fieldSpec, editor));
+                ret.push(this.createDropdown(fieldSpec, editor));
             } else if (fieldSpec.type === 'bool' || fieldSpec.type === 'boolean') {
-                ret.push(this.createBooleanInput(fieldSpec));
+                ret.push(this.createBooleanDropdown(fieldSpec));
             } else {
                 ret.push(this.createTextInput(fieldSpec, editor));
             }
@@ -105,7 +104,7 @@ export class RestFormSemantic extends Component {
         return label({content: content, style: {width: '115px', textAlign: 'center', paddingBottom: 5}});
     }
 
-    createDropDown(fieldSpec, editor) {
+    createDropdown(fieldSpec, editor) {
         const {formRecord, setFormValue} = this.model,
             field = fieldSpec.name,
             options = fieldSpec.lookupValues.map(v => {
@@ -118,14 +117,18 @@ export class RestFormSemantic extends Component {
             fluid: true,
             inline: true,
             options: options,
-            placeholder: formRecord[field] != null ? capitalize(formRecord[field].toString()) : '',
-            onChange: (e, data) => setFormValue(field, data.value),
+            defaultValue: formRecord[field] != null ? capitalize(formRecord[field].toString()) : '',
+            onChange: this.onSelectionChange(),
+            allowAdditions: editor.allowAdditions,
+            onAddItem: this.onAddItemToDropDown,
+            search: true,
+            selection: true,
             disabled: isDisabled,
             style: {marginBottom: 5}
         });
     }
 
-    createBooleanInput(fieldSpec) {
+    createBooleanDropdown(fieldSpec) {
         const {formRecord, setFormValue} = this.model,
             field = fieldSpec.name;
 
@@ -134,8 +137,8 @@ export class RestFormSemantic extends Component {
             fluid: true,
             inline: true,
             options: [{text: 'True', value: 'true', key: 'True'}, {text: 'False', value: 'false', key: 'False'}],
-            placeholder: formRecord[field] != null ? capitalize(formRecord[field].toString()) : '',
-            onChange: (e, data) => setFormValue(field, data.value === 'true'),
+            defaultValue: formRecord[field] != null ? formRecord[field].toString() : '',
+            onChange: this.onBoolChange,
             disabled: fieldSpec.readOnly,
             style: {marginBottom: 5}
         });
@@ -155,6 +158,23 @@ export class RestFormSemantic extends Component {
             disabled: fieldSpec.readOnly,
             style: {marginBottom: 5}
         });
+    }
+
+    //----------------
+    // Implementation
+    //----------------
+
+    onAddItemToDropDown(e, data) {
+        console.log('onAddItem');
+        data.options.push({text: data.value, value: data.value, key: data.value});
+    }
+
+    onSelectionChange(e, data) {
+        setFormValue(field, data.value);
+    }
+
+    onBoolChange(e, data) {
+        setFormValue(field, data.value === 'true');
     }
 }
 export const restFormSemantic = elemFactory(RestFormSemantic);
