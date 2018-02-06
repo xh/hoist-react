@@ -92,9 +92,9 @@ export class LogViewerPanel extends Component {
 
     onGridCellClicked = (ctx) => {
         this.model.loadFile(ctx.data.filename);
-    }
+    };
 
-    onResizerClicked = (ctx) => {
+    onResizerClicked = () => {
         this.model.toggleFilePanel();
-    }
+    };
 }

@@ -6,21 +6,27 @@
  */
 import {Component} from 'react';
 import {elemFactory} from 'hoist';
-import {button, input, checkbox} from 'hoist/kit/semantic';
-import {observer} from 'hoist/mobx';
+import {input, checkbox, button} from 'hoist/kit/semantic';
+import {action, observer} from 'hoist/mobx';
 import {hbox} from 'hoist/layout';
 
 @observer
 class LogViewerPanelToolbar extends Component {
     render() {
-        const {startLine, maxLines, tail, refreshValues} = this.model;
+        const {startLine, maxLines, pattern, tail} = this.model;
+
         return hbox({
             cls: 'toolbar',
             items: [
                 input({
                     label: 'Start Line',
-                    defaultValue: startLine,
+                    type: 'number',
+                    name: 'startLine',
+                    value: startLine,
+                    min: 1,
+                    max: maxLines,
                     size: 'mini',
+                    onChange: this.handleChange,
                     input: {
                         style: {
                             width: '70px'
@@ -29,8 +35,12 @@ class LogViewerPanelToolbar extends Component {
                 }),
                 input({
                     label: 'Max Lines',
-                    defaultValue: maxLines,
+                    type: 'number',
+                    name: 'maxLines',
+                    value: maxLines,
+                    min: startLine,
                     size: 'mini',
+                    onChange: this.handleChange,
                     input: {
                         style: {
                             width: '70px'
@@ -38,14 +48,18 @@ class LogViewerPanelToolbar extends Component {
                     }
                 }),
                 input({
-                    icon: {name: 'search'},
                     placeholder: 'Search...',
-                    size: 'mini'
+                    name: 'pattern',
+                    value: pattern,
+                    icon: {name: 'search'},
+                    size: 'mini',
+                    onChange: this.handleChange
                 }),
                 button({
+                    type: 'submit',
                     icon: {name: 'refresh'},
                     size: 'mini',
-                    onClick: refreshValues()
+                    onClick: this.refreshValues
                 }),
                 checkbox({
                     label: 'Tail',
@@ -55,6 +69,15 @@ class LogViewerPanelToolbar extends Component {
             ]
         });
     }
+
+    refreshValues = () => {
+        this.model.loadLines();
+    };
+
+    @action
+    handleChange = (e, {name, value}) => {
+        this.model[name] = value;
+    };
 
     //-----------------------------
     // Implementation

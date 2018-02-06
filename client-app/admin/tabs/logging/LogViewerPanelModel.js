@@ -9,7 +9,7 @@
  * Model for the LogViewerPanel
  */
 import {XH} from 'hoist';
-import {observable, autorun, action, setter} from 'hoist/mobx';
+import {observable, action, setter} from 'hoist/mobx';
 import {baseCol} from 'hoist/columns/Core';
 import {GridModel} from 'hoist/grid';
 
@@ -38,6 +38,7 @@ export class LogViewerPanelModel {
     @action
     loadFile(file) {
         this.file = file;
+        this.loadLines();
     }
 
     @action
@@ -48,7 +49,7 @@ export class LogViewerPanelModel {
     //--------------------------------
     // Implementation
     //---------------------------------
-    loadLines = autorun(() => {
+    loadLines() {
         if (!this.file) {
             this.setRows([]);
             return;
@@ -66,7 +67,7 @@ export class LogViewerPanelModel {
             })
             .then(rows => this.setRows(rows.content))
             .catchDefault();
-    });
+    }
 
     @action
     refreshValues() {
