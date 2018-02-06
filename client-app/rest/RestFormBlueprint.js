@@ -146,10 +146,11 @@ export class RestFormBlueprint extends Component {
             $items: options,
             onItemSelect: this.onInputChange,
             itemRenderer: ({handleClick, isActive, item}) => {
-                return menuItem({key: item, onClick: handleClick, text: item});
+                return menuItem({key: item, onClick: handleClick, text: item, disabled: isDisabled});
             },
             inputValueRenderer: s => s,
-            inputProps: {placeholder: defaultValue}
+            inputProps: {placeholder: defaultValue},
+            disabled: isDisabled
         });
     }
 
