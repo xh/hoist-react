@@ -4,6 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+import {forOwn} from 'lodash';
 import {XH} from 'hoist';
 import {observable, computed, action} from 'hoist/mobx';
 import {GridModel} from 'hoist/grid';
@@ -45,7 +46,13 @@ export class RestGridModel {
 
     @computed
     get formIsValid() {
-        return this.formRecord;
+        const fields = this.recordSpec.fields;
+        let valid = true;
+        forOwn(this.formRecord, (v, k) => {
+            const spec = fields.find(it => it.name === k);
+            if (spec && !spec.allowNull && !v) valid = false;
+        });
+        return valid;
     }
 
     @computed
