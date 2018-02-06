@@ -36,6 +36,7 @@ export class App extends Component {
         return hbox({
             padding: 5,
             height: 50,
+            flex: 'none',
             style: {
                 fontSize: 20,
                 color: 'white',

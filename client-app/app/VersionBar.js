@@ -21,7 +21,7 @@ export class VersionBar extends Component {
         return box({
             justifyContent: 'center',
             alignItems: 'center',
-            padding: 2,
+            flex: 'none',
             style: {
                 fontSize: '0.8em',
                 color: 'white',

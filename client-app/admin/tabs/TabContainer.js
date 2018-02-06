@@ -60,7 +60,7 @@ export class TabContainer extends Component {
                 vertical,
                 pointing: !vertical,
                 secondary: true,
-                style: vertical ? {width: '100px', margin: 0} : {margin: 0},
+                style: vertical ? {flex: 'none', width: '100px', margin: 0} : {margin: 0},
                 $items
             });
 
@@ -76,6 +76,8 @@ export class TabContainer extends Component {
 
         const conf = {
             flex: 1,
+            maxWidth: '100%',
+            maxHeight: '100%',
             display: isActive ? 'flex' : 'none',
             items: [selectors, ...panes]
         };
