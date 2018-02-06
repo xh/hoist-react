@@ -2,8 +2,8 @@
     font-size: 12px;
 }
 
-.rest-form input[type="textarea"] {
-    height: 50px;
+.rest-form textarea {
+    border: 1px solid rgba(34,36,38,.15);
 }
 
 .rest-form-dropdown {

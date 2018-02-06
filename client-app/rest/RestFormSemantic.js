@@ -10,7 +10,7 @@ import {elemFactory} from 'hoist';
 import {capitalize} from 'lodash';
 import {vbox} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
-import {dropdown, hoistButton, input, label, modal, modalContent, modalActions, modalHeader} from 'hoist/kit/semantic';
+import {dropdown, hoistButton, input, label, modal, modalContent, modalActions, modalHeader, textArea} from 'hoist/kit/semantic';
 
 @observer
 export class RestFormSemantic extends Component {
@@ -54,6 +54,8 @@ export class RestFormSemantic extends Component {
                 ret.push(this.createBooleanDropdown(fieldSpec));
             } else if (fieldSpec.type === 'int') {
                 ret.push(this.createNumberInput(fieldSpec, editor));
+            } else if (editor.type === 'textarea' || fieldSpec.type === 'json') {
+                ret.push(this.createTextAreaInput(fieldSpec, editor));
             } else {
                 ret.push(this.createTextInput(fieldSpec, editor));
             }
@@ -171,19 +173,35 @@ export class RestFormSemantic extends Component {
         });
     }
 
+    createTextAreaInput(fieldSpec, editor) {
+        const {formRecord} = this.model,
+            field = fieldSpec.name,
+            renderer = editor.renderer,
+            currentVal = renderer ? renderer(formRecord[field]) : formRecord[field],
+            isDisabled = fieldSpec.readOnly;
+
+        return textArea({
+            style: {marginBottom: 5},
+            defaultValue: currentVal || '',
+            onChange: this.onInputChange,
+            disabled: isDisabled,
+            field: field,
+            model: this.model
+        });
+    }
+
     createTextInput(fieldSpec, editor) {
         const {formRecord} = this.model,
             field = fieldSpec.name,
             renderer = editor.renderer,
             currentVal = renderer ? renderer(formRecord[field]) : formRecord[field],
-            isTextArea = editor.type === 'textarea' || fieldSpec.type === 'json',
             isDisabled = fieldSpec.readOnly;
 
         return input({
             style: {marginBottom: 5},
             defaultValue: currentVal || '',
             onChange: this.onInputChange,
-            type: isTextArea ? 'textarea' : 'text',
+            type: 'text',
             disabled: isDisabled,
             field: field,
             model: this.model
