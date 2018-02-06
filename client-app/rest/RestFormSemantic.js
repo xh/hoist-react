@@ -10,7 +10,17 @@ import {elemFactory} from 'hoist';
 import {capitalize} from 'lodash';
 import {vbox} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
-import {dropdown, hoistButton, input, label, modal, modalContent, modalActions, modalHeader, textArea} from 'hoist/kit/semantic';
+import {
+    dropdown,
+    hoistButton,
+    input,
+    label,
+    modal,
+    modalContent,
+    modalActions,
+    modalHeader,
+    textArea
+} from 'hoist/kit/semantic';
 
 @observer
 export class RestFormSemantic extends Component {
