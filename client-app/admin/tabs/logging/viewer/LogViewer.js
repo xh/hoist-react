@@ -4,20 +4,22 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import './LogViewerPanel.css';
+import './LogViewer.css';
 import {Component} from 'react';
-import {elem} from 'hoist';
-import {observer, toJS} from 'hoist/mobx';
+import {observer, observable, toJS, autorun} from 'hoist/mobx';
 import {box, vbox, hbox, div} from 'hoist/layout';
 import {grid} from 'hoist/grid';
+import {Ref} from 'hoist/react';
 import {button} from 'hoist/kit/semantic';
 
-import {LogViewerPanelModel} from './LogViewerPanelModel';
-import {logViewerPanelToolbar} from './LogViewerPanelToolbar';
+import {LogViewerModel} from './LogViewerModel';
+import {logViewerToolbar} from './LogViewerToolbar';
 
 @observer
-export class LogViewerPanel extends Component {
-    model = new LogViewerPanelModel();
+export class LogViewer extends Component {
+    model = new LogViewerModel();
+
+    @observable lastRow = new Ref();
 
     loadAsync() {
         return this.model.loadAsync();
@@ -31,7 +33,7 @@ export class LogViewerPanel extends Component {
             items: [
                 box({
                     cls: filesCollapsed ? 'collapsible-panel collapsed' : 'collapsible-panel expanded',
-                    items: grid({
+                    item: grid({
                         model: files,
                         gridOptions: {
                             onCellClicked: this.onGridCellClicked
@@ -45,7 +47,7 @@ export class LogViewerPanel extends Component {
                     },
                     justifyContent: 'center',
                     alignItems: 'center',
-                    items: button({
+                    item: button({
                         size: 'small',
                         cls: 'resizer',
                         compact: true,
@@ -62,9 +64,7 @@ export class LogViewerPanel extends Component {
                 vbox({
                     cls: 'logviewer-container',
                     items: [
-                        logViewerPanelToolbar({
-                            model: this.model
-                        }),
+                        logViewerToolbar({model: this.model}),
                         this.buildLogDisplay(rows)
                     ]
                 })
@@ -76,12 +76,12 @@ export class LogViewerPanel extends Component {
         return vbox({
             cls: 'log-display',
             items: toJS(rows).map((row, idx) => {
-                return elem('div', {
+                return div({
                     cls: 'row',
-                    ref: idx === rows.length - 1 ? (el) => {this.model.setLastRow(el)}: undefined,
+                    ref: idx === rows.length - 1 ? this.lastRow.callback : undefined,
                     items: [
-                        div({key: `row-number-${idx}`,  cls: 'row-number',  items: row[0].toString()}),
-                        div({key: `row-content-${idx}`, cls: 'row-content', items: row[1]})
+                        div({key: `row-number-${idx}`,  cls: 'row-number',  item: row[0].toString()}),
+                        div({key: `row-content-${idx}`, cls: 'row-content', item: row[1]})
                     ]
                 });
             })
@@ -90,9 +90,19 @@ export class LogViewerPanel extends Component {
 
     onGridCellClicked = (ctx) => {
         this.model.loadFile(ctx.data.filename);
-    };
+    }
 
     onResizerClicked = () => {
         this.model.toggleFilePanel();
-    };
+    }
+
+    componentDidMount() {
+        autorun(() => {
+            if (!this.model.tail) return;
+            const lastRowElem = this.lastRow.value;
+            if (lastRowElem) {
+                lastRowElem.scrollIntoView({behavior: 'smooth'});
+            }
+        });
+    }
 }

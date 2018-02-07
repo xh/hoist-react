@@ -5,25 +5,23 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-/**
- * Model for the LogViewerPanel
- */
 import {XH} from 'hoist';
-import {action, autorun, observable, setter} from 'hoist/mobx';
+import {action, observable, setter} from 'hoist/mobx';
 import {baseCol} from 'hoist/columns/Core';
 import {GridModel} from 'hoist/grid';
 
-export class LogViewerPanelModel {
-    @observable filesCollapsed = false;
+export class LogViewerModel {
+
+    // Form State/Display options
     @observable tail = true;
-    @observable file = null;
     @observable startLine = 1;
     @observable maxLines = 1000;
     @observable pattern = '';
-    @setter @observable lastRow = null;
-    @setter @observable rows = [];
 
-    intervalId = null;
+    // Overall State
+    @observable file = null;
+    @setter @observable rows = [];
+    @observable filesCollapsed = false;
 
     files = new GridModel({
         url: 'logViewerAdmin/listFiles',
@@ -32,11 +30,6 @@ export class LogViewerPanelModel {
             baseCol({headerName: 'Log File', field: 'filename', width: 250})
         ]
     });
-
-    @action
-    async loadAsync() {
-        this.files.loadAsync();
-    }
 
     @action
     loadFile(file) {
@@ -49,6 +42,13 @@ export class LogViewerPanelModel {
         this.filesCollapsed = !this.filesCollapsed;
     }
 
+    @action
+    async loadAsync() {
+        this.files.loadAsync();
+        this.loadLines();
+    }
+
+    @action
     loadLines() {
         if (!this.file) {
             this.setRows([]);
@@ -69,22 +69,8 @@ export class LogViewerPanelModel {
             .catchDefault();
     }
 
-    //--------------------------------
-    // Implementation
-    //--------------------------------
-    toggleTail = autorun(() => {
-        if (this.intervalId) this.resetTailInterval();
-
-        if (this.tail && this.lastRow) {
-            this.lastRow.scrollIntoView({behavior: 'smooth'});
-            this.intervalId = setInterval(() => {
-                this.lastRow.scrollIntoView({behavior: 'smooth'});
-            }, 5000);
-        }
-    });
-
-    resetTailInterval() {
-        clearInterval(this.intervalId);
-        this.intervalId = null;
+    @action
+    setDisplayOption(name, value) {
+        this[name] = value;
     }
 }

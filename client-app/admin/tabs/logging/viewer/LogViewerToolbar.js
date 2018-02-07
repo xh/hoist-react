@@ -7,11 +7,12 @@
 import {Component} from 'react';
 import {elemFactory} from 'hoist';
 import {input, checkbox, button} from 'hoist/kit/semantic';
-import {action, observer} from 'hoist/mobx';
+import {observer} from 'hoist/mobx';
 import {hbox} from 'hoist/layout';
 
 @observer
-class LogViewerPanelToolbar extends Component {
+class LogViewerToolbar extends Component {
+
     render() {
         const {startLine, maxLines, pattern, tail} = this.model;
 
@@ -27,11 +28,7 @@ class LogViewerPanelToolbar extends Component {
                     max: maxLines,
                     size: 'mini',
                     onChange: this.handleChange,
-                    input: {
-                        style: {
-                            width: '70px'
-                        }
-                    }
+                    input: {style: {width: '70px'}}
                 }),
                 input({
                     label: 'Max Lines',
@@ -41,25 +38,21 @@ class LogViewerPanelToolbar extends Component {
                     min: startLine,
                     size: 'mini',
                     onChange: this.handleChange,
-                    input: {
-                        style: {
-                            width: '70px'
-                        }
-                    }
+                    input: {style: {width: '70px'}}
                 }),
                 input({
                     placeholder: 'Search...',
                     name: 'pattern',
                     value: pattern,
-                    icon: {name: 'search'},
+                    icon: 'search',
                     size: 'mini',
                     onChange: this.handleChange
                 }),
                 button({
                     type: 'submit',
-                    icon: {name: 'refresh'},
+                    icon: 'refresh',
                     size: 'mini',
-                    onClick: this.refreshValues
+                    onClick: this.onSubmitClick
                 }),
                 checkbox({
                     label: 'Tail',
@@ -72,13 +65,12 @@ class LogViewerPanelToolbar extends Component {
         });
     }
 
-    refreshValues = () => {
+    onSubmitClick = () => {
         this.model.loadLines();
     };
 
-    @action
     handleChange = (e, {name, value, checked}) => {
-        this.model[name] = name === 'tail' ? checked : value;
+        this.model.setDisplayOption(name, name === 'tail' ? checked : value);
     };
 
     //-----------------------------
@@ -86,5 +78,4 @@ class LogViewerPanelToolbar extends Component {
     //-----------------------------
     get model() {return this.props.model}
 }
-
-export const logViewerPanelToolbar = elemFactory(LogViewerPanelToolbar);
+export const logViewerToolbar = elemFactory(LogViewerToolbar);

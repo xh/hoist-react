@@ -16,7 +16,7 @@ import {FeedbackPanel} from './tabs/feedback/FeedbackPanel';
 import {DashboardPanel} from './tabs/dashboards/DashboardPanel';
 import {EhCachePanel} from './tabs/ehcache/EhCachePanel';
 import {LogLevelPanel} from './tabs/logging/LogLevelPanel';
-import {LogViewerPanel} from './tabs/logging/LogViewerPanel';
+import {LogViewer} from './tabs/logging/viewer/LogViewer';
 import {MonitorResultsPanel} from './tabs/monitor/MonitorResultsPanel';
 import {MonitorEditorPanel} from './tabs/monitor/MonitorEditorPanel';
 import {PreferencePanel} from './tabs/preferences/PreferencePanel';
@@ -50,7 +50,7 @@ class AppModel {
                 new TabPaneModel('Readme', ReadmePanel)
             ),
             new TabContainerModel('Logging', 'v',
-                new TabPaneModel('Viewer', LogViewerPanel),
+                new TabPaneModel('Viewer', LogViewer),
                 new TabPaneModel('Levels', LogLevelPanel)
             ),
             new TabContainerModel('Monitor', 'v',
