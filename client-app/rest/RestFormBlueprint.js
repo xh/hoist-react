@@ -45,8 +45,9 @@ export class RestFormBlueprint extends Component {
     get model() {return this.props.model}
 
     getForm() {
-        const {editors, recordSpec} = this.model,
+        const {editors, recordSpec, formRecord} = this.model,
             fields = recordSpec.fields,
+            valueType = formRecord.valueType,
             ret = [];
 
         editors.forEach(editor => {
@@ -54,6 +55,7 @@ export class RestFormBlueprint extends Component {
 
             ret.push(this.createFieldLabel(fieldSpec));
 
+            if (fieldSpec.typeField) fieldSpec.type = valueType;
             if (fieldSpec.lookupValues) {
                 ret.push(this.createDropdown(fieldSpec, editor));
             } else if (fieldSpec.type === 'bool' || fieldSpec.type === 'boolean') {
@@ -155,6 +157,7 @@ export class RestFormBlueprint extends Component {
     createBooleanDropdown(fieldSpec) {
         const {formRecord} = this.model,
             field = fieldSpec.name,
+            currentVal = formRecord[field],
             isDisabled = fieldSpec.readOnly;
 
         return select({
@@ -163,7 +166,7 @@ export class RestFormBlueprint extends Component {
             popoverProps: {popoverClassName: Classes.MINIMAL},
             filterable: false,
             $items: ['true', 'false'],
-            items: button({text: formRecord[field].toString(), rightIconName: 'caret-down', style: {marginBottom: 5}}),
+            items: button({text: currentVal ? currentVal.toString() : '', rightIconName: 'caret-down', style: {marginBottom: 5}}),
             onItemSelect: this.onBoolChange,
             itemRenderer: ({handleClick, isActive, item}) => {
                 return menuItem({key: item, onClick: handleClick, text: item, className: `xhField-${field}`, disabled: isDisabled});
@@ -248,6 +251,8 @@ export class RestFormBlueprint extends Component {
             className = e.target.className,
             fieldIndex = className.indexOf('xhField'),
             field = className.substring(fieldIndex + 8, className.length);
+        
+        console.log('boolChange');
 
         setFormValue(field, value === 'true');
     }
