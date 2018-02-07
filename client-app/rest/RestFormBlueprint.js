@@ -244,6 +244,7 @@ export class RestFormBlueprint extends Component {
     }
 
     onBoolChange = (value, e) => {
+        // temporary logic until we find a better way of getting this field
         const {setFormValue} = this.model,
             className = e.target.className,
             fieldIndex = className.indexOf('xhField'),
