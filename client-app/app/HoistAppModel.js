@@ -15,7 +15,7 @@ import {ErrorDialogModel} from 'hoist/error';
  */
 class HoistAppModel {
 
-    useSemantic = false;
+    useSemantic = true;
 
     /** Has the authentication step completed? **/
     @observable authCompleted = false;

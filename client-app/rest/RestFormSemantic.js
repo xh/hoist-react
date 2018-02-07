@@ -6,7 +6,6 @@
  */
 
 import {Component} from 'react';
-import {capitalize} from 'lodash';
 import {elemFactory} from 'hoist';
 import {vbox} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
@@ -49,8 +48,9 @@ export class RestFormSemantic extends Component {
     get model() {return this.props.model}
 
     getForm() {
-        const {editors, recordSpec} = this.model,
+        const {editors, recordSpec, formRecord} = this.model,
             fields = recordSpec.fields,
+            valueType = formRecord.valueType,
             ret = [];
 
         editors.forEach(editor => {
@@ -58,6 +58,7 @@ export class RestFormSemantic extends Component {
 
             ret.push(this.createFieldLabel(fieldSpec));
 
+            if (fieldSpec.typeField) fieldSpec.type = valueType;
             if (fieldSpec.lookupValues) {
                 ret.push(this.createDropdown(fieldSpec, editor));
             } else if (fieldSpec.type === 'bool' || fieldSpec.type === 'boolean') {
@@ -113,8 +114,8 @@ export class RestFormSemantic extends Component {
     }
 
     createFieldLabel(fieldSpec) {
-        const text = fieldSpec.label || fieldSpec.name;
-        return label({text: text, style: {width: '115px', textAlign: 'center', paddingBottom: 5}});
+        const content = fieldSpec.label || fieldSpec.name;
+        return label({content: content, style: {width: '115px', textAlign: 'center', paddingBottom: 5}});
     }
 
     createDropdown(fieldSpec, editor) {
@@ -132,9 +133,9 @@ export class RestFormSemantic extends Component {
             style: {marginBottom: 5},
             fluid: true,
             options: options,
-            defaultValue: defaultValue != null ? capitalize(defaultValue.toString()) : '',
+            defaultValue: defaultValue,
             onChange: this.onInputChange, // gets all props on item, makes handler simpler than in blueprint
-            allowAdditions: allowAdditions, // much simpler in here semantic, see note in blueprint
+            allowAdditions: allowAdditions, // much simpler in here in semantic, see note in blueprint
             onAddItem: this.onAddItemToDropDown,
             search: true,
             selection: true,
