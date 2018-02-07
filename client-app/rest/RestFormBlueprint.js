@@ -6,11 +6,10 @@
  */
 
 import {Component} from 'react';
-import {capitalize} from 'lodash';
 import {elemFactory} from 'hoist';
-import {vbox, div, filler, span} from 'hoist/layout';
+import {vbox, div, filler} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
-import {Classes, button, dialog, inputGroup, label, menuItem, popover, select, suggest} from 'hoist/kit/blueprint';
+import {Classes, button, dialog, inputGroup, label, menuItem, numericInput, select, suggest, textArea} from 'hoist/kit/blueprint';
 
 @observer
 export class RestFormBlueprint extends Component {
@@ -59,10 +58,10 @@ export class RestFormBlueprint extends Component {
                 ret.push(this.createDropdown(fieldSpec, editor));
             } else if (fieldSpec.type === 'bool' || fieldSpec.type === 'boolean') {
                 ret.push(this.createBooleanDropdown(fieldSpec));
-            // } else if (fieldSpec.type === 'int') {
-            //     ret.push(this.createNumberInput(fieldSpec, editor));
-            // } else if (editor.type === 'textarea' || fieldSpec.type === 'json') {
-            //     ret.push(this.createTextAreaInput(fieldSpec, editor));
+            } else if (fieldSpec.type === 'int') {
+                ret.push(this.createNumberInput(fieldSpec, editor));
+            } else if (editor.type === 'textarea' || fieldSpec.type === 'json') {
+                ret.push(this.createTextAreaInput(fieldSpec, editor));
             } else {
                 ret.push(this.createTextInput(fieldSpec, editor));
             }
@@ -123,7 +122,7 @@ export class RestFormBlueprint extends Component {
     }
 
     createDropdown(fieldSpec, editor) {
-        const {formRecord, setFormValue} = this.model,
+        const {formRecord} = this.model,
             field = fieldSpec.name,
             options = fieldSpec.lookupValues,
             defaultValue = formRecord[field],
@@ -138,80 +137,75 @@ export class RestFormBlueprint extends Component {
 
         return suggest({
             className: 'rest-form-dropdown-blueprint',
-            popoverProps: {popoverClassName: Classes.MINIMAL},
+            popoverProps: {popoverClassName: Classes.MINIMAL, 'data-field': field, field: field},
             itemListPredicate: itemListPredicate,
             itemPredicate: (q, v, index) => !v || v.includes(q),
             style: {marginBottom: 5},
             $items: options,
-            onItemSelect: (value) => this.onDropDownChange(value, field, setFormValue), // simpler in semantic, see note there
+            onItemSelect: this.onDropDownChange,
             itemRenderer: ({handleClick, isActive, item}) => {
-                return menuItem({key: item, onClick: handleClick, text: item, disabled: isDisabled});
+                return menuItem({key: item, onClick: handleClick, text: item, className: `xhField-${field}`, disabled: isDisabled});
             },
             inputValueRenderer: s => s,
-            inputProps: {placeholder: defaultValue},
+            inputProps: {defaultValue: defaultValue, value: undefined}, // console warning dictated this undefined if I want to use default val, need to somehow set on visible component
             disabled: isDisabled
         });
     }
 
     createBooleanDropdown(fieldSpec) {
-        const {formRecord, setFormValue} = this.model,
+        const {formRecord} = this.model,
             field = fieldSpec.name,
-            defaultValue = formRecord[field],
             isDisabled = fieldSpec.readOnly;
 
         return select({
             className: 'rest-form-dropdown-blueprint',
-            initialContent: defaultValue,
             popoverProps: {popoverClassName: Classes.MINIMAL},
-            style: {marginBottom: 5},
+            filterable: false,
             $items: ['true', 'false'],
+            items: button({text: formRecord[field].toString(), rightIconName: 'caret-down', style: {marginBottom: 5}}),
             onItemSelect: this.onBoolChange,
             itemRenderer: ({handleClick, isActive, item}) => {
-                debugger;
-                return menuItem({key: item, onClick: handleClick, text: item, disabled: isDisabled});
+                return menuItem({key: item, onClick: handleClick, text: item, className: `xhField-${field}`, disabled: isDisabled});
             },
-            disabled: isDisabled,
-            field: field
+            disabled: isDisabled
         });
     }
-    //
-    // createNumberInput(fieldSpec, editor) {
-    //     const {formRecord} = this.model,
-    //         field = fieldSpec.name,
-    //         renderer = editor.renderer,
-    //         currentVal = renderer ? renderer(formRecord[field]) : formRecord[field],
-    //         isDisabled = fieldSpec.readOnly;
-    //
-    //     return input({
-    //         style: {marginBottom: 5},
-    //         defaultValue: currentVal || '',
-    //         onChange: this.onInputChange,
-    //         type: 'number',
-    //         disabled: isDisabled,
-    //         field: field,
-    //         model: this.model
-    //     });
-    // }
-    //
-    // createTextAreaInput(fieldSpec, editor) {
-    //     const {formRecord} = this.model,
-    //         field = fieldSpec.name,
-    //         renderer = editor.renderer,
-    //         currentVal = renderer ? renderer(formRecord[field]) : formRecord[field],
-    //         isDisabled = fieldSpec.readOnly;
-    //
-    //     return textArea({
-    //         style: {marginBottom: 5},
-    //         defaultValue: currentVal || '',
-    //         onChange: this.onInputChange,
-    //         disabled: isDisabled,
-    //         field: field,
-    //         model: this.model
-    //     });
-    // }
-    //
+
+    createNumberInput(fieldSpec, editor) {
+        const {formRecord} = this.model,
+            field = fieldSpec.name,
+            renderer = editor.renderer,
+            currentVal = renderer ? renderer(formRecord[field]) : formRecord[field],
+            isDisabled = fieldSpec.readOnly;
+
+        return numericInput({
+            style: {marginBottom: 5},
+            value: currentVal || '',
+            onValueChange: (number, numberAsString) => console.log(number, numberAsString), // no event passed from which to attach/grab the field
+            disabled: isDisabled
+        });
+    }
+
+    createTextAreaInput(fieldSpec, editor) {
+        const {formRecord} = this.model,
+            field = fieldSpec.name,
+            renderer = editor.renderer,
+            currentVal = renderer ? renderer(formRecord[field]) : formRecord[field],
+            isDisabled = fieldSpec.readOnly;
+
+        return textArea({
+            style: {marginBottom: 5},
+            defaultValue: currentVal || '',
+            onChange: this.onTextInputChange,
+            disabled: isDisabled,
+            field: field,
+            model: this.model
+        });
+    }
+
     createTextInput(fieldSpec, editor) {
-        const {formRecord, setFormValue} = this.model,
+        // temporary logic until we find a better way of getting this field
+        const {formRecord} = this.model,
             field = fieldSpec.name,
             renderer = editor.renderer,
             currentVal = renderer ? renderer(formRecord[field]) : formRecord[field],
@@ -219,31 +213,42 @@ export class RestFormBlueprint extends Component {
 
         return inputGroup({
             defaultValue: currentVal || '',
-            onChange: (e) => this.onTextInputChange(e.target.value, field, setFormValue),
+            className: `xhField-${field}`,
+            onChange: this.onTextInputChange,
             type: editor.type || 'text',
-            disabled: editor.readOnly,
             style: {marginBottom: 5},
             disabled: isDisabled
         });
     }
 
-    // onAddItemToDropDown(e, data) {
-    //     data.options.push({text: data.value, value: data.value, key: data.value});
-    // }
+    onTextInputChange = (e, arg2, arg3) => {
+        // temporary logic until we find a better way of getting this field
+        const {setFormValue, formRecord} = this.model,
+            className = e.target.offsetParent.className,
+            fieldIndex = className.indexOf('xhField'),
+            field = className.substring(fieldIndex + 8, className.length),
+            value = e.target.value;
 
-    onTextInputChange(value, field, setFormValue) {
         setFormValue(field, value);
     }
 
-    onDropDownChange(value, field, setFormValue) {
+    onDropDownChange = (value, e) => {
+        // temporary logic until we find a better way of getting this field
+        const {setFormValue} = this.model,
+            className = e.target.className,
+            fieldIndex = className.indexOf('xhField'),
+            field = className.substring(fieldIndex + 8, className.length);
+
         setFormValue(field, value);
     }
 
-    onBoolChange = (value, data) => {
-        const {setFormValue} = this.model;
-        //     field = data.field;
-        //
-        // setFormValue(field, value === 'true');
+    onBoolChange = (value, e) => {
+        const {setFormValue} = this.model,
+            className = e.target.className,
+            fieldIndex = className.indexOf('xhField'),
+            field = className.substring(fieldIndex + 8, className.length);
+
+        setFormValue(field, value === 'true');
     }
 }
 export const restFormBlueprint = elemFactory(RestFormBlueprint);
