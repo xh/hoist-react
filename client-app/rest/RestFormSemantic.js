@@ -71,22 +71,6 @@ export class RestFormSemantic extends Component {
             }
         });
 
-        // editors.forEach(editor => {
-        //     const field = editor.field;
-        //     let input;
-        //     items.push(label({text: editor.label || field}));
-        //
-        //     input = inputGroup({
-        //         defaultValue: formRecord[field] || '',
-        //         onChange: (e) => setFormValue(field, e.target.value),
-        //         type: editor.type || 'text',
-        //         disabled: editor.readOnly,
-        //         style: {marginBottom: 5}
-        //     });
-        //
-        //     items.push(input);
-        // });
-
         return vbox({
             cls: 'rest-form',
             padding: 10,
@@ -149,8 +133,8 @@ export class RestFormSemantic extends Component {
             fluid: true,
             options: options,
             defaultValue: defaultValue != null ? capitalize(defaultValue.toString()) : '',
-            onChange: this.onInputChange, // gets all props on item, makes handler simpler
-            allowAdditions: allowAdditions, // simpler in semantic, see note in blueprint
+            onChange: this.onInputChange, // gets all props on item, makes handler simpler than in blueprint
+            allowAdditions: allowAdditions, // much simpler in here semantic, see note in blueprint
             onAddItem: this.onAddItemToDropDown,
             search: true,
             selection: true,

@@ -102,7 +102,7 @@ export class RestFormBlueprint extends Component {
         ];
     }
 
-    onClose = (e) => {
+    onClose = () => {
         this.model.closeForm();
     }
 
@@ -204,7 +204,6 @@ export class RestFormBlueprint extends Component {
     }
 
     createTextInput(fieldSpec, editor) {
-        // temporary logic until we find a better way of getting this field
         const {formRecord} = this.model,
             field = fieldSpec.name,
             renderer = editor.renderer,
