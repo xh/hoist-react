@@ -50,8 +50,7 @@ export class RestGridModel {
         let valid = true;
         forOwn(this.formRecord, (v, k) => {
             const spec = fields.find(it => it.name === k);
-            if (spec) console.log(spec, !spec.allowNull, v);
-            if (spec && !spec.allowNull && v == null) valid = false; debugger;
+            if (spec && !spec.allowNull && v == null) valid = false;
         });
         return valid;
     }
