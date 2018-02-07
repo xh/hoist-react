@@ -36,7 +36,7 @@ export class RestGridModel {
     get url()       {return this.gridModel.url}
     get selection() {return this.gridModel.selection}
     get loadModel() {return this.gridModel.loadModel}
-    get records() {return this.gridModel.records}
+    get records()   {return this.gridModel.records}
 
     @computed
     get formIsAdd() {
@@ -50,7 +50,8 @@ export class RestGridModel {
         let valid = true;
         forOwn(this.formRecord, (v, k) => {
             const spec = fields.find(it => it.name === k);
-            if (spec && !spec.allowNull && !v) valid = false;
+            if (spec) console.log(spec, !spec.allowNull, v);
+            if (spec && !spec.allowNull && v == null) valid = false; debugger;
         });
         return valid;
     }
