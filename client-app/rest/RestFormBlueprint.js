@@ -143,14 +143,13 @@ export class RestFormBlueprint extends Component {
             itemPredicate: (q, v, index) => !v || v.includes(q),
             style: {marginBottom: 5},
             $items: options,
-            onItemSelect: (value) => this.onDropDownChange(value, field, setFormValue),
+            onItemSelect: (value) => this.onDropDownChange(value, field, setFormValue), // simpler in semantic, see note there
             itemRenderer: ({handleClick, isActive, item}) => {
                 return menuItem({key: item, onClick: handleClick, text: item, disabled: isDisabled});
             },
             inputValueRenderer: s => s,
             inputProps: {placeholder: defaultValue},
-            disabled: isDisabled,
-            field: field
+            disabled: isDisabled
         });
     }
 
@@ -224,14 +223,13 @@ export class RestFormBlueprint extends Component {
             type: editor.type || 'text',
             disabled: editor.readOnly,
             style: {marginBottom: 5},
-            disabled: isDisabled,
-            field: field
+            disabled: isDisabled
         });
     }
 
-    onAddItemToDropDown(e, data) {
-        data.options.push({text: data.value, value: data.value, key: data.value});
-    }
+    // onAddItemToDropDown(e, data) {
+    //     data.options.push({text: data.value, value: data.value, key: data.value});
+    // }
 
     onTextInputChange(value, field, setFormValue) {
         setFormValue(field, value);

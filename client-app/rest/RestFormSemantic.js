@@ -149,8 +149,8 @@ export class RestFormSemantic extends Component {
             fluid: true,
             options: options,
             defaultValue: defaultValue != null ? capitalize(defaultValue.toString()) : '',
-            onChange: this.onInputChange,
-            allowAdditions: allowAdditions,
+            onChange: this.onInputChange, // gets all props on item, makes handler simpler
+            allowAdditions: allowAdditions, // simpler in semantic, see note in blueprint
             onAddItem: this.onAddItemToDropDown,
             search: true,
             selection: true,
