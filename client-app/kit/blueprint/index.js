@@ -10,20 +10,34 @@ import '@blueprintjs/select/lib/css/blueprint-select.css';
 import '@blueprintjs/icons/lib/css/blueprint-icons.css';
 
 import {elemFactory} from 'hoist';
-import {Button, Icon, MenuItem, Tab, Tabs, Overlay, Spinner, InputGroup, Popover, Label, Dialog} from '@blueprintjs/core';
+import {
+    Button,
+    Dialog,
+    Icon,
+    InputGroup,
+    Label,
+    MenuItem,
+    NumberInput,
+    Popover,
+    Overlay,
+    Spinner,
+    Tab,
+    Tabs
+} from '@blueprintjs/core';
 import {Suggest, Select} from '@blueprintjs/select';
 export {Classes} from '@blueprintjs/core';
 
 export const button = elemFactory(Button),
-    select = elemFactory(Select),
-    suggest = elemFactory(Suggest),
+    dialog = elemFactory(Dialog),
     icon = elemFactory(Icon),
-    popover = elemFactory(Popover),
-    menuItem = elemFactory(MenuItem),
-    tabs = elemFactory(Tabs),
-    tab = elemFactory(Tab),
-    overlay = elemFactory(Overlay),
-    spinner = elemFactory(Spinner),
     inputGroup = elemFactory(InputGroup),
     label = elemFactory(Label),
-    dialog = elemFactory(Dialog);
+    menuItem = elemFactory(MenuItem),
+    numberInput = elemFactory(NumberInput),
+    popover = elemFactory(Popover),
+    overlay = elemFactory(Overlay),
+    select = elemFactory(Select),
+    spinner = elemFactory(Spinner),
+    suggest = elemFactory(Suggest),
+    tab = elemFactory(Tab),
+    tabs = elemFactory(Tabs);
