@@ -221,7 +221,8 @@ export class RestFormBlueprint extends Component {
         });
     }
 
-    onTextInputChange = (e, arg2, arg3) => {
+    // for some reason inputGroups, numberInputs, and select/suggest change events all get different args passed
+    onTextInputChange = (e) => {
         // temporary logic until we find a better way of getting this field
         const {setFormValue, formRecord} = this.model,
             className = e.target.offsetParent.className,
