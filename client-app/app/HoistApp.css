@@ -1,3 +1,9 @@
+body ::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 10px;
+    height: 10px;
+}
+
 .pt-tabs.pt-vertical {
     display: flex;
     flex-direction: row;

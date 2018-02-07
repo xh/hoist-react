@@ -8,6 +8,7 @@
 import {Component} from 'react';
 import {capitalize} from 'lodash';
 import {elemFactory} from 'hoist';
+import {capitalize} from 'lodash';
 import {vbox} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
 import {

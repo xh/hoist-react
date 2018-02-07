@@ -26,7 +26,7 @@ export class RestGridModel {
     gridModel = null;
     recordSpec = null;
     editors = [];
-    
+
     _lookupsLoaded = false;
 
     // If not null, this will be displayed in (modal) dialog.
