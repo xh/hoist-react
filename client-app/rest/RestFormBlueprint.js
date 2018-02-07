@@ -137,7 +137,7 @@ export class RestFormBlueprint extends Component {
 
         return suggest({
             className: 'rest-form-dropdown-blueprint',
-            popoverProps: {popoverClassName: Classes.MINIMAL, 'data-field': field, field: field},
+            popoverProps: {popoverClassName: Classes.MINIMAL},
             itemListPredicate: itemListPredicate,
             itemPredicate: (q, v, index) => !v || v.includes(q),
             style: {marginBottom: 5},
@@ -159,6 +159,7 @@ export class RestFormBlueprint extends Component {
 
         return select({
             className: 'rest-form-dropdown-blueprint',
+            class: 'pt-fill',
             popoverProps: {popoverClassName: Classes.MINIMAL},
             filterable: false,
             $items: ['true', 'false'],
@@ -198,7 +199,6 @@ export class RestFormBlueprint extends Component {
             defaultValue: currentVal || '',
             onChange: this.onTextInputChange,
             disabled: isDisabled,
-            field: field,
             model: this.model
         });
     }
