@@ -48,24 +48,34 @@ export class RestFormBlueprint extends Component {
         const {editors, recordSpec, formRecord} = this.model,
             fields = recordSpec.fields,
             valueType = formRecord.valueType,
-            ret = [];
+            items = [];
 
         editors.forEach(editor => {
             const fieldSpec = fields.find(it => it.name === editor.field);
-
-            ret.push(this.createFieldLabel(fieldSpec));
-
             if (fieldSpec.typeField) fieldSpec.type = valueType;
-            if (fieldSpec.lookupValues) {
-                ret.push(this.createDropdown(fieldSpec, editor));
-            } else if (fieldSpec.type === 'bool' || fieldSpec.type === 'boolean') {
-                ret.push(this.createBooleanDropdown(fieldSpec));
-            } else if (fieldSpec.type === 'int') {
-                ret.push(this.createNumberInput(fieldSpec, editor));
-            } else if (editor.type === 'textarea' || fieldSpec.type === 'json') {
-                ret.push(this.createTextAreaInput(fieldSpec, editor));
-            } else {
-                ret.push(this.createTextInput(fieldSpec, editor));
+
+            const inputConfig = this.getInputConfig(fieldSpec, editor, formRecord),
+                inputType = this.getInputType(fieldSpec, editor);
+
+            items.push(this.createFieldLabel(fieldSpec));
+            switch (inputType) {
+                case 'dropdown':
+                    items.push(this.createDropdown(inputConfig));
+                    break;
+                case 'boolean':
+                    items.push(this.createBooleanDropdown(inputConfig));
+                    break;
+                case 'number':
+                    items.push(this.createNumberInput(inputConfig));
+                    break;
+                case 'textarea':
+                    items.push(this.createTextAreaInput(inputConfig));
+                    break;
+                case 'text':
+                    items.push(this.createTextInput(inputConfig));
+                    break;
+                default:
+                    items.push(this.createTextInput(inputConfig));
             }
         });
 
@@ -73,7 +83,7 @@ export class RestFormBlueprint extends Component {
             cls: 'rest-form',
             width: 400,
             padding: 10,
-            items: ret
+            items
         });
     }
 
@@ -123,15 +133,12 @@ export class RestFormBlueprint extends Component {
         return label({text: text, style: {width: '115px', paddingBottom: 5}});
     }
 
-    createDropdown(fieldSpec, editor) {
-        const {formRecord} = this.model,
-            field = fieldSpec.name,
-            options = fieldSpec.lookupValues,
-            defaultValue = formRecord[field],
-            isDisabled = fieldSpec.readOnly || (editor.additionsOnly && !this.model.formIsAdd);
+    // need a icon, not obviously a dropdown in GUI
+    createDropdown(config) {
+        const options = config.fieldSpec.lookupValues;
 
         // 'hack' to allow additions(not built in), overrides itemPredicate
-        const itemListPredicate = editor.allowAdditions ? (q, v, index) => {
+        const itemListPredicate = config.editor.allowAdditions ? (q, v, index) => {
             if (q && !v.includes(q)) v.push(q);
             const ret = v.filter(it => it.includes(q));
             return q ? ret : v;
@@ -146,19 +153,16 @@ export class RestFormBlueprint extends Component {
             $items: options,
             onItemSelect: this.onDropDownChange,
             itemRenderer: ({handleClick, isActive, item}) => {
-                return menuItem({key: item, onClick: handleClick, text: item, className: `xhField-${field}`, disabled: isDisabled});
+                return menuItem({key: item, onClick: handleClick, text: item, className: `xhField-${config.field}`, disabled: config.isDisabled});
             },
             inputValueRenderer: s => s,
-            inputProps: {defaultValue: defaultValue, value: undefined}, // console warning dictated this undefined if I want to use default val, need to somehow set on visible component
-            disabled: isDisabled
+            inputProps: {defaultValue: config.defaultValue, value: undefined}, // console warning dictated this undefined if I want to use default val, need to somehow set on visible component
+            disabled: config.isDisabled  // must disable both the field and the menu items
         });
     }
 
-    createBooleanDropdown(fieldSpec) {
-        const {formRecord} = this.model,
-            field = fieldSpec.name,
-            currentVal = formRecord[field],
-            isDisabled = fieldSpec.readOnly;
+    createBooleanDropdown(config) {
+        const currentText = config.defaultValue.toString();
 
         return select({
             className: 'rest-form-dropdown-blueprint',
@@ -166,60 +170,42 @@ export class RestFormBlueprint extends Component {
             popoverProps: {popoverClassName: Classes.MINIMAL},
             filterable: false,
             $items: ['true', 'false'],
-            items: button({text: currentVal ? currentVal.toString() : '', rightIconName: 'caret-down', style: {marginBottom: 5}}),
+            items: button({text: currentText, rightIconName: 'caret-down', style: {marginBottom: 5}}),
             onItemSelect: this.onBoolChange,
             itemRenderer: ({handleClick, isActive, item}) => {
-                return menuItem({key: item, onClick: handleClick, text: item, className: `xhField-${field}`, disabled: isDisabled});
+                return menuItem({key: item, onClick: handleClick, text: item, className: `xhField-${config.field}`, disabled: config.isDisabled});
             },
-            disabled: isDisabled
+            disabled: config.isDisabled // must disable both the field and the menu items
         });
     }
 
-    createNumberInput(fieldSpec, editor) {
-        const {formRecord} = this.model,
-            field = fieldSpec.name,
-            renderer = editor.renderer,
-            currentVal = renderer ? renderer(formRecord[field]) : formRecord[field],
-            isDisabled = fieldSpec.readOnly;
-
+    createNumberInput(config) {
         return numericInput({
             style: {marginBottom: 5},
-            value: currentVal || '',
+            value: config.defaultValue,
             onValueChange: (number, numberAsString) => console.log(number, numberAsString), // no event passed from which to attach/grab the field
-            disabled: isDisabled
+            disabled: config.isDisabled
         });
     }
 
-    createTextAreaInput(fieldSpec, editor) {
-        const {formRecord} = this.model,
-            field = fieldSpec.name,
-            renderer = editor.renderer,
-            currentVal = renderer ? renderer(formRecord[field]) : formRecord[field],
-            isDisabled = fieldSpec.readOnly;
-
+    createTextAreaInput(config) {
         return textArea({
             style: {marginBottom: 5},
-            defaultValue: currentVal || '',
+            defaultValue: config.defaultValue,
             onChange: this.onTextInputChange,
-            disabled: isDisabled,
+            disabled: config.isDisabled,
             model: this.model
         });
     }
 
-    createTextInput(fieldSpec, editor) {
-        const {formRecord} = this.model,
-            field = fieldSpec.name,
-            renderer = editor.renderer,
-            currentVal = renderer ? renderer(formRecord[field]) : formRecord[field],
-            isDisabled = fieldSpec.readOnly;
-
+    createTextInput(config) {
         return inputGroup({
-            defaultValue: currentVal || '',
-            className: `xhField-${field}`,
+            defaultValue: config.defaultValue,
+            className: `xhField-${config.field}`,
             onChange: this.onTextInputChange,
-            type: editor.type || 'text',
+            type: config.editor.type || 'text',
             style: {marginBottom: 5},
-            disabled: isDisabled
+            disabled: config.isDisabled
         });
     }
 
@@ -255,6 +241,28 @@ export class RestFormBlueprint extends Component {
         console.log('boolChange');
 
         setFormValue(field, value === 'true');
+    }
+
+    getInputConfig(fieldSpec, editor, formRecord) {
+        const renderer = editor.renderer,
+            currentValue = formRecord[fieldSpec.name],
+            defaultValue = renderer ? renderer(currentValue) : currentValue,
+            isDisabled = fieldSpec.readOnly || (editor.additionsOnly && !this.model.formIsAdd);
+        return {
+            editor: editor,
+            fieldSpec: fieldSpec,
+            field: fieldSpec.name,
+            defaultValue: defaultValue,
+            isDisabled: isDisabled
+        };
+    }
+
+    getInputType(fieldSpec, editor) {
+        if (fieldSpec.lookupValues) return 'dropdown';
+        if (fieldSpec.type === 'bool' || fieldSpec.type === 'boolean') return 'boolean';
+        if (fieldSpec.type === 'int') return 'number';
+        if (editor.type === 'textarea' || fieldSpec.type === 'json') return 'textarea';
+        return 'text';
     }
 }
 export const restFormBlueprint = elemFactory(RestFormBlueprint);

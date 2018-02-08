@@ -51,31 +51,41 @@ export class RestFormSemantic extends Component {
         const {editors, recordSpec, formRecord} = this.model,
             fields = recordSpec.fields,
             valueType = formRecord.valueType,
-            ret = [];
+            items = [];
 
         editors.forEach(editor => {
             const fieldSpec = fields.find(it => it.name === editor.field);
-
-            ret.push(this.createFieldLabel(fieldSpec));
-
             if (fieldSpec.typeField) fieldSpec.type = valueType;
-            if (fieldSpec.lookupValues) {
-                ret.push(this.createDropdown(fieldSpec, editor));
-            } else if (fieldSpec.type === 'bool' || fieldSpec.type === 'boolean') {
-                ret.push(this.createBooleanDropdown(fieldSpec));
-            } else if (fieldSpec.type === 'int') {
-                ret.push(this.createNumberInput(fieldSpec, editor));
-            } else if (editor.type === 'textarea' || fieldSpec.type === 'json') {
-                ret.push(this.createTextAreaInput(fieldSpec, editor));
-            } else {
-                ret.push(this.createTextInput(fieldSpec, editor));
+
+            const inputConfig = this.getInputConfig(fieldSpec, editor, formRecord),
+                inputType = this.getInputType(fieldSpec, editor);
+
+            items.push(this.createFieldLabel(fieldSpec));
+            switch (inputType) {
+                case 'dropdown':
+                    items.push(this.createDropdown(inputConfig));
+                    break;
+                case 'boolean':
+                    items.push(this.createBooleanDropdown(inputConfig));
+                    break;
+                case 'number':
+                    items.push(this.createNumberInput(inputConfig));
+                    break;
+                case 'textarea':
+                    items.push(this.createTextAreaInput(inputConfig));
+                    break;
+                case 'text':
+                    items.push(this.createTextInput(inputConfig));
+                    break;
+                default:
+                    items.push(this.createTextInput(inputConfig));
             }
         });
 
         return vbox({
             cls: 'rest-form',
             padding: 10,
-            items: ret
+            items
         });
     }
 
@@ -118,102 +128,76 @@ export class RestFormSemantic extends Component {
         return label({content: content, style: {width: '115px', textAlign: 'center', paddingBottom: 5}});
     }
 
-    createDropdown(fieldSpec, editor) {
-        const {formRecord} = this.model,
-            field = fieldSpec.name,
-            options = fieldSpec.lookupValues.map(v => {
+    createDropdown(config) {
+        const options = config.fieldSpec.lookupValues.map(v => {
                 return {text: v, value: v, key: v};
             }),
-            defaultValue = formRecord[field],
-            allowAdditions = editor.allowAdditions,
-            isDisabled = fieldSpec.readOnly || (editor.additionsOnly && !this.model.formIsAdd);
+            allowAdditions = config.editor.allowAdditions;
 
         return dropdown({
             className: 'rest-form-dropdown',
             style: {marginBottom: 5},
             fluid: true,
             options: options,
-            defaultValue: defaultValue,
-            onChange: this.onInputChange, // gets all props on item, makes handler simpler than in blueprint
+            defaultValue: config.defaultValue,
             allowAdditions: allowAdditions, // much simpler in here in semantic, see note in blueprint
+            onChange: this.onInputChange, // gets all props on item, makes handler simpler than in blueprint
             onAddItem: this.onAddItemToDropDown,
             search: true,
             selection: true,
-            disabled: isDisabled,
-            field: field,
+            disabled: config.isDisabled,
+            field: config.field,
             model: this.model
         });
     }
 
-    createBooleanDropdown(fieldSpec) {
-        const {formRecord} = this.model,
-            field = fieldSpec.name,
-            options = [{text: 'True', value: 'true', key: 'True'}, {text: 'False', value: 'false', key: 'False'}],
-            defaultValue = formRecord[field],
-            isDisabled = fieldSpec.readOnly;
+    createBooleanDropdown(config) {
+        const options = [{text: 'True', value: 'true', key: 'True'}, {text: 'False', value: 'false', key: 'False'}];
 
         return dropdown({
             className: 'rest-form-dropdown',
             style: {marginBottom: 5},
             fluid: true,
             options: options,
-            defaultValue: defaultValue != null ? defaultValue.toString() : '',
+            defaultValue: config.defaultValue != null ? config.defaultValue.toString() : '',
             onChange: this.onBoolChange,
-            disabled: isDisabled,
-            field: field,
+            disabled: config.isDisabled,
+            field: config.field,
             model: this.model
         });
     }
 
-    createNumberInput(fieldSpec, editor) {
-        const {formRecord} = this.model,
-            field = fieldSpec.name,
-            renderer = editor.renderer,
-            currentVal = renderer ? renderer(formRecord[field]) : formRecord[field],
-            isDisabled = fieldSpec.readOnly;
-
+    createNumberInput(config) {
         return input({
             style: {marginBottom: 5},
-            defaultValue: currentVal || '',
+            defaultValue: config.defaultValue || '',
             onChange: this.onInputChange,
             type: 'number',
-            disabled: isDisabled,
-            field: field,
+            disabled: config.isDisabled,
+            field: config.field,
             model: this.model
         });
     }
 
-    createTextAreaInput(fieldSpec, editor) {
-        const {formRecord} = this.model,
-            field = fieldSpec.name,
-            renderer = editor.renderer,
-            currentVal = renderer ? renderer(formRecord[field]) : formRecord[field],
-            isDisabled = fieldSpec.readOnly;
-
+    createTextAreaInput(config) {
         return textArea({
             style: {marginBottom: 5},
-            defaultValue: currentVal || '',
+            defaultValue: config.defaultValue || '',
             onChange: this.onInputChange,
-            disabled: isDisabled,
-            field: field,
+            disabled: config.isDisabled,
+            field: config.field,
             model: this.model
         });
     }
 
-    createTextInput(fieldSpec, editor) {
-        const {formRecord} = this.model,
-            field = fieldSpec.name,
-            renderer = editor.renderer,
-            currentVal = renderer ? renderer(formRecord[field]) : formRecord[field],
-            isDisabled = fieldSpec.readOnly;
-
+    createTextInput(config) {
         return input({
             style: {marginBottom: 5},
-            defaultValue: currentVal || '',
+            defaultValue: config.defaultValue || '',
             onChange: this.onInputChange,
             type: 'text',
-            disabled: isDisabled,
-            field: field,
+            disabled: config.isDisabled,
+            field: config.field,
             model: this.model
         });
     }
@@ -236,6 +220,28 @@ export class RestFormSemantic extends Component {
             value = data.value;
 
         setFormValue(field, value === 'true');
+    }
+
+    getInputConfig(fieldSpec, editor, formRecord) {
+        const renderer = editor.renderer,
+            currentValue = formRecord[fieldSpec.name],
+            defaultValue = renderer ? renderer(currentValue) : currentValue,
+            isDisabled = fieldSpec.readOnly || (editor.additionsOnly && !this.model.formIsAdd);
+        return {
+            editor: editor,
+            fieldSpec: fieldSpec,
+            field: fieldSpec.name,
+            defaultValue: defaultValue,
+            isDisabled: isDisabled
+        };
+    }
+
+    getInputType(fieldSpec, editor) {
+        if (fieldSpec.lookupValues) return 'dropdown';
+        if (fieldSpec.type === 'bool' || fieldSpec.type === 'boolean') return 'boolean';
+        if (fieldSpec.type === 'int') return 'number';
+        if (editor.type === 'textarea' || fieldSpec.type === 'json') return 'textarea';
+        return 'text';
     }
 }
 export const restFormSemantic = elemFactory(RestFormSemantic);
