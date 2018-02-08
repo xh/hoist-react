@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {elemFactory} from 'hoist';
 import {vbox, div, filler} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
-import {Classes, button, dialog, inputGroup, label, menuItem, numericInput, select, suggest, textArea} from 'hoist/kit/blueprint';
+import {Classes, button, dialog, icon, inputGroup, label, menuItem, numericInput, select, suggest, textArea} from 'hoist/kit/blueprint';
 
 @observer
 export class RestFormBlueprint extends Component {
@@ -153,7 +153,12 @@ export class RestFormBlueprint extends Component {
                 return menuItem({key: item, onClick: handleClick, text: item});
             },
             inputValueRenderer: s => s,
-            inputProps: {defaultValue: config.defaultValue, value: undefined, disabled: config.isDisabled} // console warning dictated this undefined if I want to use default val, need to somehow set on visible component
+            inputProps: {
+                defaultValue: config.defaultValue,
+                value: undefined, // console warning dictated this undefined if I want to use default val, need to somehow set on visible component
+                rightElement: icon({iconName: 'pt-icon-caret-down'}),
+                disabled: config.isDisabled
+            }
         });
     }
 
