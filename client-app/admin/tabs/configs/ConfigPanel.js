@@ -23,7 +23,7 @@ export class ConfigPanel extends Component {
                 {name: 'name', label: 'Name', allowNull: false},
                 {name: 'groupName', label: 'Group', lookup: 'groupNames', allowNull: false},
                 {name: 'valueType', label: 'Type', lookup: 'valueTypes', allowNull: false},
-                {name: 'prodValue', label: 'Prod Value', allowNull: false, typeField: 'valueType', env: 'Production'}, // typeField not implemented yet, relevant for editing(to create correct form field) or validating input type
+                {name: 'prodValue', label: 'Prod Value', allowNull: false, typeField: 'valueType', env: 'Production'},
                 {name: 'betaValue', label: 'Beta Value', allowNull: true, typeField: 'valueType', env: 'Beta'},
                 {name: 'stageValue', label: 'Stage Value', allowNull: true, typeField: 'valueType', env: 'Staging'},
                 {name: 'devValue', label: 'Dev Value', allowNull: true, typeField: 'valueType', env: 'Development'},
