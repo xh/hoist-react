@@ -138,12 +138,8 @@ export class RestFormBlueprint extends Component {
         const options = config.fieldSpec.lookupValues,
             handler = this[config.field + 'Handler'] || this.createHandler(config.field, 'onValueChange');
 
-        // 'hack' to allow additions(not built in), overrides itemPredicate
-        const itemListPredicate = config.editor.allowAdditions ? (q, v, index) => {
-            if (q && !v.includes(q)) v.push(q);
-            const ret = v.filter(it => it.includes(q));
-            return q ? ret : v;
-        } : null;
+        // 'hack' to allow additions(not built in), overrides itemPredicate, see note above handleAdditions function
+        const itemListPredicate = config.editor.allowAdditions ? this.handleAdditions : null;
 
         return suggest({
             className: 'rest-form-dropdown-blueprint',
@@ -211,6 +207,13 @@ export class RestFormBlueprint extends Component {
             style: {marginBottom: 5},
             disabled: config.isDisabled
         });
+    }
+
+    //  one problem is this fires on each keystroke, makes for a funky list of choices, ie: n, ne, new
+    handleAdditions(query, list, index) {
+        if (query && !list.includes(query)) list.push(query);
+        const ret = list.filter(it => it.includes(query));
+        return query ? ret : list;
     }
 
     onValueChange = (value, field) => {
