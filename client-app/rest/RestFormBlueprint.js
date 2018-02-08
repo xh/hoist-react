@@ -154,7 +154,8 @@ export class RestFormBlueprint extends Component {
             inputValueRenderer: s => s,
             inputProps: {
                 defaultValue: config.defaultValue,
-                value: undefined, // console warning dictated this undefined if I want to use default val, need to somehow set on visible component
+                // TODO need to somehow set current value on visible component
+                value: undefined, // console warning dictated this undefined if I want to use default val
                 rightElement: icon({iconName: 'pt-icon-caret-down'}),
                 disabled: config.isDisabled
             }
