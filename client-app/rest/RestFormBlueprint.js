@@ -133,7 +133,6 @@ export class RestFormBlueprint extends Component {
         return label({text: text, style: {width: '115px', paddingBottom: 5}});
     }
 
-    // need a icon, not obviously a dropdown in GUI
     createDropdown(config) {
         const options = config.fieldSpec.lookupValues,
             handler = this[config.field + 'Handler'] || this.createHandler(config.field, 'onValueChange');
