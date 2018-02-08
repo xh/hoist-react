@@ -135,7 +135,8 @@ export class RestFormBlueprint extends Component {
 
     // need a icon, not obviously a dropdown in GUI
     createDropdown(config) {
-        const options = config.fieldSpec.lookupValues;
+        const options = config.fieldSpec.lookupValues,
+            handler = this[config.field + 'Handler'] || this.createHandler(config.field, 'onValueChange');
 
         // 'hack' to allow additions(not built in), overrides itemPredicate
         const itemListPredicate = config.editor.allowAdditions ? (q, v, index) => {
@@ -151,18 +152,18 @@ export class RestFormBlueprint extends Component {
             itemPredicate: (q, v, index) => !v || v.includes(q),
             style: {marginBottom: 5},
             $items: options,
-            onItemSelect: this.onDropDownChange,
+            onItemSelect: handler,
             itemRenderer: ({handleClick, isActive, item}) => {
-                return menuItem({key: item, onClick: handleClick, text: item, className: `xhField-${config.field}`, disabled: config.isDisabled});
+                return menuItem({key: item, onClick: handleClick, text: item});
             },
             inputValueRenderer: s => s,
-            inputProps: {defaultValue: config.defaultValue, value: undefined}, // console warning dictated this undefined if I want to use default val, need to somehow set on visible component
-            disabled: config.isDisabled  // must disable both the field and the menu items
+            inputProps: {defaultValue: config.defaultValue, value: undefined, disabled: config.isDisabled} // console warning dictated this undefined if I want to use default val, need to somehow set on visible component
         });
     }
 
     createBooleanDropdown(config) {
-        const currentText = config.defaultValue.toString();
+        const currentText = config.defaultValue.toString(),
+            handler = this[config.field + 'Handler'] || this.createHandler(config.field, 'onBoolChange');
 
         return select({
             className: 'rest-form-dropdown-blueprint',
@@ -171,75 +172,54 @@ export class RestFormBlueprint extends Component {
             filterable: false,
             $items: ['true', 'false'],
             items: button({text: currentText, rightIconName: 'caret-down', style: {marginBottom: 5}}),
-            onItemSelect: this.onBoolChange,
+            onItemSelect: handler,
             itemRenderer: ({handleClick, isActive, item}) => {
-                return menuItem({key: item, onClick: handleClick, text: item, className: `xhField-${config.field}`, disabled: config.isDisabled});
+                return menuItem({key: item, onClick: handleClick, text: item});
             },
-            disabled: config.isDisabled // must disable both the field and the menu items
+            disabled: config.isDisabled
         });
     }
 
     createNumberInput(config) {
+        const handler = this[config.field + 'Handler'] || this.createHandler(config.field, 'onValueChange');
         return numericInput({
             style: {marginBottom: 5},
             value: config.defaultValue,
-            onValueChange: (number, numberAsString) => console.log(number, numberAsString), // no event passed from which to attach/grab the field
+            onValueChange: handler,
             disabled: config.isDisabled
         });
     }
 
     createTextAreaInput(config) {
+        const handler = this[config.field + 'Handler'] || this.createHandler(config.field, 'onValueChange');
         return textArea({
             style: {marginBottom: 5},
             defaultValue: config.defaultValue,
-            onChange: this.onTextInputChange,
+            onChange: handler,
             disabled: config.isDisabled,
             model: this.model
         });
     }
 
     createTextInput(config) {
+        const handler = this[config.field + 'Handler'] || this.createHandler(config.field, 'onValueChange');
         return inputGroup({
             defaultValue: config.defaultValue,
             className: `xhField-${config.field}`,
-            onChange: this.onTextInputChange,
-            type: config.editor.type || 'text',
+            onChange: handler,
+            type: 'text',
             style: {marginBottom: 5},
             disabled: config.isDisabled
         });
     }
 
-    // for some reason inputGroups, numberInputs, and select/suggest change events all get different args passed
-    onTextInputChange = (e) => {
-        // temporary logic until we find a better way of getting this field
-        const {setFormValue} = this.model,
-            className = e.target.offsetParent.className,
-            fieldIndex = className.indexOf('xhField'),
-            field = className.substring(fieldIndex + 8, className.length),
-            value = e.target.value;
-
+    onValueChange = (value, field) => {
+        const {setFormValue} = this.model;
         setFormValue(field, value);
     }
 
-    onDropDownChange = (value, e) => {
-        // temporary logic until we find a better way of getting this field
-        const {setFormValue} = this.model,
-            className = e.target.className,
-            fieldIndex = className.indexOf('xhField'),
-            field = className.substring(fieldIndex + 8, className.length);
-
-        setFormValue(field, value);
-    }
-
-    onBoolChange = (value, e) => {
-        // temporary logic until we find a better way of getting this field
-        const {setFormValue} = this.model,
-            className = e.target.className,
-            fieldIndex = className.indexOf('xhField'),
-            field = className.substring(fieldIndex + 8, className.length);
-        
-        console.log('boolChange');
-
+    onBoolChange = (value, field) => {
+        const {setFormValue} = this.model;
         setFormValue(field, value === 'true');
     }
 
@@ -248,6 +228,7 @@ export class RestFormBlueprint extends Component {
             currentValue = formRecord[fieldSpec.name],
             defaultValue = renderer ? renderer(currentValue) : currentValue,
             isDisabled = fieldSpec.readOnly || (editor.additionsOnly && !this.model.formIsAdd);
+
         return {
             editor: editor,
             fieldSpec: fieldSpec,
@@ -263,6 +244,15 @@ export class RestFormBlueprint extends Component {
         if (fieldSpec.type === 'int') return 'number';
         if (editor.type === 'textarea' || fieldSpec.type === 'json') return 'textarea';
         return 'text';
+    }
+
+    createHandler(field, handlerName) {
+        const handler = (valOrEvent) => {
+            const val = (typeof valOrEvent === 'object') ? valOrEvent.target.value : valOrEvent;
+            this[handlerName](val, field);
+        };
+        this[field + 'Handler'] = handler;
+        return handler;
     }
 }
 export const restFormBlueprint = elemFactory(RestFormBlueprint);
