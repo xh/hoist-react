@@ -5,10 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {BaseService} from './BaseService';
-import {debounce} from 'lodash';
+import {debounce, isEmpty} from 'lodash';
 import {XH} from 'hoist';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
-import {deepClone} from 'hoist/utils/JsUtils';
+import {deepEquals, deepClone} from '../utils/JsUtils';
 
 export class PrefService extends BaseService {
 
@@ -28,46 +28,48 @@ export class PrefService extends BaseService {
 
     get(key, defaultValue) {
         const data = this._data;
+        let ret = defaultValue;
+
         if (data.hasOwnProperty(key)) {
-            return deepClone(data[key]);
+            ret = data[key].value;
         }
-        if (defaultValue === undefined) {
-            throw XH.exception(`Preference key not found: '${key}'`);
-        }
-        return defaultValue;
+
+        if (ret === undefined) throw XH.exception(`Preference key not found: '${key}'`);
+
+        return deepClone(ret);
     }
 
     set(key, value) {
-        this.ensurePreferenceExists(key);
-
-        if (value === undefined) throw XH.exception('Value is not defined');
-        if (this._data[key] === value) return;
+        this.validateBeforeSet(key, value);
 
         const oldVal = this.get(key);
-        this._data[key] = value;
-        this._updates[key] = value;
+        if (deepEquals(oldVal, value)) return;
 
-        this.pushPendingBuffered();
+        this._data[key].value = value;
+
+        if (this.isLocalPreference(key)) {
+            // handle local
+        } else {
+            this._updates[key] = value;
+            this.pushPendingBuffered();
+        }
         this.fireEvent('prefChange', key, value, oldVal);
     }
 
     async pushAsync(key, value) {
-        this.ensurePreferenceExists(key);
-
-        if (value === undefined) throw XH.exception('Value is not defined');
-        if (this._data[key] === value) return;
-
+        this.validateBeforeSet(key);
         this.set(key, value);
         return this.pushPendingAsync();
     }
 
     async clearAllAsync() {
+        // handle local
         await XH.fetchJson({url: 'hoistImpl/clearPrefs'});
         return this.loadPrefsAsync();
     }
 
     async pushPendingAsync() {
-        if (Object.keys(this._updates) < 1) {
+        if (Object.keys(this._updates).length < 1) {
             return;
         }
 
@@ -85,11 +87,80 @@ export class PrefService extends BaseService {
     //-------------------
     async loadPrefsAsync() {
         this._data = await XH.fetchJson({url: 'hoistImpl/getPrefs'});
+        this.syncLocalPrefs();
     }
 
-    ensurePreferenceExists(key) {
-        if (!this._data.hasOwnProperty(key)) {
-            throw XH.exception(`Preference not found: '${key}'`);
+    syncLocalPrefs() {
+        const localPrefs = null, // get localPrefs
+            data = this._data;
+
+        this.cleanLocalPrefs(localPrefs);
+
+        for (let key in data) {
+            if (data[key].local) {
+                data[key].value = !isEmpty(localPrefs[key]) ? localPrefs[key] : data[key].defaultValue;
+            }
+        }
+    }
+
+    cleanLocalPrefs(localPrefs) {
+        const data = this._data;
+
+        for (let pref in localPrefs) {
+            if (!data.hasOwnProperty(pref)) this.removeLocalValue(pref);
+        }
+    }
+
+    removeLocalValue(key) {
+        const hasRemoveValue = this._data.hasOwnProperty(key);
+        if (hasRemoveValue && !this.isLocalPreference(key)) throw XH.exception(`${key} is not a local preference.`);
+
+        const localPrefs = null; // get local preferences
+
+        delete localPrefs[key];
+
+        if (hasRemoveValue) this._data[key].value = this._data[key].defaultValue;
+
+        // set local value
+    }
+
+    isLocalPreference(key) {
+        const pref = this._data[key];
+        return pref && pref.local;
+    }
+
+    validateBeforeSet(key, value) {
+        const pref = this._data[key];
+
+        if (!pref) {
+            throw XH.exception(`Cannot set preference ${key}: not found`);
+        }
+
+        if (value === undefined) {
+            throw XH.exception(`Cannot set preference ${key}: value not defined`);
+        }
+
+        if (!this.valueIsOfType(value, pref.type)) {
+            throw XH.exception(`Cannot set preference ${key}: must be of type ${pref.type}`);
+        }
+    }
+
+    valueIsOfType(value, type) {
+        const valueType = typeof value;
+
+        switch (type) {
+            case 'string':
+                return valueType === 'string';
+            case 'int':
+            case 'long':
+            case 'double':
+                return valueType === 'number';
+            case 'bool':
+                return valueType === 'boolean';
+            case 'json':
+                return valueType === 'object';
+            default:
+                return false;
         }
     }
 }
