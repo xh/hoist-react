@@ -9,6 +9,7 @@ import {observer} from 'hoist/mobx';
 import {baseCol} from 'hoist/columns/Core';
 import {dateCol} from 'hoist/columns/DatesTimes';
 import {restGrid, RestGridModel} from 'hoist/rest';
+import {dateTimeRenderer} from '../../../format';
 
 import {usernameCol} from '../../columns/Columns';
 
@@ -36,7 +37,7 @@ export class DashboardPanel extends Component {
             {field: 'appCode'},
             {field: 'username'},
             {field: 'definition'},
-            {field: 'lastUpdated'}
+            {field: 'lastUpdated', renderer: dateTimeRenderer()}
         ]
     });
 
