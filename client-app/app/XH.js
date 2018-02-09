@@ -17,6 +17,7 @@ import {
     FeedbackService,
     FetchService,
     IdentityService,
+    LocalStorageService,
     PrefService,
     TrackService,
     EventService
@@ -33,6 +34,7 @@ export let
     feedbackService,
     fetchService,
     identityService,
+    localStorageService,
     prefService,
     trackService,
     eventService;
@@ -72,6 +74,7 @@ class _XH {
             errorTrackingService,
             feedbackService,
             identityService,
+            localStorageService,
             trackService,
             eventService
         );
@@ -93,6 +96,7 @@ class _XH {
         feedbackService = inject(FeedbackService);
         fetchService = inject(FetchService);
         identityService = inject(IdentityService);
+        localStorageService = inject(LocalStorageService);
         prefService = inject(PrefService);
         trackService = inject(TrackService);
         eventService = inject(EventService);

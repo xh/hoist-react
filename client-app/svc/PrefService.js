@@ -6,7 +6,7 @@
  */
 import {BaseService} from './BaseService';
 import {debounce, isEmpty} from 'lodash';
-import {XH} from 'hoist';
+import {XH, localStorageService} from 'hoist';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
 import {deepEquals, deepClone} from '../utils/JsUtils';
 
@@ -14,6 +14,7 @@ export class PrefService extends BaseService {
 
     _data = null;
     _updates = {};
+    _localStorageKey = 'localPrefs';
 
     constructor() {
         super();
@@ -48,7 +49,7 @@ export class PrefService extends BaseService {
         this._data[key].value = value;
 
         if (this.isLocalPreference(key)) {
-            // handle local
+            localStorageService.apply(this._localStorageKey, {[key]: value});
         } else {
             this._updates[key] = value;
             this.pushPendingBuffered();
@@ -62,8 +63,12 @@ export class PrefService extends BaseService {
         return this.pushPendingAsync();
     }
 
+    clearLocalValues() {
+        localStorageService.remove(this._localStorageKey);
+    }
+
     async clearAllAsync() {
-        // handle local
+        this.clearLocalValues();
         await XH.fetchJson({url: 'hoistImpl/clearPrefs'});
         return this.loadPrefsAsync();
     }
@@ -91,7 +96,7 @@ export class PrefService extends BaseService {
     }
 
     syncLocalPrefs() {
-        const localPrefs = null, // get localPrefs
+        const localPrefs = localStorageService.get(this._localStorageKey, {}),
             data = this._data;
 
         this.cleanLocalPrefs(localPrefs);
@@ -115,13 +120,13 @@ export class PrefService extends BaseService {
         const hasRemoveValue = this._data.hasOwnProperty(key);
         if (hasRemoveValue && !this.isLocalPreference(key)) throw XH.exception(`${key} is not a local preference.`);
 
-        const localPrefs = null; // get local preferences
+        const localPrefs = localStorageService.get(this._localStorageKey, {});
 
         delete localPrefs[key];
 
         if (hasRemoveValue) this._data[key].value = this._data[key].defaultValue;
 
-        // set local value
+        localStorageService.set(this._localStorageKey, localPrefs);
     }
 
     isLocalPreference(key) {
