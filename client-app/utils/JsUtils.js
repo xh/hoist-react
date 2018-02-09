@@ -4,18 +4,10 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {isArray, cloneDeep, isEqual} from 'lodash';
+import {isArray} from 'lodash';
 
 export function findByProperty(arr, property, value) {
     return arr.find(it => it[property] === value);
-}
-
-export function deepClone(a) {
-    return cloneDeep(a);
-}
-
-export function deepEquals(a, b) {
-    return isEqual(a, b);
 }
 
 export function shallowClone(a) {

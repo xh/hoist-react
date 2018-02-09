@@ -5,10 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {BaseService} from './BaseService';
-import {debounce, isEmpty} from 'lodash';
+import {cloneDeep, debounce, isEmpty, isEqual} from 'lodash';
 import {XH, localStorageService} from 'hoist';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
-import {deepEquals, deepClone} from '../utils/JsUtils';
 
 export class PrefService extends BaseService {
 
@@ -37,14 +36,14 @@ export class PrefService extends BaseService {
 
         if (ret === undefined) throw XH.exception(`Preference key not found: '${key}'`);
 
-        return deepClone(ret);
+        return cloneDeep(ret);
     }
 
     set(key, value) {
         this.validateBeforeSet(key, value);
 
         const oldVal = this.get(key);
-        if (deepEquals(oldVal, value)) return;
+        if (isEqual(oldVal, value)) return;
 
         this._data[key].value = value;
 
