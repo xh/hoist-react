@@ -10,6 +10,7 @@ import {baseCol, boolCheckCol} from 'hoist/columns/Core';
 import {restGrid, RestGridModel} from 'hoist/rest';
 
 import {nameFlexCol} from '../../columns/Columns';
+import {dateTimeRenderer} from '../../../format';
 
 
 @observer
@@ -54,7 +55,7 @@ export class MonitorEditorPanel extends Component {
             {field: 'notes', type: 'textarea'},
             {field: 'active'},
             {field: 'sortOrder'},
-            {field: 'lastUpdated'},
+            {field: 'lastUpdated', renderer: dateTimeRenderer()},
             {field: 'lastUpdatedBy'}
         ]
     });
