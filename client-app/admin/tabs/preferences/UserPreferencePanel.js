@@ -10,6 +10,7 @@ import {restGrid, RestGridModel} from 'hoist/rest';
 
 import {baseCol} from 'hoist/columns/Core';
 import {nameFlexCol, usernameCol} from '../../columns/Columns';
+import {dateTimeRenderer} from '../../../format';
 
 @observer
 export class UserPreferencePanel extends Component {
@@ -30,7 +31,7 @@ export class UserPreferencePanel extends Component {
                 {name: 'type', label: 'Type'},
                 {name: 'username', label: 'User'},
                 {name: 'userValue', typeField: 'type', label: 'User Value'},
-                {name: 'lastUpdated', type: 'date', dateFormat: 'time', label: 'Last Updated'},
+                {name: 'lastUpdated', type: 'date', label: 'Last Updated'},
                 {name: 'lastUpdatedBy', label: 'Last Updated By'}
             ]
         },
@@ -41,10 +42,10 @@ export class UserPreferencePanel extends Component {
             baseCol({field: 'userValue', flex: 1})
         ],
         editors: [
-            {field: 'name'},
+            {field: 'name', additionsOnly: true},
             {field: 'username'},
             {field: 'userValue'},
-            {field: 'lastUpdated'},
+            {field: 'lastUpdated', renderer: dateTimeRenderer()},
             {field: 'lastUpdatedBy'}
         ]
     });

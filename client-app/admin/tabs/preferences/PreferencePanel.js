@@ -10,6 +10,7 @@ import {boolCheckCol, baseCol} from 'hoist/columns/Core';
 import {restGrid, RestGridModel} from 'hoist/rest';
 
 import {nameFlexCol} from '../../columns/Columns';
+import {dateTimeRenderer} from '../../../format';
 
 @observer
 export class PreferencePanel extends Component {
@@ -21,7 +22,7 @@ export class PreferencePanel extends Component {
             fields: [
                 {name: 'name', label: 'Name'},
                 {name: 'type', label: 'Type', lookup: 'types'},
-                {name: 'defaultValue', label: 'Default Value'},
+                {name: 'defaultValue',  typeField: 'type', label: 'Default Value'},
                 {name: 'notes', label: 'Notes'},
                 {name: 'local', label: 'Local', type: 'bool'},
                 {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true},
@@ -37,11 +38,11 @@ export class PreferencePanel extends Component {
         ],
         editors: [
             {field: 'name'},
-            {field: 'type'},
+            {field: 'type', additionsOnly: true},
             {field: 'defaultValue'},
             {field: 'local'},
             {field: 'notes'},
-            {field: 'lastUpdated'},
+            {field: 'lastUpdated', renderer: dateTimeRenderer()},
             {field: 'lastUpdatedBy'}
         ]
     });
