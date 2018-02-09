@@ -66,6 +66,7 @@ export class RestGridModel {
         enableEdit = true,
         enableDelete = true,
         recordSpec,
+        editWarning,
         editors = [],
         dataRoot = 'data',
         ...rest
@@ -75,6 +76,7 @@ export class RestGridModel {
         this.enableDelete = enableDelete;
         this.editors = editors;
         this.recordSpec = recordSpec instanceof RecordSpec ? recordSpec : new RecordSpec(recordSpec);
+        this.editWarning = editWarning;
 
         this.gridModel = new GridModel({dataRoot, ...rest});
     }

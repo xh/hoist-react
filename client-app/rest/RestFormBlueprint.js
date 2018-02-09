@@ -8,11 +8,13 @@
 import {Component} from 'react';
 import {elemFactory} from 'hoist';
 import {vbox, div, filler} from 'hoist/layout';
-import {observer} from 'hoist/mobx';
+import {action, observer, observable} from 'hoist/mobx';
 import {Classes, button, dialog, icon, inputGroup, label, menuItem, numericInput, select, suggest, textArea} from 'hoist/kit/blueprint';
 
 @observer
 export class RestFormBlueprint extends Component {
+
+    @observable needConfirm = false;
 
     render() {
         const {formRecord, formIsAdd} = this.model;
@@ -23,19 +25,7 @@ export class RestFormBlueprint extends Component {
             isOpen: true,
             isCloseButtonShown: false,
             title: formIsAdd ? 'Add Record' : 'Edit Record',
-            items: [
-                div({
-                    cls: 'pt-dialog-body',
-                    item: this.getForm()
-                }),
-                div({
-                    cls: 'pt-dialog-footer',
-                    item: div({
-                        cls: 'pt-dialog-footer-actions',
-                        items: this.getButtons()
-                    })
-                })
-            ]
+            items: this.renderDialogItems()
         });
     }
 
@@ -43,6 +33,48 @@ export class RestFormBlueprint extends Component {
     // Implementation
     //--------------------------------
     get model() {return this.props.model}
+    get editWarning() {return this.props.model.editWarning}
+
+    renderDialogItems() {
+        const items = [
+            div({
+                cls: 'pt-dialog-body',
+                item: this.getForm()
+            }),
+            div({
+                cls: 'pt-dialog-footer',
+                item: div({
+                    cls: 'pt-dialog-footer-actions',
+                    items: this.getButtons()
+                })
+            })
+        ];
+
+        if (this.editWarning) {
+            items.push(
+                dialog({
+                    isOpen: this.needConfirm,
+                    isCloseButtonShown: false,
+                    title: 'Confirm',
+                    items: [
+                        div({
+                            cls: 'pt-dialog-body',
+                            item: this.editWarning
+                        }),
+                        div({
+                            cls: 'pt-dialog-footer',
+                            item: div({
+                                cls: 'pt-dialog-footer-actions',
+                                items: this.getConfirmButtons()
+                            })
+                        })
+                    ]
+                })
+            );
+        }
+
+        return items;
+    }
 
     getForm() {
         const {editors, recordSpec, formRecord} = this.model,
@@ -114,6 +146,20 @@ export class RestFormBlueprint extends Component {
         ];
     }
 
+    getConfirmButtons() {
+        return [
+            filler(),
+            button({
+                text: 'Yes',
+                onClick: this.doSave
+            }),
+            button({
+                text: 'No',
+                onClick: this.closeConfirm
+            }),
+            filler()
+        ];
+    }
     onClose = () => {
         this.model.closeForm();
     }
@@ -123,9 +169,25 @@ export class RestFormBlueprint extends Component {
         model.deleteRecord(model.formRecord);
     }
 
+    @action
     onSaveClick = () => {
+        if (this.editWarning) {
+            this.needConfirm = true;
+        } else {
+            this.doSave();
+        }
+    }
+
+    @action
+    doSave = () => {
         const model = this.model;
         model.saveFormRecord();
+        this.closeConfirm();
+    }
+
+    @action
+    closeConfirm = () => {
+        this.needConfirm = false;
     }
 
     createFieldLabel(fieldSpec) {
@@ -168,7 +230,6 @@ export class RestFormBlueprint extends Component {
 
         return select({
             className: 'rest-form-dropdown-blueprint',
-            class: 'pt-fill',
             popoverProps: {popoverClassName: Classes.MINIMAL},
             filterable: false,
             $items: ['true', 'false'],
