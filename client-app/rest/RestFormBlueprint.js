@@ -152,7 +152,7 @@ export class RestFormBlueprint extends Component {
                 return menuItem({key: item, onClick: handleClick, text: item});
             },
             inputValueRenderer: s => s,
-            inputProps: {
+            inputProps: { // TODO: still allowing additions without adding to the drop down.
                 defaultValue: config.defaultValue,
                 // TODO need to somehow set current value on visible component
                 value: undefined, // console warning dictated this undefined if I want to use default val
