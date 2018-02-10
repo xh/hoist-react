@@ -7,9 +7,9 @@
 
 import {Component} from 'react';
 import {elemFactory} from 'hoist';
-import {vbox, div} from 'hoist/layout';
+import {vbox} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
-import {inputGroup, button, label, dialog} from 'hoist/kit/blueprint';
+import {inputGroup, button, label, dialog, dialogBody, dialogFooter, dialogFooterActions} from 'hoist/kit/blueprint';
 
 @observer
 export class RestFormBlueprint extends Component {
@@ -19,22 +19,15 @@ export class RestFormBlueprint extends Component {
         if (!formRecord) return null;
 
         return dialog({
+            title: formIsAdd ? 'Add Record' : 'Edit Record',
             iconName: 'inbox',
             isOpen: true,
             onClose: this.onClose,
-            title: formIsAdd ? 'Add Record' : 'Edit Record',
             items: [
-                div({
-                    cls: 'pt-dialog-body',
-                    item: this.getForm()
-                }),
-                div({
-                    cls: 'pt-dialog-footer',
-                    item: div({
-                        cls: 'pt-dialog-footer-actions',
-                        items: this.getButtons()
-                    })
-                })
+                dialogBody(this.getForm()),
+                dialogFooter(
+                    dialogFooterActions(this.getButtons())
+                )
             ]
         });
     }

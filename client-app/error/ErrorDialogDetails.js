@@ -7,7 +7,8 @@
 
 import {Component} from 'react';
 import {elemFactory} from 'hoist';
-import {hoistButton, card, form, header, modal, modalActions, modalContent, textArea} from 'hoist/kit/semantic';
+import {textArea, button, dialog, dialogBody, dialogFooter, dialogFooterActions} from 'hoist/kit/blueprint';
+import {vbox, spacer, vframe} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
 import {stringifyErrorSafely} from 'hoist/exception';
 
@@ -20,47 +21,46 @@ export class ErrorDialogDetails extends Component {
 
         if (!detailsVisible || !exception) return null;
 
-        return modal({
-            open: true,
+        return dialog({
+            title: 'Error Details',
+            iconName: 'search',
+            isOpen: true,
+            onClose: this.onCloseClick,
             items: [
-                header({
-                    icon: 'search',
-                    content: 'Error Details'
-                }),
-                modalContent({
-                    items: [
-                        card({
-                            fluid: true,
-                            description: stringifyErrorSafely(exception)
+                dialogBody(
+                    vbox(
+                        vframe({
+                            padding: 5,
+                            style: {border: '1px solid'},
+                            item: stringifyErrorSafely(exception)
                         }),
-                        form(
-                            textArea({
-                                autoHeight: true,
-                                rows: 3,
-                                placeholder: 'Add message here...',
-                                value: model.msg,
-                                onChange: this.onMessageChange
-                            })
-                        )
-                    ]
-                }),
-                modalActions({
-                    style: {textAlign: 'right'},
-                    itemSpec: hoistButton,
-                    items: [{
-                        icon: 'envelope',
-                        content: 'Send',
-                        onClick: this.onSendClick
-                    }, {
-                        icon: 'clipboard',
-                        content: 'Copy',
-                        onClick: this.onCopyClick
-                    }, {
-                        icon: 'close',
-                        content: 'Close',
-                        onClick: this.onCloseClick
-                    }]
-                })
+                        spacer({height: 10}),
+                        textArea({
+                            rows: 12,
+                            placeholder: 'Add message here...',
+                            value: model.msg,
+                            onChange: this.onMessageChange
+                        })
+                    )
+                ),
+                dialogFooter(
+                    dialogFooterActions({
+                        itemSpec: button,
+                        items: [{
+                            iconName: 'envelope',
+                            text: 'Send',
+                            onClick: this.onSendClick
+                        }, {
+                            iconName: 'clipboard',
+                            text: 'Copy',
+                            onClick: this.onCopyClick
+                        }, {
+                            iconName: 'cross',
+                            text: 'Close',
+                            onClick: this.onCloseClick
+                        }]
+                    })
+                )
             ]
         });
     }
@@ -70,8 +70,8 @@ export class ErrorDialogDetails extends Component {
     //--------------------------------
     get model() {return this.props.model}
 
-    onMessageChange = (evt, data) => {
-        this.model.setMsg(data.value);
+    onMessageChange = (evt) => {
+        this.model.setMsg(evt.target.value);
     }
 
     onSendClick = () => {

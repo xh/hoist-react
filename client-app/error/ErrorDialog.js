@@ -7,7 +7,8 @@
 
 import {Component} from 'react';
 import {elemFactory, hoistAppModel} from 'hoist';
-import {hoistButton, header, modal, modalActions, modalContent} from 'hoist/kit/semantic';
+import {button, dialog, dialogBody, dialogFooter, dialogFooterActions} from 'hoist/kit/blueprint';
+
 import {observer} from 'hoist/mobx';
 import {errorDialogDetails} from './ErrorDialogDetails';
 
@@ -20,15 +21,15 @@ export class ErrorDialog extends Component {
 
         if (!exception) return null;
 
-        return modal({
-            open: true,
+        return dialog({
+            isOpen: true,
+            icoName: 'attention',
+            title: options.title,
             items: [
-                header({
-                    icon: 'attention',
-                    content: options.title
-                }),
-                modalContent(options.message),
-                modalActions(this.getButtons()),
+                dialogBody(options.message),
+                dialogFooter(
+                    dialogFooterActions(this.getButtons())
+                ),
                 errorDialogDetails({model})
             ]
         });
@@ -44,20 +45,20 @@ export class ErrorDialog extends Component {
             sessionExpired = this.sessionExpired();
 
         return [
-            hoistButton({
-                icon: 'search',
-                content: 'Show/Report Details',
+            button({
+                iconName: 'search',
+                text: 'Show/Report Details',
                 onClick: this.onShowDetailsClick,
                 omit: sessionExpired || !showAsError
             }),
-            hoistButton({
-                icon: 'refresh',
-                content: this.sessionExpired() ? 'Login' : 'Reload App',
-                omit: this.onReloadClick
+            button({
+                iconName: 'refresh',
+                text: this.sessionExpired() ? 'Login' : 'Reload App',
+                onClick: this.onReloadClick
             }),
-            hoistButton({
-                icon: 'close',
-                content: 'Close',
+            button({
+                iconName: 'cross',
+                text: 'Close',
                 onClick: this.onCloseClick
             })
         ];

@@ -25,7 +25,7 @@ import {appModel} from '../AppModel';
 @observer
 export class TabPane extends Component {
 
-    ref = new Ref();
+    child = new Ref();
 
     componentDidMount() {
         autorun(() => {
@@ -34,7 +34,7 @@ export class TabPane extends Component {
 
             if (isActive) {
                 model.setIsLazyMode(false);
-                const child = this.ref.value;
+                const child = this.child.value;
                 if (child && !isLoading) {
                     if (!lastLoaded || lastLoaded < appModel.lastRefreshRequest) {
                         this.loadChild(child);
@@ -53,7 +53,7 @@ export class TabPane extends Component {
                 display: model.isActive ? 'flex' : 'none',
                 position: 'relative',
                 margin: 4,
-                item: elem(model.componentClass, {...this.props, flex: 1, ref: this.ref.callback})
+                item: elem(model.componentClass, {...this.props, flex: 1, ref: this.child.ref})
             });
     }
 

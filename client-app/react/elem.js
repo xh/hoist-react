@@ -15,11 +15,9 @@ import {asArray} from 'hoist/utils/JsUtils';
  * to provide a well-formatted, declarative native javascript alternative to JSX.
  *
  * @param type, string representing html element, or React Component
- * @param args, additional arguments to populate the component.
+ * @param config, additional arguments to populate the component.
  *
- * args can take one of the following two forms:
- *
- * 1) a single config object with the following structure:
+ * config should be a single config object with the following structure:
  *      {
  *              cls: String, css classes for this element  (alias for React 'className')
  *
@@ -38,12 +36,6 @@ import {asArray} from 'hoist/utils/JsUtils';
  *               ...props:  other properties to apply to this element
  *        }
  *
- *  OR
- *
- *  2) an array, or series of arguments that are children objects to be directly passed to the new element.
- *  Equivalent to specifying {items: args} in [1].  Useful when no attributes need to be applied directly
- *  to the Element.
- *
  *  One important feature of this factory is that children with property 'omit' set to true will be skipped.
  *  This allows for conditional inclusion of elements in the virtual dom in a declarative style.
  *
@@ -51,10 +43,9 @@ import {asArray} from 'hoist/utils/JsUtils';
  *  with a $ prefix (e.g. '$items'). This method will recognize and pass the property appropriately.
  *
  */
-export function elem(type, ...args) {
+export function elem(type, config = {}) {
 
-    // 0) Normalize args into well-specified configs.
-    let {cls, item, items, itemSpec, omit, ...props} = normalizeArgs(args);
+    let {cls, item, items, itemSpec, omit, ...props} = config;
 
     // 1) Handle basic rename
     if (cls) props.className = cls;
@@ -80,7 +71,7 @@ export function elem(type, ...args) {
     items = items
         .filter(it => it != null)
         .map(it => {
-            if (it.$$typeof || isString(it)) {
+            if (isReactElement(it) || isString(it)) {
                 return it;
             } else {
                 const fct = it.factory || factory;
@@ -100,31 +91,52 @@ export function elem(type, ...args) {
 
 /**
  * Create a factory/function that can be used to create a React Element
- * using native javascript.
+ * using native javascript and elem().
  *
- * This is a 'curried' version of the raw elem() method.  See that method,
- * and the documentation for its rest arguments for details on how to call
- * the function returned by this method.
+ * This is a 'curried' version of the raw elem() method.   It adds the
+ * following two critical features:
+ *
+ * 1) Allows argumentt to be an array, or rest arguments that are children objects to be directly passed to the new element.
+ *  Equivalent to specifying {items: args}.  Useful when no attributes need to be applied directly
+ *  to the Element.
+ *
+ * 2) Allows the addition of fixed default props to be applied before passing
+ * to the element factory.
  *
  * @param C, React Component for which to create the element.
+ * @param defaultProps, (optional) defaults to be applied to the elem props.
  * @return {Function}
  */
-export function elemFactory(C) {
+export function elemFactory(C, defaultProps) {
     return function(...args) {
-        return elem(C, ...args);
+        args = normalizeArgs(args);
+        if (defaultProps) {
+            defaults(args, defaultProps);
+        }
+        return elem(C, args);
     };
 }
 
-//---------------------------------
+
+//------------------------
 // Implementation
-//----------------------------------
+//-------------------------
 function normalizeArgs(args) {
     const len = args.length;
     if (len === 0) return {};
     if (len === 1) {
         const arg = args[0];
-        if (isPlainObject(arg) && !arg.$$typeof) return arg;
+        if (isPlainObject(arg) && !isReactElement(arg)) return arg;
         if (isArray(arg)) return {items: arg};
     }
-    return {items: args};  // Assume > 1 args are all children
+    // Assume > 1 args or single, non-config, non-array args are children.
+    return {items: args};
 }
+
+
+// Heuristic for identifying React Elements
+function isReactElement(obj) {
+    return obj.$$typeof;
+}
+
+

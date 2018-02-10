@@ -22,6 +22,12 @@ export const viewport = elemFactory(Containers.Viewport);
 export const spacer = elemFactory(Containers.Spacer);
 export const filler = elemFactory(Containers.Filler);
 
+//----------------------------
+// Convenience Factories
+//-----------------------------
+export function hspacer(width)  {return spacer({width})}
+export function vspacer(height) {return spacer({height})}
+
 //--------------------------------
 // Standard HTML
 //--------------------------------

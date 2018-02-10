@@ -19,5 +19,5 @@ export class Ref {
     value = null;
 
     @action
-    callback = (v) => this.value = v;
+    ref = (v) => this.value = v;
 }

@@ -117,7 +117,7 @@ function createDiv(appProps, defaultProps = {}) {
     });
 
     // 3) Move properties of interest to 'style'
-    const style = props.style || {};
+    const style = Object.assign({}, props.style);
     styleKeys.forEach(k => {
         const val = props[k];
         if (val !== undefined) {

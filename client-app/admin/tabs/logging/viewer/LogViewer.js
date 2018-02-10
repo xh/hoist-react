@@ -6,12 +6,12 @@
  */
 import './LogViewer.css';
 import {Component} from 'react';
-import {observer, observable, toJS, autorun} from 'hoist/mobx';
-import {box, vbox, hbox, div} from 'hoist/layout';
+import {observer, toJS, autorun} from 'hoist/mobx';
+import {box, vbox, div, hframe, frame} from 'hoist/layout';
 import {grid} from 'hoist/grid';
 import {Ref} from 'hoist/react';
 import {button} from 'hoist/kit/semantic';
-
+import {loadMask} from 'hoist/cmp';
 import {LogViewerModel} from './LogViewerModel';
 import {logViewerToolbar} from './LogViewerToolbar';
 
@@ -19,16 +19,22 @@ import {logViewerToolbar} from './LogViewerToolbar';
 export class LogViewer extends Component {
     model = new LogViewerModel();
 
-    @observable lastRow = new Ref();
+    lastRow = new Ref();
 
     loadAsync() {
         return this.model.loadAsync();
     }
 
     render() {
-        const {files, filesCollapsed, rows} = this.model;
+        return frame(
+            this.getContents(),
+            loadMask({inline: true, model: this.model.loadModel})
+        );
+    }
 
-        return hbox({
+    getContents() {
+        const {files, filesCollapsed, rows} = this.model;
+        return hframe({
             cls: 'logviewer-panel',
             items: [
                 box({
@@ -36,7 +42,7 @@ export class LogViewer extends Component {
                     item: grid({
                         model: files,
                         gridOptions: {
-                            onCellClicked: this.onGridCellClicked
+                            defaultColDef: {suppressMenu: true}
                         }
                     })
                 }),
@@ -51,7 +57,7 @@ export class LogViewer extends Component {
                         size: 'small',
                         cls: 'resizer',
                         compact: true,
-                        icon: {name: `${filesCollapsed ? 'right': 'left'} chevron`, color: 'blue'},
+                        icon: {name: `${filesCollapsed ? 'right' : 'left'} chevron`, color: 'blue'},
                         style: {
                             margin: 0,
                             padding: 0,
@@ -78,7 +84,7 @@ export class LogViewer extends Component {
             items: toJS(rows).map((row, idx) => {
                 return div({
                     cls: 'row',
-                    ref: idx === rows.length - 1 ? this.lastRow.callback : undefined,
+                    ref: idx === rows.length - 1 ? this.lastRow.ref : undefined,
                     items: [
                         div({key: `row-number-${idx}`,  cls: 'row-number',  item: row[0].toString()}),
                         div({key: `row-content-${idx}`, cls: 'row-content', item: row[1]})
@@ -87,22 +93,22 @@ export class LogViewer extends Component {
             })
         });
     }
-
-    onGridCellClicked = (ctx) => {
-        this.model.loadFile(ctx.data.filename);
-    }
-
+    
     onResizerClicked = () => {
         this.model.toggleFilePanel();
     }
 
     componentDidMount() {
-        autorun(() => {
+        this.disposeTailRunner = autorun(() => {
             if (!this.model.tail) return;
             const lastRowElem = this.lastRow.value;
             if (lastRowElem) {
-                lastRowElem.scrollIntoView({behavior: 'smooth'});
+                lastRowElem.scrollIntoView();
             }
         });
+    }
+
+    componenentWillUnmount() {
+        this.disposeTailRunner();
     }
 }

@@ -6,76 +6,92 @@
  */
 import {Component} from 'react';
 import {elemFactory} from 'hoist';
-import {input, checkbox, button} from 'hoist/kit/semantic';
+import {inputGroup, numericInput, checkbox, button, label} from 'hoist/kit/blueprint';
 import {observer} from 'hoist/mobx';
-import {hbox} from 'hoist/layout';
+import {hbox, filler, hspacer} from 'hoist/layout';
 
 @observer
 class LogViewerToolbar extends Component {
-
+    
     render() {
         const {startLine, maxLines, pattern, tail} = this.model;
 
         return hbox({
-            cls: 'toolbar',
+            style: {background: '#106ba3'},
+            padding: 3,
+            alignItems: 'center',
             items: [
-                input({
-                    label: 'Start Line',
-                    type: 'number',
-                    name: 'startLine',
+                this.label('Start Line:'),
+                hspacer(10),
+                numericInput({
+                    style: {width: 50},
                     value: startLine,
+                    buttonPosition: 'none',
                     min: 1,
                     max: maxLines,
-                    size: 'mini',
-                    onChange: this.handleChange,
-                    input: {style: {width: '70px'}}
+                    onValueChange: this.onStartLineChange
                 }),
-                input({
-                    label: 'Max Lines',
-                    type: 'number',
-                    name: 'maxLines',
+                hspacer(10),
+                this.label('Max Lines:'),
+                hspacer(10),
+                numericInput({
+                    style: {width: 50},
                     value: maxLines,
-                    min: startLine,
-                    size: 'mini',
-                    onChange: this.handleChange,
-                    input: {style: {width: '70px'}}
+                    buttonPosition: 'none',
+                    min: 1,
+                    onValueChange: this.onMaxLineChange
                 }),
-                input({
+                hspacer(10),
+                inputGroup({
                     placeholder: 'Search...',
-                    name: 'pattern',
+                    style: {width: 150},
                     value: pattern,
-                    icon: 'search',
-                    size: 'mini',
-                    onChange: this.handleChange
+                    onChange: this.onSearchChange
                 }),
-                button({
-                    type: 'submit',
-                    icon: 'refresh',
-                    size: 'mini',
-                    onClick: this.onSubmitClick
-                }),
+                hspacer(10),
                 checkbox({
-                    label: 'Tail',
-                    size: 'mini',
+                    label: this.label('Tail'),
                     name: 'tail',
                     checked: tail,
-                    onChange: this.handleChange
+                    onChange: this.onTailChange
+                }),
+                filler(),
+                hspacer(10),
+                button({
+                    iconName: 'refresh',
+                    onClick: this.onSubmitClick
                 })
             ]
         });
     }
 
+    //-----------------------------
+    // Implementation
+    //-----------------------------
     onSubmitClick = () => {
         this.model.loadLines();
     };
 
-    handleChange = (e, {name, value, checked}) => {
-        this.model.setDisplayOption(name, name === 'tail' ? checked : value);
-    };
+    onStartLineChange = (value) => {
+        this.model.setDisplayOption('startLine', value);
+    }
 
-    //-----------------------------
-    // Implementation
-    //-----------------------------
+    onMaxLinesChange = (value) => {
+        this.model.setDisplayOption('maxLines', value);
+    }
+
+    onPatternChange = (e) => {
+        this.model.setDisplayOption('pattern', e.target.value);
+    }
+
+    onTailChange = (e) => {
+        this.model.setDisplayOption('tail', e.target.checked);
+    }
+    
+    label(txt) {
+        return label({text: txt, style: {color: 'white', whiteSpace: 'nowrap'}});
+    }
+
     get model() {return this.props.model}
 }
 export const logViewerToolbar = elemFactory(LogViewerToolbar);
