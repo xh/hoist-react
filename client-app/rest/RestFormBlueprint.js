@@ -50,17 +50,10 @@ export class RestFormBlueprint extends Component {
                     isCloseButtonShown: false,
                     title: 'Confirm',
                     items: [
-                        div({
-                            cls: 'pt-dialog-body',
-                            item: this.editWarning
-                        }),
-                        div({
-                            cls: 'pt-dialog-footer',
-                            item: div({
-                                cls: 'pt-dialog-footer-actions',
-                                items: this.getConfirmButtons()
-                            })
-                        })
+                        dialogBody(this.editWarning),
+                        dialogFooter(
+                            dialogFooterActions(this.getConfirmButtons())
+                        )
                     ]
                 })
             );
