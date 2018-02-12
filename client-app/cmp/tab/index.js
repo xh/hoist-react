@@ -4,6 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-export * from './LoadMask';
-export * from './Collapsible';
-export * from './tab';
+export * from './TabContainer';
+export * from './TabContainerModel';
+export * from './TabPane';
+export * from './TabPaneModel';

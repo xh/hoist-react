@@ -12,11 +12,12 @@ import {tabs, tab} from 'hoist/kit/blueprint';
 import {menu} from 'hoist/kit/semantic';
 import {hoistAppModel} from 'hoist/app/HoistAppModel';
 
+import './Tabs.css';
 import {tabPane} from './TabPane';
 import {TabContainerModel} from './TabContainerModel';
 
 /**
- * Enhanced TabContainer for Admin App.
+ * Display for a TabContainer.  See TabContainerModel for more details.
  */
 @observer
 export class TabContainer extends Component {

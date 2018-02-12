@@ -11,8 +11,8 @@ import {vframe, hbox, frame, div, filler, spacer} from 'hoist/layout';
 import {button, icon} from 'hoist/kit/blueprint';
 import {button as semanticButton, icon as semanticIcon} from 'hoist/kit/semantic';
 import {observer} from 'hoist/mobx';
+import {tabContainer} from 'hoist/cmp/tab';
 
-import {tabContainer} from './tabs/TabContainer';
 import {appModel} from './AppModel';
 
 @hoistApp
@@ -54,7 +54,7 @@ export class App extends Component {
             spacer({width: 10}),
             div(`${XH.appName} Admin`),
             filler(),
-            button({iconName: 'refresh', onClick: appModel.requestRefresh})
+            button({iconName: 'refresh', onClick: this.onRefreshClick})
         ];
     }
     
@@ -64,8 +64,12 @@ export class App extends Component {
             spacer({width: 10}),
             div(`${XH.appName} Admin`),
             filler(),
-            semanticButton({icon: 'refresh', size: 'small', compact: true, onClick: appModel.requestRefresh})
+            semanticButton({icon: 'refresh', size: 'small', compact: true, onClick: this.onRefreshClick})
         ];
+    }
+    
+    onRefreshClick = () => {
+        appModel.requestRefresh();
     }
 }
 
