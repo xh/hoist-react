@@ -11,12 +11,11 @@ import {action, observer, observable} from 'hoist/mobx';
 import {vbox, filler} from 'hoist/layout';
 import {Classes, button, dialog, dialogBody, dialogFooter, dialogFooterActions, icon, inputGroup, label, menuItem, numericInput, select, suggest, textArea} from 'hoist/kit/blueprint';
 
-import {confirmDialog} from '../cmp/Confirm.js';
+import {confirm} from '../cmp/confirm/Confirm.js';
 
 @observer
 export class RestFormBlueprint extends Component {
-
-    @observable needConfirm = false;
+    @observable confirmModel = null;
 
     render() {
         const {formRecord, formIsAdd} = this.model;
@@ -42,19 +41,9 @@ export class RestFormBlueprint extends Component {
             dialogBody(this.getForm()),
             dialogFooter(
                 dialogFooterActions(this.getButtons())
-            )
+            ),
+            confirm({model: this.model.confirmModel})
         ];
-
-        if (this.editWarning) {
-            items.push(
-                confirmDialog({
-                    needConfirm: this.needConfirm,
-                    warning: this.editWarning,
-                    onConfirm: this.doSave,
-                    onReject: this.closeConfirm
-                })
-            );
-        }
 
         return items;
     }
@@ -140,8 +129,12 @@ export class RestFormBlueprint extends Component {
 
     @action
     onSaveClick = () => {
-        if (this.editWarning) {
-            this.needConfirm = true;
+        const {editWarning, confirmModel} = this.model;
+        if (editWarning) {
+            confirmModel.show({
+                message: this.editWarning,
+                onConfirm: this.doSave
+            });
         } else {
             this.doSave();
         }
@@ -151,12 +144,6 @@ export class RestFormBlueprint extends Component {
     doSave = () => {
         const model = this.model;
         model.saveFormRecord();
-        this.closeConfirm();
-    }
-
-    @action
-    closeConfirm = () => {
-        this.needConfirm = false;
     }
 
     createFieldLabel(fieldSpec) {

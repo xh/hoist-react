@@ -1,19 +1,32 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2018 Extremely Heavy Industries Inc.
+ */
 
 import {Component} from 'react';
 import {elemFactory} from 'hoist';
 import {filler} from 'hoist/layout';
 import {button, dialog, dialogBody, dialogFooter, dialogFooterActions} from 'hoist/kit/blueprint';
 
+import {observer} from 'hoist/mobx';
 
-class ConfirmDialog extends Component {
+@observer
+class Confirm extends Component {
 
     render() {
+        const isOpen = this.model && this.model.isOpen;
+
+        console.log('confirm render');
+        if (!isOpen) return null;
+
         return dialog({
-            isOpen: this.props.needConfirm,
+            isOpen: true,
             isCloseButtonShown: false,
             title: 'Confirm',
             items: [
-                dialogBody(this.props.warning),
+                dialogBody(this.model.message),
                 dialogFooter(
                     dialogFooterActions(this.getConfirmButtons())
                 )
@@ -26,15 +39,17 @@ class ConfirmDialog extends Component {
             filler(),
             button({
                 text: 'Yes',
-                onClick: this.props.onConfirm
+                onClick: this.model.doConfirm
             }),
             button({
                 text: 'No',
-                onClick: this.props.onReject
+                onClick: this.model.doReject
             }),
             filler()
         ];
     }
+
+    get model() {return this.props.model}
 };
 
-export const confirmDialog = elemFactory(ConfirmDialog);
+export const confirm = elemFactory(Confirm);

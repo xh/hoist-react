@@ -9,6 +9,7 @@ import {XH} from 'hoist';
 import {observable, computed, action} from 'hoist/mobx';
 import {GridModel} from 'hoist/grid';
 import {RecordSpec} from 'hoist/data';
+import {ConfirmModel} from 'hoist/cmp/confirm/ConfirmModel';
 import {remove} from 'lodash';
 
 /**
@@ -29,9 +30,10 @@ export class RestGridModel {
 
     _lookupsLoaded = false;
 
-    // If not null, this will be displayed in (modal) dialog.
+    // If not null, this will be displayed in a modal dialogs
     @observable formRecord = null;
 
+    @observable confirmModel = new ConfirmModel();
 
     get url()       {return this.gridModel.url}
     get selection() {return this.gridModel.selection}

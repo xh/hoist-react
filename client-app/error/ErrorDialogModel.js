@@ -13,7 +13,7 @@ import {errorTrackingService} from 'hoist';
 export class ErrorDialogModel {
 
     /** A non-null value here will cause an exception to be displayed modally */
-    @observable exception = null
+    @observable exception = null;
 
     /** Are we showing the full details of the error above? */
     @setter @observable detailsVisible = true;
