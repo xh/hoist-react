@@ -22,7 +22,7 @@ export class PreferencePanel extends Component {
             fields: [
                 {name: 'name', label: 'Name'},
                 {name: 'type', label: 'Type', lookup: 'types'},
-                {name: 'defaultValue',  typeField: 'type', label: 'Default Value'},
+                {name: 'defaultValue',  typeField: 'type', label: 'Default Value'}, // type field not working
                 {name: 'notes', label: 'Notes', allowNull: true},
                 {name: 'local', label: 'Local', type: 'bool'},
                 {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true},
