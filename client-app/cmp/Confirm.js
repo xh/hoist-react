@@ -1,7 +1,7 @@
 
 import {Component} from 'react';
 import {elemFactory} from 'hoist';
-import {vbox, filler} from 'hoist/layout';
+import {filler} from 'hoist/layout';
 import {button, dialog, dialogBody, dialogFooter, dialogFooterActions} from 'hoist/kit/blueprint';
 
 

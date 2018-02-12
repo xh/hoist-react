@@ -169,12 +169,12 @@ export class RestFormBlueprint extends Component {
             handler = this[config.field + 'Handler'] || this.createHandler(config.field, 'onValueChange');
 
         // 'hack' to allow additions(not built in), overrides itemPredicate, see note above handleAdditions function
-        const itemListPredicate = config.editor.allowAdditions ? this.handleAdditions : null;
+        // const itemListPredicate = config.editor.allowAdditions ? this.handleAdditions : null;
 
         return suggest({
             className: 'rest-form-dropdown-blueprint',
             popoverProps: {popoverClassName: Classes.MINIMAL},
-            itemListPredicate: itemListPredicate,
+            // itemListPredicate: itemListPredicate,
             itemPredicate: (q, v, index) => !v || v.includes(q),
             style: {marginBottom: 5},
             $items: options,
@@ -244,7 +244,9 @@ export class RestFormBlueprint extends Component {
         });
     }
 
-    //  one problem is this fires on each keystroke, makes for a funky list of choices, ie: n, ne, new
+    // one problem is that this fires on each keystroke, makes for a funky list of choices, ie: n, ne, new
+    // input group allows input without this, it's just not added to the dropdown or set as the value
+    // once the general value setting problem is solved this may be unneeded
     handleAdditions(query, list, index) {
         if (query && !list.includes(query)) list.push(query);
         const ret = list.filter(it => it.includes(query));
