@@ -6,12 +6,13 @@
  */
 
 import {Component} from 'react';
+import {Classes, button, dialog, dialogBody, dialogFooter, dialogFooterActions, icon, inputGroup, label, menuItem, numericInput, select, suggest, textArea} from 'hoist/kit/blueprint';
 import {elemFactory} from 'hoist';
 import {action, observer, observable} from 'hoist/mobx';
-import {vbox, filler} from 'hoist/layout';
-import {Classes, button, dialog, dialogBody, dialogFooter, dialogFooterActions, icon, inputGroup, label, menuItem, numericInput, select, suggest, textArea} from 'hoist/kit/blueprint';
+import {span, vbox, filler} from 'hoist/layout';
+import {fmtDateTime} from 'hoist/format';
 
-import {confirm} from '../cmp/confirm/Confirm.js';
+import {confirm} from 'hoist/cmp/confirm/Confirm.js';
 
 @observer
 export class RestFormBlueprint extends Component {
@@ -63,6 +64,9 @@ export class RestFormBlueprint extends Component {
 
             items.push(this.createFieldLabel(fieldSpec));
             switch (inputType) {
+                case 'display':
+                    items.push(this.createDisplayField(inputConfig));
+                    break;
                 case 'dropdown':
                     items.push(this.createDropdown(inputConfig));
                     break;
@@ -76,8 +80,6 @@ export class RestFormBlueprint extends Component {
                     items.push(this.createTextAreaInput(inputConfig));
                     break;
                 case 'text':
-                    items.push(this.createTextInput(inputConfig));
-                    break;
                 default:
                     items.push(this.createTextInput(inputConfig));
             }
@@ -149,6 +151,11 @@ export class RestFormBlueprint extends Component {
     createFieldLabel(fieldSpec) {
         const text = fieldSpec.label || fieldSpec.name;
         return label({text: text, style: {width: '115px', paddingBottom: 5}});
+    }
+
+    createDisplayField(config) {
+        if (config.fieldSpec.name = 'lastUpdated') config.defaultValue = fmtDateTime(config.defaultValue);
+        return span({item: config.defaultValue, style: {marginBottom: 5, padding: '5 0'}});
     }
 
     createDropdown(config) {
@@ -251,9 +258,7 @@ export class RestFormBlueprint extends Component {
     }
 
     getInputConfig(fieldSpec, editor, formRecord) {
-        const renderer = editor.renderer,
-            currentValue = formRecord[fieldSpec.name],
-            defaultValue = renderer ? renderer(currentValue) : currentValue,
+        const defaultValue = formRecord[fieldSpec.name],
             isDisabled = fieldSpec.readOnly || (editor.additionsOnly && !this.model.formIsAdd);
 
         return {
@@ -266,6 +271,7 @@ export class RestFormBlueprint extends Component {
     }
 
     getInputType(fieldSpec, editor) {
+        if (editor.type == 'displayField') return 'display';
         if (fieldSpec.lookupValues) return 'dropdown';
         if (fieldSpec.type === 'bool' || fieldSpec.type === 'boolean') return 'boolean';
         if (fieldSpec.type === 'int') return 'number';
