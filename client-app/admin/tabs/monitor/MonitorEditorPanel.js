@@ -55,8 +55,8 @@ export class MonitorEditorPanel extends Component {
             {field: 'notes', type: 'textarea'},
             {field: 'active'},
             {field: 'sortOrder'},
-            {field: 'lastUpdated', renderer: dateTimeRenderer()},
-            {field: 'lastUpdatedBy'}
+            {field: 'lastUpdated', type: 'displayField'},
+            {field: 'lastUpdatedBy', type: 'displayField'}
         ]
     });
 

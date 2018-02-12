@@ -54,8 +54,8 @@ export class ConfigPanel extends Component {
             {field: 'devValue', env: 'Development'},
             {field: 'clientVisible', type: 'bool'},
             {field: 'note', type: 'textarea'},
-            {field: 'lastUpdated', renderer: dateTimeRenderer()},
-            {field: 'lastUpdatedBy'}
+            {field: 'lastUpdated', type: 'displayField'},
+            {field: 'lastUpdatedBy', type: 'displayField'}
         ])
     });
 

@@ -42,8 +42,8 @@ export class PreferencePanel extends Component {
             {field: 'defaultValue'},
             {field: 'local'},
             {field: 'notes'},
-            {field: 'lastUpdated', renderer: dateTimeRenderer()},
-            {field: 'lastUpdatedBy'}
+            {field: 'lastUpdated', type: 'displayField'},
+            {field: 'lastUpdatedBy', type: 'displayField'}
         ]
     });
 

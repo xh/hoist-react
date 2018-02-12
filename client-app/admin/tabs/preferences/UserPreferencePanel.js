@@ -45,8 +45,8 @@ export class UserPreferencePanel extends Component {
             {field: 'name', additionsOnly: true},
             {field: 'username'},
             {field: 'userValue'},
-            {field: 'lastUpdated', renderer: dateTimeRenderer()},
-            {field: 'lastUpdatedBy'}
+            {field: 'lastUpdated', type: 'displayField'},
+            {field: 'lastUpdatedBy', type: 'displayField'}
         ]
     });
 

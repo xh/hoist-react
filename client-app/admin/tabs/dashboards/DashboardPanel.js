@@ -37,7 +37,7 @@ export class DashboardPanel extends Component {
             {field: 'appCode'},
             {field: 'username'},
             {field: 'definition'},
-            {field: 'lastUpdated', renderer: dateTimeRenderer()}
+            {field: 'lastUpdated', type: 'displayField'}
         ]
     });
 
