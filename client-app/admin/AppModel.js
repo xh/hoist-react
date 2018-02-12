@@ -4,10 +4,10 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {observable, action} from 'hoist/mobx';
+import {action} from 'hoist/mobx';
 
-import {TabContainerModel} from './tabs/TabContainerModel';
-import {TabPaneModel} from './tabs/TabPaneModel';
+import {TabContainerModel, TabPaneModel} from 'hoist/cmp';
+
 import {AboutPanel} from './tabs/about/AboutPanel';
 import {ActivityPanel} from './tabs/activity/ActivityPanel';
 import {ConfigPanel} from './tabs/configs/ConfigPanel';
@@ -28,11 +28,10 @@ import {UserPanel} from './tabs/users/UserPanel';
 class AppModel {
 
     tabs = this.createTabs();
-    @observable lastRefreshRequest = null;
     
     @action
-    requestRefresh = () => {
-        this.lastRefreshRequest = Date.now();
+    requestRefresh() {
+        this.tabs.setLastRefreshRequest(Date.now());
     }
 
     //------------------------

@@ -6,12 +6,11 @@
  */
 
 import {Component} from 'react';
-import {viewport} from 'hoist/layout';
+import {elemFactory} from 'hoist';
+import {viewport, frame} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
 
 import {overlay, spinner} from 'hoist/kit/blueprint';
-import {dimmer, loader} from 'hoist/kit/semantic';
-import {hoistAppModel} from 'hoist/app/HoistAppModel';
 
 /**
  * Simple LoadMask.
@@ -32,33 +31,41 @@ export class LoadMask extends Component {
     };
     
     render() {
-        return hoistAppModel.useSemantic ? this.renderSemantic() : this.renderBlueprint();
-    }
-
-    renderBlueprint() {
-        const {isDisplayed, model} = this.props;
+        const {isDisplayed, model, inline} = this.props;
         return overlay({
             isOpen: isDisplayed || (model && model.isPending),
             canEscapeKeyClose: false,
             backdropProps: {
                 style: {backgroundColor: this.BACKGROUND}
             },
-            item: viewport({
-                flex: 1,
-                alignItems: 'center',
-                justifyContent: 'center',
-                item: spinner()
-            })
+            style: {display: 'flex'},
+            inline: inline,
+            item: inline ? this.getInlineChild() : this.getViewportChild()
         });
     }
 
-    renderSemantic() {
-        const {isDisplayed, model} = this.props;
-        return dimmer({
-            active: isDisplayed || (model && model.isPending),
-            page: true,
-            item: loader()
+    //-----------------
+    // Implementation
+    //-----------------
+    getInlineChild() {
+        return frame({
+            width: '100%',
+            height: '100%',
+            alignItems: 'center',
+            justifyContent: 'center',
+            item: spinner()
+        });
+    }
+
+    getViewportChild() {
+        return viewport({
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+            item: spinner()
         });
     }
 }
+export const loadMask = elemFactory(LoadMask);
+
 

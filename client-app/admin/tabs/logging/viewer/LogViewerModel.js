@@ -5,10 +5,12 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {debounce} from 'lodash';
 import {XH} from 'hoist';
-import {action, observable, setter} from 'hoist/mobx';
+import {action, observable, setter, autorun} from 'hoist/mobx';
 import {baseCol} from 'hoist/columns/Core';
 import {GridModel} from 'hoist/grid';
+import {LastPromiseModel} from 'hoist/promise';
 
 export class LogViewerModel {
 
@@ -21,7 +23,8 @@ export class LogViewerModel {
     // Overall State
     @observable file = null;
     @setter @observable rows = [];
-    @observable filesCollapsed = false;
+
+    loadModel = new LastPromiseModel();
 
     files = new GridModel({
         url: 'logViewerAdmin/listFiles',
@@ -31,17 +34,14 @@ export class LogViewerModel {
         ]
     });
 
-    @action
-    loadFile(file) {
-        this.file = file;
-        this.loadLines();
+    constructor() {
+        autorun(() => {
+            const sel = this.files.selection.singleRecord;
+            this.file = sel ? sel.filename : null;
+            this.loadLines();
+        });
     }
-
-    @action
-    toggleFilePanel() {
-        this.filesCollapsed = !this.filesCollapsed;
-    }
-
+    
     @action
     async loadAsync() {
         this.files.loadAsync();
@@ -52,9 +52,20 @@ export class LogViewerModel {
     loadLines() {
         if (!this.file) {
             this.setRows([]);
-            return;
+        } else {
+            this.fetchFile();
         }
+    }
 
+    @action
+    setDisplayOption(name, value) {
+        this[name] = value;
+    }
+
+    //-----------------
+    // Implementation
+    //-----------------
+    fetchFile = debounce(() => {
         return XH
             .fetchJson({
                 url: 'logViewerAdmin/getFile',
@@ -66,11 +77,7 @@ export class LogViewerModel {
                 }
             })
             .then(rows => this.setRows(rows.content))
+            .linkTo(this.loadModel)
             .catchDefault();
-    }
-
-    @action
-    setDisplayOption(name, value) {
-        this[name] = value;
-    }
+    }, 300);
 }

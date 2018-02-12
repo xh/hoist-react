@@ -4,23 +4,15 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import 'ag-grid-enterprise';
-import 'ag-grid/dist/styles/ag-grid.css';
-import 'ag-grid/dist/styles/ag-theme-fresh.css';
 
 import {Component} from 'react';
 import {elemFactory} from 'hoist';
 import {div} from 'hoist/layout';
 import {observer, action, toJS} from 'hoist/mobx';
-
 import {defaults} from 'lodash';
-import {AgGridReact} from 'ag-grid-react';
-import {LicenseManager} from 'ag-grid-enterprise';
 
-LicenseManager.setLicenseKey(
-    'ag-Grid_Evaluation_License_Key_Not_for_Production_100Devs15_February_2018__MTUxODY1MjgwMDAwMA==600d5a723b746ad55afff76eb446f0ad'
-);
-const agGridReact = elemFactory(AgGridReact);
+import './ag-grid';
+import {navigateSelection, agGridReact} from './ag-grid';
 
 /**
  * Grid Component
@@ -34,11 +26,17 @@ class Grid extends Component {
         rowSelection: 'single'
     };
 
-    render() {
-        const props = this.props,
-            model = this.model,
-            gridOptions = defaults(props.gridOptions || {}, Grid.gridDefaults);
+    constructor(props) {
+        super(props);
+        this.gridOptions = defaults(
+            props.gridOptions || {},
+            Grid.gridDefaults,
+            {navigateToNextCell: this.onNavigateToNextCell}
+        );
+    }
 
+    render() {
+        const model = this.model;
         return div({
             style: {flex: '1 1 auto'},
             cls: 'ag-theme-fresh',
@@ -47,7 +45,7 @@ class Grid extends Component {
                 columnDefs: model.columns,
                 onSelectionChanged: this.onSelectionChanged,
                 onGridSizeChanged: this.onGridSizeChanged,
-                gridOptions
+                gridOptions: this.gridOptions
             })
         });
     }
@@ -65,6 +63,10 @@ class Grid extends Component {
     onSelectionChanged = (ev) => {
         const selection = this.model.selection;
         selection.setRecords(ev.api.getSelectedRows());
+    }
+
+    onNavigateToNextCell = (params) => {
+        return navigateSelection(params, this.gridOptions.api);
     }
 }
 export const grid = elemFactory(Grid);

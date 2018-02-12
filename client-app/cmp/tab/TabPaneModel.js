@@ -4,7 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {computed, action, setter, observable} from 'hoist/mobx';
+import {computed, action, observable} from 'hoist/mobx';
+import {LastPromiseModel} from 'hoist/promise';
 
 /**
  * Model for a TabPane, representing its content's active load state.
@@ -14,9 +15,8 @@ export class TabPaneModel {
     componentClass = null;
     parent = null;
 
-    @setter @observable isLazyMode = true;
-    @setter @observable isLoading = false;
     @observable lastLoaded = null;
+    loadState = new LastPromiseModel();
 
     constructor(id, componentClass) {
         this.id = id;
@@ -28,9 +28,24 @@ export class TabPaneModel {
         return this.parent.selectedId === this.id && this.parent.isActive;
     }
 
+    @computed
+    get lastRefreshRequest() {
+        return this.parent.lastRefreshRequest;
+    }
+
+    @computed
+    get needsLoad() {
+        if (this.isActive) {
+            if (!this.loadState.isPending) {
+                const {lastRefreshRequest, lastLoaded} = this;
+                return (!lastLoaded || (lastRefreshRequest && (lastLoaded < lastRefreshRequest)));
+            }
+        }
+        return false;
+    }
+
     @action
     markLoaded() {
-        this.setIsLoading(false);
         this.lastLoaded = Date.now();
     }
 }

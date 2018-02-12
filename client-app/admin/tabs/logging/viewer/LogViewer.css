@@ -1,66 +1,20 @@
-.logviewer-panel {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    flex-direction: row;
-}
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2018 Extremely Heavy Industries Inc.
+ */
 
-.logviewer-panel .collapsible-panel {
-    flex: none;
-    overflow: hidden;
-    width: 0;
-    -webkit-transition: width 0.5s ease-in-out;
-    -moz-transition: width 0.5s ease-in-out;
-    -o-transition: width 0.5s ease-in-out;
-    transition: width 0.5s ease-in-out;
-}
-
-.logviewer-panel .collapsible-panel.expanded {
-    width: 220px;
-}
-
-.logviewer-panel .ui.small.button.resizer {
-    font-size: 0.7em;
-}
-
-.logviewer-panel .logviewer-container {
-    flex: 1;
-    border: 1px solid darkgrey;
-    min-width: 0;
-    max-width: 100%;
-}
-
-.logviewer-panel .toolbar {
-    background-color: #106ba3;
-    flex: none;
-    height: 45px;
-    align-items: center;
-}
-
-.logviewer-panel .toolbar .ui {
-    margin-left: 5px;
-}
-
-.logviewer-panel .toolbar .ui label, .logviewer-panel .toolbar .ui input:focus~label  {
-    color: white;
-}
-
-.logviewer-panel .log-display {
-    flex: 1;
-    overflow: auto;
+.logviewer-table {
     background-color: #f6f6f6;
 }
-
-.logviewer-panel .log-display .row {
-    display: flex;
-    flex: none;
+.logviewer-row {
     height: 16px;
     font-size: 11px;
     font-family: Monaco, monospace;
 }
 
-.logviewer-panel .log-display .row .row-number {
+.logviewer-row-number {
     padding-right: 6px;
     margin-right: 6px;
     min-width: 50px;
@@ -69,6 +23,6 @@
     text-align: end;
 }
 
-.logviewer-panel .log-display .row .row-content {
+.logviewer-row-content {
     white-space: pre;
 }

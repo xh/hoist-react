@@ -46,6 +46,7 @@ export class ImpersonationBar extends Component {
         render() {
             const {impersonating, username} = identityService;
             return hbox({
+                flex: 'none',
                 padding: 5,
                 style: {
                     color: 'white',
@@ -121,6 +122,7 @@ export class ImpersonationBar extends Component {
         render() {
             const {impersonating, username} = identityService;
             return hbox({
+                flex: 'none',
                 padding: 5,
                 style: {
                     color: 'white',

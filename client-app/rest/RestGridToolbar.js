@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {elemFactory} from 'hoist';
 import {observer} from 'hoist/mobx';
 import {hbox} from 'hoist/layout';
-import {hoistButton} from 'hoist/kit/semantic';
+import {button} from 'hoist/kit/blueprint';
 
 @observer
 export class RestGridToolbar extends Component {
@@ -17,33 +17,34 @@ export class RestGridToolbar extends Component {
         const model = this.model,
             singleRecord = model.selection.singleRecord;
 
-        const items = [
-            this.button({
-                content: 'Add',
-                icon: {name: 'add', color: 'blue'},
-                onClick: this.onAddClick,
-                omit: !model.enableAdd
-            }),
-            this.button({
-                content: 'Edit',
-                icon: {name: 'edit', color: 'blue'},
-                onClick: this.onEditClick,
-                disabled: !singleRecord,
-                omit: !model.enableEdit
-            }),
-            this.button({
-                content: 'Delete',
-                icon: {name: 'x', color: 'red'},
-                onClick: this.onDeleteClick,
-                disabled: !singleRecord,
-                omit: !model.enableDelete
-            })
-        ];
-
         return hbox({
-            cls: 'rest-toolbar',
             style: {background: '#106ba3'},
-            items
+            itemSpec: {
+                factory: button,
+                style: {margin: '4px 0px 4px 4px'}
+            },
+            items: [
+                {
+                    text: 'Add',
+                    iconName: 'add',
+                    onClick: this.onAddClick,
+                    omit: !model.enableAdd
+                },
+                {
+                    text: 'Edit',
+                    iconName: 'edit',
+                    onClick: this.onEditClick,
+                    disabled: !singleRecord,
+                    omit: !model.enableEdit
+                },
+                {
+                    text: 'Delete',
+                    iconName: 'delete',
+                    onClick: this.onDeleteClick,
+                    disabled: !singleRecord,
+                    omit: !model.enableDelete
+                }
+            ]
         });
     }
 
@@ -64,17 +65,6 @@ export class RestGridToolbar extends Component {
     onEditClick = () => {
         const model = this.model;
         model.openEditForm(model.selection.singleRecord);
-    }
-
-    button(props) {
-        return hoistButton({
-            style: {
-                marginTop: 5,
-                marginBottom: 5,
-                marginLeft: 5
-            },
-            ...props
-        });
     }
 }
 export const restGridToolbar = elemFactory(RestGridToolbar);

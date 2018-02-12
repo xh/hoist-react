@@ -52,7 +52,7 @@ class HoistAppModel {
      */
     @action
     reloadApp() {
-        this.appLoadModel.linkTo(never());
+        this.appLoadModel.link(never());
         window.location.reload(true);
     }
 
