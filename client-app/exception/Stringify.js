@@ -41,7 +41,7 @@ export function stringifyErrorSafely(errorObject) {
         }
 
         // 2) Protect against circularity, monstrosity with a general depth trim
-        err = trimToDepth(err, 7);
+        err = trimToDepth(err, 5);
 
         return stripTags(JSON.stringify(err, null, 4));
 
