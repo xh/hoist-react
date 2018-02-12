@@ -36,7 +36,8 @@ export class LogViewer extends Component {
         const {files, rows} = this.model;
         return hframe(
             collapsible({
-                contentWidth: '250px',
+                side: 'left',
+                contentSize: '250px',
                 item: grid({
                     model: files,
                     gridOptions: {
