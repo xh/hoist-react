@@ -8,8 +8,10 @@
 import {Component} from 'react';
 import {elemFactory} from 'hoist';
 import {action, observer, observable} from 'hoist/mobx';
-import {vbox, div, filler} from 'hoist/layout';
+import {vbox, filler} from 'hoist/layout';
 import {Classes, button, dialog, dialogBody, dialogFooter, dialogFooterActions, icon, inputGroup, label, menuItem, numericInput, select, suggest, textArea} from 'hoist/kit/blueprint';
+
+import {confirmDialog} from '../cmp/Confirm.js';
 
 @observer
 export class RestFormBlueprint extends Component {
@@ -45,16 +47,11 @@ export class RestFormBlueprint extends Component {
 
         if (this.editWarning) {
             items.push(
-                dialog({
-                    isOpen: this.needConfirm,
-                    isCloseButtonShown: false,
-                    title: 'Confirm',
-                    items: [
-                        dialogBody(this.editWarning),
-                        dialogFooter(
-                            dialogFooterActions(this.getConfirmButtons())
-                        )
-                    ]
+                confirmDialog({
+                    needConfirm: this.needConfirm,
+                    warning: this.editWarning,
+                    onConfirm: this.doSave,
+                    onReject: this.closeConfirm
                 })
             );
         }
@@ -132,20 +129,6 @@ export class RestFormBlueprint extends Component {
         ];
     }
 
-    getConfirmButtons() {
-        return [
-            filler(),
-            button({
-                text: 'Yes',
-                onClick: this.doSave
-            }),
-            button({
-                text: 'No',
-                onClick: this.closeConfirm
-            }),
-            filler()
-        ];
-    }
     onClose = () => {
         this.model.closeForm();
     }
