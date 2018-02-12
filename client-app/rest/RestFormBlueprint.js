@@ -7,12 +7,9 @@
 
 import {Component} from 'react';
 import {elemFactory} from 'hoist';
-import {vbox, div, filler} from 'hoist/layout';
 import {action, observer, observable} from 'hoist/mobx';
-import {Classes, inputGroup, button, label, dialog, dialogBody, dialogFooter, dialogFooterActions} from 'hoist/kit/blueprint';
 import {vbox, div, filler} from 'hoist/layout';
-import {action, observer, observable} from 'hoist/mobx';
-import {Classes, button, dialog, icon, inputGroup, label, menuItem, numericInput, select, suggest, textArea} from 'hoist/kit/blueprint';
+import {Classes, button, dialog, dialogBody, dialogFooter, dialogFooterActions, icon, inputGroup, label, menuItem, numericInput, select, suggest, textArea} from 'hoist/kit/blueprint';
 
 @observer
 export class RestFormBlueprint extends Component {
