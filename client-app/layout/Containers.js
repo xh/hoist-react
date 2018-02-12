@@ -100,7 +100,7 @@ const dimFragments = ['margin', 'padding', 'height', 'width'],
     div = elemFactory('div');
 
 function createDiv(appProps, defaultProps = {}) {
-    const props = Object.assign({display: 'flex'}, defaultProps, appProps);
+    const props = Object.assign({display: 'flex', overflow: 'hidden'}, defaultProps, appProps);
 
     // 1) Convert raw 'flex' number to string
     flexVals.forEach(k => {

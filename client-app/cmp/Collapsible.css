@@ -4,5 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-export * from './LoadMask';
-export * from './Collapsible';
+
+.collapsible-panel .ui.small.button.resizer {
+    font-size: 0.7em;
+}

@@ -23,7 +23,6 @@ export class LogViewerModel {
     // Overall State
     @observable file = null;
     @setter @observable rows = [];
-    @observable filesCollapsed = false;
 
     loadModel = new LastPromiseModel();
 
@@ -42,12 +41,7 @@ export class LogViewerModel {
             this.loadLines();
         });
     }
-
-    @action
-    toggleFilePanel() {
-        this.filesCollapsed = !this.filesCollapsed;
-    }
-
+    
     @action
     async loadAsync() {
         this.files.loadAsync();

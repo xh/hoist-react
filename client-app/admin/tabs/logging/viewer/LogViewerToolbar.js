@@ -17,9 +17,10 @@ class LogViewerToolbar extends Component {
         const {startLine, maxLines, pattern, tail} = this.model;
 
         return hbox({
-            style: {background: '#106ba3'},
+            flex: 'none',
             padding: 3,
             alignItems: 'center',
+            style: {background: '#106ba3'},
             items: [
                 this.label('Start Line:'),
                 hspacer(10),

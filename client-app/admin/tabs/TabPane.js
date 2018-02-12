@@ -51,7 +51,6 @@ export class TabPane extends Component {
             null :
             frame({
                 display: model.isActive ? 'flex' : 'none',
-                position: 'relative',
                 margin: 4,
                 item: elem(model.componentClass, {...this.props, flex: 1, ref: this.child.ref})
             });
