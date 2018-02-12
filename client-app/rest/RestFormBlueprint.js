@@ -24,7 +24,7 @@ export class RestFormBlueprint extends Component {
             title: formIsAdd ? 'Add Record' : 'Edit Record',
             iconName: 'inbox',
             isOpen: true,
-            onClose: this.onClose,
+            isCloseButtonShown: false,
             items: this.renderDialogItems()
         });
     }
@@ -276,6 +276,7 @@ export class RestFormBlueprint extends Component {
     }
 
     onValueChange = (value, field) => {
+        debugger;
         const {setFormValue} = this.model;
         setFormValue(field, value);
     }
