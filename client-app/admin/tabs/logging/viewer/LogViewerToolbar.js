@@ -28,8 +28,7 @@ class LogViewerToolbar extends Component {
                     style: {width: 50},
                     value: startLine,
                     buttonPosition: 'none',
-                    min: 1,
-                    max: maxLines,
+                    min: 0,
                     onValueChange: this.onStartLineChange
                 }),
                 hspacer(10),
@@ -40,14 +39,14 @@ class LogViewerToolbar extends Component {
                     value: maxLines,
                     buttonPosition: 'none',
                     min: 1,
-                    onValueChange: this.onMaxLineChange
+                    onValueChange: this.onMaxLinesChange
                 }),
                 hspacer(10),
                 inputGroup({
                     placeholder: 'Search...',
                     style: {width: 150},
                     value: pattern,
-                    onChange: this.onSearchChange
+                    onChange: this.onPatternChange
                 }),
                 hspacer(10),
                 checkbox({
