@@ -269,7 +269,6 @@ export class RestFormBlueprint extends Component {
     }
 
     onValueChange = (value, field) => {
-        debugger;
         const {setFormValue} = this.model;
         setFormValue(field, value);
     }
