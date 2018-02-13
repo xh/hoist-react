@@ -45,7 +45,7 @@ export class AboutPanel extends Component {
         return (
             div({
                 style: {marginTop: '10px'},
-                items: div({
+                item: div({
                     style: {display: 'table-cell', verticalAlign: 'middle', width: '100%'},
                     items: [
                         <p>

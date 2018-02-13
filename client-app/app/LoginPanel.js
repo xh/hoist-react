@@ -27,7 +27,7 @@ export class LoginPanel extends Component {
         return viewport({
             alignItems: 'center',
             justifyContent: 'center',
-            items: vbox({
+            item: vbox({
                 padding: 15,
                 style: {border: 'solid 1px'},
                 justifyContent: 'right',
@@ -43,7 +43,7 @@ export class LoginPanel extends Component {
                         placeholder: 'Password...',
                         value: this.password,
                         type: 'password',
-                        rightElement: button({iconName: 'lock', disabled: true}),
+                        rightElement: button({icon: 'lock', disabled: true}),
                         onChange: this.onPasswordChange,
                         style: {marginBottom: 5}
                     }),

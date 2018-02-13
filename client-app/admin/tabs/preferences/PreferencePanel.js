@@ -6,31 +6,43 @@
  */
 import {Component} from 'react';
 import {observer} from 'hoist/mobx';
-import {boolCheckCol} from 'hoist/columns/Core';
+import {boolCheckCol, baseCol} from 'hoist/columns/Core';
 import {restGrid, RestGridModel} from 'hoist/rest';
 
-import {nameFlexCol, typeCol, prefValueCol, notesCol} from '../../columns/Columns';
+import {nameFlexCol} from '../../columns/Columns';
 
 @observer
 export class PreferencePanel extends Component {
 
     model = new RestGridModel({
         url: 'rest/preferenceAdmin',
+        editWarning: 'Are you sure you want to edit? Editing preferences can break running apps!',
+        recordSpec: {
+            fields: [
+                {name: 'name', label: 'Name'},
+                {name: 'type', label: 'Type', lookup: 'types'},
+                {name: 'defaultValue', label: 'Default Value'},
+                {name: 'notes', label: 'Notes'},
+                {name: 'local', label: 'Local', type: 'bool'},
+                {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true},
+                {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true}
+            ]
+        },
         columns: [
             boolCheckCol({field: 'local', width: 60}),
             nameFlexCol(),
-            typeCol(),
-            prefValueCol({field: 'defaultValue'}),
-            notesCol()
+            baseCol({field: 'type', width: 80}),
+            baseCol({field: 'defaultValue', flex: 1}),
+            baseCol({field: 'notes', flex: 2})
         ],
         editors: [
-            {name: 'name', allowBlank: false},
-            {name: 'type', allowBlank: false, additionsOnly: true},
-            {name: 'defaultValue'},
-            {name: 'local'},
-            {name: 'notes', type: 'textarea'},
-            {name: 'lastUpdated', readOnly: true},
-            {name: 'lastUpdatedBy', readOnly: true}
+            {field: 'name'},
+            {field: 'type'},
+            {field: 'defaultValue'},
+            {field: 'local'},
+            {field: 'notes'},
+            {field: 'lastUpdated'},
+            {field: 'lastUpdatedBy'}
         ]
     });
 

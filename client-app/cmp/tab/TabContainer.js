@@ -12,11 +12,12 @@ import {tabs, tab} from 'hoist/kit/blueprint';
 import {menu} from 'hoist/kit/semantic';
 import {hoistAppModel} from 'hoist/app/HoistAppModel';
 
+import './Tabs.css';
 import {tabPane} from './TabPane';
 import {TabContainerModel} from './TabContainerModel';
 
 /**
- * Enhanced TabContainer for Admin App.
+ * Display for a TabContainer.  See TabContainerModel for more details.
  */
 @observer
 export class TabContainer extends Component {
@@ -26,8 +27,7 @@ export class TabContainer extends Component {
     }
 
     renderBlueprint() {
-        const model = this.props.model,
-            {id, children, selectedId, vertical} = model;
+        const {id, children, selectedId, vertical} = this.model;
 
         return tabs({
             id,
@@ -48,8 +48,7 @@ export class TabContainer extends Component {
     }
 
     renderSemantic() {
-        const model = this.props.model,
-            {children, selectedIndex, vertical, isActive} = model;
+        const {children, selectedIndex, vertical, isActive} = this.model;
 
         // 0) Construct Selectors.
         const $items = children.map(it => ({key: it.id, name: it.id})),
@@ -62,7 +61,7 @@ export class TabContainer extends Component {
                 vertical,
                 pointing: !vertical,
                 secondary: true,
-                style: vertical ? {width: '100px', margin: 0} : {margin: 0},
+                style: vertical ? {flex: 'none', width: '100px', margin: 0} : {margin: 0},
                 $items
             });
 
@@ -78,18 +77,25 @@ export class TabContainer extends Component {
 
         const conf = {
             flex: 1,
+            maxWidth: '100%',
+            maxHeight: '100%',
             display: isActive ? 'flex' : 'none',
             items: [selectors, ...panes]
         };
         return vertical ? hbox(conf) : vbox(conf);
     }
 
+    //--------------------------
+    // Implementation
+    //--------------------------
+    get model() {return this.props.model}
+
     onSemanticTabChange = (e, {index}) => {
-        this.props.model.setSelectedIndex(index);
+        this.model.setSelectedIndex(index);
     }
 
     onBlueprintTabChange = (activeId) => {
-        this.props.model.setSelectedId(activeId);
+        this.model.setSelectedId(activeId);
     }
 }
 export const tabContainer = elemFactory(TabContainer);

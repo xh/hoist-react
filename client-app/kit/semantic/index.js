@@ -6,17 +6,20 @@
  */
 import 'semantic-ui-css/semantic.min.css';
 
-import {elemFactory} from 'hoist/hyperscript';
+import {elemFactory} from 'hoist';
+import {defaults} from 'lodash';
 
 import {
     Button,
     Card,
+    Checkbox,
     Dimmer,
     Dropdown,
     Form,
     Header,
     Input,
     Icon,
+    Label,
     Loader,
     Popup,
     Menu,
@@ -29,12 +32,14 @@ export const
     button = elemFactory(Button),
     buttonContent = elemFactory(Button.Content),
     card = elemFactory(Card),
+    checkbox = elemFactory(Checkbox),
     dimmer = elemFactory(Dimmer),
     dropdown = elemFactory(Dropdown),
     form = elemFactory(Form),
     header = elemFactory(Header),
     icon = elemFactory(Icon),
     input = elemFactory(Input),
+    label = elemFactory(Label),
     loader = elemFactory(Loader),
     menu = elemFactory(Menu),
     modal = elemFactory(Modal),
@@ -45,3 +50,11 @@ export const
     tab = elemFactory(Tab),
     tabPane = elemFactory(Tab.Pane),
     textArea = elemFactory(TextArea);
+
+
+// TODO:  how to establish defaults like this appropriately for hoist and apps.
+
+export function hoistButton(args) {
+    defaults(args, {labelPosition: 'left', size: 'tiny', compact: true});
+    return button(args);
+}

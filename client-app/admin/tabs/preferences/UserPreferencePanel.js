@@ -8,25 +8,44 @@ import {Component} from 'react';
 import {observer} from 'hoist/mobx';
 import {restGrid, RestGridModel} from 'hoist/rest';
 
-import {nameFlexCol, typeCol, prefValueCol, usernameCol} from '../../columns/Columns';
+import {baseCol} from 'hoist/columns/Core';
+import {nameFlexCol, usernameCol} from '../../columns/Columns';
 
 @observer
 export class UserPreferencePanel extends Component {
 
     model = new RestGridModel({
         url: 'rest/userPreferenceAdmin',
+        editWarning: 'Are you sure you want to edit? Editing preferences can break running apps!',
+        deleteWarning(records) {
+            const count = records.length,
+                countMsg = (count === 1 ? 'this preference' : `these ${count} preferences`);
+
+            return `Are you sure you want to delete ${countMsg}? Deleting preferences can break running apps!`;
+        },
+
+        recordSpec: {
+            fields: [
+                {name: 'name', label: 'Pref', lookup: 'names'},
+                {name: 'type', label: 'Type'},
+                {name: 'username', label: 'User'},
+                {name: 'userValue', typeField: 'type', label: 'User Value'},
+                {name: 'lastUpdated', type: 'date', dateFormat: 'time', label: 'Last Updated'},
+                {name: 'lastUpdatedBy', label: 'Last Updated By'}
+            ]
+        },
         columns: [
             nameFlexCol(),
-            typeCol(),
+            baseCol({field: 'type', width: 80}),
             usernameCol(),
-            prefValueCol({field: 'userValue'})
+            baseCol({field: 'userValue', flex: 1})
         ],
         editors: [
-            {name: 'name', allowBlank: false, additionsOnly: true}, // means read only?
-            {name: 'username', allowBlank: false},
-            {name: 'userValue', allowBlank: false},
-            {name: 'lastUpdated'},
-            {name: 'lastUpdatedBy'}
+            {field: 'name'},
+            {field: 'username'},
+            {field: 'userValue'},
+            {field: 'lastUpdated'},
+            {field: 'lastUpdatedBy'}
         ]
     });
 

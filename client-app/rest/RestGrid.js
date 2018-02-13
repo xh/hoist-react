@@ -20,12 +20,12 @@ import {restForm} from './RestForm';
 export class RestGrid extends Component {
 
     render() {
-        const model = this.props.model;
+        const model = this.model;
         return vframe(
             restGridToolbar({model}),
             frame(
                 grid({
-                    model,
+                    model: model.gridModel,
                     gridOptions: {
                         onRowDoubleClicked: this.onRowDoubleClicked
                     }
@@ -35,8 +35,13 @@ export class RestGrid extends Component {
         );
     }
 
+    //------------------------
+    // Implementation
+    //------------------------
+    get model() {return this.props.model}
+
     onRowDoubleClicked = (row) => {
-        this.props.model.openEditForm(row.data);
+        this.model.openEditForm(row.data);
     }
 }
 export const restGrid = elemFactory(RestGrid);

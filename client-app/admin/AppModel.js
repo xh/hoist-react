@@ -4,10 +4,10 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {observable, action} from 'hoist/mobx';
+import {action} from 'hoist/mobx';
 
-import {TabContainerModel} from './tabs/TabContainerModel';
-import {TabPaneModel} from './tabs/TabPaneModel';
+import {TabContainerModel, TabPaneModel} from 'hoist/cmp';
+
 import {AboutPanel} from './tabs/about/AboutPanel';
 import {ActivityPanel} from './tabs/activity/ActivityPanel';
 import {ConfigPanel} from './tabs/configs/ConfigPanel';
@@ -16,7 +16,7 @@ import {FeedbackPanel} from './tabs/feedback/FeedbackPanel';
 import {DashboardPanel} from './tabs/dashboards/DashboardPanel';
 import {EhCachePanel} from './tabs/ehcache/EhCachePanel';
 import {LogLevelPanel} from './tabs/logging/LogLevelPanel';
-import {LogViewerPanel} from './tabs/logging/LogViewerPanel';
+import {LogViewer} from './tabs/logging/viewer/LogViewer';
 import {MonitorResultsPanel} from './tabs/monitor/MonitorResultsPanel';
 import {MonitorEditorPanel} from './tabs/monitor/MonitorEditorPanel';
 import {PreferencePanel} from './tabs/preferences/PreferencePanel';
@@ -28,11 +28,10 @@ import {UserPanel} from './tabs/users/UserPanel';
 class AppModel {
 
     tabs = this.createTabs();
-    @observable lastRefreshRequest = null;
     
     @action
-    requestRefresh = () => {
-        this.lastRefreshRequest = Date.now();
+    requestRefresh() {
+        this.tabs.setLastRefreshRequest(Date.now());
     }
 
     //------------------------
@@ -50,7 +49,7 @@ class AppModel {
                 new TabPaneModel('Readme', ReadmePanel)
             ),
             new TabContainerModel('Logging', 'v',
-                new TabPaneModel('Viewer', LogViewerPanel),
+                new TabPaneModel('Viewer', LogViewer),
                 new TabPaneModel('Levels', LogLevelPanel)
             ),
             new TabContainerModel('Monitor', 'v',

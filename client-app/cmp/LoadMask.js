@@ -6,12 +6,11 @@
  */
 
 import {Component} from 'react';
-import {viewport} from 'hoist/layout';
+import {elemFactory} from 'hoist';
+import {viewport, frame} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
 
 import {overlay, spinner} from 'hoist/kit/blueprint';
-import {dimmer, loader} from 'hoist/kit/semantic';
-import {hoistAppModel} from 'hoist/app/HoistAppModel';
 
 /**
  * Simple LoadMask.
@@ -28,37 +27,51 @@ export class LoadMask extends Component {
 
     static defaultProps = {
         isDisplayed: false,
-        model: null
+        model: null,
+        inline: false
     };
     
     render() {
-        return hoistAppModel.useSemantic ? this.renderSemantic() : this.renderBlueprint();
-    }
+        let {isDisplayed, model, inline} = this.props;
 
-    renderBlueprint() {
-        const {isDisplayed, model} = this.props;
+        // TODO: Inline Mask in blueprint not currently working.
+        // Also, all masks seem to steal focus
+
+        if (!(isDisplayed || (model && model.isPending))) return null;
         return overlay({
-            isOpen: isDisplayed || (model && model.isPending),
+            isOpen: true,
             canEscapeKeyClose: false,
             backdropProps: {
                 style: {backgroundColor: this.BACKGROUND}
             },
-            items: viewport({
-                flex: 1,
-                alignItems: 'center',
-                justifyContent: 'center',
-                items: spinner()
-            })
+            style: {display: 'flex'},
+            usePortal: !inline,
+            item: inline ? this.getInlineChild() : this.getViewportChild()
         });
     }
 
-    renderSemantic() {
-        const {isDisplayed, model} = this.props;
-        return dimmer({
-            active: isDisplayed || (model && model.isPending),
-            page: true,
-            items: loader()
+    //-----------------
+    // Implementation
+    //-----------------
+    getInlineChild() {
+        return frame({
+            width: '100%',
+            height: '100%',
+            alignItems: 'center',
+            justifyContent: 'center',
+            item: spinner()
+        });
+    }
+
+    getViewportChild() {
+        return viewport({
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+            item: spinner()
         });
     }
 }
+export const loadMask = elemFactory(LoadMask);
+
 

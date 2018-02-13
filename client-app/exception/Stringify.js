@@ -8,6 +8,15 @@
 import {trimToDepth} from 'hoist/utils/JsUtils';
 import {stripTags} from 'hoist/utils/HtmlUtils';
 
+/**
+ * Stringify an error object (typically an exception) safely for
+ * submission to server.
+ *
+ * This method will avoid circular references and will trim the depth of the stack.
+ *
+ * @param errorObject
+ * @return string
+ */
 export function stringifyErrorSafely(errorObject) {
     try {
         let err = errorObject;
@@ -32,7 +41,7 @@ export function stringifyErrorSafely(errorObject) {
         }
 
         // 2) Protect against circularity, monstrosity with a general depth trim
-        err = trimToDepth(err, 7);
+        err = trimToDepth(err, 5);
 
         return stripTags(JSON.stringify(err, null, 4));
 

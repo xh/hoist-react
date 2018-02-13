@@ -1,0 +1,28 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2018 Extremely Heavy Industries Inc.
+ */
+
+.logviewer-table {
+    background-color: #f6f6f6;
+}
+.logviewer-row {
+    height: 16px;
+    font-size: 11px;
+    font-family: Monaco, monospace;
+}
+
+.logviewer-row-number {
+    padding-right: 6px;
+    margin-right: 6px;
+    min-width: 50px;
+    color: #3764ab;
+    border-right: 1px dotted #929292;
+    text-align: end;
+}
+
+.logviewer-row-content {
+    white-space: pre;
+}

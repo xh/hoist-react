@@ -5,9 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-export {useStrict, observable, action, autorun, computed, when, toJS} from 'mobx';
+export {useStrict, observable, action, autorun, computed, when, toJS, trace, whyRun} from 'mobx';
 export {observer} from 'mobx-react';
 export {setter} from 'mobx-decorators';
-export {LastPromiseModel} from './LastPromiseModel';
-export {MultiPromiseModel} from './MultiPromiseModel';
 

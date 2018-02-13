@@ -7,15 +7,16 @@
 
 import {Component} from 'react';
 import {elemFactory} from 'hoist';
+import {capitalize} from 'lodash';
 import {vbox} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
-import {button, input, modal, modalContent, modalActions, modalHeader} from 'hoist/kit/semantic';
+import {dropdown, hoistButton, input, label, modal, modalContent, modalActions, modalHeader} from 'hoist/kit/semantic';
 
 @observer
 export class RestFormSemantic extends Component {
 
     render() {
-        const {formRecord, formIsAdd} = this.props.model;
+        const {formRecord, formIsAdd} = this.model;
 
         if (!formRecord) return null;
 
@@ -35,71 +36,97 @@ export class RestFormSemantic extends Component {
     //--------------------------
     // Implementation
     //---------------------------
-    getForm() {
-        const {editors, formRecord} = this.props.model;
+    get model() {return this.props.model}
 
-        const items = editors.map(editor => {
-            const field = editor.name;
-            return input({
-                value: formRecord[field] || '',
-                onChange: (e) => console.log(e),
-                type: editor.type || 'text',
-                label: {content: editor.name, style: {width: '115px', verticalAlign: 'middle'}},
-                disabled: editor.readOnly,
-                style: {marginBottom: 5}
-            });
+    getForm() {
+        const {editors} = this.model,
+            ret = [];
+
+        editors.forEach(editor => {
+            ret.push(this.createFieldLabel(editor));
+
+            // this will probably turn into a switch statement
+            if (editor.type === 'bool') {
+                ret.push(this.createBooleanField(editor));
+            } else {
+                ret.push(this.createTextField(editor));
+            }
+
         });
 
         return vbox({
             cls: 'rest-form',
             padding: 10,
-            items
+            items: ret
         });
     }
 
     getButtons() {
-        const {formIsValid, formIsWritable, enableDelete, formIsAdd} = this.props.model,
-            ret = [];
-
-        if (enableDelete && !formIsAdd) {
-            ret.push(
-                button({
-                    content: 'Delete',
-                    icon: {name: 'x', color: 'red'},
-                    compact: true,
-                    disabled: !formIsValid,
-                    onClick: this.onDeleteClick
-                })
-            );
-        }
-
-        if (formIsWritable) {
-            ret.push(
-                button({
-                    content: 'Save',
-                    icon: {name: 'check', color: 'green'},
-                    compact: true,
-                    disabled: !formIsValid,
-                    onClick: this.onSaveClick
-                })
-            );
-        }
-
-        return ret;
+        const {formIsValid, formIsWritable, enableDelete, formIsAdd} = this.model;
+        return [
+            hoistButton({
+                content: 'Delete',
+                icon: {name: 'x', color: 'red'},
+                disabled: !formIsValid,
+                onClick: this.onDeleteClick,
+                omit: !enableDelete || formIsAdd
+            }),
+            hoistButton({
+                content: 'Save',
+                icon: {name: 'check', color: 'green'},
+                disabled: !formIsValid,
+                onClick: this.onSaveClick,
+                omit: !formIsWritable
+            })
+        ];
     }
 
     onClose = () => {
-        this.props.model.closeForm();
+        this.model.closeForm();
     }
 
     onDeleteClick = () => {
-        const model = this.props.model;
+        const model = this.model;
         model.deleteRecord(model.formRecord);
     }
 
     onSaveClick = () => {
-        const model = this.props.model;
-        model.saveRecord(model.formRecord);
+        const model = this.model;
+        model.saveFormRecord();
+    }
+
+    createFieldLabel(editor) {
+        return label({content: editor.label || editor.field, style: {width: '115px', textAlign: 'center', paddingBottom: 5}});
+    }
+
+    createBooleanField(editor) {
+        const {formRecord, setFormValue} = this.model,
+            field = editor.field;
+
+        return dropdown({
+            className: 'rest-form-dropdown',
+            fluid: true,
+            inline: true,
+            options: [{text: 'True', value: 'true', key: 'True'}, {text: 'False', value: 'false', key: 'False'}],
+            placeholder: formRecord[field] ? capitalize(formRecord[field].toString()) : '',
+            onChange: (e, data) => setFormValue(field, data.value === 'true'),
+            disabled: editor.readOnly,
+            style: {marginBottom: 5}
+        });
+    }
+
+    createTextField(editor) {
+        const {formRecord, setFormValue} = this.model,
+            field = editor.field,
+            renderer = editor.renderer,
+            currentVal = renderer ? renderer(formRecord[field]) : formRecord[field];
+        return input({
+            defaultValue: currentVal || '',
+            onChange: (e) => setFormValue(field, e.target.value),
+            type: 'text',
+            disabled: editor.readOnly, // should be on corresponding feild now
+            style: {marginBottom: 5}
+        });
     }
 }
 export const restFormSemantic = elemFactory(RestFormSemantic);

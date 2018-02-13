@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {identityService, elemFactory} from 'hoist';
 import {hbox, vbox, spacer, filler, div} from 'hoist/layout';
 import {Classes, button, suggest, icon, popover, menuItem} from 'hoist/kit/blueprint';
-import {icon as semanticIcon, button as semanticButton, popup, dropdown} from 'hoist/kit/semantic';
+import {icon as semanticIcon, hoistButton, popup, dropdown} from 'hoist/kit/semantic';
 import {observer} from 'hoist/mobx';
 import {hoistAppModel} from 'hoist/app/HoistAppModel';
 
@@ -46,6 +46,7 @@ export class ImpersonationBar extends Component {
         render() {
             const {impersonating, username} = identityService;
             return hbox({
+                flex: 'none',
                 padding: 5,
                 style: {
                     color: 'white',
@@ -53,7 +54,7 @@ export class ImpersonationBar extends Component {
                 },
                 alignItems: 'center',
                 items: [
-                    icon({iconName: 'person'}),
+                    icon({icon: 'person'}),
                     spacer({width: 10}),
                     div(`${impersonating ? 'Impersonating' : ''} ${username}`),
                     filler(),
@@ -70,7 +71,7 @@ export class ImpersonationBar extends Component {
             return popover({
                 target: button({
                     text: 'Switch User',
-                    iconName: 'random',
+                    icon: 'random',
                     style: {minWidth: 130},
                     onClick: model.openTargetDialog
                 }),
@@ -108,7 +109,7 @@ export class ImpersonationBar extends Component {
 
         exitButton() {
             const text = identityService.impersonating ? 'Exit Impersonation' : 'Close';
-            return button({text, iconName: 'cross', onClick: this.model.doExit});
+            return button({text, icon: 'cross', onClick: this.model.doExit});
         }
     }
 
@@ -121,6 +122,7 @@ export class ImpersonationBar extends Component {
         render() {
             const {impersonating, username} = identityService;
             return hbox({
+                flex: 'none',
                 padding: 5,
                 style: {
                     color: 'white',
@@ -143,7 +145,7 @@ export class ImpersonationBar extends Component {
             const model = this.model,
                 targets = model.targets || [];
             return popup({
-                trigger: this.button({content: 'Switch User', icon: 'random'}),
+                trigger: hoistButton({content: 'Switch User', icon: 'random'}),
                 open: model.targetDialogOpen,
                 disabled: !model.targets,
                 position: 'bottom right',
@@ -164,9 +166,9 @@ export class ImpersonationBar extends Component {
                         spacer({height: 5}),
                         hbox(
                             filler(),
-                            this.button({content: 'Close', onClick: model.closeTargetDialog}),
+                            hoistButton({content: 'Close', onClick: model.closeTargetDialog}),
                             spacer({width: 5}),
-                            this.button({content: 'OK', onClick: model.doImpersonate, disabled: !model.selectedTarget})
+                            hoistButton({content: 'OK', onClick: model.doImpersonate, disabled: !model.selectedTarget})
                         )
                     ]
                 })
@@ -175,11 +177,7 @@ export class ImpersonationBar extends Component {
         
         exitButton() {
             const content = identityService.impersonating ? 'Exit Impersonation' : 'Close';
-            return this.button({content, icon: 'close', onClick: this.model.doExit});
-        },
-
-        button(props) {
-            return semanticButton({...props, size: 'tiny', compact: true});
+            return hoistButton({content, icon: 'close', onClick: this.model.doExit});
         }
     }
 }

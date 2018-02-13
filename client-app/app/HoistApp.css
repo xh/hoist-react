@@ -1,16 +1,5 @@
-.pt-tabs.pt-vertical {
-    display: flex;
-    flex-direction: row;
-    flex: 1 1 auto;
-}
-
-.pt-tabs {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 auto;
-}
-
-.pt-tab-panel {
-    display: flex;
-    flex: 1 1 auto;
+body ::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 10px;
+    height: 10px;
 }

@@ -5,10 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH} from 'hoist/exception/Exception';
-import {fmtSpan, saveOriginal} from './FormatUtils';
 import {defaults, isFinite, isString} from 'lodash';
 import numeral from 'numeral';
+
+import {XH} from 'hoist/exception';
+
+import {createRenderer, saveOriginal} from './FormatUtils';
+import {fmtSpan} from './FormatMisc';
 
 const THOUSAND = 1000,
     MILLION  = 1000000,
@@ -205,12 +208,6 @@ export function fmtPercent(v, opts = {}) {
     return ret;
 }
 
-// intended for use with our percent format strings in XH.util.Export (which expects v / 100)
-export function fmtExportPercent(v, {precision = 4} = {}) {
-    if (!isFinite(v)) return '';
-    return fmtNumber((v / 100), {precision: precision, zeroPad: true});
-}
-
 //---------------
 // Implementation
 //---------------
@@ -270,3 +267,11 @@ function buildFormatPattern(v, precision, zeroPad) {
 function isInvalidInput(v) {
     return v == null || v === '';
 }
+
+export const numberRenderer = createRenderer(fmtNumber),
+    thousandsRenderer = createRenderer(fmtThousands),
+    millionsRenderer = createRenderer(fmtMillions),
+    billionsRenderer = createRenderer(fmtBillions),
+    quantityRenderer = createRenderer(fmtQuantity),
+    priceRenderer = createRenderer(fmtPrice),
+    percentRenderer = createRenderer(fmtPercent);

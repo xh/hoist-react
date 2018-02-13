@@ -9,10 +9,9 @@ import './HoistApp.css';
 
 import 'babel-polyfill';
 import {Component} from 'react';
-import {elem} from 'hoist';
+import {elem, hocDisplayName} from 'hoist/react';
 import {loadMask} from 'hoist/cmp';
-import {errorRichAlertDialog} from 'hoist/error';
-import {hocDisplayName} from 'hoist/utils/ReactUtils';
+import {errorDialog} from 'hoist/error';
 import {frame, viewport, vframe} from 'hoist/layout';
 import {useStrict, observer} from 'hoist/mobx';
 
@@ -40,7 +39,7 @@ export function hoistApp(C) {
         }
 
         render() {
-            const {authUsername, authCompleted, isInitialized} = hoistAppModel;
+            const {authUsername, authCompleted, isInitialized, appLoadModel, errorDialogModel} = hoistAppModel;
 
             if (!authCompleted) return this.renderPreloadMask();
             if (!authUsername)  return loginPanel();
@@ -52,8 +51,8 @@ export function hoistApp(C) {
                     frame(elem(C)),
                     versionBar()
                 ),
-                loadMask({model: hoistAppModel.appLoadModel}),
-                errorRichAlertDialog()
+                loadMask({model: appLoadModel}),
+                errorDialog({model: errorDialogModel})
             );
         }
 

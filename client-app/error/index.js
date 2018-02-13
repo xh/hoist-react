@@ -4,10 +4,5 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {elemFactory} from 'hoist';
-import {ErrorDetailsDialog} from './ErrorDetailsDialog';
-import {ErrorRichAlertDialog} from './ErrorRichAlertDialog';
-
-export const errorDetailsDialog = elemFactory(ErrorDetailsDialog);
-export const errorRichAlertDialog = elemFactory(ErrorRichAlertDialog);
-
+export * from './ErrorDialog';
+export * from './ErrorDialogModel';

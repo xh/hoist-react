@@ -6,7 +6,9 @@
  */
 
 import {XH} from 'hoist';
-import {observable, action, LastPromiseModel} from 'hoist/mobx';
+import {observable, action} from 'hoist/mobx';
+import {LastPromiseModel} from 'hoist/promise';
+
 import {GridSelectionModel} from './GridSelectionModel';
 
 /**
@@ -14,14 +16,15 @@ import {GridSelectionModel} from './GridSelectionModel';
  */
 export class GridModel {
 
+    // Immutable public properties
     url = '';
     dataRoot = null;
     processRawData = null;
+    selection = new GridSelectionModel();
+    loadModel = new LastPromiseModel();
 
     @observable columns = [];
     @observable records = [];
-    selection = new GridSelectionModel();
-    loadModel = new LastPromiseModel();
 
     constructor({url, dataRoot, columns, processRawData}) {
         this.url = url;
@@ -35,7 +38,7 @@ export class GridModel {
         return XH
             .fetchJson({url: this.url})
             .then(this.completeLoad)
-            .bind(this.loadModel)
+            .linkTo(this.loadModel)
             .catchDefault();
     }
 
@@ -43,10 +46,10 @@ export class GridModel {
     // Implementation
     //--------------------------
     @action
-    completeLoad = (records) => {
+    completeLoad = (data) => {
         const {processRawData, dataRoot} = this;
-        if (dataRoot) records = records[dataRoot];
-        if (processRawData) records = processRawData(records);
-        this.records = records;
+        let rawRecords = dataRoot ? data[dataRoot] : data;
+        if (processRawData) rawRecords = processRawData(rawRecords);
+        this.records = rawRecords;
     }
 }

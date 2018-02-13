@@ -7,8 +7,9 @@
 import {Component} from 'react';
 import {grid, GridModel} from 'hoist/grid';
 import {observer} from 'hoist/mobx';
+import {baseCol} from 'hoist/columns/Core';
 
-import {nameCol, heapSizeCol, entriesCol, statusCol} from '../../columns/Columns';
+import {nameCol} from '../../columns/Columns';
 
 @observer
 export class EhCachePanel extends Component {
@@ -17,9 +18,9 @@ export class EhCachePanel extends Component {
         url: 'ehCacheAdmin/listCaches',
         columns: [
             nameCol(),
-            heapSizeCol(),
-            entriesCol(),
-            statusCol()
+            baseCol({field: 'heapSize', text: 'Heap Size (MB)', width: 130}),
+            baseCol({field: 'entries', text: 'Entries', width: 130}),
+            baseCol({field: 'status', text: 'Status', flex: 0.25})
         ]
     });
     
