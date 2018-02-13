@@ -77,7 +77,7 @@ export class RestGridModel {
     }
 
     @action
-    saveFormRecord() { // button in view still calls this
+    saveFormRecord() {
         const {url} = this,
             {formRecord, formIsWritable, formIsAdd} = this.restFormModel;
 
@@ -88,7 +88,7 @@ export class RestGridModel {
             method: formIsAdd ? 'POST' : 'PUT',
             params: {data: JSON.stringify(formRecord)}
         }).then(response => {
-            this.closeForm();
+            this.restFormModel.closeForm();
             this.noteRecordUpdated(response.data);
         }).linkTo(
             this.loadModel
@@ -108,7 +108,7 @@ export class RestGridModel {
         } else {
             records[idx] = rec;
         }
-        this.closeForm();
+        this.restFormModel.closeForm();
     }
 
     @action
