@@ -42,7 +42,6 @@ export class ImpersonationBar extends Component {
     // Implementation
     //---------------------
     onHotKey = () => {
-        console.log('hi there');
         this.model.toggleVisibility();
     }
 
