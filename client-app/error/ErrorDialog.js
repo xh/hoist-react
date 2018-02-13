@@ -23,7 +23,7 @@ export class ErrorDialog extends Component {
 
         return dialog({
             isOpen: true,
-            icoName: 'attention',
+            icon: 'attention',
             title: options.title,
             items: [
                 dialogBody(options.message),
