@@ -35,6 +35,8 @@ export class RestFormBlueprint extends Component {
     // Implementation
     //--------------------------------
     get model() {return this.props.model}
+    get restFormModel() {return this.props.model.restFormModel}
+
 
     renderDialogItems() {
         const items = [
