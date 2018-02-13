@@ -170,7 +170,6 @@ export class RestFormBlueprint extends Component {
             popoverProps: {popoverClassName: Classes.MINIMAL},
             // itemListPredicate: itemListPredicate,
             itemPredicate: (q, v, index) => !v || v.includes(q),
-            style: {marginBottom: 5},
             $items: options,
             onItemSelect: handler,
             itemRenderer: ({handleClick, isActive, item}) => {
@@ -181,7 +180,7 @@ export class RestFormBlueprint extends Component {
                 defaultValue: config.defaultValue,
                 // TODO need to somehow set current value on visible component
                 value: undefined, // console warning dictated this undefined if I want to use default val
-                rightElement: icon({iconName: 'pt-icon-caret-down'}),
+                style: {marginBottom: 5},
                 disabled: config.isDisabled
             }
         });
