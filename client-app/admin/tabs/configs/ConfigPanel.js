@@ -9,7 +9,6 @@ import {observer} from 'hoist/mobx';
 import {environmentService} from 'hoist';
 import {boolCheckCol, baseCol} from 'hoist/columns/Core';
 import {restGrid, RestGridModel} from 'hoist/rest';
-import {dateTimeRenderer} from '../../../format';
 
 import {nameCol} from '../../columns/Columns';
 

@@ -10,7 +10,6 @@ import {boolCheckCol, baseCol} from 'hoist/columns/Core';
 import {restGrid, RestGridModel} from 'hoist/rest';
 
 import {nameFlexCol} from '../../columns/Columns';
-import {dateTimeRenderer} from '../../../format';
 
 @observer
 export class PreferencePanel extends Component {

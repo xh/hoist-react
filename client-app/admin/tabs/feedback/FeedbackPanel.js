@@ -9,7 +9,7 @@ import {observer} from 'hoist/mobx';
 import {restGrid, RestGridModel} from 'hoist/rest';
 import {baseCol} from 'hoist/columns/Core';
 import {usernameCol} from '../../columns/Columns';
-import {compactDateRenderer, dateTimeRenderer} from '../../../format';
+import {compactDateRenderer} from '../../../format';
 
 @observer
 export class FeedbackPanel extends Component {
@@ -43,7 +43,7 @@ export class FeedbackPanel extends Component {
             {field: 'device'},
             {field: 'appVersion'},
             {field: 'appEnvironment'},
-            {field: 'dateCreated', renderer: dateTimeRenderer()}
+            {field: 'dateCreated', type: 'displayField'}
         ]
     });
 

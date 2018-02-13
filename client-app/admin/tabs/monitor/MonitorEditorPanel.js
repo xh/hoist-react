@@ -10,8 +10,6 @@ import {baseCol, boolCheckCol} from 'hoist/columns/Core';
 import {restGrid, RestGridModel} from 'hoist/rest';
 
 import {nameFlexCol} from '../../columns/Columns';
-import {dateTimeRenderer} from '../../../format';
-
 
 @observer
 export class MonitorEditorPanel extends Component {

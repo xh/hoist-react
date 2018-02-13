@@ -18,7 +18,6 @@ class Confirm extends Component {
     render() {
         const isOpen = this.model && this.model.isOpen;
 
-        console.log('confirm render');
         if (!isOpen) return null;
 
         return dialog({

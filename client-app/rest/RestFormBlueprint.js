@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {Classes, button, dialog, dialogBody, dialogFooter, dialogFooterActions, icon, inputGroup, label, menuItem, numericInput, select, suggest, textArea} from 'hoist/kit/blueprint';
+import {Classes, button, dialog, dialogBody, dialogFooter, dialogFooterActions, inputGroup, label, menuItem, numericInput, select, suggest, textArea} from 'hoist/kit/blueprint';
 import {elemFactory} from 'hoist';
 import {action, observer, observable} from 'hoist/mobx';
 import {span, vbox, filler} from 'hoist/layout';
@@ -162,7 +162,7 @@ export class RestFormBlueprint extends Component {
     }
 
     createDisplayField(config) {
-        if (config.fieldSpec.name === 'lastUpdated') config.defaultValue = fmtDateTime(config.defaultValue);
+        if (['lastUpdated', 'dateCreated'].includes(config.fieldSpec.name)) config.defaultValue = fmtDateTime(config.defaultValue);
         return span({item: config.defaultValue, style: {marginBottom: 5, padding: '5 0'}});
     }
 
@@ -278,7 +278,7 @@ export class RestFormBlueprint extends Component {
     }
 
     getInputType(fieldSpec, editor) {
-        if (editor.type == 'displayField') return 'display';
+        if (editor.type === 'displayField') return 'display';
         if (fieldSpec.lookupValues) return 'dropdown';
         if (fieldSpec.type === 'bool' || fieldSpec.type === 'boolean') return 'boolean';
         if (fieldSpec.type === 'int') return 'number';

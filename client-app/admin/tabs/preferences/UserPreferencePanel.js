@@ -10,7 +10,6 @@ import {restGrid, RestGridModel} from 'hoist/rest';
 
 import {baseCol} from 'hoist/columns/Core';
 import {nameFlexCol, usernameCol} from '../../columns/Columns';
-import {dateTimeRenderer} from '../../../format';
 
 @observer
 export class UserPreferencePanel extends Component {
