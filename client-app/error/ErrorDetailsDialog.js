@@ -7,6 +7,7 @@
 
 import {Component} from 'react';
 import {button, card, form, header, modal, modalActions, modalContent, textArea} from 'hoist/kit/semantic';
+import Clipboard from 'clipboard';
 
 import {errorTrackingService} from 'hoist';
 import {stringifyErrorSafely} from 'hoist/error/Utils';
@@ -17,8 +18,18 @@ export class ErrorDetailsDialog extends Component {
 
     @setter @observable msg = '';
 
+    componentDidUpdate() {
+        if (this.props.visManager.isVisible) {
+            this.createCopier();
+        }
+    }
+
     render() {
         if (!this.props.visManager.isVisible) return null;
+
+        this.errorString = stringifyErrorSafely(this.props.exception);
+
+
         return modal({
             open: true,
             items: [
@@ -30,7 +41,7 @@ export class ErrorDetailsDialog extends Component {
                     items: [
                         card({
                             fluid: true,
-                            description: stringifyErrorSafely(this.props.exception)
+                            description: this.errorString
                         }),
                         form(textArea({
                             autoHeight: true,
@@ -50,9 +61,9 @@ export class ErrorDetailsDialog extends Component {
                             onClick: this.onSendClick
                         }),
                         this.button({
+                            cls: 'xh-exception-copy-btn',
                             icon: 'clipboard',
-                            content: 'Copy',
-                            onClick: this.onCopyClick
+                            content: 'Copy'
                         }),
                         this.button({
                             icon: 'close',
@@ -77,15 +88,24 @@ export class ErrorDetailsDialog extends Component {
             .then(() => this.onCloseClick());
     }
 
-    onCopyClick = () => {
-
-    }
-
     @action
     onCloseClick = () => {
         this.setMsg('');
+        this.clipboard.destroy();
         this.props.visManager.isVisible = false;
     }
 
     button(props) {return button({labelPosition: 'left', ...props})}
+
+    createCopier() {
+        this.clipboard = new Clipboard('.xh-exception-copy-btn', {
+            text: () => this.errorString
+        });
+        this.clipboard.on('success', function(e) {
+            // show toast
+            e.clearSelection();
+        });
+    }
+
+
 }
