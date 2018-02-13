@@ -98,7 +98,7 @@ export class RestFormBlueprint extends Component {
         return [
             button({
                 text: 'Close',
-                iconName: 'cross',
+                icon: 'cross',
                 onClick: this.onClose
             }),
             filler(),
@@ -203,7 +203,7 @@ export class RestFormBlueprint extends Component {
             popoverProps: {popoverClassName: Classes.MINIMAL},
             filterable: false,
             $items: ['true', 'false'],
-            items: button({text: currentText, rightIconName: 'caret-down', style: {marginBottom: 5}}),
+            items: button({text: currentText, rightIcon: 'caret-down', style: {marginBottom: 5}}),
             onItemSelect: handler,
             itemRenderer: ({handleClick, isActive, item}) => {
                 return menuItem({key: item, onClick: handleClick, text: item});
