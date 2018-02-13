@@ -4,11 +4,11 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
+import React, {Component} from 'react';
 import {elemFactory} from 'hoist';
-import {inputGroup, numericInput, checkbox, button, label} from 'hoist/kit/blueprint';
+import {controlGroup, inputGroup, numericInput, checkbox, button, label, navbar, navbarGroup, navbarHeading, switchControl} from 'hoist/kit/blueprint';
 import {observer} from 'hoist/mobx';
-import {hbox, filler, hspacer} from 'hoist/layout';
+import {hbox, filler, hspacer, div} from 'hoist/layout';
 
 @observer
 class LogViewerToolbar extends Component {
@@ -23,21 +23,17 @@ class LogViewerToolbar extends Component {
             style: {background: '#106ba3'},
             items: [
                 this.label('Start Line:'),
-                hspacer(10),
-                numericInput({
-                    style: {width: 50},
+                hspacer(8),
+                this.numericInput({
                     value: startLine,
-                    buttonPosition: 'none',
                     min: 0,
                     onValueChange: this.onStartLineChange
                 }),
                 hspacer(10),
                 this.label('Max Lines:'),
-                hspacer(10),
-                numericInput({
-                    style: {width: 50},
+                hspacer(8),
+                this.numericInput({
                     value: maxLines,
-                    buttonPosition: 'none',
                     min: 1,
                     onValueChange: this.onMaxLinesChange
                 }),
@@ -50,13 +46,14 @@ class LogViewerToolbar extends Component {
                 }),
                 hspacer(10),
                 checkbox({
-                    label: this.label('Tail'),
                     name: 'tail',
+                    style: {marginBottom: '0px', marginRight: '0px'},
+                    label: this.label('Tail'),
                     checked: tail,
+                    inline: true,
                     onChange: this.onTailChange
                 }),
                 filler(),
-                hspacer(10),
                 button({
                     icon: 'refresh',
                     onClick: this.onSubmitClick
@@ -89,7 +86,16 @@ class LogViewerToolbar extends Component {
     }
     
     label(txt) {
-        return label({text: txt, style: {color: 'white', whiteSpace: 'nowrap'}});
+        // Default label object has trouble with inline
+        return div({
+            cls: 'pt-label pt-inline',
+            style: {color: 'white', whiteSpace: 'nowrap'},
+            item: txt
+        });
+    }
+
+    numericInput(args) {
+        return numericInput({style: {width: 50}, buttonPosition: 'none', ...args});
     }
 
     get model() {return this.props.model}
