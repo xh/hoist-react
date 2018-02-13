@@ -10,7 +10,7 @@ import {observable, computed, action} from 'hoist/mobx';
 import {GridModel} from 'hoist/grid';
 import {RecordSpec} from 'hoist/data';
 import {ConfirmModel} from 'hoist/cmp/confirm/ConfirmModel';
-import {remove, keys} from 'lodash';
+import {remove} from 'lodash';
 
 /**
  * Core Model for a RestGrid
