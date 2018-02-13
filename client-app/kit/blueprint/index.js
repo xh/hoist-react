@@ -15,6 +15,8 @@ import {
     Checkbox,
     ControlGroup,
     Dialog,
+    Hotkeys,
+    Hotkey,
     Icon,
     InputGroup,
     Label,
@@ -35,12 +37,14 @@ import {
 } from '@blueprintjs/core';
 
 import {Suggest, Select} from '@blueprintjs/select';
-export {Classes} from '@blueprintjs/core';
+export {Classes, HotkeysTarget} from '@blueprintjs/core';
 
 export const button = elemFactory(Button),
     controlGroup = elemFactory(ControlGroup),
     checkbox = elemFactory(Checkbox),
     dialog = elemFactory(Dialog),
+    hotkey = elemFactory(Hotkey),
+    hotkeys = elemFactory(Hotkeys),
     icon = elemFactory(Icon),
     inputGroup = elemFactory(InputGroup),
     label = elemFactory(Label),
