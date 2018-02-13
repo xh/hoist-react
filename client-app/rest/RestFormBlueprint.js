@@ -61,7 +61,7 @@ export class RestFormBlueprint extends Component {
             const inputConfig = this.getInputConfig(fieldSpec, editor, formRecord),
                 inputType = this.getInputType(fieldSpec, editor);
 
-            items.push(this.createFieldLabel(fieldSpec));
+            items.push(this.createFieldLabel(fieldSpec, inputConfig));
             switch (inputType) {
                 case 'display':
                     items.push(this.createDisplayField(inputConfig));
@@ -147,9 +147,10 @@ export class RestFormBlueprint extends Component {
         model.saveFormRecord();
     }
 
-    createFieldLabel(fieldSpec) {
-        const text = fieldSpec.label || fieldSpec.name;
-        return label({text: text, style: {width: '115px', paddingBottom: 5}});
+    createFieldLabel(fieldSpec, inputConfig) {
+        const text = fieldSpec.label || fieldSpec.name,
+            suffix = (inputConfig.editor.additionsOnly && inputConfig.defaultValue) ? '(Read Only)' : '';
+        return label({text: text + suffix, style: {width: '115px', paddingBottom: 5}});
     }
 
     createDisplayField(config) {
