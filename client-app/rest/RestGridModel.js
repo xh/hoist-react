@@ -33,7 +33,7 @@ export class RestGridModel {
     // If not null, this will be displayed in a modal dialogs
     @observable formRecord = null;
 
-    @observable confirmModel = new ConfirmModel();
+    confirmModel = new ConfirmModel();
 
     get url()       {return this.gridModel.url}
     get selection() {return this.gridModel.selection}

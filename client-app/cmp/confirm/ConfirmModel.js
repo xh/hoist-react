@@ -33,7 +33,6 @@ export class ConfirmModel {
 
     @action
     show({message, onConfirm, onReject}) {
-        console.log('showing');
         this.message = message;
         this.onConfirm = onConfirm;
         this.onReject = onReject;
