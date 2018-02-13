@@ -32,7 +32,9 @@ export function hoistApp(C) {
 
         static displayName = hocDisplayName('HoistApp', C);
 
-        componentDidMount() {
+        constructor() {
+            // TODO:  Provide to app via Provider/inject mechanism rather than global import.
+            super();
             hoistAppModel.initApp();
         }
 
