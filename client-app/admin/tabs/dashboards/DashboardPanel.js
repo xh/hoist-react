@@ -23,7 +23,7 @@ export class DashboardPanel extends Component {
                 {name: 'appCode', label: 'App Code'},
                 {name: 'username', label: 'User'},
                 {name: 'definition', label: 'Definition', type: 'json'},
-                {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true}
+                {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true, allowNull: true}
             ]
         },
         columns: [

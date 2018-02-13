@@ -28,8 +28,8 @@ export class ConfigPanel extends Component {
                 {name: 'devValue', label: 'Dev Value', allowNull: true, typeField: 'valueType', env: 'Development'},
                 {name: 'clientVisible', label: 'Client?', type: 'bool'},
                 {name: 'note', label: 'Note', allowNull: true},
-                {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true},
-                {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true}
+                {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true, allowNull: true},
+                {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true, allowNull: true}
             ])
         },
         columns: this.filterForEnv([

@@ -10,7 +10,7 @@ import {observable, computed, action} from 'hoist/mobx';
 import {GridModel} from 'hoist/grid';
 import {RecordSpec} from 'hoist/data';
 import {ConfirmModel} from 'hoist/cmp/confirm/ConfirmModel';
-import {remove} from 'lodash';
+import {remove, keys} from 'lodash';
 
 /**
  * Core Model for a RestGrid
@@ -48,10 +48,10 @@ export class RestGridModel {
 
     @computed
     get formIsValid() {
-        const fields = this.recordSpec.fields;
+        const fieldSpecs = this.recordSpec.fields;
         let valid = true;
         forOwn(this.formRecord, (v, k) => {
-            const spec = fields.find(it => it.name === k);
+            const spec = fieldSpecs.find(it => it.name === k);
             if (spec && !spec.allowNull && (v == null || v === '')) valid = false;
         });
         return valid;
@@ -108,7 +108,16 @@ export class RestGridModel {
 
     @action
     openAddForm() {
-        this.formRecord = {id: null};
+        const newRec = {id: null},
+            fieldSpecs = this.recordSpec.fields;
+
+        // must start with full formed dummy rec for validation purposes
+        // from MobX: a computed property won't re-run if none of the data used in the previous computation changed.
+        fieldSpecs.forEach(spec => {
+            newRec[spec.name] = null;
+        });
+
+        this.formRecord = newRec;
     }
 
     @action
