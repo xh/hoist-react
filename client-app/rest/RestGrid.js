@@ -16,6 +16,8 @@ import {frame, vframe} from 'hoist/layout';
 import {restGridToolbar} from './RestGridToolbar';
 import {restForm} from './RestForm';
 
+import {confirm} from 'hoist/cmp/confirm/Confirm.js';
+
 @observer
 export class RestGrid extends Component {
 
@@ -31,7 +33,8 @@ export class RestGrid extends Component {
                     }
                 })
             ),
-            restForm({model})
+            restForm({model}),
+            confirm({model: this.model.confirmModel})
         );
     }
 
@@ -39,9 +42,10 @@ export class RestGrid extends Component {
     // Implementation
     //------------------------
     get model() {return this.props.model}
+    get restFormModel() {return this.props.model.restFormModel}
 
     onRowDoubleClicked = (row) => {
-        this.model.restFormModel.openEditForm(row.data);
+        this.restFormModel.openEditForm(row.data);
     }
 }
 export const restGrid = elemFactory(RestGrid);

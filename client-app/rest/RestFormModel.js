@@ -7,8 +7,8 @@
 
 import {forOwn} from 'lodash';
 import {observable, computed, action} from 'hoist/mobx';
-import {Classes, button, dialog, dialogBody, dialogFooter, dialogFooterActions, inputGroup, label, menuItem, numericInput, select, suggest, textArea} from 'hoist/kit/blueprint';
-import {span, vbox, filler} from 'hoist/layout';
+import {Classes, button, inputGroup, label, menuItem, numericInput, select, suggest, textArea} from 'hoist/kit/blueprint';
+import {span, vbox} from 'hoist/layout';
 import {fmtDateTime} from 'hoist/format';
 import {ConfirmModel} from 'hoist/cmp/confirm/ConfirmModel';
 
@@ -150,6 +150,7 @@ export class RestFormModel {
         });
     }
 
+    // make a checkbox
     createBooleanDropdown(config) {
         const currentText = config.defaultValue.toString(),
             handler = this.getMemoizedHandler(config.field, 'onBoolChange');

@@ -15,6 +15,7 @@ export class RestGridToolbar extends Component {
 
     render() {
         const model = this.model,
+            restFormModel = this.restFormModel,
             singleRecord = model.selection.singleRecord;
 
         return hbox({
@@ -28,21 +29,21 @@ export class RestGridToolbar extends Component {
                     text: 'Add',
                     iconName: 'add',
                     onClick: this.onAddClick,
-                    omit: !model.enableAdd
+                    omit: !restFormModel.enableAdd
                 },
                 {
                     text: 'Edit',
                     iconName: 'edit',
                     onClick: this.onEditClick,
                     disabled: !singleRecord,
-                    omit: !model.enableEdit
+                    omit: !restFormModel.enableEdit
                 },
                 {
                     text: 'Delete',
                     iconName: 'delete',
                     onClick: this.onDeleteClick,
                     disabled: !singleRecord,
-                    omit: !model.enableDelete
+                    omit: !restFormModel.enableDelete
                 }
             ]
         });
@@ -52,19 +53,24 @@ export class RestGridToolbar extends Component {
     // Implementation
     //-----------------------------
     get model() {return this.props.model}
+    get restFormModel() {return this.props.model.restFormModel}
 
     onAddClick = () => {
-        this.model.openAddForm();
+        this.restFormModel.openAddForm();
     }
 
     onDeleteClick = () => {
-        const model = this.model;
-        model.deleteRecord(model.selection.singleRecord);
+        const {confirmModel} = this.model,
+            model = this.model;
+        confirmModel.show({
+            message: 'Are you sure you want to delete this record?',
+            onConfirm: () => model.deleteRecord(model.selection.singleRecord)
+        });
     }
 
     onEditClick = () => {
-        const model = this.model;
-        model.openEditForm(model.selection.singleRecord);
+        const restFormModel = this.restFormModel;
+        restFormModel.openEditForm(this.model.selection.singleRecord);
     }
 }
 export const restGridToolbar = elemFactory(RestGridToolbar);

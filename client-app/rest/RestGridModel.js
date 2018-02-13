@@ -4,12 +4,13 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+import {remove} from 'lodash';
 import {XH} from 'hoist';
 import {action} from 'hoist/mobx';
 import {RecordSpec} from 'hoist/data';
 import {GridModel} from 'hoist/grid';
 import {RestFormModel} from './RestFormModel';
-import {remove} from 'lodash';
+import {ConfirmModel} from 'hoist/cmp/confirm/ConfirmModel';
 
 /**
  * Core Model for a RestGrid
@@ -23,6 +24,8 @@ export class RestGridModel {
     gridModel = null;
     restFormModel = null;
     _lookupsLoaded = false;
+
+    confirmModel = new ConfirmModel();
 
     get url()       {return this.gridModel.url}
     get selection() {return this.gridModel.selection}
@@ -64,7 +67,7 @@ export class RestGridModel {
     //------------------
     @action
     deleteRecord(rec) {
-        if (!this.enableDelete) throw XH.exception('Record delete not enabled.');
+        if (!this.restFormModel.enableDelete) throw XH.exception('Record delete not enabled.');
 
         return XH.fetchJson({
             url: `${this.url}/${rec.id}`,
@@ -88,7 +91,6 @@ export class RestGridModel {
             method: formIsAdd ? 'POST' : 'PUT',
             params: {data: JSON.stringify(formRecord)}
         }).then(response => {
-            this.restFormModel.closeForm();
             this.noteRecordUpdated(response.data);
         }).linkTo(
             this.loadModel
@@ -114,6 +116,6 @@ export class RestGridModel {
     @action
     noteRecordDeleted(rec) {
         remove(this.records, r => r.id === rec.id);
-        this.closeForm();
+        this.restFormModel.closeForm();
     }
 }

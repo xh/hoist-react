@@ -6,16 +6,15 @@
  */
 
 import {Component} from 'react';
-import {Classes, button, dialog, dialogBody, dialogFooter, dialogFooterActions, inputGroup, label, menuItem, numericInput, select, suggest, textArea} from 'hoist/kit/blueprint';
+import {button, dialog, dialogBody, dialogFooter, dialogFooterActions} from 'hoist/kit/blueprint';
 import {elemFactory} from 'hoist';
 import {filler} from 'hoist/layout';
-import {action, observer, observable} from 'hoist/mobx';
+import {action, observer} from 'hoist/mobx';
 
 import {confirm} from 'hoist/cmp/confirm/Confirm.js';
 
 @observer
 export class RestFormBlueprint extends Component {
-    @observable confirmModel = null; // don't think this is doing anything anymore
 
     render() {
         const {formRecord, formIsAdd} = this.restFormModel;
