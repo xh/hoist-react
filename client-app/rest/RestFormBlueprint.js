@@ -160,7 +160,7 @@ export class RestFormBlueprint extends Component {
 
     createDropdown(config) {
         const options = config.fieldSpec.lookupValues,
-            handler = this[config.field + 'Handler'] || this.createHandler(config.field, 'onValueChange');
+            handler = this.getMemoizedHandler(config.field, 'onValueChange');
 
         // 'hack' to allow additions(not built in), overrides itemPredicate, see note above handleAdditions function
         // const itemListPredicate = config.editor.allowAdditions ? this.handleAdditions : null;
@@ -188,7 +188,7 @@ export class RestFormBlueprint extends Component {
 
     createBooleanDropdown(config) {
         const currentText = config.defaultValue.toString(),
-            handler = this[config.field + 'Handler'] || this.createHandler(config.field, 'onBoolChange');
+            handler = this.getMemoizedHandler(config.field, 'onBoolChange');
 
         return select({
             className: 'rest-form-dropdown-blueprint',
@@ -205,7 +205,7 @@ export class RestFormBlueprint extends Component {
     }
 
     createNumberInput(config) {
-        const handler = this[config.field + 'Handler'] || this.createHandler(config.field, 'onValueChange');
+        const handler = this.getMemoizedHandler(config.field, 'onValueChange');
         return numericInput({
             style: {marginBottom: 5},
             value: config.defaultValue,
@@ -215,7 +215,7 @@ export class RestFormBlueprint extends Component {
     }
 
     createTextAreaInput(config) {
-        const handler = this[config.field + 'Handler'] || this.createHandler(config.field, 'onValueChange');
+        const handler = this.getMemoizedHandler(config.field, 'onValueChange');
         return textArea({
             style: {marginBottom: 5},
             defaultValue: config.defaultValue,
@@ -226,7 +226,7 @@ export class RestFormBlueprint extends Component {
     }
 
     createTextInput(config) {
-        const handler = this[config.field + 'Handler'] || this.createHandler(config.field, 'onValueChange');
+        const handler = this.getMemoizedHandler(config.field, 'onValueChange');
         return inputGroup({
             defaultValue: config.defaultValue,
             className: `xhField-${config.field}`,
@@ -282,7 +282,8 @@ export class RestFormBlueprint extends Component {
         return formRecord[fields.find(it => it.name === fieldSpec.typeField).name];
     }
 
-    createHandler(field, handlerName) {
+    getMemoizedHandler(field, handlerName) {
+        if (this[field + 'Handler']) return this[field + 'Handler'];
         const handler = (valOrEvent) => {
             const val = (typeof valOrEvent === 'object') ? valOrEvent.target.value : valOrEvent;
             this[handlerName](val, field);
