@@ -9,7 +9,7 @@ import {observable, action, computed} from 'hoist/mobx';
 
 
 /**
- * Tracks the resoloution state of the last of a series of promise invocations.
+ * Tracks the resolution state of the last of a series of promise invocations.
  *
  * Currently it only tracks the *last* invocation, but could
  * be enhanced to maintain historical statistics.

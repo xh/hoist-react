@@ -8,6 +8,7 @@
 import {Component} from 'react';
 import {elemFactory} from 'hoist';
 import {textArea, button, dialog, dialogBody, dialogFooter, dialogFooterActions} from 'hoist/kit/blueprint';
+import Clipboard from 'clipboard';
 import {vbox, spacer, vframe} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
 import {stringifyErrorSafely} from 'hoist/exception';
@@ -15,11 +16,21 @@ import {stringifyErrorSafely} from 'hoist/exception';
 @observer
 export class ErrorDialogDetails extends Component {
 
+    componentDidUpdate() {
+        const {detailsVisible} = this.model;
+
+        if (detailsVisible) {
+            this.createCopier();
+        }
+    }
+
     render() {
         const model = this.model,
             {detailsVisible, exception} = model;
 
         if (!detailsVisible || !exception) return null;
+
+        this.errorStr = stringifyErrorSafely(exception);
 
         return dialog({
             title: 'Error Details',
@@ -32,7 +43,7 @@ export class ErrorDialogDetails extends Component {
                         vframe({
                             padding: 5,
                             style: {border: '1px solid'},
-                            item: stringifyErrorSafely(exception)
+                            item: this.errorStr
                         }),
                         spacer({height: 10}),
                         textArea({
@@ -52,8 +63,8 @@ export class ErrorDialogDetails extends Component {
                             onClick: this.onSendClick
                         }, {
                             icon: 'clipboard',
-                            text: 'Copy',
-                            onClick: this.onCopyClick
+                            cls: 'xh-exception-copy-btn',
+                            text: 'Copy'
                         }, {
                             icon: 'cross',
                             text: 'Close',
@@ -78,10 +89,18 @@ export class ErrorDialogDetails extends Component {
         this.model.sendReport();
     }
 
-    onCopyClick = () => {}
-
     onCloseClick = () => {
         this.model.close();
+    }
+
+    createCopier = () => {
+        this.clipboard = new Clipboard('.xh-exception-copy-btn', {
+            text: () => this.errorStr
+        });
+        this.clipboard.on('success', (e) => {
+            // show toast
+            e.clearSelection();
+        });
     }
 }
 export const errorDialogDetails = elemFactory(ErrorDialogDetails);
