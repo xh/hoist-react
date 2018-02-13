@@ -105,7 +105,7 @@ export class RestFormModel {
     createFieldLabel(fieldSpec, inputConfig) {
         const text = fieldSpec.label || fieldSpec.name,
             suffix = (inputConfig.editor.additionsOnly && inputConfig.defaultValue) ? '(Read Only)' : '';
-        return label({text: text + suffix, style: {width: '115px', paddingBottom: 5}});
+        return label({text: text + suffix, style: {width: '115px'}});
     }
 
     createDisplayField(config) {
@@ -127,13 +127,14 @@ export class RestFormModel {
             itemPredicate: (q, v, index) => !v || v.includes(q),
             $items: options,
             onItemSelect: handler,
-            itemRenderer: ({handleClick, isActive, item}) => {
-                return menuItem({key: item, onClick: handleClick, text: item});
+            itemRenderer: (item, itemProps) => {
+                return menuItem({key: item, onClick: itemProps.handleClick, text: item}); // can I use handleClick to update inputField's display
             },
             inputValueRenderer: s => s,
             inputProps: { // TODO: still allowing additions without adding to the drop down.
                 defaultValue: config.defaultValue,
                 // TODO need to somehow set current value on visible component
+                // maybe helpful: you can pass value and onChange here to override Suggest's own behavior. might help with addtions
                 value: undefined, // console warning dictated this undefined if I want to use default val
                 style: {marginBottom: 5},
                 disabled: config.isDisabled
@@ -151,7 +152,7 @@ export class RestFormModel {
             popoverProps: {popoverClassName: Classes.MINIMAL},
             filterable: false,
             $items: ['true', 'false'],
-            items: button({text: currentText, rightIconName: 'caret-down', style: {marginBottom: 5}}),
+            items: button({text: currentText, rightIcon: 'caret-down', style: {marginBottom: 5}}),
             onItemSelect: handler,
             itemRenderer: ({handleClick, isActive, item}) => {
                 return menuItem({key: item, onClick: handleClick, text: item});
