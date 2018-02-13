@@ -22,7 +22,7 @@ export class ConfirmModel {
 
     @action
     doReject = () => {
-        if (this.onConfirm) this.onConfirm();
+        if (this.onReject) this.onReject();
         this.close();
     }
 
