@@ -154,7 +154,7 @@ export class RestFormBlueprint extends Component {
     }
 
     createDisplayField(config) {
-        if (config.fieldSpec.name = 'lastUpdated') config.defaultValue = fmtDateTime(config.defaultValue);
+        if (config.fieldSpec.name === 'lastUpdated') config.defaultValue = fmtDateTime(config.defaultValue);
         return span({item: config.defaultValue, style: {marginBottom: 5, padding: '5 0'}});
     }
 
@@ -265,7 +265,7 @@ export class RestFormBlueprint extends Component {
             editor: editor,
             fieldSpec: fieldSpec,
             field: fieldSpec.name,
-            defaultValue: defaultValue,
+            defaultValue: defaultValue || '',
             isDisabled: isDisabled
         };
     }
