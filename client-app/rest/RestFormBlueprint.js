@@ -35,7 +35,6 @@ export class RestFormBlueprint extends Component {
     // Implementation
     //--------------------------------
     get model() {return this.props.model}
-    get editWarning() {return this.props.model.editWarning}
 
     renderDialogItems() {
         const items = [
@@ -141,7 +140,7 @@ export class RestFormBlueprint extends Component {
         const {editWarning, confirmModel} = this.model;
         if (editWarning) {
             confirmModel.show({
-                message: this.editWarning,
+                message: editWarning,
                 onConfirm: this.doSave
             });
         } else {
