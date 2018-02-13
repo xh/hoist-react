@@ -7,34 +7,43 @@
 
 import {Component} from 'react';
 import {identityService, elemFactory} from 'hoist';
-import {hbox, vbox, spacer, filler, div} from 'hoist/layout';
-import {Classes, button, suggest, icon, popover, menuItem} from 'hoist/kit/blueprint';
+import {hbox, vbox, spacer, filler, div, span} from 'hoist/layout';
+import {Classes, HotkeysTarget, button, suggest, icon, popover, menuItem, hotkeys, hotkey} from 'hoist/kit/blueprint';
 import {icon as semanticIcon, hoistButton, popup, dropdown} from 'hoist/kit/semantic';
 import {observer} from 'hoist/mobx';
 import {hoistAppModel} from 'hoist/app/HoistAppModel';
 
 import {ImpersonationBarModel} from './ImpersonationBarModel';
 
+@HotkeysTarget
 @observer
 export class ImpersonationBar extends Component {
 
     model = new ImpersonationBarModel();
 
-    constructor() {
-        super();
-        document.addEventListener('keydown', this.onKeyDown);
-    }
-
     render() {
-        if (!this.model.isVisible) return null;
+        if (!this.model.isVisible) return span();  // *Not* null, so hotkeys get rendered.
+        
         return hoistAppModel.useSemantic ? this.semantic.render() : this.blueprint.render();
     }
 
-    onKeyDown = (e) => {
-        if (e.ctrlKey && e.key === 'i') {
-            this.model.toggleVisibility();
-            e.stopPropagation();
-        }
+    renderHotkeys() {
+        return hotkeys(
+            hotkey({
+                global: true,
+                combo: 'ctrl + i',
+                label: 'Open Impersonation Dialog',
+                onKeyDown: this.onHotKey
+            })
+        );
+    }
+
+    //---------------------
+    // Implementation
+    //---------------------
+    onHotKey = () => {
+        console.log('hi there');
+        this.model.toggleVisibility();
     }
 
     //---------------------
