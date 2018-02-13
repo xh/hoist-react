@@ -124,6 +124,14 @@ export class RestFormBlueprint extends Component {
     }
 
     onDeleteClick = () => {
+        const {confirmModel} = this.model;
+        confirmModel.show({
+            message: 'Are you sure you want to delete this record?',
+            onConfirm: this.doDelete
+        });
+    }
+
+    doDelete = () => {
         const model = this.model;
         model.deleteRecord(model.formRecord);
     }
