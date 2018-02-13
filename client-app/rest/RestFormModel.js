@@ -154,8 +154,8 @@ export class RestFormModel {
             $items: ['true', 'false'],
             items: button({text: currentText, rightIcon: 'caret-down', style: {marginBottom: 5}}),
             onItemSelect: handler,
-            itemRenderer: ({handleClick, isActive, item}) => {
-                return menuItem({key: item, onClick: handleClick, text: item});
+            itemRenderer: (item, itemProps) => {
+                return menuItem({key: item, onClick: itemProps.handleClick, text: item});
             },
             disabled: config.isDisabled
         });
