@@ -50,7 +50,7 @@ export class App extends Component {
 
     blueprintNavItems() {
         return [
-            icon({iconName: 'eye-open'}),
+            icon({icon: 'eye-open'}),
             spacer({width: 10}),
             div(`${XH.appName} Admin`),
             filler(),

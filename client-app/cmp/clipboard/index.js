@@ -4,7 +4,4 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-export * from './LoadMask';
-export * from './clipboard';
-export * from './Collapsible';
-export * from './tab';
+export * from './button/ClipboardButton';

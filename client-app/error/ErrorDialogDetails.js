@@ -8,6 +8,7 @@
 import {Component} from 'react';
 import {elemFactory} from 'hoist';
 import {textArea, button, dialog, dialogBody, dialogFooter, dialogFooterActions} from 'hoist/kit/blueprint';
+import {clipboardButton} from 'hoist/cmp';
 import {vbox, spacer, vframe} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
 import {stringifyErrorSafely} from 'hoist/exception';
@@ -21,6 +22,8 @@ export class ErrorDialogDetails extends Component {
 
         if (!detailsVisible || !exception) return null;
 
+        this.errorStr = stringifyErrorSafely(exception);
+
         return dialog({
             title: 'Error Details',
             icon: 'search',
@@ -32,7 +35,7 @@ export class ErrorDialogDetails extends Component {
                         vframe({
                             padding: 5,
                             style: {border: '1px solid'},
-                            item: stringifyErrorSafely(exception)
+                            item: this.errorStr
                         }),
                         spacer({height: 10}),
                         textArea({
@@ -50,11 +53,10 @@ export class ErrorDialogDetails extends Component {
                             icon: 'envelope',
                             text: 'Send',
                             onClick: this.onSendClick
-                        }, {
-                            icon: 'clipboard',
+                        }, clipboardButton({
                             text: 'Copy',
-                            onClick: this.onCopyClick
-                        }, {
+                            value: this.errorStr
+                        }), {
                             icon: 'cross',
                             text: 'Close',
                             onClick: this.onCloseClick
@@ -77,8 +79,6 @@ export class ErrorDialogDetails extends Component {
     onSendClick = () => {
         this.model.sendReport();
     }
-
-    onCopyClick = () => {}
 
     onCloseClick = () => {
         this.model.close();
