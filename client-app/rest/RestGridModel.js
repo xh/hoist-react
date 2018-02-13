@@ -20,6 +20,11 @@ export class RestGridModel {
     //---------------
     // Properties
     //----------------
+    enableAdd = true;
+    enableEdit = true;
+    enableDelete = true;
+
+    gridModel = null;
     recordSpec = null;
     gridModel = null;
     restFormModel = null;
@@ -42,8 +47,11 @@ export class RestGridModel {
         dataRoot = 'data',
         ...rest
     }) {
+        this.enableAdd = enableAdd;
+        this.enableEdit = enableEdit;
+        this.enableDelete = enableDelete;
         this.recordSpec = recordSpec instanceof RecordSpec ? recordSpec : new RecordSpec(recordSpec);
-        this.restFormModel = new RestFormModel(enableAdd, enableEdit, enableDelete, this.recordSpec, editWarning, editors);
+        this.restFormModel = new RestFormModel({editors, editWarning, parentModel: this});
         this.gridModel = new GridModel({dataRoot, ...rest});
     }
 
@@ -67,7 +75,7 @@ export class RestGridModel {
     //------------------
     @action
     deleteRecord(rec) {
-        if (!this.restFormModel.enableDelete) throw XH.exception('Record delete not enabled.');
+        if (!this.enableDelete) throw XH.exception('Record delete not enabled.');
 
         return XH.fetchJson({
             url: `${this.url}/${rec.id}`,

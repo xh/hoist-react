@@ -16,17 +16,13 @@ export class RestFormModel {
 
     //---------------
     // Properties
-    //----------------
-    enableAdd = true;
-    enableEdit = true;
-    enableDelete = true;
-
-    recordSpec = null;
     editors = [];
+    editWarning = null;
+    parentModel = null;
 
     confirmModel = new ConfirmModel();
 
-    // If not null, this will be displayed in a modal dialogs
+    // If not null, this will be displayed in a modal dialog
     @observable formRecord = null;
 
     @computed
@@ -37,7 +33,7 @@ export class RestFormModel {
 
     @computed
     get formIsValid() {
-        const fieldSpecs = this.recordSpec.fields;
+        const fieldSpecs = this.parentModel.recordSpec.fields;
         let valid = true;
         forOwn(this.formRecord, (v, k) => {
             const spec = fieldSpecs.find(it => it.name === k);
@@ -48,29 +44,24 @@ export class RestFormModel {
 
     @computed
     get formIsWritable() {
-        const {formIsAdd, enableAdd, enableEdit} = this;
+        const {formIsAdd} = this,
+            {enableAdd, enableEdit} = this.parentModel;
         return (formIsAdd && enableAdd) || (!formIsAdd  && enableEdit);
     }
 
-    constructor(
-        enableAdd,
-        enableEdit,
-        enableDelete,
-        recordSpec,
+    constructor({
+        editors,
         editWarning,
-        editors
-    ) {
-        this.enableAdd = enableAdd;
-        this.enableEdit = enableEdit;
-        this.enableDelete = enableDelete;
+        parentModel
+    }) {
         this.editors = editors;
-        this.recordSpec = recordSpec; // need this?
         this.editWarning = editWarning;
+        this.parentModel = parentModel;
     }
 
     getForm() {
-        const {editors, recordSpec, formRecord} = this,
-            fields = recordSpec.fields,
+        const {editors, formRecord} = this,
+            fields = this.parentModel.recordSpec.fields,
             items = [];
 
         editors.forEach(editor => {
@@ -265,7 +256,7 @@ export class RestFormModel {
     @action
     openAddForm() {
         const newRec = {id: null},
-            fieldSpecs = this.recordSpec.fields;
+            fieldSpecs = this.parentModel.recordSpec.fields;
 
         // must start with full formed dummy rec for validation purposes
         // from MobX: a computed property won't re-run if none of the data used in the previous computation changed.
@@ -278,7 +269,6 @@ export class RestFormModel {
 
     @action
     openEditForm(rec)  {
-        console.log('adding rec');
         this.formRecord = Object.assign({}, rec);
     }
 

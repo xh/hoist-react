@@ -15,7 +15,6 @@ export class RestGridToolbar extends Component {
 
     render() {
         const model = this.model,
-            restFormModel = this.restFormModel,
             singleRecord = model.selection.singleRecord;
 
         return hbox({
@@ -29,21 +28,21 @@ export class RestGridToolbar extends Component {
                     text: 'Add',
                     iconName: 'add',
                     onClick: this.onAddClick,
-                    omit: !restFormModel.enableAdd
+                    omit: !model.enableAdd
                 },
                 {
                     text: 'Edit',
                     iconName: 'edit',
                     onClick: this.onEditClick,
                     disabled: !singleRecord,
-                    omit: !restFormModel.enableEdit
+                    omit: !model.enableEdit
                 },
                 {
                     text: 'Delete',
                     iconName: 'delete',
                     onClick: this.onDeleteClick,
                     disabled: !singleRecord,
-                    omit: !restFormModel.enableDelete
+                    omit: !model.enableDelete
                 }
             ]
         });
@@ -60,17 +59,21 @@ export class RestGridToolbar extends Component {
     }
 
     onDeleteClick = () => {
-        const {confirmModel} = this.model,
-            model = this.model;
+        const {confirmModel} = this.model;
         confirmModel.show({
             message: 'Are you sure you want to delete this record?',
-            onConfirm: () => model.deleteRecord(model.selection.singleRecord)
+            onConfirm: this.doDelete
         });
     }
 
     onEditClick = () => {
         const restFormModel = this.restFormModel;
         restFormModel.openEditForm(this.model.selection.singleRecord);
+    }
+
+    doDelete = () => {
+        const model = this.model;
+        model.deleteRecord(model.selection.singleRecord);
     }
 }
 export const restGridToolbar = elemFactory(RestGridToolbar);

@@ -48,7 +48,8 @@ export class RestFormBlueprint extends Component {
     }
 
     getButtons() {
-        const {formIsValid, formIsWritable, enableDelete, formIsAdd} = this.restFormModel;
+        const {enableDelete} = this.model,
+            {formIsValid, formIsWritable, formIsAdd} = this.restFormModel;
 
         return [
             button({
@@ -88,7 +89,7 @@ export class RestFormBlueprint extends Component {
 
     doDelete = () => {
         const model = this.model;
-        model.deleteRecord(model.formRecord);
+        model.deleteRecord(this.restFormModel.formRecord);
     }
 
     @action
