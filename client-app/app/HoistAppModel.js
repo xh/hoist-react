@@ -11,7 +11,7 @@ import {MultiPromiseModel, never} from 'hoist/promise';
 import {ErrorDialogModel} from 'hoist/error';
 
 /**
- * Main Model for Managing the loading of a HoistApp
+ * Top level model for a HoistApp.
  */
 class HoistAppModel {
 
