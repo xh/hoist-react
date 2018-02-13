@@ -52,12 +52,11 @@ export class RestFormBlueprint extends Component {
     getForm() {
         const {editors, recordSpec, formRecord} = this.model,
             fields = recordSpec.fields,
-            valueType = formRecord.valueType,
             items = [];
 
         editors.forEach(editor => {
             const fieldSpec = fields.find(it => it.name === editor.field);
-            if (fieldSpec.typeField) fieldSpec.type = valueType;
+            if (fieldSpec.typeField) fieldSpec.type = this.getTypeFromValueField(formRecord, fields, fieldSpec);
 
             const inputConfig = this.getInputConfig(fieldSpec, editor, formRecord),
                 inputType = this.getInputType(fieldSpec, editor);
@@ -265,7 +264,7 @@ export class RestFormBlueprint extends Component {
             editor: editor,
             fieldSpec: fieldSpec,
             field: fieldSpec.name,
-            defaultValue: defaultValue || '',
+            defaultValue: defaultValue == null ? '' : defaultValue,
             isDisabled: isDisabled
         };
     }
@@ -277,6 +276,10 @@ export class RestFormBlueprint extends Component {
         if (fieldSpec.type === 'int') return 'number';
         if (editor.type === 'textarea' || fieldSpec.type === 'json') return 'textarea';
         return 'text';
+    }
+
+    getTypeFromValueField(formRecord, fields, fieldSpec) {
+        return formRecord[fields.find(it => it.name === fieldSpec.typeField).name];
     }
 
     createHandler(field, handlerName) {
