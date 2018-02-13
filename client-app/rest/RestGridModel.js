@@ -4,12 +4,11 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {forOwn} from 'lodash';
 import {XH} from 'hoist';
-import {observable, computed, action} from 'hoist/mobx';
-import {GridModel} from 'hoist/grid';
+import {action} from 'hoist/mobx';
 import {RecordSpec} from 'hoist/data';
-import {ConfirmModel} from 'hoist/cmp/confirm/ConfirmModel';
+import {GridModel} from 'hoist/grid';
+import {RestFormModel} from './RestFormModel';
 import {remove} from 'lodash';
 
 /**
@@ -20,48 +19,15 @@ export class RestGridModel {
     //---------------
     // Properties
     //----------------
-    enableAdd = true;
-    enableEdit = true;
-    enableDelete = true;
-
-    gridModel = null;
     recordSpec = null;
-    editors = [];
-
+    gridModel = null;
+    restFormModel = null;
     _lookupsLoaded = false;
-
-    // If not null, this will be displayed in a modal dialogs
-    @observable formRecord = null;
-
-    confirmModel = new ConfirmModel();
 
     get url()       {return this.gridModel.url}
     get selection() {return this.gridModel.selection}
     get loadModel() {return this.gridModel.loadModel}
     get records()   {return this.gridModel.records}
-
-    @computed
-    get formIsAdd() {
-        const rec = this.formRecord;
-        return (rec && rec.id === null);
-    }
-
-    @computed
-    get formIsValid() {
-        const fieldSpecs = this.recordSpec.fields;
-        let valid = true;
-        forOwn(this.formRecord, (v, k) => {
-            const spec = fieldSpecs.find(it => it.name === k);
-            if (spec && !spec.allowNull && (v == null || v === '')) valid = false;
-        });
-        return valid;
-    }
-
-    @computed
-    get formIsWritable() {
-        const {formIsAdd, enableAdd, enableEdit} = this;
-        return (formIsAdd && enableAdd) || (!formIsAdd  && enableEdit);
-    }
 
     constructor({
         enableAdd = true,
@@ -73,13 +39,8 @@ export class RestGridModel {
         dataRoot = 'data',
         ...rest
     }) {
-        this.enableAdd = enableAdd;
-        this.enableEdit = enableEdit;
-        this.enableDelete = enableDelete;
-        this.editors = editors;
         this.recordSpec = recordSpec instanceof RecordSpec ? recordSpec : new RecordSpec(recordSpec);
-        this.editWarning = editWarning;
-
+        this.restFormModel = new RestFormModel(enableAdd, enableEdit, enableDelete, this.recordSpec, editWarning, editors);
         this.gridModel = new GridModel({dataRoot, ...rest});
     }
 
@@ -102,35 +63,6 @@ export class RestGridModel {
     // Actions
     //------------------
     @action
-    closeForm() {
-        this.formRecord = null;
-    }
-
-    @action
-    openAddForm() {
-        const newRec = {id: null},
-            fieldSpecs = this.recordSpec.fields;
-
-        // must start with full formed dummy rec for validation purposes
-        // from MobX: a computed property won't re-run if none of the data used in the previous computation changed.
-        fieldSpecs.forEach(spec => {
-            newRec[spec.name] = null;
-        });
-
-        this.formRecord = newRec;
-    }
-
-    @action
-    openEditForm(rec)  {
-        this.formRecord = Object.assign({}, rec);
-    }
-
-    @action
-    setFormValue = (field, value) => {
-        this.formRecord[field] = value;
-    }
-
-    @action
     deleteRecord(rec) {
         if (!this.enableDelete) throw XH.exception('Record delete not enabled.');
 
@@ -145,8 +77,9 @@ export class RestGridModel {
     }
 
     @action
-    saveFormRecord() {
-        const {url, formRecord, formIsWritable, formIsAdd} = this;
+    saveFormRecord() { // button in view still calls this
+        const {url} = this,
+            {formRecord, formIsWritable, formIsAdd} = this.restFormModel;
 
         if (!formIsWritable) throw XH.exception('Record save not enabled.');
 

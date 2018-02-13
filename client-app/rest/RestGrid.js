@@ -41,7 +41,7 @@ export class RestGrid extends Component {
     get model() {return this.props.model}
 
     onRowDoubleClicked = (row) => {
-        this.model.openEditForm(row.data);
+        this.model.restFormModel.openEditForm(row.data);
     }
 }
 export const restGrid = elemFactory(RestGrid);

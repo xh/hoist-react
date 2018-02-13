@@ -16,7 +16,7 @@ import {confirm} from 'hoist/cmp/confirm/Confirm.js';
 
 @observer
 export class RestFormBlueprint extends Component {
-    @observable confirmModel = null;
+    @observable confirmModel = null; // don't think this is doing anything anymore
 
     render() {
         const {formRecord, formIsAdd} = this.model;
@@ -35,7 +35,7 @@ export class RestFormBlueprint extends Component {
     // Implementation
     //--------------------------------
     get model() {return this.props.model}
-    get editWarning() {return this.props.model.editWarning}
+    get restFormModel() {return this.props.model}
 
     renderDialogItems() {
         const items = [
@@ -141,7 +141,7 @@ export class RestFormBlueprint extends Component {
         const {editWarning, confirmModel} = this.model;
         if (editWarning) {
             confirmModel.show({
-                message: this.editWarning,
+                message: editWarning,
                 onConfirm: this.doSave
             });
         } else {
