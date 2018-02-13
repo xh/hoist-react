@@ -31,6 +31,8 @@ export class EventSource {
 
     fireEvent(eventName, ev = {}) {
         const listeners = this._listeners[eventName];
+        if (!listeners) return;
+
         wait(1)
             .then(() => listeners.forEach(it => it.fn(ev, this)))
             .catchDefault({showAlert: false});

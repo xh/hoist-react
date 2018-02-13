@@ -6,7 +6,7 @@
  */
 import {BaseService} from './BaseService';
 import {XH} from 'hoist';
-import {deepClone} from 'hoist/utils/JsUtils';
+import {cloneDeep} from 'lodash';
 
 export class ConfigService extends BaseService {
 
@@ -19,7 +19,7 @@ export class ConfigService extends BaseService {
     get(key, defaultValue) {
         const data = this._data;
         if (data.hasOwnProperty(key)) {
-            return deepClone(data[key]);
+            return cloneDeep(data[key]);
         }
         if (defaultValue === undefined) {
             throw XH.exception(`Config key not found: '${key}'`);
