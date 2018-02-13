@@ -43,7 +43,7 @@ export class LoginPanel extends Component {
                         placeholder: 'Password...',
                         value: this.password,
                         type: 'password',
-                        rightElement: button({iconName: 'lock', disabled: true}),
+                        rightElement: button({icon: 'lock', disabled: true}),
                         onChange: this.onPasswordChange,
                         style: {marginBottom: 5}
                     }),
