@@ -11,7 +11,6 @@ import {hframe, frame, vframe, table, tbody, td, tr} from 'hoist/layout';
 import {grid} from 'hoist/grid';
 import {Ref} from 'hoist/react';
 import {collapsible} from 'hoist/cmp';
-import {loadMask} from 'hoist/cmp';
 import {LogViewerModel} from './LogViewerModel';
 import {logViewerToolbar} from './LogViewerToolbar';
 
@@ -27,8 +26,7 @@ export class LogViewer extends Component {
 
     render() {
         return frame(
-            this.getContents(),
-            loadMask({inline: true, model: this.model.loadModel})
+            this.getContents()
         );
     }
 
