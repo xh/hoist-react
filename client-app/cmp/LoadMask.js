@@ -27,19 +27,25 @@ export class LoadMask extends Component {
 
     static defaultProps = {
         isDisplayed: false,
-        model: null
+        model: null,
+        inline: false
     };
     
     render() {
-        const {isDisplayed, model, inline} = this.props;
+        let {isDisplayed, model, inline} = this.props;
+
+        // TODO: Inline Mask in blueprint not currently working.
+        // Also, all masks seem to steal focus
+
+        if (!(isDisplayed || (model && model.isPending))) return null;
         return overlay({
-            isOpen: isDisplayed || (model && model.isPending),
+            isOpen: true,
             canEscapeKeyClose: false,
             backdropProps: {
                 style: {backgroundColor: this.BACKGROUND}
             },
             style: {display: 'flex'},
-            inline: inline,
+            usePortal: !inline,
             item: inline ? this.getInlineChild() : this.getViewportChild()
         });
     }

@@ -46,18 +46,18 @@ export class ErrorDialog extends Component {
 
         return [
             button({
-                iconName: 'search',
+                icon: 'search',
                 text: 'Show/Report Details',
                 onClick: this.onShowDetailsClick,
                 omit: sessionExpired || !showAsError
             }),
             button({
-                iconName: 'refresh',
+                icon: 'refresh',
                 text: this.sessionExpired() ? 'Login' : 'Reload App',
                 onClick: this.onReloadClick
             }),
             button({
-                iconName: 'cross',
+                icon: 'cross',
                 text: 'Close',
                 onClick: this.onCloseClick
             })
