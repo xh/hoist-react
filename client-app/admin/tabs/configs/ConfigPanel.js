@@ -20,10 +20,10 @@ export class ConfigPanel extends Component {
         url: 'rest/configAdmin',
         recordSpec: {
             fields: this.filterForEnv([
-                {name: 'name', label: 'Name', allowNull: false},
-                {name: 'groupName', label: 'Group', lookup: 'groupNames', allowNull: false},
-                {name: 'valueType', label: 'Type', lookup: 'valueTypes', allowNull: false},
-                {name: 'prodValue', label: 'Prod Value', allowNull: false, typeField: 'valueType', env: 'Production'},
+                {name: 'name', label: 'Name'},
+                {name: 'groupName', label: 'Group', lookup: 'groupNames'},
+                {name: 'valueType', label: 'Type', lookup: 'valueTypes'},
+                {name: 'prodValue', label: 'Prod Value', typeField: 'valueType', env: 'Production'},
                 {name: 'betaValue', label: 'Beta Value', allowNull: true, typeField: 'valueType', env: 'Beta'},
                 {name: 'stageValue', label: 'Stage Value', allowNull: true, typeField: 'valueType', env: 'Staging'},
                 {name: 'devValue', label: 'Dev Value', allowNull: true, typeField: 'valueType', env: 'Development'},

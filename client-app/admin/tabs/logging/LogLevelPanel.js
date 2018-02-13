@@ -18,7 +18,7 @@ export class LogLevelPanel extends Component {
         url: 'rest/logLevelAdmin',
         recordSpec: {
             fields: [
-                {name: 'name', label: 'Log Name', allowNull: false},
+                {name: 'name', label: 'Log Name'},
                 {name: 'defaultLevel', label: 'Initial'},
                 {name: 'level', label: 'Override', lookup: 'levels'},
                 {name: 'effectiveLevel', label: 'Effective'}

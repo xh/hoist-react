@@ -18,7 +18,7 @@ export class FeedbackPanel extends Component {
         url: 'rest/feedbackAdmin',
         recordSpec: {
             fields: [
-                {name: 'username', label: 'User', allowNull: false},
+                {name: 'username', label: 'User'},
                 {name: 'msg', label: 'Message'},
                 {name: 'browser', label: 'Browser', readOnly: true},
                 {name: 'device', label: 'Device', readOnly: true},
