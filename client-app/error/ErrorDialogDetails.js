@@ -23,7 +23,7 @@ export class ErrorDialogDetails extends Component {
 
         return dialog({
             title: 'Error Details',
-            iconName: 'search',
+            icon: 'search',
             isOpen: true,
             onClose: this.onCloseClick,
             items: [
@@ -47,15 +47,15 @@ export class ErrorDialogDetails extends Component {
                     dialogFooterActions({
                         itemSpec: button,
                         items: [{
-                            iconName: 'envelope',
+                            icon: 'envelope',
                             text: 'Send',
                             onClick: this.onSendClick
                         }, {
-                            iconName: 'clipboard',
+                            icon: 'clipboard',
                             text: 'Copy',
                             onClick: this.onCopyClick
                         }, {
-                            iconName: 'cross',
+                            icon: 'cross',
                             text: 'Close',
                             onClick: this.onCloseClick
                         }]

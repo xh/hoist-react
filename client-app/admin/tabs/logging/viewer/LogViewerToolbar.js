@@ -58,7 +58,7 @@ class LogViewerToolbar extends Component {
                 filler(),
                 hspacer(10),
                 button({
-                    iconName: 'refresh',
+                    icon: 'refresh',
                     onClick: this.onSubmitClick
                 })
             ]

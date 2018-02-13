@@ -26,20 +26,20 @@ export class RestGridToolbar extends Component {
             items: [
                 {
                     text: 'Add',
-                    iconName: 'add',
+                    icon: 'add',
                     onClick: this.onAddClick,
                     omit: !model.enableAdd
                 },
                 {
                     text: 'Edit',
-                    iconName: 'edit',
+                    icon: 'edit',
                     onClick: this.onEditClick,
                     disabled: !singleRecord,
                     omit: !model.enableEdit
                 },
                 {
                     text: 'Delete',
-                    iconName: 'delete',
+                    icon: 'delete',
                     onClick: this.onDeleteClick,
                     disabled: !singleRecord,
                     omit: !model.enableDelete

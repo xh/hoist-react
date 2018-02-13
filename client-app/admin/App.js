@@ -54,7 +54,7 @@ export class App extends Component {
             spacer({width: 10}),
             div(`${XH.appName} Admin`),
             filler(),
-            button({iconName: 'refresh', onClick: this.onRefreshClick})
+            button({icon: 'refresh', onClick: this.onRefreshClick})
         ];
     }
     

@@ -20,7 +20,7 @@ export class RestFormBlueprint extends Component {
 
         return dialog({
             title: formIsAdd ? 'Add Record' : 'Edit Record',
-            iconName: 'inbox',
+            icon: 'inbox',
             isOpen: true,
             onClose: this.onClose,
             items: [
@@ -71,14 +71,14 @@ export class RestFormBlueprint extends Component {
         return [
             button({
                 text: 'Delete',
-                iconName: 'cross',
+                icon: 'cross',
                 disabled: !formIsValid,
                 onClick: this.onDeleteClick,
                 omit: !enableDelete || formIsAdd
             }),
             button({
                 text: 'Save',
-                iconName: 'tick',
+                icon: 'tick',
                 disabled: !formIsValid,
                 onClick: this.onSaveClick,
                 omit: !formIsWritable

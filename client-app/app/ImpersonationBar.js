@@ -54,7 +54,7 @@ export class ImpersonationBar extends Component {
                 },
                 alignItems: 'center',
                 items: [
-                    icon({iconName: 'person'}),
+                    icon({icon: 'person'}),
                     spacer({width: 10}),
                     div(`${impersonating ? 'Impersonating' : ''} ${username}`),
                     filler(),
@@ -71,7 +71,7 @@ export class ImpersonationBar extends Component {
             return popover({
                 target: button({
                     text: 'Switch User',
-                    iconName: 'random',
+                    icon: 'random',
                     style: {minWidth: 130},
                     onClick: model.openTargetDialog
                 }),
@@ -109,7 +109,7 @@ export class ImpersonationBar extends Component {
 
         exitButton() {
             const text = identityService.impersonating ? 'Exit Impersonation' : 'Close';
-            return button({text, iconName: 'cross', onClick: this.model.doExit});
+            return button({text, icon: 'cross', onClick: this.model.doExit});
         }
     }
 
