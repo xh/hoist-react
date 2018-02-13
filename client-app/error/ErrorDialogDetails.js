@@ -8,21 +8,13 @@
 import {Component} from 'react';
 import {elemFactory} from 'hoist';
 import {textArea, button, dialog, dialogBody, dialogFooter, dialogFooterActions} from 'hoist/kit/blueprint';
-import Clipboard from 'clipboard';
+import {clipboardButton} from 'hoist/cmp';
 import {vbox, spacer, vframe} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
 import {stringifyErrorSafely} from 'hoist/exception';
 
 @observer
 export class ErrorDialogDetails extends Component {
-
-    componentDidUpdate() {
-        const {detailsVisible} = this.model;
-
-        if (detailsVisible) {
-            this.createCopier();
-        }
-    }
 
     render() {
         const model = this.model,
@@ -61,11 +53,10 @@ export class ErrorDialogDetails extends Component {
                             icon: 'envelope',
                             text: 'Send',
                             onClick: this.onSendClick
-                        }, {
-                            icon: 'clipboard',
-                            cls: 'xh-exception-copy-btn',
-                            text: 'Copy'
-                        }, {
+                        }, clipboardButton({
+                            text: 'Copy',
+                            value: this.errorStr
+                        }), {
                             icon: 'cross',
                             text: 'Close',
                             onClick: this.onCloseClick
@@ -91,16 +82,6 @@ export class ErrorDialogDetails extends Component {
 
     onCloseClick = () => {
         this.model.close();
-    }
-
-    createCopier = () => {
-        this.clipboard = new Clipboard('.xh-exception-copy-btn', {
-            text: () => this.errorStr
-        });
-        this.clipboard.on('success', (e) => {
-            // show toast
-            e.clearSelection();
-        });
     }
 }
 export const errorDialogDetails = elemFactory(ErrorDialogDetails);
