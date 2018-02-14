@@ -153,7 +153,8 @@ export class RestFormModel {
 
         return checkbox({
             defaultChecked: config.defaultValue,
-            onChange: handler
+            onChange: handler,
+            disabled: config.isDisabled
         });
     }
 
