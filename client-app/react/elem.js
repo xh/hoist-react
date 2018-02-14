@@ -39,7 +39,7 @@ import {asArray} from 'hoist/utils/JsUtils';
  *  One important feature of this factory is that children with property 'omit' set to true will be skipped.
  *  This allows for conditional inclusion of elements in the virtual dom in a declarative style.
  *
- *  Note that if a React Component has a native property that conflicts with this API, it should be specified as
+ *  Note that if a React Component has a native property that conflicts with this API, it should be specified as native
  *  with a $ prefix (e.g. '$items'). This method will recognize and pass the property appropriately.
  *
  */
