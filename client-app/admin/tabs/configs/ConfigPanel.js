@@ -10,7 +10,7 @@ import {environmentService} from 'hoist';
 import {boolCheckCol, baseCol} from 'hoist/columns/Core';
 import {restGrid, RestGridModel} from 'hoist/rest';
 
-import {nameCol} from '../../columns/Columns';
+import {nameCol} from 'hoist/admin/columns/Columns';
 
 @observer
 export class ConfigPanel extends Component {
