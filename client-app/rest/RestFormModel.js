@@ -196,7 +196,6 @@ export class RestFormModel {
         return formRecord[fields.find(it => it.name === fieldSpec.typeField).name];
     }
 
-
     getInputConfig(fieldSpec, editor, formRecord) {
         const defaultValue = formRecord[fieldSpec.name],
             isDisabled = fieldSpec.readOnly || (editor.additionsOnly && !this.formIsAdd);
