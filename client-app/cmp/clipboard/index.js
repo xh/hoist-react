@@ -4,4 +4,4 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-export * from './button/ClipboardButton';
+export * from './ClipboardButton';

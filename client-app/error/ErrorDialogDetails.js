@@ -54,8 +54,7 @@ export class ErrorDialogDetails extends Component {
                             text: 'Send',
                             onClick: this.onSendClick
                         }, clipboardButton({
-                            text: 'Copy',
-                            value: this.errorStr
+                            text: this.errorStr
                         }), {
                             icon: 'cross',
                             text: 'Close',
