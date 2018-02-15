@@ -117,7 +117,7 @@ export class RestForm extends Component {
 
         editors.forEach(editor => {
             const fieldSpec = fields.find(it => it.name === editor.field);
-            if (fieldSpec.typeField) fieldSpec.type = this.model.getTypeFromValueField(fields, fieldSpec); // probably don't need to pass stuff that on the model i.e. record
+            if (fieldSpec.typeField) fieldSpec.type = this.model.getTypeFromValueField(fields, fieldSpec);
 
             const inputConfig = this.model.getInputConfig(fieldSpec, editor);
 
