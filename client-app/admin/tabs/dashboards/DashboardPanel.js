@@ -20,10 +20,10 @@ export class DashboardPanel extends Component {
         editWarning: 'Are you sure you want to edit this user\'s dashboard?',
         recordSpec: {
             fields: [
-                {name: 'appCode', label: 'App Code', allowNull: false},
+                {name: 'appCode', label: 'App Code'},
                 {name: 'username', label: 'User'},
-                {name: 'definition', label: 'Definition', type: 'json', allowNull: false},
-                {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true}
+                {name: 'definition', label: 'Definition', type: 'json'},
+                {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true, allowNull: true}
             ]
         },
         columns: [
@@ -36,7 +36,7 @@ export class DashboardPanel extends Component {
             {field: 'appCode'},
             {field: 'username'},
             {field: 'definition'},
-            {field: 'lastUpdated'}
+            {field: 'lastUpdated', type: 'displayField'}
         ]
     });
 

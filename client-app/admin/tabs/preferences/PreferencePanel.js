@@ -21,11 +21,11 @@ export class PreferencePanel extends Component {
             fields: [
                 {name: 'name', label: 'Name'},
                 {name: 'type', label: 'Type', lookup: 'types'},
-                {name: 'defaultValue', label: 'Default Value'},
-                {name: 'notes', label: 'Notes'},
+                {name: 'defaultValue',  typeField: 'type', label: 'Default Value'},
+                {name: 'notes', label: 'Notes', allowNull: true},
                 {name: 'local', label: 'Local', type: 'bool'},
-                {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true},
-                {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true}
+                {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true, allowNull: true},
+                {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true, allowNull: true}
             ]
         },
         columns: [
@@ -37,12 +37,12 @@ export class PreferencePanel extends Component {
         ],
         editors: [
             {field: 'name'},
-            {field: 'type'},
+            {field: 'type', additionsOnly: true},
             {field: 'defaultValue'},
             {field: 'local'},
             {field: 'notes'},
-            {field: 'lastUpdated'},
-            {field: 'lastUpdatedBy'}
+            {field: 'lastUpdated', type: 'displayField'},
+            {field: 'lastUpdatedBy', type: 'displayField'}
         ]
     });
 

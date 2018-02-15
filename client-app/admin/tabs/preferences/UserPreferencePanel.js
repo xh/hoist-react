@@ -30,8 +30,8 @@ export class UserPreferencePanel extends Component {
                 {name: 'type', label: 'Type'},
                 {name: 'username', label: 'User'},
                 {name: 'userValue', typeField: 'type', label: 'User Value'},
-                {name: 'lastUpdated', type: 'date', dateFormat: 'time', label: 'Last Updated'},
-                {name: 'lastUpdatedBy', label: 'Last Updated By'}
+                {name: 'lastUpdated', type: 'date', label: 'Last Updated', allowNull: true},
+                {name: 'lastUpdatedBy', label: 'Last Updated By', allowNull: true}
             ]
         },
         columns: [
@@ -41,11 +41,11 @@ export class UserPreferencePanel extends Component {
             baseCol({field: 'userValue', flex: 1})
         ],
         editors: [
-            {field: 'name'},
+            {field: 'name', additionsOnly: true},
             {field: 'username'},
             {field: 'userValue'},
-            {field: 'lastUpdated'},
-            {field: 'lastUpdatedBy'}
+            {field: 'lastUpdated', type: 'displayField'},
+            {field: 'lastUpdatedBy', type: 'displayField'}
         ]
     });
 

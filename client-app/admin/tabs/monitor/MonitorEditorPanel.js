@@ -11,7 +11,6 @@ import {restGrid, RestGridModel} from 'hoist/rest';
 
 import {nameFlexCol} from '../../columns/Columns';
 
-
 @observer
 export class MonitorEditorPanel extends Component {
 
@@ -26,11 +25,11 @@ export class MonitorEditorPanel extends Component {
                 {name: 'warnThreshold', label: 'Warn Threshold', type: 'int', allowNull: true},
                 {name: 'failThreshold', label: 'Fail Threshold', type: 'int', allowNull: true},
                 {name: 'params', label: 'Params'},
-                {name: 'notes', label: 'Notes'},
+                {name: 'notes', label: 'Notes', allowNull: true},
                 {name: 'active', label: 'Active', type: 'boolean'},
                 {name: 'sortOrder', label: 'Sort', type: 'int', allowNull: true},
-                {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true},
-                {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true}
+                {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true, allowNull: true},
+                {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true, allowNull: true}
             ]
         },
         columns: [
@@ -54,8 +53,8 @@ export class MonitorEditorPanel extends Component {
             {field: 'notes', type: 'textarea'},
             {field: 'active'},
             {field: 'sortOrder'},
-            {field: 'lastUpdated'},
-            {field: 'lastUpdatedBy'}
+            {field: 'lastUpdated', type: 'displayField'},
+            {field: 'lastUpdatedBy', type: 'displayField'}
         ]
     });
 

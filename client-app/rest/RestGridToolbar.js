@@ -52,19 +52,28 @@ export class RestGridToolbar extends Component {
     // Implementation
     //-----------------------------
     get model() {return this.props.model}
+    get restFormModel() {return this.props.model.formModel}
 
     onAddClick = () => {
-        this.model.openAddForm();
+        this.restFormModel.openAdd();
     }
 
     onDeleteClick = () => {
-        const model = this.model;
-        model.deleteRecord(model.selection.singleRecord);
+        const {confirmModel} = this.model;
+        confirmModel.show({
+            message: 'Are you sure you want to delete this record?',
+            onConfirm: this.doDelete
+        });
     }
 
     onEditClick = () => {
+        const restFormModel = this.restFormModel;
+        restFormModel.openEdit(this.model.selection.singleRecord);
+    }
+
+    doDelete = () => {
         const model = this.model;
-        model.openEditForm(model.selection.singleRecord);
+        model.deleteRecord(model.selection.singleRecord);
     }
 }
 export const restGridToolbar = elemFactory(RestGridToolbar);

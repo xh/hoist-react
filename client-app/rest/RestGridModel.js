@@ -4,11 +4,13 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH} from 'hoist';
-import {observable, computed, action} from 'hoist/mobx';
-import {GridModel} from 'hoist/grid';
-import {RecordSpec} from 'hoist/data';
 import {remove} from 'lodash';
+import {XH} from 'hoist';
+import {action} from 'hoist/mobx';
+import {RecordSpec} from 'hoist/data';
+import {GridModel} from 'hoist/grid';
+import {RestFormModel} from './RestFormModel';
+import {ConfirmModel} from 'hoist/cmp/confirm/ConfirmModel';
 
 /**
  * Core Model for a RestGrid
@@ -21,44 +23,27 @@ export class RestGridModel {
     enableAdd = true;
     enableEdit = true;
     enableDelete = true;
+    editWarning = null;
+    editors = [];
 
     gridModel = null;
+    formModel = null;
     recordSpec = null;
-    editors = [];
-    
     _lookupsLoaded = false;
 
-    // If not null, this will be displayed in (modal) dialog.
-    @observable formRecord = null;
-
+    confirmModel = new ConfirmModel();
 
     get url()       {return this.gridModel.url}
     get selection() {return this.gridModel.selection}
     get loadModel() {return this.gridModel.loadModel}
-    get records() {return this.gridModel.records}
-
-    @computed
-    get formIsAdd() {
-        const rec = this.formRecord;
-        return (rec && rec.id === null);
-    }
-
-    @computed
-    get formIsValid() {
-        return this.formRecord;
-    }
-
-    @computed
-    get formIsWritable() {
-        const {formIsAdd, enableAdd, enableEdit} = this;
-        return (formIsAdd && enableAdd) || (!formIsAdd  && enableEdit);
-    }
+    get records()   {return this.gridModel.records}
 
     constructor({
         enableAdd = true,
         enableEdit = true,
         enableDelete = true,
         recordSpec,
+        editWarning,
         editors = [],
         dataRoot = 'data',
         ...rest
@@ -66,9 +51,10 @@ export class RestGridModel {
         this.enableAdd = enableAdd;
         this.enableEdit = enableEdit;
         this.enableDelete = enableDelete;
+        this.editWarning = editWarning;
         this.editors = editors;
         this.recordSpec = recordSpec instanceof RecordSpec ? recordSpec : new RecordSpec(recordSpec);
-
+        this.formModel = new RestFormModel({parent: this});
         this.gridModel = new GridModel({dataRoot, ...rest});
     }
 
@@ -76,7 +62,7 @@ export class RestGridModel {
         if (!this._lookupsLoaded) {
             const lookupFields = this.recordSpec.fields.filter(it => !!it.lookup);
             if (lookupFields.length) {
-                const lookupData = await XH.fetchJson({url: `${this.url}/lookups`});
+                const lookupData = await XH.fetchJson({url: `${this.url}/lookupData`});
                 lookupFields.forEach(f => {
                     f.lookupValues = lookupData[f.lookup];
                 });
@@ -90,26 +76,6 @@ export class RestGridModel {
     //-----------------
     // Actions
     //------------------
-    @action
-    closeForm() {
-        this.formRecord = null;
-    }
-
-    @action
-    openAddForm() {
-        this.formRecord = {id: null};
-    }
-
-    @action
-    openEditForm(rec)  {
-        this.formRecord = Object.assign({}, rec);
-    }
-
-    @action
-    setFormValue = (field, value) => {
-        this.formRecord[field] = value;
-    }
-
     @action
     deleteRecord(rec) {
         if (!this.enableDelete) throw XH.exception('Record delete not enabled.');
@@ -126,16 +92,16 @@ export class RestGridModel {
 
     @action
     saveFormRecord() {
-        const {url, formRecord, formIsWritable, formIsAdd} = this;
+        const {url} = this,
+            {record, isWritable, isAdd} = this.formModel;
 
-        if (!formIsWritable) throw XH.exception('Record save not enabled.');
+        if (!isWritable) throw XH.exception('Record save not enabled.');
 
         XH.fetchJson({
             url,
-            method: formIsAdd ? 'POST' : 'PUT',
-            params: {data: JSON.stringify(formRecord)}
+            method: isAdd ? 'POST' : 'PUT',
+            params: {data: JSON.stringify(record)}
         }).then(response => {
-            this.closeForm();
             this.noteRecordUpdated(response.data);
         }).linkTo(
             this.loadModel
@@ -155,12 +121,12 @@ export class RestGridModel {
         } else {
             records[idx] = rec;
         }
-        this.closeForm();
+        this.formModel.close();
     }
 
     @action
     noteRecordDeleted(rec) {
         remove(this.records, r => r.id === rec.id);
-        this.closeForm();
+        this.formModel.close();
     }
 }

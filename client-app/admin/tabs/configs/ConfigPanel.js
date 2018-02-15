@@ -9,9 +9,8 @@ import {observer} from 'hoist/mobx';
 import {environmentService} from 'hoist';
 import {boolCheckCol, baseCol} from 'hoist/columns/Core';
 import {restGrid, RestGridModel} from 'hoist/rest';
-import {dateTimeRenderer} from '../../../format';
 
-import {nameCol} from '../../columns/Columns';
+import {nameCol} from 'hoist/admin/columns/Columns';
 
 @observer
 export class ConfigPanel extends Component {
@@ -20,17 +19,17 @@ export class ConfigPanel extends Component {
         url: 'rest/configAdmin',
         recordSpec: {
             fields: this.filterForEnv([
-                {name: 'name', label: 'Name', allowNull: false},
-                {name: 'groupName', label: 'Group', lookup: 'groupNames', allowNull: false},
-                {name: 'valueType', label: 'Type', lookup: 'valueTypes', allowNull: false},
-                {name: 'prodValue', label: 'Prod Value', allowNull: false, env: 'Production'},
-                {name: 'betaValue', label: 'Beta Value', allowNull: true, env: 'Beta'},
-                {name: 'stageValue', label: 'Stage Value', allowNull: true, env: 'Staging'},
-                {name: 'devValue', label: 'Dev Value', allowNull: true, env: 'Development'},
+                {name: 'name', label: 'Name'},
+                {name: 'groupName', label: 'Group', lookup: 'groupNames'},
+                {name: 'valueType', label: 'Type', lookup: 'valueTypes'},
+                {name: 'prodValue', label: 'Prod Value', typeField: 'valueType', env: 'Production'},
+                {name: 'betaValue', label: 'Beta Value', allowNull: true, typeField: 'valueType', env: 'Beta'},
+                {name: 'stageValue', label: 'Stage Value', allowNull: true, typeField: 'valueType', env: 'Staging'},
+                {name: 'devValue', label: 'Dev Value', allowNull: true, typeField: 'valueType', env: 'Development'},
                 {name: 'clientVisible', label: 'Client?', type: 'bool'},
                 {name: 'note', label: 'Note', allowNull: true},
-                {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true},
-                {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true}
+                {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true, allowNull: true},
+                {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true, allowNull: true}
             ])
         },
         columns: this.filterForEnv([
@@ -46,16 +45,16 @@ export class ConfigPanel extends Component {
         ]),
         editors: this.filterForEnv([
             {field: 'name'},
-            {field: 'groupName', forceSelection: false}, // force selection: false means select from existing OR add your own.
-            {field: 'valueType', additionsOnly: true}, // additionsOnly means you can select from existing if adding a rec, if editing this is read only.
+            {field: 'groupName', allowAdditions: true},
+            {field: 'valueType', additionsOnly: true},
             {field: 'prodValue', env: 'Production'},
             {field: 'betaValue', env: 'Beta'},
             {field: 'stageValue', env: 'Staging'},
             {field: 'devValue', env: 'Development'},
             {field: 'clientVisible', type: 'bool'},
             {field: 'note', type: 'textarea'},
-            {field: 'lastUpdated', renderer: dateTimeRenderer()},
-            {field: 'lastUpdatedBy'}
+            {field: 'lastUpdated', type: 'displayField'},
+            {field: 'lastUpdatedBy', type: 'displayField'}
         ])
     });
 
