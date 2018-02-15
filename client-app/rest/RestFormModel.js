@@ -117,7 +117,7 @@ export class RestFormModel {
     }
 
     @action
-    setFormValue = (field, value) => {
+    setValue = (field, value) => {
         this.record[field] = value;
     }
 

@@ -237,7 +237,7 @@ export class RestForm extends Component {
             let val = valOrEvent;
             if (typeof valOrEvent === 'object') val = valOrEvent.target.value;
             if (type === 'boolean') val = valOrEvent.target.checked;
-            this.model.setFormValue(field, val);
+            this.model.setValue(field, val);
         };
 
         this[handlerName] = handler;
