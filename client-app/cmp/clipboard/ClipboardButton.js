@@ -74,17 +74,11 @@ class ClipboardButton extends Component {
             action: this.props.action
         };
 
-        if (this.props.container !== undefined) {
-            options.container = this.propOrResult(this.props.container);
-        }
-
-        let propName;
-        switch (true) {
-            case this.props.target !== undefined: propName = 'target'; break;
-            default: propName = 'text';
-        }
-
-        options[propName] = this.getCopyVal(propName);
+        ['container', 'target', 'text'].forEach((prop) => {
+            if (this.props[prop] !== undefined) {
+                options[prop] = this.getCopyVal(prop);
+            }
+        });
 
         this.clipboard = new Clipboard(btnDom, options);
         this.clipboard.on('success', (e) => {
@@ -98,17 +92,12 @@ class ClipboardButton extends Component {
         this.clipboard && this.clipboard.destroy();
     }
 
-    getCopyVal(propName) {
+    getCopyVal(prop) {
         return (trigger) => {
-            const copyProp = this.props[propName];
-            if (typeof copyProp === 'function') return copyProp(trigger);
-            return copyProp;
+            const val = this.props[prop];
+            if (typeof val === 'function') return val(trigger);
+            return val;
         };
-    }
-
-    propOrResult(obj) {
-        if (typeof obj === 'function') return obj();
-        return obj;
     }
 
 };
