@@ -259,8 +259,8 @@ export class RestFormModel {
         const newRec = {id: null},
             fieldSpecs = this.parentModel.recordSpec.fields;
 
-        // must start with full formed dummy rec for validation purposes
-        // from MobX: a computed property won't re-run if none of the data used in the previous computation changed.
+        // must start with fully formed dummy rec for validation purposes
+        // a computed property (isValid) won't re-run if none of the data used in the previous computation changed.
         fieldSpecs.forEach(spec => {
             newRec[spec.name] = null;
         });
