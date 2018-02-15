@@ -7,10 +7,12 @@
 
 import {Component} from 'react';
 import * as PT from 'prop-types';
+import {Intent} from '@blueprintjs/core';
 import {elemFactory} from 'hoist';
 import {button} from 'hoist/kit/blueprint';
 import Clipboard from 'clipboard';
-import {isFunction, defaults} from 'lodash'
+import { ClipboardToaster } from 'hoist/cmp';
+import {isFunction, defaults} from 'lodash';
 
 import {observer} from 'hoist/mobx';
 
@@ -38,7 +40,7 @@ class ClipboardButton extends Component {
     }
 
     static defaultProps = {
-        action: 'copy',
+        action: 'copy'
     }
 
     static buttonDefaults = {
@@ -46,13 +48,15 @@ class ClipboardButton extends Component {
         text: 'Copy'
     }
 
+    buttonProps = null
+
     render() {
-        const buttonProps = defaults(
+        this.buttonProps = defaults(
             {ref: this.manageClipboard},
             this.props.buttonProps,
             this.constructor.buttonDefaults
         );
-        return button(buttonProps);
+        return button(this.buttonProps);
     }
 
     //---------------------------
@@ -78,10 +82,8 @@ class ClipboardButton extends Component {
         });
 
         this.clipboard = new Clipboard(btnDom, options);
-        this.clipboard.on('success', (e) => {
-            // show toast
-            e.clearSelection();
-        });
+        this.clipboard.on('success', this.onCopySuccess);
+        this.clipboard.on('error', this.onCopyError);
     }
 
     destroyClipboard() {
@@ -94,6 +96,33 @@ class ClipboardButton extends Component {
             if (isFunction(val)) return val(trigger);
             return val;
         };
+    }
+
+    onCopySuccess = (e) => {
+        this.showToast({
+            intent: Intent.SUCCESS,
+            message: 'Error details copied to clipboard.'
+        });
+        e.clearSelection();
+    }
+
+    onCopyError = (e) => {
+        this.showToast({
+            intent: Intent.DANGER,
+            message: 'Error details NOT copied to clipboard.'
+        });
+        e.clearSelection();
+    }
+
+    showToast(toastProps) {
+        const allProps = defaults(
+            {
+                icon: this.buttonProps.icon,
+                timeout: 3000
+            },
+            toastProps
+        );
+        ClipboardToaster.show(allProps);
     }
 };
 
