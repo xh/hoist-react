@@ -13,14 +13,12 @@ import {elem, hocDisplayName} from 'hoist/react';
 import {loadMask} from 'hoist/cmp';
 import {errorDialog} from 'hoist/error';
 import {frame, viewport, vframe} from 'hoist/layout';
-import {useStrict, observer} from 'hoist/mobx';
+import {observer} from 'hoist/mobx';
 
 import {hoistAppModel} from './HoistAppModel';
 import {loginPanel} from './LoginPanel';
 import {impersonationBar} from './ImpersonationBar';
 import {versionBar} from './VersionBar';
-
-useStrict(true);
 
 /**
  * Host Component for a Hoist Application
@@ -34,7 +32,9 @@ export function hoistApp(C) {
 
         static displayName = hocDisplayName('HoistApp', C);
 
-        componentDidMount() {
+        constructor() {
+            // TODO:  Provide to app via Provider/inject mechanism rather than global import.
+            super();
             hoistAppModel.initApp();
         }
 

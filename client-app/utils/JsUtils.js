@@ -10,10 +10,6 @@ export function findByProperty(arr, property, value) {
     return arr.find(it => it[property] === value);
 }
 
-export function deepClone(a) {
-    return JSON.parse(JSON.stringify(a));
-}
-
 export function shallowClone(a) {
     return Object.assign({}, a);
 }

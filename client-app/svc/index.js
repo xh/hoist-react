@@ -12,6 +12,7 @@ export * from './EventService';
 export * from './ExceptionHandlerService';
 export * from './FeedbackService';
 export * from './FetchService';
+export * from './LocalStorageService';
 export * from './IdentityService';
 export * from './PrefService';
 export * from './TrackService';
