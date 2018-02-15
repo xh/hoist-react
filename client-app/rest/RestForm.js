@@ -111,15 +111,11 @@ export class RestForm extends Component {
     }
 
     getForm() {
-        const {editors, recordSpec} = this.parentModel,
-            fields = recordSpec.fields,
+        const {editors} = this.parentModel,
             items = [];
 
         editors.forEach(editor => {
-            const fieldSpec = fields.find(it => it.name === editor.field);
-            if (fieldSpec.typeField) fieldSpec.type = this.model.getTypeFromValueField(fields, fieldSpec);
-
-            const inputConfig = this.model.getInputConfig(fieldSpec, editor);
+            const inputConfig = this.model.getInputConfig(editor);
 
             items.push(this.createFieldLabel(inputConfig));
             switch (inputConfig.type) {

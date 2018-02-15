@@ -48,12 +48,11 @@ export class RestFormModel {
         this.parent = parent;
     }
 
-    getTypeFromValueField(fields, fieldSpec) {
-        return this.record[fields.find(it => it.name === fieldSpec.typeField).name];
-    }
-
-    getInputConfig(fieldSpec, editor) {
-        const defaultValue = this.isAdd ? '' : this.record[fieldSpec.name],
+    getInputConfig(editor) {
+        const {recordSpec} = this.parent,
+            fields = recordSpec.fields,
+            fieldSpec = fields.find(it => it.name === editor.field),
+            defaultValue = this.isAdd ? '' : this.record[fieldSpec.name],
             isDisabled = fieldSpec.readOnly || (editor.additionsOnly && !this.isAdd);
 
         return {
@@ -61,18 +60,25 @@ export class RestFormModel {
             fieldSpec: fieldSpec,
             field: fieldSpec.name,
             defaultValue: defaultValue == null ? '' : defaultValue,
-            type: this.getInputType(fieldSpec, editor),
+            type: this.getInputType(editor, fieldSpec),
             isDisabled: isDisabled
         };
     }
 
-    getInputType(fieldSpec, editor) {
+    getInputType(editor, fieldSpec) {
+        if (fieldSpec.typeField) fieldSpec.type = this.getTypeFromTypeField(fieldSpec);
         if (editor.type === 'displayField') return 'display';
         if (fieldSpec.lookupValues) return 'dropdown';
         if (fieldSpec.type === 'bool' || fieldSpec.type === 'boolean') return 'boolean';
         if (fieldSpec.type === 'int') return 'number';
         if (editor.type === 'textarea' || fieldSpec.type === 'json') return 'textarea';
         return 'text';
+    }
+
+    getTypeFromTypeField(fieldSpec) {
+        const {recordSpec} = this.parent,
+            fields = recordSpec.fields;
+        return this.record[fields.find(it => it.name === fieldSpec.typeField).name];
     }
 
     saveRecord() {
