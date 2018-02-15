@@ -10,6 +10,7 @@ import * as PT from 'prop-types';
 import {elemFactory} from 'hoist';
 import {button} from 'hoist/kit/blueprint';
 import Clipboard from 'clipboard';
+import {isFunction, defaults} from 'lodash'
 
 import {observer} from 'hoist/mobx';
 
@@ -38,23 +39,31 @@ class ClipboardButton extends Component {
 
     static defaultProps = {
         action: 'copy',
-        buttonProps: {
-            icon: 'clipboard',
-            text: 'Copy'
-        }
+    }
+
+    static buttonDefaults = {
+        icon: 'clipboard',
+        text: 'Copy'
     }
 
     render() {
-        this.props.buttonProps.ref = this.manageClipboard.bind(this);
-        return button(this.props.buttonProps);
+        const buttonProps = defaults(
+            {ref: this.manageClipboard},
+            this.props.buttonProps,
+            this.constructor.buttonDefaults
+        );
+        return button(buttonProps);
     }
 
-    manageClipboard(btn) {
-        if (!btn || !btn.buttonRef) {
+    //---------------------------
+    // Implementation
+    //---------------------------
+    manageClipboard = (btn) => {
+        if (btn && btn.buttonRef) {
+            this.createClipboard(btn.buttonRef);
+        } else {
             this.destroyClipboard();
-            return;
         }
-        this.createClipboard(btn.buttonRef);
     }
 
     createClipboard(btnDom) {
@@ -62,8 +71,8 @@ class ClipboardButton extends Component {
             action: this.props.action
         };
 
-        ['target', 'text'].forEach((prop) => {
-            if (this.props[prop] !== undefined) {
+        ['target', 'text'].forEach(prop => {
+            if (prop in this.props) {
                 options[prop] = this.getPropVal(prop);
             }
         });
@@ -71,23 +80,21 @@ class ClipboardButton extends Component {
         this.clipboard = new Clipboard(btnDom, options);
         this.clipboard.on('success', (e) => {
             // show toast
-
             e.clearSelection();
         });
     }
 
     destroyClipboard() {
-        this.clipboard && this.clipboard.destroy();
+        if (this.clipboard) this.clipboard.destroy();
     }
 
     getPropVal(prop) {
         return (trigger) => {
             const val = this.props[prop];
-            if (typeof val === 'function') return val(trigger);
+            if (isFunction(val)) return val(trigger);
             return val;
         };
     }
-
 };
 
 export const clipboardButton = elemFactory(ClipboardButton);
