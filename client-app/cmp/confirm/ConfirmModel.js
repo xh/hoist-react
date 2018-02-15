@@ -15,13 +15,13 @@ export class ConfirmModel {
     onReject = null;
 
     @action
-    doConfirm = () => {
+    doConfirm() {
         if (this.onConfirm) this.onConfirm();
         this.close();
     }
 
     @action
-    doReject = () => {
+    doReject() {
         if (this.onReject) this.onReject();
         this.close();
     }

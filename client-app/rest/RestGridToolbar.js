@@ -52,10 +52,10 @@ export class RestGridToolbar extends Component {
     // Implementation
     //-----------------------------
     get model() {return this.props.model}
-    get restFormModel() {return this.props.model.restFormModel}
+    get restFormModel() {return this.props.model.formModel}
 
     onAddClick = () => {
-        this.restFormModel.openAddForm();
+        this.restFormModel.openAdd();
     }
 
     onDeleteClick = () => {
@@ -68,7 +68,7 @@ export class RestGridToolbar extends Component {
 
     onEditClick = () => {
         const restFormModel = this.restFormModel;
-        restFormModel.openEditForm(this.model.selection.singleRecord);
+        restFormModel.openEdit(this.model.selection.singleRecord);
     }
 
     doDelete = () => {

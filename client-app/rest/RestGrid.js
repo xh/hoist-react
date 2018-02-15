@@ -33,8 +33,8 @@ export class RestGrid extends Component {
                     }
                 })
             ),
-            restForm({model}),
-            confirm({model: this.model.confirmModel})
+            restForm({model: model.formModel}),
+            confirm({model: model.confirmModel})
         );
     }
 
@@ -42,10 +42,9 @@ export class RestGrid extends Component {
     // Implementation
     //------------------------
     get model() {return this.props.model}
-    get restFormModel() {return this.props.model.restFormModel}
 
     onRowDoubleClicked = (row) => {
-        this.restFormModel.openEditForm(row.data);
+        this.model.formModel.openEdit(row.data);
     }
 }
 export const restGrid = elemFactory(RestGrid);

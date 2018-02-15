@@ -23,11 +23,12 @@ export class RestGridModel {
     enableAdd = true;
     enableEdit = true;
     enableDelete = true;
+    editWarning = null;
+    editors = [];
 
     gridModel = null;
+    formModel = null;
     recordSpec = null;
-    gridModel = null;
-    restFormModel = null;
     _lookupsLoaded = false;
 
     confirmModel = new ConfirmModel();
@@ -50,8 +51,10 @@ export class RestGridModel {
         this.enableAdd = enableAdd;
         this.enableEdit = enableEdit;
         this.enableDelete = enableDelete;
+        this.editWarning = editWarning;
+        this.editors = editors;
         this.recordSpec = recordSpec instanceof RecordSpec ? recordSpec : new RecordSpec(recordSpec);
-        this.restFormModel = new RestFormModel({editors, editWarning, parentModel: this});
+        this.formModel = new RestFormModel({parent: this});
         this.gridModel = new GridModel({dataRoot, ...rest});
     }
 
@@ -90,14 +93,14 @@ export class RestGridModel {
     @action
     saveFormRecord() {
         const {url} = this,
-            {formRecord, formIsWritable, formIsAdd} = this.restFormModel;
+            {record, isWritable, isAdd} = this.formModel;
 
-        if (!formIsWritable) throw XH.exception('Record save not enabled.');
+        if (!isWritable) throw XH.exception('Record save not enabled.');
 
         XH.fetchJson({
             url,
-            method: formIsAdd ? 'POST' : 'PUT',
-            params: {data: JSON.stringify(formRecord)}
+            method: isAdd ? 'POST' : 'PUT',
+            params: {data: JSON.stringify(record)}
         }).then(response => {
             this.noteRecordUpdated(response.data);
         }).linkTo(
@@ -118,12 +121,12 @@ export class RestGridModel {
         } else {
             records[idx] = rec;
         }
-        this.restFormModel.closeForm();
+        this.formModel.close();
     }
 
     @action
     noteRecordDeleted(rec) {
         remove(this.records, r => r.id === rec.id);
-        this.restFormModel.closeForm();
+        this.formModel.close();
     }
 }

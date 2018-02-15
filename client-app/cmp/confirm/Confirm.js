@@ -38,14 +38,22 @@ class Confirm extends Component {
             filler(),
             button({
                 text: 'Yes',
-                onClick: this.model.doConfirm
+                onClick: this.onYesClick
             }),
             button({
                 text: 'No',
-                onClick: this.model.doReject
+                onClick: this.onNoClick
             }),
             filler()
         ];
+    }
+
+    onYesClick = () => {
+        this.model.doConfirm();
+    }
+
+    onNoClick = () => {
+        this.model.doReject();
     }
 
     get model() {return this.props.model}
