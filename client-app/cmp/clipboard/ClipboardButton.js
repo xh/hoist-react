@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import PropTypes from 'prop-types';
+import * as PT from 'prop-types';
 import {elemFactory} from 'hoist';
 import {button} from 'hoist/kit/blueprint';
 import Clipboard from 'clipboard';
@@ -16,36 +16,24 @@ import {observer} from 'hoist/mobx';
 /**
  * Button that copies content to the clipboard.
  * This wraps the https://clipboardjs.com/ libary
- * Params text, target, action, and container are hooks into the same params in clipboard.js
+ * Props text, target, and action are hooks into the same params in clipboard.js
  *
  * Either text or target param must be used.
- * @param text, string or function that returns one  - this is the text string that will be copied
- * @param target, DOM element or function that returns one - the target is a textarea or input DOM element whose value will be copied
+ * @prop text, the text string that will be copied
+ * @prop target, the textarea or input DOM element whose value will be copied
+ * @prop action, either 'copy' or 'cut'
  *
- * @param action, string - either 'copy' or 'cut' - optional, defaults to 'copy'
- * @param container, DOM element or function that returns one - optional, defaults to undefined
- *
- * @param buttonProps, object - optional - config object with any prop that can be passed to the blueprint button component
+ * @prop buttonProps, object - optional - config object with any prop that can be passed to the blueprint button component
 **/
 
 @observer
 class ClipboardButton extends Component {
 
     static propTypes = {
-        text: PropTypes.oneOfType([
-            PropTypes.string,
-            PropTypes.func
-        ]),
-        target: PropTypes.oneOfType([
-            PropTypes.instanceOf(Element),
-            PropTypes.func
-        ]),
-        container: PropTypes.oneOfType([
-            PropTypes.instanceOf(Element),
-            PropTypes.func
-        ]),
-        action: PropTypes.oneOf(['copy', 'cut']),
-        buttonProps: PropTypes.object
+        text: PT.oneOfType([PT.string, PT.func]),
+        target: PT.oneOfType([PT.instanceOf(Element), PT.func]),
+        action: PT.oneOf(['copy', 'cut']),
+        buttonProps: PT.object
     }
 
     static defaultProps = {
@@ -74,17 +62,11 @@ class ClipboardButton extends Component {
             action: this.props.action
         };
 
-        if (this.props.container !== undefined) {
-            options.container = this.propOrResult(this.props.container);
-        }
-
-        let propName;
-        switch (true) {
-            case this.props.target !== undefined: propName = 'target'; break;
-            default: propName = 'text';
-        }
-
-        options[propName] = this.getCopyVal(propName);
+        ['target', 'text'].forEach((prop) => {
+            if (this.props[prop] !== undefined) {
+                options[prop] = this.getPropVal(prop);
+            }
+        });
 
         this.clipboard = new Clipboard(btnDom, options);
         this.clipboard.on('success', (e) => {
@@ -98,17 +80,12 @@ class ClipboardButton extends Component {
         this.clipboard && this.clipboard.destroy();
     }
 
-    getCopyVal(propName) {
+    getPropVal(prop) {
         return (trigger) => {
-            const copyProp = this.props[propName];
-            if (typeof copyProp === 'function') return copyProp(trigger);
-            return copyProp;
+            const val = this.props[prop];
+            if (typeof val === 'function') return val(trigger);
+            return val;
         };
-    }
-
-    propOrResult(obj) {
-        if (typeof obj === 'function') return obj();
-        return obj;
     }
 
 };
