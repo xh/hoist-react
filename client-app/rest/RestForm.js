@@ -61,7 +61,7 @@ export class RestForm extends Component {
             button({
                 text: 'Close',
                 icon: 'cross',
-                onClick: this.onClose
+                onClick: this.onCloseClick
             }),
             filler(),
             button({
@@ -81,7 +81,7 @@ export class RestForm extends Component {
         ];
     }
 
-    onClose = () => {
+    onCloseClick = () => {
         this.model.close();
     }
 
