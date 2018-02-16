@@ -11,6 +11,7 @@ import {elemFactory} from 'hoist';
 import {filler, span, vbox} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
 import {fmtDateTime} from 'hoist/format';
+import {jsonEditor} from 'hoist/cmp';
 
 import {confirm} from 'hoist/cmp/confirm/Confirm.js';
 
@@ -125,6 +126,9 @@ export class RestForm extends Component {
                 case 'textarea':
                     items.push(this.createTextAreaInput(inputConfig));
                     break;
+                case 'jsonEditor':
+                    items.push(this.createJsonEditor(inputConfig));
+                    break;
                 case 'text':
                 default:
                     items.push(this.createTextInput(inputConfig));
@@ -206,6 +210,22 @@ export class RestForm extends Component {
         return textArea({
             style: {marginBottom: 10},
             defaultValue: config.defaultValue,
+            onChange: handler,
+            disabled: config.isDisabled
+        });
+    }
+
+    createJsonEditor(config) {
+        const handler = this.getMemoizedHandler(config);
+        return jsonEditor({
+            options: {
+                mode: {
+                    name: 'application/javascript',
+                    json: true
+                }
+            },
+            style: {marginBottom: 10},
+            value: config.defaultValue,
             onChange: handler,
             disabled: config.isDisabled
         });

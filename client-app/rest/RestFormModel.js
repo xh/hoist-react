@@ -122,7 +122,8 @@ export class RestFormModel {
         if (fieldSpec.lookupValues) return 'dropdown';
         if (fieldSpec.type === 'bool' || fieldSpec.type === 'boolean') return 'boolean';
         if (fieldSpec.type === 'int') return 'number';
-        if (editor.type === 'textarea' || fieldSpec.type === 'json') return 'textarea';
+        if (fieldSpec.type === 'json') return 'jsonEditor';
+        if (editor.type === 'textarea') return 'textarea';
         return 'text';
     }
 

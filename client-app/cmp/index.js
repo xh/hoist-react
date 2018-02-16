@@ -7,4 +7,5 @@
 export * from './LoadMask';
 export * from './clipboard';
 export * from './Collapsible';
+export * from './JsonEditor';
 export * from './tab';
