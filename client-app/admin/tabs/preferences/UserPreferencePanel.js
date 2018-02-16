@@ -16,14 +16,6 @@ export class UserPreferencePanel extends Component {
 
     model = new RestGridModel({
         url: 'rest/userPreferenceAdmin',
-        editWarning: 'Are you sure you want to edit? Editing preferences can break running apps!',
-        deleteWarning(records) {
-            const count = records.length,
-                countMsg = (count === 1 ? 'this preference' : `these ${count} preferences`);
-
-            return `Are you sure you want to delete ${countMsg}? Deleting preferences can break running apps!`;
-        },
-
         recordSpec: {
             fields: [
                 {name: 'name', label: 'Pref', lookup: 'names'},

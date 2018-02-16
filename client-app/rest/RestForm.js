@@ -26,7 +26,7 @@ export class RestForm extends Component {
             icon: 'inbox',
             isOpen: true,
             isCloseButtonShown: false,
-            items: this.renderDialogItems()
+            items: this.getDialogItems()
         });
     }
 
@@ -34,28 +34,21 @@ export class RestForm extends Component {
     // Implementation
     //--------------------------------
     get model() {return this.props.model}
-    get parentModel() {return this.props.model.parent}
 
-    renderDialogItems() {
-        const items = [
-            dialogBody(vbox({
-                cls: 'rest-form',
-                width: 400,
-                padding: 10,
-                items: this.getForm()
-            })),
+    getDialogItems() {
+        return [
+            dialogBody(
+                this.getForm()
+            ),
             dialogFooter(
                 dialogFooterActions(this.getButtons())
             ),
             confirm({model: this.model.confirmModel})
         ];
-
-        return items;
     }
 
     getButtons() {
-        const {enableDelete} = this.parentModel,
-            {isValid, isWritable, isAdd} = this.model;
+        const {isValid, isWritable, isAdd, actionEnabled} = this.model;
 
         return [
             button({
@@ -69,7 +62,7 @@ export class RestForm extends Component {
                 icon: 'cross',
                 disabled: !isValid,
                 onClick: this.onDeleteClick,
-                omit: !enableDelete || isAdd
+                omit: !actionEnabled.del || isAdd
             }),
             button({
                 text: 'Save',
@@ -86,37 +79,35 @@ export class RestForm extends Component {
     }
 
     onDeleteClick = () => {
-        const {confirmModel} = this.model;
-        confirmModel.show({
-            message: 'Are you sure you want to delete this record?',
-            onConfirm: () => this.model.deleteRecord()
-        });
-    }
-
-    onSaveClick = () => {
-        const {confirmModel} = this.model,
-            {editWarning} = this.parentModel;
-        if (editWarning) {
-            confirmModel.show({
-                message: editWarning,
-                onConfirm: () => this.doSave()
+        const model = this.model,
+            warning = model.actionWarning.del;
+        if (warning) {
+            model.confirmModel.show({
+                message: warning,
+                onConfirm: () => model.deleteRecord()
             });
         } else {
-            this.doSave();
+            model.deleteRecord();
         }
     }
 
-    doSave() {
-        this.model.saveRecord();
+    onSaveClick = () => {
+        const model = this.model,
+            isAdd = model.isAdd,
+            warning = model.actionWarning[isAdd ? 'add' : 'edit'];
+        if (warning) {
+            model.confirmModel.show({
+                message: warning,
+                onConfirm: () => model.saveRecord()
+            });
+        } else {
+            model.saveRecord();
+        }
     }
 
     getForm() {
-        const {editors} = this.parentModel,
-            items = [];
-
-        editors.forEach(editor => {
-            const inputConfig = this.model.getInputConfig(editor);
-
+        const items = [];
+        this.model.getInputConfigs().forEach(inputConfig => {
             items.push(this.createFieldLabel(inputConfig));
             switch (inputConfig.type) {
                 case 'display':
@@ -140,7 +131,12 @@ export class RestForm extends Component {
             }
         });
 
-        return items;
+        return vbox({
+            cls: 'rest-form',
+            width: 400,
+            padding: 10,
+            items
+        });
     }
 
     createFieldLabel(config) {

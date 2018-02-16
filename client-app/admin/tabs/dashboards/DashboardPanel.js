@@ -17,7 +17,10 @@ export class DashboardPanel extends Component {
 
     model = new RestGridModel({
         url: 'rest/dashboardAdmin',
-        editWarning: 'Are you sure you want to edit this user\'s dashboard?',
+        actionWarning: {
+            edit: 'Are you sure you want to edit this user\'s dashboard?',
+            del: 'Are you sure you want to delete this user\'s dashboard?'
+        },
         recordSpec: {
             fields: [
                 {name: 'appCode', label: 'App Code'},

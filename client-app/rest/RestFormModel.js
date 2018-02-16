@@ -15,10 +15,14 @@ export class RestFormModel {
     // Properties
     //---------------
     parent = null;
+    editors = [];
     confirmModel = new ConfirmModel();
 
-    // If not null, this will be displayed in a modal dialog
+    // If not null, form will be open and display it
     @observable record = null;
+
+    get actionWarning() {return this.parent.actionWarning}
+    get actionEnabled() {return this.parent.actionEnabled}
 
     @computed
     get isAdd() {
@@ -39,59 +43,28 @@ export class RestFormModel {
 
     @computed
     get isWritable() {
-        const {isAdd} = this,
-            {enableAdd, enableEdit} = this.parent;
-        return (isAdd && enableAdd) || (!isAdd && enableEdit);
+        const {isAdd, actionEnabled} = this;
+        return (isAdd && actionEnabled.add) || (!isAdd && actionEnabled.edit);
     }
 
-    constructor({parent}) {
+    constructor({parent, editors}) {
         this.parent = parent;
-    }
-
-    getInputConfig(editor) {
-        const {recordSpec} = this.parent,
-            fields = recordSpec.fields,
-            fieldSpec = fields.find(it => it.name === editor.field),
-            defaultValue = this.isAdd ? '' : this.record[fieldSpec.name],
-            isDisabled = fieldSpec.readOnly || (editor.additionsOnly && !this.isAdd);
-
-        return {
-            editor: editor,
-            fieldSpec: fieldSpec,
-            field: fieldSpec.name,
-            defaultValue: defaultValue == null ? '' : defaultValue,
-            type: this.getInputType(editor, fieldSpec),
-            isDisabled: isDisabled
-        };
-    }
-
-    getInputType(editor, fieldSpec) {
-        if (fieldSpec.typeField) fieldSpec.type = this.getTypeFromTypeField(fieldSpec);
-        if (editor.type === 'displayField') return 'display';
-        if (fieldSpec.lookupValues) return 'dropdown';
-        if (fieldSpec.type === 'bool' || fieldSpec.type === 'boolean') return 'boolean';
-        if (fieldSpec.type === 'int') return 'number';
-        if (editor.type === 'textarea' || fieldSpec.type === 'json') return 'textarea';
-        return 'text';
-    }
-
-    getTypeFromTypeField(fieldSpec) {
-        const {recordSpec} = this.parent,
-            fields = recordSpec.fields;
-        return this.record[fields.find(it => it.name === fieldSpec.typeField).name];
-    }
-
-    saveRecord() {
-        this.parent.saveFormRecord();
-    }
-
-    deleteRecord() {
-        this.parent.deleteRecord(this.record);
+        this.editors = editors;
     }
 
     //-----------------
     // Actions
     //-----------------
+    @action
+    saveRecord() {
+        this.parent.saveRecord(this.record);
+    }
+
+    @action
+    deleteRecord() {
+        this.parent.deleteRecord(this.record);
+    }
+
     @action
     close() {
         this.record = null;
@@ -121,4 +94,41 @@ export class RestFormModel {
         this.record[field] = value;
     }
 
+    //---------------------------------
+    // Helpers for Form/Editor Creation
+    //---------------------------------
+    getInputConfigs() {
+        return this.editors.map(editor => {
+            const {recordSpec} = this.parent,
+                fields = recordSpec.fields,
+                fieldSpec = fields.find(it => it.name === editor.field),
+                defaultValue = this.isAdd ? '' : this.record[fieldSpec.name],
+                isDisabled = fieldSpec.readOnly || (editor.additionsOnly && !this.isAdd);
+
+            return {
+                editor: editor,
+                fieldSpec: fieldSpec,
+                field: fieldSpec.name,
+                defaultValue: defaultValue == null ? '' : defaultValue,
+                type: this.getInputType(editor, fieldSpec),
+                isDisabled: isDisabled
+            };
+        });
+    }
+
+    getInputType(editor, fieldSpec) {
+        if (fieldSpec.typeField) fieldSpec.type = this.getTypeFromTypeField(fieldSpec);
+        if (editor.type === 'displayField') return 'display';
+        if (fieldSpec.lookupValues) return 'dropdown';
+        if (fieldSpec.type === 'bool' || fieldSpec.type === 'boolean') return 'boolean';
+        if (fieldSpec.type === 'int') return 'number';
+        if (editor.type === 'textarea' || fieldSpec.type === 'json') return 'textarea';
+        return 'text';
+    }
+
+    getTypeFromTypeField(fieldSpec) {
+        const {recordSpec} = this.parent,
+            fields = recordSpec.fields;
+        return this.record[fields.find(it => it.name === fieldSpec.typeField).name];
+    }
 }

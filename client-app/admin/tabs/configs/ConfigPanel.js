@@ -17,6 +17,10 @@ export class ConfigPanel extends Component {
 
     model = new RestGridModel({
         url: 'rest/configAdmin',
+        actionWarning: {
+            edit: 'Are you sure you want to edit? Editing configs can break running apps!',
+            del: 'Are you sure you want to delete? Deleting configs can break running apps!'
+        },
         recordSpec: {
             fields: this.filterForEnv([
                 {name: 'name', label: 'Name'},

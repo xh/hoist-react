@@ -16,7 +16,10 @@ export class PreferencePanel extends Component {
 
     model = new RestGridModel({
         url: 'rest/preferenceAdmin',
-        editWarning: 'Are you sure you want to edit? Editing preferences can break running apps!',
+        actionWarning: {
+            edit: 'Are you sure you want to edit? Editing preferences can break running apps!',
+            del: 'Are you sure you want to delete? Deleting preferences can break running apps!'
+        },
         recordSpec: {
             fields: [
                 {name: 'name', label: 'Name'},

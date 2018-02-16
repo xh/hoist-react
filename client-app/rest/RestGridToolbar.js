@@ -15,7 +15,8 @@ export class RestGridToolbar extends Component {
 
     render() {
         const model = this.model,
-            singleRecord = model.selection.singleRecord;
+            singleRecord = model.selection.singleRecord,
+            actionEnabled = model.actionEnabled;
 
         return hbox({
             style: {background: '#106ba3'},
@@ -28,21 +29,21 @@ export class RestGridToolbar extends Component {
                     text: 'Add',
                     icon: 'add',
                     onClick: this.onAddClick,
-                    omit: !model.enableAdd
+                    omit: !actionEnabled.add
                 },
                 {
                     text: 'Edit',
                     icon: 'edit',
                     onClick: this.onEditClick,
                     disabled: !singleRecord,
-                    omit: !model.enableEdit
+                    omit: !actionEnabled.edit
                 },
                 {
                     text: 'Delete',
                     icon: 'delete',
                     onClick: this.onDeleteClick,
                     disabled: !singleRecord,
-                    omit: !model.enableDelete
+                    omit: !actionEnabled.del
                 }
             ]
         });
@@ -52,28 +53,26 @@ export class RestGridToolbar extends Component {
     // Implementation
     //-----------------------------
     get model() {return this.props.model}
-    get restFormModel() {return this.props.model.formModel}
 
     onAddClick = () => {
-        this.restFormModel.openAdd();
-    }
-
-    onDeleteClick = () => {
-        const {confirmModel} = this.model;
-        confirmModel.show({
-            message: 'Are you sure you want to delete this record?',
-            onConfirm: this.doDelete
-        });
+        this.model.addRecord();
     }
 
     onEditClick = () => {
-        const restFormModel = this.restFormModel;
-        restFormModel.openEdit(this.model.selection.singleRecord);
+        this.model.editSelection();
     }
 
-    doDelete = () => {
-        const model = this.model;
-        model.deleteRecord(model.selection.singleRecord);
+    onDeleteClick = () => {
+        const model = this.model,
+            warning = model.actionWarning.del;
+        if (warning) {
+            model.confirmModel.show({
+                message: warning,
+                onConfirm: () => model.deleteSelection()
+            });
+        } else {
+            model.deleteSelection();
+        }
     }
 }
 export const restGridToolbar = elemFactory(RestGridToolbar);

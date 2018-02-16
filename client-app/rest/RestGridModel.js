@@ -20,11 +20,17 @@ export class RestGridModel {
     //---------------
     // Properties
     //----------------
-    enableAdd = true;
-    enableEdit = true;
-    enableDelete = true;
-    editWarning = null;
-    editors = [];
+    actionEnabled = {
+        add: true,
+        edit: true,
+        del: true
+    }
+
+    actionWarning = {
+        add: null,
+        edit: null,
+        del: 'Are you sure you want to delete the selected record(s)?'
+    }
 
     gridModel = null;
     formModel = null;
@@ -39,22 +45,17 @@ export class RestGridModel {
     get records()   {return this.gridModel.records}
 
     constructor({
-        enableAdd = true,
-        enableEdit = true,
-        enableDelete = true,
+        actionEnabled,
+        actionWarning,
         recordSpec,
-        editWarning,
         editors = [],
         dataRoot = 'data',
         ...rest
     }) {
-        this.enableAdd = enableAdd;
-        this.enableEdit = enableEdit;
-        this.enableDelete = enableDelete;
-        this.editWarning = editWarning;
-        this.editors = editors;
+        this.actionEnabled = Object.assign(this.actionEnabled, actionEnabled);
+        this.actionWarning = Object.assign(this.actionWarning, actionWarning);
         this.recordSpec = recordSpec instanceof RecordSpec ? recordSpec : new RecordSpec(recordSpec);
-        this.formModel = new RestFormModel({parent: this});
+        this.formModel = new RestFormModel({parent: this, editors});
         this.gridModel = new GridModel({dataRoot, ...rest});
     }
 
@@ -78,10 +79,12 @@ export class RestGridModel {
     //------------------
     @action
     deleteRecord(rec) {
-        if (!this.enableDelete) throw XH.exception('Record delete not enabled.');
+        const {url, actionEnabled} = this;
+
+        if (!actionEnabled.del) throw XH.exception('Record delete not enabled.');
 
         return XH.fetchJson({
-            url: `${this.url}/${rec.id}`,
+            url: `${url}/${rec.id}`,
             method: 'DELETE'
         }).then(() => {
             this.noteRecordDeleted(rec);
@@ -91,21 +94,37 @@ export class RestGridModel {
     }
 
     @action
-    saveFormRecord() {
-        const {url} = this,
-            {record, isWritable, isAdd} = this.formModel;
+    saveRecord(rec) {
+        const {url, actionEnabled} = this,
+            {isAdd} = this.formModel;
 
-        if (!isWritable) throw XH.exception('Record save not enabled.');
+        if (isAdd && !actionEnabled.add) throw XH.exception('Record addition not enabled.');
+        if (!isAdd && !actionEnabled.edit) throw XH.exception('Record edits not enabled.');
 
         XH.fetchJson({
             url,
             method: isAdd ? 'POST' : 'PUT',
-            params: {data: JSON.stringify(record)}
+            params: {data: JSON.stringify(rec)}
         }).then(response => {
             this.noteRecordUpdated(response.data);
         }).linkTo(
             this.loadModel
         ).catchDefault();
+    }
+
+    @action
+    addRecord() {
+        this.formModel.openAdd();
+    }
+
+    @action
+    deleteSelection() {
+        this.deleteRecord(this.selection.singleRecord);
+    }
+
+    @action
+    editSelection() {
+        this.formModel.openEdit(this.selection.singleRecord);
     }
 
     //--------------
