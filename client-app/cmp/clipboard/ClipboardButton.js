@@ -7,9 +7,11 @@
 
 import {Component} from 'react';
 import * as PT from 'prop-types';
-import {elemFactory} from 'hoist';
-import {button} from 'hoist/kit/blueprint';
+import {isFunction, defaults} from 'lodash';
 import Clipboard from 'clipboard';
+import {elemFactory, XH} from 'hoist';
+import {Intent, button} from 'hoist/kit/blueprint';
+import {hoistAppModel} from 'hoist/app/HoistAppModel';
 
 import {observer} from 'hoist/mobx';
 
@@ -37,24 +39,34 @@ class ClipboardButton extends Component {
     }
 
     static defaultProps = {
-        action: 'copy',
-        buttonProps: {
-            icon: 'clipboard',
-            text: 'Copy'
-        }
+        action: 'copy'
     }
+
+    static buttonDefaults = {
+        icon: 'clipboard',
+        text: 'Copy'
+    }
+
+    buttonProps = null
 
     render() {
-        this.props.buttonProps.ref = this.manageClipboard.bind(this);
-        return button(this.props.buttonProps);
+        this.buttonProps = defaults(
+            {ref: this.manageClipboard},
+            this.props.buttonProps,
+            this.constructor.buttonDefaults
+        );
+        return button(this.buttonProps);
     }
 
-    manageClipboard(btn) {
-        if (!btn || !btn.buttonRef) {
+    //---------------------------
+    // Implementation
+    //---------------------------
+    manageClipboard = (btn) => {
+        if (btn && btn.buttonRef) {
+            this.createClipboard(btn.buttonRef);
+        } else {
             this.destroyClipboard();
-            return;
         }
-        this.createClipboard(btn.buttonRef);
     }
 
     createClipboard(btnDom) {
@@ -62,32 +74,53 @@ class ClipboardButton extends Component {
             action: this.props.action
         };
 
-        ['target', 'text'].forEach((prop) => {
-            if (this.props[prop] !== undefined) {
+        ['target', 'text'].forEach(prop => {
+            if (prop in this.props) {
                 options[prop] = this.getPropVal(prop);
             }
         });
 
         this.clipboard = new Clipboard(btnDom, options);
-        this.clipboard.on('success', (e) => {
-            // show toast
-
-            e.clearSelection();
-        });
+        this.clipboard.on('success', this.onCopySuccess);
+        this.clipboard.on('error', this.onCopyError);
     }
 
     destroyClipboard() {
-        this.clipboard && this.clipboard.destroy();
+        if (this.clipboard) this.clipboard.destroy();
     }
 
     getPropVal(prop) {
         return (trigger) => {
             const val = this.props[prop];
-            if (typeof val === 'function') return val(trigger);
+            if (isFunction(val)) return val(trigger);
             return val;
         };
     }
 
+    onCopySuccess = (e) => {
+        this.showToast({
+            intent: Intent.SUCCESS,
+            message: 'Error details copied to clipboard.'
+        });
+        e.clearSelection();
+    }
+
+    onCopyError = (e) => {
+        const exc = XH.exception('Error details NOT copied to clipboard.');
+        XH.handleException(exc, {showAlert: false});
+        e.clearSelection();
+    }
+
+    showToast(toastProps) {
+        const allProps = defaults(
+            {
+                icon: this.buttonProps.icon,
+                timeout: 3000
+            },
+            toastProps
+        );
+        hoistAppModel.getToaster().show(allProps);
+    }
 };
 
 export const clipboardButton = elemFactory(ClipboardButton);
