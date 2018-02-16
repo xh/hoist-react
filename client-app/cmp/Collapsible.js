@@ -55,11 +55,11 @@ export class Collapsible extends Component {
         const {props, isOpen} = this,
             {contentSize, children} = props,
             vertical = this.isVertical(),
-            size = isOpen ? contentSize : 0,
-            boxProperties = {style: {position: 'relative'}, items: children};
+            size = isOpen ? contentSize : 0;
 
-        boxProperties[vertical ? 'height': 'width'] = size;
-        return box(boxProperties);
+        return vertical ?
+            box({height: size, items: children}) :
+            box({width: size, items: children});
     }
 
     getResizer() {

@@ -9,7 +9,7 @@ import './LoadMask.css';
 import {Component} from 'react';
 import {elemFactory} from 'hoist';
 import {viewport, frame} from 'hoist/layout';
-import {action, observer, observable} from 'hoist/mobx';
+import {observer} from 'hoist/mobx';
 
 import {overlay, spinner} from 'hoist/kit/blueprint';
 
@@ -27,16 +27,15 @@ export class LoadMask extends Component {
     BACKGROUND = 'rgba(0,0,0, 0.25)';
 
     static defaultProps = {
+        isDisplayed: false,
         model: null,
         inline: false
     };
-
-    @observable isDisplayed = false;
     
     render() {
-        let {model, inline} = this.props;
+        let {isDisplayed, model, inline} = this.props;
 
-        if (!(this.isDisplayed || (model && model.isPending))) return null;
+        if (!(isDisplayed || (model && model.isPending))) return null;
         return overlay({
             cls: 'xh-mask',
             autoFocus: false,
@@ -48,11 +47,6 @@ export class LoadMask extends Component {
             usePortal: !inline,
             item: inline ? this.getInlineChild() : this.getViewportChild()
         });
-    }
-
-    @action
-    componentWillReceiveProps(nextProps) {
-        this.isDisplayed = nextProps.isDisplayed;
     }
 
     //-----------------
