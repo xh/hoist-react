@@ -4,7 +4,6 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {isUndefined} from 'lodash';
 import {Position, Toaster} from 'hoist/kit/blueprint';
 
 import {XH} from 'hoist';
@@ -84,13 +83,12 @@ class HoistAppModel {
      * Other toaster options cannot be set via this method.
      * If non-default values are needed for a toaster, a different method must be used.
      *
-     * @param positionEnum a Blueprintjs Position enum. Optional.
+     * @param position a Blueprintjs Position enum. Optional.
      */
-    getToaster(positionEnum) {
-        if (isUndefined(positionEnum)) positionEnum = Position.BOTTOM_RIGHT;
-        if (positionEnum in this._toasters) return this._toasters[positionEnum];
+    getToaster(position = Position.BOTTOM_RIGHT) {
+        if (position in this._toasters) return this._toasters[position];
 
-        return this._toasters[positionEnum] = Toaster.create({position: positionEnum});
+        return this._toasters[position] = Toaster.create({position: position});
     }
 
 

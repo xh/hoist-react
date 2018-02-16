@@ -9,7 +9,7 @@ import {Component} from 'react';
 import * as PT from 'prop-types';
 import {isFunction, defaults} from 'lodash';
 import Clipboard from 'clipboard';
-import {elemFactory} from 'hoist';
+import {elemFactory, XH} from 'hoist';
 import {Intent, button} from 'hoist/kit/blueprint';
 import {hoistAppModel} from 'hoist/app/HoistAppModel';
 
@@ -106,10 +106,8 @@ class ClipboardButton extends Component {
     }
 
     onCopyError = (e) => {
-        this.showToast({
-            intent: Intent.DANGER,
-            message: 'Error details NOT copied to clipboard.'
-        });
+        const exc = XH.exception('Error details NOT copied to clipboard.');
+        XH.handleException(exc, {showAlert: false});
         e.clearSelection();
     }
 
