@@ -20,15 +20,15 @@ import {isNumber, forOwn, isEmpty} from 'lodash';
  * See also VBox, HBox. 
  */
 export function Box(props) {
-    return createDiv(props);
+    return createDiv(props, {position: 'relative'});
 }
 
 export function VBox(props) {
-    return createDiv(props,  {flexDirection: 'column'});
+    return createDiv(props,  {flexDirection: 'column', position: 'relative'});
 }
 
 export function HBox(props) {
-    return createDiv(props, {flexDirection: 'row'});
+    return createDiv(props, {flexDirection: 'row', position: 'relative'});
 }
 
 
@@ -38,15 +38,15 @@ export function HBox(props) {
  * This class is useful for creating nested layouts.  See also VFrame, and HFrame.
  */
 export function Frame(props) {
-    return createDiv(props, {flex: 'auto'});
+    return createDiv(props, {flex: 'auto', position: 'relative'});
 }
 
 export function VFrame(props) {
-    return createDiv(props, {flex: 'auto', flexDirection: 'column'});
+    return createDiv(props, {flex: 'auto', flexDirection: 'column', position: 'relative'});
 }
 
 export function HFrame(props) {
-    return createDiv(props, {flex: 'auto', flexDirection: 'row'});
+    return createDiv(props, {flex: 'auto', flexDirection: 'row', position: 'relative'});
 }
 
 /**

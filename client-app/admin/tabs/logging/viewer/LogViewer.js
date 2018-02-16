@@ -13,6 +13,7 @@ import {Ref} from 'hoist/react';
 import {collapsible} from 'hoist/cmp';
 import {LogViewerModel} from './LogViewerModel';
 import {logViewerToolbar} from './LogViewerToolbar';
+import {loadMask} from 'hoist/cmp';
 
 @observer
 export class LogViewer extends Component {
@@ -31,7 +32,7 @@ export class LogViewer extends Component {
     }
 
     getContents() {
-        const {files, rows} = this.model;
+        const {files, rows, loadModel} = this.model;
         return hframe(
             collapsible({
                 side: 'left',
@@ -49,7 +50,8 @@ export class LogViewer extends Component {
                     logViewerToolbar({model: this.model}),
                     this.buildLogDisplay(rows)
                 ]
-            })
+            }),
+            loadMask({inline: true, model: loadModel})
         );
     }
 

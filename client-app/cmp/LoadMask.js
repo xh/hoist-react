@@ -5,10 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import './LoadMask.css';
 import {Component} from 'react';
 import {elemFactory} from 'hoist';
 import {viewport, frame} from 'hoist/layout';
-import {observer} from 'hoist/mobx';
+import {action, observer, observable} from 'hoist/mobx';
 
 import {overlay, spinner} from 'hoist/kit/blueprint';
 
@@ -26,28 +27,32 @@ export class LoadMask extends Component {
     BACKGROUND = 'rgba(0,0,0, 0.25)';
 
     static defaultProps = {
-        isDisplayed: false,
         model: null,
         inline: false
     };
+
+    @observable isDisplayed = false;
     
     render() {
-        let {isDisplayed, model, inline} = this.props;
+        let {model, inline} = this.props;
 
-        // TODO: Inline Mask in blueprint not currently working.
-        // Also, all masks seem to steal focus
-
-        if (!(isDisplayed || (model && model.isPending))) return null;
+        if (!(this.isDisplayed || (model && model.isPending))) return null;
         return overlay({
+            cls: 'xh-mask',
+            autoFocus: false,
             isOpen: true,
             canEscapeKeyClose: false,
             backdropProps: {
                 style: {backgroundColor: this.BACKGROUND}
             },
-            style: {display: 'flex'},
             usePortal: !inline,
             item: inline ? this.getInlineChild() : this.getViewportChild()
         });
+    }
+
+    @action
+    componentWillReceiveProps(nextProps) {
+        this.isDisplayed = nextProps.isDisplayed;
     }
 
     //-----------------

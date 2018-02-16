@@ -45,6 +45,10 @@ class HoistAppModel {
         XH.fetchJson({url: 'auth/authUser'})
             .then(r => this.markAuthenticatedUser(r.authUser.username))
             .catch(e => this.markAuthenticatedUser(null));
+
+        this.appLoadModel.link(new Promise((res, rej) => {
+            setTimeout(res, 5000);
+        }));
     }
 
     /**
