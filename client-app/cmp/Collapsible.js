@@ -5,7 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import './Collapsible.css';
 import {elemFactory} from 'hoist';
 import {Component} from 'react';
 import {observer, observable, action} from 'hoist/mobx';
@@ -56,11 +55,11 @@ export class Collapsible extends Component {
         const {props, isOpen} = this,
             {contentSize, children} = props,
             vertical = this.isVertical(),
-            size = isOpen ? contentSize : 0;
+            size = isOpen ? contentSize : 0,
+            boxProperties = {style: {position: 'relative'}, items: children};
 
-        return vertical ?
-            box({height: size, items: children}) :
-            box({width: size, items: children});
+        boxProperties[vertical ? 'height': 'width'] = size;
+        return box(boxProperties);
     }
 
     getResizer() {
