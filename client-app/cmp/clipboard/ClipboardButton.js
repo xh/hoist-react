@@ -7,12 +7,11 @@
 
 import {Component} from 'react';
 import * as PT from 'prop-types';
-import {Intent} from '@blueprintjs/core';
-import {elemFactory} from 'hoist';
-import {button} from 'hoist/kit/blueprint';
-import Clipboard from 'clipboard';
-import { ClipboardToaster } from 'hoist/cmp';
 import {isFunction, defaults} from 'lodash';
+import Clipboard from 'clipboard';
+import {elemFactory} from 'hoist';
+import {Intent, button} from 'hoist/kit/blueprint';
+import {hoistAppModel} from 'hoist/app/HoistAppModel';
 
 import {observer} from 'hoist/mobx';
 
@@ -122,7 +121,7 @@ class ClipboardButton extends Component {
             },
             toastProps
         );
-        ClipboardToaster.show(allProps);
+        hoistAppModel.getToaster().show(allProps);
     }
 };
 

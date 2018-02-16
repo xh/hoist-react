@@ -4,6 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+import {isUndefined} from 'lodash';
+import {Position, Toaster} from 'hoist/kit/blueprint';
 
 import {XH} from 'hoist';
 import {observable, setter, action} from 'hoist/mobx';
@@ -16,6 +18,7 @@ import {ErrorDialogModel} from 'hoist/error';
 class HoistAppModel {
 
     useSemantic = false;
+    _toasters = [];
 
     /** Has the authentication step completed? **/
     @observable authCompleted = false;
@@ -36,6 +39,7 @@ class HoistAppModel {
      * the entire application to this model.
      **/
     appLoadModel = new MultiPromiseModel();
+
 
     /**
      * Call this once when application mounted in order to
@@ -73,5 +77,22 @@ class HoistAppModel {
                 .catchDefault();
         }
     }
+
+    /**
+     * Get a toaster instance.  If the instance doesn't exist, it will be made.
+     * This method lets you get/create toasters by their Position enum values.
+     * Other toaster options cannot be set via this method.
+     * If non-default values are needed for a toaster, a different method must be used.
+     *
+     * @param positionEnum a Blueprintjs Position enum. Optional.
+     */
+    getToaster(positionEnum) {
+        if (isUndefined(positionEnum)) positionEnum = Position.BOTTOM_RIGHT;
+        if (positionEnum in this._toasters) return this._toasters[positionEnum];
+
+        return this._toasters[positionEnum] = Toaster.create({position: positionEnum});
+    }
+
+
 }
 export const hoistAppModel = new HoistAppModel();

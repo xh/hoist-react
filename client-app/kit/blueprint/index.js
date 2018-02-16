@@ -37,7 +37,14 @@ import {
 } from '@blueprintjs/core';
 
 import {Suggest, Select} from '@blueprintjs/select';
-export {Classes, HotkeysTarget} from '@blueprintjs/core';
+
+export {
+    Classes,
+    HotkeysTarget,
+    Intent,
+    Position,
+    Toaster
+} from '@blueprintjs/core';
 
 export const button = elemFactory(Button),
     controlGroup = elemFactory(ControlGroup),
