@@ -5,11 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
-import {elemFactory} from 'hoist';
-import {textArea, button, dialog, dialogBody, dialogFooter, dialogFooterActions} from 'hoist/kit/blueprint';
+import React, {Component} from 'react';
+import {elemFactory, environmentService} from 'hoist';
+import {button, dialog, dialogBody, dialogFooter, dialogFooterActions, textArea} from 'hoist/kit/blueprint';
 import {clipboardButton} from 'hoist/cmp';
-import {vbox, spacer, vframe} from 'hoist/layout';
+import {pre, table} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
 import {stringifyErrorSafely} from 'hoist/exception';
 
@@ -29,23 +29,35 @@ export class ErrorDialogDetails extends Component {
             icon: 'search',
             isOpen: true,
             onClose: this.onCloseClick,
+            style: {height: 600},
             items: [
-                dialogBody(
-                    vbox(
-                        vframe({
-                            padding: 5,
-                            style: {border: '1px solid'},
+                dialogBody({
+                    items: [
+                        table(
+                            <tbody>
+                                <tr><td><strong>Name:</strong></td><td><span>{exception.name}</span></td></tr>
+                                <tr><td><strong>Message:</strong></td><td><span>{exception.msg || exception.message}</span></td></tr>
+                                <tr><td><strong>App Version:</strong></td><td><span>{environmentService.get('appVersion')}</span></td></tr>
+                            </tbody>
+                        ),
+                        pre({
+                            style: {
+                                border: '1px solid',
+                                overflow: 'scroll',
+                                height: 230,
+                                fontSize: '.75em'
+                            },
                             item: this.errorStr
                         }),
-                        spacer({height: 10}),
                         textArea({
-                            rows: 12,
+                            style: {
+                                height: 125, width: '100%'
+                            },
                             placeholder: 'Add message here...',
                             value: model.msg,
                             onChange: this.onMessageChange
-                        })
-                    )
-                ),
+                        })]
+                }),
                 dialogFooter(
                     dialogFooterActions({
                         itemSpec: button,
