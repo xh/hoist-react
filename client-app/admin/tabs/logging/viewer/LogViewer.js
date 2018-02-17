@@ -51,7 +51,7 @@ export class LogViewer extends Component {
                     this.buildLogDisplay(rows)
                 ]
             }),
-            loadMask({inline: true, model: loadModel})
+            loadMask({model: loadModel})
         );
     }
 

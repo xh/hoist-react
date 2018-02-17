@@ -29,7 +29,7 @@ export class LoadMask extends Component {
     static defaultProps = {
         isDisplayed: false,
         model: null,
-        inline: false
+        inline: true
     };
     
     render() {

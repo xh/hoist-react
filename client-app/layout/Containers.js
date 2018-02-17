@@ -20,15 +20,15 @@ import {isNumber, forOwn, isEmpty} from 'lodash';
  * See also VBox, HBox. 
  */
 export function Box(props) {
-    return createDiv(props, {position: 'relative'});
+    return createDiv(props);
 }
 
 export function VBox(props) {
-    return createDiv(props,  {flexDirection: 'column', position: 'relative'});
+    return createDiv(props,  {flexDirection: 'column'});
 }
 
 export function HBox(props) {
-    return createDiv(props, {flexDirection: 'row', position: 'relative'});
+    return createDiv(props, {flexDirection: 'row'});
 }
 
 
@@ -38,15 +38,15 @@ export function HBox(props) {
  * This class is useful for creating nested layouts.  See also VFrame, and HFrame.
  */
 export function Frame(props) {
-    return createDiv(props, {flex: 'auto', position: 'relative'});
+    return createDiv(props, {flex: 'auto'});
 }
 
 export function VFrame(props) {
-    return createDiv(props, {flex: 'auto', flexDirection: 'column', position: 'relative'});
+    return createDiv(props, {flex: 'auto', flexDirection: 'column'});
 }
 
 export function HFrame(props) {
-    return createDiv(props, {flex: 'auto', flexDirection: 'row', position: 'relative'});
+    return createDiv(props, {flex: 'auto', flexDirection: 'row'});
 }
 
 /**
@@ -100,7 +100,11 @@ const dimFragments = ['margin', 'padding', 'height', 'width'],
     div = elemFactory('div');
 
 function createDiv(appProps, defaultProps = {}) {
-    const props = Object.assign({display: 'flex', overflow: 'hidden'}, defaultProps, appProps);
+    const props = Object.assign(
+        {display: 'flex', overflow: 'hidden', position: 'relative'},
+        defaultProps,
+        appProps
+    );
 
     // 1) Convert raw 'flex' number to string
     flexVals.forEach(k => {
