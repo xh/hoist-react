@@ -8,6 +8,7 @@
 import {Component} from 'react';
 import {Classes, button, checkbox, dialog, dialogBody, dialogFooter, dialogFooterActions, controlGroup, inputGroup, label, menuItem, numericInput, suggest, textArea} from 'hoist/kit/blueprint';
 import {elemFactory} from 'hoist';
+import {loadMask} from 'hoist/cmp';
 import {filler, vframe, hbox} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
 import {fmtDateTime} from 'hoist/format';
@@ -36,14 +37,14 @@ export class RestForm extends Component {
     get model() {return this.props.model}
 
     getDialogItems() {
+        const model = this.model;
         return [
-            dialogBody(
-                this.getForm()
-            ),
+            dialogBody(this.getForm()),
             dialogFooter(
                 dialogFooterActions(this.getButtons())
             ),
-            confirm({model: this.model.confirmModel})
+            confirm({model: model.confirmModel}),
+            loadMask({model: model.loadModel})
         ];
     }
 
@@ -106,12 +107,9 @@ export class RestForm extends Component {
     }
 
     getForm() {
-        return vframe(this.getControlRows());
-    }
-
-    getControlRows() {
-        return this.model.getInputProps().map(props => {
+        const rows = this.model.getInputProps().map(props => {
             return hbox({
+                marginBottom: 10,
                 items: [
                     restLabel(props),
                     //  Needed to stretch control, and also avoid focus clipping?
@@ -120,10 +118,10 @@ export class RestForm extends Component {
                         style: {flex: 1, margin: 1},
                         item: this.getControl(props)
                     })
-                ],
-                marginBottom: 10
+                ]
             });
         });
+        return vframe(rows);
     }
 
     getControl(props) {

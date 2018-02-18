@@ -11,9 +11,6 @@ import {ConfirmModel} from 'hoist/cmp/confirm/ConfirmModel';
 
 export class RestFormModel {
 
-    //---------------
-    // Properties
-    //---------------
     parent = null;
     editors = [];
     confirmModel = new ConfirmModel();
@@ -23,6 +20,7 @@ export class RestFormModel {
 
     get actionWarning() {return this.parent.actionWarning}
     get actionEnabled() {return this.parent.actionEnabled}
+    get loadModel() {return this.parent.loadModel}
 
     @computed
     get isAdd() {
