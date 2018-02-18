@@ -6,9 +6,9 @@
  */
 
 import {Component} from 'react';
-import {Classes, button, checkbox, dialog, dialogBody, dialogFooter, dialogFooterActions, inputGroup, label, menuItem, numericInput, suggest, textArea} from 'hoist/kit/blueprint';
+import {Classes, button, checkbox, dialog, dialogBody, dialogFooter, dialogFooterActions, controlGroup, inputGroup, label, menuItem, numericInput, suggest, textArea} from 'hoist/kit/blueprint';
 import {elemFactory} from 'hoist';
-import {filler, span, vbox} from 'hoist/layout';
+import {filler, vframe, hbox} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
 import {fmtDateTime} from 'hoist/format';
 
@@ -106,19 +106,23 @@ export class RestForm extends Component {
     }
 
     getForm() {
-        const items = [];
-        this.model.getInputProps().forEach(props => {
-            items.push(restLabel(props));
-            items.push(this.getControl(props));
-        });
+        return vframe(this.getControlRows());
+    }
 
-        // TODO:  This should be a (potentially) scrollable table, as in hoist-sencha.
-        // Dialog itself needs to have a max height so buttons are always available.
-        return vbox({
-            cls: 'rest-form',
-            width: 400,
-            padding: 10,
-            items
+    getControlRows() {
+        return this.model.getInputProps().map(props => {
+            return hbox({
+                items: [
+                    restLabel(props),
+                    //  Needed to stretch control, and also avoid focus clipping?
+                    controlGroup({
+                        fill: true,
+                        style: {flex: 1, margin: 1},
+                        item: this.getControl(props)
+                    })
+                ],
+                marginBottom: 10
+            });
         });
     }
 
@@ -147,9 +151,8 @@ export const restForm = elemFactory(RestForm);
 //------------------------
 const restLabel = elemFactory(observer(
     ({fieldSpec, editor, value}) => {
-        const text = fieldSpec.label || fieldSpec.name,
-            suffix = (editor.additionsOnly && value) ? ' (Read Only)' : '';
-        return label({text: text + suffix, style: {width: '115px', marginBottom: 5}});
+        const text = fieldSpec.label || fieldSpec.name;
+        return label({text, style: {width: '115px'}});
     }
 ));
 
@@ -158,7 +161,7 @@ const restDisplayField = elemFactory(observer(
         if (['lastUpdated', 'dateCreated'].includes(fieldName)) {
             value = fmtDateTime(value);
         }
-        return span({item: value, style: {marginBottom: 10, padding: '5 0'}});
+        return label({text: value});
     }
 ));
 
@@ -169,7 +172,6 @@ const restDropdown = elemFactory(observer(
                 options = fieldSpec.lookupValues;
 
             return suggest({
-                className: 'rest-form-dropdown-blueprint',
                 popoverProps: {popoverClassName: Classes.MINIMAL},
                 itemPredicate: (q, v, index) => !v || v.includes(q),
                 $items: options,
@@ -179,7 +181,6 @@ const restDropdown = elemFactory(observer(
                 },
                 inputValueRenderer: s => s,
                 inputProps: {
-                    style: {marginBottom: 5},
                     value: value || '',
                     disabled,
                     onChange: this.onChange
@@ -222,7 +223,7 @@ const restNumericInput = elemFactory(observer(
         render() {
             const {value, disabled} = this.props;
             return numericInput({
-                style: {marginBottom: 10},
+                cls: 'pt-fill',
                 buttonPosition: 'none',
                 value: value,
                 disabled,
@@ -242,7 +243,7 @@ const restTextArea = elemFactory(observer(
         render() {
             const {value, disabled} = this.props;
             return textArea({
-                style: {marginBottom: 10},
+                cls: 'pt-fill',
                 value: value || '',
                 disabled,
                 onChange: this.onChange
@@ -260,8 +261,8 @@ const restTextInput = elemFactory(observer(
         render() {
             const {value, disabled} = this.props;
             return inputGroup({
+                cls: 'pt-fill',
                 type: 'text',
-                style: {marginBottom: 10},
                 value: value || '',
                 disabled,
                 onChange: this.onChange

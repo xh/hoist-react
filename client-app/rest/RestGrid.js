@@ -5,8 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import './styles.css';
-
 import {Component} from 'react';
 import {elemFactory} from 'hoist';
 import {grid} from 'hoist/grid';
