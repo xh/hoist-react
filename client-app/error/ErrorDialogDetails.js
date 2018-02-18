@@ -5,11 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import React, {Component} from 'react';
+import {Component} from 'react';
 import {elemFactory, environmentService} from 'hoist';
 import {button, dialog, dialogBody, dialogFooter, dialogFooterActions, textArea} from 'hoist/kit/blueprint';
 import {clipboardButton} from 'hoist/cmp';
-import {pre, table} from 'hoist/layout';
+import {pre, table, tbody, td, th, tr} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
 import {stringifyErrorSafely} from 'hoist/exception';
 
@@ -18,11 +18,19 @@ export class ErrorDialogDetails extends Component {
 
     render() {
         const model = this.model,
-            {detailsVisible, exception} = model;
+            {detailsVisible, exception} = model,
+            row = (label, data) => tr(th({item: `${label}:`, style: {textAlign: 'left'}}), td(data));
 
         if (!detailsVisible || !exception) return null;
 
         this.errorStr = stringifyErrorSafely(exception);
+        const header = table(
+            tbody(
+                row('Name', exception.name),
+                row('Message', exception.msg || exception.message),
+                row('App Version', environmentService.get('appVersion'))
+            )
+        );
 
         return dialog({
             title: 'Error Details',
@@ -33,13 +41,7 @@ export class ErrorDialogDetails extends Component {
             items: [
                 dialogBody({
                     items: [
-                        table(
-                            <tbody>
-                                <tr><td><strong>Name:</strong></td><td><span>{exception.name}</span></td></tr>
-                                <tr><td><strong>Message:</strong></td><td><span>{exception.msg || exception.message}</span></td></tr>
-                                <tr><td><strong>App Version:</strong></td><td><span>{environmentService.get('appVersion')}</span></td></tr>
-                            </tbody>
-                        ),
+                        header,
                         pre({
                             style: {
                                 border: '1px solid',
