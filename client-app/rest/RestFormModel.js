@@ -68,6 +68,7 @@ export class RestFormModel {
     @action
     close() {
         this.record = null;
+        this.confirmModel.close();
     }
 
     @action
@@ -75,8 +76,7 @@ export class RestFormModel {
         const newRec = {id: null},
             fieldSpecs = this.parent.recordSpec.fields;
 
-        // must start with fully formed dummy rec for validation purposes
-        // a computed property (isValid) won't re-run if none of the data used in the previous computation changed.
+        // must start with all keys in place, so all values will observable
         fieldSpecs.forEach(spec => {
             newRec[spec.name] = null;
         });
@@ -97,38 +97,63 @@ export class RestFormModel {
     //---------------------------------
     // Helpers for Form/Editor Creation
     //---------------------------------
-    getInputConfigs() {
-        return this.editors.map(editor => {
-            const {recordSpec} = this.parent,
-                fields = recordSpec.fields,
-                fieldSpec = fields.find(it => it.name === editor.field),
-                defaultValue = this.isAdd ? '' : this.record[fieldSpec.name],
-                isDisabled = fieldSpec.readOnly || (editor.additionsOnly && !this.isAdd);
+    /**
+     * Return a bundle of props for each control in the form.
+     * These contain toolkit independent metadata, and access to the underlying value/model.
+     */
+    getInputProps() {
+        const {recordSpec} = this.parent,
+            fields = recordSpec.fields,
+            isAdd = this.isAdd,
+            record = this.record;
 
+        return this.editors.map(editor => {
+            const fieldSpec = fields.find(it => it.name === editor.field),
+                fieldName = fieldSpec.name,
+                disabled = fieldSpec.readOnly || (editor.additionsOnly && !isAdd),
+                type = this.getInputType(editor, fieldSpec);
+
+            // NOTE: We provide the value setter and *getter* for convenience -- but don't dereference.
+            // It's observable and volatile, and we only want controls using it to re-render
             return {
-                editor: editor,
-                fieldSpec: fieldSpec,
-                field: fieldSpec.name,
-                defaultValue: defaultValue == null ? '' : defaultValue,
-                type: this.getInputType(editor, fieldSpec),
-                isDisabled: isDisabled
+                editor,
+                type,
+                fieldSpec,
+                fieldName,
+                get value() {return record[fieldName]},
+                setValue: (val) => {this.setValue(fieldName, val)},
+                disabled
             };
         });
     }
 
     getInputType(editor, fieldSpec) {
-        if (fieldSpec.typeField) fieldSpec.type = this.getTypeFromTypeField(fieldSpec);
-        if (editor.type === 'displayField') return 'display';
-        if (fieldSpec.lookupValues) return 'dropdown';
-        if (fieldSpec.type === 'bool' || fieldSpec.type === 'boolean') return 'boolean';
-        if (fieldSpec.type === 'int') return 'number';
-        if (editor.type === 'textarea' || fieldSpec.type === 'json') return 'textarea';
+        const fieldType = fieldSpec.typeField ? this.getTypeFromRecord(fieldSpec) : fieldSpec.type,
+            editorType = editor.type;
+
+        if (editorType === 'displayField') {
+            return 'display';
+        }
+        if (fieldSpec.lookupValues) {
+            return 'dropdown';
+        }
+        if (fieldType === 'bool') {
+            return 'boolean';
+        }
+        if (fieldType === 'int') {
+            return 'number';
+        }
+        if (editorType === 'textarea' || fieldType === 'json') {
+            return 'textarea';
+        }
         return 'text';
     }
 
-    getTypeFromTypeField(fieldSpec) {
-        const {recordSpec} = this.parent,
-            fields = recordSpec.fields;
-        return this.record[fields.find(it => it.name === fieldSpec.typeField).name];
+    // For dynamic types.
+    getTypeFromRecord(fieldSpec) {
+        const fields = this.parent.recordSpec.fields,
+            typeField = fields.find(it => it.name === fieldSpec.typeField);
+
+        return this.record[typeField.name];
     }
 }

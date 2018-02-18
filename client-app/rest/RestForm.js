@@ -107,30 +107,13 @@ export class RestForm extends Component {
 
     getForm() {
         const items = [];
-        this.model.getInputConfigs().forEach(inputConfig => {
-            items.push(this.createFieldLabel(inputConfig));
-            switch (inputConfig.type) {
-                case 'display':
-                    items.push(this.createDisplayField(inputConfig));
-                    break;
-                case 'dropdown':
-                    items.push(this.createDropdown(inputConfig));
-                    break;
-                case 'boolean':
-                    items.push(this.createCheckbox(inputConfig));
-                    break;
-                case 'number':
-                    items.push(this.createNumberInput(inputConfig));
-                    break;
-                case 'textarea':
-                    items.push(this.createTextAreaInput(inputConfig));
-                    break;
-                case 'text':
-                default:
-                    items.push(this.createTextInput(inputConfig));
-            }
+        this.model.getInputProps().forEach(props => {
+            items.push(restLabel(props));
+            items.push(this.getControl(props));
         });
 
+        // TODO:  This should be a (potentially) scrollable table, as in hoist-sencha.
+        // Dialog itself needs to have a max height so buttons are always available.
         return vbox({
             cls: 'rest-form',
             width: 400,
@@ -139,114 +122,154 @@ export class RestForm extends Component {
         });
     }
 
-    createFieldLabel(config) {
-        const fieldSpec = config.fieldSpec,
-            editor = config.editor,
-            text = fieldSpec.label || fieldSpec.name,
-            suffix = (editor.additionsOnly && config.defaultValue) ? '(Read Only)' : '';
-        return label({text: text + suffix, style: {width: '115px', marginBottom: 5}});
-    }
-
-    createDisplayField(config) {
-        if (['lastUpdated', 'dateCreated'].includes(config.fieldSpec.name)) config.defaultValue = fmtDateTime(config.defaultValue);
-        return span({item: config.defaultValue, style: {marginBottom: 10, padding: '5 0'}});
-    }
-
-    createDropdown(config) {
-        const options = config.fieldSpec.lookupValues,
-            handler = this.getMemoizedHandler(config);
-
-        // 'hack' to allow additions(not built in), overrides itemPredicate, see note above handleAdditions function
-        // const itemListPredicate = config.editor.allowAdditions ? this.handleAdditions : null;
-
-        return suggest({
-            className: 'rest-form-dropdown-blueprint',
-            popoverProps: {popoverClassName: Classes.MINIMAL},
-            // itemListPredicate: itemListPredicate,
-            itemPredicate: (q, v, index) => !v || v.includes(q),
-            $items: options,
-            onItemSelect: handler,
-            itemRenderer: (item, itemProps) => {
-                return menuItem({key: item, onClick: itemProps.handleClick, text: item}); // can I use handleClick to update inputField's display
-            },
-            inputValueRenderer: s => s,
-            inputProps: { // TODO: still allowing additions without adding to the drop down.
-                defaultValue: config.defaultValue,
-                // TODO need to somehow set current value on visible component
-                // maybe helpful: you can pass value and onChange here to override Suggest's own behavior. might help with addtions
-                value: undefined, // console warning dictated this undefined if I want to use default val
-                style: {marginBottom: 5},
-                disabled: config.isDisabled
-            }
-        });
-    }
-
-    createCheckbox(config) {
-        const handler = this.getMemoizedHandler(config);
-
-        return checkbox({
-            defaultChecked: config.defaultValue,
-            onChange: handler,
-            disabled: config.isDisabled
-        });
-    }
-
-    createNumberInput(config) {
-        const handler = this.getMemoizedHandler(config);
-        return numericInput({
-            style: {marginBottom: 10},
-            value: config.defaultValue,
-            onValueChange: handler,
-            disabled: config.isDisabled
-        });
-    }
-
-    createTextAreaInput(config) {
-        const handler = this.getMemoizedHandler(config);
-        return textArea({
-            style: {marginBottom: 10},
-            defaultValue: config.defaultValue,
-            onChange: handler,
-            disabled: config.isDisabled
-        });
-    }
-
-    createTextInput(config) {
-        const handler = this.getMemoizedHandler(config);
-        return inputGroup({
-            style: {marginBottom: 10},
-            defaultValue: config.defaultValue,
-            onChange: handler,
-            type: 'text',
-            disabled: config.isDisabled
-        });
-    }
-
-    getMemoizedHandler(config) {
-        const type = config.type,
-            field = config.field,
-            handlerName = type + field + 'Handler'; // including type allows for new handlers to be created for fields whose type may change e.g. config's prodValue
-
-        if (this[handlerName]) return this[handlerName];
-
-        const handler = (valOrEvent) => {
-            let val = valOrEvent;
-            if (typeof valOrEvent === 'object') val = valOrEvent.target.value;
-            if (type === 'boolean') val = valOrEvent.target.checked;
-            this.model.setValue(field, val);
-        };
-
-        this[handlerName] = handler;
-        return handler;
-    }
-
-    // one problem is that this fires on each keystroke, makes for a funky list of choices, ie: n, ne, new
-    // input group allows input without this, it's just not added to the dropdown or set as the value
-    // once the general value setting problem is solved this may be unneeded
-    handleAdditions(query, list, index) {
-        if (query && !list.includes(query)) list.push(query);
-        const ret = list.filter(it => it.includes(query));
-        return query ? ret : list;
+    getControl(props) {
+        switch (props.type) {
+            case 'display':
+                return restDisplayField(props);
+            case 'dropdown':
+                return restDropdown(props);
+            case 'boolean':
+                return restCheckbox(props);
+            case 'number':
+                return restNumericInput(props);
+            case 'textarea':
+                return restTextArea(props);
+            case 'text':
+            default:
+                return restTextInput(props);
+        }
     }
 }
 export const restForm = elemFactory(RestForm);
+
+//------------------------
+// Controls
+//------------------------
+const restLabel = elemFactory(observer(
+    ({fieldSpec, editor, value}) => {
+        const text = fieldSpec.label || fieldSpec.name,
+            suffix = (editor.additionsOnly && value) ? ' (Read Only)' : '';
+        return label({text: text + suffix, style: {width: '115px', marginBottom: 5}});
+    }
+));
+
+const restDisplayField = elemFactory(observer(
+    ({fieldName, value}) => {
+        if (['lastUpdated', 'dateCreated'].includes(fieldName)) {
+            value = fmtDateTime(value);
+        }
+        return span({item: value, style: {marginBottom: 10, padding: '5 0'}});
+    }
+));
+
+const restDropdown = elemFactory(observer(
+    class extends Component {
+        render() {
+            const {value, disabled, fieldSpec} = this.props,
+                options = fieldSpec.lookupValues;
+
+            return suggest({
+                className: 'rest-form-dropdown-blueprint',
+                popoverProps: {popoverClassName: Classes.MINIMAL},
+                itemPredicate: (q, v, index) => !v || v.includes(q),
+                $items: options,
+                onItemSelect: this.onItemSelect,
+                itemRenderer: (item, itemProps) => {
+                    return menuItem({key: item, text: item, onClick: itemProps.handleClick});
+                },
+                inputValueRenderer: s => s,
+                inputProps: {
+                    style: {marginBottom: 5},
+                    value: value || '',
+                    disabled,
+                    onChange: this.onChange
+                }
+            });
+        }
+
+        onChange = (ev) => {
+            this.props.setValue(ev.target.value);
+        }
+
+        onItemSelect = (val) => {
+            if (val) {
+                this.props.setValue(val);
+            }
+        }
+
+    }
+));
+
+const restCheckbox = elemFactory(observer(
+    class extends Component {
+        render() {
+            const {value, disabled} = this.props;
+            return checkbox({
+                checked: !!value,
+                disabled,
+                onChange: this.onChange
+            });
+        }
+
+        onChange = (ev) => {
+            this.props.setValue(ev.target.checked);
+        }
+    }
+));
+
+const restNumericInput = elemFactory(observer(
+    class extends Component {
+        render() {
+            const {value, disabled} = this.props;
+            return numericInput({
+                style: {marginBottom: 10},
+                buttonPosition: 'none',
+                value: value,
+                disabled,
+                onValueChange: this.onValueChange
+            });
+        }
+
+        onValueChange = (val, valAsString) => {
+            val = (valAsString === '') ? null : val;
+            this.props.setValue(val);
+        }
+    }
+));
+
+const restTextArea = elemFactory(observer(
+    class extends Component {
+        render() {
+            const {value, disabled} = this.props;
+            return textArea({
+                style: {marginBottom: 10},
+                value: value || '',
+                disabled,
+                onChange: this.onChange
+            });
+        }
+
+        onChange = (ev) => {
+            this.props.setValue(ev.target.value);
+        }
+    }
+));
+
+const restTextInput = elemFactory(observer(
+    class extends Component {
+        render() {
+            const {value, disabled} = this.props;
+            return inputGroup({
+                type: 'text',
+                style: {marginBottom: 10},
+                value: value || '',
+                disabled,
+                onChange: this.onChange
+            });
+        }
+
+        onChange = (ev) => {
+            this.props.setValue(ev.target.value);
+        }
+    }
+));
