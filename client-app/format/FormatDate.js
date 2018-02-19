@@ -48,7 +48,6 @@ export function fmtDateTime(v, opts = {}) {
     defaults(opts, {fmt: DATETIME_FMT});
     saveOriginal(v, opts);
 
-
     return fmtDate(v, opts);
 }
 

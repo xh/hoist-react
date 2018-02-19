@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {elemFactory, environmentService} from 'hoist';
+import {elemFactory, environmentService, hoistAppModel} from 'hoist';
 import {button, dialog, dialogBody, dialogFooter, dialogFooterActions, textArea} from 'hoist/kit/blueprint';
 import {clipboardButton} from 'hoist/cmp';
 import {pre, table, tbody, td, th, tr} from 'hoist/layout';
@@ -36,6 +36,7 @@ export class ErrorDialogDetails extends Component {
             title: 'Error Details',
             icon: 'search',
             isOpen: true,
+            cls: hoistAppModel.darkTheme ? 'xh-dark' : '',
             onClose: this.onCloseClick,
             style: {height: 600},
             items: [
@@ -63,17 +64,20 @@ export class ErrorDialogDetails extends Component {
                 dialogFooter(
                     dialogFooterActions({
                         itemSpec: button,
-                        items: [{
-                            icon: 'envelope',
-                            text: 'Send',
-                            onClick: this.onSendClick
-                        }, clipboardButton({
-                            text: this.errorStr
-                        }), {
-                            icon: 'cross',
-                            text: 'Close',
-                            onClick: this.onCloseClick
-                        }]
+                        items: [
+                            {
+                                icon: 'envelope',
+                                text: 'Send',
+                                onClick: this.onSendClick
+                            },
+                            clipboardButton({
+                                text: this.errorStr
+                            }),
+                            {
+                                text: 'Close',
+                                onClick: this.onCloseClick
+                            }
+                        ]
                     })
                 )
             ]

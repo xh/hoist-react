@@ -24,7 +24,7 @@ export class RestForm extends Component {
 
         return dialog({
             title: isAdd ? 'Add Record' : 'Edit Record',
-            icon: 'inbox',
+            icon: isAdd ? 'plus' : 'edit',
             cls: hoistAppModel.darkTheme ? 'xh-dark' : '',
             isOpen: true,
             isCloseButtonShown: false,
@@ -32,9 +32,10 @@ export class RestForm extends Component {
         });
     }
 
-    //--------------------------------
+
+    //------------------------
     // Implementation
-    //--------------------------------
+    //------------------------
     get model() {return this.props.model}
 
     getDialogItems() {
@@ -54,18 +55,16 @@ export class RestForm extends Component {
 
         return [
             button({
-                text: 'Close',
-                icon: 'cross',
-                onClick: this.onCloseClick
-            }),
-            filler(),
-            button({
                 text: 'Delete',
                 icon: 'cross',
                 intent: 'danger',
-                disabled: !isValid,
                 onClick: this.onDeleteClick,
                 omit: !actionEnabled.del || isAdd
+            }),
+            filler(),
+            button({
+                text: 'Cancel',
+                onClick: this.onCloseClick
             }),
             button({
                 text: 'Save',
@@ -85,6 +84,7 @@ export class RestForm extends Component {
     onDeleteClick = () => {
         const model = this.model,
             warning = model.actionWarning.del;
+
         if (warning) {
             model.confirmModel.show({
                 message: warning,
@@ -99,6 +99,7 @@ export class RestForm extends Component {
         const model = this.model,
             isAdd = model.isAdd,
             warning = model.actionWarning[isAdd ? 'add' : 'edit'];
+
         if (warning) {
             model.confirmModel.show({
                 message: warning,
@@ -112,7 +113,7 @@ export class RestForm extends Component {
     getForm() {
         const rows = this.model.getInputProps().map(props => {
             return hbox({
-                marginBottom: 10,
+                cls: 'xh-mb',
                 items: [
                     restLabel(props),
                     //  Needed to stretch control, and also avoid focus clipping?
@@ -147,6 +148,7 @@ export class RestForm extends Component {
 }
 export const restForm = elemFactory(RestForm);
 
+
 //------------------------
 // Controls
 //------------------------
@@ -160,7 +162,7 @@ const restLabel = elemFactory(observer(
 const restDisplayField = elemFactory(observer(
     ({fieldName, value}) => {
         if (['lastUpdated', 'dateCreated'].includes(fieldName)) {
-            value = fmtDateTime(value);
+            value = value ? fmtDateTime(value) : '';
         }
         return label({text: value});
     }

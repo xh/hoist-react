@@ -10,8 +10,6 @@ import {identityService, elemFactory} from 'hoist';
 import {hbox, vbox, spacer, filler, div, span} from 'hoist/layout';
 import {Classes, HotkeysTarget, button, suggest, icon, popover, menuItem, hotkeys, hotkey} from 'hoist/kit/blueprint';
 import {observer} from 'hoist/mobx';
-import {hoistAppModel} from 'hoist/app/HoistAppModel';
-
 import {ImpersonationBarModel} from './ImpersonationBarModel';
 
 @HotkeysTarget

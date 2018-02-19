@@ -10,11 +10,9 @@ import {elemFactory} from 'hoist';
 import {grid} from 'hoist/grid';
 import {observer} from 'hoist/mobx';
 import {frame, vframe} from 'hoist/layout';
-
+import {confirm} from 'hoist/cmp/confirm/Confirm.js';
 import {restGridToolbar} from './RestGridToolbar';
 import {restForm} from './RestForm';
-
-import {confirm} from 'hoist/cmp/confirm/Confirm.js';
 
 @observer
 export class RestGrid extends Component {

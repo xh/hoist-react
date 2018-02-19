@@ -17,7 +17,7 @@ import {ConfirmModel} from 'hoist/cmp/confirm/ConfirmModel';
  */
 export class RestGridModel {
 
-    //---------------
+    //----------------
     // Properties
     //----------------
     actionEnabled = {

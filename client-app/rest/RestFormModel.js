@@ -76,7 +76,7 @@ export class RestFormModel {
 
         // must start with all keys in place, so all values will observable
         fieldSpecs.forEach(spec => {
-            newRec[spec.name] = null;
+            newRec[spec.name] = spec.defaultValue;
         });
 
         this.record = newRec;
