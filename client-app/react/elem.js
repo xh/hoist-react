@@ -47,8 +47,12 @@ export function elem(type, config = {}) {
 
     let {cls, item, items, itemSpec, omit, ...props} = config;
 
-    // 1) Handle basic rename
-    if (cls) props.className = cls;
+    // 1) Handle cls shortcut for CSS className. Add Blueprint pt-dark cls whenever xh-dark requested for dark theme.
+    if (cls) {
+        const clsList = cls.split(' ');
+        if (clsList.includes('xh-dark')) clsList.push('pt-dark');
+        props.className = clsList.join(' ');
+    }
 
     // 2) Mark element to be skipped with a special key in props.  This element should never see the light of day
     // if its *parent* is created using this method, but this should be safe and truthy attribute to use.
@@ -90,18 +94,14 @@ export function elem(type, config = {}) {
 
 
 /**
- * Create a factory/function that can be used to create a React Element
- * using native javascript and elem().
+ * Create a factory/function that can be used to create a React Element using native javascript and elem().
  *
- * This is a 'curried' version of the raw elem() method.   It adds the
- * following two critical features:
+ * This is a 'curried' version of the raw elem() method.   It adds the following two critical features:
  *
- * 1) Allows argumentt to be an array, or rest arguments that are children objects to be directly passed to the new element.
- *  Equivalent to specifying {items: args}.  Useful when no attributes need to be applied directly
- *  to the Element.
+ * 1) Allows argument to be an array, or rest arguments that are children objects to be directly passed to the new element.
+ *  Equivalent to specifying {items: args}.  Useful when no attributes need to be applied directly to the Element.
  *
- * 2) Allows the addition of fixed default props to be applied before passing
- * to the element factory.
+ * 2) Allows the addition of fixed default props to be applied before passing to the element factory.
  *
  * @param C, React Component for which to create the element.
  * @param defaultProps, (optional) defaults to be applied to the elem props.
@@ -120,7 +120,7 @@ export function elemFactory(C, defaultProps) {
 
 //------------------------
 // Implementation
-//-------------------------
+//------------------------
 function normalizeArgs(args) {
     const len = args.length;
     if (len === 0) return {};
@@ -138,5 +138,3 @@ function normalizeArgs(args) {
 function isReactElement(obj) {
     return obj.$$typeof;
 }
-
-

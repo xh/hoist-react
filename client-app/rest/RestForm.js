@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {Classes, button, checkbox, dialog, dialogBody, dialogFooter, dialogFooterActions, controlGroup, inputGroup, label, menuItem, numericInput, suggest, textArea} from 'hoist/kit/blueprint';
-import {elemFactory} from 'hoist';
+import {elemFactory, hoistAppModel} from 'hoist';
 import {loadMask} from 'hoist/cmp';
 import {filler, vframe, hbox} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
@@ -25,6 +25,7 @@ export class RestForm extends Component {
         return dialog({
             title: isAdd ? 'Add Record' : 'Edit Record',
             icon: 'inbox',
+            cls: hoistAppModel.darkTheme ? 'xh-dark' : '',
             isOpen: true,
             isCloseButtonShown: false,
             items: this.getDialogItems()
@@ -61,6 +62,7 @@ export class RestForm extends Component {
             button({
                 text: 'Delete',
                 icon: 'cross',
+                intent: 'danger',
                 disabled: !isValid,
                 onClick: this.onDeleteClick,
                 omit: !actionEnabled.del || isAdd
@@ -68,6 +70,7 @@ export class RestForm extends Component {
             button({
                 text: 'Save',
                 icon: 'tick',
+                intent: 'success',
                 disabled: !isValid,
                 onClick: this.onSaveClick,
                 omit: !isWritable

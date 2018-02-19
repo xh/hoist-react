@@ -8,13 +8,15 @@
 import {Component} from 'react';
 import {XH, elemFactory, environmentService, prefService} from 'hoist';
 import {box} from 'hoist/layout';
+import './VersionBar.css';
 
 export class VersionBar extends Component {
 
     render() {
         const env = environmentService.get('appEnvironment'),
             version = environmentService.get('appVersion'),
-            isVisible = (env !== 'Production' || prefService.getPref('xhForceEnvironmentFooter'));
+            isVisible = (env !== 'Production' || prefService.getPref('xhForceEnvironmentFooter')),
+            cls = `xh-version-bar xh-version-bar-${env.toLowerCase()}`;
 
         if (!isVisible) return null;
 
@@ -22,22 +24,10 @@ export class VersionBar extends Component {
             justifyContent: 'center',
             alignItems: 'center',
             flex: 'none',
-            style: {
-                fontSize: '0.8em',
-                color: 'white',
-                backgroundColor: this.getFooterColor(env)
-            },
-            item: `${XH.appName} | ${env} | ${version}`
+            cls,
+            item: [XH.appName, env, version].join(' • ')
         });
     }
 
-    getFooterColor(env) {
-        switch (env) {
-            case 'Production':  return 'red';
-            case 'Staging':     return 'orange';
-            case 'Development': return 'green';
-            default:            return 'green';
-        }
-    }
 }
 export const versionBar = elemFactory(VersionBar);

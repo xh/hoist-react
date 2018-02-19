@@ -19,15 +19,16 @@ export class RestGridToolbar extends Component {
             actionEnabled = model.actionEnabled;
 
         return hbox({
-            style: {background: '#106ba3'},
+            cls: 'xh-tbar',
             itemSpec: {
                 factory: button,
-                style: {margin: '4px 0px 4px 4px'}
+                cls: 'xh-mr'
             },
             items: [
                 {
                     text: 'Add',
                     icon: 'add',
+                    intent: 'success',
                     onClick: this.onAddClick,
                     omit: !actionEnabled.add
                 },
@@ -41,6 +42,7 @@ export class RestGridToolbar extends Component {
                 {
                     text: 'Delete',
                     icon: 'delete',
+                    intent: 'danger',
                     onClick: this.onDeleteClick,
                     disabled: !singleRecord,
                     omit: !actionEnabled.del

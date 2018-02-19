@@ -4,7 +4,9 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import 'semantic-ui-css/semantic.min.css';
+
+// Restore when using SUI components
+// import 'semantic-ui-css/semantic.min.css';
 
 import {elemFactory} from 'hoist';
 import {defaults} from 'lodash';

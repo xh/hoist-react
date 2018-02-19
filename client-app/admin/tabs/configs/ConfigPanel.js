@@ -38,8 +38,8 @@ export class ConfigPanel extends Component {
         },
         columns: this.filterForEnv([
             nameCol(),
-            baseCol({field: 'valueType', maxWidth: 60}),
-            baseCol({field: 'groupName', width: 80}),
+            baseCol({field: 'valueType', maxWidth: 80}),
+            baseCol({field: 'groupName', width: 100}),
             this.valCol({field: 'prodValue', env: 'Production'}),
             this.valCol({field: 'betaValue', env: 'Beta'}),
             this.valCol({field: 'stageValue', env: 'Staging'}),
@@ -70,6 +70,7 @@ export class ConfigPanel extends Component {
         return this.model.loadAsync();
     }
 
+
     //-------------------------
     // Implementation
     //-------------------------
@@ -84,4 +85,5 @@ export class ConfigPanel extends Component {
     valCol(params) {
         return baseCol({...params, width: 175});
     }
+
 }

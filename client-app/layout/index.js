@@ -31,9 +31,12 @@ export function vspacer(height) {return spacer({height})}
 //--------------------------------
 // Standard HTML
 //--------------------------------
+export const code = elemFactory('code');
 export const div = elemFactory('div');
 export const h1 = elemFactory('h1');
 export const h2 = elemFactory('h2');
+export const h3 = elemFactory('h3');
+export const h4 = elemFactory('h4');
 export const nav = elemFactory('nav');
 export const pre = elemFactory('pre');
 export const span = elemFactory('span');

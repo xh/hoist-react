@@ -6,13 +6,14 @@
  */
 
 import {Component} from 'react';
-import {elemFactory} from 'hoist';
+import {elemFactory, hoistAppModel} from 'hoist';
 import {div} from 'hoist/layout';
 import {observer, action, toJS} from 'hoist/mobx';
 import {defaults} from 'lodash';
 
 import './ag-grid';
 import {navigateSelection, agGridReact} from './ag-grid';
+import './Grid.css';
 
 /**
  * Grid Component
@@ -39,7 +40,7 @@ class Grid extends Component {
         const model = this.model;
         return div({
             style: {flex: '1 1 auto'},
-            cls: 'ag-theme-fresh',
+            cls: hoistAppModel.darkTheme ? 'ag-theme-dark' : 'ag-theme-fresh',
             item: agGridReact({
                 rowData: toJS(model.records),
                 columnDefs: model.columns,
@@ -50,9 +51,10 @@ class Grid extends Component {
         });
     }
 
-    //----------------
+
+    //------------------------
     // Implementation
-    //-----------------
+    //------------------------
     get model() {return this.props.model}
 
     onGridSizeChanged = (ev) => {
@@ -68,5 +70,6 @@ class Grid extends Component {
     onNavigateToNextCell = (params) => {
         return navigateSelection(params, this.gridOptions.api);
     }
+
 }
 export const grid = elemFactory(Grid);

@@ -34,6 +34,7 @@ export class TabContainer extends Component {
             vertical,
             onChange: this.onBlueprintTabChange,
             selectedTabId: selectedId,
+            large: !vertical,
             items: children.map(childModel => {
                 const id = childModel.id,
                     isSubContainer = childModel instanceof TabContainerModel,

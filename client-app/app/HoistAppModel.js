@@ -25,8 +25,11 @@ class HoistAppModel {
     /** Currently authenticated user. **/
     @observable authUsername = null;
 
-    /** Are all Hoist app services successfully initialized? */
+    /** Are all Hoist app services successfully initialized? **/
     @setter @observable isInitialized = false;
+
+    /** Dark theme active? **/
+    @setter @observable darkTheme = true;
 
     /** Tracks recent errors for troubleshooting/display */
     errorDialogModel = new ErrorDialogModel();
@@ -91,6 +94,10 @@ class HoistAppModel {
         return this._toasters[position] = Toaster.create({position: position});
     }
 
+    @action
+    toggleTheme() {
+        this.setDarkTheme(!this.darkTheme);
+    }
 
 }
 export const hoistAppModel = new HoistAppModel();
