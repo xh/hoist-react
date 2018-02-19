@@ -12,7 +12,7 @@ body ::-webkit-scrollbar {
 .xh-ml {margin-left: 10px;}
 .xh-ma {margin: 10px;}
 .xh-mtb {margin: 10px 0;}
-.xh-mlr {margin: 0 10px;}
+.xh-mrl {margin: 0 10px;}
 
 .xh-mt2x {margin-top: 20px;}
 .xh-mr2x {margin-right: 20px;}
@@ -20,7 +20,7 @@ body ::-webkit-scrollbar {
 .xh-ml2x {margin-left: 20px;}
 .xh-ma2x {margin: 20px;}
 .xh-mtb2x {margin: 20px 0;}
-.xh-mlr2x {margin: 0 20px;}
+.xh-mrl2x {margin: 0 20px;}
 
 .xh-pt {padding-top: 10px;}
 .xh-pr {padding-right: 10px;}
@@ -28,7 +28,7 @@ body ::-webkit-scrollbar {
 .xh-pl {padding-left: 10px;}
 .xh-pa {padding: 10px;}
 .xh-ptb {padding: 10px 0;}
-.xh-plr {padding: 0 10px;}
+.xh-prl {padding: 0 10px;}
 
 .xh-ba {border: 1px solid;}
 .xh-bt {border-top: 1px solid;}

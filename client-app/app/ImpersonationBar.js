@@ -35,19 +35,17 @@ export class ImpersonationBar extends Component {
         const {impersonating, username} = identityService;
         return hbox({
             flex: 'none',
-            padding: 5,
+            cls: 'xh-tbar',
             style: {
                 color: 'white',
                 backgroundColor: 'midnightblue'
             },
             alignItems: 'center',
             items: [
-                icon({icon: 'person'}),
-                spacer({width: 10}),
+                icon({icon: 'person', cls: 'xh-mr'}),
                 div(`${impersonating ? 'Impersonating' : ''} ${username}`),
                 filler(),
                 this.switchButton(),
-                spacer({width: 4}),
                 this.exitButton()
             ]
         });
@@ -60,6 +58,7 @@ export class ImpersonationBar extends Component {
             target: button({
                 text: 'Switch User',
                 icon: 'random',
+                cls: 'xh-mr',
                 style: {minWidth: 130},
                 onClick: model.openTargetDialog
             }),
@@ -85,9 +84,16 @@ export class ImpersonationBar extends Component {
                     spacer({height: 5}),
                     hbox(
                         filler(),
-                        button({text: 'Close', onClick: this.onCloseClick}),
-                        spacer({width: 5}),
-                        button({text: 'OK', onClick: this.onOKClick, disabled: !model.selectedTarget})
+                        button({
+                            text: 'Close',
+                            cls: 'xh-mr',
+                            onClick: this.onCloseClick
+                        }),
+                        button({
+                            text: 'OK',
+                            onClick: this.onOKClick,
+                            disabled: !model.selectedTarget
+                        })
                     )
                 ]
             })
