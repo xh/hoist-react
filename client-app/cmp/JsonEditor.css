@@ -1,0 +1,4 @@
+.pt-dark .CodeMirror pre.CodeMirror-line {
+    box-shadow: inset 0 0 0 0px rgba(16, 22, 26, 0.4);
+    -webkit-box-shadow: inset 0 0 0 0px rgba(16, 22, 26, 0.4);
+}
