@@ -28,7 +28,7 @@ export const boolCheckCol = colFactory({
 export const glyphCol = colFactory({
     dataIndex: 'glyph',
     text: '',
-    width: 40,
+    width: 60,
     align: 'center',
     renderer: (v) => v,
     xhExportRenderer: false

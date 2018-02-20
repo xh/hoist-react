@@ -51,7 +51,7 @@ export function hoistApp(C) {
                     frame(elem(C)),
                     versionBar()
                 ),
-                loadMask({model: appLoadModel}),
+                loadMask({model: appLoadModel, inline: false}),
                 errorDialog({model: errorDialogModel})
             );
         }

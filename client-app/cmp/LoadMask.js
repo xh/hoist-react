@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import './LoadMask.css';
 import {Component} from 'react';
 import {elemFactory} from 'hoist';
 import {viewport, frame} from 'hoist/layout';
@@ -28,23 +29,21 @@ export class LoadMask extends Component {
     static defaultProps = {
         isDisplayed: false,
         model: null,
-        inline: false
+        inline: true
     };
     
     render() {
         let {isDisplayed, model, inline} = this.props;
 
-        // TODO: Inline Mask in blueprint not currently working.
-        // Also, all masks seem to steal focus
-
         if (!(isDisplayed || (model && model.isPending))) return null;
         return overlay({
+            cls: 'xh-mask',
+            autoFocus: false,
             isOpen: true,
             canEscapeKeyClose: false,
             backdropProps: {
                 style: {backgroundColor: this.BACKGROUND}
             },
-            style: {display: 'flex'},
             usePortal: !inline,
             item: inline ? this.getInlineChild() : this.getViewportChild()
         });

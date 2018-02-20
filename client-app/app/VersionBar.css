@@ -1,0 +1,14 @@
+.xh-version-bar {
+    font-size: 12px;
+    padding: 4px;
+    color: white;
+    background-color: darkgreen;
+}
+
+.xh-version-bar-production {
+    background-color: darkred;
+}
+
+.xh-version-bar-staging {
+    background-color: darkslateblue;
+}

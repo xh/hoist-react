@@ -5,7 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import './Collapsible.css';
 import {elemFactory} from 'hoist';
 import {Component} from 'react';
 import {observer, observable, action} from 'hoist/mobx';

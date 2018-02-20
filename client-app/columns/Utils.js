@@ -13,9 +13,8 @@ const globalVals = {};
  * column factory's with a shared set of defaults.
 
  * @param fileVals, defaults for file
- * @return return a function to create specific column factory.
+ * @return Function to create specific column factory
  */
-
 export function fileColFactory(fileVals = {}) {
     return function(colVals = {}) {
         return function(instanceVals = {}) {

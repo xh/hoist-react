@@ -30,7 +30,7 @@ export class ConfigPanel extends Component {
                 {name: 'betaValue', label: 'Beta Value', allowNull: true, typeField: 'valueType', env: 'Beta'},
                 {name: 'stageValue', label: 'Stage Value', allowNull: true, typeField: 'valueType', env: 'Staging'},
                 {name: 'devValue', label: 'Dev Value', allowNull: true, typeField: 'valueType', env: 'Development'},
-                {name: 'clientVisible', label: 'Client?', type: 'bool'},
+                {name: 'clientVisible', label: 'Client?', type: 'bool', defaultValue: false},
                 {name: 'note', label: 'Note', allowNull: true},
                 {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true, allowNull: true},
                 {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true, allowNull: true}
@@ -38,13 +38,13 @@ export class ConfigPanel extends Component {
         },
         columns: this.filterForEnv([
             nameCol(),
-            baseCol({field: 'valueType', maxWidth: 60}),
-            baseCol({field: 'groupName', width: 80}),
+            baseCol({field: 'valueType', width: 100}),
+            baseCol({field: 'groupName', width: 100}),
             this.valCol({field: 'prodValue', env: 'Production'}),
             this.valCol({field: 'betaValue', env: 'Beta'}),
             this.valCol({field: 'stageValue', env: 'Staging'}),
             this.valCol({field: 'devValue', env: 'Development'}),
-            boolCheckCol({field: 'clientVisible', minWidth: 40, maxWidth: 90}),
+            boolCheckCol({field: 'clientVisible', width: 90}),
             baseCol({field: 'note', flex: 1})
         ]),
         editors: this.filterForEnv([
@@ -70,6 +70,7 @@ export class ConfigPanel extends Component {
         return this.model.loadAsync();
     }
 
+
     //-------------------------
     // Implementation
     //-------------------------
@@ -84,4 +85,5 @@ export class ConfigPanel extends Component {
     valCol(params) {
         return baseCol({...params, width: 175});
     }
+
 }

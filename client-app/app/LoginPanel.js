@@ -27,9 +27,9 @@ export class LoginPanel extends Component {
         return viewport({
             alignItems: 'center',
             justifyContent: 'center',
+            cls: hoistAppModel.darkTheme ? 'xh-dark' : '',
             item: vbox({
-                padding: 15,
-                style: {border: 'solid 1px'},
+                cls: 'xh-ba xh-pa',
                 justifyContent: 'right',
                 items: [
                     inputGroup({
@@ -37,7 +37,7 @@ export class LoginPanel extends Component {
                         autoFocus: true,
                         value: this.username,
                         onChange: this.onUsernameChange,
-                        style: {marginBottom: 5}
+                        cls: 'xh-mb'
                     }),
                     inputGroup({
                         placeholder: 'Password...',
@@ -45,16 +45,22 @@ export class LoginPanel extends Component {
                         type: 'password',
                         rightElement: button({icon: 'lock', disabled: true}),
                         onChange: this.onPasswordChange,
-                        style: {marginBottom: 5}
+                        cls: 'xh-mb'
                     }),
                     hbox(
                         filler(),
-                        button({text: 'Go', disabled: !this.isValid, onClick: this.onSubmit})
+                        button({
+                            text: 'Go',
+                            intent: 'primary',
+                            disabled: !this.isValid,
+                            onClick: this.onSubmit
+                        })
                     )
                 ]
             })
         });
     }
+
 
     //--------------------------------
     // Implementation

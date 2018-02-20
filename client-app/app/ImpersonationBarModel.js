@@ -20,7 +20,7 @@ export class ImpersonationBarModel {
     }
 
     @action
-    toggleVisibility = () => {
+    toggleVisibility() {
         this.targetDialogOpen = false;
         this.isVisible = !this.isVisible || identityService.isImpersonating;
         if (this.isVisible) this.ensureTargetsLoaded();

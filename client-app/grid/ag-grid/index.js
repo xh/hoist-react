@@ -6,6 +6,7 @@
  */
 import 'ag-grid-enterprise';
 import 'ag-grid/dist/styles/ag-grid.css';
+import 'ag-grid/dist/styles/ag-theme-dark.css';
 import 'ag-grid/dist/styles/ag-theme-fresh.css';
 import {elemFactory} from 'hoist';
 

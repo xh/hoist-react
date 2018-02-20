@@ -4,12 +4,13 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import './styles.css';
 
 import React, {Component} from 'react';
 import {XH, environmentService} from 'hoist';
-import {div, h2, table, tbody, tr, th, td} from 'hoist/layout';
+import {div, h3, table, tbody, tr, th, td} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
+
+import './AboutPanel.css';
 
 @observer
 export class AboutPanel extends Component {
@@ -18,7 +19,7 @@ export class AboutPanel extends Component {
         return div({
             cls: 'xh-admin-about-panel',
             items: [
-                h2('About This Application'),
+                h3('About This Application'),
                 this.renderTable(),
                 this.renderBlurb()
             ]
@@ -28,8 +29,10 @@ export class AboutPanel extends Component {
     renderTable() {
         const svc = environmentService,
             row = (label, data) => tr(th(label), td(data));
-        return table(
-            tbody(
+
+        return table({
+            cls: 'xh-mtb2x',
+            item: tbody(
                 row('App Name', XH.appName),
                 row('Environment', svc.get('appEnvironment')),
                 row('App Version', svc.get('appVersion')),
@@ -38,24 +41,19 @@ export class AboutPanel extends Component {
                 row('Grails Version', svc.get('grailsVersion')),
                 row('Java Version', svc.get('javaVersion'))
             )
-        );
+        });
     }
 
     renderBlurb() {
-        return (
-            div({
-                style: {marginTop: '10px'},
-                item: div({
-                    style: {display: 'table-cell', verticalAlign: 'middle', width: '100%'},
-                    items: [
-                        <p>
-                            This application is built with Hoist a plugin for rich web-application development provided
-                            by <a href="http://xh.io" target="_blank" rel="noopener noreferrer"> Extremely Heavy Industries</a>.
-                        </p>,
-                        <p>Please contact <a href="mailto:support@xh.io">support@xh.io</a> with any questions.</p>
-                    ]
-                })
-            })
-        );
+        return div({
+            cls: 'xh-mt',
+            items: [
+                <p>
+                    This application is built with Hoist a plugin for rich web-application development provided
+                    by <a href="http://xh.io" target="_blank" rel="noopener noreferrer"> Extremely Heavy Industries</a>.
+                </p>,
+                <p>Please contact <a href="mailto:support@xh.io">support@xh.io</a> with any questions.</p>
+            ]
+        });
     }
 }

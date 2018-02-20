@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {elemFactory} from 'hoist';
 import {filler} from 'hoist/layout';
 import {button, dialog, dialogBody, dialogFooter, dialogFooterActions} from 'hoist/kit/blueprint';
-
+import {hoistAppModel} from 'hoist';
 import {observer} from 'hoist/mobx';
 
 @observer
@@ -24,6 +24,7 @@ class Confirm extends Component {
             isOpen: true,
             isCloseButtonShown: false,
             title: 'Confirm',
+            cls: hoistAppModel.darkTheme ? 'xh-dark' : '',
             items: [
                 dialogBody(this.model.message),
                 dialogFooter(
@@ -57,6 +58,6 @@ class Confirm extends Component {
     }
 
     get model() {return this.props.model}
-};
 
+}
 export const confirm = elemFactory(Confirm);

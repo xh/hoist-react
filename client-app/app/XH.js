@@ -23,8 +23,9 @@ import {
     EventService
 } from 'hoist/svc';
 
+
 //----------------------------------------------------------
-// Core services. Will be initialized by XH.initAsync() below.
+// Core services - initialized by XH.initAsync() below.
 //----------------------------------------------------------
 export let
     configService,
@@ -41,16 +42,12 @@ export let
 
 
 /**
- * Top-level Hoist manager.
+ * Top-level Hoist manager - initializes and manages key hoist services.
  *
- * This class initializes and manages key hoist services.
+ * Its initAsync() method should be completed before rendering any application components.
+ * See the @hoistApp for more details on its initialization.
  *
- * It's initAsync() method should be completed before rendering any
- * application components.  See the @hoistApp for more details
- * on its initialization.
- *
- * Applications should typically access it via global import
- * However, it is also available as window.XH for console access.
+ * Applications should access via global import. Also available as window.XH for console access.
  */
 class _XH {
 
@@ -122,5 +119,6 @@ class _XH {
             aliases.forEach(name => bindFn(name, name));
         }
     }
+
 }
 export const XH = window.XH = new _XH();

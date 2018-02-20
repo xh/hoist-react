@@ -8,6 +8,7 @@
 import '@blueprintjs/core/lib/css/blueprint.css';
 import '@blueprintjs/select/lib/css/blueprint-select.css';
 import '@blueprintjs/icons/lib/css/blueprint-icons.css';
+import './styles.css';
 
 import {elemFactory} from 'hoist/react';
 import {
@@ -77,5 +78,5 @@ export const button = elemFactory(Button),
 //-------------------------
 
 export const dialogBody = elemFactory('div', {cls: 'pt-dialog-body'});
-export const dialogFooter = elemFactory('div', {cls: 'pt-dialog-body'});
+export const dialogFooter = elemFactory('div', {cls: 'pt-dialog-footer'});
 export const dialogFooterActions = elemFactory('div', {cls: 'pt-dialog-footer-actions'});

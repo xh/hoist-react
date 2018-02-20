@@ -8,7 +8,6 @@
 import {Component} from 'react';
 import {elemFactory, hoistAppModel} from 'hoist';
 import {button, dialog, dialogBody, dialogFooter, dialogFooterActions} from 'hoist/kit/blueprint';
-
 import {observer} from 'hoist/mobx';
 import {errorDialogDetails} from './ErrorDialogDetails';
 
@@ -23,8 +22,9 @@ export class ErrorDialog extends Component {
 
         return dialog({
             isOpen: true,
-            icon: 'attention',
             title: options.title,
+            icon: 'warning-sign',
+            cls: hoistAppModel.darkTheme ? 'xh-dark' : '',
             items: [
                 dialogBody(options.message),
                 dialogFooter(
@@ -57,7 +57,6 @@ export class ErrorDialog extends Component {
                 onClick: this.onReloadClick
             }),
             button({
-                icon: 'cross',
                 text: 'Close',
                 onClick: this.onCloseClick
             })

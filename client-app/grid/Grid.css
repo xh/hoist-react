@@ -1,0 +1,17 @@
+.ag-root {
+     border: none;
+ }
+
+.ag-theme-dark .ag-root {
+     border: none;
+ }
+
+.ag-header-cell {
+    padding-right: 8px;
+    padding-left: 8px;
+}
+
+.ag-theme-dark .ag-header-cell {
+    padding-right: 8px;
+    padding-left: 8px;
+}

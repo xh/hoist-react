@@ -21,7 +21,7 @@ export class FieldSpec {
 
     constructor({
         name,
-        type = 'string',      // [string, int, number, boolean, json, date, day]
+        type = 'string',      // [string, int, number, bool, json, date, day]
         label,
         allowNull = true,
         defaultValue = null,
