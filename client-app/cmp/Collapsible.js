@@ -9,7 +9,7 @@ import {elemFactory} from 'hoist';
 import {Component} from 'react';
 import {observer, observable, action} from 'hoist/mobx';
 import {box, hbox, vbox} from 'hoist/layout';
-import {button, icon} from 'hoist/kit/blueprint';
+import {button} from 'hoist/kit/blueprint';
 import {isNil} from 'lodash';
 
 @observer
