@@ -7,10 +7,7 @@
 import {Component} from 'react';
 import {elemFactory} from 'hoist';
 import {observer} from 'hoist/mobx';
-import {vbox, hbox} from 'hoist/layout';
 import {tabs, tab} from 'hoist/kit/blueprint';
-import {menu} from 'hoist/kit/semantic';
-import {hoistAppModel} from 'hoist/app/HoistAppModel';
 
 import './Tabs.css';
 import {tabPane} from './TabPane';
@@ -23,16 +20,12 @@ import {TabContainerModel} from './TabContainerModel';
 export class TabContainer extends Component {
 
     render() {
-        return hoistAppModel.useSemantic ? this.renderSemantic() : this.renderBlueprint();
-    }
-
-    renderBlueprint() {
         const {id, children, selectedId, vertical} = this.model;
 
         return tabs({
             id,
             vertical,
-            onChange: this.onBlueprintTabChange,
+            onChange: this.onTabChange,
             selectedTabId: selectedId,
             large: !vertical,
             items: children.map(childModel => {
@@ -48,54 +41,12 @@ export class TabContainer extends Component {
         });
     }
 
-    renderSemantic() {
-        const {children, selectedIndex, vertical, isActive} = this.model;
-
-        // 0) Construct Selectors.
-        const $items = children.map(it => ({key: it.id, name: it.id})),
-            selectors = menu({
-                key: 'menu',
-                size: 'small',
-                color: 'blue',
-                activeIndex: selectedIndex,
-                onItemClick: this.onSemanticTabChange,
-                vertical,
-                pointing: !vertical,
-                secondary: true,
-                style: vertical ? {flex: 'none', width: '100px', margin: 0} : {margin: 0},
-                $items
-            });
-
-        // 1) Construct Panes
-        const panes = children.map(childModel => {
-            const isSubContainer = childModel instanceof TabContainerModel,
-                cmp = isSubContainer ? tabContainer : tabPane;
-            return cmp({
-                model: childModel,
-                key: childModel.id
-            });
-        });
-
-        const conf = {
-            flex: 1,
-            maxWidth: '100%',
-            maxHeight: '100%',
-            display: isActive ? 'flex' : 'none',
-            items: [selectors, ...panes]
-        };
-        return vertical ? hbox(conf) : vbox(conf);
-    }
-
     //--------------------------
     // Implementation
     //--------------------------
     get model() {return this.props.model}
-
-    onSemanticTabChange = (e, {index}) => {
-        this.model.setSelectedIndex(index);
-    }
-
-    onBlueprintTabChange = (activeId) => {
+    
+    onTabChange = (activeId) => {
         this.model.setSelectedId(activeId);
     }
 }

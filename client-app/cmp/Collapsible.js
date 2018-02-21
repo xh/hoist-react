@@ -9,11 +9,9 @@ import {elemFactory} from 'hoist';
 import {Component} from 'react';
 import {observer, observable, action} from 'hoist/mobx';
 import {box, hbox, vbox} from 'hoist/layout';
-import {button} from 'hoist/kit/semantic';
+import {button, icon} from 'hoist/kit/blueprint';
 import {isNil} from 'lodash';
 
-
-// TODO: Make this usable as controlled component.
 @observer
 export class Collapsible extends Component {
 
@@ -74,14 +72,7 @@ export class Collapsible extends Component {
                 justifyContent: 'center',
                 alignItems: 'center',
                 item: button({
-                    size: 'small',
-                    cls: 'resizer',
-                    compact: false,
-                    icon: {
-                        name: `${isOpen ? chevronClose : chevronOpen} chevron`,
-                        color: 'blue',
-                        fitted: true
-                    },
+                    icon:  `chevron-${isOpen ? chevronClose : chevronOpen}`,
                     style: {
                         margin: 0,
                         padding: 0,
@@ -92,7 +83,7 @@ export class Collapsible extends Component {
                 })
             };
 
-        cfg[vertical ? 'height' : 'width'] = 10;
+        cfg[vertical ? 'height' : 'width'] = 8;
 
         return cmp(cfg);
     }

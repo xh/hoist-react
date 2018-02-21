@@ -15,8 +15,7 @@ import {ErrorDialogModel} from 'hoist/error';
  * Top level model for a HoistApp.
  */
 class HoistAppModel {
-
-    useSemantic = false;
+    
     _toasters = [];
 
     /** Has the authentication step completed? **/

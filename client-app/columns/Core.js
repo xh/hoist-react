@@ -6,7 +6,7 @@
  */
 
 import {fileColFactory} from './Utils.js';
-import {icon} from 'hoist/kit/semantic';
+import {icon} from 'hoist/kit/blueprint';
 
 const colFactory = fileColFactory({
     xhId: null,
