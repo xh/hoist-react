@@ -6,10 +6,10 @@
  */
 
 import {Component} from 'react';
-import {elemFactory} from 'hoist';
+import {elemFactory} from 'hoist/react';
 import {observer} from 'hoist/mobx';
 import {alert} from 'hoist/kit/blueprint';
-import {hoistAppModel} from './HoistAppModel';
+import {hoistAppModel} from 'hoist/app';
 
 @observer
 export class AboutDialog extends Component {

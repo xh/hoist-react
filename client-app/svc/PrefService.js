@@ -6,7 +6,7 @@
  */
 import {BaseService} from './BaseService';
 import {cloneDeep, debounce, isEmpty, isEqual} from 'lodash';
-import {XH, localStorageService} from 'hoist';
+import {XH, localStorageService} from 'hoist/app';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
 
 export class PrefService extends BaseService {

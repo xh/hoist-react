@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory} from 'hoist';
+import {elemFactory} from 'hoist/react';
 import {start} from 'hoist/promise';
 import {menuDivider, menuItem, menu} from 'hoist/kit/blueprint';
 

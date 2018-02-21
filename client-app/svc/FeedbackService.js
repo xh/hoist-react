@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {BaseService} from './BaseService';
-import {XH, environmentService} from 'hoist';
+import {XH, environmentService} from 'hoist/app';
 import {stripTags} from 'hoist/utils/HtmlUtils';
 
 export class FeedbackService extends BaseService {

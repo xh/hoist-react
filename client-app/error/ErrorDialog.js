@@ -6,9 +6,11 @@
  */
 
 import {Component} from 'react';
-import {elemFactory, hoistAppModel} from 'hoist';
+import {hoistAppModel} from 'hoist/app';
+import {elemFactory} from 'hoist/react';
 import {button, dialog, dialogBody, dialogFooter, dialogFooterActions} from 'hoist/kit/blueprint';
 import {observer} from 'hoist/mobx';
+
 import {errorDialogDetails} from './ErrorDialogDetails';
 
 @observer

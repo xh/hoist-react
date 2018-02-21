@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, identityService} from 'hoist';
+import {XH, identityService} from 'hoist/app';
 import {observable, action} from 'hoist/mobx';
 
 export class ImpersonationBarModel {

@@ -6,7 +6,7 @@
  */
 import {Position, Toaster} from 'hoist/kit/blueprint';
 
-import {XH} from 'hoist';
+import {XH} from 'hoist/app';
 import {observable, setter, action} from 'hoist/mobx';
 import {MultiPromiseModel, never} from 'hoist/promise';
 import {ErrorDialogModel} from 'hoist/error';

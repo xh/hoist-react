@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH} from 'hoist';
+import {XH} from 'hoist/app';
 
 /**
  * Convert the passed URL into an absolute path relative to the server.

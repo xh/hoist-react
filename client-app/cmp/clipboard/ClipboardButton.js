@@ -8,12 +8,12 @@
 import {Component} from 'react';
 import * as PT from 'prop-types';
 import {isFunction, defaults} from 'lodash';
-import Clipboard from 'clipboard';
-import {elemFactory, XH} from 'hoist';
 import {Intent, button} from 'hoist/kit/blueprint';
-import {hoistAppModel} from 'hoist/app/HoistAppModel';
-
+import {hoistAppModel, XH} from 'hoist/app';
+import {elemFactory} from 'hoist/react';
 import {observer} from 'hoist/mobx';
+
+import Clipboard from 'clipboard';
 
 /**
  * Button that copies content to the clipboard.

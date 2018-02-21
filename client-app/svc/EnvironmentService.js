@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {BaseService} from './BaseService';
-import {XH} from 'hoist';
+import {XH} from 'hoist/app';
 import {Timer} from 'hoist/utils/Timer';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
 

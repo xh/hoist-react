@@ -6,10 +6,10 @@
  */
 
 import {Component} from 'react';
-import {elemFactory} from 'hoist';
+import {elemFactory} from 'hoist/react';
 import {filler} from 'hoist/layout';
 import {button, dialog, dialogBody, dialogFooter, dialogFooterActions} from 'hoist/kit/blueprint';
-import {hoistAppModel} from 'hoist';
+import {hoistAppModel} from 'hoist/app';
 import {observer} from 'hoist/mobx';
 
 @observer

@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory} from 'hoist';
+import {elemFactory} from 'hoist/react';
 import {inputGroup, numericInput, checkbox, button} from 'hoist/kit/blueprint';
 import {observer} from 'hoist/mobx';
 import {hbox, filler, hspacer, div} from 'hoist/layout';

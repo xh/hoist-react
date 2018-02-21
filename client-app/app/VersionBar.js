@@ -6,7 +6,8 @@
  */
 
 import {Component} from 'react';
-import {XH, elemFactory, environmentService, prefService} from 'hoist';
+import {XH, environmentService, prefService} from 'hoist/app';
+import {elemFactory} from 'hoist/react';
 import {box} from 'hoist/layout';
 import './VersionBar.css';
 

@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {XH, hoistApp, hoistAppModel} from 'hoist';
+import {XH, hoistApp, hoistAppModel} from 'hoist/app';
 import {vframe, frame} from 'hoist/layout';
 import {navbar, navbarGroup, navbarHeading, button, icon, Intent} from 'hoist/kit/blueprint';
 

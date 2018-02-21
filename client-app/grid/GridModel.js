@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH} from 'hoist';
+import {XH} from 'hoist/app';
 import {observable, action} from 'hoist/mobx';
 import {LastPromiseModel} from 'hoist/promise';
 

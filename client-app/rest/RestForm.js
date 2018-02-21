@@ -7,7 +7,8 @@
 
 import {Component} from 'react';
 import {Classes, button, checkbox, dialog, dialogBody, dialogFooter, dialogFooterActions, controlGroup, inputGroup, label, menuItem, numericInput, suggest, textArea} from 'hoist/kit/blueprint';
-import {elemFactory, hoistAppModel} from 'hoist';
+import {elemFactory} from 'hoist/react';
+import {hoistAppModel} from 'hoist/app';
 import {loadMask} from 'hoist/cmp';
 import {filler, vframe, hbox} from 'hoist/layout';
 import {observer} from 'hoist/mobx';

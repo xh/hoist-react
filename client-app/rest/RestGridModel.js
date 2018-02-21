@@ -5,12 +5,14 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {remove} from 'lodash';
-import {XH} from 'hoist';
+import {XH} from 'hoist/app';
 import {action} from 'hoist/mobx';
 import {RecordSpec} from 'hoist/data';
 import {GridModel} from 'hoist/grid';
-import {RestFormModel} from './RestFormModel';
 import {ConfirmModel} from 'hoist/cmp/confirm/ConfirmModel';
+
+
+import {RestFormModel} from './RestFormModel';
 
 /**
  * Core Model for a RestGrid

@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {BaseService} from './BaseService';
-import {XH, hoistAppModel} from 'hoist';
+import {XH, hoistAppModel} from 'hoist/app';
 
 export class IdentityService extends BaseService {
 
