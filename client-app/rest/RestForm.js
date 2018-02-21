@@ -286,15 +286,12 @@ const restJsonEditor = elemFactory(observer(
             const {value, disabled} = this.props;
             return jsonEditor({
                 value: value || '',
-                disabled,
-                onBeforeChange: this.onBeforeChange,
                 onChange: this.onChange,
-                editorDidMount: (editor) => editor.setSize(null, 150)
+                editorDidMount: (editor) => editor.setSize(343, 150), // setting size appears to be the only way to get scrollbars
+                codeMirrorOptions: {
+                    readOnly: disabled
+                }
             });
-        }
-
-        onBeforeChange = (editor, data, value) => {
-            this.props.setValue({value});
         }
 
         onChange = (editor, data, value) => {

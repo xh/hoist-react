@@ -4,7 +4,6 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-window.jsonlint = require('jsonlint-mod');
 export * from './LoadMask';
 export * from './clipboard';
 export * from './Collapsible';
