@@ -28,8 +28,8 @@ export class MonitorEditorPanel extends Component {
                 {name: 'notes', label: 'Notes', allowNull: true},
                 {name: 'active', label: 'Active', type: 'boolean'},
                 {name: 'sortOrder', label: 'Sort', type: 'int', allowNull: true},
-                {name: 'lastUpdated', label: 'Last Updated', readOnly: true, allowNull: true},
-                {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true, allowNull: true}
+                {name: 'lastUpdated', label: 'Last Updated', allowNull: true},
+                {name: 'lastUpdatedBy', label: 'Last Updated By', allowNull: true}
             ]
         },
         columns: [

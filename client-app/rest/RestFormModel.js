@@ -108,7 +108,7 @@ export class RestFormModel {
         return this.editors.map(editor => {
             const fieldSpec = fields.find(it => it.name === editor.field),
                 fieldName = fieldSpec.name,
-                disabled = fieldSpec.readOnly || (editor.additionsOnly && !isAdd),
+                disabled = editor.additionsOnly && !isAdd,
                 type = this.getInputType(editor, fieldSpec);
 
             // NOTE: We provide the value setter and *getter* for convenience -- but don't dereference.

@@ -32,8 +32,8 @@ export class ConfigPanel extends Component {
                 {name: 'devValue', label: 'Dev Value', allowNull: true, typeField: 'valueType', env: 'Development'},
                 {name: 'clientVisible', label: 'Client?', type: 'bool', defaultValue: false},
                 {name: 'note', label: 'Note', allowNull: true},
-                {name: 'lastUpdated', label: 'Last Updated', readOnly: true, allowNull: true},
-                {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true, allowNull: true}
+                {name: 'lastUpdated', label: 'Last Updated', allowNull: true},
+                {name: 'lastUpdatedBy', label: 'Last Updated By', allowNull: true}
             ])
         },
         columns: this.filterForEnv([
