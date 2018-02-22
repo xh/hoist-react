@@ -6,10 +6,10 @@
  */
 
 import {Component} from 'react';
-import {XH, hoistApp, hoistAppModel} from 'hoist';
-import {vframe, hbox, frame, div, filler, spacer} from 'hoist/layout';
+import {XH, hoistApp, hoistAppModel} from 'hoist/app';
+import {vframe, frame} from 'hoist/layout';
 import {navbar, navbarGroup, navbarHeading, button, icon, Intent} from 'hoist/kit/blueprint';
-import {button as semanticButton, icon as semanticIcon} from 'hoist/kit/semantic';
+
 import {observer} from 'hoist/mobx';
 import {tabContainer} from 'hoist/cmp/tab';
 import {appModel} from './AppModel';
@@ -35,32 +35,6 @@ export class App extends Component {
     // Implementation
     //------------------
     renderNavBar() {
-        return hoistAppModel.useSemantic ? this.suiNavBar() : this.bpNavBar();
-    }
-
-    suiNavBar() {
-        return hbox({
-            padding: 5,
-            height: 50,
-            flex: 'none',
-            cls: 'xh-app-nav-bar',
-            alignItems: 'center',
-            items: [
-                semanticIcon({name: 'eye'}),
-                spacer({width: 10}),
-                div(`${XH.appName} Admin`),
-                filler(),
-                semanticButton({
-                    icon: 'refresh',
-                    size: 'small',
-                    compact: true,
-                    onClick: this.onRefreshClick
-                })
-            ]
-        });
-    }
-
-    bpNavBar() {
         return navbar({
             cls: 'xh-bb',
             items: [

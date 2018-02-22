@@ -6,9 +6,7 @@
  */
 import {isString} from 'lodash';
 
-import {errorTrackingService} from 'hoist';
-import {hoistAppModel} from 'hoist/app/HoistAppModel';
-
+import {hoistAppModel, errorTrackingService} from 'hoist/app';
 import {BaseService} from './BaseService';
 
 export class ExceptionHandlerService extends BaseService {

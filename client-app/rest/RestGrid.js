@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {elemFactory} from 'hoist';
+import {elemFactory} from 'hoist/react';
 import {grid} from 'hoist/grid';
 import {observer} from 'hoist/mobx';
 import {frame, vframe} from 'hoist/layout';

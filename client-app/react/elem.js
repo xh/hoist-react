@@ -7,7 +7,7 @@
 
 import React from 'react';
 import {defaults, isPlainObject, isString, isArray} from 'lodash';
-import {XH} from 'hoist';
+import {XH} from 'hoist/app';
 import {asArray} from 'hoist/utils/JsUtils';
 
 /**

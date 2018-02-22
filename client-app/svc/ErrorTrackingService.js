@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH, environmentService} from 'hoist';
+import {XH, environmentService} from 'hoist/app';
 import {stripTags} from 'hoist/utils/HtmlUtils';
 import {stringifyErrorSafely} from 'hoist/exception';
 

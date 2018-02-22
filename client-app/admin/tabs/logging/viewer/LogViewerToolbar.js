@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory} from 'hoist';
+import {elemFactory} from 'hoist/react';
 import {inputGroup, numericInput, checkbox, button} from 'hoist/kit/blueprint';
 import {observer} from 'hoist/mobx';
 import {hbox, filler, hspacer, div} from 'hoist/layout';
@@ -17,10 +17,10 @@ class LogViewerToolbar extends Component {
         const {startLine, maxLines, pattern, tail} = this.model;
 
         return hbox({
+            cls: 'xh-tbar',
             flex: 'none',
             padding: 3,
             alignItems: 'center',
-            style: {background: '#106ba3'},
             items: [
                 this.label('Start Line:'),
                 hspacer(8),
@@ -89,7 +89,7 @@ class LogViewerToolbar extends Component {
         // Default label object has trouble with inline
         return div({
             cls: 'pt-label pt-inline',
-            style: {color: 'white', whiteSpace: 'nowrap'},
+            style: {whiteSpace: 'nowrap'},
             item: txt
         });
     }

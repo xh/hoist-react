@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {observer} from 'hoist/mobx';
-import {environmentService} from 'hoist';
+import {environmentService} from 'hoist/app';
 import {boolCheckCol, baseCol} from 'hoist/columns/Core';
 import {restGrid, RestGridModel} from 'hoist/rest';
 

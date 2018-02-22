@@ -6,17 +6,17 @@
  */
 import {Position, Toaster} from 'hoist/kit/blueprint';
 
-import {XH} from 'hoist';
+import {XH} from 'hoist/app';
 import {observable, setter, action} from 'hoist/mobx';
 import {MultiPromiseModel, never} from 'hoist/promise';
 import {ErrorDialogModel} from 'hoist/error';
+import {ContextMenuModel} from 'hoist/cmp/contextmenu';
 
 /**
  * Top level model for a HoistApp.
  */
 class HoistAppModel {
-
-    useSemantic = false;
+    
     _toasters = [];
 
     /** Has the authentication step completed? **/
@@ -31,9 +31,12 @@ class HoistAppModel {
     /** Dark theme active? **/
     @setter @observable darkTheme = true;
 
+    /** Showing the about dialog? **/
+    @setter @observable showAbout = false;
+
     /** Tracks recent errors for troubleshooting/display */
     errorDialogModel = new ErrorDialogModel();
-
+    
     /**
      * Tracks globally loading promises.
      *
@@ -41,7 +44,14 @@ class HoistAppModel {
      * the entire application to this model.
      **/
     appLoadModel = new MultiPromiseModel();
-
+    
+    /**
+     * Default Context Menu for Application.
+     *
+     * Applications may modify these items, or include in their own
+     * sub-context menus as appropriate.
+     */
+    appContextMenuModel = this.createAppContextMenuModel();
 
     /**
      * Call this once when application mounted in order to
@@ -99,5 +109,22 @@ class HoistAppModel {
         this.setDarkTheme(!this.darkTheme);
     }
 
+    //---------------------------------
+    // Implementation
+    //---------------------------------
+    createAppContextMenuModel() {
+        return new ContextMenuModel([
+            {
+                text: 'Reload App',
+                icon: 'refresh',
+                fn: () => this.reloadApp()
+            },
+            {
+                text: 'About',
+                icon: 'info-sign',
+                fn: () => this.setShowAbout(true)
+            }
+        ]);
+    }
 }
 export const hoistAppModel = new HoistAppModel();

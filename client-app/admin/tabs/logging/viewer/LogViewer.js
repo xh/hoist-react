@@ -58,10 +58,9 @@ export class LogViewer extends Component {
     buildLogDisplay(rows) {
         return frame({
             overflow: 'scroll',
-            item: table({
-                cls: 'logviewer-table',
-                item: tbody(...this.getTableRows(rows))
-            })
+            item: table(
+                tbody(...this.getTableRows(rows))
+            )
         });
     }
 

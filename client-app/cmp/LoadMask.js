@@ -7,7 +7,7 @@
 
 import './LoadMask.css';
 import {Component} from 'react';
-import {elemFactory} from 'hoist';
+import {elemFactory} from 'hoist/react';
 import {viewport, frame} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
 

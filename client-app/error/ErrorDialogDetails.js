@@ -6,7 +6,8 @@
  */
 
 import {Component} from 'react';
-import {elemFactory, environmentService, hoistAppModel} from 'hoist';
+import {elemFactory} from 'hoist/react';
+import {environmentService, hoistAppModel} from 'hoist/app';
 import {button, dialog, dialogBody, dialogFooter, dialogFooterActions, textArea} from 'hoist/kit/blueprint';
 import {clipboardButton} from 'hoist/cmp';
 import {pre, table, tbody, td, th, tr} from 'hoist/layout';

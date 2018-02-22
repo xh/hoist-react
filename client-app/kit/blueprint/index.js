@@ -12,6 +12,7 @@ import './styles.css';
 
 import {elemFactory} from 'hoist/react';
 import {
+    Alert,
     Button,
     Checkbox,
     ControlGroup,
@@ -21,7 +22,9 @@ import {
     Icon,
     InputGroup,
     Label,
+    Menu,
     MenuItem,
+    MenuDivider,
     Navbar,
     NavbarDivider,
     NavbarGroup,
@@ -40,6 +43,8 @@ import {
 import {Suggest, Select} from '@blueprintjs/select';
 
 export {
+    ContextMenu,
+    ContextMenuTarget,
     Classes,
     HotkeysTarget,
     Intent,
@@ -47,7 +52,9 @@ export {
     Toaster
 } from '@blueprintjs/core';
 
-export const button = elemFactory(Button),
+export const
+    alert = elemFactory(Alert),
+    button = elemFactory(Button),
     controlGroup = elemFactory(ControlGroup),
     checkbox = elemFactory(Checkbox),
     dialog = elemFactory(Dialog),
@@ -56,6 +63,8 @@ export const button = elemFactory(Button),
     icon = elemFactory(Icon),
     inputGroup = elemFactory(InputGroup),
     label = elemFactory(Label),
+    menu = elemFactory(Menu),
+    menuDivider = elemFactory(MenuDivider),
     menuItem = elemFactory(MenuItem),
     navbar = elemFactory(Navbar),
     navbarHeading = elemFactory(NavbarHeading),

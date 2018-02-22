@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH} from 'hoist';
+import {XH} from 'hoist/app';
 import {asArray} from 'hoist/utils/JsUtils';
 import {isFunction, isNumber} from 'lodash';
 import RSVP from 'rsvp';

@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 
-import {XH} from 'hoist';
+import {XH} from 'hoist/app';
 import {box} from 'hoist/layout';
 import {observable, action, observer} from 'hoist/mobx';
 

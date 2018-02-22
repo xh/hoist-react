@@ -6,7 +6,7 @@
  */
 
 import React, {Component} from 'react';
-import {XH, environmentService} from 'hoist';
+import {XH, environmentService} from 'hoist/app';
 import {div, h3, table, tbody, tr, th, td} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
 

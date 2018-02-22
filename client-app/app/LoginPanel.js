@@ -6,7 +6,8 @@
  */
 
 import {Component} from 'react';
-import {XH, elemFactory} from 'hoist';
+import {XH} from 'hoist/app';
+import {elemFactory} from 'hoist/react';
 import {vbox, hbox, filler, viewport} from 'hoist/layout';
 import {inputGroup, button} from 'hoist/kit/blueprint';
 import {observable, computed, observer, setter} from 'hoist/mobx';
