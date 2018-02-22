@@ -1,0 +1,24 @@
+.xh-about-table {
+    display: flex;
+    padding: 10px;
+}
+
+.xh-about-table tbody {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+}
+
+.xh-about-table th, .xh-about-table td {
+    display: flex;
+    flex: 1;
+    font-weight: lighter;
+    align-content: left;
+}
+.xh-about-table tr {
+    display: flex;
+    line-height: 25px;
+}
+.xh-about-table tr:nth-child(even) {
+    background-color: #000;
+}
