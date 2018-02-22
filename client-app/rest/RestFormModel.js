@@ -141,7 +141,10 @@ export class RestFormModel {
         if (fieldType === 'int') {
             return 'number';
         }
-        if (editorType === 'textarea' || fieldType === 'json') {
+        if (fieldType === 'json') {
+            return 'jsonEditor';
+        }
+        if (editorType === 'textarea') {
             return 'textarea';
         }
         return 'text';

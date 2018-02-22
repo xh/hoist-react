@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {Classes, button, checkbox, dialog, dialogBody, dialogFooter, dialogFooterActions, controlGroup, inputGroup, label, menuItem, numericInput, suggest, textArea} from 'hoist/kit/blueprint';
 import {elemFactory} from 'hoist/react';
 import {hoistAppModel} from 'hoist/app';
-import {loadMask} from 'hoist/cmp';
+import {loadMask, jsonEditor} from 'hoist/cmp';
 import {filler, vframe, hbox} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
 import {fmtDateTime} from 'hoist/format';
@@ -139,6 +139,8 @@ export class RestForm extends Component {
                 return restCheckbox(props);
             case 'number':
                 return restNumericInput(props);
+            case 'jsonEditor':
+                return restJsonEditor(props);
             case 'textarea':
                 return restTextArea(props);
             case 'text':
@@ -156,7 +158,7 @@ export const restForm = elemFactory(RestForm);
 const restLabel = elemFactory(observer(
     ({fieldSpec, editor, value}) => {
         const text = fieldSpec.label || fieldSpec.name;
-        return label({text, style: {width: '115px'}});
+        return label({text, style: {minWidth: '115px'}});
     }
 ));
 
@@ -275,6 +277,30 @@ const restTextInput = elemFactory(observer(
 
         onChange = (ev) => {
             this.props.setValue(ev.target.value);
+        }
+    }
+));
+
+const restJsonEditor = elemFactory(observer(
+    class extends Component {
+        render() {
+            const {value, disabled} = this.props;
+            return jsonEditor({
+                value: value || '',
+                onChange: this.onChange,
+                editorDidMount: (editor) => editor.setSize(343, 150), // setting size appears to be the only way to get scrollbars
+                codeMirrorOptions: {
+                    readOnly: disabled
+                }
+            });
+        }
+
+        onChange = (editor, data, value) => {
+            try {
+                JSON.parse(value);
+            } catch (e) {
+                // say form invalid
+            }
         }
     }
 ));
