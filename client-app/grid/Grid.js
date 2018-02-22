@@ -74,12 +74,12 @@ class Grid extends Component {
         return navigateSelection(params, this.gridOptions.api);
     }
 
-    getContextMenuItems = () => {
+    getContextMenuItems = (params) => {
         const contextModel = this.model.contextModel;
-        return contextModel ? contextModel.getContextMenuItems() : this.emptyMenu();
+        return contextModel ? contextModel.getContextMenuItems(params) : this.emptyContextMenu(params);
     }
 
-    emptyMenu(params) {
+    emptyContextMenu(params) {
         return [];
     }
 

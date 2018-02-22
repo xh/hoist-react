@@ -42,10 +42,6 @@ export class RestGrid extends Component {
     onRowDoubleClicked = (row) => {
         this.model.formModel.openEdit(row.data);
     }
-
-    getContextMenuItems = (params) => {
-        return this.model.getContextMenuItems(params);
-    }
 }
 
 export const restGrid = elemFactory(RestGrid);

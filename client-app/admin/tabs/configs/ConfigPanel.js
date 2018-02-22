@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {observer} from 'hoist/mobx';
 import {environmentService} from 'hoist';
 import {boolCheckCol, baseCol} from 'hoist/columns/Core';
-import {restGrid, RestGridModel, RestContextMenuModel} from 'hoist/rest';
+import {restGrid, RestGridModel} from 'hoist/rest';
 
 import {nameCol} from 'hoist/admin/columns/Columns';
 
@@ -21,7 +21,7 @@ export class ConfigPanel extends Component {
             edit: 'Are you sure you want to edit? Editing configs can break running apps!',
             del: 'Are you sure you want to delete? Deleting configs can break running apps!'
         },
-        contextMenuItems: this.getContextMenuItems(), // i.e. what if this particular grid wants something different?
+        contextMenuItems: this.getContextMenuItems(), // example of if a particular grid wants something different from the default
         recordSpec: {
             fields: this.filterForEnv([
                 {name: 'name', label: 'Name'},

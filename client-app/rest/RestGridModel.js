@@ -54,12 +54,13 @@ export class RestGridModel {
         contextMenuItems,
         ...rest
     }) {
-        const contextModel = new RestContextMenuModel(contextMenuItems);
+        const contextModel = new RestContextMenuModel({parent: this, contextMenuItems});
+
         this.actionEnabled = Object.assign(this.actionEnabled, actionEnabled);
         this.actionWarning = Object.assign(this.actionWarning, actionWarning);
         this.recordSpec = recordSpec instanceof RecordSpec ? recordSpec : new RecordSpec(recordSpec);
         this.formModel = new RestFormModel({parent: this, editors});
-        this.gridModel = new GridModel({dataRoot, contextModel, ...rest}); // url gets passed through here. do the same with context items?
+        this.gridModel = new GridModel({dataRoot, contextModel, ...rest});
     }
 
     async loadAsync() {
