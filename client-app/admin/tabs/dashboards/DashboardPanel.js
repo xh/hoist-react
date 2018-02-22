@@ -24,7 +24,7 @@ export class DashboardPanel extends Component {
         recordSpec: {
             fields: [
                 {name: 'appCode', label: 'App Code'},
-                {name: 'username', label: 'User', allowBlank: true},
+                {name: 'username', label: 'User'},
                 {name: 'definition', label: 'Definition', type: 'json'},
                 {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true, allowNull: true}
             ]
