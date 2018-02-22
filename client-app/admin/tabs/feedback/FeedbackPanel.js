@@ -24,7 +24,7 @@ export class FeedbackPanel extends Component {
                 {name: 'device', label: 'Device', readOnly: true},
                 {name: 'appVersion', label: 'Version', readOnly: true},
                 {name: 'appEnvironment', label: 'Environment', readOnly: true},
-                {name: 'dateCreated', dateFormat: 'time', label: 'Date', readOnly: true, allowNull: true}
+                {name: 'dateCreated', label: 'Date', readOnly: true, allowNull: true}
             ]
         },
         columns: [
