@@ -4,6 +4,10 @@ body ::-webkit-scrollbar {
     height: 10px;
 }
 
+body :focus {
+    outline: 0;
+}
+
 
 /*Utility margin / padding / border classes*/
 .xh-mt {margin-top: 10px;}
