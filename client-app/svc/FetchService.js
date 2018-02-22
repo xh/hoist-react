@@ -13,57 +13,49 @@ export class FetchService extends BaseService {
     /**
      * Returns a Promise of a json decoded XHR result.
      *
-     * @param opts, standard options for fetch, plus relative 'url'
+     * @param opts, standard options for fetch plus
+     *
+     *      + 'url', relative path, will be enhanced with params for 'GET'
+     *      + 'contentType', request contentType header as raw string, e.g. 'text/plain'
      */
     async fetchJson(opts) {
-        let url = XH.BASE_URL + opts.url;
+        let {params, method, contentType, url} = opts;
 
-        const params = opts.params,
-            method = opts.method || params ? 'POST' : 'GET',
-            isPost = method.toUpperCase() === 'POST';
+        // 1) Compute / install defaults
+        if (!method) {
+            method = (params ? 'POST' : 'GET');
+        }
 
-        // Options
-        opts = isPost ? this.postOpts(opts) : this.getOpts(opts);
+        if (!contentType) {
+            contentType = (method === 'POST') ? 'application/x-www-form-urlencoded': 'text/plain';
+        }
 
-        // Params
+        url = XH.BASE_URL + url;
+
+        // 2) Prepare merged options
+        const defaults = {
+            method,
+            cors: true,
+            credentials: 'include',
+            redirect: 'follow',
+            headers: new Headers({'Content-Type': contentType})
+        };
+        opts = Object.assign(defaults, opts);
+        delete opts.contentType;
+        delete opts.url;
+
+        // 3) preprocess and apply params
         if (params) {
             const paramsString = Object.entries(params).map(v => `${v[0]}=${v[1]}`).join('&');
-            if (isPost) {
+            if (method === 'POST') {
                 opts.body = paramsString;
             } else {
                 url += '?' + paramsString;
             }
         }
-
+        
         const ret = await fetch(url, opts);
         if (!ret.ok) throw Exception.requestError(opts, ret);
         return ret.json();
-    }
-
-    //----------------------------
-    // Implementation
-    //-----------------------------
-    postOpts(opts) {
-        const postOpts = {
-            method: 'POST',
-            headers: new Headers({'Content-Type': 'application/x-www-form-urlencoded'})
-        };
-        return Object.assign(this.defaultOpts(), postOpts, opts);
-    }
-
-    getOpts(opts) {
-        const getOpts = {
-            method: 'GET',
-            headers: new Headers({'Content-Type': 'text/plain'})
-        };
-        return Object.assign(this.defaultOpts(), getOpts, opts);
-    }
-
-    defaultOpts() {
-        return {
-            cors: true,
-            credentials: 'include',
-            redirect: 'follow'
-        };
     }
 }

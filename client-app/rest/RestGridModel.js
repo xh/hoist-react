@@ -97,16 +97,18 @@ export class RestGridModel {
 
     @action
     saveRecord(rec) {
-        const {url, actionEnabled} = this,
+        let {url, actionEnabled} = this,
             {isAdd} = this.formModel;
 
         if (isAdd && !actionEnabled.add) throw XH.exception('Record addition not enabled.');
         if (!isAdd && !actionEnabled.edit) throw XH.exception('Record edits not enabled.');
+        if (!isAdd) url += '/' + rec.id;
 
         XH.fetchJson({
             url,
             method: isAdd ? 'POST' : 'PUT',
-            params: {data: JSON.stringify(rec)}
+            contentType: 'application/json',
+            body: JSON.stringify({data: rec})
         }).then(response => {
             this.noteRecordUpdated(response.data);
         }).linkTo(
