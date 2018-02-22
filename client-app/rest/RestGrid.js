@@ -26,7 +26,9 @@ export class RestGrid extends Component {
                     model: model.gridModel,
                     gridOptions: {
                         onRowDoubleClicked: this.onRowDoubleClicked,
-                        getContextMenuItems: this.getContextMenuItems
+                        getContextMenuItems: this.getContextMenuItems,
+                        // not sure. I'm a ctrl-clicker for 'right-click'. Without this line ctrl-click results in the browser's context menu
+                        allowContextMenuWithControlKey: true
                     }
                 })
             ),
@@ -44,51 +46,8 @@ export class RestGrid extends Component {
         this.model.formModel.openEdit(row.data);
     }
 
-    // probably going to need a fat arrow to access info in model
-    // actually the items probably belong in the model.
-    getContextMenuItems(params) {
-        console.log(params);
-        return [
-            {
-                name: 'Add Record',
-                action: () => console.log('Would launch add form'),
-                tooltip: 'Add record'
-            },
-            {
-                name: 'Edit Record',
-                action: () => console.log('Would launch edit form'),
-                tooltip: 'Edit record'
-            },
-            {
-                name: 'Delete Record',
-                action: () => console.log('Would trigger confirm'),
-                tooltip: 'Delete record'
-            },
-            'separator',
-            {
-                name: 'Rest',
-                subMenu: [
-                    {
-                        name: 'Add Record',
-                        action: () => console.log('Would launch add form'),
-                        tooltip: 'Add record'
-                    },
-                    {
-                        name: 'Edit Record',
-                        action: () => console.log('Would launch edit form'),
-                        tooltip: 'Edit record'
-                    },
-                    {
-                        name: 'Delete Record',
-                        action: () => console.log('Would trigger confirm'),
-                        tooltip: 'Delete record'
-                    }
-                ],
-                tooltip: 'Demoing nested menus'
-            },
-            'separator',
-            'export' // default option provided by ag-grid
-        ];
+    getContextMenuItems = (params) => {
+        return this.model.getContextMenuItems(params);
     }
 }
 

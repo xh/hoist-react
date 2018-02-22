@@ -74,6 +74,71 @@ export class RestGridModel {
         return this.gridModel.loadAsync();
     }
 
+    //--------------------
+    // Context controls
+    //--------------------
+
+    getContextMenuItems(params) {
+        return [
+            {
+                name: 'Add Record',
+                action: () => this.addRecord(),
+                tooltip: 'Add record'
+            },
+            {
+                name: 'Edit Record',
+                action: () => this.editSelection(),
+                disabled: this.selection.isEmpty,
+                tooltip: 'Edit record'
+            },
+            {
+                name: 'Delete Record',
+                action: () => this.onContextDeleteClick(),
+                disabled: this.selection.isEmpty,
+                tooltip: 'Delete record'
+            },
+            'separator',
+            {
+                name: 'Rest',
+                subMenu: [
+                    {
+                        name: 'Add Record',
+                        action: () => this.addRecord(),
+                        tooltip: 'Add record'
+                    },
+                    {
+                        name: 'Edit Record',
+                        action: () => this.editSelection(),
+                        disabled: this.selection.isEmpty,
+                        tooltip: 'Edit record'
+                    },
+                    {
+                        name: 'Delete Record',
+                        action: () => this.onContextDeleteClick(),
+                        disabled: this.selection.isEmpty,
+                        tooltip: 'Delete record'
+                    }
+                ],
+                tooltip: 'Demoing nested menus'
+            },
+            'separator',
+            'export' // default option provided by ag-grid
+        ];
+    }
+
+    onContextDeleteClick = () => {
+        const warning = this.actionWarning.del;
+        if (warning) {
+            this.confirmModel.show({
+                message: warning,
+                onConfirm: () => this.deleteSelection()
+            });
+        } else {
+            this.deleteSelection();
+        }
+    }
+
+
     //-----------------
     // Actions
     //------------------
