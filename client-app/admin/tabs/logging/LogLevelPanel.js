@@ -32,7 +32,7 @@ export class LogLevelPanel extends Component {
         ],
         editors: [
             {field: 'name'},
-            {field: 'level'}
+            {field: 'level', editable: false} // additions not allowed, might want a select instead of a suggest (in ext editable: false), obv can rename the prop
         ]
     });
     

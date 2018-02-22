@@ -45,7 +45,7 @@ export class MonitorEditorPanel extends Component {
         editors: [
             {field: 'code'},
             {field: 'name'},
-            {field: 'metricType'},
+            {field: 'metricType', editable: false}, // see note in log level
             {field: 'warnThreshold'},
             {field: 'failThreshold'},
             {field: 'metricUnit'},
