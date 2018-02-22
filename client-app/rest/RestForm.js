@@ -176,7 +176,7 @@ const restDropdown = elemFactory(observer(
 
             return suggest({
                 popoverProps: {popoverClassName: Classes.MINIMAL},
-                itemPredicate: (q, v, index) => !v || v.includes(q),
+                // itemPredicate: (q, v, index) => !v || v.includes(q), // can this be omitted? (see BP docs on controlled component)
                 $items: options,
                 onItemSelect: this.onItemSelect,
                 itemRenderer: (item, itemProps) => {
