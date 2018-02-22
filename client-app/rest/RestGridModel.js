@@ -79,9 +79,12 @@ export class RestGridModel {
     //--------------------
 
     getContextMenuItems(params) {
+        // would be nice to get an icon for each. icon here is an DOM el or an html string. Not sure we're set up for this yet.
         return [
             {
                 name: 'Add Record',
+                // is there a better way to convert blueprint icons to html a la XH.glyph.html?
+                icon: '<svg class="pt-icon" data-icon="add" width="16" height="16" viewBox="0 0 16 16"><title>add</title><path d="M10.99 6.99h-2v-2c0-.55-.45-1-1-1s-1 .45-1 1v2h-2c-.55 0-1 .45-1 1s.45 1 1 1h2v2c0 .55.45 1 1 1s1-.45 1-1v-2h2c.55 0 1-.45 1-1s-.45-1-1-1zm-3-7c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.68 6-6 6z" fill-rule="evenodd"></path></svg>',
                 action: () => this.addRecord(),
                 tooltip: 'Add record'
             },
