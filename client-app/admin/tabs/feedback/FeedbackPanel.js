@@ -16,15 +16,18 @@ export class FeedbackPanel extends Component {
 
     model = new RestGridModel({
         url: 'rest/feedbackAdmin',
+        actionEnabled: {
+            add: false
+        },
         recordSpec: {
             fields: [
                 {name: 'username', label: 'User'},
                 {name: 'msg', label: 'Message'},
-                {name: 'browser', label: 'Browser', readOnly: true},
-                {name: 'device', label: 'Device', readOnly: true},
-                {name: 'appVersion', label: 'Version', readOnly: true},
-                {name: 'appEnvironment', label: 'Environment', readOnly: true},
-                {name: 'dateCreated', label: 'Date', readOnly: true, allowNull: true}
+                {name: 'browser', label: 'Browser'},
+                {name: 'device', label: 'Device'},
+                {name: 'appVersion', label: 'Version'},
+                {name: 'appEnvironment', label: 'Environment'},
+                {name: 'dateCreated', label: 'Date', allowNull: true}
             ]
         },
         columns: [
@@ -39,10 +42,10 @@ export class FeedbackPanel extends Component {
         editors: [
             {field: 'username'},
             {field: 'msg', type: 'textarea'},
-            {field: 'browser'},
-            {field: 'device'},
-            {field: 'appVersion'},
-            {field: 'appEnvironment'},
+            {field: 'browser', type: 'displayField'},
+            {field: 'device', type: 'displayField'},
+            {field: 'appVersion', type: 'displayField'},
+            {field: 'appEnvironment', type: 'displayField'},
             {field: 'dateCreated', type: 'displayField'}
         ]
     });
