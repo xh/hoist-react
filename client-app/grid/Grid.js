@@ -24,6 +24,8 @@ class Grid extends Component {
     static gridDefaults = {
         enableSorting: true,
         enableColResize: true,
+        // not sure. I'm a ctrl-clicker for 'right-click'. Without this line ctrl-click results in the browser's context menu
+        allowContextMenuWithControlKey: true,
         rowSelection: 'single'
     };
 
@@ -32,6 +34,7 @@ class Grid extends Component {
         this.gridOptions = defaults(
             props.gridOptions || {},
             Grid.gridDefaults,
+            {getContextMenuItems: this.getContextMenuItems},
             {navigateToNextCell: this.onNavigateToNextCell}
         );
     }
@@ -69,6 +72,15 @@ class Grid extends Component {
 
     onNavigateToNextCell = (params) => {
         return navigateSelection(params, this.gridOptions.api);
+    }
+
+    getContextMenuItems = () => {
+        const contextModel = this.model.contextModel;
+        return contextModel ? contextModel.getContextMenuItems() : this.emptyMenu();
+    }
+
+    emptyMenu(params) {
+        return [];
     }
 
 }

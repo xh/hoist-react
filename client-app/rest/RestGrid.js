@@ -25,10 +25,7 @@ export class RestGrid extends Component {
                 grid({
                     model: model.gridModel,
                     gridOptions: {
-                        onRowDoubleClicked: this.onRowDoubleClicked,
-                        getContextMenuItems: this.getContextMenuItems,
-                        // not sure. I'm a ctrl-clicker for 'right-click'. Without this line ctrl-click results in the browser's context menu
-                        allowContextMenuWithControlKey: true
+                        onRowDoubleClicked: this.onRowDoubleClicked
                     }
                 })
             ),

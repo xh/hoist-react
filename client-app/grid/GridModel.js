@@ -22,15 +22,18 @@ export class GridModel {
     processRawData = null;
     selection = new GridSelectionModel();
     loadModel = new LastPromiseModel();
+    contextModel = null;
 
     @observable columns = [];
     @observable records = [];
 
-    constructor({url, dataRoot, columns, processRawData}) {
+    constructor({url, dataRoot, columns, processRawData, contextModel}) {
         this.url = url;
         this.dataRoot = dataRoot;
         this.columns = columns;
         this.processRawData = processRawData;
+
+        this.contextModel = contextModel;
     }
 
     @action
