@@ -212,21 +212,17 @@ const restSelect = elemFactory(observer(
         render() {
             const {value, disabled, fieldSpec} = this.props,
                 options = fieldSpec.lookupValues;
-            
-            console.log('select');
 
             return select({
                 popoverProps: {popoverClassName: Classes.MINIMAL},
-                // itemPredicate: (q, v, index) => v,
                 $items: options,
                 onItemSelect: this.onItemSelect,
                 itemRenderer: (item, itemProps) => {
-                    console.log(item, itemProps);
-                    return menuItem({key: item, text: item, onClick: itemProps.handleClick});
+                    return menuItem({key: item, text: item, onClick: itemProps.handleClick, disabled});
                 },
-                items: button({text: value || '', cls: 'pt-fill'})
-                // inputValueRenderer: s => s,
-                // disabled disabling has to apply to children too...see docs
+                filterable: false,
+                items: button({text: value || options[0]}),
+                disabled
             });
         }
 
