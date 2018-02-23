@@ -26,7 +26,7 @@ export class MonitorEditorPanel extends Component {
                 {name: 'failThreshold', label: 'Fail Threshold', type: 'int', allowNull: true},
                 {name: 'params', label: 'Params', type: 'json', allowNull: true},
                 {name: 'notes', label: 'Notes', allowNull: true},
-                {name: 'active', label: 'Active', type: 'bool'},
+                {name: 'active', label: 'Active', type: 'bool', defaultValue: false},
                 {name: 'sortOrder', label: 'Sort', type: 'int', allowNull: true},
                 {name: 'lastUpdated', label: 'Last Updated', allowNull: true},
                 {name: 'lastUpdatedBy', label: 'Last Updated By', allowNull: true}

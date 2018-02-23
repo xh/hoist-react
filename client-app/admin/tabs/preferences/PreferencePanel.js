@@ -26,7 +26,7 @@ export class PreferencePanel extends Component {
                 {name: 'type', label: 'Type', lookup: 'types'},
                 {name: 'defaultValue',  typeField: 'type', label: 'Default Value'},
                 {name: 'notes', label: 'Notes', allowNull: true},
-                {name: 'local', label: 'Local', type: 'bool'},
+                {name: 'local', label: 'Local', type: 'bool', defaultValue: false},
                 {name: 'lastUpdated', label: 'Last Updated', allowNull: true},
                 {name: 'lastUpdatedBy', label: 'Last Updated By', allowNull: true}
             ]
