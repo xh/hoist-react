@@ -28,6 +28,11 @@ export class RestFormModel {
         return (rec && rec.id === null);
     }
 
+    @computed
+    get isValid() {
+        return this.invalidFields.length === 0;
+    }
+
     // do we want to get into the business of validating types? For example, NaN is being accepted in number fields at the moment
     @computed
     get invalidFields() {
@@ -41,11 +46,6 @@ export class RestFormModel {
             }
         });
         return invalidFields;
-    }
-
-    @computed
-    get isValid() {
-        return this.invalidFields.length === 0;
     }
 
     @computed
