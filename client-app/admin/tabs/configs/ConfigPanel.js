@@ -55,7 +55,7 @@ export class ConfigPanel extends Component {
             {field: 'betaValue', env: 'Beta'},
             {field: 'stageValue', env: 'Staging'},
             {field: 'devValue', env: 'Development'},
-            {field: 'clientVisible', type: 'bool'},
+            {field: 'clientVisible'},
             {field: 'note', type: 'textarea'},
             {field: 'lastUpdated', type: 'displayField'},
             {field: 'lastUpdatedBy', type: 'displayField'}
