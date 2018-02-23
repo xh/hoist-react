@@ -28,15 +28,24 @@ export class RestFormModel {
         return (rec && rec.id === null);
     }
 
+    // do we want to get into the business of validating types? For example, NaN is being accepted in number fields at the moment
     @computed
-    get isValid() {
-        const fieldSpecs = this.parent.recordSpec.fields;
-        let valid = true;
+    get invalidFields() {
+        const fieldSpecs = this.parent.recordSpec.fields,
+            invalidFields = [];
+
         forOwn(this.record, (v, k) => {
             const spec = fieldSpecs.find(it => it.name === k);
-            if (spec && !spec.allowNull && (v == null || v === '')) valid = false;
+            if (spec && !spec.allowNull && (v == null || v === '')) {
+                invalidFields.push(k);
+            }
         });
-        return valid;
+        return invalidFields;
+    }
+
+    @computed
+    get isValid() {
+        return this.invalidFields.length === 0;
     }
 
     @computed
@@ -103,13 +112,15 @@ export class RestFormModel {
         const {recordSpec} = this.parent,
             fields = recordSpec.fields,
             isAdd = this.isAdd,
-            record = this.record;
+            record = this.record,
+            invalidFields = this.invalidFields;
 
         return this.editors.map(editor => {
             const fieldSpec = fields.find(it => it.name === editor.field),
                 fieldName = fieldSpec.name,
                 disabled = fieldSpec.readOnly || (editor.additionsOnly && !isAdd),
-                type = this.getInputType(editor, fieldSpec);
+                type = this.getInputType(editor, fieldSpec),
+                fieldInvalid = invalidFields.includes(fieldName);
 
             // NOTE: We provide the value setter and *getter* for convenience -- but don't dereference.
             // It's observable and volatile, and we only want controls using it to re-render
@@ -120,7 +131,8 @@ export class RestFormModel {
                 fieldName,
                 get value() {return record[fieldName]},
                 setValue: (val) => {this.setValue(fieldName, val)},
-                disabled
+                disabled,
+                fieldInvalid
             };
         });
     }

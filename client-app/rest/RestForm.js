@@ -172,7 +172,7 @@ const restDisplayField = elemFactory(observer(
 const restDropdown = elemFactory(observer(
     class extends Component {
         render() {
-            const {value, disabled, fieldSpec} = this.props,
+            const {value, disabled, fieldSpec, fieldInvalid} = this.props,
                 options = fieldSpec.lookupValues;
 
             return suggest({
@@ -186,6 +186,7 @@ const restDropdown = elemFactory(observer(
                 inputValueRenderer: s => s,
                 inputProps: {
                     value: value || '',
+                    className: fieldInvalid ? 'pt-intent-danger' : '',
                     disabled,
                     onChange: this.onChange
                 }
@@ -208,7 +209,10 @@ const restDropdown = elemFactory(observer(
 const restCheckbox = elemFactory(observer(
     class extends Component {
         render() {
-            const {value, disabled} = this.props;
+            const {value, disabled, fieldInvalid} = this.props;
+
+            if (fieldInvalid) console.warn('Checkbox fields should never be invalid. Please provide a defaultValue in the field spec');
+
             return checkbox({
                 checked: !!value,
                 disabled,
@@ -225,10 +229,11 @@ const restCheckbox = elemFactory(observer(
 const restNumericInput = elemFactory(observer(
     class extends Component {
         render() {
-            const {value, disabled} = this.props;
+            const {value, disabled, fieldInvalid} = this.props;
             return numericInput({
                 cls: 'pt-fill',
-                buttonPosition: 'none',
+                intent: fieldInvalid ? 'danger' : 'none',
+                // buttonPosition: 'none', // would like to suggest leaving the button. Thought we were getting a textfield and tried to debug
                 value: value,
                 disabled,
                 onValueChange: this.onValueChange
@@ -245,9 +250,10 @@ const restNumericInput = elemFactory(observer(
 const restTextArea = elemFactory(observer(
     class extends Component {
         render() {
-            const {value, disabled} = this.props;
+            const {value, disabled, fieldInvalid} = this.props,
+                cls = fieldInvalid ? 'pt-fill pt-intent-danger' : 'pt-fill';
             return textArea({
-                cls: 'pt-fill',
+                cls: cls,
                 value: value || '',
                 disabled,
                 onChange: this.onChange
@@ -263,9 +269,10 @@ const restTextArea = elemFactory(observer(
 const restTextInput = elemFactory(observer(
     class extends Component {
         render() {
-            const {value, disabled} = this.props;
+            const {value, disabled, fieldInvalid} = this.props,
+                cls = fieldInvalid ? 'pt-fill pt-intent-danger' : 'pt-fill';
             return inputGroup({
-                cls: 'pt-fill',
+                cls: cls,
                 type: 'text',
                 value: value || '',
                 disabled,
