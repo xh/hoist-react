@@ -49,7 +49,7 @@ export class ConfigPanel extends Component {
         ]),
         editors: this.filterForEnv([
             {field: 'name'},
-            {field: 'groupName', allowAdditions: true}, // prop is unused at the moment. means to allow selection from dropdown or to accept new input.
+            {field: 'groupName'},
             {field: 'valueType', additionsOnly: true},
             {field: 'prodValue', env: 'Production'},
             {field: 'betaValue', env: 'Beta'},
