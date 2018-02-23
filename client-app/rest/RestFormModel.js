@@ -41,9 +41,7 @@ export class RestFormModel {
 
         forOwn(this.record, (v, k) => {
             const spec = fieldSpecs.find(it => it.name === k);
-            if (spec && !spec.allowNull && (v == null || v === '')) {
-                invalidFields.push(k);
-            }
+            if (spec && !spec.allowNull && (v == null || v === '')) invalidFields.push(k);
         });
         return invalidFields;
     }
