@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {Classes, button, checkbox, dialog, dialogBody, dialogFooter, dialogFooterActions, controlGroup, inputGroup, label, menuItem, numericInput, suggest, textArea} from 'hoist/kit/blueprint';
+import {Classes, button, checkbox, dialog, dialogBody, dialogFooter, dialogFooterActions, controlGroup, inputGroup, label, menuItem, numericInput, select, suggest, textArea} from 'hoist/kit/blueprint';
 import {elemFactory} from 'hoist/react';
 import {hoistAppModel} from 'hoist/app';
 import {loadMask} from 'hoist/cmp';
@@ -135,6 +135,8 @@ export class RestForm extends Component {
                 return restDisplayField(props);
             case 'dropdown':
                 return restDropdown(props);
+            case 'select':
+                return restSelect(props);
             case 'boolean':
                 return restCheckbox(props);
             case 'number':
@@ -194,6 +196,38 @@ const restDropdown = elemFactory(observer(
 
         onChange = (ev) => {
             this.props.setValue(ev.target.value);
+        }
+
+        onItemSelect = (val) => {
+            if (val) {
+                this.props.setValue(val);
+            }
+        }
+
+    }
+));
+
+const restSelect = elemFactory(observer(
+    class extends Component {
+        render() {
+            const {value, disabled, fieldSpec} = this.props,
+                options = fieldSpec.lookupValues;
+            
+            console.log('select');
+
+            return select({
+                popoverProps: {popoverClassName: Classes.MINIMAL},
+                // itemPredicate: (q, v, index) => v,
+                $items: options,
+                onItemSelect: this.onItemSelect,
+                itemRenderer: (item, itemProps) => {
+                    console.log(item, itemProps);
+                    return menuItem({key: item, text: item, onClick: itemProps.handleClick});
+                },
+                items: button({text: value || '', cls: 'pt-fill'})
+                // inputValueRenderer: s => s,
+                // disabled disabling has to apply to children too...see docs
+            });
         }
 
         onItemSelect = (val) => {

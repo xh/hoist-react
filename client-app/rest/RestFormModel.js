@@ -133,7 +133,7 @@ export class RestFormModel {
             return 'display';
         }
         if (fieldSpec.lookupValues) {
-            return 'dropdown';
+            return editor.editable === false ? 'select' : 'dropdown';
         }
         if (fieldType === 'bool') {
             return 'boolean';
