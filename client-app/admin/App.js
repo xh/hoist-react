@@ -8,11 +8,13 @@
 import {Component} from 'react';
 import {XH, hoistApp, hoistAppModel} from 'hoist/app';
 import {vframe, frame} from 'hoist/layout';
-import {navbar, navbarGroup, navbarHeading, button, icon, Intent} from 'hoist/kit/blueprint';
+import {navbar, navbarGroup, navbarHeading, button, Intent} from 'hoist/kit/blueprint';
 
 import {observer} from 'hoist/mobx';
 import {tabContainer} from 'hoist/cmp/tab';
 import {appModel} from './AppModel';
+
+import {glyph, Glyph} from 'hoist/utils/Glyph';
 
 @hoistApp
 @observer
@@ -41,7 +43,7 @@ export class App extends Component {
                 navbarGroup({
                     align: 'left',
                     items: [
-                        icon({icon: 'eye-open', iconSize: 20}),
+                        glyph({icon: Glyph.EYE}),
                         navbarHeading(`${XH.appName} Admin`)
                     ]
                 }),
@@ -49,18 +51,18 @@ export class App extends Component {
                     align: 'right',
                     items: [
                         button({
-                            icon: 'envelope',
+                            icon: glyph({icon: Glyph.ENVELOPE}),
                             text: 'Contact',
                             cls: 'xh-mr',
                             onClick: this.onContactClick
                         }),
                         button({
-                            icon: hoistAppModel.darkTheme ? 'flash' : 'moon',
+                            icon: glyph({icon: hoistAppModel.darkTheme ? Glyph.SUN : Glyph.MOON}),
                             cls: 'xh-mr',
                             onClick: this.onThemeToggleClick
                         }),
                         button({
-                            icon: 'refresh',
+                            icon: glyph({icon: Glyph.REFRESH}),
                             intent: Intent.SUCCESS,
                             onClick: this.onRefreshClick
                         })
