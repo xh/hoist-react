@@ -7,14 +7,16 @@
 
 package io.xh.hoist.react
 
+import groovy.util.logging.Slf4j
 import io.xh.hoist.security.AccessAll
 
 
+@Slf4j
 @AccessAll
 class AppController {
 
-    def index() {
-        renderAppEntryFile("${params.appName}.html")
+    def index(String appName) {
+        renderAppEntryFile("${appName}/index.html")
     }
     
     //------------------------

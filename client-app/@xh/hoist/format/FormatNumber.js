@@ -8,7 +8,7 @@
 import {defaults, isFinite, isString} from 'lodash';
 import numeral from 'numeral';
 
-import {XH} from 'hoist/exception';
+import {Exception} from 'hoist/exception';
 
 import {createRenderer, saveOriginal} from './FormatUtils';
 import {fmtSpan} from './FormatMisc';
@@ -224,7 +224,7 @@ function valueColor(v, colorSpec) {
     colorSpec = typeof colorSpec === 'object' ? colorSpec : defaultColors;
 
     if (!colorSpec.pos || !colorSpec.neg || !colorSpec.neutral) {
-        throw XH.exception('Invalid color spec: ' + colorSpec);
+        throw Exception.create('Invalid color spec: ' + colorSpec);
     }
 
     if (v < 0) return colorSpec.neg;

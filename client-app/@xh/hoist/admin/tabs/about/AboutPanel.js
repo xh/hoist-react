@@ -19,7 +19,7 @@ export class AboutPanel extends Component {
         return div({
             cls: 'xh-admin-about-panel',
             items: [
-                h3('About This Application'),
+                h3('About This Application?'),
                 this.renderTable(),
                 this.renderBlurb()
             ]

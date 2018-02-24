@@ -7,7 +7,6 @@
 
 import './HoistApp.css';
 
-import 'babel-polyfill';
 import {Component} from 'react';
 import {elem, hocDisplayName} from 'hoist/react';
 import {loadMask} from 'hoist/cmp';

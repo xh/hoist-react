@@ -32,6 +32,12 @@ export class FetchService extends BaseService {
 
         url = XH.BASE_URL + url;
 
+        // xhIsLocalDevelopment is injected by webpack.DefinePlugin.
+        // Routes relative requests to 8080 vs. expected 3000 when running client in dev mode.
+        if (xhIsLocalDevelopment) {
+            url = `${location.protocol}//${location.hostname}:8080${url}`;
+        }
+
         // 2) Prepare merged options
         const defaults = {
             method,
