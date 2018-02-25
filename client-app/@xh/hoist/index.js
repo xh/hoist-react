@@ -5,6 +5,4 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-export * from './HoistApp';
-export * from './HoistAppModel';
-export * from './XH';
+// Should anything go here? Do we need an index.js?

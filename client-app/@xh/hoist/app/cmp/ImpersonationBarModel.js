@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, identityService} from 'hoist/app';
+import {XH} from 'hoist/app';
 import {observable, action} from 'hoist/mobx';
 
 export class ImpersonationBarModel {
@@ -15,14 +15,14 @@ export class ImpersonationBarModel {
     @observable targetDialogOpen = false;
 
     constructor() {
-        this.isVisible = identityService.impersonating;
+        this.isVisible = XH.identityService.impersonating;
         if (this.isVisible) this.ensureTargetsLoaded();
     }
 
     @action
     toggleVisibility() {
         this.targetDialogOpen = false;
-        this.isVisible = !this.isVisible || identityService.isImpersonating;
+        this.isVisible = !this.isVisible || XH.identityService.isImpersonating;
         if (this.isVisible) this.ensureTargetsLoaded();
     }
 
@@ -30,14 +30,14 @@ export class ImpersonationBarModel {
     doImpersonate = () => {
         if (this.selectedTarget) {
             this.closeTargetDialog();
-            identityService.impersonateAsync(this.selectedTarget);
+            XH.identityService.impersonateAsync(this.selectedTarget);
         }
     }
 
     doExit = () => {
-        if (identityService.impersonating) {
+        if (XH.identityService.impersonating) {
             this.closeTargetDialog();
-            identityService.endImpersonateAsync();
+            XH.identityService.endImpersonateAsync();
         } else {
             this.toggleVisibility();
         }
@@ -59,7 +59,7 @@ export class ImpersonationBarModel {
     setTargets = (targets) => {
         this.targets = targets
             .map(t => t.username)
-            .filter(t => t !== identityService.username);
+            .filter(t => t !== XH.identityService.username);
     }
     
     @action

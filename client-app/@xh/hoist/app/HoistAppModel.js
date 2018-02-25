@@ -11,6 +11,7 @@ import {observable, setter, action} from 'hoist/mobx';
 import {MultiPromiseModel, never} from 'hoist/promise';
 import {ErrorDialogModel} from 'hoist/error';
 import {ContextMenuModel} from 'hoist/cmp/contextmenu';
+import {serviceManager} from './ServiceManager';
 
 /**
  * Top level model for a HoistApp.
@@ -84,7 +85,7 @@ class HoistAppModel {
         this.authCompleted = true;
 
         if (username && !this.isInitialized) {
-            XH.initAsync()
+            serviceManager.initAsync()
                 .then(() => this.setIsInitialized(true))
                 .catchDefault();
         }

@@ -6,7 +6,7 @@
  */
 
 import React, {Component} from 'react';
-import {XH, environmentService} from 'hoist/app';
+import {XH} from 'hoist/app';
 import {div, h3, table, tbody, tr, th, td} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
 
@@ -27,19 +27,18 @@ export class AboutPanel extends Component {
     }
 
     renderTable() {
-        const svc = environmentService,
-            row = (label, data) => tr(th(label), td(data));
+        const row = (label, data) => tr(th(label), td(data));
 
         return table({
             cls: 'xh-mtb2x',
             item: tbody(
                 row('App Name', XH.appName),
-                row('Environment', svc.get('appEnvironment')),
-                row('App Version', svc.get('appVersion')),
-                row('Hoist Core Version', svc.get('hoistCoreVersion')),
-                row('Hoist React Version', svc.get('hoistReactVersion')),
-                row('Grails Version', svc.get('grailsVersion')),
-                row('Java Version', svc.get('javaVersion'))
+                row('Environment', XH.getEnv('appEnvironment')),
+                row('App Version', XH.getEnv('appVersion')),
+                row('Hoist Core Version', XH.getEnv('hoistCoreVersion')),
+                row('Hoist React Version', XH.getEnv('hoistReactVersion')),
+                row('Grails Version', XH.getEnv('grailsVersion')),
+                row('Java Version', XH.getEnv('javaVersion'))
             )
         });
     }

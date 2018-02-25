@@ -6,7 +6,7 @@
  */
 import {isString} from 'lodash';
 
-import {hoistAppModel, errorTrackingService} from 'hoist/app';
+import {XH, hoistAppModel} from 'hoist/app';
 import {BaseService} from './BaseService';
 
 export class ExceptionHandlerService extends BaseService {
@@ -101,7 +101,7 @@ export class ExceptionHandlerService extends BaseService {
     }
 
     logErrorOnServer(exception) {
-        errorTrackingService.submitAsync({exception});
+        XH.errorTrackingService.submitAsync({exception});
     }
 
     sessionExpired(exception) {
