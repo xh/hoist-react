@@ -6,110 +6,59 @@
  */
 
 
-import {isPlainObject, camelCase} from 'lodash';
+import {isPlainObject} from 'lodash';
 import {Exception} from 'hoist/exception';
-import {
-    BaseService,
-    ConfigService,
-    EnvironmentService,
-    ExceptionHandlerService,
-    ErrorTrackingService,
-    FeedbackService,
-    FetchService,
-    IdentityService,
-    LocalStorageService,
-    PrefService,
-    TrackService,
-    EventService
-} from 'hoist/svc';
 
-
-//----------------------------------------------------------
-// Core services - initialized by XH.initAsync() below.
-//----------------------------------------------------------
-export let
-    configService,
-    environmentService,
-    exceptionHandlerService,
-    errorTrackingService,
-    feedbackService,
-    fetchService,
-    identityService,
-    localStorageService,
-    prefService,
-    trackService,
-    eventService;
-
+import {serviceManager} from './ServiceManager';
 
 /**
- * Top-level Hoist manager - initializes and manages key hoist services.
+ * Top-level provider of key aliases to methods and services in Hoist.
  *
- * Its initAsync() method should be completed before rendering any application components.
- * See the @hoistApp for more details on its initialization.
- *
- * Applications should access via global import. Also available as window.XH for console access.
+ * These are made available to application via the global XH;
+ * They are also available for troubleshooting purposes via window.XH;
  */
-class _XH {
+export const XH = window.XH = new class {
+
+    // TODO:  Move these
+    BASE_URL = '/';
+    appName = 'Scout';
 
     constructor() {
-        Object.assign(this, {
-            appName: 'Scout',
-            BASE_URL: '/'
-        });
-        this.injectServices();
+        this.serviceManager = serviceManager;
         this.aliasServices();
+        this.aliasMethods();
     }
 
-    async initAsync() {
-        const ensureReady = BaseService.ensureSvcsReadyAsync.bind(BaseService);
-
-        await ensureReady(fetchService);
-        await ensureReady(configService, prefService);
-        await ensureReady(
-            environmentService,
-            exceptionHandlerService,
-            errorTrackingService,
-            feedbackService,
-            identityService,
-            localStorageService,
-            trackService,
-            eventService
-        );
-    }
-
-    //------------------------
+    //--------------------------
     // Implementation
-    //------------------------
-    injectServices(overrides = {}) {
-        const inject = (svc) => {
-            const nm = camelCase(svc);
-            return this[nm] = overrides[nm] || new svc();
-        };
-
-        configService = inject(ConfigService);
-        environmentService = inject(EnvironmentService);
-        exceptionHandlerService = inject(ExceptionHandlerService);
-        errorTrackingService = inject(ErrorTrackingService);
-        feedbackService = inject(FeedbackService);
-        fetchService = inject(FetchService);
-        identityService = inject(IdentityService);
-        localStorageService = inject(LocalStorageService);
-        prefService = inject(PrefService);
-        trackService = inject(TrackService);
-        eventService = inject(EventService);
-    }
-
+    //--------------------------
     aliasServices() {
-        this.createAliases(trackService,               ['track']);
-        this.createAliases(fetchService,               ['fetchJson']);
-        this.createAliases(exceptionHandlerService,    ['handleException']);
-        this.createAliases(configService,              {getConf: 'get'});
-        this.createAliases(prefService,                {getPref: 'get'});
-
-        this.createAliases(Exception,                  {exception: 'create'});
+        this.createPropAliases(this.serviceManager, [
+            'configService',
+            'environmentService',
+            'exceptionHandlerService',
+            'errorTrackingService',
+            'feedbackService',
+            'fetchService',
+            'identityService',
+            'localStorageService',
+            'prefService',
+            'trackService',
+            'eventService'
+        ]);
     }
 
-    createAliases(src, aliases) {
+    aliasMethods() {
+        this.createMethodAliases(this.trackService,             ['track']);
+        this.createMethodAliases(this.fetchService,             ['fetchJson']);
+        this.createMethodAliases(this.exceptionHandlerService,  ['handleException']);
+        this.createMethodAliases(this.configService,            {getConf: 'get'});
+        this.createMethodAliases(this.prefService,              {getPref: 'get'});
+        this.createMethodAliases(this.environmentService,       {getEnv: 'get'});
+        this.createMethodAliases(Exception,                     {exception: 'create'});
+    }
+
+    createMethodAliases(src, aliases) {
         const bindFn = (tgtName, srcName) => this[tgtName] = src[srcName].bind(src);
         if (isPlainObject(aliases)) {
             for (const name in aliases) {
@@ -120,5 +69,9 @@ class _XH {
         }
     }
 
-}
-export const XH = window.XH = new _XH();
+    createPropAliases(src, aliases) {
+        aliases.forEach(it => {
+            this[it] = src[it];
+        });
+    }
+}();

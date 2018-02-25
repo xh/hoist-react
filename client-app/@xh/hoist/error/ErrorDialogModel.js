@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {observable, setter, action} from 'hoist/mobx';
-import {errorTrackingService} from 'hoist/app';
+import {XH} from 'hoist/app';
 
 /**
  * User Errors to be displayed to the user for feedback and troubleshooting.
@@ -38,7 +38,7 @@ export class ErrorDialogModel {
 
     @action
     sendReport() {
-        errorTrackingService
+        XH.errorTrackingService
             .submitAsync({exception: this.exception, msg: this.msg})
             .then(() => this.close());
     }

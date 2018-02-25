@@ -7,4 +7,5 @@
 
 export * from './HoistApp';
 export * from './HoistAppModel';
+export * from './ServiceManager';
 export * from './XH';

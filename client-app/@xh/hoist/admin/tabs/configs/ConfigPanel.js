@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {observer} from 'hoist/mobx';
-import {environmentService} from 'hoist/app';
+import {XH} from 'hoist/app';
 import {boolCheckCol, baseCol} from 'hoist/columns/Core';
 import {restGrid, RestGridModel} from 'hoist/rest';
 
@@ -75,7 +75,7 @@ export class ConfigPanel extends Component {
     // Implementation
     //-------------------------
     filterForEnv(vals) {
-        const envs = environmentService.get('supportedEnvironments'),
+        const envs = XH.getEnv('supportedEnvironments'),
             ret = vals.filter(it => !it.env || envs.includes(it.env));
 
         ret.forEach(it => delete it.env);
