@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH, environmentService} from 'hoist/app';
+import {XH} from 'hoist/app';
 import {stripTags} from 'hoist/utils/HtmlUtils';
 import {stringifyErrorSafely} from 'hoist/exception';
 
@@ -26,7 +26,7 @@ export class ErrorTrackingService extends BaseService {
             params: {
                 error,
                 msg: msg ? stripTags(msg) : null,
-                appVersion: environmentService.get('appVersion')
+                appVersion: XH.getEnv('appVersion')
             }
         });
     }

@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {XH, environmentService, prefService} from 'hoist/app';
+import {XH} from 'hoist/app';
 import {elemFactory} from 'hoist/react';
 import {box} from 'hoist/layout';
 import './VersionBar.css';
@@ -14,9 +14,9 @@ import './VersionBar.css';
 export class VersionBar extends Component {
 
     render() {
-        const env = environmentService.get('appEnvironment'),
-            version = environmentService.get('appVersion'),
-            isVisible = (env !== 'Production' || prefService.getPref('xhForceEnvironmentFooter')),
+        const env = XH.getEnv('appEnvironment'),
+            version = XH.getEnv('appVersion'),
+            isVisible = (env !== 'Production' || XH.getPref('xhForceEnvironmentFooter')),
             cls = `xh-version-bar xh-version-bar-${env.toLowerCase()}`;
 
         if (!isVisible) return null;

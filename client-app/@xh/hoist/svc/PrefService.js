@@ -6,7 +6,7 @@
  */
 import {BaseService} from './BaseService';
 import {cloneDeep, debounce, isEmpty, isEqual} from 'lodash';
-import {XH, localStorageService} from 'hoist/app';
+import {XH} from 'hoist/app';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
 
 export class PrefService extends BaseService {
@@ -48,7 +48,7 @@ export class PrefService extends BaseService {
         this._data[key].value = value;
 
         if (this.isLocalPreference(key)) {
-            localStorageService.apply(this._localStorageKey, {[key]: value});
+            XH.localStorageService.apply(this._localStorageKey, {[key]: value});
         } else {
             this._updates[key] = value;
             this.pushPendingBuffered();
@@ -63,7 +63,7 @@ export class PrefService extends BaseService {
     }
 
     clearLocalValues() {
-        localStorageService.remove(this._localStorageKey);
+        XH.localStorageService.remove(this._localStorageKey);
     }
 
     async clearAllAsync() {
@@ -95,7 +95,7 @@ export class PrefService extends BaseService {
     }
 
     syncLocalPrefs() {
-        const localPrefs = localStorageService.get(this._localStorageKey, {}),
+        const localPrefs = XH.localStorageService.get(this._localStorageKey, {}),
             data = this._data;
 
         this.cleanLocalPrefs(localPrefs);
@@ -125,7 +125,7 @@ export class PrefService extends BaseService {
 
         if (hasRemoveValue) this._data[key].value = this._data[key].defaultValue;
 
-        localStorageService.set(this._localStorageKey, localPrefs);
+        XH.localStorageService.set(this._localStorageKey, localPrefs);
     }
 
     isLocalPreference(key) {

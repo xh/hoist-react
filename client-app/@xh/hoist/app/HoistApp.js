@@ -16,10 +16,10 @@ import {frame, viewport, vframe} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
 
 import {hoistAppModel} from './HoistAppModel';
-import {loginPanel} from './LoginPanel';
-import {impersonationBar} from './ImpersonationBar';
-import {versionBar} from './VersionBar';
-import {aboutDialog} from './AboutDialog';
+import {loginPanel} from './cmp/LoginPanel';
+import {impersonationBar} from './cmp/ImpersonationBar';
+import {versionBar} from './cmp/VersionBar';
+import {aboutDialog} from './cmp/AboutDialog';
 
 /**
  * Host Component for a Hoist Application
