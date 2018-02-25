@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {elemFactory} from 'hoist/react';
-import {environmentService, hoistAppModel} from 'hoist/app';
+import {XH, hoistAppModel} from 'hoist/app';
 import {button, dialog, dialogBody, dialogFooter, dialogFooterActions, textArea} from 'hoist/kit/blueprint';
 import {clipboardButton} from 'hoist/cmp';
 import {pre, table, tbody, td, th, tr} from 'hoist/layout';
@@ -29,7 +29,7 @@ export class ErrorDialogDetails extends Component {
             tbody(
                 row('Name', exception.name),
                 row('Message', exception.msg || exception.message),
-                row('App Version', environmentService.get('appVersion'))
+                row('App Version', XH.getEnv('appVersion'))
             )
         );
 

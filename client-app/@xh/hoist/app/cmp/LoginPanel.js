@@ -12,7 +12,7 @@ import {vbox, hbox, filler, viewport} from 'hoist/layout';
 import {inputGroup, button} from 'hoist/kit/blueprint';
 import {observable, computed, observer, setter} from 'hoist/mobx';
 
-import {hoistAppModel} from './HoistAppModel';
+import {hoistAppModel} from '../HoistAppModel';
 
 @observer
 export class LoginPanel extends Component {

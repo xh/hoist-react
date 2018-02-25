@@ -51,9 +51,3 @@ body ::-webkit-scrollbar {
 .xh-dark .xh-tbar {
     background-color: #293742;
 }
-
-
-/*SUI only*/
-.xh-app-nav-bar {
-    font-size: 20px;
-}

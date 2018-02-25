@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {elemFactory} from 'hoist/react';
-import {identityService} from 'hoist/app';
+import {XH} from 'hoist/app';
 import {hbox, vbox, spacer, filler, div, span} from 'hoist/layout';
 import {Classes, HotkeysTarget, button, suggest, icon, popover, menuItem, hotkeys, hotkey} from 'hoist/kit/blueprint';
 import {observer} from 'hoist/mobx';
@@ -33,7 +33,7 @@ export class ImpersonationBar extends Component {
     render() {
         if (!this.model.isVisible) return span();  // *Not* null, so hotkeys get rendered.
 
-        const {impersonating, username} = identityService;
+        const {impersonating, username} = XH.identityService;
         return hbox({
             flex: 'none',
             cls: 'xh-tbar',
@@ -102,7 +102,7 @@ export class ImpersonationBar extends Component {
     }
 
     exitButton() {
-        const text = identityService.impersonating ? 'Exit Impersonation' : 'Close';
+        const text = XH.identityService.impersonating ? 'Exit Impersonation' : 'Close';
         return button({text, icon: 'cross', onClick: this.onExitClick});
     }
 

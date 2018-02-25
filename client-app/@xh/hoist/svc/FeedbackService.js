@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {BaseService} from './BaseService';
-import {XH, environmentService} from 'hoist/app';
+import {XH} from 'hoist/app';
 import {stripTags} from 'hoist/utils/HtmlUtils';
 
 export class FeedbackService extends BaseService {
@@ -19,7 +19,7 @@ export class FeedbackService extends BaseService {
             url: 'hoistImpl/submitFeedback',
             params: {
                 msg: stripTags(msg),
-                appVersion: environmentService.get('appVersion')
+                appVersion: XH.getEnv('appVersion')
             }
         });
     }
