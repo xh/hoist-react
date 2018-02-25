@@ -54,7 +54,6 @@ export class Collapsible extends Component {
             {contentSize, children} = props,
             vertical = this.isVertical(),
             size = isOpen ? contentSize : 0;
-
         return vertical ?
             box({height: size, items: children}) :
             box({width: size, items: children});

@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {elemFactory} from 'hoist/react';
 import {hoistAppModel} from 'hoist/app';
-import {div} from 'hoist/layout';
+import {div, frame} from 'hoist/layout';
 import {observer, action, toJS} from 'hoist/mobx';
 import {defaults} from 'lodash';
 
@@ -39,19 +39,20 @@ class Grid extends Component {
 
     render() {
         const model = this.model;
-        return div({
-            style: {flex: '1 1 auto'},
-            cls: hoistAppModel.darkTheme ? 'ag-theme-dark' : 'ag-theme-fresh',
-            item: agGridReact({
-                rowData: toJS(model.records),
-                columnDefs: model.columns,
-                onSelectionChanged: this.onSelectionChanged,
-                onGridSizeChanged: this.onGridSizeChanged,
-                gridOptions: this.gridOptions
+        return frame(
+            div({
+                style: {flex: '1 1 auto'},
+                cls: hoistAppModel.darkTheme ? 'ag-theme-dark' : 'ag-theme-fresh',
+                item: agGridReact({
+                    rowData: toJS(model.records),
+                    columnDefs: model.columns,
+                    onSelectionChanged: this.onSelectionChanged,
+                    onGridSizeChanged: this.onGridSizeChanged,
+                    gridOptions: this.gridOptions
+                })
             })
-        });
+        );
     }
-
 
     //------------------------
     // Implementation
