@@ -8,10 +8,9 @@
 import {Component} from 'react';
 import * as PT from 'prop-types';
 import {isFunction, defaults} from 'lodash';
+import {hoistComponent, XH, elemFactory} from 'hoist/core';
 import {Intent, button} from 'hoist/kit/blueprint';
-import {hoistAppModel, XH} from 'hoist/app';
-import {elemFactory} from 'hoist/react';
-import {observer} from 'hoist/mobx';
+import {ToastManager} from 'hoist/cmp';
 
 import Clipboard from 'clipboard';
 
@@ -27,8 +26,7 @@ import Clipboard from 'clipboard';
  *
  * @prop buttonProps, object - optional - config object with any prop that can be passed to the blueprint button component
 **/
-
-@observer
+@hoistComponent()
 class ClipboardButton extends Component {
 
     static propTypes = {
@@ -119,8 +117,7 @@ class ClipboardButton extends Component {
             },
             toastProps
         );
-        hoistAppModel.getToaster().show(allProps);
+        ToastManager.getToaster().show(allProps);
     }
 };
-
 export const clipboardButton = elemFactory(ClipboardButton);

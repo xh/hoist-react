@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import {XH, hoistComponent} from 'hoist/core';
 import {grid, GridModel} from 'hoist/grid';
 import {chart, ChartModel} from 'hoist/highcharts';
 import {vframe} from 'hoist/layout';
@@ -16,7 +17,7 @@ import {dateTimeCol} from 'hoist/columns/DatesTimes';
 
 import {usernameCol} from '../../columns/Columns';
 
-@observer
+@hoistComponent()
 export class ActivityPanel extends Component {
 
     gridModel = new GridModel({

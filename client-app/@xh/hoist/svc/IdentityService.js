@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {BaseService} from './BaseService';
-import {XH, hoistAppModel} from 'hoist/app';
+import {XH, hoistModel} from 'hoist/core';
 
 export class IdentityService extends BaseService {
 
@@ -42,7 +42,7 @@ export class IdentityService extends BaseService {
     async logoutAsync() {
         return XH
             .fetchJson({url: 'hoistImpl/logout'})
-            .then(() => hoistAppModel.reloadApp())
+            .then(() => hoistModel.reloadApp())
             .catchDefault();
     }
 
@@ -60,7 +60,7 @@ export class IdentityService extends BaseService {
                 username: username
             }
         }).then(() => {
-            hoistAppModel.reloadApp();
+            hoistModel.reloadApp();
         }).catchDefault({
             message: 'Failed to impersonate'
         });
@@ -70,7 +70,7 @@ export class IdentityService extends BaseService {
         return XH.fetchJson({
             url: 'hoistImpl/endImpersonate'
         }).then(() => {
-            hoistAppModel.reloadApp();
+            hoistModel.reloadApp();
         }).catchDefault({
             message: 'Failed to end impersonation'
         });

@@ -5,9 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elem, elemFactory, Ref} from 'hoist/react';
+import {elem, elemFactory, hoistComponent} from 'hoist/core';
+import {Ref} from 'hoist/utils/Ref';
 import {frame} from 'hoist/layout';
-import {autorun, observer} from 'hoist/mobx';
+import {autorun} from 'hoist/mobx';
 
 /**
  * Container for an Admin Tab
@@ -23,7 +24,7 @@ import {autorun, observer} from 'hoist/mobx';
  * Contained components that load data/state from the server should implement loadAsync(), but
  * generally leave the calling of that method to this component.
  */
-@observer
+@hoistComponent()
 export class TabPane extends Component {
 
     child = new Ref();
@@ -31,7 +32,7 @@ export class TabPane extends Component {
 
     render() {
         const model = this.model,
-            {isActive} = this.model;
+            {isActive} = model;
 
         if (isActive) this.isLazyState = false;
         if (this.isLazyState) return null;
@@ -46,8 +47,6 @@ export class TabPane extends Component {
     //------------------------------
     // Implementation
     //-----------------------------
-    get model() {return this.props.model}
-
     loadChild() {
         const model = this.model,
             child = this.child.value;

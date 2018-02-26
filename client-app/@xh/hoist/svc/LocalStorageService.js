@@ -6,7 +6,7 @@
  */
 
 import {BaseService} from './BaseService';
-import {XH} from 'hoist/app';
+import {XH} from 'hoist/core';
 import store from 'store2';
 
 export class LocalStorageService extends BaseService {

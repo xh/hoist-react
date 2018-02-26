@@ -7,7 +7,6 @@
 
 import React from 'react';
 import {defaults, isPlainObject, isString, isArray} from 'lodash';
-import {XH} from 'hoist/app';
 import {asArray} from 'hoist/utils/JsUtils';
 
 /**
@@ -80,7 +79,7 @@ export function elem(type, config = {}) {
             } else {
                 const fct = it.factory || factory;
                 if (!fct) {
-                    throw XH.exception('Unable to create child element.  No factory provided in itemSpec.');
+                    throw Exception.create('Unable to create child element.  No factory provided in itemSpec.');
                 }
                 return fct(defaults(it, defaultParams));
             }

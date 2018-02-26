@@ -6,7 +6,7 @@
  */
 
 import {debounce} from 'lodash';
-import {XH} from 'hoist/app';
+import {XH} from 'hoist/core';
 import {action, observable, setter, autorun} from 'hoist/mobx';
 import {baseCol} from 'hoist/columns/Core';
 import {GridModel} from 'hoist/grid';

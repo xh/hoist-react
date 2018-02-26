@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {elemFactory} from 'hoist/react';
+import {elemFactory} from 'hoist/core';
 import {isNumber, forOwn, isEmpty} from 'lodash';
 
 /**

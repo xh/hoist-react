@@ -6,18 +6,16 @@
  */
 
 import {Component} from 'react';
-import {elemFactory} from 'hoist/react';
-import {XH} from 'hoist/app';
+import {XH, elemFactory, hoistComponent} from 'hoist/core';
 import {hbox, vbox, spacer, filler, div, span} from 'hoist/layout';
-import {Classes, HotkeysTarget, button, suggest, icon, popover, menuItem, hotkeys, hotkey} from 'hoist/kit/blueprint';
-import {observer} from 'hoist/mobx';
+import {Classes, button, suggest, icon, popover, menuItem, hotkeys, hotkey} from 'hoist/kit/blueprint';
+
 import {ImpersonationBarModel} from './ImpersonationBarModel';
 
-@HotkeysTarget
-@observer
+@hoistComponent()
 export class ImpersonationBar extends Component {
 
-    model = new ImpersonationBarModel();
+    localModel = new ImpersonationBarModel();
 
     renderHotkeys() {
         return hotkeys(

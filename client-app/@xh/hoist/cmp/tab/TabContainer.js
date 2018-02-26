@@ -5,8 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory} from 'hoist/react';
-import {observer} from 'hoist/mobx';
+import {elemFactory, hoistComponent} from 'hoist/core';
 import {tabs, tab} from 'hoist/kit/blueprint';
 
 import './Tabs.css';
@@ -16,7 +15,7 @@ import {TabContainerModel} from './TabContainerModel';
 /**
  * Display for a TabContainer.  See TabContainerModel for more details.
  */
-@observer
+@hoistComponent()
 export class TabContainer extends Component {
 
     render() {
@@ -44,8 +43,6 @@ export class TabContainer extends Component {
     //--------------------------
     // Implementation
     //--------------------------
-    get model() {return this.props.model}
-    
     onTabChange = (activeId) => {
         this.model.setSelectedId(activeId);
     }

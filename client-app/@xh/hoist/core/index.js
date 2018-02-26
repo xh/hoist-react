@@ -5,6 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-export function hocDisplayName(name, wrappedComponent) {
-    return `${name}(${wrappedComponent.displayName || wrappedComponent.name || 'Anon'})`;
-}
+export * from './elem';
+export * from './ErrorDialogModel';
+export * from './HoistModel';
+export * from './HoistComponent';
+export * from './XH';

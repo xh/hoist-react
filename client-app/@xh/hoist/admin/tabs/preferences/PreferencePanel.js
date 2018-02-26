@@ -5,16 +5,16 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {observer} from 'hoist/mobx';
+import {hoistComponent} from 'hoist/core';
 import {boolCheckCol, baseCol} from 'hoist/columns/Core';
 import {restGrid, RestGridModel} from 'hoist/rest';
 
 import {nameFlexCol} from '../../columns/Columns';
 
-@observer
+@hoistComponent()
 export class PreferencePanel extends Component {
 
-    model = new RestGridModel({
+    gridModel = new RestGridModel({
         url: 'rest/preferenceAdmin',
         actionWarning: {
             edit: 'Are you sure you want to edit? Editing preferences can break running apps!',
@@ -50,10 +50,10 @@ export class PreferencePanel extends Component {
     });
 
     render() {
-        return restGrid({model: this.model});
+        return restGrid({model: this.gridModel});
     }
 
     loadAsync() {
-        return this.model.loadAsync();
+        return this.gridModel.loadAsync();
     }
 }

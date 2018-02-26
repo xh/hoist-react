@@ -6,17 +6,19 @@
  */
 
 import {Component} from 'react';
-import {Classes, button, checkbox, dialog, dialogBody, dialogFooter, dialogFooterActions, controlGroup, inputGroup, label, menuItem, numericInput, suggest, textArea} from 'hoist/kit/blueprint';
-import {elemFactory} from 'hoist/react';
-import {hoistAppModel} from 'hoist/app';
-import {loadMask} from 'hoist/cmp';
+import {hoistComponent, elemFactory} from 'hoist/core';
+import {loadMask, confirm} from 'hoist/cmp';
 import {filler, vframe, hbox} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
 import {fmtDateTime} from 'hoist/format';
 
-import {confirm} from 'hoist/cmp/confirm/Confirm.js';
+import {
+    Classes, button, checkbox, dialog, dialogBody,
+    dialogFooter, dialogFooterActions, controlGroup, inputGroup,
+    label, menuItem, numericInput, suggest, textArea
+} from 'hoist/kit/blueprint';
 
-@observer
+@hoistComponent()
 export class RestForm extends Component {
 
     render() {
@@ -26,19 +28,16 @@ export class RestForm extends Component {
         return dialog({
             title: isAdd ? 'Add Record' : 'Edit Record',
             icon: isAdd ? 'plus' : 'edit',
-            cls: hoistAppModel.darkTheme ? 'xh-dark' : '',
+            cls: this.darkTheme ? 'xh-dark' : '',
             isOpen: true,
             isCloseButtonShown: false,
             items: this.getDialogItems()
         });
     }
 
-
     //------------------------
     // Implementation
     //------------------------
-    get model() {return this.props.model}
-
     getDialogItems() {
         const model = this.model;
         return [
@@ -201,7 +200,6 @@ const restDropdown = elemFactory(observer(
                 this.props.setValue(val);
             }
         }
-
     }
 ));
 

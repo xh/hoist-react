@@ -5,14 +5,14 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import {XH, hoistComponent, elemFactory} from 'hoist/core';
+import {frame, div} from 'hoist/layout';
+import {toJS} from 'hoist/mobx';
+import {asArray} from 'hoist/utils/JsUtils';
+import {Ref} from 'hoist/utils/Ref';
 import Highcharts from 'highcharts/highstock';
 import {merge, clone} from 'lodash';
 
-import {elemFactory, Ref} from 'hoist/react';
-import {frame, div} from 'hoist/layout';
-import {observer, toJS} from 'hoist/mobx';
-import {asArray} from 'hoist/utils/JsUtils';
-import {hoistAppModel} from 'hoist/app';
 
 import {LightTheme} from './theme/Light';
 import {DarkTheme} from './theme/Dark';
@@ -20,7 +20,7 @@ import {DarkTheme} from './theme/Dark';
 /**
  * Wrapper Component for Highcharts chart.
  */
-@observer
+@hoistComponent()
 export class Chart extends Component {
 
     _chartElem = new Ref();
@@ -40,10 +40,6 @@ export class Chart extends Component {
     //-------------------
     // Implementation
     //-------------------
-    get model() {
-        return this.props.model;
-    }
-
     componentWillUnmount() {
         this.destroyHighChart();
     }
@@ -128,7 +124,7 @@ export class Chart extends Component {
     }
 
     getThemeConfig() {
-        return hoistAppModel.darkTheme ? clone(DarkTheme) : clone(LightTheme);
+        return this.darkTheme ? clone(DarkTheme) : clone(LightTheme);
     }
 
     getModelConfig() {

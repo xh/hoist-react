@@ -5,10 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {observer} from 'hoist/mobx';
+import {hoistComponent} from 'hoist/core';
 import {h2} from 'hoist/layout';
 
-@observer
+@hoistComponent()
 export class ReadmePanel extends Component {
     render() {
         return h2('Readme Here');
