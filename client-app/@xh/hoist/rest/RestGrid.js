@@ -6,15 +6,15 @@
  */
 
 import {Component} from 'react';
-import {elemFactory} from 'hoist/react';
+import {hoistComponent, elemFactory} from 'hoist/core';
 import {grid} from 'hoist/grid';
-import {observer} from 'hoist/mobx';
 import {frame, vframe} from 'hoist/layout';
-import {confirm} from 'hoist/cmp/confirm/Confirm.js';
+import {confirm} from 'hoist/cmp';
+
 import {restGridToolbar} from './RestGridToolbar';
 import {restForm} from './RestForm';
 
-@observer
+@hoistComponent()
 export class RestGrid extends Component {
 
     render() {
@@ -37,8 +37,6 @@ export class RestGrid extends Component {
     //------------------------
     // Implementation
     //------------------------
-    get model() {return this.props.model}
-
     onRowDoubleClicked = (row) => {
         this.model.formModel.openEdit(row.data);
     }

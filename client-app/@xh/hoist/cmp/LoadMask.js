@@ -5,13 +5,12 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import './LoadMask.css';
 import {Component} from 'react';
-import {elemFactory} from 'hoist/react';
+import {hoistComponent, elemFactory} from 'hoist/core';
 import {viewport, frame} from 'hoist/layout';
-import {observer} from 'hoist/mobx';
-
 import {overlay, spinner} from 'hoist/kit/blueprint';
+
+import './LoadMask.css';
 
 /**
  * Simple LoadMask.
@@ -21,7 +20,7 @@ import {overlay, spinner} from 'hoist/kit/blueprint';
  *
  * The mask can be explicitly shown, or reactively bound to a PromiseModel.
  */
-@observer
+@hoistComponent()
 export class LoadMask extends Component {
 
     BACKGROUND = 'rgba(0,0,0, 0.25)';

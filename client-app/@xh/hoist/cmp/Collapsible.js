@@ -6,13 +6,13 @@
  */
 
 import {Component} from 'react';
-import {elemFactory} from 'hoist/react';
-import {observer, observable, action} from 'hoist/mobx';
+import {hoistComponent, elemFactory} from 'hoist/core';
+import {observable, action} from 'hoist/mobx';
 import {box, hbox, vbox} from 'hoist/layout';
 import {button} from 'hoist/kit/blueprint';
 import {isNil} from 'lodash';
 
-@observer
+@hoistComponent()
 export class Collapsible extends Component {
 
     @observable isOpen;
@@ -98,5 +98,4 @@ export class Collapsible extends Component {
     }
 
 }
-
 export const collapsible = elemFactory(Collapsible);

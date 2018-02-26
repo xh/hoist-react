@@ -9,3 +9,5 @@ export * from './contextmenu';
 export * from './clipboard';
 export * from './Collapsible';
 export * from './tab';
+export * from './confirm';
+export * from './ToastManager';

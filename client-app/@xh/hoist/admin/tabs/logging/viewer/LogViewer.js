@@ -4,20 +4,21 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import './LogViewer.css';
 import {Component} from 'react';
-import {observer, toJS, autorun} from 'hoist/mobx';
+import {hoistComponent} from 'hoist/core';
+import {toJS, autorun} from 'hoist/mobx';
 import {hframe, frame, vframe, table, tbody, td, tr} from 'hoist/layout';
 import {grid} from 'hoist/grid';
-import {Ref} from 'hoist/react';
-import {collapsible} from 'hoist/cmp';
+import {Ref} from 'hoist/utils/Ref';
+import {collapsible, loadMask} from 'hoist/cmp';
+
 import {LogViewerModel} from './LogViewerModel';
 import {logViewerToolbar} from './LogViewerToolbar';
-import {loadMask} from 'hoist/cmp';
+import './LogViewer.css';
 
-@observer
+@hoistComponent()
 export class LogViewer extends Component {
-    model = new LogViewerModel();
+    localModel = new LogViewerModel();
 
     lastRow = new Ref();
 

@@ -5,17 +5,17 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {observer} from 'hoist/mobx';
+import {hoistComponent} from 'hoist/core';
 import {baseCol} from 'hoist/columns/Core';
 import {dateCol} from 'hoist/columns/DatesTimes';
 import {restGrid, RestGridModel} from 'hoist/rest';
 
 import {usernameCol} from '../../columns/Columns';
 
-@observer
+@hoistComponent()
 export class DashboardPanel extends Component {
 
-    model = new RestGridModel({
+    gridModel = new RestGridModel({
         url: 'rest/dashboardAdmin',
         actionWarning: {
             edit: 'Are you sure you want to edit this user\'s dashboard?',
@@ -44,10 +44,10 @@ export class DashboardPanel extends Component {
     });
 
     render() {
-        return restGrid({model: this.model});
+        return restGrid({model: this.gridModel});
     }
 
     loadAsync() {
-        return this.model.loadAsync();
+        return this.gridModel.loadAsync();
     }
 }

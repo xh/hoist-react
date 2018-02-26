@@ -8,18 +8,17 @@
 import './HoistApp.css';
 
 import {Component} from 'react';
-import {elem, hocDisplayName} from 'hoist/react';
+import {hoistComponent, hoistModel, elem} from 'hoist/core';
 import {loadMask} from 'hoist/cmp';
-import {contextMenu, ContextMenuTarget} from 'hoist/cmp/contextmenu';
+import {contextMenu, ContextMenuModel} from 'hoist/cmp';
 import {errorDialog} from 'hoist/error';
 import {frame, viewport, vframe} from 'hoist/layout';
-import {observer} from 'hoist/mobx';
+import {hocDisplayName} from 'hoist/utils/ReactUtils';
 
-import {hoistAppModel} from './HoistAppModel';
-import {loginPanel} from './cmp/LoginPanel';
-import {impersonationBar} from './cmp/ImpersonationBar';
-import {versionBar} from './cmp/VersionBar';
-import {aboutDialog} from './cmp/AboutDialog';
+import {loginPanel} from './impl/LoginPanel';
+import {impersonationBar} from './impl/ImpersonationBar';
+import {versionBar} from './impl/VersionBar';
+import {aboutDialog} from './impl/AboutDialog';
 
 /**
  * Host Component for a Hoist Application
@@ -28,47 +27,58 @@ import {aboutDialog} from './cmp/AboutDialog';
  * for a hoist application.
  */
 export function hoistApp(C) {
+    
+    C = hoistComponent()(C)
 
-    return (
-        @ContextMenuTarget
-        @observer
-        class extends Component {
+    const ret = class extends Component {
+        static displayName = hocDisplayName('HoistApp', C);
 
-            static displayName = hocDisplayName('HoistApp', C);
-
-            constructor() {
-                // TODO:  Provide to app via Provider/inject mechanism rather than global import.
-                super();
-                hoistAppModel.initApp();
-            }
-
-            render() {
-                const {authUsername, authCompleted, isInitialized, appLoadModel, errorDialogModel, showAbout} = hoistAppModel;
-
-                if (!authCompleted) return this.renderPreloadMask();
-                if (!authUsername)  return loginPanel();
-                if (!isInitialized) return this.renderPreloadMask();
-
-                return viewport(
-                    vframe(
-                        impersonationBar(),
-                        frame(elem(C)),
-                        versionBar()
-                    ),
-                    loadMask({model: appLoadModel, inline: false}),
-                    errorDialog({model: errorDialogModel}),
-                    aboutDialog({isOpen: showAbout})
-                );
-            }
-
-            renderPreloadMask() {
-                return loadMask({isDisplayed: true});
-            }
-
-            renderContextMenu() {
-                return contextMenu({model: hoistAppModel.appContextMenuModel});
-            }
+        constructor() {
+            // TODO:  Provide to app via Provider/inject mechanism rather than global import.
+            super();
+            hoistModel.initApp();
         }
-    );
+
+        render() {
+            const {authUsername, authCompleted, isInitialized, appLoadModel, errorDialogModel, showAbout} = hoistModel;
+
+            if (!authCompleted) return this.renderPreloadMask();
+            if (!authUsername)  return loginPanel();
+            if (!isInitialized) return this.renderPreloadMask();
+
+            return viewport(
+                vframe(
+                    impersonationBar(),
+                    frame(elem(C)),
+                    versionBar()
+                ),
+                loadMask({model: appLoadModel, inline: false}),
+                errorDialog({model: errorDialogModel}),
+                aboutDialog({isOpen: showAbout})
+            );
+        }
+
+        renderPreloadMask() {
+            return loadMask({isDisplayed: true});
+        }
+
+        renderContextMenu() {
+            const model = new ContextMenuModel([
+                {
+                    text: 'Reload App',
+                    icon: 'refresh',
+                    fn: () => hoistModel.reloadApp()
+                },
+                {
+                    text: 'About',
+                    icon: 'info-sign',
+                    fn: () => hoistModel.setShowAbout(true)
+                }
+            ]);
+
+            return contextMenu({model});
+        }
+    }
+    return hoistComponent()(ret);
 }
 

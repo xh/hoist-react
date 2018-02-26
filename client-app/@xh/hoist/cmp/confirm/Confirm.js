@@ -6,13 +6,11 @@
  */
 
 import {Component} from 'react';
-import {elemFactory} from 'hoist/react';
+import {hoistComponent, elemFactory} from 'hoist/core';
 import {filler} from 'hoist/layout';
 import {button, dialog, dialogBody, dialogFooter, dialogFooterActions} from 'hoist/kit/blueprint';
-import {hoistAppModel} from 'hoist/app';
-import {observer} from 'hoist/mobx';
 
-@observer
+@hoistComponent()
 class Confirm extends Component {
 
     render() {
@@ -24,7 +22,7 @@ class Confirm extends Component {
             isOpen: true,
             isCloseButtonShown: false,
             title: 'Confirm',
-            cls: hoistAppModel.darkTheme ? 'xh-dark' : '',
+            cls: this.darkTheme ? 'xh-dark' : '',
             items: [
                 dialogBody(this.model.message),
                 dialogFooter(
@@ -56,8 +54,5 @@ class Confirm extends Component {
     onNoClick = () => {
         this.model.doReject();
     }
-
-    get model() {return this.props.model}
-
 }
 export const confirm = elemFactory(Confirm);

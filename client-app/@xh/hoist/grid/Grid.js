@@ -6,10 +6,9 @@
  */
 
 import {Component} from 'react';
-import {elemFactory} from 'hoist/react';
-import {hoistAppModel} from 'hoist/app';
+import {XH, hoistComponent, elemFactory} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
-import {observer, action, toJS} from 'hoist/mobx';
+import {action, toJS} from 'hoist/mobx';
 import {defaults} from 'lodash';
 
 import './ag-grid';
@@ -19,7 +18,7 @@ import './Grid.css';
 /**
  * Grid Component
  */
-@observer
+@hoistComponent()
 class Grid extends Component {
 
     static gridDefaults = {
@@ -42,7 +41,7 @@ class Grid extends Component {
         return frame(
             div({
                 style: {flex: '1 1 auto'},
-                cls: hoistAppModel.darkTheme ? 'ag-theme-dark' : 'ag-theme-fresh',
+                cls: this.darkTheme ? 'ag-theme-dark' : 'ag-theme-fresh',
                 item: agGridReact({
                     rowData: toJS(model.records),
                     columnDefs: model.columns,
@@ -57,13 +56,10 @@ class Grid extends Component {
     //------------------------
     // Implementation
     //------------------------
-    get model() {return this.props.model}
-
     onGridSizeChanged = (ev) => {
         ev.api.sizeColumnsToFit();
     }
-
-    @action
+    
     onSelectionChanged = (ev) => {
         const selection = this.model.selection;
         selection.setRecords(ev.api.getSelectedRows());
@@ -72,6 +68,5 @@ class Grid extends Component {
     onNavigateToNextCell = (params) => {
         return navigateSelection(params, this.gridOptions.api);
     }
-
 }
 export const grid = elemFactory(Grid);

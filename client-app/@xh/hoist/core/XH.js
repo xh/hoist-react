@@ -8,8 +8,7 @@
 
 import {isPlainObject} from 'lodash';
 import {Exception} from 'hoist/exception';
-
-import {serviceManager} from './ServiceManager';
+import {hoistModel} from './HoistModel';
 
 /**
  * Top-level provider of key aliases to methods and services in Hoist.
@@ -24,7 +23,7 @@ export const XH = window.XH = new class {
     appName = 'Scout';
 
     constructor() {
-        this.serviceManager = serviceManager;
+        this.hoistModel = hoistModel;
         this.aliasServices();
         this.aliasMethods();
     }
@@ -33,7 +32,7 @@ export const XH = window.XH = new class {
     // Implementation
     //--------------------------
     aliasServices() {
-        this.createPropAliases(this.serviceManager, [
+        this.createPropAliases(this.hoistModel, [
             'configService',
             'environmentService',
             'exceptionHandlerService',

@@ -5,16 +5,16 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import {hoistComponent} from 'hoist/core';
 import {baseCol, boolCheckCol} from 'hoist/columns/Core';
 import {grid, GridModel} from 'hoist/grid';
-import {observer} from 'hoist/mobx';
 
 import {usernameCol} from '../../columns/Columns';
 
-@observer
+@hoistComponent()
 export class UserPanel extends Component {
 
-    model = new GridModel({
+    gridModel = new GridModel({
         url: 'userAdmin',
         columns: [
             usernameCol({width: 175}),
@@ -26,10 +26,10 @@ export class UserPanel extends Component {
     });
 
     render() {
-        return grid({model: this.model});
+        return grid({model: this.gridModel});
     }
 
     loadAsync() {
-        return this.model.loadAsync();
+        return this.gridModel.loadAsync();
     }
 }

@@ -10,7 +10,7 @@ import '@blueprintjs/select/lib/css/blueprint-select.css';
 import '@blueprintjs/icons/lib/css/blueprint-icons.css';
 import './styles.css';
 
-import {elemFactory} from 'hoist/react';
+import {elemFactory} from 'hoist/core';
 import {
     Alert,
     Button,

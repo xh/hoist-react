@@ -5,13 +5,12 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory} from 'hoist/react';
+import {elemFactory, hoistComponent} from 'hoist/core';
 import {inputGroup, numericInput, checkbox, button} from 'hoist/kit/blueprint';
-import {observer} from 'hoist/mobx';
 import {hbox, filler, hspacer, div} from 'hoist/layout';
 
-@observer
-class LogViewerToolbar extends Component {
+@hoistComponent()
+export class LogViewerToolbar extends Component {
     
     render() {
         const {startLine, maxLines, pattern, tail} = this.model;
@@ -97,7 +96,5 @@ class LogViewerToolbar extends Component {
     numericInput(args) {
         return numericInput({style: {width: 50}, buttonPosition: 'none', ...args});
     }
-
-    get model() {return this.props.model}
 }
 export const logViewerToolbar = elemFactory(LogViewerToolbar);

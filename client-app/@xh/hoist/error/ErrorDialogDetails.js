@@ -6,15 +6,13 @@
  */
 
 import {Component} from 'react';
-import {elemFactory} from 'hoist/react';
-import {XH, hoistAppModel} from 'hoist/app';
+import {XH, hoistComponent, elemFactory} from 'hoist/core';
 import {button, dialog, dialogBody, dialogFooter, dialogFooterActions, textArea} from 'hoist/kit/blueprint';
 import {clipboardButton} from 'hoist/cmp';
 import {pre, table, tbody, td, th, tr} from 'hoist/layout';
-import {observer} from 'hoist/mobx';
 import {stringifyErrorSafely} from 'hoist/exception';
 
-@observer
+@hoistComponent()
 export class ErrorDialogDetails extends Component {
 
     render() {
@@ -37,7 +35,7 @@ export class ErrorDialogDetails extends Component {
             title: 'Error Details',
             icon: 'search',
             isOpen: true,
-            cls: hoistAppModel.darkTheme ? 'xh-dark' : '',
+            cls: this.darkTheme ? 'xh-dark' : '',
             onClose: this.onCloseClick,
             style: {height: 600},
             items: [
@@ -88,8 +86,6 @@ export class ErrorDialogDetails extends Component {
     //--------------------------------
     // Implementation
     //--------------------------------
-    get model() {return this.props.model}
-
     onMessageChange = (evt) => {
         this.model.setMsg(evt.target.value);
     }

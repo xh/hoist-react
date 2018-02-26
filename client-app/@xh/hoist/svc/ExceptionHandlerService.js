@@ -6,7 +6,7 @@
  */
 import {isString} from 'lodash';
 
-import {XH, hoistAppModel} from 'hoist/app';
+import {hoistModel} from 'hoist/core';
 import {BaseService} from './BaseService';
 
 export class ExceptionHandlerService extends BaseService {
@@ -70,7 +70,7 @@ export class ExceptionHandlerService extends BaseService {
      * @param options, see handleException().  These options will already be parsed and defaults applied.
      */
     alertException(exception, options) {
-        hoistAppModel.errorDialogModel.showException(exception, options);
+        hoistModel.errorDialogModel.showException(exception, options);
     }
 
     /**

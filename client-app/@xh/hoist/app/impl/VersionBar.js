@@ -6,11 +6,12 @@
  */
 
 import {Component} from 'react';
-import {XH} from 'hoist/app';
-import {elemFactory} from 'hoist/react';
+import {XH, elemFactory, hoistComponent} from 'hoist/core';
 import {box} from 'hoist/layout';
+
 import './VersionBar.css';
 
+@hoistComponent()
 export class VersionBar extends Component {
 
     render() {
@@ -29,6 +30,5 @@ export class VersionBar extends Component {
             item: [XH.appName, env, version].join(' • ')
         });
     }
-
 }
 export const versionBar = elemFactory(VersionBar);

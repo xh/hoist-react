@@ -6,14 +6,12 @@
  */
 
 import {Component} from 'react';
-import {hoistAppModel} from 'hoist/app';
-import {elemFactory} from 'hoist/react';
+import {hoistComponent, elemFactory, hoistModel} from 'hoist/core';
 import {button, dialog, dialogBody, dialogFooter, dialogFooterActions} from 'hoist/kit/blueprint';
-import {observer} from 'hoist/mobx';
 
 import {errorDialogDetails} from './ErrorDialogDetails';
 
-@observer
+@hoistComponent()
 export class ErrorDialog extends Component {
 
     render() {
@@ -26,7 +24,7 @@ export class ErrorDialog extends Component {
             isOpen: true,
             title: options.title,
             icon: 'warning-sign',
-            cls: hoistAppModel.darkTheme ? 'xh-dark' : '',
+            cls: this.darkTheme ? 'xh-dark' : '',
             items: [
                 dialogBody(options.message),
                 dialogFooter(
@@ -40,8 +38,6 @@ export class ErrorDialog extends Component {
     //--------------------------------
     // Implementation
     //--------------------------------
-    get model() {return this.props.model}
-
     getButtons() {
         const showAsError = this.model.options.showAsError,
             sessionExpired = this.sessionExpired();
@@ -74,7 +70,7 @@ export class ErrorDialog extends Component {
     }
 
     onReloadClick = () => {
-        hoistAppModel.reloadApp();
+        hoistModel.reloadApp();
     }
 
     sessionExpired() {

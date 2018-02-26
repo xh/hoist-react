@@ -4,21 +4,44 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {Position, Toaster} from 'hoist/kit/blueprint';
-
-import {XH} from 'hoist/app';
+import {ErrorDialogModel} from 'hoist/core';
 import {observable, setter, action} from 'hoist/mobx';
 import {MultiPromiseModel, never} from 'hoist/promise';
-import {ErrorDialogModel} from 'hoist/error';
-import {ContextMenuModel} from 'hoist/cmp/contextmenu';
-import {serviceManager} from './ServiceManager';
+
+import {
+    BaseService,
+    ConfigService,
+    EnvironmentService,
+    ExceptionHandlerService,
+    ErrorTrackingService,
+    FeedbackService,
+    FetchService,
+    IdentityService,
+    LocalStorageService,
+    PrefService,
+    TrackService,
+    EventService
+} from 'hoist/svc';
 
 /**
  * Top level model for a HoistApp.
  */
-class HoistAppModel {
-    
-    _toasters = [];
+class HoistModel {
+
+    //------------------------
+    // Services
+    //---------------------------
+    configService = new ConfigService();
+    environmentService = new EnvironmentService();
+    exceptionHandlerService = new ExceptionHandlerService();
+    errorTrackingService = new ErrorTrackingService();
+    feedbackService = new FeedbackService();
+    fetchService = new FetchService();
+    identityService = new IdentityService();
+    localStorageService = new LocalStorageService();
+    prefService = new PrefService();
+    trackService = new TrackService();
+    eventService = new EventService();
 
     /** Has the authentication step completed? **/
     @observable authCompleted = false;
@@ -26,17 +49,17 @@ class HoistAppModel {
     /** Currently authenticated user. **/
     @observable authUsername = null;
 
-    /** Are all Hoist app services successfully initialized? **/
+    /** Are all Hoist services successfully initialized? **/
     @setter @observable isInitialized = false;
 
     /** Dark theme active? **/
     @setter @observable darkTheme = true;
 
-    /** Showing the about dialog? **/
-    @setter @observable showAbout = false;
-
     /** Tracks recent errors for troubleshooting/display */
     errorDialogModel = new ErrorDialogModel();
+
+    /** Show about dialog? **/
+    @observable @setter showAbout = false;
     
     /**
      * Tracks globally loading promises.
@@ -45,21 +68,13 @@ class HoistAppModel {
      * the entire application to this model.
      **/
     appLoadModel = new MultiPromiseModel();
-    
-    /**
-     * Default Context Menu for Application.
-     *
-     * Applications may modify these items, or include in their own
-     * sub-context menus as appropriate.
-     */
-    appContextMenuModel = this.createAppContextMenuModel();
 
     /**
      * Call this once when application mounted in order to
      * trigger initial authentication and initialization of application.
      */
     initApp() {
-        XH.fetchJson({url: 'auth/authUser'})
+        this.fetchService.fetchJson({url: 'auth/authUser'})
             .then(r => this.markAuthenticatedUser(r.authUser.username))
             .catch(e => this.markAuthenticatedUser(null));
     }
@@ -85,24 +100,10 @@ class HoistAppModel {
         this.authCompleted = true;
 
         if (username && !this.isInitialized) {
-            serviceManager.initAsync()
+            this.initServicesAsync()
                 .then(() => this.setIsInitialized(true))
                 .catchDefault();
         }
-    }
-
-    /**
-     * Get a toaster instance.  If the instance doesn't exist, it will be made.
-     * This method lets you get/create toasters by their Position enum values.
-     * Other toaster options cannot be set via this method.
-     * If non-default values are needed for a toaster, a different method must be used.
-     *
-     * @param position a Blueprintjs Position enum. Optional.
-     */
-    getToaster(position = Position.BOTTOM_RIGHT) {
-        if (position in this._toasters) return this._toasters[position];
-
-        return this._toasters[position] = Toaster.create({position: position});
     }
 
     @action
@@ -110,22 +111,23 @@ class HoistAppModel {
         this.setDarkTheme(!this.darkTheme);
     }
 
-    //---------------------------------
+    //------------------------------------
     // Implementation
-    //---------------------------------
-    createAppContextMenuModel() {
-        return new ContextMenuModel([
-            {
-                text: 'Reload App',
-                icon: 'refresh',
-                fn: () => this.reloadApp()
-            },
-            {
-                text: 'About',
-                icon: 'info-sign',
-                fn: () => this.setShowAbout(true)
-            }
-        ]);
+    //------------------------------------
+    async initServicesAsync() {
+        const ensureReady = BaseService.ensureSvcsReadyAsync.bind(BaseService);
+
+        await ensureReady(this.fetchService, this.localStorageService);
+        await ensureReady(this.configService, this.prefService);
+        await ensureReady(
+            this.environmentService,
+            this.exceptionHandlerService,
+            this.errorTrackingService,
+            this.feedbackService,
+            this.identityService,
+            this.trackService,
+            this.eventService
+        );
     }
 }
-export const hoistAppModel = new HoistAppModel();
+export const hoistModel = new HoistModel();

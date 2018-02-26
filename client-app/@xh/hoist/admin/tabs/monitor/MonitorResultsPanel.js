@@ -5,14 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-
-import {XH} from 'hoist/app';
+import {XH, hoistComponent} from 'hoist/core';
 import {box} from 'hoist/layout';
-import {observable, action, observer} from 'hoist/mobx';
+import {observable, action} from 'hoist/mobx';
 
 import {tile} from './Tile';
 
-@observer
+@hoistComponent()
 export class MonitorResultsPanel extends Component {
 
     @observable results = [];

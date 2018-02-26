@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {BaseService} from './BaseService';
-import {XH} from 'hoist/app';
+import {XH} from 'hoist/core';
 import {Exception} from 'hoist/exception';
 
 export class FetchService extends BaseService {

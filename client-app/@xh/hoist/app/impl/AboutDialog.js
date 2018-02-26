@@ -6,18 +6,16 @@
  */
 
 import {Component} from 'react';
-import {elemFactory} from 'hoist/react';
-import {observer} from 'hoist/mobx';
+import {hoistComponent, hoistModel, elemFactory} from 'hoist/core';
 import {alert} from 'hoist/kit/blueprint';
-import {hoistAppModel} from 'hoist/app';
 
-@observer
+@hoistComponent()
 export class AboutDialog extends Component {
     render() {
         return alert({
             isOpen: this.props.isOpen,
             icon: 'info-sign',
-            cls: hoistAppModel.darkTheme ? 'xh-dark' : '',
+            cls: this.darkTheme ? 'xh-dark' : '',
             item: 'About This Application....',
             confirmButtonText: 'OK',
             onConfirm: this.onConfirm
@@ -25,7 +23,7 @@ export class AboutDialog extends Component {
     }
 
     onConfirm = () => {
-        hoistAppModel.setShowAbout(false);
+        hoistModel.setShowAbout(false);
     }
 }
 export const aboutDialog = elemFactory(AboutDialog);

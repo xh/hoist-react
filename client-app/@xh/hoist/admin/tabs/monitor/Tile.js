@@ -7,11 +7,11 @@
 import './Tile.css';
 
 import {Component} from 'react';
-import {elemFactory} from 'hoist/react';
+import {hoistComponent, elemFactory} from 'hoist/core';
 import {div} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
 
-@observer
+@hoistComponent()
 export class Tile extends Component {
     render() {
         const {status, name, elapsed, metric, message} = this.props.check,

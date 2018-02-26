@@ -5,10 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory} from 'hoist/react';
+import {hoistComponent, elemFactory} from 'hoist/core';
 import {start} from 'hoist/promise';
 import {menuDivider, menuItem, menu} from 'hoist/kit/blueprint';
 
+@hoistComponent()
 export class ContextMenu extends Component {
 
     render() {
@@ -22,10 +23,6 @@ export class ContextMenu extends Component {
                 });
         });
         return menu(items);
-    }
-
-    get model() {
-        return this.props.model;
     }
 }
 export const contextMenu = elemFactory(ContextMenu);

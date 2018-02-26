@@ -5,16 +5,16 @@
 * Copyright © 2018 Extremely Heavy Industries Inc.
 */
 import {Component} from 'react';
+import {hoistComponent} from 'hoist/core';
 import {grid, GridModel} from 'hoist/grid';
-import {observer} from 'hoist/mobx';
 import {baseCol} from 'hoist/columns/Core';
 
 import {nameCol} from '../../columns/Columns';
 
-@observer
+@hoistComponent()
 export class EhCachePanel extends Component {
 
-    model = new GridModel({
+    gridModel = new GridModel({
         url: 'ehCacheAdmin/listCaches',
         columns: [
             nameCol(),
@@ -25,10 +25,10 @@ export class EhCachePanel extends Component {
     });
     
     render() {
-        return grid({model: this.model});
+        return grid({model: this.gridModel});
     }
 
     loadAsync() {
-        return this.model.loadAsync();
+        return this.gridModel.loadAsync();
     }
 }

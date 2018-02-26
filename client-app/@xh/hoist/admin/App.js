@@ -6,21 +6,20 @@
  */
 
 import {Component} from 'react';
-import {XH, hoistApp, hoistAppModel} from 'hoist/app';
+import {XH, hoistModel} from 'hoist/core';
+import {hoistApp} from 'hoist/app';
 import {vframe, frame} from 'hoist/layout';
 import {navbar, navbarGroup, navbarHeading, button, icon, Intent} from 'hoist/kit/blueprint';
+import {tabContainer} from 'hoist/cmp';
 
-import {observer} from 'hoist/mobx';
-import {tabContainer} from 'hoist/cmp/tab';
 import {appModel} from './AppModel';
 
 @hoistApp
-@observer
 export class App extends Component {
 
     render() {
         return vframe({
-            cls: hoistAppModel.darkTheme ? 'xh-dark' : '',
+            cls: this.darkTheme ? 'xh-dark' : '',
             items: [
                 this.renderNavBar(),
                 frame({
@@ -35,6 +34,7 @@ export class App extends Component {
     // Implementation
     //------------------
     renderNavBar() {
+
         return navbar({
             cls: 'xh-bb',
             items: [
@@ -55,7 +55,7 @@ export class App extends Component {
                             onClick: this.onContactClick
                         }),
                         button({
-                            icon: hoistAppModel.darkTheme ? 'flash' : 'moon',
+                            icon: this.darkTheme ? 'flash' : 'moon',
                             cls: 'xh-mr',
                             onClick: this.onThemeToggleClick
                         }),
@@ -75,11 +75,10 @@ export class App extends Component {
     }
 
     onThemeToggleClick = () => {
-        hoistAppModel.toggleTheme();
+        hoistModel.toggleTheme();
     }
 
     onRefreshClick = () => {
         appModel.requestRefresh();
     }
-
 }

@@ -5,11 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {remove} from 'lodash';
-import {XH} from 'hoist/app';
+import {XH} from 'hoist/core';
 import {action} from 'hoist/mobx';
 import {RecordSpec} from 'hoist/data';
 import {GridModel} from 'hoist/grid';
-import {ConfirmModel} from 'hoist/cmp/confirm/ConfirmModel';
+import {ConfirmModel} from 'hoist/cmp';
 
 
 import {RestFormModel} from './RestFormModel';

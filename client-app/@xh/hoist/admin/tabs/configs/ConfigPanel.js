@@ -5,17 +5,16 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {observer} from 'hoist/mobx';
-import {XH} from 'hoist/app';
+import {XH, hoistComponent} from 'hoist/core';
 import {boolCheckCol, baseCol} from 'hoist/columns/Core';
 import {restGrid, RestGridModel} from 'hoist/rest';
 
 import {nameCol} from 'hoist/admin/columns/Columns';
 
-@observer
+hoistComponent()
 export class ConfigPanel extends Component {
 
-    model = new RestGridModel({
+    gridModel = new RestGridModel({
         url: 'rest/configAdmin',
         actionWarning: {
             edit: 'Are you sure you want to edit? Editing configs can break running apps!',
@@ -63,13 +62,12 @@ export class ConfigPanel extends Component {
     });
 
     render() {
-        return restGrid({model: this.model});
+        return restGrid({model: this.gridModel});
     }
 
     loadAsync() {
-        return this.model.loadAsync();
+        return this.gridModel.loadAsync();
     }
-
 
     //-------------------------
     // Implementation
@@ -85,5 +83,4 @@ export class ConfigPanel extends Component {
     valCol(params) {
         return baseCol({...params, width: 175});
     }
-
 }

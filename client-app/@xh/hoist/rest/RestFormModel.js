@@ -7,7 +7,7 @@
 
 import {forOwn} from 'lodash';
 import {observable, computed, action} from 'hoist/mobx';
-import {ConfirmModel} from 'hoist/cmp/confirm/ConfirmModel';
+import {ConfirmModel} from 'hoist/cmp';
 
 export class RestFormModel {
 

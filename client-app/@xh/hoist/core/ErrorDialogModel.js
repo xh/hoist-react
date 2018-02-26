@@ -4,8 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+import {XH} from 'hoist/core';
 import {observable, setter, action} from 'hoist/mobx';
-import {XH} from 'hoist/app';
 
 /**
  * User Errors to be displayed to the user for feedback and troubleshooting.

@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH} from 'hoist/app';
+import {XH} from 'hoist/core';
 import {allSettled} from 'hoist/promise';
 import {EventSource} from 'hoist/utils/EventSource';
 

@@ -6,15 +6,12 @@
  */
 
 import {Component} from 'react';
-import {XH} from 'hoist/app';
-import {elemFactory} from 'hoist/react';
+import {XH, elemFactory, hoistComponent, hoistModel} from 'hoist/core';
 import {vbox, hbox, filler, viewport} from 'hoist/layout';
 import {inputGroup, button} from 'hoist/kit/blueprint';
-import {observable, computed, observer, setter} from 'hoist/mobx';
+import {observable, computed, setter} from 'hoist/mobx';
 
-import {hoistAppModel} from '../HoistAppModel';
-
-@observer
+@hoistComponent()
 export class LoginPanel extends Component {
 
     @setter @observable username = '';
@@ -28,7 +25,7 @@ export class LoginPanel extends Component {
         return viewport({
             alignItems: 'center',
             justifyContent: 'center',
-            cls: hoistAppModel.darkTheme ? 'xh-dark' : '',
+            cls: this.darkTheme ? 'xh-dark' : '',
             item: vbox({
                 cls: 'xh-ba xh-pa',
                 justifyContent: 'right',
@@ -67,16 +64,17 @@ export class LoginPanel extends Component {
     // Implementation
     //--------------------------------
     onSubmit = () => {
+        const {username, password} = this;
         return XH.fetchJson({
             url: 'auth/login',
             params: {
-                username: this.username,
-                password: this.password
+                username,
+                password
             }
         }).then(r => {
-            hoistAppModel.markAuthenticatedUser(r.success ? this.username : null);
+            hoistModel.markAuthenticatedUser(r.success ? username : null);
         }).catch(() => {
-            hoistAppModel.markAuthenticatedUser(null);
+            hoistModel.markAuthenticatedUser(null);
         });
     }
 

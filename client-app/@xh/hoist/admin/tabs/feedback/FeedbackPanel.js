@@ -5,16 +5,16 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {observer} from 'hoist/mobx';
+import {hoistComponent} from 'hoist/core';
 import {restGrid, RestGridModel} from 'hoist/rest';
 import {baseCol} from 'hoist/columns/Core';
 import {usernameCol} from '../../columns/Columns';
 import {compactDateRenderer} from '../../../format';
 
-@observer
+@hoistComponent()
 export class FeedbackPanel extends Component {
 
-    model = new RestGridModel({
+    gridModel = new RestGridModel({
         url: 'rest/feedbackAdmin',
         recordSpec: {
             fields: [
@@ -48,10 +48,10 @@ export class FeedbackPanel extends Component {
     });
 
     render() {
-        return restGrid({model: this.model});
+        return restGrid({model: this.gridModel});
     }
 
     loadAsync() {
-        return this.model.loadAsync();
+        return this.gridModel.loadAsync();
     }
 }
