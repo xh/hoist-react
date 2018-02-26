@@ -6,6 +6,9 @@
  */
 import {Component} from 'react';
 import {grid, GridModel} from 'hoist/grid';
+import {chart, ChartModel} from 'hoist/highcharts';
+import {vframe} from 'hoist/layout';
+import {collapsible} from 'hoist/cmp';
 import {observer} from 'hoist/mobx';
 import {numberRenderer} from 'hoist/format';
 import {baseCol} from 'hoist/columns/Core';
@@ -16,7 +19,7 @@ import {usernameCol} from '../../columns/Columns';
 @observer
 export class ActivityPanel extends Component {
 
-    model = new GridModel({
+    gridModel = new GridModel({
         url: 'trackLogAdmin',
         columns: [
             baseCol({field: 'severity', width: 60}),
@@ -37,11 +40,40 @@ export class ActivityPanel extends Component {
         ]
     });
 
+    chartModel = new ChartModel({
+        config: {
+            chart: {type: 'bar'},
+            title: {text: 'Fruit Consumption'},
+            xAxis: {
+                categories: ['Apples', 'Bananas', 'Oranges']
+            },
+            yAxis: {
+                title: {
+                    text: 'Fruit eaten'
+                }
+            }
+        },
+        series: [{
+            name: 'Jane',
+            data: [1, 0, 4]
+        }, {
+            name: 'John',
+            data: [5, 7, 3]
+        }]
+    });
+
     render() {
-        return grid({model: this.model});
+        return vframe(
+            grid({model: this.gridModel}),
+            collapsible({
+                side: 'bottom',
+                contentSize: 250,
+                item: chart({model: this.chartModel})
+            })
+        );
     }
 
     loadAsync() {
-        return this.model.loadAsync();
+        return this.gridModel.loadAsync();
     }
 }
