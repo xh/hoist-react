@@ -70,6 +70,7 @@ export class ErrorDialogDetails extends Component {
                                 onClick: this.onSendClick
                             },
                             clipboardButton({
+                                successMessage: 'Error details copied to clipboard.',
                                 text: this.errorStr
                             }),
                             {
