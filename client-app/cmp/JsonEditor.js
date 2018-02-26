@@ -1,6 +1,6 @@
 import {Component} from 'react';
 import {action, observable, observer} from 'hoist/mobx';
-import {defaults, omit} from 'lodash';
+import {defaults, omit, isUndefined} from 'lodash';
 
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/addon/fold/foldgutter.css';
@@ -43,12 +43,13 @@ export class JsonEditor extends Component {
         readOnly: false
     }
 
-    defaultCodeMirrorCmpProps = {
-        onBeforeChange: this.onBeforeChange.bind(this)
-    }
-
-
     render() {
+
+        const defaultCodeMirrorCmpProps = {
+            onBeforeChange: this.onBeforeChange.bind(this),
+            editorDidMount: this.onEditorDidMount.bind(this)
+        };
+
         const codeMirrorOptions = defaults(this.props.codeMirrorOptions, this.defaultCodeMirrorOptions);
         // delete this.props.codeMirrorOptions;
 
@@ -57,7 +58,7 @@ export class JsonEditor extends Component {
                 options: codeMirrorOptions
             },
             omit(this.props, ['codeMirrorOptions']),
-            this.defaultCodeMirrorCmpProps
+            defaultCodeMirrorCmpProps
         );
         this.editorProps.value = this.value;
 
@@ -70,6 +71,14 @@ export class JsonEditor extends Component {
     @action
     onBeforeChange = (editor, data, value) => {
         this.value = value;
+    }
+
+    onEditorDidMount = (editor) => {
+        if (!(isUndefined(this.props.height) && isUndefined(this.props.width))) {
+            const width = isUndefined(this.props.width) ? null : this.props.width,
+                height = isUndefined(this.props.height) ? null : this.props.height;
+            editor.setSize(width, height);
+        }
     }
 
     @action

@@ -288,7 +288,9 @@ const restJsonEditor = elemFactory(observer(
             return jsonEditor({
                 value: value || '',
                 onChange: this.onChange,
-                editorDidMount: (editor) => editor.setSize(343, 150), // setting size appears to be the only way to get scrollbars
+                // setting size appears to be the only way to get scrollbars
+                width: 343,
+                height: 150,
                 codeMirrorOptions: {
                     readOnly: disabled
                 }
