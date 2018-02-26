@@ -5,13 +5,14 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {XH} from 'hoist/app';
 import {debounce} from 'lodash';
-import {XH} from 'hoist/core';
 import {action, observable, setter, autorun} from 'hoist/mobx';
-import {baseCol} from 'hoist/columns/Core';
-import {GridModel} from 'hoist/grid';
 import {LastPromiseModel} from 'hoist/promise';
+import {clipboardButton} from  'hoist/cmp'
 import {ContextMenuModel} from 'hoist/cmp/contextmenu';
+import {GridModel} from 'hoist/grid';
+import {baseCol} from 'hoist/columns/Core';
 
 export class LogViewerModel {
 
@@ -85,11 +86,17 @@ export class LogViewerModel {
 
     createContextMenuModel() {
         return new ContextMenuModel([
-            {
-                text: 'Copy Log to Clipboard',
-                icon: 'clipboard',
-                fn: () => this.copyToClipboard()
-            }
+            clipboardButton({
+                successMessage: 'Log copied to the clipboard.',
+                errorMessage: 'Log NOT copied to the clipboard.',
+                buttonProps: {
+                    style: {
+                        width: '100%',
+                        justifyContent: 'left'
+                    }
+                },
+                text: () => this.rows.map(line => line.join(': ')).join('\n')
+            })
         ]);
     }
 }

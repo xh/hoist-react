@@ -16,6 +16,7 @@ export class ContextMenu extends Component {
         const items = this.model.items.map(it => {
             return it === '-' ?
                 menuDivider() :
+                it.$$typeof ? it :
                 menuItem({
                     text: it.text,
                     icon: it.icon,

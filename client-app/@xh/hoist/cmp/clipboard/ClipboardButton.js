@@ -37,7 +37,9 @@ class ClipboardButton extends Component {
     }
 
     static defaultProps = {
-        action: 'copy'
+        action: 'copy',
+        successMessage: 'Error details copied to clipboard.',
+        errorMessage: 'Error details NOT copied to clipboard.'
     }
 
     static buttonDefaults = {
@@ -98,13 +100,13 @@ class ClipboardButton extends Component {
     onCopySuccess = (e) => {
         this.showToast({
             intent: Intent.SUCCESS,
-            message: 'Error details copied to clipboard.'
+            message: this.props.successMessage
         });
         e.clearSelection();
     }
 
     onCopyError = (e) => {
-        const exc = XH.exception('Error details NOT copied to clipboard.');
+        const exc = XH.exception(this.props.errorMessage);
         XH.handleException(exc, {showAlert: false});
         e.clearSelection();
     }
