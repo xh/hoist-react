@@ -79,6 +79,10 @@ export class LogViewer extends Component {
         });
     }
 
+    renderContextMenu() {
+        return contextMenu({model: this.model.contextMenuModel});
+    }
+
     componentDidMount() {
         this.disposeTailRunner = autorun(() => {
             if (!this.model.tail) return;

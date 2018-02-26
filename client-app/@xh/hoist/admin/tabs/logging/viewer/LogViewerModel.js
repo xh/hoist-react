@@ -11,6 +11,7 @@ import {action, observable, setter, autorun} from 'hoist/mobx';
 import {baseCol} from 'hoist/columns/Core';
 import {GridModel} from 'hoist/grid';
 import {LastPromiseModel} from 'hoist/promise';
+import {ContextMenuModel} from 'hoist/cmp/contextmenu';
 
 export class LogViewerModel {
 
@@ -25,6 +26,7 @@ export class LogViewerModel {
     @setter @observable rows = [];
 
     loadModel = new LastPromiseModel();
+    contextMenuModel = this.createContextMenuModel();
 
     files = new GridModel({
         url: 'logViewerAdmin/listFiles',
@@ -62,9 +64,9 @@ export class LogViewerModel {
         this[name] = value;
     }
 
-    //-----------------
+    //---------------------------------
     // Implementation
-    //-----------------
+    //---------------------------------
     fetchFile = debounce(() => {
         return XH
             .fetchJson({
@@ -80,4 +82,14 @@ export class LogViewerModel {
             .linkTo(this.loadModel)
             .catchDefault();
     }, 300);
+
+    createContextMenuModel() {
+        return new ContextMenuModel([
+            {
+                text: 'Copy Log to Clipboard',
+                icon: 'clipboard',
+                fn: () => this.copyToClipboard()
+            }
+        ]);
+    }
 }
