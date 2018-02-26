@@ -9,8 +9,6 @@ import {XH} from 'hoist/app';
 import {debounce} from 'lodash';
 import {action, observable, setter, autorun} from 'hoist/mobx';
 import {LastPromiseModel} from 'hoist/promise';
-import {clipboardMenuItem} from  'hoist/cmp'
-import {ContextMenuModel} from 'hoist/cmp/contextmenu';
 import {GridModel} from 'hoist/grid';
 import {baseCol} from 'hoist/columns/Core';
 
@@ -27,7 +25,6 @@ export class LogViewerModel {
     @setter @observable rows = [];
 
     loadModel = new LastPromiseModel();
-    contextMenuModel = this.createContextMenuModel();
 
     files = new GridModel({
         url: 'logViewerAdmin/listFiles',
@@ -83,13 +80,4 @@ export class LogViewerModel {
             .linkTo(this.loadModel)
             .catchDefault();
     }, 300);
-
-    createContextMenuModel() {
-        return new ContextMenuModel([
-            clipboardMenuItem({
-                successMessage: 'Log copied to the clipboard.',
-                text: () => this.rows.map(line => line.join(': ')).join('\n')
-            })
-        ]);
-    }
 }

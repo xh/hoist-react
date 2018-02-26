@@ -15,6 +15,7 @@ class ClipboardMenuItem extends ClipboardButton {
         icon: 'clipboard',
         text: 'Copy',
         style: {
+            display: 'flex',
             width: '100%',
             justifyContent: 'left'
         }
