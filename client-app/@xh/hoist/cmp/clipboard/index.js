@@ -5,3 +5,4 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 export * from './ClipboardButton';
+export * from './ClipboardMenuItem';

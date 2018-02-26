@@ -26,8 +26,9 @@ import Clipboard from 'clipboard';
  *
  * @prop buttonProps, object - optional - config object with any prop that can be passed to the blueprint button component
 **/
+
 @hoistComponent()
-class ClipboardButton extends Component {
+export class ClipboardButton extends Component {
 
     static propTypes = {
         text: PT.oneOfType([PT.string, PT.func]),

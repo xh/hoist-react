@@ -9,7 +9,7 @@ import {XH} from 'hoist/app';
 import {debounce} from 'lodash';
 import {action, observable, setter, autorun} from 'hoist/mobx';
 import {LastPromiseModel} from 'hoist/promise';
-import {clipboardButton} from  'hoist/cmp'
+import {clipboardMenuItem} from  'hoist/cmp'
 import {ContextMenuModel} from 'hoist/cmp/contextmenu';
 import {GridModel} from 'hoist/grid';
 import {baseCol} from 'hoist/columns/Core';
@@ -86,15 +86,8 @@ export class LogViewerModel {
 
     createContextMenuModel() {
         return new ContextMenuModel([
-            clipboardButton({
+            clipboardMenuItem({
                 successMessage: 'Log copied to the clipboard.',
-                errorMessage: 'Log NOT copied to the clipboard.',
-                buttonProps: {
-                    style: {
-                        width: '100%',
-                        justifyContent: 'left'
-                    }
-                },
                 text: () => this.rows.map(line => line.join(': ')).join('\n')
             })
         ]);
