@@ -193,12 +193,14 @@ const restDropdown = elemFactory(observer(
         }
 
         onChange = (ev) => {
-            this.props.setValue(ev.target.value);
+            const {setValue, fieldName} = this.props;
+            setValue(fieldName, ev.target.value);
         }
 
         onItemSelect = (val) => {
             if (val) {
-                this.props.setValue(val);
+                const {setValue, fieldName} = this.props;
+                setValue(fieldName, val);
             }
         }
     }
@@ -219,7 +221,8 @@ const restCheckbox = elemFactory(observer(
         }
 
         onChange = (ev) => {
-            this.props.setValue(ev.target.checked);
+            const {setValue, fieldName} = this.props;
+            setValue(fieldName, ev.target.checked);
         }
     }
 ));
@@ -239,8 +242,9 @@ const restNumericInput = elemFactory(observer(
         }
 
         onValueChange = (val, valAsString) => {
+            const {fieldName} = this.props;
             val = (valAsString === '') ? null : val;
-            this.props.setValue(val);
+            this.props.setValue(fieldName, val);
         }
     }
 ));
@@ -259,7 +263,8 @@ const restTextArea = elemFactory(observer(
         }
 
         onChange = (ev) => {
-            this.props.setValue(ev.target.value);
+            const {setValue, fieldName} = this.props;
+            setValue(fieldName, ev.target.value);
         }
     }
 ));
@@ -267,8 +272,10 @@ const restTextArea = elemFactory(observer(
 const restTextInput = elemFactory(observer(
     class extends Component {
         render() {
-            const {value, disabled, valid} = this.props,
+            const {fieldName, value, disabled, valid} = this.props,
                 cls = valid ? 'pt-fill' : 'pt-fill pt-intent-danger';
+
+            console.log(fieldName);
             return inputGroup({
                 cls: cls,
                 type: 'text',
@@ -279,7 +286,8 @@ const restTextInput = elemFactory(observer(
         }
 
         onChange = (ev) => {
-            this.props.setValue(ev.target.value);
+            const {setValue, fieldName} = this.props;
+            setValue(fieldName, ev.target.value);
         }
     }
 ));

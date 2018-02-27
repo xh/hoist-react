@@ -127,7 +127,7 @@ export class RestFormModel {
                 fieldSpec,
                 fieldName,
                 get value() {return record[fieldName]},
-                setValue: (val) => {this.setValue(fieldName, val)},
+                setValue: this.setValue,
                 disabled,
                 valid
             };
