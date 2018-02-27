@@ -5,12 +5,12 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {debounce} from 'lodash';
 import {XH} from 'hoist/core';
+import {debounce} from 'lodash';
 import {action, observable, setter, autorun} from 'hoist/mobx';
-import {baseCol} from 'hoist/columns/Core';
-import {GridModel} from 'hoist/grid';
 import {LastPromiseModel} from 'hoist/promise';
+import {GridModel} from 'hoist/grid';
+import {baseCol} from 'hoist/columns/Core';
 
 export class LogViewerModel {
 
@@ -62,9 +62,9 @@ export class LogViewerModel {
         this[name] = value;
     }
 
-    //-----------------
+    //---------------------------------
     // Implementation
-    //-----------------
+    //---------------------------------
     fetchFile = debounce(() => {
         return XH
             .fetchJson({
