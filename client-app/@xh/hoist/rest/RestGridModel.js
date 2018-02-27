@@ -144,7 +144,9 @@ export class RestGridModel {
         } else {
             records[idx] = rec;
         }
+        // console.log('before close');
         this.formModel.close();
+        // console.log('after close')
     }
 
     @action
