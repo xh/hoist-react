@@ -171,7 +171,7 @@ const restDisplayField = elemFactory(observer(
 const restDropdown = elemFactory(observer(
     class extends Component {
         render() {
-            const {value, disabled, fieldSpec, fieldInvalid} = this.props,
+            const {value, disabled, fieldSpec, valid} = this.props,
                 options = fieldSpec.lookupValues;
 
             return suggest({
@@ -185,7 +185,7 @@ const restDropdown = elemFactory(observer(
                 inputValueRenderer: s => s,
                 inputProps: {
                     value: value || '',
-                    className: fieldInvalid ? 'pt-intent-danger' : '',
+                    className: valid ? '' : 'pt-intent-danger',
                     disabled,
                     onChange: this.onChange
                 }
@@ -207,9 +207,9 @@ const restDropdown = elemFactory(observer(
 const restCheckbox = elemFactory(observer(
     class extends Component {
         render() {
-            const {value, disabled, fieldInvalid} = this.props;
+            const {value, disabled, valid} = this.props;
 
-            if (fieldInvalid) console.warn('If boolean field is nullable please use a dropdown. Required boolean fields should provide a defaultValue');
+            if (!valid) console.warn('If boolean field is nullable please use a dropdown. Required boolean fields should provide a defaultValue');
 
             return checkbox({
                 checked: !!value,
@@ -227,10 +227,10 @@ const restCheckbox = elemFactory(observer(
 const restNumericInput = elemFactory(observer(
     class extends Component {
         render() {
-            const {value, disabled, fieldInvalid} = this.props;
+            const {value, disabled, valid} = this.props;
             return numericInput({
                 cls: 'pt-fill',
-                intent: fieldInvalid ? 'danger' : 'none',
+                intent: valid ? 'none' : 'danger',
                 buttonPosition: 'none',
                 value: value,
                 disabled,
@@ -248,8 +248,8 @@ const restNumericInput = elemFactory(observer(
 const restTextArea = elemFactory(observer(
     class extends Component {
         render() {
-            const {value, disabled, fieldInvalid} = this.props,
-                cls = fieldInvalid ? 'pt-fill pt-intent-danger' : 'pt-fill';
+            const {value, disabled, valid} = this.props,
+                cls = valid ? 'pt-fill' : 'pt-fill pt-intent-danger';
             return textArea({
                 cls: cls,
                 value: value || '',
@@ -267,8 +267,8 @@ const restTextArea = elemFactory(observer(
 const restTextInput = elemFactory(observer(
     class extends Component {
         render() {
-            const {value, disabled, fieldInvalid} = this.props,
-                cls = fieldInvalid ? 'pt-fill pt-intent-danger' : 'pt-fill';
+            const {value, disabled, valid} = this.props,
+                cls = valid ? 'pt-fill' : 'pt-fill pt-intent-danger';
             return inputGroup({
                 cls: cls,
                 type: 'text',

@@ -117,7 +117,7 @@ export class RestFormModel {
                 fieldName = fieldSpec.name,
                 disabled = fieldSpec.readOnly || (editor.additionsOnly && !isAdd),
                 type = this.getInputType(editor, fieldSpec),
-                fieldInvalid = invalidFields.includes(fieldName);
+                valid = !invalidFields.includes(fieldName);
 
             // NOTE: We provide the value setter and *getter* for convenience -- but don't dereference.
             // It's observable and volatile, and we only want controls using it to re-render
@@ -129,7 +129,7 @@ export class RestFormModel {
                 get value() {return record[fieldName]},
                 setValue: (val) => {this.setValue(fieldName, val)},
                 disabled,
-                fieldInvalid
+                valid
             };
         });
     }
