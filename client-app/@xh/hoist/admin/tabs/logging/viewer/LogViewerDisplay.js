@@ -17,7 +17,6 @@ import {contextMenu, ContextMenuModel} from 'hoist/cmp/contextmenu';
 class LogViewerDisplay extends Component {
 
     lastRow = new Ref();
-    currentRow = null;
 
     render() {
         const {rows} = this.model;
@@ -32,21 +31,19 @@ class LogViewerDisplay extends Component {
     getTableRows(rows) {
         return toJS(rows).map((row, idx) => {
             return tr({
-                onMouseOver: () => {this.currentRow = idx},
-                onMouseOut: () => {this.currentRow = null},
                 cls: 'logviewer-row noselect',
                 ref: idx === rows.length - 1 ? this.lastRow.ref : undefined,
                 items: [
-                    td({key: `row-number-${idx}`, cls: 'logviewer-row-number', item: row[0].toString()}),
-                    td({key: `row-content-${idx}`, cls: 'logviewer-row-content', item: row[1]})
+                    td({key: `row-number-${idx}`, datakey: idx, cls: 'logviewer-row-number', item: row[0].toString()}),
+                    td({key: `row-content-${idx}`, datakey: idx, cls: 'logviewer-row-content', item: row[1]})
                 ]
             });
         });
     }
 
-    renderContextMenu() {
+    renderContextMenu(e) {
         const rows = this.model.rows,
-            currentRow = this.currentRow;
+            currentRow = e.target.getAttribute('datakey');
 
         const menuModel = new ContextMenuModel([
             clipboardMenuItem({
