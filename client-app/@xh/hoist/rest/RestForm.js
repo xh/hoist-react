@@ -15,7 +15,7 @@ import {fmtDateTime} from 'hoist/format';
 import {
     Classes, button, checkbox, dialog, dialogBody,
     dialogFooter, dialogFooterActions, controlGroup, inputGroup,
-    label, menuItem, numericInput, suggest, textArea
+    label, menuItem, numericInput, select, suggest, textArea
 } from 'hoist/kit/blueprint';
 
 @hoistComponent()
