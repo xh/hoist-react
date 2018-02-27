@@ -1,9 +1,22 @@
 body ::-webkit-scrollbar {
     -webkit-appearance: none;
+    background-color: dimgray;
     width: 10px;
     height: 10px;
 }
 
+body ::-webkit-scrollbar-thumb {
+    background-color: darkgray;
+    border-radius: 10px;
+}
+
+body ::-webkit-scrollbar-corner {
+    background-color: dimgray;
+}
+
+body :focus {
+    outline: 0;
+}
 
 /*Utility margin / padding / border classes*/
 .xh-mt {margin-top: 10px;}
