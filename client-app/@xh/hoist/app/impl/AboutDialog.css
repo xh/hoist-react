@@ -1,6 +1,21 @@
+.xh-about-dialog {
+    display: flex;
+    flex: none;
+    width: 300px;
+    align-items: center;
+    padding: 0;
+}
+
+.xh-about-dialog > button {
+    margin: 10px;
+}
+
+.xh-about-dialog > div, .xh-about-dialog > table {
+    width: 100%;
+}
+
 .xh-about-table {
     display: flex;
-    padding: 10px;
 }
 
 .xh-about-table tbody {
@@ -13,12 +28,21 @@
     display: flex;
     flex: 1;
     font-weight: lighter;
-    align-content: left;
+    padding: 0 5px;
 }
 .xh-about-table tr {
     display: flex;
     line-height: 25px;
+    border: 1px solid #5C7080;
+    border-bottom: none;
 }
-.xh-about-table tr:nth-child(even) {
-    background-color: #000;
+.xh-about-table tr:last-child {
+    border-bottom: 1px solid #5C7080;
+}
+.xh-about-table td {
+    justify-content: flex-end;
+}
+
+.xh-about-table th {
+    background-color: #282828;
 }
