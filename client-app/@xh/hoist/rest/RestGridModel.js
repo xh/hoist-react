@@ -144,7 +144,6 @@ export class RestGridModel {
         } else {
             records[idx] = rec;
         }
-
         this.formModel.close();
     }
 
