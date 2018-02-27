@@ -11,16 +11,13 @@ import {Ref} from 'hoist/utils/Ref';
 import {observer, observable, setter , toJS, autorun} from 'hoist/mobx';
 import {frame, table, tbody, td, tr} from 'hoist/layout';
 import {clipboardMenuItem} from  'hoist/cmp'
-import {contextMenu, ContextMenuTarget, ContextMenuModel} from 'hoist/cmp/contextmenu';
+import {contextMenu, ContextMenuModel} from 'hoist/cmp/contextmenu';
 
 @hoistComponent()
-@ContextMenuTarget
 class LogViewerDisplay extends Component {
 
-    contextMenuModel = this.createContextMenuModel();
-    localModel = this.props.model;
     lastRow = new Ref();
-    currentRow = 0;
+    currentRow = null;
 
     render() {
         const {rows} = this.model;
@@ -35,9 +32,8 @@ class LogViewerDisplay extends Component {
     getTableRows(rows) {
         return toJS(rows).map((row, idx) => {
             return tr({
-                onMouseOver: () => {
-                    this.currentRow = idx;
-                },
+                onMouseOver: () => {this.currentRow = idx},
+                onMouseOut: () => {this.currentRow = null},
                 cls: 'logviewer-row noselect',
                 ref: idx === rows.length - 1 ? this.lastRow.ref : undefined,
                 items: [
@@ -49,28 +45,24 @@ class LogViewerDisplay extends Component {
     }
 
     renderContextMenu() {
-        return contextMenu({style: {width: '200px'}, model: this.contextMenuModel});
-    }
+        const rows = this.model.rows,
+            currentRow = this.currentRow;
 
-    createContextMenuModel() {
-        return new ContextMenuModel([
+        const menuModel = new ContextMenuModel([
             clipboardMenuItem({
-                buttonProps: {
-                    text: 'Copy log to clipboard.'
-                },
+                text: 'Copy Entire Log',
                 successMessage: 'Log copied to the clipboard.',
-                text: () => this.model.rows.map(row => row.join(': ')).join('\n')
+                targetText: () => rows.map(row => row.join(': ')).join('\n')
             }),
             clipboardMenuItem({
-                buttonProps: {
-                    text: `Copy current line to clipboard.`,
-                    icon: 'list'
-                },
+                text: `Copy Current Line`,
+                icon: 'list',
+                disabled: (currentRow == null),
                 successMessage: 'Log line copied to the clipboard.',
-                text: () => this.model.rows[this.currentRow].join(': ')
+                clipboardSpec: {text: () => rows[currentRow].join(': ')}
             }),
-
         ]);
+        return contextMenu({style: {width: '200px'}, model: menuModel});
     }
 
     componentDidMount() {

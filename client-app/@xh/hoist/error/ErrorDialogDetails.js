@@ -62,21 +62,22 @@ export class ErrorDialogDetails extends Component {
                 }),
                 dialogFooter(
                     dialogFooterActions({
-                        itemSpec: button,
                         items: [
-                            {
+                            button({
                                 icon: 'envelope',
                                 text: 'Send',
                                 onClick: this.onSendClick
-                            },
-                            clipboardButton({
-                                successMessage: 'Error details copied to clipboard.',
-                                text: this.errorStr
                             }),
-                            {
+                            clipboardButton({
+                                icon: 'clipboard',
+                                text: 'Copy',
+                                clipboardSpec: {text: () => this.errorStr},
+                                successMessage: 'Error details copied to clipboard.'
+                            }),
+                            button({
                                 text: 'Close',
                                 onClick: this.onCloseClick
-                            }
+                            })
                         ]
                     })
                 )

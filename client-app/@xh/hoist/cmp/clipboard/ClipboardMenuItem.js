@@ -5,18 +5,27 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {ClipboardButton} from './ClipboardButton';
+import {Component} from 'react'
+import {clipboardButton} from './ClipboardButton';
 import {elemFactory} from 'hoist/core';
 
-class ClipboardMenuItem extends ClipboardButton {
-    static buttonDefaults = {
+
+class ClipboardMenuItem extends Component {
+
+    static defaultProps = {
         icon: 'clipboard',
         text: 'Copy',
+        cls: 'pt-minimal',
+        successMessage: 'Text copied to clipboard.',
         style: {
             display: 'flex',
             width: '100%',
             justifyContent: 'left'
         }
+    }
+
+    render() {
+        return clipboardButton(this.props);
     }
 }
 
