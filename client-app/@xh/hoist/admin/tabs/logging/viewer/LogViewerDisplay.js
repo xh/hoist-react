@@ -6,19 +6,21 @@
  */
 
 import {Component} from 'react';
-import {elemFactory, Ref} from 'hoist/react';
+import {elemFactory, hoistComponent} from 'hoist/core';
+import {Ref} from 'hoist/utils/Ref';
 import {observer, observable, setter , toJS, autorun} from 'hoist/mobx';
 import {frame, table, tbody, td, tr} from 'hoist/layout';
 import {clipboardMenuItem} from  'hoist/cmp'
 import {contextMenu, ContextMenuTarget, ContextMenuModel} from 'hoist/cmp/contextmenu';
 
-@observer
+@hoistComponent()
 @ContextMenuTarget
 class LogViewerDisplay extends Component {
 
     contextMenuModel = this.createContextMenuModel();
+    localModel = this.props.model;
     lastRow = new Ref();
-    static currentRow = 0;
+    currentRow = 0;
 
     render() {
         const {rows} = this.model;
@@ -84,9 +86,6 @@ class LogViewerDisplay extends Component {
     componenentWillUnmount() {
         this.disposeTailRunner();
     }
-
-    get model() {return this.props.model}
-
 }
 
 export const logViewerDisplay = elemFactory(LogViewerDisplay);

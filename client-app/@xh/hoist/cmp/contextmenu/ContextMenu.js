@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {start} from 'hoist/promise';
 import {menuDivider, menuItem, menu} from 'hoist/kit/blueprint';
-import {isReactElement} from "hoist/react/Utils";
+import {isReactElement} from "hoist/utils/ReactUtils";
 
 @hoistComponent()
 export class ContextMenu extends Component {

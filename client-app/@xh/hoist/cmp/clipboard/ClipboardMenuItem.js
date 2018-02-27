@@ -6,10 +6,8 @@
  */
 
 import {ClipboardButton} from './ClipboardButton';
-import {elemFactory} from 'hoist/react';
-import {observer} from 'hoist/mobx';
+import {elemFactory} from 'hoist/core';
 
-@observer
 class ClipboardMenuItem extends ClipboardButton {
     static buttonDefaults = {
         icon: 'clipboard',

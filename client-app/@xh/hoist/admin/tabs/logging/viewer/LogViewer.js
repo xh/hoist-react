@@ -4,14 +4,13 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+
 import {Component} from 'react';
-<<<<<<< HEAD
 import {hoistComponent} from 'hoist/core';
 import {toJS, autorun} from 'hoist/mobx';
 import {hframe, vframe, frame} from 'hoist/layout';
 import {grid} from 'hoist/grid';
 import {collapsible, loadMask} from 'hoist/cmp';
-import {Ref} from 'hoist/utils/Ref';
 import {logViewerDisplay} from './LogViewerDisplay';
 import {LogViewerModel} from './LogViewerModel';
 import {logViewerToolbar} from './LogViewerToolbar';
