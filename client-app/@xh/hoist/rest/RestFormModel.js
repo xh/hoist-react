@@ -29,14 +29,22 @@ export class RestFormModel {
     }
 
     @computed
-    get isValid() {
+    get isFormValid() {
         const fieldSpecs = this.parent.recordSpec.fields;
+
         let valid = true;
-        forOwn(this.record, (v, k) => {
-            const spec = fieldSpecs.find(it => it.name === k);
-            if (spec && !spec.allowNull && (v == null || v === '')) valid = false;
+        fieldSpecs.forEach(spec => {
+            if (!this.isFieldValid(spec.name)) valid = false;
         });
+
         return valid;
+    }
+
+    isFieldValid(fieldName) {
+        if (!this.record) return;
+        const fieldSpec = this.parent.recordSpec.fields.find(it => it.name === fieldName),
+            v = this.record[fieldName];
+        return fieldSpec.allowNull || (v != null && v !== '')
     }
 
     @computed
@@ -119,8 +127,8 @@ export class RestFormModel {
                 fieldSpec,
                 fieldName,
                 get value() {return record[fieldName]},
-                setValue: (val) => {this.setValue(fieldName, val)},
-                disabled
+                disabled,
+                model: this
             };
         });
     }
