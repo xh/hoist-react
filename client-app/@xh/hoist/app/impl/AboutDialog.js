@@ -18,7 +18,7 @@ export class AboutDialog extends Component {
             isOpen: this.props.isOpen,
             icon: 'info-sign',
             cls: `xh-about-dialog${hoistModel.darkTheme ? ' xh-dark' : ''}`,
-            title: `About ${XH.appName} Admin`,
+            title: `About ${XH.appName}`,
             items: [
                 this.renderTable(),
                 button({text: 'OK', onClick: this.onClose})

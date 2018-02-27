@@ -16,9 +16,9 @@ import './VersionBar.css';
 export class VersionBar extends Component {
 
     render() {
-        const env = XH.environmentService.get('appEnvironment'),
-            version = XH.environmentService.get('appVersion'),
-            isVisible = (env !== 'Production' || prefService.getPref('xhForceEnvironmentFooter')),
+        const env = XH.getEnv('appEnvironment'),
+            version = XH.getEnv('appVersion'),
+            isVisible = (env !== 'Production' || XH.getPref('xhForceEnvironmentFooter')),
             cls = `xh-version-bar xh-version-bar-${env.toLowerCase()}`,
             info = icon({icon: 'info-sign', iconSize: 16, onClick: this.showAbout});
 
