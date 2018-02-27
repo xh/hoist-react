@@ -51,7 +51,7 @@ export class RestForm extends Component {
     }
 
     getButtons() {
-        const {isValid, isWritable, isAdd, actionEnabled} = this.model;
+        const {isFormValid, isWritable, isAdd, actionEnabled} = this.model;
 
         return [
             button({
@@ -70,7 +70,7 @@ export class RestForm extends Component {
                 text: 'Save',
                 icon: 'tick',
                 intent: 'success',
-                disabled: !isValid,
+                disabled: !isFormValid,
                 onClick: this.onSaveClick,
                 omit: !isWritable
             })
@@ -171,7 +171,7 @@ const restDisplayField = elemFactory(observer(
 const restDropdown = elemFactory(observer(
     class extends Component {
         render() {
-            const {value, disabled, fieldSpec, valid} = this.props,
+            const {model, value, disabled, fieldSpec, fieldName} = this.props,
                 options = fieldSpec.lookupValues;
 
             return suggest({
@@ -185,7 +185,7 @@ const restDropdown = elemFactory(observer(
                 inputValueRenderer: s => s,
                 inputProps: {
                     value: value || '',
-                    className: valid ? '' : 'pt-intent-danger',
+                    className: model.isFieldValid(fieldName) ? '' : 'pt-intent-danger',
                     disabled,
                     onChange: this.onChange
                 }
@@ -193,14 +193,14 @@ const restDropdown = elemFactory(observer(
         }
 
         onChange = (ev) => {
-            const {setValue, fieldName} = this.props;
-            setValue(fieldName, ev.target.value);
+            const {model, fieldName} = this.props;
+            model.setValue(fieldName, ev.target.value);
         }
 
         onItemSelect = (val) => {
             if (val) {
-                const {setValue, fieldName} = this.props;
-                setValue(fieldName, val);
+                const {model, fieldName} = this.props;
+                model.setValue(fieldName, val);
             }
         }
     }
@@ -209,9 +209,12 @@ const restDropdown = elemFactory(observer(
 const restCheckbox = elemFactory(observer(
     class extends Component {
         render() {
-            const {value, disabled, valid} = this.props;
+            const {model, value, disabled, fieldName} = this.props;
 
-            if (!valid) console.warn('If boolean field is nullable please use a dropdown. Required boolean fields should provide a defaultValue');
+            if (!model.isFieldValid(fieldName)) {
+                console.warn('Required boolean fields should provide a defaultValue' +
+                    ' If boolean field is nullable please use a dropdown.');
+            }
 
             return checkbox({
                 checked: !!value,
@@ -221,8 +224,8 @@ const restCheckbox = elemFactory(observer(
         }
 
         onChange = (ev) => {
-            const {setValue, fieldName} = this.props;
-            setValue(fieldName, ev.target.checked);
+            const {model, fieldName} = this.props;
+            model.setValue(fieldName, ev.target.checked);
         }
     }
 ));
@@ -230,10 +233,10 @@ const restCheckbox = elemFactory(observer(
 const restNumericInput = elemFactory(observer(
     class extends Component {
         render() {
-            const {value, disabled, valid} = this.props;
+            const {model, value, disabled, fieldName} = this.props;
             return numericInput({
                 cls: 'pt-fill',
-                intent: valid ? 'none' : 'danger',
+                intent: model.isFieldValid(fieldName) ? 'none' : 'danger',
                 buttonPosition: 'none',
                 value: value,
                 disabled,
@@ -242,9 +245,9 @@ const restNumericInput = elemFactory(observer(
         }
 
         onValueChange = (val, valAsString) => {
-            const {fieldName} = this.props;
+            const {model, fieldName} = this.props;
             val = (valAsString === '') ? null : val;
-            this.props.setValue(fieldName, val);
+            model.setValue(fieldName, val);
         }
     }
 ));
@@ -252,8 +255,8 @@ const restNumericInput = elemFactory(observer(
 const restTextArea = elemFactory(observer(
     class extends Component {
         render() {
-            const {value, disabled, valid} = this.props,
-                cls = valid ? 'pt-fill' : 'pt-fill pt-intent-danger';
+            const {model, value, disabled, fieldName} = this.props,
+                cls = model.isFieldValid(fieldName) ? 'pt-fill' : 'pt-fill pt-intent-danger';
             return textArea({
                 cls: cls,
                 value: value || '',
@@ -263,8 +266,8 @@ const restTextArea = elemFactory(observer(
         }
 
         onChange = (ev) => {
-            const {setValue, fieldName} = this.props;
-            setValue(fieldName, ev.target.value);
+            const {model, fieldName} = this.props;
+            model.setValue(fieldName, ev.target.value);
         }
     }
 ));
@@ -272,10 +275,9 @@ const restTextArea = elemFactory(observer(
 const restTextInput = elemFactory(observer(
     class extends Component {
         render() {
-            const {fieldName, value, disabled, valid} = this.props,
-                cls = valid ? 'pt-fill' : 'pt-fill pt-intent-danger';
+            const {model, value, disabled, fieldName} = this.props,
+                cls = model.isFieldValid(fieldName) ? 'pt-fill' : 'pt-fill pt-intent-danger';
 
-            console.log(fieldName);
             return inputGroup({
                 cls: cls,
                 type: 'text',
@@ -286,8 +288,8 @@ const restTextInput = elemFactory(observer(
         }
 
         onChange = (ev) => {
-            const {setValue, fieldName} = this.props;
-            setValue(fieldName, ev.target.value);
+            const {model, fieldName} = this.props;
+            model.setValue(fieldName, ev.target.value);
         }
     }
 ));

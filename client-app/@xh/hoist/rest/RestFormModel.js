@@ -29,20 +29,22 @@ export class RestFormModel {
     }
 
     @computed
-    get isValid() {
-        return this.invalidFields.length === 0;
+    get isFormValid() {
+        const fieldSpecs = this.parent.recordSpec.fields;
+
+        let valid = true;
+        fieldSpecs.forEach(spec => {
+            if (!this.isFieldValid(spec.name)) valid = false;
+        });
+
+        return valid;
     }
 
-    @computed
-    get invalidFields() {
-        const fieldSpecs = this.parent.recordSpec.fields,
-            invalidFields = [];
-
-        forOwn(this.record, (v, k) => {
-            const spec = fieldSpecs.find(it => it.name === k);
-            if (spec && !spec.allowNull && (v == null || v === '')) invalidFields.push(k);
-        });
-        return invalidFields;
+    isFieldValid(fieldName) {
+        if (!this.record) return;
+        const fieldSpec = this.parent.recordSpec.fields.find(it => it.name === fieldName),
+            v = this.record[fieldName];
+        return !(!fieldSpec.allowNull && (v == null || v === ''))
     }
 
     @computed
@@ -109,15 +111,13 @@ export class RestFormModel {
         const {recordSpec} = this.parent,
             fields = recordSpec.fields,
             isAdd = this.isAdd,
-            record = this.record,
-            invalidFields = this.invalidFields;
+            record = this.record;
 
         return this.editors.map(editor => {
             const fieldSpec = fields.find(it => it.name === editor.field),
                 fieldName = fieldSpec.name,
                 disabled = fieldSpec.readOnly || (editor.additionsOnly && !isAdd),
-                type = this.getInputType(editor, fieldSpec),
-                valid = !invalidFields.includes(fieldName);
+                type = this.getInputType(editor, fieldSpec);
 
             // NOTE: We provide the value setter and *getter* for convenience -- but don't dereference.
             // It's observable and volatile, and we only want controls using it to re-render
@@ -127,9 +127,8 @@ export class RestFormModel {
                 fieldSpec,
                 fieldName,
                 get value() {return record[fieldName]},
-                setValue: this.setValue,
                 disabled,
-                valid
+                model: this
             };
         });
     }
