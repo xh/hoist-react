@@ -209,7 +209,7 @@ const restCheckbox = elemFactory(observer(
         render() {
             const {value, disabled, fieldInvalid} = this.props;
 
-            if (fieldInvalid) console.warn('Checkbox fields should never be invalid. Please provide a defaultValue in the field spec');
+            if (fieldInvalid) console.warn('If boolean field is nullable please use a dropdown. Required boolean fields should provide a defaultValue');
 
             return checkbox({
                 checked: !!value,
@@ -231,7 +231,7 @@ const restNumericInput = elemFactory(observer(
             return numericInput({
                 cls: 'pt-fill',
                 intent: fieldInvalid ? 'danger' : 'none',
-                // buttonPosition: 'none', // would like to suggest leaving the button. Thought we were getting a textfield and tried to debug
+                buttonPosition: 'none',
                 value: value,
                 disabled,
                 onValueChange: this.onValueChange
