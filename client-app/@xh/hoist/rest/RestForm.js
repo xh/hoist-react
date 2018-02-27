@@ -173,6 +173,7 @@ const restDropdown = elemFactory(observer(
         render() {
             const {model, value, disabled, fieldSpec, fieldName} = this.props,
                 options = fieldSpec.lookupValues;
+            if (!model.record) return null;
 
             return suggest({
                 popoverProps: {popoverClassName: Classes.MINIMAL},
@@ -210,6 +211,7 @@ const restCheckbox = elemFactory(observer(
     class extends Component {
         render() {
             const {model, value, disabled, fieldName} = this.props;
+            if (!model.record) return null;
 
             if (!model.isFieldValid(fieldName)) {
                 console.warn('Required boolean fields should provide a defaultValue' +
@@ -234,6 +236,8 @@ const restNumericInput = elemFactory(observer(
     class extends Component {
         render() {
             const {model, value, disabled, fieldName} = this.props;
+            if (!model.record) return null;
+
             return numericInput({
                 cls: 'pt-fill',
                 intent: model.isFieldValid(fieldName) ? 'none' : 'danger',
@@ -257,6 +261,8 @@ const restTextArea = elemFactory(observer(
         render() {
             const {model, value, disabled, fieldName} = this.props,
                 cls = model.isFieldValid(fieldName) ? 'pt-fill' : 'pt-fill pt-intent-danger';
+            if (!model.record) return null;
+
             return textArea({
                 cls: cls,
                 value: value || '',
@@ -277,6 +283,7 @@ const restTextInput = elemFactory(observer(
         render() {
             const {model, value, disabled, fieldName} = this.props,
                 cls = model.isFieldValid(fieldName) ? 'pt-fill' : 'pt-fill pt-intent-danger';
+            if (!model.record) return null;
 
             return inputGroup({
                 cls: cls,
