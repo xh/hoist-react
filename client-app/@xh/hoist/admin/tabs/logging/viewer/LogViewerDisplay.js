@@ -50,16 +50,16 @@ class LogViewerDisplay extends Component {
 
         const menuModel = new ContextMenuModel([
             clipboardMenuItem({
-                text: 'Copy Entire Log',
-                successMessage: 'Log copied to the clipboard.',
-                targetText: () => rows.map(row => row.join(': ')).join('\n')
-            }),
-            clipboardMenuItem({
                 text: `Copy Current Line`,
                 icon: 'list',
                 disabled: (currentRow == null),
                 successMessage: 'Log line copied to the clipboard.',
                 clipboardSpec: {text: () => rows[currentRow].join(': ')}
+            }),
+            clipboardMenuItem({
+                text: 'Copy All Lines',
+                successMessage: 'Log lines copied to the clipboard.',
+                clipboardSpec: {text: () => rows.map(row => row.join(': ')).join('\n')}
             }),
         ]);
         return contextMenu({style: {width: '200px'}, model: menuModel});
