@@ -9,15 +9,15 @@ import {Component} from 'react';
 import {XH, elemFactory, hoistComponent} from 'hoist/core';
 import {box} from 'hoist/layout';
 import {icon} from 'hoist/kit/blueprint';
-import {hoistAppModel} from './HoistAppModel';
+import {hoistModel} from 'hoist/core';
 import './VersionBar.css';
 
 @hoistComponent()
 export class VersionBar extends Component {
 
     render() {
-        const env = environmentService.get('appEnvironment'),
-            version = environmentService.get('appVersion'),
+        const env = XH.environmentService.get('appEnvironment'),
+            version = XH.environmentService.get('appVersion'),
             isVisible = (env !== 'Production' || prefService.getPref('xhForceEnvironmentFooter')),
             cls = `xh-version-bar xh-version-bar-${env.toLowerCase()}`,
             info = icon({icon: 'info-sign', iconSize: 16, onClick: this.showAbout});
@@ -34,7 +34,7 @@ export class VersionBar extends Component {
     }
 
     showAbout() {
-        hoistAppModel.setShowAbout(true);
+        hoistModel.setShowAbout(true);
     }
 }
 export const versionBar = elemFactory(VersionBar);

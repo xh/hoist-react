@@ -26,7 +26,7 @@ export class AboutPanel extends Component {
     }
 
     renderTables() {
-        const svc = environmentService,
+        const svc = XH.environmentService,
             row = (label, data) => tr(th(label), td(data));
 
         return [

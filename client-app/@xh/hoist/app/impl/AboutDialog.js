@@ -4,14 +4,12 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import './AboutDialog.css';
+
 import {Component} from 'react';
-import {hoistComponent, hoistModel, elemFactory} from 'hoist/core';
-import {observer} from 'hoist/mobx';
-import {XH, environmentService, hoistAppModel} from 'hoist/app';
+import {XH, hoistComponent, hoistModel, elemFactory} from 'hoist/core';
 import {table, tbody, tr, th, td} from 'hoist/layout';
 import {dialog, button} from 'hoist/kit/blueprint';
->>>>>>> Added about info:client-app/@xh/hoist/app/AboutDialog.js
+import './AboutDialog.css';
 
 @hoistComponent()
 export class AboutDialog extends Component {
@@ -19,7 +17,7 @@ export class AboutDialog extends Component {
         return dialog({
             isOpen: this.props.isOpen,
             icon: 'info-sign',
-            cls: hoistAppModel.darkTheme ? 'xh-dark' : '',
+            cls: hoistModel.darkTheme ? 'xh-dark' : '',
             title: `About ${XH.appName} Admin`,
             style: {width: '300px'},
             items: [
@@ -31,7 +29,7 @@ export class AboutDialog extends Component {
     }
 
     renderTable() {
-        const svc = environmentService,
+        const svc = XH.environmentService,
             row = (label, data) => tr(th(label), td(data)),
             configRows = XH.getConf('xhAboutMenuConfigs', []).map(it => {
                 try {
@@ -57,7 +55,7 @@ export class AboutDialog extends Component {
     }
 
     onClose = () => {
-        hoistAppModel.setShowAbout(false);
+        hoistModel.setShowAbout(false);
     }
 }
 export const aboutDialog = elemFactory(AboutDialog);
