@@ -44,7 +44,7 @@ export class RestFormModel {
         if (!this.record) return;
         const fieldSpec = this.parent.recordSpec.fields.find(it => it.name === fieldName),
             v = this.record[fieldName];
-        return !(!fieldSpec.allowNull && (v == null || v === ''))
+        return fieldSpec.allowNull || (v != null && v !== '')
     }
 
     @computed
