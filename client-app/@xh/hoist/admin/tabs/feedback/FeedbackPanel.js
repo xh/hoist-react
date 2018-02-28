@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {hoistComponent} from 'hoist/core';
-import {restGrid, RestGridModel} from 'hoist/rest';
+import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
 import {baseCol} from 'hoist/columns/Core';
 import {usernameCol} from '../../columns/Columns';
 import {compactDateRenderer} from '../../../format';
@@ -14,7 +14,7 @@ import {compactDateRenderer} from '../../../format';
 @hoistComponent()
 export class FeedbackPanel extends Component {
 
-    gridModel = new RestGridModel({
+    store = new RestStore({
         url: 'rest/feedbackAdmin',
         recordSpec: {
             fields: [
@@ -26,7 +26,11 @@ export class FeedbackPanel extends Component {
                 {name: 'appEnvironment', label: 'Environment', readOnly: true},
                 {name: 'dateCreated', type: 'date', dateFormat: 'time', label: 'Date', readOnly: true, allowNull: true}
             ]
-        },
+        }
+    });
+
+    gridModel = new RestGridModel({
+        store: this.store,
         columns: [
             usernameCol(),
             baseCol({field: 'msg', text: 'Message', width: 60}),
@@ -52,6 +56,6 @@ export class FeedbackPanel extends Component {
     }
 
     loadAsync() {
-        return this.gridModel.loadAsync();
+        return this.store.loadAsync();
     }
 }

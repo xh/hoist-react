@@ -5,5 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-export * from './FieldSpec';
-export * from './RecordSpec';
+export * from './spec/Field';
+export * from './spec/RecordSpec';
+export * from './BaseStore';
+export * from './LocalStore';
+export * from './UrlStore';

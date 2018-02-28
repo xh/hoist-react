@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {hoistComponent} from 'hoist/core';
-import {restGrid, RestGridModel} from 'hoist/rest';
+import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
 import {baseCol} from 'hoist/columns/Core';
 
 import {nameCol} from '../../columns/Columns';
@@ -14,7 +14,7 @@ import {nameCol} from '../../columns/Columns';
 @hoistComponent()
 export class LogLevelPanel extends Component {
 
-    gridModel = new RestGridModel({
+    store = new RestStore({
         url: 'rest/logLevelAdmin',
         recordSpec: {
             fields: [
@@ -23,7 +23,11 @@ export class LogLevelPanel extends Component {
                 {name: 'level', label: 'Override', lookup: 'levels'},
                 {name: 'effectiveLevel', label: 'Effective'}
             ]
-        },
+        }
+    });
+
+    gridModel = new RestGridModel({
+        store: this.store,
         columns: [
             nameCol(),
             baseCol({field: 'defaultLevel', width: 80}),
@@ -41,6 +45,6 @@ export class LogLevelPanel extends Component {
     }
 
     loadAsync() {
-        return this.gridModel.loadAsync();
+        return this.store.loadAsync();
     }
 }

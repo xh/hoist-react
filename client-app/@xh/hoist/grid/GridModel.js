@@ -17,39 +17,18 @@ import {GridSelectionModel} from './GridSelectionModel';
 export class GridModel {
 
     // Immutable public properties
-    url = '';
-    dataRoot = null;
-    processRawData = null;
+    store = null;
     selection = new GridSelectionModel();
     loadModel = new LastPromiseModel();
 
     @observable columns = [];
-    @observable records = [];
+    @observable store = null;
 
-    constructor({url, dataRoot, columns, processRawData}) {
-        this.url = url;
-        this.dataRoot = dataRoot;
+    /**
+     * Construct this object.
+     */
+    constructor({store, columns}) {
+        this.store = store;
         this.columns = columns;
-        this.processRawData = processRawData;
-    }
-
-    @action
-    loadAsync() {
-        return XH
-            .fetchJson({url: this.url})
-            .then(this.completeLoad)
-            .linkTo(this.loadModel)
-            .catchDefault();
-    }
-
-    //--------------------------
-    // Implementation
-    //--------------------------
-    @action
-    completeLoad = (data) => {
-        const {processRawData, dataRoot} = this;
-        let rawRecords = dataRoot ? data[dataRoot] : data;
-        if (processRawData) rawRecords = processRawData(rawRecords);
-        this.records = rawRecords;
     }
 }

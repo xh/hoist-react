@@ -8,30 +8,36 @@
 /**
  * Metadata for field.
  */
-export class FieldSpec {
+export class Field {
 
     name
     label
     allowNull
     defaultValue
     type
-    lookup
 
-    lookupValues = null;
-
+    /**
+     * Construct this object.
+     *
+     * @param name, required.
+     * @param type, one of [string, int, number, bool, json, date, day, auto]
+     * @param label, optional, default to name
+     * @param allowNull, default true.
+     * @param defaultValue, default null.
+     */
     constructor({
         name,
-        type = 'string',      // [string, int, number, bool, json, date, day]
-        label,
+        type = 'auto',
+        label = name,
         allowNull = true,
         defaultValue = null,
-        lookup = null
+        ...rest
     }) {
         this.name = name;
         this.type = type;
         this.label = label;
         this.allowNull = allowNull;
         this.defaultValue = defaultValue;
-        this.lookup = lookup;
+        Object.assign(this, rest);
     }
 }

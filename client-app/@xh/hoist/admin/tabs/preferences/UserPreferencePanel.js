@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {hoistComponent} from 'hoist/core';
-import {restGrid, RestGridModel} from 'hoist/rest';
+import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
 import {baseCol} from 'hoist/columns/Core';
 
 import {nameFlexCol, usernameCol} from '../../columns/Columns';
@@ -14,7 +14,7 @@ import {nameFlexCol, usernameCol} from '../../columns/Columns';
 @hoistComponent()
 export class UserPreferencePanel extends Component {
 
-    gridModel = new RestGridModel({
+    store = new RestStore({
         url: 'rest/userPreferenceAdmin',
         recordSpec: {
             fields: [
@@ -25,7 +25,11 @@ export class UserPreferencePanel extends Component {
                 {name: 'lastUpdated', type: 'date', label: 'Last Updated', allowNull: true},
                 {name: 'lastUpdatedBy', label: 'Last Updated By', allowNull: true}
             ]
-        },
+        }
+    });
+
+    gridModel = new RestGridModel({
+        store: this.store,
         columns: [
             nameFlexCol(),
             baseCol({field: 'type', width: 80}),
@@ -46,6 +50,6 @@ export class UserPreferencePanel extends Component {
     }
 
     loadAsync() {
-        return this.gridModel.loadAsync();
+        return this.store.loadAsync();
     }
 }

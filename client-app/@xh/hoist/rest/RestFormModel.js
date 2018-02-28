@@ -20,7 +20,9 @@ export class RestFormModel {
 
     get actionWarning() {return this.parent.actionWarning}
     get actionEnabled() {return this.parent.actionEnabled}
-    get loadModel() {return this.parent.loadModel}
+    get store()         {return this.parent.store}
+    get fields()        {return this.store.recordSpec.fields}
+    get loadModel()     {return this.store.loadModel}
 
     @computed
     get isAdd() {
@@ -30,7 +32,7 @@ export class RestFormModel {
 
     @computed
     get isFormValid() {
-        const fieldSpecs = this.parent.recordSpec.fields;
+        const fieldSpecs = this.store.recordSpec.fields;
 
         let valid = true;
         fieldSpecs.forEach(spec => {
@@ -42,7 +44,7 @@ export class RestFormModel {
 
     isFieldValid(fieldName) {
         if (!this.record) return;
-        const fieldSpec = this.parent.recordSpec.fields.find(it => it.name === fieldName),
+        const fieldSpec = this.fields.find(it => it.name === fieldName),
             v = this.record[fieldName];
         return fieldSpec.allowNull || (v != null && v !== '')
     }
@@ -63,12 +65,18 @@ export class RestFormModel {
     //-----------------
     @action
     saveRecord() {
-        this.parent.saveRecord(this.record);
+        this.store
+            .saveRecordAsync(this.record)
+            .then(() => this.close())
+            .catchDefault();
     }
 
     @action
     deleteRecord() {
-        this.parent.deleteRecord(this.record);
+        this.store
+            .deleteRecordAsync(this.record)
+            .then(() => this.close())
+            .catchDefault();
     }
 
     @action
@@ -79,11 +87,9 @@ export class RestFormModel {
 
     @action
     openAdd() {
-        const newRec = {id: null},
-            fieldSpecs = this.parent.recordSpec.fields;
-
+        const newRec = {id: null};
         // must start with all keys in place, so all values will observable
-        fieldSpecs.forEach(spec => {
+        this.fields.forEach(spec => {
             newRec[spec.name] = spec.defaultValue;
         });
 
@@ -108,8 +114,7 @@ export class RestFormModel {
      * These contain toolkit independent metadata, and access to the underlying value/model.
      */
     getInputProps() {
-        const {recordSpec} = this.parent,
-            fields = recordSpec.fields,
+        const fields = this.fields,
             isAdd = this.isAdd,
             record = this.record;
 
@@ -157,8 +162,7 @@ export class RestFormModel {
 
     // For dynamic types.
     getTypeFromRecord(fieldSpec) {
-        const fields = this.parent.recordSpec.fields,
-            typeField = fields.find(it => it.name === fieldSpec.typeField);
+        const typeField = this.fields.find(it => it.name === fieldSpec.typeField);
 
         return this.record[typeField.name];
     }

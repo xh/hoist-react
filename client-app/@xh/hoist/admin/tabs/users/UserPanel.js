@@ -8,6 +8,7 @@ import {Component} from 'react';
 import {hoistComponent} from 'hoist/core';
 import {baseCol, boolCheckCol} from 'hoist/columns/Core';
 import {grid, GridModel} from 'hoist/grid';
+import {UrlStore} from 'hoist/data';
 
 import {usernameCol} from '../../columns/Columns';
 
@@ -15,7 +16,12 @@ import {usernameCol} from '../../columns/Columns';
 export class UserPanel extends Component {
 
     gridModel = new GridModel({
-        url: 'userAdmin',
+        store: new UrlStore({
+            url: 'userAdmin',
+            recordSpec: {
+                fields: ['email', 'displayName', 'active', 'roles']
+            }
+        }),
         columns: [
             usernameCol({width: 175}),
             baseCol({text: 'Email', field: 'email', width: 175}),
@@ -30,6 +36,6 @@ export class UserPanel extends Component {
     }
 
     loadAsync() {
-        return this.gridModel.loadAsync();
+        return this.gridModel.store.loadAsync();
     }
 }

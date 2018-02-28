@@ -7,19 +7,15 @@
 import {Component} from 'react';
 import {hoistComponent} from 'hoist/core';
 import {boolCheckCol, baseCol} from 'hoist/columns/Core';
-import {restGrid, RestGridModel} from 'hoist/rest';
+import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
 
 import {nameFlexCol} from '../../columns/Columns';
 
 @hoistComponent()
 export class PreferencePanel extends Component {
 
-    gridModel = new RestGridModel({
+    store = new RestStore({
         url: 'rest/preferenceAdmin',
-        actionWarning: {
-            edit: 'Are you sure you want to edit? Editing preferences can break running apps!',
-            del: 'Are you sure you want to delete? Deleting preferences can break running apps!'
-        },
         recordSpec: {
             fields: [
                 {name: 'name', label: 'Name'},
@@ -30,6 +26,14 @@ export class PreferencePanel extends Component {
                 {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true, allowNull: true},
                 {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true, allowNull: true}
             ]
+        },
+    });
+
+    gridModel = new RestGridModel({
+        store: this.store,
+        actionWarning: {
+            edit: 'Are you sure you want to edit? Editing preferences can break running apps!',
+            del: 'Are you sure you want to delete? Deleting preferences can break running apps!'
         },
         columns: [
             boolCheckCol({field: 'local', width: 60}),
@@ -54,6 +58,6 @@ export class PreferencePanel extends Component {
     }
 
     loadAsync() {
-        return this.gridModel.loadAsync();
+        return this.store.loadAsync();
     }
 }
