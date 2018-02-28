@@ -16,22 +16,20 @@ export class MonitorEditorPanel extends Component {
 
     store = new RestStore({
         url: 'rest/monitorAdmin',
-        recordSpec: {
-            fields: [
-                {name: 'code', label: 'Code'},
-                {name: 'name', label: 'Name'},
-                {name: 'metricType', label: 'Metric Type', lookup: 'metricTypes'},
-                {name: 'metricUnit', label: 'Metric Unit', allowNull: true},
-                {name: 'warnThreshold', label: 'Warn Threshold', type: 'int', allowNull: true},
-                {name: 'failThreshold', label: 'Fail Threshold', type: 'int', allowNull: true},
-                {name: 'params', label: 'Params'},
-                {name: 'notes', label: 'Notes', allowNull: true},
-                {name: 'active', label: 'Active', type: 'boolean'},
-                {name: 'sortOrder', label: 'Sort', type: 'int', allowNull: true},
-                {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true, allowNull: true},
-                {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true, allowNull: true}
-            ]
-        }
+        fields: [
+            {name: 'code', label: 'Code'},
+            {name: 'name', label: 'Name'},
+            {name: 'metricType', label: 'Metric Type', lookup: 'metricTypes'},
+            {name: 'metricUnit', label: 'Metric Unit', allowNull: true},
+            {name: 'warnThreshold', label: 'Warn Threshold', type: 'int', allowNull: true},
+            {name: 'failThreshold', label: 'Fail Threshold', type: 'int', allowNull: true},
+            {name: 'params', label: 'Params'},
+            {name: 'notes', label: 'Notes', allowNull: true},
+            {name: 'active', label: 'Active', type: 'boolean'},
+            {name: 'sortOrder', label: 'Sort', type: 'int', allowNull: true},
+            {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true, allowNull: true},
+            {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true, allowNull: true}
+        ]
     });
 
     gridModel = new RestGridModel({

@@ -18,7 +18,7 @@ export class EhCachePanel extends Component {
     gridModel = new GridModel({
         store: new UrlStore({
             url: 'ehCacheAdmin/listCaches',
-            recordSpec: {fields: ['heapSize', 'entries', 'status']}
+            fields: ['name', 'heapSize', 'entries', 'status']
         }),
         columns: [
             nameCol(),

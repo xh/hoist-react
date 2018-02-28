@@ -31,7 +31,7 @@ export class LogViewerModel {
         store: new UrlStore({
             url: 'logViewerAdmin/listFiles',
             dataRoot: 'files',
-            recordSpec: {fields: ['filename']}
+            fields: ['filename']
         }),
         columns: [
             baseCol({headerName: 'Log File', field: 'filename', width: 250})

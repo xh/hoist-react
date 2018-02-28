@@ -9,6 +9,7 @@ import {XH} from 'hoist/core';
 
 import {UrlStore} from 'hoist/data';
 import {action} from 'hoist/mobx';
+import {remove} from 'lodash';
 
 /**
  * Store with additional support for RestGrid.
@@ -26,7 +27,7 @@ export class RestStore extends UrlStore {
 
     async loadAsync() {
         if (!this._lookupsLoaded) {
-            const lookupFields = this.recordSpec.fields.filter(it => !!it.lookup);
+            const lookupFields = this.fields.filter(it => !!it.lookup);
             if (lookupFields.length) {
                 const lookupData = await XH.fetchJson({url: `${this.url}/lookupData`});
                 lookupFields.forEach(f => {
@@ -52,6 +53,7 @@ export class RestStore extends UrlStore {
     }
 
     async addRecordAsync(rec) {
+        console.log(rec);
         return this.saveRecordInternalAsync(rec, true)
     }
 

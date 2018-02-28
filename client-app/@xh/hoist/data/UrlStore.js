@@ -11,7 +11,6 @@ import {LocalStore} from './LocalStore';
 
 /**
  * A store with built-in support for loading data from a url.
- *
  */
 export class UrlStore extends LocalStore {
 

@@ -18,9 +18,7 @@ export class UserPanel extends Component {
     gridModel = new GridModel({
         store: new UrlStore({
             url: 'userAdmin',
-            recordSpec: {
-                fields: ['email', 'displayName', 'active', 'roles']
-            }
+            fields: ['username', 'email', 'displayName', 'active', 'roles']
         }),
         columns: [
             usernameCol({width: 175}),

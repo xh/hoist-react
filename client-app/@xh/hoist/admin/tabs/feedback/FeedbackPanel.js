@@ -16,17 +16,15 @@ export class FeedbackPanel extends Component {
 
     store = new RestStore({
         url: 'rest/feedbackAdmin',
-        recordSpec: {
-            fields: [
-                {name: 'username', label: 'User'},
-                {name: 'msg', label: 'Message'},
-                {name: 'browser', label: 'Browser', readOnly: true},
-                {name: 'device', label: 'Device', readOnly: true},
-                {name: 'appVersion', label: 'Version', readOnly: true},
-                {name: 'appEnvironment', label: 'Environment', readOnly: true},
-                {name: 'dateCreated', type: 'date', dateFormat: 'time', label: 'Date', readOnly: true, allowNull: true}
-            ]
-        }
+        fields: [
+            {name: 'username', label: 'User'},
+            {name: 'msg', label: 'Message'},
+            {name: 'browser', label: 'Browser', readOnly: true},
+            {name: 'device', label: 'Device', readOnly: true},
+            {name: 'appVersion', label: 'Version', readOnly: true},
+            {name: 'appEnvironment', label: 'Environment', readOnly: true},
+            {name: 'dateCreated', type: 'date', dateFormat: 'time', label: 'Date', readOnly: true, allowNull: true}
+        ]
     });
 
     gridModel = new RestGridModel({

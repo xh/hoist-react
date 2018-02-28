@@ -6,6 +6,7 @@
  */
 
 import {forOwn} from 'lodash';
+import {start} from 'hoist/promise';
 import {observable, computed, action} from 'hoist/mobx';
 import {ConfirmModel} from 'hoist/cmp';
 
@@ -21,7 +22,7 @@ export class RestFormModel {
     get actionWarning() {return this.parent.actionWarning}
     get actionEnabled() {return this.parent.actionEnabled}
     get store()         {return this.parent.store}
-    get fields()        {return this.store.recordSpec.fields}
+    get fields()        {return this.store.fields}
     get loadModel()     {return this.store.loadModel}
 
     @computed
@@ -32,10 +33,8 @@ export class RestFormModel {
 
     @computed
     get isFormValid() {
-        const fieldSpecs = this.store.recordSpec.fields;
-
         let valid = true;
-        fieldSpecs.forEach(spec => {
+        this.fields.forEach(spec => {
             if (!this.isFieldValid(spec.name)) valid = false;
         });
 
@@ -65,10 +64,12 @@ export class RestFormModel {
     //-----------------
     @action
     saveRecord() {
-        this.store
-            .saveRecordAsync(this.record)
-            .then(() => this.close())
-            .catchDefault();
+        const {isAdd, record, store} = this;
+        start(() => {
+            return isAdd ? store.addRecordAsync(record) : store.saveRecordAsync(record)
+        }).then(
+            () => this.close()
+        ).catchDefault();
     }
 
     @action

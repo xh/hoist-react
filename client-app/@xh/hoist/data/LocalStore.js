@@ -60,24 +60,24 @@ export class LocalStore extends BaseStore {
 
     createRecords(rawData) {
         const id = 0;
-        const {processRawData, recordSpec} = this;
+        const {processRawData} = this;
         if (processRawData) {
             rawData = processRawData(rawData);
         }
         rawData.forEach((rec, id) => {
             if (!('id' in rec)) rec.id = id;
         });
-        return rawData.map(it => recordSpec.createRecord(it));
+        return rawData.map(it => this.createRecord(it));
     }
 
     //-----------------------------
     // Implementation of Store
     //-----------------------------
-    get records()       {return this._records;}
-    get allRecords()    {return this._allRecords;}
+    get records()       {return this._records}
+    get allRecords()    {return this._allRecords}
 
-    get loadModel()     {return this._loadModel;}
-    get filter()        {return this._filter;}
+    get loadModel()     {return this._loadModel}
+    get filter()        {return this._filter}
     set filter(filterFn) {
         this._filter = filterFn;
         this.applyFilter();

@@ -16,17 +16,15 @@ export class PreferencePanel extends Component {
 
     store = new RestStore({
         url: 'rest/preferenceAdmin',
-        recordSpec: {
-            fields: [
-                {name: 'name', label: 'Name'},
-                {name: 'type', label: 'Type', lookup: 'types'},
-                {name: 'defaultValue',  typeField: 'type', label: 'Default Value'},
-                {name: 'notes', label: 'Notes', allowNull: true},
-                {name: 'local', label: 'Local', type: 'bool'},
-                {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true, allowNull: true},
-                {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true, allowNull: true}
-            ]
-        },
+        fields: [
+            {name: 'name', label: 'Name'},
+            {name: 'type', label: 'Type', lookup: 'types'},
+            {name: 'defaultValue',  typeField: 'type', label: 'Default Value'},
+            {name: 'notes', label: 'Notes', allowNull: true},
+            {name: 'local', label: 'Local', type: 'bool'},
+            {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true, allowNull: true},
+            {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true, allowNull: true}
+        ]
     });
 
     gridModel = new RestGridModel({

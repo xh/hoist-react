@@ -16,16 +16,14 @@ export class UserPreferencePanel extends Component {
 
     store = new RestStore({
         url: 'rest/userPreferenceAdmin',
-        recordSpec: {
-            fields: [
-                {name: 'name', label: 'Pref', lookup: 'names'},
-                {name: 'type', label: 'Type'},
-                {name: 'username', label: 'User'},
-                {name: 'userValue', typeField: 'type', label: 'User Value'},
-                {name: 'lastUpdated', type: 'date', label: 'Last Updated', allowNull: true},
-                {name: 'lastUpdatedBy', label: 'Last Updated By', allowNull: true}
-            ]
-        }
+        fields: [
+            {name: 'name', label: 'Pref', lookup: 'names'},
+            {name: 'type', label: 'Type'},
+            {name: 'username', label: 'User'},
+            {name: 'userValue', typeField: 'type', label: 'User Value'},
+            {name: 'lastUpdated', type: 'date', label: 'Last Updated', allowNull: true},
+            {name: 'lastUpdatedBy', label: 'Last Updated By', allowNull: true}
+        ]
     });
 
     gridModel = new RestGridModel({

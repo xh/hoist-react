@@ -23,12 +23,10 @@ export class ActivityPanel extends Component {
 
     store = new UrlStore({
         url: 'trackLogAdmin',
-        recordSpec: {
-            fields: [
-                'severity', 'dateCreated', 'msg', 'category', 'device',
-                'browser', 'data', 'impersonating', 'elapsed'
-            ]
-        }
+        fields: [
+            'severity', 'dateCreated', 'msg', 'category', 'device',
+            'browser', 'data', 'impersonating', 'elapsed'
+        ]
     });
 
     gridModel = new GridModel({

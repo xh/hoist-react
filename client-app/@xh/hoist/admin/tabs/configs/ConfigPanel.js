@@ -16,21 +16,19 @@ export class ConfigPanel extends Component {
 
     store = new RestStore({
         url: 'rest/configAdmin',
-        recordSpec: {
-            fields: this.filterForEnv([
-                {name: 'name', label: 'Name'},
-                {name: 'groupName', label: 'Group', lookup: 'groupNames'},
-                {name: 'valueType', label: 'Type', lookup: 'valueTypes'},
-                {name: 'prodValue', label: 'Prod Value', typeField: 'valueType', env: 'Production'},
-                {name: 'betaValue', label: 'Beta Value', allowNull: true, typeField: 'valueType', env: 'Beta'},
-                {name: 'stageValue', label: 'Stage Value', allowNull: true, typeField: 'valueType', env: 'Staging'},
-                {name: 'devValue', label: 'Dev Value', allowNull: true, typeField: 'valueType', env: 'Development'},
-                {name: 'clientVisible', label: 'Client?', type: 'bool', defaultValue: false},
-                {name: 'note', label: 'Note', allowNull: true},
-                {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true, allowNull: true},
-                {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true, allowNull: true}
-            ])
-        }
+        fields: this.filterForEnv([
+            {name: 'name', label: 'Name'},
+            {name: 'groupName', label: 'Group', lookup: 'groupNames'},
+            {name: 'valueType', label: 'Type', lookup: 'valueTypes'},
+            {name: 'prodValue', label: 'Prod Value', typeField: 'valueType', env: 'Production'},
+            {name: 'betaValue', label: 'Beta Value', allowNull: true, typeField: 'valueType', env: 'Beta'},
+            {name: 'stageValue', label: 'Stage Value', allowNull: true, typeField: 'valueType', env: 'Staging'},
+            {name: 'devValue', label: 'Dev Value', allowNull: true, typeField: 'valueType', env: 'Development'},
+            {name: 'clientVisible', label: 'Client?', type: 'bool', defaultValue: false},
+            {name: 'note', label: 'Note', allowNull: true},
+            {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true, allowNull: true},
+            {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true, allowNull: true}
+        ])
     });
 
     gridModel = new RestGridModel({

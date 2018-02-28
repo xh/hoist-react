@@ -17,9 +17,7 @@ export class ServicePanel extends Component {
         store: new UrlStore({
             url: 'serviceAdmin/listServices',
             processRawData: this.processRawData,
-            recordSpec: {
-                fields: ['provider', 'name']
-            }
+            fields: ['provider', 'name']
         }),
         columns: [
             baseCol({field: 'provider', text: 'Provider', width: 150, maxWidth: 150}),
