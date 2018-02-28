@@ -31,7 +31,9 @@ export class LogViewer extends Component {
     }
 
     getContents() {
-        const {files, loadModel} = this.model;
+        const {files, loadModel} = this.model,
+            appLogFile = `${XH.appName.toLowerCase()}.log`;
+
         return hframe(
             collapsible({
                 side: 'left',
@@ -39,7 +41,10 @@ export class LogViewer extends Component {
                 item: grid({
                     model: files,
                     gridOptions: {
-                        defaultColDef: {suppressMenu: true}
+                        defaultColDef: {suppressMenu: true},
+                        onRowDataChanged() {
+                            this.api.forEachNode(node => node.setSelected(node.data.filename === appLogFile));
+                        }
                     }
                 })
             }),
