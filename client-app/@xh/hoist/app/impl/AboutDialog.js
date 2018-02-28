@@ -16,6 +16,7 @@ export class AboutDialog extends Component {
     render() {
         return dialog({
             isOpen: this.props.isOpen,
+            isCloseButtonShown: false,
             icon: 'info-sign',
             cls: `xh-about-dialog${hoistModel.darkTheme ? ' xh-dark' : ''}`,
             title: `About ${XH.appName}`,
@@ -31,13 +32,7 @@ export class AboutDialog extends Component {
         const svc = XH.environmentService,
             row = (label, data) => tr(th(label), td(data)),
             configRows = XH.getConf('xhAboutMenuConfigs', []).map(it => {
-                try {
-                    return row(it.label, XH.getConf(it.key));
-                } catch (e) {
-                    console.warn('Error while getting config: ', e);
-                }
-
-                return false;
+                return row(it.label, XH.getConf(it.key, ''));
             });
 
         return table({
