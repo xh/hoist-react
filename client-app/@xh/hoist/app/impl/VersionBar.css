@@ -12,3 +12,8 @@
 .xh-version-bar-staging {
     background-color: darkslateblue;
 }
+
+.xh-version-bar .pt-icon {
+    cursor: pointer;
+    margin-left: 5px;
+}

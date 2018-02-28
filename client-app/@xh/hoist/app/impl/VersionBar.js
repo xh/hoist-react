@@ -8,7 +8,8 @@
 import {Component} from 'react';
 import {XH, elemFactory, hoistComponent} from 'hoist/core';
 import {box} from 'hoist/layout';
-
+import {icon} from 'hoist/kit/blueprint';
+import {hoistModel} from 'hoist/core';
 import './VersionBar.css';
 
 @hoistComponent()
@@ -18,7 +19,8 @@ export class VersionBar extends Component {
         const env = XH.getEnv('appEnvironment'),
             version = XH.getEnv('appVersion'),
             isVisible = (env !== 'Production' || XH.getPref('xhForceEnvironmentFooter')),
-            cls = `xh-version-bar xh-version-bar-${env.toLowerCase()}`;
+            cls = `xh-version-bar xh-version-bar-${env.toLowerCase()}`,
+            info = icon({icon: 'info-sign', iconSize: 16, onClick: this.showAbout});
 
         if (!isVisible) return null;
 
@@ -27,8 +29,12 @@ export class VersionBar extends Component {
             alignItems: 'center',
             flex: 'none',
             cls,
-            item: [XH.appName, env, version].join(' • ')
+            items: [[XH.appName, env, version].join(' • '), info]
         });
+    }
+
+    showAbout() {
+        hoistModel.setShowAbout(true);
     }
 }
 export const versionBar = elemFactory(VersionBar);
