@@ -100,22 +100,19 @@ class HoistModel {
         this.authCompleted = true;
 
         if (username && !this.isInitialized) {
-            // 100ms delay works around styling issues introduced by 2/2018 web pack loading changes
-            // TODO: Remove
+            // 100ms delay works around styling issues introduced by 2/2018 web pack loading changes. TODO: Remove
             this.initServicesAsync()
                 .wait(100)
-                .then(() => {
-                    this.setIsInitialized(true);
-                    this.setDarkTheme(this.prefService.get('xhTheme') === 'dark');
-                })
+                .then(() => this.initLocalState())
+                .then(() => this.setIsInitialized(true))
                 .catchDefault();
         }
     }
 
     @action
     toggleTheme() {
-        this.prefService.set('xhTheme', this.darkTheme ? 'light' : 'dark');
         this.setDarkTheme(!this.darkTheme);
+        this.prefService.set('xhTheme', this.darkTheme ? 'dark' : 'light');
     }
 
     //------------------------------------
@@ -135,6 +132,10 @@ class HoistModel {
             this.trackService,
             this.eventService
         );
+    }
+
+    initLocalState() {
+        this.setDarkTheme(this.prefService.get('xhTheme') === 'dark');
     }
 }
 export const hoistModel = new HoistModel();
