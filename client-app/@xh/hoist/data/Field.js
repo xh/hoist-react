@@ -6,7 +6,7 @@
  */
 
 /**
- * Metadata for field.
+ * Metadata for a column or 'field' in a Store record.
  */
 export class Field {
 
@@ -20,10 +20,12 @@ export class Field {
      * Construct this object.
      *
      * @param name, required.
-     * @param type, one of [string, int, number, bool, json, date, day, auto]
+     * @param type, one of [string, int, number, bool, json, date, day, auto], default 'auto'
      * @param label, optional, default to name
      * @param allowNull, default false.
      * @param defaultValue, default null.
+     *
+     * @param rest, additional properties to be applied directly to this object.
      */
     constructor({
         name,

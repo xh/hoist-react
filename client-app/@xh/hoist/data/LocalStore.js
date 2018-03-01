@@ -11,9 +11,8 @@ import {observable, action, computed} from 'hoist/mobx';
 import {BaseStore} from './BaseStore';
 
 /**
- * Basic implementation of Store.
+ * Basic implementation of Store for local in-memory data.
  *
- * This class allows records to be loaded via a loadDataAsync() method.
  */
 export class LocalStore extends BaseStore {
 

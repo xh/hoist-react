@@ -12,7 +12,7 @@ import {Field} from './Field';
 /**
  * A managed observable set of Records.
  *
- * This class is intended to be abstract.  See LocalStore, RestStore, or UrlStore for
+ * This class is intended to be abstract.  See LocalStore or UrlStore for
  * concrete implementations.
  */
 export class BaseStore {
@@ -37,7 +37,7 @@ export class BaseStore {
      * Construct this object.
      *
      * @param fields, list of Fields or valid configuration for Fields.
-     *      (A simple string representing the name is an acceptable default value)
+     *      (A simple string representing the field name is sufficient).
      */
     constructor({fields}) {
         this.fields = fields.map(f => {
@@ -54,8 +54,9 @@ export class BaseStore {
      * @param raw, json object containing raw data, and 'id' property
      *
      * This method will apply basic validation for nullability and type,
-     * and basic conversion (e.g. 'date').   An exception will be thrown
-     * if the validation or conversion fails.
+     * and basic conversion (e.g. 'date' will convert from UTC time to a JS Date object).
+     *
+     * An exception will be thrown if the validation or conversion fails.
      */
     createRecord(raw) {
         const ret = {id: raw.id, raw};

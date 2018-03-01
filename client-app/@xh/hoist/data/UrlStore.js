@@ -21,7 +21,7 @@ export class UrlStore extends LocalStore {
      * Construct this object.
      *
      * @param url, required.
-     * @param dataRoot, optional.  Root node for records in returned data.
+     * @param dataRoot, optional.  Name of root node for records in returned data.
      */
     constructor({url, dataRoot = null, ...rest}) {
         super(rest)
@@ -41,6 +41,5 @@ export class UrlStore extends LocalStore {
                 return this.loadDataInternal(data);
             })
             .linkTo(this.loadModel)
-            .catchDefault()
     }
 }

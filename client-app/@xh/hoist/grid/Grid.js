@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {XH, hoistComponent, elemFactory} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
-import {toJS, whyRun} from 'hoist/mobx';
+import {toJS} from 'hoist/mobx';
 import {defaults} from 'lodash';
 
 import './ag-grid';

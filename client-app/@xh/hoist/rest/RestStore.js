@@ -13,6 +13,8 @@ import {remove} from 'lodash';
 
 /**
  * Store with additional support for RestGrid.
+ *
+ * Provides support for lookups, and CRUD operations on records.
  */
 export class RestStore extends UrlStore {
 
@@ -53,7 +55,6 @@ export class RestStore extends UrlStore {
     }
 
     async addRecordAsync(rec) {
-        console.log(rec);
         return this.saveRecordInternalAsync(rec, true)
     }
 

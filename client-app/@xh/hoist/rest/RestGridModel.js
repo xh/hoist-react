@@ -14,7 +14,7 @@ import {ConfirmModel} from 'hoist/cmp';
 import {RestFormModel} from './RestFormModel';
 
 /**
- * Core Model for a RestGrid
+ * Core Model for a RestGrid.
  */
 export class RestGridModel {
 
