@@ -9,7 +9,7 @@ import {XH} from 'hoist/core';
 import {action} from 'hoist/mobx';
 import {RecordSpec} from 'hoist/data';
 import {GridModel} from 'hoist/grid';
-import {ConfirmModel} from 'hoist/cmp';
+import {AlertModel} from 'hoist/cmp';
 
 
 import {RestFormModel} from './RestFormModel';
@@ -39,7 +39,7 @@ export class RestGridModel {
     recordSpec = null;
     _lookupsLoaded = false;
 
-    confirmModel = new ConfirmModel();
+    alertModel = new AlertModel();
 
     get url()       {return this.gridModel.url}
     get selection() {return this.gridModel.selection}

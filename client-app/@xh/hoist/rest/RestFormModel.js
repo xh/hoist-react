@@ -7,13 +7,13 @@
 
 import {forOwn} from 'lodash';
 import {observable, computed, action} from 'hoist/mobx';
-import {ConfirmModel} from 'hoist/cmp';
+import {AlertModel} from 'hoist/cmp';
 
 export class RestFormModel {
 
     parent = null;
     editors = [];
-    confirmModel = new ConfirmModel();
+    alertModel = new AlertModel();
 
     // If not null, form will be open and display it
     @observable record = null;
@@ -74,7 +74,7 @@ export class RestFormModel {
     @action
     close() {
         this.record = null;
-        this.confirmModel.close();
+        this.alertModel.close();
     }
 
     @action

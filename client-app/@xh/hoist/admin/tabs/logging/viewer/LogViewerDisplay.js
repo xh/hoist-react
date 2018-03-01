@@ -10,8 +10,7 @@ import {elemFactory, hoistComponent} from 'hoist/core';
 import {Ref} from 'hoist/utils/Ref';
 import {observer, observable, setter , toJS, autorun} from 'hoist/mobx';
 import {frame, table, tbody, td, tr} from 'hoist/layout';
-import {clipboardMenuItem} from  'hoist/cmp'
-import {contextMenu, ContextMenuModel} from 'hoist/cmp/contextmenu';
+import {clipboardMenuItem, contextMenu, ContextMenuModel} from  'hoist/cmp';
 
 @hoistComponent()
 class LogViewerDisplay extends Component {
