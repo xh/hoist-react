@@ -7,6 +7,7 @@
 import {Component} from 'react';
 import {hoistComponent} from 'hoist/core';
 import {grid, GridModel} from 'hoist/grid';
+import {UrlStore} from 'hoist/data';
 import {baseCol} from 'hoist/columns/Core';
 
 import {nameCol} from '../../columns/Columns';
@@ -15,7 +16,10 @@ import {nameCol} from '../../columns/Columns';
 export class EhCachePanel extends Component {
 
     gridModel = new GridModel({
-        url: 'ehCacheAdmin/listCaches',
+        store: new UrlStore({
+            url: 'ehCacheAdmin/listCaches',
+            fields: ['name', 'heapSize', 'entries', 'status']
+        }),
         columns: [
             nameCol(),
             baseCol({field: 'heapSize', text: 'Heap Size (MB)', width: 130}),
@@ -29,6 +33,6 @@ export class EhCachePanel extends Component {
     }
 
     loadAsync() {
-        return this.gridModel.loadAsync();
+        return this.gridModel.store.loadAsync();
     }
 }

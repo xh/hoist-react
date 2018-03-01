@@ -6,5 +6,5 @@
  */
 
 export * from './Promise';
-export * from './LastPromiseModel';
-export * from './MultiPromiseModel';
+export * from './model/LastPromiseModel';
+export * from './model/MultiPromiseModel';

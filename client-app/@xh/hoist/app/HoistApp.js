@@ -36,7 +36,7 @@ export function hoistApp(C) {
         constructor() {
             // TODO:  Provide to app via Provider/inject mechanism rather than global import.
             super();
-            hoistModel.initApp();
+            hoistModel.initAsync();
         }
 
         render() {
