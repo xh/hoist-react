@@ -33,19 +33,15 @@ export class RestFormModel {
 
     @computed
     get isFormValid() {
-        let valid = true;
-        this.fields.forEach(spec => {
-            if (!this.isFieldValid(spec.name)) valid = false;
-        });
-
-        return valid;
+        return this.fields.every(f => this.isFieldValid(f.name));
     }
 
     isFieldValid(fieldName) {
-        if (!this.record) return;
-        const fieldSpec = this.fields.find(it => it.name === fieldName),
-            v = this.record[fieldName];
-        return fieldSpec.allowNull || (v != null && v !== '')
+        const {record, fields} = this;
+        if (!record) return false;
+        const field = fields.find(it => it.name === fieldName),
+            v = record[fieldName];
+        return field.allowNull || (v != null && v !== '');
     }
 
     @computed

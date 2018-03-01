@@ -22,14 +22,14 @@ export class Field {
      * @param name, required.
      * @param type, one of [string, int, number, bool, json, date, day, auto]
      * @param label, optional, default to name
-     * @param allowNull, default true.
+     * @param allowNull, default false.
      * @param defaultValue, default null.
      */
     constructor({
         name,
         type = 'auto',
         label = name,
-        allowNull = true,
+        allowNull = false,
         defaultValue = null,
         ...rest
     }) {
