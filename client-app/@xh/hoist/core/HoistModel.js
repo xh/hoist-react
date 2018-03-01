@@ -76,7 +76,7 @@ class HoistModel {
     initApp() {
         this.fetchService.fetchJson({url: 'auth/authUser'})
             .then(r => this.markAuthenticatedUser(r.authUser.username))
-            .catch(e => this.markAuthenticatedUser(null));
+            .catch(e => this.markAuthenticatedUser(null))
     }
 
     /**
@@ -100,7 +100,10 @@ class HoistModel {
         this.authCompleted = true;
 
         if (username && !this.isInitialized) {
+            // 100ms delay works around styling issues introduced by 2/2018 web pack loading changes
+            // TODO: Remove
             this.initServicesAsync()
+                .wait(100)
                 .then(() => this.setIsInitialized(true))
                 .catchDefault();
         }
