@@ -104,13 +104,17 @@ class HoistModel {
             // TODO: Remove
             this.initServicesAsync()
                 .wait(100)
-                .then(() => this.setIsInitialized(true))
+                .then(() => {
+                    this.setIsInitialized(true);
+                    this.setDarkTheme(this.prefService.get('xhTheme') === 'dark');
+                })
                 .catchDefault();
         }
     }
 
     @action
     toggleTheme() {
+        this.prefService.set('xhTheme', this.darkTheme ? 'light' : 'dark');
         this.setDarkTheme(!this.darkTheme);
     }
 
