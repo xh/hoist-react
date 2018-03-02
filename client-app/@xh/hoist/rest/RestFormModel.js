@@ -8,13 +8,13 @@
 import {forOwn} from 'lodash';
 import {start} from 'hoist/promise';
 import {observable, computed, action} from 'hoist/mobx';
-import {AlertModel} from 'hoist/cmp';
+import {MessageModel} from 'hoist/cmp';
 
 export class RestFormModel {
 
     parent = null;
     editors = [];
-    alertModel = new AlertModel();
+    messageModel = new MessageModel({title: 'Warning', icon: 'warning-sign'});
 
     // If not null, form will be open and display it
     @observable record = null;
@@ -79,7 +79,7 @@ export class RestFormModel {
     @action
     close() {
         this.record = null;
-        this.alertModel.close();
+        this.messageModel.close();
     }
 
     @action

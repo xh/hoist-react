@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
-import {loadMask, alert} from 'hoist/cmp';
+import {loadMask, message} from 'hoist/cmp';
 import {filler, vframe, hbox} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
 import {fmtDateTime} from 'hoist/format';
@@ -45,7 +45,7 @@ export class RestForm extends Component {
             dialogFooter(
                 dialogFooterActions(this.getButtons())
             ),
-            alert({model: model.alertModel}),
+            message({model: model.messageModel}),
             loadMask({model: model.loadModel})
         ];
     }
@@ -86,7 +86,7 @@ export class RestForm extends Component {
             warning = model.actionWarning.del;
 
         if (warning) {
-            model.alertModel.alert({
+            model.messageModel.confirm({
                 message: warning,
                 onConfirm: () => model.deleteRecord()
             });
@@ -101,7 +101,7 @@ export class RestForm extends Component {
             warning = model.actionWarning[isAdd ? 'add' : 'edit'];
 
         if (warning) {
-            model.alertModel.show({
+            model.messageModel.confirm({
                 message: warning,
                 onConfirm: () => model.saveRecord()
             });

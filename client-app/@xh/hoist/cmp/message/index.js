@@ -4,5 +4,5 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-export * from './Alert';
-export * from './AlertModel';
+export * from './Message';
+export * from './MessageModel';

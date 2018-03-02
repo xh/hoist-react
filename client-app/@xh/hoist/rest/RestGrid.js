@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {frame, vframe} from 'hoist/layout';
-import {alert} from 'hoist/cmp';
+import {message} from 'hoist/cmp';
 
 import {restGridToolbar} from './RestGridToolbar';
 import {restForm} from './RestForm';
@@ -30,7 +30,7 @@ export class RestGrid extends Component {
                 })
             ),
             restForm({model: model.formModel}),
-            alert({model: model.alertModel})
+            message({model: model.messageModel})
         );
     }
 

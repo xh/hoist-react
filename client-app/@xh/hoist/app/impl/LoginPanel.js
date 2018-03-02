@@ -6,12 +6,12 @@
  */
 
 import './LoginPanel.css';
-import {Component} from 'react';
+import React, {Component} from 'react';
 import {XH, elemFactory, hoistComponent, hoistModel} from 'hoist/core';
 import {vbox, hbox, filler, viewport} from 'hoist/layout';
 import {inputGroup, button, text} from 'hoist/kit/blueprint';
 import {observable, computed, setter} from 'hoist/mobx';
-import {AlertModel, alert} from 'hoist/cmp';
+import {MessageModel, message} from 'hoist/cmp';
 
 @hoistComponent()
 export class LoginPanel extends Component {
@@ -19,7 +19,7 @@ export class LoginPanel extends Component {
     @setter @observable username = '';
     @setter @observable password = '*****'; // Needed because saved password in chrome not triggering initial validation
     @setter @observable warning = '';
-    exceptionAlert = new AlertModel();
+    messageModel = new MessageModel();
 
     @computed get isValid() {
         return this.username && this.password;
@@ -64,7 +64,7 @@ export class LoginPanel extends Component {
                             onClick: this.onSubmit
                         })
                     ),
-                    alert({model: this.exceptionAlert})
+                    message({model: this.messageModel})
                 ]
             })
         });
@@ -76,16 +76,21 @@ export class LoginPanel extends Component {
     onSubmit = () => {
         const {username, password} = this;
         return XH.fetchJson({
-            url: 'auth/loginn',
+            url: 'auth/login',
             params: {username, password}
         }).then(r => {
             hoistModel.markAuthenticatedUser(r.success ? username : null);
-            this.setWarning(r.success ? '' : 'Login Failed.');
+            this.setWarning(r.success ? '' : 'Login Incorrect.');
         }).catch(e => {
             hoistModel.markAuthenticatedUser(null);
-            this.exceptionAlert.alert({
+            this.messageModel.alert({
                 title: 'Error' ,
-                message: `There was an error executing the login: ${e.message || e.name}`
+                icon: 'error',
+                message:
+                    <div>
+                        An error occurred executing the login: <br/><br/>
+                        <b> {e.message || e.name} </b>
+                    </div>
             });
         });
     }

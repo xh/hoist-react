@@ -9,5 +9,5 @@ export * from './contextmenu';
 export * from './clipboard';
 export * from './Collapsible';
 export * from './tab';
-export * from './alert';
+export * from './message';
 export * from './ToastManager';

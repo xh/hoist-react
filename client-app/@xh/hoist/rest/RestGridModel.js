@@ -9,7 +9,7 @@ import {XH} from 'hoist/core';
 import {action} from 'hoist/mobx';
 import {RecordSpec} from 'hoist/data';
 import {GridModel} from 'hoist/grid';
-import {AlertModel} from 'hoist/cmp';
+import {MessageModel} from 'hoist/cmp';
 
 
 import {RestFormModel} from './RestFormModel';
@@ -36,7 +36,7 @@ export class RestGridModel {
 
     gridModel = null;
     formModel = null;
-    alertModel = new AlertModel();
+    messageModel = new MessageModel({title: 'Warning', icon: 'warning-sign'});
 
     get store()     {return this.gridModel.store}
     get selection() {return this.gridModel.selection}
