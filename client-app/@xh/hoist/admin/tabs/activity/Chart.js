@@ -21,7 +21,6 @@ export class VisitsChart extends Component {
 
     @observable chartModel = new ChartModel({
         config: {
-            startDate: 20151128,
             chart: {type: 'column'},
             title: {text: 'Unique Visits'},
             xAxis: {
@@ -37,12 +36,12 @@ export class VisitsChart extends Component {
     });
 
     render() {
-        if(this._dailyVisits.length === 0 || this.needReload) {
-            this.getUniqueVisits();
+        if(this._dailyVisits.length === 0) {
+            this.getUniqueVisits({startDate: 20151128});
             return null
         }
 
-        this.chartModel.setSeries(this.getSeries(this._dailyVisits));
+        this.chartModel.setSeries(this.getSeriesData(this._dailyVisits));
 
         return vframe(
                 this.createToolbar(),
@@ -50,12 +49,12 @@ export class VisitsChart extends Component {
         );
     }
 
-    getUniqueVisits() {
+    getUniqueVisits(params) {
         return XH.fetchJson({
             url: 'trackLogAdmin/dailyVisitors',
             // params will also take a user name, cannot be set to null, better to not pass one at all.
             params: {
-                startDate: this.chartModel.config.startDate, // piq defaults to a year ago from today. implement this later
+                startDate: params.startDate, // piq defaults to a year ago from today. implement this later
                 endDate: 20180228
             },
         }).then(data => {
@@ -65,7 +64,7 @@ export class VisitsChart extends Component {
         });
     }
 
-    getSeries(visits) {
+    getSeriesData(visits) {
         if (visits.length === 0) return;
 
         const data = [];
@@ -96,12 +95,11 @@ export class VisitsChart extends Component {
     @action
     setDailyVisits(data) {
         this._dailyVisits = data;
-        this.needReload = false;
     }
 
     @action
     onChangeDate = () => {
-        this.chartModel.config.startDate = 20171101;
+        this.getUniqueVisits({startDate: 20171101}); // triggers the correct
     }
 
 }
