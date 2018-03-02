@@ -14,6 +14,7 @@ import {contextMenu, ContextMenuModel} from 'hoist/cmp';
 import {errorDialog} from 'hoist/error';
 import {frame, viewport, vframe} from 'hoist/layout';
 import {hocDisplayName} from 'hoist/utils/ReactUtils';
+import {Icon} from 'hoist/icon';
 
 import {loginPanel} from './impl/LoginPanel';
 import {impersonationBar} from './impl/ImpersonationBar';
@@ -28,7 +29,7 @@ import {aboutDialog} from './impl/AboutDialog';
  */
 export function hoistApp(C) {
     
-    C = hoistComponent()(C)
+    C = hoistComponent()(C);
 
     const ret = class extends Component {
         static displayName = hocDisplayName('HoistApp', C);
@@ -66,19 +67,19 @@ export function hoistApp(C) {
             const model = new ContextMenuModel([
                 {
                     text: 'Reload App',
-                    icon: 'refresh',
+                    icon: Icon.refresh,
                     fn: () => hoistModel.reloadApp()
                 },
                 {
                     text: 'About',
-                    icon: 'info-sign',
+                    icon: Icon.info,
                     fn: () => hoistModel.setShowAbout(true)
                 }
             ]);
 
             return contextMenu({model});
         }
-    }
+    };
     return hoistComponent()(ret);
 }
 

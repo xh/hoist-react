@@ -11,10 +11,9 @@ import {hoistApp} from 'hoist/app';
 import {vframe, frame} from 'hoist/layout';
 import {navbar, navbarGroup, navbarHeading, button, Intent} from 'hoist/kit/blueprint';
 import {tabContainer} from 'hoist/cmp';
+import {Icon, faIcon} from 'hoist/icon';
 
 import {AppModel} from './AppModel';
-
-import {glyph, Glyph} from 'hoist/utils/Glyph';
 
 @hoistApp
 export class App extends Component {
@@ -44,7 +43,7 @@ export class App extends Component {
                 navbarGroup({
                     align: 'left',
                     items: [
-                        glyph({icon: Glyph.EYE, size: '2x', flip: 'both'}),
+                        faIcon({icon: 'eye', size: '2x', flip: 'both'}),
                         navbarHeading(`${XH.appName} Admin`)
                     ]
                 }),
@@ -52,18 +51,18 @@ export class App extends Component {
                     align: 'right',
                     items: [
                         button({
-                            icon: glyph(Glyph.ENVELOPE),
+                            icon: Icon.mail,
                             text: 'Contact',
                             cls: 'xh-mr',
                             onClick: this.onContactClick
                         }),
                         button({
-                            icon: glyph(this.darkTheme ? Glyph.SUN : Glyph.MOON),
+                            icon: this.darkTheme ? Icon.sun : Icon.moon,
                             cls: 'xh-mr',
                             onClick: this.onThemeToggleClick
                         }),
                         button({
-                            icon: glyph(Glyph.REFRESH),
+                            icon: Icon.refresh,
                             intent: Intent.SUCCESS,
                             onClick: this.onRefreshClick
                         })

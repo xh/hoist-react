@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {elemFactory, hoistComponent} from 'hoist/core';
 import {inputGroup, numericInput, checkbox, button} from 'hoist/kit/blueprint';
 import {hbox, filler, hspacer, div} from 'hoist/layout';
-import {Glyph, glyph} from 'hoist/utils/Glyph';
+import {Icon} from 'hoist/icon';
 
 @hoistComponent()
 export class LogViewerToolbar extends Component {
@@ -53,7 +53,7 @@ export class LogViewerToolbar extends Component {
                 }),
                 filler(),
                 button({
-                    icon: glyph(Glyph.REFRESH),
+                    icon: Icon.refresh,
                     onClick: this.onSubmitClick
                 })
             ]

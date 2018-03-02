@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {hbox} from 'hoist/layout';
 import {button} from 'hoist/kit/blueprint';
-import {Glyph, glyph} from 'hoist/utils/Glyph';
+import {Icon} from 'hoist/icon';
 
 @hoistComponent()
 export class RestGridToolbar extends Component {
@@ -27,21 +27,21 @@ export class RestGridToolbar extends Component {
             items: [
                 {
                     text: 'Add',
-                    icon: glyph(Glyph.ADD),
+                    icon: Icon.add,
                     intent: 'success',
                     onClick: this.onAddClick,
                     omit: !actionEnabled.add
                 },
                 {
                     text: 'Edit',
-                    icon: glyph(Glyph.EDIT),
+                    icon: Icon.edit,
                     onClick: this.onEditClick,
                     disabled: !singleRecord,
                     omit: !actionEnabled.edit
                 },
                 {
                     text: 'Delete',
-                    icon: glyph(Glyph.DELETE),
+                    icon: Icon.delete,
                     intent: 'danger',
                     onClick: this.onDeleteClick,
                     disabled: !singleRecord,
