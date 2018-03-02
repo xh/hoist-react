@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {button, inputGroup} from 'hoist/kit/blueprint';
 import {XH, hoistComponent, elemFactory} from 'hoist/core';
 import {chart, ChartModel} from 'hoist/highcharts';
-import {vframe, hbox} from 'hoist/layout';
+import {vframe, hbox, hspacer} from 'hoist/layout';
 import {observable, action} from 'hoist/mobx';
 
 @hoistComponent()
@@ -31,15 +31,18 @@ export class VisitsChart extends Component {
                     value: model.startDate,
                     onChange: this.onStartDateChange
                 }),
+                hspacer(10),
                 inputGroup({ // turn into date field
                     value: model.endDate,
                     onChange: this.onEndDateChange
                 }),
+                hspacer(10),
                 inputGroup({
-                    placeHolder: 'Username',
+                    placeholder: 'Username',
                     value: model.username,
                     onChange: this.onUsernameChange
                 }),
+                hspacer(10),
                 button({
                     text: 'Submit',
                     intent: 'success',

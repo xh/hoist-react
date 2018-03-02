@@ -45,7 +45,7 @@ export class VisitsModel {
                 username: this.username
             },
         }).then(data => {
-            this.chartModel.setSeries(this.getSeriesData(data)) // still getting the mobx warning
+            this.chartModel.setSeries(this.getSeriesData(data))
         }).catchDefault({
             message: 'Failed to fetch daily visits'
         });
