@@ -12,17 +12,16 @@ import {button} from 'hoist/kit/blueprint';
 import {XH, hoistComponent, elemFactory} from 'hoist/core';
 import {chart, ChartModel} from 'hoist/highcharts';
 import {vframe, hbox} from 'hoist/layout';
-import {observable, action} from 'hoist/mobx';
+import {observable, action, whyRun, trace} from 'hoist/mobx';
 
 @hoistComponent()
 export class VisitsChart extends Component {
 
-    @observable _dailyVisits = [];
-    @observable.ref needReload = false;
-    startDate = 20151128;
+    @observable.ref _dailyVisits = [];
 
     @observable chartModel = new ChartModel({
         config: {
+            startDate: 20151128,
             chart: {type: 'column'},
             title: {text: 'Unique Visits'},
             xAxis: {
@@ -39,7 +38,8 @@ export class VisitsChart extends Component {
 
     render() {
         if(this._dailyVisits.length === 0 || this.needReload) {
-            this.getUniqueVisits(this.startDate);
+            this.getUniqueVisits();
+            return null
         }
 
         this.chartModel.setSeries(this.getSeries(this._dailyVisits));
@@ -50,21 +50,12 @@ export class VisitsChart extends Component {
         );
     }
 
-    @action
-    onChangeDate = () => {
-        console.log('changing startDate');
-        this.startDate = 20171101;
-        this.needReload = true; // this is wrong. You are not supposed to change obseravb;es in render but it's the only way I've been able to trigger rerender
-    }
-
-
-    getUniqueVisits(startDate) {
-        // console.log('fetching', config.startDate);
+    getUniqueVisits() {
         return XH.fetchJson({
             url: 'trackLogAdmin/dailyVisitors',
             // params will also take a user name, cannot be set to null, better to not pass one at all.
             params: {
-                startDate: startDate, // piq defaults to a year ago from today. implement this later
+                startDate: this.chartModel.config.startDate, // piq defaults to a year ago from today. implement this later
                 endDate: 20180228
             },
         }).then(data => {
@@ -74,18 +65,12 @@ export class VisitsChart extends Component {
         });
     }
 
-    @action
-    setDailyVisits(data) {
-        this._dailyVisits = data;
-        this.needReload = false;
-    }
-
     getSeries(visits) {
         if (visits.length === 0) return;
 
         const data = [];
 
-        forOwn(this._dailyVisits, (k, v) => {
+        forOwn(visits, (k, v) => {
             data.push([moment(v).valueOf(), k])
         });
 
@@ -106,6 +91,17 @@ export class VisitsChart extends Component {
                 onClick: this.onChangeDate
             }]
         });
+    }
+
+    @action
+    setDailyVisits(data) {
+        this._dailyVisits = data;
+        this.needReload = false;
+    }
+
+    @action
+    onChangeDate = () => {
+        this.chartModel.config.startDate = 20171101;
     }
 
 }
