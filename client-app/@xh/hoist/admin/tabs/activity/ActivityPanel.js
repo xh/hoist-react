@@ -19,15 +19,10 @@ import {baseCol} from 'hoist/columns/Core';
 import {dateTimeCol} from 'hoist/columns/DatesTimes';
 
 import {usernameCol} from '../../columns/Columns';
+import {visitsChart} from './Chart';
 
 @hoistComponent()
 export class ActivityPanel extends Component {
-
-    @observable _dailyVisits = []; // btw this is an array.
-    @observable.ref needReload = false;
-    startDate = 20151128;
-    // chartConfig = {dailyVisits: [], startDate: 20151128};
-    // @observable startDate = 20151128;
 
     gridModel = new GridModel({
         url: 'trackLogAdmin',
@@ -50,104 +45,19 @@ export class ActivityPanel extends Component {
         ]
     });
 
-    @observable chartModel = new ChartModel({
-        config: {
-            chart: {type: 'column'},
-            title: {text: 'Unique Visits'},
-            xAxis: {
-                type: 'datetime',
-                units: [['day', [1]], ['week', [1]], ['month', [1]]]
-            },
-            yAxis: {
-                title: {
-                    text: 'Unique Visits'
-                }
-            }
-        }
-    });
-
     render() {
-        if(this._dailyVisits.length === 0 || this.needReload) {
-            this.getUniqueVisits(this.startDate);
-            return null;
-        }
-
-        this.chartModel.setSeries(this.getSeries(this._dailyVisits));
+        console.log('rendering activity panel');
         return vframe(
             grid({model: this.gridModel}),
             collapsible({
                 side: 'bottom',
                 contentSize: 250,
-                item: vframe({
-                    items: [
-                        this.createChartToolbar(),
-                        chart({model: this.chartModel})
-                    ]
-                })
+                item: visitsChart()
             })
         );
     }
 
-    createChartToolbar() {
-        return hbox({
-            itemSpec: {
-                factory: button,
-                cls: 'xh-mr'
-            },
-            items: [{
-                    text: 'Change Start Date',
-                    intent: 'success',
-                    onClick: this.onChangeDate
-            }]
-        });
-    }
-
-    @action
-    onChangeDate = () => {
-        console.log('changing startDate');
-        this.startDate = 20171101;
-        this.needReload = true; // this is wrong. You are not supposed to
-    }
-
     loadAsync() {
         return this.gridModel.loadAsync();
-    }
-
-    getUniqueVisits(startDate) {
-        // console.log('fetching', config.startDate);
-        return XH.fetchJson({
-            url: 'trackLogAdmin/dailyVisitors',
-            // params will also take a user name, cannot be set to null, better to not pass one at all.
-            params: {
-                startDate: startDate, // piq defaults to a year ago from today. implement this later
-                endDate: 20180228
-            },
-        }).then(data => {
-            this.setDailyVisits(data)
-        }).catchDefault({
-            message: 'Failed to fetch daily visits'
-        });
-    }
-
-    @action
-    setDailyVisits(data) {
-        this._dailyVisits = data;
-        this.needReload = false;
-    }
-
-    getSeries(visits) {
-        if (visits.length === 0) return;
-
-        const data = [];
-
-        forOwn(this._dailyVisits, (k, v) => {
-            data.push([moment(v).valueOf(), k])
-        });
-
-        // debugger;
-
-        return  [{
-            data: data
-        }]
     }
 }
