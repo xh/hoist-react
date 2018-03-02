@@ -16,6 +16,7 @@ import {baseCol} from 'hoist/columns/Core';
 import {dateTimeCol} from 'hoist/columns/DatesTimes';
 
 import {usernameCol} from '../../columns/Columns';
+import {activityGridToolbar} from './ActivityGridToolbar';
 import {visitsChart} from './VisitsChart';
 import {VisitsModel} from './VisitsModel';
 
@@ -55,6 +56,7 @@ export class ActivityPanel extends Component {
 
     render() {
         return vframe(
+            activityGridToolbar(),
             grid({model: this.gridModel}),
             collapsible({
                 side: 'bottom',
