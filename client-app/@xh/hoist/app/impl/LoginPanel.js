@@ -5,17 +5,21 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
+import './LoginPanel.css';
+import React, {Component} from 'react';
 import {XH, elemFactory, hoistComponent, hoistModel} from 'hoist/core';
 import {vbox, hbox, filler, viewport} from 'hoist/layout';
-import {inputGroup, button} from 'hoist/kit/blueprint';
+import {inputGroup, button, text} from 'hoist/kit/blueprint';
 import {observable, computed, setter} from 'hoist/mobx';
+import {MessageModel, message} from 'hoist/cmp';
 
 @hoistComponent()
 export class LoginPanel extends Component {
 
     @setter @observable username = '';
     @setter @observable password = '*****'; // Needed because saved password in chrome not triggering initial validation
+    @setter @observable warning = '';
+    messageModel = new MessageModel();
 
     @computed get isValid() {
         return this.username && this.password;
@@ -29,6 +33,7 @@ export class LoginPanel extends Component {
             item: vbox({
                 cls: 'xh-ba xh-pa',
                 justifyContent: 'right',
+                width: 300,
                 items: [
                     inputGroup({
                         placeholder: 'Username...',
@@ -45,6 +50,11 @@ export class LoginPanel extends Component {
                         onChange: this.onPasswordChange,
                         cls: 'xh-mb'
                     }),
+                    text({
+                        item: this.warning,
+                        ellipsize: true,
+                        cls: 'xh-mb xh-login-warning'
+                    }),
                     hbox(
                         filler(),
                         button({
@@ -53,13 +63,13 @@ export class LoginPanel extends Component {
                             disabled: !this.isValid,
                             onClick: this.onSubmit
                         })
-                    )
+                    ),
+                    message({model: this.messageModel})
                 ]
             })
         });
     }
-
-
+    
     //--------------------------------
     // Implementation
     //--------------------------------
@@ -67,14 +77,21 @@ export class LoginPanel extends Component {
         const {username, password} = this;
         return XH.fetchJson({
             url: 'auth/login',
-            params: {
-                username,
-                password
-            }
+            params: {username, password}
         }).then(r => {
             hoistModel.markAuthenticatedUser(r.success ? username : null);
-        }).catch(() => {
+            this.setWarning(r.success ? '' : 'Login Incorrect.');
+        }).catch(e => {
             hoistModel.markAuthenticatedUser(null);
+            this.messageModel.alert({
+                title: 'Error' ,
+                icon: 'error',
+                message:
+                    <div>
+                        An error occurred executing the login: <br/><br/>
+                        <b> {e.message || e.name} </b>
+                    </div>
+            });
         });
     }
 
