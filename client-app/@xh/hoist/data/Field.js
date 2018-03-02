@@ -22,7 +22,7 @@ export class Field {
      * @param name, required.
      * @param type, one of [string, int, number, bool, json, date, day, auto], default 'auto'
      * @param label, optional, default to name
-     * @param allowNull, default false.
+     * @param allowNull, default true.
      * @param defaultValue, default null.
      *
      * @param rest, additional properties to be applied directly to this object.
@@ -31,7 +31,7 @@ export class Field {
         name,
         type = 'auto',
         label = name,
-        allowNull = false,
+        allowNull = true,
         defaultValue = null,
         ...rest
     }) {
