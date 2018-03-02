@@ -12,10 +12,12 @@ import {vframe, frame} from 'hoist/layout';
 import {navbar, navbarGroup, navbarHeading, button, icon, Intent} from 'hoist/kit/blueprint';
 import {tabContainer} from 'hoist/cmp';
 
-import {appModel} from './AppModel';
+import {AppModel} from './AppModel';
 
 @hoistApp
 export class App extends Component {
+
+    static model = new AppModel();
 
     render() {
         return vframe({
@@ -24,7 +26,7 @@ export class App extends Component {
                 this.renderNavBar(),
                 frame({
                     cls: 'xh-mt xh-ml',
-                    item: tabContainer({model: appModel.tabs})
+                    item: tabContainer({model: XH.appModel.tabs})
                 })
             ]
         });
@@ -34,7 +36,6 @@ export class App extends Component {
     // Implementation
     //------------------
     renderNavBar() {
-
         return navbar({
             cls: 'xh-bb',
             items: [
@@ -79,6 +80,6 @@ export class App extends Component {
     }
 
     onRefreshClick = () => {
-        appModel.requestRefresh();
+        XH.appModel.requestRefresh();
     }
 }

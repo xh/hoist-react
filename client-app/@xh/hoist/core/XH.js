@@ -8,6 +8,7 @@
 
 import {isPlainObject} from 'lodash';
 import {Exception} from 'hoist/exception';
+
 import {hoistModel} from './HoistModel';
 
 /**
@@ -26,6 +27,10 @@ export const XH = window.XH = new class {
         this.hoistModel = hoistModel;
         this.aliasServices();
         this.aliasMethods();
+    }
+
+    get appModel() {
+        return this.hoistModel.appModel;
     }
 
     //--------------------------

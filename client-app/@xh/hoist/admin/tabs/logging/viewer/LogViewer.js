@@ -31,7 +31,8 @@ export class LogViewer extends Component {
     }
 
     getContents() {
-        const {files, loadModel} = this.model;
+        const model = this.model,
+             {files, loadModel} = model;
         return hframe(
             collapsible({
                 side: 'left',
@@ -46,8 +47,8 @@ export class LogViewer extends Component {
             vframe({
                 style: {border: '1px solid darkgrey'},
                 items: [
-                    logViewerToolbar({model: this.model}),
-                    logViewerDisplay({model: this.model})
+                    logViewerToolbar({model}),
+                    logViewerDisplay({model})
                 ]
             }),
             loadMask({model: loadModel})
