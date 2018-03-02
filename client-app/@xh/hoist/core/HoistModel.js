@@ -53,7 +53,7 @@ class HoistModel {
     @setter @observable isInitialized = false;
 
     /** Dark theme active? **/
-    @setter @observable darkTheme = true;
+    @observable darkTheme = true;
 
     /** Tracks recent errors for troubleshooting/display */
     errorDialogModel = new ErrorDialogModel();
@@ -113,10 +113,8 @@ class HoistModel {
         }
     }
 
-    @action
     toggleTheme() {
         this.setDarkTheme(!this.darkTheme);
-        this.prefService.set('xhTheme', this.darkTheme ? 'dark' : 'light');
     }
 
     //------------------------------------
@@ -140,6 +138,15 @@ class HoistModel {
 
     initLocalState() {
         this.setDarkTheme(this.prefService.get('xhTheme') === 'dark');
+    }
+
+    @action
+    setDarkTheme(value) {
+        const classList = document.body.classList;
+        classList.toggle('xh-dark', value);
+        classList.toggle('pt-dark', value);
+        this.darkTheme = value;
+        this.prefService.set('xhTheme', value ? 'dark' : 'light');
     }
 }
 export const hoistModel = new HoistModel();
