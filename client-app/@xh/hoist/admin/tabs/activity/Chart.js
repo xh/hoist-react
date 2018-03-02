@@ -10,12 +10,9 @@ import moment from 'moment';
 import {forOwn} from 'lodash';
 import {button} from 'hoist/kit/blueprint';
 import {XH, hoistComponent, elemFactory} from 'hoist/core';
-import {grid, GridModel} from 'hoist/grid';
 import {chart, ChartModel} from 'hoist/highcharts';
-import {vframe, hbox, vbox} from 'hoist/layout';
-import {collapsible} from 'hoist/cmp';
-import {observer, observable, action, whyRun} from 'hoist/mobx';
-import {numberRenderer} from 'hoist/format';
+import {vframe, hbox} from 'hoist/layout';
+import {observable, action} from 'hoist/mobx';
 
 @hoistComponent()
 export class VisitsChart extends Component {

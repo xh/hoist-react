@@ -5,15 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import moment from 'moment';
-import {forOwn} from 'lodash';
-import {button} from 'hoist/kit/blueprint';
 import {XH, hoistComponent} from 'hoist/core';
 import {grid, GridModel} from 'hoist/grid';
-import {chart, ChartModel} from 'hoist/highcharts';
-import {vframe, hbox, vbox} from 'hoist/layout';
+import {vframe} from 'hoist/layout';
 import {collapsible} from 'hoist/cmp';
-import {observer, observable, action, whyRun} from 'hoist/mobx';
 import {numberRenderer} from 'hoist/format';
 import {baseCol} from 'hoist/columns/Core';
 import {dateTimeCol} from 'hoist/columns/DatesTimes';
@@ -46,7 +41,6 @@ export class ActivityPanel extends Component {
     });
 
     render() {
-        console.log('rendering activity panel');
         return vframe(
             grid({model: this.gridModel}),
             collapsible({
