@@ -19,6 +19,7 @@ export class VisitsChart extends Component {
 
     @observable.ref _dailyVisits = [];
 
+    // not sure this needs to be observable
     @observable chartModel = new ChartModel({
         config: {
             chart: {type: 'column'},
@@ -38,7 +39,6 @@ export class VisitsChart extends Component {
     render() {
         if(this._dailyVisits.length === 0) {
             this.getUniqueVisits({startDate: 20151128});
-            return null
         }
 
         this.chartModel.setSeries(this.getSeriesData(this._dailyVisits));
@@ -55,7 +55,7 @@ export class VisitsChart extends Component {
             // params will also take a user name, cannot be set to null, better to not pass one at all.
             params: {
                 startDate: params.startDate, // piq defaults to a year ago from today. implement this later
-                endDate: 20180228
+                endDate: 20180228 // temp. hard coded for dev
             },
         }).then(data => {
             this.setDailyVisits(data)
@@ -99,7 +99,7 @@ export class VisitsChart extends Component {
 
     @action
     onChangeDate = () => {
-        this.getUniqueVisits({startDate: 20171101}); // triggers the correct
+        this.getUniqueVisits({startDate: 20171101});
     }
 
 }
