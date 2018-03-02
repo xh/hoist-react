@@ -7,6 +7,8 @@
 import {Component} from 'react';
 import {XH, hoistComponent} from 'hoist/core';
 import {grid, GridModel} from 'hoist/grid';
+import {UrlStore} from 'hoist/data';
+import {chart, ChartModel} from 'hoist/highcharts';
 import {vframe} from 'hoist/layout';
 import {collapsible} from 'hoist/cmp';
 import {numberRenderer} from 'hoist/format';
@@ -20,8 +22,16 @@ import {VisitsModel} from './VisitsModel';
 @hoistComponent()
 export class ActivityPanel extends Component {
 
-    gridModel = new GridModel({
+    store = new UrlStore({
         url: 'trackLogAdmin',
+        fields: [
+            'severity', 'dateCreated', 'msg', 'category', 'device',
+            'browser', 'data', 'impersonating', 'elapsed'
+        ]
+    });
+
+    gridModel = new GridModel({
+        store: this.store,
         columns: [
             baseCol({field: 'severity', width: 60}),
             dateTimeCol({field: 'dateCreated', text: 'Date Created'}),
@@ -55,6 +65,6 @@ export class ActivityPanel extends Component {
     }
 
     async loadAsync() {
-        return Promise.all([this.visitsModel.loadAsync(), this.gridModel.loadAsync()]);
+        return Promise.all([this.visitsModel.loadAsync(), this.store.loadAsync()]);
     }
 }

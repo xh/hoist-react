@@ -65,7 +65,7 @@ export class RestGridToolbar extends Component {
         const model = this.model,
             warning = model.actionWarning.del;
         if (warning) {
-            model.confirmModel.show({
+            model.messageModel.alert({
                 message: warning,
                 onConfirm: () => model.deleteSelection()
             });
