@@ -17,20 +17,26 @@ export class VisitsChart extends Component {
 
     render() {
         return vframe(
-            this.renderToolbar({model: this.visitsModel}),
+            this.renderToolbar({model: this.model}),
             chart({model: this.model.chartModel})
         );
     }
 
+    // make own component
     renderToolbar({model}) {
         return hbox(
-                inputGroup({
-                    value: this.model.startDate,
+                inputGroup({ // turn into date field
+                    value: model.startDate,
                     onChange: this.onStartDateChange
                 }),
-                inputGroup({
-                    value: this.model.endDate,
+                inputGroup({ // turn into date field
+                    value: model.endDate,
                     onChange: this.onEndDateChange
+                }),
+                inputGroup({
+                    placeHolder: 'Username',
+                    value: model.username,
+                    onChange: this.onUsernameChange
                 }),
                 button({
                     text: 'Submit',
@@ -46,6 +52,10 @@ export class VisitsChart extends Component {
 
     onEndDateChange = (ev) => {
         this.model.setEndDate(ev.target.value);
+    }
+
+    onUsernameChange = (ev) => {
+        this.model.setUsername(ev.target.value);
     }
 
     onSubmitClick = () => {

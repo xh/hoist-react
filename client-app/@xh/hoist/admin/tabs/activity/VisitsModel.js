@@ -12,8 +12,9 @@ import {ChartModel} from 'hoist/highcharts';
 
 export class VisitsModel {
 
-    @observable @setter startDate = 20150101;
+    @observable @setter startDate = 20150101;// piq defaults to a year ago from today. implement this later
     @observable @setter endDate = 20180228;
+    @observable @setter username = '';
 
     chartModel = new ChartModel({
         config: {
@@ -37,7 +38,8 @@ export class VisitsModel {
             // params will also take a user name, cannot be set to null, better to not pass one at all.
             params: {
                 startDate: this.startDate, // piq defaults to a year ago from today. implement this later
-                endDate: this.endDate // piq defaults to a year ago from today. implement this later
+                endDate: this.endDate,
+                username: this.username
             },
         }).then(data => {
             this.chartModel.setSeries(this.getSeriesData(data)) // still getting the mobx warning
