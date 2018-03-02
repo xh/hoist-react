@@ -8,6 +8,7 @@ import {Component} from 'react';
 import {elemFactory, hoistComponent} from 'hoist/core';
 import {inputGroup, numericInput, checkbox, button} from 'hoist/kit/blueprint';
 import {hbox, filler, hspacer, div} from 'hoist/layout';
+import {Icon} from 'hoist/icon';
 
 @hoistComponent()
 export class LogViewerToolbar extends Component {
@@ -17,8 +18,6 @@ export class LogViewerToolbar extends Component {
 
         return hbox({
             cls: 'xh-tbar',
-            flex: 'none',
-            padding: 3,
             alignItems: 'center',
             items: [
                 this.label('Start Line:'),
@@ -54,7 +53,7 @@ export class LogViewerToolbar extends Component {
                 }),
                 filler(),
                 button({
-                    icon: 'refresh',
+                    icon: Icon.refresh,
                     onClick: this.onSubmitClick
                 })
             ]
@@ -94,7 +93,11 @@ export class LogViewerToolbar extends Component {
     }
 
     numericInput(args) {
-        return numericInput({style: {width: 50}, buttonPosition: 'none', ...args});
+        return numericInput({
+            style: {width: 80},
+            buttonPosition: 'none',
+            ...args
+        });
     }
 }
 export const logViewerToolbar = elemFactory(LogViewerToolbar);

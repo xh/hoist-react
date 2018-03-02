@@ -9,8 +9,9 @@ import {Component} from 'react';
 import {XH, hoistModel} from 'hoist/core';
 import {hoistApp} from 'hoist/app';
 import {vframe, frame} from 'hoist/layout';
-import {navbar, navbarGroup, navbarHeading, button, icon, Intent} from 'hoist/kit/blueprint';
+import {navbar, navbarGroup, navbarHeading, button, Intent} from 'hoist/kit/blueprint';
 import {tabContainer} from 'hoist/cmp';
+import {Icon, faIcon} from 'hoist/icon';
 
 import {AppModel} from './AppModel';
 
@@ -42,7 +43,7 @@ export class App extends Component {
                 navbarGroup({
                     align: 'left',
                     items: [
-                        icon({icon: 'eye-open', iconSize: 20}),
+                        faIcon({icon: 'eye', size: '2x', flip: 'both'}),
                         navbarHeading(`${XH.appName} Admin`)
                     ]
                 }),
@@ -50,18 +51,18 @@ export class App extends Component {
                     align: 'right',
                     items: [
                         button({
-                            icon: 'envelope',
+                            icon: Icon.mail,
                             text: 'Contact',
                             cls: 'xh-mr',
                             onClick: this.onContactClick
                         }),
                         button({
-                            icon: this.darkTheme ? 'flash' : 'moon',
+                            icon: this.darkTheme ? Icon.sun : Icon.moon,
                             cls: 'xh-mr',
                             onClick: this.onThemeToggleClick
                         }),
                         button({
-                            icon: 'refresh',
+                            icon: Icon.refresh,
                             intent: Intent.SUCCESS,
                             onClick: this.onRefreshClick
                         })

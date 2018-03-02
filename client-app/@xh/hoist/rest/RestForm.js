@@ -11,6 +11,7 @@ import {loadMask, message} from 'hoist/cmp';
 import {filler, vframe, hbox} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
 import {fmtDateTime} from 'hoist/format';
+import {Icon} from 'hoist/icon';
 
 import {
     Classes, button, checkbox, dialog, dialogBody,
@@ -27,7 +28,7 @@ export class RestForm extends Component {
 
         return dialog({
             title: isAdd ? 'Add Record' : 'Edit Record',
-            icon: isAdd ? 'plus' : 'edit',
+            icon: isAdd ? Icon.add : Icon.edit,
             cls: this.darkTheme ? 'xh-dark' : '',
             isOpen: true,
             isCloseButtonShown: false,
@@ -56,7 +57,7 @@ export class RestForm extends Component {
         return [
             button({
                 text: 'Delete',
-                icon: 'cross',
+                icon: Icon.delete,
                 intent: 'danger',
                 onClick: this.onDeleteClick,
                 omit: !actionEnabled.del || isAdd
@@ -68,7 +69,7 @@ export class RestForm extends Component {
             }),
             button({
                 text: 'Save',
-                icon: 'tick',
+                icon: Icon.check,
                 intent: 'success',
                 disabled: !isFormValid,
                 onClick: this.onSaveClick,
