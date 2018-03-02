@@ -24,7 +24,7 @@ export class VisitsModel {
             legend: {
                 enabled: false
             },
-            title: {text: 'Unique Visits'},
+            title: {text: null},
             xAxis: {
                 type: 'datetime',
                 units: [['day', [1]], ['week', [1]], ['month', [1]]]

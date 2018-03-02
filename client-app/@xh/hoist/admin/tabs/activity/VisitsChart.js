@@ -7,10 +7,10 @@
 
 import {Component} from 'react';
 import moment from 'moment';
-import {button, inputGroup, dateInput} from 'hoist/kit/blueprint';
+import {button, icon, inputGroup, dateInput} from 'hoist/kit/blueprint';
 import {XH, hoistComponent, elemFactory} from 'hoist/core';
 import {chart, ChartModel} from 'hoist/highcharts';
-import {vframe, hbox, hspacer} from 'hoist/layout';
+import {vframe, filler, hbox, hspacer, div} from 'hoist/layout';
 import {observable, action} from 'hoist/mobx';
 import {fmtDate} from 'hoist/format';
 
@@ -28,7 +28,13 @@ export class VisitsChart extends Component {
     renderToolbar({model}) {
         return hbox({
             cls: 'xh-tbar',
+            flex: 'none',
+            alignItems: 'center',
             items: [
+                icon({icon: 'people', color: '#48aff0'}),
+                hspacer(8),
+                this.label('Unique Daily Visitors'),
+                filler(),
                 dateInput({
                     value: model.startDate,
                     formatDate: fmtDate,
@@ -82,6 +88,15 @@ export class VisitsChart extends Component {
 
     onSubmitClick = () => {
         this.model.loadAsync();
+    }
+
+    label(txt) {
+        // Default label object has trouble with inline
+        return div({
+            cls: 'pt-label pt-inline',
+            style: {whiteSpace: 'nowrap'},
+            item: txt
+        });
     }
 
 }
