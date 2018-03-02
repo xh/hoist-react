@@ -9,11 +9,13 @@ import moment from 'moment';
 import {forOwn} from 'lodash';
 import {observable, setter, toJS} from 'hoist/mobx';
 import {ChartModel} from 'hoist/highcharts';
+import {fmtDate} from 'hoist/format';
 
 export class VisitsModel {
 
-    @observable @setter startDate = 20150101;// piq defaults to a year ago from today. implement this later
-    @observable @setter endDate = 20180228;
+
+    @observable @setter startDate = moment('20150101').toDate();// piq defaults to a year ago from today. implement this later
+    @observable @setter endDate =  moment('20180228').toDate();
     @observable @setter username = '';
 
     chartModel = new ChartModel({
@@ -38,10 +40,9 @@ export class VisitsModel {
     async loadAsync() {
         return XH.fetchJson({
             url: 'trackLogAdmin/dailyVisitors',
-            // params will also take a user name, cannot be set to null, better to not pass one at all.
             params: {
-                startDate: this.startDate, // piq defaults to a year ago from today. implement this later
-                endDate: this.endDate,
+                startDate: fmtDate(this.startDate, 'YYYYMMDD'),
+                endDate: fmtDate(this.endDate, 'YYYYMMDD'),
                 username: this.username
             },
         }).then(data => {

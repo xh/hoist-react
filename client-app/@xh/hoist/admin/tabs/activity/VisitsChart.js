@@ -6,11 +6,13 @@
  */
 
 import {Component} from 'react';
-import {button, inputGroup} from 'hoist/kit/blueprint';
+import moment from 'moment';
+import {button, inputGroup, dateInput} from 'hoist/kit/blueprint';
 import {XH, hoistComponent, elemFactory} from 'hoist/core';
 import {chart, ChartModel} from 'hoist/highcharts';
 import {vframe, hbox, hspacer} from 'hoist/layout';
 import {observable, action} from 'hoist/mobx';
+import {fmtDate} from 'hoist/format';
 
 @hoistComponent()
 export class VisitsChart extends Component {
@@ -22,19 +24,29 @@ export class VisitsChart extends Component {
         );
     }
 
-    // make own component
+    // break out into chartToolBar component?
     renderToolbar({model}) {
         return hbox({
             cls: 'xh-tbar',
             items: [
-                inputGroup({ // turn into date field
+                dateInput({
                     value: model.startDate,
-                    onChange: this.onStartDateChange
+                    formatDate: fmtDate,
+                    parseDate: this.parseDate,
+                    onChange: this.onStartDateChange,
+                    popoverProps: {
+                        usePortal: true
+                    }
                 }),
                 hspacer(10),
-                inputGroup({ // turn into date field
+                dateInput({
                     value: model.endDate,
-                    onChange: this.onEndDateChange
+                    formatDate: fmtDate,
+                    parseDate: this.parseDate,
+                    onChange: this.onEndDateChange,
+                    popoverProps: {
+                        usePortal: true
+                    }
                 }),
                 hspacer(10),
                 inputGroup({
@@ -52,12 +64,16 @@ export class VisitsChart extends Component {
         });
     }
 
-    onStartDateChange = (ev) => {
-        this.model.setStartDate(ev.target.value);
+    parseDate(dateString) {
+        return moment(dateString).toDate()
     }
 
-    onEndDateChange = (ev) => {
-        this.model.setEndDate(ev.target.value);
+    onStartDateChange = (date) => {
+        this.model.setStartDate(moment(date).toDate());
+    }
+
+    onEndDateChange = (date) => {
+        this.model.setEndDate(moment(date).toDate());
     }
 
     onUsernameChange = (ev) => {
