@@ -14,8 +14,8 @@ import {fmtDate} from 'hoist/format';
 export class VisitsModel {
 
 
-    @observable @setter startDate = moment('20150101').toDate();// piq defaults to a year ago from today. implement this later
-    @observable @setter endDate =  moment('20180228').toDate();
+    @observable @setter startDate = moment().subtract(1, 'years').toDate();
+    @observable @setter endDate =  moment().toDate();
     @observable @setter username = '';
 
     chartModel = new ChartModel({

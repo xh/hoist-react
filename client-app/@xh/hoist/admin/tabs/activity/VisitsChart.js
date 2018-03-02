@@ -29,6 +29,7 @@ export class VisitsChart extends Component {
         return hbox({
             cls: 'xh-tbar',
             flex: 'none',
+            padding: 4,
             alignItems: 'center',
             items: [
                 icon({icon: 'people', color: '#48aff0'}),
