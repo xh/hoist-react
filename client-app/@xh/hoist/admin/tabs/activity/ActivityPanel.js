@@ -14,7 +14,8 @@ import {baseCol} from 'hoist/columns/Core';
 import {dateTimeCol} from 'hoist/columns/DatesTimes';
 
 import {usernameCol} from '../../columns/Columns';
-import {visitsChart} from './Chart';
+import {visitsChart} from './VisitsChart';
+import {VisitsModel} from './VisitsModel';
 
 @hoistComponent()
 export class ActivityPanel extends Component {
@@ -40,18 +41,20 @@ export class ActivityPanel extends Component {
         ]
     });
 
+    visitsModel = new VisitsModel();
+
     render() {
         return vframe(
             grid({model: this.gridModel}),
             collapsible({
                 side: 'bottom',
                 contentSize: 250,
-                item: visitsChart()
+                item: visitsChart({model: this.visitsModel})
             })
         );
     }
 
-    loadAsync() {
-        return this.gridModel.loadAsync();
+    async loadAsync() {
+        return Promise.all([this.visitsModel.loadAsync(), this.gridModel.loadAsync()]);
     }
 }

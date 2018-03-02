@@ -130,7 +130,7 @@ export class Chart extends Component {
     getModelConfig() {
         return {
             ...this.model.config,
-            series: toJS(this.model.series)
+            series: this.model.series
         };
     }
 
