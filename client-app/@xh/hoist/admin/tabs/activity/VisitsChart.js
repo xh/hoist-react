@@ -24,7 +24,9 @@ export class VisitsChart extends Component {
 
     // make own component
     renderToolbar({model}) {
-        return hbox(
+        return hbox({
+            cls: 'xh-tbar',
+            items: [
                 inputGroup({ // turn into date field
                     value: model.startDate,
                     onChange: this.onStartDateChange
@@ -43,7 +45,8 @@ export class VisitsChart extends Component {
                     intent: 'success',
                     onClick: this.onSubmitClick
                 })
-        );
+            ]
+        });
     }
 
     onStartDateChange = (ev) => {

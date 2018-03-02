@@ -19,6 +19,9 @@ export class VisitsModel {
     chartModel = new ChartModel({
         config: {
             chart: {type: 'column'},
+            legend: {
+                enabled: false
+            },
             title: {text: 'Unique Visits'},
             xAxis: {
                 type: 'datetime',
