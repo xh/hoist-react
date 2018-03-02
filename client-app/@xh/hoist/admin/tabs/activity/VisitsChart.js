@@ -38,7 +38,7 @@ export class VisitsChart extends Component {
                 filler(),
                 dateInput({
                     value: model.startDate,
-                    formatDate: fmtDate,
+                    formatDate: this.fmtDate,
                     parseDate: this.parseDate,
                     onChange: this.onStartDateChange,
                     popoverProps: {
@@ -48,7 +48,7 @@ export class VisitsChart extends Component {
                 hspacer(10),
                 dateInput({
                     value: model.endDate,
-                    formatDate: fmtDate,
+                    formatDate: this.fmtDate,
                     parseDate: this.parseDate,
                     onChange: this.onEndDateChange,
                     popoverProps: {
@@ -69,6 +69,10 @@ export class VisitsChart extends Component {
                 })
             ]
         });
+    }
+
+    fmtDate(date) {
+        return fmtDate(date)
     }
 
     parseDate(dateString) {
