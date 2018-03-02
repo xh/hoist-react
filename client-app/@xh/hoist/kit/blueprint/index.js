@@ -6,6 +6,7 @@
  */
 
 import '@blueprintjs/core/lib/css/blueprint.css';
+import '@blueprintjs/datetime/lib/css/blueprint-datetime.css';
 import '@blueprintjs/select/lib/css/blueprint-select.css';
 import '@blueprintjs/icons/lib/css/blueprint-icons.css';
 import './styles.css';
@@ -40,6 +41,7 @@ import {
     Text
 } from '@blueprintjs/core';
 
+import {DateInput} from '@blueprintjs/datetime';
 import {Suggest, Select} from '@blueprintjs/select';
 
 export {
@@ -57,6 +59,7 @@ export const
     button = elemFactory(Button),
     controlGroup = elemFactory(ControlGroup),
     checkbox = elemFactory(Checkbox),
+    dateInput = elemFactory(DateInput),
     dialog = elemFactory(Dialog),
     hotkey = elemFactory(Hotkey),
     hotkeys = elemFactory(Hotkeys),

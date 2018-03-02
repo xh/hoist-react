@@ -84,6 +84,15 @@
     react-popper "~0.7.4"
     tslib "^1.5.0"
 
+"@blueprintjs/datetime@^2.0.0-rc.2":
+  version "2.0.0-rc.2"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/datetime/-/datetime-2.0.0-rc.2.tgz#018e926d070c9c65f7eebf1ecbe17adc7013e558"
+  dependencies:
+    "@blueprintjs/core" "^2.0.0-rc.2"
+    classnames "^2.2"
+    react-day-picker "^7.0.7"
+    tslib "^1.5.0"
+
 "@blueprintjs/icons@2.0.0-rc.2", "@blueprintjs/icons@^2.0.0-rc.2":
   version "2.0.0-rc.2"
   resolved "https://registry.yarnpkg.com/@blueprintjs/icons/-/icons-2.0.0-rc.2.tgz#77f74db9ee9508e051f15467b2feb48409840e52"
@@ -984,6 +993,13 @@ prop-types@^15.5.10, prop-types@^15.5.8, prop-types@^15.6.0:
     fbjs "^0.8.16"
     loose-envify "^1.3.1"
     object-assign "^4.1.1"
+
+react-day-picker@^7.0.7:
+  version "7.0.7"
+  resolved "https://registry.yarnpkg.com/react-day-picker/-/react-day-picker-7.0.7.tgz#4af30404ebb19125ff5f9f2d62e6204b4e68f119"
+  dependencies:
+    object-assign "^4.1.1"
+    prop-types "^15.6.0"
 
 react-dom-factories@^1.0.2:
   version "1.0.2"

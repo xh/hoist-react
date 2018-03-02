@@ -9,16 +9,22 @@ import moment from 'moment';
 import {forOwn} from 'lodash';
 import {observable, setter, toJS} from 'hoist/mobx';
 import {ChartModel} from 'hoist/highcharts';
+import {fmtDate} from 'hoist/format';
 
 export class VisitsModel {
 
-    @observable @setter startDate = 20150101;
-    @observable @setter endDate = 20180228;
+
+    @observable @setter startDate = moment().subtract(1, 'years').toDate();
+    @observable @setter endDate =  moment().toDate();
+    @observable @setter username = '';
 
     chartModel = new ChartModel({
         config: {
             chart: {type: 'column'},
-            title: {text: 'Unique Visits'},
+            legend: {
+                enabled: false
+            },
+            title: {text: null},
             xAxis: {
                 type: 'datetime',
                 units: [['day', [1]], ['week', [1]], ['month', [1]]]
@@ -34,13 +40,13 @@ export class VisitsModel {
     async loadAsync() {
         return XH.fetchJson({
             url: 'trackLogAdmin/dailyVisitors',
-            // params will also take a user name, cannot be set to null, better to not pass one at all.
             params: {
-                startDate: this.startDate, // piq defaults to a year ago from today. implement this later
-                endDate: this.endDate // piq defaults to a year ago from today. implement this later
+                startDate: fmtDate(this.startDate, 'YYYYMMDD'),
+                endDate: fmtDate(this.endDate, 'YYYYMMDD'),
+                username: this.username
             },
         }).then(data => {
-            this.chartModel.setSeries(this.getSeriesData(data)) // still getting the mobx warning
+            this.chartModel.setSeries(this.getSeriesData(data))
         }).catchDefault({
             message: 'Failed to fetch daily visits'
         });
