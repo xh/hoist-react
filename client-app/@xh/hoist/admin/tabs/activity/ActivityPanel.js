@@ -23,8 +23,10 @@ import {usernameCol} from '../../columns/Columns';
 @hoistComponent()
 export class ActivityPanel extends Component {
 
-    _dailyVisits = null;
-    @observable chartConfig = {startDate: 20151128};
+    @observable _dailyVisits = []; // btw this is an array.
+    @observable.ref needReload = false;
+    startDate = 20151128;
+    // chartConfig = {dailyVisits: [], startDate: 20151128};
     // @observable startDate = 20151128;
 
     gridModel = new GridModel({
@@ -54,7 +56,7 @@ export class ActivityPanel extends Component {
             title: {text: 'Unique Visits'},
             xAxis: {
                 type: 'datetime',
-                units: [['day', [1]]]
+                units: [['day', [1]], ['week', [1]], ['month', [1]]]
             },
             yAxis: {
                 title: {
@@ -65,9 +67,12 @@ export class ActivityPanel extends Component {
     });
 
     render() {
-        // if (!this._dailyVisits) this.getUniqueVisits();
-        this.getUniqueVisits(this.chartConfig.startDate);
-        this.chartModel.setSeries(this.getSeries());
+        if(this._dailyVisits.length === 0 || this.needReload) {
+            this.getUniqueVisits(this.startDate);
+            return null;
+        }
+
+        this.chartModel.setSeries(this.getSeries(this._dailyVisits));
         return vframe(
             grid({model: this.gridModel}),
             collapsible({
@@ -100,7 +105,8 @@ export class ActivityPanel extends Component {
     @action
     onChangeDate = () => {
         console.log('changing startDate');
-        this.chartConfig.startDate = 20171101;
+        this.startDate = 20171101;
+        this.needReload = true; // this is wrong. You are not supposed to
     }
 
     loadAsync() {
@@ -108,7 +114,7 @@ export class ActivityPanel extends Component {
     }
 
     getUniqueVisits(startDate) {
-        console.log('fetching');
+        // console.log('fetching', config.startDate);
         return XH.fetchJson({
             url: 'trackLogAdmin/dailyVisitors',
             // params will also take a user name, cannot be set to null, better to not pass one at all.
@@ -117,20 +123,28 @@ export class ActivityPanel extends Component {
                 endDate: 20180228
             },
         }).then(data => {
-            this._dailyVisits = data;
+            this.setDailyVisits(data)
         }).catchDefault({
             message: 'Failed to fetch daily visits'
         });
     }
 
-    getSeries() {
+    @action
+    setDailyVisits(data) {
+        this._dailyVisits = data;
+        this.needReload = false;
+    }
+
+    getSeries(visits) {
+        if (visits.length === 0) return;
+
         const data = [];
 
         forOwn(this._dailyVisits, (k, v) => {
             data.push([moment(v).valueOf(), k])
         });
 
-        debugger;
+        // debugger;
 
         return  [{
             data: data
