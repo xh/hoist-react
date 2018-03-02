@@ -44,7 +44,7 @@ export class App extends Component {
                 navbarGroup({
                     align: 'left',
                     items: [
-                        glyph({icon: Glyph.EYE}),
+                        glyph({icon: Glyph.EYE, size: '2x', flip: 'both'}),
                         navbarHeading(`${XH.appName} Admin`)
                     ]
                 }),
@@ -52,18 +52,18 @@ export class App extends Component {
                     align: 'right',
                     items: [
                         button({
-                            icon: glyph({icon: Glyph.ENVELOPE}),
+                            icon: glyph(Glyph.ENVELOPE),
                             text: 'Contact',
                             cls: 'xh-mr',
                             onClick: this.onContactClick
                         }),
                         button({
-                            icon: glyph({icon: this.darkTheme ? Glyph.SUN : Glyph.MOON}),
+                            icon: glyph(this.darkTheme ? Glyph.SUN : Glyph.MOON),
                             cls: 'xh-mr',
                             onClick: this.onThemeToggleClick
                         }),
                         button({
-                            icon: glyph({icon: Glyph.REFRESH}),
+                            icon: glyph(Glyph.REFRESH),
                             intent: Intent.SUCCESS,
                             onClick: this.onRefreshClick
                         })

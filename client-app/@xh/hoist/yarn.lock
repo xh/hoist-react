@@ -99,6 +99,28 @@
     classnames "^2.2"
     tslib "^1.5.0"
 
+"@fortawesome/fontawesome-common-types@^0.1.3":
+  version "0.1.3"
+  resolved "https://npm.fontawesome.com/ABE1E3DA-85E5-4338-B645-BB04E504A908/@fortawesome/fontawesome-common-types/-/fontawesome-common-types-0.1.3.tgz#8475e0f2d1ad1f858c4ec2e76ed9a2456a09ad83"
+
+"@fortawesome/fontawesome-pro-solid@^5.0.6":
+  version "5.0.8"
+  resolved "https://npm.fontawesome.com/ABE1E3DA-85E5-4338-B645-BB04E504A908/@fortawesome/fontawesome-pro-solid/-/fontawesome-pro-solid-5.0.8.tgz#a5d40aa9c79db80d695ba0152c1e296e3ed9533e"
+  dependencies:
+    "@fortawesome/fontawesome-common-types" "^0.1.3"
+
+"@fortawesome/fontawesome@^1.1.3":
+  version "1.1.4"
+  resolved "https://npm.fontawesome.com/ABE1E3DA-85E5-4338-B645-BB04E504A908/@fortawesome/fontawesome/-/fontawesome-1.1.4.tgz#03065638046206c2226e103b550196934c75be9b"
+  dependencies:
+    "@fortawesome/fontawesome-common-types" "^0.1.3"
+
+"@fortawesome/react-fontawesome@^0.0.17":
+  version "0.0.17"
+  resolved "https://npm.fontawesome.com/ABE1E3DA-85E5-4338-B645-BB04E504A908/@fortawesome/react-fontawesome/-/react-fontawesome-0.0.17.tgz#69abd135523187044f533cadc5458f829d43961f"
+  dependencies:
+    humps "^2.0.1"
+
 "@types/dom4@^2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@types/dom4/-/dom4-2.0.0.tgz#00dc42fed6b36a7a6dabb8f7a9c9e678ee644e05"
@@ -866,6 +888,10 @@ highcharts@^6.0.7:
 hoist-non-react-statics@^2.3.1:
   version "2.5.0"
   resolved "https://registry.yarnpkg.com/hoist-non-react-statics/-/hoist-non-react-statics-2.5.0.tgz#d2ca2dfc19c5a91c5a6615ce8e564ef0347e2a40"
+
+humps@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/humps/-/humps-2.0.1.tgz#dd02ea6081bd0568dc5d073184463957ba9ef9aa"
 
 iconv-lite@~0.4.13:
   version "0.4.19"

@@ -11,6 +11,10 @@ import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import solid from '@fortawesome/fontawesome-pro-solid';
 
 export const Glyph = {
+    ADD: 'plus-circle',
+    CHECK: 'check',
+    DELETE: 'minus-circle',
+    EDIT: 'edit',
     ENVELOPE: 'envelope',
     EYE: 'eye',
     MOON: 'moon',
@@ -20,4 +24,8 @@ export const Glyph = {
 
 fontawesome.library.add(solid);
 
-export const glyph = elemFactory(FontAwesomeIcon);
+export const faIcon = elemFactory(FontAwesomeIcon);
+
+export function glyph(props) {
+    return (typeof props == 'string') ? faIcon({icon: props}) : faIcon(props);
+}

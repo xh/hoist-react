@@ -7,7 +7,6 @@
 
 import {Component} from 'react';
 import {hoistComponent} from 'hoist/core';
-import {toJS, autorun} from 'hoist/mobx';
 import {hframe, vframe, frame} from 'hoist/layout';
 import {grid} from 'hoist/grid';
 import {collapsible, loadMask} from 'hoist/cmp';
@@ -32,7 +31,8 @@ export class LogViewer extends Component {
 
     getContents() {
         const model = this.model,
-             {files, loadModel} = model;
+            {files, loadModel} = model;
+
         return hframe(
             collapsible({
                 side: 'left',
@@ -45,7 +45,6 @@ export class LogViewer extends Component {
                 })
             }),
             vframe({
-                style: {border: '1px solid darkgrey'},
                 items: [
                     logViewerToolbar({model}),
                     logViewerDisplay({model})
