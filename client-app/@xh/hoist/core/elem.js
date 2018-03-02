@@ -8,6 +8,7 @@
 import React from 'react';
 import {defaults, isPlainObject, isString, isArray} from 'lodash';
 import {asArray} from 'hoist/utils/JsUtils';
+import {isReactElement} from 'hoist/utils/ReactUtils';
 
 /**
  * Convenience method for creating React Elements with native javascript.  This method is designed
@@ -42,6 +43,8 @@ import {asArray} from 'hoist/utils/JsUtils';
  *  with a $ prefix (e.g. '$items'). This method will recognize and pass the property appropriately.
  *
  */
+
+
 export function elem(type, config = {}) {
 
     let {cls, item, items, itemSpec, omit, ...props} = config;
@@ -130,10 +133,4 @@ function normalizeArgs(args) {
     }
     // Assume > 1 args or single, non-config, non-array args are children.
     return {items: args};
-}
-
-
-// Heuristic for identifying React Elements
-function isReactElement(obj) {
-    return obj.$$typeof;
 }

@@ -6,54 +6,40 @@
  */
 
 import {Component} from 'react';
-import * as PT from 'prop-types';
 import {isFunction, defaults} from 'lodash';
 import {hoistComponent, XH, elemFactory} from 'hoist/core';
 import {Intent, button} from 'hoist/kit/blueprint';
 import {ToastManager} from 'hoist/cmp';
+import {SECONDS} from 'hoist/utils/DateTimeUtils';
 
 import Clipboard from 'clipboard';
 
 /**
  * Button that copies content to the clipboard.
- * This wraps the https://clipboardjs.com/ libary
- * Props text, target, and action are hooks into the same params in clipboard.js
+ * This button utilizes the https://clipboardjs.com/ library.
  *
- * Either text or target param must be used.
- * @prop text, the text string that will be copied
- * @prop target, the textarea or input DOM element whose value will be copied
- * @prop action, either 'copy' or 'cut'
+ * @prop clipboardSpec, an object appropriate for the clipboard js library, e.g.
+ *      {
+ *          text: a function that return the text string that will be copied
+ *          target: a function that returns the textarea or input DOM element whose value will be copied.
+ *          action: either 'copy' or 'cut',
+ *      }
+ * @prop successMessage - optional
  *
- * @prop buttonProps, object - optional - config object with any prop that can be passed to the blueprint button component
+ *  ... and any other props that can be passed to a blueprint button component.
 **/
 @hoistComponent()
-class ClipboardButton extends Component {
-
-    static propTypes = {
-        text: PT.oneOfType([PT.string, PT.func]),
-        target: PT.oneOfType([PT.instanceOf(Element), PT.func]),
-        action: PT.oneOf(['copy', 'cut']),
-        buttonProps: PT.object
-    }
+export class ClipboardButton extends Component {
 
     static defaultProps = {
-        action: 'copy'
-    }
-
-    static buttonDefaults = {
         icon: 'clipboard',
-        text: 'Copy'
+        text: 'Copy',
+        successMessage: 'Text copied to clipboard.'
     }
-
-    buttonProps = null
 
     render() {
-        this.buttonProps = defaults(
-            {ref: this.manageClipboard},
-            this.props.buttonProps,
-            this.constructor.buttonDefaults
-        );
-        return button(this.buttonProps);
+        const {successMessage, clipboardSpec, ...rest} = this.props;
+        return button({...rest, ref: this.manageClipboard});
     }
 
     //---------------------------
@@ -68,17 +54,9 @@ class ClipboardButton extends Component {
     }
 
     createClipboard(btnDom) {
-        const options = {
-            action: this.props.action
-        };
+        const clipboardSpec = Object.assign({action: 'copy'}, this.props.clipboardSpec);
 
-        ['target', 'text'].forEach(prop => {
-            if (prop in this.props) {
-                options[prop] = this.getPropVal(prop);
-            }
-        });
-
-        this.clipboard = new Clipboard(btnDom, options);
+        this.clipboard = new Clipboard(btnDom, clipboardSpec);
         this.clipboard.on('success', this.onCopySuccess);
         this.clipboard.on('error', this.onCopyError);
     }
@@ -87,37 +65,27 @@ class ClipboardButton extends Component {
         if (this.clipboard) this.clipboard.destroy();
     }
 
-    getPropVal(prop) {
-        return (trigger) => {
-            const val = this.props[prop];
-            if (isFunction(val)) return val(trigger);
-            return val;
-        };
-    }
-
     onCopySuccess = (e) => {
-        this.showToast({
-            intent: Intent.SUCCESS,
-            message: 'Error details copied to clipboard.'
-        });
+        const {successMessage} = this.props;
+        if (successMessage) {
+            this.showToast({
+                intent: Intent.SUCCESS,
+                message: successMessage
+            });
+        }
         e.clearSelection();
     }
 
     onCopyError = (e) => {
-        const exc = XH.exception('Error details NOT copied to clipboard.');
+        const exc = XH.exception('Failed to copy text to clipboard.');
         XH.handleException(exc, {showAlert: false});
         e.clearSelection();
     }
 
     showToast(toastProps) {
-        const allProps = defaults(
-            {
-                icon: this.buttonProps.icon,
-                timeout: 3000
-            },
-            toastProps
-        );
-        ToastManager.getToaster().show(allProps);
+        toastProps.icon = this.props.icon;
+        toastProps.timeout = 3 * SECONDS;
+        ToastManager.getToaster().show(toastProps);
     }
 };
 export const clipboardButton = elemFactory(ClipboardButton);

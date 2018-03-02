@@ -9,13 +9,13 @@ import {XH} from 'hoist/core';
 import {action} from 'hoist/mobx';
 import {RecordSpec} from 'hoist/data';
 import {GridModel} from 'hoist/grid';
-import {ConfirmModel} from 'hoist/cmp';
+import {MessageModel} from 'hoist/cmp';
 
 
 import {RestFormModel} from './RestFormModel';
 
 /**
- * Core Model for a RestGrid
+ * Core Model for a RestGrid.
  */
 export class RestGridModel {
 
@@ -36,86 +36,35 @@ export class RestGridModel {
 
     gridModel = null;
     formModel = null;
-    recordSpec = null;
-    _lookupsLoaded = false;
+    messageModel = new MessageModel({title: 'Warning', icon: 'warning-sign'});
 
-    confirmModel = new ConfirmModel();
-
-    get url()       {return this.gridModel.url}
+    get store()     {return this.gridModel.store}
     get selection() {return this.gridModel.selection}
-    get loadModel() {return this.gridModel.loadModel}
-    get records()   {return this.gridModel.records}
 
+    /**
+     * Construct this Object.
+     *
+     * @param actionEnabled, map of action (e.g. 'add'/'edit'/'delete') to boolean  See default prop
+     * @param actionWarning, map of action (e.g. 'add'/'edit'/'delete') to string.  See default prop.
+     * @param editors, array of editors
+     * @param rest, arguments for GridModel.
+     */
     constructor({
         actionEnabled,
         actionWarning,
-        recordSpec,
         editors = [],
-        dataRoot = 'data',
         ...rest
     }) {
         this.actionEnabled = Object.assign(this.actionEnabled, actionEnabled);
         this.actionWarning = Object.assign(this.actionWarning, actionWarning);
-        this.recordSpec = recordSpec instanceof RecordSpec ? recordSpec : new RecordSpec(recordSpec);
         this.formModel = new RestFormModel({parent: this, editors});
-        this.gridModel = new GridModel({dataRoot, ...rest});
+        this.gridModel = new GridModel(rest);
     }
 
-    async loadAsync() {
-        if (!this._lookupsLoaded) {
-            const lookupFields = this.recordSpec.fields.filter(it => !!it.lookup);
-            if (lookupFields.length) {
-                const lookupData = await XH.fetchJson({url: `${this.url}/lookupData`});
-                lookupFields.forEach(f => {
-                    f.lookupValues = lookupData[f.lookup];
-                });
-                this._lookupsLoaded = true;
-            }
-        }
-
-        return this.gridModel.loadAsync();
-    }
 
     //-----------------
     // Actions
     //------------------
-    @action
-    deleteRecord(rec) {
-        const {url, actionEnabled} = this;
-
-        if (!actionEnabled.del) throw XH.exception('Record delete not enabled.');
-
-        return XH.fetchJson({
-            url: `${url}/${rec.id}`,
-            method: 'DELETE'
-        }).then(() => {
-            this.noteRecordDeleted(rec);
-        }).linkTo(
-            this.loadModel
-        ).catchDefault();
-    }
-
-    @action
-    saveRecord(rec) {
-        let {url, actionEnabled} = this,
-            {isAdd} = this.formModel;
-
-        if (isAdd && !actionEnabled.add) throw XH.exception('Record addition not enabled.');
-        if (!isAdd && !actionEnabled.edit) throw XH.exception('Record edits not enabled.');
-        if (!isAdd) url += '/' + rec.id;
-
-        XH.fetchJson({
-            url,
-            method: isAdd ? 'POST' : 'PUT',
-            contentType: 'application/json',
-            body: JSON.stringify({data: rec})
-        }).then(response => {
-            this.noteRecordUpdated(response.data);
-        }).linkTo(
-            this.loadModel
-        ).catchDefault();
-    }
-
     @action
     addRecord() {
         this.formModel.openAdd();
@@ -123,33 +72,17 @@ export class RestGridModel {
 
     @action
     deleteSelection() {
-        this.deleteRecord(this.selection.singleRecord);
+        const record = this.selection.singleRecord;
+        if (record) {
+            this.store.deleteRecordAsync(record).catchDefault();
+        }
     }
 
     @action
     editSelection() {
-        this.formModel.openEdit(this.selection.singleRecord);
-    }
-
-    //--------------
-    // Implementation
-    //--------------
-    @action
-    noteRecordUpdated(rec) {
-        const records = this.records,
-            idx = records.findIndex(r => r.id === rec.id);
-
-        if (idx < 0) {
-            records.push(rec);
-        } else {
-            records[idx] = rec;
+        const record = this.selection.singleRecord;
+        if (record) {
+            this.formModel.openEdit(record);
         }
-        this.formModel.close();
-    }
-
-    @action
-    noteRecordDeleted(rec) {
-        remove(this.records, r => r.id === rec.id);
-        this.formModel.close();
     }
 }

@@ -6,21 +6,24 @@
  */
 
 import {forOwn} from 'lodash';
+import {start} from 'hoist/promise';
 import {observable, computed, action} from 'hoist/mobx';
-import {ConfirmModel} from 'hoist/cmp';
+import {MessageModel} from 'hoist/cmp';
 
 export class RestFormModel {
 
     parent = null;
     editors = [];
-    confirmModel = new ConfirmModel();
+    messageModel = new MessageModel({title: 'Warning', icon: 'warning-sign'});
 
     // If not null, form will be open and display it
     @observable record = null;
 
     get actionWarning() {return this.parent.actionWarning}
     get actionEnabled() {return this.parent.actionEnabled}
-    get loadModel() {return this.parent.loadModel}
+    get store()         {return this.parent.store}
+    get fields()        {return this.store.fields}
+    get loadModel()     {return this.store.loadModel}
 
     @computed
     get isAdd() {
@@ -29,14 +32,16 @@ export class RestFormModel {
     }
 
     @computed
-    get isValid() {
-        const fieldSpecs = this.parent.recordSpec.fields;
-        let valid = true;
-        forOwn(this.record, (v, k) => {
-            const spec = fieldSpecs.find(it => it.name === k);
-            if (spec && !spec.allowNull && (v == null || v === '')) valid = false;
-        });
-        return valid;
+    get isFormValid() {
+        return this.fields.every(f => this.isFieldValid(f.name));
+    }
+
+    isFieldValid(fieldName) {
+        const {record, fields} = this;
+        if (!record) return false;
+        const field = fields.find(it => it.name === fieldName),
+            v = record[fieldName];
+        return field.allowNull || (v != null && v !== '');
     }
 
     @computed
@@ -55,27 +60,33 @@ export class RestFormModel {
     //-----------------
     @action
     saveRecord() {
-        this.parent.saveRecord(this.record);
+        const {isAdd, record, store} = this;
+        start(() => {
+            return isAdd ? store.addRecordAsync(record) : store.saveRecordAsync(record)
+        }).then(
+            () => this.close()
+        ).catchDefault();
     }
 
     @action
     deleteRecord() {
-        this.parent.deleteRecord(this.record);
+        this.store
+            .deleteRecordAsync(this.record)
+            .then(() => this.close())
+            .catchDefault();
     }
 
     @action
     close() {
         this.record = null;
-        this.confirmModel.close();
+        this.messageModel.close();
     }
 
     @action
     openAdd() {
-        const newRec = {id: null},
-            fieldSpecs = this.parent.recordSpec.fields;
-
+        const newRec = {id: null};
         // must start with all keys in place, so all values will observable
-        fieldSpecs.forEach(spec => {
+        this.fields.forEach(spec => {
             newRec[spec.name] = spec.defaultValue;
         });
 
@@ -100,8 +111,7 @@ export class RestFormModel {
      * These contain toolkit independent metadata, and access to the underlying value/model.
      */
     getInputProps() {
-        const {recordSpec} = this.parent,
-            fields = recordSpec.fields,
+        const fields = this.fields,
             isAdd = this.isAdd,
             record = this.record;
 
@@ -119,8 +129,8 @@ export class RestFormModel {
                 fieldSpec,
                 fieldName,
                 get value() {return record[fieldName]},
-                setValue: (val) => {this.setValue(fieldName, val)},
-                disabled
+                disabled,
+                model: this
             };
         });
     }
@@ -149,8 +159,7 @@ export class RestFormModel {
 
     // For dynamic types.
     getTypeFromRecord(fieldSpec) {
-        const fields = this.parent.recordSpec.fields,
-            typeField = fields.find(it => it.name === fieldSpec.typeField);
+        const typeField = this.fields.find(it => it.name === fieldSpec.typeField);
 
         return this.record[typeField.name];
     }
