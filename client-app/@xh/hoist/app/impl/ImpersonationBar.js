@@ -8,7 +8,8 @@
 import {Component} from 'react';
 import {XH, elemFactory, hoistComponent} from 'hoist/core';
 import {hbox, vbox, spacer, filler, div, span} from 'hoist/layout';
-import {Classes, button, suggest, icon, popover, menuItem, hotkeys, hotkey} from 'hoist/kit/blueprint';
+import {Classes, button, suggest, popover, menuItem, hotkeys, hotkey} from 'hoist/kit/blueprint';
+import {Icon} from 'hoist/icon';
 
 import {ImpersonationBarModel} from './ImpersonationBarModel';
 
@@ -41,7 +42,7 @@ export class ImpersonationBar extends Component {
             },
             alignItems: 'center',
             items: [
-                icon({icon: 'person', cls: 'xh-mr'}),
+                Icon.user({cls: 'xh-mr'}),
                 div(`${impersonating ? 'Impersonating' : ''} ${username}`),
                 filler(),
                 this.switchButton(),
@@ -56,7 +57,6 @@ export class ImpersonationBar extends Component {
         return popover({
             target: button({
                 text: 'Switch User',
-                icon: 'random',
                 cls: 'xh-mr',
                 style: {minWidth: 130},
                 onClick: model.openTargetDialog
@@ -101,7 +101,7 @@ export class ImpersonationBar extends Component {
 
     exitButton() {
         const text = XH.identityService.impersonating ? 'Exit Impersonation' : 'Close';
-        return button({text, icon: 'cross', onClick: this.onExitClick});
+        return button({text, icon: Icon.cross(), onClick: this.onExitClick});
     }
 
     //---------------------

@@ -27,21 +27,21 @@ export class RestGridToolbar extends Component {
             items: [
                 {
                     text: 'Add',
-                    icon: Icon.add,
+                    icon: Icon.add(),
                     intent: 'success',
                     onClick: this.onAddClick,
                     omit: !actionEnabled.add
                 },
                 {
                     text: 'Edit',
-                    icon: Icon.edit,
+                    icon: Icon.edit(),
                     onClick: this.onEditClick,
                     disabled: !singleRecord,
                     omit: !actionEnabled.edit
                 },
                 {
                     text: 'Delete',
-                    icon: Icon.delete,
+                    icon: Icon.delete(),
                     intent: 'danger',
                     onClick: this.onDeleteClick,
                     disabled: !singleRecord,

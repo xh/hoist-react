@@ -14,33 +14,32 @@ import solid from '@fortawesome/fontawesome-pro-solid';
 fontawesome.library.add(solid);
 
 /**
- * Singleton class to provide getters for enumerated icons, each returning a FontAwesome SVG element.
+ * Singleton class to provide factories for enumerated icons, each returning a FontAwesome SVG element.
+ *
  * Currently importing the licensed "pro" library with additional icons - note this requires fetching
  * the FA npm package via a registry URL w/license token. See https://fontawesome.com/pro#license.
- *
- * A faIcon() method is also exported for direct access to the FA React component API.
- * See https://github.com/FortAwesome/react-fontawesome.
  */
-class _Icon {
-
-    get add()           {return this.el('plus-circle')}
-    get angleLeft()     {return this.el('angle-left')}
-    get angleRight()    {return this.el('angle-right')}
-    get check()         {return this.el('check')}
-    get delete()        {return this.el('minus-circle')}
-    get edit()          {return this.el('edit')}
-    get eye()           {return this.el('eye')}
-    get info()          {return this.el('info-circle')}
-    get mail()          {return this.el('envelope')}
-    get moon()          {return this.el('moon')}
-    get refresh()       {return this.el('sync')}
-    get sun()           {return this.el('sun')}
-
-
-    el(name) {
-        return faIcon({icon: name});
-    }
+export const Icon = {
+    add(p)           {return fa(p, 'plus-circle')},
+    angleLeft(p)     {return fa(p, 'angle-left')},
+    angleRight(p)    {return fa(p, 'angle-right')},
+    check(p)         {return fa(p, 'check')},
+    delete(p)        {return fa(p, 'minus-circle')},
+    edit(p)          {return fa(p, 'edit')},
+    eye(p)           {return fa(p, 'eye')},
+    info(p)          {return fa(p, 'info-circle')},
+    mail(p)          {return fa(p, 'envelope')},
+    moon(p)          {return fa(p, 'moon')},
+    refresh(p)       {return fa(p, 'sync')},
+    sun(p)           {return fa(p, 'sun')},
+    cross(p)         {return fa(p, 'times')},
+    user(p)          {return fa(p, 'user')}
 }
 
-export const faIcon = elemFactory(FontAwesomeIcon);
-export const Icon = new _Icon();
+//-----------------------------
+// Implementation
+//-----------------------------
+const faIcon = elemFactory(FontAwesomeIcon);
+const fa = function (props, name) {
+    return faIcon({icon: name, ...props});
+}

@@ -53,7 +53,7 @@ export class LogViewerToolbar extends Component {
                 }),
                 filler(),
                 button({
-                    icon: Icon.refresh,
+                    icon: Icon.refresh(),
                     onClick: this.onSubmitClick
                 })
             ]

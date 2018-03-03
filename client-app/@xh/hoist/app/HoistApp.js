@@ -67,12 +67,12 @@ export function hoistApp(C) {
             const model = new ContextMenuModel([
                 {
                     text: 'Reload App',
-                    icon: Icon.refresh,
+                    icon: Icon.refresh(),
                     fn: () => hoistModel.reloadApp()
                 },
                 {
                     text: 'About',
-                    icon: Icon.info,
+                    icon: Icon.info(),
                     fn: () => hoistModel.setShowAbout(true)
                 }
             ]);

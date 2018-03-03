@@ -28,7 +28,7 @@ export class RestForm extends Component {
 
         return dialog({
             title: isAdd ? 'Add Record' : 'Edit Record',
-            icon: isAdd ? Icon.add : Icon.edit,
+            icon: isAdd ? Icon.add() : Icon.edit(),
             cls: this.darkTheme ? 'xh-dark' : '',
             isOpen: true,
             isCloseButtonShown: false,
@@ -57,7 +57,7 @@ export class RestForm extends Component {
         return [
             button({
                 text: 'Delete',
-                icon: Icon.delete,
+                icon: Icon.delete(),
                 intent: 'danger',
                 onClick: this.onDeleteClick,
                 omit: !actionEnabled.del || isAdd
@@ -69,7 +69,7 @@ export class RestForm extends Component {
             }),
             button({
                 text: 'Save',
-                icon: Icon.check,
+                icon: Icon.check(),
                 intent: 'success',
                 disabled: !isFormValid,
                 onClick: this.onSaveClick,
