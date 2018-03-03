@@ -56,7 +56,8 @@ export class TabPane extends Component {
         } else {
             child.loadAsync()
                 .finally(() => model.markLoaded())
-                .linkTo(model.loadState);
+                .linkTo(model.loadState)
+                .catchDefault()
         }
     }
 

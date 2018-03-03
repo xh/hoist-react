@@ -16,8 +16,8 @@ import {MessageModel, message} from 'hoist/cmp';
 @hoistComponent()
 export class LoginPanel extends Component {
 
-    @setter @observable username = '';
-    @setter @observable password = '*****'; // Needed because saved password in chrome not triggering initial validation
+    @setter @observable username = 'admin@xh.io';
+    @setter @observable password = 'onBQs!!En93E3Wbj';
     @setter @observable warning = '';
     messageModel = new MessageModel();
 

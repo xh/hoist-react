@@ -24,7 +24,7 @@ import {DarkTheme} from './theme/Dark';
 export class Chart extends Component {
 
     _chartElem = new Ref();
-    _chart = null
+    _chart = null;
 
     render() {
         this.renderHighChart();
@@ -130,7 +130,7 @@ export class Chart extends Component {
     getModelConfig() {
         return {
             ...this.model.config,
-            series: toJS(this.model.series)
+            series: this.model.series
         };
     }
 

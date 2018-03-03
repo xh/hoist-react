@@ -11,12 +11,13 @@ import {UrlStore} from 'hoist/data';
 import {chart, ChartModel} from 'hoist/highcharts';
 import {vframe} from 'hoist/layout';
 import {collapsible} from 'hoist/cmp';
-import {observer} from 'hoist/mobx';
 import {numberRenderer} from 'hoist/format';
 import {baseCol} from 'hoist/columns/Core';
 import {dateTimeCol} from 'hoist/columns/DatesTimes';
 
 import {usernameCol} from '../../columns/Columns';
+import {visitsChart} from './VisitsChart';
+import {VisitsModel} from './VisitsModel';
 
 @hoistComponent()
 export class ActivityPanel extends Component {
@@ -50,27 +51,7 @@ export class ActivityPanel extends Component {
         ]
     });
 
-    chartModel = new ChartModel({
-        config: {
-            chart: {type: 'bar'},
-            title: {text: 'Fruit Consumption'},
-            xAxis: {
-                categories: ['Apples', 'Bananas', 'Oranges']
-            },
-            yAxis: {
-                title: {
-                    text: 'Fruit eaten'
-                }
-            }
-        },
-        series: [{
-            name: 'Jane',
-            data: [1, 0, 4]
-        }, {
-            name: 'John',
-            data: [5, 7, 3]
-        }]
-    });
+    visitsModel = new VisitsModel();
 
     render() {
         return vframe(
@@ -78,12 +59,12 @@ export class ActivityPanel extends Component {
             collapsible({
                 side: 'bottom',
                 contentSize: 250,
-                item: chart({model: this.chartModel})
+                item: visitsChart({model: this.visitsModel})
             })
         );
     }
 
-    loadAsync() {
-        return this.store.loadAsync();
+    async loadAsync() {
+        return Promise.all([this.visitsModel.loadAsync(), this.store.loadAsync()]);
     }
 }

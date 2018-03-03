@@ -7,6 +7,11 @@
     padding-left: 10px;
 }
 
+/* Header icon spacing */
+.pt-dialog-header svg:first-child {
+    margin-right: 5px;
+}
+
 .pt-dialog-close-button {
     padding-right: 10px;
 }
