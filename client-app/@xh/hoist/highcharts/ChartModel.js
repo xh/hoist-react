@@ -21,13 +21,13 @@ export class ChartModel {
      * This may includes all native highcharts options other than 'series',
      * which should be set on the seperate 'series' property on this object.
      */
-    @observable @setter config = {};
+    @observable.ref @setter config = {};
 
 
     /**
      * Data series to be displayed.
      */
-    @observable @setter series = [];
+    @observable.ref @setter series = [];
 
     /**
      * Construct this object.

@@ -7,31 +7,33 @@
 import {Component} from 'react';
 import {hoistComponent} from 'hoist/core';
 import {baseCol, boolCheckCol} from 'hoist/columns/Core';
-import {restGrid, RestGridModel} from 'hoist/rest';
+import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
 
 import {nameFlexCol} from '../../columns/Columns';
 
 @hoistComponent()
 export class MonitorEditorPanel extends Component {
 
-    gridModel = new RestGridModel({
+    store = new RestStore({
         url: 'rest/monitorAdmin',
-        recordSpec: {
-            fields: [
-                {name: 'code', label: 'Code'},
-                {name: 'name', label: 'Name'},
-                {name: 'metricType', label: 'Metric Type', lookup: 'metricTypes'},
-                {name: 'metricUnit', label: 'Metric Unit', allowNull: true},
-                {name: 'warnThreshold', label: 'Warn Threshold', type: 'int', allowNull: true},
-                {name: 'failThreshold', label: 'Fail Threshold', type: 'int', allowNull: true},
-                {name: 'params', label: 'Params', type: 'json', allowNull: true},
-                {name: 'notes', label: 'Notes', allowNull: true},
-                {name: 'active', label: 'Active', type: 'bool', defaultValue: false},
-                {name: 'sortOrder', label: 'Sort', type: 'int', allowNull: true},
-                {name: 'lastUpdated', label: 'Last Updated', allowNull: true},
-                {name: 'lastUpdatedBy', label: 'Last Updated By', allowNull: true}
-            ]
-        },
+        fields: [
+            {name: 'code', label: 'Code'},
+            {name: 'name', label: 'Name'},
+            {name: 'metricType', label: 'Metric Type', lookup: 'metricTypes'},
+            {name: 'metricUnit', label: 'Metric Unit', allowNull: true},
+            {name: 'warnThreshold', label: 'Warn Threshold', type: 'int', allowNull: true},
+            {name: 'failThreshold', label: 'Fail Threshold', type: 'int', allowNull: true},
+            {name: 'params', label: 'Params'},
+            {name: 'notes', label: 'Notes', allowNull: true},
+            {name: 'active', label: 'Active', type: 'bool'},
+            {name: 'sortOrder', label: 'Sort', type: 'int', allowNull: true},
+            {name: 'lastUpdated', label: 'Last Updated', type: 'date', allowNull: true},
+            {name: 'lastUpdatedBy', label: 'Last Updated By', allowNull: true}
+        ]
+    });
+
+    gridModel = new RestGridModel({
+        store: this.store,
         columns: [
             boolCheckCol({field: 'active', width: 60}),
             baseCol({field: 'code', width: 150}),
@@ -45,7 +47,7 @@ export class MonitorEditorPanel extends Component {
         editors: [
             {field: 'code'},
             {field: 'name'},
-            {field: 'metricType', editable: false}, // see note in log level
+            {field: 'metricType', editable: false},
             {field: 'warnThreshold'},
             {field: 'failThreshold'},
             {field: 'metricUnit'},
@@ -63,6 +65,6 @@ export class MonitorEditorPanel extends Component {
     }
 
     loadAsync() {
-        return this.gridModel.loadAsync();
+        return this.store.loadAsync();
     }
 }

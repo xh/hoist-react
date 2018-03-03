@@ -7,10 +7,11 @@
 
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
-import {loadMask, confirm} from 'hoist/cmp';
+import {loadMask, message} from 'hoist/cmp';
 import {filler, vframe, hbox} from 'hoist/layout';
 import {observer} from 'hoist/mobx';
 import {fmtDateTime} from 'hoist/format';
+import {Icon} from 'hoist/icon';
 
 import {
     Classes, button, checkbox, dialog, dialogBody,
@@ -27,7 +28,7 @@ export class RestForm extends Component {
 
         return dialog({
             title: isAdd ? 'Add Record' : 'Edit Record',
-            icon: isAdd ? 'plus' : 'edit',
+            icon: isAdd ? Icon.add() : Icon.edit(),
             cls: this.darkTheme ? 'xh-dark' : '',
             isOpen: true,
             isCloseButtonShown: false,
@@ -45,18 +46,18 @@ export class RestForm extends Component {
             dialogFooter(
                 dialogFooterActions(this.getButtons())
             ),
-            confirm({model: model.confirmModel}),
+            message({model: model.messageModel}),
             loadMask({model: model.loadModel})
         ];
     }
 
     getButtons() {
-        const {isValid, isWritable, isAdd, actionEnabled} = this.model;
+        const {isFormValid, isWritable, isAdd, actionEnabled} = this.model;
 
         return [
             button({
                 text: 'Delete',
-                icon: 'cross',
+                icon: Icon.delete(),
                 intent: 'danger',
                 onClick: this.onDeleteClick,
                 omit: !actionEnabled.del || isAdd
@@ -68,9 +69,9 @@ export class RestForm extends Component {
             }),
             button({
                 text: 'Save',
-                icon: 'tick',
+                icon: Icon.check(),
                 intent: 'success',
-                disabled: !isValid,
+                disabled: !isFormValid,
                 onClick: this.onSaveClick,
                 omit: !isWritable
             })
@@ -86,7 +87,7 @@ export class RestForm extends Component {
             warning = model.actionWarning.del;
 
         if (warning) {
-            model.confirmModel.show({
+            model.messageModel.confirm({
                 message: warning,
                 onConfirm: () => model.deleteRecord()
             });
@@ -101,7 +102,7 @@ export class RestForm extends Component {
             warning = model.actionWarning[isAdd ? 'add' : 'edit'];
 
         if (warning) {
-            model.confirmModel.show({
+            model.messageModel.confirm({
                 message: warning,
                 onConfirm: () => model.saveRecord()
             });
@@ -173,8 +174,9 @@ const restDisplayField = elemFactory(observer(
 const restDropdown = elemFactory(observer(
     class extends Component {
         render() {
-            const {value, disabled, fieldSpec} = this.props,
+            const {model, value, disabled, fieldSpec, fieldName} = this.props,
                 options = fieldSpec.lookupValues;
+            if (!model.record) return null;
 
             return suggest({
                 popoverProps: {popoverClassName: Classes.MINIMAL},
@@ -187,6 +189,7 @@ const restDropdown = elemFactory(observer(
                 inputValueRenderer: s => s,
                 inputProps: {
                     value: value || '',
+                    className: model.isFieldValid(fieldName) ? '' : 'pt-intent-danger',
                     disabled,
                     onChange: this.onChange
                 }
@@ -194,12 +197,14 @@ const restDropdown = elemFactory(observer(
         }
 
         onChange = (ev) => {
-            this.props.setValue(ev.target.value);
+            const {model, fieldName} = this.props;
+            model.setValue(fieldName, ev.target.value);
         }
 
         onItemSelect = (val) => {
             if (val) {
-                this.props.setValue(val);
+                const {model, fieldName} = this.props;
+                model.setValue(fieldName, val);
             }
         }
 
@@ -237,7 +242,14 @@ const restSelect = elemFactory(observer(
 const restCheckbox = elemFactory(observer(
     class extends Component {
         render() {
-            const {value, disabled} = this.props;
+            const {model, value, disabled, fieldName} = this.props;
+            if (!model.record) return null;
+
+            if (!model.isFieldValid(fieldName)) {
+                console.warn('Required boolean fields should provide a defaultValue' +
+                    ' If boolean field is nullable please use a dropdown.');
+            }
+
             return checkbox({
                 checked: !!value,
                 disabled,
@@ -246,7 +258,8 @@ const restCheckbox = elemFactory(observer(
         }
 
         onChange = (ev) => {
-            this.props.setValue(ev.target.checked);
+            const {model, fieldName} = this.props;
+            model.setValue(fieldName, ev.target.checked);
         }
     }
 ));
@@ -254,9 +267,12 @@ const restCheckbox = elemFactory(observer(
 const restNumericInput = elemFactory(observer(
     class extends Component {
         render() {
-            const {value, disabled} = this.props;
+            const {model, value, disabled, fieldName} = this.props;
+            if (!model.record) return null;
+
             return numericInput({
                 cls: 'pt-fill',
+                intent: model.isFieldValid(fieldName) ? 'none' : 'danger',
                 buttonPosition: 'none',
                 value: value,
                 disabled,
@@ -265,8 +281,9 @@ const restNumericInput = elemFactory(observer(
         }
 
         onValueChange = (val, valAsString) => {
+            const {model, fieldName} = this.props;
             val = (valAsString === '') ? null : val;
-            this.props.setValue(val);
+            model.setValue(fieldName, val);
         }
     }
 ));
@@ -274,9 +291,12 @@ const restNumericInput = elemFactory(observer(
 const restTextArea = elemFactory(observer(
     class extends Component {
         render() {
-            const {value, disabled} = this.props;
+            const {model, value, disabled, fieldName} = this.props,
+                cls = model.isFieldValid(fieldName) ? 'pt-fill' : 'pt-fill pt-intent-danger';
+            if (!model.record) return null;
+
             return textArea({
-                cls: 'pt-fill',
+                cls: cls,
                 value: value || '',
                 disabled,
                 onChange: this.onChange
@@ -284,7 +304,8 @@ const restTextArea = elemFactory(observer(
         }
 
         onChange = (ev) => {
-            this.props.setValue(ev.target.value);
+            const {model, fieldName} = this.props;
+            model.setValue(fieldName, ev.target.value);
         }
     }
 ));
@@ -292,9 +313,12 @@ const restTextArea = elemFactory(observer(
 const restTextInput = elemFactory(observer(
     class extends Component {
         render() {
-            const {value, disabled} = this.props;
+            const {model, value, disabled, fieldName} = this.props,
+                cls = model.isFieldValid(fieldName) ? 'pt-fill' : 'pt-fill pt-intent-danger';
+            if (!model.record) return null;
+
             return inputGroup({
-                cls: 'pt-fill',
+                cls: cls,
                 type: 'text',
                 value: value || '',
                 disabled,
@@ -303,7 +327,8 @@ const restTextInput = elemFactory(observer(
         }
 
         onChange = (ev) => {
-            this.props.setValue(ev.target.value);
+            const {model, fieldName} = this.props;
+            model.setValue(fieldName, ev.target.value);
         }
     }
 ));

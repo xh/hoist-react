@@ -6,7 +6,7 @@
  */
 
 import {fileColFactory} from './Utils.js';
-import {icon} from 'hoist/kit/blueprint';
+import {Icon} from 'hoist/icon';
 
 const colFactory = fileColFactory({
     xhId: null,
@@ -19,8 +19,7 @@ export const boolCheckCol = colFactory({
     align: 'center',
     width: 34,
     cellRendererFramework: (params) => {
-        const iconConfig = params.value ? {name: 'check', color: 'green'} : {name: 'x', color: 'red'};
-        return icon(iconConfig);
+        return params.value ? Icon.check({color: 'green'}) : Icon.cross({color: 'red'});
     },
     xhExportRenderer: val => !!val
 });

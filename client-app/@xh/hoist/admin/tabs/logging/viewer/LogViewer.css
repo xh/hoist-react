@@ -4,10 +4,25 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+.noselect {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
+}
+
 .logviewer-row {
     height: 16px;
     font-size: 11px;
     font-family: Monaco, monospace;
+}
+
+.logviewer-row:hover {
+    background-color:#f5f8fa;
+    color: #282828;
 }
 
 .logviewer-row-number {

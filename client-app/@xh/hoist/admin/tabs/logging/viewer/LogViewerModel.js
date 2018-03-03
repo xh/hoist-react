@@ -5,12 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {debounce} from 'lodash';
 import {XH} from 'hoist/core';
+import {debounce} from 'lodash';
 import {action, observable, setter, autorun} from 'hoist/mobx';
-import {baseCol} from 'hoist/columns/Core';
-import {GridModel} from 'hoist/grid';
 import {LastPromiseModel} from 'hoist/promise';
+import {GridModel} from 'hoist/grid';
+import {UrlStore} from 'hoist/data';
+import {baseCol} from 'hoist/columns/Core';
 
 export class LogViewerModel {
 
@@ -27,8 +28,11 @@ export class LogViewerModel {
     loadModel = new LastPromiseModel();
 
     files = new GridModel({
-        url: 'logViewerAdmin/listFiles',
-        dataRoot: 'files',
+        store: new UrlStore({
+            url: 'logViewerAdmin/listFiles',
+            dataRoot: 'files',
+            fields: ['filename']
+        }),
         columns: [
             baseCol({headerName: 'Log File', field: 'filename', width: 250})
         ]
@@ -44,7 +48,7 @@ export class LogViewerModel {
     
     @action
     async loadAsync() {
-        this.files.loadAsync();
+        this.files.store.loadAsync();
         this.loadLines();
     }
 
@@ -62,9 +66,9 @@ export class LogViewerModel {
         this[name] = value;
     }
 
-    //-----------------
+    //---------------------------------
     // Implementation
-    //-----------------
+    //---------------------------------
     fetchFile = debounce(() => {
         return XH
             .fetchJson({

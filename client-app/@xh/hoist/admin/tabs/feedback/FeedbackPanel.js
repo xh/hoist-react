@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {hoistComponent} from 'hoist/core';
-import {restGrid, RestGridModel} from 'hoist/rest';
+import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
 import {baseCol} from 'hoist/columns/Core';
 import {usernameCol} from '../../columns/Columns';
 import {compactDateRenderer} from '../../../format';
@@ -14,21 +14,23 @@ import {compactDateRenderer} from '../../../format';
 @hoistComponent()
 export class FeedbackPanel extends Component {
 
-    gridModel = new RestGridModel({
+    store = new RestStore({
         url: 'rest/feedbackAdmin',
+        fields: [
+            {name: 'username', label: 'User'},
+            {name: 'msg', label: 'Message'},
+            {name: 'browser', label: 'Browser', readOnly: true},
+            {name: 'device', label: 'Device', readOnly: true},
+            {name: 'appVersion', label: 'Version', readOnly: true},
+            {name: 'appEnvironment', label: 'Environment', readOnly: true},
+            {name: 'dateCreated', type: 'date', dateFormat: 'time', label: 'Date', readOnly: true, allowNull: true}
+        ]
+    });
+
+    gridModel = new RestGridModel({
+        store: this.store,
         actionEnabled: {
             add: false
-        },
-        recordSpec: {
-            fields: [
-                {name: 'username', label: 'User'},
-                {name: 'msg', label: 'Message'},
-                {name: 'browser', label: 'Browser'},
-                {name: 'device', label: 'Device'},
-                {name: 'appVersion', label: 'Version'},
-                {name: 'appEnvironment', label: 'Environment'},
-                {name: 'dateCreated', label: 'Date', allowNull: true}
-            ]
         },
         columns: [
             usernameCol(),
@@ -55,6 +57,6 @@ export class FeedbackPanel extends Component {
     }
 
     loadAsync() {
-        return this.gridModel.loadAsync();
+        return this.store.loadAsync();
     }
 }

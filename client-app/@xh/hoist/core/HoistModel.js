@@ -24,7 +24,7 @@ import {
 } from 'hoist/svc';
 
 /**
- * Top level model for a HoistApp.
+ * Top level model for Hoist
  */
 class HoistModel {
 
@@ -60,7 +60,10 @@ class HoistModel {
 
     /** Show about dialog? **/
     @observable @setter showAbout = false;
-    
+
+    /** Top level model for theApp **/
+    appModel = null;
+
     /**
      * Tracks globally loading promises.
      *
@@ -73,8 +76,8 @@ class HoistModel {
      * Call this once when application mounted in order to
      * trigger initial authentication and initialization of application.
      */
-    initApp() {
-        this.fetchService.fetchJson({url: 'auth/authUser'})
+    async initAsync() {
+        return this.fetchService.fetchJson({url: 'auth/authUser'})
             .then(r => this.markAuthenticatedUser(r.authUser.username))
             .catch(e => this.markAuthenticatedUser(null));
     }
@@ -100,7 +103,11 @@ class HoistModel {
         this.authCompleted = true;
 
         if (username && !this.isInitialized) {
+            // 100ms delay works around styling issues introduced by 2/2018 web pack loading changes. TODO: Remove
             this.initServicesAsync()
+                .wait(100)
+                .then(() => this.initLocalState())
+                .then(() => this.appModel.initAsync())
                 .then(() => this.setIsInitialized(true))
                 .catchDefault();
         }
@@ -109,6 +116,7 @@ class HoistModel {
     @action
     toggleTheme() {
         this.setDarkTheme(!this.darkTheme);
+        this.prefService.set('xhTheme', this.darkTheme ? 'dark' : 'light');
     }
 
     //------------------------------------
@@ -128,6 +136,10 @@ class HoistModel {
             this.trackService,
             this.eventService
         );
+    }
+
+    initLocalState() {
+        this.setDarkTheme(this.prefService.get('xhTheme') === 'dark');
     }
 }
 export const hoistModel = new HoistModel();

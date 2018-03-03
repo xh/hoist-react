@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {frame, vframe} from 'hoist/layout';
-import {confirm} from 'hoist/cmp';
+import {message} from 'hoist/cmp';
 
 import {restGridToolbar} from './RestGridToolbar';
 import {restForm} from './RestForm';
@@ -30,7 +30,7 @@ export class RestGrid extends Component {
                 })
             ),
             restForm({model: model.formModel}),
-            confirm({model: model.confirmModel})
+            message({model: model.messageModel})
         );
     }
 
