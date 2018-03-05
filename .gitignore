@@ -5,9 +5,8 @@
 *.iml
 
 # Build / Libs
-.gradle/
 build/
-/client-app/@xh/hoist/node_modules/
+node_modules/
 
 # Logs
 *.log
