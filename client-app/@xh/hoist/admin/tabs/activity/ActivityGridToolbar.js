@@ -7,8 +7,9 @@
 import {Component} from 'react';
 import moment from 'moment';
 import {elemFactory, hoistComponent} from 'hoist/core';
-import {inputGroup, dateInput, button} from 'hoist/kit/blueprint';
+import {button, dateInput, inputGroup} from 'hoist/kit/blueprint';
 import {hbox, filler, hspacer} from 'hoist/layout';
+import {Icon} from 'hoist/icon';
 import {fmtDate} from 'hoist/format';
 
 @hoistComponent()
@@ -34,6 +35,8 @@ export class ActivityGridToolbar extends Component {
                     }
                 }),
                 hspacer(8),
+                Icon.angleRight(),
+                hspacer(8),
                 dateInput({
                     value: moment().toDate(),
                     formatDate: this.fmtDate,
@@ -43,26 +46,68 @@ export class ActivityGridToolbar extends Component {
                         usePortal: true
                     }
                 }),
-                // hspacer(10),
-                // inputGroup({
-                //     placeholder: 'Search...',
-                //     style: {width: 150},
-                //     value: pattern,
-                //     onChange: this.onPatternChange
-                // }),
-                // hspacer(10),
-                // checkbox({
-                //     name: 'tail',
-                //     style: {marginBottom: '0px', marginRight: '0px'},
-                //     label: this.label('Tail'),
-                //     checked: tail,
-                //     inline: true,
-                //     onChange: this.onTailChange
-                // }),
-                filler(),
+                hspacer(8),
                 button({
-                    icon: 'refresh',
+                    icon: Icon.caretLeft(),
                     // onClick: this.onSubmitClick
+                }),
+                button({
+                    icon: Icon.caretRight(),
+                    // onClick: this.onSubmitClick
+                }),
+                button({
+                    icon: Icon.arrowToRight(),
+                    // onClick: this.onSubmitClick
+                }),
+                hspacer(8),
+                '|',
+                hspacer(8),
+                inputGroup({
+                    placeholder: 'User...',
+                    // style: {width: 150},
+                    // value: pattern,
+                    // onChange: this.onPatternChange
+                }),
+                hspacer(10),
+                inputGroup({
+                    placeholder: 'Msg...',
+                    // style: {width: 150},
+                    // value: pattern,
+                    // onChange: this.onPatternChange
+                }),
+                hspacer(10),
+                inputGroup({
+                    placeholder: 'Category...',
+                    // style: {width: 150},
+                    // value: pattern,
+                    // onChange: this.onPatternChange
+                }),
+                hspacer(10),
+                inputGroup({
+                    placeholder: 'Device...',
+                    // style: {width: 150},
+                    // value: pattern,
+                    // onChange: this.onPatternChange
+                }),
+                hspacer(10),
+                inputGroup({
+                    placeholder: 'Browser...',
+                    // style: {width: 150},
+                    // value: pattern,
+                    // onChange: this.onPatternChange
+                }),
+                hspacer(8),
+                '|',
+                hspacer(8),
+                button({
+                    icon: Icon.sync(),
+                    // onClick: this.onSubmitClick
+                }),
+                filler(),
+                this.renderLogCount(),
+                hspacer(8),
+                button({
+                    icon: Icon.download()
                 })
             ]
         });
@@ -81,5 +126,9 @@ export class ActivityGridToolbar extends Component {
 
     onSubmitClick = () => {
     };
+
+    renderLogCount() {
+        return '99 track logs'
+    }
 }
 export const activityGridToolbar = elemFactory(ActivityGridToolbar);

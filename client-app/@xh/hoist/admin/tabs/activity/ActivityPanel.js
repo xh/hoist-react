@@ -55,7 +55,7 @@ export class ActivityPanel extends Component {
 
     render() {
         return vframe(
-            activityGridToolbar(),
+            activityGridToolbar({model: this.gridModel}),
             grid({model: this.gridModel}),
             collapsible({
                 side: 'bottom',
