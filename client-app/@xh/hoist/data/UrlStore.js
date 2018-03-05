@@ -24,7 +24,7 @@ export class UrlStore extends LocalStore {
      * @param dataRoot, optional.  Name of root node for records in returned data.
      */
     constructor({url, dataRoot = null, ...rest}) {
-        super(rest)
+        super(rest);
         this.url = url;
         this.dataRoot = dataRoot;
     }

@@ -82,6 +82,7 @@ export class LocalStore extends BaseStore {
         this.applyFilter();
     }
 
+    @action
     applyFilter() {
         const {_filter, _allRecords} = this;
         this._records = _filter ? _allRecords.filter(_filter) : _allRecords;

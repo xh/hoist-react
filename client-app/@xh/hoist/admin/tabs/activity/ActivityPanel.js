@@ -17,6 +17,7 @@ import {dateTimeCol} from 'hoist/columns/DatesTimes';
 
 import {usernameCol} from '../../columns/Columns';
 import {activityGridToolbar} from './ActivityGridToolbar';
+import {ActivityModel} from './ActivityModel';
 import {visitsChart} from './VisitsChart';
 import {VisitsModel} from './VisitsModel';
 
@@ -51,11 +52,12 @@ export class ActivityPanel extends Component {
         ]
     });
 
+    activityModel = new ActivityModel({gridModel: this.gridModel});
     visitsModel = new VisitsModel();
 
     render() {
         return vframe(
-            activityGridToolbar({model: this.gridModel}),
+            activityGridToolbar({model: this.activityModel}),
             grid({model: this.gridModel}),
             collapsible({
                 side: 'bottom',
@@ -66,6 +68,8 @@ export class ActivityPanel extends Component {
     }
 
     async loadAsync() {
-        return Promise.all([this.visitsModel.loadAsync(), this.store.loadAsync()]);
+        return Promise.all([this.visitsModel.loadAsync(), this.store.loadAsync()]).then(() => {
+            this.gridModel.store.filter = this.activityModel.activityFilter
+        });
     }
 }

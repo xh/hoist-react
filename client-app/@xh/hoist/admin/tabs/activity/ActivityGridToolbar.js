@@ -16,7 +16,7 @@ import {fmtDate} from 'hoist/format';
 export class ActivityGridToolbar extends Component {
 
     render() {
-        // const {} = this.model;
+        const model = this.model;
 
         return hbox({
             cls: 'xh-tbar',
@@ -26,10 +26,10 @@ export class ActivityGridToolbar extends Component {
             items: [
                 hspacer(4),
                 dateInput({
-                    value: moment().toDate(),
+                    value: model.startDate,
                     formatDate: this.fmtDate,
                     parseDate: this.parseDate,
-                    // onChange: this.onStartDateChange,
+                    onChange: this.onStartDateChange,
                     popoverProps: {
                         usePortal: true
                     }
@@ -38,10 +38,10 @@ export class ActivityGridToolbar extends Component {
                 Icon.angleRight(),
                 hspacer(8),
                 dateInput({
-                    value: moment().toDate(),
+                    value: model.endDate,
                     formatDate: this.fmtDate,
                     parseDate: this.parseDate,
-                    // onChange: this.onEndDateChange,
+                    onChange: this.onEndDateChange,
                     popoverProps: {
                         usePortal: true
                     }
@@ -101,7 +101,7 @@ export class ActivityGridToolbar extends Component {
                 hspacer(8),
                 button({
                     icon: Icon.sync(),
-                    // onClick: this.onSubmitClick
+                    onClick: this.onSubmitClick
                 }),
                 filler(),
                 this.renderLogCount(),
@@ -124,7 +124,16 @@ export class ActivityGridToolbar extends Component {
         return moment(dateString).toDate()
     }
 
+    onStartDateChange = (date) => {
+        this.model.setStartDate(date); // might need to be a moment
+    }
+
+    onEndDateChange = (date) => {
+        this.model.setEndDate(date); // might need to be a moment
+    }
+
     onSubmitClick = () => {
+        this.model.gridModel.store.filter = this.model.activityFilter
     };
 
     renderLogCount() {

@@ -25,7 +25,6 @@ export class VisitsChart extends Component {
         );
     }
 
-    // break out into chartToolBar component?
     renderToolbar({model}) {
         return hbox({
             cls: 'xh-tbar',
@@ -80,7 +79,7 @@ export class VisitsChart extends Component {
     }
 
     onStartDateChange = (date) => {
-        this.model.setStartDate(moment(date).toDate());
+        this.model.setStartDate(moment(date).toDate()); // why do I have to convert this to a moment and back out (not working if I don't)
     }
 
     onEndDateChange = (date) => {
