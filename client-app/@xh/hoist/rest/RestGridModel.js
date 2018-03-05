@@ -57,8 +57,8 @@ export class RestGridModel {
     }) {
         this.actionEnabled = Object.assign(this.actionEnabled, actionEnabled);
         this.actionWarning = Object.assign(this.actionWarning, actionWarning);
-        this.formModel = new RestFormModel({parent: this, editors});
         this.gridModel = new GridModel(rest);
+        this.formModel = new RestFormModel({parent: this, editors});
     }
 
 

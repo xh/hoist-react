@@ -11,6 +11,8 @@ import {UrlStore} from 'hoist/data';
 import {action} from 'hoist/mobx';
 import {remove} from 'lodash';
 
+import {RestField} from './RestField';
+
 /**
  * Store with additional support for RestGrid.
  *
@@ -27,13 +29,17 @@ export class RestStore extends UrlStore {
         super({dataRoot, ...rest});
     }
 
+    get defaultFieldClass() {
+        return RestField;
+    }
+
     async loadAsync() {
         if (!this._lookupsLoaded) {
-            const lookupFields = this.fields.filter(it => !!it.lookup);
+            const lookupFields = this.fields.filter(it => !!it.lookupName);
             if (lookupFields.length) {
                 const lookupData = await XH.fetchJson({url: `${this.url}/lookupData`});
                 lookupFields.forEach(f => {
-                    f.lookupValues = lookupData[f.lookup];
+                    f.lookup = lookupData[f.lookupName];
                 });
                 this._lookupsLoaded = true;
             }

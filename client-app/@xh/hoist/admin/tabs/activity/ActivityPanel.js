@@ -35,17 +35,16 @@ export class ActivityPanel extends Component {
         store: this.store,
         columns: [
             baseCol({field: 'severity', width: 60}),
-            dateTimeCol({field: 'dateCreated', text: 'Date Created'}),
+            dateTimeCol({field: 'dateCreated'}),
             usernameCol(),
             baseCol({field: 'msg', text: 'Message', width: 60}),
-            baseCol({field: 'category', text: 'Category', width: 100}),
-            baseCol({field: 'device', text: 'Device', width: 60}),
-            baseCol({field: 'browser', text: 'Browser', width: 100}),
-            baseCol({field: 'data', text: 'Data', flex: 1}),
-            baseCol({field: 'impersonating', text: 'Impersonating', width: 120}),
+            baseCol({field: 'category', width: 100}),
+            baseCol({field: 'device', width: 60}),
+            baseCol({field: 'browser', width: 100}),
+            baseCol({field: 'data', flex: 1}),
+            baseCol({field: 'impersonating',  width: 120}),
             baseCol({
                 field: 'elapsed',
-                text: 'Elapsed (ms)',
                 width: 60,
                 valueFormatter: numberRenderer({precision: 0})
             })

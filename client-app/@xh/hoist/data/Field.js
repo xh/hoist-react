@@ -5,41 +5,37 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {startCase} from 'lodash';
 /**
  * Metadata for a column or 'field' in a Store record.
  */
 export class Field {
 
     name
-    label
-    allowNull
-    defaultValue
     type
+    label
+    defaultValue
 
     /**
      * Construct this object.
      *
      * @param name, required.
-     * @param type, one of [string, int, number, bool, json, date, day, auto], default 'auto'
-     * @param label, optional, default to name
-     * @param allowNull, default true.
-     * @param defaultValue, default null.
-     *
-     * @param rest, additional properties to be applied directly to this object.
+     * @param type, one of [string, number, bool, json, date, day, auto], default 'auto' indicates no conversion
+     *        or validation will be made.
+     * @param label, optional, default to Start Case of 'name'.
+     * @param defaultValue. Value to be used for records with a null, or non-existent value.
      */
     constructor({
         name,
         type = 'auto',
-        label = name,
-        allowNull = true,
+        label = startCase(name),
+        nullable = true,
         defaultValue = null,
-        ...rest
     }) {
         this.name = name;
         this.type = type;
         this.label = label;
-        this.allowNull = allowNull;
+        this.nullable = nullable;
         this.defaultValue = defaultValue;
-        Object.assign(this, rest);
     }
 }

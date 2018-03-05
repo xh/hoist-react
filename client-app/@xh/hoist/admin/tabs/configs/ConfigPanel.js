@@ -16,19 +16,53 @@ export class ConfigPanel extends Component {
 
     store = new RestStore({
         url: 'rest/configAdmin',
-        fields: this.filterForEnv([
-            {name: 'name', label: 'Name'},
-            {name: 'groupName', label: 'Group', lookup: 'groupNames'},
-            {name: 'valueType', label: 'Type', lookup: 'valueTypes'},
-            {name: 'prodValue', label: 'Prod Value', typeField: 'valueType', env: 'Production'},
-            {name: 'betaValue', label: 'Beta Value', allowNull: true, typeField: 'valueType', env: 'Beta'},
-            {name: 'stageValue', label: 'Stage Value', allowNull: true, typeField: 'valueType', env: 'Staging'},
-            {name: 'devValue', label: 'Dev Value', allowNull: true, typeField: 'valueType', env: 'Development'},
-            {name: 'clientVisible', label: 'Client?', type: 'bool', defaultValue: false},
-            {name: 'note', label: 'Note', allowNull: true},
-            {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true, allowNull: true},
-            {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true, allowNull: true}
-        ])
+        fields: this.filterForEnv([{
+            name: 'name',
+            required: true
+        }, {
+            name: 'groupName',
+            label: 'Group',
+            lookupName: 'groupNames',
+            required: true
+        }, {
+            name: 'valueType',
+            label: 'Type',
+            lookupName: 'valueTypes',
+            lookupStrict: true,
+            editable: 'onAdd',
+            required: true
+        }, {
+            name: 'prodValue',
+            typeField: 'valueType',
+            required: true,
+            env: 'Production'
+        }, {
+            name: 'betaValue',
+            typeField: 'valueType',
+            env: 'Beta'
+        }, {
+            name: 'stageValue',
+            typeField: 'valueType',
+            env: 'Staging'
+        }, {
+            name: 'devValue',
+            typeField: 'valueType',
+            env: 'Development'
+        }, {
+            name: 'clientVisible',
+            type: 'bool',
+            defaultValue: false,
+            required: true
+        }, {
+            name: 'note'
+        }, {
+            name: 'lastUpdated',
+            type: 'date',
+            editable: false
+        }, {
+            name: 'lastUpdatedBy',
+            editable: false
+        }])
     });
 
     gridModel = new RestGridModel({
@@ -51,16 +85,16 @@ export class ConfigPanel extends Component {
         ]),
         editors: this.filterForEnv([
             {field: 'name'},
-            {field: 'groupName', allowAdditions: true},
-            {field: 'valueType', additionsOnly: true},
+            {field: 'groupName'},
+            {field: 'valueType',},
             {field: 'prodValue', env: 'Production'},
             {field: 'betaValue', env: 'Beta'},
             {field: 'stageValue', env: 'Staging'},
             {field: 'devValue', env: 'Development'},
-            {field: 'clientVisible', type: 'bool'},
+            {field: 'clientVisible'},
             {field: 'note', type: 'textarea'},
-            {field: 'lastUpdated', type: 'displayField'},
-            {field: 'lastUpdatedBy', type: 'displayField'}
+            {field: 'lastUpdated'},
+            {field: 'lastUpdatedBy'}
         ])
     });
 

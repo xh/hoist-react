@@ -17,12 +17,22 @@ export class DashboardPanel extends Component {
 
     store = new RestStore({
         url: 'rest/dashboardAdmin',
-        fields: [
-            {name: 'appCode', label: 'App Code'},
-            {name: 'username', label: 'User'},
-            {name: 'definition', label: 'Definition', type: 'json'},
-            {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true, allowNull: true}
-        ]
+        fields: [{
+            name: 'appCode',
+            required: true,
+        }, {
+            name: 'username',
+            label: 'User',
+            required: true
+        }, {
+            name: 'definition',
+            type: 'json',
+            required: true
+        }, {
+            name: 'lastUpdated',
+            type: 'date',
+            editable: false
+        }]
     });
 
     gridModel = new RestGridModel({
@@ -42,7 +52,7 @@ export class DashboardPanel extends Component {
             {field: 'appCode'},
             {field: 'username'},
             {field: 'definition'},
-            {field: 'lastUpdated', type: 'displayField'}
+            {field: 'lastUpdated'}
         ]
     });
 

@@ -16,15 +16,34 @@ export class PreferencePanel extends Component {
 
     store = new RestStore({
         url: 'rest/preferenceAdmin',
-        fields: [
-            {name: 'name', label: 'Name'},
-            {name: 'type', label: 'Type', lookup: 'types'},
-            {name: 'defaultValue',  typeField: 'type', label: 'Default Value'},
-            {name: 'notes', label: 'Notes', allowNull: true},
-            {name: 'local', label: 'Local', type: 'bool'},
-            {name: 'lastUpdated', label: 'Last Updated', type: 'date', readOnly: true, allowNull: true},
-            {name: 'lastUpdatedBy', label: 'Last Updated By', readOnly: true, allowNull: true}
-        ]
+        fields: [{
+            name: 'name',
+            required: true
+        }, {
+            name: 'type',
+            defaultValue: 'string',
+            lookupName: 'types',
+            lookupStrict: true,
+            editable: 'onAdd',
+            required: true
+        }, {
+            name: 'defaultValue',
+            typeField: 'type',
+            required: true
+        }, {
+            name: 'notes'
+        },{
+            name: 'local',
+            type: 'bool',
+            required: true
+        }, {
+            name: 'lastUpdated',
+            type: 'date',
+            editable: false
+        }, {
+            name: 'lastUpdatedBy',
+            editable: false
+        }]
     });
 
     gridModel = new RestGridModel({
@@ -42,12 +61,12 @@ export class PreferencePanel extends Component {
         ],
         editors: [
             {field: 'name'},
-            {field: 'type', additionsOnly: true},
+            {field: 'type'},
             {field: 'defaultValue'},
             {field: 'local'},
-            {field: 'notes'},
-            {field: 'lastUpdated', type: 'displayField'},
-            {field: 'lastUpdatedBy', type: 'displayField'}
+            {field: 'notes', type: 'textarea'},
+            {field: 'lastUpdated'},
+            {field: 'lastUpdatedBy'}
         ]
     });
 

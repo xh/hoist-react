@@ -7,12 +7,13 @@
 
 import {Component} from 'react';
 import moment from 'moment';
-import {button, icon, inputGroup, dateInput} from 'hoist/kit/blueprint';
+import {button, inputGroup, dateInput} from 'hoist/kit/blueprint';
 import {XH, hoistComponent, elemFactory} from 'hoist/core';
 import {chart, ChartModel} from 'hoist/highcharts';
 import {vframe, filler, hbox, hspacer, div} from 'hoist/layout';
 import {observable, action} from 'hoist/mobx';
 import {fmtDate} from 'hoist/format';
+import {Icon} from 'hoist/icon';
 
 @hoistComponent()
 export class VisitsChart extends Component {
@@ -32,7 +33,6 @@ export class VisitsChart extends Component {
             padding: 4,
             alignItems: 'center',
             items: [
-                icon({icon: 'people', color: '#48aff0'}),
                 hspacer(8),
                 this.label('Unique Daily Visitors'),
                 filler(),
