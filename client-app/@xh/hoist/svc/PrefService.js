@@ -119,7 +119,7 @@ export class PrefService extends BaseService {
         const hasRemoveValue = this._data.hasOwnProperty(key);
         if (hasRemoveValue && !this.isLocalPreference(key)) throw XH.exception(`${key} is not a local preference.`);
 
-        const localPrefs = localStorageService.get(this._localStorageKey, {});
+        const localPrefs = XH.localStorageService.get(this._localStorageKey, {});
 
         delete localPrefs[key];
 

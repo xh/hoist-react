@@ -17,8 +17,13 @@ import {Field} from './Field';
  */
 export class BaseStore {
 
-    /** Fields contained in each record.  **/
+    /** List of fields contained in each record.  **/
     fields = null;
+
+    /** Get a specific field, by name.  **/
+    getField(name) {
+        return this.fields.find(it => it.name === name);
+    }
 
     /** Current loading state. **/
     get loadModel() {}
@@ -33,6 +38,7 @@ export class BaseStore {
     get filter() {}
     set filter(filterFn) {}
 
+
     /**
      * Construct this object.
      *
@@ -43,18 +49,24 @@ export class BaseStore {
         this.fields = fields.map(f => {
             if (f instanceof Field) return f;
             if (isString(f)) f = {name: f};
-            return new Field(f);
+            return new this.defaultFieldClass(f);
         });
     }
 
+    //--------------------
+    // For Implementations
+    //--------------------
+    get defaultFieldClass() {
+        return Field;
+    }
 
     /**
      * Create a record from rawData presented.
      *
      * @param raw, json object containing raw data, and 'id' property
      *
-     * This method will apply basic validation for nullability and type,
-     * and basic conversion (e.g. 'date' will convert from UTC time to a JS Date object).
+     * This method will apply basic validation and conversion
+     * (e.g. 'date' will convert from UTC time to a JS Date object).
      *
      * An exception will be thrown if the validation or conversion fails.
      */
@@ -62,16 +74,12 @@ export class BaseStore {
         const ret = {id: raw.id, raw};
 
         this.fields.forEach(field => {
-            const {type, name} = field;
+            const {type, name, defaultValue} = field;
             let val = raw[name]
-            if (val === undefined) val = null;
-
-            if (!field.allowNull && val === null) {
-                throw XH.exception(`Null value not allowed for field ${name}`);
-            }
+            if (val === undefined || val === null) val = defaultValue;
 
             if (val !== null) {
-                // TODO -- Add validation and conversion?
+                // TODO -- Add additional validation and conversion?
                 switch (type) {
                     case 'auto':
                     case 'string':
