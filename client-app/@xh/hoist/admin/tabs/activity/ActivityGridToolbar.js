@@ -76,22 +76,20 @@ export class ActivityGridToolbar extends Component {
                 hspacer(10),
                 inputGroup({
                     placeholder: 'Category...',
-                    // value: model.msg,
-                    // onChange: this.onPatternChange
+                    value: model.category,
+                    onChange: this.onCategoryChange
                 }),
                 hspacer(10),
                 inputGroup({
                     placeholder: 'Device...',
-                    // style: {width: 150},
-                    // value: pattern,
-                    // onChange: this.onPatternChange
+                    value: model.device,
+                    onChange: this.onDeviceChange
                 }),
                 hspacer(10),
                 inputGroup({
                     placeholder: 'Browser...',
-                    // style: {width: 150},
-                    // value: pattern,
-                    // onChange: this.onPatternChange
+                    value: model.browser,
+                    onChange: this.onBrowserChange
                 }),
                 hspacer(8),
                 '|',
@@ -133,13 +131,28 @@ export class ActivityGridToolbar extends Component {
     }
 
     onUsernameChange = (ev) => {
-        const username = ev.target.value;
+        const username = ev.target.value.toLowerCase();
         this.model.setUsername(username);
     }
 
     onMsgChange = (ev) => {
-        const msg = ev.target.value;
+        const msg = ev.target.value.toLowerCase();
         this.model.setMsg(msg);
+    }
+
+    onCategoryChange = (ev) => {
+        const category = ev.target.value.toLowerCase();
+        this.model.setCategory(category);
+    }
+
+    onDeviceChange = (ev) => {
+        const device = ev.target.value.toLowerCase();
+        this.model.setDevice(device);
+    }
+
+    onBrowserChange = (ev) => {
+        const browser = ev.target.value.toLowerCase();
+        this.model.setBrowser(browser);
     }
 
     onSubmitClick = () => {

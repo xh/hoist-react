@@ -17,6 +17,9 @@ export class ActivityModel {
     @observable @setter endDate = moment().toDate();
     @observable @setter username = '';
     @observable @setter msg = '';
+    @observable @setter category = '';
+    @observable @setter device = '';
+    @observable @setter browser = '';
 
     constructor({gridModel}) {
         this.gridModel = gridModel; // might not need this after all. The records are observable and when the store gets the filter we get a render for free
@@ -32,11 +35,15 @@ export class ActivityModel {
 
     createFilterFunction() {
         return (rec) => {
-            const dateCreated = moment(rec.dateCreated);
-            if (dateCreated.isBefore(this.startDate)) return false;
-            if (dateCreated.isAfter(this.endDate)) return false;
-            if (!rec.username.includes(this.username)) return false;
-            if (!rec.msg.includes(this.msg)) return false;
+            const {dateCreated, username, msg, category, device, browser} = rec,
+                date = moment(dateCreated);
+            if (date.isBefore(this.startDate)) return false;
+            if (date.isAfter(this.endDate)) return false;
+            if (!username.toLowerCase().includes(this.username)) return false;
+            if (!msg.toLowerCase().includes(this.msg)) return false;
+            if (!category.toLowerCase().includes(this.category)) return false;
+            if (!device.toLowerCase().includes(this.device)) return false;
+            if (!browser.toLowerCase().includes(this.browser)) return false;
             return true
         }
     }
