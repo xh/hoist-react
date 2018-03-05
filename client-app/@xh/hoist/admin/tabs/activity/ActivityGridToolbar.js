@@ -64,22 +64,19 @@ export class ActivityGridToolbar extends Component {
                 hspacer(8),
                 inputGroup({
                     placeholder: 'User...',
-                    // style: {width: 150},
-                    // value: pattern,
-                    // onChange: this.onPatternChange
+                    value: model.username,
+                    onChange: this.onUsernameChange
                 }),
                 hspacer(10),
                 inputGroup({
                     placeholder: 'Msg...',
-                    // style: {width: 150},
-                    // value: pattern,
-                    // onChange: this.onPatternChange
+                    value: model.msg,
+                    onChange: this.onMsgChange
                 }),
                 hspacer(10),
                 inputGroup({
                     placeholder: 'Category...',
-                    // style: {width: 150},
-                    // value: pattern,
+                    // value: model.msg,
                     // onChange: this.onPatternChange
                 }),
                 hspacer(10),
@@ -117,27 +114,41 @@ export class ActivityGridToolbar extends Component {
     // Implementation
     //-----------------------------
     fmtDate(date) {
-        return fmtDate(date)
+        return fmtDate(date);
     }
 
     parseDate(dateString) {
-        return moment(dateString).toDate()
+        return moment(dateString).toDate();
     }
 
     onStartDateChange = (date) => {
         this.model.setStartDate(date); // might need to be a moment
+        this.model.setFilter();
+
     }
 
     onEndDateChange = (date) => {
         this.model.setEndDate(date); // might need to be a moment
+        this.model.setFilter();
+    }
+
+    onUsernameChange = (ev) => {
+        const username = ev.target.value;
+        this.model.setUsername(username);
+    }
+
+    onMsgChange = (ev) => {
+        const msg = ev.target.value;
+        this.model.setMsg(msg);
     }
 
     onSubmitClick = () => {
-        this.model.gridModel.store.filter = this.model.activityFilter
-    };
+        this.model.setFilter();
+    }
 
     renderLogCount() {
-        return '99 track logs'
+        const store = this.model.gridModel.store;
+        return store.records.length + ' track logs'
     }
 }
 export const activityGridToolbar = elemFactory(ActivityGridToolbar);

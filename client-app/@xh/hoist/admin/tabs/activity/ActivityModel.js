@@ -16,16 +16,16 @@ export class ActivityModel {
     @observable @setter startDate = moment().toDate();
     @observable @setter endDate = moment().toDate();
     @observable @setter username = '';
+    @observable @setter msg = '';
 
     constructor({gridModel}) {
-        this.gridModel = gridModel;
+        this.gridModel = gridModel; // might not need this after all. The records are observable and when the store gets the filter we get a render for free
     }
 
-    get activityFilter(){
-        return this.createFilterFunction()
+    setFilter() {
+        const store = this.gridModel.store;
+        store.filter = this.createFilterFunction();
     }
-
-
     //----------------
     // Implementation
     //----------------
@@ -35,6 +35,8 @@ export class ActivityModel {
             const dateCreated = moment(rec.dateCreated);
             if (dateCreated.isBefore(this.startDate)) return false;
             if (dateCreated.isAfter(this.endDate)) return false;
+            if (!rec.username.includes(this.username)) return false;
+            if (!rec.msg.includes(this.msg)) return false;
             return true
         }
     }

@@ -27,8 +27,8 @@ export class ActivityPanel extends Component {
     store = new UrlStore({
         url: 'trackLogAdmin',
         fields: [
-            'severity', 'dateCreated', 'msg', 'category', 'device',
-            'browser', 'data', 'impersonating', 'elapsed'
+            'severity', 'dateCreated', 'username', 'msg', 'category',
+            'device', 'browser', 'data', 'impersonating', 'elapsed'
         ]
     });
 
@@ -69,7 +69,7 @@ export class ActivityPanel extends Component {
 
     async loadAsync() {
         return Promise.all([this.visitsModel.loadAsync(), this.store.loadAsync()]).then(() => {
-            this.gridModel.store.filter = this.activityModel.activityFilter
+            this.activityModel.setFilter()
         });
     }
 }
