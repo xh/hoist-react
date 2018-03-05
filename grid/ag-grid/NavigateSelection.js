@@ -7,7 +7,7 @@
 
 
 /**
- * Adapated from Ag-Grig Sample Docs
+ * Adapted from Ag-Grig Sample Docs
  * Allow KeyPresses to navigate selection.
  *
  * TODO:  This looks like it does full row scans on each key press!

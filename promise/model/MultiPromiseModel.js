@@ -9,7 +9,7 @@ import {observable, action, computed} from 'hoist/mobx';
 
 
 /**
- * Tracks the resoloution state of a stream of promise invocations.
+ * Tracks the resolution state of a stream of promise invocations.
  */
 export class MultiPromiseModel {
 

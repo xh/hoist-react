@@ -19,7 +19,7 @@ export class ChartModel {
      * Highchart config of chart.
      *
      * This may includes all native highcharts options other than 'series',
-     * which should be set on the seperate 'series' property on this object.
+     * which should be set on the separate 'series' property on this object.
      */
     @observable.ref @setter config = {};
 

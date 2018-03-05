@@ -66,8 +66,8 @@ export function fmtTime(v, opts = {}) {
  * @param v - date to format
  * @param opts - MomentJs format string options, may include:
  *      @param sameDayFmt - format for dates matching current day, defaults to 'hh:mma'
- *      @param nearFmt - format for dates within the number of months determined by the recentTheshold, defaults to 'MMM D'
- *      @param distantFmt - format for dates outside of the number of months specified by the recentTheshold, defaults to 'YYYY-MM-DD'
+ *      @param nearFmt - format for dates within the number of months determined by the recentThreshold, defaults to 'MMM D'
+ *      @param distantFmt - format for dates outside of the number of months specified by the recentThreshold, defaults to 'YYYY-MM-DD'
  *      @param distantThreshold - int used to determined the number of months away from the current month to be considered 'recent'
  *      @param tipFn - function, use to place formatted date in span with title property set to string returned by this function
  *      @param originalValue - used to retain an unaltered reference to the original value to be formatted

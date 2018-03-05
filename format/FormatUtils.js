@@ -8,10 +8,9 @@
 import {defaults} from 'lodash';
 
 /**
- * Generate a renderer.
- * Renderers return a given formatter function.
+ * Generate a renderer. Renderers return a given formatter function.
  *
- * Renderers take a config for its formatter method
+ * Renderers take a config for its formatter method.
  * If this config is an object it will be cloned before being passed to its formatter.
  * Cloning ensures that the formatter gets a clean config object each time it is called.
  *

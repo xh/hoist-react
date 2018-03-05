@@ -51,9 +51,8 @@ export class Timer {
     /**
      * Permanently cancel *all* running timers.
      *
-     * This method is intended for framework use only.  It is a
-     * one-way operation, intended for permananently halting app
-     * activity before sleeping.
+     * This method is intended for framework use only.
+     * It is a one-way operation, intended for permanently halting app activity before sleeping.
      */
     static cancelAll() {
         this._timers.forEach(t => t.cancel());

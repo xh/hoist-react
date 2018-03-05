@@ -11,8 +11,8 @@ import {max} from 'lodash';
 /**
  * Model for a TabContainer, representing its layout/contents and currently selected TabPane.
  *
- * This TabContainer also supports managed loading and refreshing of its TabPanes.  In particular,
- * TabPanes will be laziliy instantiated, and can also be lazily refreshed.
+ * This TabContainer also supports managed loading and refreshing of its TabPanes.
+ * In particular, TabPanes will be lazily instantiated and can also be lazily refreshed.
  *
  * See also TabPaneModel.
  */

@@ -66,7 +66,7 @@ export async function never() {
  * Inspired and implemented by RSVP.allSettled, but returns a native Promise.
  *
  * @param promises
- * @returns array of form [{state:'fufilled'|'rejected', reason:[exception or null] , value: [value or null]}]
+ * @returns array of form [{state:'fulfilled'|'rejected', reason:[exception or null] , value: [value or null]}]
  */
 export async function allSettled(promises) {
     return new Promise((resolve, reject) => {
