@@ -11,6 +11,10 @@ import {button, inputGroup} from 'hoist/kit/blueprint';
 import {setter, observable, action} from 'hoist/mobx';
 import {escapeRegExp} from 'lodash';
 
+/**
+ * A Component that can bind to any store and filter it,
+ * based on simple text messages with text in selected fields.
+ */
 @hoistComponent()
 class StoreFilterField extends Component {
     @setter @observable value = '';
@@ -27,7 +31,7 @@ class StoreFilterField extends Component {
             onChange: this.onValueChange,
             rightElement: button({
                 icon: 'cross',
-                onClick: this.clearInput
+                onClick: this.onClearClick
             })
         })
     }
@@ -37,26 +41,24 @@ class StoreFilterField extends Component {
         this.runFilter();
     }
 
-    clearInput = () => {
+    onClearClick = () => {
         this.setValue('');
         this.runFilter();
     }
 
-    @action
     runFilter() {
         const {store, fields} = this.props;
         let searchTerm = escapeRegExp(this.value);
 
-        store.filter = null;
-
+        let filter = null;
         if (searchTerm && fields.length) {
-            store.filter = rec => fields.some(f => {
-                    const fieldVal = rec[f];
-                    return fieldVal && new RegExp('(^|\\W)' + searchTerm, 'ig').test(fieldVal);
-                });
+            filter = (rec) => fields.some(f => {
+                const fieldVal = rec[f];
+                return fieldVal && new RegExp('(^|\\W)' + searchTerm, 'ig').test(fieldVal);
+            });
         }
-
-        store.applyFilter();
+        
+        store.setFilter(filter);
     }
 }
 
