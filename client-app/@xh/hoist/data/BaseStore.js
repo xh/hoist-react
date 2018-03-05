@@ -36,7 +36,7 @@ export class BaseStore {
 
     /** Filter.  Filter function to be applied. **/
     get filter() {}
-    set filter(filterFn) {}
+    setFilter(filterFn) {}
 
 
     /**

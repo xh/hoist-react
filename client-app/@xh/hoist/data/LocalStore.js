@@ -74,14 +74,14 @@ export class LocalStore extends BaseStore {
     //-----------------------------
     get records()       {return this._records}
     get allRecords()    {return this._allRecords}
-
     get loadModel()     {return this._loadModel}
     get filter()        {return this._filter}
-    set filter(filterFn) {
+    setFilter(filterFn) {
         this._filter = filterFn;
         this.applyFilter();
     }
 
+    @action
     applyFilter() {
         const {_filter, _allRecords} = this;
         this._records = _filter ? _allRecords.filter(_filter) : _allRecords;
