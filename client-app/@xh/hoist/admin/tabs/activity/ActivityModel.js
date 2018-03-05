@@ -13,7 +13,7 @@ import {fmtDate} from 'hoist/format';
 
 export class ActivityModel {
 
-    @observable @setter startDate = moment().toDate();
+    @observable @setter startDate = moment().toDate(); // need to figure out where to used this vs newDate. Why is there a disconnect between this and visitsModel?
     @observable @setter endDate = moment().toDate();
     @observable @setter username = '';
     @observable @setter msg = '';

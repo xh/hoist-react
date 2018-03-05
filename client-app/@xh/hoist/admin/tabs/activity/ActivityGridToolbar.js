@@ -49,15 +49,15 @@ export class ActivityGridToolbar extends Component {
                 hspacer(8),
                 button({
                     icon: Icon.caretLeft(),
-                    // onClick: this.onSubmitClick
+                    onClick: this.onDateGoBackClick
                 }),
                 button({
                     icon: Icon.caretRight(),
-                    // onClick: this.onSubmitClick
+                    onClick: this.onDateGoForwardClick
                 }),
                 button({
                     icon: Icon.arrowToRight(),
-                    // onClick: this.onSubmitClick
+                    onClick: this.onGoToCurrentDateClick
                 }),
                 hspacer(8),
                 '|',
@@ -156,6 +156,38 @@ export class ActivityGridToolbar extends Component {
     }
 
     onSubmitClick = () => {
+        this.model.setFilter();
+    }
+
+    onDateGoBackClick = () => {
+        this.adjustDates('subtract')
+    }
+
+    onDateGoForwardClick = () => {
+        this.adjustDates('add')
+    }
+
+    onGoToCurrentDateClick = () => {
+        this.adjustDates('subtract', true)
+    }
+
+    adjustDates(dir, toToday = false) {
+        const model = this.model,
+            start = moment(model.startDate),
+            end = moment(model.endDate),
+            diff = end.diff(start, 'days'),
+            incr = diff + 1;
+
+        let newStart = start[dir](incr, 'days'),
+            newEnd = end[dir](incr, 'days');
+
+        if (newEnd.diff(moment(), 'days') > 0 || toToday) {
+            newStart = moment().subtract(diff, 'days');
+            newEnd = moment();
+        }
+
+        model.setStartDate(newStart.toDate());
+        model.setEndDate(newEnd.toDate());
         this.model.setFilter();
     }
 
