@@ -29,7 +29,6 @@ export class LoginPanel extends Component {
         return viewport({
             alignItems: 'center',
             justifyContent: 'center',
-            cls: this.darkTheme ? 'xh-dark' : '',
             item: vbox({
                 cls: 'xh-ba xh-pa',
                 justifyContent: 'right',

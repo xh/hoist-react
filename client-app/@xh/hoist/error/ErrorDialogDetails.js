@@ -35,7 +35,6 @@ export class ErrorDialogDetails extends Component {
             title: 'Error Details',
             icon: 'search',
             isOpen: true,
-            cls: this.darkTheme ? 'xh-dark' : '',
             onClose: this.onCloseClick,
             style: {height: 600},
             items: [

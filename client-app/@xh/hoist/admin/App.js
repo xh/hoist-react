@@ -22,7 +22,6 @@ export class App extends Component {
 
     render() {
         return vframe({
-            cls: this.darkTheme ? 'xh-dark' : '',
             items: [
                 this.renderNavBar(),
                 frame({
