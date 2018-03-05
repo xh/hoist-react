@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {elemFactory, hoistComponent} from 'hoist/core';
 import {Ref} from 'hoist/utils/Ref';
-import {observer, observable, setter , toJS, autorun} from 'hoist/mobx';
+import {toJS, autorun} from 'hoist/mobx';
 import {frame, table, tbody, td, tr} from 'hoist/layout';
 import {clipboardMenuItem, contextMenu, ContextMenuModel} from  'hoist/cmp';
 
@@ -24,7 +24,7 @@ class LogViewerDisplay extends Component {
             item: table(
                 tbody(...this.getTableRows(rows))
             )
-        })
+        });
     }
 
     getTableRows(rows) {
@@ -46,7 +46,7 @@ class LogViewerDisplay extends Component {
 
         const menuModel = new ContextMenuModel([
             clipboardMenuItem({
-                text: `Copy Current Line`,
+                text: 'Copy Current Line',
                 icon: 'list',
                 disabled: (currentRow == null),
                 successMessage: 'Log line copied to the clipboard.',
@@ -56,7 +56,7 @@ class LogViewerDisplay extends Component {
                 text: 'Copy All Lines',
                 successMessage: 'Log lines copied to the clipboard.',
                 clipboardSpec: {text: () => rows.map(row => row.join(': ')).join('\n')}
-            }),
+            })
         ]);
         return contextMenu({style: {width: '200px'}, model: menuModel});
     }

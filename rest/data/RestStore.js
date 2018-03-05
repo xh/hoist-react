@@ -61,11 +61,11 @@ export class RestStore extends UrlStore {
     }
 
     async addRecordAsync(rec) {
-        return this.saveRecordInternalAsync(rec, true)
+        return this.saveRecordInternalAsync(rec, true);
     }
 
     async saveRecordAsync(rec) {
-        return this.saveRecordInternalAsync(rec, false)
+        return this.saveRecordInternalAsync(rec, false);
     }
 
     //--------------------------------
@@ -80,7 +80,7 @@ export class RestStore extends UrlStore {
             contentType: 'application/json',
             body: JSON.stringify({data: rec})
         }).then(response => {
-            const recs = this.createRecords([response.data])
+            const recs = this.createRecords([response.data]);
             this.noteRecordUpdated(recs[0]);
         }).linkTo(
             this.loadModel
@@ -94,14 +94,14 @@ export class RestStore extends UrlStore {
         if (!filter || filter(rec)) {
             this.updateInCollection(rec, this._records);
         } else {
-            this.deleteFromCollection(rec, this._records)
+            this.deleteFromCollection(rec, this._records);
         }
     }
 
     @action
     noteRecordDeleted(rec) {
-       this.deleteFromCollection(rec, this._allRecords);
-       this.deleteFromCollection(rec, this._records);
+        this.deleteFromCollection(rec, this._allRecords);
+        this.deleteFromCollection(rec, this._records);
     }
 
     updateInCollection(rec, col) {

@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {XH, hoistComponent, elemFactory} from 'hoist/core';
+import {hoistComponent, elemFactory} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
 import {toJS} from 'hoist/mobx';
 import {defaults} from 'lodash';

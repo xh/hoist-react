@@ -72,7 +72,7 @@ export class ImpersonationBar extends Component {
                 items: [
                     suggest({
                         popoverProps: {popoverClassName: Classes.MINIMAL},
-                        itemPredicate: (q, v, index) => !v || v.includes(q),
+                        itemPredicate: (q, v) => !v || v.includes(q),
                         $items: model.targets || [],
                         onItemSelect: this.onItemSelect,
                         itemRenderer: (item, itemProps) => {

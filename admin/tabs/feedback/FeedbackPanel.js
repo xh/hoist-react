@@ -43,7 +43,7 @@ export class FeedbackPanel extends Component {
         store: this.store,
         actionEnabled: {
             add: false,
-            edit: false,
+            edit: false
         },
         columns: [
             usernameCol(),
