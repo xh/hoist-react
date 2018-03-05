@@ -24,35 +24,7 @@ import {VisitsModel} from './VisitsModel';
 @hoistComponent()
 export class ActivityPanel extends Component {
 
-    store = new UrlStore({
-        url: 'trackLogAdmin',
-        fields: [
-            'severity', 'dateCreated', 'username', 'msg', 'category',
-            'device', 'browser', 'data', 'impersonating', 'elapsed'
-        ]
-    });
-
-    gridModel = new GridModel({
-        store: this.store,
-        columns: [
-            baseCol({field: 'severity', width: 60}),
-            dateTimeCol({field: 'dateCreated'}),
-            usernameCol(),
-            baseCol({field: 'msg', text: 'Message', width: 60}),
-            baseCol({field: 'category', width: 100}),
-            baseCol({field: 'device', width: 60}),
-            baseCol({field: 'browser', width: 100}),
-            baseCol({field: 'data', flex: 1}),
-            baseCol({field: 'impersonating',  width: 120}),
-            baseCol({
-                field: 'elapsed',
-                width: 60,
-                valueFormatter: numberRenderer({precision: 0})
-            })
-        ]
-    });
-
-    activityModel = new ActivityModel({gridModel: this.gridModel});
+    activityModel = new ActivityModel();
     visitsModel = new VisitsModel();
 
     render() {

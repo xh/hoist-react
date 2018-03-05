@@ -121,14 +121,26 @@ export class ActivityGridToolbar extends Component {
     }
 
     onStartDateChange = (date) => {
-        this.model.setStartDate(date); // might need to be a moment
+        this.model.setStartDate(date);
         this.model.setFilter();
 
     }
 
     onEndDateChange = (date) => {
-        this.model.setEndDate(date); // might need to be a moment
+        this.model.setEndDate(date);
         this.model.setFilter();
+    }
+
+    onDateGoBackClick = () => {
+        this.adjustDates('subtract')
+    }
+
+    onDateGoForwardClick = () => {
+        this.adjustDates('add')
+    }
+
+    onGoToCurrentDateClick = () => {
+        this.adjustDates('subtract', true)
     }
 
     onUsernameChange = (ev) => {
@@ -158,18 +170,6 @@ export class ActivityGridToolbar extends Component {
 
     onSubmitClick = () => {
         this.model.setFilter();
-    }
-
-    onDateGoBackClick = () => {
-        this.adjustDates('subtract')
-    }
-
-    onDateGoForwardClick = () => {
-        this.adjustDates('add')
-    }
-
-    onGoToCurrentDateClick = () => {
-        this.adjustDates('subtract', true)
     }
 
     onExportClick = () => {

@@ -13,7 +13,7 @@ import {fmtDate} from 'hoist/format';
 
 export class ActivityModel {
 
-    @observable @setter startDate = moment().toDate(); // need to figure out where to used this vs newDate. Why is there a disconnect between this and visitsModel?
+    @observable @setter startDate = moment().toDate(); // need to figure out where to used this vs new Date(). Why is there a disconnect between this and the visitsModel?
     @observable @setter endDate = moment().toDate();
     @observable @setter username = '';
     @observable @setter msg = '';
@@ -21,18 +21,43 @@ export class ActivityModel {
     @observable @setter device = '';
     @observable @setter browser = '';
 
-    constructor({gridModel}) {
-        this.gridModel = gridModel; // might not need this after all. The records are observable and when the store gets the filter we get a render for free
-    }
+    store = new UrlStore({
+        url: 'trackLogAdmin',
+        fields: [
+            'severity', 'dateCreated', 'username', 'msg', 'category',
+            'device', 'browser', 'data', 'impersonating', 'elapsed'
+        ]
+    });
+
+    gridModel = new GridModel({
+        store: this.store,
+        columns: [
+            baseCol({field: 'severity', width: 60}),
+            dateTimeCol({field: 'dateCreated'}),
+            usernameCol(),
+            baseCol({field: 'msg', text: 'Message', width: 60}),
+            baseCol({field: 'category', width: 100}),
+            baseCol({field: 'device', width: 60}),
+            baseCol({field: 'browser', width: 100}),
+            baseCol({field: 'data', flex: 1}),
+            baseCol({field: 'impersonating',  width: 120}),
+            baseCol({
+                field: 'elapsed',
+                width: 60,
+                valueFormatter: numberRenderer({precision: 0})
+            })
+        ]
+    });
+
 
     setFilter() {
         const store = this.gridModel.store;
         store.filter = this.createFilterFunction();
     }
+
     //----------------
     // Implementation
     //----------------
-
     createFilterFunction() {
         return (rec) => {
             const {dateCreated, username, msg, category, device, browser} = rec,
