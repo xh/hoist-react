@@ -40,13 +40,12 @@ class Grid extends Component {
         const {store, columns} = this.model;
         return frame(
             div({
-                style: {flex: '1 1 auto'},
+                style: {flex: '1 1 auto', overflow: 'hidden'},
                 cls: this.darkTheme ? 'ag-theme-dark' : 'ag-theme-fresh',
                 item: agGridReact({
                     rowData: toJS(store.records),
                     columnDefs: columns,
                     onSelectionChanged: this.onSelectionChanged,
-                    onGridSizeChanged: this.onGridSizeChanged,
                     gridOptions: this.gridOptions
                 })
             })
@@ -56,10 +55,6 @@ class Grid extends Component {
     //------------------------
     // Implementation
     //------------------------
-    onGridSizeChanged = (ev) => {
-        ev.api.sizeColumnsToFit();
-    }
-    
     onSelectionChanged = (ev) => {
         const selection = this.model.selection;
         selection.setRecords(ev.api.getSelectedRows());

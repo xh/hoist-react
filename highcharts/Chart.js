@@ -31,7 +31,7 @@ export class Chart extends Component {
         return frame({
             ...this.props,
             item: div({
-                style: {flex: 'auto'},
+                style: {flex: 'auto', overflow: 'hidden'},
                 ref: this._chartElem.ref
             })
         });
