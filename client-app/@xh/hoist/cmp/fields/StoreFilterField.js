@@ -13,7 +13,7 @@ import {escapeRegExp} from 'lodash';
 
 /**
  * A Component that can bind to any store and filter it,
- * based on simple text messages with text in selected fields.
+ * based on simple text matching in selected fields.
  */
 @hoistComponent()
 class StoreFilterField extends Component {
