@@ -11,7 +11,7 @@ import {observable, setter, toJS} from 'hoist/mobx';
 import {ChartModel} from 'hoist/highcharts';
 import {fmtDate} from 'hoist/format';
 
-export class VisitsModel {
+export class VisitsChartModel {
 
 
     @observable @setter startDate = moment().subtract(1, 'years').toDate();

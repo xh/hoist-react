@@ -6,42 +6,37 @@
  */
 import {Component} from 'react';
 import {XH, hoistComponent} from 'hoist/core';
-import {grid, GridModel} from 'hoist/grid';
-import {UrlStore} from 'hoist/data';
+import {grid} from 'hoist/grid';
 import {chart, ChartModel} from 'hoist/highcharts';
 import {vframe} from 'hoist/layout';
 import {collapsible} from 'hoist/cmp';
-import {numberRenderer} from 'hoist/format';
-import {baseCol} from 'hoist/columns/Core';
-import {dateTimeCol} from 'hoist/columns/DatesTimes';
 
-import {usernameCol} from '../../columns/Columns';
 import {activityGridToolbar} from './ActivityGridToolbar';
-import {ActivityModel} from './ActivityModel';
+import {ActivityGridModel} from './ActivityGridModel';
 import {visitsChart} from './VisitsChart';
-import {VisitsModel} from './VisitsModel';
+import {VisitsChartModel} from './VisitsChartModel';
 
 @hoistComponent()
 export class ActivityPanel extends Component {
 
-    activityModel = new ActivityModel();
-    visitsModel = new VisitsModel();
+    activityGridModel = new ActivityGridModel();
+    visitsChartModel = new VisitsChartModel();
 
     render() {
         return vframe(
-            activityGridToolbar({model: this.activityModel}),
-            grid({model: this.gridModel}),
+            activityGridToolbar({model: this.activityGridModel}),
+            grid({model: this.activityGridModel.gridModel}),
             collapsible({
                 side: 'bottom',
                 contentSize: 250,
-                item: visitsChart({model: this.visitsModel})
+                item: visitsChart({model: this.visitsChartModel})
             })
         );
     }
 
     async loadAsync() {
-        return Promise.all([this.visitsModel.loadAsync(), this.store.loadAsync()]).then(() => {
-            this.activityModel.setFilter()
+        return Promise.all([this.visitsChartModel.loadAsync(), this.activityGridModel.store.loadAsync()]).then(() => {
+            this.activityGridModel.store.setFilter()
         });
     }
 }

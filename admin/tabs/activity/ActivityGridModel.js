@@ -9,9 +9,16 @@
 import moment from 'moment';
 import {forOwn} from 'lodash';
 import {observable, setter, toJS} from 'hoist/mobx';
-import {fmtDate} from 'hoist/format';
+import {UrlStore} from 'hoist/data';
+import {GridModel} from 'hoist/grid';
+import {fmtDate, numberRenderer} from 'hoist/format';
 
-export class ActivityModel {
+import {baseCol} from 'hoist/columns/Core';
+import {dateTimeCol} from 'hoist/columns/DatesTimes';
+import {usernameCol} from '../../columns/Columns';
+
+
+export class ActivityGridModel {
 
     @observable @setter startDate = moment().toDate(); // need to figure out where to used this vs new Date(). Why is there a disconnect between this and the visitsModel?
     @observable @setter endDate = moment().toDate();
@@ -51,7 +58,7 @@ export class ActivityModel {
 
 
     setFilter() {
-        const store = this.gridModel.store;
+        const store = this.store;
         store.filter = this.createFilterFunction();
     }
 
