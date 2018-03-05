@@ -8,15 +8,10 @@ import {Component} from 'react';
 import {XH, hoistComponent} from 'hoist/core';
 import {grid, GridModel} from 'hoist/grid';
 import {UrlStore} from 'hoist/data';
-import {chart, ChartModel} from 'hoist/highcharts';
 import {vframe} from 'hoist/layout';
-import {collapsible} from 'hoist/cmp';
-import {numberRenderer} from 'hoist/format';
 import {baseCol} from 'hoist/columns/Core';
 import {dateTimeCol} from 'hoist/columns/DatesTimes';
-
 import {usernameCol} from '../../columns/Columns';
-
 
 @hoistComponent()
 export class ClientErrorPanel extends Component {
