@@ -46,7 +46,8 @@ class Grid extends Component {
                     rowData: toJS(store.records),
                     columnDefs: columns,
                     onSelectionChanged: this.onSelectionChanged,
-                    gridOptions: this.gridOptions
+                    gridOptions: this.gridOptions,
+                    getContextMenuItems: this.getContextMenuItems
                 })
             })
         );
@@ -62,6 +63,10 @@ class Grid extends Component {
 
     onNavigateToNextCell = (params) => {
         return navigateSelection(params, this.gridOptions.api);
+    }
+
+    getContextMenuItems = () => {
+        return [];
     }
 }
 export const grid = elemFactory(Grid);
