@@ -28,7 +28,6 @@ class Message extends Component {
             isCloseButtonShown: false,
             title: model.title,
             icon: model.icon,
-            cls: this.darkTheme ? 'xh-dark' : '',
             items: [
                 dialogBody(model.message),
                 dialogFooter(

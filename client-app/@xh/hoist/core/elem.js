@@ -50,11 +50,9 @@ export function elem(type, config = {}) {
 
     let {cls, item, items, itemSpec, omit, ...props} = config;
 
-    // 1) Handle cls shortcut for CSS className. Add Blueprint pt-dark cls whenever xh-dark requested for dark theme.
+    // 1) Handle basic rename
     if (cls) {
-        const clsList = cls.split(' ');
-        if (clsList.includes('xh-dark')) clsList.push('pt-dark');
-        props.className = clsList.join(' ');
+        props.className = cls;
     }
 
     // 2) Mark element to be skipped with a special key in props.  This element should never see the light of day

@@ -24,7 +24,6 @@ export class RestForm extends Component {
         return dialog({
             title: isAdd ? 'Add Record' : 'Edit Record',
             icon: isAdd ? Icon.add() : Icon.edit(),
-            cls: this.darkTheme ? 'xh-dark' : '',
             isOpen: true,
             isCloseButtonShown: false,
             items: this.getDialogItems()

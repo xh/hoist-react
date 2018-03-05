@@ -24,7 +24,6 @@ export class ErrorDialog extends Component {
             isOpen: true,
             title: options.title,
             icon: 'warning-sign',
-            cls: this.darkTheme ? 'xh-dark' : '',
             items: [
                 dialogBody(options.message),
                 dialogFooter(
