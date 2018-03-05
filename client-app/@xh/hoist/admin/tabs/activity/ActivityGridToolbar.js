@@ -102,7 +102,8 @@ export class ActivityGridToolbar extends Component {
                 this.renderLogCount(),
                 hspacer(8),
                 button({
-                    icon: Icon.download()
+                    icon: Icon.download(),
+                    onClick: this.onExportClick
                 })
             ]
         });
@@ -169,6 +170,14 @@ export class ActivityGridToolbar extends Component {
 
     onGoToCurrentDateClick = () => {
         this.adjustDates('subtract', true)
+    }
+
+    onExportClick = () => {
+        const model = this.model,
+            gridModel = model.gridModel,
+            fileName = `Track logs ${fmtDate(model.startDate)} to ${fmtDate(model.endDate)}`;
+
+        gridModel.exportDataAsExcel({fileName: fileName});
     }
 
     adjustDates(dir, toToday = false) {

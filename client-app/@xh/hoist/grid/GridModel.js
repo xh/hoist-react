@@ -18,6 +18,7 @@ export class GridModel {
 
     // Immutable public properties
     store = null;
+    gridApi = null;
     selection = new GridSelectionModel();
     loadModel = new LastPromiseModel();
 
@@ -30,5 +31,20 @@ export class GridModel {
     constructor({store, columns}) {
         this.store = store;
         this.columns = columns;
+    }
+
+    exportDataAsExcel(params) {
+        params.processCellCallback = this.formatDatesForExport;
+        this.gridApi.exportDataAsExcel(params)
+    }
+
+    formatDatesForExport(params) {
+        const value = params.value,
+            fmt = params.column.colDef.valueFormatter;
+        if (value && fmt) {
+            return fmt(value);
+        } else {
+            return value;
+        }
     }
 }
