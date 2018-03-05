@@ -8,12 +8,10 @@
 import {Component} from 'react';
 import moment from 'moment';
 import {button, inputGroup, dateInput} from 'hoist/kit/blueprint';
-import {XH, hoistComponent, elemFactory} from 'hoist/core';
-import {chart, ChartModel} from 'hoist/highcharts';
+import {hoistComponent, elemFactory} from 'hoist/core';
+import {chart} from 'hoist/highcharts';
 import {vframe, filler, hbox, hspacer, div} from 'hoist/layout';
-import {observable, action} from 'hoist/mobx';
 import {fmtDate} from 'hoist/format';
-import {Icon} from 'hoist/icon';
 
 @hoistComponent()
 export class VisitsChart extends Component {
@@ -72,7 +70,7 @@ export class VisitsChart extends Component {
     }
 
     parseDate(dateString) {
-        return moment(dateString).toDate()
+        return moment(dateString).toDate();
     }
 
     onStartDateChange = (date) => {

@@ -5,8 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {start, LastPromiseModel, remove} from 'hoist/promise';
-import {observable, action, computed} from 'hoist/mobx';
+import {start, LastPromiseModel} from 'hoist/promise';
+import {observable, action} from 'hoist/mobx';
 
 import {BaseStore} from './BaseStore';
 
@@ -45,7 +45,7 @@ export class LocalStore extends BaseStore {
             () => this.loadDataInternal(rawData)
         ).linkTo(
             this.loadModel
-        )
+        );
     }
 
     //---------------------------------
