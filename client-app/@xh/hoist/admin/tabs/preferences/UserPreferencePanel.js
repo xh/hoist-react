@@ -16,14 +16,32 @@ export class UserPreferencePanel extends Component {
 
     store = new RestStore({
         url: 'rest/userPreferenceAdmin',
-        fields: [
-            {name: 'name', label: 'Pref', lookup: 'names'},
-            {name: 'type', label: 'Type'},
-            {name: 'username', label: 'User'},
-            {name: 'userValue', typeField: 'type', label: 'User Value'},
-            {name: 'lastUpdated', type: 'date', label: 'Last Updated', allowNull: true},
-            {name: 'lastUpdatedBy', label: 'Last Updated By', allowNull: true}
-        ]
+        fields: [{
+            name: 'name',
+            label: 'Pref',
+            lookupName: 'names',
+            lookupStrict: true,
+            editable: 'onAdd',
+            required: true
+        }, {
+            name: 'type',
+            editable: false
+        },{
+            name: 'username',
+            label: 'User',
+            required: true
+        }, {
+            name: 'userValue',
+            typeField: 'type',
+            required: true
+        }, {
+            name: 'lastUpdated',
+            type: 'date',
+            editable: false
+        }, {
+            name: 'lastUpdatedBy',
+            editable: false
+        }]
     });
 
     gridModel = new RestGridModel({
@@ -35,11 +53,11 @@ export class UserPreferencePanel extends Component {
             baseCol({field: 'userValue', flex: 1})
         ],
         editors: [
-            {field: 'name', additionsOnly: true},
+            {field: 'name'},
             {field: 'username'},
             {field: 'userValue'},
-            {field: 'lastUpdated', type: 'displayField'},
-            {field: 'lastUpdatedBy', type: 'displayField'}
+            {field: 'lastUpdated'},
+            {field: 'lastUpdatedBy'}
         ]
     });
 

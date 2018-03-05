@@ -9,15 +9,10 @@ import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {loadMask, message} from 'hoist/cmp';
 import {filler, vframe, hbox} from 'hoist/layout';
-import {observer} from 'hoist/mobx';
-import {fmtDateTime} from 'hoist/format';
 import {Icon} from 'hoist/icon';
+import {button, checkbox, dialog, dialogBody, dialogFooter, dialogFooterActions} from 'hoist/kit/blueprint';
 
-import {
-    Classes, button, checkbox, dialog, dialogBody,
-    dialogFooter, dialogFooterActions, controlGroup, inputGroup,
-    label, menuItem, numericInput, select, suggest, textArea
-} from 'hoist/kit/blueprint';
+import {restControl} from './RestControl'
 
 @hoistComponent()
 export class RestForm extends Component {
@@ -50,9 +45,15 @@ export class RestForm extends Component {
             loadMask({model: model.loadModel})
         ];
     }
+    
+    getForm() {
+        return vframe(
+            this.model.controlModels.map(model => restControl({model}))
+        );
+    }
 
     getButtons() {
-        const {isFormValid, isWritable, isAdd, actionEnabled} = this.model;
+        const {isValid, isWritable, isDirty, isAdd, actionEnabled} = this.model;
 
         return [
             button({
@@ -71,7 +72,7 @@ export class RestForm extends Component {
                 text: 'Save',
                 icon: Icon.check(),
                 intent: 'success',
-                disabled: !isFormValid,
+                disabled: !isValid  || !isDirty,
                 onClick: this.onSaveClick,
                 omit: !isWritable
             })
@@ -110,225 +111,5 @@ export class RestForm extends Component {
             model.saveRecord();
         }
     }
-
-    getForm() {
-        const rows = this.model.getInputProps().map(props => {
-            return hbox({
-                cls: 'xh-mb',
-                items: [
-                    restLabel(props),
-                    //  Needed to stretch control, and also avoid focus clipping?
-                    controlGroup({
-                        fill: true,
-                        style: {flex: 1, margin: 1},
-                        item: this.getControl(props)
-                    })
-                ]
-            });
-        });
-        return vframe(rows);
-    }
-
-    getControl(props) {
-        switch (props.type) {
-            case 'display':
-                return restDisplayField(props);
-            case 'dropdown':
-                return restDropdown(props);
-            case 'select':
-                return restSelect(props);
-            case 'boolean':
-                return restCheckbox(props);
-            case 'number':
-                return restNumericInput(props);
-            case 'textarea':
-                return restTextArea(props);
-            case 'text':
-            default:
-                return restTextInput(props);
-        }
-    }
 }
 export const restForm = elemFactory(RestForm);
-
-
-//------------------------
-// Controls
-//------------------------
-const restLabel = elemFactory(observer(
-    ({fieldSpec, editor, value}) => {
-        const text = fieldSpec.label || fieldSpec.name;
-        return label({text, style: {width: '115px'}});
-    }
-));
-
-const restDisplayField = elemFactory(observer(
-    ({fieldName, value}) => {
-        if (['lastUpdated', 'dateCreated'].includes(fieldName)) {
-            value = value ? fmtDateTime(value) : '';
-        }
-        return label({text: value});
-    }
-));
-
-const restDropdown = elemFactory(observer(
-    class extends Component {
-        render() {
-            const {model, value, disabled, fieldSpec, fieldName} = this.props,
-                options = fieldSpec.lookupValues;
-            if (!model.record) return null;
-
-            return suggest({
-                popoverProps: {popoverClassName: Classes.MINIMAL},
-                itemPredicate: (q, v, index) => !v || v.includes(q),
-                $items: options,
-                onItemSelect: this.onItemSelect,
-                itemRenderer: (item, itemProps) => {
-                    return menuItem({key: item, text: item, onClick: itemProps.handleClick});
-                },
-                inputValueRenderer: s => s,
-                inputProps: {
-                    value: value || '',
-                    className: model.isFieldValid(fieldName) ? '' : 'pt-intent-danger',
-                    disabled,
-                    onChange: this.onChange
-                }
-            });
-        }
-
-        onChange = (ev) => {
-            const {model, fieldName} = this.props;
-            model.setValue(fieldName, ev.target.value);
-        }
-
-        onItemSelect = (val) => {
-            if (val) {
-                const {model, fieldName} = this.props;
-                model.setValue(fieldName, val);
-            }
-        }
-
-    }
-));
-
-const restSelect = elemFactory(observer(
-    class extends Component {
-        render() {
-            const {value, disabled, fieldSpec} = this.props,
-                options = fieldSpec.lookupValues;
-
-            return select({
-                popoverProps: {popoverClassName: Classes.MINIMAL},
-                $items: options,
-                onItemSelect: this.onItemSelect,
-                itemRenderer: (item, itemProps) => {
-                    return menuItem({key: item, text: item, onClick: itemProps.handleClick, disabled});
-                },
-                filterable: false,
-                items: button({text: value || options[0]}),
-                disabled
-            });
-        }
-
-        onItemSelect = (val) => {
-            if (val) {
-                this.props.setValue(val);
-            }
-        }
-
-    }
-));
-
-const restCheckbox = elemFactory(observer(
-    class extends Component {
-        render() {
-            const {model, value, disabled, fieldName} = this.props;
-            if (!model.record) return null;
-
-            if (!model.isFieldValid(fieldName)) {
-                console.warn('Required boolean fields should provide a defaultValue' +
-                    ' If boolean field is nullable please use a dropdown.');
-            }
-
-            return checkbox({
-                checked: !!value,
-                disabled,
-                onChange: this.onChange
-            });
-        }
-
-        onChange = (ev) => {
-            const {model, fieldName} = this.props;
-            model.setValue(fieldName, ev.target.checked);
-        }
-    }
-));
-
-const restNumericInput = elemFactory(observer(
-    class extends Component {
-        render() {
-            const {model, value, disabled, fieldName} = this.props;
-            if (!model.record) return null;
-
-            return numericInput({
-                cls: 'pt-fill',
-                intent: model.isFieldValid(fieldName) ? 'none' : 'danger',
-                buttonPosition: 'none',
-                value: value,
-                disabled,
-                onValueChange: this.onValueChange
-            });
-        }
-
-        onValueChange = (val, valAsString) => {
-            const {model, fieldName} = this.props;
-            val = (valAsString === '') ? null : val;
-            model.setValue(fieldName, val);
-        }
-    }
-));
-
-const restTextArea = elemFactory(observer(
-    class extends Component {
-        render() {
-            const {model, value, disabled, fieldName} = this.props,
-                cls = model.isFieldValid(fieldName) ? 'pt-fill' : 'pt-fill pt-intent-danger';
-            if (!model.record) return null;
-
-            return textArea({
-                cls: cls,
-                value: value || '',
-                disabled,
-                onChange: this.onChange
-            });
-        }
-
-        onChange = (ev) => {
-            const {model, fieldName} = this.props;
-            model.setValue(fieldName, ev.target.value);
-        }
-    }
-));
-
-const restTextInput = elemFactory(observer(
-    class extends Component {
-        render() {
-            const {model, value, disabled, fieldName} = this.props,
-                cls = model.isFieldValid(fieldName) ? 'pt-fill' : 'pt-fill pt-intent-danger';
-            if (!model.record) return null;
-
-            return inputGroup({
-                cls: cls,
-                type: 'text',
-                value: value || '',
-                disabled,
-                onChange: this.onChange
-            });
-        }
-
-        onChange = (ev) => {
-            const {model, fieldName} = this.props;
-            model.setValue(fieldName, ev.target.value);
-        }
-    }
-));

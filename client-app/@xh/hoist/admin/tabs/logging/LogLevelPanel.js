@@ -16,12 +16,24 @@ export class LogLevelPanel extends Component {
 
     store = new RestStore({
         url: 'rest/logLevelAdmin',
-        fields: [
-            {name: 'name', label: 'Log Name'},
-            {name: 'defaultLevel', label: 'Initial'},
-            {name: 'level', label: 'Override', lookup: 'levels'},
-            {name: 'effectiveLevel', label: 'Effective'}
-        ]
+        fields: [{
+            name: 'name',
+            label: 'Log Name',
+            required: true
+        }, {
+            name: 'level',
+            label: 'Override',
+            lookupName: 'levels',
+            required: true
+        },  {
+            name: 'defaultLevel',
+            label: 'Initial',
+            editable: false
+        }, {
+            name: 'effectiveLevel',
+            label: 'Effective',
+            editable: false
+        }]
     });
 
     gridModel = new RestGridModel({
@@ -34,7 +46,7 @@ export class LogLevelPanel extends Component {
         ],
         editors: [
             {field: 'name'},
-            {field: 'level', editable: false} // additions not allowed, might want a select instead of a suggest (in ext editable: false), obv can rename the prop
+            {field: 'level'}
         ]
     });
     

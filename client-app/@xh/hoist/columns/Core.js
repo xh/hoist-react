@@ -19,7 +19,7 @@ export const boolCheckCol = colFactory({
     align: 'center',
     width: 34,
     cellRendererFramework: (params) => {
-        return params.value ? Icon.check({color: 'green'}) : Icon.cross({color: 'red'});
+        return params.value ? Icon.check({color: 'green'}) : '';
     },
     xhExportRenderer: val => !!val
 });

@@ -16,20 +16,45 @@ export class MonitorEditorPanel extends Component {
 
     store = new RestStore({
         url: 'rest/monitorAdmin',
-        fields: [
-            {name: 'code', label: 'Code'},
-            {name: 'name', label: 'Name'},
-            {name: 'metricType', label: 'Metric Type', lookup: 'metricTypes'},
-            {name: 'metricUnit', label: 'Metric Unit', allowNull: true},
-            {name: 'warnThreshold', label: 'Warn Threshold', type: 'int', allowNull: true},
-            {name: 'failThreshold', label: 'Fail Threshold', type: 'int', allowNull: true},
-            {name: 'params', label: 'Params'},
-            {name: 'notes', label: 'Notes', allowNull: true},
-            {name: 'active', label: 'Active', type: 'bool'},
-            {name: 'sortOrder', label: 'Sort', type: 'int', allowNull: true},
-            {name: 'lastUpdated', label: 'Last Updated', type: 'date', allowNull: true},
-            {name: 'lastUpdatedBy', label: 'Last Updated By', allowNull: true}
-        ]
+        fields: [{
+            name: 'code',
+            required: true
+        },{
+            name: 'name',
+            required: true
+        },{
+            name: 'metricType',
+            lookupName: 'metricTypes',
+            lookupStrict: true,
+            required: true
+        }, {
+            name: 'metricUnit'
+        }, {
+            name: 'warnThreshold',
+            type: 'int'
+        },{
+            name: 'failThreshold',
+            type: 'int',
+        }, {
+            name: 'params'
+        },{
+            name: 'notes'
+        }, {
+            name: 'active',
+            type: 'bool',
+            defaultValue: true,
+            required: true
+        }, {
+            name: 'sortOrder',
+            type: 'int'
+        }, {
+            name: 'lastUpdated',
+            type: 'date',
+            editable: false
+        }, {
+            name: 'lastUpdatedBy',
+            editable: false
+        }]
     });
 
     gridModel = new RestGridModel({
@@ -47,7 +72,7 @@ export class MonitorEditorPanel extends Component {
         editors: [
             {field: 'code'},
             {field: 'name'},
-            {field: 'metricType', editable: false},
+            {field: 'metricType'},
             {field: 'warnThreshold'},
             {field: 'failThreshold'},
             {field: 'metricUnit'},
@@ -55,8 +80,8 @@ export class MonitorEditorPanel extends Component {
             {field: 'notes', type: 'textarea'},
             {field: 'active'},
             {field: 'sortOrder'},
-            {field: 'lastUpdated', type: 'displayField'},
-            {field: 'lastUpdatedBy', type: 'displayField'}
+            {field: 'lastUpdated'},
+            {field: 'lastUpdatedBy'}
         ]
     });
 

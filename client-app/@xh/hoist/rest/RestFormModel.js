@@ -9,15 +9,19 @@ import {forOwn} from 'lodash';
 import {start} from 'hoist/promise';
 import {observable, computed, action} from 'hoist/mobx';
 import {MessageModel} from 'hoist/cmp';
+import {isEqual} from 'lodash';
+
+import {RestControlModel} from './RestControlModel';
 
 export class RestFormModel {
 
     parent = null;
-    editors = [];
+    controlModels = [];
     messageModel = new MessageModel({title: 'Warning', icon: 'warning-sign'});
 
     // If not null, form will be open and display it
     @observable record = null;
+    originalRecord = null;
 
     get actionWarning() {return this.parent.actionWarning}
     get actionEnabled() {return this.parent.actionEnabled}
@@ -32,16 +36,8 @@ export class RestFormModel {
     }
 
     @computed
-    get isFormValid() {
-        return this.fields.every(f => this.isFieldValid(f.name));
-    }
-
-    isFieldValid(fieldName) {
-        const {record, fields} = this;
-        if (!record) return false;
-        const field = fields.find(it => it.name === fieldName),
-            v = record[fieldName];
-        return field.allowNull || (v != null && v !== '');
+    get isValid() {
+        return this.controlModels.every(it => it.isValid);
     }
 
     @computed
@@ -50,9 +46,18 @@ export class RestFormModel {
         return (isAdd && actionEnabled.add) || (!isAdd && actionEnabled.edit);
     }
 
+    @computed
+    get isDirty() {
+        return !isEqual(this.record, this.originalRecord);
+    }
+
     constructor({parent, editors}) {
         this.parent = parent;
-        this.editors = editors;
+        this.controlModels = editors.map((editor) => {
+           const field = this.store.getField(editor.field);
+           if (!field) throw XH.exception(`Unknown field '${editor.field}' in RestGrid.`)
+           return new RestControlModel({editor, field, parent: this});
+        });
     }
 
     //-----------------
@@ -78,89 +83,27 @@ export class RestFormModel {
 
     @action
     close() {
-        this.record = null;
+        this.originalRecord = this.record = null;
         this.messageModel.close();
     }
 
     @action
     openAdd() {
         const newRec = {id: null};
-        // must start with all keys in place, so all values will observable
-        this.fields.forEach(spec => {
-            newRec[spec.name] = spec.defaultValue;
+        this.fields.forEach(f => {
+            newRec[f.name] = f.defaultValue;
         });
 
-        this.record = newRec;
+        this.originalRecord = this.record = newRec;
     }
 
     @action
     openEdit(rec)  {
-        this.record = Object.assign({}, rec);
+        this.originalRecord = this.record = Object.assign({}, rec);
     }
 
     @action
     setValue = (field, value) => {
         this.record[field] = value;
-    }
-
-    //---------------------------------
-    // Helpers for Form/Editor Creation
-    //---------------------------------
-    /**
-     * Return a bundle of props for each control in the form.
-     * These contain toolkit independent metadata, and access to the underlying value/model.
-     */
-    getInputProps() {
-        const fields = this.fields,
-            isAdd = this.isAdd,
-            record = this.record;
-
-        return this.editors.map(editor => {
-            const fieldSpec = fields.find(it => it.name === editor.field),
-                fieldName = fieldSpec.name,
-                disabled = editor.additionsOnly && !isAdd,
-                type = this.getInputType(editor, fieldSpec);
-
-            // NOTE: We provide the value setter and *getter* for convenience -- but don't dereference.
-            // It's observable and volatile, and we only want controls using it to re-render
-            return {
-                editor,
-                type,
-                fieldSpec,
-                fieldName,
-                get value() {return record[fieldName]},
-                disabled,
-                model: this
-            };
-        });
-    }
-
-    getInputType(editor, fieldSpec) {
-        const fieldType = fieldSpec.typeField ? this.getTypeFromRecord(fieldSpec) : fieldSpec.type,
-            editorType = editor.type;
-
-        if (editorType === 'displayField') {
-            return 'display';
-        }
-        if (fieldSpec.lookupValues) {
-            return editor.editable === false ? 'select' : 'dropdown';
-        }
-        if (fieldType === 'bool') {
-            return 'boolean';
-        }
-        if (fieldType === 'int') {
-            return 'number';
-        }
-        if (editorType === 'textarea' || fieldType === 'json') {
-            return 'textarea';
-        }
-        return 'text';
-    }
-
-    // For dynamic types.
-    getTypeFromRecord(fieldSpec) {
-        const typeField = this.fields.find(it => it.name === fieldSpec.typeField);
-
-        return this.record[typeField.name];
     }
 }

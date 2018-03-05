@@ -16,39 +16,52 @@ export class FeedbackPanel extends Component {
 
     store = new RestStore({
         url: 'rest/feedbackAdmin',
-        fields: [
-            {name: 'username', label: 'User'},
-            {name: 'msg', label: 'Message'},
-            {name: 'browser', label: 'Browser', readOnly: true},
-            {name: 'device', label: 'Device', readOnly: true},
-            {name: 'appVersion', label: 'Version', readOnly: true},
-            {name: 'appEnvironment', label: 'Environment', readOnly: true},
-            {name: 'dateCreated', type: 'date', dateFormat: 'time', label: 'Date', readOnly: true, allowNull: true}
-        ]
+        fields: [{
+            name: 'username',
+            label: 'User'
+        }, {
+            name: 'msg',
+            label: 'Message'
+        }, {
+            name: 'browser'
+        }, {
+            name: 'device'
+        }, {
+            name: 'appVersion',
+            label: 'Version'
+        }, {
+            name: 'appEnvironment',
+            label: 'Environment'
+        }, {
+            name: 'dateCreated',
+            label: 'Date',
+            type: 'date'
+        }]
     });
 
     gridModel = new RestGridModel({
         store: this.store,
         actionEnabled: {
-            add: false
+            add: false,
+            edit: false,
         },
         columns: [
             usernameCol(),
             baseCol({field: 'msg', text: 'Message', width: 60}),
-            baseCol({field: 'browser', text: 'Browser', width: 100}),
-            baseCol({field: 'device', text: 'Device', width: 60}),
-            baseCol({field: 'appVersion', text: 'Version', width: 100}),
-            baseCol({field: 'appEnvironment', text: 'Environment', width: 100}),
-            baseCol({field: 'dateCreated', text: 'Date', width: 100, renderer: compactDateRenderer()})
+            baseCol({field: 'browser', width: 100}),
+            baseCol({field: 'device', width: 60}),
+            baseCol({field: 'appVersion', width: 100}),
+            baseCol({field: 'appEnvironment',  width: 100}),
+            baseCol({field: 'dateCreated', width: 100, renderer: compactDateRenderer()})
         ],
         editors: [
             {field: 'username'},
             {field: 'msg', type: 'textarea'},
-            {field: 'browser', type: 'displayField'},
-            {field: 'device', type: 'displayField'},
-            {field: 'appVersion', type: 'displayField'},
-            {field: 'appEnvironment', type: 'displayField'},
-            {field: 'dateCreated', type: 'displayField'}
+            {field: 'browser'},
+            {field: 'device'},
+            {field: 'appVersion'},
+            {field: 'appEnvironment'},
+            {field: 'dateCreated'}
         ]
     });
 

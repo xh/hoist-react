@@ -6,8 +6,9 @@
  */
 import {observer} from 'hoist/mobx';
 import {ContextMenuTarget, HotkeysTarget} from 'hoist/kit/blueprint';
-import {hoistModel} from './HoistModel';
 
+import {hoistModel} from './HoistModel';
+import {elemFactory} from './elem';
 /**
  * Core Decorator for Components in Hoist.
  */
@@ -49,7 +50,16 @@ export function hoistComponent({isObserver = true} = {}) {
     };
 }
 
+/**
+ * Create an elementFactory for a HoistComponent.
+ */
+export function hoistComponentFactory(C) {
+    return elemFactory(hoistComponent()(C));
+}
 
+//-----------------------------------
+// Implementation
+//-----------------------------------
 function addProperty(C, name,  cfg) {
     const proto = C.prototype;
     if (!proto[name]) {

@@ -9,6 +9,7 @@ import React from 'react';
 import {defaults, isPlainObject, isString, isArray} from 'lodash';
 import {asArray} from 'hoist/utils/JsUtils';
 import {isReactElement} from 'hoist/utils/ReactUtils';
+import {Exception} from 'hoist/exception';
 
 /**
  * Convenience method for creating React Elements with native javascript.  This method is designed
