@@ -81,7 +81,7 @@ export class VisitsChart extends Component {
     }
 
     formatDate(date) {
-        return fmtDate(date)
+        return fmtDate(date);
     }
 
     parseDate(dateString) {

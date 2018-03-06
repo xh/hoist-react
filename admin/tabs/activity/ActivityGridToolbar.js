@@ -143,15 +143,15 @@ export class ActivityGridToolbar extends Component {
     }
 
     onDateGoBackClick = () => {
-        this.adjustDates('subtract')
+        this.adjustDates('subtract');
     }
 
     onDateGoForwardClick = () => {
-        this.adjustDates('add')
+        this.adjustDates('add');
     }
 
     onGoToCurrentDateClick = () => {
-        this.adjustDates('subtract', true)
+        this.adjustDates('subtract', true);
     }
 
     onUsernameChange = (ev) => {
@@ -218,7 +218,7 @@ export class ActivityGridToolbar extends Component {
 
     renderLogCount() {
         const store = this.model.gridModel.store;
-        return store.records.length + ' track logs'
+        return store.records.length + ' track logs';
     }
 }
 export const activityGridToolbar = elemFactory(ActivityGridToolbar);

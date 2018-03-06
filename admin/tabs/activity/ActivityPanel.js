@@ -35,6 +35,6 @@ export class ActivityPanel extends Component {
     }
 
     async loadAsync() {
-        return Promise.all([this.visitsChartModel.loadAsync(), this.activityGridModel.loadAsync()])
+        return Promise.all([this.visitsChartModel.loadAsync(), this.activityGridModel.loadAsync()]);
     }
 }
