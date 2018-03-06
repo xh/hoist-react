@@ -6,7 +6,6 @@
  */
 
 import {Component} from 'react';
-import {isFunction, defaults} from 'lodash';
 import {hoistComponent, XH, elemFactory} from 'hoist/core';
 import {Intent, button} from 'hoist/kit/blueprint';
 import {ToastManager} from 'hoist/cmp';
@@ -87,5 +86,5 @@ export class ClipboardButton extends Component {
         toastProps.timeout = 3 * SECONDS;
         ToastManager.getToaster().show(toastProps);
     }
-};
+}
 export const clipboardButton = elemFactory(ClipboardButton);

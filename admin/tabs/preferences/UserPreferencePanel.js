@@ -16,32 +16,39 @@ export class UserPreferencePanel extends Component {
 
     store = new RestStore({
         url: 'rest/userPreferenceAdmin',
-        fields: [{
-            name: 'name',
-            label: 'Pref',
-            lookupName: 'names',
-            lookupStrict: true,
-            editable: 'onAdd',
-            required: true
-        }, {
-            name: 'type',
-            editable: false
-        },{
-            name: 'username',
-            label: 'User',
-            required: true
-        }, {
-            name: 'userValue',
-            typeField: 'type',
-            required: true
-        }, {
-            name: 'lastUpdated',
-            type: 'date',
-            editable: false
-        }, {
-            name: 'lastUpdatedBy',
-            editable: false
-        }]
+        fields: [
+            {
+                name: 'name',
+                label: 'Pref',
+                lookupName: 'names',
+                lookupStrict: true,
+                editable: 'onAdd',
+                required: true
+            },
+            {
+                name: 'type',
+                editable: false
+            },
+            {
+                name: 'username',
+                label: 'User',
+                required: true
+            },
+            {
+                name: 'userValue',
+                typeField: 'type',
+                required: true
+            },
+            {
+                name: 'lastUpdated',
+                type: 'date',
+                editable: false
+            },
+            {
+                name: 'lastUpdatedBy',
+                editable: false
+            }
+        ]
     });
 
     gridModel = new RestGridModel({
