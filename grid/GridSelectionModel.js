@@ -15,7 +15,7 @@ export class GridSelectionModel {
 
     parent = null;
 
-    @observable records = [];
+    @observable.ref records = [];
 
     @computed get singleRecord() {
         const recs = this.records;
@@ -29,12 +29,11 @@ export class GridSelectionModel {
     constructor({parent}) {
         this.parent = parent;
         autorun(() => {
-            // Remove records from the selection if they are no longer in the store
-            // e.g. due to filtering, updated changes, etc
+            // Remove recs from selection if they are no longer in store e.g. (due to filtering)
             const storeRecords = this.parent.store.records,
                 selection = this.records,
                 newSelection = intersectionBy(storeRecords, selection, 'id'),
-                diff = differenceBy(selection, newSelection, 'id');
+            diff = differenceBy(selection, newSelection, 'id');
 
             if (diff.length > 0) this.select(newSelection);
         });
