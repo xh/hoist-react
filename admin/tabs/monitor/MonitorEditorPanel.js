@@ -16,45 +16,58 @@ export class MonitorEditorPanel extends Component {
 
     store = new RestStore({
         url: 'rest/monitorAdmin',
-        fields: [{
-            name: 'code',
-            required: true
-        },{
-            name: 'name',
-            required: true
-        },{
-            name: 'metricType',
-            lookupName: 'metricTypes',
-            lookupStrict: true,
-            required: true
-        }, {
-            name: 'metricUnit'
-        }, {
-            name: 'warnThreshold',
-            type: 'int'
-        },{
-            name: 'failThreshold',
-            type: 'int',
-        }, {
-            name: 'params'
-        },{
-            name: 'notes'
-        }, {
-            name: 'active',
-            type: 'bool',
-            defaultValue: true,
-            required: true
-        }, {
-            name: 'sortOrder',
-            type: 'int'
-        }, {
-            name: 'lastUpdated',
-            type: 'date',
-            editable: false
-        }, {
-            name: 'lastUpdatedBy',
-            editable: false
-        }]
+        fields: [
+            {
+                name: 'code',
+                required: true
+            },
+            {
+                name: 'name',
+                required: true
+            },
+            {
+                name: 'metricType',
+                lookupName: 'metricTypes',
+                lookupStrict: true,
+                required: true
+            },
+            {
+                name: 'metricUnit'
+            },
+            {
+                name: 'warnThreshold',
+                type: 'int'
+            },
+            {
+                name: 'failThreshold',
+                type: 'int'
+            },
+            {
+                name: 'params'
+            },
+            {
+                name: 'notes'
+            },
+            {
+                name: 'active',
+                type: 'bool',
+                defaultValue: true,
+                required: true
+            },
+            {
+                name: 'sortOrder',
+                type: 'int'
+            },
+            {
+                name: 'lastUpdated',
+                type: 'date',
+                editable: false
+            },
+            {
+                name: 'lastUpdatedBy',
+                editable: false
+            }
+        ]
     });
 
     gridModel = new RestGridModel({

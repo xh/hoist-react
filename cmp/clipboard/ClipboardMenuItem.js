@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react'
+import {Component} from 'react';
 import {clipboardButton} from './ClipboardButton';
 import {elemFactory} from 'hoist/core';
 
