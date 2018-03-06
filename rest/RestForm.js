@@ -8,11 +8,11 @@
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {loadMask, message} from 'hoist/cmp';
-import {filler, vframe, hbox} from 'hoist/layout';
+import {filler, vframe} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
-import {button, checkbox, dialog, dialogBody, dialogFooter, dialogFooterActions} from 'hoist/kit/blueprint';
+import {button, dialog, dialogBody, dialogFooter, dialogFooterActions} from 'hoist/kit/blueprint';
 
-import {restControl} from './RestControl'
+import {restControl} from './RestControl';
 
 @hoistComponent()
 export class RestForm extends Component {

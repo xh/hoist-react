@@ -5,9 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {XH, hoistComponent, elemFactory} from 'hoist/core';
+import {castArray} from 'lodash';
+import {hoistComponent, elemFactory} from 'hoist/core';
 import {frame, div} from 'hoist/layout';
-import {toJS} from 'hoist/mobx';
 import {asArray} from 'hoist/utils/JsUtils';
 import {Ref} from 'hoist/utils/Ref';
 import Highcharts from 'highcharts/highstock';
@@ -31,7 +31,7 @@ export class Chart extends Component {
         return frame({
             ...this.props,
             item: div({
-                style: {flex: 'auto'},
+                style: {flex: 'auto', overflow: 'hidden'},
                 ref: this._chartElem.ref
             })
         });
@@ -95,7 +95,7 @@ export class Chart extends Component {
         const axisLabels = ['x', 'y', 'z'];
         axisLabels.forEach(lbl => {
             const axis = lbl + 'Axis',
-                arr = asArray(conf[axis] || {}),
+                arr = castArray(conf[axis] || {}),
                 dfltAxisConfig = this.getDefaultAxisConfig(axis);
 
             conf[axis] = arr.map(it => merge({}, dfltAxisConfig, theme[axis], it));

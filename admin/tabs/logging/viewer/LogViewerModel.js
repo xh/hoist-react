@@ -23,7 +23,7 @@ export class LogViewerModel {
 
     // Overall State
     @observable file = null;
-    @setter @observable rows = [];
+    @setter @observable.ref rows = [];
 
     loadModel = new LastPromiseModel();
 
@@ -34,7 +34,7 @@ export class LogViewerModel {
             fields: ['filename']
         }),
         columns: [
-            baseCol({headerName: 'Log File', field: 'filename', width: 250})
+            baseCol({headerName: 'Log File', field: 'filename', width: 250, sort: 'asc'})
         ]
     });
 

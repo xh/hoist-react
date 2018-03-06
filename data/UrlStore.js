@@ -41,6 +41,6 @@ export class UrlStore extends LocalStore {
                 if (dataRoot) data = data[dataRoot];
                 return this.loadDataInternal(data);
             })
-            .linkTo(this.loadModel)
+            .linkTo(this.loadModel);
     }
 }

@@ -27,4 +27,4 @@ export const ToastManager = {
 
         return toasters[position] = Toaster.create({position});
     }
-}
+};
