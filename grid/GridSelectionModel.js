@@ -39,7 +39,7 @@ export class GridSelectionModel {
     @action
     select(records, clearSelection = true) {
         records = castArray(records).map(it => {
-            return it.id ? it : this.parent.getById(it);
+            return it.id ? it : this.parent.store.getById(it);
         });
         this.records = clearSelection ? records : unionBy(this.records, records, 'id');
     }

@@ -53,6 +53,10 @@ export class BaseStore {
         });
     }
 
+    getById(id) {
+        return this.allRecords.find(it => it.id == id);
+    }
+
     //--------------------
     // For Implementations
     //--------------------

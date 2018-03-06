@@ -83,6 +83,7 @@ class Grid extends Component {
                 modelSelection.forEach((record) => {
                     const node = api.getRowNode(record.id);
                     node.setSelected(true);
+                    api.ensureNodeVisible(node);
                 });
             }
         });

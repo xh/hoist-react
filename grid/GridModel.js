@@ -33,9 +33,4 @@ export class GridModel {
         this.selection = new GridSelectionModel({parent: this});
     }
 
-    getById(id) {
-        const records = this.store.allRecords;
-        return records.find(it => it.id == id);
-    }
-
 }
