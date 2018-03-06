@@ -6,8 +6,7 @@
  */
 
 import {XH} from 'hoist/core';
-import {asArray} from 'hoist/utils/JsUtils';
-import {isFunction, isNumber} from 'lodash';
+import {isFunction, isNumber, castArray} from 'lodash';
 import RSVP from 'rsvp';
 
 
@@ -209,7 +208,7 @@ Object.assign(Promise.prototype, {
     // Implementation
     //--------------------------------
     throwIfFailsSelector(e, selector) {
-        const fn = isFunction(selector) ? selector : (e) => asArray(selector).includes(e.name);
+        const fn = isFunction(selector) ? selector : (e) => castArray(selector).includes(e.name);
         if (!fn(e)) throw e;
     }
 });

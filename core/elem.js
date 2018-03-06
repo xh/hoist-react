@@ -6,8 +6,7 @@
  */
 
 import React from 'react';
-import {defaults, isPlainObject, isString, isArray} from 'lodash';
-import {asArray} from 'hoist/utils/JsUtils';
+import {defaults, isPlainObject, isString, isArray, castArray} from 'lodash';
 import {isReactElement} from 'hoist/utils/ReactUtils';
 import {Exception} from 'hoist/exception';
 
@@ -69,7 +68,7 @@ export function elem(type, config = {}) {
 
     // 4) process children
     items = item || items;
-    items = asArray(items);
+    items = castArray(items);
     
     itemSpec = isPlainObject(itemSpec) ? itemSpec : {factory: itemSpec};
     const {factory, ...defaultParams} = itemSpec;

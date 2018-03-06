@@ -5,10 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import {castArray} from 'lodash';
 import {XH, hoistComponent, elemFactory} from 'hoist/core';
 import {frame, div} from 'hoist/layout';
 import {toJS} from 'hoist/mobx';
-import {asArray} from 'hoist/utils/JsUtils';
 import {Ref} from 'hoist/utils/Ref';
 import Highcharts from 'highcharts/highstock';
 import {merge, clone} from 'lodash';
@@ -95,7 +95,7 @@ export class Chart extends Component {
         const axisLabels = ['x', 'y', 'z'];
         axisLabels.forEach(lbl => {
             const axis = lbl + 'Axis',
-                arr = asArray(conf[axis] || {}),
+                arr = castArray(conf[axis] || {}),
                 dfltAxisConfig = this.getDefaultAxisConfig(axis);
 
             conf[axis] = arr.map(it => merge({}, dfltAxisConfig, theme[axis], it));
