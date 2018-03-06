@@ -213,7 +213,7 @@ export class ActivityGridToolbar extends Component {
 
         model.setStartDate(newStart.toDate());
         model.setEndDate(newEnd.toDate());
-        this.model.setFilter();
+        this.model.loadAsync();
     }
 
     renderLogCount() {
