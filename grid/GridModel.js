@@ -36,7 +36,7 @@ export class GridModel {
     exportDataAsExcel(params) {
         if (!this.gridApi) return;
         params.processCellCallback = this.formatValuesForExport;
-        this.gridApi.exportDataAsExcel(params)
+        this.gridApi.exportDataAsExcel(params);
     }
 
     formatValuesForExport(params) {

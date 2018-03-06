@@ -5,9 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {XH, hoistComponent} from 'hoist/core';
+import {hoistComponent} from 'hoist/core';
 import {grid} from 'hoist/grid';
-import {chart, ChartModel} from 'hoist/highcharts';
 import {vframe} from 'hoist/layout';
 import {collapsible} from 'hoist/cmp';
 
