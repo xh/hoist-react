@@ -7,6 +7,7 @@
 
 import React, {Component} from 'react';
 import {hoistComponent, hoistComponentFactory, elemFactory} from 'hoist/core';
+import {jsonEditor} from 'hoist/cmp';
 import {fmtDateTime} from 'hoist/format';
 import {hbox} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
@@ -44,7 +45,11 @@ export class RestControl extends Component {
 
         if (type == null) return null;
 
-        if (type === 'json' || editorType === 'textarea') {
+        if (type === 'json') {
+            return restJsonEditor;
+        }
+
+        if (editorType === 'textarea') {
             return restTextArea;
         }
 
@@ -217,6 +222,32 @@ const restTextInput = hoistComponentFactory(
 
         onChange = (ev) => {
             this.model.value = ev.target.value;
+        }
+    }
+);
+
+const restJsonEditor = hoistComponentFactory(
+    class extends Component {
+        render() {
+            const {value, disabled} = this.props;
+            return jsonEditor({
+                value: value || '',
+                onChange: this.onChange,
+                // setting size appears to be the only way to get scrollbars
+                width: 343,
+                height: 150,
+                codeMirrorOptions: {
+                    readOnly: disabled
+                }
+            });
+        }
+
+        onChange = (editor, data, value) => {
+            try {
+                JSON.parse(value);
+            } catch (e) {
+                // say form invalid
+            }
         }
     }
 );
