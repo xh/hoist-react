@@ -23,7 +23,7 @@ export class LogViewerModel {
 
     // Overall State
     @observable file = null;
-    @setter @observable rows = [];
+    @setter @observable.ref rows = [];
 
     loadModel = new LastPromiseModel();
 
