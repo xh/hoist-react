@@ -5,8 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {action, setter, observable, computed} from 'hoist/mobx';
-import {castArray, unionBy} from 'lodash';
+import {autorun, action, setter, observable, computed} from 'hoist/mobx';
+import {castArray, intersectionBy, differenceBy, unionBy} from 'lodash';
 
 /**
  * Model for managing the selection in a GridPanel.
@@ -28,6 +28,16 @@ export class GridSelectionModel {
 
     constructor({parent}) {
         this.parent = parent;
+        autorun(() => {
+            // Remove records from the selection if they are no longer in the store
+            // e.g. due to filtering, updated changes, etc
+            const storeRecords = this.parent.store.records,
+                selection = this.records,
+                newSelection = intersectionBy(storeRecords, selection, 'id'),
+                diff = differenceBy(selection, newSelection, 'id');
+
+            if (diff.length > 0) this.select(newSelection);
+        });
     }
 
     /**
