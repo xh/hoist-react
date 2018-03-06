@@ -8,8 +8,6 @@
 import {XH} from 'hoist/core';
 
 import {UrlStore} from 'hoist/data';
-import {action} from 'hoist/mobx';
-import {remove} from 'lodash';
 
 import {RestField} from './RestField';
 

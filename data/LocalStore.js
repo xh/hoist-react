@@ -75,7 +75,7 @@ export class LocalStore extends BaseStore {
     @action
     loadDataInternal(rawData) {
         this._recordsMap = this.createRecordMap(rawData);
-        this.rebuildArrays()
+        this.rebuildArrays();
     }
 
     @action
@@ -98,7 +98,6 @@ export class LocalStore extends BaseStore {
     }
 
     createRecordMap(rawData) {
-        const id = 0;
         const {processRawData} = this;
         if (processRawData) {
             rawData = processRawData(rawData);
@@ -108,7 +107,7 @@ export class LocalStore extends BaseStore {
         });
         const ret = new Map();
         rawData.forEach(it => {
-            const rec = this.createRecord(it)
+            const rec = this.createRecord(it);
             ret.set(rec.id, rec);
         });
         return ret;
