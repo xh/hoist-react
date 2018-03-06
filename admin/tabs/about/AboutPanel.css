@@ -1,0 +1,26 @@
+.xh-admin-about-panel {
+    padding: 10px;
+}
+
+.xh-admin-about-panel table {
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+.xh-admin-about-panel tr {
+    border: 1px solid #5C7080;
+}
+
+.xh-admin-about-panel th {
+    background-color: #293742;
+    color: white;
+    width: 200px;
+    padding: 8px;
+    text-align: left;
+}
+
+.xh-admin-about-panel td {
+    width: 200px;
+    padding: 8px;
+    text-align: right;
+}
