@@ -7,6 +7,7 @@
   "author": "Extremely Heavy Industries, Inc.",
   "license": "UNLICENSED",
   "scripts": {
+    "lint": "yarn run eslint lint .",
     "publishHoist": "yarn publish --registry=\"https://repo.xh.io/repository/npm-hosted/\""
   },
   "publishConfig": {
