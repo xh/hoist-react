@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {autorun, action, setter, observable, computed} from 'hoist/mobx';
+import {autorun, action, observable, computed} from 'hoist/mobx';
 import {castArray, intersectionBy, differenceBy, unionBy} from 'lodash';
 
 /**
@@ -33,7 +33,7 @@ export class GridSelectionModel {
             const storeRecords = this.parent.store.records,
                 selection = this.records,
                 newSelection = intersectionBy(storeRecords, selection, 'id'),
-            diff = differenceBy(selection, newSelection, 'id');
+                diff = differenceBy(selection, newSelection, 'id');
 
             if (diff.length > 0) this.select(newSelection);
         });

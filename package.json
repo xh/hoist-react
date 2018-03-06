@@ -7,6 +7,7 @@
   "author": "Extremely Heavy Industries, Inc.",
   "license": "UNLICENSED",
   "scripts": {
+    "lint": "yarn run eslint lint .",
     "publishHoist": "yarn publish --registry=\"https://repo.xh.io/repository/npm-hosted/\""
   },
   "publishConfig": {
@@ -24,7 +25,7 @@
     "ag-grid-enterprise": "^15.0.0",
     "ag-grid-react": "^15.0.0",
     "babel-runtime": "^6.26.0",
-    "clipboard": "^1.7.1",
+    "clipboard": "^2.0.0",
     "highcharts": "^6.0.7",
     "mobx": "^3.5.1",
     "mobx-decorators": "^2.3.3",
