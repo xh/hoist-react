@@ -27,12 +27,10 @@ export class ActivityGridToolbar extends Component {
                 hspacer(4),
                 dateInput({
                     value: model.startDate,
-                    formatDate: this.fmtDate,
+                    formatDate: this.formatDate,
                     parseDate: this.parseDate,
                     onChange: this.onStartDateChange,
-                    inputProps: {
-                        style: {width: 120}
-                    },
+                    inputProps: {style: {width: 120}},
                     popoverProps: {
                         minimal: true,
                         usePortal: true,
@@ -45,12 +43,10 @@ export class ActivityGridToolbar extends Component {
                 hspacer(8),
                 dateInput({
                     value: model.endDate,
-                    formatDate: this.fmtDate,
+                    formatDate: this.formatDate,
                     parseDate: this.parseDate,
                     onChange: this.onEndDateChange,
-                    inputProps: {
-                        style: {width: 120}
-                    },
+                    inputProps: {style: {width: 120}},
                     popoverProps: {
                         minimal: true,
                         usePortal: true,
@@ -129,7 +125,7 @@ export class ActivityGridToolbar extends Component {
     //-----------------------------
     // Implementation
     //-----------------------------
-    fmtDate(date) {
+    formatDate(date) {
         return fmtDate(date);
     }
 
@@ -192,11 +188,12 @@ export class ActivityGridToolbar extends Component {
             gridModel = model.gridModel,
             fileName = `Track logs ${fmtDate(model.startDate)} to ${fmtDate(model.endDate)}`;
 
-        gridModel.exportDataAsExcel({fileName: fileName});
+        gridModel.exportDataAsExcel({fileName});
     }
 
     adjustDates(dir, toToday = false) {
         const model = this.model,
+            today = moment(),
             start = moment(model.startDate),
             end = moment(model.endDate),
             diff = end.diff(start, 'days'),
@@ -205,9 +202,9 @@ export class ActivityGridToolbar extends Component {
         let newStart = start[dir](incr, 'days'),
             newEnd = end[dir](incr, 'days');
 
-        if (newEnd.diff(moment(), 'days') > 0 || toToday) {
-            newStart = moment().subtract(diff, 'days');
-            newEnd = moment();
+        if (newEnd.diff(today, 'days') > 0 || toToday) {
+            newStart = today.clone().subtract(diff, 'days');
+            newEnd = today;
         }
 
         model.setStartDate(newStart.toDate());

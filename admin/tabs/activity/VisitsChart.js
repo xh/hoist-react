@@ -12,8 +12,8 @@ import {XH, hoistComponent, elemFactory} from 'hoist/core';
 import {chart, ChartModel} from 'hoist/highcharts';
 import {vframe, filler, hbox, hspacer, div} from 'hoist/layout';
 import {observable, action} from 'hoist/mobx';
-import {fmtDate} from 'hoist/format';
 import {Icon} from 'hoist/icon';
+import {fmtDate} from 'hoist/format';
 
 @hoistComponent()
 export class VisitsChart extends Component {
@@ -25,6 +25,9 @@ export class VisitsChart extends Component {
         );
     }
 
+    //----------------
+    // Implementation
+    //----------------
     renderToolbar({model}) {
         return hbox({
             cls: 'xh-tbar',
@@ -37,27 +40,25 @@ export class VisitsChart extends Component {
                 filler(),
                 dateInput({
                     value: model.startDate,
-                    formatDate: this.fmtDate,
+                    formatDate: this.formatDate,
                     parseDate: this.parseDate,
                     onChange: this.onStartDateChange,
-                    inputProps: {
-                        style: {width: 120}
-                    },
+                    inputProps: {style: {width: 120}},
                     popoverProps: {
                         minimal: true,
                         usePortal: true,
                         position: 'top'
                     }
                 }),
-                hspacer(10),
+                hspacer(8),
+                Icon.angleRight(),
+                hspacer(8),
                 dateInput({
                     value: model.endDate,
-                    formatDate: this.fmtDate,
+                    formatDate: this.formatDate,
                     parseDate: this.parseDate,
                     onChange: this.onEndDateChange,
-                    inputProps: {
-                        style: {width: 120}
-                    },
+                    inputProps: {style: {width: 120}},
                     popoverProps: {
                         minimal: true,
                         usePortal: true,
@@ -72,15 +73,14 @@ export class VisitsChart extends Component {
                 }),
                 hspacer(10),
                 button({
-                    text: 'Submit',
-                    intent: 'success',
+                    icon: Icon.sync(),
                     onClick: this.onSubmitClick
                 })
             ]
         });
     }
 
-    fmtDate(date) {
+    formatDate(date) {
         return fmtDate(date)
     }
 

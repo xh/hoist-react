@@ -32,6 +32,7 @@ export class UrlStore extends LocalStore {
     /**
      * Reload store from url
      */
+    // something like this
     async loadAsync() {
         const {url, dataRoot} = this;
         return XH

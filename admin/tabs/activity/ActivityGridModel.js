@@ -59,7 +59,7 @@ export class ActivityGridModel {
 
     setFilter() {
         const store = this.store;
-        store.filter = this.createFilterFunction();
+        store.setFilter(this.createFilterFunction());
     }
 
     //----------------
