@@ -8,8 +8,8 @@
 import {Component} from 'react';
 import {XH, hoistComponent, elemFactory} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
-import {toJS} from 'hoist/mobx';
-import {defaults} from 'lodash';
+import {autorun, toJS} from 'hoist/mobx';
+import {defaults, differenceBy} from 'lodash';
 
 import './ag-grid';
 import {navigateSelection, agGridReact} from './ag-grid';
@@ -24,6 +24,8 @@ class Grid extends Component {
     static gridDefaults = {
         enableSorting: true,
         enableColResize: true,
+        deltaRowDataMode: true,
+        getRowNodeId: (data) => data.id,
         rowSelection: 'single'
     };
 
@@ -58,7 +60,7 @@ class Grid extends Component {
     //------------------------
     onSelectionChanged = (ev) => {
         const selection = this.model.selection;
-        selection.setRecords(ev.api.getSelectedRows());
+        selection.select(ev.api.getSelectedRows());
     }
 
     onNavigateToNextCell = (params) => {
@@ -67,6 +69,30 @@ class Grid extends Component {
 
     getContextMenuItems = () => {
         return [];
+    }
+
+    componentDidMount() {
+        this.disposeRunner = autorun(() => {
+            const api = this.gridOptions.api,
+                modelSelection = this.model.selection.records,
+                gridSelection = api.getSelectedRows(),
+                diff = differenceBy(modelSelection, gridSelection, 'id');
+
+            // If ag-grid's selection differs from the selection model,
+            // set ag-grid selected nodes to match the selection model
+            if (diff.length > 0) {
+                api.deselectAll();
+                modelSelection.forEach((record) => {
+                    const node = api.getRowNode(record.id);
+                    node.setSelected(true);
+                    api.ensureNodeVisible(node);
+                });
+            }
+        });
+    }
+
+    componentWillUnmount() {
+        this.disposeRunner();
     }
 }
 export const grid = elemFactory(Grid);

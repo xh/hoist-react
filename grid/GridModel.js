@@ -18,7 +18,7 @@ export class GridModel {
 
     // Immutable public properties
     store = null;
-    selection = new GridSelectionModel();
+    selection = null;
     loadModel = new LastPromiseModel();
 
     @observable columns = [];
@@ -30,5 +30,7 @@ export class GridModel {
     constructor({store, columns}) {
         this.store = store;
         this.columns = columns;
+        this.selection = new GridSelectionModel({parent: this});
     }
+
 }
