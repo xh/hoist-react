@@ -34,8 +34,8 @@ export class ActivityGridToolbar extends Component {
                     popoverProps: {
                         minimal: true,
                         usePortal: true,
-                        position: 'bottom'
-                        // popoverWillClose: model.setFilter // ??? will change to loadData art very least
+                        position: 'bottom',
+                        popoverWillClose: this.onPopoverWillClose
                     }
                 }),
                 hspacer(8),
@@ -50,8 +50,8 @@ export class ActivityGridToolbar extends Component {
                     popoverProps: {
                         minimal: true,
                         usePortal: true,
-                        position: 'bottom'
-                        // popoverWillClose: model.setFilter
+                        position: 'bottom',
+                        popoverWillClose: this.onPopoverWillClose
                     }
                 }),
                 hspacer(8),
@@ -179,8 +179,12 @@ export class ActivityGridToolbar extends Component {
         this.model.setBrowser(browser);
     }
 
+    onPopoverWillClose = () => {
+        this.model.loadAsync();  // can we/do we want to confirm a change here first
+    }
+
     onSubmitClick = () => {
-        this.model.setFilter();
+        this.model.loadAsync();
     }
 
     onExportClick = () => {

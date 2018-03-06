@@ -54,12 +54,6 @@ export class ActivityGridModel {
         ]
     });
 
-
-    // setFilter() {
-    //     const store = this.store;
-    //     store.setFilter(this.createFilterFunction());
-    // }
-
     async loadAsync() {
         return XH.fetchJson({
             url: 'trackLogAdmin',
@@ -71,23 +65,24 @@ export class ActivityGridModel {
         });
     }
 
+    reloadData = () => {
+        this.loadAsync();
+    }
+
     //----------------
     // Implementation
     //----------------
     getParams() {
         let params = {
             startDate: fmtDate(this.startDate, 'YYYYMMDD'),
-            endDate: fmtDate(this.endDate, 'YYYYMMDD')
+            endDate: fmtDate(this.endDate, 'YYYYMMDD'),
+            username: this.username,
+            msg: this.msg,
+            category: this.category,
+            device: this.device,
+            browser: this.browser
         };
-        // const {dateCreated, username, msg, category, device, browser} = rec,
-        //     date = moment(dateCreated);
-        // if (date.isBefore(this.startDate)) return false;
-        // if (date.isAfter(this.endDate)) return false;
-        // if (!username.toLowerCase().includes(this.username)) return false;
-        // if (!msg.toLowerCase().includes(this.msg)) return false;
-        // if (!category.toLowerCase().includes(this.category)) return false;
-        // if (!device.toLowerCase().includes(this.device)) return false;
-        // if (!browser.toLowerCase().includes(this.browser)) return false;
+
         return params;
     }
 
