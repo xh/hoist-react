@@ -36,6 +36,7 @@ class Grid extends Component {
             Grid.gridDefaults,
             {navigateToNextCell: this.onNavigateToNextCell}
         );
+        this.addAutoRun(() => this.syncSelection());
     }
 
     render() {
@@ -71,28 +72,23 @@ class Grid extends Component {
         return [];
     }
 
-    componentDidMount() {
-        this.disposeRunner = autorun(() => {
-            const api = this.gridOptions.api,
-                modelSelection = this.model.selection.records,
-                gridSelection = api.getSelectedRows(),
-                diff = differenceBy(modelSelection, gridSelection, 'id');
+    syncSelection() {
+        const api = this.gridOptions.api,
+            modelSelection = this.model.selection.records,
+            gridSelection = api.getSelectedRows(),
+            diff = differenceBy(modelSelection, gridSelection, 'id');
 
-            // If ag-grid's selection differs from the selection model,
-            // set ag-grid selected nodes to match the selection model
-            if (diff.length > 0) {
-                api.deselectAll();
-                modelSelection.forEach((record) => {
-                    const node = api.getRowNode(record.id);
-                    node.setSelected(true);
-                    api.ensureNodeVisible(node);
-                });
-            }
-        });
+        // If ag-grid's selection differs from the selection model,
+        // set ag-grid selected nodes to match the selection model
+        if (diff.length > 0) {
+            api.deselectAll();
+            modelSelection.forEach((record) => {
+                const node = api.getRowNode(record.id);
+                node.setSelected(true);
+                api.ensureNodeVisible(node);
+            });
+        }
     }
 
-    componentWillUnmount() {
-        this.disposeRunner();
-    }
 }
 export const grid = elemFactory(Grid);
