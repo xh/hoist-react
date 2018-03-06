@@ -8,7 +8,6 @@ import {Component} from 'react';
 import {elem, elemFactory, hoistComponent} from 'hoist/core';
 import {Ref} from 'hoist/utils/Ref';
 import {frame} from 'hoist/layout';
-import {autorun} from 'hoist/mobx';
 
 /**
  * Container for an Admin Tab
@@ -29,6 +28,11 @@ export class TabPane extends Component {
 
     child = new Ref();
     isLazyState = true
+
+    constructor(props) {
+        super(props);
+        this.addAutoRun(() => this.syncLoad());
+    }
 
     render() {
         const model = this.model,
@@ -61,15 +65,10 @@ export class TabPane extends Component {
         }
     }
 
-    componentDidMount() {
-        this.disposeRunner = autorun(() => {
-            const {model, child} = this;
-            if (model.needsLoad && child.value) this.loadChild();
-        });
+    syncLoad() {
+        const {model, child} = this;
+        if (model.needsLoad && child.value) this.loadChild();
     }
 
-    componentWillUnmount() {
-        this.disposeRunner();
-    }
 }
 export const tabPane = elemFactory(TabPane);
