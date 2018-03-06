@@ -31,6 +31,7 @@ export class ActivityGridToolbar extends Component {
                     parseDate: this.parseDate,
                     onChange: this.onStartDateChange,
                     popoverProps: {
+                        minimal: true,
                         usePortal: true
                     }
                 }),
@@ -43,6 +44,7 @@ export class ActivityGridToolbar extends Component {
                     parseDate: this.parseDate,
                     onChange: this.onEndDateChange,
                     popoverProps: {
+                        minimal: true,
                         usePortal: true
                     }
                 }),

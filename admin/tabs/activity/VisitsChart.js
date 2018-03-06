@@ -41,7 +41,9 @@ export class VisitsChart extends Component {
                     parseDate: this.parseDate,
                     onChange: this.onStartDateChange,
                     popoverProps: {
-                        usePortal: true
+                        minimal: true,
+                        usePortal: true,
+                        position: 'top'
                     }
                 }),
                 hspacer(10),
@@ -51,7 +53,9 @@ export class VisitsChart extends Component {
                     parseDate: this.parseDate,
                     onChange: this.onEndDateChange,
                     popoverProps: {
-                        usePortal: true
+                        minimal: true,
+                        usePortal: true,
+                        position: 'top'
                     }
                 }),
                 hspacer(10),
