@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {button, inputGroup} from 'hoist/kit/blueprint';
-import {setter, observable, action} from 'hoist/mobx';
+import {setter, observable} from 'hoist/mobx';
 import {escapeRegExp} from 'lodash';
 
 /**
@@ -33,7 +33,7 @@ class StoreFilterField extends Component {
                 icon: 'cross',
                 onClick: this.onClearClick
             })
-        })
+        });
     }
 
     onValueChange = (e) => {

@@ -9,11 +9,10 @@ import React, {Component} from 'react';
 import {hoistComponent, hoistComponentFactory, elemFactory} from 'hoist/core';
 import {fmtDateTime} from 'hoist/format';
 import {hbox} from 'hoist/layout';
-import {Icon} from 'hoist/icon';
 import {clone} from 'lodash';
 
 import {
-    Classes, button, checkbox, inputGroup,
+    Classes, button, inputGroup,
     label, menuItem, numericInput, select,
     suggest, textArea, controlGroup
 } from 'hoist/kit/blueprint';
@@ -71,7 +70,7 @@ const restLabel = hoistComponentFactory(
         render() {
             const lbl =  this.model.field.label,
                 isValid = this.model.isValid,
-                text = <span>{lbl} <span style={{color:'red'}}>{!isValid ? '*' : ''}</span> </span>;
+                text = <span>{lbl} <span style={{color: 'red'}}>{!isValid ? '*' : ''}</span> </span>;
 
             return label({text, style: {width: '115px'}});
         }
@@ -81,7 +80,7 @@ const restLabel = hoistComponentFactory(
 const restDisplayField = hoistComponentFactory(
     class extends Component {
         render() {
-            let {field, value, type} = this.model;
+            let {value, type} = this.model;
             if (type === 'date') {
                 value = value ? fmtDateTime(value) : '';
             }
@@ -93,7 +92,7 @@ const restDisplayField = hoistComponentFactory(
 const restDropdown = hoistComponentFactory(
     class extends Component {
         render() {
-            const {value, isEditable, field, isValid} = this.model;
+            const {value, isEditable, field} = this.model;
             const options = clone(field.lookup);
 
             options.unshift(null);
@@ -129,7 +128,7 @@ const restDropdown = hoistComponentFactory(
 const restSelect = hoistComponentFactory(
     class extends Component {
         render() {
-            const {value, isEditable, field, isValid, type} = this.model;
+            const {value, isEditable, field, type} = this.model;
 
             let options = [];
             if (field.lookup) {
@@ -166,7 +165,7 @@ const restSelect = hoistComponentFactory(
 const restNumericInput = hoistComponentFactory(
     class extends Component {
         render() {
-            const {value, isEditable, field, isValid} = this.model;
+            const {value, isEditable} = this.model;
 
             return numericInput({
                 cls: 'pt-fill',
@@ -187,7 +186,7 @@ const restNumericInput = hoistComponentFactory(
 const restTextArea = hoistComponentFactory(
     class extends Component {
         render() {
-            const {value, isEditable, field, isValid} = this.model;
+            const {value, isEditable} = this.model;
             return textArea({
                 cls: 'pt-fill',
                 value: value || '',
@@ -205,7 +204,7 @@ const restTextArea = hoistComponentFactory(
 const restTextInput = hoistComponentFactory(
     class extends Component {
         render() {
-            const {value, isEditable, field, isValid} = this.model;
+            const {value, isEditable} = this.model;
             return inputGroup({
                 cls: 'pt-fill',
                 type: 'text',

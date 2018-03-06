@@ -4,22 +4,6 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {isArray} from 'lodash';
-
-export function findByProperty(arr, property, value) {
-    return arr.find(it => it[property] === value);
-}
-
-export function shallowClone(a) {
-    return Object.assign({}, a);
-}
-
-export function asArray(val) {
-    if (val === undefined || val === null) return [];
-    if (isArray(val)) return val;
-    return [val];
-}
-
 export function trimToDepth(obj, depth) {
     if (depth < 1) return null;
 

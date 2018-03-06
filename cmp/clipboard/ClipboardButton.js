@@ -86,5 +86,5 @@ export class ClipboardButton extends Component {
         toastProps.timeout = 3 * SECONDS;
         ToastManager.getToaster().show(toastProps);
     }
-};
+}
 export const clipboardButton = elemFactory(ClipboardButton);

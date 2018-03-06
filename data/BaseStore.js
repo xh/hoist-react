@@ -53,6 +53,10 @@ export class BaseStore {
         });
     }
 
+    getById(id) {
+        return this.records.find(it => it.id == id);
+    }
+
     //--------------------
     // For Implementations
     //--------------------
@@ -75,7 +79,7 @@ export class BaseStore {
 
         this.fields.forEach(field => {
             const {type, name, defaultValue} = field;
-            let val = raw[name]
+            let val = raw[name];
             if (val === undefined || val === null) val = defaultValue;
 
             if (val !== null) {
@@ -88,7 +92,6 @@ export class BaseStore {
                     case 'bool':
                     case 'json':
                     case 'day':
-                        val = val;
                         break;
                     case 'date':
                         val = new Date(val);

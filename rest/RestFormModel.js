@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {forOwn} from 'lodash';
+import {XH} from 'hoist/core';
 import {start} from 'hoist/promise';
 import {observable, computed, action} from 'hoist/mobx';
 import {MessageModel} from 'hoist/cmp';
@@ -54,9 +54,11 @@ export class RestFormModel {
     constructor({parent, editors}) {
         this.parent = parent;
         this.controlModels = editors.map((editor) => {
-           const field = this.store.getField(editor.field);
-           if (!field) throw XH.exception(`Unknown field '${editor.field}' in RestGrid.`)
-           return new RestControlModel({editor, field, parent: this});
+            const field = this.store.getField(editor.field);
+            if (!field) {
+                throw XH.exception(`Unknown field '${editor.field}' in RestGrid.`);
+            }
+            return new RestControlModel({editor, field, parent: this});
         });
     }
 
@@ -67,7 +69,7 @@ export class RestFormModel {
     saveRecord() {
         const {isAdd, record, store} = this;
         start(() => {
-            return isAdd ? store.addRecordAsync(record) : store.saveRecordAsync(record)
+            return isAdd ? store.addRecordAsync(record) : store.saveRecordAsync(record);
         }).then(
             () => this.close()
         ).catchDefault();

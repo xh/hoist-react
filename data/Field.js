@@ -23,6 +23,7 @@ export class Field {
      * @param type, one of [string, number, bool, json, date, day, auto], default 'auto' indicates no conversion
      *        or validation will be made.
      * @param label, optional, default to Start Case of 'name'.
+     * @param nullable
      * @param defaultValue. Value to be used for records with a null, or non-existent value.
      */
     constructor({
@@ -30,7 +31,7 @@ export class Field {
         type = 'auto',
         label = startCase(name),
         nullable = true,
-        defaultValue = null,
+        defaultValue = null
     }) {
         this.name = name;
         this.type = type;
