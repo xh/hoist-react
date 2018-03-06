@@ -54,7 +54,7 @@ export class RestStore extends UrlStore {
             url: `${url}/${rec.id}`,
             method: 'DELETE'
         }).then(() => {
-            this.noteRecordDeleted(rec);
+            this.deleteRecordInternal(rec);
         }).linkTo(
             this.loadModel
         );
@@ -80,40 +80,10 @@ export class RestStore extends UrlStore {
             contentType: 'application/json',
             body: JSON.stringify({data: rec})
         }).then(response => {
-            const recs = this.createRecords([response.data]);
-            this.noteRecordUpdated(recs[0]);
+            const recs = this.createRecordMap([response.data]);
+            this.updateRecordInternal(recs.values().next().value);
         }).linkTo(
             this.loadModel
         );
-    }
-
-    @action
-    noteRecordUpdated(rec) {
-        this.updateInCollection(rec, this._allRecords);
-        const {filter} = this;
-        if (!filter || filter(rec)) {
-            this.updateInCollection(rec, this._records);
-        } else {
-            this.deleteFromCollection(rec, this._records);
-        }
-    }
-
-    @action
-    noteRecordDeleted(rec) {
-        this.deleteFromCollection(rec, this._allRecords);
-        this.deleteFromCollection(rec, this._records);
-    }
-
-    updateInCollection(rec, col) {
-        const  idx = col.findIndex(r => r.id === rec.id);
-        if (idx < 0) {
-            col.push(rec);
-        } else {
-            col[idx] = rec;
-        }
-    }
-
-    deleteFromCollection(rec, col) {
-        remove(col, (r) => r.id === rec.id);
     }
 }

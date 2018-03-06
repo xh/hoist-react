@@ -16,8 +16,10 @@ import {BaseStore} from './BaseStore';
  */
 export class LocalStore extends BaseStore {
 
-    @observable.shallow _allRecords = [];
-    @observable.shallow _records = [];
+    _recordsMap = new Map();
+
+    @observable.ref _allRecords = [];
+    @observable.ref _records = [];
 
     _loadModel = new LastPromiseModel();
     _filter = null;
@@ -48,27 +50,6 @@ export class LocalStore extends BaseStore {
         );
     }
 
-    //---------------------------------
-    // Protected Methods for subclasses
-    //---------------------------------
-    @action
-    loadDataInternal(rawData) {
-        this._allRecords = this.createRecords(rawData);
-        this.applyFilter();
-    }
-
-    createRecords(rawData) {
-        const id = 0;
-        const {processRawData} = this;
-        if (processRawData) {
-            rawData = processRawData(rawData);
-        }
-        rawData.forEach((rec, id) => {
-            if (!('id' in rec)) rec.id = id;
-        });
-        return rawData.map(it => this.createRecord(it));
-    }
-
     //-----------------------------
     // Implementation of Store
     //-----------------------------
@@ -78,12 +59,58 @@ export class LocalStore extends BaseStore {
     get filter()        {return this._filter}
     setFilter(filterFn) {
         this._filter = filterFn;
-        this.applyFilter();
+        this.rebuildArrays();
+    }
+
+    getById(id, filteredOnly) {
+        const rec = this._recordsMap.get(id);
+        return (filteredOnly && rec && this._filter && !this.filter(rec)) ?
+            null :
+            rec;
+    }
+
+    //-----------------------------------
+    // Protected methods for subclasses
+    //-----------------------------------
+    @action
+    loadDataInternal(rawData) {
+        this._recordsMap = this.createRecordMap(rawData);
+        this.rebuildArrays()
     }
 
     @action
-    applyFilter() {
-        const {_filter, _allRecords} = this;
-        this._records = _filter ? _allRecords.filter(_filter) : _allRecords;
+    updateRecordInternal(rec) {
+        this._recordsMap.set(rec.id, rec);
+        this.rebuildArrays();
+    }
+
+    @action
+    deleteRecordInternal(rec) {
+        this._recordsMap.delete(rec.id);
+        this.rebuildArrays();
+    }
+
+    @action
+    rebuildArrays() {
+        const {_filter, _recordsMap} = this;
+        this._allRecords = Array.from(_recordsMap.values());
+        this._records = _filter ? this._allRecords.filter(_filter) : this._allRecords;
+    }
+
+    createRecordMap(rawData) {
+        const id = 0;
+        const {processRawData} = this;
+        if (processRawData) {
+            rawData = processRawData(rawData);
+        }
+        rawData.forEach((rec, id) => {
+            if (!('id' in rec)) rec.id = id;
+        });
+        const ret = new Map();
+        rawData.forEach(it => {
+            const rec = this.createRecord(it)
+            ret.set(rec.id, rec);
+        });
+        return ret;
     }
 }
