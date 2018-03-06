@@ -8,7 +8,6 @@
 import {Component} from 'react';
 import {elemFactory, hoistComponent} from 'hoist/core';
 import {Ref} from 'hoist/utils/Ref';
-import {observer, observable, setter , toJS, autorun} from 'hoist/mobx';
 import {frame, table, tbody, td, tr} from 'hoist/layout';
 import {clipboardMenuItem, contextMenu} from  'hoist/cmp';
 
@@ -17,6 +16,11 @@ class LogViewerDisplay extends Component {
 
     lastRow = new Ref();
     
+
+    constructor(props) {
+        super(props)
+        this.addAutoRun(() => this.syncTail());
+    }
 
     render() {
         const {rows} = this.model;
@@ -29,7 +33,7 @@ class LogViewerDisplay extends Component {
     }
 
     getTableRows(rows) {
-        return toJS(rows).map((row, idx) => {
+        return rows.map((row, idx) => {
             return tr({
                 cls: 'logviewer-row noselect',
                 ref: idx === rows.length - 1 ? this.lastRow.ref : undefined,
@@ -63,19 +67,13 @@ class LogViewerDisplay extends Component {
             ]
         });
     }
-
-    componentDidMount() {
-        this.disposeTailRunner = autorun(() => {
-            if (!this.model.tail) return;
-            const lastRowElem = this.lastRow.value;
-            if (lastRowElem) {
-                lastRowElem.scrollIntoView();
-            }
-        });
-    }
-
-    componenentWillUnmount() {
-        this.disposeTailRunner();
+    
+    syncTail() {
+        if (!this.model.tail) return;
+        const lastRowElem = this.lastRow.value;
+        if (lastRowElem) {
+            lastRowElem.scrollIntoView();
+        }
     }
 }
 
