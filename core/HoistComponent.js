@@ -48,22 +48,22 @@ export function hoistComponent({isObserver = true} = {}) {
         }
 
         mixinMethods(C, {
-            addAutoRun: function (fn) {
+            addAutoRun: function(fn) {
                 this.xhAutoRuns = this.xhAutoRuns || [];
                 this.xhAutoRuns.push(fn);
             },
 
-            componentDidMount: function () {
+            componentDidMount: function() {
                 const {xhAutoRuns} = this;
                 if (xhAutoRuns) {
                     xhAutoRuns.forEach(f => {
                         this.xhDisposers = this.xhDisposers || [];
-                        this.xhDisposers.push(autorun(f))
+                        this.xhDisposers.push(autorun(f));
                     });
                 }
             },
 
-            componentWillUnmount: function () {
+            componentWillUnmount: function() {
                 const {xhDisposers} = this;
                 if (xhDisposers) {
                     xhDisposers.forEach(f => f());
@@ -73,7 +73,7 @@ export function hoistComponent({isObserver = true} = {}) {
         });
 
         return C;
-    }
+    };
 }
 
 /**
@@ -96,21 +96,18 @@ function addProperty(C, name,  cfg) {
 function mixinMethods(C, mixins) {
     const proto = C.prototype;
 
-    for (name in mixins) {
+    for (const name in mixins) {
         const base = proto[name],
             mixin = mixins[name];
         let f = null;
         if (!base) {
             f = mixin;
         } else {
-            f = function () {
+            f = function() {
                 base.apply(this, arguments);
                 mixin.apply(this, arguments);
-            }
+            };
         }
         proto[name] = f;
     }
 }
-
-
-
