@@ -24,6 +24,8 @@ class Grid extends Component {
     static gridDefaults = {
         enableSorting: true,
         enableColResize: true,
+        deltaRowDataMode: true,
+        getRowNodeId: (data) => data.id,
         rowSelection: 'single'
     };
 
