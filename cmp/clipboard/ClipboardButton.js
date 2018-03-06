@@ -11,7 +11,7 @@ import {Intent, button} from 'hoist/kit/blueprint';
 import {ToastManager} from 'hoist/cmp';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
 
-import Clipboard from 'clipboard';
+import ClipboardJS from 'clipboard';
 
 /**
  * Button that copies content to the clipboard.
@@ -55,7 +55,7 @@ export class ClipboardButton extends Component {
     createClipboard(btnDom) {
         const clipboardSpec = Object.assign({action: 'copy'}, this.props.clipboardSpec);
 
-        this.clipboard = new Clipboard(btnDom, clipboardSpec);
+        this.clipboard = new ClipboardJS(btnDom, clipboardSpec);
         this.clipboard.on('success', this.onCopySuccess);
         this.clipboard.on('error', this.onCopyError);
     }
