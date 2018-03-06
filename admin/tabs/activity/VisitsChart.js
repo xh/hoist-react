@@ -88,7 +88,7 @@ export class VisitsChart extends Component {
     }
 
     onStartDateChange = (date) => {
-        this.model.setStartDate(moment(date).toDate()); // why do I have to convert this to a moment and back out (not working if I don't)
+        this.model.setStartDate(moment(date).toDate());
     }
 
     onEndDateChange = (date) => {
