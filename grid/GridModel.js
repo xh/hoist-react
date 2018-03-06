@@ -34,14 +34,15 @@ export class GridModel {
     }
 
     exportDataAsExcel(params) {
-        params.processCellCallback = this.formatDatesForExport;
+        if (!this.gridApi) return;
+        params.processCellCallback = this.formatValuesForExport;
         this.gridApi.exportDataAsExcel(params)
     }
 
-    formatDatesForExport(params) {
+    formatValuesForExport(params) {
         const value = params.value,
             fmt = params.column.colDef.valueFormatter;
-        if (value && fmt) {
+        if (value !== null && fmt) {
             return fmt(value);
         } else {
             return value;
