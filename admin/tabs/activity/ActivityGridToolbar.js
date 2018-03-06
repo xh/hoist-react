@@ -30,9 +30,14 @@ export class ActivityGridToolbar extends Component {
                     formatDate: this.fmtDate,
                     parseDate: this.parseDate,
                     onChange: this.onStartDateChange,
+                    inputProps: {
+                        style: {width: 120}
+                    },
                     popoverProps: {
                         minimal: true,
-                        usePortal: true
+                        usePortal: true,
+                        position: 'bottom'
+                        // popoverWillClose: model.setFilter // ??? will change to loadData art very least
                     }
                 }),
                 hspacer(8),
@@ -43,9 +48,14 @@ export class ActivityGridToolbar extends Component {
                     formatDate: this.fmtDate,
                     parseDate: this.parseDate,
                     onChange: this.onEndDateChange,
+                    inputProps: {
+                        style: {width: 120}
+                    },
                     popoverProps: {
                         minimal: true,
-                        usePortal: true
+                        usePortal: true,
+                        position: 'bottom'
+                        // popoverWillClose: model.setFilter
                     }
                 }),
                 hspacer(8),
@@ -67,30 +77,35 @@ export class ActivityGridToolbar extends Component {
                 inputGroup({
                     placeholder: 'User...',
                     value: model.username,
+                    style: {width: 140},
                     onChange: this.onUsernameChange
                 }),
                 hspacer(10),
                 inputGroup({
                     placeholder: 'Msg...',
                     value: model.msg,
+                    style: {width: 140},
                     onChange: this.onMsgChange
                 }),
                 hspacer(10),
                 inputGroup({
                     placeholder: 'Category...',
                     value: model.category,
+                    style: {width: 140},
                     onChange: this.onCategoryChange
                 }),
                 hspacer(10),
                 inputGroup({
                     placeholder: 'Device...',
                     value: model.device,
+                    style: {width: 140},
                     onChange: this.onDeviceChange
                 }),
                 hspacer(10),
                 inputGroup({
                     placeholder: 'Browser...',
                     value: model.browser,
+                    style: {width: 140},
                     onChange: this.onBrowserChange
                 }),
                 hspacer(8),
@@ -124,13 +139,11 @@ export class ActivityGridToolbar extends Component {
 
     onStartDateChange = (date) => {
         this.model.setStartDate(date);
-        this.model.setFilter();
 
     }
 
     onEndDateChange = (date) => {
         this.model.setEndDate(date);
-        this.model.setFilter();
     }
 
     onDateGoBackClick = () => {

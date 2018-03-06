@@ -40,6 +40,9 @@ export class VisitsChart extends Component {
                     formatDate: this.fmtDate,
                     parseDate: this.parseDate,
                     onChange: this.onStartDateChange,
+                    inputProps: {
+                        style: {width: 120}
+                    },
                     popoverProps: {
                         minimal: true,
                         usePortal: true,
@@ -52,6 +55,9 @@ export class VisitsChart extends Component {
                     formatDate: this.fmtDate,
                     parseDate: this.parseDate,
                     onChange: this.onEndDateChange,
+                    inputProps: {
+                        style: {width: 120}
+                    },
                     popoverProps: {
                         minimal: true,
                         usePortal: true,
