@@ -31,12 +31,10 @@ export class ActivityPanel extends Component {
                 contentSize: 250,
                 item: visitsChart({model: this.visitsChartModel})
             })
-        );
+        ) ;
     }
 
     async loadAsync() {
-        return Promise.all([this.visitsChartModel.loadAsync(), this.activityGridModel.store.loadAsync()]).then(() => {
-            this.activityGridModel.store.setFilter()
-        });
+        return Promise.all([this.visitsChartModel.loadAsync(), this.activityGridModel.loadAsync()])
     }
 }
