@@ -54,7 +54,7 @@ export class BaseStore {
     }
 
     getById(id) {
-        return this.allRecords.find(it => it.id == id);
+        return this.records.find(it => it.id == id);
     }
 
     //--------------------
