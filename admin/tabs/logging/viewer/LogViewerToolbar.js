@@ -19,6 +19,7 @@ export class LogViewerToolbar extends Component {
         return hbox({
             cls: 'xh-tbar',
             alignItems: 'center',
+            style: {flex: 'none'},
             items: [
                 this.label('Start Line:'),
                 hspacer(8),
