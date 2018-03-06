@@ -77,16 +77,17 @@ class Grid extends Component {
         // Get the hoist menu, and translate to a set of AG items.
         const hoistMenu = this.props.getContextMenu || this.constructor.getDefaultContextMenu();
 
-        const agItems = hoistMenu.items.map((it) => {
+        return hoistMenu.items.map((it) => {
             if ('-') return 'divider';
             if (isString(it)) return it;
 
+            // Otherwise, its a 
             return {
-                   name: it.action,
-                   icon: it.icon,
-                
-                }
-        })
+                name: it.action,
+                icon: it.icon,
+                disabled: it.disabled
+            }
+        });
     }
 
 
