@@ -12,9 +12,9 @@
  *  Also the form of callbacks may also change slightly, depending on whether or not the menu is being
  *  triggered over a grid.
  */
-export class ContextMenuItemModel {
+export class ContextMenuItem {
 
-    name;
+    text;
     icon;
     action;
     items;
@@ -50,6 +50,4 @@ export class ContextMenuItemModel {
         this.enableFn = enableFn;
         this.recordsRequired = recordsRequired
     }
-
-
 }

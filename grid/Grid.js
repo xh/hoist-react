@@ -16,7 +16,7 @@ import {navigateSelection, agGridReact} from './ag-grid';
 import './Grid.css';
 
 /**
- * Grid Component
+ * Grid Component.
  */
 @hoistComponent()
 class Grid extends Component {
@@ -26,6 +26,14 @@ class Grid extends Component {
         enableColResize: true,
         rowSelection: 'single'
     };
+
+    static getDefaultContextMenu() {
+        return new GridContextMenu([
+            'autoSizeAll',
+            '-',
+            'copy'
+        ]);
+    }
 
     constructor(props) {
         super(props);
@@ -65,8 +73,23 @@ class Grid extends Component {
         return navigateSelection(params, this.gridOptions.api);
     }
 
-    getContextMenuItems = () => {
-        return [];
+    getContextMenuItems = (params) => {
+        // Get the hoist menu, and translate to a set of AG items.
+        const hoistMenu = this.props.getContextMenu || this.constructor.getDefaultContextMenu();
+
+        const agItems = hoistMenu.items.map((it) => {
+            if ('-') return 'divider';
+            if (isString(it)) return it;
+
+            return {
+                   name: it.action,
+                   icon: it.icon,
+                
+                }
+        })
     }
+
+
+
 }
 export const grid = elemFactory(Grid);
