@@ -66,7 +66,7 @@ class LogViewerDisplay extends Component {
             ]
         });
     }
-    
+
     syncTail() {
         if (!this.model.tail) return;
         const lastRowElem = this.lastRow.value;
