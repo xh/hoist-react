@@ -27,7 +27,10 @@ export class VisitsChartModel {
             title: {text: null},
             xAxis: {
                 type: 'datetime',
-                units: [['day', [1]], ['week', [1]], ['month', [1]]]
+                units: [['day', [1]], ['week', [2]], ['month', [1]]],
+                labels: {
+                    formatter: this.dateFormatter()
+                }
             },
             yAxis: {
                 title: {
@@ -55,6 +58,12 @@ export class VisitsChartModel {
     //----------------
     // Implementation
     //----------------
+
+    dateFormatter() {
+        return function() {
+            return fmtDate(this.value);
+        };
+    }
 
     getSeriesData(visits) {
         const data = [];
