@@ -36,14 +36,14 @@ export class GridContextMenuItem {
      *           false:  specifies any number of records (0 - infinity, inclusive). Always active.
      */
     constructor({
-        name,
+        text,
         icon = null,
         action = null,
         items = null,
         enableFn = null,
         recordsRequired = false
     }) {
-        this.name = name;
+        this.text = text;
         this.icon = icon;
         this.action = action;
         this.items = items;

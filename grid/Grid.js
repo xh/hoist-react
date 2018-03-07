@@ -12,7 +12,6 @@ import {defaults, differenceBy, isString} from 'lodash';
 
 import './ag-grid';
 import {navigateSelection, agGridReact} from './ag-grid';
-import {GridContextMenu} from './GridContextMenu';
 import './Grid.css';
 
 /**
@@ -26,16 +25,9 @@ class Grid extends Component {
         enableColResize: true,
         deltaRowDataMode: true,
         getRowNodeId: (data) => data.id,
-        rowSelection: 'single'
+        rowSelection: 'single',
+        allowContextMenuWithControlKey: true
     };
-
-    static getDefaultContextMenu() {
-        return new GridContextMenu([
-            'autoSizeAll',
-            '-',
-            'copy'
-        ]);
-    }
 
     constructor(props) {
         super(props);
@@ -77,16 +69,35 @@ class Grid extends Component {
     }
 
     getContextMenuItems = (params) => {
-        // Get the hoist menu, and translate to a set of AG items.
-        const hoistMenu = this.props.getContextMenu || this.constructor.getDefaultContextMenu();
 
-        return hoistMenu.items.map((it) => {
-            if (it === '-') return 'divider';
+        // TODO: Display this as Blueprint Context menu, with code similar to below?
+
+        // const men = contextMenu({
+        //    menuItems: [{
+        //        text: 'Reload App',
+        //        icon: Icon.refresh(),
+        //        action: () => hoistModel.reloadApp()
+        //    }, {
+        //        text: 'About',
+        //        icon: Icon.info(),
+        //        action: () => hoistModel.setShowAbout(true)
+        //    }]
+        // });
+        // ContextMenu.show(men, { left:0, top:0}, () => {});
+
+
+        const menuFn = this.model.contextMenuFn;
+        if (!menuFn) return null;
+
+        const menu = menuFn(params);
+        return menu.items.map((it) => {
+            if (it === '-') return 'separator';
             if (isString(it)) return it;
 
             return {
-                name: it.action,
+                name: it.text,
                 icon: it.icon,
+                action: it.action,
                 disabled: it.disabled
             };
         });
@@ -98,8 +109,7 @@ class Grid extends Component {
             gridSelection = api.getSelectedRows(),
             diff = differenceBy(modelSelection, gridSelection, 'id');
 
-        // If ag-grid's selection differs from the selection model,
-        // set ag-grid selected nodes to match the selection model
+        // If ag-grid's selection differs from the selection model, set it to match
         if (diff.length > 0) {
             api.deselectAll();
             modelSelection.forEach((record) => {
@@ -109,6 +119,5 @@ class Grid extends Component {
             });
         }
     }
-
 }
 export const grid = elemFactory(Grid);
