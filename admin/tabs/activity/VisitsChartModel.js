@@ -7,15 +7,15 @@
 
 import moment from 'moment';
 import {forOwn} from 'lodash';
-import {observable, setter} from 'hoist/mobx';
+import {action, observable, setter} from 'hoist/mobx';
 import {ChartModel} from 'hoist/highcharts';
 import {fmtDate} from 'hoist/format';
 
 export class VisitsChartModel {
 
 
-    @observable @setter startDate = moment().subtract(1, 'years').toDate();
-    @observable @setter endDate =  moment().toDate();
+    @observable startDate = moment().subtract(3, 'months').toDate();
+    @observable endDate =  moment().toDate();
     @observable @setter username = '';
 
     chartModel = new ChartModel({
@@ -29,7 +29,7 @@ export class VisitsChartModel {
                 type: 'datetime',
                 units: [['day', [1]], ['week', [2]], ['month', [1]]],
                 labels: {
-                    formatter: this.dateFormatter()
+                    formatter: function() {return fmtDate(this.value)}
                 }
             },
             yAxis: {
@@ -58,13 +58,6 @@ export class VisitsChartModel {
     //----------------
     // Implementation
     //----------------
-
-    dateFormatter() {
-        return function() {
-            return fmtDate(this.value);
-        };
-    }
-
     getSeriesData(visits) {
         const data = [];
 
@@ -72,7 +65,19 @@ export class VisitsChartModel {
             data.push([moment(v).valueOf(), k]);
         });
 
-        return  [{data}];
+        return [{data}];
+    }
+
+    @action
+    setStartDate(date) {
+        this.startDate = date;
+        this.loadAsync();
+    }
+
+    @action
+    setEndDate(date) {
+        this.endDate = date;
+        this.loadAsync();
     }
 
 }

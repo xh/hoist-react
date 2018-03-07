@@ -10,6 +10,7 @@ import {hoistComponent, elemFactory} from 'hoist/core';
 import {frame, div} from 'hoist/layout';
 import {Ref} from 'hoist/utils/Ref';
 import Highcharts from 'highcharts/highstock';
+import {whyRun} from 'mobx';
 import {merge, clone} from 'lodash';
 
 
@@ -27,13 +28,15 @@ export class Chart extends Component {
 
     render() {
         this.renderHighChart();
-        return frame({
+        const ret = frame({
             ...this.props,
             item: div({
                 style: {flex: 'auto', overflow: 'hidden'},
                 ref: this._chartElem.ref
             })
         });
+        whyRun()
+        return ret;
     }
 
     //-------------------
