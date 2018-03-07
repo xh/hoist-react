@@ -53,6 +53,12 @@ export class RestControlModel  {
         return field.typeField ? this.getDynamicType(field.typeField) : field.type;
     }
 
+    get isPwd()  {
+        const {record, editor} = this;
+        return editor.checkForPwdVal == true && record.valueType === 'pwd';
+    }
+
+
     //---------------------
     // Implementation
     //---------------------

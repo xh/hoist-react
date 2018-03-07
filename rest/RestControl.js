@@ -204,10 +204,10 @@ const restTextArea = hoistComponentFactory(
 const restTextInput = hoistComponentFactory(
     class extends Component {
         render() {
-            const {value, isEditable} = this.model;
+            const {value, isEditable, isPwd} = this.model;
             return inputGroup({
                 cls: 'pt-fill',
-                type: 'text',
+                type: isPwd ? 'password' : 'text',
                 value: value || '',
                 disabled: !isEditable,
                 onChange: this.onChange
