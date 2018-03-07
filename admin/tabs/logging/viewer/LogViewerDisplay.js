@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {elemFactory, hoistComponent} from 'hoist/core';
 import {Ref} from 'hoist/utils/Ref';
-import {toJS, autorun} from 'hoist/mobx';
+import {toJS} from 'hoist/mobx';
 import {frame, table, tbody, td, tr} from 'hoist/layout';
 import {clipboardMenuItem, contextMenu, ContextMenuModel} from  'hoist/cmp';
 
@@ -16,6 +16,11 @@ import {clipboardMenuItem, contextMenu, ContextMenuModel} from  'hoist/cmp';
 class LogViewerDisplay extends Component {
 
     lastRow = new Ref();
+
+    constructor(props) {
+        super(props);
+        this.addAutoRun(() => this.syncTail());
+    }
 
     render() {
         const {rows} = this.model;
@@ -61,19 +66,14 @@ class LogViewerDisplay extends Component {
         return contextMenu({style: {width: '200px'}, model: menuModel});
     }
 
-    componentDidMount() {
-        this.disposeTailRunner = autorun(() => {
-            if (!this.model.tail) return;
-            const lastRowElem = this.lastRow.value;
-            if (lastRowElem) {
-                lastRowElem.scrollIntoView();
-            }
-        });
+    syncTail() {
+        if (!this.model.tail) return;
+        const lastRowElem = this.lastRow.value;
+        if (lastRowElem) {
+            lastRowElem.scrollIntoView();
+        }
     }
 
-    componenentWillUnmount() {
-        this.disposeTailRunner();
-    }
 }
 
 export const logViewerDisplay = elemFactory(LogViewerDisplay);
