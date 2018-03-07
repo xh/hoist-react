@@ -7,7 +7,7 @@
  */
 
 import moment from 'moment';
-import {observable, setter} from 'hoist/mobx';
+import {action, observable, setter} from 'hoist/mobx';
 import {LocalStore} from 'hoist/data';
 import {GridModel} from 'hoist/grid';
 import {fmtDate, numberRenderer} from 'hoist/format';
@@ -18,8 +18,8 @@ import {usernameCol} from '../../columns/Columns';
 
 export class ActivityGridModel {
 
-    @observable @setter startDate = moment().toDate();
-    @observable @setter endDate = moment().toDate();
+    @observable startDate = moment().toDate();
+    @observable endDate = moment().toDate();
     @observable @setter username = '';
     @observable @setter msg = '';
     @observable @setter category = '';
@@ -89,6 +89,20 @@ export class ActivityGridModel {
         this.gridModel.exportDataAsExcel({fileName});
     }
 
+    @action
+    setStartDate(date) {
+        if (this.isInvalidDate(date, 'startDate')) return;
+        this.startDate = date;
+        this.loadAsync();
+    }
+
+    @action
+    setEndDate(date) {
+        if (this.isInvalidDate(date, 'endDate')) return;
+        this.endDate = date;
+        this.loadAsync();
+    }
+
     //----------------
     // Implementation
     //----------------
@@ -106,4 +120,7 @@ export class ActivityGridModel {
         return params;
     }
 
+    isInvalidDate(date, prop) {
+        return !date || date.toString() === 'Invalid Date' || date === this[prop];
+    }
 }
