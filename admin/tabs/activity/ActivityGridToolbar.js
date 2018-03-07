@@ -79,7 +79,7 @@ export class ActivityGridToolbar extends Component {
         });
     }
 
-    inputGroup(args){
+    inputGroup(args) {
         return inputGroup({
             style: {width: 140},
             ...args
