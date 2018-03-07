@@ -55,7 +55,7 @@ export class RestControlModel  {
 
     get isPwd()  {
         const {record, editor} = this;
-        return editor.checkForPwdVal == true && record.valueType === 'pwd';
+        return editor.maskIfPwd === true && record.valueType === 'pwd';
     }
 
 
