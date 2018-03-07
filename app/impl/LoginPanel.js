@@ -83,7 +83,7 @@ export class LoginPanel extends Component {
         }).catch(e => {
             hoistModel.markAuthenticatedUser(null);
             this.messageModel.alert({
-                title: 'Error' ,
+                title: 'Error',
                 icon: 'error',
                 message:
                     <div>

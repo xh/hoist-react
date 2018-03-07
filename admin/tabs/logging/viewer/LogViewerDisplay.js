@@ -8,6 +8,7 @@
 import {Component} from 'react';
 import {elemFactory, hoistComponent} from 'hoist/core';
 import {Ref} from 'hoist/utils/Ref';
+import {toJS, autorun} from 'hoist/mobx';
 import {frame, table, tbody, td, tr} from 'hoist/layout';
 import {clipboardMenuItem, contextMenu} from  'hoist/cmp';
 
@@ -15,7 +16,7 @@ import {clipboardMenuItem, contextMenu} from  'hoist/cmp';
 class LogViewerDisplay extends Component {
 
     lastRow = new Ref();
-    
+
 
     constructor(props) {
         super(props)
@@ -29,7 +30,7 @@ class LogViewerDisplay extends Component {
             item: table(
                 tbody(...this.getTableRows(rows))
             )
-        })
+        });
     }
 
     getTableRows(rows) {

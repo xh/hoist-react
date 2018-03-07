@@ -79,7 +79,7 @@ class HoistModel {
     async initAsync() {
         return this.fetchService.fetchJson({url: 'auth/authUser'})
             .then(r => this.markAuthenticatedUser(r.authUser.username))
-            .catch(e => this.markAuthenticatedUser(null));
+            .catch(() => this.markAuthenticatedUser(null));
     }
 
     /**

@@ -7,7 +7,7 @@
 
 import moment from 'moment';
 import {forOwn} from 'lodash';
-import {observable, setter, toJS} from 'hoist/mobx';
+import {observable, setter} from 'hoist/mobx';
 import {ChartModel} from 'hoist/highcharts';
 import {fmtDate} from 'hoist/format';
 
@@ -44,9 +44,9 @@ export class VisitsModel {
                 startDate: fmtDate(this.startDate, 'YYYYMMDD'),
                 endDate: fmtDate(this.endDate, 'YYYYMMDD'),
                 username: this.username
-            },
+            }
         }).then(data => {
-            this.chartModel.setSeries(this.getSeriesData(data))
+            this.chartModel.setSeries(this.getSeriesData(data));
         }).catchDefault({
             message: 'Failed to fetch daily visits'
         });
@@ -60,10 +60,10 @@ export class VisitsModel {
         const data = [];
 
         forOwn(visits, (k, v) => {
-            data.push([moment(v).valueOf(), k])
+            data.push([moment(v).valueOf(), k]);
         });
 
-        return  [{data}]
+        return  [{data}];
     }
 
 }
