@@ -4,6 +4,5 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-export {ContextMenuTarget} from 'hoist/kit/blueprint/';
 export * from './ContextMenu';
-export * from './ContextMenuModel';
+export * from './ContextMenuItem';

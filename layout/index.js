@@ -37,6 +37,7 @@ export const h1 = elemFactory('h1');
 export const h2 = elemFactory('h2');
 export const h3 = elemFactory('h3');
 export const h4 = elemFactory('h4');
+export const p = elemFactory('p');
 export const nav = elemFactory('nav');
 export const pre = elemFactory('pre');
 export const span = elemFactory('span');
