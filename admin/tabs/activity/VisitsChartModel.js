@@ -63,7 +63,7 @@ export class VisitsChartModel {
 
     @action
     setEndDate(date) {
-        if (!this.isInvalidDate(date) || moment(date).isSame(this.endDate)) return;
+        if (!this.isValidDate(date) || moment(date).isSame(this.endDate)) return;
         this.endDate = date;
     }
 
