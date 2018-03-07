@@ -44,7 +44,8 @@ export const Icon = {
     sun(p)           {return fa(p, 'sun')},
     sync(p)          {return fa(p, 'sync')},
     cross(p)         {return fa(p, 'times')},
-    user(p)          {return fa(p, 'user')}
+    user(p)          {return fa(p, 'user')},
+    users(p)         {return fa(p, 'users')}
 };
 
 //-----------------------------
