@@ -8,7 +8,6 @@ import {Component} from 'react';
 import {castArray} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {frame, div} from 'hoist/layout';
-import {asArray} from 'hoist/utils/JsUtils';
 import {Ref} from 'hoist/utils/Ref';
 import Highcharts from 'highcharts/highstock';
 import {merge, clone} from 'lodash';

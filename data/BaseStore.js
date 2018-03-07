@@ -38,7 +38,14 @@ export class BaseStore {
     get filter() {}
     setFilter(filterFn) {}
 
-
+    /**
+     * Get a record by id.  Return null if no record found.
+     *
+     * @param id
+     * @param filteredOnly, set to true to skip non-filtered records
+     */
+    getById(id, filteredOnly) {}
+    
     /**
      * Construct this object.
      *
@@ -51,10 +58,6 @@ export class BaseStore {
             if (isString(f)) f = {name: f};
             return new this.defaultFieldClass(f);
         });
-    }
-
-    getById(id) {
-        return this.records.find(it => it.id == id);
     }
 
     //--------------------

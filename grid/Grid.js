@@ -8,7 +8,6 @@
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
-import {autorun, toJS} from 'hoist/mobx';
 import {defaults, differenceBy} from 'lodash';
 
 import './ag-grid';
@@ -46,7 +45,7 @@ class Grid extends Component {
                 style: {flex: '1 1 auto', overflow: 'hidden'},
                 cls: this.darkTheme ? 'ag-theme-dark' : 'ag-theme-fresh',
                 item: agGridReact({
-                    rowData: toJS(store.records),
+                    rowData: store.records,
                     columnDefs: columns,
                     onSelectionChanged: this.onSelectionChanged,
                     onGridReady: this.onGridReady,
