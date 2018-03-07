@@ -29,8 +29,8 @@ export class ClientErrorPanel extends Component {
         columns: [
             dateTimeCol({field: 'dateCreated'}),
             usernameCol(),
-            baseCol({field: 'error', flex: 3}),
-            baseCol({field: 'msg', text: 'Message', flex: 1}),
+            baseCol({field: 'error'}),
+            baseCol({field: 'msg', headerName: 'Message'}),
             baseCol({field: 'browser', width: 100}),
             baseCol({field: 'device', width: 100}),
             baseCol({field: 'appVersion', width: 100}),

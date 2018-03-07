@@ -35,11 +35,11 @@ export class ActivityPanel extends Component {
             baseCol({field: 'severity', width: 60}),
             dateTimeCol({field: 'dateCreated'}),
             usernameCol(),
-            baseCol({field: 'msg', text: 'Message', width: 60}),
+            baseCol({field: 'msg', headerName: 'Message', width: 60}),
             baseCol({field: 'category', width: 100}),
             baseCol({field: 'device', width: 60}),
             baseCol({field: 'browser', width: 100}),
-            baseCol({field: 'data', flex: 1}),
+            baseCol({field: 'data'}),
             baseCol({field: 'impersonating',  width: 120}),
             baseCol({
                 field: 'elapsed',

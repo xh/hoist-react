@@ -93,7 +93,7 @@ export class ConfigPanel extends Component {
             this.valCol({field: 'stageValue', env: 'Staging'}),
             this.valCol({field: 'devValue', env: 'Development'}),
             boolCheckCol({field: 'clientVisible', width: 90}),
-            baseCol({field: 'note', flex: 1})
+            baseCol({field: 'note'})
         ]),
         editors: this.filterForEnv([
             {field: 'name'},

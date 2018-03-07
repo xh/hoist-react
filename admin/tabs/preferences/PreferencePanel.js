@@ -64,8 +64,8 @@ export class PreferencePanel extends Component {
             boolCheckCol({field: 'local', width: 60}),
             nameFlexCol(),
             baseCol({field: 'type', width: 80}),
-            baseCol({field: 'defaultValue', flex: 1}),
-            baseCol({field: 'notes', flex: 2})
+            baseCol({field: 'defaultValue'}),
+            baseCol({field: 'notes'})
         ],
         editors: [
             {field: 'name'},

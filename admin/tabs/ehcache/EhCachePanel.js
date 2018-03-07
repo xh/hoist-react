@@ -24,7 +24,7 @@ export class EhCachePanel extends Component {
             nameCol(),
             baseCol({field: 'heapSize', width: 130}),
             baseCol({field: 'entries', width: 130}),
-            baseCol({field: 'status', flex: 0.25})
+            baseCol({field: 'status'})
         ]
     });
     

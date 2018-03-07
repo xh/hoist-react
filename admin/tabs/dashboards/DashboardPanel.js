@@ -51,7 +51,7 @@ export class DashboardPanel extends Component {
             baseCol({field: 'appCode', width: 100}),
             usernameCol(),
             dateCol({field: 'lastUpdated'}),
-            baseCol({field: 'definition', flex: 1})
+            baseCol({field: 'definition'})
         ],
         editors: [
             {field: 'appCode'},

@@ -22,8 +22,8 @@ export class GridModel {
     loadModel = new LastPromiseModel();
     contextMenuFn = null
 
-    @observable columns = [];
-    @observable store = null;
+    @observable.ref columns = [];
+    store = null;
 
     static defaultContextMenu = () => {
         return new GridContextMenu([

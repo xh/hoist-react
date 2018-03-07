@@ -9,38 +9,14 @@ import {fileColFactory} from './Utils.js';
 import {Icon} from 'hoist/icon';
 
 const colFactory = fileColFactory({
-    xhId: null,
-    dataIndex: null
+    field: null
 });
 
 export const baseCol = colFactory();
 
 export const boolCheckCol = colFactory({
-    align: 'center',
     width: 34,
     cellRendererFramework: (params) => {
         return params.value ? Icon.check({color: 'green'}) : '';
-    },
-    xhExportRenderer: val => !!val
-});
-
-export const glyphCol = colFactory({
-    dataIndex: 'glyph',
-    text: '',
-    width: 60,
-    align: 'center',
-    renderer: (v) => v,
-    xhExportRenderer: false
-});
-
-export const emptyFlex = colFactory({
-    xhId: 'emptyFlex',
-    text: '',
-    flex: 1,
-    minWidth: 1,
-    resizable: false,
-    sortable: false,
-    draggable: false,
-    xhExcludeFromChooser: true,
-    xhExportRenderer: false
+    }
 });

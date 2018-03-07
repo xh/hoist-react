@@ -47,7 +47,7 @@ export class FeedbackPanel extends Component {
         },
         columns: [
             usernameCol(),
-            baseCol({field: 'msg', text: 'Message', width: 60}),
+            baseCol({field: 'msg', headerName: 'Message', width: 60}),
             baseCol({field: 'browser', width: 100}),
             baseCol({field: 'device', width: 60}),
             baseCol({field: 'appVersion', width: 100}),

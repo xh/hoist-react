@@ -8,31 +8,29 @@ import {fileColFactory} from './Utils.js';
 import {dateRenderer, dateTimeRenderer, timeRenderer, compactDateRenderer} from '../format';
 
 const colFactory = fileColFactory({
-    xtype: 'datecolumn',
-    align: 'right',
-    xhChooserGroup: 'Dates / Times'
+    cellStyle: {align: 'right'}
 });
 
 export const dateCol = colFactory({
-    text: 'Date',
+    headerName: 'Date',
     valueFormatter: dateRenderer(),
     width: 120
 });
 
 export const timeCol = colFactory({
-    text: 'Time',
+    headerName: 'Time',
     valueFormatter: timeRenderer(),
     width: 90
 });
 
 export const dateTimeCol = colFactory({
-    text: 'Date',
+    headerName: 'Date',
     valueFormatter: dateTimeRenderer(),
     width: 160
 });
 
 export const compactDateCol = colFactory({
-    text: 'Date',
+    headerName: 'Date',
     valueFormatter: compactDateRenderer(),
     width: 100
 });

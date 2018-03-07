@@ -79,7 +79,7 @@ export class MonitorEditorPanel extends Component {
             baseCol({field: 'warnThreshold', width: 120}),
             baseCol({field: 'failThreshold', width: 120}),
             baseCol({field: 'metricUnit', width: 100}),
-            baseCol({field: 'notes', flex: 1}),
+            baseCol({field: 'notes'}),
             baseCol({field: 'sortOrder', width: 100})
         ],
         editors: [
