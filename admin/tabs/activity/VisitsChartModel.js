@@ -7,15 +7,14 @@
 
 import moment from 'moment';
 import {forOwn} from 'lodash';
-import {observable, setter} from 'hoist/mobx';
+import {action, observable, setter} from 'hoist/mobx';
 import {ChartModel} from 'hoist/highcharts';
 import {fmtDate} from 'hoist/format';
 
-export class VisitsModel {
+export class VisitsChartModel {
 
-
-    @observable @setter startDate = moment().subtract(1, 'years').toDate();
-    @observable @setter endDate =  moment().toDate();
+    @observable startDate = moment().subtract(3, 'months').toDate();
+    @observable endDate =  moment().toDate();
     @observable @setter username = '';
 
     chartModel = new ChartModel({
@@ -27,7 +26,10 @@ export class VisitsModel {
             title: {text: null},
             xAxis: {
                 type: 'datetime',
-                units: [['day', [1]], ['week', [1]], ['month', [1]]]
+                units: [['day', [1]], ['week', [2]], ['month', [1]]],
+                labels: {
+                    formatter: function() {return fmtDate(this.value)}
+                }
             },
             yAxis: {
                 title: {
@@ -47,14 +49,27 @@ export class VisitsModel {
             }
         }).then(data => {
             this.chartModel.setSeries(this.getSeriesData(data));
-        }).catchDefault({
-            message: 'Failed to fetch daily visits'
-        });
+        }).catchDefault();
     }
 
     //----------------
     // Implementation
     //----------------
+    @action
+    setStartDate(date) {
+        if (!this.isValidDate(date) || moment(date).isSame(this.startDate)) return;
+        this.startDate = date;
+    }
+
+    @action
+    setEndDate(date) {
+        if (!this.isValidDate(date) || moment(date).isSame(this.endDate)) return;
+        this.endDate = date;
+    }
+
+    isValidDate(date) {
+        return date && date.toString() !== 'Invalid Date';
+    }
 
     getSeriesData(visits) {
         const data = [];
@@ -63,7 +78,7 @@ export class VisitsModel {
             data.push([moment(v).valueOf(), k]);
         });
 
-        return  [{data}];
+        return [{data}];
     }
 
 }

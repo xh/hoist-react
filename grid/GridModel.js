@@ -18,6 +18,7 @@ export class GridModel {
 
     // Immutable public properties
     store = null;
+    gridApi = null;
     selection = null;
     loadModel = new LastPromiseModel();
     contextMenuFn = null
@@ -52,5 +53,21 @@ export class GridModel {
         this.columns = columns;
         this.contextMenuFn = contextMenuFn;
         this.selection = new GridSelectionModel({parent: this});
+    }
+
+    exportDataAsExcel(params) {
+        if (!this.gridApi) return;
+        params.processCellCallback = this.formatValuesForExport;
+        this.gridApi.exportDataAsExcel(params);
+    }
+
+    formatValuesForExport(params) {
+        const value = params.value,
+            fmt = params.column.colDef.valueFormatter;
+        if (value !== null && fmt) {
+            return fmt(value);
+        } else {
+            return value;
+        }
     }
 }

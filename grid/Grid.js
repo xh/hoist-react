@@ -49,6 +49,7 @@ class Grid extends Component {
                     rowData: store.records,
                     columnDefs: columns,
                     onSelectionChanged: this.onSelectionChanged,
+                    onGridReady: this.onGridReady,
                     gridOptions: this.gridOptions,
                     getContextMenuItems: this.getContextMenuItems
                 })
@@ -59,6 +60,10 @@ class Grid extends Component {
     //------------------------
     // Implementation
     //------------------------
+    onGridReady = (params) => {
+        this.model.gridApi = params.api;
+    }
+    
     onSelectionChanged = (ev) => {
         const selection = this.model.selection;
         selection.select(ev.api.getSelectedRows());
