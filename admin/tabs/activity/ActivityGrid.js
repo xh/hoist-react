@@ -9,7 +9,7 @@ import {hoistComponent, elemFactory} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {vframe} from 'hoist/layout';
 
-import {activityGridToolbar} from './ActivityGridToolbar'
+import {activityGridToolbar} from './ActivityGridToolbar';
 
 @hoistComponent()
 export class ActivityGrid extends Component {
