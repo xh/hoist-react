@@ -57,18 +57,18 @@ export class VisitsChartModel {
     //----------------
     @action
     setStartDate(date) {
-        if (this.isInvalidDate(date, 'startDate')) return;
+        if (!this.isValidDate(date) || moment(date).isSame(this.startDate)) return;
         this.startDate = date;
     }
 
     @action
     setEndDate(date) {
-        if (this.isInvalidDate(date, 'endDate')) return;
+        if (!this.isInvalidDate(date) || moment(date).isSame(this.endDate)) return;
         this.endDate = date;
     }
 
-    isInvalidDate(date, prop) {
-        return !date || date.toString() === 'Invalid Date' || date === this[prop];
+    isValidDate(date) {
+        return date && date.toString() !== 'Invalid Date';
     }
 
     getSeriesData(visits) {
