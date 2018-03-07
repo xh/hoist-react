@@ -34,7 +34,9 @@ export class VisitsChart extends Component {
             padding: 4,
             alignItems: 'center',
             items: [
-                hspacer(8),
+                hspacer(4),
+                Icon.users(),
+                hspacer(4),
                 this.label('Unique Daily Visitors'),
                 filler(),
                 dateInput({

@@ -13,7 +13,6 @@ import {fmtDate} from 'hoist/format';
 
 export class VisitsChartModel {
 
-
     @observable startDate = moment().subtract(3, 'months').toDate();
     @observable endDate =  moment().toDate();
     @observable @setter username = '';
