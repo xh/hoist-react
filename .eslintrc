@@ -39,12 +39,6 @@
     "space-unary-ops": 0,
     "strict": 0,
 
-    // Hoist - put to warn vs. error
-    "no-unused-vars": [1, {
-      "ignoreRestSiblings": true,
-      "args": "none"
-    }],
-
     // React - to research
     "react/jsx-uses-react": 2,
     "react/jsx-uses-vars": 2,
@@ -73,6 +67,10 @@
     }],
     "space-before-function-paren": [2, "never"],
     "no-spaced-func": 2,
+    "no-unused-vars": [2, {
+      "ignoreRestSiblings": true,
+      "args": "none"
+    }],
     "space-in-parens": 2,
     "space-before-blocks": 2,
     "spaced-comment": [2, "always", {
