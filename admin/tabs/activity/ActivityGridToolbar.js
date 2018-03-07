@@ -25,105 +25,35 @@ export class ActivityGridToolbar extends Component {
             alignItems: 'center',
             items: [
                 hspacer(4),
-                dateInput({
-                    value: model.startDate,
-                    formatDate: this.formatDate,
-                    parseDate: this.parseDate,
-                    onChange: this.onStartDateChange,
-                    inputProps: {style: {width: 120}},
-                    popoverProps: {
-                        minimal: true,
-                        usePortal: true,
-                        position: 'bottom',
-                        popoverWillClose: this.onDatePopoverWillClose
-                    },
-                    dayPickerProps: {
-                        fixedWeeks: true
-                    }
-                }),
+                this.dateInput({value: model.startDate, onChange: this.onStartDateChange}),
                 hspacer(8),
                 Icon.angleRight(),
                 hspacer(8),
-                dateInput({
-                    value: model.endDate,
-                    formatDate: this.formatDate,
-                    parseDate: this.parseDate,
-                    onChange: this.onEndDateChange,
-                    inputProps: {style: {width: 120}},
-                    popoverProps: {
-                        minimal: true,
-                        usePortal: true,
-                        position: 'bottom',
-                        popoverWillClose: this.onDatePopoverWillClose
-                    },
-                    dayPickerProps: {
-                        fixedWeeks: true
-                    }
-                }),
+                this.dateInput({value: model.endDate, onChange: this.onEndDateChange}),
                 hspacer(8),
-                button({
-                    icon: Icon.caretLeft(),
-                    onClick: this.onDateGoBackClick
-                }),
-                button({
-                    icon: Icon.caretRight(),
-                    onClick: this.onDateGoForwardClick
-                }),
-                button({
-                    icon: Icon.arrowToRight(),
-                    onClick: this.onGoToCurrentDateClick
-                }),
+                button({icon: Icon.caretLeft(), onClick: this.onDateGoBackClick}),
+                button({icon: Icon.caretRight(), onClick: this.onDateGoForwardClick}),
+                button({icon: Icon.arrowToRight(), onClick: this.onGoToCurrentDateClick}),
                 hspacer(8),
                 '|',
                 hspacer(8),
-                inputGroup({
-                    placeholder: 'User...',
-                    value: model.username,
-                    style: {width: 140},
-                    onChange: this.onUsernameChange
-                }),
+                this.inputGroup({value: model.username, onChange: this.onUsernameChange, placeholder: 'User...'}),
                 hspacer(10),
-                inputGroup({
-                    placeholder: 'Msg...',
-                    value: model.msg,
-                    style: {width: 140},
-                    onChange: this.onMsgChange
-                }),
+                this.inputGroup({value: model.msg, onChange: this.onMsgChange, placeholder: 'Msg...'}),
                 hspacer(10),
-                inputGroup({
-                    placeholder: 'Category...',
-                    value: model.category,
-                    style: {width: 140},
-                    onChange: this.onCategoryChange
-                }),
+                this.inputGroup({value: model.category, onChange: this.onCategoryChange, placeholder: 'Category...'}),
                 hspacer(10),
-                inputGroup({
-                    placeholder: 'Device...',
-                    value: model.device,
-                    style: {width: 140},
-                    onChange: this.onDeviceChange
-                }),
+                this.inputGroup({value: model.device, onChange: this.onDeviceChange, placeholder: 'Device...'}),
                 hspacer(10),
-                inputGroup({
-                    placeholder: 'Browser...',
-                    value: model.browser,
-                    style: {width: 140},
-                    onChange: this.onBrowserChange
-                }),
+                this.inputGroup({value: model.browser, onChange: this.onBrowserChange, placeholder: 'Browser...'}),
                 hspacer(8),
                 '|',
                 hspacer(8),
-                button({
-                    icon: Icon.sync(),
-                    onClick: this.onSubmitClick
-                }),
+                button({icon: Icon.sync(), onClick: this.onSubmitClick}),
                 filler(),
                 this.renderLogCount(),
                 hspacer(8),
-                button({
-                    icon: Icon.download(),
-                    onClick: this.onExportClick
-                })
+                button({icon: Icon.download(), onClick: this.onExportClick})
             ]
         });
     }
@@ -131,6 +61,31 @@ export class ActivityGridToolbar extends Component {
     //-----------------------------
     // Implementation
     //-----------------------------
+    dateInput(args) {
+        return dateInput({
+            formatDate: this.formatDate,
+            parseDate: this.parseDate,
+            inputProps: {style: {width: 120}},
+            popoverProps: {
+                minimal: true,
+                usePortal: true,
+                position: 'bottom',
+                popoverWillClose: this.onDatePopoverWillClose
+            },
+            dayPickerProps: {
+                fixedWeeks: true
+            },
+            ...args
+        });
+    }
+
+    inputGroup(args){
+        return inputGroup({
+            style: {width: 140},
+            ...args
+        });
+    }
+
     formatDate(date) {
         return fmtDate(date);
     }

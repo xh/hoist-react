@@ -39,41 +39,11 @@ export class VisitsChart extends Component {
                 hspacer(4),
                 this.label('Unique Daily Visitors'),
                 filler(),
-                dateInput({
-                    value: model.startDate,
-                    formatDate: this.formatDate,
-                    parseDate: this.parseDate,
-                    onChange: this.onStartDateChange,
-                    inputProps: {style: {width: 120}},
-                    popoverProps: {
-                        minimal: true,
-                        usePortal: true,
-                        position: 'top',
-                        popoverWillClose: this.onDatePopoverWillClose
-                    },
-                    dayPickerProps: {
-                        fixedWeeks: true
-                    }
-                }),
+                this.dateInput({value: model.startDate, onChange: this.onStartDateChange}),
                 hspacer(8),
                 Icon.angleRight(),
                 hspacer(8),
-                dateInput({
-                    value: model.endDate,
-                    formatDate: this.formatDate,
-                    parseDate: this.parseDate,
-                    onChange: this.onEndDateChange,
-                    inputProps: {style: {width: 120}},
-                    popoverProps: {
-                        minimal: true,
-                        usePortal: true,
-                        position: 'top',
-                        popoverWillClose: this.onDatePopoverWillClose
-                    },
-                    dayPickerProps: {
-                        fixedWeeks: true
-                    }
-                }),
+                this.dateInput({value: model.endDate, onChange: this.onEndDateChange}),
                 hspacer(10),
                 inputGroup({
                     placeholder: 'Username',
@@ -86,6 +56,27 @@ export class VisitsChart extends Component {
                     onClick: this.onSubmitClick
                 })
             ]
+        });
+    }
+
+    //-----------------------------
+    // Implementation
+    //-----------------------------
+    dateInput(args) {
+        return dateInput({
+            formatDate: this.formatDate,
+            parseDate: this.parseDate,
+            inputProps: {style: {width: 120}},
+            popoverProps: {
+                minimal: true,
+                usePortal: true,
+                position: 'top',
+                popoverWillClose: this.onDatePopoverWillClose
+            },
+            dayPickerProps: {
+                fixedWeeks: true
+            },
+            ...args
         });
     }
 
