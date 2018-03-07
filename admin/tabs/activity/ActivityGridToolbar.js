@@ -135,7 +135,6 @@ export class ActivityGridToolbar extends Component {
 
     onStartDateChange = (date) => {
         this.model.setStartDate(date);
-
     }
 
     onEndDateChange = (date) => {
@@ -188,11 +187,7 @@ export class ActivityGridToolbar extends Component {
     }
 
     onExportClick = () => {
-        const model = this.model,
-            gridModel = model.gridModel,
-            fileName = `Track logs ${fmtDate(model.startDate)} to ${fmtDate(model.endDate)}`;
-
-        gridModel.exportDataAsExcel({fileName});
+        this.model.exportGrid();
     }
 
     renderLogCount() {
