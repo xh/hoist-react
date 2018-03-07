@@ -143,39 +143,39 @@ export class ActivityGridToolbar extends Component {
     }
 
     onDateGoBackClick = () => {
-        this.adjustDates('subtract');
+        this.model.adjustDates('subtract');
     }
 
     onDateGoForwardClick = () => {
-        this.adjustDates('add');
+        this.model.adjustDates('add');
     }
 
     onGoToCurrentDateClick = () => {
-        this.adjustDates('subtract', true);
+        this.model.adjustDates('subtract', true);
     }
 
     onUsernameChange = (ev) => {
-        const username = ev.target.value.toLowerCase();
+        const username = ev.target.value;
         this.model.setUsername(username);
     }
 
     onMsgChange = (ev) => {
-        const msg = ev.target.value.toLowerCase();
+        const msg = ev.target.value;
         this.model.setMsg(msg);
     }
 
     onCategoryChange = (ev) => {
-        const category = ev.target.value.toLowerCase();
+        const category = ev.target.value;
         this.model.setCategory(category);
     }
 
     onDeviceChange = (ev) => {
-        const device = ev.target.value.toLowerCase();
+        const device = ev.target.value;
         this.model.setDevice(device);
     }
 
     onBrowserChange = (ev) => {
-        const browser = ev.target.value.toLowerCase();
+        const browser = ev.target.value;
         this.model.setBrowser(browser);
     }
 
@@ -193,27 +193,6 @@ export class ActivityGridToolbar extends Component {
             fileName = `Track logs ${fmtDate(model.startDate)} to ${fmtDate(model.endDate)}`;
 
         gridModel.exportDataAsExcel({fileName});
-    }
-
-    adjustDates(dir, toToday = false) {
-        const model = this.model,
-            today = moment(),
-            start = moment(model.startDate),
-            end = moment(model.endDate),
-            diff = end.diff(start, 'days'),
-            incr = diff + 1;
-
-        let newStart = start[dir](incr, 'days'),
-            newEnd = end[dir](incr, 'days');
-
-        if (newEnd.diff(today, 'days') > 0 || toToday) {
-            newStart = today.clone().subtract(diff, 'days');
-            newEnd = today;
-        }
-
-        model.setStartDate(newStart.toDate());
-        model.setEndDate(newEnd.toDate());
-        this.model.loadAsync();
     }
 
     renderLogCount() {

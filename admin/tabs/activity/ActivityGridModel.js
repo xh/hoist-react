@@ -36,18 +36,18 @@ export class ActivityGridModel {
     gridModel = new GridModel({
         store: this.store,
         columns: [
-            baseCol({field: 'severity', width: 60}),
+            baseCol({field: 'severity', width: 80}),
             dateTimeCol({field: 'dateCreated'}),
-            usernameCol(),
-            baseCol({field: 'msg', text: 'Message', width: 60}),
+            usernameCol({width: 120}),
+            baseCol({field: 'msg', text: 'Message', width: 120}),
             baseCol({field: 'category', width: 100}),
-            baseCol({field: 'device', width: 60}),
+            baseCol({field: 'device', width: 80}),
             baseCol({field: 'browser', width: 100}),
             baseCol({field: 'data', flex: 1}),
             baseCol({field: 'impersonating',  width: 120}),
             baseCol({
                 field: 'elapsed',
-                width: 60,
+                width: 80,
                 valueFormatter: numberRenderer({precision: 0})
             })
         ]
@@ -64,7 +64,23 @@ export class ActivityGridModel {
         });
     }
 
-    reloadData = () => {
+    adjustDates(dir, toToday = false) {
+        const today = moment(),
+            start = moment(this.startDate),
+            end = moment(this.endDate),
+            diff = end.diff(start, 'days'),
+            incr = diff + 1;
+
+        let newStart = start[dir](incr, 'days'),
+            newEnd = end[dir](incr, 'days');
+
+        if (newEnd.diff(today, 'days') > 0 || toToday) {
+            newStart = today.clone().subtract(diff, 'days');
+            newEnd = today;
+        }
+
+        this.setStartDate(newStart.toDate());
+        this.setEndDate(newEnd.toDate());
         this.loadAsync();
     }
 
