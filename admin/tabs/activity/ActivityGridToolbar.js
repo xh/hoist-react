@@ -35,7 +35,10 @@ export class ActivityGridToolbar extends Component {
                         minimal: true,
                         usePortal: true,
                         position: 'bottom',
-                        popoverWillClose: this.onPopoverWillClose
+                        popoverWillClose: this.onDatePopoverWillClose
+                    },
+                    dayPickerProps: {
+                        fixedWeeks: true
                     }
                 }),
                 hspacer(8),
@@ -51,7 +54,10 @@ export class ActivityGridToolbar extends Component {
                         minimal: true,
                         usePortal: true,
                         position: 'bottom',
-                        popoverWillClose: this.onPopoverWillClose
+                        popoverWillClose: this.onDatePopoverWillClose
+                    },
+                    dayPickerProps: {
+                        fixedWeeks: true
                     }
                 }),
                 hspacer(8),
@@ -178,8 +184,8 @@ export class ActivityGridToolbar extends Component {
         this.model.setBrowser(browser);
     }
 
-    onPopoverWillClose = () => {
-        this.model.loadAsync();  // can we/do we want to confirm a change here first
+    onDatePopoverWillClose = () => {
+        this.model.loadAsync();
     }
 
     onSubmitClick = () => {

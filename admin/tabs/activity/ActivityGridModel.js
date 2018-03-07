@@ -91,14 +91,12 @@ export class ActivityGridModel {
     setStartDate(date) {
         if (this.isInvalidDate(date, 'startDate')) return;
         this.startDate = date;
-        this.loadAsync();
     }
 
     @action
     setEndDate(date) {
         if (this.isInvalidDate(date, 'endDate')) return;
         this.endDate = date;
-        this.loadAsync();
     }
 
     //----------------

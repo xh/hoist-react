@@ -48,7 +48,11 @@ export class VisitsChart extends Component {
                     popoverProps: {
                         minimal: true,
                         usePortal: true,
-                        position: 'top'
+                        position: 'top',
+                        popoverWillClose: this.onDatePopoverWillClose
+                    },
+                    dayPickerProps: {
+                        fixedWeeks: true
                     }
                 }),
                 hspacer(8),
@@ -63,7 +67,11 @@ export class VisitsChart extends Component {
                     popoverProps: {
                         minimal: true,
                         usePortal: true,
-                        position: 'top'
+                        position: 'top',
+                        popoverWillClose: this.onDatePopoverWillClose
+                    },
+                    dayPickerProps: {
+                        fixedWeeks: true
                     }
                 }),
                 hspacer(10),
@@ -95,6 +103,10 @@ export class VisitsChart extends Component {
 
     onEndDateChange = (date) => {
         this.model.setEndDate(moment(date).toDate());
+    }
+
+    onDatePopoverWillClose = () => {
+        this.model.loadAsync();
     }
 
     onUsernameChange = (ev) => {
