@@ -8,9 +8,8 @@
 import {Component} from 'react';
 import {elemFactory, hoistComponent} from 'hoist/core';
 import {Ref} from 'hoist/utils/Ref';
-import {toJS} from 'hoist/mobx';
 import {frame, table, tbody, td, tr} from 'hoist/layout';
-import {clipboardMenuItem, contextMenu, ContextMenuModel} from  'hoist/cmp';
+import {clipboardMenuItem, contextMenu} from  'hoist/cmp';
 
 @hoistComponent()
 class LogViewerDisplay extends Component {
@@ -33,7 +32,7 @@ class LogViewerDisplay extends Component {
     }
 
     getTableRows(rows) {
-        return toJS(rows).map((row, idx) => {
+        return rows.map((row, idx) => {
             return tr({
                 cls: 'logviewer-row noselect',
                 ref: idx === rows.length - 1 ? this.lastRow.ref : undefined,
@@ -49,21 +48,23 @@ class LogViewerDisplay extends Component {
         const rows = this.model.rows,
             currentRow = e.target.getAttribute('datakey');
 
-        const menuModel = new ContextMenuModel([
-            clipboardMenuItem({
-                text: 'Copy Current Line',
-                icon: 'list',
-                disabled: (currentRow == null),
-                successMessage: 'Log line copied to the clipboard.',
-                clipboardSpec: {text: () => rows[currentRow].join(': ')}
-            }),
-            clipboardMenuItem({
-                text: 'Copy All Lines',
-                successMessage: 'Log lines copied to the clipboard.',
-                clipboardSpec: {text: () => rows.map(row => row.join(': ')).join('\n')}
-            })
-        ]);
-        return contextMenu({style: {width: '200px'}, model: menuModel});
+        return contextMenu({
+            style: {width: '200px'},
+            menuItems: [
+                clipboardMenuItem({
+                    text: 'Copy Current Line',
+                    icon: 'list',
+                    disabled: (currentRow == null),
+                    successMessage: 'Log line copied to the clipboard.',
+                    clipboardSpec: {text: () => rows[currentRow].join(': ')}
+                }),
+                clipboardMenuItem({
+                    text: 'Copy All Lines',
+                    successMessage: 'Log lines copied to the clipboard.',
+                    clipboardSpec: {text: () => rows.map(row => row.join(': ')).join('\n')}
+                })
+            ]
+        });
     }
 
     syncTail() {
@@ -73,7 +74,6 @@ class LogViewerDisplay extends Component {
             lastRowElem.scrollIntoView();
         }
     }
-
 }
 
 export const logViewerDisplay = elemFactory(LogViewerDisplay);
