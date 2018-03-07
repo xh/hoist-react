@@ -59,9 +59,7 @@ export class ActivityGridModel {
             params: this.getParams()
         }).then(data => {
             this.store.loadDataAsync(data);
-        }).catchDefault({
-            message: 'Failed to fetch track logs'
-        });
+        }).catchDefault();
     }
 
     adjustDates(dir, toToday = false) {
@@ -107,7 +105,7 @@ export class ActivityGridModel {
     // Implementation
     //----------------
     getParams() {
-        let params = {
+        return {
             startDate: fmtDate(this.startDate, 'YYYYMMDD'),
             endDate: fmtDate(this.endDate, 'YYYYMMDD'),
             username: this.username,
@@ -116,8 +114,6 @@ export class ActivityGridModel {
             device: this.device,
             browser: this.browser
         };
-
-        return params;
     }
 
     isInvalidDate(date, prop) {

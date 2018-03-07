@@ -49,24 +49,12 @@ export class VisitsChartModel {
             }
         }).then(data => {
             this.chartModel.setSeries(this.getSeriesData(data));
-        }).catchDefault({
-            message: 'Failed to fetch daily visits'
-        });
+        }).catchDefault();
     }
 
     //----------------
     // Implementation
     //----------------
-    getSeriesData(visits) {
-        const data = [];
-
-        forOwn(visits, (k, v) => {
-            data.push([moment(v).valueOf(), k]);
-        });
-
-        return [{data}];
-    }
-
     @action
     setStartDate(date) {
         if (this.isInvalidDate(date, 'startDate')) return;
@@ -83,6 +71,16 @@ export class VisitsChartModel {
 
     isInvalidDate(date, prop) {
         return !date || date.toString() === 'Invalid Date' || date === this[prop];
+    }
+
+    getSeriesData(visits) {
+        const data = [];
+
+        forOwn(visits, (k, v) => {
+            data.push([moment(v).valueOf(), k]);
+        });
+
+        return [{data}];
     }
 
 }
