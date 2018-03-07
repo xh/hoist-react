@@ -40,7 +40,10 @@
     "strict": 0,
 
     // Hoist - put to warn vs. error
-    "no-unused-vars": 1,
+    "no-unused-vars": [1, {
+      "ignoreRestSiblings": true,
+      "args": "none"
+    }],
 
     // React - to research
     "react/jsx-uses-react": 2,
