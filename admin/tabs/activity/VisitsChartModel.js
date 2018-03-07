@@ -69,14 +69,20 @@ export class VisitsChartModel {
 
     @action
     setStartDate(date) {
+        if (this.isInvalidDate(date, 'startDate')) return;
         this.startDate = date;
         this.loadAsync();
     }
 
     @action
     setEndDate(date) {
+        if (this.isInvalidDate(date, 'endDate')) return;
         this.endDate = date;
         this.loadAsync();
+    }
+
+    isInvalidDate(date, prop) {
+        return !date || date.toString() === 'Invalid Date' || date === this[prop];
     }
 
 }
