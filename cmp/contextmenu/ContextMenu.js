@@ -12,7 +12,7 @@ import {menuDivider, menuItem, menu} from 'hoist/kit/blueprint';
 import {isReactElement} from 'hoist/utils/ReactUtils';
 
 
-import {ContextMenuItem} from './ContextMenuItem'
+import {ContextMenuItem} from './ContextMenuItem';
 
 /**
  * ContextMenu
@@ -48,7 +48,7 @@ export class ContextMenu extends Component {
             if (item === '-') return menuDivider();
             if (isReactElement(item))  return item;
 
-            const items = item.items ? parseMenuItems(item.items) : null;
+            const items = item.items ? this.parseMenuItems(item.items) : null;
 
             return menuItem({
                 text: item.text,

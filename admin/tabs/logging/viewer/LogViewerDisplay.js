@@ -8,7 +8,6 @@
 import {Component} from 'react';
 import {elemFactory, hoistComponent} from 'hoist/core';
 import {Ref} from 'hoist/utils/Ref';
-import {toJS, autorun} from 'hoist/mobx';
 import {frame, table, tbody, td, tr} from 'hoist/layout';
 import {clipboardMenuItem, contextMenu} from  'hoist/cmp';
 
@@ -17,9 +16,8 @@ class LogViewerDisplay extends Component {
 
     lastRow = new Ref();
 
-
     constructor(props) {
-        super(props)
+        super(props);
         this.addAutoRun(() => this.syncTail());
     }
 
@@ -54,7 +52,7 @@ class LogViewerDisplay extends Component {
             style: {width: '200px'},
             menuItems: [
                 clipboardMenuItem({
-                    text: `Copy Current Line`,
+                    text: 'Copy Current Line',
                     icon: 'list',
                     disabled: (currentRow == null),
                     successMessage: 'Log line copied to the clipboard.',

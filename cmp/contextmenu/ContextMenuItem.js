@@ -29,12 +29,12 @@ export class ContextMenuItem {
         icon = null,
         action = null,
         disabled = false,
-        items = null,
+        items = null
     }) {
         this.text = text;
         this.icon = icon;
         this.action = action;
-        this.disabled = disabled
+        this.disabled = disabled;
         this.items = items;
     }
 }

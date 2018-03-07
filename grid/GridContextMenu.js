@@ -5,6 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {isString} from 'lodash';
+import {GridContextMenuItem} from './GridContextMenuItem';
+
 /**
  * Model for ContextMenu on Grids.
  *

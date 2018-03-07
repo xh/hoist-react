@@ -8,10 +8,11 @@
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
-import {defaults, differenceBy} from 'lodash';
+import {defaults, differenceBy, isString} from 'lodash';
 
 import './ag-grid';
 import {navigateSelection, agGridReact} from './ag-grid';
+import {GridContextMenu} from './GridContextMenu';
 import './Grid.css';
 
 /**
@@ -80,15 +81,14 @@ class Grid extends Component {
         const hoistMenu = this.props.getContextMenu || this.constructor.getDefaultContextMenu();
 
         return hoistMenu.items.map((it) => {
-            if ('-') return 'divider';
+            if (it === '-') return 'divider';
             if (isString(it)) return it;
 
-            // Otherwise, its a
             return {
                 name: it.action,
                 icon: it.icon,
                 disabled: it.disabled
-            }
+            };
         });
     }
 
