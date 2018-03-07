@@ -39,11 +39,11 @@ export class ActivityGridModel {
             baseCol({field: 'severity', width: 80}),
             dateTimeCol({field: 'dateCreated'}),
             usernameCol({width: 120}),
-            baseCol({field: 'msg', text: 'Message', width: 120}),
+            baseCol({field: 'msg', headerName: 'Message', width: 120}),
             baseCol({field: 'category', width: 100}),
             baseCol({field: 'device', width: 80}),
             baseCol({field: 'browser', width: 100}),
-            baseCol({field: 'data', flex: 1}),
+            baseCol({field: 'data'}),
             baseCol({field: 'impersonating',  width: 120}),
             baseCol({
                 field: 'elapsed',

@@ -6,11 +6,10 @@
  */
 import {Component} from 'react';
 import {hoistComponent} from 'hoist/core';
-import {grid} from 'hoist/grid';
 import {vframe} from 'hoist/layout';
 import {collapsible} from 'hoist/cmp';
 
-import {activityGridToolbar} from './ActivityGridToolbar';
+import {activityGrid} from './ActivityGrid';
 import {ActivityGridModel} from './ActivityGridModel';
 import {visitsChart} from './VisitsChart';
 import {VisitsChartModel} from './VisitsChartModel';
@@ -23,14 +22,13 @@ export class ActivityPanel extends Component {
 
     render() {
         return vframe(
-            activityGridToolbar({model: this.activityGridModel}),
-            grid({model: this.activityGridModel.gridModel}),
+            activityGrid({model: this.activityGridModel}),
             collapsible({
                 side: 'bottom',
                 contentSize: 250,
                 item: visitsChart({model: this.visitsChartModel})
             })
-        ) ;
+        );
     }
 
     async loadAsync() {
