@@ -62,10 +62,6 @@ class Grid extends Component {
     onGridReady = (params) => {
         this.model.gridApi = params.api;
     }
-
-    onGridSizeChanged = (ev) => {
-        ev.api.sizeColumnsToFit();
-    }
     
     onSelectionChanged = (ev) => {
         const selection = this.model.selection;
