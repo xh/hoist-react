@@ -6,13 +6,13 @@
  */
 
 import {isNil} from 'lodash';
-import {setter, observable} from 'hoist/mobx';
+import {action, observable} from 'hoist/mobx';
 import {cloneElement} from 'react';
 import {ResizeHandler} from './ResizeHandler';
 
 export function resizable(C) {
     class ResizableComponent extends C {
-        _isResizing = false;
+        @observable _isResizing = false;
         resizeDirection = 'right';
         _resizable = null;
         isResizable = {
@@ -37,13 +37,23 @@ export function resizable(C) {
         }
 
         render() {
+            const userSelect = this._isResizing ? {
+                userSelect: 'none',
+                MozUserSelect: 'none',
+                WebkitUserSelect: 'none',
+                MsUserSelect: 'none'
+            } : {
+                userSelect: 'auto',
+                MozUserSelect: 'auto',
+                WebkitUserSelect: 'auto',
+                MsUserSelect: 'auto'
+            };
             const el = super.render(),
-                blockSelect = this._isResizing,
                 props = {
                     ...el.props,
                     style: {
                         ...(el.props.style || {}),
-                        ...blockSelect
+                        ...userSelect
                     },
                     ref: (c) => { this._resizable = c;}
                 };
@@ -82,6 +92,7 @@ export function resizable(C) {
             });
         }
 
+        @action
         _onResizeStart(e, direction) {
             console.log('start');
             this._isResizing = true;
@@ -96,6 +107,7 @@ export function resizable(C) {
             console.log(e);
         }
 
+        @action
         _onResizeEnd = () => {
             console.log('end');
             this._isResizing = false;
