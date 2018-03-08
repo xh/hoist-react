@@ -7,14 +7,16 @@
 
 import {isNil} from 'lodash';
 import {action, observable} from 'hoist/mobx';
+import {Ref} from 'hoist/utils/Ref';
 import {cloneElement} from 'react';
-import {ResizeHandler} from './ResizeHandler';
+import {ResizeHandle} from './ResizeHandle';
 
 export function resizable(C) {
     class ResizableComponent extends C {
         @observable _isResizing = false;
-        resizeDirection = 'right';
-        _resizable = null;
+        _resizableElem = new Ref();
+        _resizeDirection = 'right';
+
         isResizable = {
             topLeft: true,
             top: true,
@@ -55,7 +57,7 @@ export function resizable(C) {
                         ...(el.props.style || {}),
                         ...userSelect
                     },
-                    ref: (c) => { this._resizable = c;}
+                    ref: this._resizableElem.ref
                 };
 
             return cloneElement(
@@ -83,7 +85,7 @@ export function resizable(C) {
                 'top', 'right', 'bottom', 'left', 'topRight', 'bottomRight', 'bottomLeft', 'topLeft',
             ].map(direction => {
                 if (isResizable && isResizable[direction]) {
-                    return ResizeHandler({
+                    return ResizeHandle({
                         key: direction,
                         direction,
                         onResizeStart: this._onResizeStart
@@ -100,8 +102,10 @@ export function resizable(C) {
 
         _onResize = (e) => {
             if (!this._isResizing) return;
-            const {clientX, clientY} = e,
+            const el = this._resizableElem.value,
+                {clientX, clientY} = e,
                 direction = this.resizeDirection;
+
 
             console.log(clientX, clientY, direction);
             console.log(e);
