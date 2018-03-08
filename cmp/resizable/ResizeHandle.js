@@ -7,9 +7,9 @@
 
 import React, { PropTypes } from 'prop-types';
 import {div} from 'hoist/layout';
-import './ResizeHandler.css';
+import './ResizeHandle.css';
 
-export function ResizeHandler(props) {
+export function ResizeHandle(props) {
     return div({
         key: props.key,
         cls: `xh-resize-handler ${props.direction}`,
@@ -18,7 +18,7 @@ export function ResizeHandler(props) {
     });
 }
 
-ResizeHandler.propTypes = {
+ResizeHandle.propTypes = {
     onResizeStart: PropTypes.func.isRequired,
     direction: PropTypes.oneOf([
         'top', 'right', 'bottom', 'left',

@@ -6,7 +6,8 @@
  */
 
 import {Component} from 'react';
-import {hoistComponent, elemFactory, resizable} from 'hoist/core';
+import {hoistComponent, elemFactory} from 'hoist/core';
+import {resizable} from 'hoist/cmp/resizable';
 import {observable, action} from 'hoist/mobx';
 import {box, hbox, vbox} from 'hoist/layout';
 import {button} from 'hoist/kit/blueprint';
