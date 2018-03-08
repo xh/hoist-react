@@ -39,14 +39,14 @@ export class NumberField extends Component {
 
         return numericInput({
             value: this.readValue(),
-            onChange: this.onChange,
+            onValueChange: this.onValueChange,
             style: {...style, width},
             buttonPosition: 'none',
             ...this.getDelegateProps()
         });
     }
 
-    onChange = (val, valAsString) => {
+    onValueChange = (val, valAsString) => {
         val = (valAsString === '') ? null : val;
         this.noteValueChange(val);
     }

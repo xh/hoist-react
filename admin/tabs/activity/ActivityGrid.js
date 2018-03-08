@@ -110,7 +110,7 @@ export class ActivityGrid extends Component {
 
     renderLogCount() {
         const store = this.model.gridModel.store;
-        return label(store.records.length + ' track logs');
+        return label(store.count + ' track logs');
     }
 
 }
