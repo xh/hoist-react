@@ -50,6 +50,10 @@ export class LocalStore extends BaseStore {
         );
     }
 
+    get count() {
+        return this.records.length;
+    }
+
     //-----------------------------
     // Implementation of Store
     //-----------------------------
