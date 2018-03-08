@@ -6,13 +6,14 @@
  */
 
 import {Component} from 'react';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {hoistComponent, elemFactory, resizable} from 'hoist/core';
 import {observable, action} from 'hoist/mobx';
 import {box, hbox, vbox} from 'hoist/layout';
 import {button} from 'hoist/kit/blueprint';
 import {isNil} from 'lodash';
 
 @hoistComponent()
+@resizable
 export class Collapsible extends Component {
 
     @observable isOpen;
@@ -39,6 +40,8 @@ export class Collapsible extends Component {
             child = this.isLazyState ? null : this.renderChild(),
             items = resizerFirst ? [this.getResizer(), child] : [child, this.getResizer()],
             cmp = vertical ? vbox : hbox;
+
+        this.isResizable = this.isOpen && {[this.getOppositeSide(side)]: true};
 
         return cmp({
             flex: 'none',
@@ -95,6 +98,19 @@ export class Collapsible extends Component {
     isVertical() {
         const side = this.props.side;
         return side === 'top' || side === 'bottom';
+    }
+
+    getOppositeSide(side) {
+        switch (side) {
+            case 'left':
+                return 'right';
+            case 'right':
+                return 'left';
+            case 'top':
+                return 'bottom';
+            case 'bottom':
+                return 'top';
+        }
     }
 
 }
