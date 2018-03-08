@@ -125,9 +125,11 @@ export class RestControl extends Component {
     }
 
     renderTextField() {
-        const model = this.model;
+        const model = this.model,
+            type = model.type === 'pwd' ? 'password' : 'text';
         return textField({
             model,
+            type,
             field: 'value',
             cls: 'pt-fill',
             disabled: !model.isEditable

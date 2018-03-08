@@ -114,7 +114,7 @@ export class ConfigPanel extends Component {
         return restGrid({model: this.gridModel});
     }
 
-    loadAsync() {
+    async loadAsync() {
         return this.store.loadAsync();
     }
 
@@ -130,6 +130,11 @@ export class ConfigPanel extends Component {
     }
 
     valCol(params) {
-        return baseCol({...params, width: 175});
+        return baseCol({...params, width: 175, valueFormatter: this.maskIfPwd});
+    }
+
+    maskIfPwd(params) {
+        if (params.data.valueType === 'pwd') return '*****';
+        return params.value;
     }
 }

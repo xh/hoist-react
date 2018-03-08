@@ -50,6 +50,20 @@ export class LocalStore extends BaseStore {
         );
     }
 
+    /**
+     * Get the count of all records loaded into the store
+     */
+    get allCount() {
+        return this.allRecords.length;
+    }
+
+    /**
+     * Get the count of the filtered record in the store
+     */
+    get count() {
+        return this.records.length;
+    }
+
     //-----------------------------
     // Implementation of Store
     //-----------------------------

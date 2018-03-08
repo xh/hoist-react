@@ -69,7 +69,7 @@ export class RestStore extends UrlStore {
     //--------------------------------
     // Implementation
     //--------------------------------
-    saveRecordInternalAsync(rec, isAdd) {
+    async saveRecordInternalAsync(rec, isAdd) {
         let {url} = this;
         if (!isAdd) url += '/' + rec.id;
         return XH.fetchJson({
