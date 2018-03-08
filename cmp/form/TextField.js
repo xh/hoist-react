@@ -21,28 +21,27 @@ import {bindableField} from './BindableField';
  * @prop field, name of property in model to bind to
  * @prop disabled, is control disabled
  * @prop style
+ * @prop className
  *
+ * @prop autoFocus
+ * @prop type, 'text' or 'password'
  * @prop placeholder, text to display when control is empty
  * @prop width, width of field, in pixels,
  */
 @bindableField
 @hoistComponent()
 export class TextField extends Component {
-
-    static defaultProps = {
-        placeholder: '',
-        width: 140
-    }
+    
+    delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus'];
 
     render() {
-        const {placeholder, width, style, disabled} = this.props;
+        const {style, width} = this.props;
 
         return inputGroup({
-            value: this.readValue(),
+            value: this.readValue() || '',
             onChange: this.onChange,
             style: {...style, width},
-            placeholder,
-            disabled
+            ...this.getDelegateProps()
         });
     }
 

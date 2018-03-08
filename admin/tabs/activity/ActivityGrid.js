@@ -23,7 +23,6 @@ export class ActivityGrid extends Component {
     }
 
     renderToolbar() {
-        const model = this.model;
         return hbox({
             cls: 'xh-tbar',
             flex: 'none',
@@ -31,11 +30,11 @@ export class ActivityGrid extends Component {
             alignItems: 'center',
             items: [
                 hspacer(4),
-                dayField({model, field: 'startDate', onCommit: this.onDateCommit, popoverPosition: 'bottom'}),
+                this.dayField({field: 'startDate'}),
                 hspacer(8),
                 Icon.angleRight(),
                 hspacer(8),
-                dayField({model, field: 'endDate', onCommit: this.onDateCommit, popoverPosition: 'bottom'}),
+                this.dayField({field: 'endDate'}),
                 hspacer(8),
                 button({icon: Icon.caretLeft(), onClick: this.onDateGoBackClick}),
                 button({icon: Icon.caretRight(), onClick: this.onDateGoForwardClick}),
@@ -43,15 +42,15 @@ export class ActivityGrid extends Component {
                 hspacer(8),
                 '|',
                 hspacer(8),
-                textField({model, field: 'username', placeholder: 'User...'}),
+                this.textField({field: 'username', placeholder: 'User...'}),
                 hspacer(10),
-                textField({model, field: 'msg', placeholder: 'Msg...'}),
+                this.textField({field: 'msg', placeholder: 'Msg...'}),
                 hspacer(10),
-                textField({model, field: 'category', placeholder: 'Category...'}),
+                this.textField({field: 'category', placeholder: 'Category...'}),
                 hspacer(10),
-                textField({model, field: 'device', placeholder: 'Device...'}),
+                this.textField({field: 'device', placeholder: 'Device...'}),
                 hspacer(10),
-                textField({model, field: 'browser', placeholder: 'Browser...'}),
+                this.textField({field: 'browser', placeholder: 'Browser...'}),
                 hspacer(8),
                 '|',
                 hspacer(8),
@@ -63,10 +62,28 @@ export class ActivityGrid extends Component {
             ]
         });
     }
-
+    
     //-----------------------------
     // Implementation
     //-----------------------------
+    dayField(args) {
+        return dayField({
+            model: this.model,
+            onCommit: this.onDateCommit,
+            popoverPosition: 'bottom',
+            width: 100,
+            ...args
+        });
+    }
+
+    textField(args) {
+        return textField({
+            model: this.model,
+            width: 140,
+            ...args
+        });
+    }
+
     onDateGoBackClick = () => {
         this.model.adjustDates('subtract');
     }

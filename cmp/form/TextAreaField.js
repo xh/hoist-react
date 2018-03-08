@@ -8,15 +8,14 @@
 
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
-import {label} from 'hoist/cmp';
-import {checkbox} from 'hoist/kit/blueprint';
+import {textArea} from 'hoist/kit/blueprint';
 
 import {bindableField} from './BindableField';
 
 /**
- * A CheckBox field for editing a boolean value
+ * A Text Area Field
  *
- * @prop value, boolean
+ * @prop value, string
  * @prop onChange, handler to fire when value changes
  * @prop model, model to bind to
  * @prop field, name of property in model to bind to
@@ -24,33 +23,30 @@ import {bindableField} from './BindableField';
  * @prop style
  * @prop className
  *
- * @prop text, name of field
+ * @prop autoFocus
+ * @prop type, 'text' or 'password'
+ * @prop placeholder, text to display when control is empty
+ * @prop width, width of field, in pixels,
  */
 @bindableField
 @hoistComponent()
-export class CheckField extends Component {
-
-    static defaultProps = {
-        text: ''
-    }
-
-    delegateProps = ['className', 'disabled']
+export class TextAreaField extends Component {
+    
+    delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus'];
 
     render() {
-        const {text, style} = this.props;
+        const {style, width} = this.props;
 
-        return checkbox({
-            checked: this.readValue(),
+        return textArea({
+            value: this.readValue() || '',
             onChange: this.onChange,
-            style: {...style, marginBottom: '0px', marginRight: '0px'},
-            label: label(text),
-            inline: true,
+            style: {...style, width},
             ...this.getDelegateProps()
         });
     }
 
-    onChange = (e) => {
-        this.noteValueChange(e.target.checked);
+    onChange = (ev) => {
+        this.noteValueChange(ev.target.value);
     }
 }
-export const checkField = elemFactory(CheckField);
+export const textAreaField = elemFactory(TextAreaField);

@@ -24,6 +24,7 @@ import {bindableField} from './BindableField';
  * @prop field, name of property in model to bind to
  * @prop disabled, is control disabled
  * @prop style
+ * @prop className
  *
  * @prop width, width of field
  * @prop onCommit, handler to call when enter or tab pressed, or popover closed
@@ -34,12 +35,13 @@ import {bindableField} from './BindableField';
 export class DayField extends Component {
 
     static defaultProps = {
-        width: 100,
         popoverPosition: 'auto'
     }
 
+    delegateProps = ['className', 'disabled']
+
     render() {
-        const {width, onCommit, popoverPosition, style, disabled} = this.props;
+        const {width, onCommit, popoverPosition, style} = this.props;
 
         return dateInput({
             value: this.readValue(),
@@ -54,7 +56,7 @@ export class DayField extends Component {
                 popoverWillClose: onCommit
             },
             dayPickerProps: {fixedWeeks: true},
-            disabled
+            ...this.getDelegateProps()
         });
     }
 

@@ -27,6 +27,19 @@ import {upperFirst} from 'lodash';
 export function bindableField(C) {
     const proto = C.prototype;
 
+
+    proto.getDelegateProps = function() {
+        const props = this.props,
+            ret = {},
+            delegates = this.delegateProps || [];
+
+        delegates.forEach(it => {
+            if (it in props) ret[it] = props[it];
+        });
+        
+        return ret;
+    };
+
     proto.readValue = function() {
         const {value, model, field} = this.props;
         if (value != undefined) {

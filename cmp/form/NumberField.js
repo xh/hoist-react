@@ -21,6 +21,7 @@ import {bindableField} from './BindableField';
  * @prop field, name of property in model to bind to
  * @prop disabled, is control disabled
  * @prop style
+ * @prop className
  *
  * @prop placeholder, text to display when control is empty
  * @prop width, width of field, in pixels
@@ -30,30 +31,24 @@ import {bindableField} from './BindableField';
 @bindableField
 @hoistComponent()
 export class NumberField extends Component {
-
-    static defaultProps = {
-        placeholder: '',
-        width: 80,
-        min: null,
-        max: null
-    }
+    
+    delegateProps = ['className', 'min', 'max', 'placeholder'];
 
     render() {
-        const {placeholder, width, min, max, style} = this.props;
+        const {width, style} = this.props;
 
         return numericInput({
             value: this.readValue(),
             onChange: this.onChange,
             style: {...style, width},
             buttonPosition: 'none',
-            placeholder,
-            min,
-            max
+            ...this.getDelegateProps()
         });
     }
 
-    onChange = (value) => {
-        this.noteValueChange(value);
+    onChange = (val, valAsString) => {
+        val = (valAsString === '') ? null : val;
+        this.noteValueChange(val);
     }
 }
 export const numberField = elemFactory(NumberField);

@@ -36,13 +36,18 @@ export class VisitsChart extends Component {
                 hspacer(4),
                 label('Unique Daily Visitors'),
                 filler(),
-                dayField({model, field: 'startDate', popoverPosition: 'top', onCommit: this.onDateCommit}),
+                this.dayField({field: 'startDate'}),
                 hspacer(8),
                 Icon.angleRight(),
                 hspacer(8),
-                dayField({model, field: 'endDate', popoverPosition: 'top', onCommit: this.onDateCommit}),
+                this.dayField({field: 'endDate'}),
                 hspacer(10),
-                textField({model, field: 'username', placeholder: 'Username'}),
+                textField({
+                    model,
+                    field: 'username', 
+                    placeholder: 'Username',
+                    width: 140
+                }),
                 hspacer(10),
                 button({icon: Icon.sync(), onClick: this.onSubmitClick})
             ]
@@ -52,6 +57,16 @@ export class VisitsChart extends Component {
     //-----------------------------
     // Implementation
     //-----------------------------
+    dayField(args) {
+        return dayField({
+            model: this.model,
+            onCommit: this.onDateCommit,
+            popoverPosition: 'top',
+            width: 100,
+            ...args
+        });
+    }
+
     onDateCommit = () => {
         this.model.loadAsync();
     }

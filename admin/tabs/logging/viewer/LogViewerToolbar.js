@@ -23,11 +23,11 @@ export class LogViewerToolbar extends Component {
             items: [
                 label('Start Line:'),
                 hspacer(8),
-                numberField({model, field: 'startLine', min: 0}),
+                numberField({model, field: 'startLine', min: 0, width: 80}),
                 hspacer(10),
                 label('Max Lines:'),
                 hspacer(8),
-                numberField({model, field: 'maxLines', min: 1}),
+                numberField({model, field: 'maxLines', min: 1, width: 80}),
                 hspacer(10),
                 textField({model, field: 'pattern', placeholder: 'Search...', width: 150}),
                 hspacer(10),
