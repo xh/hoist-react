@@ -27,14 +27,14 @@ export class ClientErrorPanel extends Component {
     gridModel = new GridModel({
         store: this.store,
         columns: [
-            dateTimeCol({field: 'dateCreated'}),
-            usernameCol(),
-            baseCol({field: 'error'}),
-            baseCol({field: 'msg', headerName: 'Message'}),
+            dateTimeCol({field: 'dateCreated', minWidth: 120, maxWidth: 120}),
+            usernameCol({minWidth: 120, maxWidth: 120}),
+            baseCol({field: 'error', minWidth: 450}), // was sencha flex 3
+            baseCol({field: 'msg', headerName: 'Message', minWidth: 150}), // was sencha flex 1
             baseCol({field: 'browser', width: 100}),
-            baseCol({field: 'device', width: 100}),
-            baseCol({field: 'appVersion', width: 100}),
-            baseCol({field: 'appEnvironment',  width: 100})
+            baseCol({field: 'device', width: 80}),
+            baseCol({field: 'appVersion', minWidth: 130, maxWidth: 130}),
+            baseCol({field: 'appEnvironment',  minWidth: 140, maxWidth: 140})  // doing this a lot. Would be nice to have the col take a width and apply it as min and max
         ]
     });
 
