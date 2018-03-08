@@ -18,7 +18,7 @@ import {usernameCol} from '../../columns/Columns';
 
 export class ActivityGridModel {
 
-    @observable startDate = moment().toDate();
+    @observable startDate = moment('20170801').toDate();
     @observable endDate = moment().toDate();
     @observable @setter username = '';
     @observable @setter msg = '';
@@ -36,18 +36,19 @@ export class ActivityGridModel {
     gridModel = new GridModel({
         store: this.store,
         columns: [
-            baseCol({field: 'severity', width: 80}),
-            dateTimeCol({field: 'dateCreated'}),
-            usernameCol({width: 120}),
-            baseCol({field: 'msg', headerName: 'Message', width: 120}),
-            baseCol({field: 'category', width: 100}),
-            baseCol({field: 'device', width: 80}),
-            baseCol({field: 'browser', width: 100}),
+            baseCol({field: 'severity', minWidth: 80, maxWidth: 80}),
+            dateTimeCol({field: 'dateCreated', minWidth: 160, maxWidth: 160}),
+            usernameCol({minWidth: 120, maxWidth: 120}),
+            baseCol({field: 'msg', headerName: 'Message', minWidth: 150}),
+            baseCol({field: 'category', minWidth: 100, maxWidth: 100}),
+            baseCol({field: 'device', minWidth: 80, maxWidth: 80}),
+            baseCol({field: 'browser', minWidth: 100, maxWidth: 100}),
             baseCol({field: 'data'}),
-            baseCol({field: 'impersonating',  width: 120}),
+            baseCol({field: 'impersonating',  minWidth: 140, maxWidth: 140}),
             baseCol({
                 field: 'elapsed',
-                width: 80,
+                minWidth: 80,
+                maxWidth: 80,
                 valueFormatter: numberRenderer({precision: 0})
             })
         ]

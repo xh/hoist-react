@@ -51,7 +51,8 @@ class Grid extends Component {
                     onSelectionChanged: this.onSelectionChanged,
                     onGridReady: this.onGridReady,
                     gridOptions: this.gridOptions,
-                    getContextMenuItems: this.getContextMenuItems
+                    getContextMenuItems: this.getContextMenuItems,
+                    onGridSizeChanged: this.onGridSizeChanged
                 })
             })
         );
@@ -60,6 +61,10 @@ class Grid extends Component {
     //------------------------
     // Implementation
     //------------------------
+    onGridSizeChanged = (ev) => {
+        ev.api.sizeColumnsToFit();
+    }
+
     onGridReady = (params) => {
         this.model.gridApi = params.api;
     }
