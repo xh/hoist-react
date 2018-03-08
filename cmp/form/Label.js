@@ -19,7 +19,7 @@ import {div} from 'hoist/layout';
 @hoistComponent()
 export class Label extends Component {
     render() {
-        const {text, children, style} = this.props;
+        const {fchildren, style} = this.props;
         return div({
             cls: 'pt-label pt-inline',
             style: {...style, whiteSpace: 'nowrap'},
