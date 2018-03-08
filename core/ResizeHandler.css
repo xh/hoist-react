@@ -1,0 +1,62 @@
+.xh-resize-handler {
+    position: absolute;
+    background-color: red;
+}
+
+.xh-resize-handler.top {
+    width: 100%;
+    height: 3px;
+    top: -2px;
+    left: 0;
+    cursor: ns-resize;
+}
+.xh-resize-handler.right {
+    width: 3px;
+    height: 100%;
+    top: 0;
+    right: -2px;
+    z-index: 999;
+    cursor: ew-resize;
+}
+.xh-resize-handler.bottom {
+    width: 100%;
+    height: 3px;
+    bottom: -2px;
+    left: 0;
+    cursor: ns-resize;
+}
+.xh-resize-handler.left {
+    width: 3px;
+    height: 100%;
+    top: 0;
+    left: -2px;
+    cursor: ew-resize;
+}
+.xh-resize-handler.topRight {
+    width: 5px;
+    height: 5px;
+    top: 0;
+    right: 0;
+    cursor: nesw-resize;
+}
+.xh-resize-handler.bottomRight {
+    width: 5px;
+    height: 5px;
+    bottom: 0;
+    right: 0;
+    cursor: nwse-resize;
+}
+.xh-resize-handler.bottomLeft {
+    width: 5px;
+    height: 5px;
+    bottom: 0;
+    left: 0;
+    cursor: nesw-resize;
+}
+.xh-resize-handler.topLeft {
+    width: 5px;
+    height: 5px;
+    top: 0;
+    left: 0;
+    cursor: nwse-resize;
+}
