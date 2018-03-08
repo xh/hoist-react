@@ -7,21 +7,27 @@
 
 
 import {Component} from 'react';
-import {upperFirst} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {numericInput} from 'hoist/kit/blueprint';
 
+import {bindableField} from './BindableField';
+
 /**
- * A model bindable Number Input
+ * A Number Input Field
  *
- * @prop model
+ * @prop value, number
+ * @prop onChange, handler to fire when value changes
+ * @prop model, model to bind to
  * @prop field, name of property in model to bind to
+ * @prop disabled, is control disabled
+ * @prop style
+ *
  * @prop placeholder, text to display when control is empty
  * @prop width, width of field, in pixels
  * @prop min, minimum value
  * @prop max, maximum value
- * @prop style
  */
+@bindableField
 @hoistComponent()
 export class NumberField extends Component {
 
@@ -33,10 +39,10 @@ export class NumberField extends Component {
     }
 
     render() {
-        const {model, field, placeholder, width, min, max, style} = this.props;
+        const {placeholder, width, min, max, style} = this.props;
 
         return numericInput({
-            value: model[field],
+            value: this.readValue(),
             onChange: this.onChange,
             style: {...style, width},
             buttonPosition: 'none',
@@ -47,8 +53,7 @@ export class NumberField extends Component {
     }
 
     onChange = (value) => {
-        const {field} = this.props;
-        this.model[`set${upperFirst(field)}`](value);
+        this.noteValueChange(value);
     }
 }
 export const numberField = elemFactory(NumberField);

@@ -7,19 +7,25 @@
 
 
 import {Component} from 'react';
-import {upperFirst} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {label} from 'hoist/cmp';
 import {checkbox} from 'hoist/kit/blueprint';
 
+import {bindableField} from './BindableField';
+
 /**
- * A model bindable Checkbox
+ * A CheckBox field for editing a boolean value
  *
- * @prop model
+ * @prop value, boolean
+ * @prop onChange, handler to fire when value changes
+ * @prop model, model to bind to
  * @prop field, name of property in model to bind to
- * @prop text, name of field
+ * @prop disabled, is control disabled
  * @prop style
+ *
+ * @prop text, name of field
  */
+@bindableField
 @hoistComponent()
 export class CheckField extends Component {
 
@@ -28,20 +34,20 @@ export class CheckField extends Component {
     }
 
     render() {
-        const {model, field, text, style} = this.props;
+        const {text, style, disabled} = this.props;
 
         return checkbox({
-            checked: model[field],
+            checked: this.readValue(),
             onChange: this.onChange,
             style: {...style, marginBottom: '0px', marginRight: '0px'},
             label: label(text),
-            inline: true
+            inline: true,
+            disabled
         });
     }
 
     onChange = (e) => {
-        const {field} = this.props;
-        this.model[`set${upperFirst(field)}`](e.target.checked);
+        this.noteValueChange(e.target.checked);
     }
 }
 export const checkField = elemFactory(CheckField);

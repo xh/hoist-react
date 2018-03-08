@@ -7,19 +7,25 @@
 
 
 import {Component} from 'react';
-import {upperFirst} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {inputGroup} from 'hoist/kit/blueprint';
 
+import {bindableField} from './BindableField';
+
 /**
- * A model bindable Text Input
+ * A Text Input Field
  *
- * @prop model
+ * @prop value, string
+ * @prop onChange, handler to fire when value changes
+ * @prop model, model to bind to
  * @prop field, name of property in model to bind to
+ * @prop disabled, is control disabled
+ * @prop style
+ *
  * @prop placeholder, text to display when control is empty
  * @prop width, width of field, in pixels,
- * @prop style
  */
+@bindableField
 @hoistComponent()
 export class TextField extends Component {
 
@@ -29,19 +35,19 @@ export class TextField extends Component {
     }
 
     render() {
-        const {model, field, placeholder, width, style} = this.props;
+        const {placeholder, width, style, disabled} = this.props;
 
         return inputGroup({
-            value: model[field],
+            value: this.readValue(),
             onChange: this.onChange,
             style: {...style, width},
-            placeholder
+            placeholder,
+            disabled
         });
     }
 
     onChange = (ev) => {
-        const {field} = this.props;
-        this.model[`set${upperFirst(field)}`](ev.target.value);
+        this.noteValueChange(ev.target.value);
     }
 }
 export const textField = elemFactory(TextField);

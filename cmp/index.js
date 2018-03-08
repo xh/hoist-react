@@ -12,3 +12,4 @@ export * from './tab';
 export * from './message';
 export * from './ToastManager';
 export * from './form';
+export * from './StoreFilterField';

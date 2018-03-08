@@ -7,22 +7,29 @@
 
 
 import {Component} from 'react';
-import {upperFirst} from 'lodash';
 import moment from 'moment';
 import {fmtDate} from 'hoist/format';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {dateInput} from 'hoist/kit/blueprint';
 
+import {bindableField} from './BindableField';
+
+
 /**
- * A model bindable calendar field for choosing a Day.
+ * A calendar control for choosing a date
  *
- * @prop model
+ * @prop value, date
+ * @prop onChange, handler to fire when value changes
+ * @prop model, model to bind to
  * @prop field, name of property in model to bind to
+ * @prop disabled, is control disabled
+ * @prop style
+ *
  * @prop width, width of field
  * @prop onCommit, handler to call when enter or tab pressed, or popover closed
  * @prop popoverPosition, 'top' | 'bottom' |  'auto' (auto determined),
- * @prop style
  */
+@bindableField
 @hoistComponent()
 export class DayField extends Component {
 
@@ -32,10 +39,10 @@ export class DayField extends Component {
     }
 
     render() {
-        const {model, field, width, onCommit, popoverPosition, style} = this.props;
+        const {width, onCommit, popoverPosition, style, disabled} = this.props;
 
         return dateInput({
-            value: model[field],
+            value: this.readValue(),
             onChange: this.onChange,
             formatDate: this.formatDate,
             parseDate: this.parseDate,
@@ -46,7 +53,8 @@ export class DayField extends Component {
                 position: popoverPosition,
                 popoverWillClose: onCommit
             },
-            dayPickerProps: {fixedWeeks: true}
+            dayPickerProps: {fixedWeeks: true},
+            disabled
         });
     }
 
@@ -59,8 +67,7 @@ export class DayField extends Component {
     }
 
     onChange = (date) => {
-        const {field} = this.props;
-        this.model[`set${upperFirst(field)}`](date);
+        this.noteValueChange(date);
     }
 }
 export const dayField = elemFactory(DayField);
