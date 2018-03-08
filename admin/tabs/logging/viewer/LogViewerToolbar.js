@@ -6,57 +6,34 @@
  */
 import {Component} from 'react';
 import {elemFactory, hoistComponent} from 'hoist/core';
-import {inputGroup, numericInput, checkbox, button} from 'hoist/kit/blueprint';
-import {hbox, filler, hspacer, div} from 'hoist/layout';
+import {button} from 'hoist/kit/blueprint';
+import {textField, checkField, numberField, label} from 'hoist/cmp';
+import {hbox, filler, hspacer} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
 
 @hoistComponent()
 export class LogViewerToolbar extends Component {
     
     render() {
-        const {startLine, maxLines, pattern, tail} = this.model;
-
+        const model = this.model;
         return hbox({
             cls: 'xh-tbar',
             alignItems: 'center',
             style: {flex: 'none'},
             items: [
-                this.label('Start Line:'),
+                label('Start Line:'),
                 hspacer(8),
-                this.numericInput({
-                    value: startLine,
-                    min: 0,
-                    onValueChange: this.onStartLineChange
-                }),
+                numberField({model, field: 'startLine', min: 0}),
                 hspacer(10),
-                this.label('Max Lines:'),
+                label('Max Lines:'),
                 hspacer(8),
-                this.numericInput({
-                    value: maxLines,
-                    min: 1,
-                    onValueChange: this.onMaxLinesChange
-                }),
+                numberField({model, field: 'maxLines', min: 1}),
                 hspacer(10),
-                inputGroup({
-                    placeholder: 'Search...',
-                    style: {width: 150},
-                    value: pattern,
-                    onChange: this.onPatternChange
-                }),
+                textField({model, field: 'pattern', placeholder: 'Search...', width: 150}),
                 hspacer(10),
-                checkbox({
-                    name: 'tail',
-                    style: {marginBottom: '0px', marginRight: '0px'},
-                    label: this.label('Tail'),
-                    checked: tail,
-                    inline: true,
-                    onChange: this.onTailChange
-                }),
+                checkField({model, field: 'tail', text: 'Tail'}),
                 filler(),
-                button({
-                    icon: Icon.refresh(),
-                    onClick: this.onSubmitClick
-                })
+                button({icon: Icon.refresh(), onClick: this.onSubmitClick})
             ]
         });
     }
@@ -66,39 +43,6 @@ export class LogViewerToolbar extends Component {
     //-----------------------------
     onSubmitClick = () => {
         this.model.loadLines();
-    };
-
-    onStartLineChange = (value) => {
-        this.model.setDisplayOption('startLine', value);
-    }
-
-    onMaxLinesChange = (value) => {
-        this.model.setDisplayOption('maxLines', value);
-    }
-
-    onPatternChange = (e) => {
-        this.model.setDisplayOption('pattern', e.target.value);
-    }
-
-    onTailChange = (e) => {
-        this.model.setDisplayOption('tail', e.target.checked);
-    }
-    
-    label(txt) {
-        // Default label object has trouble with inline
-        return div({
-            cls: 'pt-label pt-inline',
-            style: {whiteSpace: 'nowrap'},
-            item: txt
-        });
-    }
-
-    numericInput(args) {
-        return numericInput({
-            style: {width: 80},
-            buttonPosition: 'none',
-            ...args
-        });
     }
 }
 export const logViewerToolbar = elemFactory(LogViewerToolbar);

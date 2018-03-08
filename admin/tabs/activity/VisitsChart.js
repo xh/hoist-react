@@ -6,28 +6,25 @@
  */
 
 import {Component} from 'react';
-import moment from 'moment';
-import {button, inputGroup, dateInput} from 'hoist/kit/blueprint';
+import {button} from 'hoist/kit/blueprint';
+import {textField, dayField, label} from 'hoist/cmp';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {chart} from 'hoist/highcharts';
-import {vframe, filler, hbox, hspacer, div} from 'hoist/layout';
+import {vframe, filler, hbox, hspacer} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
-import {fmtDate} from 'hoist/format';
 
 @hoistComponent()
 export class VisitsChart extends Component {
 
     render() {
         return vframe(
-            this.renderToolbar({model: this.model}),
+            this.renderToolbar(),
             chart({model: this.model.chartModel})
         );
     }
-
-    //----------------
-    // Implementation
-    //----------------
-    renderToolbar({model}) {
+    
+    renderToolbar() {
+        const model = this.model;
         return hbox({
             cls: 'xh-tbar',
             flex: 'none',
@@ -37,24 +34,17 @@ export class VisitsChart extends Component {
                 hspacer(4),
                 Icon.users(),
                 hspacer(4),
-                this.label('Unique Daily Visitors'),
+                label('Unique Daily Visitors'),
                 filler(),
-                this.dateInput({value: model.startDate, onChange: this.onStartDateChange}),
+                dayField({model, field: 'startDate', popoverPosition: 'top', onCommit: this.onDateCommit}),
                 hspacer(8),
                 Icon.angleRight(),
                 hspacer(8),
-                this.dateInput({value: model.endDate, onChange: this.onEndDateChange}),
+                dayField({model, field: 'endDate', popoverPosition: 'top', onCommit: this.onDateCommit}),
                 hspacer(10),
-                inputGroup({
-                    placeholder: 'Username',
-                    value: model.username,
-                    onChange: this.onUsernameChange
-                }),
+                textField({model, field: 'username', placeholder: 'Username'}),
                 hspacer(10),
-                button({
-                    icon: Icon.sync(),
-                    onClick: this.onSubmitClick
-                })
+                button({icon: Icon.sync(), onClick: this.onSubmitClick})
             ]
         });
     }
@@ -62,61 +52,13 @@ export class VisitsChart extends Component {
     //-----------------------------
     // Implementation
     //-----------------------------
-    dateInput(args) {
-        return dateInput({
-            formatDate: this.formatDate,
-            parseDate: this.parseDate,
-            inputProps: {style: {width: 120}},
-            popoverProps: {
-                minimal: true,
-                usePortal: true,
-                position: 'top',
-                popoverWillClose: this.onDatePopoverWillClose
-            },
-            dayPickerProps: {
-                fixedWeeks: true
-            },
-            ...args
-        });
-    }
-
-    formatDate(date) {
-        return fmtDate(date);
-    }
-
-    parseDate(dateString) {
-        return moment(dateString).toDate();
-    }
-
-    onStartDateChange = (date) => {
-        this.model.setStartDate(moment(date).toDate());
-    }
-
-    onEndDateChange = (date) => {
-        this.model.setEndDate(moment(date).toDate());
-    }
-
-    onDatePopoverWillClose = () => {
+    onDateCommit = () => {
         this.model.loadAsync();
-    }
-
-    onUsernameChange = (ev) => {
-        this.model.setUsername(ev.target.value);
     }
 
     onSubmitClick = () => {
         this.model.loadAsync();
     }
-
-    label(txt) {
-        // Default label object has trouble with inline
-        return div({
-            cls: 'pt-label pt-inline',
-            style: {whiteSpace: 'nowrap'},
-            item: txt
-        });
-    }
-
 }
 
 export const visitsChart = elemFactory(VisitsChart);
