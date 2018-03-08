@@ -32,7 +32,7 @@ export class EhCachePanel extends Component {
         return grid({model: this.gridModel});
     }
 
-    loadAsync() {
+    async loadAsync() {
         return this.gridModel.store.loadAsync();
     }
 }

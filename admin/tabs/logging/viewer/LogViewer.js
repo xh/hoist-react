@@ -20,7 +20,7 @@ import './LogViewer.css';
 export class LogViewer extends Component {
     localModel = new LogViewerModel();
 
-    loadAsync() {
+    async loadAsync() {
         return this.model.loadAsync();
     }
 
