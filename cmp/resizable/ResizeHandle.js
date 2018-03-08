@@ -5,23 +5,31 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import React, { PropTypes } from 'prop-types';
+import {Component} from 'react';
+import {PropTypes} from 'prop-types';
+import {elemFactory} from "hoist/core";
 import {div} from 'hoist/layout';
 import './ResizeHandle.css';
 
-export function ResizeHandle(props) {
-    return div({
-        key: props.key,
-        cls: `xh-resize-handler ${props.direction}`,
-        onMouseDown: (e) => props.onResizeStart(e, props.direction),
-        onTouchStart: (e) => props.onResizeStart(e, props.direction)
-    });
+class ResizeHandle extends Component {
+    static propTypes = {
+        onResizeStart: PropTypes.func.isRequired,
+        direction: PropTypes.oneOf([
+            'top', 'right', 'bottom', 'left',
+            'topRight', 'bottomRight', 'bottomleft', 'topLeft'
+        ]).isRequired
+    }
+
+    render() {
+        const {key, direction, onResizeStart} = this.props;
+
+        return div({
+            key: key,
+            cls: `xh-resize-handler ${direction}`,
+            onMouseDown: (e) => onResizeStart(e, direction),
+            onTouchStart: (e) => onResizeStart(e, direction)
+        });
+    }
 }
 
-ResizeHandle.propTypes = {
-    onResizeStart: PropTypes.func.isRequired,
-    direction: PropTypes.oneOf([
-        'top', 'right', 'bottom', 'left',
-        'topRight', 'bottomRight', 'bottomleft', 'topLeft'
-    ]).isRequired
-}
+export const resizeHandle = elemFactory(ResizeHandle);
