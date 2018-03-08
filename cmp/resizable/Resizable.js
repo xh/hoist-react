@@ -9,7 +9,7 @@ import {isNil} from 'lodash';
 import {action, observable} from 'hoist/mobx';
 import {Ref} from 'hoist/utils/Ref';
 import {cloneElement} from 'react';
-import {ResizeHandle} from './ResizeHandle';
+import {resizeHandle} from './ResizeHandle';
 
 export function resizable(C) {
     class ResizableComponent extends C {
@@ -85,7 +85,7 @@ export function resizable(C) {
                 'top', 'right', 'bottom', 'left', 'topRight', 'bottomRight', 'bottomLeft', 'topLeft',
             ].map(direction => {
                 if (isResizable && isResizable[direction]) {
-                    return ResizeHandle({
+                    return resizeHandle({
                         key: direction,
                         direction,
                         onResizeStart: this._onResizeStart
