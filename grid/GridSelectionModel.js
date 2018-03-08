@@ -6,7 +6,7 @@
  */
 
 import {autorun, action, observable, computed} from 'hoist/mobx';
-import {castArray, intersection, difference, union} from 'lodash';
+import {castArray, intersection, union} from 'lodash';
 
 /**
  * Model for managing the selection in a GridPanel.
@@ -36,10 +36,9 @@ export class GridSelectionModel {
             // Remove recs from selection if they are no longer in store e.g. (due to filtering)
             const storeIds = this.parent.store.records.map(it => it.id),
                 selection = this.ids,
-                newSelection = intersection(storeIds, selection),
-                diff = difference(selection, newSelection);
+                newSelection = intersection(storeIds, selection);
 
-            if (diff.length > 0) this.select(newSelection);
+            if (selection.length !== newSelection.length) this.select(newSelection);
         });
     }
 
