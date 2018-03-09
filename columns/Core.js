@@ -7,7 +7,6 @@
 
 import {fileColFactory} from './Utils.js';
 import {Icon} from 'hoist/icon';
-import './Columns.css';
 
 const colFactory = fileColFactory({
     field: null
@@ -17,7 +16,6 @@ export const baseCol = colFactory();
 
 export const boolCheckCol = colFactory({
     width: 34,
-    cellClass: 'xh-center-content',
     cellRendererFramework: (params) => {
         return params.value ? Icon.check({color: 'green'}) : '';
     }
