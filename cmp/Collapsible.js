@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {resizable} from 'hoist/cmp/resizable';
-import {observable, action} from 'hoist/mobx';
+import {setter, observable, action} from 'hoist/mobx';
 import {box, hbox, vbox} from 'hoist/layout';
 import {button} from 'hoist/kit/blueprint';
 import {isNil} from 'lodash';
@@ -18,6 +18,7 @@ import {isNil} from 'lodash';
 export class Collapsible extends Component {
 
     @observable isOpen;
+    @setter @observable contentSize;
     isLazyState = true;
 
     static defaultProps = {
@@ -27,8 +28,9 @@ export class Collapsible extends Component {
 
     constructor(props) {
         super(props);
-        const {defaultIsOpen} = this.props;
+        const {contentSize, defaultIsOpen} = this.props;
         if (!isNil(defaultIsOpen)) this.isOpen = defaultIsOpen;
+        this.setContentSize(contentSize);
     }
 
     render() {
@@ -55,9 +57,9 @@ export class Collapsible extends Component {
     //------------------
     renderChild() {
         const {props, isOpen} = this,
-            {contentSize, children} = props,
+            {children} = props,
             vertical = this.isVertical(),
-            size = isOpen ? contentSize : 0;
+            size = isOpen ? this.contentSize : 0;
         return vertical ?
             box({height: size, items: children}) :
             box({width: size, items: children});
@@ -80,7 +82,8 @@ export class Collapsible extends Component {
                         margin: 0,
                         padding: 0,
                         width: vertical ? '70px' : '10px',
-                        height: vertical ? '10px' : '70px'
+                        height: vertical ? '10px' : '70px',
+                        zIndex: 10
                     },
                     onClick: this.onButtonClick
                 })
