@@ -73,14 +73,14 @@ export class MonitorEditorPanel extends Component {
     gridModel = new RestGridModel({
         store: this.store,
         columns: [
-            boolCheckCol({field: 'active', width: 60}),
-            baseCol({field: 'code', width: 150}),
-            nameFlexCol(),
-            baseCol({field: 'warnThreshold', width: 120}),
-            baseCol({field: 'failThreshold', width: 120}),
-            baseCol({field: 'metricUnit', width: 100}),
-            baseCol({field: 'notes'}),
-            baseCol({field: 'sortOrder', width: 100})
+            boolCheckCol({field: 'active', fixedWidth: 70}),
+            baseCol({field: 'code', fixedWidth: 150}),
+            nameFlexCol(), // need to think about max widths in cases where more than one column is 'flex' and in different proportions
+            baseCol({field: 'warnThreshold', fixedWidth: 130}),
+            baseCol({field: 'failThreshold', fixedWidth: 130}),
+            baseCol({field: 'metricUnit', fixedWidth: 100}),
+            baseCol({field: 'notes', minWidth: 70}), // like here, it would make more sense in this case for notes to truly flex, and have name stop at some point.
+            baseCol({field: 'sortOrder', fixedWidth: 100})
         ],
         editors: [
             {field: 'code'},
