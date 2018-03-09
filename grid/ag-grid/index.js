@@ -12,7 +12,7 @@ import {elemFactory} from 'hoist/core';
 
 
 import {AgGridReact} from 'ag-grid-react';
-import {LicenseManager} from 'ag-grid-enterprise';
+// import {LicenseManager} from 'ag-grid-enterprise';
 
 // Watiting for real key
 // LicenseManager.setLicenseKey(
