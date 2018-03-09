@@ -46,13 +46,13 @@ export class FeedbackPanel extends Component {
             edit: false
         },
         columns: [
-            usernameCol(),
-            baseCol({field: 'msg', headerName: 'Message', width: 60}),
-            baseCol({field: 'browser', width: 100}),
-            baseCol({field: 'device', width: 60}),
-            baseCol({field: 'appVersion', width: 100}),
-            baseCol({field: 'appEnvironment',  width: 100}),
-            baseCol({field: 'dateCreated', width: 100, renderer: compactDateRenderer()})
+            baseCol({field: 'dateCreated', headerName: 'Date', fixedWidth: 100, valueFormatter: compactDateRenderer()}),
+            usernameCol({fixedWidth: 120}),
+            baseCol({field: 'msg', headerName: 'Message', minWidth: 60}),
+            baseCol({field: 'browser', fixedWidth: 120}),
+            baseCol({field: 'device', fixedWidth: 120}),
+            baseCol({field: 'appVersion', headerName: 'Version', fixedWidth: 120}),
+            baseCol({field: 'appEnvironment', headerName: 'Environment', fixedWidth: 120})
         ],
         editors: [
             {field: 'username'},
