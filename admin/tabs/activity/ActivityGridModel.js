@@ -18,7 +18,7 @@ import {usernameCol} from '../../columns/Columns';
 
 export class ActivityGridModel {
 
-    @observable startDate = moment('20170801').toDate();
+    @observable startDate = moment('20170801').toDate(); // test code to ensure rows, reset to today
     @observable endDate = moment().toDate();
     @observable @setter username = '';
     @observable @setter msg = '';
@@ -37,7 +37,7 @@ export class ActivityGridModel {
         store: this.store,
         columns: [
             baseCol({field: 'severity', fixedWidth: 80}),
-            dateTimeCol({field: 'dateCreated', fixedWidth: 160}),
+            dateTimeCol({field: 'dateCreated', fixedWidth: 160, rightAlign: true}),
             usernameCol({fixedWidth: 120}),
             baseCol({field: 'msg', headerName: 'Message', minWidth: 150}),
             baseCol({field: 'category', fixedWidth: 100}),
@@ -47,7 +47,8 @@ export class ActivityGridModel {
             baseCol({field: 'impersonating', fixedWidth: 140}),
             baseCol({
                 field: 'elapsed',
-                fixedWidth: 80,
+                headerName: 'Elapsed (ms)',
+                fixedWidth: 120,
                 valueFormatter: numberRenderer({precision: 0})
             })
         ]
