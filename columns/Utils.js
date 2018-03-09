@@ -19,9 +19,9 @@ export function fileColFactory(fileVals = {}) {
     return function(colVals = {}) {
         return function(instanceVals = {}) {
             // ask Lee, this makes the grid code cleaner
-            if (instanceVals.width) {
-                instanceVals.maxWidth = instanceVals.width;
-                instanceVals.minWidth = instanceVals.width;
+            if (instanceVals.fixedWidth) {
+                instanceVals.maxWidth = instanceVals.fixedWidth;
+                instanceVals.minWidth = instanceVals.fixedWidth;
             }
             // Do additional pre-processing here
             return defaults(instanceVals, colVals, fileVals, globalVals);
