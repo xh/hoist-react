@@ -1,32 +1,32 @@
 .xh-resize-handler {
     position: absolute;
-    background-color: red;
+    background-color: transparent;
+    z-index: 5;
 }
 
 .xh-resize-handler.top {
     width: 100%;
-    height: 3px;
+    height: 5px;
     top: -2px;
     left: 0;
     cursor: ns-resize;
 }
 .xh-resize-handler.right {
-    width: 3px;
+    width: 5px;
     height: 100%;
     top: 0;
     right: -2px;
-    z-index: 999;
     cursor: ew-resize;
 }
 .xh-resize-handler.bottom {
     width: 100%;
-    height: 3px;
+    height: 5px;
     bottom: -2px;
     left: 0;
     cursor: ns-resize;
 }
 .xh-resize-handler.left {
-    width: 3px;
+    width: 5px;
     height: 100%;
     top: 0;
     left: -2px;

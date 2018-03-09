@@ -5,16 +5,15 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {isNil} from 'lodash';
-import {action, observable} from 'hoist/mobx';
-import {Ref} from 'hoist/utils/Ref';
 import {cloneElement} from 'react';
+import {frame} from 'hoist/layout';
+import {action, observable} from 'hoist/mobx';
 import {resizeHandle} from './ResizeHandle';
+import {isNil} from 'lodash';
 
-export function resizable(C) {
+export const resizable = C => {
     class ResizableComponent extends C {
         @observable _isResizing = false;
-        _resizableElem = new Ref();
         _resizeDirection = 'right';
 
         isResizable = {
@@ -26,6 +25,11 @@ export function resizable(C) {
             bottom: true,
             bottomLeft: true,
             left: true
+        };
+
+        _startValues = {
+            x: 0,
+            y: 0,
         };
 
         constructor(props) {
@@ -56,16 +60,15 @@ export function resizable(C) {
                     style: {
                         ...(el.props.style || {}),
                         ...userSelect
-                    },
-                    ref: this._resizableElem.ref
+                    }
                 };
+
 
             return cloneElement(
                 el,
                 props,
                 [el.props.children, this.renderResizers()]
             )
-
         }
 
         componentWillUnmount() {
@@ -96,24 +99,42 @@ export function resizable(C) {
 
         @action
         _onResizeStart(e, direction) {
-            console.log('start');
+            this._resizeDirection = direction;
+
+            this._startValues.y = e.clientY;
+            this._startValues.x = e.clientX;
             this._isResizing = true;
         }
 
         _onResize = (e) => {
             if (!this._isResizing) return;
-            const el = this._resizableElem.value,
-                {clientX, clientY} = e,
-                direction = this.resizeDirection;
+            const {clientX, clientY} = e,
+                {x: startX, y: startY} = this._startValues,
+                direction = this._resizeDirection,
+                contentSize = this.contentSize && parseInt(this.contentSize, 10);
 
+            let diff, size;
+            if (direction === 'right') {
+                diff = startX - clientX;
+                this._startValues.x = clientX;
+            } else if (direction === 'left') {
+                diff = clientX - startX;
+                this._startValues.x = clientX;
+            } else if (direction === 'top') {
+                diff = clientY - startY;
+                this._startValues.y = clientY;
+            } else if (direction === 'bottom') {
+                diff = startY - clientY;
+                this._startValues.y = clientY;
+            }
 
-            console.log(clientX, clientY, direction);
-            console.log(e);
+            size = Math.max(contentSize - diff, 0);
+
+            this.setContentSize(`${size}px`);
         }
 
         @action
         _onResizeEnd = () => {
-            console.log('end');
             this._isResizing = false;
         }
     }

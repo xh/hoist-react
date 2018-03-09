@@ -21,10 +21,9 @@ class ResizeHandle extends Component {
     }
 
     render() {
-        const {key, direction, onResizeStart} = this.props;
+        const {direction, onResizeStart} = this.props;
 
         return div({
-            key: key,
             cls: `xh-resize-handler ${direction}`,
             onMouseDown: (e) => onResizeStart(e, direction),
             onTouchStart: (e) => onResizeStart(e, direction)
