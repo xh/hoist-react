@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {hoistComponent} from 'hoist/core';
 import {baseCol} from 'hoist/columns/Core';
-import {dateCol} from 'hoist/columns/DatesTimes';
+import {dateTimeCol} from 'hoist/columns/DatesTimes';
 import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
 
 import {usernameCol} from '../../columns/Columns';
@@ -48,10 +48,10 @@ export class DashboardPanel extends Component {
         },
 
         columns: [
-            baseCol({field: 'appCode', width: 100}),
-            usernameCol(),
-            dateCol({field: 'lastUpdated'}),
-            baseCol({field: 'definition'})
+            baseCol({field: 'appCode', fixedWidth: 140}),
+            usernameCol({fixedWidth: 120}),
+            dateTimeCol({field: 'lastUpdated', fixedWidth: 160}),
+            baseCol({field: 'definition', minWidth: 120})
         ],
         editors: [
             {field: 'appCode'},
