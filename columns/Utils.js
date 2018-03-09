@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {defaults, castArray} from 'lodash';
+import './Columns.css';
 
 const globalVals = {};
 
