@@ -9,7 +9,8 @@ import './LoginPanel.css';
 import React, {Component} from 'react';
 import {XH, elemFactory, hoistComponent, hoistModel} from 'hoist/core';
 import {vbox, hbox, filler, viewport} from 'hoist/layout';
-import {inputGroup, button, text} from 'hoist/kit/blueprint';
+import {button, text} from 'hoist/kit/blueprint';
+import {textField} from 'hoist/cmp';
 import {observable, computed, setter} from 'hoist/mobx';
 import {MessageModel, message} from 'hoist/cmp';
 
@@ -34,19 +35,18 @@ export class LoginPanel extends Component {
                 justifyContent: 'right',
                 width: 300,
                 items: [
-                    inputGroup({
+                    textField({
+                        model: this,
+                        field: 'username',
                         placeholder: 'Username...',
                         autoFocus: true,
-                        value: this.username,
-                        onChange: this.onUsernameChange,
                         cls: 'xh-mb'
                     }),
-                    inputGroup({
+                    textField({
+                        model: this,
+                        field: 'password',
                         placeholder: 'Password...',
-                        value: this.password,
                         type: 'password',
-                        rightElement: button({icon: 'lock', disabled: true}),
-                        onChange: this.onPasswordChange,
                         cls: 'xh-mb'
                     }),
                     text({

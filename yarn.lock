@@ -148,17 +148,19 @@ acorn@^5.5.0:
   version "5.5.0"
   resolved "https://repo.xh.io/repository/npm-public/acorn/-/acorn-5.5.0.tgz#1abb587fbf051f94e3de20e6b26ef910b1828298"
 
-ag-grid-enterprise@^15.0.0:
-  version "15.0.0"
-  resolved "https://registry.yarnpkg.com/ag-grid-enterprise/-/ag-grid-enterprise-15.0.0.tgz#0240ead5400f1af3f0753f49137bc4836a3b927b"
+ag-grid-enterprise@17.0.0:
+  version "17.0.0"
+  resolved "https://registry.yarnpkg.com/ag-grid-enterprise/-/ag-grid-enterprise-17.0.0.tgz#760769c9400f6eb60213a06ca2c5fe91c92d9fd4"
 
-ag-grid-react@^15.0.0:
-  version "15.0.0"
-  resolved "https://registry.yarnpkg.com/ag-grid-react/-/ag-grid-react-15.0.0.tgz#582859325b524a1fdf48ac05198b25429e3c11b0"
+ag-grid-react@17.0.0:
+  version "17.0.0"
+  resolved "https://registry.yarnpkg.com/ag-grid-react/-/ag-grid-react-17.0.0.tgz#363d78b95b9be3bb2124284d2baf70056808f287"
+  dependencies:
+    prop-types "15.6.0"
 
-ag-grid@^15.0.0:
-  version "15.0.0"
-  resolved "https://registry.yarnpkg.com/ag-grid/-/ag-grid-15.0.0.tgz#73048d812a43547494d43dc7f5cba533463fcc3e"
+ag-grid@17.0.0:
+  version "17.0.0"
+  resolved "https://registry.yarnpkg.com/ag-grid/-/ag-grid-17.0.0.tgz#b8c82268c1785e04425a3149ca53cc526376029b"
 
 ajv-keywords@^2.1.0:
   version "2.1.1"
@@ -1584,7 +1586,7 @@ promise@^7.1.1:
   dependencies:
     asap "~2.0.3"
 
-prop-types@^15.5.10, prop-types@^15.5.8, prop-types@^15.6.0:
+prop-types@15.6.0, prop-types@^15.5.10, prop-types@^15.5.8, prop-types@^15.6.0:
   version "15.6.0"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.6.0.tgz#ceaf083022fc46b4a35f69e13ef75aed0d639856"
   dependencies:
