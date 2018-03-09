@@ -18,7 +18,7 @@ import {usernameCol} from '../../columns/Columns';
 
 export class ActivityGridModel {
 
-    @observable startDate = moment('20170801').toDate(); // test code to ensure rows, reset to today
+    @observable startDate = moment().toDate();
     @observable endDate = moment().toDate();
     @observable @setter username = '';
     @observable @setter msg = '';
