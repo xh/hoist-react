@@ -7,8 +7,9 @@
 
 import {Component} from 'react';
 import {XH, elemFactory, hoistComponent} from 'hoist/core';
-import {hbox, vbox, spacer, filler, div, span} from 'hoist/layout';
-import {Classes, button, suggest, popover, menuItem, hotkeys, hotkey} from 'hoist/kit/blueprint';
+import {hbox, vbox, vspacer, filler, div, span} from 'hoist/layout';
+import {button, popover, hotkeys, hotkey} from 'hoist/kit/blueprint';
+import {comboField} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import {ImpersonationBarModel} from './ImpersonationBarModel';
@@ -70,17 +71,13 @@ export class ImpersonationBar extends Component {
             content: vbox({
                 justifyContent: 'right',
                 items: [
-                    suggest({
-                        popoverProps: {popoverClassName: Classes.MINIMAL},
-                        itemPredicate: (q, v) => !v || v.includes(q),
-                        $items: model.targets || [],
-                        onItemSelect: this.onItemSelect,
-                        itemRenderer: (item, itemProps) => {
-                            return menuItem({key: item, text: item, onClick: itemProps.handleClick});
-                        },
-                        inputValueRenderer: s => s
+                    comboField({
+                        model,
+                        field: 'selectedTarget',
+                        options: model.targets,
+                        placeholder: 'Select User...'
                     }),
-                    spacer({height: 5}),
+                    vspacer(5),
                     hbox(
                         filler(),
                         button({
@@ -109,10 +106,6 @@ export class ImpersonationBar extends Component {
     //---------------------
     onHotKey = () => {
         this.model.toggleVisibility();
-    }
-
-    onItemSelect = (item) => {
-        this.model.setSelectedTarget(item);
     }
 
     onOKClick = () => {
