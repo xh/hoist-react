@@ -49,11 +49,13 @@ class Grid extends Component {
                 // cls: this.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                 item: agGridReact({
                     rowData: store.records,
+                    defaultColDef: {suppressMenu: true},
                     columnDefs: columns,
                     onSelectionChanged: this.onSelectionChanged,
                     onGridReady: this.onGridReady,
                     gridOptions: this.gridOptions,
-                    getContextMenuItems: this.getContextMenuItems
+                    getContextMenuItems: this.getContextMenuItems,
+                    onGridSizeChanged: this.onGridSizeChanged
                 })
             })
         );
@@ -62,6 +64,10 @@ class Grid extends Component {
     //------------------------
     // Implementation
     //------------------------
+    onGridSizeChanged = (ev) => {
+        ev.api.sizeColumnsToFit();
+    }
+
     onGridReady = (params) => {
         this.model.gridApi = params.api;
     }

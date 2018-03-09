@@ -9,7 +9,7 @@ import {hoistComponent} from 'hoist/core';
 import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
 import {baseCol} from 'hoist/columns/Core';
 
-import {nameFlexCol, usernameCol} from '../../columns/Columns';
+import {nameCol, usernameCol} from '../../columns/Columns';
 
 @hoistComponent()
 export class UserPreferencePanel extends Component {
@@ -54,10 +54,10 @@ export class UserPreferencePanel extends Component {
     gridModel = new RestGridModel({
         store: this.store,
         columns: [
-            nameFlexCol(),
-            baseCol({field: 'type', width: 80}),
-            usernameCol(),
-            baseCol({field: 'userValue'})
+            nameCol({fixedWidth: 200}),
+            baseCol({field: 'type', fixedWidth: 70}),
+            usernameCol({fixedWidth: 120}),
+            baseCol({field: 'userValue', minWidth: 200})
         ],
         editors: [
             {field: 'name'},

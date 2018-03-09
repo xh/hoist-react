@@ -36,18 +36,19 @@ export class ActivityGridModel {
     gridModel = new GridModel({
         store: this.store,
         columns: [
-            baseCol({field: 'severity', width: 80}),
-            dateTimeCol({field: 'dateCreated'}),
-            usernameCol({width: 120}),
-            baseCol({field: 'msg', headerName: 'Message', width: 120}),
-            baseCol({field: 'category', width: 100}),
-            baseCol({field: 'device', width: 80}),
-            baseCol({field: 'browser', width: 100}),
-            baseCol({field: 'data'}),
-            baseCol({field: 'impersonating',  width: 120}),
+            baseCol({field: 'severity', fixedWidth: 80}),
+            dateTimeCol({field: 'dateCreated', fixedWidth: 160, rightAlign: true}),
+            usernameCol({fixedWidth: 120}),
+            baseCol({field: 'msg', headerName: 'Message', minWidth: 150}),
+            baseCol({field: 'category', fixedWidth: 100}),
+            baseCol({field: 'device', fixedWidth: 80}),
+            baseCol({field: 'browser', fixedWidth: 100}),
+            baseCol({field: 'data', minWidth: 70}),
+            baseCol({field: 'impersonating', fixedWidth: 140}),
             baseCol({
                 field: 'elapsed',
-                width: 80,
+                headerName: 'Elapsed (ms)',
+                fixedWidth: 120,
                 valueFormatter: numberRenderer({precision: 0})
             })
         ]
