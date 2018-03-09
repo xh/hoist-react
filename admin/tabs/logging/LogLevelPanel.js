@@ -39,10 +39,10 @@ export class LogLevelPanel extends Component {
     gridModel = new RestGridModel({
         store: this.store,
         columns: [
-            nameCol(),
-            baseCol({field: 'defaultLevel', width: 80}),
-            baseCol({field: 'level', width: 80}),
-            baseCol({field: 'effectiveLevel', width: 80})
+            nameCol({minWidth: 200}),
+            baseCol({field: 'defaultLevel', fixedWidth: 120}),
+            baseCol({field: 'level', fixedWidth: 120}),
+            baseCol({field: 'effectiveLevel', fixedWidth: 120})
         ],
         editors: [
             {field: 'name'},
