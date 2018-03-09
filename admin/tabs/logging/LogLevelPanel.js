@@ -40,9 +40,9 @@ export class LogLevelPanel extends Component {
         store: this.store,
         columns: [
             nameCol({minWidth: 200}),
-            baseCol({field: 'defaultLevel', fixedWidth: 120}),
-            baseCol({field: 'level', fixedWidth: 120}),
-            baseCol({field: 'effectiveLevel', fixedWidth: 120})
+            baseCol({field: 'defaultLevel', headerName: 'Initial', fixedWidth: 90}),
+            baseCol({field: 'level', headerName: 'Override', fixedWidth: 90}),
+            baseCol({field: 'effectiveLevel', headerName: 'Effective', fixedWidth: 90})
         ],
         editors: [
             {field: 'name'},

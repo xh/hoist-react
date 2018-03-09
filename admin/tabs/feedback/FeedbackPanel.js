@@ -46,7 +46,13 @@ export class FeedbackPanel extends Component {
             edit: false
         },
         columns: [
-            baseCol({field: 'dateCreated', headerName: 'Date', fixedWidth: 100, valueFormatter: compactDateRenderer()}),
+            baseCol({
+                field: 'dateCreated',
+                headerName: 'Date',
+                fixedWidth: 100,
+                rightAlign: true,
+                valueFormatter: compactDateRenderer()
+            }),
             usernameCol({fixedWidth: 120}),
             baseCol({field: 'msg', headerName: 'Message', minWidth: 60}),
             baseCol({field: 'browser', fixedWidth: 120}),

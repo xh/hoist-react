@@ -75,11 +75,11 @@ export class MonitorEditorPanel extends Component {
         columns: [
             boolCheckCol({field: 'active', fixedWidth: 70, centerAlign: true}),
             baseCol({field: 'code', fixedWidth: 150}),
-            nameFlexCol(), // need to think about max widths in cases where more than one column is 'flex' and in different proportions
+            nameFlexCol({width: 500}),
             baseCol({field: 'warnThreshold', fixedWidth: 130}),
             baseCol({field: 'failThreshold', fixedWidth: 130}),
             baseCol({field: 'metricUnit', fixedWidth: 100}),
-            baseCol({field: 'notes', minWidth: 70}), // like here, it would make more sense in this case for notes to truly flex, and have name stop at some point.
+            baseCol({field: 'notes', minWidth: 70, width: 500}),
             baseCol({field: 'sortOrder', fixedWidth: 100})
         ],
         editors: [
