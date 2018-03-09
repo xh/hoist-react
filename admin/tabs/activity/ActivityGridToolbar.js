@@ -153,7 +153,7 @@ export class ActivityGridToolbar extends Component {
 
     renderLogCount() {
         const store = this.model.gridModel.store;
-        return store.records.length + ' track logs';
+        return store.count + ' track logs';
     }
 }
 export const activityGridToolbar = elemFactory(ActivityGridToolbar);
