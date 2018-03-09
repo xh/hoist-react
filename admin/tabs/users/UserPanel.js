@@ -21,11 +21,11 @@ export class UserPanel extends Component {
             fields: ['username', 'email', 'displayName', 'active', 'roles']
         }),
         columns: [
-            usernameCol({width: 175}),
-            baseCol({field: 'email', width: 175}),
-            baseCol({field: 'displayName', width: 150}),
-            boolCheckCol({field: 'active', width: 75}),
-            baseCol({field: 'roles'})
+            usernameCol({fixedWidth: 175}),
+            baseCol({field: 'email', fixedWidth: 175}),
+            baseCol({field: 'displayName', fixedWidth: 150}),
+            boolCheckCol({field: 'active', fixedWidth: 75}),
+            baseCol({field: 'roles', minWidth: 130})
         ]
     });
 
