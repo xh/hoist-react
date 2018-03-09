@@ -18,8 +18,8 @@ const globalVals = {};
 export function fileColFactory(fileVals = {}) {
     return function(colVals = {}) {
         return function(instanceVals = {}) {
-            // ask Lee, this makes the grid code cleaner
             if (instanceVals.fixedWidth) {
+                instanceVals.width = instanceVals.fixedWidth;
                 instanceVals.maxWidth = instanceVals.fixedWidth;
                 instanceVals.minWidth = instanceVals.fixedWidth;
             }
