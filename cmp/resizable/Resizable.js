@@ -6,10 +6,8 @@
  */
 
 import {cloneElement} from 'react';
-import {frame} from 'hoist/layout';
 import {action, observable} from 'hoist/mobx';
 import {resizeHandle} from './ResizeHandle';
-import {isNil} from 'lodash';
 
 export const resizable = C => {
     class ResizableComponent extends C {
@@ -29,7 +27,7 @@ export const resizable = C => {
 
         _startValues = {
             x: 0,
-            y: 0,
+            y: 0
         };
 
         constructor(props) {
@@ -68,7 +66,7 @@ export const resizable = C => {
                 el,
                 props,
                 [el.props.children, this.renderResizers()]
-            )
+            );
         }
 
         componentWillUnmount() {
@@ -85,7 +83,7 @@ export const resizable = C => {
             const isResizable = this.props.isResizable || this.isResizable;
 
             return [
-                'top', 'right', 'bottom', 'left', 'topRight', 'bottomRight', 'bottomLeft', 'topLeft',
+                'top', 'right', 'bottom', 'left', 'topRight', 'bottomRight', 'bottomLeft', 'topLeft'
             ].map(direction => {
                 if (isResizable && isResizable[direction]) {
                     return resizeHandle({
@@ -140,4 +138,4 @@ export const resizable = C => {
     }
 
     return ResizableComponent;
-}
+};
