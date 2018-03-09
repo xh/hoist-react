@@ -20,8 +20,8 @@ export class ServicePanel extends Component {
             fields: ['provider', 'name']
         }),
         columns: [
-            baseCol({field: 'provider', width: 150, maxWidth: 150}),
-            baseCol({field: 'name', width: 300, maxWidth: 300})
+            baseCol({field: 'provider', fixedWidth: 100}),
+            baseCol({field: 'name', minWidth: 300})
         ]
     });
 
