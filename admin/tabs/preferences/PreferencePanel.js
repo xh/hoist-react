@@ -9,7 +9,7 @@ import {hoistComponent} from 'hoist/core';
 import {boolCheckCol, baseCol} from 'hoist/columns/Core';
 import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
 
-import {nameFlexCol} from '../../columns/Columns';
+import {nameCol} from '../../columns/Columns';
 
 @hoistComponent()
 export class PreferencePanel extends Component {
@@ -61,11 +61,11 @@ export class PreferencePanel extends Component {
             del: 'Are you sure you want to delete? Deleting preferences can break running apps!'
         },
         columns: [
-            boolCheckCol({field: 'local', fixedWidth: 70, centerAlign: true}), // do we want to do this on all instance vLues or diffault in col
-            nameFlexCol({headerClass: 'don'}),
+            boolCheckCol({field: 'local', fixedWidth: 70, centerAlign: true}),
+            nameCol({fixedWidth: 200}),
             baseCol({field: 'type', fixedWidth: 70}),
-            baseCol({field: 'defaultValue'}),  // still need to look at this grid for sizing (and user prefs)
-            baseCol({field: 'notes'})
+            baseCol({field: 'defaultValue', minWidth: 150, maxWidth: 480}),
+            baseCol({field: 'notes', minWidth: 200})
         ],
         editors: [
             {field: 'name'},
