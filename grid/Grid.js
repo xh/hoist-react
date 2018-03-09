@@ -21,6 +21,7 @@ import './Grid.css';
 class Grid extends Component {
 
     static gridDefaults = {
+        toolPanelSuppressSideButtons: true,
         enableSorting: true,
         enableColResize: true,
         deltaRowDataMode: true,
@@ -44,8 +45,8 @@ class Grid extends Component {
         return frame(
             div({
                 style: {flex: '1 1 auto', overflow: 'hidden'},
-                // cls: this.darkTheme ? 'ag-theme-dark' : 'ag-theme-fresh',
-                cls: this.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
+                cls: this.darkTheme ? 'ag-theme-dark' : 'ag-theme-fresh',
+                // cls: this.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                 item: agGridReact({
                     rowData: store.records,
                     columnDefs: columns,
