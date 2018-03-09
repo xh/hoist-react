@@ -12,8 +12,6 @@ import {baseCol} from 'hoist/columns/Core';
 
 import {nameCol} from '../../columns/Columns';
 
-import './EhCachePanel.css';
-
 @hoistComponent()
 export class EhCachePanel extends Component {
 
@@ -24,9 +22,9 @@ export class EhCachePanel extends Component {
         }),
         columns: [
             nameCol({minWidth: 360}),
-            baseCol({field: 'heapSize', fixedWidth: 130, cellClass: 'xh-align-right'}),
-            baseCol({field: 'entries', fixedWidth: 130, cellClass: 'xh-align-right'}),
-            baseCol({field: 'status', minWidth: 120, cellClass: 'xh-align-right'})
+            baseCol({field: 'heapSize', fixedWidth: 130, rightAlign: true}),
+            baseCol({field: 'entries', fixedWidth: 130, rightAlign: true}),
+            baseCol({field: 'status', minWidth: 120, rightAlign: true})
         ]
     });
     

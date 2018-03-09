@@ -61,10 +61,10 @@ export class PreferencePanel extends Component {
             del: 'Are you sure you want to delete? Deleting preferences can break running apps!'
         },
         columns: [
-            boolCheckCol({field: 'local', width: 60}),
-            nameFlexCol(),
-            baseCol({field: 'type', width: 80}),
-            baseCol({field: 'defaultValue'}),
+            boolCheckCol({field: 'local', fixedWidth: 70, centerAlign: true}), // do we want to do this on all instnce vLues or diffault in col
+            nameFlexCol({headerClass: 'don'}),
+            baseCol({field: 'type', fixedWidth: 70}),
+            baseCol({field: 'defaultValue'}),  // still need to look at this grid for sizing (and user prefs)
             baseCol({field: 'notes'})
         ],
         editors: [

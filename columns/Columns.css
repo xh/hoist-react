@@ -1,3 +1,23 @@
-.xh-center-content {
+/*right align col cell content*/
+.xh-align-right {
+    text-align: right
+}
+
+/*center align col cell content*/
+.xh-align-center {
     text-align: center
+}
+
+/*right align col header*/
+.xh-right-justify .ag-header-cell-label {
+    width: auto;
+    float: none;
+    justify-content: flex-end;
+}
+
+/*center align col header*/
+.xh-center-justify .ag-header-cell-label {
+    width: auto;
+    float: none;
+    justify-content: center;
 }

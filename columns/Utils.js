@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {defaults} from 'lodash';
+import {defaults, castArray} from 'lodash';
 
 const globalVals = {};
 
@@ -18,6 +18,19 @@ const globalVals = {};
 export function fileColFactory(fileVals = {}) {
     return function(colVals = {}) {
         return function(instanceVals = {}) {
+
+            instanceVals.headerClass = castArray(instanceVals.headerClass);
+            instanceVals.cellClass = castArray(instanceVals.cellClass);
+            if (instanceVals.centerAlign) {
+                instanceVals.headerClass.push('xh-center-justify');
+                instanceVals.cellClass.push('xh-align-center');
+            }
+
+            if (instanceVals.rightAlign) {
+                instanceVals.headerClass.push('xh-right-justify');
+                instanceVals.cellClass.push('xh-align-right');
+            }
+
             if (instanceVals.fixedWidth) {
                 instanceVals.width = instanceVals.fixedWidth;
                 instanceVals.maxWidth = instanceVals.fixedWidth;
