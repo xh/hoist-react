@@ -85,15 +85,15 @@ export class ConfigPanel extends Component {
         },
 
         columns: this.filterForEnv([
-            nameCol(),
-            baseCol({field: 'valueType', width: 100}),
-            baseCol({field: 'groupName', width: 100}),
+            nameCol({fixedWidth: 200}),
+            baseCol({field: 'valueType', fixedWidth: 100}),
+            baseCol({field: 'groupName', fixedWidth: 120}),
             this.valCol({field: 'prodValue', env: 'Production'}),
             this.valCol({field: 'betaValue', env: 'Beta'}),
             this.valCol({field: 'stageValue', env: 'Staging'}),
             this.valCol({field: 'devValue', env: 'Development'}),
-            boolCheckCol({field: 'clientVisible', width: 90}),
-            baseCol({field: 'note'})
+            boolCheckCol({field: 'clientVisible', headerName: 'Client?', fixedWidth: 75}),
+            baseCol({field: 'note', minWidth: 60})
         ]),
         editors: this.filterForEnv([
             {field: 'name'},
@@ -130,7 +130,7 @@ export class ConfigPanel extends Component {
     }
 
     valCol(params) {
-        return baseCol({...params, width: 175, valueFormatter: this.maskIfPwd});
+        return baseCol({...params, fixedWidth: 175, valueFormatter: this.maskIfPwd});
     }
 
     maskIfPwd(params) {
