@@ -1,5 +1,5 @@
 .xh-admin-about-panel {
-    padding: 10px;
+    padding: var(--xh-padding-px);
 }
 
 .xh-admin-about-panel table {
@@ -8,19 +8,18 @@
 }
 
 .xh-admin-about-panel tr {
-    border: 1px solid #5C7080;
+    border: 1px solid var(--xh-border-color);
 }
 
 .xh-admin-about-panel th {
-    background-color: #293742;
-    color: white;
+    padding: var(--xh-padding-px);
+    background-color: var(--xh-alt-bg-color);
     width: 200px;
-    padding: 8px;
     text-align: left;
 }
 
 .xh-admin-about-panel td {
+    padding: var(--xh-padding-px);
     width: 200px;
-    padding: 8px;
     text-align: right;
 }

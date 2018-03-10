@@ -1,3 +1,12 @@
+.pt-dark, .pt-dark h1, .pt-dark h2, .pt-dark h3, .pt-dark h4, .pt-dark h5 {
+    color: var(--xh-text-color);
+}
+
+.pt-navbar, .pt-dark .pt-navbar {
+    color: var(--xh-navbar-color);
+    background-color: var(--xh-navbar-bg-color);
+}
+
 .pt-navbar-heading {
     margin-left: 8px;
     font-size: 20px !important;
