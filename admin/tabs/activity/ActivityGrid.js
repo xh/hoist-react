@@ -69,9 +69,9 @@ export class ActivityGrid extends Component {
     dayField(args) {
         return dayField({
             model: this.model,
-            onCommit: this.onDateCommit,
             popoverPosition: 'bottom',
             width: 100,
+            onCommit: this.onCommit,
             ...args
         });
     }
@@ -80,8 +80,13 @@ export class ActivityGrid extends Component {
         return textField({
             model: this.model,
             width: 140,
+            onCommit: this.onCommit,
             ...args
         });
+    }
+
+    onCommit = () => {
+        this.model.loadAsync();
     }
 
     onDateGoBackClick = () => {
@@ -94,10 +99,6 @@ export class ActivityGrid extends Component {
 
     onGoToCurrentDateClick = () => {
         this.model.adjustDates('subtract', true);
-    }
-
-    onDateCommit = () => {
-        this.model.loadAsync();
     }
 
     onSubmitClick = () => {

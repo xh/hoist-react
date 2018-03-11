@@ -23,15 +23,38 @@ export class LogViewerToolbar extends Component {
             items: [
                 label('Start Line:'),
                 hspacer(8),
-                numberField({model, field: 'startLine', min: 0, width: 80}),
+                numberField({
+                    model,
+                    field: 'startLine',
+                    min: 0,
+                    width: 80,
+                    onCommit: this.onCommit
+                }),
                 hspacer(10),
                 label('Max Lines:'),
                 hspacer(8),
-                numberField({model, field: 'maxLines', min: 1, width: 80}),
+                numberField({
+                    model,
+                    field: 'maxLines',
+                    min: 1,
+                    width: 80,
+                    onCommit:
+                    this.onCommit
+                }),
                 hspacer(10),
-                textField({model, field: 'pattern', placeholder: 'Search...', width: 150}),
+                textField({
+                    model,
+                    field: 'pattern',
+                    placeholder: 'Search...',
+                    width: 150,
+                    onCommit: this.onCommit
+                }),
                 hspacer(10),
-                checkField({model, field: 'tail', text: 'Tail'}),
+                checkField({
+                    model,
+                    field: 'tail',
+                    text: 'Tail'
+                }),
                 filler(),
                 button({icon: Icon.refresh(), onClick: this.onSubmitClick})
             ]
@@ -42,6 +65,10 @@ export class LogViewerToolbar extends Component {
     // Implementation
     //-----------------------------
     onSubmitClick = () => {
+        this.model.loadLines();
+    }
+
+    onCommit = () => {
         this.model.loadLines();
     }
 }

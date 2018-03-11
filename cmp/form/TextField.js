@@ -5,32 +5,21 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-
-import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {inputGroup} from 'hoist/kit/blueprint';
 
-import {bindableField} from './BindableField';
+import {HoistField} from './HoistField';
 
 /**
  * A Text Input Field
- *
- * @prop value, string
- * @prop onChange, handler to fire when value changes
- * @prop model, model to bind to
- * @prop field, name of property in model to bind to
- * @prop disabled, is control disabled
- * @prop style
- * @prop className
  *
  * @prop autoFocus
  * @prop type, 'text' or 'password'
  * @prop placeholder, text to display when control is empty
  * @prop width, width of field, in pixels,
  */
-@bindableField
 @hoistComponent()
-export class TextField extends Component {
+export class TextField extends HoistField {
     
     delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus'];
 
@@ -38,8 +27,11 @@ export class TextField extends Component {
         const {style, width} = this.props;
 
         return inputGroup({
-            value: this.readValue() || '',
+            value: this.renderValue || '',
             onChange: this.onChange,
+            onKeyPress: this.onKeyPress,
+            onBlur: this.onBlur,
+            onFocus: this.onFocus,
             style: {...style, width},
             ...this.getDelegateProps()
         });
@@ -47,6 +39,16 @@ export class TextField extends Component {
 
     onChange = (ev) => {
         this.noteValueChange(ev.target.value);
+    }
+    
+    onKeyPress = (ev) => {
+        if (ev.key === 'Enter') {
+            this.doCommit();
+        }
+    }
+
+    onBlur = (ev) => {
+        this.doCommit();
     }
 }
 export const textField = elemFactory(TextField);

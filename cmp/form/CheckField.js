@@ -6,29 +6,20 @@
  */
 
 
-import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {label} from 'hoist/cmp';
 import {checkbox} from 'hoist/kit/blueprint';
 
-import {bindableField} from './BindableField';
+import {HoistField} from './HoistField';
 
 /**
  * A CheckBox field for editing a boolean value
  *
- * @prop value, boolean
- * @prop onChange, handler to fire when value changes
- * @prop model, model to bind to
- * @prop field, name of property in model to bind to
- * @prop disabled, is control disabled
- * @prop style
- * @prop className
- *
  * @prop text, name of field
+ * @prop rest, see properties for HoistField
  */
-@bindableField
 @hoistComponent()
-export class CheckField extends Component {
+export class CheckField extends HoistField {
 
     static defaultProps = {
         text: ''
@@ -40,17 +31,20 @@ export class CheckField extends Component {
         const {text, style} = this.props;
 
         return checkbox({
-            checked: this.readValue(),
+            checked: this.renderValue,
             onChange: this.onChange,
             style: {...style, marginBottom: '0px', marginRight: '0px'},
             label: label(text),
             inline: true,
+            onBlur: this.onBlur,
+            onFocus: this.onFocus,
             ...this.getDelegateProps()
         });
     }
 
     onChange = (e) => {
         this.noteValueChange(e.target.checked);
+        this.doCommit();
     }
 }
 export const checkField = elemFactory(CheckField);
