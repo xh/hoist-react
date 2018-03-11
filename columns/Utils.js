@@ -25,17 +25,20 @@ export function fileColFactory(fileVals = {}) {
             if (instanceVals.centerAlign) {
                 instanceVals.headerClass.push('xh-center-justify');
                 instanceVals.cellClass.push('xh-align-center');
+                delete instanceVals.centerAlign;
             }
 
             if (instanceVals.rightAlign) {
                 instanceVals.headerClass.push('xh-right-justify');
                 instanceVals.cellClass.push('xh-align-right');
+                delete instanceVals.rightAlign;
             }
 
             if (instanceVals.fixedWidth) {
                 instanceVals.width = instanceVals.fixedWidth;
                 instanceVals.maxWidth = instanceVals.fixedWidth;
                 instanceVals.minWidth = instanceVals.fixedWidth;
+                delete instanceVals.fixedWidth;
             }
             // Do additional pre-processing here
             return defaults(instanceVals, colVals, fileVals, globalVals);
