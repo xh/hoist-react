@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import {action, observable, observer} from 'hoist/mobx';
 import {defaults, isUndefined} from 'lodash';
 
-import {textArea} from 'hoist/kit/blueprint';
+import {textAreaField} from 'hoist/cmp';
 
 import * as codemirror from 'codemirror';
 window.jsonlint = require('jsonlint-mod-fix');
@@ -52,7 +52,7 @@ export class JsonEditor extends Component {
     render() {
 
         const {jsonEditorSpec, ...rest} = this.props;
-        return textArea({...rest, ref: this.manageJsonEditor});
+        return textAreaField({...rest, ref: this.manageJsonEditor});
     }
 
     //------------------
@@ -95,6 +95,9 @@ export class JsonEditor extends Component {
     }
 
     // see https://codemirror.net/demo/lint.html for demo implementation
+    //         this function is taken from /addon/lint/json-lint.js which did not work with
+    //          'jsonlint-mod-fix' (which is a fork of jsonlint, adapted to work with modules).
+    //
     // todo: figure out how not to register this helper for each generated json field.
     //       not a big deal that it currently does, the function just overwrites the previous one,
     //       but is a little sloppy.
@@ -124,7 +127,7 @@ export class JsonEditor extends Component {
 
     @action
     handleEditorChange = (editor) => {
-        this.props.model.value = editor.getValue();
+        this.props.model.setValue(editor.getValue());
     }
 
     format() {

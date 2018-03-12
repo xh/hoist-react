@@ -10,7 +10,7 @@ import {hoistComponent, elemFactory} from 'hoist/core';
 import {fmtDateTime} from 'hoist/format';
 import {hbox} from 'hoist/layout';
 import {controlGroup} from 'hoist/kit/blueprint';
-import {label, comboField, numberField, selectField, textAreaField, textField}  from 'hoist/cmp';
+import {label, comboField, jsonEditor, numberField, selectField, textAreaField, textField}  from 'hoist/cmp';
 
 @hoistComponent()
 export class RestControl extends Component {
@@ -142,7 +142,7 @@ export class RestControl extends Component {
 
     renderJsonEditor() {
         const model = this.model;
-        return textAreaField({
+        return jsonEditor({
             model,
             field: 'value',
             cls: 'pt-fill',
