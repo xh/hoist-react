@@ -37,8 +37,17 @@ export class RestControlModel  {
 
     @computed
     get isValid() {
-        const {value, field} = this;
-        return (value != null && value !== '') || !field.required;
+        const {field, record, value} = this,
+            hasValue = (value != null && value !== '');
+        if (hasValue && field.typeField == 'valueType' && record.valueType == 'json') {
+            try {
+                JSON.parse(value);
+            } catch (e) {
+                return false;
+            }
+        }
+
+        return hasValue || !field.required;
     }
 
     @computed

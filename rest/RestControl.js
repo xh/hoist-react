@@ -229,25 +229,22 @@ const restTextInput = hoistComponentFactory(
 const restJsonEditor = hoistComponentFactory(
     class extends Component {
         render() {
-            const {value, disabled} = this.props;
+            const {value, disabled} = this.model;
             return jsonEditor({
                 value: value || '',
-                onChange: this.onChange,
                 // setting size appears to be the only way to get scrollbars
                 width: 343,
                 height: 150,
-                codeMirrorOptions: {
+                onChange: this.onChange,
+                jsonEditorSpec: {
                     readOnly: disabled
-                }
+                },
+                model: this.model
             });
         }
 
-        onChange = (editor, data, value) => {
-            try {
-                JSON.parse(value);
-            } catch (e) {
-                // say form invalid
-            }
+        onChange = (ev) => {
+            this.model.value = ev.target.value;
         }
     }
 );

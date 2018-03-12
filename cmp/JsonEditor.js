@@ -1,6 +1,7 @@
 import {Component} from 'react';
+import ReactDOM from 'react-dom';
 import {action, observable, observer} from 'hoist/mobx';
-import {defaults, omit, isUndefined} from 'lodash';
+import {defaults, isUndefined} from 'lodash';
 
 import {textArea} from 'hoist/kit/blueprint';
 
@@ -10,7 +11,7 @@ import 'codemirror/addon/fold/foldgutter.css';
 import 'codemirror/addon/scroll/simplescrollbars.css';
 import './JsonEditor.css';
 
-import {elem, elemFactory} from 'hoist';
+import {elemFactory} from 'hoist/core';
 import 'codemirror/mode/javascript/javascript.js';
 import 'codemirror/addon/fold/foldcode.js';
 import 'codemirror/addon/fold/foldgutter.js';
@@ -22,11 +23,11 @@ import 'codemirror/addon/scroll/simplescrollbars.js';
 @observer
 export class JsonEditor extends Component {
 
-    editorProps = null
-
+    editor = null
+    taCmp = null
     @observable value = this.props.value
 
-    defaultCodeMirrorOptions = {
+    defaultJsonEditorSpec = {
         mode: 'application/json',
         lineNumbers: true,
         autoCloseBrackets: true,
@@ -45,46 +46,56 @@ export class JsonEditor extends Component {
 
     render() {
 
-        const defaultCodeMirrorCmpProps = {
-            onBeforeChange: this.onBeforeChange.bind(this),
-            editorDidMount: this.onEditorDidMount.bind(this)
-        };
-
-        const codeMirrorOptions = defaults(this.props.codeMirrorOptions, this.defaultCodeMirrorOptions);
-        // delete this.props.codeMirrorOptions;
-
-        this.editorProps = defaults(
-            {
-                options: codeMirrorOptions
-            },
-            omit(this.props, ['codeMirrorOptions']),
-            defaultCodeMirrorCmpProps
-        );
-        this.editorProps.value = this.value;
-
-        return elem(CodeMirror, this.editorProps);
+        const {jsonEditorSpec, ...rest} = this.props;
+        return textArea({...rest, ref: this.manageJsonEditor});
     }
 
     //------------------
     // Implementation
     //------------------
-    @action
-    onBeforeChange = (editor, data, value) => {
-        this.value = value;
-    }
-
-    onEditorDidMount = (editor) => {
-        if (!(isUndefined(this.props.height) && isUndefined(this.props.width))) {
-            const width = isUndefined(this.props.width) ? null : this.props.width,
-                height = isUndefined(this.props.height) ? null : this.props.height;
-            editor.setSize(width, height);
+    manageJsonEditor = (taCmp) => {
+        if (taCmp) {
+            this.taCmp = taCmp;
+            this.createJsonEditor(taCmp);
+        } else {
+            this.destroyJsonEditor();
         }
     }
 
+    createJsonEditor(taCmp) {
+        const taDom = ReactDOM.findDOMNode(taCmp),
+            jsonEditorSpec = defaults(this.props.jsonEditorSpec, this.defaultJsonEditorSpec);
+
+        this.editor = codemirror.fromTextArea(taDom, jsonEditorSpec);
+        this.setSize();
+        this.addListeners();
+
+    }
+
+    destroyJsonEditor() {
+
+    }
+
+    setSize = () => {
+        if (!(isUndefined(this.props.height) && isUndefined(this.props.width))) {
+            const width = isUndefined(this.props.width) ? null : this.props.width,
+                height = isUndefined(this.props.height) ? null : this.props.height;
+            this.editor.setSize(width, height);
+        }
+    }
+
+    addListeners() {
+        this.editor.on('change', this.handleEditorChange.bind(this));
+    }
+
     @action
+    handleEditorChange = (editor) => {
+        this.props.model.value = editor.getValue();
+    }
+
     format() {
-        var value = this.tryPrettyPrint(this.value);
-        this.value = value;
+        var value = this.tryPrettyPrint(this.editor.getValue());
+        this.editor.setValue(value);
     }
 
     tryPrettyPrint(str) {
