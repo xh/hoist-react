@@ -19,30 +19,31 @@ const globalVals = {};
 export function fileColFactory(fileVals = {}) {
     return function(colVals = {}) {
         return function(instanceVals = {}) {
-
-            instanceVals.headerClass = castArray(instanceVals.headerClass);
-            instanceVals.cellClass = castArray(instanceVals.cellClass);
-            if (instanceVals.align === 'center') {
-                instanceVals.headerClass.push('xh-center-justify');
-                instanceVals.cellClass.push('xh-align-center');
-                delete instanceVals.align;
-            }
-
-            if (instanceVals.align === 'right') {
-                instanceVals.headerClass.push('xh-right-justify');
-                instanceVals.cellClass.push('xh-align-right');
-                delete instanceVals.align;
-            }
-
-            if (instanceVals.fixedWidth) {
-                instanceVals.width = instanceVals.fixedWidth;
-                instanceVals.maxWidth = instanceVals.fixedWidth;
-                instanceVals.minWidth = instanceVals.fixedWidth;
-                delete instanceVals.fixedWidth;
-            }
             // Do additional pre-processing here
-            return defaults(instanceVals, colVals, fileVals, globalVals);
+            const colProps = defaults(instanceVals, colVals, fileVals, globalVals);
+
+            colProps.headerClass = castArray(colProps.headerClass);
+            colProps.cellClass = castArray(colProps.cellClass);
+            if (colProps.align === 'center') {
+                colProps.headerClass.push('xh-center-justify');
+                colProps.cellClass.push('xh-align-center');
+                delete colProps.align;
+            }
+
+            if (colProps.align === 'right') {
+                colProps.headerClass.push('xh-right-justify');
+                colProps.cellClass.push('xh-align-right');
+                delete colProps.align;
+            }
+
+            if (colProps.fixedWidth) {
+                colProps.width = colProps.fixedWidth;
+                colProps.maxWidth = colProps.fixedWidth;
+                colProps.minWidth = colProps.fixedWidth;
+                delete colProps.fixedWidth;
+            }
             // Do additional post-processing here
+            return colProps;
         };
     };
 }
