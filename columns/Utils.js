@@ -36,6 +36,11 @@ export function fileColFactory(fileVals = {}) {
                 delete colProps.align;
             }
 
+            if (colProps.flex) {
+                colProps.width = colProps.flex * 1000;
+                delete colProps.flex;
+            }
+
             if (colProps.fixedWidth) {
                 colProps.width = colProps.fixedWidth;
                 colProps.maxWidth = colProps.fixedWidth;
