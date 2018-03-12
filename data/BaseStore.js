@@ -38,7 +38,14 @@ export class BaseStore {
     get filter() {}
     setFilter(filterFn) {}
 
-
+    /**
+     * Get a record by id.  Return null if no record found.
+     *
+     * @param id
+     * @param filteredOnly, set to true to skip non-filtered records
+     */
+    getById(id, filteredOnly) {}
+    
     /**
      * Construct this object.
      *
@@ -75,7 +82,7 @@ export class BaseStore {
 
         this.fields.forEach(field => {
             const {type, name, defaultValue} = field;
-            let val = raw[name]
+            let val = raw[name];
             if (val === undefined || val === null) val = defaultValue;
 
             if (val !== null) {
@@ -88,7 +95,6 @@ export class BaseStore {
                     case 'bool':
                     case 'json':
                     case 'day':
-                        val = val;
                         break;
                     case 'date':
                         val = new Date(val);

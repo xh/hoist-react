@@ -21,11 +21,11 @@ export class UserPanel extends Component {
             fields: ['username', 'email', 'displayName', 'active', 'roles']
         }),
         columns: [
-            usernameCol({width: 175}),
-            baseCol({text: 'Email', field: 'email', width: 175}),
-            baseCol({text: 'Display Name', field: 'displayName', width: 150}),
-            boolCheckCol({text: 'Active?', field: 'active', width: 75}),
-            baseCol({text: 'Roles', field: 'roles', flex: 1})
+            usernameCol({fixedWidth: 175}),
+            baseCol({field: 'email', fixedWidth: 175}),
+            baseCol({field: 'displayName', fixedWidth: 150}),
+            boolCheckCol({field: 'active', fixedWidth: 75, centerAlign: true}),
+            baseCol({field: 'roles', minWidth: 130})
         ]
     });
 
@@ -33,7 +33,7 @@ export class UserPanel extends Component {
         return grid({model: this.gridModel});
     }
 
-    loadAsync() {
+    async loadAsync() {
         return this.gridModel.store.loadAsync();
     }
 }

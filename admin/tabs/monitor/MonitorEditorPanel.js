@@ -16,58 +16,71 @@ export class MonitorEditorPanel extends Component {
 
     store = new RestStore({
         url: 'rest/monitorAdmin',
-        fields: [{
-            name: 'code',
-            required: true
-        },{
-            name: 'name',
-            required: true
-        },{
-            name: 'metricType',
-            lookupName: 'metricTypes',
-            lookupStrict: true,
-            required: true
-        }, {
-            name: 'metricUnit'
-        }, {
-            name: 'warnThreshold',
-            type: 'int'
-        },{
-            name: 'failThreshold',
-            type: 'int',
-        }, {
-            name: 'params'
-        },{
-            name: 'notes'
-        }, {
-            name: 'active',
-            type: 'bool',
-            defaultValue: true,
-            required: true
-        }, {
-            name: 'sortOrder',
-            type: 'int'
-        }, {
-            name: 'lastUpdated',
-            type: 'date',
-            editable: false
-        }, {
-            name: 'lastUpdatedBy',
-            editable: false
-        }]
+        fields: [
+            {
+                name: 'code',
+                required: true
+            },
+            {
+                name: 'name',
+                required: true
+            },
+            {
+                name: 'metricType',
+                lookupName: 'metricTypes',
+                lookupStrict: true,
+                required: true
+            },
+            {
+                name: 'metricUnit'
+            },
+            {
+                name: 'warnThreshold',
+                type: 'int'
+            },
+            {
+                name: 'failThreshold',
+                type: 'int'
+            },
+            {
+                name: 'params'
+            },
+            {
+                name: 'notes'
+            },
+            {
+                name: 'active',
+                type: 'bool',
+                defaultValue: true,
+                required: true
+            },
+            {
+                name: 'sortOrder',
+                type: 'int'
+            },
+            {
+                name: 'lastUpdated',
+                type: 'date',
+                editable: false
+            },
+            {
+                name: 'lastUpdatedBy',
+                editable: false
+            }
+        ]
     });
 
     gridModel = new RestGridModel({
         store: this.store,
         columns: [
-            boolCheckCol({field: 'active', width: 60}),
-            baseCol({field: 'code', width: 150}),
-            nameFlexCol(),
-            baseCol({field: 'warnThreshold', width: 120}),
-            baseCol({field: 'failThreshold', width: 120}),
-            baseCol({field: 'metricUnit', width: 100}),
-            baseCol({field: 'notes', flex: 1}),
-            baseCol({field: 'sortOrder', width: 100})
+            boolCheckCol({field: 'active', fixedWidth: 70, centerAlign: true}),
+            baseCol({field: 'code', fixedWidth: 150}),
+            nameFlexCol({width: 500}),
+            baseCol({field: 'warnThreshold', fixedWidth: 130}),
+            baseCol({field: 'failThreshold', fixedWidth: 130}),
+            baseCol({field: 'metricUnit', fixedWidth: 100}),
+            baseCol({field: 'notes', minWidth: 70, width: 500}),
+            baseCol({field: 'sortOrder', fixedWidth: 100})
         ],
         editors: [
             {field: 'code'},
@@ -89,7 +102,7 @@ export class MonitorEditorPanel extends Component {
         return restGrid({model: this.gridModel});
     }
 
-    loadAsync() {
+    async loadAsync() {
         return this.store.loadAsync();
     }
 }

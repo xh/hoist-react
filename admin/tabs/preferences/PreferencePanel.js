@@ -9,41 +9,49 @@ import {hoistComponent} from 'hoist/core';
 import {boolCheckCol, baseCol} from 'hoist/columns/Core';
 import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
 
-import {nameFlexCol} from '../../columns/Columns';
+import {nameCol} from '../../columns/Columns';
 
 @hoistComponent()
 export class PreferencePanel extends Component {
 
     store = new RestStore({
         url: 'rest/preferenceAdmin',
-        fields: [{
-            name: 'name',
-            required: true
-        }, {
-            name: 'type',
-            defaultValue: 'string',
-            lookupName: 'types',
-            lookupStrict: true,
-            editable: 'onAdd',
-            required: true
-        }, {
-            name: 'defaultValue',
-            typeField: 'type',
-            required: true
-        }, {
-            name: 'notes'
-        },{
-            name: 'local',
-            type: 'bool',
-            required: true
-        }, {
-            name: 'lastUpdated',
-            type: 'date',
-            editable: false
-        }, {
-            name: 'lastUpdatedBy',
-            editable: false
-        }]
+        fields: [
+            {
+                name: 'name',
+                required: true
+            },
+            {
+                name: 'type',
+                defaultValue: 'string',
+                lookupName: 'types',
+                lookupStrict: true,
+                editable: 'onAdd',
+                required: true
+            },
+            {
+                name: 'defaultValue',
+                typeField: 'type',
+                required: true
+            },
+            {
+                name: 'notes'
+            },
+            {
+                name: 'local',
+                type: 'bool',
+                required: true
+            },
+            {
+                name: 'lastUpdated',
+                type: 'date',
+                editable: false
+            },
+            {
+                name: 'lastUpdatedBy',
+                editable: false
+            }
+        ]
     });
 
     gridModel = new RestGridModel({
@@ -53,11 +61,11 @@ export class PreferencePanel extends Component {
             del: 'Are you sure you want to delete? Deleting preferences can break running apps!'
         },
         columns: [
-            boolCheckCol({field: 'local', width: 60}),
-            nameFlexCol(),
-            baseCol({field: 'type', width: 80}),
-            baseCol({field: 'defaultValue', flex: 1}),
-            baseCol({field: 'notes', flex: 2})
+            boolCheckCol({field: 'local', fixedWidth: 70, centerAlign: true}),
+            nameCol({fixedWidth: 200}),
+            baseCol({field: 'type', fixedWidth: 70}),
+            baseCol({field: 'defaultValue', minWidth: 150, maxWidth: 480}),
+            baseCol({field: 'notes', minWidth: 200})
         ],
         editors: [
             {field: 'name'},
@@ -74,7 +82,7 @@ export class PreferencePanel extends Component {
         return restGrid({model: this.gridModel});
     }
 
-    loadAsync() {
+    async loadAsync() {
         return this.store.loadAsync();
     }
 }

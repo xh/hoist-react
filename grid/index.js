@@ -7,4 +7,6 @@
 
 export * from './Grid';
 export * from './GridModel';
+export * from './GridContextMenu';
+export * from './GridContextMenuItem';
 export * from './GridSelectionModel';

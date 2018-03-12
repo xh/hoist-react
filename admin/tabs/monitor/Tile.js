@@ -9,7 +9,6 @@ import './Tile.css';
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {div} from 'hoist/layout';
-import {observer} from 'hoist/mobx';
 
 @hoistComponent()
 export class Tile extends Component {

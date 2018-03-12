@@ -23,11 +23,15 @@ export const Icon = {
     add(p)           {return fa(p, 'plus-circle')},
     angleLeft(p)     {return fa(p, 'angle-left')},
     angleRight(p)    {return fa(p, 'angle-right')},
+    arrowToRight(p)  {return fa(p, 'arrow-to-right')},
+    caretLeft(p)     {return fa(p, 'caret-left')},
+    caretRight(p)    {return fa(p, 'caret-right')},
     check(p)         {return fa(p, 'check')},
     chess(p)         {return fa(p, 'chess')},
     chessKnight(p)   {return fa(p, 'chess-knight-alt')},
     contact(p)       {return fa(p, 'address-card')},
     delete(p)        {return fa(p, 'minus-circle')},
+    download(p)      {return fa(p, 'download')},
     edit(p)          {return fa(p, 'edit')},
     eye(p)           {return fa(p, 'eye')},
     info(p)          {return fa(p, 'info-circle')},
@@ -38,8 +42,10 @@ export const Icon = {
     refresh(p)       {return fa(p, 'sync')},
     search(p)        {return fa(p, 'search')},
     sun(p)           {return fa(p, 'sun')},
+    sync(p)          {return fa(p, 'sync')},
     cross(p)         {return fa(p, 'times')},
-    user(p)          {return fa(p, 'user')}
+    user(p)          {return fa(p, 'user')},
+    users(p)         {return fa(p, 'users')}
 };
 
 //-----------------------------

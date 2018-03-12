@@ -5,65 +5,33 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {XH, hoistComponent} from 'hoist/core';
-import {grid, GridModel} from 'hoist/grid';
-import {UrlStore} from 'hoist/data';
-import {chart, ChartModel} from 'hoist/highcharts';
+import {hoistComponent} from 'hoist/core';
 import {vframe} from 'hoist/layout';
 import {collapsible} from 'hoist/cmp';
-import {numberRenderer} from 'hoist/format';
-import {baseCol} from 'hoist/columns/Core';
-import {dateTimeCol} from 'hoist/columns/DatesTimes';
 
-import {usernameCol} from '../../columns/Columns';
+import {activityGrid} from './ActivityGrid';
+import {ActivityGridModel} from './ActivityGridModel';
 import {visitsChart} from './VisitsChart';
-import {VisitsModel} from './VisitsModel';
+import {VisitsChartModel} from './VisitsChartModel';
 
 @hoistComponent()
 export class ActivityPanel extends Component {
 
-    store = new UrlStore({
-        url: 'trackLogAdmin',
-        fields: [
-            'severity', 'dateCreated', 'msg', 'category', 'device',
-            'browser', 'data', 'impersonating', 'elapsed'
-        ]
-    });
-
-    gridModel = new GridModel({
-        store: this.store,
-        columns: [
-            baseCol({field: 'severity', width: 60}),
-            dateTimeCol({field: 'dateCreated'}),
-            usernameCol(),
-            baseCol({field: 'msg', text: 'Message', width: 60}),
-            baseCol({field: 'category', width: 100}),
-            baseCol({field: 'device', width: 60}),
-            baseCol({field: 'browser', width: 100}),
-            baseCol({field: 'data', flex: 1}),
-            baseCol({field: 'impersonating',  width: 120}),
-            baseCol({
-                field: 'elapsed',
-                width: 60,
-                valueFormatter: numberRenderer({precision: 0})
-            })
-        ]
-    });
-
-    visitsModel = new VisitsModel();
+    activityGridModel = new ActivityGridModel();
+    visitsChartModel = new VisitsChartModel();
 
     render() {
         return vframe(
-            grid({model: this.gridModel}),
+            activityGrid({model: this.activityGridModel}),
             collapsible({
                 side: 'bottom',
                 contentSize: 250,
-                item: visitsChart({model: this.visitsModel})
+                item: visitsChart({model: this.visitsChartModel})
             })
         );
     }
 
     async loadAsync() {
-        return Promise.all([this.visitsModel.loadAsync(), this.store.loadAsync()]);
+        return Promise.all([this.visitsChartModel.loadAsync(), this.activityGridModel.loadAsync()]);
     }
 }

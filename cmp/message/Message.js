@@ -52,7 +52,7 @@ class Message extends Component {
                 text: confirmText,
                 intent: confirmIntent,
                 onClick: this.onConfirm
-            }),
+            })
         ];
     }
 

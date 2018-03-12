@@ -6,13 +6,11 @@
  */
 
 import {Component} from 'react';
-import moment from 'moment';
-import {button, inputGroup, dateInput} from 'hoist/kit/blueprint';
-import {XH, hoistComponent, elemFactory} from 'hoist/core';
-import {chart, ChartModel} from 'hoist/highcharts';
-import {vframe, filler, hbox, hspacer, div} from 'hoist/layout';
-import {observable, action} from 'hoist/mobx';
-import {fmtDate} from 'hoist/format';
+import {button} from 'hoist/kit/blueprint';
+import {textField, dayField, label} from 'hoist/cmp';
+import {hoistComponent, elemFactory} from 'hoist/core';
+import {chart} from 'hoist/highcharts';
+import {vframe, filler, hbox, hspacer} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
 
 @hoistComponent()
@@ -20,86 +18,62 @@ export class VisitsChart extends Component {
 
     render() {
         return vframe(
-            this.renderToolbar({model: this.model}),
+            this.renderToolbar(),
             chart({model: this.model.chartModel})
         );
     }
-
-    // break out into chartToolBar component?
-    renderToolbar({model}) {
+    
+    renderToolbar() {
+        const model = this.model;
         return hbox({
             cls: 'xh-tbar',
             flex: 'none',
             padding: 4,
             alignItems: 'center',
             items: [
-                hspacer(8),
-                this.label('Unique Daily Visitors'),
+                hspacer(4),
+                Icon.users(),
+                hspacer(4),
+                label('Unique Daily Visitors'),
                 filler(),
-                dateInput({
-                    value: model.startDate,
-                    formatDate: fmtDate,
-                    parseDate: this.parseDate,
-                    onChange: this.onStartDateChange,
-                    popoverProps: {
-                        usePortal: true
-                    }
-                }),
+                this.dayField({field: 'startDate'}),
+                hspacer(8),
+                Icon.angleRight(),
+                hspacer(8),
+                this.dayField({field: 'endDate'}),
                 hspacer(10),
-                dateInput({
-                    value: model.endDate,
-                    formatDate: fmtDate,
-                    parseDate: this.parseDate,
-                    onChange: this.onEndDateChange,
-                    popoverProps: {
-                        usePortal: true
-                    }
-                }),
-                hspacer(10),
-                inputGroup({
+                textField({
+                    model,
+                    field: 'username', 
                     placeholder: 'Username',
-                    value: model.username,
-                    onChange: this.onUsernameChange
+                    width: 140
                 }),
                 hspacer(10),
-                button({
-                    text: 'Submit',
-                    intent: 'success',
-                    onClick: this.onSubmitClick
-                })
+                button({icon: Icon.sync(), onClick: this.onSubmitClick})
             ]
         });
     }
 
-    parseDate(dateString) {
-        return moment(dateString).toDate()
+    //-----------------------------
+    // Implementation
+    //-----------------------------
+    dayField(args) {
+        return dayField({
+            model: this.model,
+            onCommit: this.onDateCommit,
+            popoverPosition: 'top',
+            width: 100,
+            ...args
+        });
     }
 
-    onStartDateChange = (date) => {
-        this.model.setStartDate(moment(date).toDate());
-    }
-
-    onEndDateChange = (date) => {
-        this.model.setEndDate(moment(date).toDate());
-    }
-
-    onUsernameChange = (ev) => {
-        this.model.setUsername(ev.target.value);
+    onDateCommit = () => {
+        this.model.loadAsync();
     }
 
     onSubmitClick = () => {
         this.model.loadAsync();
     }
-
-    label(txt) {
-        // Default label object has trouble with inline
-        return div({
-            cls: 'pt-label pt-inline',
-            style: {whiteSpace: 'nowrap'},
-            item: txt
-        });
-    }
-
 }
 
 export const visitsChart = elemFactory(VisitsChart);

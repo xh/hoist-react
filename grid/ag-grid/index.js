@@ -15,7 +15,7 @@ import {AgGridReact} from 'ag-grid-react';
 import {LicenseManager} from 'ag-grid-enterprise';
 
 LicenseManager.setLicenseKey(
-    'ag-Grid_Evaluation_License_Key_Not_for_Production_100Devs15_February_2018__MTUxODY1MjgwMDAwMA==600d5a723b746ad55afff76eb446f0ad'
+    'Extremely_Heavy_Industries_Scout_3Devs9_March_2019__MTU1MjA4OTYwMDAwMA==79f1a93b578543bf1e45a51272b2359a'
 );
 
 export * from './NavigateSelection';

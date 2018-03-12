@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {hoistComponent} from 'hoist/core';
 import {baseCol} from 'hoist/columns/Core';
-import {dateCol} from 'hoist/columns/DatesTimes';
+import {dateTimeCol} from 'hoist/columns/DatesTimes';
 import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
 
 import {usernameCol} from '../../columns/Columns';
@@ -17,22 +17,27 @@ export class DashboardPanel extends Component {
 
     store = new RestStore({
         url: 'rest/dashboardAdmin',
-        fields: [{
-            name: 'appCode',
-            required: true,
-        }, {
-            name: 'username',
-            label: 'User',
-            required: true
-        }, {
-            name: 'definition',
-            type: 'json',
-            required: true
-        }, {
-            name: 'lastUpdated',
-            type: 'date',
-            editable: false
-        }]
+        fields: [
+            {
+                name: 'appCode',
+                required: true
+            },
+            {
+                name: 'username',
+                label: 'User',
+                required: true
+            },
+            {
+                name: 'definition',
+                type: 'json',
+                required: true
+            },
+            {
+                name: 'lastUpdated',
+                type: 'date',
+                editable: false
+            }
+        ]
     });
 
     gridModel = new RestGridModel({
@@ -43,10 +48,10 @@ export class DashboardPanel extends Component {
         },
 
         columns: [
-            baseCol({field: 'appCode', width: 100}),
-            usernameCol(),
-            dateCol({field: 'lastUpdated'}),
-            baseCol({field: 'definition', flex: 1})
+            baseCol({field: 'appCode', fixedWidth: 140}),
+            usernameCol({fixedWidth: 120}),
+            dateTimeCol({field: 'lastUpdated', headerName: 'Last Updated', fixedWidth: 160, rightAlign: true}),
+            baseCol({field: 'definition', minWidth: 120})
         ],
         editors: [
             {field: 'appCode'},
@@ -60,7 +65,7 @@ export class DashboardPanel extends Component {
         return restGrid({model: this.gridModel});
     }
 
-    loadAsync() {
+    async loadAsync() {
         return this.store.loadAsync();
     }
 }

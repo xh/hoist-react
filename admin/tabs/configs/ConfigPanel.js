@@ -11,58 +11,70 @@ import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
 
 import {nameCol} from 'hoist/admin/columns/Columns';
 
-hoistComponent()
+@hoistComponent()
 export class ConfigPanel extends Component {
 
     store = new RestStore({
         url: 'rest/configAdmin',
-        fields: this.filterForEnv([{
-            name: 'name',
-            required: true
-        }, {
-            name: 'groupName',
-            label: 'Group',
-            lookupName: 'groupNames',
-            required: true
-        }, {
-            name: 'valueType',
-            label: 'Type',
-            lookupName: 'valueTypes',
-            lookupStrict: true,
-            editable: 'onAdd',
-            required: true
-        }, {
-            name: 'prodValue',
-            typeField: 'valueType',
-            required: true,
-            env: 'Production'
-        }, {
-            name: 'betaValue',
-            typeField: 'valueType',
-            env: 'Beta'
-        }, {
-            name: 'stageValue',
-            typeField: 'valueType',
-            env: 'Staging'
-        }, {
-            name: 'devValue',
-            typeField: 'valueType',
-            env: 'Development'
-        }, {
-            name: 'clientVisible',
-            type: 'bool',
-            defaultValue: false,
-            required: true
-        }, {
-            name: 'note'
-        }, {
-            name: 'lastUpdated',
-            type: 'date',
-            editable: false
-        }, {
-            name: 'lastUpdatedBy',
-            editable: false
-        }])
+        fields: this.filterForEnv([
+            {
+                name: 'name',
+                required: true
+            },
+            {
+                name: 'groupName',
+                label: 'Group',
+                lookupName: 'groupNames',
+                required: true
+            },
+            {
+                name: 'valueType',
+                label: 'Type',
+                lookupName: 'valueTypes',
+                lookupStrict: true,
+                editable: 'onAdd',
+                required: true
+            },
+            {
+                name: 'prodValue',
+                typeField: 'valueType',
+                required: true,
+                env: 'Production'
+            },
+            {
+                name: 'betaValue',
+                typeField: 'valueType',
+                env: 'Beta'
+            },
+            {
+                name: 'stageValue',
+                typeField: 'valueType',
+                env: 'Staging'
+            },
+            {
+                name: 'devValue',
+                typeField: 'valueType',
+                env: 'Development'
+            },
+            {
+                name: 'clientVisible',
+                type: 'bool',
+                defaultValue: false,
+                required: true
+            },
+            {
+                name: 'note'
+            },
+            {
+                name: 'lastUpdated',
+                type: 'date',
+                editable: false
+            },
+            {
+                name: 'lastUpdatedBy',
+                editable: false
+            }
+        ])
     });
 
     gridModel = new RestGridModel({
@@ -73,20 +85,20 @@ export class ConfigPanel extends Component {
         },
 
         columns: this.filterForEnv([
-            nameCol(),
-            baseCol({field: 'valueType', width: 100}),
-            baseCol({field: 'groupName', width: 100}),
+            nameCol({fixedWidth: 200}),
+            baseCol({field: 'valueType', headerName: 'Type', fixedWidth: 60}),
             this.valCol({field: 'prodValue', env: 'Production'}),
             this.valCol({field: 'betaValue', env: 'Beta'}),
             this.valCol({field: 'stageValue', env: 'Staging'}),
             this.valCol({field: 'devValue', env: 'Development'}),
-            boolCheckCol({field: 'clientVisible', width: 90}),
-            baseCol({field: 'note', flex: 1})
+            boolCheckCol({field: 'clientVisible', headerName: 'Client?', fixedWidth: 75, centerAlign: true}),
+            baseCol({field: 'groupName', headerName: 'Group', fixedWidth: 100}),
+            baseCol({field: 'note', minWidth: 60})
         ]),
         editors: this.filterForEnv([
             {field: 'name'},
             {field: 'groupName'},
-            {field: 'valueType',},
+            {field: 'valueType'},
             {field: 'prodValue', env: 'Production'},
             {field: 'betaValue', env: 'Beta'},
             {field: 'stageValue', env: 'Staging'},
@@ -102,7 +114,7 @@ export class ConfigPanel extends Component {
         return restGrid({model: this.gridModel});
     }
 
-    loadAsync() {
+    async loadAsync() {
         return this.store.loadAsync();
     }
 
@@ -118,6 +130,11 @@ export class ConfigPanel extends Component {
     }
 
     valCol(params) {
-        return baseCol({...params, width: 175});
+        return baseCol({...params, fixedWidth: 175, valueFormatter: this.maskIfPwd});
+    }
+
+    maskIfPwd(params) {
+        if (params.data.valueType === 'pwd') return '*****';
+        return params.value;
     }
 }

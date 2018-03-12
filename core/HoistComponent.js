@@ -4,11 +4,12 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {observer} from 'hoist/mobx';
+import {observer, autorun} from 'hoist/mobx';
 import {ContextMenuTarget, HotkeysTarget} from 'hoist/kit/blueprint';
 
 import {hoistModel} from './HoistModel';
 import {elemFactory} from './elem';
+
 /**
  * Core Decorator for Components in Hoist.
  */
@@ -27,7 +28,7 @@ export function hoistComponent({isObserver = true} = {}) {
         addProperty(C, 'model', {
             get() {return this.localModel ? this.localModel : this.props.model}
         });
-        
+
         //---------------------------------------------
         // Decorate with Blueprint Context Menu, HotKeys support
         //---------------------------------------------
@@ -39,12 +40,37 @@ export function hoistComponent({isObserver = true} = {}) {
             C = HotkeysTarget(C);
         }
 
-        //-------------------------
-        // Mobx
-        //---------------------------
+        //---------------------------------------------------------
+        // Mobx -- add observer and support for managed auto runs
+        //---------------------------------------------------------
         if (isObserver) {
             C = observer(C);
         }
+
+        mixinMethods(C, {
+            addAutoRun: function(fn) {
+                this.xhAutoRuns = this.xhAutoRuns || [];
+                this.xhAutoRuns.push(fn);
+            },
+
+            componentDidMount: function() {
+                const {xhAutoRuns} = this;
+                if (xhAutoRuns) {
+                    xhAutoRuns.forEach(f => {
+                        this.xhDisposers = this.xhDisposers || [];
+                        this.xhDisposers.push(autorun(f));
+                    });
+                }
+            },
+
+            componentWillUnmount: function() {
+                const {xhDisposers} = this;
+                if (xhDisposers) {
+                    xhDisposers.forEach(f => f());
+                    this.xhDisposers = null;
+                }
+            }
+        });
 
         return C;
     };
@@ -67,4 +93,21 @@ function addProperty(C, name,  cfg) {
     }
 }
 
+function mixinMethods(C, mixins) {
+    const proto = C.prototype;
 
+    for (const name in mixins) {
+        const base = proto[name],
+            mixin = mixins[name];
+        let f = null;
+        if (!base) {
+            f = mixin;
+        } else {
+            f = function() {
+                base.apply(this, arguments);
+                mixin.apply(this, arguments);
+            };
+        }
+        proto[name] = f;
+    }
+}

@@ -6,245 +6,155 @@
  */
 
 import React, {Component} from 'react';
-import {hoistComponent, hoistComponentFactory, elemFactory} from 'hoist/core';
-import {jsonEditor} from 'hoist/cmp';
+import {hoistComponent, elemFactory} from 'hoist/core';
 import {fmtDateTime} from 'hoist/format';
 import {hbox} from 'hoist/layout';
-import {Icon} from 'hoist/icon';
-import {clone} from 'lodash';
-
-import {
-    Classes, button, checkbox, inputGroup,
-    label, menuItem, numericInput, select,
-    suggest, textArea, controlGroup
-} from 'hoist/kit/blueprint';
-
+import {controlGroup} from 'hoist/kit/blueprint';
+import {label, comboField, numberField, selectField, textAreaField, textField}  from 'hoist/cmp';
 
 @hoistComponent()
 export class RestControl extends Component {
 
     render() {
-        const ctl = this.getSubControl();
         return hbox({
             cls: 'xh-mb',
             items: [
-                restLabel(this.props),
+                this.renderLabel(),
                 //  Needed to stretch control, and also avoid focus clipping?
                 controlGroup({
                     fill: true,
                     style: {flex: 1, margin: 1},
-                    item: ctl ? ctl(this.props) : null
+                    item: this.renderControl()
                 })
             ]
         });
     }
 
-    getSubControl() {
+    renderControl() {
         const {field, editor, type, isEditable} = this.model,
             editorType = editor.type;
 
         if (type == null) return null;
 
         if (type === 'json') {
-            return restJsonEditor;
+            return this.renderJsonEditor();
         }
 
         if (editorType === 'textarea') {
-            return restTextArea;
+            return this.renderTextArea();
         }
 
-        if (!isEditable) return restDisplayField;
+        if (!isEditable) return this.renderDisplayField();
         
         if (field.lookup) {
-            return field.lookupStrict ? restSelect : restDropdown;
+            return field.lookupStrict ? this.renderSelect() : this.renderCombo();
         } else if (type === 'bool') {
-            return restSelect;
+            return this.renderSelect();
         } else if (type === 'number') {
-            return restNumericInput;
+            return this.renderNumberField();
         } else {
-            return restTextInput;
+            return this.renderTextField();
         }
+    }
+
+    renderLabel() {
+        const lbl = this.model.field.label,
+            isValid = this.model.isValid,
+            item = <span>{lbl} <span style={{color: 'red'}}>{!isValid ? '*' : ''}</span> </span>;
+
+        return label({item, width: 115});
+    }
+
+    renderDisplayField() {
+        let {value, type} = this.model;
+        if (type === 'date') {
+            value = value ? fmtDateTime(value) : '';
+        }
+        return label(value);
+    }
+
+    renderCombo() {
+        const model = this.model,
+            lookup = model.field.lookup;
+
+        const options = [null, ...lookup];
+        return comboField({
+            model,
+            field: 'value',
+            options,
+            disabled: !model.isEditable
+        });
+    }
+
+    renderSelect() {
+        const model = this.model,
+            lookup = model.field.lookup,
+            type = model.type;
+
+        let options;
+        if (lookup) {
+            options = [null, ...lookup];
+        } else if (type == 'bool') {
+            options = [null, true, false];
+        } else {
+            options = [null];
+        }
+
+        return selectField({
+            model,
+            field: 'value',
+            options,
+            disabled: !model.isEditable
+        });
+    }
+
+    renderNumberField() {
+        const model = this.model;
+        return numberField({
+            model,
+            field: 'value',
+            cls: 'pt-fill',
+            disabled: !model.isEditable
+        });
+    }
+
+    renderTextArea() {
+        const model = this.model;
+        return textAreaField({
+            model,
+            field: 'value',
+            cls: 'pt-fill',
+            disabled: !model.isEditable
+        });
+    }
+
+    renderTextField() {
+        const model = this.model,
+            type = model.type === 'pwd' ? 'password' : 'text';
+        return textField({
+            model,
+            type,
+            field: 'value',
+            cls: 'pt-fill',
+            disabled: !model.isEditable
+        });
+    }
+
+    renderJsonEditor() {
+        const model = this.model;
+        return textAreaField({
+            model,
+            field: 'value',
+            cls: 'pt-fill',
+            disabled: !model.isEditable,
+            // setting size appears to be the only way to get scrollbars
+            width: 343,
+            height: 150,
+            jsonEditorSpec: {
+                readOnly: !model.isEditable
+            }
+        });
     }
 }
 export const restControl = elemFactory(RestControl);
 
-//------------------------
-// Sub - Controls
-//------------------------
-const restLabel = hoistComponentFactory(
-    class extends Component {
-        render() {
-            const lbl =  this.model.field.label,
-                isValid = this.model.isValid,
-                text = <span>{lbl} <span style={{color:'red'}}>{!isValid ? '*' : ''}</span> </span>;
-
-            return label({text, style: {width: '115px'}});
-        }
-    }
-);
-
-const restDisplayField = hoistComponentFactory(
-    class extends Component {
-        render() {
-            let {field, value, type} = this.model;
-            if (type === 'date') {
-                value = value ? fmtDateTime(value) : '';
-            }
-            return label({text: value});
-        }
-    }
-);
-
-const restDropdown = hoistComponentFactory(
-    class extends Component {
-        render() {
-            const {value, isEditable, field, isValid} = this.model;
-            const options = clone(field.lookup);
-
-            options.unshift(null);
-
-            return suggest({
-                popoverProps: {popoverClassName: Classes.MINIMAL},
-                $items: options,
-                onItemSelect: this.onItemSelect,
-                itemRenderer: (item, itemProps) => {
-                    const text = item === null ? '-' : item.toString();
-                    return menuItem({key: item, text, onClick: itemProps.handleClick});
-                },
-                inputValueRenderer: s => s,
-                inputProps: {
-                    placeholder: 'Select',
-                    value: value === null ? '' : value.toString(),
-                    disabled: !isEditable,
-                    onChange: this.onChange
-                }
-            });
-        }
-
-        onChange = (ev) => {
-            this.model.value = ev.target.value;
-        }
-
-        onItemSelect = (val) => {
-            this.model.value = val;
-        }
-    }
-);
-
-const restSelect = hoistComponentFactory(
-    class extends Component {
-        render() {
-            const {value, isEditable, field, isValid, type} = this.model;
-
-            let options = [];
-            if (field.lookup) {
-                options = clone(field.lookup);
-            } else if (type == 'bool') {
-                options = [true, false];
-            }
-
-            options.unshift(null);
-
-            return select({
-                popoverProps: {popoverClassName: Classes.MINIMAL},
-                $items: options,
-                onItemSelect: this.onItemSelect,
-                itemRenderer: (item, itemProps) => {
-                    const text = item === null ? '-' : item.toString();
-                    return menuItem({key: item, text, onClick: itemProps.handleClick});
-                },
-                filterable: false,
-                item: button({
-                    rightIcon: 'caret-down',
-                    text: value === null ? 'Select' : value.toString()
-                }),
-                disabled: !isEditable
-            });
-        }
-
-        onItemSelect = (val) => {
-            this.model.value = val;
-        }
-    }
-);
-
-const restNumericInput = hoistComponentFactory(
-    class extends Component {
-        render() {
-            const {value, isEditable, field, isValid} = this.model;
-
-            return numericInput({
-                cls: 'pt-fill',
-                buttonPosition: 'none',
-                value,
-                disabled: !isEditable,
-                onValueChange: this.onValueChange
-            });
-        }
-
-        onValueChange = (val, valAsString) => {
-            val = (valAsString === '') ? null : val;
-            this.model.value = val;
-        }
-    }
-);
-
-const restTextArea = hoistComponentFactory(
-    class extends Component {
-        render() {
-            const {value, isEditable, field, isValid} = this.model;
-            return textArea({
-                cls: 'pt-fill',
-                value: value || '',
-                disabled: !isEditable,
-                onChange: this.onChange
-            });
-        }
-
-        onChange = (ev) => {
-            this.model.value = ev.target.value;
-        }
-    }
-);
-
-const restTextInput = hoistComponentFactory(
-    class extends Component {
-        render() {
-            const {value, isEditable, field, isValid} = this.model;
-            return inputGroup({
-                cls: 'pt-fill',
-                type: 'text',
-                value: value || '',
-                disabled: !isEditable,
-                onChange: this.onChange
-            });
-        }
-
-        onChange = (ev) => {
-            this.model.value = ev.target.value;
-        }
-    }
-);
-
-const restJsonEditor = hoistComponentFactory(
-    class extends Component {
-        render() {
-            const {value, disabled} = this.model;
-            return jsonEditor({
-                value: value || '',
-                // setting size appears to be the only way to get scrollbars
-                width: 343,
-                height: 150,
-                onChange: this.onChange,
-                jsonEditorSpec: {
-                    readOnly: disabled
-                },
-                model: this.model
-            });
-        }
-
-        onChange = (ev) => {
-            this.model.value = ev.target.value;
-        }
-    }
-);

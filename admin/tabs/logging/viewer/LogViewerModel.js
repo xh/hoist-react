@@ -16,14 +16,14 @@ import {baseCol} from 'hoist/columns/Core';
 export class LogViewerModel {
 
     // Form State/Display options
-    @observable tail = true;
-    @observable startLine = 1;
-    @observable maxLines = 1000;
-    @observable pattern = '';
+    @observable @setter tail = true;
+    @observable @setter startLine = 1;
+    @observable @setter maxLines = 1000;
+    @observable @setter pattern = '';
 
     // Overall State
     @observable file = null;
-    @setter @observable rows = [];
+    @setter @observable.ref rows = [];
 
     loadModel = new LastPromiseModel();
 
@@ -59,11 +59,6 @@ export class LogViewerModel {
         } else {
             this.fetchFile();
         }
-    }
-
-    @action
-    setDisplayOption(name, value) {
-        this[name] = value;
     }
 
     //---------------------------------

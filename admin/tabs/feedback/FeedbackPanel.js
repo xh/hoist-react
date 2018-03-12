@@ -43,16 +43,22 @@ export class FeedbackPanel extends Component {
         store: this.store,
         actionEnabled: {
             add: false,
-            edit: false,
+            edit: false
         },
         columns: [
-            usernameCol(),
-            baseCol({field: 'msg', text: 'Message', width: 60}),
-            baseCol({field: 'browser', width: 100}),
-            baseCol({field: 'device', width: 60}),
-            baseCol({field: 'appVersion', width: 100}),
-            baseCol({field: 'appEnvironment',  width: 100}),
-            baseCol({field: 'dateCreated', width: 100, renderer: compactDateRenderer()})
+            baseCol({
+                field: 'dateCreated',
+                headerName: 'Date',
+                fixedWidth: 100,
+                rightAlign: true,
+                valueFormatter: compactDateRenderer()
+            }),
+            usernameCol({fixedWidth: 120}),
+            baseCol({field: 'msg', headerName: 'Message', minWidth: 60}),
+            baseCol({field: 'browser', fixedWidth: 120}),
+            baseCol({field: 'device', fixedWidth: 120}),
+            baseCol({field: 'appVersion', headerName: 'Version', fixedWidth: 120}),
+            baseCol({field: 'appEnvironment', headerName: 'Environment', fixedWidth: 120})
         ],
         editors: [
             {field: 'username'},
@@ -69,7 +75,7 @@ export class FeedbackPanel extends Component {
         return restGrid({model: this.gridModel});
     }
 
-    loadAsync() {
+    async loadAsync() {
         return this.store.loadAsync();
     }
 }

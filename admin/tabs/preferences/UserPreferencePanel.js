@@ -9,48 +9,55 @@ import {hoistComponent} from 'hoist/core';
 import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
 import {baseCol} from 'hoist/columns/Core';
 
-import {nameFlexCol, usernameCol} from '../../columns/Columns';
+import {nameCol, usernameCol} from '../../columns/Columns';
 
 @hoistComponent()
 export class UserPreferencePanel extends Component {
 
     store = new RestStore({
         url: 'rest/userPreferenceAdmin',
-        fields: [{
-            name: 'name',
-            label: 'Pref',
-            lookupName: 'names',
-            lookupStrict: true,
-            editable: 'onAdd',
-            required: true
-        }, {
-            name: 'type',
-            editable: false
-        },{
-            name: 'username',
-            label: 'User',
-            required: true
-        }, {
-            name: 'userValue',
-            typeField: 'type',
-            required: true
-        }, {
-            name: 'lastUpdated',
-            type: 'date',
-            editable: false
-        }, {
-            name: 'lastUpdatedBy',
-            editable: false
-        }]
+        fields: [
+            {
+                name: 'name',
+                label: 'Pref',
+                lookupName: 'names',
+                lookupStrict: true,
+                editable: 'onAdd',
+                required: true
+            },
+            {
+                name: 'type',
+                editable: false
+            },
+            {
+                name: 'username',
+                label: 'User',
+                required: true
+            },
+            {
+                name: 'userValue',
+                typeField: 'type',
+                required: true
+            },
+            {
+                name: 'lastUpdated',
+                type: 'date',
+                editable: false
+            },
+            {
+                name: 'lastUpdatedBy',
+                editable: false
+            }
+        ]
     });
 
     gridModel = new RestGridModel({
         store: this.store,
         columns: [
-            nameFlexCol(),
-            baseCol({field: 'type', width: 80}),
-            usernameCol(),
-            baseCol({field: 'userValue', flex: 1})
+            nameCol({fixedWidth: 200}),
+            baseCol({field: 'type', fixedWidth: 70}),
+            usernameCol({fixedWidth: 120}),
+            baseCol({field: 'userValue', minWidth: 200})
         ],
         editors: [
             {field: 'name'},
@@ -65,7 +72,7 @@ export class UserPreferencePanel extends Component {
         return restGrid({model: this.gridModel});
     }
 
-    loadAsync() {
+    async loadAsync() {
         return this.store.loadAsync();
     }
 }

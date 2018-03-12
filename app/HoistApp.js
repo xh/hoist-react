@@ -10,7 +10,7 @@ import './HoistApp.css';
 import {Component} from 'react';
 import {hoistComponent, hoistModel, elem} from 'hoist/core';
 import {loadMask} from 'hoist/cmp';
-import {contextMenu, ContextMenuModel} from 'hoist/cmp';
+import {contextMenu} from 'hoist/cmp';
 import {errorDialog} from 'hoist/error';
 import {frame, viewport, vframe} from 'hoist/layout';
 import {hocDisplayName} from 'hoist/utils/ReactUtils';
@@ -64,20 +64,17 @@ export function hoistApp(C) {
         }
 
         renderContextMenu() {
-            const model = new ContextMenuModel([
-                {
+            return contextMenu({
+                menuItems: [{
                     text: 'Reload App',
                     icon: Icon.refresh(),
-                    fn: () => hoistModel.reloadApp()
-                },
-                {
+                    action: () => hoistModel.reloadApp()
+                }, {
                     text: 'About',
                     icon: Icon.info(),
-                    fn: () => hoistModel.setShowAbout(true)
-                }
-            ]);
-
-            return contextMenu({model});
+                    action: () => hoistModel.setShowAbout(true)
+                }]
+            });
         }
     };
     return hoistComponent()(ret);

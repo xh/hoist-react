@@ -21,10 +21,10 @@ export class EhCachePanel extends Component {
             fields: ['name', 'heapSize', 'entries', 'status']
         }),
         columns: [
-            nameCol(),
-            baseCol({field: 'heapSize', width: 130}),
-            baseCol({field: 'entries', width: 130}),
-            baseCol({field: 'status', flex: 0.25})
+            nameCol({minWidth: 360, width: 500}),
+            baseCol({field: 'heapSize', headerName: 'Heap Size (MB)', fixedWidth: 120, rightAlign: true}),
+            baseCol({field: 'entries', fixedWidth: 120, rightAlign: true}),
+            baseCol({field: 'status', minWidth: 120, width: 200, rightAlign: true})
         ]
     });
     
@@ -32,7 +32,7 @@ export class EhCachePanel extends Component {
         return grid({model: this.gridModel});
     }
 
-    loadAsync() {
+    async loadAsync() {
         return this.gridModel.store.loadAsync();
     }
 }

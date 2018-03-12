@@ -4,12 +4,10 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {remove} from 'lodash';
-import {XH} from 'hoist/core';
 import {action} from 'hoist/mobx';
-import {RecordSpec} from 'hoist/data';
 import {GridModel} from 'hoist/grid';
 import {MessageModel} from 'hoist/cmp';
+import {GridContextMenu} from 'hoist/grid';
 
 
 import {RestFormModel} from './RestFormModel';
@@ -57,7 +55,7 @@ export class RestGridModel {
     }) {
         this.actionEnabled = Object.assign(this.actionEnabled, actionEnabled);
         this.actionWarning = Object.assign(this.actionWarning, actionWarning);
-        this.gridModel = new GridModel(rest);
+        this.gridModel = new GridModel({contextMenuFn: this.contextMenuFn, ...rest});
         this.formModel = new RestFormModel({parent: this, editors});
     }
 
@@ -84,5 +82,28 @@ export class RestGridModel {
         if (record) {
             this.formModel.openEdit(record);
         }
+    }
+
+    contextMenuFn = () => {
+        return new GridContextMenu([
+            {
+                text: 'Add',
+                action: () => this.addRecord()
+            },
+            {
+                text: 'Edit',
+                action: () => this.editSelection()
+            },
+            {
+                text: 'Delete',
+                action: () => this.deleteSelection()
+            },
+            '-',
+            'copy',
+            'copyWithHeaders',
+            '-',
+            'export',
+            'autoSizeAll'
+        ]);
     }
 }

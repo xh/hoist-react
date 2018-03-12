@@ -27,7 +27,7 @@ export class MonitorResultsPanel extends Component {
     }
 
     @action
-    loadAsync() {
+    async loadAsync() {
         return XH
             .fetchJson({url: 'monitorAdmin/results'})
             .then(rows => {

@@ -8,14 +8,18 @@
 import {Component} from 'react';
 import {elemFactory, hoistComponent} from 'hoist/core';
 import {Ref} from 'hoist/utils/Ref';
-import {observer, observable, setter , toJS, autorun} from 'hoist/mobx';
 import {frame, table, tbody, td, tr} from 'hoist/layout';
-import {clipboardMenuItem, contextMenu, ContextMenuModel} from  'hoist/cmp';
+import {clipboardMenuItem, contextMenu} from  'hoist/cmp';
 
 @hoistComponent()
 class LogViewerDisplay extends Component {
 
     lastRow = new Ref();
+
+    constructor(props) {
+        super(props);
+        this.addAutoRun(() => this.syncTail());
+    }
 
     render() {
         const {rows} = this.model;
@@ -24,11 +28,11 @@ class LogViewerDisplay extends Component {
             item: table(
                 tbody(...this.getTableRows(rows))
             )
-        })
+        });
     }
 
     getTableRows(rows) {
-        return toJS(rows).map((row, idx) => {
+        return rows.map((row, idx) => {
             return tr({
                 cls: 'logviewer-row noselect',
                 ref: idx === rows.length - 1 ? this.lastRow.ref : undefined,
@@ -44,35 +48,31 @@ class LogViewerDisplay extends Component {
         const rows = this.model.rows,
             currentRow = e.target.getAttribute('datakey');
 
-        const menuModel = new ContextMenuModel([
-            clipboardMenuItem({
-                text: `Copy Current Line`,
-                icon: 'list',
-                disabled: (currentRow == null),
-                successMessage: 'Log line copied to the clipboard.',
-                clipboardSpec: {text: () => rows[currentRow].join(': ')}
-            }),
-            clipboardMenuItem({
-                text: 'Copy All Lines',
-                successMessage: 'Log lines copied to the clipboard.',
-                clipboardSpec: {text: () => rows.map(row => row.join(': ')).join('\n')}
-            }),
-        ]);
-        return contextMenu({style: {width: '200px'}, model: menuModel});
-    }
-
-    componentDidMount() {
-        this.disposeTailRunner = autorun(() => {
-            if (!this.model.tail) return;
-            const lastRowElem = this.lastRow.value;
-            if (lastRowElem) {
-                lastRowElem.scrollIntoView();
-            }
+        return contextMenu({
+            style: {width: '200px'},
+            menuItems: [
+                clipboardMenuItem({
+                    text: 'Copy Current Line',
+                    icon: 'list',
+                    disabled: (currentRow == null),
+                    successMessage: 'Log line copied to the clipboard.',
+                    clipboardSpec: {text: () => rows[currentRow].join(': ')}
+                }),
+                clipboardMenuItem({
+                    text: 'Copy All Lines',
+                    successMessage: 'Log lines copied to the clipboard.',
+                    clipboardSpec: {text: () => rows.map(row => row.join(': ')).join('\n')}
+                })
+            ]
         });
     }
 
-    componenentWillUnmount() {
-        this.disposeTailRunner();
+    syncTail() {
+        if (!this.model.tail) return;
+        const lastRowElem = this.lastRow.value;
+        if (lastRowElem) {
+            lastRowElem.scrollIntoView();
+        }
     }
 }
 
