@@ -21,10 +21,10 @@ export class EhCachePanel extends Component {
             fields: ['name', 'heapSize', 'entries', 'status']
         }),
         columns: [
-            nameCol({minWidth: 360, width: 500}),
+            nameCol({minWidth: 360, flex: 3}),
             baseCol({field: 'heapSize', headerName: 'Heap Size (MB)', fixedWidth: 120, align: 'right'}),
             baseCol({field: 'entries', fixedWidth: 120, align: 'right'}),
-            baseCol({field: 'status', minWidth: 120, width: 200, align: 'right'})
+            baseCol({field: 'status', minWidth: 120, flex: 1, align: 'right'})
         ]
     });
     

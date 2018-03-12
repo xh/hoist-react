@@ -54,7 +54,7 @@ export class FeedbackPanel extends Component {
                 valueFormatter: compactDateRenderer()
             }),
             usernameCol({fixedWidth: 120}),
-            baseCol({field: 'msg', headerName: 'Message', minWidth: 60}),
+            baseCol({field: 'msg', headerName: 'Message', minWidth: 60, flex: 1}),
             baseCol({field: 'browser', fixedWidth: 120}),
             baseCol({field: 'device', fixedWidth: 120}),
             baseCol({field: 'appVersion', headerName: 'Version', fixedWidth: 120}),

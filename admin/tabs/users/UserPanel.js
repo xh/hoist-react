@@ -25,7 +25,7 @@ export class UserPanel extends Component {
             baseCol({field: 'email', fixedWidth: 175}),
             baseCol({field: 'displayName', fixedWidth: 150}),
             boolCheckCol({field: 'active', fixedWidth: 75, align: 'center'}),
-            baseCol({field: 'roles', minWidth: 130})
+            baseCol({field: 'roles', minWidth: 130, flex: 1}) // do we want add this flex prop for clarity? In this case this column is already 'flexing'. All the other cols are fixed, so this column will take up the remaining space.
         ]
     });
 

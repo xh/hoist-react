@@ -65,7 +65,7 @@ export class PreferencePanel extends Component {
             nameCol({fixedWidth: 200}),
             baseCol({field: 'type', fixedWidth: 70}),
             baseCol({field: 'defaultValue', minWidth: 150, maxWidth: 480}),
-            baseCol({field: 'notes', minWidth: 200})
+            baseCol({field: 'notes', minWidth: 200, flex: 1})
         ],
         editors: [
             {field: 'name'},

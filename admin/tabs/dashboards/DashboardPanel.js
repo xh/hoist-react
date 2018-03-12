@@ -51,7 +51,7 @@ export class DashboardPanel extends Component {
             baseCol({field: 'appCode', fixedWidth: 140}),
             usernameCol({fixedWidth: 120}),
             dateTimeCol({field: 'lastUpdated', headerName: 'Last Updated', fixedWidth: 160, align: 'right'}),
-            baseCol({field: 'definition', minWidth: 120})
+            baseCol({field: 'definition', minWidth: 120, flex: 1})
         ],
         editors: [
             {field: 'appCode'},

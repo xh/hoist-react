@@ -29,8 +29,8 @@ export class ClientErrorPanel extends Component {
         columns: [
             compactDateCol({field: 'dateCreated', fixedWidth: 100, align: 'right'}),
             usernameCol({fixedWidth: 120}),
-            baseCol({field: 'error', minWidth: 450, width: 800}),
-            baseCol({field: 'msg', headerName: 'Message', minWidth: 150, width: 270}),
+            baseCol({field: 'error', minWidth: 450, flex: 3}),
+            baseCol({field: 'msg', headerName: 'Message', minWidth: 150, flex: 1}),
             baseCol({field: 'browser', fixedWidth: 100}),
             baseCol({field: 'device', fixedWidth: 80}),
             baseCol({field: 'appVersion', fixedWidth: 130}),
