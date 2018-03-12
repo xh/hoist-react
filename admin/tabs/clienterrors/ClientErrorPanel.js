@@ -8,43 +8,70 @@ import {Component} from 'react';
 import {hoistComponent} from 'hoist/core';
 import {grid, GridModel} from 'hoist/grid';
 import {UrlStore} from 'hoist/data';
-import {vframe} from 'hoist/layout';
-import {baseCol} from 'hoist/columns/Core';
-import {compactDateCol} from 'hoist/columns/DatesTimes';
-import {usernameCol} from '../../columns/Columns';
+import {filler, hbox, hspacer, vframe} from 'hoist/layout';
+import {button} from 'hoist/kit/blueprint';
+import {textField, dayField, label} from 'hoist/cmp';
+import {Icon} from 'hoist/icon';
+
+import {ClientErrorModel} from './ClientErrorModel';
 
 @hoistComponent()
 export class ClientErrorPanel extends Component {
 
-    store = new UrlStore({
-        url: 'clientErrorAdmin',
-        fields: [
-            'username', 'error', 'msg', 'browser', 'device',
-            'appVersion', 'appEnvironment', 'dateCreated'
-        ]
-    });
-
-    gridModel = new GridModel({
-        store: this.store,
-        columns: [
-            compactDateCol({field: 'dateCreated', fixedWidth: 100, align: 'right'}),
-            usernameCol({fixedWidth: 120}),
-            baseCol({field: 'error', minWidth: 450, flex: 3}),
-            baseCol({field: 'msg', headerName: 'Message', minWidth: 150, flex: 1}),
-            baseCol({field: 'browser', fixedWidth: 100}),
-            baseCol({field: 'device', fixedWidth: 80}),
-            baseCol({field: 'appVersion', fixedWidth: 130}),
-            baseCol({field: 'appEnvironment', fixedWidth: 140})
-        ]
-    });
+    clientErrorModel = new ClientErrorModel();
 
     render() {
         return vframe(
-            grid({model: this.gridModel})
+            this.renderToolbar(),
+            grid({model: this.clientErrorModel.gridModel})
         );
     }
 
+    renderToolbar() {
+        return hbox({
+            cls: 'xh-tbar',
+            flex: 'none',
+            padding: 3,
+            alignItems: 'center',
+            items: [
+                // hspacer(4),
+                // this.dayField({field: 'startDate'}),
+                // hspacer(8),
+                // Icon.angleRight(),
+                // hspacer(8),
+                // this.dayField({field: 'endDate'}),
+                // hspacer(8),
+                // button({icon: Icon.caretLeft(), onClick: this.onDateGoBackClick}),
+                // button({icon: Icon.caretRight(), onClick: this.onDateGoForwardClick}),
+                // button({icon: Icon.arrowToRight(), onClick: this.onGoToCurrentDateClick}),
+                // hspacer(8),
+                // '|',
+                // hspacer(8),
+                // this.textField({field: 'username', placeholder: 'User...'}),
+                // hspacer(10),
+                // this.textField({field: 'msg', placeholder: 'Msg...'}),
+                // hspacer(8),
+                // '|',
+                // hspacer(8),
+                // button({icon: Icon.sync(), onClick: this.onSubmitClick}),
+                filler(),
+                this.renderErrorCount(),
+                hspacer(8),
+                button({icon: Icon.download(), onClick: this.onExportClick})
+            ]
+        });
+    }
+
+    renderErrorCount() {
+        const store = this.clientErrorModel.store;
+        return label(store.count + ' client errors');
+    }
+
+    onExportClick = () => {
+        this.clientErrorModel.exportGrid();
+    }
+
     async loadAsync() {
-        return this.store.loadAsync();
+        return this.clientErrorModel.loadAsync();
     }
 }
