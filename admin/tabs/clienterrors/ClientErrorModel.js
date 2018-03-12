@@ -44,7 +44,8 @@ export class ClientErrorModel {
 
     async loadAsync() {
         return XH.fetchJson({
-            url: 'clientErrorAdmin'
+            url: 'clientErrorAdmin',
+            params: this.getParams()
         }).then(data => {
             this.store.loadDataAsync(data);
         }).catchDefault();
@@ -55,5 +56,37 @@ export class ClientErrorModel {
         const fileName = 'Client Errors';
         this.gridModel.exportDataAsExcel({fileName});
     }
+
+    @action
+    setStartDate(date) {
+        if (!this.isValidDate(date) || moment(date).isSame(this.startDate)) return;
+        this.startDate = date;
+    }
+
+    @action
+    setEndDate(date) {
+        if (!this.isValidDate(date) || moment(date).isSame(this.endDate)) return;
+        this.endDate = date;
+    }
+
+    //----------------
+    // Implementation
+    //----------------
+    getParams() {
+        return {
+            startDate: fmtDate(this.startDate, 'YYYYMMDD'),
+            endDate: fmtDate(this.endDate, 'YYYYMMDD'),
+            // username: this.username,
+            // msg: this.msg,
+            // category: this.category,
+            // device: this.device,
+            // browser: this.browser
+        };
+    }
+
+    isValidDate(date) {
+        return date && date.toString() !== 'Invalid Date';
+    }
+
 
 }

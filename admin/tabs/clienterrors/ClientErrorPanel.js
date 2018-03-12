@@ -34,13 +34,13 @@ export class ClientErrorPanel extends Component {
             padding: 3,
             alignItems: 'center',
             items: [
-                // hspacer(4),
-                // this.dayField({field: 'startDate'}),
-                // hspacer(8),
-                // Icon.angleRight(),
-                // hspacer(8),
-                // this.dayField({field: 'endDate'}),
-                // hspacer(8),
+                hspacer(4),
+                this.dayField({field: 'startDate'}),
+                hspacer(8),
+                Icon.angleRight(),
+                hspacer(8),
+                this.dayField({field: 'endDate'}),
+                hspacer(8),
                 // button({icon: Icon.caretLeft(), onClick: this.onDateGoBackClick}),
                 // button({icon: Icon.caretRight(), onClick: this.onDateGoForwardClick}),
                 // button({icon: Icon.arrowToRight(), onClick: this.onGoToCurrentDateClick}),
@@ -60,6 +60,31 @@ export class ClientErrorPanel extends Component {
                 button({icon: Icon.download(), onClick: this.onExportClick})
             ]
         });
+    }
+
+    //-----------------------------
+    // Implementation
+    //-----------------------------
+    dayField(args) {
+        return dayField({
+            model: this.clientErrorModel,
+            onCommit: this.onDateCommit,
+            popoverPosition: 'bottom',
+            width: 100,
+            ...args
+        });
+    }
+
+    textField(args) {
+        return textField({
+            model: this.clientErrorModel,
+            width: 140,
+            ...args
+        });
+    }
+
+    onDateCommit = () => {
+        this.clientErrorModel.loadAsync();
     }
 
     renderErrorCount() {
