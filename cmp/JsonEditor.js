@@ -118,8 +118,9 @@ export class JsonEditor extends Component {
             };
             if (!text) return found;
 
-            try { window.jsonlint.parse(text); }
-            catch (e) {}
+            try {
+                window.jsonlint.parse(text);
+            } catch (e) {}
 
             return found;
         });
