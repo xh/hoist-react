@@ -51,6 +51,26 @@ export class ClientErrorModel {
         }).catchDefault();
     }
 
+    adjustDates(dir, toToday = false) {
+        const today = moment(),
+            start = moment(this.startDate),
+            end = moment(this.endDate),
+            diff = end.diff(start, 'days'),
+            incr = diff + 1;
+
+        let newStart = start[dir](incr, 'days'),
+            newEnd = end[dir](incr, 'days');
+
+        if (newEnd.diff(today, 'days') > 0 || toToday) {
+            newStart = today.clone().subtract(diff, 'days');
+            newEnd = today;
+        }
+
+        this.setStartDate(newStart.toDate());
+        this.setEndDate(newEnd.toDate());
+        this.loadAsync();
+    }
+
     exportGrid() {
         // const fileName = `Client Errors: ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`;
         const fileName = 'Client Errors';

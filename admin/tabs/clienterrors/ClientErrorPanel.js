@@ -41,11 +41,11 @@ export class ClientErrorPanel extends Component {
                 hspacer(8),
                 this.dayField({field: 'endDate'}),
                 hspacer(8),
-                // button({icon: Icon.caretLeft(), onClick: this.onDateGoBackClick}),
-                // button({icon: Icon.caretRight(), onClick: this.onDateGoForwardClick}),
-                // button({icon: Icon.arrowToRight(), onClick: this.onGoToCurrentDateClick}),
-                // hspacer(8),
-                // '|',
+                button({icon: Icon.caretLeft(), onClick: this.onDateGoBackClick}),
+                button({icon: Icon.caretRight(), onClick: this.onDateGoForwardClick}),
+                button({icon: Icon.arrowToRight(), onClick: this.onGoToCurrentDateClick}),
+                hspacer(8),
+                '|',
                 // hspacer(8),
                 // this.textField({field: 'username', placeholder: 'User...'}),
                 // hspacer(10),
@@ -81,6 +81,18 @@ export class ClientErrorPanel extends Component {
             width: 140,
             ...args
         });
+    }
+
+    onDateGoBackClick = () => {
+        this.clientErrorModel.adjustDates('subtract');
+    }
+
+    onDateGoForwardClick = () => {
+        this.clientErrorModel.adjustDates('add');
+    }
+
+    onGoToCurrentDateClick = () => {
+        this.clientErrorModel.adjustDates('subtract', true);
     }
 
     onDateCommit = () => {
