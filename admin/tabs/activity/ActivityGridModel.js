@@ -37,7 +37,7 @@ export class ActivityGridModel {
         store: this.store,
         columns: [
             baseCol({field: 'severity', fixedWidth: 80}),
-            dateTimeCol({field: 'dateCreated', fixedWidth: 160, rightAlign: true}),
+            dateTimeCol({field: 'dateCreated', fixedWidth: 160, align: 'right'}),
             usernameCol({fixedWidth: 120}),
             baseCol({field: 'msg', headerName: 'Message', minWidth: 150}),
             baseCol({field: 'category', fixedWidth: 100}),

@@ -22,9 +22,9 @@ export class EhCachePanel extends Component {
         }),
         columns: [
             nameCol({minWidth: 360, width: 500}),
-            baseCol({field: 'heapSize', headerName: 'Heap Size (MB)', fixedWidth: 120, rightAlign: true}),
-            baseCol({field: 'entries', fixedWidth: 120, rightAlign: true}),
-            baseCol({field: 'status', minWidth: 120, width: 200, rightAlign: true})
+            baseCol({field: 'heapSize', headerName: 'Heap Size (MB)', fixedWidth: 120, align: 'right'}),
+            baseCol({field: 'entries', fixedWidth: 120, align: 'right'}),
+            baseCol({field: 'status', minWidth: 120, width: 200, align: 'right'})
         ]
     });
     

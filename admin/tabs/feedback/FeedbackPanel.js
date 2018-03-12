@@ -50,7 +50,7 @@ export class FeedbackPanel extends Component {
                 field: 'dateCreated',
                 headerName: 'Date',
                 fixedWidth: 100,
-                rightAlign: true,
+                align: 'right',
                 valueFormatter: compactDateRenderer()
             }),
             usernameCol({fixedWidth: 120}),

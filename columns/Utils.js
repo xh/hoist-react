@@ -22,16 +22,16 @@ export function fileColFactory(fileVals = {}) {
 
             instanceVals.headerClass = castArray(instanceVals.headerClass);
             instanceVals.cellClass = castArray(instanceVals.cellClass);
-            if (instanceVals.centerAlign) {
+            if (instanceVals.align === 'center') {
                 instanceVals.headerClass.push('xh-center-justify');
                 instanceVals.cellClass.push('xh-align-center');
-                delete instanceVals.centerAlign;
+                delete instanceVals.align;
             }
 
-            if (instanceVals.rightAlign) {
+            if (instanceVals.align === 'right') {
                 instanceVals.headerClass.push('xh-right-justify');
                 instanceVals.cellClass.push('xh-align-right');
-                delete instanceVals.rightAlign;
+                delete instanceVals.align;
             }
 
             if (instanceVals.fixedWidth) {

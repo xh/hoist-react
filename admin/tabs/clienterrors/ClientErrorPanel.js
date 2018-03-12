@@ -27,7 +27,7 @@ export class ClientErrorPanel extends Component {
     gridModel = new GridModel({
         store: this.store,
         columns: [
-            compactDateCol({field: 'dateCreated', fixedWidth: 100, rightAlign: true}),
+            compactDateCol({field: 'dateCreated', fixedWidth: 100, align: 'right'}),
             usernameCol({fixedWidth: 120}),
             baseCol({field: 'error', minWidth: 450, width: 800}),
             baseCol({field: 'msg', headerName: 'Message', minWidth: 150, width: 270}),
