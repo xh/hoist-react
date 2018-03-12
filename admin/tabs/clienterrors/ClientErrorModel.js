@@ -20,6 +20,8 @@ export class ClientErrorModel {
 
     @observable startDate = moment().subtract(7, 'days').toDate();
     @observable endDate = moment().toDate();
+    @observable @setter username = '';
+    @observable @setter error = '';
 
     store = new LocalStore({
         fields: [
@@ -95,11 +97,8 @@ export class ClientErrorModel {
         return {
             startDate: fmtDate(this.startDate, 'YYYYMMDD'),
             endDate: fmtDate(this.endDate, 'YYYYMMDD'),
-            // username: this.username,
-            // msg: this.msg,
-            // category: this.category,
-            // device: this.device,
-            // browser: this.browser
+            username: this.username,
+            error: this.error
         };
     }
 

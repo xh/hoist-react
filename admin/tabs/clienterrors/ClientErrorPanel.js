@@ -46,14 +46,14 @@ export class ClientErrorPanel extends Component {
                 button({icon: Icon.arrowToRight(), onClick: this.onGoToCurrentDateClick}),
                 hspacer(8),
                 '|',
-                // hspacer(8),
-                // this.textField({field: 'username', placeholder: 'User...'}),
-                // hspacer(10),
-                // this.textField({field: 'msg', placeholder: 'Msg...'}),
-                // hspacer(8),
-                // '|',
-                // hspacer(8),
-                // button({icon: Icon.sync(), onClick: this.onSubmitClick}),
+                hspacer(8),
+                this.textField({field: 'username', placeholder: 'User...'}),
+                hspacer(10),
+                this.textField({field: 'error', placeholder: 'Error...'}),
+                hspacer(8),
+                '|',
+                hspacer(8),
+                button({icon: Icon.sync(), onClick: this.onSubmitClick}),
                 filler(),
                 this.renderErrorCount(),
                 hspacer(8),
@@ -102,6 +102,10 @@ export class ClientErrorPanel extends Component {
     renderErrorCount() {
         const store = this.clientErrorModel.store;
         return label(store.count + ' client errors');
+    }
+
+    onSubmitClick = () => {
+        this.clientErrorModel.loadAsync();
     }
 
     onExportClick = () => {
