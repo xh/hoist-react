@@ -1,26 +1,29 @@
 .xh-about-dialog {
-    &__inner {
-        padding: var(--xh-pad-px);
-    }
+  &__inner {
+    background-color: var(--xh-bg-color);
+    padding: var(--xh-pad-px);
+  }
 
-    button {
-        margin: var(--xh-pad-px);
-    }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
+  th {
+    text-align: right;
+    background-color: var(--xh-bg-color-alt);
+    border: 1px solid var(--xh-border-color);
+    padding: var(--xh-pad-half-px);
+  }
 
-    th {
-        text-align: right;
-        background-color: var(--xh-bg-color-alt);
-        border: 1px solid var(--xh-border-color);
-        padding: var(--xh-pad-half-px);
-    }
+  td {
+    border: 1px solid var(--xh-border-color);
+    padding: var(--xh-pad-half-px);
+  }
 
-    td {
-        border: 1px solid var(--xh-border-color);
-        padding: var(--xh-pad-half-px);
-    }
+  button {
+    margin-top: var(--xh-pad-px);
+    margin-right: var(--xh-pad-px);
+    margin-left: var(--xh-pad-px);
+  }
 }

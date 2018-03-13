@@ -9,6 +9,7 @@
   padding: var(--xh-pad-px);
 
   table {
+    margin: var(--xh-pad-px);
     border-spacing: 0;
     border-collapse: collapse;
   }
@@ -28,6 +29,10 @@
     padding: var(--xh-pad-px);
     width: 200px;
     text-align: right;
+  }
+
+  &__blurb {
+    margin: var(--xh-pad-px);
   }
 
 }

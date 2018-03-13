@@ -7,7 +7,7 @@
 
 import React, {Component} from 'react';
 import {XH, hoistComponent} from 'hoist/core';
-import {div, h3, table, tbody, tr, th, td} from 'hoist/layout';
+import {div, h3, h4, table, tbody, tr, th, td} from 'hoist/layout';
 
 import './AboutPanel.scss';
 
@@ -31,16 +31,14 @@ export class AboutPanel extends Component {
 
         return [
             table({
-                cls: 'xh-mtb2x',
                 item: tbody(
                     row('App Name', XH.appName),
                     row('Environment', svc.get('appEnvironment')),
                     row('Version', svc.get('appVersion'))
                 )
             }),
-            div({cls: 'xh-mt', items: <p>Framework Versions</p>}),
+            h4('Framework Versions'),
             table({
-                cls: 'xh-mtb2x',
                 item: tbody(
                     row('Hoist Core', svc.get('hoistCoreVersion')),
                     row('Hoist React', svc.get('hoistReactVersion')),
@@ -54,7 +52,7 @@ export class AboutPanel extends Component {
 
     renderBlurb() {
         return div({
-            cls: 'xh-mt',
+            cls: 'xh-admin-about-panel__blurb',
             items: [
                 <p>
                     This application is built with Hoist a plugin for rich web-application development provided
