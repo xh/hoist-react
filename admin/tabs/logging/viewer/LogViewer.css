@@ -20,11 +20,6 @@
     font-family: Monaco, monospace;
 }
 
-.logviewer-row:hover {
-    background-color:#f5f8fa;
-    color: #282828;
-}
-
 .logviewer-row-number {
     padding-right: 6px;
     margin-right: 6px;
@@ -36,4 +31,14 @@
 
 .logviewer-row-content {
     white-space: pre;
+}
+
+.logviewer-row:hover {
+    background-color: #282828;
+    color: #f5f8fa;
+}
+
+.xh-dark .logviewer-row:hover {
+    background-color:#f5f8fa;
+    color: #282828;
 }

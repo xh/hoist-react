@@ -42,7 +42,14 @@ export class LogViewer extends Component {
                     grid({
                         model: files,
                         gridOptions: {
-                            defaultColDef: {suppressMenu: true}
+                            defaultColDef: {suppressMenu: true},
+                            onRowDataChanged() {
+                                const model = files,
+                                    store = model.store,
+                                    rec = store.findRecord('filename', `${XH.appName.toLowerCase()}.log`);
+
+                                if (rec) model.selection.select(rec, true);
+                            }
                         }
                     }),
                     storeFilterField({

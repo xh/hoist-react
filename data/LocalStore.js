@@ -83,6 +83,10 @@ export class LocalStore extends BaseStore {
             rec;
     }
 
+    findRecord(property, value) {
+        return this.records.filter(rec => rec[property] === value)[0];
+    }
+
     //-----------------------------------
     // Protected methods for subclasses
     //-----------------------------------
