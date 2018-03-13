@@ -15,3 +15,15 @@
     padding-right: 8px;
     padding-left: 8px;
 }
+
+.xh-column-header-align-right .ag-header-cell-label {
+    width: auto;
+    float: none;
+    justify-content: flex-end;
+}
+
+.xh-column-header-align-center .ag-header-cell-label {
+    width: auto;
+    float: none;
+    justify-content: center;
+}

@@ -21,7 +21,7 @@ export class ServicePanel extends Component {
         }),
         columns: [
             baseCol({field: 'provider', fixedWidth: 100}),
-            baseCol({field: 'name', minWidth: 300})
+            baseCol({field: 'name', minWidth: 300, flex: 1})
         ]
     });
 

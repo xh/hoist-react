@@ -20,7 +20,8 @@ export const nameCol = colFactory({
 
 export const nameFlexCol = colFactory({
     field: 'name',
-    minWidth: 120
+    minWidth: 120,
+    flex: 1
 });
 
 export const usernameCol = colFactory({

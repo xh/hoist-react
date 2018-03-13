@@ -57,7 +57,7 @@ export class UserPreferencePanel extends Component {
             nameCol({fixedWidth: 200}),
             baseCol({field: 'type', fixedWidth: 70}),
             usernameCol({fixedWidth: 120}),
-            baseCol({field: 'userValue', minWidth: 200})
+            baseCol({field: 'userValue', minWidth: 200, flex: 1})
         ],
         editors: [
             {field: 'name'},

@@ -20,21 +20,22 @@ import './Grid.scss';
 @hoistComponent()
 class Grid extends Component {
 
-    static gridDefaults = {
+    static gridDefaultOptions = {
         toolPanelSuppressSideButtons: true,
         enableSorting: true,
         enableColResize: true,
         deltaRowDataMode: true,
         getRowNodeId: (data) => data.id,
         rowSelection: 'single',
-        allowContextMenuWithControlKey: true
+        allowContextMenuWithControlKey: true,
+        defaultColDef: {suppressMenu: true}
     };
 
     constructor(props) {
         super(props);
         this.gridOptions = defaults(
             props.gridOptions || {},
-            Grid.gridDefaults,
+            Grid.gridDefaultOptions,
             {navigateToNextCell: this.onNavigateToNextCell}
         );
         this.addAutoRun(() => this.syncSelection());
@@ -49,7 +50,6 @@ class Grid extends Component {
                 // cls: this.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                 item: agGridReact({
                     rowData: store.records,
-                    defaultColDef: {suppressMenu: true},
                     columnDefs: columns,
                     onSelectionChanged: this.onSelectionChanged,
                     onGridReady: this.onGridReady,
