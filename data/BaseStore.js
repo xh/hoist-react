@@ -45,6 +45,14 @@ export class BaseStore {
      * @param filteredOnly, set to true to skip non-filtered records
      */
     getById(id, filteredOnly) {}
+
+    /**
+     * Find a record by property and value.
+     *
+     * @param property
+     * @param value
+     */
+    findRecord(property, value) {}
     
     /**
      * Construct this object.
