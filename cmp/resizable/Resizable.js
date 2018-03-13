@@ -18,6 +18,7 @@ export class Resizable extends Component {
 
     @observable isOpen;
     @setter @observable contentSize;
+    @observable _isResizing;
     isLazyState = true;
     isResizable = false;
 
@@ -60,19 +61,7 @@ export class Resizable extends Component {
         // Turn off lazy rendering once opened
         if (this.isOpen) this.isLazyState = false;
 
-        const userSelect = this._isResizing ? {
-            userSelect: 'none',
-            MozUserSelect: 'none',
-            WebkitUserSelect: 'none',
-            MsUserSelect: 'none'
-        } : {
-            userSelect: 'auto',
-            MozUserSelect: 'auto',
-            WebkitUserSelect: 'auto',
-            MsUserSelect: 'auto'
-        };
-
-        const {isCollapsible, isResizable, collapseDirection, style} = this.props,
+        const {isCollapsible, isResizable, collapseDirection} = this.props,
             vertical = this.isVertical(),
             splitterFirst = collapseDirection === 'right' || collapseDirection === 'bottom',
             child = this.isLazyState ? null : this.renderChild(),
@@ -87,7 +76,7 @@ export class Resizable extends Component {
 
         return cmp({
             flex: 'none',
-            style: Object.assign(style || {}, ...userSelect),
+            cls: `${this.props.cls || ''}${this._isResizing ? ' xh-unselectable' : ''}`,
             items: [...items, ...this.getResizers()]
         });
     }
@@ -105,22 +94,26 @@ export class Resizable extends Component {
     renderChild() {
         const {props, isOpen} = this,
             {children} = props,
-            vertical = this.isVertical(),
+            type = this.isVertical() ? 'height' : 'width',
             size = isOpen ? this.contentSize : 0;
-        return vertical ?
-            box({height: size, items: children}) :
-            box({width: size, items: children});
+
+        return box({
+            style: {
+                [type]: size,
+                transition: this._isResizing ? 'none' : 'width 0.5s, height 0.5s'
+            },
+            items: children
+        });
     }
 
     getSplitter() {
         const {props, isOpen} = this,
-            {collapseDirection, isCollapsible} = props;
+            {isCollapsible} = props;
 
         if (!isCollapsible) return null;
 
         const vertical = this.isVertical(),
-            chevronClose = vertical ? (collapseDirection === 'top' ? 'up' : 'down') : (collapseDirection === 'left' ? 'left' : 'right'),
-            chevronOpen = vertical ? (collapseDirection === 'top' ? 'down' : 'up') : (collapseDirection === 'left' ? 'right' : 'left'),
+            {open: chevronOpen, close: chevronClose} = this.getChevrons(vertical),
             cmp = vertical ? hbox : vbox,
             cfg = {
                 style: {background: '#959b9e'},
@@ -171,16 +164,20 @@ export class Resizable extends Component {
     }
 
     getOppositeSide(side) {
-        switch (side) {
-            case 'left':
-                return 'right';
-            case 'right':
-                return 'left';
-            case 'top':
-                return 'bottom';
-            case 'bottom':
-                return 'top';
-        }
+        const map = {left: 'right', right: 'left', top: 'bottom', bottom: 'top'};
+        return map[side];
+    }
+
+    getChevrons(vertical) {
+        const {collapseDirection} = this.props,
+            directions = [['up', 'down'], ['left', 'right']],
+            type = vertical ? 0 : 1,
+            idx = collapseDirection === 'top' || collapseDirection === 'left' ? 0 : 1;
+
+        return {
+            close: directions[type][idx],
+            open: directions[type][1 - idx]
+        };
     }
 
     @action
@@ -199,22 +196,16 @@ export class Resizable extends Component {
             direction = this._resizeDirection,
             contentSize = this.contentSize && parseInt(this.contentSize, 10);
 
-        let diff, size;
-        if (direction === 'right') {
-            diff = startX - clientX;
-            this._startPositionValues.x = clientX;
-        } else if (direction === 'left') {
-            diff = clientX - startX;
-            this._startPositionValues.x = clientX;
-        } else if (direction === 'top') {
-            diff = clientY - startY;
-            this._startPositionValues.y = clientY;
-        } else if (direction === 'bottom') {
-            diff = startY - clientY;
-            this._startPositionValues.y = clientY;
-        }
+        let diff;
 
-        size = Math.max(contentSize - diff, 0);
+        if (/right/i.test(direction)) diff = startX - clientX;
+        if (/left/i.test(direction)) diff = clientX - startX;
+        if (/top/i.test(direction)) diff = clientY - startY;
+        if (/bottom/i.test(direction)) diff = startY - clientY;
+
+        this._startPositionValues = {x: clientX, y: clientY };
+
+        const size = Math.max(contentSize - diff, 0);
 
         this.setContentSize(`${size}px`);
     }
