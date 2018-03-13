@@ -18,7 +18,6 @@ const globalVals = {};
 export function fileColFactory(fileVals = {}) {
     return function(colVals = {}) {
         return function(instanceVals = {}) {
-            // Do additional pre-processing here
             const colProps = defaults(instanceVals, colVals, fileVals, globalVals);
 
             colProps.headerClass = castArray(colProps.headerClass);
@@ -46,7 +45,7 @@ export function fileColFactory(fileVals = {}) {
                 colProps.minWidth = colProps.fixedWidth;
                 delete colProps.fixedWidth;
             }
-            // Do additional post-processing here
+
             return colProps;
         };
     };
