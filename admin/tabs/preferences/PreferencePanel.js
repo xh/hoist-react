@@ -61,11 +61,11 @@ export class PreferencePanel extends Component {
             del: 'Are you sure you want to delete? Deleting preferences can break running apps!'
         },
         columns: [
-            boolCheckCol({field: 'local', fixedWidth: 70, centerAlign: true}),
+            boolCheckCol({field: 'local', fixedWidth: 70, align: 'center'}),
             nameCol({fixedWidth: 200}),
             baseCol({field: 'type', fixedWidth: 70}),
             baseCol({field: 'defaultValue', minWidth: 150, maxWidth: 480}),
-            baseCol({field: 'notes', minWidth: 200})
+            baseCol({field: 'notes', minWidth: 200, flex: 1})
         ],
         editors: [
             {field: 'name'},

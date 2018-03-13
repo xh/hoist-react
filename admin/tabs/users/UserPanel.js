@@ -24,8 +24,8 @@ export class UserPanel extends Component {
             usernameCol({fixedWidth: 175}),
             baseCol({field: 'email', fixedWidth: 175}),
             baseCol({field: 'displayName', fixedWidth: 150}),
-            boolCheckCol({field: 'active', fixedWidth: 75, centerAlign: true}),
-            baseCol({field: 'roles', minWidth: 130})
+            boolCheckCol({field: 'active', fixedWidth: 75, align: 'center'}),
+            baseCol({field: 'roles', minWidth: 130, flex: 1})
         ]
     });
 

@@ -5,7 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {defaults, castArray} from 'lodash';
-import './Columns.css';
 
 const globalVals = {};
 
@@ -19,30 +18,35 @@ const globalVals = {};
 export function fileColFactory(fileVals = {}) {
     return function(colVals = {}) {
         return function(instanceVals = {}) {
+            const colProps = defaults(instanceVals, colVals, fileVals, globalVals);
 
-            instanceVals.headerClass = castArray(instanceVals.headerClass);
-            instanceVals.cellClass = castArray(instanceVals.cellClass);
-            if (instanceVals.centerAlign) {
-                instanceVals.headerClass.push('xh-center-justify');
-                instanceVals.cellClass.push('xh-align-center');
-                delete instanceVals.centerAlign;
+            colProps.headerClass = castArray(colProps.headerClass);
+            colProps.cellClass = castArray(colProps.cellClass);
+            if (colProps.align === 'center') {
+                colProps.headerClass.push('xh-column-header-align-center');
+                colProps.cellClass.push('xh-align-center');
+                delete colProps.align;
             }
 
-            if (instanceVals.rightAlign) {
-                instanceVals.headerClass.push('xh-right-justify');
-                instanceVals.cellClass.push('xh-align-right');
-                delete instanceVals.rightAlign;
+            if (colProps.align === 'right') {
+                colProps.headerClass.push('xh-column-header-align-right');
+                colProps.cellClass.push('xh-align-right');
+                delete colProps.align;
             }
 
-            if (instanceVals.fixedWidth) {
-                instanceVals.width = instanceVals.fixedWidth;
-                instanceVals.maxWidth = instanceVals.fixedWidth;
-                instanceVals.minWidth = instanceVals.fixedWidth;
-                delete instanceVals.fixedWidth;
+            if (colProps.flex) {
+                colProps.width = colProps.flex * 1000;
+                delete colProps.flex;
             }
-            // Do additional pre-processing here
-            return defaults(instanceVals, colVals, fileVals, globalVals);
-            // Do additional post-processing here
+
+            if (colProps.fixedWidth) {
+                colProps.width = colProps.fixedWidth;
+                colProps.maxWidth = colProps.fixedWidth;
+                colProps.minWidth = colProps.fixedWidth;
+                delete colProps.fixedWidth;
+            }
+
+            return colProps;
         };
     };
 }
