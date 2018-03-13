@@ -64,3 +64,11 @@ body :focus {
 .xh-dark .xh-tbar {
     background-color: #293742;
 }
+
+.xh-align-right {
+    text-align: right
+}
+
+.xh-align-center {
+    text-align: center
+}

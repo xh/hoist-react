@@ -24,13 +24,13 @@ export function fileColFactory(fileVals = {}) {
             colProps.headerClass = castArray(colProps.headerClass);
             colProps.cellClass = castArray(colProps.cellClass);
             if (colProps.align === 'center') {
-                colProps.headerClass.push('xh-center-justify');
+                colProps.headerClass.push('xh-column-header-align-center');
                 colProps.cellClass.push('xh-align-center');
                 delete colProps.align;
             }
 
             if (colProps.align === 'right') {
-                colProps.headerClass.push('xh-right-justify');
+                colProps.headerClass.push('xh-column-header-align-right');
                 colProps.cellClass.push('xh-align-right');
                 delete colProps.align;
             }
