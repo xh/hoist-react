@@ -14,7 +14,7 @@ import {collapsible, loadMask, storeFilterField} from 'hoist/cmp';
 import {logViewerDisplay} from './LogViewerDisplay';
 import {LogViewerModel} from './LogViewerModel';
 import {logViewerToolbar} from './LogViewerToolbar';
-import './LogViewer.css';
+import './LogViewer.scss';
 
 @hoistComponent()
 export class LogViewer extends Component {

@@ -5,7 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import './LoginPanel.css';
 import React, {Component} from 'react';
 import {XH, elemFactory, hoistComponent, hoistModel} from 'hoist/core';
 import {vbox, hbox, filler, viewport} from 'hoist/layout';
@@ -13,6 +12,8 @@ import {button, text} from 'hoist/kit/blueprint';
 import {textField} from 'hoist/cmp';
 import {observable, computed, setter} from 'hoist/mobx';
 import {MessageModel, message} from 'hoist/cmp';
+
+import './LoginPanel.scss';
 
 @hoistComponent()
 export class LoginPanel extends Component {

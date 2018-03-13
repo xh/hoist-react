@@ -10,7 +10,7 @@ import {hoistComponent, elemFactory} from 'hoist/core';
 import {viewport, frame} from 'hoist/layout';
 import {overlay, spinner} from 'hoist/kit/blueprint';
 
-import './LoadMask.css';
+import './LoadMask.scss';
 
 /**
  * Simple LoadMask.

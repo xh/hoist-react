@@ -1,0 +1,201 @@
+/*noinspection CssUnresolvedCustomProperty*/
+body {
+  /* App color vars - note these are expected to often have an alternate in xh-dark mode */
+  --xh-bg-color: var(--bg-color, white);
+  --xh-bg-color-alt: var(--bg-color-alt, rgba(146, 188, 228, 0.56));
+  --xh-bg-color-highlight: var(--bg-color-highlight, rgba(43, 139, 228, 0.56));
+
+  --xh-border-color: var(--border-color, #7c7c7c);
+
+  --xh-navbar-bg-color: var(--navbar-bg-color, var(--xh-bg-color-alt));
+  --xh-navbar-color: var(--navbar-color, var(--xh-text-color));
+
+  --xh-tbar-bg-color: var(--tbar-bg-color, var(--xh-bg-color-alt));
+
+  --xh-text-color: var(--text-color, #232323);
+  --xh-text-color-accent: var(--text-color-accent, #924000);
+  --xh-text-color-highlight: var(--text-color-highlight, #eeeeee);
+
+  /* Primary color vars */
+  --xh-blue: var(--blue, darkblue);
+  --xh-gray: var(--green, gray);
+  --xh-green: var(--green, darkgreen);
+  --xh-orange: var(--orange, orange);
+  --xh-red: var(--red, darkred);
+
+  /* Sizing / other vars - these do not switch on xh-dark mode */
+  --xh-border-width: var(--border-width, 1);
+  --xh-border-width-px: calc(var(--xh-border-width) * 1px);
+
+  --xh-font-family: var(--font-family, (-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif));
+  --xh-font-family-mono: var(--font-family-mono, (Monaco, Consolas, monospace));
+
+  --xh-font-size: var(--font-size, 12);
+  --xh-font-size-px: calc(var(--xh-font-size) * 1px);
+  --xh-font-size-large-em: var(--font-size-small-em, 1.2em);
+  --xh-font-size-small-em: var(--font-size-small-em, 0.9em);
+
+  --xh-pad: var(--pad, 10);
+  --xh-pad-px: calc(var(--xh-pad) * 1px);
+  --xh-pad-double-px: calc(var(--xh-pad) * 2px);
+  --xh-pad-half-px: calc(var(--xh-pad) * 0.5px);
+}
+
+/*noinspection CssUnresolvedCustomProperty*/
+body.xh-dark {
+  --xh-bg-color: var(--bg-color, #282827);
+  --xh-bg-color-alt: var(--bg-color-alt, #293741);
+  --xh-bg-color-highlight: var(--bg-color-highlight, #4a708b);
+
+  --xh-border-color: var(--border-color, #4b7079);
+
+  --xh-navbar-bg-color: var(--navbar-bg-color, var(--xh-bg-color-alt));
+  --xh-navbar-color: var(--navbar-color, var(--xh-text-color));
+
+  --xh-tbar-bg-color: var(--tbar-bg-color, var(--xh-bg-color-alt));
+
+  --xh-text-color: var(--text-color, white);
+  --xh-text-color-accent: var(--text-color-accent, #d05700);
+  --xh-text-color-highlight: var(--text-color-highlight, white);
+}
+
+/* Body */
+body {
+  background-color: var(--xh-bg-color);
+  color: var(--xh-text-color);
+  border-color: var(--xh-border-color);
+
+  font-family: var(--xh-font-family);
+  font-size: var(--xh-font-size-px);
+}
+
+body :focus {
+  outline: 0;
+}
+
+/* Custom scrollbar */
+body ::-webkit-scrollbar {
+  -webkit-appearance: none;
+  background-color: #696969;
+  width: 10px;
+  height: 10px;
+}
+
+body ::-webkit-scrollbar-thumb {
+  background-color: #a9a9a9;
+}
+
+body ::-webkit-scrollbar-corner {
+  background-color: #696969;
+}
+
+/*Utility margin / padding / border classes*/
+.xh-mt {
+  margin-top: var(--xh-pad-px);
+}
+
+.xh-mr {
+  margin-right: var(--xh-pad-px);
+}
+
+.xh-mb {
+  margin-bottom: var(--xh-pad-px);
+}
+
+.xh-ml {
+  margin-left: var(--xh-pad-px);
+}
+
+.xh-ma {
+  margin: var(--xh-pad-px);
+}
+
+.xh-mtb {
+  margin: var(--xh-pad-px) 0;
+}
+
+.xh-mrl {
+  margin: 0 var(--xh-pad-px);
+}
+
+.xh-mt2x {
+  margin-top: var(--xh-pad-double-px);
+}
+
+.xh-mr2x {
+  margin-right: var(--xh-pad-double-px);
+}
+
+.xh-mb2x {
+  margin-bottom: var(--xh-pad-double-px);
+}
+
+.xh-ml2x {
+  margin-left: var(--xh-pad-double-px);
+}
+
+.xh-ma2x {
+  margin: var(--xh-pad-double-px);
+}
+
+.xh-mtb2x {
+  margin: var(--xh-pad-double-px) 0;
+}
+
+.xh-mrl2x {
+  margin: 0 var(--xh-pad-double-px);
+}
+
+.xh-pt {
+  padding-top: var(--xh-pad-px);
+}
+
+.xh-pr {
+  padding-right: var(--xh-pad-px);
+}
+
+.xh-pb {
+  padding-bottom: var(--xh-pad-px);
+}
+
+.xh-pl {
+  padding-left: var(--xh-pad-px);
+}
+
+.xh-pa {
+  padding: var(--xh-pad-px);
+}
+
+.xh-ptb {
+  padding: var(--xh-pad-px) 0;
+}
+
+.xh-prl {
+  padding: 0 var(--xh-pad-px);
+}
+
+.xh-ba {
+  border: var(--xh-border-width-px) solid;
+}
+
+.xh-bt {
+  border-top: var(--xh-border-width-px) solid;
+}
+
+.xh-br {
+  border-right: var(--xh-border-width-px) solid;
+}
+
+.xh-bb {
+  border-bottom: var(--xh-border-width-px) solid;
+}
+
+.xh-bl {
+  border-left: var(--xh-border-width-px) solid;
+}
+
+/*XH theme and component classes*/
+.xh-tbar {
+  padding: var(--xh-pad-px);
+  background-color: var(--xh-tbar-bg-color);
+}

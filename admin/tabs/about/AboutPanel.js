@@ -9,7 +9,7 @@ import React, {Component} from 'react';
 import {XH, hoistComponent} from 'hoist/core';
 import {div, h3, table, tbody, tr, th, td} from 'hoist/layout';
 
-import './AboutPanel.css';
+import './AboutPanel.scss';
 
 @hoistComponent()
 export class AboutPanel extends Component {

@@ -12,7 +12,7 @@ import {defaults, difference, isString} from 'lodash';
 
 import './ag-grid';
 import {navigateSelection, agGridReact} from './ag-grid';
-import './Grid.css';
+import './Grid.scss';
 
 /**
  * Grid Component
