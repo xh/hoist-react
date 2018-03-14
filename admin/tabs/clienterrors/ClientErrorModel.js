@@ -40,7 +40,7 @@ export class ClientErrorModel {
             baseCol({field: 'browser', fixedWidth: 100}),
             baseCol({field: 'device', fixedWidth: 80}),
             baseCol({field: 'appVersion', fixedWidth: 130}),
-            baseCol({field: 'appEnvironment', fixedWidth: 140})
+            baseCol({field: 'appEnvironment', headerName: 'Environment', fixedWidth: 120})
         ]
     });
 
