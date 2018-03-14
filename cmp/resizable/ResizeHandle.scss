@@ -32,31 +32,3 @@
     left: -2px;
     cursor: ew-resize;
 }
-.xh-resize-handler.topRight {
-    width: 5px;
-    height: 5px;
-    top: 0;
-    right: 0;
-    cursor: nesw-resize;
-}
-.xh-resize-handler.bottomRight {
-    width: 5px;
-    height: 5px;
-    bottom: 0;
-    right: 0;
-    cursor: nwse-resize;
-}
-.xh-resize-handler.bottomLeft {
-    width: 5px;
-    height: 5px;
-    bottom: 0;
-    left: 0;
-    cursor: nesw-resize;
-}
-.xh-resize-handler.topLeft {
-    width: 5px;
-    height: 5px;
-    top: 0;
-    left: 0;
-    cursor: nwse-resize;
-}
