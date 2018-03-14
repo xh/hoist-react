@@ -39,7 +39,7 @@ export class ServicePanel extends Component {
     renderToolbar() {
         return toolbar({
             items: [
-                button({icon: Icon.sync(), text: 'Clear Caches', onClick: this.onClearCachesClick}),
+                button({icon: Icon.sync(), text: 'Clear Caches', onClick: this.onClearCachesClick}), // disable this button if no selction
                 toolbarSep(),
                 button({icon: Icon.sync(), onClick: this.onRefreshClick}),
                 filler(),
@@ -49,12 +49,14 @@ export class ServicePanel extends Component {
     }
 
     onClearCachesClick = () => {
-        // get selection for params, do we have this yet?
+        const selection = this.gridModel.selection;
+        if (selection.isEmpty) return;
+
+        const names = selection.records.map(it => it.name);
         XH.fetchJson({
             url: 'serviceAdmin/clearCaches',
-            // params: {names: names},
+            params: {names}
         }).then(r => {
-            // check for success?
             return this.loadAsync();
         }).catchDefault();
     }
