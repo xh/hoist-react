@@ -34,7 +34,7 @@ export class LogViewerModel {
             fields: ['filename']
         }),
         columns: [
-            baseCol({headerName: 'Log File', field: 'filename', width: 250, sort: 'asc'})
+            baseCol({headerName: 'Log File', field: 'filename', width: 250, sort: 'desc'})
         ]
     });
 
@@ -51,7 +51,7 @@ export class LogViewerModel {
         const files = this.files,
             fileSelection = files.selection,
             fileStore = files.store;
-        await fileStore.loadAsync()
+        await fileStore.loadAsync();
         if (fileSelection.isEmpty) {
             const latestAppLog = find(fileStore.records, ['filename', `${XH.appName.toLowerCase()}.log`]);
             if (latestAppLog) {
