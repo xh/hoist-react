@@ -7,7 +7,7 @@
 
 import React, {Component} from 'react';
 import {XH, elemFactory, hoistComponent, hoistModel} from 'hoist/core';
-import {vbox, filler, viewport} from 'hoist/layout';
+import {vbox, filler, viewport, div} from 'hoist/layout';
 import {button, text} from 'hoist/kit/blueprint';
 import {textField, toolbar} from 'hoist/cmp';
 import {observable, computed, setter} from 'hoist/mobx';
@@ -18,8 +18,8 @@ import './LoginPanel.scss';
 @hoistComponent()
 export class LoginPanel extends Component {
 
-    @setter @observable username = 'admin@xh.io';
-    @setter @observable password = 'onBQs!!En93E3Wbj';
+    @setter @observable username = '';
+    @setter @observable password = '';
     @setter @observable warning = '';
     messageModel = new MessageModel();
 
@@ -32,10 +32,14 @@ export class LoginPanel extends Component {
             alignItems: 'center',
             justifyContent: 'center',
             item: vbox({
-                cls: 'xh-login-panel',
+                cls: 'xh-login',
                 justifyContent: 'right',
                 width: 300,
                 items: [
+                    div({
+                        cls: 'xh-login__title',
+                        item: `Welcome to ${XH.appName}`
+                    }),
                     textField({
                         model: this,
                         field: 'username',
@@ -51,12 +55,12 @@ export class LoginPanel extends Component {
                     text({
                         item: this.warning,
                         ellipsize: true,
-                        cls: 'xh-login-warning'
+                        cls: 'xh-login__warning'
                     }),
                     toolbar(
                         filler(),
                         button({
-                            text: 'Go',
+                            text: 'Login',
                             intent: 'primary',
                             disabled: !this.isValid,
                             onClick: this.onSubmit

@@ -7,9 +7,9 @@
 
 import {Component} from 'react';
 import {XH, hoistComponent, elemFactory} from 'hoist/core';
-import {button, dialog, dialogBody, dialogFooter, dialogFooterActions, textArea} from 'hoist/kit/blueprint';
-import {clipboardButton} from 'hoist/cmp';
-import {pre, table, tbody, td, th, tr} from 'hoist/layout';
+import {button, dialog, dialogBody, textArea} from 'hoist/kit/blueprint';
+import {clipboardButton, toolbar} from 'hoist/cmp';
+import {pre, table, tbody, td, th, tr, filler} from 'hoist/layout';
 import {stringifyErrorSafely} from 'hoist/exception';
 
 @hoistComponent()
@@ -59,34 +59,32 @@ export class ErrorDialogDetails extends Component {
                             onChange: this.onMessageChange
                         })]
                 }),
-                dialogFooter(
-                    dialogFooterActions({
-                        items: [
-                            button({
-                                icon: 'envelope',
-                                text: 'Send',
-                                onClick: this.onSendClick
-                            }),
-                            clipboardButton({
-                                icon: 'clipboard',
-                                text: 'Copy',
-                                clipboardSpec: {text: () => this.errorStr},
-                                successMessage: 'Error details copied to clipboard.'
-                            }),
-                            button({
-                                text: 'Close',
-                                onClick: this.onCloseClick
-                            })
-                        ]
+                toolbar([
+                    filler(),
+                    button({
+                        icon: 'envelope',
+                        text: 'Send',
+                        onClick: this.onSendClick
+                    }),
+                    clipboardButton({
+                        icon: 'clipboard',
+                        text: 'Copy',
+                        clipboardSpec: {text: () => this.errorStr},
+                        successMessage: 'Error details copied to clipboard.'
+                    }),
+                    button({
+                        text: 'Close',
+                        onClick: this.onCloseClick
                     })
-                )
+                ])
             ]
         });
     }
 
-    //--------------------------------
+
+    //------------------------
     // Implementation
-    //--------------------------------
+    //------------------------
     onMessageChange = (evt) => {
         this.model.setMsg(evt.target.value);
     }
