@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {hoistComponent} from 'hoist/core';
 import {grid} from 'hoist/grid';
-import {filler, hspacer, vframe} from 'hoist/layout';
+import {filler, vframe} from 'hoist/layout';
 import {button} from 'hoist/kit/blueprint';
 import {textField, dayField, label, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
