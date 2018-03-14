@@ -9,6 +9,10 @@ import {hoistComponent} from 'hoist/core';
 import {baseCol} from 'hoist/columns/Core';
 import {grid, GridModel} from 'hoist/grid';
 import {UrlStore} from 'hoist/data';
+import {vframe} from 'hoist/layout';
+import {button} from 'hoist/kit/blueprint';
+import {toolbar, toolbarSep} from 'hoist/cmp';
+import {Icon} from 'hoist/icon';
 
 @hoistComponent()
 export class ServicePanel extends Component {
@@ -26,7 +30,35 @@ export class ServicePanel extends Component {
     });
 
     render() {
-        return grid({model: this.gridModel});
+        return vframe(
+            this.renderToolbar(),
+            grid({model: this.gridModel})
+        );
+    }
+
+    renderToolbar() {
+        return toolbar({
+            items: [
+                button({icon: Icon.sync(), text: 'Clear Caches', onClick: this.onClearCachesClick}),
+                toolbarSep(),
+                button({icon: Icon.sync(), onClick: this.onRefreshClick})
+            ]
+        });
+    }
+
+    onClearCachesClick = () => {
+        // get selection for params, do we have this yet?
+        XH.fetchJson({
+            url: 'serviceAdmin/clearCaches',
+            // params: {names: names},
+        }).then(r => {
+            // check for success?
+            return this.loadAsync();
+        }).catchDefault();
+    }
+
+    onRefreshClick = () => {
+        return this.loadAsync();
     }
 
     async loadAsync() {
