@@ -57,7 +57,14 @@
 .pt-button {
   border-radius: var(--xh-border-radius);
 
-  // TODO - decide if we want to go down this path....
+  &:not([class*="pt-intent-"]) {
+    color: var(--xh-button-text-color);
+    .pt-dark & {
+      color: var(--xh-button-text-color);
+    }
+  }
+
+    // TODO - decide if we want to go down this path....
   &.pt-intent-success {
     background-color: var(--xh-green);
     &:disabled {

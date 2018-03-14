@@ -20,38 +20,16 @@ body {
   --xh-bg-color-alt: var(--bg-color-alt, var(--xh-blue-gray-light));
   --xh-bg-color-highlight: var(--bg-color-highlight, rgba(2, 136, 209, 0.3));
   --xh-border-color: var(--border-color, var(--xh-gray));
+  --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
   --xh-grid-header-bg-color: var(--grid-header-bg-color, #cfd8dc);
   --xh-header-color: var(--header-color, var(--xh-text-color));
   --xh-mask-bg-color: var(--mask-bg-color, rgba(16, 22, 26, 0.7));
   --xh-navbar-bg-color: var(--navbar-bg-color, var(--xh-bg-color-alt));
-  --xh-navbar-color: var(--navbar-color, var(--xh-text-color));
+  --xh-navbar-color: var(--navbar-color, var(--xh-text-color-highlight));
   --xh-tbar-bg-color: var(--tbar-bg-color, var(--xh-bg-color-alt));
   --xh-text-color: var(--text-color, var(--xh-blue-gray-dark));
   --xh-text-color-accent: var(--text-color-accent, var(--xh-blue));
-  --xh-text-color-highlight: var(--text-color-highlight, var(--xh-text-color));
-
-
-  /* Sizing / other vars - these do not switch on xh-dark mode */
-  --xh-border-radius: var(--border-radius, 0);
-  --xh-border-width: var(--border-width, 1);
-  --xh-border-width-px: calc(var(--xh-border-width) * 1px);
-  --xh-border-dotted: (var(--xh-border-width-px) dotted var(--xh-border-color));
-  --xh-border-solid: (var(--xh-border-width-px) solid var(--xh-border-color));
-  --xh-font-family: var(--font-family, (-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif));
-  --xh-font-family-mono: var(--font-family-mono, (Monaco, Consolas, monospace));
-  --xh-font-size: var(--font-size, 13);
-  --xh-font-size-px: calc(var(--xh-font-size) * 1px);
-  --xh-font-size-app-title-px: var(--font-size-app-title-px, calc(var(--xh-font-size) * 1.8px));
-  --xh-font-size-large-em: var(--font-size-small-em, 1.2em);
-  --xh-font-size-small-em: var(--font-size-small-em, 0.9em);
-  --xh-pad: var(--pad, 10);
-  --xh-pad-px: calc(var(--xh-pad) * 1px);
-  --xh-pad-double-px: calc(var(--xh-pad) * 2px);
-  --xh-pad-half-px: calc(var(--xh-pad) * 0.5px);
-  --xh-popup-border-width: var(--popup-border-width, var(--xh-border-width));
-  --xh-popup-border-width-px: calc(var(--xh-popup-border-width) * 1px);
-  --xh-tab-border-width: var(--tab-border-width, var(--xh-border-width));
-  --xh-tab-border-width-px: calc(var(--xh-tab-border-width) * 1px);
+  --xh-text-color-highlight: var(--text-color-highlight, #37474f);
   --xh-title-color: var(--title-color, var(--xh-text-color-accent));
 }
 
@@ -72,6 +50,30 @@ body.xh-dark {
   --xh-text-color: var(--text-color, white);
   --xh-text-color-accent: var(--text-color-accent, var(--xh-orange));
   --xh-text-color-highlight: var(--text-color-highlight, white);
+}
+
+/* Sizing / other vars - these do not switch on xh-dark mode */
+body {
+  --xh-border-radius: var(--border-radius, 0);
+  --xh-border-width: var(--border-width, 1);
+  --xh-border-width-px: calc(var(--xh-border-width) * 1px);
+  --xh-border-dotted: (var(--xh-border-width-px) dotted var(--xh-border-color));
+  --xh-border-solid: (var(--xh-border-width-px) solid var(--xh-border-color));
+  --xh-font-family: var(--font-family, (-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif));
+  --xh-font-family-mono: var(--font-family-mono, (Monaco, Consolas, monospace));
+  --xh-font-size: var(--font-size, 13);
+  --xh-font-size-px: calc(var(--xh-font-size) * 1px);
+  --xh-font-size-app-title-px: var(--font-size-app-title-px, calc(var(--xh-font-size) * 1.8px));
+  --xh-font-size-large-em: var(--font-size-small-em, 1.2em);
+  --xh-font-size-small-em: var(--font-size-small-em, 0.9em);
+  --xh-pad: var(--pad, 10);
+  --xh-pad-px: calc(var(--xh-pad) * 1px);
+  --xh-pad-double-px: calc(var(--xh-pad) * 2px);
+  --xh-pad-half-px: calc(var(--xh-pad) * 0.5px);
+  --xh-popup-border-width: var(--popup-border-width, var(--xh-border-width));
+  --xh-popup-border-width-px: calc(var(--xh-popup-border-width) * 1px);
+  --xh-tab-border-width: var(--tab-border-width, var(--xh-border-width));
+  --xh-tab-border-width-px: calc(var(--xh-tab-border-width) * 1px);
 }
 
 /* Body */
