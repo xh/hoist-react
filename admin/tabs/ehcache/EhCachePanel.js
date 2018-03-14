@@ -10,7 +10,7 @@ import {hoistComponent} from 'hoist/core';
 import {grid, GridModel} from 'hoist/grid';
 import {UrlStore} from 'hoist/data';
 import {filler, vframe} from 'hoist/layout';
-import {label, toolbar, toolbarSep} from 'hoist/cmp';
+import {label, storeFilterField, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import {baseCol} from 'hoist/columns/Core';
@@ -53,7 +53,11 @@ export class EhCachePanel extends Component {
                     onClick: this.onRefreshClick
                 }),
                 filler(),
-                this.renderCachesCount()
+                this.renderCachesCount(),
+                storeFilterField({
+                    store: this.gridModel.store,
+                    fields: ['name', 'status']
+                })
             ]
         });
     }

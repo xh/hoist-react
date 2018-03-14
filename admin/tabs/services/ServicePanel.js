@@ -11,7 +11,7 @@ import {grid, GridModel} from 'hoist/grid';
 import {UrlStore} from 'hoist/data';
 import {filler, vframe} from 'hoist/layout';
 import {button} from 'hoist/kit/blueprint';
-import {label, toolbar, toolbarSep} from 'hoist/cmp';
+import {label, storeFilterField, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 @hoistComponent()
@@ -51,7 +51,11 @@ export class ServicePanel extends Component {
                     onClick: this.onRefreshClick
                 }),
                 filler(),
-                this.renderServicesCount()
+                this.renderServicesCount(),
+                storeFilterField({
+                    store: this.gridModel.store,
+                    fields: ['name']
+                })
             ]
         });
     }
