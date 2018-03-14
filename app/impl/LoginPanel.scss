@@ -1,4 +1,13 @@
+.xh-login-panel {
+  border: 1px solid var(--xh-border-color);
+
+  padding-top: var(--xh-pad-px);
+  .pt-input-group {
+    margin: 0 var(--xh-pad-px) var(--xh-pad-px) var(--xh-pad-px);
+  }
+}
+
 .xh-login-warning {
-    color: red;
-    text-align: center;
+  color: red;
+  text-align: center;
 }
