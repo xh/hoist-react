@@ -13,7 +13,7 @@ import './ResizeHandle.scss';
 
 class ResizeHandle extends Component {
     static propTypes = {
-        onResizeStart: PropTypes.func.isRequired,
+        resizeHandler: PropTypes.func.isRequired,
         direction: PropTypes.oneOf([
             'top', 'right', 'bottom', 'left',
             'topRight', 'bottomRight', 'bottomleft', 'topLeft'
@@ -21,13 +21,17 @@ class ResizeHandle extends Component {
     }
 
     render() {
-        const {direction, onResizeStart} = this.props;
-
+        const {direction} = this.props;
         return div({
             cls: `xh-resize-handler ${direction}`,
-            onMouseDown: (e) => onResizeStart(e, direction),
-            onTouchStart: (e) => onResizeStart(e, direction)
+            onMouseDown: this.onResizeStart,
+            onTouchStart: this.onResizeStart
         });
+    }
+
+    onResizeStart = (e) => {
+        const {direction, resizeHandler} = this.props;
+        resizeHandler(e, direction)
     }
 }
 

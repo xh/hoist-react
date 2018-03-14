@@ -27,13 +27,9 @@ export class Resizable extends Component {
         defaultIsOpen: true,
         collapseDirection: 'left',
         isResizable: {
-            topLeft: true,
             top: true,
-            topRight: true,
             right: true,
-            bottomRight: true,
             bottom: true,
-            bottomLeft: true,
             left: true
         }
     };
@@ -49,12 +45,6 @@ export class Resizable extends Component {
         if (!isNil(defaultIsOpen)) this.isOpen = defaultIsOpen;
 
         this.setContentSize(contentSize);
-
-        this._onResizeStart = this._onResizeStart.bind(this);
-        window.addEventListener('mousemove', this._onResize);
-        window.addEventListener('touchmove', this._onResize);
-        window.addEventListener('mouseup', this._onResizeEnd);
-        window.addEventListener('touchend', this._onResizeEnd);
     }
 
     render() {
@@ -79,6 +69,13 @@ export class Resizable extends Component {
             cls: `${this.props.cls || ''}${this._isResizing ? ' xh-unselectable' : ''}`,
             items: [...items, ...this.getResizers()]
         });
+    }
+
+    componentDidMount() {
+        window.addEventListener('mousemove', this._onResize);
+        window.addEventListener('touchmove', this._onResize);
+        window.addEventListener('mouseup', this._onResizeEnd);
+        window.addEventListener('touchend', this._onResizeEnd);
     }
 
     componentWillUnmount() {
@@ -141,13 +138,13 @@ export class Resizable extends Component {
         const isResizable = this.isResizable;
 
         return [
-            'top', 'right', 'bottom', 'left', 'topRight', 'bottomRight', 'bottomLeft', 'topLeft'
+            'top', 'right', 'bottom', 'left'
         ].map(direction => {
             if (isResizable && isResizable[direction]) {
                 return resizeHandle({
                     key: direction,
                     direction,
-                    onResizeStart: this._onResizeStart
+                    resizeHandler: this._onResizeStart
                 });
             }
         });
@@ -181,7 +178,7 @@ export class Resizable extends Component {
     }
 
     @action
-    _onResizeStart(e, direction) {
+    _onResizeStart = (e, direction) => {
         this._resizeDirection = direction;
 
         this._startPositionValues.y = e.clientY;
