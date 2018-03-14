@@ -9,8 +9,7 @@ import {defaults, castArray} from 'lodash';
 const globalVals = {};
 
 /**
- * Create a factory for use in a file to create multiple
- * column factory's with a shared set of defaults.
+ * Create a factory for use in a file to create multiple column factories with a shared set of defaults.
 
  * @param fileVals, defaults for file
  * @return Function to create specific column factory

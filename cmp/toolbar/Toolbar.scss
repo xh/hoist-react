@@ -1,0 +1,8 @@
+.xh-toolbar {
+  padding: var(--xh-pad-px) var(--xh-pad-px) var(--xh-pad-px) 0;
+  background-color: var(--xh-tbar-bg-color);
+
+  > * {
+    margin-left: var(--xh-pad-px);
+  }
+}

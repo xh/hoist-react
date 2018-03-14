@@ -17,6 +17,6 @@ export const baseCol = colFactory();
 export const boolCheckCol = colFactory({
     width: 34,
     cellRendererFramework: (params) => {
-        return params.value ? Icon.check({color: 'green'}) : '';
+        return params.value ? Icon.check({cls: 'xh-green'}) : '';
     }
 });

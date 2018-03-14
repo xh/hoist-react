@@ -4,31 +4,32 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import './Tile.css';
 
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {div} from 'hoist/layout';
 
+import './Tile.scss';
+
 @hoistComponent()
 export class Tile extends Component {
     render() {
         const {status, name, elapsed, metric, message} = this.props.check,
-            tileClass = 'tile tile-' + status.toLowerCase();
+            tileClass = 'xh-status-tile xh-status-tile-' + status.toLowerCase();
 
         return div({
             cls: tileClass,
             items: [
                 div({
-                    cls: 'tile-name',
+                    cls: 'xh-status-tile__name',
                     item: name
                 }),
                 div({
-                    cls: 'tile-content',
+                    cls: 'xh-status-tile__content',
                     items: [
-                        div({cls: 'tile-metric', item: `Metric: ${metric}`}),
-                        div({cls: 'tile-elapsed', item: `Elapsed: ${elapsed}ms`}),
-                        div({cls: 'tile-message', item: `${message}`})
+                        div({cls: 'xh-status-tile__metric', item: `Metric: ${metric}`}),
+                        div({cls: 'xh-status-tile__elapsed', item: `Elapsed: ${elapsed}ms`}),
+                        div({cls: 'xh-status-tile__message', item: `${message}`})
                     ]
                 })
             ]

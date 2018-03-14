@@ -7,9 +7,10 @@
 
 import {Component} from 'react';
 import {XH, hoistComponent, hoistModel, elemFactory} from 'hoist/core';
-import {table, tbody, tr, th, td} from 'hoist/layout';
+import {frame, table, tbody, tr, th, td, filler} from 'hoist/layout';
+import {toolbar} from 'hoist/cmp/toolbar';
 import {dialog, button} from 'hoist/kit/blueprint';
-import './AboutDialog.css';
+import './AboutDialog.scss';
 
 @hoistComponent()
 export class AboutDialog extends Component {
@@ -20,9 +21,21 @@ export class AboutDialog extends Component {
             icon: 'info-sign',
             cls: 'xh-about-dialog',
             title: `About ${XH.appName}`,
+            style: {width: 350},
             items: [
-                this.renderTable(),
-                button({text: 'OK', onClick: this.onClose})
+                frame({
+                    cls: 'xh-about-dialog__inner',
+                    item: this.renderTable()
+                }),
+                toolbar({
+                    items: [
+                        filler(),
+                        button({
+                            text: 'OK',
+                            onClick: this.onClose
+                        })
+                    ]
+                })
             ],
             onClose: this.onClose
         });
@@ -36,7 +49,6 @@ export class AboutDialog extends Component {
             });
 
         return table({
-            cls: 'xh-about-table',
             item: tbody(
                 row('App Name', XH.appName),
                 row('Environment', svc.get('appEnvironment')),

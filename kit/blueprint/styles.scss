@@ -1,0 +1,84 @@
+//------------------------
+// NavBar
+//------------------------
+.pt-navbar, .pt-dark .pt-navbar {
+  color: var(--xh-navbar-color);
+  background-color: var(--xh-navbar-bg-color);
+
+  .pt-navbar-heading {
+    margin-left: var(--xh-pad-px);
+    font-size: var(--xh-font-size-app-title-px);
+  }
+
+  .pt-navbar-group {
+    &.pt-align-right {
+      > * {
+        margin-left: var(--xh-pad-half-px);
+      }
+    }
+  }
+}
+
+
+//------------------------
+// Tabs
+//------------------------
+.pt-tab-panel > div {
+  margin: 0 !important;
+}
+
+
+//------------------------
+// Dialog + Masking
+//------------------------
+.pt-dialog {
+  padding-bottom: 0;
+  border-radius: var(--xh-border-radius);
+  border: var(--xh-popup-border-width-px) solid var(--xh-border-color);
+
+  .pt-dialog-header {
+    background-color: var(--xh-bg-color-alt);
+    padding-left: var(--xh-pad-px);
+
+    svg:first-child {
+      margin-right: var(--xh-pad-half-px);
+    }
+  }
+}
+
+.pt-overlay-backdrop {
+  background-color: var(--xh-mask-bg-color);
+}
+
+
+//------------------------
+// Buttons
+//------------------------
+.pt-button {
+  border-radius: var(--xh-border-radius);
+
+  // TODO - decide if we want to go down this path....
+  &.pt-intent-success {
+    background-color: var(--xh-green);
+    &:disabled {
+      background-color: var(--xh-green-trans);
+    }
+  }
+
+  &.pt-intent-danger {
+    background-color: var(--xh-red);
+  }
+}
+
+//------------------------
+// Forms + Inputs
+//------------------------
+
+/* Apply blueprint styling to non-blueprint icons within input groups */
+.pt-input-group svg:not(.pt-icon) {
+  position: absolute;
+  top: 0;
+  margin: var(--xh-pad-px);
+  font-size: var(--xh-font-size);
+  z-index: 1;
+}

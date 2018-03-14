@@ -86,7 +86,7 @@ export class ConfigPanel extends Component {
 
         columns: this.filterForEnv([
             nameCol({fixedWidth: 200}),
-            baseCol({field: 'valueType', headerName: 'Type', fixedWidth: 60}),
+            baseCol({field: 'valueType', headerName: 'Type', fixedWidth: 80, align: 'center'}),
             this.valCol({field: 'prodValue', env: 'Production'}),
             this.valCol({field: 'betaValue', env: 'Beta'}),
             this.valCol({field: 'stageValue', env: 'Staging'}),

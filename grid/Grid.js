@@ -12,7 +12,7 @@ import {defaults, difference, isString} from 'lodash';
 
 import './ag-grid';
 import {navigateSelection, agGridReact} from './ag-grid';
-import './Grid.css';
+import './Grid.scss';
 
 /**
  * Grid Component
@@ -27,6 +27,7 @@ class Grid extends Component {
         deltaRowDataMode: true,
         getRowNodeId: (data) => data.id,
         rowSelection: 'single',
+        suppressCellSelection: true,
         allowContextMenuWithControlKey: true,
         defaultColDef: {suppressMenu: true}
     };
@@ -46,10 +47,11 @@ class Grid extends Component {
         return frame(
             div({
                 style: {flex: '1 1 auto', overflow: 'hidden'},
-                cls: this.darkTheme ? 'ag-theme-dark' : 'ag-theme-fresh',
+                cls: this.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                 // cls: this.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                 item: agGridReact({
                     rowData: store.records,
+                    defaultColDef: {suppressMenu: true},
                     columnDefs: columns,
                     onSelectionChanged: this.onSelectionChanged,
                     onGridReady: this.onGridReady,

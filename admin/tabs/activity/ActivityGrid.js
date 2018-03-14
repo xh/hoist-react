@@ -7,9 +7,9 @@
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {grid} from 'hoist/grid';
-import {vframe, hbox, filler, hspacer} from 'hoist/layout';
+import {vframe, filler, hspacer} from 'hoist/layout';
 import {button} from 'hoist/kit/blueprint';
-import {textField, dayField, label} from 'hoist/cmp';
+import {textField, dayField, label, toolbar} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 @hoistComponent()
@@ -23,37 +23,21 @@ export class ActivityGrid extends Component {
     }
 
     renderToolbar() {
-        return hbox({
-            cls: 'xh-tbar',
-            flex: 'none',
-            padding: 3,
-            alignItems: 'center',
+        return toolbar({
             items: [
-                hspacer(4),
                 this.dayField({field: 'startDate'}),
-                hspacer(8),
                 Icon.angleRight(),
-                hspacer(8),
                 this.dayField({field: 'endDate'}),
-                hspacer(8),
                 button({icon: Icon.caretLeft(), onClick: this.onDateGoBackClick}),
                 button({icon: Icon.caretRight(), onClick: this.onDateGoForwardClick}),
                 button({icon: Icon.arrowToRight(), onClick: this.onGoToCurrentDateClick}),
-                hspacer(8),
-                '|',
+                // '|',  // TODO - tbar separator?
                 hspacer(8),
                 this.textField({field: 'username', placeholder: 'User...'}),
-                hspacer(10),
                 this.textField({field: 'msg', placeholder: 'Msg...'}),
-                hspacer(10),
                 this.textField({field: 'category', placeholder: 'Category...'}),
-                hspacer(10),
                 this.textField({field: 'device', placeholder: 'Device...'}),
-                hspacer(10),
                 this.textField({field: 'browser', placeholder: 'Browser...'}),
-                hspacer(8),
-                '|',
-                hspacer(8),
                 button({icon: Icon.sync(), onClick: this.onSubmitClick}),
                 filler(),
                 this.renderLogCount(),
@@ -79,7 +63,7 @@ export class ActivityGrid extends Component {
     textField(args) {
         return textField({
             model: this.model,
-            width: 140,
+            width: 120,
             ...args
         });
     }

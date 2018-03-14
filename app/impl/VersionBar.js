@@ -10,7 +10,7 @@ import {XH, elemFactory, hoistComponent} from 'hoist/core';
 import {box, hspacer} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
 import {hoistModel} from 'hoist/core';
-import './VersionBar.css';
+import './VersionBar.scss';
 
 @hoistComponent()
 export class VersionBar extends Component {

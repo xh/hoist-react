@@ -14,6 +14,7 @@ import {tabContainer} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import {AppModel} from './AppModel';
+import './App.scss';
 
 @hoistApp
 export class App extends Component {
@@ -25,7 +26,7 @@ export class App extends Component {
             items: [
                 this.renderNavBar(),
                 frame({
-                    cls: 'xh-mt xh-ml',
+                    cls: 'xh-admin-app-frame',
                     item: tabContainer({model: XH.appModel.tabs})
                 })
             ]
@@ -37,7 +38,6 @@ export class App extends Component {
     //------------------
     renderNavBar() {
         return navbar({
-            cls: 'xh-bb',
             items: [
                 navbarGroup({
                     align: 'left',
@@ -52,12 +52,10 @@ export class App extends Component {
                         button({
                             icon: Icon.mail(),
                             text: 'Contact',
-                            cls: 'xh-mr',
                             onClick: this.onContactClick
                         }),
                         button({
                             icon: this.darkTheme ? Icon.sun() : Icon.moon(),
-                            cls: 'xh-mr',
                             onClick: this.onThemeToggleClick
                         }),
                         button({

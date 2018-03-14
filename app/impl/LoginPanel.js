@@ -5,14 +5,15 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import './LoginPanel.css';
 import React, {Component} from 'react';
 import {XH, elemFactory, hoistComponent, hoistModel} from 'hoist/core';
-import {vbox, hbox, filler, viewport} from 'hoist/layout';
+import {vbox, filler, viewport} from 'hoist/layout';
 import {button, text} from 'hoist/kit/blueprint';
-import {textField} from 'hoist/cmp';
+import {textField, toolbar} from 'hoist/cmp';
 import {observable, computed, setter} from 'hoist/mobx';
 import {MessageModel, message} from 'hoist/cmp';
+
+import './LoginPanel.scss';
 
 @hoistComponent()
 export class LoginPanel extends Component {
@@ -31,7 +32,7 @@ export class LoginPanel extends Component {
             alignItems: 'center',
             justifyContent: 'center',
             item: vbox({
-                cls: 'xh-ba xh-pa',
+                cls: 'xh-login-panel',
                 justifyContent: 'right',
                 width: 300,
                 items: [
@@ -39,22 +40,20 @@ export class LoginPanel extends Component {
                         model: this,
                         field: 'username',
                         placeholder: 'Username...',
-                        autoFocus: true,
-                        cls: 'xh-mb'
+                        autoFocus: true
                     }),
                     textField({
                         model: this,
                         field: 'password',
                         placeholder: 'Password...',
-                        type: 'password',
-                        cls: 'xh-mb'
+                        type: 'password'
                     }),
                     text({
                         item: this.warning,
                         ellipsize: true,
-                        cls: 'xh-mb xh-login-warning'
+                        cls: 'xh-login-warning'
                     }),
-                    hbox(
+                    toolbar(
                         filler(),
                         button({
                             text: 'Go',
