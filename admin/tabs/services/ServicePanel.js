@@ -9,9 +9,9 @@ import {hoistComponent} from 'hoist/core';
 import {baseCol} from 'hoist/columns/Core';
 import {grid, GridModel} from 'hoist/grid';
 import {UrlStore} from 'hoist/data';
-import {vframe} from 'hoist/layout';
+import {filler, vframe} from 'hoist/layout';
 import {button} from 'hoist/kit/blueprint';
-import {toolbar, toolbarSep} from 'hoist/cmp';
+import {label, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 @hoistComponent()
@@ -41,7 +41,9 @@ export class ServicePanel extends Component {
             items: [
                 button({icon: Icon.sync(), text: 'Clear Caches', onClick: this.onClearCachesClick}),
                 toolbarSep(),
-                button({icon: Icon.sync(), onClick: this.onRefreshClick})
+                button({icon: Icon.sync(), onClick: this.onRefreshClick}),
+                filler(),
+                this.renderServicesCount()
             ]
         });
     }
@@ -59,6 +61,11 @@ export class ServicePanel extends Component {
 
     onRefreshClick = () => {
         return this.loadAsync();
+    }
+
+    renderServicesCount() {
+        const store = this.gridModel.store;
+        return label(store.count + ' services');
     }
 
     async loadAsync() {
