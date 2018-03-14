@@ -7,9 +7,9 @@
 
 import {Component} from 'react';
 import {hoistComponent} from 'hoist/core';
-import {hframe, vframe, frame} from 'hoist/layout';
+import {hframe, vframe, frame, filler} from 'hoist/layout';
 import {grid} from 'hoist/grid';
-import {collapsible, loadMask, storeFilterField} from 'hoist/cmp';
+import {collapsible, loadMask, storeFilterField, toolbar} from 'hoist/cmp';
 
 import {logViewerDisplay} from './LogViewerDisplay';
 import {LogViewerModel} from './LogViewerModel';
@@ -34,28 +34,29 @@ export class LogViewer extends Component {
         const model = this.model,
             {files, loadModel} = model;
 
-        return hframe(
-            collapsible({
-                side: 'left',
-                contentSize: '250px',
-                item: vframe(
-                    grid({
-                        model: files,
-                        gridOptions: {
-                            defaultColDef: {suppressMenu: true}
-                        }
-                    }),
-                    storeFilterField({
-                        store: files.store,
-                        fields: ['filename']
-                    })
-                )
-            }),
-            vframe(
-                logViewerToolbar({model}),
-                logViewerDisplay({model})
-            ),
-            loadMask({model: loadModel})
-        );
+        return hframe({
+            cls: 'xh-log-viewer',
+            items: [
+                collapsible({
+                    side: 'left',
+                    contentSize: '250px',
+                    item: vframe(
+                        grid({model: files}),
+                        toolbar(
+                            filler(),
+                            storeFilterField({
+                                store: files.store,
+                                fields: ['filename']
+                            })
+                        )
+                    )
+                }),
+                vframe(
+                    logViewerToolbar({model}),
+                    logViewerDisplay({model})
+                ),
+                loadMask({model: loadModel})
+            ]
+        });
     }
 }

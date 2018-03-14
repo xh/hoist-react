@@ -17,7 +17,7 @@ export class RestControl extends Component {
 
     render() {
         return hbox({
-            cls: 'xh-mb',
+            cls: 'xh-rest-form__control',
             items: [
                 this.renderLabel(),
                 //  Needed to stretch control, and also avoid focus clipping?

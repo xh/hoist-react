@@ -6,7 +6,7 @@
  */
 
 .xh-admin-about-panel {
-  padding: var(--xh-pad-px);
+  padding: var(--xh-pad-px) 0 0 var(--xh-pad-double-px);
 
   table {
     margin: var(--xh-pad-px);
@@ -15,7 +15,7 @@
   }
 
   tr {
-    border: 1px solid var(--xh-border-color);
+    border: var(--xh-border-solid);
   }
 
   th {

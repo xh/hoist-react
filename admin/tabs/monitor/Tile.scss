@@ -3,15 +3,15 @@
   min-width: 300px;
   height: 250px;
   border: 1px solid white;
-  border-radius: 3px;
+  border-radius: var(--xh-border-radius);
   overflow: hidden;
-  margin-right: var(--xh-pad-px);
+  margin: var(--xh-pad-px) var(--xh-pad-px) var(--xh-pad-px) var(--xh-pad-px);
 
   &-ok        { background-color: var(--xh-green)}
   &-warn      { background-color: var(--xh-orange)}
   &-fail      { background-color: var(--xh-red)}
-  &-inactive  { background-color: var(--xh-gray)}
-  &-unknown   { background-color: var(--xh-gray)}
+  &-inactive  { background-color: var(--xh-gray-dark)}
+  &-unknown   { background-color: var(--xh-gray-dark)}
 
   &__name {
     padding: var(--xh-pad-px);

@@ -5,11 +5,19 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-.xh-admin-log {
+.xh-log-viewer {
+  border-top: var(--xh-border-solid);
+  border-left: var(--xh-border-solid);
+}
+
+.xh-log-display {
+  border-top: var(--xh-border-solid);
+  color: var(--xh-blue-gray-dark);
+  background-color: var(--xh-yellow-light);
+
   &__row {
     font-family: var(--xh-font-family-mono);
     font-size: var(--xh-font-size-small-em);
-    height: calc(var(--xh-font-size) * 1.5px);
     user-select: none;
 
     &:hover {
@@ -19,7 +27,7 @@
 
     &-number {
       color: var(--xh-text-color-accent);
-      border-right: var(--xh-border-width-px) dotted var(--xh-border-color);
+      border-right: 1px dotted var(--xh-border-color);
       padding-right: var(--xh-pad-px);
       min-width: 50px;
       text-align: end;

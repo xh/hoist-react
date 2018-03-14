@@ -7,7 +7,8 @@
 
 import {Component} from 'react';
 import {XH, hoistComponent, hoistModel, elemFactory} from 'hoist/core';
-import {frame, table, tbody, tr, th, td} from 'hoist/layout';
+import {frame, table, tbody, tr, th, td, filler} from 'hoist/layout';
+import {toolbar} from 'hoist/cmp/toolbar';
 import {dialog, button} from 'hoist/kit/blueprint';
 import './AboutDialog.scss';
 
@@ -26,9 +27,14 @@ export class AboutDialog extends Component {
                     cls: 'xh-about-dialog__inner',
                     item: this.renderTable()
                 }),
-                button({
-                    text: 'OK',
-                    onClick: this.onClose
+                toolbar({
+                    items: [
+                        filler(),
+                        button({
+                            text: 'OK',
+                            onClick: this.onClose
+                        })
+                    ]
                 })
             ],
             onClose: this.onClose
