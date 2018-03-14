@@ -5,10 +5,14 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import {button} from 'hoist/kit/blueprint';
 import {hoistComponent} from 'hoist/core';
 import {baseCol, boolCheckCol} from 'hoist/columns/Core';
 import {grid, GridModel} from 'hoist/grid';
+import {vframe, filler} from 'hoist/layout';
+import {label, storeFilterField, toolbar} from 'hoist/cmp';
 import {UrlStore} from 'hoist/data';
+import {Icon} from 'hoist/icon';
 
 import {usernameCol} from '../../columns/Columns';
 
@@ -30,7 +34,30 @@ export class UserPanel extends Component {
     });
 
     render() {
-        return grid({model: this.gridModel});
+        return vframe(
+            this.renderToolbar(),
+            grid({model: this.gridModel})
+        );
+    }
+
+    renderToolbar() {
+        return toolbar({
+            items: [
+                button({icon: Icon.sync(), onClick: this.onRefreshClick}),
+                filler(),
+                this.renderUserCount(),
+                storeFilterField({store: this.gridModel.store, fields: ['displayName', 'roles']})
+            ]
+        });
+    }
+
+    onRefreshClick = () => {
+        return this.loadAsync();
+    }
+
+    renderUserCount() {
+        const count = this.gridModel.store.count;
+        return label(`${count} User${count === 1 ? '' : 's'}`);
     }
 
     async loadAsync() {
