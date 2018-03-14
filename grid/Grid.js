@@ -51,7 +51,6 @@ class Grid extends Component {
                 // cls: this.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                 item: agGridReact({
                     rowData: store.records,
-                    defaultColDef: {suppressMenu: true},
                     columnDefs: columns,
                     onSelectionChanged: this.onSelectionChanged,
                     onGridReady: this.onGridReady,
