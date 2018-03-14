@@ -24,7 +24,7 @@ export class ActivityPanel extends Component {
         return vframe(
             activityGrid({model: this.activityGridModel}),
             resizable({
-                collapseDirection: 'bottom',
+                side: 'top',
                 contentSize: 250,
                 item: visitsChart({model: this.visitsChartModel})
             })

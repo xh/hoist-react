@@ -23,9 +23,9 @@ class ResizeHandle extends Component {
     }
 
     render() {
-        const {direction} = this.props;
+        const {side} = this.props;
         return div({
-            cls: `xh-resize-handler ${direction}`,
+            cls: `xh-resize-handler ${side}`,
             onMouseDown: this.onResizeStart
         });
     }
@@ -39,15 +39,16 @@ class ResizeHandle extends Component {
     onMouseMove = (e) => {
         if (!this.resizeState) return;
 
-        const {side} = this,
+        const {side} = this.props,
             {clientX, clientY} = e,
             {startX, startY} = this.resizeState;
 
         let diff;
-        if (side === 'right') diff = startX - clientX;
-        if (side === 'left') diff = clientX - startX;
-        if (side === 'top') diff = clientY - startY;
-        if (side === 'bottom') diff = startY - clientY;
+
+        if (side === 'right') diff = clientX - startX;
+        if (side === 'left') diff = startX - clientX;
+        if (side === 'top') diff = startY - clientY;
+        if (side === 'bottom') diff = clientY - startY;
 
         const {onResize} = this.props;
         if (onResize) onResize(diff);
@@ -62,12 +63,12 @@ class ResizeHandle extends Component {
     //-------------------
     // Lifecycle
     //---------------------
-    onComponentDidMount() {
+    componentDidMount() {
         window.addEventListener('mouseup', this.onResizeEnd);
         window.addEventListener('mousemove', this.onMouseMove);
     }
 
-    onComponentWillUnmount() {
+    componentWillUnmount() {
         window.removeEventListener('mouseup', this.onResizeEnd);
         window.removeEventListener('mousemove', this.onMouseMove);
     }

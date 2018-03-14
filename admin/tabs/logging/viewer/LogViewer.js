@@ -37,8 +37,8 @@ export class LogViewer extends Component {
             cls: 'xh-log-viewer',
             items: [
                 resizable({
-                    side: 'left',
-                    contentSize: '250px',
+                    side: 'right',
+                    contentSize: 250,
                     item: vframe(
                         grid({model: files}),
                         toolbar(
