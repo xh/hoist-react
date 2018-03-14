@@ -39,9 +39,17 @@ export class ServicePanel extends Component {
     renderToolbar() {
         return toolbar({
             items: [
-                button({icon: Icon.sync(), text: 'Clear Caches', onClick: this.onClearCachesClick}), // disable this button if no selction
+                button({
+                    icon: Icon.sync(),
+                    text: 'Clear Caches',
+                    onClick: this.onClearCachesClick,
+                    disabled: this.gridModel.selection.isEmpty
+                }),
                 toolbarSep(),
-                button({icon: Icon.sync(), onClick: this.onRefreshClick}),
+                button({
+                    icon: Icon.sync(),
+                    onClick: this.onRefreshClick
+                }),
                 filler(),
                 this.renderServicesCount()
             ]
