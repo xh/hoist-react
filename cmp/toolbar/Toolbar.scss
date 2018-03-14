@@ -2,7 +2,11 @@
   padding: var(--xh-pad-px) var(--xh-pad-px) var(--xh-pad-px) 0;
   background-color: var(--xh-tbar-bg-color);
 
-  > * {
+  > *:not([class*='xh-no-pad']) {
     margin-left: var(--xh-pad-px);
+  }
+
+  &__separator {
+    color: var(--xh-text-color-muted);
   }
 }
