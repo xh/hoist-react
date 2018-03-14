@@ -87,7 +87,7 @@ export class RestGridToolbar extends Component {
     renderRecordCount() {
         const count = this.model.store.count,
             recName = this.model.recName || 'record';
-        return label(`${count} ${recName}${count === 1 ? '' : 's'}`); // should we maybe provide both a singular and plural recNames?
+        return label(`${count} ${recName}${count === 1 ? '' : 's'}`); // should we maybe provide both a singular and a plural recName as a config object?
     }
 }
 export const restGridToolbar = elemFactory(RestGridToolbar);
