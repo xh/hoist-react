@@ -42,6 +42,7 @@ export class DashboardPanel extends Component {
 
     gridModel = new RestGridModel({
         store: this.store,
+        recName: 'dashboard',
         actionWarning: {
             edit: 'Are you sure you want to edit this user\'s dashboard?',
             del: 'Are you sure you want to delete this user\'s dashboard?'

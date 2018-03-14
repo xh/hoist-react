@@ -83,6 +83,7 @@ export class ConfigPanel extends Component {
             edit: 'Are you sure you want to edit? Editing configs can break running apps!',
             del: 'Are you sure you want to delete? Deleting configs can break running apps!'
         },
+        recName: 'config',
 
         columns: this.filterForEnv([
             nameCol({fixedWidth: 200}),

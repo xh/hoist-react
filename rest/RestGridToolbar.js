@@ -7,7 +7,8 @@
 import {Component} from 'react';
 import {button} from 'hoist/kit/blueprint';
 import {hoistComponent, elemFactory} from 'hoist/core';
-import {toolbar} from 'hoist/cmp';
+import {filler} from 'hoist/layout';
+import {label, toolbar} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 @hoistComponent()
@@ -44,7 +45,9 @@ export class RestGridToolbar extends Component {
                     onClick: this.onDeleteClick,
                     disabled: !singleRecord,
                     omit: !actionEnabled.del
-                }
+                },
+                filler(),
+                this.renderRecordCount()
             ]
         });
     }
@@ -71,6 +74,12 @@ export class RestGridToolbar extends Component {
         } else {
             model.deleteSelection();
         }
+    }
+
+    renderRecordCount() {
+        const count = this.model.store.count,
+            recName = this.model.recName || 'record';
+        return label(`${count} ${recName}${count === 1 ? '' : 's'}`); // should we maybe provide both a singular and plural recNames?
     }
 }
 export const restGridToolbar = elemFactory(RestGridToolbar);

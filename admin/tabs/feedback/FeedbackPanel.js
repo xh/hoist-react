@@ -45,6 +45,7 @@ export class FeedbackPanel extends Component {
             add: false,
             edit: false
         },
+        recName: 'report',
         columns: [
             baseCol({
                 field: 'dateCreated',
