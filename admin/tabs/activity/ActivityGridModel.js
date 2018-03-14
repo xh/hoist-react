@@ -36,7 +36,7 @@ export class ActivityGridModel {
     gridModel = new GridModel({
         store: this.store,
         columns: [
-            baseCol({field: 'severity', fixedWidth: 80}),
+            baseCol({field: 'severity', fixedWidth: 90}),
             dateTimeCol({field: 'dateCreated', fixedWidth: 160, align: 'right'}),
             usernameCol({fixedWidth: 120}),
             baseCol({field: 'msg', headerName: 'Message', minWidth: 150, flex: 1}),
