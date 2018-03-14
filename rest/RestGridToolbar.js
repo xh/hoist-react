@@ -10,6 +10,7 @@ import {hoistComponent, elemFactory} from 'hoist/core';
 import {filler} from 'hoist/layout';
 import {label, storeFilterField, toolbar} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
+import {fmtDate} from 'hoist/format';
 
 @hoistComponent()
 export class RestGridToolbar extends Component {
@@ -48,7 +49,8 @@ export class RestGridToolbar extends Component {
                 },
                 filler(),
                 this.renderRecordCount(),
-                storeFilterField({store: this.model.store, fields: this.model.filterFields})
+                storeFilterField({store: this.model.store, fields: this.model.filterFields}),
+                button({icon: Icon.download(), onClick: this.onExportClick})
             ]
         });
     }
@@ -75,6 +77,11 @@ export class RestGridToolbar extends Component {
         } else {
             model.deleteSelection();
         }
+    }
+
+    onExportClick = () => {
+        const fileName = `${this.model.recName }s: ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`;
+        this.model.gridModel.exportDataAsExcel({fileName});
     }
 
     renderRecordCount() {
