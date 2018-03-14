@@ -2,33 +2,34 @@
     position: absolute;
     background-color: transparent;
     z-index: 5;
-}
 
-.xh-resize-handler.top {
-    width: 100%;
-    height: 5px;
-    top: -2px;
-    left: 0;
-    cursor: ns-resize;
-}
-.xh-resize-handler.right {
-    width: 5px;
-    height: 100%;
-    top: 0;
-    right: -2px;
-    cursor: ew-resize;
-}
-.xh-resize-handler.bottom {
-    width: 100%;
-    height: 5px;
-    bottom: -2px;
-    left: 0;
-    cursor: ns-resize;
-}
-.xh-resize-handler.left {
-    width: 5px;
-    height: 100%;
-    top: 0;
-    left: -2px;
-    cursor: ew-resize;
+    &.top, &.bottom {
+        width: 100%;
+        height: 5px;
+        left: 0;
+        cursor: ns-resize;
+    }
+
+    &.right, &.left {
+        width: 5px;
+        height: 100%;
+        top: 0;
+        cursor: ew-resize;
+    }
+
+    &.top {
+        top: -2px;
+    }
+
+    &.bottom {
+        bottom: -2px;
+    }
+
+    &.right {
+        right: -2px;
+    }
+
+    &.left {
+        left: -2px;
+    }
 }
