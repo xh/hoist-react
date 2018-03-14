@@ -84,6 +84,7 @@ export class ConfigPanel extends Component {
             del: 'Are you sure you want to delete? Deleting configs can break running apps!'
         },
         recName: 'config',
+        filterFields: ['name', 'prodValue', 'betaValue', 'stageValue', 'devValue', 'groupName', 'note'],
 
         columns: this.filterForEnv([
             nameCol({fixedWidth: 200}),

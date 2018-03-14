@@ -46,6 +46,7 @@ export class FeedbackPanel extends Component {
             edit: false
         },
         recName: 'report',
+        filterFields: ['username', 'msg'],
         columns: [
             baseCol({
                 field: 'dateCreated',

@@ -51,12 +51,14 @@ export class RestGridModel {
         actionEnabled,
         actionWarning,
         recName,
+        filterFields,
         editors = [],
         ...rest
     }) {
         this.actionEnabled = Object.assign(this.actionEnabled, actionEnabled);
         this.actionWarning = Object.assign(this.actionWarning, actionWarning);
         this.recName = recName;
+        this.filterFields = filterFields;
         this.gridModel = new GridModel({contextMenuFn: this.contextMenuFn, ...rest});
         this.formModel = new RestFormModel({parent: this, editors});
     }

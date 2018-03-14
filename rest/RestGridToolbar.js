@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {button} from 'hoist/kit/blueprint';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {filler} from 'hoist/layout';
-import {label, toolbar} from 'hoist/cmp';
+import {label, storeFilterField, toolbar} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 @hoistComponent()
@@ -47,7 +47,8 @@ export class RestGridToolbar extends Component {
                     omit: !actionEnabled.del
                 },
                 filler(),
-                this.renderRecordCount()
+                this.renderRecordCount(),
+                storeFilterField({store: this.model.store, fields: this.model.filterFields})
             ]
         });
     }
