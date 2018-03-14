@@ -61,7 +61,7 @@ export class PreferencePanel extends Component {
             del: 'Are you sure you want to delete? Deleting preferences can break running apps!'
         },
         columns: [
-            boolCheckCol({field: 'local', fixedWidth: 70, align: 'center'}),
+            boolCheckCol({field: 'local', fixedWidth: 70}),
             nameCol({fixedWidth: 200}),
             baseCol({field: 'type', fixedWidth: 70}),
             baseCol({field: 'defaultValue', minWidth: 150, maxWidth: 480}),

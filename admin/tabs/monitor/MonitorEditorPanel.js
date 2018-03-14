@@ -73,7 +73,7 @@ export class MonitorEditorPanel extends Component {
     gridModel = new RestGridModel({
         store: this.store,
         columns: [
-            boolCheckCol({field: 'active', fixedWidth: 70, align: 'center'}),
+            boolCheckCol({field: 'active', fixedWidth: 70}),
             baseCol({field: 'code', fixedWidth: 150}),
             nameFlexCol(),
             baseCol({field: 'warnThreshold', fixedWidth: 130}),

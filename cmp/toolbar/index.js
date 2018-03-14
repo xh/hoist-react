@@ -5,3 +5,4 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 export * from './Toolbar';
+export * from './ToolbarSeparator';
