@@ -16,6 +16,8 @@ import {resizeHandle} from './ResizeHandle';
 /**
  * A Resizable Container
  *
+ * @prop contentSize, integer - Size of the collapsible container. If side is `left` or `right` it
+ *       represents the width, otherwise it represents the height.
  * @prop isResizable, object - Can the panel be resized with drag and drop?
  * @prop isCollapsible, boolean - Can the panel be collapsed via collapse/expand toggle button
  * @prop side, string - The side of this container where resizing and collapsing will be done.
@@ -61,8 +63,8 @@ export class Resizable extends Component {
         // Turn off lazy rendering once opened
         if (this.isOpen) this.isLazyState = false;
 
-        const {isCollapsible, isResizable, side} = this.props,
-            {sideIsAfterContent, sideIsVertical, isLazyState} = this,
+        const {sideIsAfterContent, sideIsVertical, isLazyState} = this,
+            {isCollapsible} = this.props,
             child = isLazyState ? null : this.renderChild(),
             items = !isCollapsible ? child : (sideIsAfterContent ? [child, this.getSplitter()] : [this.getSplitter(), child]),
             cmp = sideIsVertical ? vbox : hbox;
@@ -124,15 +126,15 @@ export class Resizable extends Component {
             type = sideIsVertical ? 0 : 1,
             idx = sideIsAfterContent ? 0 : 1;
 
-        return toMakeOpen ? directions[type][idx] : directions[type][1 - idx];
+        return currentlyOpen ? directions[type][idx] : directions[type][1 - idx];
     }
 
     getResizer() {
-        return this.props.isResizable ?
+        return this.isOpen && this.props.isResizable ?
             resizeHandle({
                 side: this.props.side,
                 onResizeStart: this.onResizeStart,
-                onResizeEnd: this.onResizeEnd
+                onResizeEnd: this.onResizeEnd,
                 onResize: this.onResize
             }) : null;
     }
@@ -152,13 +154,14 @@ export class Resizable extends Component {
     }
 
     @action
-    onResizeEnd = (delta) => {
+    onResizeEnd = () => {
         this.isResizing = false;
         this.startContentSize = null;
     }
 
+    @action
     onResize = (delta) => {
-        this.contentSize = this.startContentSize + diff;
+        this.contentSize = this.startContentSize + delta;
     }
 
 }
