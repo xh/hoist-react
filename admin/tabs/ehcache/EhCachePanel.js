@@ -5,11 +5,15 @@
 * Copyright © 2018 Extremely Heavy Industries Inc.
 */
 import {Component} from 'react';
+import {button} from 'hoist/kit/blueprint';
 import {hoistComponent} from 'hoist/core';
 import {grid, GridModel} from 'hoist/grid';
 import {UrlStore} from 'hoist/data';
-import {baseCol} from 'hoist/columns/Core';
+import {filler, vframe} from 'hoist/layout';
+import {label, toolbar, toolbarSep} from 'hoist/cmp';
+import {Icon} from 'hoist/icon';
 
+import {baseCol} from 'hoist/columns/Core';
 import {nameCol} from '../../columns/Columns';
 
 @hoistComponent()
@@ -29,7 +33,46 @@ export class EhCachePanel extends Component {
     });
     
     render() {
-        return grid({model: this.gridModel});
+        return vframe(
+            this.renderToolbar(),
+            grid({model: this.gridModel})
+        );
+    }
+
+    renderToolbar() {
+        return toolbar({
+            items: [
+                button({
+                    icon: Icon.sync(),
+                    text: 'Clear All',
+                    onClick: this.onClearAllClick
+                }),
+                toolbarSep(),
+                button({
+                    icon: Icon.sync(),
+                    onClick: this.onRefreshClick
+                }),
+                filler(),
+                this.renderCachesCount()
+            ]
+        });
+    }
+
+    onClearAllClick = () => {
+        XH.fetchJson({
+            url: 'ehCacheAdmin/clearAllCaches',
+        }).then(r => {
+            return this.loadAsync();
+        }).catchDefault();
+    }
+
+    onRefreshClick = () => {
+        return this.loadAsync();
+    }
+
+    renderCachesCount() {
+        const store = this.gridModel.store;
+        return label(store.count + ' caches');
     }
 
     async loadAsync() {
