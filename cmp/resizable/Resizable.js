@@ -13,6 +13,19 @@ import {button} from 'hoist/kit/blueprint';
 import {isNil} from 'lodash';
 import {resizeHandle} from './ResizeHandle';
 
+/**
+ * A Resizable Container
+ *
+ * @prop isResizable object - An object containing all sides that should receive a resizer handle.
+ * @prop isCollapsible boolean - Defines if this container should render a collapse/expand toggle button
+ * @prop collapseDirection string - The direction this container will collapse (Defaults to left)
+ * @prop defaultIsOpen boolean - If set to false this container will be collapsed by default.
+ *
+ * Notes:
+ * 1 - If this container must be collapsible but not resizable, set isResizable to `false`.
+ * 2 - When this container is collapsed, the resizable feature is automatically turned off.
+ */
+
 @hoistComponent()
 export class Resizable extends Component {
 

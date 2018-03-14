@@ -31,7 +31,7 @@ class ResizeHandle extends Component {
 
     onResizeStart = (e) => {
         const {direction, resizeHandler} = this.props;
-        resizeHandler(e, direction)
+        resizeHandler(e, direction);
     }
 }
 
