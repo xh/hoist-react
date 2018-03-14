@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {PropTypes} from 'prop-types';
 import {elemFactory} from 'hoist/core';
 import {div} from 'hoist/layout';
-import './ResizeHandle.css';
+import './ResizeHandle.scss';
 
 class ResizeHandle extends Component {
     static propTypes = {
