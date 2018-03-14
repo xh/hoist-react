@@ -60,7 +60,7 @@ export class EhCachePanel extends Component {
 
     onClearAllClick = () => {
         XH.fetchJson({
-            url: 'ehCacheAdmin/clearAllCaches',
+            url: 'ehCacheAdmin/clearAllCaches'
         }).then(r => {
             return this.loadAsync();
         }).catchDefault();
