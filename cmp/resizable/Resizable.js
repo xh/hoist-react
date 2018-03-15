@@ -9,10 +9,11 @@ import {Component} from 'react';
 import {PropTypes} from 'prop-types';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {setter, observable, action} from 'hoist/mobx';
-import {box, hbox, vbox} from 'hoist/layout';
+import {box, div, hbox, vbox} from 'hoist/layout';
 import {button} from 'hoist/kit/blueprint';
 import {isNil} from 'lodash';
 import {resizeHandle} from './ResizeHandle';
+import './Resizable.scss';
 
 /**
  * A Resizable Container
@@ -72,7 +73,7 @@ export class Resizable extends Component {
         const {sideIsAfterContent, sideIsVertical, isLazyState} = this,
             {isCollapsible} = this.props,
             child = isLazyState ? null : this.renderChild(),
-            items = !isCollapsible ? child : (sideIsAfterContent ? [child, this.getSplitter()] : [this.getSplitter(), child]),
+            items = !isCollapsible ? child : (sideIsAfterContent ? [child, ...this.getCollapsibleBar()] : [...this.getCollapsibleBar(), child]),
             cmp = sideIsVertical ? vbox : hbox;
 
         return cmp({
@@ -96,31 +97,29 @@ export class Resizable extends Component {
         });
     }
 
-    getSplitter() {
-        const {isOpen, sideIsVertical} = this,
-            {isCollapsible} = this.props;
+    getCollapsibleBar() {
+        const {isCollapsible} = this.props;
 
         if (!isCollapsible) return null;
 
+        const splitter = this.getSplitter(),
+            collapseText = this.getCollapseText();
+
+        return this.sideIsAfterContent ? [collapseText, splitter] : [splitter, collapseText];
+    }
+
+    getSplitter() {
+        const {isOpen, sideIsVertical} = this;
+
         const cmp = sideIsVertical ? hbox : vbox,
             cfg = {
-                style: {background: '#959b9e'},
-                justifyContent: 'center',
-                alignItems: 'center',
+                cls: `xh-resizable-splitter ${sideIsVertical ? 'vertical' : 'horizontal'}`,
                 item: button({
+                    cls: 'xh-resizable-splitter-btn',
                     icon:  this.getChevron(isOpen),
-                    style: {
-                        margin: 0,
-                        padding: 0,
-                        width: sideIsVertical ? '70px' : '10px',
-                        height: sideIsVertical ? '10px' : '70px',
-                        zIndex: 10
-                    },
                     onClick: this.onChevronClick
                 })
             };
-
-        cfg[sideIsVertical ? 'height' : 'width'] = 8;
 
         return cmp(cfg);
     }
@@ -142,6 +141,17 @@ export class Resizable extends Component {
                 onResizeEnd: this.onResizeEnd,
                 onResize: this.onResize
             }) : null;
+    }
+
+    getCollapseText() {
+        const {props, isOpen, sideIsVertical} = this,
+            {collapseText} = props;
+        if (!collapseText || isOpen) return null;
+
+        return box({
+            cls: `xh-collapse-text ${sideIsVertical ? 'vertical' : 'horizontal'}`,
+            item: div(collapseText)
+        });
     }
 
     //----------------------------
