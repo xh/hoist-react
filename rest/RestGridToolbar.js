@@ -64,8 +64,6 @@ export class RestGridToolbar extends Component {
         const model = this.model,
             warning = model.actionWarning.del;
         if (warning) {
-            // Seems we were intentionally using an alert(intentionally no cancel)
-            // but the message was 'Are you sure?', was confusing. I vote we allow the cancel here.
             model.messageModel.confirm({
                 message: warning,
                 onConfirm: () => model.deleteSelection()
