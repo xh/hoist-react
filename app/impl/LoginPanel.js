@@ -88,11 +88,7 @@ export class LoginPanel extends Component {
             this.messageModel.alert({
                 title: 'Error',
                 icon: 'error',
-                message:
-                    <div>
-                        An error occurred executing the login: <br/><br/>
-                        <b> {e.message || e.name} </b>
-                    </div>
+                message: <div>Unable to login: <b>{e.message || e.name}</b></div>
             });
         });
     }
