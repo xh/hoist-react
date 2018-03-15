@@ -31,9 +31,9 @@ export class EhCacheModel {
     clearAll() {
         XH.fetchJson({
             url: 'ehCacheAdmin/clearAllCaches'
-        }).then(r => {
-            return this.loadAsync();
-        }).catchDefault();
+        }).then(
+            this.loadAsync()
+        ).catchDefault();
     }
 
     async loadAsync() {
