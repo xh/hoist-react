@@ -86,7 +86,7 @@ body {
 }
 
 /* Body */
-body {
+body.xh-app {
   background-color: var(--xh-bg-color);
   color: var(--xh-text-color);
   border-color: var(--xh-border-color);
@@ -112,10 +112,10 @@ body {
   ::-webkit-scrollbar-corner {
     background-color: #696969;
   }
-}
 
-h1, h2, h3, h4, h5 {
-  color: var(--xh-header-color);
+  h1, h2, h3, h4, h5 {
+    color: var(--xh-header-color);
+  }
 }
 
 .xh-blue    {color: var(--xh-blue);}
