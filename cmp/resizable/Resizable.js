@@ -47,9 +47,6 @@ export class Resizable extends Component {
     @setter @observable contentSize;
     isLazyState = true;
 
-    // Resizing state
-    @observable isResizing;
-
     constructor(props) {
         super(props);
         const {contentSize, defaultIsOpen} = this.props;
@@ -80,7 +77,6 @@ export class Resizable extends Component {
 
         return cmp({
             flex: 'none',
-            cls: `${this.props.cls || ''}${false ? ' xh-unselectable' : ''}`,
             items: [...items, this.getResizer()]
         });
     }
@@ -156,15 +152,11 @@ export class Resizable extends Component {
         this.isOpen = !this.isOpen;
     }
 
-    @action
     onResizeStart = () => {
-        this.isResizing = true;
         this.startContentSize = this.contentSize;
     }
 
-    @action
     onResizeEnd = () => {
-        this.isResizing = false;
         this.startContentSize = null;
     }
 
