@@ -8,6 +8,7 @@ export * from './clipboard';
 export * from './contextmenu';
 export * from './form';
 export * from './message';
+export * from './storecount';
 export * from './tab';
 export * from './toolbar';
 export * from './Collapsible';

@@ -10,7 +10,7 @@ import {hoistComponent} from 'hoist/core';
 import {grid, GridModel} from 'hoist/grid';
 import {UrlStore} from 'hoist/data';
 import {filler, vframe} from 'hoist/layout';
-import {label, storeFilterField, toolbar, toolbarSep} from 'hoist/cmp';
+import {storeCountLabel, StoreCountLabelModel, storeFilterField, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import {baseCol} from 'hoist/columns/Core';
@@ -19,11 +19,13 @@ import {nameCol} from '../../columns/Columns';
 @hoistComponent()
 export class EhCachePanel extends Component {
 
+    store = new UrlStore({
+        url: 'ehCacheAdmin/listCaches',
+        fields: ['name', 'heapSize', 'entries', 'status']
+    });
+
     gridModel = new GridModel({
-        store: new UrlStore({
-            url: 'ehCacheAdmin/listCaches',
-            fields: ['name', 'heapSize', 'entries', 'status']
-        }),
+        store: this.store,
         columns: [
             nameCol({minWidth: 360, flex: 3}),
             baseCol({field: 'heapSize', headerName: 'Heap Size (MB)', fixedWidth: 120, align: 'right'}),
@@ -31,6 +33,8 @@ export class EhCachePanel extends Component {
             baseCol({field: 'status', minWidth: 120, flex: 1, align: 'right'})
         ]
     });
+
+    storeCountModel = new StoreCountLabelModel({store: this.store, unitConfig: {singular: 'cache', plural: 'caches'}});
     
     render() {
         return vframe(
@@ -53,7 +57,7 @@ export class EhCachePanel extends Component {
                     onClick: this.onRefreshClick
                 }),
                 filler(),
-                this.renderCachesCount(),
+                storeCountLabel({storeCountModel: this.storeCountModel}),
                 storeFilterField({
                     store: this.gridModel.store,
                     fields: ['name', 'status']
@@ -72,11 +76,6 @@ export class EhCachePanel extends Component {
 
     onRefreshClick = () => {
         return this.loadAsync();
-    }
-
-    renderCachesCount() {
-        const store = this.gridModel.store;
-        return label(store.count + ' caches');
     }
 
     async loadAsync() {
