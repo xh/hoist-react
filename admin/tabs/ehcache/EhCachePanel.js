@@ -34,7 +34,7 @@ export class EhCachePanel extends Component {
         ]
     });
 
-    storeCountModel = new StoreCountLabelModel({store: this.store, unitConfig: {singular: 'cache', plural: 'caches'}});
+    storeCountLabelModel = new StoreCountLabelModel({store: this.store, unitConfig: {singular: 'cache', plural: 'caches'}});
     
     render() {
         return vframe(
