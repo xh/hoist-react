@@ -46,8 +46,12 @@
   }
 }
 
-.pt-overlay-backdrop {
-  background-color: var(--xh-mask-bg-color);
+.pt-dialog-container {
+   background-color: var(--xh-mask-bg-color);
+}
+
+.pt-dark .pt-menu, .pt-menu {
+  background-color: var(--xh-bg-color-alt);
 }
 
 
