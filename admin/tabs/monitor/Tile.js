@@ -27,9 +27,9 @@ export class Tile extends Component {
                 div({
                     cls: 'xh-status-tile__content',
                     items: [
-                        div({cls: 'xh-status-tile__metric', item: `Metric: ${metric}`}),
+                        div({cls: 'xh-status-tile__metric', item: `Metric: ${metric || 'N/A'}`}),
                         div({cls: 'xh-status-tile__elapsed', item: `Elapsed: ${elapsed}ms`}),
-                        div({cls: 'xh-status-tile__message', item: `${message}`})
+                        div({cls: 'xh-status-tile__message', item: `${message}`, hidden: !message})
                     ]
                 })
             ]

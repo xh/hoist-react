@@ -12,7 +12,6 @@ import {defaults, difference, isString} from 'lodash';
 
 import './ag-grid';
 import {navigateSelection, agGridReact} from './ag-grid';
-import './Grid.scss';
 
 /**
  * Grid Component
@@ -27,7 +26,6 @@ class Grid extends Component {
         deltaRowDataMode: true,
         getRowNodeId: (data) => data.id,
         rowSelection: 'single',
-        suppressCellSelection: true,
         allowContextMenuWithControlKey: true,
         defaultColDef: {suppressMenu: true}
     };
