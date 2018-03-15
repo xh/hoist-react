@@ -1,5 +1,5 @@
 .ag-theme-balham, .ag-theme-balham-dark {
-    font-family: var(--xh-font-family);
+    font-family: var(--xh-font-family-grid);
     font-size: var(--xh-font-size);
 
     .ag-root {
@@ -8,7 +8,7 @@
 
     .ag-header {
         color: var(--xh-text-color);
-        font-family: var(--xh-font-family);
+        font-family: var(--xh-font-family-grid);
         background-color: var(--xh-grid-header-bg-color);
     }
 
