@@ -20,7 +20,7 @@ class ResizeHandle extends Component {
         onResize: PropTypes.func,
         onResizeEnd: PropTypes.func,
         side: PropTypes.oneOf(['top', 'right', 'bottom', 'left']).isRequired
-    }
+    };
 
     render() {
         const {side} = this.props;

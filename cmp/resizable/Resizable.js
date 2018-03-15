@@ -6,6 +6,7 @@
  */
 
 import {Component} from 'react';
+import {PropTypes} from 'prop-types';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {setter, observable, action} from 'hoist/mobx';
 import {box, hbox, vbox} from 'hoist/layout';
@@ -25,6 +26,14 @@ import {resizeHandle} from './ResizeHandle';
  */
 @hoistComponent()
 export class Resizable extends Component {
+
+    static propTypes = {
+        isCollapsible: PropTypes.bool,
+        isResizable: PropTypes.bool,
+        defaultIsOpen: PropTypes.bool,
+        side: PropTypes.oneOf(['top', 'right', 'bottom', 'left']),
+        contentSize: PropTypes.number
+    };
 
     static defaultProps = {
         isCollapsible: true,
