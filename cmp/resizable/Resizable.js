@@ -80,7 +80,7 @@ export class Resizable extends Component {
 
         return cmp({
             flex: 'none',
-            cls: `${this.props.cls || ''}${this.isResizing ? ' xh-unselectable' : ''}`,
+            cls: `${this.props.cls || ''}${false ? ' xh-unselectable' : ''}`,
             items: [...items, this.getResizer()]
         });
     }

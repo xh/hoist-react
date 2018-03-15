@@ -26,18 +26,26 @@ class ResizeHandle extends Component {
         const {side} = this.props;
         return div({
             cls: `xh-resize-handler ${side}`,
-            onMouseDown: this.onResizeStart
+            onDrag: this.onDrag,
+            onDragStart: this.onDragStart,
+            onDragEnd: this.onDragEnd,
+            draggable: true
         });
     }
     
-    onResizeStart = (e) => {
+    onDragStart = (e) => {
         this.resizeState = {startX: e.clientX, startY: e.clientY};
         const {onResizeStart} = this.props;
         if (onResizeStart) onResizeStart(e);
+        e.stopPropagation();
     }
 
-    onMouseMove = (e) => {
+    onDrag = (e) => {
         if (!this.resizeState) return;
+        if (!e.buttons || e.buttons.length == 0) {
+            this.onDragEnd();
+            return;
+        }
 
         const {side} = this.props,
             {clientX, clientY} = e,
@@ -54,23 +62,10 @@ class ResizeHandle extends Component {
         if (onResize) onResize(diff);
     }
 
-    onResizeEnd = () => {
+    onDragEnd = () => {
         this.resizeState = null;
         const {onResizeEnd} = this.props;
         if (onResizeEnd) onResizeEnd();
-    }
-
-    //-------------------
-    // Lifecycle
-    //---------------------
-    componentDidMount() {
-        window.addEventListener('mouseup', this.onResizeEnd);
-        window.addEventListener('mousemove', this.onMouseMove);
-    }
-
-    componentWillUnmount() {
-        window.removeEventListener('mouseup', this.onResizeEnd);
-        window.removeEventListener('mousemove', this.onMouseMove);
     }
 }
 export const resizeHandle = elemFactory(ResizeHandle);
