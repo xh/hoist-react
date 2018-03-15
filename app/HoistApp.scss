@@ -19,8 +19,11 @@ body {
   /* App color vars - note these are expected to often have an alternate in xh-dark mode */
   --xh-bg-color: var(--bg-color, white);
   --xh-bg-color-alt: var(--bg-color-alt, var(--xh-blue-gray-light));
+  --xh-bg-color-grid: var(--bg-color-grid, var(--xh-bg-color));
+  --xh-bg-color-grid-odd: var(--bg-color-grid-odd, var(--xh-bg-color-alt));
   --xh-bg-color-highlight: var(--bg-color-highlight, rgba(2, 136, 209, 0.3));
   --xh-border-color: var(--border-color, var(--xh-gray));
+  --xh-border-color-grid: var(--border-color-grid, var(--xh-border-color));
   --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
   --xh-grid-header-bg-color: var(--grid-header-bg-color, #cfd8dc);
   --xh-header-color: var(--header-color, var(--xh-text-color));
@@ -41,8 +44,11 @@ body.xh-dark {
 
   --xh-bg-color: var(--bg-color, var(--xh-black));
   --xh-bg-color-alt: var(--bg-color-alt, var(--xh-blue-gray-dark));
+  --xh-bg-color-grid: var(--bg-color-grid, var(--xh-bg-color));
+  --xh-bg-color-grid-odd: var(--bg-color-grid-odd, #102027);
   --xh-bg-color-highlight: var(--bg-color-highlight, rgba(2, 136, 209, 0.6));
   --xh-border-color: var(--border-color, #29434e);
+  --xh-border-color-grid: var(--border-color-grid, var(--xh-border-color));
   --xh-grid-header-bg-color: var(--grid-header-bg-color, #546e7a);
   --xh-mask-bg-color: var(--mask-bg-color, rgba(16, 22, 26, 0.8));
   --xh-navbar-bg-color: var(--navbar-bg-color, var(--xh-bg-color-alt));

@@ -13,6 +13,7 @@
 
   .ag-root {
     border: none;
+    background-color: var(--xh-bg-color-grid);
   }
 
   .ag-header {
@@ -22,12 +23,18 @@
   }
 
   .ag-row {
-    border-bottom-color: var(--xh-border-color);
+    background-color: var(--xh-bg-color-grid);
+    border-bottom-color: var(--xh-border-color-grid);
+
+    &.ag-row-odd {
+      background-color: var(--xh-bg-color-grid-odd);
+    }
+
+    &.ag-row-selected {
+      background-color: var(--xh-bg-color-highlight);
+    }
   }
 
-  .ag-row-selected {
-    background-color: var(--xh-bg-color-highlight);
-  }
 }
 
 .xh-column-header-align-right .ag-header-cell-label {
