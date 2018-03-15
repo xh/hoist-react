@@ -109,9 +109,13 @@ export class RestGridModel {
 
     confirmDeleteSelection() {
         const warning = this.actionWarning.del;
-        this.messageModel.confirm({
-            message: warning,
-            onConfirm: () => this.deleteSelection()
-        });
+        if (warning) {
+            this.messageModel.confirm({
+                message: warning,
+                onConfirm: () => this.deleteSelection()
+            });
+        } else {
+            this.deleteSelection();
+        }
     }
 }

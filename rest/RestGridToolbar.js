@@ -61,16 +61,7 @@ export class RestGridToolbar extends Component {
     }
 
     onDeleteClick = () => {
-        const model = this.model,
-            warning = model.actionWarning.del;
-        if (warning) {
-            model.messageModel.confirm({
-                message: warning,
-                onConfirm: () => model.deleteSelection()
-            });
-        } else {
-            model.deleteSelection();
-        }
+        this.model.confirmDeleteSelection();
     }
 }
 export const restGridToolbar = elemFactory(RestGridToolbar);
