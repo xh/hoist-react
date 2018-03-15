@@ -57,7 +57,7 @@ export class EhCachePanel extends Component {
                     onClick: this.onRefreshClick
                 }),
                 filler(),
-                storeCountLabel({storeCountModel: this.storeCountModel}),
+                storeCountLabel({storeCountLabelModel: this.storeCountLabelModel}),
                 storeFilterField({
                     store: this.gridModel.store,
                     fields: ['name', 'status']

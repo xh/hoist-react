@@ -16,7 +16,7 @@ import {label} from 'hoist/cmp';
 class StoreCountLabel extends Component {
 
     render() {
-        const model =  this.props.storeCountModel,
+        const model =  this.props.storeCountLabelModel,
             count = model.store.count,
             unitConfig = model.unitConfig,
             unitLabel = count === 1 ? unitConfig.singular : unitConfig.plural;
