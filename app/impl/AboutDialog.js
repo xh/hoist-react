@@ -51,8 +51,9 @@ export class AboutDialog extends Component {
         return table({
             item: tbody(
                 row('App Name', XH.appName),
+                row('Version', XH.appVersion),
+                row('Build', XH.appBuild),
                 row('Environment', svc.get('appEnvironment')),
-                row('App Version', svc.get('appVersion')),
                 row('Hoist Core Version', svc.get('hoistCoreVersion')),
                 row('Hoist React Version', svc.get('hoistReactVersion')),
                 ...configRows
