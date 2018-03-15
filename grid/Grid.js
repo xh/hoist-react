@@ -27,7 +27,6 @@ class Grid extends Component {
         deltaRowDataMode: true,
         getRowNodeId: (data) => data.id,
         rowSelection: 'single',
-        suppressCellSelection: true,
         allowContextMenuWithControlKey: true,
         defaultColDef: {suppressMenu: true}
     };
