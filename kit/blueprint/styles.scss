@@ -27,6 +27,10 @@
   margin: 0 !important;
 }
 
+.pt-tabs:not(.pt-vertical) > .pt-tab-list {
+  padding-left: var(--xh-pad-px);
+}
+
 
 //------------------------
 // Dialog + Masking
