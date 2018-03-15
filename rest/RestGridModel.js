@@ -96,7 +96,7 @@ export class RestGridModel {
             },
             {
                 text: 'Delete',
-                action: () => this.deleteSelection()
+                action: () => this.onDeleteSelection()
             },
             '-',
             'copy',
@@ -105,5 +105,13 @@ export class RestGridModel {
             'export',
             'autoSizeAll'
         ]);
+    }
+
+    onDeleteSelection = () => {
+        const warning = this.actionWarning.del;
+        this.messageModel.confirm({
+            message: warning,
+            onConfirm: () => this.deleteSelection()
+        });
     }
 }
