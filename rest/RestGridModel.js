@@ -107,7 +107,7 @@ export class RestGridModel {
         ]);
     }
 
-    onDeleteSelection = () => {
+    onDeleteSelection() {
         const warning = this.actionWarning.del;
         this.messageModel.confirm({
             message: warning,
