@@ -73,7 +73,7 @@ export class Resizable extends Component {
         const {sideIsAfterContent, sideIsVertical, isLazyState} = this,
             {isCollapsible} = this.props,
             child = isLazyState ? null : this.renderChild(),
-            items = !isCollapsible ? child : (sideIsAfterContent ? [child, ...this.getCollapsibleBar()] : [...this.getCollapsibleBar(), child]),
+            items = !isCollapsible ? [child] : (sideIsAfterContent ? [child, ...this.getCollapsibleBar()] : [...this.getCollapsibleBar(), child]),
             cmp = sideIsVertical ? vbox : hbox;
 
         return cmp({
