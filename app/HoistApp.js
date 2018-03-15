@@ -65,15 +65,18 @@ export function hoistApp(C) {
 
         renderContextMenu() {
             return contextMenu({
-                menuItems: [{
-                    text: 'Reload App',
-                    icon: Icon.refresh(),
-                    action: () => hoistModel.reloadApp()
-                }, {
-                    text: 'About',
-                    icon: Icon.info(),
-                    action: () => hoistModel.setShowAbout(true)
-                }]
+                menuItems: [
+                    {
+                        text: 'Reload App',
+                        icon: Icon.refresh(),
+                        action: () => hoistModel.reloadApp()
+                    },
+                    {
+                        text: 'About',
+                        icon: Icon.info(),
+                        action: () => hoistModel.setShowAbout(true)
+                    }
+                ]
             });
         }
     };

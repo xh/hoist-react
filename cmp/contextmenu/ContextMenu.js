@@ -18,7 +18,6 @@ import {ContextMenuItem} from './ContextMenuItem';
  * ContextMenu
  *
  * This object can be used to specify context menus on any HoistComponent.
- *
  * To add a ContextMenu to a component, specify a renderContextMenu() method on the component.
  *
  * See GridContextMenu to specify a context menu on a grid.  That API will receive grid specific
@@ -28,11 +27,10 @@ export class ContextMenu extends Component {
 
     /**
      * This element expects the following properties
-     *
      * @props items, Array of ContextMenuItems, configs to create them, React Elements,  or '-' to represent a divider
      */
     render() {
-        return new menu(this.parseMenuItems(this.props.menuItems));
+        return menu(this.parseMenuItems(this.props.menuItems));
     }
 
     //---------------------------
