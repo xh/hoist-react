@@ -7,6 +7,7 @@
 import {XH} from 'hoist/core';
 import {computed, action, observable} from 'hoist/mobx';
 import {max} from 'lodash';
+import {kebabCase} from 'lodash';
 
 /**
  * Model for a TabContainer, representing its layout/contents and currently selected TabPane.
@@ -18,6 +19,7 @@ import {max} from 'lodash';
  */
 export class TabContainerModel {
     id = null;
+    route = null;
     vertical = false;
     children = [];
 
@@ -63,9 +65,9 @@ export class TabContainerModel {
         return max([parentVal, this._lastRefreshRequest]);
     }
 
-
     constructor(id, orientation, ...children) {
         this.id = id;
+        this.route = kebabCase(id);
         this.vertical = orientation === 'v';
         this.children = children;
         this.selectedIndex = children.length ? 0 : -1;
