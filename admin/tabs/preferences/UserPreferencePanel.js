@@ -37,6 +37,7 @@ export class UserPreferencePanel extends Component {
             {
                 name: 'userValue',
                 typeField: 'type',
+                defaultType: 'string',
                 required: true
             },
             {

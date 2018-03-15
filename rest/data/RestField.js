@@ -18,6 +18,7 @@ export class RestField extends Field {
     lookupName
     lookupStrict
     typeField
+    defaultType
 
     /**
      * Construct this object.
@@ -37,6 +38,7 @@ export class RestField extends Field {
         lookupName = null,
         lookupStrict = false,
         typeField = null,
+        defaultType = null,
         ...rest
     }) {
         super(rest);
@@ -46,5 +48,6 @@ export class RestField extends Field {
         this.lookupName = lookupName;
         this.lookupStrict = lookupStrict;
         this.typeField = typeField;
+        this.defaultType = defaultType;
     }
 }

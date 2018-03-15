@@ -49,7 +49,12 @@ export class RestControlModel  {
     @computed
     get type() {
         const {field} = this;
-        return field.typeField ? this.getDynamicType(field.typeField) : field.type;
+        let type = field.typeField ? this.getDynamicType(field.typeField) : field.type;
+        if (!type && field.defaultType) {
+            type = field.defaultType;
+        }
+
+        return type;
     }
 
     //---------------------
