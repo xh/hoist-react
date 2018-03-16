@@ -26,6 +26,7 @@ export class ActivityPanel extends Component {
             resizable({
                 side: 'top',
                 contentSize: 250,
+                prefName: 'xhAdminActivityChartSize',
                 item: visitsChart({model: this.visitsChartModel})
             })
         );

@@ -79,6 +79,7 @@ export class PrefService extends BaseService {
 
         const response = await XH.fetchJson({
             url: 'hoistImpl/setPrefs',
+            method: 'POST',
             params: {updates: JSON.stringify(this._updates)}
         });
 

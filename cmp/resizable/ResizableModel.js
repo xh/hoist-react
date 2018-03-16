@@ -6,7 +6,7 @@
  */
 
 import {XH} from 'hoist/core';
-import {setter, observable, autorun, action} from 'hoist/mobx';
+import {observable, autorun, action} from 'hoist/mobx';
 
 /**
  * A Model for managing the state of a Resizable.
@@ -35,7 +35,7 @@ export class ResizableModel {
     }
 
     syncToPref() {
-        const {prefName} = this;;
+        const {prefName} = this;
         if (prefName) {
             XH.prefService.set(prefName, {
                 isOpen: this.isOpen,

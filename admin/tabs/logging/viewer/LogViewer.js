@@ -39,7 +39,7 @@ export class LogViewer extends Component {
                 resizable({
                     side: 'right',
                     contentSize: 250,
-                    collapseText: 'Log Files',
+                    isOpen: true,
                     item: vframe(
                         grid({model: files}),
                         toolbar(
