@@ -6,10 +6,14 @@
  */
 import {Component} from 'react';
 import {button} from 'hoist/kit/blueprint';
+import {mixin} from 'lodash';
+import _inflection from 'lodash-inflection';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {filler} from 'hoist/layout';
 import {storeCountLabel, storeFilterField, toolbar} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
+
+mixin(_inflection);
 
 @hoistComponent()
 export class RestGridToolbar extends Component {
@@ -68,7 +72,7 @@ export class RestGridToolbar extends Component {
 
     onExportClick = () => {
         const model = this.model,
-            fileName = model.unit;
+            fileName = _inflection.pluralize(model.unit);
         model.gridModel.exportDataAsExcel({fileName});
     }
 }
