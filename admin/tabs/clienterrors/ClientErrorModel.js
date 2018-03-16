@@ -10,53 +10,43 @@ import moment from 'moment';
 import {action, observable, setter} from 'hoist/mobx';
 import {LocalStore} from 'hoist/data';
 import {GridModel} from 'hoist/grid';
-import {fmtDate, numberRenderer} from 'hoist/format';
+import {fmtDate} from 'hoist/format';
 
 import {baseCol} from 'hoist/columns/Core';
-import {dateTimeCol} from 'hoist/columns/DatesTimes';
+import {compactDateCol} from 'hoist/columns/DatesTimes';
 import {usernameCol} from '../../columns/Columns';
 
-export class ActivityGridModel {
+export class ClientErrorModel {
 
-    @observable startDate = moment().toDate();
+    @observable startDate = moment().subtract(7, 'days').toDate();
     @observable endDate = moment().toDate();
     @observable @setter username = '';
-    @observable @setter msg = '';
-    @observable @setter category = '';
-    @observable @setter device = '';
-    @observable @setter browser = '';
+    @observable @setter error = '';
 
     store = new LocalStore({
         fields: [
-            'severity', 'dateCreated', 'username', 'msg', 'category',
-            'device', 'browser', 'data', 'impersonating', 'elapsed'
+            'username', 'error', 'msg', 'browser', 'device',
+            'appVersion', 'appEnvironment', 'dateCreated'
         ]
     });
 
     gridModel = new GridModel({
         store: this.store,
         columns: [
-            baseCol({field: 'severity', fixedWidth: 90}),
-            dateTimeCol({field: 'dateCreated', fixedWidth: 160, align: 'right'}),
+            compactDateCol({field: 'dateCreated', fixedWidth: 100, align: 'right'}),
             usernameCol({fixedWidth: 120}),
+            baseCol({field: 'error', minWidth: 450, flex: 3}),
             baseCol({field: 'msg', headerName: 'Message', minWidth: 150, flex: 1}),
-            baseCol({field: 'category', fixedWidth: 100}),
-            baseCol({field: 'device', fixedWidth: 80}),
             baseCol({field: 'browser', fixedWidth: 100}),
-            baseCol({field: 'data', minWidth: 70, flex: 1}),
-            baseCol({field: 'impersonating', fixedWidth: 140}),
-            baseCol({
-                field: 'elapsed',
-                headerName: 'Elapsed (ms)',
-                fixedWidth: 120,
-                valueFormatter: numberRenderer({precision: 0})
-            })
+            baseCol({field: 'device', fixedWidth: 80}),
+            baseCol({field: 'appVersion', fixedWidth: 130}),
+            baseCol({field: 'appEnvironment', headerName: 'Environment', fixedWidth: 120})
         ]
     });
 
     async loadAsync() {
         return XH.fetchJson({
-            url: 'trackLogAdmin',
+            url: 'clientErrorAdmin',
             params: this.getParams()
         }).then(data => {
             this.store.loadDataAsync(data);
@@ -84,7 +74,7 @@ export class ActivityGridModel {
     }
 
     exportGrid() {
-        const fileName = `Activity: ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`;
+        const fileName = `Client Errors: ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`;
         this.gridModel.exportDataAsExcel({fileName});
     }
 
@@ -108,14 +98,13 @@ export class ActivityGridModel {
             startDate: fmtDate(this.startDate, 'YYYYMMDD'),
             endDate: fmtDate(this.endDate, 'YYYYMMDD'),
             username: this.username,
-            msg: this.msg,
-            category: this.category,
-            device: this.device,
-            browser: this.browser
+            error: this.error
         };
     }
 
     isValidDate(date) {
         return date && date.toString() !== 'Invalid Date';
     }
+
+
 }

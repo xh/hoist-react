@@ -7,9 +7,9 @@
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {grid} from 'hoist/grid';
-import {vframe, hbox, filler, hspacer} from 'hoist/layout';
+import {vframe, filler} from 'hoist/layout';
 import {button} from 'hoist/kit/blueprint';
-import {textField, dayField, label} from 'hoist/cmp';
+import {textField, dayField, label, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 @hoistComponent()
@@ -23,41 +23,34 @@ export class ActivityGrid extends Component {
     }
 
     renderToolbar() {
-        return hbox({
-            cls: 'xh-tbar',
-            flex: 'none',
-            padding: 3,
-            alignItems: 'center',
+        return toolbar({
             items: [
-                hspacer(4),
                 this.dayField({field: 'startDate'}),
-                hspacer(8),
                 Icon.angleRight(),
-                hspacer(8),
                 this.dayField({field: 'endDate'}),
-                hspacer(8),
-                button({icon: Icon.caretLeft(), onClick: this.onDateGoBackClick}),
-                button({icon: Icon.caretRight(), onClick: this.onDateGoForwardClick}),
-                button({icon: Icon.arrowToRight(), onClick: this.onGoToCurrentDateClick}),
-                hspacer(8),
-                '|',
-                hspacer(8),
+                button({
+                    icon: Icon.caretLeft(),
+                    onClick: this.onDateGoBackClick
+                }),
+                button({
+                    icon: Icon.caretRight(),
+                    onClick: this.onDateGoForwardClick,
+                    cls: 'xh-no-pad'
+                }),
+                button({
+                    icon: Icon.arrowToRight(),
+                    onClick: this.onGoToCurrentDateClick,
+                    cls: 'xh-no-pad'
+                }),
+                toolbarSep(),
                 this.textField({field: 'username', placeholder: 'User...'}),
-                hspacer(10),
                 this.textField({field: 'msg', placeholder: 'Msg...'}),
-                hspacer(10),
                 this.textField({field: 'category', placeholder: 'Category...'}),
-                hspacer(10),
                 this.textField({field: 'device', placeholder: 'Device...'}),
-                hspacer(10),
                 this.textField({field: 'browser', placeholder: 'Browser...'}),
-                hspacer(8),
-                '|',
-                hspacer(8),
                 button({icon: Icon.sync(), onClick: this.onSubmitClick}),
                 filler(),
                 this.renderLogCount(),
-                hspacer(8),
                 button({icon: Icon.download(), onClick: this.onExportClick})
             ]
         });
@@ -99,6 +92,10 @@ export class ActivityGrid extends Component {
 
     onGoToCurrentDateClick = () => {
         this.model.adjustDates('subtract', true);
+    }
+
+    onDateCommit = () => {
+        this.model.loadAsync();
     }
 
     onSubmitClick = () => {

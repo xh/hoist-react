@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import './HoistApp.css';
+import './HoistApp.scss';
 
 import {Component} from 'react';
 import {hoistComponent, hoistModel, elem} from 'hoist/core';

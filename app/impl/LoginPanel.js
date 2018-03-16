@@ -5,20 +5,21 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import './LoginPanel.css';
 import React, {Component} from 'react';
 import {XH, elemFactory, hoistComponent, hoistModel} from 'hoist/core';
-import {vbox, hbox, filler, viewport} from 'hoist/layout';
+import {vbox, filler, viewport, div} from 'hoist/layout';
 import {button, text} from 'hoist/kit/blueprint';
-import {textField} from 'hoist/cmp';
+import {textField, toolbar} from 'hoist/cmp';
 import {observable, computed, setter} from 'hoist/mobx';
 import {MessageModel, message} from 'hoist/cmp';
+
+import './LoginPanel.scss';
 
 @hoistComponent()
 export class LoginPanel extends Component {
 
-    @setter @observable username = 'admin@xh.io';
-    @setter @observable password = 'onBQs!!En93E3Wbj';
+    @setter @observable username = '';
+    @setter @observable password = '';
     @setter @observable warning = '';
     messageModel = new MessageModel();
 
@@ -31,33 +32,35 @@ export class LoginPanel extends Component {
             alignItems: 'center',
             justifyContent: 'center',
             item: vbox({
-                cls: 'xh-ba xh-pa',
+                cls: 'xh-login',
                 justifyContent: 'right',
                 width: 300,
                 items: [
+                    div({
+                        cls: 'xh-login__title',
+                        item: `Welcome to ${XH.appName}`
+                    }),
                     textField({
                         model: this,
                         field: 'username',
                         placeholder: 'Username...',
-                        autoFocus: true,
-                        cls: 'xh-mb'
+                        autoFocus: true
                     }),
                     textField({
                         model: this,
                         field: 'password',
                         placeholder: 'Password...',
-                        type: 'password',
-                        cls: 'xh-mb'
+                        type: 'password'
                     }),
                     text({
                         item: this.warning,
                         ellipsize: true,
-                        cls: 'xh-mb xh-login-warning'
+                        cls: 'xh-login__warning'
                     }),
-                    hbox(
+                    toolbar(
                         filler(),
                         button({
-                            text: 'Go',
+                            text: 'Login',
                             intent: 'primary',
                             disabled: !this.isValid,
                             onClick: this.onSubmit
@@ -85,11 +88,7 @@ export class LoginPanel extends Component {
             this.messageModel.alert({
                 title: 'Error',
                 icon: 'error',
-                message:
-                    <div>
-                        An error occurred executing the login: <br/><br/>
-                        <b> {e.message || e.name} </b>
-                    </div>
+                message: <div>Unable to login: <b>{e.message || e.name}</b></div>
             });
         });
     }

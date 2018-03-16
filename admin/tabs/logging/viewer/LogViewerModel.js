@@ -6,7 +6,7 @@
  */
 
 import {XH} from 'hoist/core';
-import {debounce} from 'lodash';
+import {debounce, find} from 'lodash';
 import {action, observable, setter, autorun} from 'hoist/mobx';
 import {LastPromiseModel} from 'hoist/promise';
 import {GridModel} from 'hoist/grid';
@@ -34,7 +34,7 @@ export class LogViewerModel {
             fields: ['filename']
         }),
         columns: [
-            baseCol({headerName: 'Log File', field: 'filename', width: 250, sort: 'asc'})
+            baseCol({headerName: 'Log File', field: 'filename', width: 250, sort: 'desc'})
         ]
     });
 
@@ -48,7 +48,16 @@ export class LogViewerModel {
     
     @action
     async loadAsync() {
-        this.files.store.loadAsync();
+        const files = this.files,
+            fileSelection = files.selection,
+            fileStore = files.store;
+        await fileStore.loadAsync();
+        if (fileSelection.isEmpty) {
+            const latestAppLog = find(fileStore.records, ['filename', `${XH.appName.toLowerCase()}.log`]);
+            if (latestAppLog) {
+                fileSelection.select(latestAppLog);
+            }
+        }
         this.loadLines();
     }
 

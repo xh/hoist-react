@@ -7,8 +7,8 @@
 import {Component} from 'react';
 import {elemFactory, hoistComponent} from 'hoist/core';
 import {button} from 'hoist/kit/blueprint';
-import {textField, checkField, numberField, label} from 'hoist/cmp';
-import {hbox, filler, hspacer} from 'hoist/layout';
+import {textField, checkField, numberField, label, toolbar} from 'hoist/cmp';
+import {filler} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
 
 @hoistComponent()
@@ -16,13 +16,11 @@ export class LogViewerToolbar extends Component {
     
     render() {
         const model = this.model;
-        return hbox({
-            cls: 'xh-tbar',
+        return toolbar({
             alignItems: 'center',
             style: {flex: 'none'},
             items: [
                 label('Start Line:'),
-                hspacer(8),
                 numberField({
                     model,
                     field: 'startLine',
@@ -30,18 +28,14 @@ export class LogViewerToolbar extends Component {
                     width: 80,
                     onCommit: this.onCommit
                 }),
-                hspacer(10),
                 label('Max Lines:'),
-                hspacer(8),
                 numberField({
                     model,
                     field: 'maxLines',
                     min: 1,
                     width: 80,
-                    onCommit:
-                    this.onCommit
+                    onCommit: this.onCommit
                 }),
-                hspacer(10),
                 textField({
                     model,
                     field: 'pattern',
@@ -49,7 +43,6 @@ export class LogViewerToolbar extends Component {
                     width: 150,
                     onCommit: this.onCommit
                 }),
-                hspacer(10),
                 checkField({
                     model,
                     field: 'tail',

@@ -1,0 +1,43 @@
+.xh-status-tile {
+  color: white;
+  min-width: 300px;
+  height: 250px;
+  border: 1px solid white;
+  border-radius: var(--xh-border-radius);
+  overflow: hidden;
+  margin: var(--xh-pad-px) var(--xh-pad-px) var(--xh-pad-px) var(--xh-pad-px);
+
+  &-ok        { background-color: var(--xh-green)}
+  &-warn      { background-color: var(--xh-orange)}
+  &-fail      { background-color: var(--xh-red)}
+  &-inactive  { background-color: var(--xh-gray-dark)}
+  &-unknown   { background-color: var(--xh-gray-dark)}
+
+  &__name {
+    padding: var(--xh-pad-px);
+    font-size: var(--xh-font-size-large-em);
+    background-color: rgba(255, 255, 255, 0.2);
+    border-bottom: 1px solid white;
+  }
+
+  &__content {
+    padding: var(--xh-pad-px);
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    position: relative;
+  }
+
+  &__message {
+    flex: 1;
+    padding: var(--xh-pad-px);
+    margin-top: var(--xh-pad-px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid white;
+    border-radius: 3px;
+  }
+
+
+}

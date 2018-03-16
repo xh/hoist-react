@@ -53,7 +53,7 @@ export class AppModel extends BaseAppModel {
                 new TabPaneModel('Levels', LogLevelPanel)
             ),
             new TabContainerModel('Monitor', 'v',
-                new TabPaneModel('Current Status', MonitorResultsPanel),
+                new TabPaneModel('Status', MonitorResultsPanel),
                 new TabPaneModel('Edit Monitors', MonitorEditorPanel)
             ),
             new TabContainerModel('Client Activity', 'v',
@@ -63,7 +63,7 @@ export class AppModel extends BaseAppModel {
             ),
             new TabContainerModel('Preferences', 'v',
                 new TabPaneModel('Preferences', PreferencePanel),
-                new TabPaneModel('User Preferences', UserPreferencePanel)
+                new TabPaneModel('User Prefs', UserPreferencePanel)
             )
         );
     }

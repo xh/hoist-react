@@ -5,9 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {hoistComponent, elemFactory} from 'hoist/core';
-import {hbox} from 'hoist/layout';
 import {button} from 'hoist/kit/blueprint';
+import {hoistComponent, elemFactory} from 'hoist/core';
+import {toolbar} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 @hoistComponent()
@@ -18,11 +18,9 @@ export class RestGridToolbar extends Component {
             singleRecord = model.selection.singleRecord,
             actionEnabled = model.actionEnabled;
 
-        return hbox({
-            cls: 'xh-tbar',
+        return toolbar({
             itemSpec: {
-                factory: button,
-                cls: 'xh-mr'
+                factory: button
             },
             items: [
                 {

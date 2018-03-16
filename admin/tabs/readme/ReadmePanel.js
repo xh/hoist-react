@@ -6,11 +6,14 @@
  */
 import {Component} from 'react';
 import {hoistComponent} from 'hoist/core';
-import {h2} from 'hoist/layout';
+import {div, h2} from 'hoist/layout';
 
 @hoistComponent()
 export class ReadmePanel extends Component {
     render() {
-        return h2('Readme Here');
+        return div({
+            style: {padding: 'var(--xh-pad-px)'},
+            item: h2('Readme TODO')
+        });
     }
 }

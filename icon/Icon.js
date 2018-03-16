@@ -24,6 +24,8 @@ export const Icon = {
     angleLeft(p)     {return fa(p, 'angle-left')},
     angleRight(p)    {return fa(p, 'angle-right')},
     arrowToRight(p)  {return fa(p, 'arrow-to-right')},
+    arrowUp(p)       {return fa(p, 'arrow-up')},
+    arrowDown(p)     {return fa(p, 'arrow-down')},
     caretLeft(p)     {return fa(p, 'caret-left')},
     caretRight(p)    {return fa(p, 'caret-right')},
     check(p)         {return fa(p, 'check')},
