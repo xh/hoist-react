@@ -73,6 +73,12 @@ export class AppContainer extends Component {
                     text: 'About',
                     icon: Icon.info(),
                     action: () => hoistModel.setShowAbout(true)
+                },
+                {
+                    text: 'Logout',
+                    icon: Icon.logout(),
+                    omit: !hoistModel.appModel.enableLogout,
+                    action: () => XH.identityService.logoutAsync()
                 }
             ]
         });
