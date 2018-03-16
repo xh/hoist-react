@@ -36,6 +36,7 @@ export class VisitsChart extends Component {
                 model,
                 field: 'username',
                 placeholder: 'Username',
+                onCommit: this.onCommit,
                 width: 120
             }),
             button({icon: Icon.sync(), onClick: this.onSubmitClick})
@@ -48,14 +49,14 @@ export class VisitsChart extends Component {
     dayField(args) {
         return dayField({
             model: this.model,
-            onCommit: this.onDateCommit,
+            onCommit: this.onCommit,
             popoverPosition: 'top',
             width: 100,
             ...args
         });
     }
 
-    onDateCommit = () => {
+    onCommit = () => {
         this.model.loadAsync();
     }
 

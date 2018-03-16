@@ -74,7 +74,7 @@ export class ClientErrorPanel extends Component {
     dayField(args) {
         return dayField({
             model: this.model,
-            onCommit: this.onDateCommit,
+            onCommit: this.onCommit,
             popoverPosition: 'bottom',
             width: 100,
             ...args
@@ -84,6 +84,7 @@ export class ClientErrorPanel extends Component {
     textField(args) {
         return textField({
             model: this.model,
+            onCommit: this.onCommit,
             width: 150,
             ...args
         });
@@ -101,7 +102,7 @@ export class ClientErrorPanel extends Component {
         this.model.adjustDates('subtract', true);
     }
 
-    onDateCommit = () => {
+    onCommit = () => {
         this.loadAsync();
     }
 
