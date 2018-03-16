@@ -10,7 +10,6 @@ import {hoistComponent, elemFactory} from 'hoist/core';
 import {filler} from 'hoist/layout';
 import {storeCountLabel, storeFilterField, toolbar} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
-import {fmtDate} from 'hoist/format';
 
 @hoistComponent()
 export class RestGridToolbar extends Component {
