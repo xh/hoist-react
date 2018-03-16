@@ -7,14 +7,14 @@
 
 import moment from 'moment';
 import {forOwn} from 'lodash';
-import {action, observable, setter} from 'hoist/mobx';
+import {observable, setter} from 'hoist/mobx';
 import {ChartModel} from 'hoist/highcharts';
 import {fmtDate} from 'hoist/format';
 
 export class VisitsChartModel {
 
-    @observable startDate = moment().subtract(3, 'months').toDate();
-    @observable endDate =  moment().toDate();
+    @observable @setter startDate = moment().subtract(3, 'months').toDate();
+    @observable @setter endDate =  new Date();
     @observable @setter username = '';
 
     chartModel = new ChartModel({
@@ -40,12 +40,17 @@ export class VisitsChartModel {
     });
 
     async loadAsync() {
+        const {startDate, endDate, username} = this;
+
+        if ((!this.isValidDate(startDate)) || !this.isValidDate(endDate)) return;
+
+
         return XH.fetchJson({
             url: 'trackLogAdmin/dailyVisitors',
             params: {
-                startDate: fmtDate(this.startDate, 'YYYYMMDD'),
-                endDate: fmtDate(this.endDate, 'YYYYMMDD'),
-                username: this.username
+                startDate: fmtDate(startDate, 'YYYYMMDD'),
+                endDate: fmtDate(endDate, 'YYYYMMDD'),
+                username: username
             }
         }).then(data => {
             this.chartModel.setSeries(this.getSeriesData(data));
@@ -55,18 +60,6 @@ export class VisitsChartModel {
     //----------------
     // Implementation
     //----------------
-    @action
-    setStartDate(date) {
-        if (!this.isValidDate(date) || moment(date).isSame(this.startDate)) return;
-        this.startDate = date;
-    }
-
-    @action
-    setEndDate(date) {
-        if (!this.isValidDate(date) || moment(date).isSame(this.endDate)) return;
-        this.endDate = date;
-    }
-
     isValidDate(date) {
         return date && date.toString() !== 'Invalid Date';
     }

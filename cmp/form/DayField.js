@@ -6,33 +6,24 @@
  */
 
 
-import {Component} from 'react';
 import moment from 'moment';
 import {fmtDate} from 'hoist/format';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {dateInput} from 'hoist/kit/blueprint';
 
-import {bindableField} from './BindableField';
+import {HoistField} from './HoistField';
 
 
 /**
- * A calendar control for choosing a date
+ * A Calendar Control for choosing a Day.
  *
- * @prop value, date
- * @prop onChange, handler to fire when value changes
- * @prop model, model to bind to
- * @prop field, name of property in model to bind to
- * @prop disabled, is control disabled
- * @prop style
- * @prop className
+ * @prop rest, see properties for HoistField
  *
  * @prop width, width of field
- * @prop onCommit, handler to call when enter or tab pressed, or popover closed
  * @prop popoverPosition, 'top' | 'bottom' |  'auto' (auto determined),
  */
-@bindableField
 @hoistComponent()
-export class DayField extends Component {
+export class DayField extends HoistField {
 
     static defaultProps = {
         popoverPosition: 'auto'
@@ -41,19 +32,24 @@ export class DayField extends Component {
     delegateProps = ['className', 'disabled']
 
     render() {
-        const {width, onCommit, popoverPosition, style} = this.props;
+        const {width, popoverPosition, style} = this.props;
 
         return dateInput({
-            value: this.readValue(),
+            value: this.renderValue,
             onChange: this.onChange,
             formatDate: this.formatDate,
             parseDate: this.parseDate,
-            inputProps: {style: {...style, width}},
+            inputProps: {
+                style: {...style, width},
+                onKeyPress: this.onKeyPress,
+                onBlur: this.onBlur,
+                onFocus: this.onFocus
+            },
             popoverProps: {
                 minimal: true,
                 usePortal: true,
                 position: popoverPosition,
-                popoverWillClose: onCommit
+                popoverWillClose: this.onPopoverWillClose
             },
             dayPickerProps: {fixedWeeks: true},
             ...this.getDelegateProps()
@@ -65,11 +61,19 @@ export class DayField extends Component {
     }
 
     parseDate(dateString) {
-        return moment(dateString).toDate();
+        return moment(dateString, 'YYYY-MM-DD', true).toDate();
     }
 
     onChange = (date) => {
         this.noteValueChange(date);
+    }
+
+    onKeyPress = (ev) => {
+        if (ev.key == 'Enter') this.doCommit();
+    }
+
+    onPopoverWillClose = (ev) => {
+        this.doCommit();
     }
 }
 export const dayField = elemFactory(DayField);
