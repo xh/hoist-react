@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {BaseService} from './BaseService';
-import {cloneDeep, debounce, isEmpty, isEqual} from 'lodash';
+import {cloneDeep, debounce, isNil, isEqual} from 'lodash';
 import {XH} from 'hoist/core';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
 
@@ -102,7 +102,7 @@ export class PrefService extends BaseService {
 
         for (let key in data) {
             if (data[key].local) {
-                data[key].value = !isEmpty(localPrefs[key]) ? localPrefs[key] : data[key].defaultValue;
+                data[key].value = !isNil(localPrefs[key]) ? localPrefs[key] : data[key].defaultValue;
             }
         }
     }
