@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {hoistComponent} from 'hoist/core';
 import {vframe} from 'hoist/layout';
-import {collapsible} from 'hoist/cmp';
+import {resizable} from 'hoist/cmp';
 
 import {activityGrid} from './ActivityGrid';
 import {ActivityGridModel} from './ActivityGridModel';
@@ -23,9 +23,10 @@ export class ActivityPanel extends Component {
     render() {
         return vframe(
             activityGrid({model: this.activityGridModel}),
-            collapsible({
-                side: 'bottom',
+            resizable({
+                side: 'top',
                 contentSize: 250,
+                prefName: 'xhAdminActivityChartSize',
                 item: visitsChart({model: this.visitsChartModel})
             })
         );
