@@ -46,7 +46,7 @@ export class UserPanel extends Component {
     }
 
     onRefreshClick = () => {
-        return this.model.loadAsync();
+        this.loadAsync();
     }
 
     async loadAsync() {
