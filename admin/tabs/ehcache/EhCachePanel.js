@@ -61,11 +61,6 @@ export class EhCachePanel extends Component {
         return this.ehCacheModel.loadAsync();
     }
 
-    renderCachesCount() {
-        const store = this.gridModel.store;
-        return label(store.count + ' caches');
-    }
-
     async loadAsync() {
         return this.ehCacheModel.loadAsync();
     }
