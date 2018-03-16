@@ -12,6 +12,19 @@ import {hoistModel} from 'hoist/core';
  */
 export class BaseAppModel {
 
+    /**
+     * Should applications display a logout option - i.e. for apps using form-based auth
+     * where logging out is a supported operation. Expected to be false for SSO apps.
+     */
+    enableLogout = true;
+
+    /**
+     * Is SSO authentication expected / required for this application? If true, will
+     * prevent display of the loginPanel form and instead display a lockoutPanel if the
+     * user cannot be identified.
+     */
+    requireSSO = false;
+
     constructor() {
         hoistModel.appModel = this;
     }

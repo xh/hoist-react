@@ -61,7 +61,7 @@ class HoistModel {
     /** Show about dialog? **/
     @observable @setter showAbout = false;
 
-    /** Top level model for theApp **/
+    /** Top level model for the App - assigned via BaseAppModel's constructor **/
     appModel = null;
 
     /**

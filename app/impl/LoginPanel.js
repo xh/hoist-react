@@ -15,6 +15,10 @@ import {MessageModel, message} from 'hoist/cmp';
 
 import './LoginPanel.scss';
 
+/**
+ * A minimal username / password prompt for applications using form-based authentication.
+ * Automatically created and displayed if required by AppContainer.
+ */
 @hoistComponent()
 export class LoginPanel extends Component {
 
@@ -71,10 +75,11 @@ export class LoginPanel extends Component {
             })
         });
     }
-    
-    //--------------------------------
+
+
+    //------------------------
     // Implementation
-    //--------------------------------
+    //------------------------
     onSubmit = () => {
         const {username, password} = this;
         return XH.fetchJson({

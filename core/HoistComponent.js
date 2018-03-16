@@ -79,8 +79,8 @@ export function hoistComponent({isObserver = true} = {}) {
 /**
  * Create an elementFactory for a HoistComponent.
  */
-export function hoistComponentFactory(C) {
-    return elemFactory(hoistComponent()(C));
+export function hoistComponentFactory(C, hcArgs = {}) {
+    return elemFactory(hoistComponent(hcArgs)(C));
 }
 
 //-----------------------------------

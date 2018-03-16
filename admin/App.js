@@ -6,22 +6,22 @@
  */
 
 import {Component} from 'react';
-import {XH, hoistModel} from 'hoist/core';
-import {hoistApp} from 'hoist/app';
+import {XH, elemFactory, hoistModel, hoistComponent} from 'hoist/core';
 import {vframe, frame} from 'hoist/layout';
+import {lockoutPanel} from 'hoist/app/impl';
 import {navbar, navbarGroup, navbarHeading, button, Intent} from 'hoist/kit/blueprint';
 import {tabContainer} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
-import {AppModel} from './AppModel';
 import './App.scss';
 
-@hoistApp
+@hoistComponent()
 export class App extends Component {
-
-    static model = new AppModel();
-
     render() {
+        if (!XH.identityService.user.isHoistAdmin) {
+            return lockoutPanel({message: 'Access to this area requires administrator permissions.'});
+        }
+
         return vframe({
             items: [
                 this.renderNavBar(),
@@ -59,6 +59,13 @@ export class App extends Component {
                             onClick: this.onThemeToggleClick
                         }),
                         button({
+                            icon: Icon.logout(),
+                            intent: Intent.DANGER,
+                            hidden: true,
+                            onClick: this.onLogoutClick,
+                            omit: !this.model.enableLogout
+                        }),
+                        button({
                             icon: Icon.refresh(),
                             intent: Intent.SUCCESS,
                             onClick: this.onRefreshClick
@@ -77,7 +84,12 @@ export class App extends Component {
         hoistModel.toggleTheme();
     }
 
+    onLogoutClick = () => {
+        XH.identityService.logoutAsync();
+    }
+
     onRefreshClick = () => {
         XH.appModel.requestRefresh();
     }
 }
+export const app = elemFactory(App);
