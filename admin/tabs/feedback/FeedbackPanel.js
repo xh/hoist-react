@@ -45,7 +45,7 @@ export class FeedbackPanel extends Component {
             add: false,
             edit: false
         },
-        unitConfig: {singular: 'report', plural: 'reports'},
+        unit: 'report',
         filterFields: ['username', 'msg'],
         columns: [
             baseCol({

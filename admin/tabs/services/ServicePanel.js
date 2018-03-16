@@ -43,7 +43,7 @@ export class ServicePanel extends Component {
             filler(),
             storeCountLabel({
                 store,
-                unitConfig: {singular: 'service', plural: 'services'}
+                unit: 'service'
             }),
             storeFilterField({
                 store,

@@ -56,7 +56,7 @@ export class PreferencePanel extends Component {
 
     gridModel = new RestGridModel({
         store: this.store,
-        unitConfig: {singular: 'preference', plural: 'preferences'},
+        unit: 'preference',
         filterFields: ['name'],
         actionWarning: {
             edit: 'Are you sure you want to edit? Editing preferences can break running apps!',

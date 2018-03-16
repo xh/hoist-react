@@ -60,7 +60,8 @@ export class ClientErrorPanel extends Component {
             filler(),
             storeCountLabel({
                 store: this.model.store,
-                unitConfig: {singular: 'client error', plural: 'client errors'}}),
+                unit: 'client error'
+            }),
             button({
                 icon: Icon.download(),
                 onClick: this.onExportClick

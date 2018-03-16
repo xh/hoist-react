@@ -59,7 +59,7 @@ export class ActivityGrid extends Component {
             filler(),
             storeCountLabel({
                 store: this.model.store,
-                unitConfig: {singular: 'log', plural: 'logs'}
+                unit: 'log'
             }),
             button({
                 icon: Icon.download(),

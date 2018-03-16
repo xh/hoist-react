@@ -53,7 +53,7 @@ export class UserPreferencePanel extends Component {
 
     gridModel = new RestGridModel({
         store: this.store,
-        unitConfig: {singular: 'preference', plural: 'preferences'},
+        unit: 'preference',
         filterFields: ['name', 'username'],
         columns: [
             nameCol({fixedWidth: 200}),

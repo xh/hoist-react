@@ -44,7 +44,7 @@ export class RestGridModel {
      *
      * @param actionEnabled, map of action (e.g. 'add'/'edit'/'delete') to boolean  See default prop
      * @param actionWarning, map of action (e.g. 'add'/'edit'/'delete') to string.  See default prop.
-     * @param unitConfig, map of singular and plural names to describe this grid's records
+     * @param unit, string describing the name records in this grid
      * @param filterFields, array of strings, names of fields to include in this grid's quick filter logic
      * @param editors, array of editors
      * @param rest, arguments for GridModel.
@@ -52,14 +52,14 @@ export class RestGridModel {
     constructor({
         actionEnabled,
         actionWarning,
-        unitConfig,
+        unit,
         filterFields,
         editors = [],
         ...rest
     }) {
         this.actionEnabled = Object.assign(this.actionEnabled, actionEnabled);
         this.actionWarning = Object.assign(this.actionWarning, actionWarning);
-        this.unitConfig = unitConfig;
+        this.unit = unit;
         this.filterFields = filterFields;
         this.gridModel = new GridModel({contextMenuFn: this.contextMenuFn, ...rest});
         this.formModel = new RestFormModel({parent: this, editors});

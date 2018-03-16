@@ -38,7 +38,7 @@ export class LogLevelPanel extends Component {
 
     gridModel = new RestGridModel({
         store: this.store,
-        unitConfig: {singular: 'log level', plural: 'log levels'},
+        unit: 'log level',
         filterFields: ['name'],
         columns: [
             nameCol({minWidth: 200, flex: 1}),

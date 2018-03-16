@@ -41,7 +41,7 @@ export class UserPanel extends Component {
             filler(),
             storeCountLabel({
                 store,
-                unitConfig: {singular: 'user', plural: 'users'}
+                unit: 'user'
             }),
             storeFilterField({
                 store,

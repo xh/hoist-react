@@ -17,7 +17,7 @@ export class RestGridToolbar extends Component {
     render() {
         const model = this.model,
             store = model.store,
-            unitConfig = model.unitConfig,
+            unit = model.unit,
             singleRecord = model.selection.singleRecord,
             actionEnabled = model.actionEnabled;
 
@@ -45,7 +45,7 @@ export class RestGridToolbar extends Component {
                 omit: !actionEnabled.del
             }),
             filler(),
-            storeCountLabel({store, unitConfig}),
+            storeCountLabel({store, unit}),
             storeFilterField({store, fields: model.filterFields}),
             button({icon: Icon.download(), onClick: this.onExportClick})
         );
@@ -68,7 +68,7 @@ export class RestGridToolbar extends Component {
 
     onExportClick = () => {
         const model = this.model,
-            fileName = model.unitConfig.singular;
+            fileName = model.unit;
         model.gridModel.exportDataAsExcel({fileName});
     }
 }
