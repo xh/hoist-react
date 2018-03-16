@@ -22,6 +22,8 @@ body {
   --xh-bg-color-grid: var(--bg-color-grid, var(--xh-bg-color));
   --xh-bg-color-grid-odd: var(--bg-color-grid-odd, var(--xh-bg-color-alt));
   --xh-bg-color-highlight: var(--bg-color-highlight, rgba(2, 136, 209, 0.3));
+  --xh-bg-color-scrollbar: var(--bg-color-scrollbar, var(--xh-gray-dark));
+  --xh-bg-color-scrollbar-thumb: var(--bg-color-scrollbar, var(--xh-gray));
   --xh-border-color: var(--border-color, var(--xh-gray));
   --xh-border-color-grid: var(--border-color-grid, var(--xh-border-color));
   --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
@@ -100,17 +102,17 @@ body.xh-app {
 
   ::-webkit-scrollbar {
     -webkit-appearance: none;
-    background-color: #696969;
+    background-color: var(--xh-bg-color-scrollbar);
     width: 10px;
     height: 10px;
   }
 
-  ::-webkit-scrollbar-thumb {
-    background-color: #8c8c8c;
+  ::-webkit-scrollbar-corner {
+    background-color: var(--xh-bg-color-scrollbar);
   }
 
-  ::-webkit-scrollbar-corner {
-    background-color: #696969;
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--xh-bg-color-scrollbar-thumb);
   }
 
   h1, h2, h3, h4, h5 {
