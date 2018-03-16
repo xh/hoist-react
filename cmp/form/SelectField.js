@@ -13,10 +13,11 @@ import {HoistField} from './HoistField';
 
 /**
  * A Select Field
- **
+ *
+ * @prop rest, see properties for HoistField
+ *
  * @prop options, collection of form [{value: object, label: string}, ...] or [val, val, ...]
  * @prop placeholder, text to display when control is empty
- * @prop rest, see properties for HoistField
  */
 @hoistComponent()
 export class SelectField extends HoistField {

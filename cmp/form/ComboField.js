@@ -12,12 +12,13 @@ import {Classes, menuItem, suggest} from 'hoist/kit/blueprint';
 import {HoistField} from './HoistField';
 
 /**
- * A ComboBox Field
- **
+ * ComboBox Field
+ *
+ * @prop rest, see properties for HoistField
+ *
  * @prop options, collection of form [{value: string, label: string}, ...] or [val, val, ...]
  * @prop placeholder, text to display when control is empty
  * @prop width, width of field, in pixels
- * @prop rest, see properties for HoistField
  */
 @hoistComponent()
 export class ComboField extends HoistField {

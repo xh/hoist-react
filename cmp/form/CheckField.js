@@ -13,10 +13,11 @@ import {checkbox} from 'hoist/kit/blueprint';
 import {HoistField} from './HoistField';
 
 /**
- * A CheckBox field for editing a boolean value
+ * CheckBox Field
  *
- * @prop text, name of field
  * @prop rest, see properties for HoistField
+ *
+ * @prop text, name for labelling field
  */
 @hoistComponent()
 export class CheckField extends HoistField {

@@ -15,11 +15,12 @@ import {HoistField} from './HoistField';
 
 
 /**
- * A calendar control for choosing a date
+ * A Calendar Control for choosing a Day.
+ *
+ * @prop rest, see properties for HoistField
  *
  * @prop width, width of field
  * @prop popoverPosition, 'top' | 'bottom' |  'auto' (auto determined),
- * @prop rest, see properties for HoistField
  */
 @hoistComponent()
 export class DayField extends HoistField {

@@ -13,10 +13,12 @@ import {HoistField} from './HoistField';
 /**
  * A Text Input Field
  *
+ * @prop rest, see general properties for HoistField
+ *
  * @prop autoFocus
  * @prop type, 'text' or 'password'
  * @prop placeholder, text to display when control is empty
- * @prop width, width of field, in pixels,
+ * @prop width, width of field, in pixels
  */
 @hoistComponent()
 export class TextField extends HoistField {
