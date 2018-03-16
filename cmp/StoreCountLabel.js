@@ -6,12 +6,10 @@
  */
 
 import {Component} from 'react';
-import {mixin} from 'lodash';
-import _inflection from 'lodash-inflection';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {label} from 'hoist/cmp';
+import {singularize, pluralize} from 'hoist/utils/JsUtils';
 
-mixin(_inflection);
 /**
  * A Component that can bind to any store, provides a label for the records count
  */
@@ -23,8 +21,8 @@ class StoreCountLabel extends Component {
     constructor(props) {
         super(props);
         const unit = props.unit || this.defaultUnit;
-        this.oneUnit = _inflection.singularize(unit);
-        this.manyUnits = _inflection.pluralize(unit);
+        this.oneUnit = singularize(unit);
+        this.manyUnits = pluralize(unit);
     }
 
     render() {
