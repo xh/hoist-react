@@ -46,7 +46,7 @@ export class DashboardPanel extends Component {
             edit: 'Are you sure you want to edit this user\'s dashboard?',
             del: 'Are you sure you want to delete this user\'s dashboard?'
         },
-        recName: 'dashboard',
+        unitConfig: {singular: 'dashboard', plural: 'dashboards'},
         filterFields: ['appCode', 'username'],
 
         columns: [

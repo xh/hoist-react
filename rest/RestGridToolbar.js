@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {button} from 'hoist/kit/blueprint';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {filler} from 'hoist/layout';
-import {label, storeFilterField, toolbar} from 'hoist/cmp';
+import {storeCountLabel, storeFilterField, toolbar} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 import {fmtDate} from 'hoist/format';
 
@@ -48,8 +48,8 @@ export class RestGridToolbar extends Component {
                     omit: !actionEnabled.del
                 },
                 filler(),
-                this.renderRecordCount(),
-                storeFilterField({store: this.model.store, fields: this.model.filterFields}),
+                storeCountLabel({store: model.store, unitConfig: model.unitConfig}),
+                storeFilterField({store: model.store, fields: model.filterFields}),
                 button({icon: Icon.download(), onClick: this.onExportClick})
             ]
         });
@@ -71,14 +71,9 @@ export class RestGridToolbar extends Component {
     }
 
     onExportClick = () => {
-        const fileName = `${this.model.recName }s: ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`;
-        this.model.gridModel.exportDataAsExcel({fileName});
-    }
-
-    renderRecordCount() {
-        const count = this.model.store.count,
-            recName = this.model.recName || 'record';
-        return label(`${count} ${recName}${count === 1 ? '' : 's'}`); // should we maybe provide both a singular and a plural recName as a config object?
+        const model = this.model,
+            fileName = `${model.unitConfig.plural}: ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`; // can I count on dates? Probably not.
+        model.gridModel.exportDataAsExcel({fileName});
     }
 }
 export const restGridToolbar = elemFactory(RestGridToolbar);
