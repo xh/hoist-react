@@ -65,7 +65,7 @@ export class GridModel {
         const value = params.value,
             fmt = params.column.colDef.valueFormatter;
         if (value !== null && fmt) {
-            return fmt(params);
+            return fmt(value);
         } else {
             return value;
         }
