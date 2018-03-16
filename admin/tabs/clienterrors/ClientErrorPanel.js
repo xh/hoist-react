@@ -27,42 +27,40 @@ export class ClientErrorPanel extends Component {
     }
 
     renderToolbar() {
-        return toolbar({
-            items: [
-                this.dayField({field: 'startDate'}),
-                Icon.angleRight(),
-                this.dayField({field: 'endDate'}),
-                button({
-                    icon: Icon.caretLeft(),
-                    onClick: this.onDateGoBackClick
-                }),
-                button({
-                    icon: Icon.caretRight(),
-                    onClick: this.onDateGoForwardClick,
-                    cls: 'xh-no-pad'
-                }),
-                button({
-                    icon: Icon.arrowToRight(),
-                    onClick: this.onGoToCurrentDateClick,
-                    cls: 'xh-no-pad'
-                }),
-                toolbarSep(),
-                this.textField({field: 'username', placeholder: 'User...'}),
-                this.textField({field: 'error', placeholder: 'Error...'}),
-                button({
-                    icon: Icon.sync(),
-                    onClick: this.onSubmitClick
-                }),
-                filler(),
-                storeCountLabel({
-                    store: this.model.store,
-                    unitConfig: {singular: 'client error', plural: 'client errors'}}),
-                button({
-                    icon: Icon.download(),
-                    onClick: this.onExportClick
-                })
-            ]
-        });
+        return toolbar(
+            this.dayField({field: 'startDate'}),
+            Icon.angleRight(),
+            this.dayField({field: 'endDate'}),
+            button({
+                icon: Icon.caretLeft(),
+                onClick: this.onDateGoBackClick
+            }),
+            button({
+                icon: Icon.caretRight(),
+                onClick: this.onDateGoForwardClick,
+                cls: 'xh-no-pad'
+            }),
+            button({
+                icon: Icon.arrowToRight(),
+                onClick: this.onGoToCurrentDateClick,
+                cls: 'xh-no-pad'
+            }),
+            toolbarSep(),
+            this.textField({field: 'username', placeholder: 'User...'}),
+            this.textField({field: 'error', placeholder: 'Error...'}),
+            button({
+                icon: Icon.sync(),
+                onClick: this.onSubmitClick
+            }),
+            filler(),
+            storeCountLabel({
+                store: this.model.store,
+                unitConfig: {singular: 'client error', plural: 'client errors'}}),
+            button({
+                icon: Icon.download(),
+                onClick: this.onExportClick
+            })
+        );
     }
 
     //-----------------------------

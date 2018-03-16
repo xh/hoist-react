@@ -25,23 +25,21 @@ export class VisitsChart extends Component {
     
     renderToolbar() {
         const model = this.model;
-        return toolbar({
-            items: [
-                Icon.users(),
-                label('Unique Daily Visitors'),
-                filler(),
-                this.dayField({field: 'startDate'}),
-                Icon.angleRight(),
-                this.dayField({field: 'endDate'}),
-                textField({
-                    model,
-                    field: 'username', 
-                    placeholder: 'Username',
-                    width: 120
-                }),
-                button({icon: Icon.sync(), onClick: this.onSubmitClick})
-            ]
-        });
+        return toolbar(
+            Icon.users(),
+            label('Unique Daily Visitors'),
+            filler(),
+            this.dayField({field: 'startDate'}),
+            Icon.angleRight(),
+            this.dayField({field: 'endDate'}),
+            textField({
+                model,
+                field: 'username',
+                placeholder: 'Username',
+                width: 120
+            }),
+            button({icon: Icon.sync(), onClick: this.onSubmitClick})
+        );
     }
 
     //-----------------------------

@@ -28,29 +28,27 @@ export class EhCachePanel extends Component {
 
     renderToolbar() {
         const store = this.model.store;
-        return toolbar({
-            items: [
-                button({
-                    icon: Icon.sync(),
-                    text: 'Clear All',
-                    onClick: this.onClearAllClick
-                }),
-                toolbarSep(),
-                button({
-                    icon: Icon.sync(),
-                    onClick: this.onRefreshClick
-                }),
-                filler(),
-                storeCountLabel({
-                    store: store,
-                    unitConfig: {singular: 'cache', plural: 'caches'}
-                }),
-                storeFilterField({
-                    store: store,
-                    fields: ['name', 'status']
-                })
-            ]
-        });
+        return toolbar(
+            button({
+                icon: Icon.sync(),
+                text: 'Clear All',
+                onClick: this.onClearAllClick
+            }),
+            toolbarSep(),
+            button({
+                icon: Icon.sync(),
+                onClick: this.onRefreshClick
+            }),
+            filler(),
+            storeCountLabel({
+                store: store,
+                unitConfig: {singular: 'cache', plural: 'caches'}
+            }),
+            storeFilterField({
+                store: store,
+                fields: ['name', 'status']
+            })
+        );
     }
 
     onClearAllClick = () => {

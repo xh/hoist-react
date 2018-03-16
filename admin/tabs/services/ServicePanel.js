@@ -27,30 +27,28 @@ export class ServicePanel extends Component {
 
     renderToolbar() {
         const model = this.model;
-        return toolbar({
-            items: [
-                button({
-                    icon: Icon.sync(),
-                    text: 'Clear Caches',
-                    onClick: this.onClearCachesClick,
-                    disabled: model.gridModel.selection.isEmpty
-                }),
-                toolbarSep(),
-                button({
-                    icon: Icon.sync(),
-                    onClick: this.onRefreshClick
-                }),
-                filler(),
-                storeCountLabel({
-                    store: model.store,
-                    unitConfig: {singular: 'service', plural: 'services'}
-                }),
-                storeFilterField({
-                    store: model.store,
-                    fields: ['name']
-                })
-            ]
-        });
+        return toolbar(
+            button({
+                icon: Icon.sync(),
+                text: 'Clear Caches',
+                onClick: this.onClearCachesClick,
+                disabled: model.gridModel.selection.isEmpty
+            }),
+            toolbarSep(),
+            button({
+                icon: Icon.sync(),
+                onClick: this.onRefreshClick
+            }),
+            filler(),
+            storeCountLabel({
+                store: model.store,
+                unitConfig: {singular: 'service', plural: 'services'}
+            }),
+            storeFilterField({
+                store: model.store,
+                fields: ['name']
+            })
+        );
     }
 
     onClearCachesClick = () => {

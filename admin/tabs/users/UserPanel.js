@@ -28,23 +28,21 @@ export class UserPanel extends Component {
 
     renderToolbar() {
         const store = this.model.store;
-        return toolbar({
-            items: [
-                button({
-                    icon: Icon.sync(),
-                    onClick: this.onRefreshClick
-                }),
-                filler(),
-                storeCountLabel({
-                    store: store,
-                    unitConfig: {singular: 'user', plural: 'users'}
-                }),
-                storeFilterField({
-                    store: store,
-                    fields: ['displayName', 'roles']
-                })
-            ]
-        });
+        return toolbar(
+            button({
+                icon: Icon.sync(),
+                onClick: this.onRefreshClick
+            }),
+            filler(),
+            storeCountLabel({
+                store: store,
+                unitConfig: {singular: 'user', plural: 'users'}
+            }),
+            storeFilterField({
+                store: store,
+                fields: ['displayName', 'roles']
+            })
+        );
     }
 
     onRefreshClick = () => {
