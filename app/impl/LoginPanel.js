@@ -12,6 +12,7 @@ import {button, text} from 'hoist/kit/blueprint';
 import {textField, toolbar} from 'hoist/cmp';
 import {observable, computed, setter} from 'hoist/mobx';
 import {MessageModel, message} from 'hoist/cmp';
+import {Icon} from 'hoist/icon';
 
 import './LoginPanel.scss';
 
@@ -66,6 +67,7 @@ export class LoginPanel extends Component {
                         button({
                             text: 'Login',
                             intent: 'primary',
+                            icon: Icon.login(),
                             disabled: !this.isValid,
                             onClick: this.onSubmit
                         })

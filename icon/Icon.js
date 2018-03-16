@@ -48,6 +48,7 @@ export const Icon = {
     hand(p)          {return fa(p, 'hand-paper')},
     home(p)          {return fa(p, 'home')},
     info(p)          {return fa(p, 'info-circle')},
+    login(p)         {return fa(p, 'sign-in')},
     logout(p)        {return fa(p, 'sign-out')},
     mail(p)          {return fa(p, 'envelope')},
     moon(p)          {return fa(p, 'moon')},
