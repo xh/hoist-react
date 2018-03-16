@@ -9,7 +9,7 @@ import {button} from 'hoist/kit/blueprint';
 import {hoistComponent} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {filler, vframe} from 'hoist/layout';
-import {label, storeFilterField, toolbar, toolbarSep} from 'hoist/cmp';
+import {storeCountLabel, storeFilterField, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import {EhCacheModel} from './EhCacheModel';
@@ -27,6 +27,7 @@ export class EhCachePanel extends Component {
     }
 
     renderToolbar() {
+        const store = this.ehCacheModel.store;
         return toolbar({
             items: [
                 button({
@@ -40,9 +41,12 @@ export class EhCachePanel extends Component {
                     onClick: this.onRefreshClick
                 }),
                 filler(),
-                this.renderCachesCount(),
+                storeCountLabel({
+                    store: store,
+                    unitConfig: {singular: 'cache', plural: 'caches'}
+                }),
                 storeFilterField({
-                    store: this.ehCacheModel.store,
+                    store: store,
                     fields: ['name', 'status']
                 })
             ]
@@ -55,12 +59,6 @@ export class EhCachePanel extends Component {
 
     onRefreshClick = () => {
         return this.ehCacheModel.loadAsync();
-    }
-
-    // probably going to turn into it's own cmp
-    renderCachesCount() {
-        const store = this.ehCacheModel.store;
-        return label(store.count + ' caches');
     }
 
     async loadAsync() {

@@ -12,5 +12,6 @@ export * from './tab';
 export * from './toolbar';
 export * from './Collapsible';
 export * from './LoadMask';
+export * from './StoreCountLabel';
 export * from './StoreFilterField';
 export * from './ToastManager';
