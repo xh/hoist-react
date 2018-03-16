@@ -41,11 +41,11 @@ export class EhCachePanel extends Component {
             }),
             filler(),
             storeCountLabel({
-                store: store,
+                store,
                 unitConfig: {singular: 'cache', plural: 'caches'}
             }),
             storeFilterField({
-                store: store,
+                store,
                 fields: ['name', 'status']
             })
         );

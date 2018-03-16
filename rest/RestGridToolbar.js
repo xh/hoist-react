@@ -16,6 +16,8 @@ export class RestGridToolbar extends Component {
 
     render() {
         const model = this.model,
+            store = model.store,
+            unitConfig = model.unitConfig,
             singleRecord = model.selection.singleRecord,
             actionEnabled = model.actionEnabled;
 
@@ -43,8 +45,8 @@ export class RestGridToolbar extends Component {
                 omit: !actionEnabled.del
             }),
             filler(),
-            storeCountLabel({store: model.store, unitConfig: model.unitConfig}),
-            storeFilterField({store: model.store, fields: model.filterFields}),
+            storeCountLabel({store, unitConfig}),
+            storeFilterField({store, fields: model.filterFields}),
             button({icon: Icon.download(), onClick: this.onExportClick})
         );
     }

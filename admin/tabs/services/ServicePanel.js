@@ -26,7 +26,8 @@ export class ServicePanel extends Component {
     }
 
     renderToolbar() {
-        const model = this.model;
+        const model = this.model,
+            store = model.store;
         return toolbar(
             button({
                 icon: Icon.sync(),
@@ -41,11 +42,11 @@ export class ServicePanel extends Component {
             }),
             filler(),
             storeCountLabel({
-                store: model.store,
+                store,
                 unitConfig: {singular: 'service', plural: 'services'}
             }),
             storeFilterField({
-                store: model.store,
+                store,
                 fields: ['name']
             })
         );
