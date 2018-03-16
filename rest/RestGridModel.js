@@ -71,17 +71,23 @@ export class RestGridModel {
     @action
     deleteSelection() {
         const record = this.selection.singleRecord;
-        if (record) {
-            this.store.deleteRecordAsync(record).catchDefault();
-        }
+        if (record) this.deleteRecord(record);
+    }
+
+    @action
+    deleteRecord(record) {
+        this.store.deleteRecordAsync(record).catchDefault();
     }
 
     @action
     editSelection() {
         const record = this.selection.singleRecord;
-        if (record) {
-            this.formModel.openEdit(record);
-        }
+        if (record) this.editRecord(record);
+    }
+
+    @action
+    editRecord(record) {
+        this.formModel.openEdit(record);
     }
 
     contextMenuFn = () => {
@@ -92,11 +98,13 @@ export class RestGridModel {
             },
             {
                 text: 'Edit',
-                action: () => this.editSelection()
+                action: (item, record) => this.editRecord(record),
+                recordsRequired: 1
             },
             {
                 text: 'Delete',
-                action: () => this.confirmDeleteSelection()
+                action: (item, record) => this.confirmDeleteRecord(record),
+                recordsRequired: true
             },
             '-',
             'copy',
@@ -108,14 +116,19 @@ export class RestGridModel {
     }
 
     confirmDeleteSelection() {
+        const record = this.selection.singleRecord;
+        if (record) this.confirmDeleteRecord(record);
+    }
+
+    confirmDeleteRecord(record) {
         const warning = this.actionWarning.del;
         if (warning) {
             this.messageModel.confirm({
                 message: warning,
-                onConfirm: () => this.deleteSelection()
+                onConfirm: () => this.deleteRecord(record)
             });
         } else {
-            this.deleteSelection();
+            this.deleteRecord(record);
         }
     }
 }
