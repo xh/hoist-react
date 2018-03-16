@@ -5,32 +5,22 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-
-import {Component} from 'react';
 import {isObject} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {Classes, menuItem, suggest} from 'hoist/kit/blueprint';
 
-import {bindableField} from './BindableField';
+import {HoistField} from './HoistField';
 
 /**
  * A ComboBox Field
- *
- * @prop value, string
- * @prop onChange, handler to fire when value changes
- * @prop model, model to bind to
- * @prop field, name of property in model to bind to
- * @prop disabled, is control disabled
- * @prop style
- * @prop className
- *
+ **
  * @prop options, collection of form [{value: string, label: string}, ...] or [val, val, ...]
  * @prop placeholder, text to display when control is empty
  * @prop width, width of field, in pixels
+ * @prop rest, see properties for HoistField
  */
-@bindableField
 @hoistComponent()
-export class ComboField extends Component {
+export class ComboField extends HoistField {
 
     static defaultProps = {
         placeholder: 'Select'
@@ -41,7 +31,7 @@ export class ComboField extends Component {
     render() {
         const {style, width, options, disabled} = this.props;
 
-        const value = this.readValue();
+        const value = this.renderValue;
 
         return suggest({
             popoverProps: {popoverClassName: Classes.MINIMAL},
@@ -58,6 +48,9 @@ export class ComboField extends Component {
             inputProps: {
                 value: value === null ? '' : value.toString(),
                 onChange: this.onChange,
+                onKeyPress: this.onKeyPress,
+                onBlur: this.onBlur,
+                onFocus: this.onFocus,
                 style: {...style, width},
                 ...this.getDelegateProps()
             },
@@ -71,6 +64,13 @@ export class ComboField extends Component {
 
     onItemSelect = (val) => {
         this.noteValueChange(val);
+        this.doCommit();
+    }
+
+    onKeyPress = (ev) => {
+        if (ev.key === 'Enter') {
+            this.doCommit();
+        }
     }
 }
 export const comboField = elemFactory(ComboField);

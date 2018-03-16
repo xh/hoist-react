@@ -5,32 +5,21 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-
-import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {numericInput} from 'hoist/kit/blueprint';
-
-import {bindableField} from './BindableField';
+import {HoistField} from './HoistField';
 
 /**
  * A Number Input Field
- *
- * @prop value, number
- * @prop onChange, handler to fire when value changes
- * @prop model, model to bind to
- * @prop field, name of property in model to bind to
- * @prop disabled, is control disabled
- * @prop style
- * @prop className
  *
  * @prop placeholder, text to display when control is empty
  * @prop width, width of field, in pixels
  * @prop min, minimum value
  * @prop max, maximum value
+ * @prop rest, see properties for HoistField
  */
-@bindableField
 @hoistComponent()
-export class NumberField extends Component {
+export class NumberField extends HoistField {
     
     delegateProps = ['className', 'min', 'max', 'placeholder'];
 
@@ -38,8 +27,11 @@ export class NumberField extends Component {
         const {width, style} = this.props;
 
         return numericInput({
-            value: this.readValue(),
+            value: this.renderValue,
             onValueChange: this.onValueChange,
+            onKeyPress: this.onKeyPress,
+            onBlur: this.onBlur,
+            onFocus: this.onFocus,
             style: {...style, width},
             buttonPosition: 'none',
             ...this.getDelegateProps()
@@ -47,8 +39,19 @@ export class NumberField extends Component {
     }
 
     onValueChange = (val, valAsString) => {
-        val = (valAsString === '') ? null : val;
-        this.noteValueChange(val);
+        this.noteValueChange(valAsString);
+    }
+
+    onKeyPress = (ev) => {
+        if (ev.key === 'Enter') this.doCommit();
+    }
+
+    toExternal(val) {
+        return Number.parseFloat(val);
+    }
+
+    toInternal(val) {
+        return val ? val.toString() : '';
     }
 }
 export const numberField = elemFactory(NumberField);
