@@ -42,7 +42,7 @@ export class App extends Component {
                 navbarGroup({
                     align: 'left',
                     items: [
-                        Icon.eye({size: '2x', flip: 'both'}),
+                        Icon.gears({size: '2x'}),
                         navbarHeading(`${XH.appName} Admin`)
                     ]
                 }),
