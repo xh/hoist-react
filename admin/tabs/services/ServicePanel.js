@@ -9,7 +9,7 @@ import {hoistComponent} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {filler, vframe} from 'hoist/layout';
 import {button} from 'hoist/kit/blueprint';
-import {label, storeFilterField, toolbar, toolbarSep} from 'hoist/cmp';
+import {storeCountLabel, storeFilterField, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 import {ServiceModel} from './ServiceModel';
 
@@ -41,7 +41,10 @@ export class ServicePanel extends Component {
                     onClick: this.onRefreshClick
                 }),
                 filler(),
-                this.renderServicesCount(),
+                storeCountLabel({
+                    store: model.store,
+                    unitConfig: {singular: 'service', plural: 'services'}
+                }),
                 storeFilterField({
                     store: model.store,
                     fields: ['name']
@@ -56,11 +59,6 @@ export class ServicePanel extends Component {
 
     onRefreshClick = () => {
         return this.serviceModel.loadAsync();
-    }
-
-    renderServicesCount() {
-        const store = this.serviceModel.store;
-        return label(store.count + ' services');
     }
 
     async loadAsync() {

@@ -9,7 +9,7 @@ import {hoistComponent, elemFactory} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {vframe, filler} from 'hoist/layout';
 import {button} from 'hoist/kit/blueprint';
-import {textField, dayField, label, toolbar, toolbarSep} from 'hoist/cmp';
+import {textField, dayField, storeCountLabel, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 @hoistComponent()
@@ -48,10 +48,19 @@ export class ActivityGrid extends Component {
                 this.textField({field: 'category', placeholder: 'Category...'}),
                 this.textField({field: 'device', placeholder: 'Device...'}),
                 this.textField({field: 'browser', placeholder: 'Browser...'}),
-                button({icon: Icon.sync(), onClick: this.onSubmitClick}),
+                button({
+                    icon: Icon.sync(),
+                    onClick: this.onSubmitClick
+                }),
                 filler(),
-                this.renderLogCount(),
-                button({icon: Icon.download(), onClick: this.onExportClick})
+                storeCountLabel({
+                    store: this.model.store,
+                    unitConfig: {singular: 'log', plural: 'logs'}
+                }),
+                button({
+                    icon: Icon.download(),
+                    onClick: this.onExportClick
+                })
             ]
         });
     }
@@ -104,11 +113,6 @@ export class ActivityGrid extends Component {
 
     onExportClick = () => {
         this.model.exportGrid();
-    }
-
-    renderLogCount() {
-        const store = this.model.gridModel.store;
-        return label(store.count + ' track logs');
     }
 
 }

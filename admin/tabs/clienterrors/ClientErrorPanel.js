@@ -9,7 +9,7 @@ import {hoistComponent} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {filler, vframe} from 'hoist/layout';
 import {button} from 'hoist/kit/blueprint';
-import {textField, dayField, label, toolbar, toolbarSep} from 'hoist/cmp';
+import {textField, dayField, storeCountLabel, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import {ClientErrorModel} from './ClientErrorModel';
@@ -49,10 +49,18 @@ export class ClientErrorPanel extends Component {
                 toolbarSep(),
                 this.textField({field: 'username', placeholder: 'User...'}),
                 this.textField({field: 'error', placeholder: 'Error...'}),
-                button({icon: Icon.sync(), onClick: this.onSubmitClick}),
+                button({
+                    icon: Icon.sync(),
+                    onClick: this.onSubmitClick
+                }),
                 filler(),
-                this.renderErrorCount(),
-                button({icon: Icon.download(), onClick: this.onExportClick})
+                storeCountLabel({
+                    store: this.clientErrorModel.store,
+                    unitConfig: {singular: 'client error', plural: 'client errors'}}),
+                button({
+                    icon: Icon.download(),
+                    onClick: this.onExportClick
+                })
             ]
         });
     }
@@ -92,11 +100,6 @@ export class ClientErrorPanel extends Component {
 
     onDateCommit = () => {
         this.clientErrorModel.loadAsync();
-    }
-
-    renderErrorCount() {
-        const store = this.clientErrorModel.store;
-        return label(store.count + ' client errors');
     }
 
     onSubmitClick = () => {
