@@ -17,12 +17,12 @@ import {ClientErrorModel} from './ClientErrorModel';
 @hoistComponent()
 export class ClientErrorPanel extends Component {
 
-    clientErrorModel = new ClientErrorModel();
+    localModel = new ClientErrorModel();
 
     render() {
         return vframe(
             this.renderToolbar(),
-            grid({model: this.clientErrorModel.gridModel})
+            grid({model: this.model.gridModel})
         );
     }
 
@@ -55,7 +55,7 @@ export class ClientErrorPanel extends Component {
                 }),
                 filler(),
                 storeCountLabel({
-                    store: this.clientErrorModel.store,
+                    store: this.model.store,
                     unitConfig: {singular: 'client error', plural: 'client errors'}}),
                 button({
                     icon: Icon.download(),
@@ -70,7 +70,7 @@ export class ClientErrorPanel extends Component {
     //-----------------------------
     dayField(args) {
         return dayField({
-            model: this.clientErrorModel,
+            model: this.model,
             onCommit: this.onDateCommit,
             popoverPosition: 'bottom',
             width: 100,
@@ -80,37 +80,37 @@ export class ClientErrorPanel extends Component {
 
     textField(args) {
         return textField({
-            model: this.clientErrorModel,
+            model: this.model,
             width: 150,
             ...args
         });
     }
 
     onDateGoBackClick = () => {
-        this.clientErrorModel.adjustDates('subtract');
+        this.model.adjustDates('subtract');
     }
 
     onDateGoForwardClick = () => {
-        this.clientErrorModel.adjustDates('add');
+        this.model.adjustDates('add');
     }
 
     onGoToCurrentDateClick = () => {
-        this.clientErrorModel.adjustDates('subtract', true);
+        this.model.adjustDates('subtract', true);
     }
 
     onDateCommit = () => {
-        this.clientErrorModel.loadAsync();
+        this.loadAsync();
     }
 
     onSubmitClick = () => {
-        this.clientErrorModel.loadAsync();
+        this.loadAsync();
     }
 
     onExportClick = () => {
-        this.clientErrorModel.exportGrid();
+        this.model.exportGrid();
     }
 
     async loadAsync() {
-        return this.clientErrorModel.loadAsync();
+        return this.model.loadAsync();
     }
 }

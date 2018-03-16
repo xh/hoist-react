@@ -16,17 +16,17 @@ import {ServiceModel} from './ServiceModel';
 @hoistComponent()
 export class ServicePanel extends Component {
 
-    serviceModel = new ServiceModel();
+    localModel = new ServiceModel();
 
     render() {
         return vframe(
             this.renderToolbar(),
-            grid({model: this.serviceModel.gridModel})
+            grid({model: this.model.gridModel})
         );
     }
 
     renderToolbar() {
-        const model = this.serviceModel;
+        const model = this.model;
         return toolbar({
             items: [
                 button({
@@ -54,7 +54,7 @@ export class ServicePanel extends Component {
     }
 
     onClearCachesClick = () => {
-        this.serviceModel.clearCaches();
+        this.model.clearCaches();
     }
 
     onRefreshClick = () => {
@@ -62,6 +62,6 @@ export class ServicePanel extends Component {
     }
 
     async loadAsync() {
-        return this.serviceModel.loadAsync();
+        return this.model.loadAsync();
     }
 }

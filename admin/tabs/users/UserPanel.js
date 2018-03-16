@@ -17,17 +17,17 @@ import {UserModel} from './UserModel';
 @hoistComponent()
 export class UserPanel extends Component {
 
-    userModel = new UserModel();
+    localModel = new UserModel();
 
     render() {
         return vframe(
             this.renderToolbar(),
-            grid({model: this.userModel.gridModel})
+            grid({model: this.model.gridModel})
         );
     }
 
     renderToolbar() {
-        const store = this.userModel.store;
+        const store = this.model.store;
         return toolbar({
             items: [
                 button({
@@ -48,10 +48,10 @@ export class UserPanel extends Component {
     }
 
     onRefreshClick = () => {
-        return this.userModel.loadAsync();
+        return this.model.loadAsync();
     }
 
     async loadAsync() {
-        return this.userModel.loadAsync();
+        return this.model.loadAsync();
     }
 }

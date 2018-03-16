@@ -17,17 +17,17 @@ import {EhCacheModel} from './EhCacheModel';
 @hoistComponent()
 export class EhCachePanel extends Component {
 
-    ehCacheModel = new EhCacheModel();
+    localModel = new EhCacheModel();
 
     render() {
         return vframe(
             this.renderToolbar(),
-            grid({model: this.ehCacheModel.gridModel})
+            grid({model: this.model.gridModel})
         );
     }
 
     renderToolbar() {
-        const store = this.ehCacheModel.store;
+        const store = this.model.store;
         return toolbar({
             items: [
                 button({
@@ -54,7 +54,7 @@ export class EhCachePanel extends Component {
     }
 
     onClearAllClick = () => {
-        this.ehCacheModel.clearAll();
+        this.model.clearAll();
     }
 
     onRefreshClick = () => {
@@ -62,7 +62,7 @@ export class EhCachePanel extends Component {
     }
 
     async loadAsync() {
-        return this.ehCacheModel.loadAsync();
+        return this.model.loadAsync();
     }
 
 }
