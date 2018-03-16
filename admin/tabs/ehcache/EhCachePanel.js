@@ -58,7 +58,7 @@ export class EhCachePanel extends Component {
     }
 
     onRefreshClick = () => {
-        return this.ehCacheModel.loadAsync();
+        this.loadAsync();
     }
 
     async loadAsync() {

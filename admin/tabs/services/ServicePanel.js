@@ -58,7 +58,7 @@ export class ServicePanel extends Component {
     }
 
     onRefreshClick = () => {
-        return this.serviceModel.loadAsync();
+        this.loadAsync();
     }
 
     async loadAsync() {

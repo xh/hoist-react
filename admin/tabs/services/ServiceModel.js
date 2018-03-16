@@ -5,6 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {Intent} from 'hoist/kit/blueprint';
+import {SECONDS} from 'hoist/utils/DateTimeUtils';
+import {ToastManager} from 'hoist/cmp';
 import {UrlStore} from 'hoist/data';
 import {GridModel} from 'hoist/grid';
 
@@ -35,8 +38,18 @@ export class ServiceModel {
             url: 'serviceAdmin/clearCaches',
             params: {names}
         }).then(
-            this.loadAsync()
+            this.onClearCacheSuccess()
         ).catchDefault();
+    }
+
+    onClearCacheSuccess = () => {
+        this.loadAsync();
+        ToastManager.getToaster().show({
+            intent: Intent.SUCCESS,
+            message: 'Caches Cleared',
+            icon: 'tick',
+            timeout: 3 * SECONDS
+        });
     }
 
     async loadAsync() {
