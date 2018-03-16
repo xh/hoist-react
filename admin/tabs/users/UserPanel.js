@@ -22,7 +22,12 @@ export class UserPanel extends Component {
     render() {
         return vframe(
             this.renderToolbar(),
-            grid({model: this.model.gridModel})
+            grid({
+                model: this.model.gridModel,
+                gridOptions: {
+                    rowSelection: 'single'
+                }
+            })
         );
     }
 
