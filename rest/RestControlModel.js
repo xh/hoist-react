@@ -49,12 +49,7 @@ export class RestControlModel  {
     @computed
     get type() {
         const {field} = this;
-        let type = field.typeField ? this.getDynamicType(field.typeField) : field.type;
-        if (!type && field.defaultType) {
-            type = field.defaultType;
-        }
-
-        return type;
+        return field.typeField ? this.getDynamicType(field.typeField) : field.type;
     }
 
     //---------------------
@@ -71,7 +66,7 @@ export class RestControlModel  {
             case 'long':
                 return 'number';
             default:
-                return rawType;
+                return rawType || 'string';
         }
     }
 }
