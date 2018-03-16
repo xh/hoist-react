@@ -26,6 +26,10 @@ export class PrefService extends BaseService {
         return this.loadPrefsAsync();
     }
 
+    hasKey(key) {
+        return this._data.hasOwnProperty(key);
+    }
+    
     get(key, defaultValue) {
         const data = this._data;
         let ret = defaultValue;
@@ -79,7 +83,6 @@ export class PrefService extends BaseService {
 
         const response = await XH.fetchJson({
             url: 'hoistImpl/setPrefs',
-            method: 'POST',
             params: {updates: JSON.stringify(this._updates)}
         });
 

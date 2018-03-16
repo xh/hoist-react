@@ -24,7 +24,13 @@ export class ResizableModel {
      * Construct this object.
      */
     constructor({prefName = null, contentSize = 0, isOpen = true}) {
-        const pref = prefName ? XH.getPref(prefName, null) : {};
+
+        if (prefName && !XH.prefService.hasKey(prefName)) {
+            console.warn(`Unknown preference for storing state of resizable: '${prefName}'`);
+            prefName = null;
+        }
+        
+        const pref = prefName ? XH.getPref(prefName) : {};
         this.prefName = prefName;
         this.setContentSize('contentSize' in pref ? pref.contentSize : contentSize);
         this.setIsOpen('isOpen' in pref ? pref.isOpen : isOpen);

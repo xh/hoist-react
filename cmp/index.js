@@ -10,7 +10,7 @@ export * from './form';
 export * from './message';
 export * from './tab';
 export * from './toolbar';
-export * from './resizable/Resizable';
+export * from './resizable';
 export * from './LoadMask';
 export * from './StoreFilterField';
 export * from './ToastManager';
