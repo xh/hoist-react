@@ -6,26 +6,27 @@
  */
 
 import {Component} from 'react';
-import {PropTypes} from 'prop-types';
-import {elemFactory} from 'hoist/core';
+import {PropTypes as PT} from 'prop-types';
+import {elemFactory, hoistComponent} from 'hoist/core';
 import {div} from 'hoist/layout';
-import './ResizeHandle.scss';
+import './Dragger.scss';
 
-class ResizeHandle extends Component {
+@hoistComponent()
+export class Dragger extends Component {
 
     resizeState = null;
 
     static propTypes = {
-        onResizeStart: PropTypes.func,
-        onResize: PropTypes.func,
-        onResizeEnd: PropTypes.func,
-        side: PropTypes.oneOf(['top', 'right', 'bottom', 'left']).isRequired
+        side: PT.oneOf(['top', 'right', 'bottom', 'left']).isRequired,
+        onResizeStart: PT.func,
+        onResize: PT.func,
+        onResizeEnd: PT.func
     };
 
     render() {
         const {side} = this.props;
         return div({
-            cls: `xh-resize-handler ${side}`,
+            cls: `xh-resizable-dragger ${side}`,
             onDrag: this.onDrag,
             onDragStart: this.onDragStart,
             onDragEnd: this.onDragEnd,
@@ -68,4 +69,4 @@ class ResizeHandle extends Component {
         if (onResizeEnd) onResizeEnd();
     }
 }
-export const resizeHandle = elemFactory(ResizeHandle);
+export const dragger = elemFactory(Dragger);

@@ -6,89 +6,101 @@
  */
 
 import {Component} from 'react';
-import {PropTypes} from 'prop-types';
+import {PropTypes as PT} from 'prop-types';
 import {hoistComponent, elemFactory} from 'hoist/core';
-import {setter, observable, action} from 'hoist/mobx';
-import {box, div, hbox, vbox} from 'hoist/layout';
-import {button} from 'hoist/kit/blueprint';
-import {isNil} from 'lodash';
-import {resizeHandle} from './ResizeHandle';
+import {box, hbox, vbox} from 'hoist/layout';
+
+import {ResizableModel} from './ResizableModel';
+import {dragger} from './impl/Dragger';
+import {collapser} from './impl/Collapser';
 import './Resizable.scss';
+
 
 /**
  * A Resizable Container
  *
- * @prop contentSize, integer - Size of the collapsible container. If side is `left` or `right` it
- *       represents the width, otherwise it represents the height.
- * @prop isResizable, object - Can the panel be resized with drag and drop?
- * @prop isCollapsible, boolean - Can the panel be collapsed via collapse/expand toggle button
+ * This component is designed to host a fixed-height/fixed-width child within a flex box.
+ * It will allow the user to manage the fixed size via drag-drop, and button based expand/collapse.
+ *
+ * Applications should provide optional values for isOpen, contentSize, and prefName.
+ * Applications may provide this object with an instance of ResizableModel.
+ *
  * @prop side, string - The side of this container where resizing and collapsing will be done.
- * @prop defaultIsOpen boolean - If set to false this container will be collapsed by default.
+ * @prop isCollapsible, boolean - Can the panel be collapsed via collapse/expand toggle button
+ * @prop isDraggable, object - Can the panel be resized with drag and drop?
+ * @prop side, string - The side of this container where resizing and collapsing will be done.
+ * @prop isOpen, boolean - If the content panel showing?
+ * @prop contentSize, integer - Size of the content panel. If side is `left` or `right` it
+ *       represents the width, otherwise it represents the height.
+ * @prop prefName, string, Preference name to optionally store state in for this component.
  */
 @hoistComponent()
 export class Resizable extends Component {
 
     static propTypes = {
-        isCollapsible: PropTypes.bool,
-        isResizable: PropTypes.bool,
-        defaultIsOpen: PropTypes.bool,
-        side: PropTypes.oneOf(['top', 'right', 'bottom', 'left']),
-        contentSize: PropTypes.number
+        isCollapsible: PT.bool,
+        isDraggable: PT.bool,
+        side: PT.oneOf(['top', 'right', 'bottom', 'left']).isRequired,
+        contentSize: PT.number.isRequired,
+        isOpen: PT.bool,
+        prefName: PT.string,
+        model: PT.object
     };
 
     static defaultProps = {
         isCollapsible: true,
-        isResizable: true,
-        defaultIsOpen: true,
-        side: 'right'
+        isDraggable: true
     };
-
-    // Main state
-    @observable isOpen;
-    @setter @observable contentSize;
-    isLazyState = true;
 
     constructor(props) {
         super(props);
-        const {contentSize, defaultIsOpen} = this.props;
-        if (!isNil(defaultIsOpen)) this.isOpen = defaultIsOpen;
 
-        this.setContentSize(contentSize);
+        if (!props.model) {
+            this.localModel = new ResizableModel({
+                contentSize: props.contentSize,
+                isOpen: props.isOpen,
+                prefName: props.prefName
+            });
+        }
     }
 
-    get sideIsVertical() {
-        const {side} = this.props;
-        return side === 'top' || side === 'bottom';
-    }
-
-    get sideIsAfterContent() {
-        const {side} = this.props;
-        return side === 'right' || side === 'bottom';
-    }
+    get side()              {return this.props.side}
+    get isCollapsible()     {return this.props.isCollapsible}
+    get isDraggable()       {return this.props.isDraggable}
+    get isLazyState()       {return this.model.isLazyState}
+    get contentSize()       {return this.model.contentSize}
+    get isOpen()            {return this.model.isOpen}
+    get isVertical()        {return this.side === 'bottom' || this.side === 'top'}
+    get isContentFirst()    {return this.side === 'right' || this.side === 'bottom'}
 
     render() {
-        // Turn off lazy rendering once opened
-        if (this.isOpen) this.isLazyState = false;
+        const {isVertical, isContentFirst, isCollapsible, isOpen, isDraggable, isLazyState} = this,
+            cmp = isVertical ? vbox : hbox;
 
-        const {sideIsAfterContent, sideIsVertical, isLazyState} = this,
-            {isCollapsible} = this.props,
-            child = isLazyState ? null : this.renderChild(),
-            items = !isCollapsible ? [child] : (sideIsAfterContent ? [child, ...this.getCollapsibleBar()] : [...this.getCollapsibleBar(), child]),
-            cmp = sideIsVertical ? vbox : hbox;
+        let items = [];
+        if (!isLazyState) {
+            items.push(this.renderChild());
+        }
 
-        return cmp({
-            flex: 'none',
-            items: [...items, this.getResizer()]
-        });
+        if (isCollapsible) {
+            const collapser = this.getCollapser();
+            items = (isContentFirst ? [...items, collapser] : [collapser, ...items]);
+        }
+
+        if (isOpen && isDraggable) {
+            items.push(this.getDragger());
+        }
+
+        return cmp({flex: 'none', items});
     }
 
     //----------------------------------------
     // Implementation -- Render Affordances
     //----------------------------------------
     renderChild() {
-        const {isOpen, sideIsVertical, contentSize} = this,
+        const {isOpen, isVertical, contentSize} = this,
             {children} = this.props,
-            type = sideIsVertical ? 'height' : 'width',
+            type = isVertical ? 'height' : 'width',
             size = isOpen ? contentSize : 0;
 
         return box({
@@ -97,69 +109,55 @@ export class Resizable extends Component {
         });
     }
 
-    getCollapsibleBar() {
-        const {isCollapsible} = this.props;
+    //-----------------
+    // Needs Review.
+    //------------------
+    // getCollapsibleBar() {
+    //     const {isCollapsible} = this.props;
+    //
+    //     if (!isCollapsible) return null;
+    //
+    //     const splitter = this.getSplitter(),
+    //         collapseText = this.getCollapseText();
+    //
+    //     return this.sideIsAfterContent ? [collapseText, splitter] : [splitter, collapseText];
+    // }
 
-        if (!isCollapsible) return null;
 
-        const splitter = this.getSplitter(),
-            collapseText = this.getCollapseText();
+    // getCollapseText() {
+    //     const {props, isOpen, sideIsVertical} = this,
+    //         {collapseText} = props;
+    //     if (!collapseText || isOpen) return null;
+    //
+    //     return box({
+    //         cls: `xh-collapse-text ${sideIsVertical ? 'vertical' : 'horizontal'}`,
+    //         item: div(collapseText)
+    //     });
+    // }
 
-        return this.sideIsAfterContent ? [collapseText, splitter] : [splitter, collapseText];
+    getCollapser() {
+        return collapser({
+            side: this.side,
+            isOpen: this.isOpen,
+            onClick: this.onCollapserClick
+        });
     }
 
-    getSplitter() {
-        const {isOpen, sideIsVertical} = this;
-
-        const cmp = sideIsVertical ? hbox : vbox,
-            cfg = {
-                cls: `xh-resizable-splitter ${sideIsVertical ? 'vertical' : 'horizontal'}`,
-                item: button({
-                    cls: 'xh-resizable-splitter-btn',
-                    icon:  this.getChevron(isOpen),
-                    onClick: this.onChevronClick
-                })
-            };
-
-        return cmp(cfg);
-    }
-
-    getChevron(currentlyOpen) {
-        const {sideIsVertical, sideIsAfterContent} = this,
-            directions = [['chevron-up', 'chevron-down'], ['chevron-left', 'chevron-right']],
-            type = sideIsVertical ? 0 : 1,
-            idx = sideIsAfterContent ? 0 : 1;
-
-        return currentlyOpen ? directions[type][idx] : directions[type][1 - idx];
-    }
-
-    getResizer() {
-        return this.isOpen && this.props.isResizable ?
-            resizeHandle({
-                side: this.props.side,
-                onResizeStart: this.onResizeStart,
-                onResizeEnd: this.onResizeEnd,
-                onResize: this.onResize
-            }) : null;
-    }
-
-    getCollapseText() {
-        const {props, isOpen, sideIsVertical} = this,
-            {collapseText} = props;
-        if (!collapseText || isOpen) return null;
-
-        return box({
-            cls: `xh-collapse-text ${sideIsVertical ? 'vertical' : 'horizontal'}`,
-            item: div(collapseText)
+    getDragger() {
+        return dragger({
+            side: this.side,
+            onResizeStart: this.onResizeStart,
+            onResizeEnd: this.onResizeEnd,
+            onResize: this.onResize
         });
     }
 
     //----------------------------
     // Implementation -- Handlers
     //----------------------------
-    @action
-    onChevronClick = () => {
-        this.isOpen = !this.isOpen;
+    onCollapserClick = () => {
+        const model = this.model;
+        model.setIsOpen(!model.isOpen);
     }
 
     onResizeStart = () => {
@@ -170,10 +168,8 @@ export class Resizable extends Component {
         this.startContentSize = null;
     }
 
-    @action
     onResize = (delta) => {
-        this.contentSize = this.startContentSize + delta;
+        this.model.setContentSize(this.startContentSize + delta);
     }
-
 }
 export const resizable = elemFactory(Resizable);
