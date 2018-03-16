@@ -8,6 +8,7 @@
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {label} from 'hoist/cmp';
+import {defaults} from 'lodash';
 
 /**
  * A Component that can bind to any store, provides a label for the records count
@@ -15,10 +16,15 @@ import {label} from 'hoist/cmp';
 @hoistComponent()
 class StoreCountLabel extends Component {
 
+    defaultUnitConfig = {
+        singular: 'record',
+        plural: 'records'
+    }
+
     render() {
-        const model =  this.props.storeCountLabelModel,
-            count = model.store.count,
-            unitConfig = model.unitConfig,
+        const store = this.props.store,
+            count = store.count,
+            unitConfig = defaults(this.props.unitConfig, this.defaultUnitConfig),
             unitLabel = count === 1 ? unitConfig.singular : unitConfig.plural;
         return label(`${count} ${unitLabel}`);
     }

@@ -10,7 +10,7 @@ import {hoistComponent} from 'hoist/core';
 import {grid, GridModel} from 'hoist/grid';
 import {UrlStore} from 'hoist/data';
 import {filler, vframe} from 'hoist/layout';
-import {storeCountLabel, StoreCountLabelModel, storeFilterField, toolbar, toolbarSep} from 'hoist/cmp';
+import {storeCountLabel, storeFilterField, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import {baseCol} from 'hoist/columns/Core';
@@ -33,8 +33,6 @@ export class EhCachePanel extends Component {
             baseCol({field: 'status', minWidth: 120, flex: 1, align: 'right'})
         ]
     });
-
-    storeCountLabelModel = new StoreCountLabelModel({store: this.store, unitConfig: {singular: 'cache', plural: 'caches'}});
     
     render() {
         return vframe(
@@ -44,6 +42,7 @@ export class EhCachePanel extends Component {
     }
 
     renderToolbar() {
+        const store = this.gridModel.store;
         return toolbar({
             items: [
                 button({
@@ -57,9 +56,12 @@ export class EhCachePanel extends Component {
                     onClick: this.onRefreshClick
                 }),
                 filler(),
-                storeCountLabel({storeCountLabelModel: this.storeCountLabelModel}),
+                storeCountLabel({
+                    store: store,
+                    unitConfig: {singular: 'cache', plural: 'caches'}
+                }),
                 storeFilterField({
-                    store: this.gridModel.store,
+                    store: store,
                     fields: ['name', 'status']
                 })
             ]
