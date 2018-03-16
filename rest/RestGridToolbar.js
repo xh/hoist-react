@@ -72,7 +72,7 @@ export class RestGridToolbar extends Component {
 
     onExportClick = () => {
         const model = this.model,
-            fileName = `${model.unitConfig.plural}: ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`; // can I count on dates? Probably not.
+            fileName = model.unitConfig.singular;
         model.gridModel.exportDataAsExcel({fileName});
     }
 }
