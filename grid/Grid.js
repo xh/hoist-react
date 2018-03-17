@@ -25,7 +25,7 @@ class Grid extends Component {
         enableColResize: true,
         deltaRowDataMode: true,
         getRowNodeId: (data) => data.id,
-        rowSelection: 'multiple',
+        rowSelection: 'single',
         allowContextMenuWithControlKey: true,
         defaultColDef: {suppressMenu: true}
     };
