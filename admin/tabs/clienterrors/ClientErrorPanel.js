@@ -9,7 +9,7 @@ import {hoistComponent} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {filler, vframe} from 'hoist/layout';
 import {button} from 'hoist/kit/blueprint';
-import {textField, dayField, label, toolbar, toolbarSep} from 'hoist/cmp';
+import {textField, dayField, storeCountLabel, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import {ClientErrorModel} from './ClientErrorModel';
@@ -17,44 +17,56 @@ import {ClientErrorModel} from './ClientErrorModel';
 @hoistComponent()
 export class ClientErrorPanel extends Component {
 
-    clientErrorModel = new ClientErrorModel();
+    localModel = new ClientErrorModel();
 
     render() {
         return vframe(
             this.renderToolbar(),
-            grid({model: this.clientErrorModel.gridModel})
+            grid({
+                model: this.model.gridModel,
+                gridOptions: {
+                    rowSelection: 'single'
+                }
+            })
         );
     }
 
     renderToolbar() {
-        return toolbar({
-            items: [
-                this.dayField({field: 'startDate'}),
-                Icon.angleRight(),
-                this.dayField({field: 'endDate'}),
-                button({
-                    icon: Icon.caretLeft(),
-                    onClick: this.onDateGoBackClick
-                }),
-                button({
-                    icon: Icon.caretRight(),
-                    onClick: this.onDateGoForwardClick,
-                    cls: 'xh-no-pad'
-                }),
-                button({
-                    icon: Icon.arrowToRight(),
-                    onClick: this.onGoToCurrentDateClick,
-                    cls: 'xh-no-pad'
-                }),
-                toolbarSep(),
-                this.textField({field: 'username', placeholder: 'User...'}),
-                this.textField({field: 'error', placeholder: 'Error...'}),
-                button({icon: Icon.sync(), onClick: this.onSubmitClick}),
-                filler(),
-                this.renderErrorCount(),
-                button({icon: Icon.download(), onClick: this.onExportClick})
-            ]
-        });
+        return toolbar(
+            this.dayField({field: 'startDate'}),
+            Icon.angleRight(),
+            this.dayField({field: 'endDate'}),
+            button({
+                icon: Icon.caretLeft(),
+                onClick: this.onDateGoBackClick
+            }),
+            button({
+                icon: Icon.caretRight(),
+                onClick: this.onDateGoForwardClick,
+                cls: 'xh-no-pad'
+            }),
+            button({
+                icon: Icon.arrowToRight(),
+                onClick: this.onGoToCurrentDateClick,
+                cls: 'xh-no-pad'
+            }),
+            toolbarSep(),
+            this.textField({field: 'username', placeholder: 'User...'}),
+            this.textField({field: 'error', placeholder: 'Error...'}),
+            button({
+                icon: Icon.sync(),
+                onClick: this.onSubmitClick
+            }),
+            filler(),
+            storeCountLabel({
+                store: this.model.store,
+                unit: 'client error'
+            }),
+            button({
+                icon: Icon.download(),
+                onClick: this.onExportClick
+            })
+        );
     }
 
     //-----------------------------
@@ -62,8 +74,8 @@ export class ClientErrorPanel extends Component {
     //-----------------------------
     dayField(args) {
         return dayField({
-            model: this.clientErrorModel,
-            onCommit: this.onDateCommit,
+            model: this.model,
+            onCommit: this.onCommit,
             popoverPosition: 'bottom',
             width: 100,
             ...args
@@ -72,42 +84,38 @@ export class ClientErrorPanel extends Component {
 
     textField(args) {
         return textField({
-            model: this.clientErrorModel,
+            model: this.model,
+            onCommit: this.onCommit,
             width: 150,
             ...args
         });
     }
 
     onDateGoBackClick = () => {
-        this.clientErrorModel.adjustDates('subtract');
+        this.model.adjustDates('subtract');
     }
 
     onDateGoForwardClick = () => {
-        this.clientErrorModel.adjustDates('add');
+        this.model.adjustDates('add');
     }
 
     onGoToCurrentDateClick = () => {
-        this.clientErrorModel.adjustDates('subtract', true);
+        this.model.adjustDates('subtract', true);
     }
 
-    onDateCommit = () => {
-        this.clientErrorModel.loadAsync();
-    }
-
-    renderErrorCount() {
-        const store = this.clientErrorModel.store;
-        return label(store.count + ' client errors');
+    onCommit = () => {
+        this.loadAsync();
     }
 
     onSubmitClick = () => {
-        this.clientErrorModel.loadAsync();
+        this.loadAsync();
     }
 
     onExportClick = () => {
-        this.clientErrorModel.exportGrid();
+        this.model.exportGrid();
     }
 
     async loadAsync() {
-        return this.clientErrorModel.loadAsync();
+        return this.model.loadAsync();
     }
 }

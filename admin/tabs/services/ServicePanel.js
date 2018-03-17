@@ -6,37 +6,61 @@
  */
 import {Component} from 'react';
 import {hoistComponent} from 'hoist/core';
-import {baseCol} from 'hoist/columns/Core';
-import {grid, GridModel} from 'hoist/grid';
-import {UrlStore} from 'hoist/data';
+import {grid} from 'hoist/grid';
+import {filler, vframe} from 'hoist/layout';
+import {button} from 'hoist/kit/blueprint';
+import {storeCountLabel, storeFilterField, toolbar, toolbarSep} from 'hoist/cmp';
+import {Icon} from 'hoist/icon';
+import {ServiceModel} from './ServiceModel';
 
 @hoistComponent()
 export class ServicePanel extends Component {
 
-    gridModel = new GridModel({
-        store: new UrlStore({
-            url: 'serviceAdmin/listServices',
-            processRawData: this.processRawData,
-            fields: ['provider', 'name']
-        }),
-        columns: [
-            baseCol({field: 'provider', fixedWidth: 100}),
-            baseCol({field: 'name', minWidth: 300, flex: 1})
-        ]
-    });
+    localModel = new ServiceModel();
 
     render() {
-        return grid({model: this.gridModel});
+        return vframe(
+            this.renderToolbar(),
+            grid({model: this.model.gridModel})
+        );
+    }
+
+    renderToolbar() {
+        const model = this.model,
+            store = model.store;
+        return toolbar(
+            button({
+                icon: Icon.sync(),
+                text: 'Clear Caches',
+                onClick: this.onClearCachesClick,
+                disabled: model.gridModel.selection.isEmpty
+            }),
+            toolbarSep(),
+            button({
+                icon: Icon.sync(),
+                onClick: this.onRefreshClick
+            }),
+            filler(),
+            storeCountLabel({
+                store,
+                unit: 'service'
+            }),
+            storeFilterField({
+                store,
+                fields: ['name']
+            })
+        );
+    }
+
+    onClearCachesClick = () => {
+        this.model.clearCaches();
+    }
+
+    onRefreshClick = () => {
+        this.loadAsync();
     }
 
     async loadAsync() {
-        return this.gridModel.store.loadAsync();
-    }
-
-    processRawData(rows) {
-        rows.forEach(r => {
-            r.provider = r.name && r.name.indexOf('hoist') === 0 ? 'Hoist' : 'App';
-        });
-        return rows;
+        return this.model.loadAsync();
     }
 }
