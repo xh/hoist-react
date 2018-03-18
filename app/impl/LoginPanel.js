@@ -12,9 +12,14 @@ import {button, text} from 'hoist/kit/blueprint';
 import {textField, toolbar} from 'hoist/cmp';
 import {observable, computed, setter} from 'hoist/mobx';
 import {MessageModel, message} from 'hoist/cmp';
+import {Icon} from 'hoist/icon';
 
 import './LoginPanel.scss';
 
+/**
+ * A minimal username / password prompt for applications using form-based authentication.
+ * Automatically created and displayed if required by AppContainer.
+ */
 @hoistComponent()
 export class LoginPanel extends Component {
 
@@ -62,6 +67,7 @@ export class LoginPanel extends Component {
                         button({
                             text: 'Login',
                             intent: 'primary',
+                            icon: Icon.login(),
                             disabled: !this.isValid,
                             onClick: this.onSubmit
                         })
@@ -71,10 +77,11 @@ export class LoginPanel extends Component {
             })
         });
     }
-    
-    //--------------------------------
+
+
+    //------------------------
     // Implementation
-    //--------------------------------
+    //------------------------
     onSubmit = () => {
         const {username, password} = this;
         return XH.fetchJson({

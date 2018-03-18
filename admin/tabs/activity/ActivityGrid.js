@@ -9,7 +9,7 @@ import {hoistComponent, elemFactory} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {vframe, filler} from 'hoist/layout';
 import {button} from 'hoist/kit/blueprint';
-import {textField, dayField, label, toolbar, toolbarSep} from 'hoist/cmp';
+import {textField, dayField, storeCountLabel, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 @hoistComponent()
@@ -18,42 +18,54 @@ export class ActivityGrid extends Component {
     render() {
         return vframe(
             this.renderToolbar(),
-            grid({model: this.model.gridModel})
+            grid({
+                model: this.model.gridModel,
+                gridOptions: {
+                    rowSelection: 'single'
+                }
+            })
         );
     }
 
     renderToolbar() {
-        return toolbar({
-            items: [
-                this.dayField({field: 'startDate'}),
-                Icon.angleRight(),
-                this.dayField({field: 'endDate'}),
-                button({
-                    icon: Icon.caretLeft(),
-                    onClick: this.onDateGoBackClick
-                }),
-                button({
-                    icon: Icon.caretRight(),
-                    onClick: this.onDateGoForwardClick,
-                    cls: 'xh-no-pad'
-                }),
-                button({
-                    icon: Icon.arrowToRight(),
-                    onClick: this.onGoToCurrentDateClick,
-                    cls: 'xh-no-pad'
-                }),
-                toolbarSep(),
-                this.textField({field: 'username', placeholder: 'User...'}),
-                this.textField({field: 'msg', placeholder: 'Msg...'}),
-                this.textField({field: 'category', placeholder: 'Category...'}),
-                this.textField({field: 'device', placeholder: 'Device...'}),
-                this.textField({field: 'browser', placeholder: 'Browser...'}),
-                button({icon: Icon.sync(), onClick: this.onSubmitClick}),
-                filler(),
-                this.renderLogCount(),
-                button({icon: Icon.download(), onClick: this.onExportClick})
-            ]
-        });
+        return toolbar(
+            this.dayField({field: 'startDate'}),
+            Icon.angleRight(),
+            this.dayField({field: 'endDate'}),
+            button({
+                icon: Icon.caretLeft(),
+                onClick: this.onDateGoBackClick
+            }),
+            button({
+                icon: Icon.caretRight(),
+                onClick: this.onDateGoForwardClick,
+                cls: 'xh-no-pad'
+            }),
+            button({
+                icon: Icon.arrowToRight(),
+                onClick: this.onGoToCurrentDateClick,
+                cls: 'xh-no-pad'
+            }),
+            toolbarSep(),
+            this.textField({field: 'username', placeholder: 'User...'}),
+            this.textField({field: 'msg', placeholder: 'Msg...'}),
+            this.textField({field: 'category', placeholder: 'Category...'}),
+            this.textField({field: 'device', placeholder: 'Device...'}),
+            this.textField({field: 'browser', placeholder: 'Browser...'}),
+            button({
+                icon: Icon.sync(),
+                onClick: this.onSubmitClick
+            }),
+            filler(),
+            storeCountLabel({
+                store: this.model.store,
+                unit: 'log'
+            }),
+            button({
+                icon: Icon.download(),
+                onClick: this.onExportClick
+            })
+        );
     }
     
     //-----------------------------
@@ -62,9 +74,9 @@ export class ActivityGrid extends Component {
     dayField(args) {
         return dayField({
             model: this.model,
-            onCommit: this.onDateCommit,
             popoverPosition: 'bottom',
             width: 100,
+            onCommit: this.onCommit,
             ...args
         });
     }
@@ -72,9 +84,14 @@ export class ActivityGrid extends Component {
     textField(args) {
         return textField({
             model: this.model,
-            width: 120,
+            width: 140,
+            onCommit: this.onCommit,
             ...args
         });
+    }
+
+    onCommit = () => {
+        this.model.loadAsync();
     }
 
     onDateGoBackClick = () => {
@@ -99,11 +116,6 @@ export class ActivityGrid extends Component {
 
     onExportClick = () => {
         this.model.exportGrid();
-    }
-
-    renderLogCount() {
-        const store = this.model.gridModel.store;
-        return label(store.count + ' track logs');
     }
 
 }

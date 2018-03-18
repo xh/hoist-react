@@ -5,4 +5,4 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-export * from './HoistApp';
+export * from './AppContainer';

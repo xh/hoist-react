@@ -83,6 +83,8 @@ export class ConfigPanel extends Component {
             edit: 'Are you sure you want to edit? Editing configs can break running apps!',
             del: 'Are you sure you want to delete? Deleting configs can break running apps!'
         },
+        unit: 'config',
+        filterFields: ['name', 'prodValue', 'betaValue', 'stageValue', 'devValue', 'groupName', 'note'],
 
         columns: this.filterForEnv([
             nameCol({fixedWidth: 200}),
@@ -134,7 +136,9 @@ export class ConfigPanel extends Component {
     }
 
     maskIfPwd(params) {
-        if (params.data.valueType === 'pwd') return '*****';
+        const data = params.data;
+        if (!data) return params;
+        if (data.valueType === 'pwd') return '*****';
         return params.value;
     }
 }

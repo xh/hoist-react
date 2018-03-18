@@ -9,8 +9,7 @@ import {Component} from 'react';
 import {hoistComponent} from 'hoist/core';
 import {hframe, vframe, frame, filler} from 'hoist/layout';
 import {grid} from 'hoist/grid';
-import {collapsible, loadMask, storeFilterField, toolbar} from 'hoist/cmp';
-
+import {resizable, loadMask, storeFilterField, toolbar} from 'hoist/cmp';
 import {logViewerDisplay} from './LogViewerDisplay';
 import {LogViewerModel} from './LogViewerModel';
 import {logViewerToolbar} from './LogViewerToolbar';
@@ -37,9 +36,10 @@ export class LogViewer extends Component {
         return hframe({
             cls: 'xh-log-viewer',
             items: [
-                collapsible({
-                    side: 'left',
-                    contentSize: '250px',
+                resizable({
+                    side: 'right',
+                    contentSize: 250,
+                    isOpen: true,
                     item: vframe(
                         grid({model: files}),
                         toolbar(

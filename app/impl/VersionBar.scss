@@ -1,7 +1,7 @@
 .xh-version-bar {
-  padding: var(--xh-pad-half-px);
   color: white;
   background-color: var(--xh-green);
+  padding: var(--xh-pad-half-px);
 
   &-production {
     background-color: var(--xh-red);
@@ -13,5 +13,6 @@
 
   svg {
     cursor: pointer;
+    margin-left: var(--xh-pad-px);
   }
 }

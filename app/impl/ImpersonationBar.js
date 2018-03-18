@@ -7,13 +7,17 @@
 
 import {Component} from 'react';
 import {XH, elemFactory, hoistComponent} from 'hoist/core';
-import {hbox, vbox, vspacer, filler, div, span} from 'hoist/layout';
+import {vbox, filler, span, box} from 'hoist/layout';
 import {button, popover, hotkeys, hotkey} from 'hoist/kit/blueprint';
-import {comboField} from 'hoist/cmp';
+import {comboField, toolbar} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import {ImpersonationBarModel} from './ImpersonationBarModel';
 
+/**
+ * An admin-only toolbar that provides a UI for impersonating application users, as well as ending
+ * any current impersonation setting. Can be shown via a global Ctrl+i keyboard shortcut.
+ */
 @hoistComponent()
 export class ImpersonationBar extends Component {
 
@@ -34,17 +38,11 @@ export class ImpersonationBar extends Component {
         if (!this.model.isVisible) return span();  // *Not* null, so hotkeys get rendered.
 
         const {impersonating, username} = XH.identityService;
-        return hbox({
-            flex: 'none',
-            cls: 'xh-tbar',
-            style: {
-                color: 'white',
-                backgroundColor: 'midnightblue'
-            },
-            alignItems: 'center',
+        return toolbar({
+            style: {color: 'white', backgroundColor: 'midnightblue'},
             items: [
-                Icon.user({cls: 'xh-mr'}),
-                div(`${impersonating ? 'Impersonating' : ''} ${username}`),
+                Icon.user(),
+                span(`${impersonating ? 'Impersonating' : ''} ${username}`),
                 filler(),
                 this.switchButton(),
                 this.exitButton()
@@ -58,35 +56,31 @@ export class ImpersonationBar extends Component {
         return popover({
             target: button({
                 text: 'Switch User',
-                cls: 'xh-mr',
                 style: {minWidth: 130},
                 onClick: model.openTargetDialog
             }),
             isOpen: model.targetDialogOpen,
             hasBackdrop: true,
-            minimal: true,
-            placement: 'bottom-end',
-            popoverClassName: 'pt-popover-content-sizing',
-            backdropProps: {style: {backgroundColor: 'rgba(255,255,255,0.5)'}},
             content: vbox({
-                justifyContent: 'right',
                 items: [
-                    comboField({
-                        model,
-                        field: 'selectedTarget',
-                        options: model.targets,
-                        placeholder: 'Select User...'
+                    box({
+                        padding: 10,
+                        item: comboField({
+                            model,
+                            field: 'selectedTarget',
+                            options: model.targets,
+                            placeholder: 'Select User...'
+                        })
                     }),
-                    vspacer(5),
-                    hbox(
+                    toolbar(
                         filler(),
                         button({
-                            text: 'Close',
-                            cls: 'xh-mr',
+                            text: 'Cancel',
                             onClick: this.onCloseClick
                         }),
                         button({
                             text: 'OK',
+                            intent: 'primary',
                             onClick: this.onOKClick,
                             disabled: !model.selectedTarget
                         })
@@ -98,7 +92,11 @@ export class ImpersonationBar extends Component {
 
     exitButton() {
         const text = XH.identityService.impersonating ? 'Exit Impersonation' : 'Close';
-        return button({text, icon: Icon.cross(), onClick: this.onExitClick});
+        return button({
+            text,
+            icon: Icon.close(),
+            onClick: this.onExitClick
+        });
     }
 
     //---------------------

@@ -5,12 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-
-import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {div} from 'hoist/layout';
 
-import {bindableField} from './BindableField';
+import {HoistField} from './HoistField';
 /**
  * A simple label for a form.
  *
@@ -19,9 +17,8 @@ import {bindableField} from './BindableField';
  * @prop className
  * @prop width, width of field, in pixels
  */
-@bindableField
 @hoistComponent()
-export class Label extends Component {
+export class Label extends HoistField {
 
     delegateProps = ['className'];
     

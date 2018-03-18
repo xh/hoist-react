@@ -61,7 +61,7 @@ class HoistModel {
     /** Show about dialog? **/
     @observable @setter showAbout = false;
 
-    /** Top level model for theApp **/
+    /** Top level model for the App - assigned via BaseAppModel's constructor **/
     appModel = null;
 
     /**
@@ -77,6 +77,9 @@ class HoistModel {
      * trigger initial authentication and initialization of application.
      */
     async initAsync() {
+        // Add xh-app class to body element to power Hoist CSS selectors
+        document.body.classList.add('xh-app');
+
         return this.fetchService.fetchJson({url: 'auth/authUser'})
             .then(r => this.markAuthenticatedUser(r.authUser.username))
             .catch(() => this.markAuthenticatedUser(null));

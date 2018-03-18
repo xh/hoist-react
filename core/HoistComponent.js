@@ -19,7 +19,7 @@ export function hoistComponent({isObserver = true} = {}) {
         const proto = C.prototype;
 
         //--------------------------------------------------------------------
-        // Convenience Getters.  TODO: Provide via CONTEXT, rather than import?
+        // Convenience Getters.
         //---------------------------------------------------------------------
         addProperty(C, 'darkTheme', {
             get() {return hoistModel.darkTheme}
@@ -79,8 +79,8 @@ export function hoistComponent({isObserver = true} = {}) {
 /**
  * Create an elementFactory for a HoistComponent.
  */
-export function hoistComponentFactory(C) {
-    return elemFactory(hoistComponent()(C));
+export function hoistComponentFactory(C, hcArgs = {}) {
+    return elemFactory(hoistComponent(hcArgs)(C));
 }
 
 //-----------------------------------

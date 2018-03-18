@@ -24,7 +24,7 @@
 // Tabs
 //------------------------
 .pt-tab-panel > div {
-  margin: 0 !important;
+  margin: 0 !important;  // TODO - investigate this....
 }
 
 .pt-tabs:not(.pt-vertical) > .pt-tab-list {
@@ -88,6 +88,9 @@
 //------------------------
 // Forms + Inputs
 //------------------------
+.pt-input {
+  font-size: var(--xh-font-size);
+}
 
 /* Apply blueprint styling to non-blueprint icons within input groups */
 .pt-input-group svg:not(.pt-icon) {

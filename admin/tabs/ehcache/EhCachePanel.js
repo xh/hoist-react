@@ -5,34 +5,62 @@
 * Copyright © 2018 Extremely Heavy Industries Inc.
 */
 import {Component} from 'react';
+import {button} from 'hoist/kit/blueprint';
 import {hoistComponent} from 'hoist/core';
-import {grid, GridModel} from 'hoist/grid';
-import {UrlStore} from 'hoist/data';
-import {baseCol} from 'hoist/columns/Core';
+import {grid} from 'hoist/grid';
+import {filler, vframe} from 'hoist/layout';
+import {storeCountLabel, storeFilterField, toolbar, toolbarSep} from 'hoist/cmp';
+import {Icon} from 'hoist/icon';
 
-import {nameCol} from '../../columns/Columns';
+import {EhCacheModel} from './EhCacheModel';
 
 @hoistComponent()
 export class EhCachePanel extends Component {
 
-    gridModel = new GridModel({
-        store: new UrlStore({
-            url: 'ehCacheAdmin/listCaches',
-            fields: ['name', 'heapSize', 'entries', 'status']
-        }),
-        columns: [
-            nameCol({minWidth: 360, flex: 3}),
-            baseCol({field: 'heapSize', headerName: 'Heap Size (MB)', fixedWidth: 120, align: 'right'}),
-            baseCol({field: 'entries', fixedWidth: 120, align: 'right'}),
-            baseCol({field: 'status', minWidth: 120, flex: 1, align: 'right'})
-        ]
-    });
-    
+    localModel = new EhCacheModel();
+
     render() {
-        return grid({model: this.gridModel});
+        return vframe(
+            this.renderToolbar(),
+            grid({model: this.model.gridModel})
+        );
+    }
+
+    renderToolbar() {
+        const store = this.model.store;
+        return toolbar(
+            button({
+                icon: Icon.sync(),
+                text: 'Clear All',
+                onClick: this.onClearAllClick
+            }),
+            toolbarSep(),
+            button({
+                icon: Icon.sync(),
+                onClick: this.onRefreshClick
+            }),
+            filler(),
+            storeCountLabel({
+                store,
+                unit: 'cache'
+            }),
+            storeFilterField({
+                store,
+                fields: ['name', 'status']
+            })
+        );
+    }
+
+    onClearAllClick = () => {
+        this.model.clearAll();
+    }
+
+    onRefreshClick = () => {
+        this.loadAsync();
     }
 
     async loadAsync() {
-        return this.gridModel.store.loadAsync();
+        return this.model.loadAsync();
     }
+
 }
