@@ -13,7 +13,6 @@ import {Icon} from 'hoist/icon';
 @hoistComponent()
 export class RefreshButton extends Component {
 
-
     render() {
         return button({
             icon: Icon.sync(),
@@ -27,7 +26,6 @@ export class RefreshButton extends Component {
     onRefreshClick = () => {
         this.props.model.loadAsync();
     }
-
 
 }
 export const refreshButton = elemFactory(RefreshButton);

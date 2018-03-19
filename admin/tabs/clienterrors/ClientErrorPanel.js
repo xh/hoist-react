@@ -102,10 +102,6 @@ export class ClientErrorPanel extends Component {
         this.loadAsync();
     }
 
-    onExportClick = () => {
-        this.model.exportGrid();
-    }
-
     async loadAsync() {
         return this.model.loadAsync();
     }

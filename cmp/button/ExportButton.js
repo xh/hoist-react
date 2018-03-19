@@ -13,7 +13,6 @@ import {Icon} from 'hoist/icon';
 @hoistComponent()
 export class ExportButton extends Component {
 
-
     render() {
         return button({
             icon: Icon.download(),
@@ -27,7 +26,6 @@ export class ExportButton extends Component {
     onExportClick = () => {
         this.props.model.exportGrid();
     }
-
 
 }
 export const exportButton = elemFactory(ExportButton);

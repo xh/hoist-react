@@ -59,9 +59,6 @@ export class VisitsChart extends Component {
         this.model.loadAsync();
     }
 
-    onSubmitClick = () => {
-        this.model.loadAsync();
-    }
 }
 
 export const visitsChart = elemFactory(VisitsChart);

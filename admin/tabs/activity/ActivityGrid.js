@@ -101,9 +101,5 @@ export class ActivityGrid extends Component {
         this.model.adjustDates('subtract', true);
     }
 
-    onExportClick = () => {
-        this.model.exportGrid();
-    }
-
 }
 export const activityGrid = elemFactory(ActivityGrid);
