@@ -6,7 +6,7 @@
  */
 
 import {Component, isValidElement} from 'react';
-import fontawesome from '@fortawesome/fontawesome'
+import fontawesome from '@fortawesome/fontawesome';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
 import {defaults, difference, isString, isNumber, isBoolean} from 'lodash';
