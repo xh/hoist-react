@@ -27,9 +27,7 @@ export class ServicePanel extends Component {
                     // ag-grid: groupDefaultExpanded can no longer be boolean. for groupDefaultExpanded=true, use groupDefaultExpanded=9999 instead
                     groupDefaultExpanded: 9999,
                     groupUseEntireRow: true,
-                    groupRowInnerRenderer: function(params) {
-                        return params.value + ' Services';
-                    }
+                    groupRowInnerRenderer: this.groupRowInnerRenderer
                 }
             })
         );
@@ -62,6 +60,9 @@ export class ServicePanel extends Component {
         );
     }
 
+    groupRowInnerRenderer(params) {
+        return params.value + ' Services';
+    }
     onClearCachesClick = () => {
         this.model.clearCaches();
     }
