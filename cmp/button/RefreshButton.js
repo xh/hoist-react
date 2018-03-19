@@ -15,7 +15,7 @@ export class RefreshButton extends Component {
 
     render() {
         return button({
-            icon: Icon.sync(),
+            icon: this.props.icon || Icon.sync(),
             onClick: this.onRefreshClick
         });
     }
@@ -24,7 +24,11 @@ export class RefreshButton extends Component {
     // Implementation
     //---------------------------
     onRefreshClick = () => {
-        this.props.model.loadAsync();
+        if ( this.props.handler) {
+            this.props.handler();
+        } else {
+            this.model.loadAsync();
+        }
     }
 
 }

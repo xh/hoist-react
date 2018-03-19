@@ -15,7 +15,7 @@ export class ExportButton extends Component {
 
     render() {
         return button({
-            icon: Icon.download(),
+            icon: this.props.icon || Icon.download(),
             onClick: this.onExportClick
         });
     }
@@ -24,7 +24,11 @@ export class ExportButton extends Component {
     // Implementation
     //---------------------------
     onExportClick = () => {
-        this.props.model.exportGrid();
+        if (this.props.handler) {
+            this.props.handler();
+        } else {
+            this.model.exportGrid();
+        }
     }
 
 }
