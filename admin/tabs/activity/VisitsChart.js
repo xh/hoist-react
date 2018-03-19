@@ -6,7 +6,6 @@
  */
 
 import {Component} from 'react';
-import {button} from 'hoist/kit/blueprint';
 import {refreshButton, dayField, label, textField, toolbar} from 'hoist/cmp';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {chart} from 'hoist/highcharts';
