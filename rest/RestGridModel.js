@@ -8,7 +8,7 @@ import {action} from 'hoist/mobx';
 import {GridModel} from 'hoist/grid';
 import {MessageModel} from 'hoist/cmp';
 import {GridContextMenu} from 'hoist/grid';
-
+import {pluralize} from 'hoist/utils/JsUtils';
 
 import {RestFormModel} from './RestFormModel';
 
@@ -31,6 +31,9 @@ export class RestGridModel {
         edit: null,
         del: 'Are you sure you want to delete the selected record(s)?'
     }
+
+    unit = null
+    filterFields = null
 
     gridModel = null;
     formModel = null;
@@ -136,5 +139,10 @@ export class RestGridModel {
         } else {
             this.deleteRecord(record);
         }
+    }
+
+    exportGrid = () => {
+        const fileName = pluralize(this.unit);
+        this.gridModel.exportDataAsExcel({fileName});
     }
 }
