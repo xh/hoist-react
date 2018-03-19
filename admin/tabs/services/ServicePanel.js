@@ -28,7 +28,7 @@ export class ServicePanel extends Component {
                     groupDefaultExpanded: 9999,
                     groupUseEntireRow: true,
                     groupRowInnerRenderer: function(params) {
-                        return params.value + ' Services'
+                        return params.value + ' Services';
                     }
                 }
             })
