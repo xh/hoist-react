@@ -142,7 +142,8 @@ export class RestGridModel {
     }
 
     exportGrid = () => {
-        const fileName = pluralize(this.unit);
+        const unit = this.unit || 'record',
+            fileName = pluralize(unit);
         this.gridModel.exportDataAsExcel({fileName});
     }
 }
