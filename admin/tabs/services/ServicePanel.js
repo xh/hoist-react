@@ -9,7 +9,7 @@ import {hoistComponent} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {filler, vframe} from 'hoist/layout';
 import {button} from 'hoist/kit/blueprint';
-import {storeCountLabel, storeFilterField, toolbar, toolbarSep} from 'hoist/cmp';
+import {refreshButton, storeCountLabel, storeFilterField, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 import {ServiceModel} from './ServiceModel';
 
@@ -36,10 +36,7 @@ export class ServicePanel extends Component {
                 disabled: model.gridModel.selection.isEmpty
             }),
             toolbarSep(),
-            button({
-                icon: Icon.sync(),
-                onClick: this.onRefreshClick
-            }),
+            refreshButton({model}),
             filler(),
             storeCountLabel({
                 store,
@@ -54,10 +51,6 @@ export class ServicePanel extends Component {
 
     onClearCachesClick = () => {
         this.model.clearCaches();
-    }
-
-    onRefreshClick = () => {
-        this.loadAsync();
     }
 
     async loadAsync() {

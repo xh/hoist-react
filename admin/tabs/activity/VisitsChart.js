@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {button} from 'hoist/kit/blueprint';
-import {textField, dayField, label, toolbar} from 'hoist/cmp';
+import {refreshButton, dayField, label, textField, toolbar} from 'hoist/cmp';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {chart} from 'hoist/highcharts';
 import {vframe, filler} from 'hoist/layout';
@@ -39,7 +39,7 @@ export class VisitsChart extends Component {
                 onCommit: this.onCommit,
                 width: 120
             }),
-            button({icon: Icon.sync(), onClick: this.onSubmitClick})
+            refreshButton({model})
         );
     }
 

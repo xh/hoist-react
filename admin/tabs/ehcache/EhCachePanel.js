@@ -9,7 +9,7 @@ import {button} from 'hoist/kit/blueprint';
 import {hoistComponent} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {filler, vframe} from 'hoist/layout';
-import {storeCountLabel, storeFilterField, toolbar, toolbarSep} from 'hoist/cmp';
+import {refreshButton, storeCountLabel, storeFilterField, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import {EhCacheModel} from './EhCacheModel';
@@ -27,7 +27,8 @@ export class EhCachePanel extends Component {
     }
 
     renderToolbar() {
-        const store = this.model.store;
+        const model = this.model,
+            store = model.store;
         return toolbar(
             button({
                 icon: Icon.sync(),
@@ -35,10 +36,7 @@ export class EhCachePanel extends Component {
                 onClick: this.onClearAllClick
             }),
             toolbarSep(),
-            button({
-                icon: Icon.sync(),
-                onClick: this.onRefreshClick
-            }),
+            refreshButton({model}),
             filler(),
             storeCountLabel({
                 store,
@@ -53,10 +51,6 @@ export class EhCachePanel extends Component {
 
     onClearAllClick = () => {
         this.model.clearAll();
-    }
-
-    onRefreshClick = () => {
-        this.loadAsync();
     }
 
     async loadAsync() {
