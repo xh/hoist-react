@@ -24,8 +24,6 @@ export class ServicePanel extends Component {
             grid({
                 model: this.model.gridModel,
                 gridOptions: {
-                    groupDefaultExpanded: 1,
-                    groupUseEntireRow: true,
                     groupRowInnerRenderer: this.groupRowInnerRenderer
                 }
             })
