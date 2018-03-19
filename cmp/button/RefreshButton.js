@@ -24,7 +24,7 @@ export class RefreshButton extends Component {
     // Implementation
     //---------------------------
     onRefreshClick = () => {
-        if ( this.props.handler) {
+        if (this.props.handler) {
             this.props.handler();
         } else {
             this.model.loadAsync();
