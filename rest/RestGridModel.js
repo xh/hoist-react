@@ -55,7 +55,7 @@ export class RestGridModel {
     constructor({
         actionEnabled,
         actionWarning,
-        unit,
+        unit = 'record',
         filterFields,
         editors = [],
         ...rest
@@ -142,8 +142,7 @@ export class RestGridModel {
     }
 
     exportGrid = () => {
-        const unit = this.unit || 'record',
-            fileName = pluralize(unit);
+        const fileName = pluralize(this.unit);
         this.gridModel.exportDataAsExcel({fileName});
     }
 }
