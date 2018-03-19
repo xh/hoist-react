@@ -5,7 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
+import {Component, isValidElement} from 'react';
+import fontawesome from '@fortawesome/fontawesome'
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
 import {defaults, difference, isString, isNumber, isBoolean} from 'lodash';
@@ -123,9 +124,16 @@ class Grid extends Component {
             // Prepare menuitem
             if (it.prepareFn) it.prepareFn(it, rec, selection);
 
+            // Convert React FontAwesomeIcon to SVG markup for display in ag-grid's context menu.
+            let icon = it.icon;
+            if (isValidElement(icon)) {
+                const iconDef = fontawesome.findIconDefinition({prefix: 'fas', iconName: icon.props.icon});
+                icon = fontawesome.icon(iconDef).html[0];
+            }
+
             return {
                 name: it.text,
-                icon: it.icon,
+                icon: icon,
                 disabled: (it.disabled || requiredRecordsNotMet || !enabled),
                 action: () => {
                     it.action(it, rec, selection);
