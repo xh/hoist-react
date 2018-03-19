@@ -21,7 +21,17 @@ export class ServicePanel extends Component {
     render() {
         return vframe(
             this.renderToolbar(),
-            grid({model: this.model.gridModel})
+            grid({
+                model: this.model.gridModel,
+                gridOptions: {
+                    // ag-grid: groupDefaultExpanded can no longer be boolean. for groupDefaultExpanded=true, use groupDefaultExpanded=9999 instead
+                    groupDefaultExpanded: 9999,
+                    groupUseEntireRow: true,
+                    groupRowInnerRenderer: function(params) {
+                        return params.value + ' Services'
+                    }
+                }
+            })
         );
     }
 
