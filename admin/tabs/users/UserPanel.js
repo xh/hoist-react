@@ -5,12 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {button} from 'hoist/kit/blueprint';
 import {hoistComponent} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {vframe, filler} from 'hoist/layout';
-import {storeCountLabel, storeFilterField, toolbar} from 'hoist/cmp';
-import {Icon} from 'hoist/icon';
+import {refreshButton, storeCountLabel, storeFilterField, toolbar} from 'hoist/cmp';
 
 import {UserModel} from './UserModel';
 
@@ -32,12 +30,10 @@ export class UserPanel extends Component {
     }
 
     renderToolbar() {
-        const store = this.model.store;
+        const model = this.model,
+            store = model.store;
         return toolbar(
-            button({
-                icon: Icon.sync(),
-                onClick: this.onRefreshClick
-            }),
+            refreshButton({model}),
             filler(),
             storeCountLabel({
                 store,
@@ -48,10 +44,6 @@ export class UserPanel extends Component {
                 fields: ['displayName', 'roles']
             })
         );
-    }
-
-    onRefreshClick = () => {
-        this.loadAsync();
     }
 
     async loadAsync() {
