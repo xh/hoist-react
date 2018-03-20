@@ -27,9 +27,11 @@ export class RefreshButton extends Component {
     }
 
     render() {
+        const {icon, onClick, ...rest} = this.props;
         return button({
-            icon: this.props.icon,
-            onClick: this.props.onClick || this.onRefreshClick
+            icon: icon,
+            onClick: onClick || this.onRefreshClick,
+            ...rest
         });
     }
 

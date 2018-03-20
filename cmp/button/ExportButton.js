@@ -27,9 +27,11 @@ export class ExportButton extends Component {
     }
 
     render() {
+        const {icon, onClick, ...rest} = this.props;
         return button({
-            icon: this.props.icon,
-            onClick: this.props.onClick || this.onExportClick
+            icon: icon,
+            onClick: onClick || this.onExportClick,
+            ...rest
         });
     }
 
