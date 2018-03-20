@@ -9,6 +9,7 @@ import 'codemirror/lib/codemirror.css';
 import 'codemirror/addon/fold/foldgutter.css';
 import 'codemirror/addon/scroll/simplescrollbars.css';
 import 'codemirror/addon/lint/lint.css';
+import 'codemirror/theme/dracula.css'
 
 import * as codemirror from 'codemirror';
 import * as jsonlint from 'jsonlint-mod-fix';
@@ -56,6 +57,7 @@ export class JsonField extends HoistField {
 
     createJsonEditor(taCmp) {
         const editorSpec = {
+            theme: this.darkTheme ? 'dracula' : 'default',
             mode: 'application/json',
             lineNumbers: true,
             autoCloseBrackets: true,
