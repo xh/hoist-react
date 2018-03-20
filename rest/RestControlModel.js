@@ -6,7 +6,7 @@
  */
 
 import {computed} from 'hoist/mobx';
-
+import {isJSON} from 'hoist/utils/JsUtils';
 
 export class RestControlModel  {
 
@@ -36,16 +36,11 @@ export class RestControlModel  {
 
     @computed
     get isValid() {
-        const {field, record, value} = this,
+        const {field, value} = this,
             hasValue = (value != null && value !== '');
-        if (hasValue && field.typeField == 'valueType' && record.valueType == 'json') {
-            try {
-                JSON.parse(value);
-            } catch (e) {
-                return false;
-            }
+        if (hasValue && this.type == 'json') {
+            return isJSON(value);
         }
-
         return hasValue || !field.required;
     }
 

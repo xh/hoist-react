@@ -13,3 +13,4 @@ export * from './TextField';
 export * from './TextAreaField';
 export * from './DayField';
 export * from './Label';
+export * from './JsonField';

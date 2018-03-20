@@ -10,7 +10,7 @@ import {hoistComponent, elemFactory} from 'hoist/core';
 import {fmtDateTime} from 'hoist/format';
 import {hbox} from 'hoist/layout';
 import {controlGroup} from 'hoist/kit/blueprint';
-import {label, comboField, jsonEditor, numberField, selectField, textAreaField, textField}  from 'hoist/cmp';
+import {label, comboField, jsonField, numberField, selectField, textAreaField, textField}  from 'hoist/cmp';
 
 @hoistComponent()
 export class RestControl extends Component {
@@ -37,7 +37,7 @@ export class RestControl extends Component {
         if (type == null) return null;
 
         if (type === 'json') {
-            return this.renderJsonEditor();
+            return this.renderJsonField();
         }
 
         if (editorType === 'textarea') {
@@ -140,19 +140,16 @@ export class RestControl extends Component {
         });
     }
 
-    renderJsonEditor() {
+    renderJsonField() {
         const model = this.model;
-        return jsonEditor({
+        return jsonField({
             model,
             field: 'value',
             cls: 'pt-fill',
             disabled: !model.isEditable,
             // setting size appears to be the only way to get scrollbars
             width: 343,
-            height: 150,
-            jsonEditorSpec: {
-                readOnly: !model.isEditable
-            }
+            height: 150
         });
     }
 }

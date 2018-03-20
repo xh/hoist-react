@@ -30,3 +30,12 @@ export function singularize(string) {
 export function pluralize(string) {
     return _inflection.pluralize(string);
 }
+
+export function isJSON(value) {
+    try {
+        JSON.parse(value);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}

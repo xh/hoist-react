@@ -15,4 +15,3 @@ export * from './LoadMask';
 export * from './StoreCountLabel';
 export * from './StoreFilterField';
 export * from './ToastManager';
-export * from './JsonEditor';
