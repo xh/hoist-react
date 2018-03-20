@@ -33,6 +33,11 @@
     &.ag-row-selected {
       background-color: var(--xh-bg-color-highlight);
     }
+
+    &.ag-row-group {
+      color: white;
+      background-color: var(--xh-bg-color-grid-group);
+    }
   }
 
 }

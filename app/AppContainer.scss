@@ -21,6 +21,7 @@ body {
   --xh-bg-color-alt: var(--bg-color-alt, var(--xh-blue-gray-light));
   --xh-bg-color-grid: var(--bg-color-grid, var(--xh-bg-color));
   --xh-bg-color-grid-odd: var(--bg-color-grid-odd, var(--xh-bg-color-alt));
+  --xh-bg-color-grid-group: var(--bg-color-grid-group, var(--xh-blue-gray));
   --xh-bg-color-highlight: var(--bg-color-highlight, rgba(2, 136, 209, 0.3));
   --xh-bg-color-scrollbar: var(--bg-color-scrollbar, var(--xh-gray-dark));
   --xh-bg-color-scrollbar-thumb: var(--bg-color-scrollbar-thumb, var(--xh-gray));
@@ -48,6 +49,7 @@ body.xh-dark {
   --xh-bg-color-alt: var(--bg-color-alt, var(--xh-blue-gray-dark));
   --xh-bg-color-grid: var(--bg-color-grid, var(--xh-bg-color));
   --xh-bg-color-grid-odd: var(--bg-color-grid-odd, #102027);
+  --xh-bg-color-grid-group: var(--br-color-grid-group, #000000);
   --xh-bg-color-highlight: var(--bg-color-highlight, rgba(2, 136, 209, 0.6));
   --xh-border-color: var(--border-color, #29434e);
   --xh-border-color-grid: var(--border-color-grid, var(--xh-border-color));

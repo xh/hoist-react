@@ -21,7 +21,12 @@ export class ServicePanel extends Component {
     render() {
         return vframe(
             this.renderToolbar(),
-            grid({model: this.model.gridModel})
+            grid({
+                model: this.model.gridModel,
+                gridOptions: {
+                    groupRowInnerRenderer: this.groupRowInnerRenderer
+                }
+            })
         );
     }
 
@@ -49,6 +54,9 @@ export class ServicePanel extends Component {
         );
     }
 
+    groupRowInnerRenderer(params) {
+        return params.value + ' Services';
+    }
     onClearCachesClick = () => {
         this.model.clearCaches();
     }

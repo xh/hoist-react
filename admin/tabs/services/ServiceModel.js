@@ -24,7 +24,12 @@ export class ServiceModel {
     gridModel = new GridModel({
         store: this.store,
         columns: [
-            baseCol({field: 'provider', fixedWidth: 100}),
+            baseCol({
+                field: 'provider',
+                rowGroup: true,
+                hide: true,
+                fixedWidth: 100
+            }),
             baseCol({field: 'name', minWidth: 300, flex: 1})
         ]
     });

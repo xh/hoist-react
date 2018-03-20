@@ -38,6 +38,7 @@ export class RestGrid extends Component {
     // Implementation
     //------------------------
     onRowDoubleClicked = (row) => {
+        if (!row.data) return;
         this.model.formModel.openEdit(row.data);
     }
 }

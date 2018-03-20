@@ -27,7 +27,9 @@ class Grid extends Component {
         getRowNodeId: (data) => data.id,
         rowSelection: 'single',
         allowContextMenuWithControlKey: true,
-        defaultColDef: {suppressMenu: true}
+        defaultColDef: {suppressMenu: true},
+        groupDefaultExpanded: 1,
+        groupUseEntireRow: true
     };
 
     constructor(props) {
