@@ -6,45 +6,116 @@
  */
 import {Component} from 'react';
 import {hoistComponent} from 'hoist/core';
-import {grid, GridModel} from 'hoist/grid';
-import {UrlStore} from 'hoist/data';
-import {vframe} from 'hoist/layout';
-import {baseCol} from 'hoist/columns/Core';
-import {compactDateCol} from 'hoist/columns/DatesTimes';
-import {usernameCol} from '../../columns/Columns';
+import {grid} from 'hoist/grid';
+import {filler, vframe} from 'hoist/layout';
+import {button} from 'hoist/kit/blueprint';
+import {textField, dayField, storeCountLabel, toolbar, toolbarSep} from 'hoist/cmp';
+import {Icon} from 'hoist/icon';
+
+import {ClientErrorModel} from './ClientErrorModel';
 
 @hoistComponent()
 export class ClientErrorPanel extends Component {
 
-    store = new UrlStore({
-        url: 'clientErrorAdmin',
-        fields: [
-            'username', 'error', 'msg', 'browser', 'device',
-            'appVersion', 'appEnvironment', 'dateCreated'
-        ]
-    });
-
-    gridModel = new GridModel({
-        store: this.store,
-        columns: [
-            compactDateCol({field: 'dateCreated', fixedWidth: 100, rightAlign: true}),
-            usernameCol({fixedWidth: 120}),
-            baseCol({field: 'error', minWidth: 450, width: 800}),
-            baseCol({field: 'msg', headerName: 'Message', minWidth: 150, width: 270}),
-            baseCol({field: 'browser', fixedWidth: 100}),
-            baseCol({field: 'device', fixedWidth: 80}),
-            baseCol({field: 'appVersion', fixedWidth: 130}),
-            baseCol({field: 'appEnvironment', fixedWidth: 140})
-        ]
-    });
+    localModel = new ClientErrorModel();
 
     render() {
         return vframe(
-            grid({model: this.gridModel})
+            this.renderToolbar(),
+            grid({
+                model: this.model.gridModel,
+                gridOptions: {
+                    rowSelection: 'single'
+                }
+            })
         );
     }
 
+    renderToolbar() {
+        return toolbar(
+            this.dayField({field: 'startDate'}),
+            Icon.angleRight(),
+            this.dayField({field: 'endDate'}),
+            button({
+                icon: Icon.caretLeft(),
+                onClick: this.onDateGoBackClick
+            }),
+            button({
+                icon: Icon.caretRight(),
+                onClick: this.onDateGoForwardClick,
+                cls: 'xh-no-pad'
+            }),
+            button({
+                icon: Icon.arrowToRight(),
+                onClick: this.onGoToCurrentDateClick,
+                cls: 'xh-no-pad'
+            }),
+            toolbarSep(),
+            this.textField({field: 'username', placeholder: 'User...'}),
+            this.textField({field: 'error', placeholder: 'Error...'}),
+            button({
+                icon: Icon.sync(),
+                onClick: this.onSubmitClick
+            }),
+            filler(),
+            storeCountLabel({
+                store: this.model.store,
+                unit: 'client error'
+            }),
+            button({
+                icon: Icon.download(),
+                onClick: this.onExportClick
+            })
+        );
+    }
+
+    //-----------------------------
+    // Implementation
+    //-----------------------------
+    dayField(args) {
+        return dayField({
+            model: this.model,
+            onCommit: this.onCommit,
+            popoverPosition: 'bottom',
+            width: 100,
+            ...args
+        });
+    }
+
+    textField(args) {
+        return textField({
+            model: this.model,
+            onCommit: this.onCommit,
+            width: 150,
+            ...args
+        });
+    }
+
+    onDateGoBackClick = () => {
+        this.model.adjustDates('subtract');
+    }
+
+    onDateGoForwardClick = () => {
+        this.model.adjustDates('add');
+    }
+
+    onGoToCurrentDateClick = () => {
+        this.model.adjustDates('subtract', true);
+    }
+
+    onCommit = () => {
+        this.loadAsync();
+    }
+
+    onSubmitClick = () => {
+        this.loadAsync();
+    }
+
+    onExportClick = () => {
+        this.model.exportGrid();
+    }
+
     async loadAsync() {
-        return this.store.loadAsync();
+        return this.model.loadAsync();
     }
 }

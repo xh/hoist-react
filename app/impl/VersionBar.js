@@ -7,10 +7,10 @@
 
 import {Component} from 'react';
 import {XH, elemFactory, hoistComponent} from 'hoist/core';
-import {box, hspacer} from 'hoist/layout';
+import {box} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
 import {hoistModel} from 'hoist/core';
-import './VersionBar.css';
+import './VersionBar.scss';
 
 @hoistComponent()
 export class VersionBar extends Component {
@@ -31,7 +31,6 @@ export class VersionBar extends Component {
             cls,
             items: [
                 [XH.appName, env, version].join(' • '),
-                hspacer(5),
                 info
             ]
         });

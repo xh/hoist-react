@@ -46,12 +46,14 @@ export class DashboardPanel extends Component {
             edit: 'Are you sure you want to edit this user\'s dashboard?',
             del: 'Are you sure you want to delete this user\'s dashboard?'
         },
+        unitConfig: {singular: 'dashboard', plural: 'dashboards'},
+        filterFields: ['appCode', 'username'],
 
         columns: [
             baseCol({field: 'appCode', fixedWidth: 140}),
             usernameCol({fixedWidth: 120}),
-            dateTimeCol({field: 'lastUpdated', headerName: 'Last Updated', fixedWidth: 160, rightAlign: true}),
-            baseCol({field: 'definition', minWidth: 120})
+            dateTimeCol({field: 'lastUpdated', headerName: 'Last Updated', fixedWidth: 160, align: 'right'}),
+            baseCol({field: 'definition', minWidth: 120, flex: 1})
         ],
         editors: [
             {field: 'appCode'},

@@ -21,7 +21,7 @@ import 'codemirror/addon/fold/brace-fold.js';
 import 'codemirror/addon/scroll/simplescrollbars.js';
 import 'codemirror/addon/lint/lint.js';
 
-@observer
+@hoistComponent
 export class JsonEditor extends Component {
 
     editor = null
@@ -69,24 +69,20 @@ export class JsonEditor extends Component {
 
         this.addLinter();
         this.editor = codemirror.fromTextArea(taDom, jsonEditorSpec);
+        this.editor.on('change', this.handleEditorChange);
         this.setSize();
-        this.addListeners();
     }
 
     destroyJsonEditor() {
 
     }
 
-    setSize = () => {
+    setSize() {
         if (!(isUndefined(this.props.height) && isUndefined(this.props.width))) {
             const width = isUndefined(this.props.width) ? null : this.props.width,
                 height = isUndefined(this.props.height) ? null : this.props.height;
             this.editor.setSize(width, height);
         }
-    }
-
-    addListeners() {
-        this.editor.on('change', this.handleEditorChange.bind(this));
     }
 
     addLinter() {
@@ -116,9 +112,8 @@ export class JsonEditor extends Component {
         });
     }
 
-    @action
     handleEditorChange = (editor) => {
-        this.props.model.setValue(editor.getValue());
+        this.model.setValue(editor.getValue());
     }
 
     format() {

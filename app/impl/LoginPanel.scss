@@ -1,0 +1,21 @@
+.xh-login {
+  border: 1px solid var(--xh-border-color);
+
+  .pt-input-group {
+    margin: 0 var(--xh-pad-px) var(--xh-pad-px) var(--xh-pad-px);
+  }
+
+  &__title {
+    color: var(--xh-text-color-highlight);
+    background-color: var(--xh-bg-color-highlight);
+    padding: var(--xh-pad-px);
+    font-size: var(--xh-font-size-large-em);
+    margin-bottom: var(--xh-pad-px);
+  }
+
+}
+
+.xh-login-warning {
+  color: red;
+  text-align: center;
+}

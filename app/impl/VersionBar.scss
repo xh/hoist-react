@@ -1,0 +1,18 @@
+.xh-version-bar {
+  color: white;
+  background-color: var(--xh-green);
+  padding: var(--xh-pad-half-px);
+
+  &-production {
+    background-color: var(--xh-red);
+  }
+
+  &-staging {
+    background-color: var(--xh-blue);
+  }
+
+  svg {
+    cursor: pointer;
+    margin-left: var(--xh-pad-px);
+  }
+}

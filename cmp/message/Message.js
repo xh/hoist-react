@@ -8,7 +8,8 @@
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {filler} from 'hoist/layout';
-import {dialog, dialogBody, dialogFooter, dialogFooterActions, button} from 'hoist/kit/blueprint';
+import {toolbar} from 'hoist/cmp';
+import {dialog, dialogBody, button} from 'hoist/kit/blueprint';
 
 /**
  * A modal dialog that supports imperative alert/confirm.
@@ -22,7 +23,6 @@ class Message extends Component {
 
         if (!isOpen) return null;
 
-        // blueprint alert() does not support title, use dialog()
         return dialog({
             isOpen: true,
             isCloseButtonShown: false,
@@ -30,9 +30,7 @@ class Message extends Component {
             icon: model.icon,
             items: [
                 dialogBody(model.message),
-                dialogFooter(
-                    dialogFooterActions(this.getButtons())
-                )
+                toolbar(this.getButtons())
             ],
             ...this.props
         });

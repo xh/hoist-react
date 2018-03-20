@@ -16,7 +16,10 @@
   "globals": {
     "XH": false,
     "xhInlineHoist": false,
-    "xhIsLocalDevelopment": false
+    "xhIsLocalDevelopment": false,
+    "xhAppName": false,
+    "xhAppVersion": false,
+    "xhAppBuild": false
   },
 
   "env": {

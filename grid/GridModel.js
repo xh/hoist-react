@@ -24,7 +24,6 @@ export class GridModel {
     contextMenuFn = null
 
     @observable.ref columns = [];
-    store = null;
 
     static defaultContextMenu = () => {
         return new GridContextMenu([

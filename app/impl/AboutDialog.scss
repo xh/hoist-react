@@ -1,0 +1,24 @@
+.xh-about-dialog {
+  &__inner {
+    background-color: var(--xh-bg-color);
+    padding: var(--xh-pad-px);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th {
+    text-align: right;
+    background-color: var(--xh-bg-color-alt);
+    border: 1px solid var(--xh-border-color);
+    padding: var(--xh-pad-half-px);
+  }
+
+  td {
+    border: 1px solid var(--xh-border-color);
+    padding: var(--xh-pad-half-px);
+  }
+
+}

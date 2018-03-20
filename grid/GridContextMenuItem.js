@@ -19,21 +19,36 @@ export class GridContextMenuItem {
     action;
     items;
     enableFn;
+    prepareFn;
     recordsRequired;
 
     /**
      * Construct this object.
      * @param text, String to be displayed
      * @param icon, optional.
-     * @param action, optional, function to execute on click
      * @param items, optional, child menu items.
      *
-     * @param enableFn, optional, function called to determine if item should be enabled.
+     * @param action, optional, function(item, record, selection).
+     *
+     *          Executed when the user clicks the menuitem.
+     *          It is passed the menuitem, clicked grid record, and current grid selection.
+     *
+     * @param enableFn, optional, function(item, record, selection).
+     *
+     *          The enableFn is a callback that is triggered before each time the menuitem is shown.
+     *          It should return a boolean for whether or not to enable the menuitem.
+     *
+     * @param prepareFn, optional, function(item, record, selection).
+     *
+     *          The prepareFn is a callback that is triggered before each time the menuitem is shown.
+     *          It can be used to modify the menuitem based on the record / selection.
+     *
      * @param recordsRequired how many records must be 'active' (selected and / or clicked upon) for the menuitem to be enabled.
-     *           int: specifies exactly n number of records. Defaults to 1 for single record actions.
+     *
+     *          int: specifies exactly n number of records. Defaults to 1 for single record actions.
      *               Can specify 0 to only enable menuitem if no records are active.
-     *           true: specifies that number of records > 0. Allows for arbitrary number of records.
-     *           false:  specifies any number of records (0 - infinity, inclusive). Always active.
+     *          true: specifies that number of records > 0. Allows for arbitrary number of records.
+     *          false:  specifies any number of records (0 - infinity, inclusive). Always active.
      */
     constructor({
         text,
@@ -41,6 +56,7 @@ export class GridContextMenuItem {
         action = null,
         items = null,
         enableFn = null,
+        prepareFn = null,
         recordsRequired = false
     }) {
         this.text = text;
@@ -48,6 +64,7 @@ export class GridContextMenuItem {
         this.action = action;
         this.items = items;
         this.enableFn = enableFn;
+        this.prepareFn = prepareFn;
         this.recordsRequired = recordsRequired;
     }
 }

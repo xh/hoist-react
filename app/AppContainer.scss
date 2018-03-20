@@ -1,0 +1,131 @@
+/*noinspection CssUnresolvedCustomProperty*/
+
+body {
+  --xh-black: var(--black, #212121);
+  --xh-blue: var(--blue, #1565c0);
+  --xh-blue-light: var(--blue-light, #0288d1);
+  --xh-blue-gray: var(--blue-gray, #546e7a);
+  --xh-blue-gray-light: var(--blue-gray-light, #eceff1);
+  --xh-blue-gray-dark: var(--blue-gray-dark, #263238);
+  --xh-gray: var(--gray, #9e9e9e);
+  --xh-gray-dark: var(--gray-dark, #424242);
+  --xh-gray-light: var(--gray-light, #fafafa);
+  --xh-green: var(--green, #388e3c);
+  --xh-green-trans: rgba(#1b5e20, 0.8);
+  --xh-orange: var(--orange, #ef6c00);
+  --xh-red: var(--red, #b71c1c);
+  --xh-yellow-light: var(--yellow-light, #fffde7);
+
+  /* App color vars - note these are expected to often have an alternate in xh-dark mode */
+  --xh-bg-color: var(--bg-color, white);
+  --xh-bg-color-alt: var(--bg-color-alt, var(--xh-blue-gray-light));
+  --xh-bg-color-grid: var(--bg-color-grid, var(--xh-bg-color));
+  --xh-bg-color-grid-odd: var(--bg-color-grid-odd, var(--xh-bg-color-alt));
+  --xh-bg-color-highlight: var(--bg-color-highlight, rgba(2, 136, 209, 0.3));
+  --xh-bg-color-scrollbar: var(--bg-color-scrollbar, var(--xh-gray-dark));
+  --xh-bg-color-scrollbar-thumb: var(--bg-color-scrollbar-thumb, var(--xh-gray));
+  --xh-border-color: var(--border-color, var(--xh-gray));
+  --xh-border-color-grid: var(--border-color-grid, var(--xh-border-color));
+  --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
+  --xh-grid-header-bg-color: var(--grid-header-bg-color, #cfd8dc);
+  --xh-header-color: var(--header-color, var(--xh-text-color));
+  --xh-mask-bg-color: var(--mask-bg-color, rgba(16, 22, 26, 0.7));
+  --xh-navbar-bg-color: var(--navbar-bg-color, var(--xh-bg-color-alt));
+  --xh-navbar-color: var(--navbar-color, var(--xh-text-color-highlight));
+  --xh-tbar-bg-color: var(--tbar-bg-color, var(--xh-bg-color-alt));
+  --xh-text-color: var(--text-color, var(--xh-blue-gray-dark));
+  --xh-text-color-accent: var(--text-color-accent, var(--xh-blue));
+  --xh-text-color-highlight: var(--text-color-highlight, #37474f);
+  --xh-text-color-muted: var(--text-color-muted, var(--xh-gray));
+  --xh-title-color: var(--title-color, var(--xh-text-color-accent));
+}
+
+body.xh-dark {
+  --xh-green: var(--green, #2e7d32);
+  --xh-green-trans: rgba(#00701a, 0.8);
+
+  --xh-bg-color: var(--bg-color, var(--xh-black));
+  --xh-bg-color-alt: var(--bg-color-alt, var(--xh-blue-gray-dark));
+  --xh-bg-color-grid: var(--bg-color-grid, var(--xh-bg-color));
+  --xh-bg-color-grid-odd: var(--bg-color-grid-odd, #102027);
+  --xh-bg-color-highlight: var(--bg-color-highlight, rgba(2, 136, 209, 0.6));
+  --xh-border-color: var(--border-color, #29434e);
+  --xh-border-color-grid: var(--border-color-grid, var(--xh-border-color));
+  --xh-grid-header-bg-color: var(--grid-header-bg-color, #546e7a);
+  --xh-mask-bg-color: var(--mask-bg-color, rgba(16, 22, 26, 0.8));
+  --xh-navbar-bg-color: var(--navbar-bg-color, var(--xh-bg-color-alt));
+  --xh-navbar-color: var(--navbar-color, var(--xh-text-color));
+  --xh-tbar-bg-color: var(--tbar-bg-color, var(--xh-bg-color-alt));
+  --xh-text-color: var(--text-color, white);
+  --xh-text-color-accent: var(--text-color-accent, var(--xh-orange));
+  --xh-text-color-highlight: var(--text-color-highlight, white);
+  --xh-text-color-muted: var(--text-color-muted, #62757f);
+}
+
+/* Sizing / other vars - these do not switch on xh-dark mode */
+body {
+  --xh-border-radius: var(--border-radius, 0);
+  --xh-border-width: var(--border-width, 1);
+  --xh-border-width-px: calc(var(--xh-border-width) * 1px);
+  --xh-border-dotted: (var(--xh-border-width-px) dotted var(--xh-border-color));
+  --xh-border-solid: (var(--xh-border-width-px) solid var(--xh-border-color));
+  --xh-font-family: var(--font-family, (-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif));
+  --xh-font-family-grid: var(--font-family-grid, var(--xh-font-family));
+  --xh-font-family-mono: var(--font-family-mono, (Monaco, Consolas, monospace));
+  --xh-font-size: var(--font-size, 13);
+  --xh-font-size-px: calc(var(--xh-font-size) * 1px);
+  --xh-font-size-app-title-px: var(--font-size-app-title-px, calc(var(--xh-font-size) * 1.8px));
+  --xh-font-size-large-em: var(--font-size-small-em, 1.2em);
+  --xh-font-size-small-em: var(--font-size-small-em, 0.9em);
+  --xh-pad: var(--pad, 10);
+  --xh-pad-px: calc(var(--xh-pad) * 1px);
+  --xh-pad-double-px: calc(var(--xh-pad) * 2px);
+  --xh-pad-half-px: calc(var(--xh-pad) * 0.5px);
+  --xh-popup-border-width: var(--popup-border-width, var(--xh-border-width));
+  --xh-popup-border-width-px: calc(var(--xh-popup-border-width) * 1px);
+  --xh-tab-border-width: var(--tab-border-width, var(--xh-border-width));
+  --xh-tab-border-width-px: calc(var(--xh-tab-border-width) * 1px);
+}
+
+/* Body */
+body.xh-app {
+  background-color: var(--xh-bg-color);
+  color: var(--xh-text-color);
+  border-color: var(--xh-border-color);
+
+  font-family: var(--xh-font-family);
+  font-size: var(--xh-font-size-px);
+
+  :focus {
+    outline: 0;
+  }
+
+  ::-webkit-scrollbar {
+    -webkit-appearance: none;
+    background-color: var(--xh-bg-color-scrollbar);
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-corner {
+    background-color: var(--xh-bg-color-scrollbar);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--xh-bg-color-scrollbar-thumb);
+  }
+
+  h1, h2, h3, h4, h5 {
+    color: var(--xh-header-color);
+  }
+}
+
+.xh-blue    {color: var(--xh-blue);}
+.xh-gray    {color: var(--xh-gray);}
+.xh-green   {color: var(--xh-green);}
+.xh-orange  {color: var(--xh-orange);}
+.xh-red     {color: var(--xh-red);}
+
+.xh-align-center  {text-align: center;}
+.xh-align-left    {text-align: left;}
+.xh-align-right   {text-align: right;}

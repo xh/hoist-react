@@ -83,15 +83,17 @@ export class ConfigPanel extends Component {
             edit: 'Are you sure you want to edit? Editing configs can break running apps!',
             del: 'Are you sure you want to delete? Deleting configs can break running apps!'
         },
+        unit: 'config',
+        filterFields: ['name', 'prodValue', 'betaValue', 'stageValue', 'devValue', 'groupName', 'note'],
 
         columns: this.filterForEnv([
             nameCol({fixedWidth: 200}),
-            baseCol({field: 'valueType', headerName: 'Type', fixedWidth: 60}),
+            baseCol({field: 'valueType', headerName: 'Type', fixedWidth: 80, align: 'center'}),
             this.valCol({field: 'prodValue', env: 'Production'}),
             this.valCol({field: 'betaValue', env: 'Beta'}),
             this.valCol({field: 'stageValue', env: 'Staging'}),
             this.valCol({field: 'devValue', env: 'Development'}),
-            boolCheckCol({field: 'clientVisible', headerName: 'Client?', fixedWidth: 75, centerAlign: true}),
+            boolCheckCol({field: 'clientVisible', headerName: 'Client?', fixedWidth: 75}),
             baseCol({field: 'groupName', headerName: 'Group', fixedWidth: 100}),
             baseCol({field: 'note', minWidth: 60})
         ]),
@@ -134,7 +136,9 @@ export class ConfigPanel extends Component {
     }
 
     maskIfPwd(params) {
-        if (params.data.valueType === 'pwd') return '*****';
+        const data = params.data;
+        if (!data) return params;
+        if (data.valueType === 'pwd') return '*****';
         return params.value;
     }
 }

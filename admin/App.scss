@@ -1,0 +1,12 @@
+.xh-admin-app-frame {
+  .pt-tabs.pt-vertical > .pt-tab-list {
+    min-width: 130px;
+    background-color: var(--xh-bg-color-alt);
+    border-right: var(--xh-border-solid);
+  }
+
+  > .pt-tabs > .pt-tab-panel {
+    border-top: var(--xh-border-solid);
+  }
+
+}

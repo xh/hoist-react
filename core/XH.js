@@ -19,9 +19,13 @@ import {hoistModel} from './HoistModel';
  */
 export const XH = window.XH = new class {
 
-    // TODO:  Move these
+    // Currently set via webpack.DefinePlugin at build time (up for negotiation)
+    appName = xhAppName;
+    appVersion = xhAppVersion;
+    appBuild = xhAppBuild;
+
+    // TODO - review how this should be set (or how it's used / if it's needed)
     BASE_URL = '/';
-    appName = 'Scout';
 
     constructor() {
         this.hoistModel = hoistModel;

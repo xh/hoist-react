@@ -75,7 +75,7 @@ export class RestControlModel  {
             case 'long':
                 return 'number';
             default:
-                return rawType;
+                return rawType || 'string';
         }
     }
 }

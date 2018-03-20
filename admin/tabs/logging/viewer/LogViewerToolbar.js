@@ -7,8 +7,8 @@
 import {Component} from 'react';
 import {elemFactory, hoistComponent} from 'hoist/core';
 import {button} from 'hoist/kit/blueprint';
-import {textField, checkField, numberField, label} from 'hoist/cmp';
-import {hbox, filler, hspacer} from 'hoist/layout';
+import {textField, checkField, numberField, label, toolbar} from 'hoist/cmp';
+import {filler} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
 
 @hoistComponent()
@@ -16,22 +16,38 @@ export class LogViewerToolbar extends Component {
     
     render() {
         const model = this.model;
-        return hbox({
-            cls: 'xh-tbar',
+        return toolbar({
             alignItems: 'center',
             style: {flex: 'none'},
             items: [
                 label('Start Line:'),
-                hspacer(8),
-                numberField({model, field: 'startLine', min: 0, width: 80}),
-                hspacer(10),
+                numberField({
+                    model,
+                    field: 'startLine',
+                    min: 0,
+                    width: 80,
+                    onCommit: this.onCommit
+                }),
                 label('Max Lines:'),
-                hspacer(8),
-                numberField({model, field: 'maxLines', min: 1, width: 80}),
-                hspacer(10),
-                textField({model, field: 'pattern', placeholder: 'Search...', width: 150}),
-                hspacer(10),
-                checkField({model, field: 'tail', text: 'Tail'}),
+                numberField({
+                    model,
+                    field: 'maxLines',
+                    min: 1,
+                    width: 80,
+                    onCommit: this.onCommit
+                }),
+                textField({
+                    model,
+                    field: 'pattern',
+                    placeholder: 'Search...',
+                    width: 150,
+                    onCommit: this.onCommit
+                }),
+                checkField({
+                    model,
+                    field: 'tail',
+                    text: 'Tail'
+                }),
                 filler(),
                 button({icon: Icon.refresh(), onClick: this.onSubmitClick})
             ]
@@ -42,6 +58,10 @@ export class LogViewerToolbar extends Component {
     // Implementation
     //-----------------------------
     onSubmitClick = () => {
+        this.model.loadLines();
+    }
+
+    onCommit = () => {
         this.model.loadLines();
     }
 }

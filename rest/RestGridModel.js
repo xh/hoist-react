@@ -44,17 +44,23 @@ export class RestGridModel {
      *
      * @param actionEnabled, map of action (e.g. 'add'/'edit'/'delete') to boolean  See default prop
      * @param actionWarning, map of action (e.g. 'add'/'edit'/'delete') to string.  See default prop.
+     * @param unit, string describing the name records in this grid
+     * @param filterFields, array of strings, names of fields to include in this grid's quick filter logic
      * @param editors, array of editors
      * @param rest, arguments for GridModel.
      */
     constructor({
         actionEnabled,
         actionWarning,
+        unit,
+        filterFields,
         editors = [],
         ...rest
     }) {
         this.actionEnabled = Object.assign(this.actionEnabled, actionEnabled);
         this.actionWarning = Object.assign(this.actionWarning, actionWarning);
+        this.unit = unit;
+        this.filterFields = filterFields;
         this.gridModel = new GridModel({contextMenuFn: this.contextMenuFn, ...rest});
         this.formModel = new RestFormModel({parent: this, editors});
     }
@@ -71,17 +77,23 @@ export class RestGridModel {
     @action
     deleteSelection() {
         const record = this.selection.singleRecord;
-        if (record) {
-            this.store.deleteRecordAsync(record).catchDefault();
-        }
+        if (record) this.deleteRecord(record);
+    }
+
+    @action
+    deleteRecord(record) {
+        this.store.deleteRecordAsync(record).catchDefault();
     }
 
     @action
     editSelection() {
         const record = this.selection.singleRecord;
-        if (record) {
-            this.formModel.openEdit(record);
-        }
+        if (record) this.editRecord(record);
+    }
+
+    @action
+    editRecord(record) {
+        this.formModel.openEdit(record);
     }
 
     contextMenuFn = () => {
@@ -92,11 +104,13 @@ export class RestGridModel {
             },
             {
                 text: 'Edit',
-                action: () => this.editSelection()
+                action: (item, record) => this.editRecord(record),
+                recordsRequired: 1
             },
             {
                 text: 'Delete',
-                action: () => this.deleteSelection()
+                action: (item, record) => this.confirmDeleteRecord(record),
+                recordsRequired: true
             },
             '-',
             'copy',
@@ -105,5 +119,22 @@ export class RestGridModel {
             'export',
             'autoSizeAll'
         ]);
+    }
+
+    confirmDeleteSelection() {
+        const record = this.selection.singleRecord;
+        if (record) this.confirmDeleteRecord(record);
+    }
+
+    confirmDeleteRecord(record) {
+        const warning = this.actionWarning.del;
+        if (warning) {
+            this.messageModel.confirm({
+                message: warning,
+                onConfirm: () => this.deleteRecord(record)
+            });
+        } else {
+            this.deleteRecord(record);
+        }
     }
 }

@@ -8,11 +8,10 @@
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
-import {defaults, difference, isString} from 'lodash';
+import {defaults, difference, isString, isNumber, isBoolean} from 'lodash';
 
 import './ag-grid';
 import {navigateSelection, agGridReact} from './ag-grid';
-import './Grid.css';
 
 /**
  * Grid Component
@@ -20,21 +19,22 @@ import './Grid.css';
 @hoistComponent()
 class Grid extends Component {
 
-    static gridDefaults = {
+    static gridDefaultOptions = {
         toolPanelSuppressSideButtons: true,
         enableSorting: true,
         enableColResize: true,
         deltaRowDataMode: true,
         getRowNodeId: (data) => data.id,
         rowSelection: 'single',
-        allowContextMenuWithControlKey: true
+        allowContextMenuWithControlKey: true,
+        defaultColDef: {suppressMenu: true}
     };
 
     constructor(props) {
         super(props);
         this.gridOptions = defaults(
             props.gridOptions || {},
-            Grid.gridDefaults,
+            Grid.gridDefaultOptions,
             {navigateToNextCell: this.onNavigateToNextCell}
         );
         this.addAutoRun(() => this.syncSelection());
@@ -45,11 +45,9 @@ class Grid extends Component {
         return frame(
             div({
                 style: {flex: '1 1 auto', overflow: 'hidden'},
-                cls: this.darkTheme ? 'ag-theme-dark' : 'ag-theme-fresh',
-                // cls: this.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
+                cls: this.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                 item: agGridReact({
                     rowData: store.records,
-                    defaultColDef: {suppressMenu: true},
                     columnDefs: columns,
                     onSelectionChanged: this.onSelectionChanged,
                     onGridReady: this.onGridReady,
@@ -102,16 +100,36 @@ class Grid extends Component {
         const menuFn = this.model.contextMenuFn;
         if (!menuFn) return null;
 
-        const menu = menuFn(params);
+        const menu = menuFn(params),
+            recId = params.node ? params.node.id : null,
+            rec = recId ? this.model.store.getById(recId, true) : null,
+            selection = this.model.selection.ids;
+
+        // If the target record is not in the selection, we need to include it in the count
+        let count = selection.length;
+        if (rec && !selection.includes(recId)) count++;
+        
         return menu.items.map((it) => {
             if (it === '-') return 'separator';
             if (isString(it)) return it;
 
+            const required = it.recordsRequired,
+                requiredRecordsNotMet = (isBoolean(required) && required && count === 0) || (isNumber(required) && count !== required);
+
+            // Disable menuitem
+            let enabled = true;
+            if (it.enableFn) enabled = it.enableFn(it, rec, selection);
+
+            // Prepare menuitem
+            if (it.prepareFn) it.prepareFn(it, rec, selection);
+
             return {
                 name: it.text,
                 icon: it.icon,
-                action: it.action,
-                disabled: it.disabled
+                disabled: (it.disabled || requiredRecordsNotMet || !enabled),
+                action: () => {
+                    it.action(it, rec, selection);
+                }
             };
         });
     }

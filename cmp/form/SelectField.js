@@ -5,31 +5,22 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-
-import {Component} from 'react';
 import {isObject} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {Classes, menuItem, select, button} from 'hoist/kit/blueprint';
 
-import {bindableField} from './BindableField';
+import {HoistField} from './HoistField';
 
 /**
  * A Select Field
  *
- * @prop value, object
- * @prop onChange, handler to fire when value changes
- * @prop model, model to bind to
- * @prop field, name of property in model to bind to
- * @prop disabled, is control disabled
- * @prop style
- * @prop className
+ * @prop rest, see properties for HoistField
  *
  * @prop options, collection of form [{value: object, label: string}, ...] or [val, val, ...]
  * @prop placeholder, text to display when control is empty
  */
-@bindableField
 @hoistComponent()
-export class SelectField extends Component {
+export class SelectField extends HoistField {
 
     static defaultProps = {
         placeholder: 'Select'
@@ -40,7 +31,7 @@ export class SelectField extends Component {
     render() {
         const {style, width, options, placeholder, disabled} = this.props;
 
-        const value = this.readValue();
+        const value = this.renderValue;
 
         return select({
             popoverProps: {popoverClassName: Classes.MINIMAL},
@@ -60,12 +51,15 @@ export class SelectField extends Component {
                 style: {...style, width},
                 ...this.getDelegateProps()
             }),
+            onBlur: this.onBlur,
+            onFocus: this.onFocus,
             disabled
         });
     }
 
     onItemSelect = (val) => {
         this.noteValueChange(val);
+        this.doCommit();
     }
 }
 export const selectField = elemFactory(SelectField);
