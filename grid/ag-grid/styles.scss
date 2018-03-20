@@ -40,6 +40,12 @@
     }
   }
 
+  .ag-group-expanded, .ag-group-contracted {
+    span {
+      margin: 0 var(--xh-pad-half-px);
+    }
+  }
+
 }
 
 .xh-column-header-align-right .ag-header-cell-label {
