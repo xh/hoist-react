@@ -69,7 +69,6 @@ export class ServicePanel extends Component {
         }
     }
 
-
     onClearCachesClick = () => {
         this.model.clearCaches();
     }
