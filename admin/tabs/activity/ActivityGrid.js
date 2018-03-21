@@ -9,7 +9,7 @@ import {hoistComponent, elemFactory} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {vframe, filler} from 'hoist/layout';
 import {button} from 'hoist/kit/blueprint';
-import {textField, dayField, storeCountLabel, toolbar, toolbarSep} from 'hoist/cmp';
+import {textField, dayField, exportButton, refreshButton, storeCountLabel, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 @hoistComponent()
@@ -28,6 +28,7 @@ export class ActivityGrid extends Component {
     }
 
     renderToolbar() {
+        const model = this.model;
         return toolbar(
             this.dayField({field: 'startDate'}),
             Icon.angleRight(),
@@ -52,19 +53,13 @@ export class ActivityGrid extends Component {
             this.textField({field: 'category', placeholder: 'Category...'}),
             this.textField({field: 'device', placeholder: 'Device...'}),
             this.textField({field: 'browser', placeholder: 'Browser...'}),
-            button({
-                icon: Icon.sync(),
-                onClick: this.onSubmitClick
-            }),
+            refreshButton({model}),
             filler(),
             storeCountLabel({
-                store: this.model.store,
+                store: model.store,
                 unit: 'log'
             }),
-            button({
-                icon: Icon.download(),
-                onClick: this.onExportClick
-            })
+            exportButton({model})
         );
     }
     
@@ -104,18 +99,6 @@ export class ActivityGrid extends Component {
 
     onGoToCurrentDateClick = () => {
         this.model.adjustDates('subtract', true);
-    }
-
-    onDateCommit = () => {
-        this.model.loadAsync();
-    }
-
-    onSubmitClick = () => {
-        this.model.loadAsync();
-    }
-
-    onExportClick = () => {
-        this.model.exportGrid();
     }
 
 }

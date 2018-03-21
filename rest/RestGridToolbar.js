@@ -8,8 +8,7 @@ import {Component} from 'react';
 import {button} from 'hoist/kit/blueprint';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {filler} from 'hoist/layout';
-import {storeCountLabel, storeFilterField, toolbar} from 'hoist/cmp';
-import {pluralize} from 'hoist/utils/JsUtils';
+import {exportButton, storeCountLabel, storeFilterField, toolbar} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 @hoistComponent()
@@ -48,7 +47,7 @@ export class RestGridToolbar extends Component {
             filler(),
             storeCountLabel({store, unit}),
             storeFilterField({store, fields: model.filterFields}),
-            button({icon: Icon.download(), onClick: this.onExportClick})
+            exportButton({model})
         );
     }
 
@@ -65,12 +64,6 @@ export class RestGridToolbar extends Component {
 
     onDeleteClick = () => {
         this.model.confirmDeleteSelection();
-    }
-
-    onExportClick = () => {
-        const model = this.model,
-            fileName = pluralize(model.unit);
-        model.gridModel.exportDataAsExcel({fileName});
     }
 }
 export const restGridToolbar = elemFactory(RestGridToolbar);

@@ -9,7 +9,7 @@ import {Component, isValidElement} from 'react';
 import fontawesome from '@fortawesome/fontawesome';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
-import {defaults, difference, isString, isNumber, isBoolean} from 'lodash';
+import {defaults, delay, difference, isString, isNumber, isBoolean} from 'lodash';
 
 import './ag-grid';
 import {navigateSelection, agGridReact} from './ag-grid';
@@ -38,7 +38,8 @@ class Grid extends Component {
         this.gridOptions = defaults(
             props.gridOptions || {},
             Grid.gridDefaultOptions,
-            {navigateToNextCell: this.onNavigateToNextCell}
+            {navigateToNextCell: this.onNavigateToNextCell},
+            {defaultGroupSortComparator: this.sortByGroup}
         );
         this.addAutoRun(() => this.syncSelection());
     }
@@ -66,7 +67,7 @@ class Grid extends Component {
     // Implementation
     //------------------------
     onGridSizeChanged = (ev) => {
-        ev.api.sizeColumnsToFit();
+        delay(() => ev.api.sizeColumnsToFit(), 50);
     }
 
     onGridReady = (params) => {
@@ -80,6 +81,16 @@ class Grid extends Component {
 
     onNavigateToNextCell = (params) => {
         return navigateSelection(params, this.gridOptions.api);
+    }
+
+    sortByGroup(nodeA, nodeB) {
+        if (nodeA.key < nodeB.key) {
+            return -1;
+        } else if (nodeA.key > nodeB.key) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 
     getContextMenuItems = (params) => {

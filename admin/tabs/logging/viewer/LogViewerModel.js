@@ -34,7 +34,7 @@ export class LogViewerModel {
             fields: ['filename']
         }),
         columns: [
-            baseCol({headerName: 'Log File', field: 'filename', width: 250, sort: 'desc'})
+            baseCol({headerName: 'Log File', field: 'filename', minWidth: 160, sort: 'desc'})
         ]
     });
 
