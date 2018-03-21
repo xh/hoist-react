@@ -38,7 +38,8 @@ class Grid extends Component {
         this.gridOptions = defaults(
             props.gridOptions || {},
             Grid.gridDefaultOptions,
-            {navigateToNextCell: this.onNavigateToNextCell}
+            {navigateToNextCell: this.onNavigateToNextCell},
+            {defaultGroupSortComparator: this.sortByGroup}
         );
         this.addAutoRun(() => this.syncSelection());
     }
@@ -80,6 +81,16 @@ class Grid extends Component {
 
     onNavigateToNextCell = (params) => {
         return navigateSelection(params, this.gridOptions.api);
+    }
+
+    sortByGroup(nodeA, nodeB) {
+        if (nodeA.key < nodeB.key) {
+            return -1;
+        } else if (nodeA.key > nodeB.key) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 
     getContextMenuItems = (params) => {
