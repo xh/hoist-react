@@ -9,6 +9,7 @@ import {XH} from 'hoist/core';
 import {start} from 'hoist/promise';
 import {observable, computed, action} from 'hoist/mobx';
 import {MessageModel} from 'hoist/cmp';
+import {Icon} from 'hoist/icon';
 import {isEqual} from 'lodash';
 
 import {RestControlModel} from './RestControlModel';
@@ -17,7 +18,7 @@ export class RestFormModel {
 
     parent = null;
     controlModels = [];
-    messageModel = new MessageModel({title: 'Warning', icon: 'warning-sign'});
+    messageModel = new MessageModel({title: 'Warning', icon: Icon.warning({size: 'lg'})});
 
     // If not null, form will be open and display it
     @observable record = null;

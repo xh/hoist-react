@@ -8,6 +8,7 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, hoistComponent} from 'hoist/core';
+import {Icon} from 'hoist/icon';
 import {button} from 'hoist/kit/blueprint';
 import {hbox, vbox} from 'hoist/layout';
 
@@ -35,7 +36,7 @@ export class Collapser extends Component {
                 cls: `xh-resizable-collapser ${isVertical ? 'vertical' : 'horizontal'}`,
                 item: button({
                     cls: 'xh-resizable-collapser-btn',
-                    icon: this.getChevron(),
+                    icon: Icon[this.getChevron()](),
                     onClick: this.props.onClick
                 })
             };
@@ -45,7 +46,7 @@ export class Collapser extends Component {
 
     getChevron() {
         const {isVertical, isContentFirst, isOpen} = this,
-            directions = [['chevron-up', 'chevron-down'], ['chevron-left', 'chevron-right']],
+            directions = [['chevronUp', 'chevronDown'], ['chevronLeft', 'chevronRight']],
             type = isVertical ? 0 : 1,
             idx = isContentFirst ? 0 : 1;
 

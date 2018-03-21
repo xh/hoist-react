@@ -7,6 +7,7 @@
 
 import {Component} from 'react';
 import {elemFactory, hoistComponent} from 'hoist/core';
+import {Icon} from 'hoist/icon';
 import {Ref} from 'hoist/utils/Ref';
 import {frame, table, tbody, td, tr} from 'hoist/layout';
 import {clipboardMenuItem, contextMenu} from  'hoist/cmp';
@@ -54,7 +55,7 @@ class LogViewerDisplay extends Component {
             menuItems: [
                 clipboardMenuItem({
                     text: 'Copy Current Line',
-                    icon: 'list',
+                    icon: Icon.list(),
                     disabled: (currentRow == null),
                     successMessage: 'Log line copied to the clipboard.',
                     clipboardSpec: {text: () => rows[currentRow].join(': ')}
