@@ -71,7 +71,6 @@ export class Resizable extends Component {
     get isCollapsible()     {return this.props.isCollapsible}
     get isDraggable()       {return this.props.isDraggable}
     get collapsedDisplay()   {return this.props.collapsedDisplay}
-    get isLazyState()       {return this.model.isLazyState}
     get contentSize()       {return this.model.contentSize}
     get isOpen()            {return this.model.isOpen}
     get isVertical()        {return this.side === 'bottom' || this.side === 'top'}

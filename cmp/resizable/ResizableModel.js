@@ -15,9 +15,7 @@ export class ResizableModel {
 
     @observable contentSize = null;
     @observable isOpen = null;
-
-    isLazyState = true;
-
+    
     prefName = null;
 
     /**
@@ -52,7 +50,6 @@ export class ResizableModel {
 
     @action
     setIsOpen(isOpen) {
-        this.isLazyState = false;
         this.isOpen = isOpen;
     }
 
