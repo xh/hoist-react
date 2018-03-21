@@ -24,7 +24,8 @@ export class ServicePanel extends Component {
             grid({
                 model: this.model.gridModel,
                 gridOptions: {
-                    groupRowInnerRenderer: this.groupRowInnerRenderer
+                    groupRowInnerRenderer: this.groupRowInnerRenderer,
+                    defaultGroupSortComparator: this.sortByGroup
                 }
             })
         );
@@ -57,6 +58,18 @@ export class ServicePanel extends Component {
     groupRowInnerRenderer(params) {
         return params.value + ' Services';
     }
+
+    sortByGroup(nodeA, nodeB) {
+        if (nodeA.key < nodeB.key) {
+            return -1;
+        } else if (nodeA.key > nodeB.key) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+
     onClearCachesClick = () => {
         this.model.clearCaches();
     }
