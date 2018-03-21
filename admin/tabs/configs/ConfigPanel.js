@@ -136,6 +136,7 @@ export class ConfigPanel extends Component {
     }
 
     maskIfPwd(params) {
+        if (!params) return;
         const data = params.data;
         if (!data) return params;
         if (data.valueType === 'pwd') return '*****';

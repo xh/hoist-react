@@ -73,7 +73,7 @@ export class ClientErrorModel {
         this.loadAsync();
     }
 
-    exportGrid() {
+    export() {
         const fileName = `Client Errors: ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`;
         this.gridModel.exportDataAsExcel({fileName});
     }

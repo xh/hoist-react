@@ -83,7 +83,7 @@ export class ActivityGridModel {
         this.loadAsync();
     }
 
-    exportGrid() {
+    export() {
         const fileName = `Activity: ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`;
         this.gridModel.exportDataAsExcel({fileName});
     }
