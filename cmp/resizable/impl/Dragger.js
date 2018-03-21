@@ -49,11 +49,15 @@ export class Dragger extends Component {
         }
 
         const {side} = this.props,
-            {clientX, clientY} = e,
+            {screenX, screenY, clientX, clientY} = e,
             {startX, startY} = this.resizeState;
 
-        let diff;
+        // Skip degenerate final drag event from dropping over non-target
+        if (screenX == 0 && screenY === 0 && clientX === 0 && clientY === 0) {
+            return;
+        }
 
+        let diff;
         if (side === 'right') diff = clientX - startX;
         if (side === 'left') diff = startX - clientX;
         if (side === 'top') diff = startY - clientY;

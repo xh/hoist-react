@@ -169,7 +169,9 @@ export class Resizable extends Component {
     }
 
     onResize = (delta) => {
-        this.model.setContentSize(this.startContentSize + delta);
+        if (this.startContentSize !== null) {
+            this.model.setContentSize(this.startContentSize + delta);
+        }
     }
 }
 export const resizable = elemFactory(Resizable);
