@@ -9,7 +9,7 @@ import {Component, isValidElement} from 'react';
 import fontawesome from '@fortawesome/fontawesome';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
-import {defaults, difference, isString, isNumber, isBoolean} from 'lodash';
+import {defaults, delay, difference, isString, isNumber, isBoolean} from 'lodash';
 
 import './ag-grid';
 import {navigateSelection, agGridReact} from './ag-grid';
@@ -66,7 +66,7 @@ class Grid extends Component {
     // Implementation
     //------------------------
     onGridSizeChanged = (ev) => {
-        ev.api.sizeColumnsToFit();
+        delay(() => ev.api.sizeColumnsToFit(), 50);
     }
 
     onGridReady = (params) => {
