@@ -10,11 +10,15 @@ import {button} from 'hoist/kit/blueprint';
 import {textField, dayField, label, toolbar} from 'hoist/cmp';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {chart} from 'hoist/highcharts';
-import {vframe, filler} from 'hoist/layout';
+import {vframe, filler, frame} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
 
 @hoistComponent()
 export class VisitsChart extends Component {
+
+    renderCollapsed() {
+        return toolbar(Icon.users(), label('Unique Daily Visitors'));
+    }
 
     render() {
         return vframe(

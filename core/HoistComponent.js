@@ -40,6 +40,15 @@ export function hoistComponent({isObserver = true} = {}) {
             C = HotkeysTarget(C);
         }
 
+
+        const render = proto['render'],
+            renderCollapsed = proto.renderCollapsed;
+        proto.render = function () {
+            return this.props.isCollapsed === true ?
+                (renderCollapsed ? renderCollapsed.apply(this, arguments) : null):
+                (render ? render.apply(this, arguments) : null)
+        }
+
         //---------------------------------------------------------
         // Mobx -- add observer and support for managed auto runs
         //---------------------------------------------------------
@@ -72,6 +81,7 @@ export function hoistComponent({isObserver = true} = {}) {
             }
         });
 
+        C.isHoistComponent = true
         return C;
     };
 }

@@ -5,22 +5,23 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
+import React, {Component, Children} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {hoistComponent, elemFactory} from 'hoist/core';
-import {box, hbox, vbox} from 'hoist/layout';
+import {box, hbox, vbox, div} from 'hoist/layout';
 
 import {ResizableModel} from './ResizableModel';
 import {dragger} from './impl/Dragger';
 import {collapser} from './impl/Collapser';
-import './Resizable.scss';
-
 
 /**
- * A Resizable Container
+ * A Resizable/Collapsible Container
  *
  * This component is designed to host a fixed-height/fixed-width child within a flex box.
  * It will allow the user to manage the fixed size via drag-drop, and button based expand/collapse.
+ *
+ * When collapsed, it will show either the configured 'collapsedDisplay' element, or, if the child panel
+ * is a HoistComponent, the child component with the property isCollapsed: true.
  *
  * Applications should provide optional values for isOpen, contentSize, and prefName.
  * Applications may provide this object with an instance of ResizableModel.
@@ -32,6 +33,7 @@ import './Resizable.scss';
  * @prop isOpen, boolean - If the content panel showing?
  * @prop contentSize, integer - Size of the content panel. If side is `left` or `right` it
  *       represents the width, otherwise it represents the height.
+ * @prop collapsedDisplay, React Element.  N
  * @prop prefName, string, Preference name to optionally store state in for this component.
  */
 @hoistComponent()
@@ -44,7 +46,8 @@ export class Resizable extends Component {
         contentSize: PT.number.isRequired,
         isOpen: PT.bool,
         prefName: PT.string,
-        model: PT.object
+        model: PT.object,
+        collapsedDisplay: PT.object
     };
 
     static defaultProps = {
@@ -67,6 +70,7 @@ export class Resizable extends Component {
     get side()              {return this.props.side}
     get isCollapsible()     {return this.props.isCollapsible}
     get isDraggable()       {return this.props.isDraggable}
+    get collapsedDisplay()   {return this.props.collapsedDisplay}
     get isLazyState()       {return this.model.isLazyState}
     get contentSize()       {return this.model.contentSize}
     get isOpen()            {return this.model.isOpen}
@@ -78,8 +82,10 @@ export class Resizable extends Component {
             cmp = isVertical ? vbox : hbox;
 
         let items = [];
-        if (!isLazyState) {
+        if (isOpen) {
             items.push(this.renderChild());
+        } else {
+            items.push(this.renderCollapsedChild());
         }
 
         if (isCollapsible) {
@@ -98,48 +104,43 @@ export class Resizable extends Component {
     // Implementation -- Render Affordances
     //----------------------------------------
     renderChild() {
-        const {isOpen, isVertical, contentSize} = this,
-            {children} = this.props,
-            type = isVertical ? 'height' : 'width',
-            size = isOpen ? contentSize : 0;
+        const {isVertical, contentSize, props} = this,
+            dim = isVertical ? 'height' : 'width';
+
+        let child = Children.only(this.props.children);
+        if (child.type.isHoistComponent) {
+            child = React.cloneElement(child, {isCollapsed: false});
+        }
 
         return box({
-            [type]: size,
-            items: children
+            [dim]: contentSize,
+            items: child
         });
     }
 
-    //-----------------
-    // Needs Review.
-    //------------------
-    // getCollapsibleBar() {
-    //     const {isCollapsible} = this.props;
-    //
-    //     if (!isCollapsible) return null;
-    //
-    //     const splitter = this.getSplitter(),
-    //         collapseText = this.getCollapseText();
-    //
-    //     return this.sideIsAfterContent ? [collapseText, splitter] : [splitter, collapseText];
-    // }
+    renderCollapsedChild() {
+        const {isVertical, collapsedDisplay, props} = this;
 
+        let child = Children.only(props.children);
+        if (collapsedDisplay) {
+           child = collapsedDisplay;
+        } else if (child.type.isHoistComponent) {
+            child = React.cloneElement(child, {isCollapsed: true});
+        } else {
+            child = null;
+        }
 
-    // getCollapseText() {
-    //     const {props, isOpen, sideIsVertical} = this,
-    //         {collapseText} = props;
-    //     if (!collapseText || isOpen) return null;
-    //
-    //     return box({
-    //         cls: `xh-collapse-text ${sideIsVertical ? 'vertical' : 'horizontal'}`,
-    //         item: div(collapseText)
-    //     });
-    // }
+        return box({
+            item: child,
+            onDoubleClick: this.onCollapseToggle
+        });
+    }
 
     getCollapser() {
         return collapser({
             side: this.side,
             isOpen: this.isOpen,
-            onClick: this.onCollapserClick
+            onClick: this.onCollapseToggle
         });
     }
 
@@ -155,7 +156,7 @@ export class Resizable extends Component {
     //----------------------------
     // Implementation -- Handlers
     //----------------------------
-    onCollapserClick = () => {
+    onCollapseToggle = () => {
         const model = this.model;
         model.setIsOpen(!model.isOpen);
     }
