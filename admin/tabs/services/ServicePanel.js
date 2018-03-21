@@ -57,6 +57,7 @@ export class ServicePanel extends Component {
     groupRowInnerRenderer(params) {
         return params.value + ' Services';
     }
+
     onClearCachesClick = () => {
         this.model.clearCaches();
     }

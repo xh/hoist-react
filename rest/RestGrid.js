@@ -6,6 +6,7 @@
  */
 
 import {Component} from 'react';
+import {defaults} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {frame, vframe} from 'hoist/layout';
@@ -18,15 +19,14 @@ import {restForm} from './RestForm';
 export class RestGrid extends Component {
 
     render() {
-        const model = this.model;
+        const model = this.model,
+            gridOptions = defaults(this.props.gridOptions, {onRowDoubleClicked: this.onRowDoubleClicked});
         return vframe(
             restGridToolbar({model}),
             frame(
                 grid({
                     model: model.gridModel,
-                    gridOptions: {
-                        onRowDoubleClicked: this.onRowDoubleClicked
-                    }
+                    gridOptions: gridOptions
                 })
             ),
             restForm({model: model.formModel}),
