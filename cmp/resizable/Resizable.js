@@ -8,7 +8,7 @@
 import React, {Component, Children} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {hoistComponent, elemFactory} from 'hoist/core';
-import {box, hbox, vbox, div} from 'hoist/layout';
+import {box, hbox, vbox} from 'hoist/layout';
 
 import {ResizableModel} from './ResizableModel';
 import {dragger} from './impl/Dragger';
@@ -78,7 +78,7 @@ export class Resizable extends Component {
     get isContentFirst()    {return this.side === 'right' || this.side === 'bottom'}
 
     render() {
-        const {isVertical, isContentFirst, isCollapsible, isOpen, isDraggable, isLazyState} = this,
+        const {isVertical, isContentFirst, isCollapsible, isOpen, isDraggable} = this,
             cmp = isVertical ? vbox : hbox;
 
         let items = [];
@@ -104,7 +104,7 @@ export class Resizable extends Component {
     // Implementation -- Render Affordances
     //----------------------------------------
     renderChild() {
-        const {isVertical, contentSize, props} = this,
+        const {isVertical, contentSize} = this,
             dim = isVertical ? 'height' : 'width';
 
         let child = Children.only(this.props.children);
@@ -119,11 +119,11 @@ export class Resizable extends Component {
     }
 
     renderCollapsedChild() {
-        const {isVertical, collapsedDisplay, props} = this;
+        const {collapsedDisplay, props} = this;
 
         let child = Children.only(props.children);
         if (collapsedDisplay) {
-           child = collapsedDisplay;
+            child = collapsedDisplay;
         } else if (child.type.isHoistComponent) {
             child = React.cloneElement(child, {isCollapsed: true});
         } else {

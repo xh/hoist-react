@@ -10,7 +10,7 @@ import {button} from 'hoist/kit/blueprint';
 import {textField, dayField, label, toolbar} from 'hoist/cmp';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {chart} from 'hoist/highcharts';
-import {vframe, filler, frame} from 'hoist/layout';
+import {vframe, filler} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
 
 @hoistComponent()
