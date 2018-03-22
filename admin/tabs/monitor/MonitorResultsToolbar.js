@@ -16,11 +16,11 @@ import {Icon} from 'hoist/icon';
 class MonitorResultsToolbar extends Component {
     render() {
         const model = this.model,
-            {passed, lastRun} = model;
+            {passed, lastRun, forceRunAllMonitors} = model;
         return toolbar({
             style: {flex: 'none'},
             items: [
-                button({icon: Icon.refresh(), text: 'Run All Now', onClick: this.onSubmitClick}),
+                button({icon: Icon.refresh(), text: 'Run All Now', onClick: forceRunAllMonitors}),
                 label(`${passed} Passed`),
                 filler(),
                 label(lastRun)

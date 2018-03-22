@@ -47,6 +47,7 @@ export const Icon = {
     close(p)         {return fa(p, 'times')},
     contact(p)       {return fa(p, 'address-card')},
     cross(p)         {return fa(p, 'times')},
+    disabled(p)      {return fa(p, 'ban')},
     delete(p)        {return fa(p, 'minus-circle')},
     download(p)      {return fa(p, 'download')},
     edit(p)          {return fa(p, 'edit')},

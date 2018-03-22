@@ -27,7 +27,7 @@ import {frame} from 'hoist/layout';
 export class TabPane extends Component {
 
     child = new Ref();
-    isLazyState = true
+    isLazyState = true;
 
     constructor(props) {
         super(props);
@@ -44,7 +44,7 @@ export class TabPane extends Component {
         return frame({
             display: isActive ? 'flex' : 'none',
             margin: 4,
-            item: elem(model.componentClass, {...this.props, flex: 1, ref: this.child.ref})
+            item: elem(model.componentClass, {...this.props, flex: 1, ref: this.child.ref, parentModel: this.model})
         });
     }
 

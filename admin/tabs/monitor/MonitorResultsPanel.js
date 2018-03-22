@@ -14,7 +14,9 @@ import {MonitorResultsModel} from './MonitorResultsModel';
 
 @hoistComponent()
 export class MonitorResultsPanel extends Component {
-    localModel = new MonitorResultsModel();
+    localModel = new MonitorResultsModel({
+        parentModel: this.props.parentModel
+    });
 
     async loadAsync() {
         this.model.loadAsync();
@@ -22,9 +24,14 @@ export class MonitorResultsPanel extends Component {
 
     render() {
         const model = this.model;
+
         return vframe(
             monitorResultsToolbar({model}),
             monitorResultsDisplay({model})
         );
+    }
+
+    componentWillReceiveProps(nextProps) {
+
     }
 }
