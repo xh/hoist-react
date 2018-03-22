@@ -30,12 +30,8 @@ export class FetchService extends BaseService {
             contentType = (method === 'POST') ? 'application/x-www-form-urlencoded': 'text/plain';
         }
 
-        url = XH.BASE_URL + url;
-
-        // xhIsLocalDevelopment is injected by webpack.DefinePlugin.
-        // Routes relative requests to 8080 vs. expected 3000 when running client in dev mode.
-        if (xhIsLocalDevelopment) {
-            url = `${location.protocol}//${location.hostname}:8080${url}`;
+        if (!url.startsWith('/') && !url.includes('//')) {
+            url = XH.baseUrl + url;
         }
 
         // 2) Prepare merged options

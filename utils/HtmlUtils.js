@@ -13,7 +13,7 @@ import {XH} from 'hoist/core';
  */
 export function appUrl(url) {
     if (url != null && !url.startsWith('/') && !url.includes('//')) {
-        url = XH.BASE_URL + url;
+        url = XH.baseUrl + url;
     }
     return url;
 }
