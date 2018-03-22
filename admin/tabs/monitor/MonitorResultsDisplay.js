@@ -6,20 +6,23 @@
  */
 import {Component} from 'react';
 import {elemFactory, hoistComponent} from 'hoist/core';
+import {hbox} from 'hoist/layout';
 import {toJS} from 'hoist/mobx';
 import {tile} from './Tile';
+import './MonitorResultsDisplay.scss';
 
 @hoistComponent()
 class MonitorResultsDisplay extends Component {
     render() {
         const {results} = this.props.model;
 
-        return (
-            toJS(results).map((check, idx) => tile({
+        return hbox({
+            cls: 'xh-monitor-status-display',
+            items: toJS(results).map((check, idx) => tile({
                 key: `tile-${idx}`,
                 check
             }))
-        );
+        });
     }
 }
 

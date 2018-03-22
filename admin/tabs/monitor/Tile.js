@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
-import {div} from 'hoist/layout';
+import {vbox, div} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
 
 import './Tile.scss';
@@ -18,17 +18,17 @@ export class Tile extends Component {
         const {status, name, elapsed, metric, message} = this.props.check,
             tileClass = 'xh-status-tile xh-status-tile-' + status.toLowerCase();
 
-        return div({
+        return vbox({
             cls: tileClass,
             items: [
                 div({
                     cls: 'xh-status-tile__name',
                     item: name
                 }),
-                div({
+                vbox({
                     cls: 'xh-status-tile__content',
                     items: [
-                        Icon[this.getStatusIcon()]({size: '10x'}),
+                        Icon[this.getStatusIcon(status)]({size: '8x'}),
                         div({cls: 'xh-status-tile__elapsed', item: `Elapsed: ${elapsed}ms`}),
                         div({cls: 'xh-status-tile__metric', item: `Metric: ${metric}`, hidden: !metric}),
                         div({cls: 'xh-status-tile__message', item: `${message}`, hidden: !message})
@@ -40,6 +40,12 @@ export class Tile extends Component {
 
     getStatusIcon(status) {
         switch (status) {
+            case 'OK':
+                return 'check';
+            case 'WARN':
+                return 'warning';
+            case 'FAIL':
+                return 'error';
             case 'INACTIVE':
                 return 'disabled';
             default:
