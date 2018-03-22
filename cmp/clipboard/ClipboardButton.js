@@ -10,6 +10,7 @@ import {hoistComponent, XH, elemFactory} from 'hoist/core';
 import {Intent, button} from 'hoist/kit/blueprint';
 import {ToastManager} from 'hoist/cmp';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
+import {Icon} from 'hoist/icon';
 
 import ClipboardJS from 'clipboard';
 
@@ -31,7 +32,7 @@ import ClipboardJS from 'clipboard';
 export class ClipboardButton extends Component {
 
     static defaultProps = {
-        icon: 'clipboard',
+        icon: Icon.clipboard(),
         text: 'Copy',
         successMessage: 'Text copied to clipboard.'
     }

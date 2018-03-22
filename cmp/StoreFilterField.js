@@ -30,7 +30,7 @@ class StoreFilterField extends Component {
             value: this.value,
             onChange: this.onValueChange,
             rightElement: button({
-                icon: 'cross',
+                cls: 'pt-minimal pt-icon-cross',
                 onClick: this.onClearClick
             })
         });

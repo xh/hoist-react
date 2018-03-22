@@ -8,12 +8,13 @@
 import {Component} from 'react';
 import {clipboardButton} from './ClipboardButton';
 import {elemFactory} from 'hoist/core';
+import {Icon} from 'hoist/icon';
 
 
 class ClipboardMenuItem extends Component {
 
     static defaultProps = {
-        icon: 'clipboard',
+        icon: Icon.clipboard(),
         text: 'Copy',
         cls: 'pt-minimal',
         successMessage: 'Text copied to clipboard.',

@@ -8,6 +8,7 @@
 import {Component} from 'react';
 import {hoistComponent, elemFactory, hoistModel} from 'hoist/core';
 import {toolbar} from 'hoist/cmp';
+import {Icon} from 'hoist/icon';
 import {filler} from 'hoist/layout';
 import {button, dialog, dialogBody} from 'hoist/kit/blueprint';
 
@@ -25,7 +26,7 @@ export class ErrorDialog extends Component {
         return dialog({
             isOpen: true,
             title: options.title,
-            icon: 'warning-sign',
+            icon: Icon.warning({size: 'lg'}),
             items: [
                 dialogBody(options.message),
                 toolbar(this.getButtons()),
@@ -44,18 +45,18 @@ export class ErrorDialog extends Component {
         return [
             filler(),
             button({
-                icon: 'search',
+                icon: Icon.search(),
                 text: 'Show/Report Details',
                 onClick: this.onShowDetailsClick,
                 omit: sessionExpired || !showAsError
             }),
             button({
-                icon: 'refresh',
+                icon: Icon.refresh(),
                 text: this.sessionExpired() ? 'Login' : 'Reload App',
                 onClick: this.onReloadClick
             }),
             button({
-                text: 'Close',
+                text: Icon.close(),
                 onClick: this.onCloseClick
             })
         ];

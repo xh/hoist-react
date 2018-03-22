@@ -7,6 +7,7 @@
 import {action} from 'hoist/mobx';
 import {GridModel} from 'hoist/grid';
 import {MessageModel} from 'hoist/cmp';
+import {Icon} from 'hoist/icon';
 import {GridContextMenu} from 'hoist/grid';
 import {pluralize} from 'hoist/utils/JsUtils';
 
@@ -37,7 +38,7 @@ export class RestGridModel {
 
     gridModel = null;
     formModel = null;
-    messageModel = new MessageModel({title: 'Warning', icon: 'warning-sign'});
+    messageModel = new MessageModel({title: 'Warning', icon: Icon.warning({size: 'lg'})});
 
     get store()     {return this.gridModel.store}
     get selection() {return this.gridModel.selection}

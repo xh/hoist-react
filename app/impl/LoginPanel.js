@@ -94,7 +94,7 @@ export class LoginPanel extends Component {
             hoistModel.markAuthenticatedUser(null);
             this.messageModel.alert({
                 title: 'Error',
-                icon: 'error',
+                icon: Icon.error({size: 'lg'}),
                 message: <div>Unable to login: <b>{e.message || e.name}</b></div>
             });
         });
