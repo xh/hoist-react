@@ -28,7 +28,7 @@ export class Tile extends Component {
                 vbox({
                     cls: 'xh-status-tile__content',
                     items: [
-                        Icon[this.getStatusIcon(status)]({size: '8x'}),
+                        Icon[this.getStatusIcon(status)]({size: '8x', prefix: 'fal'}),
                         div({cls: 'xh-status-tile__elapsed', item: `Elapsed: ${elapsed}ms`}),
                         div({cls: 'xh-status-tile__metric', item: `Metric: ${metric}`, hidden: !metric}),
                         div({cls: 'xh-status-tile__message', item: `${message}`, hidden: !message})

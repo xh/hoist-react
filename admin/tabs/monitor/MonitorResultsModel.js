@@ -9,20 +9,36 @@ import {XH} from 'hoist/core';
 import {Intent} from 'hoist/kit/blueprint';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
 import {ToastManager} from 'hoist/cmp';
-import {action, observable, autorun} from 'hoist/mobx';
+import {action, observable, computed} from 'hoist/mobx';
 import {Timer} from 'hoist/utils/Timer';
 import {Icon} from 'hoist/icon';
 
 export class MonitorResultsModel {
-    @observable results = [];
-    @observable passed = 1;
-    @observable lastRun = '1 minute ago';
+    @observable.ref results = [];
+    tabPaneModel = null;
     timer = null;
 
-    constructor(props) {
-        autorun(() => {
-            const {isActive} = props.parentModel;
-            this.toggleRefreshTimer(isActive);
+    @computed
+    get passed() {
+        return this.results.filter(monitor => monitor.status === 'OK').length;
+    }
+
+    @computed
+    get warned() {
+        return this.results.filter(monitor => monitor.status === 'WARN').length;
+    }
+
+    @computed
+    get failed() {
+        return this.results.filter(monitor => monitor.status === 'FAIL').length;
+    }
+
+    constructor(tabPaneModel) {
+        this.tabPaneModel = tabPaneModel;
+        this.timer = Timer.create({
+            runFn: this.loadResults,
+            delay: 15 * SECONDS,
+            interval: 15 * SECONDS
         });
     }
 
@@ -31,6 +47,8 @@ export class MonitorResultsModel {
     }
 
     loadResults = async() => {
+        if (!this.tabPaneModel.isActive) return;
+
         console.log('Fetching Results...');
         return XH
             .fetchJson({url: 'monitorAdmin/results'})
@@ -59,17 +77,5 @@ export class MonitorResultsModel {
                 })
             )
             .catchDefault();
-    }
-
-    toggleRefreshTimer() {
-        if (!this.timer) {
-            this.timer = Timer.create({
-                runFn: this.loadResults,
-                delay: 15 * SECONDS,
-                interval: 15 * SECONDS
-            });
-        } else {
-            this.timer = this.timer.cancel();
-        }
     }
 }

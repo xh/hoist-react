@@ -10,13 +10,12 @@ import {vframe} from 'hoist/layout';
 import {monitorResultsToolbar} from './MonitorResultsToolbar';
 import {monitorResultsDisplay} from './MonitorResultsDisplay';
 import {MonitorResultsModel} from './MonitorResultsModel';
+import './MonitorResultsPanel.scss';
 
 
 @hoistComponent()
 export class MonitorResultsPanel extends Component {
-    localModel = new MonitorResultsModel({
-        parentModel: this.props.parentModel
-    });
+    localModel = new MonitorResultsModel(this.props.tabPaneModel);
 
     async loadAsync() {
         this.model.loadAsync();
@@ -25,13 +24,12 @@ export class MonitorResultsPanel extends Component {
     render() {
         const model = this.model;
 
-        return vframe(
-            monitorResultsToolbar({model}),
-            monitorResultsDisplay({model})
-        );
-    }
-
-    componentWillReceiveProps(nextProps) {
-
+        return vframe({
+            cls: 'xh-monitor-results-panel',
+            items: [
+                monitorResultsToolbar({model}),
+                monitorResultsDisplay({model})
+            ]
+        });
     }
 }
