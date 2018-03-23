@@ -7,6 +7,7 @@
 import {ErrorDialogModel} from 'hoist/core';
 import {observable, setter, action} from 'hoist/mobx';
 import {MultiPromiseModel, never} from 'hoist/promise';
+import {RouterModel} from 'hoist/router';
 
 import {
     BaseService,
@@ -64,6 +65,9 @@ class HoistModel {
     /** Top level model for the App - assigned via BaseAppModel's constructor **/
     appModel = null;
 
+    /** Router model for the app - used for route based navigation. **/
+    routerModel = null;
+
     /**
      * Tracks globally loading promises.
      *
@@ -111,6 +115,7 @@ class HoistModel {
                 .wait(100)
                 .then(() => this.initLocalState())
                 .then(() => this.appModel.initAsync())
+                .then(() => this.initRouterModel())
                 .then(() => this.setIsInitialized(true))
                 .catchDefault();
         }
@@ -141,6 +146,10 @@ class HoistModel {
 
     initLocalState() {
         this.setDarkTheme(this.prefService.get('xhTheme') === 'dark');
+    }
+
+    initRouterModel() {
+        this.routerModel = new RouterModel(this.appModel.routes)
     }
 
     @action

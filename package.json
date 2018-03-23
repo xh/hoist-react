@@ -36,6 +36,7 @@
     "moment": "^2.20.1",
     "numeral": "^2.0.6",
     "react-transition-group": "^2.2.1",
+    "router5": "^5.8.3",
     "rsvp": "^4.7.0",
     "store2": "^2.7.0"
   },
