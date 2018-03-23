@@ -9,7 +9,7 @@ import {Intent} from 'hoist/kit/blueprint';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
 import {ToastManager} from 'hoist/cmp';
 import {UrlStore} from 'hoist/data';
-import {GridModel} from 'hoist/grid';
+import {GridModel, GridContextMenu} from 'hoist/grid';
 
 import {baseCol} from 'hoist/columns/Core';
 
@@ -26,12 +26,25 @@ export class ServiceModel {
         columns: [
             baseCol({
                 field: 'provider',
-                rowGroup: true,
-                hide: true,
+                // rowGroup: true,
+                // hide: true,
+                
                 fixedWidth: 100
             }),
             baseCol({field: 'name', minWidth: 300, flex: 1})
-        ]
+        ],
+        contextMenuFn:   () => {
+            return new GridContextMenu([
+                {
+                    text: 'Group by Provider',
+                    action: () => this.gridModel.groupBy('provider')
+                },
+                {
+                    text: 'Ungroup',
+                    action: () => this.gridModel.ungroup()
+                }
+            ]);
+        }
     });
 
     clearCaches() {

@@ -5,9 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {observable} from 'hoist/mobx';
+import {observable, action} from 'hoist/mobx';
 import {LastPromiseModel} from 'hoist/promise';
 
+import {find} from 'lodash';
 import {GridSelectionModel} from './GridSelectionModel';
 import {GridContextMenu} from './GridContextMenu';
 
@@ -30,8 +31,7 @@ export class GridModel {
             'copy',
             'copyWithHeaders',
             '-',
-            'export',
-            'autoSizeAll'
+            'export'
         ]);
     }
 
@@ -68,5 +68,32 @@ export class GridModel {
         } else {
             return value;
         }
+    }
+
+    @action
+    groupBy(field) {
+        const cols = this.columns
+        cols.forEach(it => {
+            it.rowGroup = false;
+            it.hide = false;
+        });
+
+        const col = find(cols, {field});
+        if (col) {
+            console.log(col);
+            col.rowGroup = true;
+            col.hide = false;
+        }
+        this.columns = [...cols];
+    }
+
+    @action
+    ungroup() {
+        const cols = this.columns
+        cols.forEach(it => {
+            it.rowGroup = false;
+            it.hide = false;
+        });
+        this.columns = [...cols];
     }
 }
