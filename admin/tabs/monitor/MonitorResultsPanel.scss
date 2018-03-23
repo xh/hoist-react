@@ -1,4 +1,7 @@
 .xh-monitor-results-panel {
+  .hidden {
+    display: none !important;
+  }
   .xh-monitor-status-display {
     flex-wrap: wrap;
     height: 100%;

@@ -10,11 +10,13 @@ import {Intent} from 'hoist/kit/blueprint';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
 import {ToastManager} from 'hoist/cmp';
 import {action, observable, computed} from 'hoist/mobx';
+import {min} from 'lodash';
 import {Timer} from 'hoist/utils/Timer';
 import {Icon} from 'hoist/icon';
 
 export class MonitorResultsModel {
     @observable.ref results = [];
+    @observable lastRun = null;
     tabPaneModel = null;
     timer = null;
 
@@ -49,7 +51,6 @@ export class MonitorResultsModel {
     loadResults = async() => {
         if (!this.tabPaneModel.isActive) return;
 
-        console.log('Fetching Results...');
         return XH
             .fetchJson({url: 'monitorAdmin/results'})
             .then(rows => {
@@ -63,6 +64,7 @@ export class MonitorResultsModel {
     @action
     completeLoad(success, vals) {
         this.results = success ? Object.values(vals) : [];
+        this.getLastRun();
     }
 
     async forceRunAllMonitors() {
@@ -77,5 +79,14 @@ export class MonitorResultsModel {
                 })
             )
             .catchDefault();
+    }
+
+    @action
+    getLastRun() {
+        const lastRun = min(this.results.
+            filter(monitor => monitor.status !== 'UNKNOWN')
+            .map(it => it.date));
+
+        this.lastRun = lastRun ? new Date(lastRun) : null;
     }
 }
