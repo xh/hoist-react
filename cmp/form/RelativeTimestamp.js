@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
-import {observable, action} from 'mobx';
+import {observable, setter} from 'hoist/mobx';
 import {label} from 'hoist/cmp';
 import {Timer} from 'hoist/utils/Timer';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
@@ -21,28 +21,35 @@ import {getString} from 'hoist/utils/RelativeTimestampUtils';
 
 @hoistComponent()
 class RelativeTimestamp extends Component {
-    @observable relativeTimeString;
+    @setter @observable relativeTimeString;
     timer = null;
 
     render() {
         return label(this.relativeTimeString);
     }
 
-    @action
-    updateLabel = () => {
-        const {timeStamp, options} = this.props;
-        this.relativeTimeString = getString(timeStamp, options);
+    refreshLabel = () => {
+        this.updateRelativeTimeString(this.props);
+    }
+
+    updateRelativeTimeString(props) {
+        const {timeStamp, options} = props;
+        this.setRelativeTimeString(getString(timeStamp, options));
     }
 
     componentDidMount() {
         this.timer = new Timer({
-            runFn: this.updateLabel,
+            runFn: this.refreshLabel,
             interval: 10 * SECONDS
         });
     }
 
     componentWillUnmount() {
         this.timer.cancel();
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.updateRelativeTimeString(nextProps);
     }
 }
 
