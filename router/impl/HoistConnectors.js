@@ -12,14 +12,14 @@ export function hoistPlugin(routerModel) {
     const ret = (router) => {
         return {
             onTransitionError: (toState) => {
-                console.log(Error going to:' , toState);
+                console.debug('Error going to:', toState);
             },
 
             onTransitionSuccess: (toState) => {
                 routerModel.setCurrentState(toState);
             }
-        }
-    }
+        };
+    };
     ret.pluginName = 'MOBX_PLUGIN';
     return ret;
 }
@@ -29,7 +29,7 @@ export function hoistPlugin(routerModel) {
  */
 export function hoistMiddleware(routerModel) {
     return (router) => (toState, fromState, done) => {
-        console.log('Transitioning - ', fromState, "=>", toState);
+        console.debug('Transitioning - ', fromState, '=>', toState);
         done();
-    }
+    };
 }

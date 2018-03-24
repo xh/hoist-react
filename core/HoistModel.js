@@ -145,7 +145,7 @@ class HoistModel {
     }
 
     initRouterModel() {
-        this.routerModel = new RouterModel(this.appModel.getRoutes())
+        this.routerModel = new RouterModel(this.appModel.getRoutes());
     }
 
     @action

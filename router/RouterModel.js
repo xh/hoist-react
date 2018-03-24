@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {observable, setter, action} from 'hoist/mobx';
+import {observable, action} from 'hoist/mobx';
 import createRouter from 'router5';
 import browserPlugin from 'router5/plugins/browser';
 import {hoistPlugin, hoistMiddleware} from './impl/HoistConnectors';
@@ -47,6 +47,3 @@ export class RouterModel {
         this.router.start();
     }
 }
-
-
-
