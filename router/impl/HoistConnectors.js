@@ -12,11 +12,11 @@ export function hoistPlugin(routerModel) {
     const ret = (router) => {
         return {
             onTransitionError: (toState) => {
-                console.log('Not Implemented');
+                console.log(Error going to:' , toState);
             },
 
             onTransitionSuccess: (toState) => {
-                routingModel.setCurrentState(toState);
+                routerModel.setCurrentState(toState);
             }
         }
     }
@@ -29,7 +29,7 @@ export function hoistPlugin(routerModel) {
  */
 export function hoistMiddleware(routerModel) {
     return (router) => (toState, fromState, done) => {
-        console.log(`Transitioning from ${toState} to ${fromState}`);
+        console.log('Transitioning - ', fromState, "=>", toState);
         done();
     }
 }

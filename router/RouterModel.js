@@ -39,7 +39,9 @@ export class RouterModel {
      * Additional routes may be added
      */
     constructor(routes) {
-        this.router = createRouter(routes)
+        const config = {defaultRoute: 'default'};
+        
+        this.router = createRouter(routes, config)
             .usePlugin(browserPlugin(), hoistPlugin(this))
             .useMiddleware(hoistMiddleware(this));
         this.router.start();
