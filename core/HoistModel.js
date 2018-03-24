@@ -70,9 +70,7 @@ class HoistModel {
 
     /**
      * Tracks globally loading promises.
-     *
-     * Applications should bind any async operations that should mask
-     * the entire application to this model.
+     * Bind any async operations that should mask the entire application to this model.
      **/
     appLoadModel = new MultiPromiseModel();
 
@@ -100,9 +98,7 @@ class HoistModel {
 
     /**
      * Call to mark the authenticated user.
-     *
-     * @param username of verified user. Use null to indicate an
-     * authentication failure and an unidentified user.
+     * @param username of verified user - null to indicate auth failure / unidentified user.
      */
     @action
     markAuthenticatedUser(username) {
