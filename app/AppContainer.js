@@ -39,7 +39,7 @@ export class AppContainer extends Component {
 
         if (!authUsername) {
             return appModel.requireSSO ?
-                lockoutPanel({message: 'Error processing single-sign-on authentication'}) :
+                lockoutPanel({message: 'Unable to contact UI server, or error processing single-sign on authentication'}) :
                 loginPanel();
         }
 
