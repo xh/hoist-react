@@ -66,7 +66,6 @@ export class Timer {
         this.cancelled = true;
         this.runFn = null;
         pull(Timer._timers, this);
-        return null;
     }
 
     //----------------------
