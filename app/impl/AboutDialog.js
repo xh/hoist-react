@@ -9,6 +9,7 @@ import {Component} from 'react';
 import {XH, hoistComponent, hoistModel, elemFactory} from 'hoist/core';
 import {frame, table, tbody, tr, th, td, filler} from 'hoist/layout';
 import {toolbar} from 'hoist/cmp/toolbar';
+import {Icon} from 'hoist/icon';
 import {dialog, button} from 'hoist/kit/blueprint';
 import './AboutDialog.scss';
 
@@ -23,7 +24,7 @@ export class AboutDialog extends Component {
         return dialog({
             isOpen: this.props.isOpen,
             isCloseButtonShown: false,
-            icon: 'info-sign',
+            icon: Icon.info({size: 'lg'}),
             cls: 'xh-about-dialog',
             title: `About ${XH.appName}`,
             style: {width: 350},

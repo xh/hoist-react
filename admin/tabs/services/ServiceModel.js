@@ -9,6 +9,7 @@ import {Intent} from 'hoist/kit/blueprint';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
 import {ToastManager} from 'hoist/cmp';
 import {UrlStore} from 'hoist/data';
+import {Icon} from 'hoist/icon';
 import {GridModel} from 'hoist/grid';
 
 import {baseCol} from 'hoist/columns/Core';
@@ -52,7 +53,7 @@ export class ServiceModel {
         ToastManager.getToaster().show({
             intent: Intent.SUCCESS,
             message: 'Caches Cleared',
-            icon: 'tick',
+            icon: Icon.check({style: {alignSelf: 'center', marginLeft: '5px'}}),
             timeout: 3 * SECONDS
         });
     }

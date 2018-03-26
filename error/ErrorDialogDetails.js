@@ -9,6 +9,7 @@ import {Component} from 'react';
 import {XH, hoistComponent, elemFactory} from 'hoist/core';
 import {button, dialog, dialogBody, textArea} from 'hoist/kit/blueprint';
 import {clipboardButton, toolbar} from 'hoist/cmp';
+import {Icon} from 'hoist/icon';
 import {pre, table, tbody, td, th, tr, filler} from 'hoist/layout';
 import {stringifyErrorSafely} from 'hoist/exception';
 
@@ -33,7 +34,7 @@ export class ErrorDialogDetails extends Component {
 
         return dialog({
             title: 'Error Details',
-            icon: 'search',
+            icon: Icon.search(),
             isOpen: true,
             onClose: this.onCloseClick,
             style: {height: 600},
@@ -62,12 +63,12 @@ export class ErrorDialogDetails extends Component {
                 toolbar([
                     filler(),
                     button({
-                        icon: 'envelope',
+                        icon: Icon.envelope(),
                         text: 'Send',
                         onClick: this.onSendClick
                     }),
                     clipboardButton({
-                        icon: 'clipboard',
+                        icon: Icon.clipboard(),
                         text: 'Copy',
                         clipboardSpec: {text: () => this.errorStr},
                         successMessage: 'Error details copied to clipboard.'

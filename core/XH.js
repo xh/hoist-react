@@ -23,9 +23,7 @@ export const XH = window.XH = new class {
     appName = xhAppName;
     appVersion = xhAppVersion;
     appBuild = xhAppBuild;
-
-    // TODO - review how this should be set (or how it's used / if it's needed)
-    BASE_URL = '/';
+    baseUrl = xhBaseUrl;
 
     constructor() {
         this.hoistModel = hoistModel;
