@@ -7,6 +7,7 @@
 
 import {SECONDS, MINUTES, HOURS, DAYS} from './DateTimeUtils';
 import {flow} from 'lodash';
+import {pluralize} from 'hoist/utils/JsUtils';
 
 const FORMAT_STRINGS = {
     seconds: '<1 minute',
@@ -65,7 +66,7 @@ const getElapsedTime = timeStamp =>
         const diff = config.currentDate - timeStamp;
         return Object.assign(config, {
             isFuture: diff < 0,
-            diff: Math.abs(diff)
+            elapsedTime: Math.abs(diff)
         });
     };
 
@@ -73,19 +74,24 @@ const normalizeElapsedTime = config => {
     const {isFuture, options} = config,
         {allowFuture, nowEpsilon} = options;
 
-    if (config.diff < nowEpsilon * SECONDS) {
-        config.diff = 0;
+    if (config.elapsedTime < nowEpsilon * SECONDS) {
+        config.elapsedTime = 0;
     } else if (!allowFuture && isFuture) {
         config.isInvalid = true;
-        console.warn(`Unexpected future date provided for timestamp: ${config.diff}ms in the future.`);
+        console.warn(`Unexpected future date provided for timestamp: ${config.elapsedTime}ms in the future.`);
     }
 
     return config;
 };
 
 const formatElapsedTime = config => {
-    const {isInvalid, diff} = config;
-    if (isInvalid || !diff) return config;
+    const {isInvalid, elapsedTime} = config;
+
+    // by default the smallest possible unit should be used
+    config.unit = 'seconds';
+    config.value = 0;
+
+    if (isInvalid || !elapsedTime) return config;
 
     const types = [
         {name: 'seconds',  formula: v => v / SECONDS},
@@ -97,10 +103,15 @@ const formatElapsedTime = config => {
     ];
 
     types.forEach(type => {
-        const val = type.formula(diff);
+        const val = type.formula(elapsedTime);
+
         if (val >= 1) {
-            config.value = parseInt(val);
-            config.unit = `${type.name}${type.name !== 'seconds' && val >=2 ? 's' : ''}`;
+            config.value = parseInt(val, 10);
+            config.unit = type.name;
+
+            if (config.unit !== 'seconds') {
+                config.unit = pluralize(config.unit, config.value);
+            }
         }
     });
 
@@ -108,11 +119,12 @@ const formatElapsedTime = config => {
 };
 
 const getSuffix = config => {
-    const {isInvalid, diff, isFuture, options} = config;
+    const {isInvalid, elapsedTime, isFuture, options} = config;
     if (isInvalid) return config;
 
-    if (!diff) {
-        config._suffix = options.nowString || '';
+    if (!elapsedTime && options.nowString) {
+        config.suffix = options.nowString;
+        config.useNowString = true;
     } else {
         config.suffix = options[isFuture ? 'futureSuffix' : 'pastSuffix'];
     }
@@ -121,12 +133,13 @@ const getSuffix = config => {
 };
 
 const generateStringByDateRange = config => {
-    const {isInvalid, diff, unit, value, suffix} = config;
+    const {isInvalid, elapsedTime, value, unit, useNowString, suffix} = config;
     if (isInvalid) return '[???]';
-    if (!diff || unit === 'seconds') {
-        if (!diff && suffix) return suffix;
-        return FORMAT_STRINGS.seconds;
-    }
+
+    // if elapsedTime was normalized to 0 (smaller than nowEpsilon)
+    // then return the nowString if it's present, otherwise return the
+    // default FORMAT for seconds.
+    if (!elapsedTime && useNowString) return suffix;
 
     return `${FORMAT_STRINGS[unit].replace('%d', value)} ${suffix}`;
 };
