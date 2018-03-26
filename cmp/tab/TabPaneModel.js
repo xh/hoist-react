@@ -4,23 +4,47 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {computed, action, observable} from 'hoist/mobx';
+import {computed, action, observable, autorun} from 'hoist/mobx';
 import {LastPromiseModel} from 'hoist/promise';
+import {startCase} from 'lodash';
+import {wait} from 'hoist/promise';
 
 /**
- * Model for a TabPane, representing its content's active load state.
+ * Model for a TabPane, representing its content's active and load state.
  */
 export class TabPaneModel {
     id = null;
+    name = null;
     componentClass = null;
     parent = null;
 
     @observable lastLoaded = null;
     loadState = new LastPromiseModel();
+    
+    get routeName() {
+        return this.parent.routeName + '.' + this.id;
+    }
 
-    constructor(id, componentClass) {
+    /**
+     * Construct this object.
+     *
+     * @param id, String.  Unique id.  Used for generating routes.
+     * @param name, String. Display name for the tab.
+     * @param component, React Node.  Specifies component to be displayed within tab.
+     */
+    constructor({
+        id,
+        name = startCase(id),
+        component
+    }) {
         this.id = id;
-        this.componentClass = componentClass;
+        this.name = name;
+        this.componentClass = component;
+        wait(1).then(() => autorun(() => this.syncFromRouter()));
+    }
+
+    select() {
+        this.parent.setSelectedId(this.id);
     }
 
     @computed
@@ -47,5 +71,16 @@ export class TabPaneModel {
     @action
     markLoaded() {
         this.lastLoaded = Date.now();
+    }
+
+    syncFromRouter() {
+        const {parent, id} = this,
+            routerModel = XH.routerModel,
+            state = routerModel.currentState,
+            routeName = state ? state.name : 'default';
+
+        if (routeName.startsWith(this.routeName) && parent.selectedId != id) {
+            parent.setSelectedId(id);
+        }
     }
 }

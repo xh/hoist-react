@@ -5,8 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH} from 'hoist/core';
-import {computed, action, observable} from 'hoist/mobx';
-import {max} from 'lodash';
+import {computed, action, observable, autorun} from 'hoist/mobx';
+import {max, uniqBy, find, clone, startCase, isPlainObject} from 'lodash';
+import {throwIf} from 'hoist/utils/JsUtils';
+import {wait} from 'hoist/promise';
+import {TabPaneModel} from 'hoist/cmp';
 
 /**
  * Model for a TabContainer, representing its layout/contents and currently selected TabPane.
@@ -18,32 +21,34 @@ import {max} from 'lodash';
  */
 export class TabContainerModel {
     id = null;
+    name = null;
     vertical = false;
     children = [];
 
     @observable _lastRefreshRequest = null;
-    @observable selectedIndex = -1;
+    @observable selectedId = null;
 
     parent = null;   // For sub-tabs only
-
-    @computed
-    get selectedId() {
-        const selectedIndex = this.selectedIndex;
-        return selectedIndex >= 0 ? this.children[selectedIndex].id : null;
+    
+    get routeName() {
+        return this.parent ? this.parent.routeName + '.' + this.id : this.id;
     }
 
     @action
     setSelectedId(id) {
-        const index = this.children.findIndex(it => it.id === id);
-        this.setSelectedIndex(index);
-    }
+        const children = this.children,
+            child = find(children, ['id', id]);
+        
+        this.selectedId = id; //child ? id : children[0].id;
+        
+        const routerModel = XH.routerModel,
+             state = routerModel.currentState,
+             routeName = state ? state.name : 'default',
+             selectedRouteFragment = this.routeName + '.' + this.selectedId;
 
-    @action
-    setSelectedIndex(index) {
-        if (index >= this.children.length || index < -1)  {
-            throw XH.exception('Incorrect Index for TabContainerModel');
+        if (!routeName.startsWith(selectedRouteFragment)) {
+            routerModel.navigate(selectedRouteFragment);
         }
-        this.selectedIndex = index;
     }
 
     @computed
@@ -63,12 +68,53 @@ export class TabContainerModel {
         return max([parentVal, this._lastRefreshRequest]);
     }
 
-
-    constructor(id, orientation, ...children) {
+    /**
+     * Construct this object
+     * @param id, String.  Unique id.  Used for generating routes.
+     * @param name, String. Display name for the tab.
+     * @param orientation, 'v' or 'h'
+     * @param children, configurations for TabPaneModels, or TabContainerModel
+     */
+    constructor({
+        id,
+        name = startCase(id),
+        orientation = 'h',
+        children
+    }) {
         this.id = id;
+        this.name = name;
         this.vertical = orientation === 'v';
-        this.children = children;
-        this.selectedIndex = children.length ? 0 : -1;
+
+        // Instantiate children, if needed.
+        children = children.map(it => {
+            if (isPlainObject(it)) {
+                return it.children ? new TabContainerModel(it) : new TabPaneModel(it);
+            }
+            return it;
+        });
+        
+        // Validate and wire children
+        throwIf(children.length == 0,
+            'TabContainerModel needs at least one child pane.'
+        )
+        throwIf(children.length != uniqBy(children, 'id').length,
+            'One or more Panes in TabContainerModel has a non-unique id.'
+        )
+
         children.forEach(child => child.parent = this);
+        this.children = children;
+        this.selectedId = children[0].id;
+        wait(1).then(() => autorun(() => this.syncFromRouter()));
+    }
+    
+    syncFromRouter() {
+        const {parent, id} = this,
+            routerModel = XH.routerModel,
+            state = routerModel.currentState,
+            routeName = state ? state.name : 'default';
+        
+        if (parent && routeName.startsWith(this.routeName) && parent.selectedId != id) {
+            parent.setSelectedId(id);
+        }
     }
 }

@@ -21,29 +21,49 @@ export class RouterModel {
     @observable currentState;
 
     /**
-     * Router5 Router object implementing the routing state.
-     * This is the main entry point for Router5 api calls.
+     * Underlying Router5 Router object implementing the routing state.
+     *
+     * Applications should use this property to directly access the Router5 API.
      */
     router = null;
 
-    @action
-    setCurrentState(state) {
-        this.currentState = state;
+    /**
+     * Initialize this object, and the underlying Router5 routing system.
+     *
+     * @param routes, array of router 5 route objects.
+     */
+    init(routes) {
+        const config = {defaultRoute: 'default'};
+
+        this.router = createRouter(routes, config)
+            .usePlugin(browserPlugin(), hoistPlugin(this))
+            .useMiddleware(hoistMiddleware(this))
+            .start();
     }
 
     /**
-     * Initialize the Router5 routing system.
+     * Navigate
      *
-     * @param routes, array of router 5 route objects.
-     *
-     * Additional routes may be added
+     * This is a convenience short cut for router.navigate().  See
+     * the Router5 documentation for more information.
      */
-    constructor(routes) {
-        const config = {defaultRoute: 'default'};
-        
-        this.router = createRouter(routes, config)
-            .usePlugin(browserPlugin(), hoistPlugin(this))
-            .useMiddleware(hoistMiddleware(this));
-        this.router.start();
+    navigate(...args) {
+        this.router.navigate(...args);
+    }
+
+    //-------------------------
+    // Implementation
+    //-------------------------
+    /**
+     * Set the current routing state.  
+     *
+     * @param state, Router5 State object.
+     *
+     * Not for use by applications.  This is used for implementing
+     * the connection between this object and the router5 system.
+     */
+    @action
+    setCurrentState(state) {
+        this.currentState = state;
     }
 }

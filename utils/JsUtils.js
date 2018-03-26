@@ -39,3 +39,9 @@ export function isJSON(value) {
         return false;
     }
 }
+
+export function throwIf(condition, msg) {
+    if (condition) {
+        throw XH.exception(msg);
+    }
+}

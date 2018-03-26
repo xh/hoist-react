@@ -66,7 +66,7 @@ class HoistModel {
     appModel = null;
 
     /** Router model for the app - used for route based navigation. **/
-    routerModel = null;
+    routerModel = new RouterModel();
 
     /**
      * Tracks globally loading promises.
@@ -145,7 +145,7 @@ class HoistModel {
     }
 
     initRouterModel() {
-        this.routerModel = new RouterModel(this.appModel.getRoutes());
+        this.routerModel.init(this.appModel.getRoutes());
     }
 
     @action
