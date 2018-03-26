@@ -45,53 +45,57 @@ const defaultOptions = {
  *          emptyString, string - String to be used when timeStamp is undefined
  */
 export const getString = (timeStamp, options) => {
-    const opt = Object.assign(defaultOptions, options);
+    const opts = Object.assign({timeStamp}, defaultOptions, options);
 
     if (!timeStamp) return opt.emptyString;
 
+    // Enhance options with needed info, last function will output result.
     return flow(
-        getCurrentTime,
-        getElapsedTime(timeStamp),
-        normalizeElapsedTime,
-        formatElapsedTime,
+        getNow,
+        getElapsedTime,
+        normalizeAndValidate,
+        getMillisAndUnit,
         getSuffix,
-        generateStringByDateRange
-    )(opt);
+        getResult
+    )(opts);
 };
 
-const getCurrentTime = options => ({ currentDate: new Date(), options});
+//----------------------------
+// Implementation
+//-----------------------------
+const getCurrentTime = opts => {
+    opts.now = Date.now();
+    return opts;
+};
 
-const getElapsedTime = timeStamp =>
-    config => {
-        const diff = config.currentDate - timeStamp;
-        return Object.assign(config, {
-            isFuture: diff < 0,
-            elapsedTime: Math.abs(diff)
-        });
-    };
+const getElapsedTime = opts => {
+    const diff = opts.now - opts.timeStamp;
+    opts.isFuture = diff < 0;
+    opts.elapsedTime: Math.abs(diff);
+    return opts;
+};
 
-const normalizeElapsedTime = config => {
-    const {isFuture, options} = config,
-        {allowFuture, nowEpsilon} = options;
+const normalizeElapsedTime = opts => {
+    const {isFuture, allowFuture, nowEpsilon, elapsedTime} = opts;
 
-    if (config.elapsedTime < nowEpsilon * SECONDS) {
-        config.elapsedTime = 0;
+    if (elapsedTime < nowEpsilon * SECONDS) {
+        opts.elapsedTime = 0;
     } else if (!allowFuture && isFuture) {
-        config.isInvalid = true;
-        console.warn(`Unexpected future date provided for timestamp: ${config.elapsedTime}ms in the future.`);
+        opts.isInvalid = true;
+        console.warn(`Unexpected future date provided for timestamp: ${elapsedTime}ms in the future.`);
     }
 
-    return config;
+    return opts;
 };
 
-const formatElapsedTime = config => {
-    const {isInvalid, elapsedTime} = config;
+const getMillisAndUnit = opts => {
+    const {isInvalid, elapsedTime} = opts;
 
     // by default the smallest possible unit should be used
-    config.unit = 'seconds';
-    config.value = 0;
+    opts.unit = 'seconds';
+    opts.millis = 0;
 
-    if (isInvalid || !elapsedTime) return config;
+    if (isInvalid || !elapsedTime) return opts;
 
     const types = [
         {name: 'seconds',  formula: v => v / SECONDS},
@@ -106,34 +110,34 @@ const formatElapsedTime = config => {
         const val = type.formula(elapsedTime);
 
         if (val >= 1) {
-            config.value = parseInt(val, 10);
-            config.unit = type.name;
+            opts.millis = parseInt(val, 10);
+            opts.unit = type.name;
 
-            if (config.unit !== 'seconds') {
-                config.unit = pluralize(config.unit, config.value);
+            if (opts.unit !== 'seconds') {
+                opts.unit = pluralize(opts.unit, opts.millis);
             }
         }
     });
 
-    return config;
+    return opts;
 };
 
-const getSuffix = config => {
-    const {isInvalid, elapsedTime, isFuture, options} = config;
-    if (isInvalid) return config;
+const getSuffix = opts => {
+    const {isInvalid, elapsedTime, isFuture, nowString} = opts;
+    if (isInvalid) return opts;
 
-    if (!elapsedTime && options.nowString) {
-        config.suffix = options.nowString;
-        config.useNowString = true;
+    if (!elapsedTime && nowString) {
+        opts.suffix = nowString;
+        opts.useNowString = true;
     } else {
-        config.suffix = options[isFuture ? 'futureSuffix' : 'pastSuffix'];
+        opts.suffix = opts[isFuture ? 'futureSuffix' : 'pastSuffix'];
     }
 
-    return config;
+    return opts;
 };
 
-const generateStringByDateRange = config => {
-    const {isInvalid, elapsedTime, value, unit, useNowString, suffix} = config;
+const getResult = opts => {
+    const {isInvalid, elapsedTime, value, unit, useNowString, suffix} = opts;
     if (isInvalid) return '[???]';
 
     // if elapsedTime was normalized to 0 (smaller than nowEpsilon)
