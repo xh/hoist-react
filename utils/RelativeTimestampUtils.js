@@ -6,7 +6,7 @@
  */
 
 import {SECONDS, MINUTES, HOURS, DAYS} from './DateTimeUtils';
-import {compose} from './Compose';
+import {flow} from 'lodash';
 
 const FORMAT_STRINGS = {
     seconds: '<1 minute',
@@ -48,45 +48,44 @@ export const getString = (timeStamp, options) => {
 
     if (!timeStamp) return opt.emptyString;
 
-    return compose(
+    return flow(
         getCurrentTime,
-        getDiffFromInput(timeStamp),
-        adjustDiff(opt),
-        getUnitAndValue,
-        getSuffix(opt),
+        getElapsedTime(timeStamp),
+        normalizeElapsedTime,
+        formatElapsedTime,
+        getSuffix,
         generateStringByDateRange
-    )();
+    )(opt);
 };
 
-const getCurrentTime = () => new Date();
+const getCurrentTime = options => ({ currentDate: new Date(), options});
 
-const getDiffFromInput = timeStamp => {
-    return now => {
-        const diff = now - timeStamp;
-        return {
+const getElapsedTime = timeStamp =>
+    config => {
+        const diff = config.currentDate - timeStamp;
+        return Object.assign(config, {
             isFuture: diff < 0,
             diff: Math.abs(diff)
-        };
+        });
     };
+
+const normalizeElapsedTime = config => {
+    const {isFuture, options} = config,
+        {allowFuture, nowEpsilon} = options;
+
+    if (config.diff < nowEpsilon * SECONDS) {
+        config.diff = 0;
+    } else if (!allowFuture && isFuture) {
+        config.isInvalid = true;
+        console.warn(`Unexpected future date provided for timestamp: ${config.diff}ms in the future.`);
+    }
+
+    return config;
 };
 
-const adjustDiff = options =>
-    config => {
-        const {allowFuture, nowEpsilon} = options;
-
-        if (config.diff < nowEpsilon * SECONDS) {
-            config.diff = 0;
-        } else if (!allowFuture && config.isFuture) {
-            config.isInvalid = true;
-            console.warn(`Unexpected future date provided for timestamp: ${config.diff}ms in the future.`);
-        }
-
-        return config;
-    };
-
-const getUnitAndValue = config => {
+const formatElapsedTime = config => {
     const {isInvalid, diff} = config;
-    if (isInvalid || !diff) return this;
+    if (isInvalid || !diff) return config;
 
     const types = [
         {name: 'seconds',  formula: v => v / SECONDS},
@@ -94,7 +93,7 @@ const getUnitAndValue = config => {
         {name: 'hour',     formula: v => v / HOURS},
         {name: 'day',      formula: v => v / DAYS},
         {name: 'month',    formula: v => v / (DAYS * 30)},
-        {name: 'year',    formula: v => v / (DAYS * 365)}
+        {name: 'year',     formula: v => v / (DAYS * 365)}
     ];
 
     types.forEach(type => {
@@ -108,19 +107,18 @@ const getUnitAndValue = config => {
     return config;
 };
 
-const getSuffix = options =>
-    config => {
-        const {isInvalid, diff, isFuture} = config;
-        if (isInvalid) return config;
+const getSuffix = config => {
+    const {isInvalid, diff, isFuture, options} = config;
+    if (isInvalid) return config;
 
-        if (!diff) {
-            config._suffix = options.nowString || '';
-        } else {
-            config.suffix = options[isFuture ? 'futureSuffix' : 'pastSuffix'];
-        }
+    if (!diff) {
+        config._suffix = options.nowString || '';
+    } else {
+        config.suffix = options[isFuture ? 'futureSuffix' : 'pastSuffix'];
+    }
 
-        return config;
-    };
+    return config;
+};
 
 const generateStringByDateRange = config => {
     const {isInvalid, diff, unit, value, suffix} = config;
