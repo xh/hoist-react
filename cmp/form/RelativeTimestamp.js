@@ -38,10 +38,10 @@ const defaultOptions = {
 };
 
 /**
- * A RelativeTimestamp form field that uses the RelativeTimestamp string generator
+ * A RelativeTimestamp form field
  *
  * @prop timeStamp, Date
- * @prop options, Object, see the RelativeTimestamp options
+ * @prop options, Object, see the getRelativeTimestamp options
  */
 
 @hoistComponent()
