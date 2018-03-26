@@ -34,7 +34,7 @@ const defaultOptions = {
     pastSuffix: 'ago',
     nowString: null,
     nowEpsilon: 30,
-    emptyString: 'never'
+    emptyResult: ''
 };
 
 /**
@@ -90,12 +90,12 @@ export const relativeTimestamp = elemFactory(RelativeTimestamp);
  *          pastSuffix, string - String appended to past timestamps
  *          nowEpsilon, integer - Number of seconds from initial timeStamp to be considered as `now`.
  *          nowString, string - String used as display property when timeStamp is within nowEpsilon
- *          emptyString, string - String to be used when timeStamp is undefined
+ *          emptyResult, string - String to be used when timeStamp is undefined
  */
 export const getRelativeTimestamp = (timeStamp, options) => {
     const opts = Object.assign({timeStamp}, defaultOptions, options);
 
-    if (!timeStamp) return opts.emptyString;
+    if (!timeStamp) return opts.emptyResult;
 
     // Enhance options with needed info, last function will output result.
     return flow(
