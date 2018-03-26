@@ -6,7 +6,7 @@
  */
 import {BaseAppModel} from 'hoist/core';
 import {action} from 'hoist/mobx';
-import {TabContainerModel, TabPaneModel} from 'hoist/cmp';
+import {TabContainerModel} from 'hoist/cmp';
 
 import {AboutPanel} from './tabs/about/AboutPanel';
 import {ActivityPanel} from './tabs/activity/ActivityPanel';
@@ -79,7 +79,7 @@ export class AppModel extends BaseAppModel {
                         children: [
                             {name: 'activity', path: '/activity'},
                             {name: 'clientErrors', path: '/clientErrors'},
-                            {name: 'feedback', path: '/feedback'},
+                            {name: 'feedback', path: '/feedback'}
                         ]
                     },
                     {

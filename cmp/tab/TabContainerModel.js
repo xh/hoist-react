@@ -6,7 +6,7 @@
  */
 import {XH} from 'hoist/core';
 import {computed, action, observable, autorun} from 'hoist/mobx';
-import {max, uniqBy, find, clone, startCase, isPlainObject} from 'lodash';
+import {max, uniqBy, find, startCase, isPlainObject} from 'lodash';
 import {throwIf} from 'hoist/utils/JsUtils';
 import {wait} from 'hoist/promise';
 import {TabPaneModel} from 'hoist/cmp';
@@ -37,14 +37,14 @@ export class TabContainerModel {
     @action
     setSelectedId(id) {
         const children = this.children,
-            child = find(children, ['id', id]);
+            child = children.find(it => it.id === id);
         
-        this.selectedId = id; //child ? id : children[0].id;
+        this.selectedId = child ? id : children[0].id;
         
         const routerModel = XH.routerModel,
-             state = routerModel.currentState,
-             routeName = state ? state.name : 'default',
-             selectedRouteFragment = this.routeName + '.' + this.selectedId;
+            state = routerModel.currentState,
+            routeName = state ? state.name : 'default',
+            selectedRouteFragment = this.routeName + '.' + this.selectedId;
 
         if (!routeName.startsWith(selectedRouteFragment)) {
             routerModel.navigate(selectedRouteFragment);
@@ -96,10 +96,10 @@ export class TabContainerModel {
         // Validate and wire children
         throwIf(children.length == 0,
             'TabContainerModel needs at least one child pane.'
-        )
+        );
         throwIf(children.length != uniqBy(children, 'id').length,
             'One or more Panes in TabContainerModel has a non-unique id.'
-        )
+        );
 
         children.forEach(child => child.parent = this);
         this.children = children;
