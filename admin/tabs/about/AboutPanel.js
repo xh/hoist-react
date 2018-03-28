@@ -32,9 +32,11 @@ export class AboutPanel extends Component {
         return [
             table({
                 item: tbody(
-                    row('App Name', XH.appName),
+                    row('App Name', svc.get('appName')),
                     row('Environment', svc.get('appEnvironment')),
-                    row('Version', svc.get('appVersion'))
+                    row('Server', svc.get('appVersion')),
+                    row('Client', svc.get('clientVersion')),
+                    row('Build', svc.get('clientBuild'))
                 )
             }),
             h4('Framework Versions'),
@@ -42,9 +44,9 @@ export class AboutPanel extends Component {
                 item: tbody(
                     row('Hoist Core', svc.get('hoistCoreVersion')),
                     row('Hoist React', svc.get('hoistReactVersion')),
+                    row('React', svc.get('reactVersion')),
                     row('Grails', svc.get('grailsVersion')),
-                    row('React', React.version),
-                    row('Java Version', svc.get('javaVersion'))
+                    row('Java', svc.get('javaVersion'))
                 )
             })
         ];

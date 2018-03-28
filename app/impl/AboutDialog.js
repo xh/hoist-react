@@ -27,7 +27,7 @@ export class AboutDialog extends Component {
             icon: Icon.info({size: 'lg'}),
             cls: 'xh-about-dialog',
             title: `About ${XH.appName}`,
-            style: {width: 350},
+            style: {width: 450},
             items: [
                 frame({
                     cls: 'xh-about-dialog__inner',
@@ -61,13 +61,15 @@ export class AboutDialog extends Component {
 
         return table({
             item: tbody(
-                row('App Name', XH.appName),
-                row('Version', XH.appVersion),
-                row('Build', XH.appBuild),
+                row('App Name', svc.get('appName')),
                 row('Current User', XH.identityService.username),
                 row('Environment', svc.get('appEnvironment')),
-                row('Hoist Core Version', svc.get('hoistCoreVersion')),
-                row('Hoist React Version', svc.get('hoistReactVersion')),
+                row('Server', svc.get('appVersion')),
+                row('Client', svc.get('clientVersion')),
+                row('Hoist Core', svc.get('hoistCoreVersion')),
+                row('Hoist React', svc.get('hoistReactVersion')),
+                row('Build', svc.get('clientBuild')),
+                row('User Agent', navigator.userAgent),
                 ...configRows
             )
         });
