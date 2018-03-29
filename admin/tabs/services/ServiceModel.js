@@ -24,25 +24,33 @@ export class ServiceModel {
 
     gridModel = new GridModel({
         store: this.store,
+        sorters: [{field: 'name', dir: 'asc'}],
+        groupBy: 'provider',
         columns: [
             baseCol({
                 field: 'provider',
-                // rowGroup: true,
-                // hide: true,
-
                 fixedWidth: 100
             }),
             baseCol({field: 'name', minWidth: 300, flex: 1})
         ],
         contextMenuFn:   () => {
+            const {gridModel} = this;
             return new GridContextMenu([
                 {
                     text: 'Group by Provider',
-                    action: () => this.gridModel.groupBy('provider')
+                    action: () => gridModel.setGroupBy('provider')
                 },
                 {
                     text: 'Ungroup',
-                    action: () => this.gridModel.ungroup()
+                    action: () => gridModel.setGroupBy(null)
+                },
+                {
+                    text: 'Sort by Name',
+                    action: () => gridModel.setSorters([{field: 'name', dir: 'asc'}])
+                },
+                {
+                    text: 'Provider',
+                    action: () => gridModel.setSorters([{field: 'provider', dir: 'asc'}])
                 }
             ]);
         }

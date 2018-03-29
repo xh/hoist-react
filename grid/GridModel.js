@@ -58,6 +58,7 @@ export class GridModel {
         this.contextMenuFn = contextMenuFn;
         this.selection = new GridSelectionModel({parent: this});
         this.setGroupBy(groupBy);
+        this.setSorters(sorters);
     }
 
     exportDataAsExcel(params) {
@@ -77,12 +78,11 @@ export class GridModel {
         if (field) {
             const col = find(cols, {field});
             if (col) {
-                console.log(col);
                 col.rowGroup = true;
                 col.hide = false;
             }
         }
-
+        
         this.columns = [...cols];
     }
 

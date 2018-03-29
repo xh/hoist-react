@@ -9,7 +9,7 @@ import {Component, isValidElement} from 'react';
 import fontawesome from '@fortawesome/fontawesome';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
-import {defaults, delay, difference, isString, isNumber, isBoolean} from 'lodash';
+import {defaults, delay, difference, isString, isNumber, isBoolean, isEqual} from 'lodash';
 
 import './ag-grid';
 import {navigateSelection, agGridReact} from './ag-grid';
@@ -43,6 +43,7 @@ class Grid extends Component {
         );
         this.addAutoRun(() => this.syncSelection());
         this.addAutoRun(() => this.syncSort());
+        this.addAutoRun(() => this.syncColumns());
     }
 
     render() {
@@ -82,7 +83,7 @@ class Grid extends Component {
     }
 
     onSortChanged = (ev) => {
-        console.log(ev.api.getSortModel());
+        this.model.setSorters(this.toModelSorters(ev.api.getSortModel()));
     }
 
     onNavigateToNextCell = (params) => {
@@ -180,11 +181,24 @@ class Grid extends Component {
 
     syncSort() {
         const api = this.gridOptions.api,
-            agModel = api.getSortModel(),
-            sorters = this.model.sorters;
+            agSorters = api.getSortModel(),
+            modelSorters = this.toAgSorters(this.model.sorters);
+        if (!isEqual(agSorters, modelSorters)) {
+            api.setSortModel(modelSorters);
+        }
+    }
 
-        console.log(agModel);
-        console.log(sorters);
+    syncColumns() {
+        // Needed because AGGridReact won't recognize updates to columns prop.
+        this.gridOptions.api.setColumnDefs(this.model.columns);
+    }
+
+    toModelSorters(agSorters) {
+        return agSorters.map(it => ({field: it.colId, dir: it.sort}));
+    }
+
+    toAgSorters(modelSorters) {
+        return modelSorters.map(it => ({colId: it.field, sort: it.dir}));
     }
 }
 export const grid = elemFactory(Grid);
