@@ -220,7 +220,7 @@ function signGlyph(v) {
 function valueColor(v, colorSpec) {
     if (!isFinite(v)) return '';
 
-    const defaultColors = {pos: 'green', neg: 'red', neutral: 'gray'};
+    const defaultColors = {pos: 'xh-green', neg: 'xh-red', neutral: 'xh-gray'};
     colorSpec = typeof colorSpec === 'object' ? colorSpec : defaultColors;
 
     if (!colorSpec.pos || !colorSpec.neg || !colorSpec.neutral) {

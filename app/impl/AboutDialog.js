@@ -9,6 +9,7 @@ import {Component} from 'react';
 import {XH, hoistComponent, hoistModel, elemFactory} from 'hoist/core';
 import {frame, table, tbody, tr, th, td, filler} from 'hoist/layout';
 import {toolbar} from 'hoist/cmp/toolbar';
+import {Icon} from 'hoist/icon';
 import {dialog, button} from 'hoist/kit/blueprint';
 import './AboutDialog.scss';
 
@@ -23,10 +24,10 @@ export class AboutDialog extends Component {
         return dialog({
             isOpen: this.props.isOpen,
             isCloseButtonShown: false,
-            icon: 'info-sign',
+            icon: Icon.info({size: 'lg'}),
             cls: 'xh-about-dialog',
             title: `About ${XH.appName}`,
-            style: {width: 350},
+            style: {width: 450},
             items: [
                 frame({
                     cls: 'xh-about-dialog__inner',
@@ -60,13 +61,15 @@ export class AboutDialog extends Component {
 
         return table({
             item: tbody(
-                row('App Name', XH.appName),
-                row('Version', XH.appVersion),
-                row('Build', XH.appBuild),
+                row('App Name', svc.get('appName')),
                 row('Current User', XH.identityService.username),
                 row('Environment', svc.get('appEnvironment')),
-                row('Hoist Core Version', svc.get('hoistCoreVersion')),
-                row('Hoist React Version', svc.get('hoistReactVersion')),
+                row('Server', svc.get('appVersion')),
+                row('Client', svc.get('clientVersion')),
+                row('Hoist Core', svc.get('hoistCoreVersion')),
+                row('Hoist React', svc.get('hoistReactVersion')),
+                row('Build', svc.get('clientBuild')),
+                row('User Agent', navigator.userAgent),
                 ...configRows
             )
         });

@@ -32,6 +32,7 @@ import {
     NumericInput,
     Overlay,
     Popover,
+    RangeSlider,
     Spinner,
     Switch,
     Tab,
@@ -41,7 +42,7 @@ import {
 } from '@blueprintjs/core';
 
 import {DateInput} from '@blueprintjs/datetime';
-import {Suggest, Select} from '@blueprintjs/select';
+import {Suggest, Select, Omnibar} from '@blueprintjs/select';
 
 export {
     ContextMenu,
@@ -72,8 +73,10 @@ export const
     navbarGroup = elemFactory(NavbarGroup),
     navbarDivider = elemFactory(NavbarDivider),
     numericInput = elemFactory(NumericInput),
+    omnibar = elemFactory(Omnibar),
     overlay = elemFactory(Overlay),
     popover = elemFactory(Popover),
+    rangeSlider = elemFactory(RangeSlider),
     select = elemFactory(Select),
     spinner = elemFactory(Spinner),
     suggest = elemFactory(Suggest),
