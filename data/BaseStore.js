@@ -45,7 +45,16 @@ export class BaseStore {
      * @param filteredOnly, set to true to skip non-filtered records
      */
     getById(id, filteredOnly) {}
-    
+
+    /**
+     * Get records sorted by property
+     *
+     * @param property
+     * @param direction, ASC | DESC
+     * @param filteredOnly, set to true to skip non-filtered records
+     */
+    getSorted(property, direction, filteredOnly) {}
+
     /**
      * Construct this object.
      *

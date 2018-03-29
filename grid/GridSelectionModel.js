@@ -58,4 +58,22 @@ export class GridSelectionModel {
         this.ids = clearSelection ? ids : union(this.ids, ids);
     }
 
+    /**
+     * Selects first row in grid, accounting for grid sorting
+     */
+    selectFirst() {
+        const store = this.parent.store,
+            sortModel = this.parent.gridApi.getSortModel()[0],
+            recs = sortModel ? store.getSorted(sortModel.colId, sortModel.sort, true) : store.records;
+        if (recs.length) this.select(recs[0]);
+    }
+
+    /**
+     * Auto-select first record in grid, unless a record is already selected.
+     * Useful for grids that should always have a selection
+     */
+    autoSelectFirst() {
+        if (!this.singleRecord) this.selectFirst();
+    }
+
 }
