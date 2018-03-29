@@ -63,7 +63,7 @@ export class GridSelectionModel {
      */
     selectFirst() {
         const {store, gridApi} = this.parent,
-            sorters = gridApi.getSortModel().map(it => { return {property: it.colId, direction: it.sort}; }),
+            sorters = gridApi.getSortModel().map(it => { return {property: it.colId, direction: it.sort} }),
             recs = sorters.length ? store.getSorted(sorters, true) : store.records;
         if (recs.length) this.select(recs[0]);
     }
