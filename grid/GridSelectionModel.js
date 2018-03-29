@@ -51,7 +51,7 @@ export class GridSelectionModel {
     @action
     select(records, clearSelection = true) {
         const ids = castArray(records).map(it => {
-            return it.id ? it.id : it;
+            return it.id != null ? it.id : it;
         }).filter(id => {
             return this.parent.store.getById(id, true);
         });

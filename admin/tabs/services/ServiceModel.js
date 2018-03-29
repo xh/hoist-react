@@ -10,7 +10,6 @@ import {SECONDS} from 'hoist/utils/DateTimeUtils';
 import {ToastManager} from 'hoist/cmp';
 import {UrlStore} from 'hoist/data';
 import {Icon} from 'hoist/icon';
-import {GridModel} from 'hoist/grid';
 import {GridModel, GridContextMenu} from 'hoist/grid';
 
 import {baseCol} from 'hoist/columns/Core';

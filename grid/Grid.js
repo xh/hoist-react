@@ -42,6 +42,7 @@ class Grid extends Component {
             {defaultGroupSortComparator: this.sortByGroup}
         );
         this.addAutoRun(() => this.syncSelection());
+        this.addAutoRun(() => this.syncSort());
     }
 
     render() {
@@ -57,7 +58,8 @@ class Grid extends Component {
                     onGridReady: this.onGridReady,
                     gridOptions: this.gridOptions,
                     getContextMenuItems: this.getContextMenuItems,
-                    onGridSizeChanged: this.onGridSizeChanged
+                    onGridSizeChanged: this.onGridSizeChanged,
+                    onSortChanged: this.onSortChanged
                 })
             })
         );
@@ -77,6 +79,10 @@ class Grid extends Component {
     onSelectionChanged = (ev) => {
         const selection = this.model.selection;
         selection.select(ev.api.getSelectedRows());
+    }
+
+    onSortChanged = (ev) => {
+        console.log(ev.api.getSortModel());
     }
 
     onNavigateToNextCell = (params) => {
@@ -170,6 +176,15 @@ class Grid extends Component {
                 api.ensureNodeVisible(node);
             });
         }
+    }
+
+    syncSort() {
+        const api = this.gridOptions.api,
+            agModel = api.getSortModel(),
+            sorters = this.model.sorters;
+
+        console.log(agModel);
+        console.log(sorters);
     }
 }
 export const grid = elemFactory(Grid);

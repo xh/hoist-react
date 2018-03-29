@@ -25,6 +25,8 @@ export class GridModel {
     contextMenuFn = null
 
     @observable.ref columns = [];
+    @observable.ref sorters = [];
+    @observable groupBy
 
     static defaultContextMenu = () => {
         return new GridContextMenu([
@@ -41,17 +43,21 @@ export class GridModel {
      *
      * @param store, store containing the data for the grid.
      * @param columns, collection of column specifications.
+     * @param sorters, collection of form [{field: 'name', dir: 'ASC|DESC'}]
      * @param contextMenuFn, closure returning a GridContextMenu().
      */
     constructor({
         store,
         columns,
+        sorters = [],
+        groupBy = null,
         contextMenuFn = GridModel.defaultContextMenu
     }) {
         this.store = store;
         this.columns = columns;
         this.contextMenuFn = contextMenuFn;
         this.selection = new GridSelectionModel({parent: this});
+        this.setGroupBy(groupBy);
     }
 
     exportDataAsExcel(params) {
@@ -60,6 +66,34 @@ export class GridModel {
         this.gridApi.exportDataAsExcel(params);
     }
 
+    @action
+    setGroupBy(field) {
+        const cols = this.columns;
+        cols.forEach(it => {
+            it.rowGroup = false;
+            it.hide = false;
+        });
+
+        if (field) {
+            const col = find(cols, {field});
+            if (col) {
+                console.log(col);
+                col.rowGroup = true;
+                col.hide = false;
+            }
+        }
+
+        this.columns = [...cols];
+    }
+
+    @action
+    setSorters(sorters) {
+        this.sorters = sorters;
+    }
+
+    //-----------------------
+    // Implementation
+    //-----------------------
     formatValuesForExport(params) {
         const value = params.value,
             fmt = params.column.colDef.valueFormatter;
@@ -68,32 +102,5 @@ export class GridModel {
         } else {
             return value;
         }
-    }
-
-    @action
-    groupBy(field) {
-        const cols = this.columns
-        cols.forEach(it => {
-            it.rowGroup = false;
-            it.hide = false;
-        });
-
-        const col = find(cols, {field});
-        if (col) {
-            console.log(col);
-            col.rowGroup = true;
-            col.hide = false;
-        }
-        this.columns = [...cols];
-    }
-
-    @action
-    ungroup() {
-        const cols = this.columns
-        cols.forEach(it => {
-            it.rowGroup = false;
-            it.hide = false;
-        });
-        this.columns = [...cols];
     }
 }
