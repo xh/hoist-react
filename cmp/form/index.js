@@ -11,7 +11,6 @@ export * from './DayField';
 export * from './JsonField';
 export * from './Label';
 export * from './NumberField';
-export * from './RelativeTimestamp';
 export * from './SelectField';
 export * from './TextAreaField';
 export * from './TextField';

@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {observable, setter} from 'hoist/mobx';
-import {label} from 'hoist/cmp';
+import {div} from 'hoist/layout';
 import {Timer} from 'hoist/utils/Timer';
 import {SECONDS, MINUTES, HOURS, DAYS} from 'hoist/utils/DateTimeUtils';
 import {flow} from 'lodash';
@@ -38,9 +38,9 @@ const defaultOptions = {
 };
 
 /**
- * A RelativeTimestamp form field
+ * A RelativeTimestamp component - It displays time relative to `now`
  *
- * @prop timeStamp, Date
+ * @prop timestamp, Date
  * @prop options, Object, see the getRelativeTimestamp options
  */
 
@@ -50,7 +50,7 @@ class RelativeTimestamp extends Component {
     timer = null;
 
     render() {
-        return label(this.relativeTimeString);
+        return div(this.relativeTimeString);
     }
 
     refreshLabel = () => {
@@ -58,8 +58,8 @@ class RelativeTimestamp extends Component {
     }
 
     updateRelativeTimeString(props) {
-        const {timeStamp, options} = props;
-        this.setRelativeTimeString(getRelativeTimestamp(timeStamp, options));
+        const {timestamp, options} = props;
+        this.setRelativeTimeString(getRelativeTimestamp(timestamp, options));
     }
 
     componentDidMount() {
@@ -83,19 +83,19 @@ export const relativeTimestamp = elemFactory(RelativeTimestamp);
 /**
  * Returns a String relative to the Timestamp provided
  *
- * @param timeStamp, Date Object - Date that will be used as reference for this component
+ * @param timestamp, Date Object - Date that will be used as reference for this component
  * @param options, Object
  *          allowFuture, boolean -  Allow dates greater than new Date()
  *          futureSuffix, string - String appended to future timestamps
  *          pastSuffix, string - String appended to past timestamps
- *          nowEpsilon, integer - Number of seconds from initial timeStamp to be considered as `now`.
- *          nowString, string - String used as display property when timeStamp is within nowEpsilon
- *          emptyResult, string - String to be used when timeStamp is undefined
+ *          nowEpsilon, integer - interval (in seconds) that will serve as threshold for the nowString. (default 30)
+ *          nowString, string - String used as display property when timestamp is within the nowEpsilon interval.
+ *          emptyResult, string - String to be used when timestamp is undefined
  */
-export const getRelativeTimestamp = (timeStamp, options) => {
-    const opts = Object.assign({timeStamp}, defaultOptions, options);
+export const getRelativeTimestamp = (timestamp, options) => {
+    const opts = Object.assign({timestamp}, defaultOptions, options);
 
-    if (!timeStamp) return opts.emptyResult;
+    if (!timestamp) return opts.emptyResult;
 
     // Enhance options with needed info, last function will output result.
     return flow(
@@ -114,7 +114,7 @@ export const getRelativeTimestamp = (timeStamp, options) => {
 const getNow = opts => ({...opts, now: Date.now()});
 
 const getElapsedTime = opts => {
-    const diff = opts.now - opts.timeStamp;
+    const diff = opts.now - opts.timestamp;
     opts.isFuture = diff < 0;
     opts.elapsedTime = Math.abs(diff);
     return opts;
@@ -122,7 +122,6 @@ const getElapsedTime = opts => {
 
 const normalizeAndValidate = opts => {
     const {isFuture, allowFuture, nowEpsilon, elapsedTime} = opts;
-
     if (elapsedTime < nowEpsilon * SECONDS) {
         opts.elapsedTime = 0;
     } else if (!allowFuture && isFuture) {
@@ -135,7 +134,6 @@ const normalizeAndValidate = opts => {
 
 const getMillisAndUnit = opts => {
     const {isInvalid, elapsedTime} = opts;
-
     // by default the smallest possible unit should be used
     opts.unit = 'seconds';
     opts.millis = 0;
@@ -182,7 +180,7 @@ const getSuffix = opts => {
 };
 
 const getResult = opts => {
-    const {isInvalid, elapsedTime, value, unit, useNowString, suffix} = opts;
+    const {isInvalid, elapsedTime, millis, unit, useNowString, suffix} = opts;
     if (isInvalid) return '[???]';
 
     // if elapsedTime was normalized to 0 (smaller than nowEpsilon)
@@ -190,5 +188,5 @@ const getResult = opts => {
     // default FORMAT for seconds.
     if (!elapsedTime && useNowString) return suffix;
 
-    return `${FORMAT_STRINGS[unit].replace('%d', value)} ${suffix}`;
+    return `${FORMAT_STRINGS[unit].replace('%d', millis)} ${suffix}`;
 };
