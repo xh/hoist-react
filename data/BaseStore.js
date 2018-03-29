@@ -49,11 +49,10 @@ export class BaseStore {
     /**
      * Get records sorted by property
      *
-     * @param property
-     * @param direction, ASC | DESC
+     * @param sorters[], One or more objects in the form {property: '', direction: 'asc' | 'desc'}
      * @param filteredOnly, set to true to skip non-filtered records
      */
-    getSorted(property, direction, filteredOnly) {}
+    getSorted(sorters, filteredOnly) {}
 
     /**
      * Construct this object.

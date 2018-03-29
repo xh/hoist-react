@@ -7,7 +7,7 @@
 
 import {start, LastPromiseModel} from 'hoist/promise';
 import {observable, action} from 'hoist/mobx';
-import {orderBy} from 'lodash';
+import {castArray, orderBy} from 'lodash';
 
 import {BaseStore} from './BaseStore';
 
@@ -84,9 +84,16 @@ export class LocalStore extends BaseStore {
             rec;
     }
 
-    getSorted(property, direction, filteredOnly) {
-        const recs = filteredOnly ? this.records : this.allRecords;
-        return orderBy(recs, property, direction);
+    getSorted(sorters, filteredOnly) {
+        const recs = filteredOnly ? this.records : this.allRecords,
+            props = [], orders = [];
+
+        castArray(sorters).forEach(it => {
+            props.push(it.property);
+            orders.push(it.direction.toLowerCase());
+        });
+
+        return orderBy(recs, props, orders);
     }
 
     //-----------------------------------
