@@ -5,10 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {useStrict} from 'mobx';
+import {configure} from 'mobx';
 
-export {observable, action, autorun, computed, when, toJS, trace, whyRun} from 'mobx';
+export {observable, action, autorun, computed, when, toJS, trace} from 'mobx';
 export {observer} from 'mobx-react';
-export {setter} from 'mobx-decorators';
+export {setter} from 'mobx-decorators/lib';
 
-useStrict(true);
+configure({enforceActions: true});
