@@ -74,7 +74,11 @@ class Grid extends Component {
     }
 
     onGridReady = (params) => {
-        this.model.gridApi = params.api;
+        const {api} = params,
+            {model} = this;
+        
+        model.gridApi = api;
+        api.setSortModel(model.sortBy);
     }
     
     onSelectionChanged = (ev) => {
@@ -83,7 +87,7 @@ class Grid extends Component {
     }
 
     onSortChanged = (ev) => {
-        this.model.setSorters(this.toModelSorters(ev.api.getSortModel()));
+        this.model.setSortBy(ev.api.getSortModel());
     }
 
     onNavigateToNextCell = (params) => {
@@ -182,7 +186,7 @@ class Grid extends Component {
     syncSort() {
         const api = this.gridOptions.api,
             agSorters = api.getSortModel(),
-            modelSorters = this.toAgSorters(this.model.sorters);
+            modelSorters = this.model.sortBy;
         if (!isEqual(agSorters, modelSorters)) {
             api.setSortModel(modelSorters);
         }
@@ -191,14 +195,6 @@ class Grid extends Component {
     syncColumns() {
         // Needed because AGGridReact won't recognize updates to columns prop.
         this.gridOptions.api.setColumnDefs(this.model.columns);
-    }
-
-    toModelSorters(agSorters) {
-        return agSorters.map(it => ({field: it.colId, dir: it.sort}));
-    }
-
-    toAgSorters(modelSorters) {
-        return modelSorters.map(it => ({colId: it.field, sort: it.dir}));
     }
 }
 export const grid = elemFactory(Grid);

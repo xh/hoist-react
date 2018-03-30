@@ -86,6 +86,7 @@ export class ConfigPanel extends Component {
         unit: 'config',
         filterFields: ['name', 'prodValue', 'betaValue', 'stageValue', 'devValue', 'groupName', 'note'],
 
+        groupBy: 'groupName',
         columns: this.filterForEnv([
             nameCol({fixedWidth: 200}),
             baseCol({field: 'valueType', headerName: 'Type', fixedWidth: 80, align: 'center'}),
@@ -94,7 +95,7 @@ export class ConfigPanel extends Component {
             this.valCol({field: 'stageValue', env: 'Staging'}),
             this.valCol({field: 'devValue', env: 'Development'}),
             boolCheckCol({field: 'clientVisible', headerName: 'Client?', fixedWidth: 75}),
-            baseCol({field: 'groupName', headerName: 'Group', rowGroup: true, hide: true, fixedWidth: 100}),
+            baseCol({field: 'groupName', headerName: 'Group', fixedWidth: 100}),
             baseCol({field: 'note', minWidth: 60})
         ]),
         editors: this.filterForEnv([

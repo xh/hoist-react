@@ -10,7 +10,7 @@ import {SECONDS} from 'hoist/utils/DateTimeUtils';
 import {ToastManager} from 'hoist/cmp';
 import {UrlStore} from 'hoist/data';
 import {Icon} from 'hoist/icon';
-import {GridModel, GridContextMenu} from 'hoist/grid';
+import {GridModel} from 'hoist/grid';
 
 import {baseCol} from 'hoist/columns/Core';
 
@@ -24,7 +24,7 @@ export class ServiceModel {
 
     gridModel = new GridModel({
         store: this.store,
-        sorters: [{field: 'name', dir: 'asc'}],
+        sortBy: 'name',
         groupBy: 'provider',
         columns: [
             baseCol({
@@ -32,28 +32,7 @@ export class ServiceModel {
                 fixedWidth: 100
             }),
             baseCol({field: 'name', minWidth: 300, flex: 1})
-        ],
-        contextMenuFn:   () => {
-            const {gridModel} = this;
-            return new GridContextMenu([
-                {
-                    text: 'Group by Provider',
-                    action: () => gridModel.setGroupBy('provider')
-                },
-                {
-                    text: 'Ungroup',
-                    action: () => gridModel.setGroupBy(null)
-                },
-                {
-                    text: 'Sort by Name',
-                    action: () => gridModel.setSorters([{field: 'name', dir: 'asc'}])
-                },
-                {
-                    text: 'Provider',
-                    action: () => gridModel.setSorters([{field: 'provider', dir: 'asc'}])
-                }
-            ]);
-        }
+        ]
     });
 
     clearCaches() {

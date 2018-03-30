@@ -8,7 +8,7 @@
 import {observable, action} from 'hoist/mobx';
 import {LastPromiseModel} from 'hoist/promise';
 
-import {find} from 'lodash';
+import {find, castArray, isString} from 'lodash';
 import {GridSelectionModel} from './GridSelectionModel';
 import {GridContextMenu} from './GridContextMenu';
 
@@ -25,8 +25,8 @@ export class GridModel {
     contextMenuFn = null
 
     @observable.ref columns = [];
-    @observable.ref sorters = [];
-    @observable groupBy
+    @observable.ref sortBy = [];
+    @observable groupBy = null;
 
     static defaultContextMenu = () => {
         return new GridContextMenu([
@@ -43,13 +43,14 @@ export class GridModel {
      *
      * @param store, store containing the data for the grid.
      * @param columns, collection of column specifications.
-     * @param sorters, collection of form [{field: 'name', dir: 'ASC|DESC'}]
+     * @param sortBy, collection of form [{colId: 'name', sort: 'asc'|'dec'}],
+     * @param groupBy, id of column to group by.
      * @param contextMenuFn, closure returning a GridContextMenu().
      */
     constructor({
         store,
         columns,
-        sorters = [],
+        sortBy = [],
         groupBy = null,
         contextMenuFn = GridModel.defaultContextMenu
     }) {
@@ -58,7 +59,7 @@ export class GridModel {
         this.contextMenuFn = contextMenuFn;
         this.selection = new GridSelectionModel({parent: this});
         this.setGroupBy(groupBy);
-        this.setSorters(sorters);
+        this.setSortBy(sortBy);
     }
 
     exportDataAsExcel(params) {
@@ -87,8 +88,17 @@ export class GridModel {
     }
 
     @action
-    setSorters(sorters) {
-        this.sorters = sorters;
+    setSortBy(sortBy) {
+
+        // normalize string, and partially specified values
+        sortBy = castArray(sortBy);
+        sortBy = sortBy.map(it => {
+            if (isString(it)) it = {colId: it};
+            it.sort = it.sort || 'asc';
+            return it;
+        });
+
+        this.sortBy = sortBy;
     }
 
     //-----------------------
