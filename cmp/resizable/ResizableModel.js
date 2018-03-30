@@ -7,6 +7,7 @@
 
 import {XH} from 'hoist/core';
 import {observable, autorun, action} from 'hoist/mobx';
+import {wait} from 'hoist/promise';
 
 /**
  * A Model for managing the state of a Resizable.
@@ -54,10 +55,16 @@ export class ResizableModel {
     setIsOpen(isOpen) {
         this.isLazyState = false;
         this.isOpen = isOpen;
+        this.dispatchResize();
     }
 
     @action
     setContentSize(contentSize) {
         this.contentSize = contentSize;
+        this.dispatchResize();
+    }
+
+    dispatchResize() {
+        wait(1).then(() => window.dispatchEvent(new Event('resize')));
     }
 }
