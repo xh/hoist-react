@@ -10,7 +10,7 @@ import {elemFactory, hoistComponent} from 'hoist/core';
 import {button} from 'hoist/kit/blueprint';
 import {label, toolbar} from 'hoist/cmp';
 import {hbox, filler} from 'hoist/layout';
-import {relativeTimestamp} from 'hoist/cmp/form';
+import {relativeTimestamp} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 @hoistComponent()
@@ -44,7 +44,7 @@ class MonitorResultsToolbar extends Component {
                     ]
                 }),
                 filler(),
-                relativeTimestamp({timeStamp: lastRun, options: {emptyString: 'No results available!'}})
+                relativeTimestamp({timestamp: lastRun, options: {emptyResult: 'No results available!'}})
             ]
         });
     }
