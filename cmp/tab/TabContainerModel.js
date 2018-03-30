@@ -6,7 +6,7 @@
  */
 import {XH} from 'hoist/core';
 import {computed, action, observable, autorun} from 'hoist/mobx';
-import {max, uniqBy, find, startCase, isPlainObject} from 'lodash';
+import {max, uniqBy, startCase, isPlainObject} from 'lodash';
 import {throwIf} from 'hoist/utils/JsUtils';
 import {wait} from 'hoist/promise';
 import {TabPaneModel} from 'hoist/cmp';
