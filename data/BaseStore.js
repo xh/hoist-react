@@ -47,14 +47,6 @@ export class BaseStore {
     getById(id, filteredOnly) {}
 
     /**
-     * Get records sorted by property
-     *
-     * @param sorters[], One or more objects in the form {property: '', direction: 'asc' | 'desc'}
-     * @param filteredOnly, set to true to skip non-filtered records
-     */
-    getSorted(sorters, filteredOnly) {}
-
-    /**
      * Construct this object.
      *
      * @param fields, list of Fields or valid configuration for Fields.

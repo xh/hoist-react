@@ -6,7 +6,7 @@
  */
 
 import {autorun, action, observable, computed} from 'hoist/mobx';
-import {castArray, intersection, union} from 'lodash';
+import {castArray, intersection, union, orderBy} from 'lodash';
 
 /**
  * Model for managing the selection in a GridPanel.
@@ -59,21 +59,15 @@ export class GridSelectionModel {
     }
 
     /**
-     * Selects first row in grid, accounting for grid sorting
+     * Selects first row in grid
      */
     selectFirst() {
-        const {store, gridApi} = this.parent,
-            sorters = gridApi.getSortModel().map(it => { return {property: it.colId, direction: it.sort} }),
-            recs = sorters.length ? store.getSorted(sorters, true) : store.records;
-        if (recs.length) this.select(recs[0]);
-    }
+        const {store, sortBy} = this.parent,
+            colIds = sortBy.map(it => it.colId),
+            sorts = sortBy.map(it => it.sort),
+            recs = orderBy(store.records, colIds, sorts);
 
-    /**
-     * Select first record in grid if none are already selected.
-     * Useful for grids that should always have a selection
-     */
-    ensureRecordSelected() {
-        if (this.isEmpty) this.selectFirst();
+        if (recs.length) this.select(recs[0]);
     }
 
 }
