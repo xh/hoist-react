@@ -9,7 +9,7 @@ import {Component, isValidElement} from 'react';
 import fontawesome from '@fortawesome/fontawesome';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
-import {defaults, delay, difference, isString, isNumber, isBoolean} from 'lodash';
+import {defaults, delay, difference, isString, isNumber, isBoolean, isEqual} from 'lodash';
 
 import './ag-grid';
 import {navigateSelection, agGridReact} from './ag-grid';
@@ -42,6 +42,8 @@ class Grid extends Component {
             {defaultGroupSortComparator: this.sortByGroup}
         );
         this.addAutoRun(() => this.syncSelection());
+        this.addAutoRun(() => this.syncSort());
+        this.addAutoRun(() => this.syncColumns());
     }
 
     render() {
@@ -57,7 +59,8 @@ class Grid extends Component {
                     onGridReady: this.onGridReady,
                     gridOptions: this.gridOptions,
                     getContextMenuItems: this.getContextMenuItems,
-                    onGridSizeChanged: this.onGridSizeChanged
+                    onGridSizeChanged: this.onGridSizeChanged,
+                    onSortChanged: this.onSortChanged
                 })
             })
         );
@@ -71,12 +74,20 @@ class Grid extends Component {
     }
 
     onGridReady = (params) => {
-        this.model.gridApi = params.api;
+        const {api} = params,
+            {model} = this;
+        
+        model.gridApi = api;
+        api.setSortModel(model.sortBy);
     }
     
     onSelectionChanged = (ev) => {
         const selection = this.model.selection;
         selection.select(ev.api.getSelectedRows());
+    }
+
+    onSortChanged = (ev) => {
+        this.model.setSortBy(ev.api.getSortModel());
     }
 
     onNavigateToNextCell = (params) => {
@@ -170,6 +181,20 @@ class Grid extends Component {
                 api.ensureNodeVisible(node);
             });
         }
+    }
+
+    syncSort() {
+        const api = this.gridOptions.api,
+            agSorters = api.getSortModel(),
+            modelSorters = this.model.sortBy;
+        if (!isEqual(agSorters, modelSorters)) {
+            api.setSortModel(modelSorters);
+        }
+    }
+
+    syncColumns() {
+        // Needed because AGGridReact won't recognize updates to columns prop.
+        this.gridOptions.api.setColumnDefs(this.model.columns);
     }
 }
 export const grid = elemFactory(Grid);

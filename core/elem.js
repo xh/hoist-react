@@ -79,11 +79,10 @@ export function elem(type, config = {}) {
                 return it;
             } else {
                 const fct = it.factory || factory;
-                if (!fct) {
-                    throw Exception.create('Unable to create child element.  No factory provided in itemSpec.');
-                }
-                return fct(defaults(it, defaultParams));
+                if (fct) return fct(defaults(it, defaultParams));
             }
+
+            throw Exception.create(`Unable to create child element for [${it.toString()}].`);
         });
 
     // 4a) Remove omitted children last, after elements generated from configs have been created.

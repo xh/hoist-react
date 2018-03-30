@@ -162,10 +162,12 @@ export class Resizable extends Component {
 
     onResizeStart = () => {
         this.startContentSize = this.contentSize;
+        this.model.setIsResizing(true);
     }
 
     onResizeEnd = () => {
         this.startContentSize = null;
+        this.model.setIsResizing(false);
     }
 
     onResize = (delta) => {

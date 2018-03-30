@@ -24,6 +24,7 @@ class Toolbar extends Component {
             width: '100%',
             cls: 'xh-toolbar',
             alignItems: 'center',
+            flex: 'none',
             itemSpec: {
                 factory: button
             },
