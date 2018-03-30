@@ -33,7 +33,8 @@ export class GridModel {
             'copy',
             'copyWithHeaders',
             '-',
-            'export'
+            'export',
+            'autoSizeAll'
         ]);
     }
 
