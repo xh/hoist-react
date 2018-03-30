@@ -13,6 +13,7 @@ export * from './tab';
 export * from './toolbar';
 export * from './resizable';
 export * from './LoadMask';
+export * from './RelativeTimestamp';
 export * from './StoreCountLabel';
 export * from './StoreFilterField';
 export * from './ToastManager';
