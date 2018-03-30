@@ -38,6 +38,7 @@ export const Icon = {
     chartLine(p)     {return fa(p, 'chart-line')},
     chartPie(p)      {return fa(p, 'chart-pie')},
     check(p)         {return fa(p, 'check')},
+    checkCircle(p)   {return fa(p, 'check-circle')},
     chess(p)         {return fa(p, 'chess')},
     chessKnight(p)   {return fa(p, 'chess-knight-alt')},
     chevronDown(p)   {return fa(p, 'chevron-down')},
@@ -53,7 +54,7 @@ export const Icon = {
     download(p)      {return fa(p, 'download')},
     edit(p)          {return fa(p, 'edit')},
     envelope(p)      {return fa(p, 'envelope')},
-    error(p)         {return fa(p, 'exclamation-circle')},
+    error(p)         {return fa(p, 'times-hexagon')},
     eye(p)           {return fa(p, 'eye')},
     gear(p)          {return fa(p, 'cog')},
     gears(p)         {return fa(p, 'cogs')},
@@ -76,7 +77,9 @@ export const Icon = {
     user(p)          {return fa(p, 'user-circle')},
     users(p)         {return fa(p, 'users')},
     warning(p)       {return fa(p, 'exclamation-triangle')},
-    wrench(p)        {return fa(p, 'wrench')}
+    wrench(p)        {return fa(p, 'wrench')},
+    x(p)             {return fa(p, 'times')},
+    xCircle(p)       {return fa(p, 'times-circle')}
 };
 
 //-----------------------------

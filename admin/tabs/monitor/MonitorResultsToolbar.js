@@ -21,7 +21,11 @@ class MonitorResultsToolbar extends Component {
 
         return toolbar({
             items: [
-                button({icon: Icon.refresh(), text: 'Run All Now', onClick: forceRunAllMonitors}),
+                button({
+                    icon: Icon.refresh(),
+                    text: 'Run all now',
+                    onClick: forceRunAllMonitors
+                }),
                 hbox({
                     cls: !failed ? 'hidden' : '',
                     items: [
@@ -39,7 +43,7 @@ class MonitorResultsToolbar extends Component {
                 hbox({
                     cls: !passed ? 'hidden' : '',
                     items: [
-                        Icon.check({prefix: 'far', style: {color: 'var(--xh-green)'}}),
+                        Icon.checkCircle({prefix: 'far', style: {color: 'var(--xh-green)'}}),
                         label(`${passed} passed`)
                     ]
                 }),
