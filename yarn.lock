@@ -46,6 +46,13 @@
     esutils "^2.0.2"
     js-tokens "^3.0.0"
 
+"@babel/runtime@^7.0.0-beta.42":
+  version "7.0.0-beta.42"
+  resolved "https://repo.xh.io/repository/npm-public/@babel/runtime/-/runtime-7.0.0-beta.42.tgz#352e40c92e0460d3e82f49bd7e79f6cda76f919f"
+  dependencies:
+    core-js "^2.5.3"
+    regenerator-runtime "^0.11.1"
+
 "@babel/template@7.0.0-beta.41":
   version "7.0.0-beta.41"
   resolved "https://repo.xh.io/repository/npm-public/@babel/template/-/template-7.0.0-beta.41.tgz#628eeb93f9b5b423a252d3b6183f12e09505ab55"
@@ -78,82 +85,74 @@
     lodash "^4.2.0"
     to-fast-properties "^2.0.0"
 
-"@blueprintjs/core@2.0.0-rc.2":
-  version "2.0.0-rc.2"
-  resolved "https://repo.xh.io/repository/npm-public/@blueprintjs/core/-/core-2.0.0-rc.2.tgz#64af8a332e6202efb0795c3fdd2358896ddfd3e8"
+"@blueprintjs/core@^2.0.0":
+  version "2.0.1"
+  resolved "https://repo.xh.io/repository/npm-public/@blueprintjs/core/-/core-2.0.1.tgz#0b2cf9b477c8a0d102030a5de0465c1709eb99e7"
   dependencies:
-    "@blueprintjs/icons" "^2.0.0-rc.2"
+    "@blueprintjs/icons" "^2.0.0"
     "@types/dom4" "^2.0.0"
     classnames "^2.2"
     dom4 "^2.0.1"
     normalize.css "^7.0.0"
-    popper.js "^1.12.6"
-    react-popper "~0.7.4"
-    tslib "^1.5.0"
-
-"@blueprintjs/core@^2.0.0-rc.2", "@blueprintjs/core@^2.0.0-rc.3":
-  version "2.0.0-rc.3"
-  resolved "https://repo.xh.io/repository/npm-public/@blueprintjs/core/-/core-2.0.0-rc.3.tgz#1eb7dbe82fadc06c754c268d1261e1d04a51727d"
-  dependencies:
-    "@blueprintjs/icons" "^2.0.0-rc.3"
-    "@types/dom4" "^2.0.0"
-    classnames "^2.2"
-    dom4 "^2.0.1"
-    normalize.css "^7.0.0"
-    popper.js "^1.12.6"
-    react-popper "~0.7.4"
+    popper.js "^1.14.1"
+    react-popper "^0.8.2"
     tslib "^1.9.0"
 
-"@blueprintjs/datetime@^2.0.0-rc.2":
-  version "2.0.0-rc.3"
-  resolved "https://repo.xh.io/repository/npm-public/@blueprintjs/datetime/-/datetime-2.0.0-rc.3.tgz#6b610a97ab1848c6f228de2543f0ed1d78262287"
+"@blueprintjs/datetime@^2.0.0":
+  version "2.0.0"
+  resolved "https://repo.xh.io/repository/npm-public/@blueprintjs/datetime/-/datetime-2.0.0.tgz#f52b97f42ba4f65d07cbbd87d1f3e1c68df7564f"
   dependencies:
-    "@blueprintjs/core" "^2.0.0-rc.3"
+    "@blueprintjs/core" "^2.0.0"
     classnames "^2.2"
     react-day-picker "^7.0.7"
     tslib "^1.9.0"
 
-"@blueprintjs/icons@2.0.0-rc.2":
-  version "2.0.0-rc.2"
-  resolved "https://repo.xh.io/repository/npm-public/@blueprintjs/icons/-/icons-2.0.0-rc.2.tgz#77f74db9ee9508e051f15467b2feb48409840e52"
-  dependencies:
-    classnames "^2.2"
-    tslib "^1.5.0"
-
-"@blueprintjs/icons@^2.0.0-rc.2", "@blueprintjs/icons@^2.0.0-rc.3":
-  version "2.0.0-rc.3"
-  resolved "https://repo.xh.io/repository/npm-public/@blueprintjs/icons/-/icons-2.0.0-rc.3.tgz#30235278a115c849b3d6a9a1f38495790b526c52"
+"@blueprintjs/icons@^2.0.0":
+  version "2.0.0"
+  resolved "https://repo.xh.io/repository/npm-public/@blueprintjs/icons/-/icons-2.0.0.tgz#d3c149b0c70de20f16bf46eff30caa60b3e74370"
   dependencies:
     classnames "^2.2"
     tslib "^1.9.0"
 
-"@blueprintjs/select@2.0.0-rc.2":
-  version "2.0.0-rc.2"
-  resolved "https://repo.xh.io/repository/npm-public/@blueprintjs/select/-/select-2.0.0-rc.2.tgz#2d0cabae9f9f390a0bf369d9c1264487dd6a9675"
+"@blueprintjs/select@^2.0.0":
+  version "2.0.0"
+  resolved "https://repo.xh.io/repository/npm-public/@blueprintjs/select/-/select-2.0.0.tgz#35c1e05e1171774fe4cb6772f5f8f77d5be80c4d"
   dependencies:
-    "@blueprintjs/core" "^2.0.0-rc.2"
+    "@blueprintjs/core" "^2.0.0"
     classnames "^2.2"
-    tslib "^1.5.0"
+    tslib "^1.9.0"
 
 "@fortawesome/fontawesome-common-types@^0.1.3":
   version "0.1.3"
   resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome-common-types/-/fontawesome-common-types-0.1.3.tgz#8475e0f2d1ad1f858c4ec2e76ed9a2456a09ad83"
 
-"@fortawesome/fontawesome-pro-solid@^5.0.6":
-  version "5.0.8"
-  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome-pro-solid/-/fontawesome-pro-solid-5.0.8.tgz#a5d40aa9c79db80d695ba0152c1e296e3ed9533e"
+"@fortawesome/fontawesome-pro-light@^5.0.9":
+  version "5.0.9"
+  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome-pro-light/-/fontawesome-pro-light-5.0.9.tgz#47ccd35d2f22d07441bee12689b1eae2894853ed"
   dependencies:
     "@fortawesome/fontawesome-common-types" "^0.1.3"
 
-"@fortawesome/fontawesome@^1.1.3":
-  version "1.1.4"
-  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome/-/fontawesome-1.1.4.tgz#03065638046206c2226e103b550196934c75be9b"
+"@fortawesome/fontawesome-pro-regular@^5.0.9":
+  version "5.0.9"
+  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome-pro-regular/-/fontawesome-pro-regular-5.0.9.tgz#74d318aef6ed1cad6b0a335f43ab4603b1d255ff"
   dependencies:
     "@fortawesome/fontawesome-common-types" "^0.1.3"
 
-"@fortawesome/react-fontawesome@^0.0.17":
-  version "0.0.17"
-  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/react-fontawesome/-/react-fontawesome-0.0.17.tgz#69abd135523187044f533cadc5458f829d43961f"
+"@fortawesome/fontawesome-pro-solid@^5.0.9":
+  version "5.0.9"
+  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome-pro-solid/-/fontawesome-pro-solid-5.0.9.tgz#5a4f2a7def2afe9b61b3c8067d39d528908f3a1c"
+  dependencies:
+    "@fortawesome/fontawesome-common-types" "^0.1.3"
+
+"@fortawesome/fontawesome@^1.1.5":
+  version "1.1.5"
+  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome/-/fontawesome-1.1.5.tgz#c7cfafdd3364245626293cc670357f9fb8487170"
+  dependencies:
+    "@fortawesome/fontawesome-common-types" "^0.1.3"
+
+"@fortawesome/react-fontawesome@^0.0.18":
+  version "0.0.18"
+  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/react-fontawesome/-/react-fontawesome-0.0.18.tgz#4e0eb1cf9797715a67bb7705ae084fa0a410f185"
   dependencies:
     humps "^2.0.1"
 
@@ -1099,7 +1098,7 @@ babel-register@^6.26.0:
     mkdirp "^0.5.1"
     source-map-support "^0.4.15"
 
-babel-runtime@^6.18.0, babel-runtime@^6.2.0, babel-runtime@^6.22.0, babel-runtime@^6.23.0, babel-runtime@^6.26.0:
+babel-runtime@^6.18.0, babel-runtime@^6.2.0, babel-runtime@^6.22.0, babel-runtime@^6.26.0:
   version "6.26.0"
   resolved "https://repo.xh.io/repository/npm-public/babel-runtime/-/babel-runtime-6.26.0.tgz#965c7058668e82b55d7bfe04ff2337bc8b5647fe"
   dependencies:
@@ -1739,9 +1738,9 @@ code-point-at@^1.0.0:
   version "1.1.0"
   resolved "https://repo.xh.io/repository/npm-public/code-point-at/-/code-point-at-1.1.0.tgz#0d070b4d043a5bea33a2f1a40e2edb3d9a4ccf77"
 
-codemirror@^5.35.0:
-  version "5.35.0"
-  resolved "https://repo.xh.io/repository/npm-public/codemirror/-/codemirror-5.35.0.tgz#280653d495455bc66aa87e6284292b02775ba878"
+codemirror@^5.36.0:
+  version "5.36.0"
+  resolved "https://repo.xh.io/repository/npm-public/codemirror/-/codemirror-5.36.0.tgz#1172ad9dc298056c06e0b34e5ccd23825ca15b40"
 
 collection-visit@^1.0.0:
   version "1.0.0"
@@ -1910,6 +1909,10 @@ core-js@^1.0.0:
 core-js@^2.4.0, core-js@^2.5.0:
   version "2.5.3"
   resolved "https://repo.xh.io/repository/npm-public/core-js/-/core-js-2.5.3.tgz#8acc38345824f16d8365b7c9b4259168e8ed603e"
+
+core-js@^2.5.3:
+  version "2.5.4"
+  resolved "https://repo.xh.io/repository/npm-public/core-js/-/core-js-2.5.4.tgz#f2c8bf181f2a80b92f360121429ce63a2f0aeae0"
 
 core-util-is@1.0.2, core-util-is@~1.0.0:
   version "1.0.2"
@@ -4634,23 +4637,23 @@ mkdirp@0.5.1, mkdirp@0.5.x, "mkdirp@>=0.5 0", mkdirp@^0.5.0, mkdirp@^0.5.1, mkdi
   dependencies:
     minimist "0.0.8"
 
-mobx-decorators@^2.3.3:
-  version "2.3.3"
-  resolved "https://repo.xh.io/repository/npm-public/mobx-decorators/-/mobx-decorators-2.3.3.tgz#c22d185b2407b8295b05007bfdca290e9e100730"
+mobx-decorators@^4.0.1:
+  version "4.0.1"
+  resolved "https://repo.xh.io/repository/npm-public/mobx-decorators/-/mobx-decorators-4.0.1.tgz#e4d91ed529cc65c4d7a3413b9b834e497246e649"
   dependencies:
-    babel-runtime "^6.23.0"
+    "@babel/runtime" "^7.0.0-beta.42"
     lodash.difference "^4.5.0"
     lodash.intersection "^4.4.0"
 
-mobx-react@^4.4.1:
-  version "4.4.3"
-  resolved "https://repo.xh.io/repository/npm-public/mobx-react/-/mobx-react-4.4.3.tgz#baa9ec41165ee35ae7b9df19bca10190f36f117e"
+mobx-react@^5.0.0:
+  version "5.0.0"
+  resolved "https://repo.xh.io/repository/npm-public/mobx-react/-/mobx-react-5.0.0.tgz#8d5a33be376fa22b184a6f555d40a6a3a8459a16"
   dependencies:
     hoist-non-react-statics "^2.3.1"
 
-mobx@^3.5.1:
-  version "3.6.2"
-  resolved "https://repo.xh.io/repository/npm-public/mobx/-/mobx-3.6.2.tgz#fb9f5ff5090539a1ad54e75dc4c098b602693320"
+mobx@^4.1.1:
+  version "4.1.1"
+  resolved "https://repo.xh.io/repository/npm-public/mobx/-/mobx-4.1.1.tgz#7ce7ef92b22e85271d1fc274a124d7fa32fcceeb"
 
 moment@^2.20.1:
   version "2.21.0"
@@ -5341,7 +5344,7 @@ pngjs@^3.0.0, pngjs@^3.2.0:
   version "3.3.2"
   resolved "https://repo.xh.io/repository/npm-public/pngjs/-/pngjs-3.3.2.tgz#097c3c2a75feb223eadddea6bc9f0050cf830bc3"
 
-popper.js@^1.12.5, popper.js@^1.12.6:
+popper.js@^1.12.9, popper.js@^1.14.1:
   version "1.14.1"
   resolved "https://repo.xh.io/repository/npm-public/popper.js/-/popper.js-1.14.1.tgz#b8815e5cda6f62fc2042e47618649f75866e6753"
 
@@ -5702,7 +5705,7 @@ prop-types@15.6.0:
     loose-envify "^1.3.1"
     object-assign "^4.1.1"
 
-prop-types@^15.5.10, prop-types@^15.5.8, prop-types@^15.6.0, prop-types@^15.6.1:
+prop-types@^15.5.8, prop-types@^15.6.0, prop-types@^15.6.1:
   version "15.6.1"
   resolved "https://repo.xh.io/repository/npm-public/prop-types/-/prop-types-15.6.1.tgz#36644453564255ddda391191fb3a125cbdf654ca"
   dependencies:
@@ -5858,12 +5861,12 @@ react-dom@^16.2.0:
     object-assign "^4.1.1"
     prop-types "^15.6.0"
 
-react-popper@~0.7.4:
-  version "0.7.5"
-  resolved "https://repo.xh.io/repository/npm-public/react-popper/-/react-popper-0.7.5.tgz#71c25946f291db381231281f6b95729e8b801596"
+react-popper@^0.8.2:
+  version "0.8.3"
+  resolved "https://repo.xh.io/repository/npm-public/react-popper/-/react-popper-0.8.3.tgz#0f73333137c9fb0af6ec4074d2d0585a0a0461e1"
   dependencies:
-    popper.js "^1.12.5"
-    prop-types "^15.5.10"
+    popper.js "^1.12.9"
+    prop-types "^15.6.0"
 
 react-transition-group@^2.2.1:
   version "2.2.1"
@@ -5983,7 +5986,7 @@ regenerate@^1.2.1:
   version "1.3.3"
   resolved "https://repo.xh.io/repository/npm-public/regenerate/-/regenerate-1.3.3.tgz#0c336d3980553d755c39b586ae3b20aa49c82b7f"
 
-regenerator-runtime@^0.11.0:
+regenerator-runtime@^0.11.0, regenerator-runtime@^0.11.1:
   version "0.11.1"
   resolved "https://repo.xh.io/repository/npm-public/regenerator-runtime/-/regenerator-runtime-0.11.1.tgz#be05ad7f9bf7d22e056f9726cee5017fbf19e2e9"
 
@@ -7018,7 +7021,7 @@ tryer@^1.0.0:
   version "1.0.0"
   resolved "https://repo.xh.io/repository/npm-public/tryer/-/tryer-1.0.0.tgz#027b69fa823225e551cace3ef03b11f6ab37c1d7"
 
-tslib@^1.5.0, tslib@^1.9.0:
+tslib@^1.9.0:
   version "1.9.0"
   resolved "https://repo.xh.io/repository/npm-public/tslib/-/tslib-1.9.0.tgz#e37a86fda8cbbaf23a057f473c9f4dc64e5fc2e8"
 

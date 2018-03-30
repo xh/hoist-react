@@ -9,9 +9,10 @@ import {elemFactory} from 'hoist/core';
 import fontawesome from '@fortawesome/fontawesome';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import solid from '@fortawesome/fontawesome-pro-solid';
+import regular from '@fortawesome/fontawesome-pro-regular';
+import light from '@fortawesome/fontawesome-pro-light';
 
-// TODO - check if this is necessary and what exactly it does...
-fontawesome.library.add(solid);
+fontawesome.library.add(solid, light, regular);
 
 /**
  * Singleton class to provide factories for enumerated icons, each returning a FontAwesome SVG element.
@@ -32,7 +33,12 @@ export const Icon = {
     bookmark(p)      {return fa(p, 'bookmark')},
     caretLeft(p)     {return fa(p, 'caret-left')},
     caretRight(p)    {return fa(p, 'caret-right')},
+    chartArea(p)     {return fa(p, 'chart-area')},
+    chartBar(p)      {return fa(p, 'chart-bar')},
+    chartLine(p)     {return fa(p, 'chart-line')},
+    chartPie(p)      {return fa(p, 'chart-pie')},
     check(p)         {return fa(p, 'check')},
+    checkCircle(p)   {return fa(p, 'check-circle')},
     chess(p)         {return fa(p, 'chess')},
     chessKnight(p)   {return fa(p, 'chess-knight-alt')},
     chevronDown(p)   {return fa(p, 'chevron-down')},
@@ -43,11 +49,12 @@ export const Icon = {
     close(p)         {return fa(p, 'times')},
     contact(p)       {return fa(p, 'address-card')},
     cross(p)         {return fa(p, 'times')},
+    disabled(p)      {return fa(p, 'ban')},
     delete(p)        {return fa(p, 'minus-circle')},
     download(p)      {return fa(p, 'download')},
     edit(p)          {return fa(p, 'edit')},
     envelope(p)      {return fa(p, 'envelope')},
-    error(p)         {return fa(p, 'exclamation-circle')},
+    error(p)         {return fa(p, 'times-hexagon')},
     eye(p)           {return fa(p, 'eye')},
     gear(p)          {return fa(p, 'cog')},
     gears(p)         {return fa(p, 'cogs')},
@@ -70,7 +77,9 @@ export const Icon = {
     user(p)          {return fa(p, 'user-circle')},
     users(p)         {return fa(p, 'users')},
     warning(p)       {return fa(p, 'exclamation-triangle')},
-    wrench(p)        {return fa(p, 'wrench')}
+    wrench(p)        {return fa(p, 'wrench')},
+    x(p)             {return fa(p, 'times')},
+    xCircle(p)       {return fa(p, 'times-circle')}
 };
 
 //-----------------------------
@@ -78,5 +87,8 @@ export const Icon = {
 //-----------------------------
 const faIcon = elemFactory(FontAwesomeIcon);
 const fa = function(props, name) {
+    if (props && props.prefix) {
+        name = [props.prefix, name];
+    }
     return faIcon({icon: name, ...props});
 };

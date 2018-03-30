@@ -6,7 +6,7 @@
  */
 
 import {autorun, action, observable, computed} from 'hoist/mobx';
-import {castArray, intersection, union} from 'lodash';
+import {castArray, intersection, union, orderBy} from 'lodash';
 
 /**
  * Model for managing the selection in a GridPanel.
@@ -51,11 +51,23 @@ export class GridSelectionModel {
     @action
     select(records, clearSelection = true) {
         const ids = castArray(records).map(it => {
-            return it.id ? it.id : it;
+            return it.id != null ? it.id : it;
         }).filter(id => {
             return this.parent.store.getById(id, true);
         });
         this.ids = clearSelection ? ids : union(this.ids, ids);
+    }
+
+    /**
+     * Selects first row in grid
+     */
+    selectFirst() {
+        const {store, sortBy} = this.parent,
+            colIds = sortBy.map(it => it.colId),
+            sorts = sortBy.map(it => it.sort),
+            recs = orderBy(store.records, colIds, sorts);
+
+        if (recs.length) this.select(recs[0]);
     }
 
 }

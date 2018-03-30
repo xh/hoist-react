@@ -45,7 +45,7 @@ export class BaseStore {
      * @param filteredOnly, set to true to skip non-filtered records
      */
     getById(id, filteredOnly) {}
-    
+
     /**
      * Construct this object.
      *

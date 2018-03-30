@@ -5,31 +5,31 @@
 
     &.top, &.bottom {
         width: 100%;
-        height: 5px;
+        height: 8px;
         left: 0;
         cursor: ns-resize;
     }
 
     &.right, &.left {
-        width: 5px;
+        width: 8px;
         height: 100%;
         top: 0;
         cursor: ew-resize;
     }
 
     &.top {
-        top: -2px;
+        top: 0;
     }
 
     &.bottom {
-        bottom: -2px;
+        bottom: 0;
     }
 
     &.right {
-        right: -2px;
+        right: 0;
     }
 
     &.left {
-        left: -2px;
+        left: 0;
     }
 }

@@ -26,6 +26,7 @@ export class ErrorDialog extends Component {
         return dialog({
             isOpen: true,
             title: options.title,
+            onClose: this.onCloseClick,
             icon: Icon.warning({size: 'lg'}),
             items: [
                 dialogBody(options.message),
@@ -56,7 +57,8 @@ export class ErrorDialog extends Component {
                 onClick: this.onReloadClick
             }),
             button({
-                text: Icon.close(),
+                icon: Icon.close(),
+                text: 'Close',
                 onClick: this.onCloseClick
             })
         ];
