@@ -18,7 +18,6 @@ export class LogViewerToolbar extends Component {
         const model = this.model;
         return toolbar({
             alignItems: 'center',
-            style: {flex: 'none'},
             items: [
                 label('Start Line:'),
                 numberField({

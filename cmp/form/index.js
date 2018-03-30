@@ -5,12 +5,12 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-export * from './ComboField';
 export * from './CheckField';
+export * from './ComboField';
+export * from './DayField';
+export * from './JsonField';
+export * from './Label';
 export * from './NumberField';
 export * from './SelectField';
-export * from './TextField';
 export * from './TextAreaField';
-export * from './DayField';
-export * from './Label';
-export * from './JsonField';
+export * from './TextField';

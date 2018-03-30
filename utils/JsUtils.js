@@ -27,8 +27,8 @@ export function singularize(string) {
     return _inflection.singularize(string);
 }
 
-export function pluralize(string) {
-    return _inflection.pluralize(string);
+export function pluralize(string, count, includeCount) {
+    return _inflection.pluralize(string, count, includeCount);
 }
 
 export function isJSON(value) {
