@@ -80,7 +80,6 @@ export class ConfigPanel extends Component {
     gridModel = new RestGridModel({
         store: this.store,
         actionWarning: {
-            edit: 'Are you sure you want to edit? Editing configs can break running apps!',
             del: 'Are you sure you want to delete? Deleting configs can break running apps!'
         },
         unit: 'config',
