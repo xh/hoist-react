@@ -1,0 +1,21 @@
+.xh-monitor-results-panel {
+  .hidden {
+    display: none !important;
+  }
+  .xh-monitor-status-display {
+    flex-wrap: wrap;
+    height: 100%;
+    align-content: flex-start;
+    overflow: auto !important;
+  }
+
+  .xh-toolbar {
+    > div {
+      align-items: center;
+      margin-left: 20px;
+      svg {
+        margin-right: 4px;
+      }
+    }
+  }
+}

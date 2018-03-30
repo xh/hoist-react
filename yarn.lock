@@ -126,6 +126,18 @@
   version "0.1.3"
   resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome-common-types/-/fontawesome-common-types-0.1.3.tgz#8475e0f2d1ad1f858c4ec2e76ed9a2456a09ad83"
 
+"@fortawesome/fontawesome-pro-light@^5.0.9":
+  version "5.0.9"
+  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome-pro-light/-/fontawesome-pro-light-5.0.9.tgz#47ccd35d2f22d07441bee12689b1eae2894853ed"
+  dependencies:
+    "@fortawesome/fontawesome-common-types" "^0.1.3"
+
+"@fortawesome/fontawesome-pro-regular@^5.0.9":
+  version "5.0.9"
+  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome-pro-regular/-/fontawesome-pro-regular-5.0.9.tgz#74d318aef6ed1cad6b0a335f43ab4603b1d255ff"
+  dependencies:
+    "@fortawesome/fontawesome-common-types" "^0.1.3"
+
 "@fortawesome/fontawesome-pro-solid@^5.0.9":
   version "5.0.9"
   resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome-pro-solid/-/fontawesome-pro-solid-5.0.9.tgz#5a4f2a7def2afe9b61b3c8067d39d528908f3a1c"

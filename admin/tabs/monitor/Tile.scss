@@ -1,7 +1,18 @@
 .xh-status-tile {
   color: white;
-  min-width: 300px;
-  height: 250px;
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: calc(25% - 20px);
+  font-size: 1em;
+  @media only screen and (max-width: 1350px) {
+    font-size: 1em;
+    flex-basis: calc(50% - 20px);
+  }
+  @media only screen and (max-width: 700px) {
+    font-size: 1.2em;
+    flex-basis: calc(100% - 20px);
+  }
+  height: 160px;
   border: 1px solid white;
   border-radius: var(--xh-border-radius);
   overflow: hidden;
@@ -22,10 +33,12 @@
 
   &__content {
     padding: var(--xh-pad-px);
-    display: flex;
-    flex-direction: column;
     flex: 1;
-    position: relative;
+    svg {
+      position: absolute;
+      right: -20px;
+      opacity: 0.5;
+    }
   }
 
   &__message {
@@ -37,7 +50,13 @@
     background-color: rgba(0, 0, 0, 0.2);
     border: 1px solid white;
     border-radius: 3px;
+    width: calc(100% - 80px);
+    @media only screen and (max-width: 1350px) {
+      font-size: 1em;
+      width: calc(100% - 90px);
+    }
+    @media only screen and (max-width: 700px) {
+      width: calc(100% - 110px);
+    }
   }
-
-
 }
