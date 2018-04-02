@@ -56,8 +56,11 @@ export class FetchService extends BaseService {
             }
         }
         
-        const ret = await fetch(url, opts);
+        let ret = await fetch(url, opts);
         if (!ret.ok) throw Exception.requestError(opts, ret);
-        return ret.json();
+        ret = ret.json();
+        if (url == 'http://localhost:8080/configDiffAdmin/configs') console.log('ret', ret);
+        if (url == 'http://localhost:8090/configDiffAdmin/configs') console.log('ret', ret);
+        return ret;
     }
 }

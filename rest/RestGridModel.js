@@ -63,6 +63,7 @@ export class RestGridModel {
         editors = [],
         ...rest
     }) {
+        console.log(enhanceToolbar);
         this.actionEnabled = Object.assign(this.actionEnabled, actionEnabled);
         this.actionWarning = Object.assign(this.actionWarning, actionWarning);
         this.unit = unit;

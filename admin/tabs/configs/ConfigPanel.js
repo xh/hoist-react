@@ -5,16 +5,23 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import {setter, observable} from 'hoist/mobx';
 import {button} from 'hoist/kit/blueprint';
 import {XH, hoistComponent} from 'hoist/core';
+import {vframe} from 'hoist/layout';
 import {boolCheckCol, baseCol} from 'hoist/columns/Core';
 import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
+import {toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import {nameCol} from 'hoist/admin/columns/Columns';
+import {configDiffer} from './differ/ConfigDiffer';
+import {ConfigDifferModel} from './differ/ConfigDifferModel';
 
 @hoistComponent()
 export class ConfigPanel extends Component {
+
+    differModel = new ConfigDifferModel({});
 
     store = new RestStore({
         url: 'rest/configAdmin',
@@ -88,7 +95,7 @@ export class ConfigPanel extends Component {
         filterFields: ['name', 'prodValue', 'betaValue', 'stageValue', 'devValue', 'groupName', 'note'],
 
         groupBy: 'groupName',
-        enhanceToolbar: this.addDifferButton,
+        enhanceToolbar: this.differModel.addDifferButton.bind(this.differModel),
         columns: this.filterForEnv([
             nameCol({fixedWidth: 200}),
             baseCol({field: 'valueType', headerName: 'Type', fixedWidth: 80, align: 'center'}),
@@ -116,7 +123,10 @@ export class ConfigPanel extends Component {
     });
 
     render() {
-        return restGrid({model: this.gridModel});
+        return vframe(
+            restGrid({model: this.gridModel}),
+            configDiffer({model: this.differModel})
+        );
     }
 
     async loadAsync() {
@@ -126,15 +136,6 @@ export class ConfigPanel extends Component {
     //-------------------------
     // Implementation
     //-------------------------
-    addDifferButton(items) {
-        items.splice(3, 0,
-            button({
-                icon: Icon.diff(),
-                text: 'Compare w/ Remote'
-            })
-        );
-        return items;
-    }
 
     filterForEnv(vals) {
         const envs = XH.getEnv('supportedEnvironments'),
