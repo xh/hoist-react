@@ -69,11 +69,11 @@ body {
   --xh-border-radius: var(--border-radius, 0);
   --xh-border-width: var(--border-width, 1);
   --xh-border-width-px: calc(var(--xh-border-width) * 1px);
-  --xh-border-dotted: (var(--xh-border-width-px) dotted var(--xh-border-color));
-  --xh-border-solid: (var(--xh-border-width-px) solid var(--xh-border-color));
-  --xh-font-family: var(--font-family, (-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif));
+  --xh-border-dotted: #{(var(--xh-border-width-px) dotted var(--xh-border-color))};
+  --xh-border-solid: #{(var(--xh-border-width-px) solid var(--xh-border-color))};
+  --xh-font-family: var(--font-family, #{(-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif)});
   --xh-font-family-grid: var(--font-family-grid, var(--xh-font-family));
-  --xh-font-family-mono: var(--font-family-mono, (Monaco, Consolas, monospace));
+  --xh-font-family-mono: var(--font-family-mono, #{(Monaco, Consolas, monospace)});
   --xh-font-size: var(--font-size, 13);
   --xh-font-size-px: calc(var(--xh-font-size) * 1px);
   --xh-font-size-app-title-px: var(--font-size-app-title-px, calc(var(--xh-font-size) * 1.8px));
