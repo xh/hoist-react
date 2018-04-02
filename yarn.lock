@@ -160,9 +160,9 @@
   version "2.0.0"
   resolved "https://repo.xh.io/repository/npm-public/@types/dom4/-/dom4-2.0.0.tgz#00dc42fed6b36a7a6dabb8f7a9c9e678ee644e05"
 
-"@xh/hoist-dev-utils@~0.3.0":
-  version "0.3.0"
-  resolved "https://repo.xh.io/repository/npm-hosted/@xh/hoist-dev-utils/-/hoist-dev-utils-0.3.0.tgz#ffeacdf225c7c960eef3a27e7b6df21dd1c97a38"
+"@xh/hoist-dev-utils@~0.3.2":
+  version "0.3.2"
+  resolved "https://repo.xh.io/repository/npm-hosted/@xh/hoist-dev-utils/-/hoist-dev-utils-0.3.2.tgz#373da2eec7ecc14339d9060f39fb0e8e26d06db0"
   dependencies:
     autoprefixer "~8.2.0"
     babel-core "~6.26.0"
