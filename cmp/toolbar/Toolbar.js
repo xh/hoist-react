@@ -21,8 +21,6 @@ class Toolbar extends Component {
     render() {
         return hbox({
             cls: 'xh-toolbar',
-            alignItems: 'center',
-            flex: 'none',
             itemSpec: {
                 factory: button
             },

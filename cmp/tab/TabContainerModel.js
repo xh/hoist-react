@@ -29,7 +29,54 @@ export class TabContainerModel {
     @observable selectedId = null;
 
     parent = null;   // For sub-tabs only
-    
+
+    /**
+     * Construct this object
+     * @param id, String.  Unique id.  Used for generating routes.
+     * @param name, String. Display name for the tab.
+     * @param orientation, 'v' or 'h'
+     * @param useRoutes, if true, component will use routes for navigation.
+     *      These routes must be setup externally in the application (See BaseApp.getRoutes()).  The routes may exist at
+     *      any level of the application, but there must be a route of the form /../../[containerId]/[childPaneId] for
+     *      each child pane in this container.
+     * @param children, configurations for TabPaneModels, or TabContainerModel
+     */
+    constructor({
+        id,
+        name = startCase(id),
+        orientation = 'h',
+        useRoutes = false,
+        children
+    }) {
+        this.id = id;
+        this.name = name;
+        this.vertical = orientation === 'v';
+        this.useRoutes = useRoutes;
+
+        // Instantiate children, if needed.
+        children = children.map(child => {
+            if (isPlainObject(child)) {
+                return (child.children) ?
+                    new TabContainerModel({useRoutes, ...child}) :
+                    new TabPaneModel(child);
+            }
+            return child;
+        });
+
+        // Validate and wire children
+        throwIf(children.length == 0,
+            'TabContainerModel needs at least one child pane.'
+        );
+        throwIf(children.length != uniqBy(children, 'id').length,
+            'One or more Panes in TabContainerModel has a non-unique id.'
+        );
+
+        children.forEach(child => child.parent = this);
+        this.children = children;
+        this.selectedId = children[0].id;
+        wait(1).then(() => autorun(() => this.syncFromRouter()));
+    }
+
     get routeName() {
         return this.parent ? this.parent.routeName + '.' + this.id : this.id;
     }
@@ -40,14 +87,16 @@ export class TabContainerModel {
             child = children.find(it => it.id === id);
         
         this.selectedId = child ? id : children[0].id;
-        
-        const routerModel = XH.routerModel,
-            state = routerModel.currentState,
-            routeName = state ? state.name : 'default',
-            selectedRouteFragment = this.routeName + '.' + this.selectedId;
 
-        if (!routeName.startsWith(selectedRouteFragment)) {
-            routerModel.navigate(selectedRouteFragment);
+        if (this.useRoutes) {
+            const routerModel = XH.routerModel,
+                state = routerModel.currentState,
+                routeName = state ? state.name : 'default',
+                selectedRouteFragment = this.routeName + '.' + this.selectedId;
+
+            if (!routeName.startsWith(selectedRouteFragment)) {
+                routerModel.navigate(selectedRouteFragment);
+            }
         }
     }
 
@@ -68,46 +117,12 @@ export class TabContainerModel {
         return max([parentVal, this._lastRefreshRequest]);
     }
 
-    /**
-     * Construct this object
-     * @param id, String.  Unique id.  Used for generating routes.
-     * @param name, String. Display name for the tab.
-     * @param orientation, 'v' or 'h'
-     * @param children, configurations for TabPaneModels, or TabContainerModel
-     */
-    constructor({
-        id,
-        name = startCase(id),
-        orientation = 'h',
-        children
-    }) {
-        this.id = id;
-        this.name = name;
-        this.vertical = orientation === 'v';
-
-        // Instantiate children, if needed.
-        children = children.map(it => {
-            if (isPlainObject(it)) {
-                return it.children ? new TabContainerModel(it) : new TabPaneModel(it);
-            }
-            return it;
-        });
-        
-        // Validate and wire children
-        throwIf(children.length == 0,
-            'TabContainerModel needs at least one child pane.'
-        );
-        throwIf(children.length != uniqBy(children, 'id').length,
-            'One or more Panes in TabContainerModel has a non-unique id.'
-        );
-
-        children.forEach(child => child.parent = this);
-        this.children = children;
-        this.selectedId = children[0].id;
-        wait(1).then(() => autorun(() => this.syncFromRouter()));
-    }
-    
+    //-------------------------
+    // Implementation
+    //-------------------------
     syncFromRouter() {
+        if (!this.useRoutes) return;
+
         const {parent, id} = this,
             routerModel = XH.routerModel,
             state = routerModel.currentState,

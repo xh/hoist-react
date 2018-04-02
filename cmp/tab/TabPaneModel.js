@@ -73,7 +73,12 @@ export class TabPaneModel {
         this.lastLoaded = Date.now();
     }
 
+    //---------------------------
+    // Implementation
+    //---------------------------
     syncFromRouter() {
+        if (!this.parent.useRoutes) return;
+
         const {parent, id} = this,
             routerModel = XH.routerModel,
             state = routerModel.currentState,

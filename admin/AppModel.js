@@ -104,6 +104,7 @@ export class AppModel extends BaseAppModel {
     createTabs() {
         return new TabContainerModel({
             id: 'default',
+            useRoutes: true,
             orientation: 'h',
             children: [
                 {
