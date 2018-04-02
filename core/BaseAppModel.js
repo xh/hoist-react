@@ -25,6 +25,7 @@ export class BaseAppModel {
      */
     requireSSO = false;
 
+    
     constructor() {
         hoistModel.appModel = this;
     }
@@ -35,4 +36,10 @@ export class BaseAppModel {
      */
     async initAsync() {}
 
+    /**
+     * Provide the initial set of Router5 Routes to be used by this application.
+     */
+    getRoutes() {
+        return [];
+    }
 }
