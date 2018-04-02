@@ -20,8 +20,6 @@ class Toolbar extends Component {
 
     render() {
         return hbox({
-            flex: 'none',
-            width: '100%',
             cls: 'xh-toolbar',
             alignItems: 'center',
             flex: 'none',

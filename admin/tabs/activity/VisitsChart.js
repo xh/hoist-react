@@ -15,17 +15,20 @@ import {Icon} from 'hoist/icon';
 @hoistComponent()
 export class VisitsChart extends Component {
 
-    renderCollapsed() {
-        return toolbar(Icon.users(), label('Unique Daily Visitors'));
-    }
-
     render() {
         return vframe(
             this.renderToolbar(),
             chart({model: this.model.chartModel})
         );
     }
-    
+
+    renderCollapsed() {
+        return toolbar(Icon.users(), label('Unique Daily Visitors'));
+    }
+
+    //-----------------------------
+    // Implementation
+    //-----------------------------
     renderToolbar() {
         const model = this.model;
         return toolbar(
@@ -46,9 +49,6 @@ export class VisitsChart extends Component {
         );
     }
 
-    //-----------------------------
-    // Implementation
-    //-----------------------------
     dayField(args) {
         return dayField({
             model: this.model,
@@ -62,7 +62,6 @@ export class VisitsChart extends Component {
     onCommit = () => {
         this.model.loadAsync();
     }
-
 }
 
 export const visitsChart = elemFactory(VisitsChart);

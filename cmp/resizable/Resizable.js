@@ -21,7 +21,7 @@ import {collapser} from './impl/Collapser';
  * It will allow the user to manage the fixed size via drag-drop, and button based expand/collapse.
  *
  * When collapsed, it will show either the configured 'collapsedDisplay' element, or, if the child panel
- * is a HoistComponent, the child component with the property isCollapsed: true.
+ * is a HoistComponent, the child component with its 'isCollapsed' property set to true.
  *
  * Applications should provide optional values for isOpen, contentSize, and prefName.
  * Applications may provide this object with an instance of ResizableModel.
@@ -33,7 +33,7 @@ import {collapser} from './impl/Collapser';
  * @prop isOpen, boolean - If the content panel showing?
  * @prop contentSize, integer - Size of the content panel. If side is `left` or `right` it
  *       represents the width, otherwise it represents the height.
- * @prop collapsedDisplay, React Element.  N
+ * @prop collapsedDisplay, React Element.
  * @prop prefName, string, Preference name to optionally store state in for this component.
  */
 @hoistComponent()
@@ -70,7 +70,7 @@ export class Resizable extends Component {
     get side()              {return this.props.side}
     get isCollapsible()     {return this.props.isCollapsible}
     get isDraggable()       {return this.props.isDraggable}
-    get collapsedDisplay()   {return this.props.collapsedDisplay}
+    get collapsedDisplay()  {return this.props.collapsedDisplay}
     get contentSize()       {return this.model.contentSize}
     get isOpen()            {return this.model.isOpen}
     get isVertical()        {return this.side === 'bottom' || this.side === 'top'}

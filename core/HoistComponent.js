@@ -29,9 +29,9 @@ export function hoistComponent({isObserver = true} = {}) {
             get() {return this.localModel ? this.localModel : this.props.model}
         });
 
-        //---------------------------------------------
+        //-------------------------------------------------------
         // Decorate with Blueprint Context Menu, HotKeys support
-        //---------------------------------------------
+        //-------------------------------------------------------
         if (proto.renderContextMenu) {
             C = ContextMenuTarget(C);
         }
@@ -40,6 +40,9 @@ export function hoistComponent({isObserver = true} = {}) {
             C = HotkeysTarget(C);
         }
 
+        //------------------------------
+        // Support fir renderCollapsed
+        //------------------------------
         const render = proto['render'],
             renderCollapsed = proto.renderCollapsed;
         proto.render = function() {
