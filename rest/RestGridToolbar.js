@@ -15,40 +15,47 @@ import {Icon} from 'hoist/icon';
 export class RestGridToolbar extends Component {
 
     render() {
+        return toolbar(
+            this.renderToolbarItems()
+        );
+    }
+
+    renderToolbarItems() {
         const model = this.model,
             store = model.store,
             unit = model.unit,
             singleRecord = model.selection.singleRecord,
-            actionEnabled = model.actionEnabled;
+            actionEnabled = model.actionEnabled,
+            items = [
+                button({
+                    text: 'Add',
+                    icon: Icon.add(),
+                    intent: 'success',
+                    onClick: this.onAddClick,
+                    omit: !actionEnabled.add
+                }),
+                button({
+                    text: 'Edit',
+                    icon: Icon.edit(),
+                    onClick: this.onEditClick,
+                    disabled: !singleRecord,
+                    omit: !actionEnabled.edit
+                }),
+                button({
+                    text: 'Delete',
+                    icon: Icon.delete(),
+                    intent: 'danger',
+                    onClick: this.onDeleteClick,
+                    disabled: !singleRecord,
+                    omit: !actionEnabled.del
+                }),
+                filler(),
+                storeCountLabel({store, unit}),
+                storeFilterField({store, fields: model.filterFields}),
+                exportButton({model})
+            ];
 
-        return toolbar(
-            button({
-                text: 'Add',
-                icon: Icon.add(),
-                intent: 'success',
-                onClick: this.onAddClick,
-                omit: !actionEnabled.add
-            }),
-            button({
-                text: 'Edit',
-                icon: Icon.edit(),
-                onClick: this.onEditClick,
-                disabled: !singleRecord,
-                omit: !actionEnabled.edit
-            }),
-            button({
-                text: 'Delete',
-                icon: Icon.delete(),
-                intent: 'danger',
-                onClick: this.onDeleteClick,
-                disabled: !singleRecord,
-                omit: !actionEnabled.del
-            }),
-            filler(),
-            storeCountLabel({store, unit}),
-            storeFilterField({store, fields: model.filterFields}),
-            exportButton({model})
-        );
+        return model.enhanceToolbar ? model.enhanceToolbar(items) : items;
     }
 
     //-----------------------------
