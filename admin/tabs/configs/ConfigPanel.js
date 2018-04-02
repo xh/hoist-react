@@ -5,9 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import {button} from 'hoist/kit/blueprint';
 import {XH, hoistComponent} from 'hoist/core';
 import {boolCheckCol, baseCol} from 'hoist/columns/Core';
 import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
+import {Icon} from 'hoist/icon';
 
 import {nameCol} from 'hoist/admin/columns/Columns';
 
@@ -86,6 +88,7 @@ export class ConfigPanel extends Component {
         filterFields: ['name', 'prodValue', 'betaValue', 'stageValue', 'devValue', 'groupName', 'note'],
 
         groupBy: 'groupName',
+        enhanceToolbar: this.addDifferButton,
         columns: this.filterForEnv([
             nameCol({fixedWidth: 200}),
             baseCol({field: 'valueType', headerName: 'Type', fixedWidth: 80, align: 'center'}),
@@ -123,6 +126,16 @@ export class ConfigPanel extends Component {
     //-------------------------
     // Implementation
     //-------------------------
+    addDifferButton(items) {
+        items.splice(3, 0,
+            button({
+                icon: Icon.diff(),
+                text: 'Compare w/ Remote'
+            })
+        );
+        return items;
+    }
+
     filterForEnv(vals) {
         const envs = XH.getEnv('supportedEnvironments'),
             ret = vals.filter(it => !it.env || envs.includes(it.env));
