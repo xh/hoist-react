@@ -16,6 +16,9 @@ export class ResizableModel {
 
     @observable contentSize = null;
     @observable isOpen = null;
+    @observable isResizing = false;
+
+    defaultContentSize = null;
 
     prefName = null;
 
@@ -30,8 +33,10 @@ export class ResizableModel {
 
         const pref = prefName ? XH.getPref(prefName) : {};
         this.prefName = prefName;
+        this.defaultContentSize =  contentSize;
         this.setContentSize('contentSize' in pref ? pref.contentSize : contentSize);
         this.setIsOpen('isOpen' in pref ? pref.isOpen : isOpen);
+
 
         if (prefName) {
             autorun(() => this.syncToPref(), {delay: 1000});
@@ -40,7 +45,16 @@ export class ResizableModel {
 
     @action
     setIsOpen(isOpen) {
+
+        // When opening from collapsed position restore *default* size.
+        // This may be a suboptimal in some cases (you lose previous user "size"), but avoids
+        // confusing behavior where 'opening' a collapsed panel could cause it to shrink.
+        if (this.isOpen === false && isOpen) {
+            this.contentSize = this.defaultContentSize;
+        }
+
         this.isOpen = isOpen;
+
         this.dispatchResize();
     }
 
