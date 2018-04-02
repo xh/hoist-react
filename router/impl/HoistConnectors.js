@@ -20,7 +20,7 @@ export function hoistPlugin(routerModel) {
             }
         };
     };
-    ret.pluginName = 'MOBX_PLUGIN';
+    ret.pluginName = 'HOIST_ROUTER5_MOBX_PLUGIN';
     return ret;
 }
 

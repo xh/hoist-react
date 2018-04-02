@@ -18,6 +18,9 @@ import {hoistPlugin, hoistMiddleware} from './impl/HoistConnectors';
  */
 export class RouterModel {
 
+    /**
+     * Router5 state object representing the current state.
+     */
     @observable currentState;
 
     /**

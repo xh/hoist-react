@@ -113,7 +113,7 @@ export class AppModel extends BaseAppModel {
                         {id: 'about', component: AboutPanel},
                         {id: 'config', component: ConfigPanel},
                         {id: 'services', component: ServicePanel},
-                        {id: 'ehCache', component: EhCachePanel},
+                        {id: 'ehCache', name: 'Caches', component: EhCachePanel},
                         {id: 'dashboards', component: DashboardPanel},
                         {id: 'users', component: UserPanel},
                         {id: 'readme', component: ReadmePanel}
