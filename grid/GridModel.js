@@ -5,15 +5,15 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {observable, action} from 'hoist/mobx';
+import {action, observable} from 'hoist/mobx';
 import {LastPromiseModel} from 'hoist/promise';
-
-import {find, castArray, isString} from 'lodash';
+import {castArray, find, isString} from 'lodash';
 import {GridSelectionModel} from './GridSelectionModel';
 import {GridContextMenu} from './GridContextMenu';
 
 /**
- * Core Model for a Grid.
+ * Core Model for a Grid, specifying the grid's data store, column definitions,
+ * sorting/grouping/selection state, and context menu configuration.
  */
 export class GridModel {
 
@@ -38,15 +38,14 @@ export class GridModel {
         ]);
     }
 
-
     /**
-     * Construct this object.
-     *
-     * @param store, store containing the data for the grid.
-     * @param columns, collection of column specifications.
-     * @param sortBy, collection of form [{colId: 'name', sort: 'asc'|'dec'}],
-     * @param groupBy, id of column to group by.
-     * @param contextMenuFn, closure returning a GridContextMenu().
+     * @param {BaseStore} store, store containing the data for the grid.
+     * @param {Object[]} columns - collection of column specifications.
+     * @param {Object[]} sortBy - one or more sorters to apply to store data.
+     * @param {string} sortBy[].colId - Column ID by which to sort.
+     * @param {string} sortBy[].sort - sort direction [asc|desc].
+     * @param {string} groupBy - Column ID by which to group.
+     * @param {function} contextMenuFn - closure returning a GridContextMenu().
      */
     constructor({
         store,
@@ -72,16 +71,19 @@ export class GridModel {
     @action
     setGroupBy(field) {
         const cols = this.columns;
+
         cols.forEach(it => {
-            it.rowGroup = false;
-            it.hide = false;
+            if (it.rowGroup) {
+                it.rowGroup = false;
+                it.hide = false;
+            }
         });
 
         if (field) {
             const col = find(cols, {field});
             if (col) {
                 col.rowGroup = true;
-                col.hide = false;
+                col.hide = true;
             }
         }
         
@@ -90,8 +92,7 @@ export class GridModel {
 
     @action
     setSortBy(sortBy) {
-
-        // normalize string, and partially specified values
+        // Normalize string, and partially specified values
         sortBy = castArray(sortBy);
         sortBy = sortBy.map(it => {
             if (isString(it)) it = {colId: it};
@@ -101,6 +102,7 @@ export class GridModel {
 
         this.sortBy = sortBy;
     }
+
 
     //-----------------------
     // Implementation
