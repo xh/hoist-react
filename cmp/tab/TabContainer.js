@@ -29,11 +29,12 @@ export class TabContainer extends Component {
             large: !vertical,
             items: children.map(childModel => {
                 const id = childModel.id,
+                    title = childModel.name,
                     isSubContainer = childModel instanceof TabContainerModel,
                     cmp = isSubContainer ? tabContainer : tabPane;
                 return tab({
                     id,
-                    title: id,
+                    title,
                     panel: cmp({model: childModel})
                 });
             })

@@ -39,6 +39,7 @@
     "numeral": "~2.0.6",
     "prop-types": "~15.6.1",
     "react-transition-group": "~2.3.0",
+    "router5": "~5.8.3",
     "rsvp": "~4.8.2",
     "store2": "~2.7.0"
   },
