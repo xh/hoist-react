@@ -35,19 +35,32 @@ export class ConfigDifferModel  {
         ]
     });
 
-    gridModel = new GridModel({
-        store: this.store,
-        columns: [
-            nameCol({flex: 1}),
-            baseCol({
-                field: 'status',
-                fixedWidth: 100
-            })
-        ],
-        contextMenuFn: this.contextMenuFn
-    });
-
     detailModel = new ConfigDifferDetailModel({parent: this});
+
+    // not sure why I can't do this declaratively
+    constructor() {
+        this.gridModel = new GridModel({
+            store: this.store,
+            columns: [
+                nameCol({flex: 1}),
+                baseCol({
+                    field: 'status',
+                    fixedWidth: 100
+                })
+            ],
+            contextMenuFn: this.contextMenuFn
+        });
+    }
+
+    contextMenuFn = () => {
+        return new GridContextMenu([
+            {
+                text: 'Apply Remote',
+                action: (item, record) => this.confirmApplyRemote(record),
+                recordsRequired: true
+            }
+        ]);
+    }
 
     async loadAsync() {
         Promise.all([

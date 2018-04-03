@@ -25,16 +25,16 @@ export class RestGridModel {
         add: true,
         edit: true,
         del: true
-    }
+    };
 
     actionWarning = {
         add: null,
         edit: null,
         del: 'Are you sure you want to delete the selected record(s)?'
-    }
+    };
 
-    unit = null
-    filterFields = null
+    unit = null;
+    filterFields = null;
 
     gridModel = null;
     formModel = null;
