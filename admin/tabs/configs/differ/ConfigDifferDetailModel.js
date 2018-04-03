@@ -9,8 +9,15 @@ import {observable, setter} from 'hoist/mobx';
 
 export class ConfigDifferDetailModel  {
 
+    parent = null;
+
     @setter @observable isOpen = false;
     @setter record = null;
+
+
+    constructor({parent}) {
+        this.parent = parent;
+    }
 
     showDetail(rec) {
         this.setRecord(rec);

@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import React, {Component} from 'react';
+import {Component} from 'react';
 import {keys, toString} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {button, dialog} from 'hoist/kit/blueprint';
@@ -31,19 +31,21 @@ export class ConfigDifferDetail extends Component {
                     button({
                         text: 'Close',
                         icon: Icon.close(),
-                        intent: 'danger'
+                        intent: 'danger',
+                        onClick: this.onCloseClick
                     }),
                     button({
                         text: 'Accept Remote',
                         icon: Icon.check(),
-                        intent: 'success'
+                        intent: 'success',
+                        onClick: this.onAcceptRemoteClick
                     })
                 )
             ]
         });
     }
 
-    // model
+    // move to model
     renderDiffTable() {
         const rec = this.model.record;
         if (!rec) return;
@@ -51,18 +53,16 @@ export class ConfigDifferDetail extends Component {
         const local = rec.localValue,
             remote = rec.remoteValue,
             props = keys(local || remote),
-            row = (c1, c2, c3) => tr(c1, c2, c3),
-            header = (v) => th(v),
-            cell = (v, cls) => td({cls: cls, item: v}); // items?
+            cell = (v, cls) => td({cls: cls, item: v});
 
         let rows = [];
 
         props.forEach(prop => {
             const cls = this.createDiffClass(prop, local, remote),
-                c1 = cell(prop),
-                c2 = local ? cell(toString(local[prop])) : cell(''),
-                c3 = remote ? cell(toString(remote[prop]), cls) : cell('');
-            rows.push(row(c1, c2, c3));
+                propCell = cell(prop),
+                localCell = local ? cell(toString(local[prop])) : cell(''),
+                remoteCell = remote ? cell(toString(remote[prop]), cls) : cell('');
+            rows.push(tr(propCell, localCell, remoteCell));
         });
 
         return table({
@@ -70,9 +70,9 @@ export class ConfigDifferDetail extends Component {
             item: tbody({
                 items: [
                     tr(
-                        header('Property'),
-                        header('Local'),
-                        header('Remote')
+                        th('Property'),
+                        th('Local'),
+                        th('Remote')
                     ),
                     ...rows
                 ]
@@ -80,10 +80,17 @@ export class ConfigDifferDetail extends Component {
         });
     }
 
-    // model
+    // move to model
     createDiffClass(prop, local, remote) {
         if (!remote) return;
         if (!local || local[prop] !== remote[prop]) return 'diff';
+    }
+    
+    onAcceptRemoteClick = () => {
+        const model = this.model,
+            differModel = model.parent;
+
+        differModel.confirmApplyRemote(model.record);
     }
 
     onCloseClick = () => {

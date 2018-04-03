@@ -8,9 +8,9 @@ import {Component} from 'react';
 import {trimEnd} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {button, dialog} from 'hoist/kit/blueprint';
-import {box, frame} from 'hoist/layout';
+import {box} from 'hoist/layout';
 import {grid} from 'hoist/grid';
-import {label, textField, toolbar} from 'hoist/cmp';
+import {label, message, textField, toolbar} from 'hoist/cmp';
 
 import {configDifferDetail} from './ConfigDifferDetail';
 
@@ -39,12 +39,13 @@ export class ConfigDiffer extends Component {
     getDialogItems() {
         const model = this.model;
         return [
-            frame(
-                grid({
-                    model: model.gridModel,
-                    gridOptions: {onRowDoubleClicked: this.onRowDoubleClicked}
-                })
-            ),
+            grid({
+                model: model.gridModel,
+                gridOptions: {
+                    onRowDoubleClicked: this.onRowDoubleClicked,
+                    overlayNoRowsTemplate: model.noRowsTemplate
+                }
+            }),
             toolbar({
                 items: [
                     label('Compare with:'),
@@ -60,7 +61,8 @@ export class ConfigDiffer extends Component {
                         onClick: this.onLoadDiffClick
                     })
                 ]
-            })
+            }),
+            message({model: model.messageModel})
             // loadMask({model: model.loadModel})
         ];
     }

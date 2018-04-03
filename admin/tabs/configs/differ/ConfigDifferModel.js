@@ -6,7 +6,8 @@
  */
 
 import {observable, setter} from 'hoist/mobx';
-import {isEqual, remove} from 'lodash';
+import {castArray, isEqual, remove} from 'lodash';
+import {pluralize} from 'hoist/utils/JsUtils';
 import {LocalStore} from 'hoist/data';
 import {GridModel} from 'hoist/grid';
 
@@ -14,15 +15,19 @@ import {button} from 'hoist/kit/blueprint';
 import {baseCol} from 'hoist/columns/Core';
 import {nameCol} from 'hoist/admin/columns/Columns';
 
-import {toolbarSep} from 'hoist/cmp';
+import {MessageModel, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
+import {p, div} from 'hoist/layout';
 
 export class ConfigDifferModel  {
 
+    messageModel = new MessageModel({title: 'Warning', icon: Icon.warning({size: 'lg'})});
+
     @setter @observable isOpen = false;
     @setter remoteHost = null;
+    @setter noRowsTemplate = 'Please enter remote host for comparison';
 
     store = new LocalStore({
         fields: [
@@ -41,7 +46,7 @@ export class ConfigDifferModel  {
         ]
     });
 
-    detailModel = new ConfigDifferDetailModel({});
+    detailModel = new ConfigDifferDetailModel({parent: this});
 
     async loadAsync() {
         Promise.all([
@@ -62,14 +67,22 @@ export class ConfigDifferModel  {
     processResponse(resp) {
         const local = this.removeMetaData(resp[0].data),
             remote = this.removeMetaData(resp[1].data),
-            diffedConfigs = this.diffConfigs(local, remote);
+            diffedConfigs = this.diffConfigs(local, remote),
+            store = this.store;
 
-        // this.setEmptyText('Good news! All configs match remote host.');
-        this.store.loadDataAsync(diffedConfigs);
+        // this changes but not until you close and reopen the window
+        // if made observable the grid rerenders with a incorrect size
+        // but still(!) doesn't show the correct template
+        this.setNoRowsTemplate('Good news! All configs match remote host.');
+        store.loadDataAsync(diffedConfigs);
+
+        store.setFilter((it) => {
+            return it.status !== 'Identical';
+        });
     }
 
     processFailedLoad() {
-        // this.setEmptyText('Please enter remote host for comparison');
+        this.setNoRowsTemplate('Please enter remote host for comparison');
         this.store.loadDataAsync([]);
     }
 
@@ -113,6 +126,40 @@ export class ConfigDifferModel  {
         });
 
         return data;
+    }
+
+    confirmApplyRemote(records) {
+        const data = castArray(records), // only single selections at the moment
+            filteredData = data.filter(it => !this.isPwd(it)),
+            hadPwdConfig = data.length != filteredData.length,
+            willDeleteConfig = filteredData.some(it => !it.remoteValue),
+            messages = [];
+
+        messages.push(p(`Are you sure you want to apply remote values to ${pluralize('config', filteredData.length, true)}?`));
+        if (hadPwdConfig) messages.push(p('Warning: No changes will be applied to password configs. These must be changed manually.'));
+        if (willDeleteConfig) messages.push('Warning: Operation includes deletions.');
+
+        this.messageModel.confirm({
+            message: messages,
+            onConfirm: () => this.doApplyRemote(filteredData)
+        });
+    }
+
+    isPwd(diff) {
+        if (diff.localValue && diff.localValue.valueType == 'pwd') return true;
+        if (diff.remoteValue && diff.remoteValue.valueType == 'pwd') return true;
+        return false;
+    }
+
+    doApplyRemote(records) {
+        XH.fetchJson({
+            url: 'configDiffAdmin/applyRemoteValues',
+            params: {records: JSON.stringify(records)}
+        }).finally(() => {
+            // this.requestConfigs();
+            // XH.getViewport().down('configPanel').refreshGrid();
+            // loadMask here?
+        }).catchDefault();
     }
 
     addDifferButton(items) {
