@@ -5,29 +5,31 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import {trimEnd} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {button, dialog} from 'hoist/kit/blueprint';
 import {box, frame} from 'hoist/layout';
 import {grid} from 'hoist/grid';
 import {label, textField, toolbar} from 'hoist/cmp';
 
+import {configDifferDetail} from './ConfigDifferDetail';
+
 @hoistComponent()
 export class ConfigDiffer extends Component {
 
     render() {
+        const model = this.model,
+            detailModel = model.detailModel;
         return box(
             dialog({
                 title: 'Config Differ',
-                isOpen: this.model.isOpen,
+                isOpen: model.isOpen,
                 isCloseButtonShown: true,
                 onClose: this.onCloseClick,
                 style: {height: 600},
                 items: this.getDialogItems()
             }),
-            dialog({
-                title: 'Detail',
-                isOpen: this.model.detailIsOpen
-            })
+            configDifferDetail({model: detailModel})
         );
     }
 
@@ -35,10 +37,11 @@ export class ConfigDiffer extends Component {
     // Implementation
     //------------------------
     getDialogItems() {
+        const model = this.model;
         return [
             frame(
                 grid({
-                    model: this.model.gridModel,
+                    model: model.gridModel,
                     gridOptions: {onRowDoubleClicked: this.onRowDoubleClicked}
                 })
             ),
@@ -46,11 +49,11 @@ export class ConfigDiffer extends Component {
                 items: [
                     label('Compare with:'),
                     textField({
+                        width: 150,
                         placeholder: 'https://remote-host',
-                        field: 'remoteHost',
-                        model: this.model,
+                        onChange: this.onRemoteHostChange,
                         onCommit: this.onCommit,
-                        width: 150
+                        value: model.remoteHost
                     }),
                     button({
                         text: 'Load Diff',
@@ -60,6 +63,11 @@ export class ConfigDiffer extends Component {
             })
             // loadMask({model: model.loadModel})
         ];
+    }
+
+    onRemoteHostChange = (remoteHost) => {
+        const host = trimEnd(remoteHost, '/');
+        this.model.setRemoteHost(host);
     }
     
     onCommit = () => {
@@ -75,7 +83,7 @@ export class ConfigDiffer extends Component {
     }
 
     onRowDoubleClicked = (e) => {
-        this.model.showDiffDetail(e.data);
+        this.model.detailModel.showDetail(e.data);
     }
 }
 

@@ -17,10 +17,11 @@ import {nameCol} from 'hoist/admin/columns/Columns';
 import {toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
+import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
+
 export class ConfigDifferModel  {
 
     @setter @observable isOpen = false;
-    @setter @observable detailIsOpen = false;
     @setter remoteHost = null;
 
     store = new LocalStore({
@@ -35,10 +36,12 @@ export class ConfigDifferModel  {
             nameCol({flex: 1}),
             baseCol({
                 field: 'status',
-                fixedWidth: 120
+                fixedWidth: 100
             })
         ]
     });
+
+    detailModel = new ConfigDifferDetailModel({});
 
     async loadAsync() {
         Promise.all([
@@ -49,16 +52,17 @@ export class ConfigDifferModel  {
                 url: this.remoteHost + '/configDiffAdmin/configs'
             })
         ]).then(resp => {
-            console.log('got response');
-            this.processResponse(resp[0].data, resp[1].data);
+            this.processResponse(resp);
         }).catch(e => {
             this.processFailedLoad();
             XH.handleException(e, {showAsError: false, logOnServer: false});
         });
     }
 
-    processResponse(local, remote) {
-        const diffedConfigs = this.diffConfigs(local, remote);
+    processResponse(resp) {
+        const local = this.removeMetaData(resp[0].data),
+            remote = this.removeMetaData(resp[1].data),
+            diffedConfigs = this.diffConfigs(local, remote);
 
         // this.setEmptyText('Good news! All configs match remote host.');
         this.store.loadDataAsync(diffedConfigs);
@@ -126,12 +130,6 @@ export class ConfigDifferModel  {
     // models are only supposed to have methods, but I need a handler for this special case of adding an item to a rest grid toolbar.
     onDifferBtnClick = () => {
         this.setIsOpen(true);
-    }
-
-    // differ detail code (could be broken out into own component)
-    showDiffDetail(rec) {
-        // this.creatDiffTable(rec);
-        this.setDetailIsOpen(true);
     }
 
 }
