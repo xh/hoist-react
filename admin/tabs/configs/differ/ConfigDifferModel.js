@@ -11,15 +11,15 @@ import {pluralize} from 'hoist/utils/JsUtils';
 import {LocalStore} from 'hoist/data';
 import {GridModel} from 'hoist/grid';
 
-import {button} from 'hoist/kit/blueprint';
 import {baseCol} from 'hoist/columns/Core';
 import {nameCol} from 'hoist/admin/columns/Columns';
 
-import {MessageModel, toolbarSep} from 'hoist/cmp';
+import {MessageModel} from 'hoist/cmp';
+import {p} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
 
+import {GridContextMenu} from 'hoist/grid';
 import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
-import {p, div} from 'hoist/layout';
 
 export class ConfigDifferModel  {
 
@@ -43,7 +43,8 @@ export class ConfigDifferModel  {
                 field: 'status',
                 fixedWidth: 100
             })
-        ]
+        ],
+        contextMenuFn: this.contextMenuFn
     });
 
     detailModel = new ConfigDifferDetailModel({parent: this});
@@ -161,22 +162,4 @@ export class ConfigDifferModel  {
             // loadMask here?
         }).catchDefault();
     }
-
-    addDifferButton(items) {
-        items.splice(3, 0,
-            toolbarSep(),
-            button({
-                icon: Icon.diff(),
-                text: 'Compare w/ Remote',
-                onClick: this.onDifferBtnClick
-            })
-        );
-        return items;
-    }
-
-    // models are only supposed to have methods, but I need a handler for this special case of adding an item to a rest grid toolbar.
-    onDifferBtnClick = () => {
-        this.setIsOpen(true);
-    }
-
 }

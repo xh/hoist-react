@@ -5,7 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {setter, observable} from 'hoist/mobx';
 import {button} from 'hoist/kit/blueprint';
 import {XH, hoistComponent} from 'hoist/core';
 import {vframe} from 'hoist/layout';
@@ -95,7 +94,7 @@ export class ConfigPanel extends Component {
         filterFields: ['name', 'prodValue', 'betaValue', 'stageValue', 'devValue', 'groupName', 'note'],
 
         groupBy: 'groupName',
-        enhanceToolbar: this.differModel.addDifferButton.bind(this.differModel),
+        enhanceToolbar: this.addDifferButton.bind(this), // fat arrow results in no button, no binding gives no handler
         columns: this.filterForEnv([
             nameCol({fixedWidth: 200}),
             baseCol({field: 'valueType', headerName: 'Type', fixedWidth: 80, align: 'center'}),
@@ -155,5 +154,21 @@ export class ConfigPanel extends Component {
         if (!data) return params;
         if (data.valueType === 'pwd') return '*****';
         return params.value;
+    }
+
+    addDifferButton(items) {
+        items.splice(3, 0,
+            toolbarSep(),
+            button({
+                icon: Icon.diff(),
+                text: 'Compare w/ Remote',
+                onClick: this.onDifferBtnClick
+            })
+        );
+        return items;
+    }
+
+    onDifferBtnClick = () => {
+        this.differModel.setIsOpen(true);
     }
 }
