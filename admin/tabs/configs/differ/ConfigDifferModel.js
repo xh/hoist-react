@@ -171,16 +171,15 @@ export class ConfigDifferModel  {
             url: 'configDiffAdmin/applyRemoteValues',
             params: {records: JSON.stringify(records)}
         }).finally(() => {
-            // this.requestConfigs();
-            // XH.getViewport().down('configPanel').refreshGrid();
+            this.loadAsync();
             // loadMask here?
         }).catchDefault();
     }
 
     close() {
         this.setIsOpen(false);
-        this.setNoRowsTemplate('Please enter remote host for comparison');
         this.store.loadDataAsync([]);
+        this.setNoRowsTemplate('Please enter remote host for comparison');
         this.setRemoteHost(null);
     }
 }
