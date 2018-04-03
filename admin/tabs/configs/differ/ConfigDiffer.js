@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {button, dialog, dialogBody} from 'hoist/kit/blueprint';
-import {frame} from 'hoist/layout'
+import {frame} from 'hoist/layout';
 import {grid} from 'hoist/grid';
 import {label, textField, toolbar} from 'hoist/cmp';
 
@@ -32,13 +32,7 @@ export class ConfigDiffer extends Component {
     //------------------------
     getDialogItems() {
         return [
-            dialogBody({
-                style: {height: 600}, // nope
-                items: [
-                    frame(grid({model: this.model.gridModel})) // not filling the space before or after load
-                ]
-            }),
-            // dialogBody('Im the dialog body'),
+            frame(grid({model: this.model.gridModel})),
             toolbar({
                 items: [
                     label('Compare with:'),
