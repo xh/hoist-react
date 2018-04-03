@@ -167,12 +167,13 @@ export class ConfigDifferModel  {
     }
 
     doApplyRemote(records) {
+        // add loadMask?
         XH.fetchJson({
             url: 'configDiffAdmin/applyRemoteValues',
             params: {records: JSON.stringify(records)}
         }).finally(() => {
             this.loadAsync();
-            // loadMask here?
+            this.detailModel.setIsOpen(false);
         }).catchDefault();
     }
 
