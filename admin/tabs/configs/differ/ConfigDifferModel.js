@@ -26,7 +26,7 @@ export class ConfigDifferModel  {
     messageModel = new MessageModel({title: 'Warning', icon: Icon.warning({size: 'lg'})});
 
     @setter @observable isOpen = false;
-    @setter remoteHost = null;
+    @setter @observable remoteHost = null;
     @setter noRowsTemplate = 'Please enter remote host for comparison';
 
     store = new LocalStore({

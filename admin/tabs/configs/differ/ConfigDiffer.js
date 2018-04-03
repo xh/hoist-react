@@ -9,7 +9,7 @@ import {hoistComponent, elemFactory} from 'hoist/core';
 import {button, dialog} from 'hoist/kit/blueprint';
 import {box} from 'hoist/layout';
 import {grid} from 'hoist/grid';
-import {label, message, textField, toolbar} from 'hoist/cmp';
+import {label, message, comboField, toolbar} from 'hoist/cmp';
 
 import {configDifferDetail} from './ConfigDifferDetail';
 
@@ -24,6 +24,7 @@ export class ConfigDiffer extends Component {
                 title: 'Compare w/Remote',
                 isOpen: model.isOpen,
                 isCloseButtonShown: true,
+                canOutsideClickClose: false,
                 onClose: this.onCloseClick,
                 style: {height: 600, width: '50%'},
                 items: this.getDialogItems()
@@ -48,11 +49,10 @@ export class ConfigDiffer extends Component {
             toolbar({
                 items: [
                     label('Compare with:'),
-                    textField({
-                        width: 150,
-                        placeholder: 'https://remote-host',
-                        model: model,
-                        field: 'remoteHost'
+                    comboField({
+                        model,
+                        field: 'remoteHost',
+                        options: [...XH.getConf('xhAppInstances')]
                     }),
                     button({
                         text: 'Load Diff',
