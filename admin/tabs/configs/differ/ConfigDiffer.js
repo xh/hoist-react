@@ -7,9 +7,11 @@
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {button, dialog} from 'hoist/kit/blueprint';
-import {box} from 'hoist/layout';
+import {box, filler} from 'hoist/layout';
 import {grid} from 'hoist/grid';
 import {label, message, comboField, toolbar} from 'hoist/cmp';
+
+import {Icon} from 'hoist/icon';
 
 import {configDifferDetail} from './ConfigDifferDetail';
 
@@ -56,7 +58,15 @@ export class ConfigDiffer extends Component {
                     }),
                     button({
                         text: 'Load Diff',
+                        intent: 'success',
                         onClick: this.onLoadDiffClick
+                    }),
+                    filler(),
+                    button({
+                        icon: Icon.close(),
+                        text: 'Close',
+                        intent: 'danger',
+                        onClick: this.onCloseClick
                     })
                 ]
             }),
