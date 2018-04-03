@@ -5,7 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {trimEnd} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {button, dialog} from 'hoist/kit/blueprint';
 import {box} from 'hoist/layout';
@@ -52,9 +51,8 @@ export class ConfigDiffer extends Component {
                     textField({
                         width: 150,
                         placeholder: 'https://remote-host',
-                        onChange: this.onRemoteHostChange,
-                        onCommit: this.onCommit,
-                        value: model.remoteHost
+                        model: model,
+                        field: 'remoteHost'
                     }),
                     button({
                         text: 'Load Diff',
@@ -67,21 +65,12 @@ export class ConfigDiffer extends Component {
         ];
     }
 
-    onRemoteHostChange = (remoteHost) => {
-        const host = trimEnd(remoteHost, '/');
-        this.model.setRemoteHost(host);
-    }
-    
-    onCommit = () => {
-        this.model.loadAsync();
-    }
-
     onLoadDiffClick = () => {
         this.model.loadAsync();
     }
 
     onCloseClick = () => {
-        this.model.setIsOpen(false);
+        this.model.close();
     }
 
     onRowDoubleClicked = (e) => {

@@ -6,7 +6,7 @@
  */
 
 import {observable, setter} from 'hoist/mobx';
-import {castArray, isEqual, remove} from 'lodash';
+import {castArray, isEqual, remove, trimEnd} from 'lodash';
 import {pluralize} from 'hoist/utils/JsUtils';
 import {LocalStore} from 'hoist/data';
 import {GridModel} from 'hoist/grid';
@@ -68,7 +68,8 @@ export class ConfigDifferModel  {
                 url: 'http://localhost:8080/configDiffAdmin/configs' // without the absolute path, currently defaulting to 3000 (at least in dev)
             }),
             XH.fetchJson({
-                url: this.remoteHost + '/configDiffAdmin/configs'
+                // avoid '//' in middle of url
+                url: trimEnd(this.remoteHost, '/') + '/configDiffAdmin/configs'
             })
         ]).then(resp => {
             this.processResponse(resp);
@@ -174,5 +175,12 @@ export class ConfigDifferModel  {
             // XH.getViewport().down('configPanel').refreshGrid();
             // loadMask here?
         }).catchDefault();
+    }
+
+    close() {
+        this.setIsOpen(false);
+        this.setNoRowsTemplate('Please enter remote host for comparison');
+        this.store.loadDataAsync([]);
+        this.setRemoteHost(null);
     }
 }
