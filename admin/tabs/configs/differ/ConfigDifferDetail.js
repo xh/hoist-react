@@ -8,9 +8,11 @@ import React, {Component} from 'react';
 import {keys, toString} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {button, dialog} from 'hoist/kit/blueprint';
-import {box, frame} from 'hoist/layout';
-import {label, toolbar} from 'hoist/cmp';
+import {filler} from 'hoist/layout';
+import {toolbar} from 'hoist/cmp';
 import {table, tbody, tr, th, td} from 'hoist/layout';
+
+import {Icon} from 'hoist/icon';
 
 import './Differ.scss';
 
@@ -22,20 +24,29 @@ export class ConfigDifferDetail extends Component {
             title: 'Detail',
             isOpen: this.model.isOpen,
             onClose: this.onCloseClick,
-            items: this.renderDiffTable()
+            items: [
+                this.renderDiffTable(),
+                toolbar(
+                    filler(),
+                    button({
+                        text: 'Close',
+                        icon: Icon.close(),
+                        intent: 'danger'
+                    }),
+                    button({
+                        text: 'Accept Remote',
+                        icon: Icon.check(),
+                        intent: 'success'
+                    })
+                )
+            ]
         });
     }
 
-    //model
+    // model
     renderDiffTable() {
         const rec = this.model.record;
         if (!rec) return;
-        // return [
-        //     <div>
-        //         <p>{rec.localValue.groupName}</p>
-        //         <p>{rec.name}</p>
-        //     </div>
-        // ];
 
         const local = rec.localValue,
             remote = rec.remoteValue,

@@ -22,11 +22,11 @@ export class ConfigDiffer extends Component {
             detailModel = model.detailModel;
         return box(
             dialog({
-                title: 'Config Differ',
+                title: 'Compare w/Remote',
                 isOpen: model.isOpen,
                 isCloseButtonShown: true,
                 onClose: this.onCloseClick,
-                style: {height: 600},
+                style: {height: 600, width: '50%'},
                 items: this.getDialogItems()
             }),
             configDifferDetail({model: detailModel})
