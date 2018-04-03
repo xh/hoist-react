@@ -11,8 +11,6 @@ import {frame} from 'hoist/layout';
 import {grid} from 'hoist/grid';
 import {label, textField, toolbar} from 'hoist/cmp';
 
-import {ConfigDifferModel} from './ConfigDifferModel';
-
 @hoistComponent()
 export class ConfigDiffer extends Component {
 

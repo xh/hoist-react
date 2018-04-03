@@ -6,7 +6,7 @@
  */
 
 import {observable, setter} from 'hoist/mobx';
-import {remove} from 'lodash';
+import {isEqual, remove} from 'lodash';
 import {LocalStore} from 'hoist/data';
 import {GridModel} from 'hoist/grid';
 
@@ -34,7 +34,7 @@ export class ConfigDifferModel  {
             nameCol({flex: 1}),
             baseCol({
                 field: 'status',
-                fixedWidth: 80
+                fixedWidth: 120
             })
         ]
     });
@@ -78,7 +78,8 @@ export class ConfigDifferModel  {
             ret.push({
                 name: local.name,
                 localValue: local,
-                remoteValue: remote
+                remoteValue: remote,
+                status: isEqual(local, remote) ? 'Identical' : remote ? 'Diff' : 'Local Only'
             });
 
             if (remote) {
@@ -91,7 +92,8 @@ export class ConfigDifferModel  {
             ret.push({
                 name: remote.name,
                 localValue: null,
-                remoteValue: remote
+                remoteValue: remote,
+                status: 'Remote Only'
             });
         });
 
