@@ -20,6 +20,7 @@ import {Icon} from 'hoist/icon';
 export class ConfigDifferModel  {
 
     @setter @observable isOpen = false;
+    @setter @observable detailIsOpen = false;
     @setter remoteHost = null;
 
     store = new LocalStore({
@@ -116,15 +117,21 @@ export class ConfigDifferModel  {
             button({
                 icon: Icon.diff(),
                 text: 'Compare w/ Remote',
-                // onClick: () => this.setIsOpen(true)
-                onClick: this.testHandler
+                onClick: this.onDifferBtnClick
             })
         );
         return items;
     }
 
-    testHandler = () => {
+    // models are only supposed to have methods, but I need a handler for this special case of adding an item to a rest grid toolbar.
+    onDifferBtnClick = () => {
         this.setIsOpen(true);
+    }
+
+    // differ detail code (could be broken out into own component)
+    showDiffDetail(rec) {
+        // this.creatDiffTable(rec);
+        this.setDetailIsOpen(true);
     }
 
 }

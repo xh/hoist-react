@@ -6,8 +6,8 @@
  */
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
-import {button, dialog, dialogBody} from 'hoist/kit/blueprint';
-import {frame} from 'hoist/layout';
+import {button, dialog} from 'hoist/kit/blueprint';
+import {box, frame} from 'hoist/layout';
 import {grid} from 'hoist/grid';
 import {label, textField, toolbar} from 'hoist/cmp';
 
@@ -15,14 +15,20 @@ import {label, textField, toolbar} from 'hoist/cmp';
 export class ConfigDiffer extends Component {
 
     render() {
-        return dialog({
-            title: 'Config Differ',
-            isOpen: this.model.isOpen,
-            isCloseButtonShown: true,
-            onClose: this.onCloseClick,
-            style: {height: 600},
-            items: this.getDialogItems()
-        });
+        return box(
+            dialog({
+                title: 'Config Differ',
+                isOpen: this.model.isOpen,
+                isCloseButtonShown: true,
+                onClose: this.onCloseClick,
+                style: {height: 600},
+                items: this.getDialogItems()
+            }),
+            dialog({
+                title: 'Detail',
+                isOpen: this.model.detailIsOpen
+            })
+        );
     }
 
     //------------------------
@@ -30,7 +36,12 @@ export class ConfigDiffer extends Component {
     //------------------------
     getDialogItems() {
         return [
-            frame(grid({model: this.model.gridModel})),
+            frame(
+                grid({
+                    model: this.model.gridModel,
+                    gridOptions: {onRowDoubleClicked: this.onRowDoubleClicked}
+                })
+            ),
             toolbar({
                 items: [
                     label('Compare with:'),
@@ -47,7 +58,6 @@ export class ConfigDiffer extends Component {
                     })
                 ]
             })
-            // message({model: model.messageModel}),
             // loadMask({model: model.loadModel})
         ];
     }
@@ -62,6 +72,10 @@ export class ConfigDiffer extends Component {
 
     onCloseClick = () => {
         this.model.setIsOpen(false);
+    }
+
+    onRowDoubleClicked = (e) => {
+        this.model.showDiffDetail(e.data);
     }
 }
 
