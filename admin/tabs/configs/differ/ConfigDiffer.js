@@ -9,7 +9,7 @@ import {hoistComponent, elemFactory} from 'hoist/core';
 import {button, dialog} from 'hoist/kit/blueprint';
 import {div, filler} from 'hoist/layout';
 import {grid} from 'hoist/grid';
-import {label, message, comboField, toolbar} from 'hoist/cmp';
+import {comboField, label, loadMask, message, toolbar} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import {configDifferDetail} from './ConfigDifferDetail';
@@ -76,8 +76,8 @@ export class ConfigDiffer extends Component {
                     onClick: this.onCloseClick
                 })
             ),
-            message({model: model.messageModel})
-            // loadMask({model: model.loadModel})
+            message({model: model.messageModel}),
+            loadMask({model: model.loadModel})
         ];
     }
 

@@ -12,9 +12,10 @@ import {pluralize} from 'hoist/utils/JsUtils';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
 import {LocalStore} from 'hoist/data';
 import {GridModel} from 'hoist/grid';
+import {MessageModel, ToastManager} from 'hoist/cmp';
+import {LastPromiseModel} from 'hoist/promise';
 import {baseCol} from 'hoist/columns/Core';
 import {nameCol} from 'hoist/admin/columns/Columns';
-import {MessageModel, ToastManager} from 'hoist/cmp';
 import {p} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
 
@@ -24,6 +25,8 @@ import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
 export class ConfigDifferModel  {
 
     messageModel = new MessageModel({title: 'Warning', icon: Icon.warning({size: 'lg'})});
+    detailModel = new ConfigDifferDetailModel({parent: this});
+    loadModel = new LastPromiseModel();
 
     @setter @observable isOpen = false;
     @setter @observable remoteHost = null;
@@ -33,8 +36,6 @@ export class ConfigDifferModel  {
             'name', 'status', 'localValue', 'remoteValue'
         ]
     });
-
-    detailModel = new ConfigDifferDetailModel({parent: this});
 
     // not sure why I can't do this declaratively
     constructor() {
