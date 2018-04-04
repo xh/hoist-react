@@ -71,7 +71,7 @@ export class LocalStore extends BaseStore {
     get allRecords()    {return this._allRecords}
     get loadModel()     {return this._loadModel}
     get filter()        {return this._filter}
-    setFilter(filterFn) { // as it stand I will have to set this on every load, would it make sense to make filter a public prop so I can set on creation?
+    setFilter(filterFn) {
         this._filter = filterFn;
         this.rebuildArrays();
     }
