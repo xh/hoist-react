@@ -65,4 +65,8 @@ export class ConfigDifferDetailModel  {
         if (!local || local[prop] !== remote[prop]) return 'diff';
     }
 
+    confirmApplyRemote() {
+        this.parent.confirmApplyRemote(this.record);
+    }
+
 }

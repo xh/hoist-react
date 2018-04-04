@@ -9,7 +9,6 @@ import {hoistComponent, elemFactory} from 'hoist/core';
 import {button, dialog} from 'hoist/kit/blueprint';
 import {filler} from 'hoist/layout';
 import {toolbar} from 'hoist/cmp';
-
 import {Icon} from 'hoist/icon';
 
 import './Differ.scss';
@@ -45,10 +44,7 @@ export class ConfigDifferDetail extends Component {
     }
     
     onAcceptRemoteClick = () => {
-        const model = this.model,
-            differModel = model.parent;
-
-        differModel.confirmApplyRemote(model.record);
+        this.model.confirmApplyRemote();
     }
 
     onCloseClick = () => {
