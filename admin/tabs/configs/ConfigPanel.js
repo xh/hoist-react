@@ -7,13 +7,13 @@
 import {Component} from 'react';
 import {button} from 'hoist/kit/blueprint';
 import {XH, hoistComponent} from 'hoist/core';
-import {vframe} from 'hoist/layout';
-import {boolCheckCol, baseCol} from 'hoist/columns/Core';
-import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
+import {frame} from 'hoist/layout';
 import {toolbarSep} from 'hoist/cmp';
-import {Icon} from 'hoist/icon';
-
+import {boolCheckCol, baseCol} from 'hoist/columns/Core';
 import {nameCol} from 'hoist/admin/columns/Columns';
+import {Icon} from 'hoist/icon';
+import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
+
 import {configDiffer} from './differ/ConfigDiffer';
 import {ConfigDifferModel} from './differ/ConfigDifferModel';
 
@@ -122,7 +122,7 @@ export class ConfigPanel extends Component {
     });
 
     render() {
-        return vframe(
+        return frame(
             restGrid({model: this.gridModel}),
             configDiffer({model: this.differModel})
         );
@@ -135,7 +135,6 @@ export class ConfigPanel extends Component {
     //-------------------------
     // Implementation
     //-------------------------
-
     filterForEnv(vals) {
         const envs = XH.getEnv('supportedEnvironments'),
             ret = vals.filter(it => !it.env || envs.includes(it.env));
