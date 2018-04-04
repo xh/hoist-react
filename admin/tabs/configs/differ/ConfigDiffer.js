@@ -40,17 +40,6 @@ export class ConfigDiffer extends Component {
     getDialogItems() {
         const model = this.model;
         return [
-            grid({
-                model: model.gridModel,
-                gridOptions: {
-                    onRowDoubleClicked: this.onRowDoubleClicked,
-                    // 'Empty text' cannot be changed dynamically for ag-grid
-                    // Overlays can be customized but are set once at init.
-                    // https://www.ag-grid.com/javascript-grid-overlay-component/#no-rows-overlay-interface
-                    // https://stackoverflow.com/questions/45062947/how-to-change-the-overlayloadingtemplate-in-ag-grid
-                    overlayNoRowsTemplate: 'Please enter remote host for comparison'
-                }
-            }),
             toolbar({
                 items: [
                     label('Compare with:'),
@@ -64,16 +53,29 @@ export class ConfigDiffer extends Component {
                         text: 'Load Diff',
                         intent: 'success',
                         onClick: this.onLoadDiffClick
-                    }),
-                    filler(),
-                    button({
-                        icon: Icon.close(),
-                        text: 'Close',
-                        intent: 'danger',
-                        onClick: this.onCloseClick
                     })
                 ]
             }),
+            grid({
+                model: model.gridModel,
+                gridOptions: {
+                    onRowDoubleClicked: this.onRowDoubleClicked,
+                    // 'Empty text' cannot be changed dynamically for ag-grid
+                    // Overlays can be customized but are set once at init.
+                    // https://www.ag-grid.com/javascript-grid-overlay-component/#no-rows-overlay-interface
+                    // https://stackoverflow.com/questions/45062947/how-to-change-the-overlayloadingtemplate-in-ag-grid
+                    overlayNoRowsTemplate: 'Please enter remote host for comparison'
+                }
+            }),
+            toolbar(
+                filler(),
+                button({
+                    icon: Icon.close(),
+                    text: 'Close',
+                    intent: 'danger',
+                    onClick: this.onCloseClick
+                })
+            ),
             message({model: model.messageModel})
             // loadMask({model: model.loadModel})
         ];
