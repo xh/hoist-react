@@ -28,6 +28,7 @@ body {
   --xh-border-color: var(--border-color, var(--xh-gray));
   --xh-border-color-grid: var(--border-color-grid, var(--xh-border-color));
   --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
+  --xh-chart-bg-color: var(--bg-color, white);
   --xh-grid-header-bg-color: var(--grid-header-bg-color, #cfd8dc);
   --xh-header-color: var(--header-color, var(--xh-text-color));
   --xh-mask-bg-color: var(--mask-bg-color, rgba(16, 22, 26, 0.7));
@@ -53,6 +54,7 @@ body.xh-dark {
   --xh-bg-color-highlight: var(--bg-color-highlight, rgba(2, 136, 209, 0.6));
   --xh-border-color: var(--border-color, #29434e);
   --xh-border-color-grid: var(--border-color-grid, var(--xh-border-color));
+  --xh-chart-bg-color: #1F232B;
   --xh-grid-header-bg-color: var(--grid-header-bg-color, #546e7a);
   --xh-mask-bg-color: var(--mask-bg-color, rgba(16, 22, 26, 0.8));
   --xh-navbar-bg-color: var(--navbar-bg-color, var(--xh-bg-color-alt));

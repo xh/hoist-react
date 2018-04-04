@@ -29,9 +29,9 @@ export function hoistComponent({isObserver = true} = {}) {
             get() {return this.localModel ? this.localModel : this.props.model}
         });
 
-        //---------------------------------------------
+        //-------------------------------------------------------
         // Decorate with Blueprint Context Menu, HotKeys support
-        //---------------------------------------------
+        //-------------------------------------------------------
         if (proto.renderContextMenu) {
             C = ContextMenuTarget(C);
         }
@@ -39,6 +39,17 @@ export function hoistComponent({isObserver = true} = {}) {
         if (proto.renderHotkeys) {
             C = HotkeysTarget(C);
         }
+
+        //------------------------------
+        // Support fir renderCollapsed
+        //------------------------------
+        const render = proto['render'],
+            renderCollapsed = proto.renderCollapsed;
+        proto.render = function() {
+            return this.props.isCollapsed === true ?
+                (renderCollapsed ? renderCollapsed.apply(this, arguments) : null):
+                (render ? render.apply(this, arguments) : null);
+        };
 
         //---------------------------------------------------------
         // Mobx -- add observer and support for managed auto runs
@@ -72,6 +83,7 @@ export function hoistComponent({isObserver = true} = {}) {
             }
         });
 
+        C.isHoistComponent = true;
         return C;
     };
 }

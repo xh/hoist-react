@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {hoistComponent} from 'hoist/core';
-import {hframe, vframe, frame, filler} from 'hoist/layout';
+import {hframe, vframe, vbox, frame, filler, div} from 'hoist/layout';
 import {grid} from 'hoist/grid';
 import {resizable, loadMask, storeFilterField, toolbar} from 'hoist/cmp';
 import {logViewerDisplay} from './LogViewerDisplay';
@@ -40,6 +40,7 @@ export class LogViewer extends Component {
                     side: 'right',
                     contentSize: 250,
                     isOpen: true,
+                    collapsedDisplay: toolbar(vbox(div('Log'), div('Files'))),
                     item: vframe(
                         grid({model: files}),
                         toolbar(

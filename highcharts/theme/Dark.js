@@ -91,7 +91,8 @@ export const DarkTheme = {
         }
     },
     tooltip: {
-        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        backgroundColor: '#1F232B',
+        borderColor: '#606063',
         style: {
             color: '#F0F0F0'
         }

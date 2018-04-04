@@ -35,6 +35,15 @@ export const XH = window.XH = new class {
         return this.hoistModel.appModel;
     }
 
+    get routerModel() {
+        return this.hoistModel.routerModel;
+    }
+
+    navigate(...args) {
+        this.routerModel.navigate(...args);
+    }
+
+
     //--------------------------
     // Implementation
     //--------------------------

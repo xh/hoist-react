@@ -24,6 +24,9 @@ export const LightTheme = {
             }
         }
     },
+    tooltip: {
+        borderColor: '#606063'
+    },
     yAxis: {
         gridLineColor: '#E0E0E0',
         minorGridLineColor: '#F0F0F0'

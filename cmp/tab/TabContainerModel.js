@@ -5,8 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH} from 'hoist/core';
-import {computed, action, observable} from 'hoist/mobx';
-import {max} from 'lodash';
+import {computed, action, observable, autorun} from 'hoist/mobx';
+import {max, uniqBy, startCase, isPlainObject} from 'lodash';
+import {throwIf} from 'hoist/utils/JsUtils';
+import {wait} from 'hoist/promise';
+import {TabPaneModel} from 'hoist/cmp';
 
 /**
  * Model for a TabContainer, representing its layout/contents and currently selected TabPane.
@@ -18,32 +21,83 @@ import {max} from 'lodash';
  */
 export class TabContainerModel {
     id = null;
+    name = null;
     vertical = false;
     children = [];
 
     @observable _lastRefreshRequest = null;
-    @observable selectedIndex = -1;
+    @observable selectedId = null;
 
     parent = null;   // For sub-tabs only
 
-    @computed
-    get selectedId() {
-        const selectedIndex = this.selectedIndex;
-        return selectedIndex >= 0 ? this.children[selectedIndex].id : null;
+    /**
+     * Construct this object
+     * @param id, String.  Unique id.  Used for generating routes.
+     * @param name, String. Display name for the tab.
+     * @param orientation, 'v' or 'h'
+     * @param useRoutes, if true, component will use routes for navigation.
+     *      These routes must be setup externally in the application (See BaseApp.getRoutes()).  The routes may exist at
+     *      any level of the application, but there must be a route of the form /../../[containerId]/[childPaneId] for
+     *      each child pane in this container.
+     * @param children, configurations for TabPaneModels, or TabContainerModel
+     */
+    constructor({
+        id,
+        name = startCase(id),
+        orientation = 'h',
+        useRoutes = false,
+        children
+    }) {
+        this.id = id;
+        this.name = name;
+        this.vertical = orientation === 'v';
+        this.useRoutes = useRoutes;
+
+        // Instantiate children, if needed.
+        children = children.map(child => {
+            if (isPlainObject(child)) {
+                return (child.children) ?
+                    new TabContainerModel({useRoutes, ...child}) :
+                    new TabPaneModel(child);
+            }
+            return child;
+        });
+
+        // Validate and wire children
+        throwIf(children.length == 0,
+            'TabContainerModel needs at least one child pane.'
+        );
+        throwIf(children.length != uniqBy(children, 'id').length,
+            'One or more Panes in TabContainerModel has a non-unique id.'
+        );
+
+        children.forEach(child => child.parent = this);
+        this.children = children;
+        this.selectedId = children[0].id;
+        wait(1).then(() => autorun(() => this.syncFromRouter()));
+    }
+
+    get routeName() {
+        return this.parent ? this.parent.routeName + '.' + this.id : this.id;
     }
 
     @action
     setSelectedId(id) {
-        const index = this.children.findIndex(it => it.id === id);
-        this.setSelectedIndex(index);
-    }
+        const children = this.children,
+            child = children.find(it => it.id === id);
+        
+        this.selectedId = child ? id : children[0].id;
 
-    @action
-    setSelectedIndex(index) {
-        if (index >= this.children.length || index < -1)  {
-            throw XH.exception('Incorrect Index for TabContainerModel');
+        if (this.useRoutes) {
+            const routerModel = XH.routerModel,
+                state = routerModel.currentState,
+                routeName = state ? state.name : 'default',
+                selectedRouteFragment = this.routeName + '.' + this.selectedId;
+
+            if (!routeName.startsWith(selectedRouteFragment)) {
+                routerModel.navigate(selectedRouteFragment);
+            }
         }
-        this.selectedIndex = index;
     }
 
     @computed
@@ -63,12 +117,19 @@ export class TabContainerModel {
         return max([parentVal, this._lastRefreshRequest]);
     }
 
+    //-------------------------
+    // Implementation
+    //-------------------------
+    syncFromRouter() {
+        if (!this.useRoutes) return;
 
-    constructor(id, orientation, ...children) {
-        this.id = id;
-        this.vertical = orientation === 'v';
-        this.children = children;
-        this.selectedIndex = children.length ? 0 : -1;
-        children.forEach(child => child.parent = this);
+        const {parent, id} = this,
+            routerModel = XH.routerModel,
+            state = routerModel.currentState,
+            routeName = state ? state.name : 'default';
+        
+        if (parent && routeName.startsWith(this.routeName) && parent.selectedId != id) {
+            parent.setSelectedId(id);
+        }
     }
 }
