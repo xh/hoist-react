@@ -7,14 +7,14 @@
 
 import {observable, setter} from 'hoist/mobx';
 import {castArray, isEqual, remove, trimEnd} from 'lodash';
+import {Intent} from 'hoist/kit/blueprint';
 import {pluralize} from 'hoist/utils/JsUtils';
+import {SECONDS} from 'hoist/utils/DateTimeUtils';
 import {LocalStore} from 'hoist/data';
 import {GridModel} from 'hoist/grid';
-
 import {baseCol} from 'hoist/columns/Core';
 import {nameCol} from 'hoist/admin/columns/Columns';
-
-import {MessageModel} from 'hoist/cmp';
+import {MessageModel, ToastManager} from 'hoist/cmp';
 import {p} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
 
@@ -27,7 +27,6 @@ export class ConfigDifferModel  {
 
     @setter @observable isOpen = false;
     @setter @observable remoteHost = null;
-    @setter noRowsTemplate = 'Please enter remote host for comparison';
 
     store = new LocalStore({
         fields: [
@@ -85,15 +84,12 @@ export class ConfigDifferModel  {
             diffedConfigs = this.diffConfigs(local, remote),
             store = this.store;
 
-        // this changes but not until you close and reopen the window
-        // if made observable the grid rerenders with a incorrect size
-        // but still(!) doesn't show the correct template
-        this.setNoRowsTemplate('Good news! All configs match remote host.');
         store.loadDataAsync(diffedConfigs);
-
         store.setFilter((it) => {
             return it.status !== 'Identical';
         });
+
+        if (store.count == 0) this.showToast();
     }
 
     processFailedLoad() {
@@ -177,10 +173,18 @@ export class ConfigDifferModel  {
         }).catchDefault();
     }
 
+    showToast() {
+        ToastManager.getToaster().show({
+            intent: Intent.SUCCESS,
+            message: 'Good news! All configs match remote host.',
+            icon: Icon.check({style: {alignSelf: 'center', marginLeft: '5px'}}),
+            timeout: 3 * SECONDS
+        });
+    }
+
     close() {
         this.setIsOpen(false);
         this.store.loadDataAsync([]);
-        this.setNoRowsTemplate('Please enter remote host for comparison');
         this.setRemoteHost(null);
     }
 }

@@ -7,10 +7,9 @@
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {button, dialog} from 'hoist/kit/blueprint';
-import {box, filler} from 'hoist/layout';
+import {div, filler} from 'hoist/layout';
 import {grid} from 'hoist/grid';
 import {label, message, comboField, toolbar} from 'hoist/cmp';
-
 import {Icon} from 'hoist/icon';
 
 import {configDifferDetail} from './ConfigDifferDetail';
@@ -21,7 +20,7 @@ export class ConfigDiffer extends Component {
     render() {
         const model = this.model,
             detailModel = model.detailModel;
-        return box(
+        return div(
             dialog({
                 title: 'Compare w/Remote',
                 isOpen: model.isOpen,
@@ -45,7 +44,11 @@ export class ConfigDiffer extends Component {
                 model: model.gridModel,
                 gridOptions: {
                     onRowDoubleClicked: this.onRowDoubleClicked,
-                    overlayNoRowsTemplate: model.noRowsTemplate
+                    // 'Empty text' cannot be changed dynamically for ag-grid
+                    // Overlays can be customized but are set once at init.
+                    // https://www.ag-grid.com/javascript-grid-overlay-component/#no-rows-overlay-interface
+                    // https://stackoverflow.com/questions/45062947/how-to-change-the-overlayloadingtemplate-in-ag-grid
+                    overlayNoRowsTemplate: 'Please enter remote host for comparison'
                 }
             }),
             toolbar({
@@ -53,6 +56,7 @@ export class ConfigDiffer extends Component {
                     label('Compare with:'),
                     comboField({
                         model,
+                        placeholder: 'https://remote-host/',
                         field: 'remoteHost',
                         options: [...XH.getConf('xhAppInstances')]
                     }),
