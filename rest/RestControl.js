@@ -152,6 +152,11 @@ export class RestControl extends Component {
             height: 150
         });
     }
+    
+    componentWillUpdate() {
+        const cm = this.model.codeMirrorInstance;
+        if (cm) cm.toTextArea();
+    }
 }
 export const restControl = elemFactory(RestControl);
 

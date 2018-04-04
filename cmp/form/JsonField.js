@@ -84,6 +84,7 @@ export class JsonField extends HoistField {
         editor.on('focus',  this.onFocus);
         editor.on('blur',  this.onBlur);
         editor.on('keyup',  this.onKeyUp);
+        this.model.setCodeMirrorInstance(editor);
 
         let {height, width} = props;
         if (!(isUndefined(height) && isUndefined(width))) {

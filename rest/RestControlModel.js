@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {computed} from 'hoist/mobx';
+import {computed, setter} from 'hoist/mobx';
 import {isJSON} from 'hoist/utils/JsUtils';
 
 export class RestControlModel  {
@@ -13,6 +13,8 @@ export class RestControlModel  {
     field
     editor
     parent
+
+    @setter codeMirrorInstance = null; // used to dynamically control jsonEditor
 
     get record() {return this.parent.record}
 
