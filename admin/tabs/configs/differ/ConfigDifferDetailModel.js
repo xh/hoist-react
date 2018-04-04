@@ -24,20 +24,18 @@ export class ConfigDifferDetailModel  {
     }
 
     renderDiffTable() {
-        const rec = this.record;
-
-        const local = rec.localValue,
+        const rec = this.record,
+            local = rec.localValue,
             remote = rec.remoteValue,
-            props = keys(local || remote),
-            cell = (v, cls) => td({cls: cls, item: v});
+            props = keys(local || remote);
 
         let rows = [];
 
         props.forEach(prop => {
             const cls = this.createDiffClass(prop, local, remote),
-                propCell = cell(prop),
-                localCell = local ? cell(toString(local[prop])) : cell(''),
-                remoteCell = remote ? cell(toString(remote[prop]), cls) : cell('');
+                propCell = td(prop),
+                localCell = local ? td(toString(local[prop])) : td(''),
+                remoteCell = remote ? td({cls: cls, item: toString(remote[prop])}) : td('');
             rows.push(tr(propCell, localCell, remoteCell));
         });
 
