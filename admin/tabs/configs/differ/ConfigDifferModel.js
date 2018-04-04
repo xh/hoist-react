@@ -11,7 +11,7 @@ import {Intent} from 'hoist/kit/blueprint';
 import {pluralize} from 'hoist/utils/JsUtils';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
 import {LocalStore} from 'hoist/data';
-import {GridModel} from 'hoist/grid';
+import {GridContextMenu, GridModel} from 'hoist/grid';
 import {MessageModel, ToastManager} from 'hoist/cmp';
 import {LastPromiseModel} from 'hoist/promise';
 import {baseCol} from 'hoist/columns/Core';
@@ -19,7 +19,6 @@ import {nameCol} from 'hoist/admin/columns/Columns';
 import {p} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
 
-import {GridContextMenu} from 'hoist/grid';
 import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
 
 export class ConfigDifferModel  {
@@ -37,7 +36,6 @@ export class ConfigDifferModel  {
         ]
     });
 
-    // not sure why I can't do this declaratively
     constructor() {
         this.gridModel = new GridModel({
             store: this.store,
@@ -65,7 +63,7 @@ export class ConfigDifferModel  {
     async loadAsync() {
         Promise.all([
             XH.fetchJson({
-                url: 'http://localhost:8080/configDiffAdmin/configs' // without the absolute path, currently defaulting to 3000 (at least in dev)
+                url: XH.baseUrl + 'configDiffAdmin/configs'
             }),
             XH.fetchJson({
                 // avoid '//' in middle of url
@@ -79,22 +77,22 @@ export class ConfigDifferModel  {
         });
     }
 
-    processResponse(resp) {
+    async processResponse(resp) {
         const local = this.removeMetaData(resp[0].data),
             remote = this.removeMetaData(resp[1].data),
             diffedConfigs = this.diffConfigs(local, remote),
             store = this.store;
 
-        store.loadDataAsync(diffedConfigs);
-        store.setFilter((it) => {
+        store.setFilter(it => {
             return it.status !== 'Identical';
         });
+
+        await store.loadDataAsync(diffedConfigs);
 
         if (store.count == 0) this.showToast();
     }
 
     processFailedLoad() {
-        this.setNoRowsTemplate('Please enter remote host for comparison');
         this.store.loadDataAsync([]);
     }
 
