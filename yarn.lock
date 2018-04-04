@@ -160,13 +160,21 @@
   version "2.0.0"
   resolved "https://repo.xh.io/repository/npm-public/@types/dom4/-/dom4-2.0.0.tgz#00dc42fed6b36a7a6dabb8f7a9c9e678ee644e05"
 
-"@xh/hoist-dev-utils@~0.3.2":
-  version "0.3.2"
-  resolved "https://repo.xh.io/repository/npm-hosted/@xh/hoist-dev-utils/-/hoist-dev-utils-0.3.2.tgz#373da2eec7ecc14339d9060f39fb0e8e26d06db0"
+"@xh/eslint-config@~0.1.1":
+  version "0.1.1"
+  resolved "https://repo.xh.io/repository/npm-hosted/@xh/eslint-config/-/eslint-config-0.1.1.tgz#7c25731e8b2a31960c20b203b9fc7bbc6be75d5a"
   dependencies:
+    babel-eslint "~8.2.2"
+    eslint "~4.19.1"
+    eslint-plugin-react "~7.7.0"
+
+"@xh/hoist-dev-utils@~0.3.7":
+  version "0.3.7"
+  resolved "https://repo.xh.io/repository/npm-hosted/@xh/hoist-dev-utils/-/hoist-dev-utils-0.3.7.tgz#7c4cdaba600ebda7395a7d5bd9e3d9a5ac403e9d"
+  dependencies:
+    "@xh/eslint-config" "~0.1.1"
     autoprefixer "~8.2.0"
     babel-core "~6.26.0"
-    babel-eslint "~8.2.2"
     babel-loader "~7.1.4"
     babel-plugin-transform-decorators-legacy "~1.3.4"
     babel-preset-react-app "~3.1.1"
@@ -176,7 +184,6 @@
     css-loader "~0.28.11"
     eslint "~4.19.1"
     eslint-loader "~2.0.0"
-    eslint-plugin-react "~7.7.0"
     extract-text-webpack-plugin "~3.0.2"
     favicons-webpack-plugin "~0.0.8"
     file-loader "~1.1.11"
@@ -5761,9 +5768,9 @@ react-dom-factories@~1.0.2:
   version "1.0.2"
   resolved "https://repo.xh.io/repository/npm-public/react-dom-factories/-/react-dom-factories-1.0.2.tgz#eb7705c4db36fb501b3aa38ff759616aa0ff96e0"
 
-react-dom@~16.3.0:
-  version "16.3.0"
-  resolved "https://repo.xh.io/repository/npm-public/react-dom/-/react-dom-16.3.0.tgz#b318e52184188ecb5c3e81117420cca40618643e"
+react-dom@~16.3.1:
+  version "16.3.1"
+  resolved "https://repo.xh.io/repository/npm-public/react-dom/-/react-dom-16.3.1.tgz#6a3c90a4fb62f915bdbcf6204422d93a7d4ca573"
   dependencies:
     fbjs "^0.8.16"
     loose-envify "^1.1.0"
@@ -5787,9 +5794,9 @@ react-transition-group@~2.3.0:
     prop-types "^15.5.8"
     warning "^3.0.0"
 
-react@~16.3.0:
-  version "16.3.0"
-  resolved "https://repo.xh.io/repository/npm-public/react/-/react-16.3.0.tgz#fc5a01c68f91e9b38e92cf83f7b795ebdca8ddff"
+react@~16.3.1:
+  version "16.3.1"
+  resolved "https://repo.xh.io/repository/npm-public/react/-/react-16.3.1.tgz#4a2da433d471251c69b6033ada30e2ed1202cfd8"
   dependencies:
     fbjs "^0.8.16"
     loose-envify "^1.1.0"
