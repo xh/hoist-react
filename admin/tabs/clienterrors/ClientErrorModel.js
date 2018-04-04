@@ -8,9 +8,13 @@
 
 import moment from 'moment';
 import {action, observable, setter} from 'hoist/mobx';
+import {button, controlGroup} from 'hoist/kit/blueprint';
 import {LocalStore} from 'hoist/data';
-import {GridModel} from 'hoist/grid';
 import {fmtDate} from 'hoist/format';
+import {GridModel} from 'hoist/grid';
+import {filler, table, tbody, tr, th, td} from 'hoist/layout';
+import {jsonField, toolbar} from 'hoist/cmp';
+import {Icon} from 'hoist/icon';
 
 import {baseCol} from 'hoist/columns/Core';
 import {compactDateCol} from 'hoist/columns/DatesTimes';
@@ -22,6 +26,7 @@ export class ClientErrorModel {
     @observable endDate = moment().toDate();
     @observable @setter username = '';
     @observable @setter error = '';
+    @observable @setter detailOpen = false;
 
     store = new LocalStore({
         fields: [
@@ -90,6 +95,51 @@ export class ClientErrorModel {
         this.endDate = date;
     }
 
+    renderDetail() {
+        const rec = this.gridModel.selection.singleRecord;
+        if (!rec) return null;
+        return [
+            table({
+                cls: 'xh-admin-error-detail',
+                items: [
+                    tbody(
+                        tr(
+                            th('User:'), td(rec.username)
+                        ),
+                        tr(
+                            th('App Version:'), td(rec.appVersion)
+                        ),
+                        tr(
+                            th('Environment:'), td(rec.appEnvironment)
+                        )
+                    )
+                ]
+            }),
+            controlGroup({
+                fill: true, // need both?
+                style: {flex: 1, margin: 1}, // need both?
+                item: jsonField({
+                    value: rec.error,
+                    disabled: true,
+                    lineWrapping: true,
+                    height: 300
+                })
+            }),
+            toolbar({
+                cls: 'xh-toolbar',
+                items: [
+                    filler(),
+                    button({
+                        icon: Icon.close(),
+                        text: 'Close',
+                        intent: 'danger',
+                        onClick: this.onDetailCloseClick
+                    })
+                ]
+            })
+        ];
+    }
+
     //----------------
     // Implementation
     //----------------
@@ -104,6 +154,10 @@ export class ClientErrorModel {
 
     isValidDate(date) {
         return date && date.toString() !== 'Invalid Date';
+    }
+
+    onDetailCloseClick = () => {
+        this.setDetailOpen(false);
     }
 
 

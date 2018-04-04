@@ -8,11 +8,12 @@ import {Component} from 'react';
 import {hoistComponent} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {filler, vframe} from 'hoist/layout';
-import {button} from 'hoist/kit/blueprint';
+import {button, dialog} from 'hoist/kit/blueprint';
 import {textField, dayField, exportButton, refreshButton, storeCountLabel, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import {ClientErrorModel} from './ClientErrorModel';
+import './clienterror.scss';
 
 @hoistComponent()
 export class ClientErrorPanel extends Component {
@@ -20,13 +21,22 @@ export class ClientErrorPanel extends Component {
     localModel = new ClientErrorModel();
 
     render() {
+        const model = this.model;
         return vframe(
             this.renderToolbar(),
             grid({
-                model: this.model.gridModel,
+                model: model.gridModel,
                 gridOptions: {
-                    rowSelection: 'single'
+                    rowSelection: 'single',
+                    onRowDoubleClicked: this.onRowDoubleClicked
                 }
+            }),
+            dialog({
+                title: 'Error Details',
+                icon: Icon.gauge({size: '2x'}),
+                isOpen: model.detailOpen,
+                onClose: model.onDetailCloseClick,
+                items: model.renderDetail()
             })
         );
     }
@@ -100,6 +110,10 @@ export class ClientErrorPanel extends Component {
 
     onCommit = () => {
         this.loadAsync();
+    }
+
+    onRowDoubleClicked = () => {
+        this.model.setDetailOpen(true);
     }
 
     async loadAsync() {

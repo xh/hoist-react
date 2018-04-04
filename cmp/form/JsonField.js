@@ -59,6 +59,7 @@ export class JsonField extends HoistField {
         const editorSpec = {
             theme: this.darkTheme ? 'dracula' : 'default',
             mode: 'application/json',
+            lineWrapping: this.props.lineWrapping,
             lineNumbers: true,
             autoCloseBrackets: true,
             extraKeys: {
