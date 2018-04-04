@@ -17,11 +17,12 @@ import './Toolbar.scss';
  */
 @hoistComponent()
 class Toolbar extends Component {
-
     render() {
-        const {className, ...rest} = this.props;
+        const {className, vertical, ...rest} = this.props;
+
         return hbox({
             cls: className ? `${className} xh-toolbar` : 'xh-toolbar',
+            vertical: vertical ? 'true' : 'false',
             itemSpec: {
                 factory: button
             },

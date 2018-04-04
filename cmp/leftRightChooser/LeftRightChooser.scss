@@ -1,0 +1,7 @@
+.xh-leftRightChooser {
+  .gridContainer {
+    > div:not(.xh-toolbar) {
+      width: calc(50% - 15px);
+    }
+  }
+}

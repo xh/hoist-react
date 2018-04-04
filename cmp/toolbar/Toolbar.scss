@@ -15,6 +15,15 @@
     }
   }
 
+  &[vertical='true'] {
+    flex-direction: column !important;
+    justify-content: center;
+
+    > *:not([class*='xh-no-pad']) {
+      margin-top: var(--xh-pad-px);
+    }
+  }
+
   &__separator {
     color: var(--xh-text-color-muted);
   }
