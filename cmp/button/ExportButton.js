@@ -6,34 +6,36 @@
  */
 
 import {Component} from 'react';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {PropTypes as PT} from 'prop-types';
+import {elemFactory, hoistComponent} from 'hoist/core';
 import {button} from 'hoist/kit/blueprint';
 import {Icon} from 'hoist/icon';
 
 /**
- * Button intended for export. Defaults icon to font awesome 'download'.
- * Defaults click handler to passed model's export function
+ * Convenience Button preconfigured for use as a trigger for an export/download of data.
+ * Accepts props documented below as well as any supported by Blueprint's Button.
  *
- * @prop icon - a valid icon for a blueprint button
- * @prop onClick - a click handler for this button
- *
- *  ...and any other props that can be passed to a blueprint button component.
+ * Must be provided either an onClick handler *or* a model. If a model is provided, this button
+ * will call export() on the model class.
  */
 @hoistComponent()
 export class ExportButton extends Component {
 
-    static defaultProps = {
-        icon: Icon.download()
-    }
+    static propTypes = {
+        icon: PT.element,
+        onClick: PT.func,
+        model: PT.object
+    };
 
     render() {
-        const {icon, onClick, ...rest} = this.props;
+        const {icon, onClick, model, ...rest} = this.props;
         return button({
-            icon: icon,
+            icon: icon || Icon.download(),
             onClick: onClick || this.onExportClick,
             ...rest
         });
     }
+
 
     //---------------------------
     // Implementation

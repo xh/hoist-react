@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {observer, autorun} from 'hoist/mobx';
+import {autorun, observer} from 'hoist/mobx';
 import {ContextMenuTarget, HotkeysTarget} from 'hoist/kit/blueprint';
 
 import {hoistModel} from './HoistModel';
@@ -41,7 +41,7 @@ export function hoistComponent({isObserver = true} = {}) {
         }
 
         //------------------------------
-        // Support fir renderCollapsed
+        // Support for renderCollapsed
         //------------------------------
         const render = proto['render'],
             renderCollapsed = proto.renderCollapsed;
