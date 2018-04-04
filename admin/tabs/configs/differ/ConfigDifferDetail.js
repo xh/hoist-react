@@ -18,9 +18,11 @@ export class ConfigDifferDetail extends Component {
 
     render() {
         const model = this.model;
+        if (!model.record) return null;
+
         return dialog({
             title: 'Detail',
-            isOpen: model.isOpen,
+            isOpen: model.record,
             onClose: this.onCloseClick,
             items: [
                 model.renderDiffTable(),
@@ -48,7 +50,7 @@ export class ConfigDifferDetail extends Component {
     }
 
     onCloseClick = () => {
-        this.model.setIsOpen(false);
+        this.model.setRecord(null);
     }
 }
 

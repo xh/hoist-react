@@ -13,9 +13,7 @@ export class ConfigDifferDetailModel  {
 
     parent = null;
 
-    @setter @observable isOpen = false;
-    @setter record = null;
-
+    @setter @observable record = null;
 
     constructor({parent}) {
         this.parent = parent;
@@ -23,12 +21,10 @@ export class ConfigDifferDetailModel  {
 
     showDetail(rec) {
         this.setRecord(rec);
-        this.setIsOpen(true);
     }
 
     renderDiffTable() {
         const rec = this.record;
-        if (!rec) return;
 
         const local = rec.localValue,
             remote = rec.remoteValue,
