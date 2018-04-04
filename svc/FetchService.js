@@ -56,10 +56,8 @@ export class FetchService extends BaseService {
             }
         }
         
-        let ret = await fetch(url, opts);
+        const ret = await fetch(url, opts);
         if (!ret.ok) throw Exception.requestError(opts, ret);
-        ret = ret.json();
-
-        return ret;
+        return ret.json();
     }
 }

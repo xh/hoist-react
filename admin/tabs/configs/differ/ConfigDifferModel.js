@@ -139,7 +139,7 @@ export class ConfigDifferModel  {
     }
 
     confirmApplyRemote(records) {
-        const data = castArray(records), // only single selections at the moment
+        const data = castArray(records),
             filteredData = data.filter(it => !this.isPwd(it)),
             hadPwdConfig = data.length != filteredData.length,
             willDeleteConfig = filteredData.some(it => !it.remoteValue),
