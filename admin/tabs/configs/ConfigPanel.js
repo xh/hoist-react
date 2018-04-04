@@ -94,7 +94,7 @@ export class ConfigPanel extends Component {
         filterFields: ['name', 'prodValue', 'betaValue', 'stageValue', 'devValue', 'groupName', 'note'],
 
         groupBy: 'groupName',
-        enhanceToolbar: this.addDifferButton.bind(this),
+        enhanceToolbar: (items) => this.addDifferButton(items),
         columns: this.filterForEnv([
             nameCol({fixedWidth: 200}),
             baseCol({field: 'valueType', headerName: 'Type', fixedWidth: 80, align: 'center'}),
