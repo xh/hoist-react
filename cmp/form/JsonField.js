@@ -121,8 +121,8 @@ export class JsonField extends HoistField {
         }
     }
 
-    // CodeMirror docs: If you dynamically create and destroy editors made with `fromTextArea`,
-    // without destroying the form they are part of, you should make sure to call `toTextArea`
+    // CodeMirror docs: If you dynamically create and destroy editors made with `fromTextArea`
+    // ...you should make sure to call `toTextArea` to remove the editor
     componentWillUnmount() {
         if (this.editor) this.editor.toTextArea();
     }
