@@ -13,8 +13,7 @@ export class RestControlModel  {
     field
     editor
     parent
-
-    @setter codeMirrorInstance = null; // used to dynamically control jsonEditor
+    codeMirrorInstance = null; // used to dynamically control jsonEditor
 
     get record() {return this.parent.record}
 
