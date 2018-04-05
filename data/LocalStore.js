@@ -73,8 +73,6 @@ export class LocalStore extends BaseStore {
     get loadModel()     {return this._loadModel}
     get filter()        {return this._filter}
     setFilter(filterFn) {
-        console.log('inlocalsetfilter');
-        console.log(filterFn);
         this._filter = filterFn;
         this.rebuildArrays();
     }

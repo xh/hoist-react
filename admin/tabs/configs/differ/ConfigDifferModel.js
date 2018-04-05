@@ -14,7 +14,6 @@ import {SECONDS} from 'hoist/utils/DateTimeUtils';
 import {LocalStore} from 'hoist/data';
 import {GridContextMenu, GridModel} from 'hoist/grid';
 import {MessageModel, ToastManager} from 'hoist/cmp';
-import {LastPromiseModel} from 'hoist/promise';
 import {baseCol} from 'hoist/columns/Core';
 import {nameCol} from 'hoist/admin/columns/Columns';
 import {p} from 'hoist/layout';

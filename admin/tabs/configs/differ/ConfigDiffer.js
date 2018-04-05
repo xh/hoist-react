@@ -90,5 +90,4 @@ export class ConfigDiffer extends Component {
         this.model.detailModel.showDetail(e.data);
     }
 }
-
 export const configDiffer = elemFactory(ConfigDiffer);

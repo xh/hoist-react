@@ -53,5 +53,4 @@ export class ConfigDifferDetail extends Component {
         this.model.closeDetail();
     }
 }
-
 export const configDifferDetail= elemFactory(ConfigDifferDetail);
