@@ -116,7 +116,7 @@ export class ClientErrorPanel extends Component {
 }
 
 @hoistComponent()
-export class ClientErrorDetail extends Component {
+class ClientErrorDetail extends Component {
 
     render() {
         const model = this.model;
