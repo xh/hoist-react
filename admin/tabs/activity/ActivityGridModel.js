@@ -114,18 +114,10 @@ export class ActivityGridModel {
                 cls: 'xh-admin-activity-detail',
                 items: [
                     tbody(
-                        tr(
-                            th('User:'), td(rec.username)
-                        ),
-                        tr(
-                            th('Message:'), td(rec.msg)
-                        ),
-                        tr(
-                            th('Category:'), td(rec.category)
-                        ),
-                        tr(
-                            th('Agent:'), td(rec.userAgent)
-                        )
+                        tr(th('User:'), td(rec.username)),
+                        tr(th('Message:'), td(rec.msg)),
+                        tr(th('Category:'), td(rec.category)),
+                        tr(th('Agent:'), td(rec.userAgent))
                     )
                 ]
             }),

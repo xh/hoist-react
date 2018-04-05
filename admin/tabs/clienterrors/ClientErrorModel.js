@@ -103,15 +103,9 @@ export class ClientErrorModel {
                 cls: 'xh-admin-error-detail',
                 items: [
                     tbody(
-                        tr(
-                            th('User:'), td(rec.username)
-                        ),
-                        tr(
-                            th('App Version:'), td(rec.appVersion)
-                        ),
-                        tr(
-                            th('Environment:'), td(rec.appEnvironment)
-                        )
+                        tr(th('User:'), td(rec.username)),
+                        tr(th('App Version:'), td(rec.appVersion)),
+                        tr(th('Environment:'), td(rec.appEnvironment))
                     )
                 ]
             }),
