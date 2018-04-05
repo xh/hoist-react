@@ -5,15 +5,14 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import {button, dialog} from 'hoist/kit/blueprint';
 import {elemFactory, hoistComponent} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {filler, vframe} from 'hoist/layout';
-import {button, dialog} from 'hoist/kit/blueprint';
 import {textField, dayField, exportButton, refreshButton, storeCountLabel, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import {ClientErrorModel} from './ClientErrorModel';
-import './clienterror.scss';
 
 @hoistComponent()
 export class ClientErrorPanel extends Component {

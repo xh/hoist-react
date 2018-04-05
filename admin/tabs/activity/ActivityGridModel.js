@@ -8,9 +8,13 @@
 
 import moment from 'moment';
 import {action, observable, setter} from 'hoist/mobx';
+import {button, controlGroup} from 'hoist/kit/blueprint';
 import {LocalStore} from 'hoist/data';
-import {GridModel} from 'hoist/grid';
 import {fmtDate, numberRenderer} from 'hoist/format';
+import {GridModel} from 'hoist/grid';
+import {filler, table, tbody, tr, th, td} from 'hoist/layout';
+import {jsonField, toolbar} from 'hoist/cmp';
+import {Icon} from 'hoist/icon';
 
 import {baseCol} from 'hoist/columns/Core';
 import {dateTimeCol} from 'hoist/columns/DatesTimes';
@@ -25,6 +29,7 @@ export class ActivityGridModel {
     @observable @setter category = '';
     @observable @setter device = '';
     @observable @setter browser = '';
+    @observable @setter detailOpen = false;
 
     store = new LocalStore({
         fields: [
@@ -100,6 +105,55 @@ export class ActivityGridModel {
         this.endDate = date;
     }
 
+    renderDetail() {
+        const rec = this.gridModel.selection.singleRecord;
+        if (!rec) return null;
+        return [
+            table({
+                cls: 'xh-admin-activity-detail',
+                items: [
+                    tbody(
+                        tr(
+                            th('User:'), td(rec.username)
+                        ),
+                        tr(
+                            th('Message:'), td(rec.message)
+                        ),
+                        tr(
+                            th('Category:'), td(rec.category)
+                        ),
+                        tr(
+                            th('Agent:'), td(rec.agent)
+                        )
+                    )
+                ]
+            }),
+            controlGroup({
+                fill: true, // need both?
+                style: {flex: 1, margin: 1}, // need both?
+                item: jsonField({
+                    value: rec.data,
+                    disabled: true,
+                    lineWrapping: true,
+                    height: 300
+                })
+            }),
+            toolbar({
+                cls: 'xh-toolbar',
+                items: [
+                    filler(),
+                    button({
+                        icon: Icon.close(),
+                        text: 'Close',
+                        intent: 'danger',
+                        onClick: this.onDetailCloseClick
+                    })
+                ]
+            })
+        ];
+    }
+
+
     //----------------
     // Implementation
     //----------------
@@ -118,4 +172,9 @@ export class ActivityGridModel {
     isValidDate(date) {
         return date && date.toString() !== 'Invalid Date';
     }
+
+    onDetailCloseClick = () => {
+        this.setDetailOpen(false);
+    }
+
 }

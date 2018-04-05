@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import {dialog} from 'hoist/kit/blueprint';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {vframe, filler} from 'hoist/layout';
@@ -16,14 +17,17 @@ import {Icon} from 'hoist/icon';
 export class ActivityGrid extends Component {
 
     render() {
+        const model = this.model;
         return vframe(
             this.renderToolbar(),
             grid({
-                model: this.model.gridModel,
+                model: model.gridModel,
                 gridOptions: {
-                    rowSelection: 'single'
+                    rowSelection: 'single',
+                    onRowDoubleClicked: this.onRowDoubleClicked
                 }
-            })
+            }),
+            activityDetail({model})
         );
     }
 
@@ -101,5 +105,29 @@ export class ActivityGrid extends Component {
         this.model.adjustDates('subtract', true);
     }
 
+    onRowDoubleClicked = () => {
+        this.model.setDetailOpen(true);
+    }
+
 }
 export const activityGrid = elemFactory(ActivityGrid);
+
+
+@hoistComponent()
+class ActivityDetail extends Component {
+
+    render() {
+        const model = this.model;
+        return dialog({
+            title: 'Activity Details',
+            icon: Icon.gauge({size: '2x'}),
+            isOpen: model.detailOpen,
+            onClose: model.onDetailCloseClick,
+            items: model.renderDetail()
+        });
+    }
+
+}
+const activityDetail = elemFactory(ActivityDetail);
+
+
