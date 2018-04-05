@@ -122,7 +122,7 @@ export class JsonField extends HoistField {
     }
 
     componentWillUnmount() {
-        this.editor.toTextArea();
+        if (this.editor) this.editor.toTextArea();
     }
 }
 export const jsonField = elemFactory(JsonField);
