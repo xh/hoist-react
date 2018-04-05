@@ -5,10 +5,19 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {observable} from 'mobx';
+import {observable, setter} from 'hoist/mobx';
 
 export class FeedbackDialogModel {
 
-    @observable isOpen = false;
+    @setter @observable isOpen = false;
+    @setter feedback = null;
+    
+    submitFeedback() {
+        this.close();
+    }
+
+    close() {
+        this.setIsOpen(false);
+    }
 
 }

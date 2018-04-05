@@ -6,16 +6,13 @@
  */
 
 import {Component} from 'react';
-import {dialog} from 'hoist/kit/blueprint';
+import {button, dialog} from 'hoist/kit/blueprint';
 import {hoistComponent, elemFactory} from 'hoist/core';
+import {textAreaField, toolbar} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
-
-import {FeedbackDialogModel} from './FeedbackDialogModel';
 
 @hoistComponent()
 export class FeedbackDialog extends Component {
-
-    localModel = new FeedbackDialogModel();
 
     render() {
         const model = this.model;
@@ -23,9 +20,35 @@ export class FeedbackDialog extends Component {
             title: 'Submit Feedback',
             icon: Icon.comment(),
             isOpen: model.isOpen,
-            item: 'PUT FEEDBACK HERE'
+            onClose: this.onClose,
+            items: [
+                textAreaField({
+                    model,
+                    field: 'feedback'
+                }),
+                toolbar(
+                    filler(),
+                    button({
+                        text: 'Cancel',
+                        onClick: this.onClose,
+                        intent: 'success'
+                    }),
+                    button({
+                        text: 'Send',
+                        onClick: this.onSubmitClick,
+                        intent: 'danger'
+                    })
+                )
+            ]
         });
     }
 
+    onSendClick = () => {
+        this.model.submitFeedback();
+    }
+
+    onClose = () => {
+        this.model.close();
+    }
 }
 export const feedbackDialog = elemFactory(FeedbackDialog);
