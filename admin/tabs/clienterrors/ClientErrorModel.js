@@ -8,7 +8,7 @@
 
 import moment from 'moment';
 import {action, observable, setter} from 'hoist/mobx';
-import {button, controlGroup} from 'hoist/kit/blueprint';
+import {button} from 'hoist/kit/blueprint';
 import {LocalStore} from 'hoist/data';
 import {fmtDate} from 'hoist/format';
 import {GridModel} from 'hoist/grid';
