@@ -6,45 +6,36 @@
  */
 
 import React from 'react';
-import {defaults, isPlainObject, isString, isArray, castArray} from 'lodash';
+import {castArray, defaults, isArray, isPlainObject, isString} from 'lodash';
 import {isReactElement} from 'hoist/utils/ReactUtils';
 import {Exception} from 'hoist/exception';
 
 /**
- * Convenience method for creating React Elements with native javascript.  This method is designed
- * to provide a well-formatted, declarative native javascript alternative to JSX.
+ * Convenience method for creating React Elements. This method is designed to provide a  well-
+ * formatted, declarative native javascript approach to configuring Elements and their children
+ * without writing JSX.
  *
- * @param type, string representing html element, or React Component
- * @param config, additional arguments to populate the component.
+ * An important feature of this factory is that children with property `omit` set to true will be
+ * skipped, allowing for conditional inclusion of elements in the vDOM in a declarative style.
  *
- * config should be a single config object with the following structure:
- *      {
- *              cls: String, css classes for this element  (alias for React 'className')
+ * Note that if a React Component has a native property that conflicts with this API, it should be
+ * specified as native with a $ prefix (e.g. '$items'). This method will recognize and pass the
+ * property appropriately.
  *
- *              items: single or array of child elements.  These may be specified as React Elements, or raw js objects,
- *                      or strings. If specified as objects, elements will be created for them by calling a factory method on each
- *                      object. The creation of child items in this way will be governed by itemSpec.
- *
- *              item: single child element.  The format is equivalent to objects provided to 'items', but offered for
-  *                     code clarity when only a single item is provided.
- *
- *              itemSpec: factory, or object of the following form:
- *                      {
- *                          factory: factory to be used for creating child elements, if none specified.
- *                          ...props: other properties to serve as defaults for children.
- *                      }
- *               ...props:  other properties to apply to this element
- *        }
- *
- *  One important feature of this factory is that children with property 'omit' set to true will be skipped.
- *  This allows for conditional inclusion of elements in the virtual dom in a declarative style.
- *
- *  Note that if a React Component has a native property that conflicts with this API, it should be specified as native
- *  with a $ prefix (e.g. '$items'). This method will recognize and pass the property appropriately.
- *
+ * @param {(Component|string)} type - React Component, or string representing an HTML element
+ * @param {Object} [config] - config props to be applied to the Component
+ * @param {string} [config.cls] - CSS classes for this element (alias for React 'className')
+ * @param {(Array|Element|Object|string)} [config.items] - child element(s) specified as React
+ *      Elements, raw JS objects, or strings. Elements will be created for any raw objects by
+ *      calling a factory as per config.itemSpec (below).
+ * @param {(Element|Object|string)} [config.item] - a single child - equivalent to items, offered
+ *      for code clarity when only one child is needed.
+ * @param {(function|Object)} [config.itemSpec] - element factory to be used to create child items
+ *      from raw objects, or an object of the form {factory, ...props}, where props will serve as
+ *      defaults for children.
+ * @param {*} [config...props] - any additional props to apply to this element
+ * @return ReactElement
  */
-
-
 export function elem(type, config = {}) {
 
     let {cls, item, items, itemSpec, omit, ...props} = config;
@@ -93,18 +84,17 @@ export function elem(type, config = {}) {
 
 
 /**
- * Create a factory/function that can be used to create a React Element using native javascript and elem().
+ * Returns a factory function that can create a ReactElement using native JS (i.e. not JSX).
+ * This is a 'curried' version of the raw elem() method and adds two critical features:
  *
- * This is a 'curried' version of the raw elem() method.   It adds the following two critical features:
+ *   1) Allows argument to be an array, or rest arguments that are children to be directly passed
+ *      to the new Element. Equivalent to specifying `{items: args}`. Useful when no attributes
+ *      need to be applied directly to the Element.
+ *   2) Allows the addition of fixed default props to be applied before passing to the elem factory.
  *
- * 1) Allows argument to be an array, or rest arguments that are children objects to be directly passed to the new element.
- *  Equivalent to specifying {items: args}.  Useful when no attributes need to be applied directly to the Element.
- *
- * 2) Allows the addition of fixed default props to be applied before passing to the element factory.
- *
- * @param C, React Component for which to create the element.
- * @param defaultProps, (optional) defaults to be applied to the elem props.
- * @return {Function}
+ * @param {Component} C - React Component for which this factory will create Elements
+ * @param {Object} [defaultProps] - optional defaults to be applied to the elem props
+ * @return {function}
  */
 export function elemFactory(C, defaultProps) {
     return function(...args) {

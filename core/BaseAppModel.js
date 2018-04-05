@@ -19,9 +19,8 @@ export class BaseAppModel {
     enableLogout = true;
 
     /**
-     * Is SSO authentication expected / required for this application? If true, will
-     * prevent display of the loginPanel form and instead display a lockoutPanel if the
-     * user cannot be identified.
+     * Is SSO authentication expected / required for this application? If true, will prevent display of the
+     * loginPanel form and instead display a lockoutPanel if the user cannot be identified.
      */
     requireSSO = false;
 
@@ -31,8 +30,8 @@ export class BaseAppModel {
     }
 
     /**
-     * Call this once when application mounted in order to
-     * trigger initial authentication and initialization of application.
+     * Call this once when application mounted in order to trigger initial
+     * authentication and initialization of application.
      */
     async initAsync() {}
 
