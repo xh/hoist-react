@@ -5,13 +5,14 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {dialog} from 'hoist/kit/blueprint';
+import {button} from 'hoist/kit/blueprint';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {grid} from 'hoist/grid';
-import {vframe, filler} from 'hoist/layout';
-import {button} from 'hoist/kit/blueprint';
 import {textField, dayField, exportButton, refreshButton, storeCountLabel, toolbar, toolbarSep} from 'hoist/cmp';
+import {vframe, filler} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
+
+import {activityDetail} from './ActivityDetail';
 
 @hoistComponent()
 export class ActivityGrid extends Component {
@@ -111,21 +112,3 @@ export class ActivityGrid extends Component {
 
 }
 export const activityGrid = elemFactory(ActivityGrid);
-
-
-@hoistComponent()
-class ActivityDetail extends Component {
-
-    render() {
-        const model = this.model;
-        return dialog({
-            title: 'Activity Details',
-            icon: Icon.gauge({size: '2x'}),
-            isOpen: model.detailOpen,
-            onClose: model.onDetailCloseClick,
-            items: model.renderDetail()
-        });
-    }
-
-}
-const activityDetail = elemFactory(ActivityDetail);
