@@ -67,8 +67,9 @@ export const XH = window.XH = new class {
         this.createMethodAliases(this.trackService,             ['track']);
         this.createMethodAliases(this.fetchService,             ['fetchJson']);
         this.createMethodAliases(this.exceptionHandlerService,  ['handleException']);
+        this.createMethodAliases(this.identityService,          ['getUser']);
         this.createMethodAliases(this.configService,            {getConf: 'get'});
-        this.createMethodAliases(this.prefService,              {getPref: 'get'});
+        this.createMethodAliases(this.prefService,              {getPref: 'get', setPref: 'set'});
         this.createMethodAliases(this.environmentService,       {getEnv: 'get'});
         this.createMethodAliases(Exception,                     {exception: 'create'});
     }

@@ -39,8 +39,8 @@ export class MonitorResultsModel {
         this.tabPaneModel = tabPaneModel;
         this.timer = Timer.create({
             runFn: this.loadResults,
-            delay: 15 * SECONDS,
-            interval: 15 * SECONDS
+            delay: 10 * SECONDS,
+            interval: 10 * SECONDS
         });
     }
 
