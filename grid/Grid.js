@@ -70,7 +70,9 @@ class Grid extends Component {
     // Implementation
     //------------------------
     onGridSizeChanged = (ev) => {
-        delay(() => ev.api.sizeColumnsToFit(), 50);
+        // Delay introduced to workaround unwanted horizontal scrollbar showing up.
+        // See https://github.com/exhi/hoist-react/issues/107
+        delay(() => ev.api.sizeColumnsToFit(), 100);
     }
 
     onGridReady = (params) => {
