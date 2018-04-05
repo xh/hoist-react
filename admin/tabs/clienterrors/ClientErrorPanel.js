@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {hoistComponent} from 'hoist/core';
+import {elemFactory, hoistComponent} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {filler, vframe} from 'hoist/layout';
 import {button, dialog} from 'hoist/kit/blueprint';
@@ -31,13 +31,7 @@ export class ClientErrorPanel extends Component {
                     onRowDoubleClicked: this.onRowDoubleClicked
                 }
             }),
-            dialog({
-                title: 'Error Details',
-                icon: Icon.gauge({size: '2x'}),
-                isOpen: model.detailOpen,
-                onClose: model.onDetailCloseClick,
-                items: model.renderDetail()
-            })
+            clientErrorDetail({model})
         );
     }
 
@@ -120,3 +114,22 @@ export class ClientErrorPanel extends Component {
         return this.model.loadAsync();
     }
 }
+
+@hoistComponent()
+export class ClientErrorDetail extends Component {
+
+    render() {
+        const model = this.model;
+        return dialog({
+            title: 'Error Details',
+            icon: Icon.gauge({size: '2x'}),
+            isOpen: model.detailOpen,
+            onClose: model.onDetailCloseClick,
+            items: model.renderDetail()
+        });
+    }
+
+}
+
+const clientErrorDetail = elemFactory(ClientErrorDetail);
+
