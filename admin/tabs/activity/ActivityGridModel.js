@@ -129,15 +129,11 @@ export class ActivityGridModel {
                     )
                 ]
             }),
-            controlGroup({
-                fill: true, // need both?
-                style: {flex: 1, margin: 1}, // need both?
-                item: jsonField({
-                    value: rec.data,
-                    disabled: true,
-                    lineWrapping: true,
-                    height: 300
-                })
+            jsonField({
+                value: rec.data,
+                disabled: true,
+                lineWrapping: true,
+                height: 300
             }),
             toolbar({
                 cls: 'xh-toolbar',
