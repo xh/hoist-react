@@ -34,7 +34,8 @@ export class ActivityGridModel {
     store = new LocalStore({
         fields: [
             'severity', 'dateCreated', 'username', 'msg', 'category',
-            'device', 'browser', 'data', 'impersonating', 'elapsed'
+            'device', 'browser', 'data', 'impersonating', 'elapsed',
+            'userAgent'
         ]
     });
 
@@ -117,13 +118,13 @@ export class ActivityGridModel {
                             th('User:'), td(rec.username)
                         ),
                         tr(
-                            th('Message:'), td(rec.message)
+                            th('Message:'), td(rec.msg)
                         ),
                         tr(
                             th('Category:'), td(rec.category)
                         ),
                         tr(
-                            th('Agent:'), td(rec.agent)
+                            th('Agent:'), td(rec.userAgent)
                         )
                     )
                 ]
