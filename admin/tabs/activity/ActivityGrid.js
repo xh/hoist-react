@@ -129,5 +129,3 @@ class ActivityDetail extends Component {
 
 }
 const activityDetail = elemFactory(ActivityDetail);
-
-

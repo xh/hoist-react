@@ -129,6 +129,5 @@ class ClientErrorDetail extends Component {
     }
 
 }
-
 const clientErrorDetail = elemFactory(ClientErrorDetail);
 

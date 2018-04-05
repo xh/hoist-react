@@ -153,7 +153,6 @@ export class ActivityGridModel {
         ];
     }
 
-
     //----------------
     // Implementation
     //----------------

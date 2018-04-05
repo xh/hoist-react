@@ -160,5 +160,4 @@ export class ClientErrorModel {
         this.setDetailOpen(false);
     }
 
-
 }
