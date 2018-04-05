@@ -32,8 +32,9 @@ export class LocalStore extends BaseStore {
      * @param processRawData, optional.  Function to run on data presented to
      *        loadDataAsync() before creating records.
      */
-    constructor({processRawData = null, ...rest}) {
+    constructor({processRawData = null, filter, ...rest}) {
         super(rest);
+        this.setFilter(filter);
         this.processRawData = processRawData;
     }
 
@@ -72,6 +73,8 @@ export class LocalStore extends BaseStore {
     get loadModel()     {return this._loadModel}
     get filter()        {return this._filter}
     setFilter(filterFn) {
+        console.log('inlocalsetfilter');
+        console.log(filterFn);
         this._filter = filterFn;
         this.rebuildArrays();
     }

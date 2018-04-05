@@ -50,7 +50,7 @@ export class ConfigDifferDetail extends Component {
     }
 
     onCloseClick = () => {
-        this.model.setRecord(null);
+        this.model.closeDetail();
     }
 }
 

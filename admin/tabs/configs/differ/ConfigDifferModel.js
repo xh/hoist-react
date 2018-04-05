@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import React from 'react';
 import {observable, setter} from 'hoist/mobx';
 import {castArray, isEqual, remove, trimEnd} from 'lodash';
 import {Intent} from 'hoist/kit/blueprint';
@@ -25,7 +26,6 @@ export class ConfigDifferModel  {
 
     messageModel = new MessageModel({title: 'Warning', icon: Icon.warning({size: 'lg'})});
     detailModel = new ConfigDifferDetailModel({parent: this});
-    loadModel = new LastPromiseModel();
 
     @setter @observable isOpen = false;
     @setter @observable remoteHost = null;
@@ -33,7 +33,9 @@ export class ConfigDifferModel  {
     store = new LocalStore({
         fields: [
             'name', 'status', 'localValue', 'remoteValue'
-        ]
+        ],
+        name: 'differ',
+        filter: (it) => it.status !== 'Identical'
     });
 
     constructor() {
@@ -61,35 +63,31 @@ export class ConfigDifferModel  {
     }
 
     async loadAsync() {
-        Promise.all([
-            XH.fetchJson({
-                url: XH.baseUrl + 'configDiffAdmin/configs'
-            }),
-            XH.fetchJson({
-                // avoid '//' in middle of url
-                url: trimEnd(this.remoteHost, '/') + '/configDiffAdmin/configs'
-            })
-        ]).then(resp => {
-            this.processResponse(resp);
-        }).catch(e => {
+        try {
+            const resp = await Promise.all([
+                XH.fetchJson({
+                    url: XH.baseUrl + 'configDiffAdmin/configs'
+                }),
+                XH.fetchJson({
+                    url: trimEnd(this.remoteHost, '/') + '/configDiffAdmin/configs'
+                })
+            ]);
+            await this.processResponseAsync(resp);
+        } catch (e) {
             this.processFailedLoad();
             XH.handleException(e, {showAsError: false, logOnServer: false});
-        });
+        }
     }
 
-    async processResponse(resp) {
+    async processResponseAsync(resp) {
         const local = this.removeMetaData(resp[0].data),
             remote = this.removeMetaData(resp[1].data),
             diffedConfigs = this.diffConfigs(local, remote),
             store = this.store;
 
-        store.setFilter(it => {
-            return it.status !== 'Identical';
-        });
-
         await store.loadDataAsync(diffedConfigs);
 
-        if (store.count == 0) this.showToast();
+        if (store.count == 0) this.showNoDiffToast();
     }
 
     processFailedLoad() {
@@ -107,11 +105,11 @@ export class ConfigDifferModel  {
                 name: local.name,
                 localValue: local,
                 remoteValue: remote,
-                status: isEqual(local, remote) ? 'Identical' : remote ? 'Diff' : 'Local Only'
+                status: isEqual(local, remote) ? 'Identical' : (remote ? 'Diff' : 'Local Only')
             });
 
             if (remote) {
-                remove(remoteConfigs, it => remote.name == it.name);
+                remove(remoteConfigs, {name: remote.name});
             }
         });
 
@@ -143,14 +141,18 @@ export class ConfigDifferModel  {
             filteredData = data.filter(it => !this.isPwd(it)),
             hadPwdConfig = data.length != filteredData.length,
             willDeleteConfig = filteredData.some(it => !it.remoteValue),
-            messages = [];
+            confirmMsg = `Are you sure you want to apply remote values to ${pluralize('config', filteredData.length, true)}?`;
 
-        messages.push(p(`Are you sure you want to apply remote values to ${pluralize('config', filteredData.length, true)}?`));
-        if (hadPwdConfig) messages.push(p('Warning: No changes will be applied to password configs. These must be changed manually.'));
-        if (willDeleteConfig) messages.push('Warning: Operation includes deletions.');
+        const message = (
+            <div>
+                <p>{confirmMsg}</p>
+                <p hidden={!hadPwdConfig}>Warning: No changes will be applied to password configs. These must be changed manually.</p>
+                <p hidden={!willDeleteConfig}>Warning: Operation includes deletions.</p>
+            </div>
+        );
 
         this.messageModel.confirm({
-            message: messages,
+            message: message,
             onConfirm: () => this.doApplyRemote(filteredData)
         });
     }
@@ -167,11 +169,11 @@ export class ConfigDifferModel  {
             params: {records: JSON.stringify(records)}
         }).finally(() => {
             this.loadAsync();
-            this.detailModel.setRecord(null);
+            this.detailModel.closeDetail();
         }).catchDefault();
     }
 
-    showToast() {
+    showNoDiffToast() {
         ToastManager.getToaster().show({
             intent: Intent.SUCCESS,
             message: 'Good news! All configs match remote host.',

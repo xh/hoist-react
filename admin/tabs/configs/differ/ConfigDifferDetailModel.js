@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {observable, setter} from 'hoist/mobx';
+import {action, observable} from 'hoist/mobx';
 import {keys, toString} from 'lodash';
 import {table, tbody, tr, th, td} from 'hoist/layout';
 
@@ -13,50 +13,51 @@ export class ConfigDifferDetailModel  {
 
     parent = null;
 
-    @setter @observable record = null;
+    @observable record = null;
 
     constructor({parent}) {
         this.parent = parent;
     }
 
+    @action
     showDetail(rec) {
-        this.setRecord(rec);
+        this.record = rec;
+    }
+
+    @action
+    closeDetail() {
+        this.record = null;
     }
 
     renderDiffTable() {
         const rec = this.record,
             local = rec.localValue,
             remote = rec.remoteValue,
-            props = keys(local || remote);
+            fields = keys(local || remote);
 
-        let rows = [];
-
-        props.forEach(prop => {
-            const cls = this.createDiffClass(prop, local, remote),
-                propCell = td(prop),
-                localCell = local ? td(toString(local[prop])) : td(''),
-                remoteCell = remote ? td({cls: cls, item: toString(remote[prop])}) : td('');
-            rows.push(tr(propCell, localCell, remoteCell));
+        const rows = fields.map(field => {
+            const cls = this.createDiffClass(field, local, remote),
+                localCell = local ? toString(local[field]) : '',
+                remoteCell = remote ? {cls: cls, item: toString(remote[field])} : '';
+            return tr(td(field), td(localCell), td(remoteCell));
         });
 
         return table({
             cls: 'config-diff-table',
-            item: tbody({
-                items: [
-                    tr(
-                        th('Property'),
-                        th('Local'),
-                        th('Remote')
-                    ),
-                    ...rows
-                ]
-            })
+            item: tbody(
+                tr(
+                    th('Property'),
+                    th('Local'),
+                    th('Remote')
+                ),
+                ...rows
+            )
         });
     }
 
-    createDiffClass(prop, local, remote) {
+    createDiffClass(field, local, remote) {
         if (!remote) return;
-        if (!local || local[prop] !== remote[prop]) return 'diff';
+        if (!local || local[field] !== remote[field]) return 'diff';
     }
 
     confirmApplyRemote() {
