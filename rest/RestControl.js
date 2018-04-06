@@ -6,6 +6,7 @@
  */
 
 import React, {Component} from 'react';
+import {remove, isEmpty} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {fmtDateTime} from 'hoist/format';
 import {hbox} from 'hoist/layout';
@@ -79,9 +80,11 @@ export class RestControl extends Component {
 
     renderCombo() {
         const model = this.model,
-            options = model.field.lookup;
+            field = model.field,
+            lookup = field.lookup;
 
-        if (model.field.nullable) options.unshift(null);
+        const options = [null, ...lookup];
+        if (!field.nullable) remove(options, (it) => isEmpty(it));
 
         return comboField({
             model,
@@ -93,19 +96,20 @@ export class RestControl extends Component {
 
     renderSelect() {
         const model = this.model,
-            lookup = model.field.lookup,
+            field = model.field,
+            lookup = field.lookup,
             type = model.type;
 
         let options;
         if (lookup) {
-            options = lookup;
+            options = [null, ...lookup];
         } else if (type == 'bool') {
-            options = [true, false];
+            options = [null, true, false];
         } else {
-            options = [];
+            options = [null];
         }
 
-        if (model.field.nullable) options.unshift(null);
+        if (!field.nullable) remove(options, (it) => isEmpty(it));
 
         return selectField({
             model,
