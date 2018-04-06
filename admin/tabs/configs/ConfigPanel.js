@@ -58,7 +58,7 @@ export class ConfigPanel extends Component {
             },
             {
                 name: 'clientVisible',
-                type: 'bool',
+                type: 'checkbox',
                 defaultValue: false,
                 required: true
             },

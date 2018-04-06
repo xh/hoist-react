@@ -10,7 +10,7 @@ import {hoistComponent, elemFactory} from 'hoist/core';
 import {fmtDateTime} from 'hoist/format';
 import {hbox} from 'hoist/layout';
 import {controlGroup} from 'hoist/kit/blueprint';
-import {label, comboField, jsonField, numberField, selectField, textAreaField, textField}  from 'hoist/cmp';
+import {label, checkField, comboField, jsonField, numberField, selectField, textAreaField, textField}  from 'hoist/cmp';
 
 @hoistComponent()
 export class RestControl extends Component {
@@ -50,6 +50,8 @@ export class RestControl extends Component {
             return field.lookupStrict ? this.renderSelect() : this.renderCombo();
         } else if (type === 'bool') {
             return this.renderSelect();
+        } else if (type === 'checkbox') {
+            return this.renderCheckField();
         } else if (type === 'number') {
             return this.renderNumberField();
         } else {
@@ -104,6 +106,15 @@ export class RestControl extends Component {
             model,
             field: 'value',
             options,
+            disabled: !model.isEditable
+        });
+    }
+
+    renderCheckField() {
+        const model = this.model;
+        return checkField({
+            model,
+            field: 'value',
             disabled: !model.isEditable
         });
     }
