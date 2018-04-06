@@ -40,6 +40,10 @@
     }
   }
 
+  .ag-cell-focus {
+    border: none;
+  }
+
   .ag-group-expanded, .ag-group-contracted {
     span {
       margin: 0 var(--xh-pad-half-px);
