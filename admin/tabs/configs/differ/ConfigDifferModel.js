@@ -151,7 +151,7 @@ export class ConfigDifferModel  {
         );
 
         this.messageModel.confirm({
-            message: message,
+            message,
             onConfirm: () => this.doApplyRemote(filteredData)
         });
     }
