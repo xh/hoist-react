@@ -12,12 +12,12 @@ import {jsonField, toolbar} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 @hoistComponent()
-class ActivityDetail extends Component {
+class ClientErrorDetail extends Component {
 
     render() {
         const model = this.model;
         return dialog({
-            title: 'Activity Details',
+            title: 'Error Details',
             icon: Icon.gauge({size: '2x'}),
             style: {width: 450},
             isOpen: model.detailOpen,
@@ -31,21 +31,20 @@ class ActivityDetail extends Component {
         if (!rec) return null;
         return [
             table({
-                cls: 'xh-admin-activity-detail',
+                cls: 'xh-admin-error-detail',
                 items: [
                     tbody(
                         tr(th('User:'), td(rec.username)),
-                        tr(th('Message:'), td(rec.msg)),
-                        tr(th('Category:'), td(rec.category)),
-                        tr(th('Agent:'), td(rec.userAgent))
+                        tr(th('App Version:'), td(rec.appVersion)),
+                        tr(th('Environment:'), td(rec.appEnvironment))
                     )
                 ]
             }),
             jsonField({
-                value: rec.data,
+                value: rec.error,
                 disabled: true,
                 lineWrapping: true,
-                height: 100
+                height: 300
             }),
             toolbar({
                 cls: 'xh-toolbar',
@@ -66,4 +65,4 @@ class ActivityDetail extends Component {
         this.model.setDetailOpen(false);
     }
 }
-export const activityDetail = elemFactory(ActivityDetail);
+export const clientErrorDetail = elemFactory(ClientErrorDetail);

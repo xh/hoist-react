@@ -95,41 +95,6 @@ export class ClientErrorModel {
         this.endDate = date;
     }
 
-    renderDetail() {
-        const rec = this.gridModel.selection.singleRecord;
-        if (!rec) return null;
-        return [
-            table({
-                cls: 'xh-admin-error-detail',
-                items: [
-                    tbody(
-                        tr(th('User:'), td(rec.username)),
-                        tr(th('App Version:'), td(rec.appVersion)),
-                        tr(th('Environment:'), td(rec.appEnvironment))
-                    )
-                ]
-            }),
-            jsonField({
-                value: rec.error,
-                disabled: true,
-                lineWrapping: true,
-                height: 300
-            }),
-            toolbar({
-                cls: 'xh-toolbar',
-                items: [
-                    filler(),
-                    button({
-                        icon: Icon.close(),
-                        text: 'Close',
-                        intent: 'danger',
-                        onClick: this.onDetailCloseClick
-                    })
-                ]
-            })
-        ];
-    }
-
     //----------------
     // Implementation
     //----------------
@@ -144,10 +109,6 @@ export class ClientErrorModel {
 
     isValidDate(date) {
         return date && date.toString() !== 'Invalid Date';
-    }
-
-    onDetailCloseClick = () => {
-        this.setDetailOpen(false);
     }
 
 }

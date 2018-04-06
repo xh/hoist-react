@@ -5,14 +5,15 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {button, dialog} from 'hoist/kit/blueprint';
-import {elemFactory, hoistComponent} from 'hoist/core';
+import {button} from 'hoist/kit/blueprint';
+import {hoistComponent} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {filler, vframe} from 'hoist/layout';
 import {textField, dayField, exportButton, refreshButton, storeCountLabel, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import {ClientErrorModel} from './ClientErrorModel';
+import {clientErrorDetail} from './ClientErrorDetail';
 
 @hoistComponent()
 export class ClientErrorPanel extends Component {
@@ -113,20 +114,3 @@ export class ClientErrorPanel extends Component {
         return this.model.loadAsync();
     }
 }
-
-@hoistComponent()
-class ClientErrorDetail extends Component {
-
-    render() {
-        const model = this.model;
-        return dialog({
-            title: 'Error Details',
-            icon: Icon.gauge({size: '2x'}),
-            isOpen: model.detailOpen,
-            onClose: model.onDetailCloseClick,
-            items: model.renderDetail()
-        });
-    }
-
-}
-const clientErrorDetail = elemFactory(ClientErrorDetail);
