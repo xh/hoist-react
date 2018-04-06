@@ -81,7 +81,8 @@ export class RestControl extends Component {
     renderCombo() {
         const model = this.model,
             field = model.field,
-            lookup = field.lookup;
+            lookup = field.lookup,
+            enableSuggest = model.editor.enableSuggest;
 
         const options = [null, ...lookup];
         if (!field.nullable) remove(options, (it) => isEmpty(it));
@@ -90,6 +91,7 @@ export class RestControl extends Component {
             model,
             field: 'value',
             options,
+            enableSuggest,
             disabled: !model.isEditable
         });
     }
