@@ -50,7 +50,7 @@ export class RestControl extends Component {
             return field.lookupStrict ? this.renderSelect() : this.renderCombo();
         } else if (type === 'bool') {
             return this.renderSelect();
-        } else if (type === 'checkbox') {
+        } else if (type === 'checkbox') { // make editor type
             return this.renderCheckField();
         } else if (type === 'number') {
             return this.renderNumberField();
@@ -135,6 +135,7 @@ export class RestControl extends Component {
             model,
             field: 'value',
             cls: 'pt-fill',
+            style: {height: 100},
             disabled: !model.isEditable
         });
     }
