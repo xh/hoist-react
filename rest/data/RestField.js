@@ -39,6 +39,7 @@ export class RestField extends Field {
         typeField = null,
         ...rest
     }) {
+        if (required) rest.nullable = false;
         super(rest);
         this.editable = editable;
         this.required = required;
