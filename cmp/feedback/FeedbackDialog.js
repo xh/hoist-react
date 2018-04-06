@@ -19,7 +19,7 @@ export class FeedbackDialog extends Component {
         const model = this.model;
         return dialog({
             title: 'Submit Feedback',
-            icon: Icon.comment(),
+            icon: Icon.comment({size: '2x'}),
             style: {width: 450},
             isOpen: model.isOpen,
             onClose: this.onClose,
