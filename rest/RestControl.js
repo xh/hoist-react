@@ -44,14 +44,16 @@ export class RestControl extends Component {
             return this.renderTextArea();
         }
 
+        if (editorType == 'checkbox') {
+            return this.renderCheckField();
+        }
+
         if (!isEditable) return this.renderDisplayField();
         
         if (field.lookup) {
             return field.lookupStrict ? this.renderSelect() : this.renderCombo();
         } else if (type === 'bool') {
             return this.renderSelect();
-        } else if (type === 'checkbox') { // make editor type
-            return this.renderCheckField();
         } else if (type === 'number') {
             return this.renderNumberField();
         } else {

@@ -93,7 +93,6 @@ export class BaseStore {
                     case 'int':
                     case 'number':
                     case 'bool':
-                    case 'checkbox': // really this is bool. Maybe we can identify the type of input we what differently in rest controls
                     case 'json':
                     case 'day':
                         break;
