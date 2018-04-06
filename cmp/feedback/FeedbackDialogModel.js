@@ -13,7 +13,11 @@ export class FeedbackDialogModel {
     @setter feedback = null;
     
     submitFeedback() {
-        this.close();
+        XH.feedbackService.submitAsync(
+            {msg: this.feedback}
+        ).then(() => {
+            this.close();
+        }).catchDefault();
     }
 
     close() {
