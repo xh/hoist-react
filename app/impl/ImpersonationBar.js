@@ -27,7 +27,7 @@ export class ImpersonationBar extends Component {
         return hotkeys(
             hotkey({
                 global: true,
-                combo: 'ctrl + i',
+                combo: 'shift + i',
                 label: 'Open Impersonation Dialog',
                 onKeyDown: this.onHotKey
             })
