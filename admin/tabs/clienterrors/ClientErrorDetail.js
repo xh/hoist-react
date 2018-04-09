@@ -22,7 +22,6 @@ class ClientErrorDetail extends Component {
 
         return dialog({
             title: 'Error Details',
-            icon: Icon.gauge({size: '2x'}),
             style: {width: 450},
             isOpen: model.detailOpen,
             onClose: this.onDetailCloseClick,
