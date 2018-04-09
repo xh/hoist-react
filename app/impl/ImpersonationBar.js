@@ -16,7 +16,7 @@ import {ImpersonationBarModel} from './ImpersonationBarModel';
 
 /**
  * An admin-only toolbar that provides a UI for impersonating application users, as well as ending
- * any current impersonation setting. Can be shown via a global Shift+i keyboard shortcut.
+ * any current impersonation setting. Can be shown via a global Ctrl+i keyboard shortcut.
  */
 @hoistComponent()
 export class ImpersonationBar extends Component {
@@ -27,7 +27,7 @@ export class ImpersonationBar extends Component {
         return hotkeys(
             hotkey({
                 global: true,
-                combo: 'shift + i',
+                combo: 'ctrl + i',
                 label: 'Open Impersonation Dialog',
                 onKeyDown: this.onHotKey
             })
@@ -35,9 +35,9 @@ export class ImpersonationBar extends Component {
     }
 
     render() {
-        const {impersonating, username, authUser} = XH.identityService;
-        if (!this.model.isVisible || !authUser.isHoistAdmin) return span();  // *Not* null, so hotkeys get rendered.
+        if (!this.model.isVisible) return span();  // *Not* null, so hotkeys get rendered.
 
+        const {impersonating, username} = XH.identityService;
         return toolbar({
             style: {color: 'white', backgroundColor: 'midnightblue'},
             items: [
