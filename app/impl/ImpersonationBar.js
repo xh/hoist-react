@@ -36,7 +36,10 @@ export class ImpersonationBar extends Component {
 
     render() {
         const {impersonating, username, authUser} = XH.identityService;
-        if (!this.model.isVisible || !authUser.isHoistAdmin) return span();  // *Not* null, so hotkeys get rendered.
+
+        if (!authUser.isHoistAdmin) return null;
+
+        if (!this.model.isVisible) return span();  // *Not* null, so hotkeys get rendered.
 
         return toolbar({
             style: {color: 'white', backgroundColor: 'midnightblue'},
