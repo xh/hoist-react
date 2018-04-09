@@ -35,13 +35,11 @@ export class ThemeToggleButton extends Component {
         });
     }
 
-
     //---------------------------
     // Implementation
     //---------------------------
     onThemeToggleClick = () => {
         hoistModel.toggleTheme();
     }
-
 }
 export const themeToggleButton = elemFactory(ThemeToggleButton);
