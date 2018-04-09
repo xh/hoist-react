@@ -30,6 +30,7 @@ import './JsonField.css';
  *
  * @prop width, width of field, in pixels
  * @prop height, width of field, in pixels
+ * @prop lineWrapping, Whether field should scroll or wrap for long lines. Defaults to false
  */
 @hoistComponent()
 export class JsonField extends HoistField {
@@ -59,7 +60,7 @@ export class JsonField extends HoistField {
         const editorSpec = {
             theme: this.darkTheme ? 'dracula' : 'default',
             mode: 'application/json',
-            lineWrapping: this.props.lineWrapping,
+            lineWrapping: this.props.lineWrapping || false,
             lineNumbers: true,
             autoCloseBrackets: true,
             extraKeys: {
