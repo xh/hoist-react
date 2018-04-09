@@ -21,8 +21,10 @@ import './LeftRightChooser.scss';
  * 'available' items and the right group represents 'selected' items. A description panel is also available
  * to give the user more in-depth information on each item.
  *
- * The data that is loaded into the store expects the following properties:
  *
+ * @prop chooserData, a data array to be loaded as source for both lists
+ *
+ * The data that is loaded into the store expects the following properties:
  *      text                    (string)    Text to display as item title in the chooser.
  *      value                   (string)    The value that the item respresents.
  *      description             (string)    A user-friendly description of the item.
@@ -30,16 +32,28 @@ import './LeftRightChooser.scss';
  *      side                    (string)    ['left','right'] Which side of the chooser the item should appear in.
  *      locked                  (bool)      If item cannot be moved between sides of the chooser.
  *      exclude:                (bool)      Exclude the item from the chooser entirely.
+ *
+ * @prop ungroupedName,
+ * @prop lockedText,
+ * @prop descriptionTitle,
+ *
+ * @prop leftTitle
+ * @prop leftGrouping
+ * @prop leftSorters
+ *
+ * @prop rightTitle
+ * @prop rightGrouping
+ * @prop rightSorters
  */
 
 @hoistComponent()
 class LeftRightChooser extends Component {
-    localModel = new LeftRightChooserModel();
 
     static defaultProps = {
-        chooserData: null,
+        chooserData: [],
         ungroupedName: 'Ungrouped',
         lockedText: ` ${Icon.lock({cls: 'medium-gray'})}`,
+        descriptionTitle: 'Description',
 
         // Left Grid
         leftTitle: 'Available',
@@ -49,19 +63,12 @@ class LeftRightChooser extends Component {
         // Right Grid
         rightTitle: 'Selected',
         rightGrouping: true,
-        rightSorters: [],
-
-        descriptionTitle: 'Description'
+        rightSorters: []
     };
 
-    render() {
-        const {
-            chooserData, ungroupedName, lockedText,
-            leftTitle, leftGrouping, leftSorters,
-            rightTitle, rightGrouping, rightSorters,
-            descriptionTitle
-        } = this.props;
+    localModel = new LeftRightChooserModel(this.props);
 
+    render() {
         const {leftModel, rightModel} = this.model;
 
         return vframe({
@@ -75,7 +82,7 @@ class LeftRightChooser extends Component {
                             model: leftModel
                         }),
                         leftRightChooserToolbar({
-                            model: this.localModel
+                            model: this.model
                         }),
                         grid({
                             model: rightModel
@@ -83,11 +90,15 @@ class LeftRightChooser extends Component {
                     ]
                 }),
                 leftRightChooserDescription({
-                    title: descriptionTitle,
-                    model: this.localModel
+                    title: this.model.descriptionTitle,
+                    model: this.model
                 })
             ]
         });
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.model.updateConfig(nextProps);
     }
 }
 

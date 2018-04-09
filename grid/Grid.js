@@ -10,8 +10,7 @@ import fontawesome from '@fortawesome/fontawesome';
 import {PropTypes as PT} from 'prop-types';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
-import {defaults, xor, isString, isNumber, isBoolean, isEqual} from 'lodash';
-
+import {defaults, isString, isNumber, isBoolean, isEqual, xor} from 'lodash';
 import './ag-grid';
 import {navigateSelection, agGridReact} from './ag-grid';
 

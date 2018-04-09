@@ -23,10 +23,14 @@ class LeftRightChooserToolbar extends Component {
             vertical: true,
             items: [
                 button({
-                    icon: Icon.chevronRight()
+                    icon: Icon.chevronRight(),
+                    onClick: () => this.model.moveRecord('right'),
+                    disabled: !this.model.leftModel.selection.singleRecord
                 }),
                 button({
-                    icon: Icon.chevronLeft()
+                    icon: Icon.chevronLeft(),
+                    onClick: () => this.model.moveRecord('left'),
+                    disabled: !this.model.rightModel.selection.singleRecord
                 })
             ]
         });
