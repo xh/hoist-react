@@ -9,8 +9,8 @@
 import moment from 'moment';
 import {action, observable, setter} from 'hoist/mobx';
 import {LocalStore} from 'hoist/data';
-import {fmtDate} from 'hoist/format';
 import {GridModel} from 'hoist/grid';
+import {fmtDate} from 'hoist/format';
 
 import {baseCol} from 'hoist/columns/Core';
 import {compactDateCol} from 'hoist/columns/DatesTimes';

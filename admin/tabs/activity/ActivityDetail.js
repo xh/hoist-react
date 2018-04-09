@@ -15,20 +15,22 @@ import {Icon} from 'hoist/icon';
 class ActivityDetail extends Component {
 
     render() {
-        const model = this.model;
+        const model = this.model,
+            rec = model.gridModel.selection.singleRecord;
+
+        if (!rec) return null;
+
         return dialog({
             title: 'Activity Details',
             icon: Icon.gauge({size: '2x'}),
             style: {width: 450},
             isOpen: model.detailOpen,
             onClose: this.onDetailCloseClick,
-            items: this.renderDetail()
+            items: this.renderDetail(rec)
         });
     }
 
-    renderDetail() {
-        const rec = this.model.gridModel.selection.singleRecord;
-        if (!rec) return null;
+    renderDetail(rec) {
         return [
             table({
                 cls: 'xh-admin-activity-detail',
