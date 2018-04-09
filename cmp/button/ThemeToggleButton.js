@@ -12,6 +12,7 @@ import {button, hotkeys, hotkey} from 'hoist/kit/blueprint';
 
 /**
  * Convenience Button preconfigured for use as a trigger for light/dark theme toggling.
+ * Theme can also be toggled via a global Shift+t keyboard shortcut.
  */
 @hoistComponent()
 export class ThemeToggleButton extends Component {

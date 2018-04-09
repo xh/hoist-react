@@ -16,7 +16,7 @@ import {ImpersonationBarModel} from './ImpersonationBarModel';
 
 /**
  * An admin-only toolbar that provides a UI for impersonating application users, as well as ending
- * any current impersonation setting. Can be shown via a global Ctrl+i keyboard shortcut.
+ * any current impersonation setting. Can be shown via a global Shift+i keyboard shortcut.
  */
 @hoistComponent()
 export class ImpersonationBar extends Component {
