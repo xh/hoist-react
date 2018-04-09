@@ -16,14 +16,14 @@ class ActivityDetail extends Component {
 
     render() {
         const model = this.model,
-            rec = model.gridModel.selection.singleRecord;
+            rec = model.detailRecord;
 
         if (!rec) return null;
 
         return dialog({
             title: 'Activity Details',
             style: {width: 450},
-            isOpen: model.detailOpen,
+            isOpen: model.detailRecord,
             onClose: this.onCloseClick,
             items: this.renderDetail(rec)
         });
@@ -64,7 +64,7 @@ class ActivityDetail extends Component {
     }
 
     onCloseClick = () => {
-        this.model.setDetailOpen(false);
+        this.model.setDetailRecord(null);
     }
 }
 export const activityDetail = elemFactory(ActivityDetail);

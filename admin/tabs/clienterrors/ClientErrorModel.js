@@ -22,7 +22,7 @@ export class ClientErrorModel {
     @observable endDate = moment().toDate();
     @observable @setter username = '';
     @observable @setter error = '';
-    @observable @setter detailOpen = false;
+    @observable @setter detailRecord = null;
 
     store = new LocalStore({
         fields: [

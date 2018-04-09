@@ -25,7 +25,7 @@ export class ActivityGridModel {
     @observable @setter category = '';
     @observable @setter device = '';
     @observable @setter browser = '';
-    @observable @setter detailOpen = false;
+    @observable @setter detailRecord = null;
 
     store = new LocalStore({
         fields: [

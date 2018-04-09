@@ -106,8 +106,8 @@ export class ActivityGrid extends Component {
         this.model.adjustDates('subtract', true);
     }
 
-    onRowDoubleClicked = () => {
-        this.model.setDetailOpen(true);
+    onRowDoubleClicked = (e) => {
+        this.model.setDetailRecord(e.data);
     }
 
 }
