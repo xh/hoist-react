@@ -12,11 +12,6 @@ import {button, hotkeys, hotkey} from 'hoist/kit/blueprint';
 
 /**
  * Convenience Button preconfigured for use as a trigger for light/dark theme toggling.
- * Accepts props documented below as well as any others supported by Blueprint's Button.
- *
- * Light Icon
- * Dark Icon
- * (theme names?)
  */
 @hoistComponent()
 export class ThemeToggleButton extends Component {
@@ -33,8 +28,6 @@ export class ThemeToggleButton extends Component {
     }
 
     render() {
-        const {icon, model, ...rest} = this.props;
-        console.log(this.darkTheme);
         return button({
             icon: this.darkTheme ? Icon.sun() : Icon.moon(),
             onClick: this.onThemeToggleClick
