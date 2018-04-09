@@ -59,7 +59,7 @@ export class ActivityGridModel {
             url: 'trackLogAdmin',
             params: this.getParams()
         }).then(data => {
-            this.store.loadDataAsync(data);
+            this.store.loadData(data);
         }).catchDefault();
     }
 

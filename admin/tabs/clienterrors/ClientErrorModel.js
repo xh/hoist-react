@@ -49,7 +49,7 @@ export class ClientErrorModel {
             url: 'clientErrorAdmin',
             params: this.getParams()
         }).then(data => {
-            this.store.loadDataAsync(data);
+            this.store.loadData(data);
         }).catchDefault();
     }
 
