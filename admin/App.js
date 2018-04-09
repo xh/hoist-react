@@ -6,11 +6,11 @@
  */
 
 import {Component} from 'react';
-import {XH, elemFactory, hoistComponent} from 'hoist/core';
+import {XH, elemFactory, hoistModel, hoistComponent} from 'hoist/core';
 import {vframe, frame} from 'hoist/layout';
 import {lockoutPanel} from 'hoist/app/impl';
 import {navbar, navbarGroup, navbarHeading, button, Intent} from 'hoist/kit/blueprint';
-import {tabContainer, themeToggleButton} from 'hoist/cmp';
+import {tabContainer} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import './App.scss';
@@ -54,7 +54,10 @@ export class App extends Component {
                             text: 'Contact',
                             onClick: this.onContactClick
                         }),
-                        themeToggleButton(),
+                        button({
+                            icon: this.darkTheme ? Icon.sun() : Icon.moon(),
+                            onClick: this.onThemeToggleClick
+                        }),
                         button({
                             icon: Icon.logout(),
                             intent: Intent.DANGER,
@@ -75,6 +78,10 @@ export class App extends Component {
 
     onContactClick = () => {
         window.open('https://xh.io/contact');
+    }
+
+    onThemeToggleClick = () => {
+        hoistModel.toggleTheme();
     }
 
     onLogoutClick = () => {
