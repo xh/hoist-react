@@ -47,7 +47,7 @@ export function elem(type, config = {}) {
 
     // 2) Mark element to be skipped with a special key in props.  This element should never see the light of day
     // if its *parent* is created using this method, but this should be safe and truthy attribute to use.
-    if (omit) props.xhOmit = 'true';
+    if (omit) props.xhomit = 'true';
 
     // 3) Special handling to recapture API props that conflicted.
     ['$items', '$item', '$cls', '$itemSpec', '$omit'].forEach(key => {
@@ -77,7 +77,7 @@ export function elem(type, config = {}) {
         });
 
     // 4a) Remove omitted children last, after elements generated from configs have been created.
-    items = items.filter(it => !it.props || !it.props.xhOmit);
+    items = items.filter(it => !it.props || !it.props.xhomit);
 
     return React.createElement(type, props, ...items);
 }
