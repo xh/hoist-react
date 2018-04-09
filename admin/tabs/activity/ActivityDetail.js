@@ -24,7 +24,7 @@ class ActivityDetail extends Component {
             title: 'Activity Details',
             style: {width: 450},
             isOpen: model.detailOpen,
-            onClose: this.onDetailCloseClick,
+            onClose: this.onCloseClick,
             items: this.renderDetail(rec)
         });
     }
@@ -56,14 +56,14 @@ class ActivityDetail extends Component {
                         icon: Icon.close(),
                         text: 'Close',
                         intent: 'danger',
-                        onClick: this.onDetailCloseClick
+                        onClick: this.onCloseClick
                     })
                 ]
             })
         ];
     }
 
-    onDetailCloseClick = () => {
+    onCloseClick = () => {
         this.model.setDetailOpen(false);
     }
 }

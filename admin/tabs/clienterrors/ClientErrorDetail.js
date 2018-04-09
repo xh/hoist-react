@@ -24,7 +24,7 @@ class ClientErrorDetail extends Component {
             title: 'Error Details',
             style: {width: 450},
             isOpen: model.detailOpen,
-            onClose: this.onDetailCloseClick,
+            onClose: this.onCloseClick,
             items: this.renderDetail(rec)
         });
     }
@@ -55,14 +55,14 @@ class ClientErrorDetail extends Component {
                         icon: Icon.close(),
                         text: 'Close',
                         intent: 'danger',
-                        onClick: this.onDetailCloseClick
+                        onClick: this.onCloseClick
                     })
                 ]
             })
         ];
     }
 
-    onDetailCloseClick = () => {
+    onCloseClick = () => {
         this.model.setDetailOpen(false);
     }
 }
