@@ -11,7 +11,7 @@ import {observable, setter} from 'hoist/mobx';
 export class FeedbackDialogModel {
 
     @setter @observable isOpen = false;
-    @setter feedback = null;
+    @setter @observable feedback = null;
     
     submitFeedback() {
         XH.feedbackService.submitAsync(
