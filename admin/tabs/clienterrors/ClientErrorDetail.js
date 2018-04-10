@@ -47,18 +47,15 @@ class ClientErrorDetail extends Component {
                 lineWrapping: true,
                 height: 300
             }),
-            toolbar({
-                cls: 'xh-toolbar',
-                items: [
-                    filler(),
-                    button({
-                        icon: Icon.close(),
-                        text: 'Close',
-                        intent: 'primary',
-                        onClick: this.onCloseClick
-                    })
-                ]
-            })
+            toolbar(
+                filler(),
+                button({
+                    icon: Icon.close(),
+                    text: 'Close',
+                    intent: 'primary',
+                    onClick: this.onCloseClick
+                })
+            )
         ];
     }
 
