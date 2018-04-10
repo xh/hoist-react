@@ -17,13 +17,17 @@ export class FeedbackDialogModel {
         XH.feedbackService.submitAsync(
             {msg: this.feedback}
         ).then(() => {
-            this.close();
+            this.hide();
         }).linkTo(
             hoistModel.appLoadModel
         ).catchDefault();
     }
 
-    close() {
+    show() {
+        this.setIsOpen(true);
+    }
+
+    hide() {
         this.setIsOpen(false);
         this.setFeedback(null);
     }
