@@ -5,14 +5,15 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import {button} from 'hoist/kit/blueprint';
 import {hoistComponent} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {filler, vframe} from 'hoist/layout';
-import {button} from 'hoist/kit/blueprint';
 import {textField, dayField, exportButton, refreshButton, storeCountLabel, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import {ClientErrorModel} from './ClientErrorModel';
+import {clientErrorDetail} from './ClientErrorDetail';
 
 @hoistComponent()
 export class ClientErrorPanel extends Component {
@@ -20,14 +21,17 @@ export class ClientErrorPanel extends Component {
     localModel = new ClientErrorModel();
 
     render() {
+        const model = this.model;
         return vframe(
             this.renderToolbar(),
             grid({
-                model: this.model.gridModel,
+                model: model.gridModel,
                 gridOptions: {
-                    rowSelection: 'single'
+                    rowSelection: 'single',
+                    onRowDoubleClicked: this.onRowDoubleClicked
                 }
-            })
+            }),
+            clientErrorDetail({model})
         );
     }
 
@@ -100,6 +104,10 @@ export class ClientErrorPanel extends Component {
 
     onCommit = () => {
         this.loadAsync();
+    }
+
+    onRowDoubleClicked = (e) => {
+        this.model.setDetailRecord(e.data);
     }
 
     async loadAsync() {

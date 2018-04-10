@@ -25,11 +25,13 @@ export class ActivityGridModel {
     @observable @setter category = '';
     @observable @setter device = '';
     @observable @setter browser = '';
+    @observable @setter detailRecord = null;
 
     store = new LocalStore({
         fields: [
             'severity', 'dateCreated', 'username', 'msg', 'category',
-            'device', 'browser', 'data', 'impersonating', 'elapsed'
+            'device', 'browser', 'data', 'impersonating', 'elapsed',
+            'userAgent'
         ]
     });
 
@@ -59,7 +61,7 @@ export class ActivityGridModel {
             url: 'trackLogAdmin',
             params: this.getParams()
         }).then(data => {
-            this.store.loadDataAsync(data);
+            this.store.loadData(data);
         }).catchDefault();
     }
 
