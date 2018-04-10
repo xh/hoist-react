@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {XH} from 'hoist/core';
 import {observable, setter} from 'hoist/mobx';
 
 export class FeedbackDialogModel {
