@@ -54,7 +54,7 @@ class ClientErrorDetail extends Component {
                     button({
                         icon: Icon.close(),
                         text: 'Close',
-                        intent: 'danger',
+                        intent: 'primary',
                         onClick: this.onCloseClick
                     })
                 ]
