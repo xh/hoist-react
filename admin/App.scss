@@ -12,18 +12,18 @@
 }
 
 .xh-admin-activity-detail, .xh-admin-error-detail {
-  padding: 5px 20px;
+  padding: var(--xh-pad-half-px) var(--xh-pad-double-px);
   width: 400px;
 
   th {
     font-weight: normal;
     text-align: left;
     vertical-align: top;
-    padding: 0 20px 5px 0;
+    padding: 0 var(--xh-pad-double-px) var(--xh-pad-half-px) 0;
   }
 
   td {
-    padding-bottom: 5px;
+    padding-bottom: var(--xh-pad-half-px);
   }
 
 }

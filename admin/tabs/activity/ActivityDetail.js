@@ -48,18 +48,15 @@ class ActivityDetail extends Component {
                 lineWrapping: true,
                 height: 100
             }),
-            toolbar({
-                cls: 'xh-toolbar',
-                items: [
-                    filler(),
-                    button({
-                        icon: Icon.close(),
-                        text: 'Close',
-                        intent: 'danger',
-                        onClick: this.onCloseClick
-                    })
-                ]
-            })
+            toolbar(
+                filler(),
+                button({
+                    icon: Icon.close(),
+                    text: 'Close',
+                    intent: 'primary',
+                    onClick: this.onCloseClick
+                })
+            )
         ];
     }
 
