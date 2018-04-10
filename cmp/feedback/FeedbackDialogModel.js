@@ -14,13 +14,10 @@ export class FeedbackDialogModel {
     @setter @observable feedback = null;
     
     submitFeedback() {
-        XH.feedbackService.submitAsync(
-            {msg: this.feedback}
-        ).then(() => {
-            this.hide();
-        }).linkTo(
-            hoistModel.appLoadModel
-        ).catchDefault();
+        XH.feedbackService.submitAsync({msg: this.feedback})
+            .then(() => {this.hide()})
+            .linkTo(hoistModel.appLoadModel)
+            .catchDefault();
     }
 
     show() {
