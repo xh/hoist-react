@@ -27,7 +27,8 @@ export class ClientErrorModel {
     store = new LocalStore({
         fields: [
             'username', 'error', 'msg', 'browser', 'device',
-            'appVersion', 'appEnvironment', 'dateCreated'
+            'appVersion', 'appEnvironment', 'dateCreated',
+            'userAgent'
         ]
     });
 

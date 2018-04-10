@@ -9,6 +9,7 @@ import {dialog, button} from 'hoist/kit/blueprint';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {filler, table, tbody, tr, th, td} from 'hoist/layout';
 import {clipboardButton, jsonField, toolbar} from 'hoist/cmp';
+import {fmtDateTime} from 'hoist/format';
 import {Icon} from 'hoist/icon';
 
 @hoistComponent()
@@ -33,11 +34,17 @@ class ClientErrorDetail extends Component {
         return [
             table({
                 cls: 'xh-admin-error-detail',
+                // might want to use omit here in the case of null values.
+                // Test in Activity detail. Right now we have records returning the string 'null' making this a little tricky at the moment.
                 items: [
                     tbody(
                         tr(th('User:'), td(rec.username)),
+                        tr(th('Message:'), td(rec.msg)),
+                        tr(th('Device/Browser:'), td(`${rec.device}/${rec.browser}`)),
+                        tr(th('Agent:'), td(rec.userAgent)),
                         tr(th('App Version:'), td(rec.appVersion)),
-                        tr(th('Environment:'), td(rec.appEnvironment))
+                        tr(th('Environment:'), td(rec.appEnvironment)),
+                        tr(th('Date:'), td(fmtDateTime(rec.dateCreated)))
                     )
                 ]
             }),
