@@ -22,6 +22,7 @@ export class FeedbackDialogModel {
 
     close() {
         this.setIsOpen(false);
+        this.setFeedback(null);
     }
 
 }

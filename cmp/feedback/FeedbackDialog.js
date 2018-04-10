@@ -10,7 +10,6 @@ import {button, dialog} from 'hoist/kit/blueprint';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {filler} from 'hoist/layout';
 import {textAreaField, toolbar} from 'hoist/cmp';
-import {Icon} from 'hoist/icon';
 
 @hoistComponent()
 export class FeedbackDialog extends Component {
@@ -19,10 +18,10 @@ export class FeedbackDialog extends Component {
         const model = this.model;
         return dialog({
             title: 'Submit Feedback',
-            icon: Icon.comment({size: '2x'}),
             style: {width: 450},
             isOpen: model.isOpen,
             onClose: this.onClose,
+            canOutsideClickClose: false,
             fill: true,
             items: [
                 textAreaField({
@@ -35,13 +34,12 @@ export class FeedbackDialog extends Component {
                     filler(),
                     button({
                         text: 'Cancel',
-                        onClick: this.onClose,
-                        intent: 'success'
+                        onClick: this.onClose
                     }),
                     button({
                         text: 'Send',
-                        onClick: this.onSendClick,
-                        intent: 'danger'
+                        intent: 'success',
+                        onClick: this.onSendClick
                     })
                 )
             ]
