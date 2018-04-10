@@ -41,6 +41,7 @@ body {
   --xh-text-color-highlight: var(--text-color-highlight, #37474f);
   --xh-text-color-muted: var(--text-color-muted, var(--xh-gray));
   --xh-title-color: var(--title-color, var(--xh-text-color-accent));
+  --xh-grid-cell-focus-border-color: var(--grid-cell-focus-border-color, transparent);
 }
 
 body.xh-dark {
