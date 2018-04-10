@@ -59,18 +59,17 @@ export function hoistComponent({isObserver = true} = {}) {
         }
 
         mixinMethods(C, {
-            addAutoRun: function(fn, ...rest) {
+            addAutoRun: function(...autoRunArgs) {
                 this.xhAutoRuns = this.xhAutoRuns || [];
-                this.xhAutoRuns.push({fn: fn, rest: rest});
+                this.xhAutoRuns.push(autoRunArgs);
             },
 
             componentDidMount: function() {
                 const {xhAutoRuns} = this;
                 if (xhAutoRuns) {
-                    xhAutoRuns.forEach(ar => {
-                        const {fn, rest} = ar;
+                    xhAutoRuns.forEach(args => {
                         this.xhDisposers = this.xhDisposers || [];
-                        this.xhDisposers.push(autorun(fn, ...rest));
+                        this.xhDisposers.push(autorun(...args));
                     });
                 }
             },
