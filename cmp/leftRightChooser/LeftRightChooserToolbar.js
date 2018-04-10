@@ -17,20 +17,23 @@ import {Icon} from 'hoist/icon';
 
 @hoistComponent()
 class LeftRightChooserToolbar extends Component {
+
     render() {
+        const {leftModel, rightModel, moveRecord} = this.model;
+
         return toolbar({
             width: 50,
             vertical: true,
             items: [
                 button({
                     icon: Icon.chevronRight(),
-                    onClick: () => this.model.moveRecord('right'),
-                    disabled: !this.model.leftModel.selection.singleRecord
+                    onClick: () => moveRecord('right'),
+                    disabled: !leftModel.selection.singleRecord
                 }),
                 button({
                     icon: Icon.chevronLeft(),
-                    onClick: () => this.model.moveRecord('left'),
-                    disabled: !this.model.rightModel.selection.singleRecord
+                    onClick: () => moveRecord('left'),
+                    disabled: !rightModel.selection.singleRecord
                 })
             ]
         });

@@ -9,6 +9,7 @@ import {GridModel} from 'hoist/grid';
 import {baseCol} from 'hoist/columns/Core';
 import {LocalStore} from 'hoist/data';
 import {action, autorun, observable} from 'hoist/mobx';
+import {Icon} from 'hoist/icon';
 /**
  * A Model for managing the state of a LeftRightChooser.
  */
@@ -19,12 +20,9 @@ export class LeftRightChooserModel {
     leftModel = null;
     rightModel = null;
 
-    _descriptionEnabled = false;
-    _ungroupedName = null;
-    _groupName = null;
-    _lockedText = null;
     _lastSelection = null;
-
+    _ungroupedName = null;
+    _lockedText = null;
     _fields = [
         'text', 'value', 'description', 'group',
         'side', 'locked', 'exclude'
@@ -39,14 +37,25 @@ export class LeftRightChooserModel {
     });
 
 
-    constructor(config) {
-        const {leftTitle, rightTitle} = config;
-        this.updateConfig(config);
+    constructor({
+        data = [],
+        ungroupedName = 'Ungrouped',
+        lockedText = ` ${Icon.lock({cls: 'medium-gray'})}`,
+        descriptionTitle = 'Description',
+        leftTitle = 'Available',
+        leftGroupBy,
+        leftSortBy = [],
+        rightTitle = 'Selected',
+        rightGroupBy,
+        rightSortBy = []
+    }) {
+        this._ungroupedName = ungroupedName;
+        this._lockedText = lockedText;
 
         this.leftModel = new GridModel({
             store: this._leftStore,
-            sortBy: this._leftSorters,
-            groupBy: this._leftGrouper,
+            sortBy: leftSortBy,
+            groupBy: leftGroupBy,
             columns: [
                 baseCol({headerName: leftTitle, resizable: false, field: 'text'})
             ]
@@ -54,8 +63,8 @@ export class LeftRightChooserModel {
 
         this.rightModel = new GridModel({
             store: this._rightStore,
-            sortBy: this._rightSorters,
-            groupBy: this._leftGrouper,
+            sortBy: rightSortBy,
+            groupBy: rightGroupBy,
             columns: [
                 baseCol({headerName: rightTitle, resizable: false, field: 'text'})
             ]
@@ -63,21 +72,10 @@ export class LeftRightChooserModel {
 
         this._leftStore.setFilter(rec => rec.side === 'left');
         this._rightStore.setFilter(rec => rec.side === 'right');
-    }
 
-    @action
-    updateConfig({
-        chooserData, descriptionTitle,
-        ungroupedName, lockedText,
-        leftGrouping, leftSorters,
-        rightGrouping, rightSorters
-    }) {
-        this._ungroupedName = ungroupedName;
-        this._leftSorters = leftSorters;
-        this._rightSorters = rightSorters;
-        this._lockedText = lockedText;
+        this.loadStores(data);
 
-        this.loadStores(chooserData);
+        autorun(() => this.updateSelection());
     }
 
     @action
@@ -100,11 +98,11 @@ export class LeftRightChooserModel {
             return it;
         });
 
-        this._leftStore.loadDataAsync(normalizedData.filter(rec => !rec.exclude));
-        this._rightStore.loadDataAsync(normalizedData.filter(rec => !rec.exclude));
+        this._leftStore.loadData(normalizedData.filter(rec => !rec.exclude));
+        this._rightStore.loadData(normalizedData.filter(rec => !rec.exclude));
     }
 
-    moveRecord(side) {
+    moveRecord = (side) => {
         const currentSide = side === 'left' ? 'right' : 'left',
             selected = this[`${currentSide}Model`].selection.singleRecord;
 
@@ -116,7 +114,7 @@ export class LeftRightChooserModel {
         this._rightStore.updateRecordInternal(selected);
     }
 
-    updateSelection = autorun(() => {
+    updateSelection() {
         const leftSel = this.leftModel.selection.singleRecord,
             rightSel = this.rightModel.selection.singleRecord,
             currentSel = this._lastSelection || {};
@@ -128,7 +126,5 @@ export class LeftRightChooserModel {
             this._lastSelection = rightSel;
             this.leftModel.selection.select([]);
         }
-
-
-    });
+    }
 }

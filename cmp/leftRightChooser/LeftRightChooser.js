@@ -10,8 +10,6 @@ import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {vframe, hframe} from 'hoist/layout';
 import {grid} from 'hoist/grid';
-import {Icon} from 'hoist/icon';
-import {LeftRightChooserModel} from './LeftRightChooserModel';
 import {leftRightChooserDescription} from  './LeftRightChooserDescription';
 import {leftRightChooserToolbar} from './LeftRightChooserToolbar';
 import './LeftRightChooser.scss';
@@ -49,25 +47,6 @@ import './LeftRightChooser.scss';
 @hoistComponent()
 class LeftRightChooser extends Component {
 
-    static defaultProps = {
-        chooserData: [],
-        ungroupedName: 'Ungrouped',
-        lockedText: ` ${Icon.lock({cls: 'medium-gray'})}`,
-        descriptionTitle: 'Description',
-
-        // Left Grid
-        leftTitle: 'Available',
-        leftGrouping: true,
-        leftSorters: [],
-
-        // Right Grid
-        rightTitle: 'Selected',
-        rightGrouping: true,
-        rightSorters: []
-    };
-
-    localModel = new LeftRightChooserModel(this.props);
-
     render() {
         const {leftModel, rightModel} = this.model;
 
@@ -95,10 +74,6 @@ class LeftRightChooser extends Component {
                 })
             ]
         });
-    }
-
-    componentWillReceiveProps(nextProps) {
-        this.model.updateConfig(nextProps);
     }
 }
 
