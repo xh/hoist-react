@@ -8,7 +8,7 @@
 import {GridModel} from 'hoist/grid';
 import {baseCol} from 'hoist/columns/Core';
 import {LocalStore} from 'hoist/data';
-import {action, autorun} from 'hoist/mobx';
+import {action, autorun, computed, toJS} from 'hoist/mobx';
 import {Icon} from 'hoist/icon';
 /**
  * A Model for managing the state of a LeftRightChooser.
@@ -33,6 +33,10 @@ export class LeftRightChooserModel {
     _rightStore = new LocalStore({
         fields: this._fields
     });
+
+    @computed get value() {
+        return toJS(this._rightStore._records);
+    }
 
     /**
      * @param {Object[]} data, an array to be loaded as source for both lists
