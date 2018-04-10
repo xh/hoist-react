@@ -33,6 +33,7 @@ export class ClientErrorModel {
 
     gridModel = new GridModel({
         store: this.store,
+        sortBy: [{colId: 'dateCreated', sort: 'desc'}],
         columns: [
             compactDateCol({field: 'dateCreated', fixedWidth: 100, align: 'right'}),
             usernameCol({fixedWidth: 120}),
