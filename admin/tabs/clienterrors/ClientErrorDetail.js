@@ -22,7 +22,7 @@ class ClientErrorDetail extends Component {
 
         return dialog({
             title: 'Error Details',
-            style: {width: 450},
+            style: {width: 1000},
             isOpen: model.detailRecord,
             onClose: this.onCloseClick,
             items: this.renderDetail(rec)
@@ -45,7 +45,7 @@ class ClientErrorDetail extends Component {
                 value: rec.error,
                 disabled: true,
                 lineWrapping: true,
-                height: 300
+                height: 450
             }),
             toolbar(
                 filler(),
