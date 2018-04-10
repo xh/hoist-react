@@ -4,6 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+import React from 'react';
 import {elemFactory} from 'hoist/core';
 import * as Containers from './Containers';
 
@@ -22,11 +23,17 @@ export const viewport = elemFactory(Containers.Viewport);
 export const spacer = elemFactory(Containers.Spacer);
 export const filler = elemFactory(Containers.Filler);
 
-//----------------------------
+//--------------------------------
 // Convenience Factories
-//-----------------------------
+//--------------------------------
 export function hspacer(width)  {return spacer({width})}
 export function vspacer(height) {return spacer({height})}
+
+
+//--------------------------------
+// React
+//--------------------------------
+export const fragment = elemFactory(React.Fragment);
 
 //--------------------------------
 // Standard HTML

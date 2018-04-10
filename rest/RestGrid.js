@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {defaults} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {grid} from 'hoist/grid';
-import {frame, vframe} from 'hoist/layout';
+import {frame, vframe, fragment} from 'hoist/layout';
 import {message} from 'hoist/cmp';
 
 import {restGridToolbar} from './RestGridToolbar';
@@ -21,13 +21,15 @@ export class RestGrid extends Component {
     render() {
         const model = this.model,
             gridOptions = defaults(this.props.gridOptions, {onRowDoubleClicked: this.onRowDoubleClicked});
-        return vframe(
-            restGridToolbar({model}),
-            frame(
-                grid({
-                    model: model.gridModel,
-                    gridOptions: gridOptions
-                })
+        return fragment(
+            vframe(
+                restGridToolbar({model}),
+                frame(
+                    grid({
+                        model: model.gridModel,
+                        gridOptions: gridOptions
+                    })
+                )
             ),
             restForm({model: model.formModel}),
             message({model: model.messageModel})

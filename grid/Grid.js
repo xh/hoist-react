@@ -9,7 +9,7 @@ import {Component, isValidElement} from 'react';
 import fontawesome from '@fortawesome/fontawesome';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
-import {defaults, delay, difference, isString, isNumber, isBoolean, isEqual} from 'lodash';
+import {defaults, difference, isString, isNumber, isBoolean, isEqual} from 'lodash';
 
 import './ag-grid';
 import {navigateSelection, agGridReact} from './ag-grid';
@@ -55,12 +55,13 @@ class Grid extends Component {
                 item: agGridReact({
                     rowData: store.records,
                     columnDefs: columns,
-                    onSelectionChanged: this.onSelectionChanged,
-                    onGridReady: this.onGridReady,
                     gridOptions: this.gridOptions,
                     getContextMenuItems: this.getContextMenuItems,
+                    onGridReady: this.onGridReady,
+                    onSelectionChanged: this.onSelectionChanged,
+                    onSortChanged: this.onSortChanged,
                     onGridSizeChanged: this.onGridSizeChanged,
-                    onSortChanged: this.onSortChanged
+                    onComponentStateChanged: this.onComponentStateChanged
                 })
             })
         );
@@ -69,33 +70,6 @@ class Grid extends Component {
     //------------------------
     // Implementation
     //------------------------
-    onGridSizeChanged = (ev) => {
-        // Delay introduced to workaround unwanted horizontal scrollbar showing up.
-        // See https://github.com/exhi/hoist-react/issues/107
-        delay(() => ev.api.sizeColumnsToFit(), 100);
-    }
-
-    onGridReady = (params) => {
-        const {api} = params,
-            {model} = this;
-        
-        model.gridApi = api;
-        api.setSortModel(model.sortBy);
-    }
-    
-    onSelectionChanged = (ev) => {
-        const selection = this.model.selection;
-        selection.select(ev.api.getSelectedRows());
-    }
-
-    onSortChanged = (ev) => {
-        this.model.setSortBy(ev.api.getSortModel());
-    }
-
-    onNavigateToNextCell = (params) => {
-        return navigateSelection(params, this.gridOptions.api);
-    }
-
     sortByGroup(nodeA, nodeB) {
         if (nodeA.key < nodeB.key) {
             return -1;
@@ -104,68 +78,6 @@ class Grid extends Component {
         } else {
             return 0;
         }
-    }
-
-    getContextMenuItems = (params) => {
-
-        // TODO: Display this as Blueprint Context menu, with code similar to below?
-
-        // const men = contextMenu({
-        //    menuItems: [{
-        //        text: 'Reload App',
-        //        icon: Icon.refresh(),
-        //        action: () => hoistModel.reloadApp()
-        //    }, {
-        //        text: 'About',
-        //        icon: Icon.info(),
-        //        action: () => hoistModel.setShowAbout(true)
-        //    }]
-        // });
-        // ContextMenu.show(men, { left:0, top:0}, () => {});
-
-
-        const menuFn = this.model.contextMenuFn;
-        if (!menuFn) return null;
-
-        const menu = menuFn(params),
-            recId = params.node ? params.node.id : null,
-            rec = recId ? this.model.store.getById(recId, true) : null,
-            selection = this.model.selection.ids;
-
-        // If the target record is not in the selection, we need to include it in the count
-        let count = selection.length;
-        if (rec && !selection.includes(recId)) count++;
-        
-        return menu.items.map((it) => {
-            if (it === '-') return 'separator';
-            if (isString(it)) return it;
-
-            const required = it.recordsRequired,
-                requiredRecordsNotMet = (isBoolean(required) && required && count === 0) || (isNumber(required) && count !== required);
-
-            // Disable menuitem
-            let enabled = true;
-            if (it.enableFn) enabled = it.enableFn(it, rec, selection);
-
-            // Prepare menuitem
-            if (it.prepareFn) it.prepareFn(it, rec, selection);
-
-            // Convert React FontAwesomeIcon to SVG markup for display in ag-grid's context menu.
-            let icon = it.icon;
-            if (isValidElement(icon)) {
-                const iconDef = fontawesome.findIconDefinition({prefix: 'fas', iconName: icon.props.icon});
-                icon = fontawesome.icon(iconDef).html[0];
-            }
-
-            return {
-                name: it.text,
-                icon: icon,
-                disabled: (it.disabled || requiredRecordsNotMet || !enabled),
-                action: () => {
-                    it.action(it, rec, selection);
-                }
-            };
-        });
     }
 
     syncSelection() {
@@ -198,5 +110,101 @@ class Grid extends Component {
         // Needed because AGGridReact won't recognize updates to columns prop.
         this.gridOptions.api.setColumnDefs(this.model.columns);
     }
+
+    getContextMenuItems = (params) => {
+
+        // TODO: Display this as Blueprint Context menu, with code similar to below?
+
+        // const men = contextMenu({
+        //    menuItems: [{
+        //        text: 'Reload App',
+        //        icon: Icon.refresh(),
+        //        action: () => hoistModel.reloadApp()
+        //    }, {
+        //        text: 'About',
+        //        icon: Icon.info(),
+        //        action: () => hoistModel.setShowAbout(true)
+        //    }]
+        // });
+        // ContextMenu.show(men, { left:0, top:0}, () => {});
+
+
+        const menuFn = this.model.contextMenuFn;
+        if (!menuFn) return null;
+
+        const menu = menuFn(params),
+            recId = params.node ? params.node.id : null,
+            rec = recId ? this.model.store.getById(recId, true) : null,
+            selection = this.model.selection.ids;
+
+        // If the target record is not in the selection, we need to include it in the count
+        let count = selection.length;
+        if (rec && !selection.includes(recId)) count++;
+
+        return menu.items.map((it) => {
+            if (it === '-') return 'separator';
+            if (isString(it)) return it;
+
+            const required = it.recordsRequired,
+                requiredRecordsNotMet = (isBoolean(required) && required && count === 0) || (isNumber(required) && count !== required);
+
+            // Disable menuitem
+            let enabled = true;
+            if (it.enableFn) enabled = it.enableFn(it, rec, selection);
+
+            // Prepare menuitem
+            if (it.prepareFn) it.prepareFn(it, rec, selection);
+
+            // Convert React FontAwesomeIcon to SVG markup for display in ag-grid's context menu.
+            let icon = it.icon;
+            if (isValidElement(icon)) {
+                const iconDef = fontawesome.findIconDefinition({prefix: 'fas', iconName: icon.props.icon});
+                icon = fontawesome.icon(iconDef).html[0];
+            }
+
+            return {
+                name: it.text,
+                icon: icon,
+                disabled: (it.disabled || requiredRecordsNotMet || !enabled),
+                action: () => {
+                    it.action(it, rec, selection);
+                }
+            };
+        });
+    }
+
+    //------------------------
+    // Event Handlers
+    //------------------------
+    onGridReady = (params) => {
+        const {api} = params,
+            {model} = this;
+
+        model.gridApi = api;
+        api.setSortModel(model.sortBy);
+        api.sizeColumnsToFit();
+    }
+
+    onNavigateToNextCell = (params) => {
+        return navigateSelection(params, this.gridOptions.api);
+    }
+
+    onSelectionChanged = (ev) => {
+        const selection = this.model.selection;
+        selection.select(ev.api.getSelectedRows());
+    }
+
+    onSortChanged = (ev) => {
+        this.model.setSortBy(ev.api.getSortModel());
+    }
+
+    onGridSizeChanged = (ev) => {
+        ev.api.sizeColumnsToFit();
+    }
+
+    onComponentStateChanged = (ev) => {
+        ev.api.sizeColumnsToFit();
+    }
+
 }
 export const grid = elemFactory(Grid);

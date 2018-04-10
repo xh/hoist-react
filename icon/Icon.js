@@ -57,6 +57,7 @@ export const Icon = {
     envelope(p)      {return fa(p, 'envelope')},
     error(p)         {return fa(p, 'times-hexagon')},
     eye(p)           {return fa(p, 'eye')},
+    gauge(p)         {return fa(p, 'tachometer')},
     gear(p)          {return fa(p, 'cog')},
     gears(p)         {return fa(p, 'cogs')},
     hand(p)          {return fa(p, 'hand-paper')},
