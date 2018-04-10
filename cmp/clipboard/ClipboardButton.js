@@ -20,7 +20,7 @@ import ClipboardJS from 'clipboard';
  *
  * @prop clipboardSpec, an object appropriate for the clipboard js library, e.g.
  *      {
- *          text: a function that return the text string that will be copied
+ *          text: a function that returns the text string that will be copied
  *          target: a function that returns the textarea or input DOM element whose value will be copied.
  *          action: either 'copy' or 'cut',
  *      }

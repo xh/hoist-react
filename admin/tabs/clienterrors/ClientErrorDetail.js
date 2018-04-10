@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {dialog, button} from 'hoist/kit/blueprint';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {filler, table, tbody, tr, th, td} from 'hoist/layout';
-import {jsonField, toolbar} from 'hoist/cmp';
+import {clipboardButton, jsonField, toolbar} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 @hoistComponent()
@@ -49,6 +49,12 @@ class ClientErrorDetail extends Component {
             }),
             toolbar(
                 filler(),
+                clipboardButton({
+                    icon: Icon.clipboard(),
+                    text: 'Copy',
+                    clipboardSpec: {text: this.errorStr},
+                    successMessage: 'Error details copied to clipboard.'
+                }),
                 button({
                     icon: Icon.close(),
                     text: 'Close',
@@ -61,6 +67,10 @@ class ClientErrorDetail extends Component {
 
     onCloseClick = () => {
         this.model.setDetailRecord(null);
+    }
+
+    errorStr = () => {
+        return this.model.detailRecord.error;
     }
 }
 export const clientErrorDetail = elemFactory(ClientErrorDetail);
