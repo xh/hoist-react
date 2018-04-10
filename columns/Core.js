@@ -13,16 +13,14 @@ const colFactory = fileColFactory({
     field: null
 });
 
-class BoolCheckRenderer extends Component {
-    render() {
-        return this.props.value ? Icon.check({cls: 'xh-green'}) : '';
-    }
-}
-
 export const baseCol = colFactory();
 
 export const boolCheckCol = colFactory({
     width: 34,
     align: 'center',
-    cellRendererFramework: BoolCheckRenderer
+    cellRendererFramework: (
+        class extends Component {
+            render() {return this.props.value ? Icon.check({cls: 'xh-green'}) : ''}
+        }
+    )
 });
