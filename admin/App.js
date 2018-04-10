@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {XH, elemFactory, hoistComponent} from 'hoist/core';
 import {vframe, frame} from 'hoist/layout';
 import {lockoutPanel} from 'hoist/app/impl';
-import {navbar, navbarGroup, navbarHeading, button, Intent} from 'hoist/kit/blueprint';
+import {navbar, navbarGroup, navbarHeading, button} from 'hoist/kit/blueprint';
 import {tabContainer, themeToggleButton} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
@@ -37,40 +37,38 @@ export class App extends Component {
     // Implementation
     //------------------
     renderNavBar() {
-        return navbar({
-            items: [
-                navbarGroup({
-                    align: 'left',
-                    items: [
-                        Icon.gears({size: '2x'}),
-                        navbarHeading(`${XH.appName} Admin`)
-                    ]
-                }),
-                navbarGroup({
-                    align: 'right',
-                    items: [
-                        button({
-                            icon: Icon.mail(),
-                            text: 'Contact',
-                            onClick: this.onContactClick
-                        }),
-                        themeToggleButton(),
-                        button({
-                            icon: Icon.logout(),
-                            intent: Intent.DANGER,
-                            hidden: true,
-                            onClick: this.onLogoutClick,
-                            omit: !this.model.enableLogout
-                        }),
-                        button({
-                            icon: Icon.refresh(),
-                            intent: Intent.SUCCESS,
-                            onClick: this.onRefreshClick
-                        })
-                    ]
-                })
-            ]
-        });
+        return navbar(
+            navbarGroup({
+                align: 'left',
+                items: [
+                    Icon.gears({size: '2x'}),
+                    navbarHeading(`${XH.appName} Admin`)
+                ]
+            }),
+            navbarGroup({
+                align: 'right',
+                items: [
+                    button({
+                        icon: Icon.mail(),
+                        text: 'Contact',
+                        onClick: this.onContactClick
+                    }),
+                    themeToggleButton(),
+                    button({
+                        icon: Icon.logout(),
+                        intent: 'danger',
+                        hidden: true,
+                        onClick: this.onLogoutClick,
+                        omit: !this.model.enableLogout
+                    }),
+                    button({
+                        icon: Icon.refresh(),
+                        intent: 'success',
+                        onClick: this.onRefreshClick
+                    })
+                ]
+            })
+        );
     }
 
     onContactClick = () => {
