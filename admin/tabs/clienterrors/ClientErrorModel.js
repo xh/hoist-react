@@ -22,6 +22,7 @@ export class ClientErrorModel {
     @observable endDate = moment().toDate();
     @observable @setter username = '';
     @observable @setter error = '';
+    @observable @setter detailRecord = null;
 
     store = new LocalStore({
         fields: [
@@ -105,6 +106,5 @@ export class ClientErrorModel {
     isValidDate(date) {
         return date && date.toString() !== 'Invalid Date';
     }
-
 
 }

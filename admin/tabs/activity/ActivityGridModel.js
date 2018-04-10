@@ -25,11 +25,13 @@ export class ActivityGridModel {
     @observable @setter category = '';
     @observable @setter device = '';
     @observable @setter browser = '';
+    @observable @setter detailRecord = null;
 
     store = new LocalStore({
         fields: [
             'severity', 'dateCreated', 'username', 'msg', 'category',
-            'device', 'browser', 'data', 'impersonating', 'elapsed'
+            'device', 'browser', 'data', 'impersonating', 'elapsed',
+            'userAgent'
         ]
     });
 
