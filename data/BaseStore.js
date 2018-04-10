@@ -41,16 +41,14 @@ export class BaseStore {
     /**
      * Get a record by id.  Return null if no record found.
      *
-     * @param id
-     * @param filteredOnly, set to true to skip non-filtered records
+     * @param {integer} id
+     * @param {boolean} filteredOnly - set to true to skip non-filtered records
      */
     getById(id, filteredOnly) {}
 
     /**
-     * Construct this object.
-     *
-     * @param fields, list of Fields or valid configuration for Fields.
-     *      (A simple string representing the field name is sufficient).
+     * @param {Array} fields - list of Fields or valid configuration for Fields
+     *      (A simple string representing the field name is sufficient for an entry).
      */
     constructor({fields}) {
         this.fields = fields.map(f => {
@@ -70,12 +68,12 @@ export class BaseStore {
     /**
      * Create a record from rawData presented.
      *
-     * @param raw, json object containing raw data, and 'id' property
-     *
      * This method will apply basic validation and conversion
      * (e.g. 'date' will convert from UTC time to a JS Date object).
-     *
      * An exception will be thrown if the validation or conversion fails.
+     *
+     *  @param {Object} raw - json object containing raw data, and 'id'
+     *      property
      */
     createRecord(raw) {
         const ret = {id: raw.id, raw};
@@ -109,5 +107,4 @@ export class BaseStore {
 
         return ret;
     }
-
 }

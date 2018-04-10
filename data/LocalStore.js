@@ -5,14 +5,12 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {start, LastPromiseModel} from 'hoist/promise';
+import {LastPromiseModel} from 'hoist/promise';
 import {observable, action} from 'hoist/mobx';
-
 import {BaseStore} from './BaseStore';
 
 /**
  * Basic implementation of Store for local in-memory data.
- *
  */
 export class LocalStore extends BaseStore {
 
@@ -27,10 +25,9 @@ export class LocalStore extends BaseStore {
     processRawData = null;
 
     /**
-     * Construct this object.
-     *
-     * @param processRawData, optional.  Function to run on data presented to
-     *        loadDataAsync() before creating records.
+     * @param {boolean} processRawData - Function to run on data presented to
+     *      loadData() before creating records
+     * @param {*} ...rest - Additional properties to pass to BaseStore
      */
     constructor({processRawData = null, ...rest}) {
         super(rest);
@@ -42,12 +39,8 @@ export class LocalStore extends BaseStore {
      *
      * @param rawData, array of raw records to be loaded into the store.
      */
-    async loadDataAsync(rawData) {
-        return start(
-            () => this.loadDataInternal(rawData)
-        ).linkTo(
-            this.loadModel
-        );
+    loadData(rawData) {
+        this.loadDataInternal(rawData);
     }
 
     /**
