@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {Component} from 'react';
 import {fileColFactory} from './Utils.js';
 import {Icon} from 'hoist/icon';
 
@@ -12,12 +13,16 @@ const colFactory = fileColFactory({
     field: null
 });
 
+class BoolCheckRenderer extends Component {
+    render() {
+        return this.props.value ? Icon.check({cls: 'xh-green'}) : '';
+    }
+}
+
 export const baseCol = colFactory();
 
 export const boolCheckCol = colFactory({
     width: 34,
     align: 'center',
-    cellRendererFramework: (params) => {
-        return params.value ? Icon.check({cls: 'xh-green'}) : '';
-    }
+    cellRendererFramework: BoolCheckRenderer
 });
