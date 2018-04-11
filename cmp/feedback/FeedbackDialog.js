@@ -22,7 +22,6 @@ export class FeedbackDialog extends Component {
             isOpen: model.isOpen,
             onClose: this.onClose,
             canOutsideClickClose: false,
-            fill: true,
             items: [
                 textAreaField({
                     placeholder: 'Please enter your comments...',
