@@ -15,7 +15,7 @@ export class ImpersonationBarModel {
     @observable targetDialogOpen = false;
 
     constructor() {
-        this.isVisible = XH.identityService.impersonating;
+        this.isVisible = XH.identityService.isImpersonating;
         if (this.isVisible) this.ensureTargetsLoaded();
     }
 
@@ -35,7 +35,7 @@ export class ImpersonationBarModel {
     }
 
     doExit = () => {
-        if (XH.identityService.impersonating) {
+        if (XH.identityService.isImpersonating) {
             this.closeTargetDialog();
             XH.identityService.endImpersonateAsync();
         } else {

@@ -77,7 +77,7 @@ export class IdentityService extends BaseService {
     // Impersonation
     //------------------------
     /** Is an impersonation session currently active? */
-    get impersonating() {
+    get isImpersonating() {
         return this._authUser !== this._apparentUser;
     }
 
