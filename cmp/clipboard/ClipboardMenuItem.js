@@ -10,7 +10,9 @@ import {clipboardButton} from './ClipboardButton';
 import {elemFactory} from 'hoist/core';
 import {Icon} from 'hoist/icon';
 
-
+/**
+ * Convenience wrapper for a ClipboardButton to be rendered as a Blueprint menu item.
+ */
 class ClipboardMenuItem extends Component {
 
     static defaultProps = {
@@ -28,6 +30,6 @@ class ClipboardMenuItem extends Component {
     render() {
         return clipboardButton(this.props);
     }
-}
 
+}
 export const clipboardMenuItem = elemFactory(ClipboardMenuItem);

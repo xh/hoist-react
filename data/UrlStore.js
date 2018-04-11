@@ -18,10 +18,9 @@ export class UrlStore extends LocalStore {
     dataRoot = null;
 
     /**
-     * Construct this object.
-     *
-     * @param url, required.
-     * @param dataRoot, optional.  Name of root node for records in returned data.
+     * @param {string} url
+     * @param {string} dataRoot - Name of root node for records in returned data (optional)
+     * @param {*} ...rest - Additional arguments to pass to LocalStore.
      */
     constructor({url, dataRoot = null, ...rest}) {
         super(rest);
@@ -30,7 +29,7 @@ export class UrlStore extends LocalStore {
     }
 
     /**
-     * Reload store from url
+     * Reload store from url.
      */
     async loadAsync() {
         const {url, dataRoot} = this;

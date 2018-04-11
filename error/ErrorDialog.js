@@ -7,6 +7,7 @@
 
 import {Component} from 'react';
 import {hoistComponent, elemFactory, hoistModel} from 'hoist/core';
+import {fragment} from 'hoist/layout';
 import {toolbar} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 import {filler} from 'hoist/layout';
@@ -23,17 +24,19 @@ export class ErrorDialog extends Component {
 
         if (!exception) return null;
 
-        return dialog({
-            isOpen: true,
-            title: options.title,
-            onClose: this.onCloseClick,
-            icon: Icon.warning({size: 'lg'}),
-            items: [
-                dialogBody(options.message),
-                toolbar(this.getButtons()),
-                errorDialogDetails({model})
-            ]
-        });
+        return fragment(
+            dialog({
+                isOpen: true,
+                title: options.title,
+                onClose: this.onCloseClick,
+                icon: Icon.warning({size: 'lg'}),
+                items: [
+                    dialogBody(options.message),
+                    toolbar(this.getButtons())
+                ]
+            }),
+            errorDialogDetails({model})
+        );
     }
 
     //--------------------------------
