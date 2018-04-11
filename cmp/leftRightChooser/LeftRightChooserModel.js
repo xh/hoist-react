@@ -9,7 +9,7 @@ import {GridModel} from 'hoist/grid';
 import {baseCol} from 'hoist/columns/Core';
 import {LocalStore} from 'hoist/data';
 import {action, autorun, computed, toJS} from 'hoist/mobx';
-import {Icon} from 'hoist/icon';
+import {ItemRenderer} from './ItemRenderer';
 /**
  * A Model for managing the state of a LeftRightChooser.
  */
@@ -51,7 +51,6 @@ export class LeftRightChooserModel {
      *      exclude:                (bool)      Exclude the item from the chooser entirely.
      *
      * @param {string} ungroupedName - Group value when an item has no group
-     * @param {string} lockedText - Text to be displayed for locked items
      * @param {string} descriptionTitle - Title of the description panel
      *
      * @param {string} leftTitle - Title of the left-side list
@@ -65,7 +64,6 @@ export class LeftRightChooserModel {
     constructor({
         data = [],
         ungroupedName = 'Ungrouped',
-        lockedText = ` ${Icon.lock({cls: 'medium-gray'})}`,
         descriptionTitle = 'Description',
         leftTitle = 'Available',
         leftGroupBy,
@@ -75,14 +73,13 @@ export class LeftRightChooserModel {
         rightSortBy = []
     }) {
         this._ungroupedName = ungroupedName;
-        this._lockedText = lockedText;
 
         this.leftModel = new GridModel({
             store: this._leftStore,
             sortBy: leftSortBy,
             groupBy: leftGroupBy,
             columns: [
-                baseCol({headerName: leftTitle, resizable: false, field: 'text'})
+                baseCol({headerName: leftTitle, resizable: false, field: 'text', cellRendererFramework: ItemRenderer})
             ]
         });
 
@@ -91,7 +88,7 @@ export class LeftRightChooserModel {
             sortBy: rightSortBy,
             groupBy: rightGroupBy,
             columns: [
-                baseCol({headerName: rightTitle, resizable: false, field: 'text'})
+                baseCol({headerName: rightTitle, resizable: false, field: 'text', cellRendererFramework: ItemRenderer})
             ]
         });
 
