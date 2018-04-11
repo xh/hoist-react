@@ -180,19 +180,19 @@
   version "2.0.0"
   resolved "https://repo.xh.io/repository/npm-public/@types/dom4/-/dom4-2.0.0.tgz#00dc42fed6b36a7a6dabb8f7a9c9e678ee644e05"
 
-"@xh/eslint-config@~0.1.1":
-  version "0.1.1"
-  resolved "https://repo.xh.io/repository/npm-hosted/@xh/eslint-config/-/eslint-config-0.1.1.tgz#7c25731e8b2a31960c20b203b9fc7bbc6be75d5a"
+"@xh/eslint-config@~0.1.2":
+  version "0.1.2"
+  resolved "https://repo.xh.io/repository/npm-hosted/@xh/eslint-config/-/eslint-config-0.1.2.tgz#567a9cf8ffdc8c128d606d951f36e72e11b4fd79"
   dependencies:
     babel-eslint "~8.2.2"
     eslint "~4.19.1"
     eslint-plugin-react "~7.7.0"
 
-"@xh/hoist-dev-utils@~0.3.7":
-  version "0.3.8"
-  resolved "https://repo.xh.io/repository/npm-hosted/@xh/hoist-dev-utils/-/hoist-dev-utils-0.3.8.tgz#d3a011aa532d304c70c9bbec6b13a604950e0e7e"
+"@xh/hoist-dev-utils@~0.4.0":
+  version "0.4.0"
+  resolved "https://repo.xh.io/repository/npm-hosted/@xh/hoist-dev-utils/-/hoist-dev-utils-0.4.0.tgz#0df9d4ad1bd52b149cddf6c9588b1ef9d3168df6"
   dependencies:
-    "@xh/eslint-config" "~0.1.1"
+    "@xh/eslint-config" "~0.1.2"
     autoprefixer "~8.2.0"
     babel-core "~6.26.0"
     babel-loader "~7.1.4"
