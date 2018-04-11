@@ -5,28 +5,36 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {isEmpty} from 'lodash';
 import {XH, hoistModel} from 'hoist/core';
-import {observable, setter} from 'hoist/mobx';
+import {action, observable, setter} from 'hoist/mobx';
 
 export class FeedbackDialogModel {
 
-    @setter @observable isOpen = false;
+    @observable isOpen = false;
     @setter @observable feedback = null;
     
     submitFeedback() {
+        if (isEmpty(this.feedback)){
+            this.close();
+            return;
+        }
+
         XH.feedbackService.submitAsync({msg: this.feedback})
-            .then(() => {this.hide()})
+            .then(() => {this.close()})
             .linkTo(hoistModel.appLoadModel)
             .catchDefault();
     }
 
-    show() {
-        this.setIsOpen(true);
+    @action
+    open() {
+        this.isOpen = true;
     }
 
-    hide() {
-        this.setIsOpen(false);
-        this.setFeedback(null);
+    @action
+    close() {
+        this.isOpen = false;
+        this.feedback = null;
     }
 
 }
