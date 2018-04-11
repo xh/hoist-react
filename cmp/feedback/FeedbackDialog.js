@@ -11,6 +11,9 @@ import {hoistComponent, elemFactory} from 'hoist/core';
 import {filler} from 'hoist/layout';
 import {textAreaField, toolbar} from 'hoist/cmp';
 
+/**
+ *  A simple dialog component to allow users to submit feedback in-app
+ */
 @hoistComponent()
 export class FeedbackDialog extends Component {
 

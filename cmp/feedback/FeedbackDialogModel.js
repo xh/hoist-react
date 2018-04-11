@@ -15,7 +15,7 @@ export class FeedbackDialogModel {
     @setter @observable feedback = null;
     
     submitFeedback() {
-        if (isEmpty(this.feedback)){
+        if (isEmpty(this.feedback)) {
             this.close();
             return;
         }
