@@ -67,7 +67,7 @@ export class RestGridModel {
         this.actionWarning = Object.assign(this.actionWarning, actionWarning);
         this.unit = unit;
         this.filterFields = filterFields;
-        this.enhanceToolbar = enhanceToolbar,
+        this.enhanceToolbar = enhanceToolbar;
         this.gridModel = new GridModel({contextMenuFn: this.contextMenuFn, ...rest});
         this.formModel = new RestFormModel({parent: this, editors});
     }
