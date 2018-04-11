@@ -50,7 +50,7 @@ export class FeedbackDialog extends Component {
     }
 
     onClose = () => {
-        this.model.hide();
+        this.model.close();
     }
 }
 export const feedbackDialog = elemFactory(FeedbackDialog);
