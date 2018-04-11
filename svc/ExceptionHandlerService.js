@@ -6,6 +6,7 @@
  */
 import {isString} from 'lodash';
 
+import {Exception} from  'hoist/exception';
 import {hoistModel} from 'hoist/core';
 import {BaseService} from './BaseService';
 
@@ -17,7 +18,8 @@ export class ExceptionHandlerService extends BaseService {
      *  Typical application entry points to this method are via the 'catchDefault' option
      *  on AjaxService.request() and Promise.catchDefault()
      *
-     * @param exception - Error object or String
+     * @param exception - {Error | String | Object} - Error or thrown object.  If not an Error, an Exception will be
+     *      created via Exception.create.
      * @param options (optional), includes:
      *      message {String} - optional introductory text to describe the error
      *      title {String} - optional title for modal alert
@@ -31,9 +33,10 @@ export class ExceptionHandlerService extends BaseService {
      *                          expired exceptions.
      */
     handleException(exception, options) {
-        if (isString(exception)) {
-            exception = {message: exception};
+        if (!(exception instanceof Error)) {
+            exception = Exception.create(exception);
         }
+
         options = this.parseOptions(exception, options);
 
         this.logException(exception, options);

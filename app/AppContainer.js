@@ -7,7 +7,7 @@
 
 import {Children, Component} from 'react';
 import {ContextMenuTarget} from 'hoist/kit/blueprint';
-import {observer} from 'hoist/mobx';
+import {observer, observable} from 'hoist/mobx';
 import {elemFactory, hoistModel} from 'hoist/core';
 import {contextMenu, loadMask} from 'hoist/cmp';
 import {errorDialog} from 'hoist/error';
@@ -37,22 +37,28 @@ import './AppContainer.scss';
 @ContextMenuTarget
 export class AppContainer extends Component {
 
+    @observable.ref caughtException = null
+
     constructor() {
         super();
         hoistModel.initAsync();
     }
 
     render() {
-        const {authUsername, authCompleted, isInitialized, appModel, appLoadModel, errorDialogModel, showAbout} = hoistModel;
+        const {
+            authUsername,
+            authCompleted,
+            isInitialized,
+            appModel,
+            appLoadModel,
+            errorDialogModel,
+            showAbout
+        } = hoistModel;
+
+        if (this.caughtException) return null;
 
         if (!authCompleted) return this.renderPreloadMask();
-
-        if (!authUsername) {
-            return appModel.requireSSO ?
-                lockoutPanel({message: 'Unable to contact UI server, or error processing single-sign on authentication'}) :
-                loginPanel();
-        }
-
+        if (!authUsername)  return loginPanel();
         if (!isInitialized) return this.renderPreloadMask();
 
         return viewport(
@@ -92,6 +98,11 @@ export class AppContainer extends Component {
                 }
             ]
         });
+    }
+
+    componentDidCatch(e, info) {
+        this._caughtException = e;
+        XH.handleException(e);
     }
 }
 export const appContainer = elemFactory(AppContainer);

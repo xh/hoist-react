@@ -44,14 +44,16 @@ class HoistModel {
     trackService = new TrackService();
     eventService = new EventService();
 
-    /** Has the authentication step completed? **/
-    @observable authCompleted = false;
+    /**
+     * State of app loading.
+     *
+     * This property can take the following states:
+     * NOT_LOADED | AUTHENTICATING | LOGIN_REQUIRED | SSO_FAILED | COMPLETE | FAILED
+     */
+    @setter @observable loadState = 'NOT_LOADED';
 
     /** Currently authenticated user. **/
     @observable authUsername = null;
-
-    /** Are all Hoist services successfully initialized? **/
-    @setter @observable isInitialized = false;
 
     /** Dark theme active? **/
     @observable darkTheme = true;
@@ -82,9 +84,18 @@ class HoistModel {
         // Add xh-app class to body element to power Hoist CSS selectors
         document.body.classList.add('xh-app');
 
-        return this.fetchService.fetchJson({url: 'auth/authUser'})
-            .then(r => this.markAuthenticatedUser(r.authUser.username))
-            .catch(() => this.markAuthenticatedUser(null));
+        this.setLoadState('AUTHENTICATING');
+        const authUser = await this.fetchService
+            .fetchJson({url: 'auth/authUser'})
+            .then(r => r.authUser.username)
+            .catch(() => null);
+
+
+        if (!authUser && this.appModel.requireSSO) {
+            this.setLoadState('SSO_FAILED');
+        } else {
+            this.markAuthenticatedUser(authUser);
+        }
     }
 
     /**
@@ -103,7 +114,6 @@ class HoistModel {
     @action
     markAuthenticatedUser(username) {
         this.authUsername = username;
-        this.authCompleted = true;
 
         if (username && !this.isInitialized) {
             // 100ms delay works around styling issues introduced by 2/2018 web pack loading changes. TODO: Remove
@@ -112,8 +122,11 @@ class HoistModel {
                 .then(() => this.initLocalState())
                 .then(() => this.appModel.initAsync())
                 .then(() => this.initRouterModel())
-                .then(() => this.setIsInitialized(true))
-                .catchDefault();
+                .then(() => this.setLoadState('COMPLETE'))
+                .catch(e => {
+                    this.setLoadState('FAILED');
+                    XH.handleException(e);
+                });
         }
     }
 

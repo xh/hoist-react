@@ -13,7 +13,7 @@ import {observable, setter, action} from 'hoist/mobx';
 export class ErrorDialogModel {
 
     /** A non-null value here will cause an exception to be displayed modally */
-    @observable exception = null;
+    @observable.ref exception = null;
 
     /** Are we showing the full details of the error above? */
     @setter @observable detailsVisible = true;
