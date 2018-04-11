@@ -22,7 +22,7 @@ class ActivityDetail extends Component {
 
         return dialog({
             title: 'Activity Details',
-            style: {width: 450},
+            style: {width: 600},
             isOpen: model.detailRecord,
             onClose: this.onCloseClick,
             items: this.renderDetail(rec)
