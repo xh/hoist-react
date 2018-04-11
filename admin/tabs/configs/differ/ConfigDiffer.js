@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {button, dialog} from 'hoist/kit/blueprint';
-import {filler, frame} from 'hoist/layout';
+import {filler, fragment} from 'hoist/layout';
 import {grid} from 'hoist/grid';
 import {comboField, label, message, toolbar} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
@@ -20,7 +20,7 @@ export class ConfigDiffer extends Component {
     render() {
         const model = this.model,
             detailModel = model.detailModel;
-        return frame(
+        return fragment(
             dialog({
                 title: 'Compare w/Remote',
                 isOpen: model.isOpen,

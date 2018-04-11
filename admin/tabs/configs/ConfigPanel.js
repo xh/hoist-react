@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {button} from 'hoist/kit/blueprint';
 import {XH, hoistComponent} from 'hoist/core';
-import {frame} from 'hoist/layout';
+import {fragment} from 'hoist/layout';
 import {toolbarSep} from 'hoist/cmp';
 import {boolCheckCol, baseCol} from 'hoist/columns/Core';
 import {nameCol} from 'hoist/admin/columns/Columns';
@@ -122,7 +122,7 @@ export class ConfigPanel extends Component {
     });
 
     render() {
-        return frame(
+        return fragment(
             restGrid({model: this.gridModel}),
             configDiffer({model: this.differModel})
         );
