@@ -61,7 +61,7 @@ class ActivityDetail extends Component {
                         }),
                         tr({
                             omit: !rec.elapsed,
-                            items: [th('Elapsed:'), td(`${rec.elapsed}`)]
+                            items: [th('Elapsed (ms):'), td(`${rec.elapsed}`)]
                         }),
                         tr({
                             omit: !rec.dateCreated,

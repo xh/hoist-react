@@ -38,13 +38,34 @@ class ClientErrorDetail extends Component {
                 // Test in Activity detail. Right now we have records returning the string 'null' making this a little tricky at the moment.
                 items: [
                     tbody(
-                        tr(th('User:'), td(rec.username)),
-                        tr(th('Message:'), td(rec.msg)),
-                        tr(th('Device/Browser:'), td(`${rec.device}/${rec.browser}`)),
-                        tr(th('Agent:'), td(rec.userAgent)),
-                        tr(th('App Version:'), td(rec.appVersion)),
-                        tr(th('Environment:'), td(rec.appEnvironment)),
-                        tr(th('Date:'), td(fmtDateTime(rec.dateCreated)))
+                        tr({
+                            omit: !rec.username,
+                            items: [th('User:'), td(rec.username)]
+                        }),
+                        tr({
+                            omit: !rec.msg,
+                            items: [th('Message:'), td(rec.msg)]
+                        }),
+                        tr({
+                            omit: !rec.device && !rec.browser,
+                            items: [th('Device/Browser:'), td(`${rec.device}/${rec.browser}`)]
+                        }),
+                        tr({
+                            omit: !rec.userAgent,
+                            items: [th('Agent:'), td(rec.userAgent)]
+                        }),
+                        tr({
+                            omit: !rec.appVersion,
+                            items: [th('App Version:'), td(rec.appVersion)]
+                        }),
+                        tr({
+                            omit: !rec.appEnvironment,
+                            items: [th('Environment:'), td(rec.appEnvironment)]
+                        }),
+                        tr({
+                            omit: !rec.dateCreated,
+                            items: [th('Date:'), td(fmtDateTime(rec.dateCreated))]
+                        })
                     )
                 ]
             }),
