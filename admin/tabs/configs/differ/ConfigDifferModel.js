@@ -71,26 +71,26 @@ export class ConfigDifferModel  {
                     url: trimEnd(this.remoteHost, '/') + '/configDiffAdmin/configs'
                 })
             ]);
-            await this.processResponseAsync(resp);
+            this.processResponse(resp);
         } catch (e) {
             this.processFailedLoad();
             XH.handleException(e, {showAsError: false, logOnServer: false});
         }
     }
 
-    async processResponseAsync(resp) {
+    processResponse(resp) {
         const local = this.removeMetaData(resp[0].data),
             remote = this.removeMetaData(resp[1].data),
             diffedConfigs = this.diffConfigs(local, remote),
             store = this.store;
 
-        await store.loadDataAsync(diffedConfigs);
+        store.loadData(diffedConfigs);
 
         if (store.count == 0) this.showNoDiffToast();
     }
 
     processFailedLoad() {
-        this.store.loadDataAsync([]);
+        this.store.loadData([]);
     }
 
     diffConfigs(localConfigs, remoteConfigs) {
@@ -183,7 +183,7 @@ export class ConfigDifferModel  {
 
     close() {
         this.setIsOpen(false);
-        this.store.loadDataAsync([]);
+        this.store.loadData([]);
         this.setRemoteHost(null);
     }
 }
