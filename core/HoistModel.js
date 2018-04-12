@@ -18,7 +18,7 @@ import {
     IdentityService,
     LocalStorageService,
     PrefService,
-    TrackService,
+    TrackService
 } from 'hoist/svc';
 
 
