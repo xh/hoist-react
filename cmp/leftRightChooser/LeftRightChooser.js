@@ -33,7 +33,6 @@ class LeftRightChooser extends Component {
                     cls: 'gridContainer',
                     items: [
                         grid({
-                            isLeft: true,
                             model: leftModel
                         }),
                         leftRightChooserToolbar({

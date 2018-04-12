@@ -17,10 +17,11 @@ import {ItemRenderer} from './ItemRenderer';
 export class LeftRightChooserModel {
     leftModel = null;
     rightModel = null;
+    stores = [];
 
     _lastSelection = null;
     _ungroupedName = null;
-    _lockedText = null;
+    _hasGrouping = false;
     _fields = [
         'text', 'value', 'description', 'group',
         'side', 'locked', 'exclude'
@@ -54,11 +55,11 @@ export class LeftRightChooserModel {
      * @param {string} descriptionTitle - Title of the description panel
      *
      * @param {string} leftTitle - Title of the left-side list
-     * @param {string} leftGroupBy - Column ID by which to group the left-side list
+     * @param {boolean} leftGrouping - Enable grouping on the the left-side list
      * @param {Object[]} leftSortBy - One or more sorters to apply to the left-side store
      *
      * @param {string} rightTitle - Title of the right-side list
-     * @param {string} rightGroupBy -Column ID by which to group the right-side list
+     * @param {boolean} rightGrouping - Enable grouping on the the right-side list
      * @param {Object[]} rightSortBy - One or more sorters to apply to the right-side store
      */
     constructor({
@@ -66,36 +67,41 @@ export class LeftRightChooserModel {
         ungroupedName = 'Ungrouped',
         descriptionTitle = 'Description',
         leftTitle = 'Available',
-        leftGroupBy,
+        leftGrouping = true,
         leftSortBy = [],
         rightTitle = 'Selected',
-        rightGroupBy,
+        rightGrouping = true,
         rightSortBy = []
     }) {
+        const {_leftStore: leftStore, _rightStore: rightStore} = this;
+
+        this.stores = [leftStore, rightStore];
         this._ungroupedName = ungroupedName;
 
+        leftStore.setFilter(rec => rec.side === 'left');
+        rightStore.setFilter(rec => rec.side === 'right');
+
+        this.loadStores(data);
+
         this.leftModel = new GridModel({
-            store: this._leftStore,
+            store: leftStore,
             sortBy: leftSortBy,
-            groupBy: leftGroupBy,
+            groupBy: (leftGrouping && this._hasGrouping) ? 'group' : null,
             columns: [
-                baseCol({headerName: leftTitle, resizable: false, field: 'text', cellRendererFramework: ItemRenderer})
+                baseCol({headerName: leftTitle, resizable: false, field: 'text', cellRendererFramework: ItemRenderer}),
+                baseCol({headerName: 'Group', resizable: false, field: 'group', hide: true})
             ]
         });
 
         this.rightModel = new GridModel({
-            store: this._rightStore,
+            store: rightStore,
             sortBy: rightSortBy,
-            groupBy: rightGroupBy,
+            groupBy: (rightGrouping && this._hasGrouping) ? 'group' : null,
             columns: [
-                baseCol({headerName: rightTitle, resizable: false, field: 'text', cellRendererFramework: ItemRenderer})
+                baseCol({headerName: rightTitle, resizable: false, field: 'text', cellRendererFramework: ItemRenderer}),
+                baseCol({headerName: 'Group', resizable: false, field: 'group', hide: true})
             ]
         });
-
-        this._leftStore.setFilter(rec => rec.side === 'left');
-        this._rightStore.setFilter(rec => rec.side === 'right');
-
-        this.loadStores(data);
 
         autorun(() => this.updateSelection());
     }
@@ -105,8 +111,8 @@ export class LeftRightChooserModel {
         if (!data.length) return;
 
         const normalizedData = data.map(it => {
-            if (it.group && this._leftGrouper !== it.group) {
-                this._leftGrouper = this._rightGrouper = it.group;
+            if (it.group) {
+                this._hasGrouping = true;
             } else {
                 it.group = this._ungroupedName;
             }
@@ -120,8 +126,7 @@ export class LeftRightChooserModel {
             return it;
         });
 
-        this._leftStore.loadData(normalizedData.filter(rec => !rec.exclude));
-        this._rightStore.loadData(normalizedData.filter(rec => !rec.exclude));
+        this.stores.forEach(store => store.loadData(normalizedData.filter(rec => !rec.exclude)));
     }
 
     moveRecord = (side) => {
@@ -132,8 +137,7 @@ export class LeftRightChooserModel {
 
         selected.side = side;
 
-        this._leftStore.updateRecordInternal(selected);
-        this._rightStore.updateRecordInternal(selected);
+        this.stores.forEach(store => store.updateRecordInternal(selected));
     }
 
     updateSelection() {
