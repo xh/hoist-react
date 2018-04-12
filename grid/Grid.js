@@ -158,7 +158,10 @@ class Grid extends Component {
             // Convert React FontAwesomeIcon to SVG markup for display in ag-grid's context menu.
             let icon = it.icon;
             if (isValidElement(icon)) {
-                const iconDef = fontawesome.findIconDefinition({prefix: 'fas', iconName: icon.props.icon});
+                const iconDef = fontawesome.findIconDefinition({
+                    prefix: icon.props.icon[0],
+                    iconName: icon.props.icon[1]
+                });
                 icon = fontawesome.icon(iconDef).html[0];
             }
 

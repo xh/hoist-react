@@ -23,6 +23,7 @@ export class ExportButton extends Component {
 
     static propTypes = {
         icon: PT.element,
+        title: PT.string,
         onClick: PT.func,
         model: PT.object
     };
@@ -31,6 +32,7 @@ export class ExportButton extends Component {
         const {icon, onClick, model, ...rest} = this.props;
         return button({
             icon: icon || Icon.download(),
+            title: this.title || 'Export',
             onClick: onClick || this.onExportClick,
             ...rest
         });
