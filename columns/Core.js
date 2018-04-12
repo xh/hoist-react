@@ -20,7 +20,7 @@ export const boolCheckCol = colFactory({
     align: 'center',
     cellRendererFramework: (
         class extends Component {
-            render() {return this.props.value ? Icon.check({cls: 'xh-green'}) : ''}
+            render() {return this.props.value ? Icon.check({prefix: 'fas', cls: 'xh-green'}) : ''}
         }
     )
 });
