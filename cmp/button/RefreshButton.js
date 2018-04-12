@@ -23,21 +23,18 @@ export class RefreshButton extends Component {
 
     static propTypes = {
         icon: PT.element,
-        title: PT.string,
         onClick: PT.func,
         model: PT.object
     };
 
     render() {
-        const {icon, title, onClick, model, ...rest} = this.props;
+        const {icon, onClick, ...rest} = this.props;
         return button({
             icon: icon || Icon.sync(),
-            title: title || 'Refresh',
             onClick: onClick || this.onRefreshClick,
             ...rest
         });
     }
-
 
     //---------------------------
     // Implementation
