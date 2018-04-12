@@ -13,9 +13,9 @@
     margin-bottom: var(--xh-pad-px);
   }
 
-}
 
-.xh-login-warning {
-  color: red;
-  text-align: center;
+  &__warning {
+    color: red;
+    text-align: center;
+  }
 }

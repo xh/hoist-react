@@ -52,6 +52,7 @@ export class BaseService extends EventSource {
 
         try {
             await this.initAsync();
+            this.isReady = true;
         } catch (e) {
             console.error('Failed to initialize ' + this.constructor.name);
             console.error(e);

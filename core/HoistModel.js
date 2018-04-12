@@ -4,7 +4,6 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {ErrorDialogModel} from 'hoist/core';
 import {observable, setter, action} from 'hoist/mobx';
 import {MultiPromiseModel, never} from 'hoist/promise';
 import {RouterModel} from 'hoist/router';
@@ -13,7 +12,6 @@ import {
     BaseService,
     ConfigService,
     EnvironmentService,
-    ExceptionHandlerService,
     ErrorTrackingService,
     FeedbackService,
     FetchService,
@@ -21,20 +19,36 @@ import {
     LocalStorageService,
     PrefService,
     TrackService,
-    EventService
 } from 'hoist/svc';
 
+
 /**
- * Top level model for Hoist
+ * Enumeration of possible Load States for HoistModel.
+ *
+ * See HoistModel.loadState.
  */
-class HoistModel {
+export const LoadState = {
+    PRE_AUTH: 'PRE_AUTH',
+    LOGIN_REQUIRED: 'LOGIN_REQUIRED',
+    INITIALIZING: 'INITIALIZING',
+    COMPLETE: 'COMPLETE',
+    FAILED: 'FAILED'
+};
+
+/**
+ * Top level model for Hoist.
+ *
+ * This singleton object represents the main entry point for most of the framework services
+ * in Hoist. It provides a number of built-in services for applications, and manages and holds
+ * the initialization, error handling, and masking state of the app.
+ */
+export class HoistModel {
 
     //------------------------
     // Services
     //---------------------------
     configService = new ConfigService();
     environmentService = new EnvironmentService();
-    exceptionHandlerService = new ExceptionHandlerService();
     errorTrackingService = new ErrorTrackingService();
     feedbackService = new FeedbackService();
     fetchService = new FetchService();
@@ -42,15 +56,11 @@ class HoistModel {
     localStorageService = new LocalStorageService();
     prefService = new PrefService();
     trackService = new TrackService();
-    eventService = new EventService();
-
+ 
     /**
-     * State of app loading.
-     *
-     * This property can take the following states:
-     * NOT_LOADED | AUTHENTICATING | LOGIN_REQUIRED | SSO_FAILED | COMPLETE | FAILED
+     * State of app loading -- see HoistLoadState for valid values.
      */
-    @setter @observable loadState = 'NOT_LOADED';
+    @setter @observable loadState = LoadState.PRE_AUTH;
 
     /** Currently authenticated user. **/
     @observable authUsername = null;
@@ -58,11 +68,14 @@ class HoistModel {
     /** Dark theme active? **/
     @observable darkTheme = true;
 
-    /** Tracks recent errors for troubleshooting/display */
-    errorDialogModel = new ErrorDialogModel();
+    /**
+     * Exception to be shown troubleshooting/display.
+     * An object of the form {exception: exception, options: options}
+     */
+    @observable.ref displayException;
 
     /** Show about dialog? **/
-    @observable @setter showAbout = false;
+    @observable aboutIsOpen = false;
 
     /** Top level model for the App - assigned via BaseAppModel's constructor **/
     appModel = null;
@@ -76,28 +89,9 @@ class HoistModel {
      **/
     appLoadModel = new MultiPromiseModel();
 
-    /**
-     * Call this once when application mounted in order to
-     * trigger initial authentication and initialization of application.
-     */
-    async initAsync() {
-        // Add xh-app class to body element to power Hoist CSS selectors
-        document.body.classList.add('xh-app');
-
-        this.setLoadState('AUTHENTICATING');
-        const authUser = await this.fetchService
-            .fetchJson({url: 'auth/authUser'})
-            .then(r => r.authUser.username)
-            .catch(() => null);
-
-
-        if (!authUser && this.appModel.requireSSO) {
-            this.setLoadState('SSO_FAILED');
-        } else {
-            this.markAuthenticatedUser(authUser);
-        }
-    }
-
+    //----------------------------------
+    // Application Entry points
+    //----------------------------------
     /**
      * Trigger a full reload of the app.
      */
@@ -108,48 +102,129 @@ class HoistModel {
     }
 
     /**
-     * Call to mark the authenticated user.
-     * @param username of verified user - null to indicate auth failure / unidentified user.
+     * Toggle the theme between light and dark variants.
      */
     @action
-    markAuthenticatedUser(username) {
-        this.authUsername = username;
-
-        if (username && !this.isInitialized) {
-            // 100ms delay works around styling issues introduced by 2/2018 web pack loading changes. TODO: Remove
-            this.initServicesAsync()
-                .wait(100)
-                .then(() => this.initLocalState())
-                .then(() => this.appModel.initAsync())
-                .then(() => this.initRouterModel())
-                .then(() => this.setLoadState('COMPLETE'))
-                .catch(e => {
-                    this.setLoadState('FAILED');
-                    XH.handleException(e);
-                });
-        }
-    }
-
     toggleTheme() {
         this.setDarkTheme(!this.darkTheme);
+    }
+
+    /**
+     * Show Exception to user.
+     *
+     * Applications should typically use XH.handleException().
+     * This method will fully log and track the exception before display.
+     *
+     * @param {object} exception - exception to be shown.
+     * @param {object} options - display options.
+     */
+    @action
+    showException(exception, options) {
+        this.displayException = {exception, options};
+    }
+
+    /**
+     * Hide any displayed exception
+     */
+    @action
+    hideException() {
+        this.displayException = null;
+    }
+
+    /**
+     * Show the About Dialog for this application.
+     */
+    @action
+    showAbout() {
+        this.aboutIsOpen = true;
+    }
+
+    //---------------------------------
+    // Framework Methods
+    //---------------------------------
+    /**
+     * Called when application mounted in order to trigger initial authentication
+     * and initialization of framework and application.
+     *
+     * Not for application use.
+     */
+    async initAsync() {
+        // Add xh-app class to body element to power Hoist CSS selectors
+        document.body.classList.add('xh-app');
+
+        try {
+            this.setLoadState(LoadState.PRE_AUTH);
+            const username = await this.getAuthUserFromServerAsync();
+            if (username) {
+                return this.completeInitAsync(username);
+            }
+            if (this.appModel.requireSSO) {
+                throw XH.exception('Failed to authenticate user vis SSO');
+            } else {
+                this.setLoadState(LoadState.LOGIN_REQUIRED);
+            }
+        } catch (e) {
+            this.setLoadState(LoadState.FAILED);
+            XH.handleException(e, {requireReload: true});
+        }
+
+    }
+
+    /**
+     * Call to complete initialization, with the name of a verified user.
+     *
+     * @param {string} username - username of verified user.
+     *
+     * Not for application use.  Called by framework to complete initialization after
+     * user identity has been determined.
+     */
+    @action
+    async completeInitAsync(username) {
+        this.authUsername = username;
+        this.setLoadState(LoadState.INITIALIZING);
+        try {
+            await this.initServicesAsync()
+                .wait(100)  // delay is workaround for styling issues in dev TODO: Remove
+                .then(() => this.initLocalState())
+                .then(() => this.appModel.initAsync())
+                .then(() => this.initRouterModel());
+            this.setLoadState(LoadState.COMPLETE);
+        } catch (e) {
+            this.setLoadState(LoadState.FAILED);
+            XH.handleException(e, {requireReload: true});
+        }
     }
 
     //------------------------------------
     // Implementation
     //------------------------------------
+    async getAuthUserFromServerAsync() {
+        const authUser = await this.fetchService
+            .fetchJson({url: 'auth/authUser'})
+            .then(r => r.authUser.username)
+            .catch(() => null);
+
+        return authUser;
+    }
+
+
     async initServicesAsync() {
         const ensureReady = BaseService.ensureSvcsReadyAsync.bind(BaseService);
 
-        await ensureReady(this.fetchService, this.localStorageService);
-        await ensureReady(this.configService, this.prefService);
+        await ensureReady(
+            this.fetchService,
+            this.localStorageService,
+            this.errorTrackingService
+        );
+        await ensureReady(
+            this.configService,
+            this.prefService
+        );
         await ensureReady(
             this.environmentService,
-            this.exceptionHandlerService,
-            this.errorTrackingService,
             this.feedbackService,
             this.identityService,
-            this.trackService,
-            this.eventService
+            this.trackService
         );
     }
 

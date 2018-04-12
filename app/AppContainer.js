@@ -7,14 +7,13 @@
 
 import {Children, Component} from 'react';
 import {ContextMenuTarget} from 'hoist/kit/blueprint';
-import {observer, observable} from 'hoist/mobx';
-import {elemFactory, hoistModel} from 'hoist/core';
+import {observer, observable, setter} from 'hoist/mobx';
+import {elemFactory, hoistModel, LoadState} from 'hoist/core';
 import {contextMenu, loadMask} from 'hoist/cmp';
-import {errorDialog} from 'hoist/error';
 import {frame, vframe, viewport} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
 
-import {aboutDialog, impersonationBar, lockoutPanel, loginPanel, versionBar} from './impl';
+import {aboutDialog, impersonationBar, loginPanel, versionBar, exceptionDialog} from './impl';
 
 import './AppContainer.scss';
 
@@ -37,7 +36,7 @@ import './AppContainer.scss';
 @ContextMenuTarget
 export class AppContainer extends Component {
 
-    @observable.ref caughtException = null
+    @setter @observable.ref caughtException = null
 
     constructor() {
         super();
@@ -45,21 +44,27 @@ export class AppContainer extends Component {
     }
 
     render() {
-        const {
-            authUsername,
-            authCompleted,
-            isInitialized,
-            appModel,
-            appLoadModel,
-            errorDialogModel,
-            showAbout
-        } = hoistModel;
+        const hoistModel = XH.hoistModel;
 
-        if (this.caughtException) return null;
+        switch (hoistModel.loadState) {
+            case LoadState.PRE_AUTH:
+            case LoadState.INITIALIZING:
+                return loadMask({isDisplayed: true});
+            case LoadState.LOGIN_REQUIRED:
+                return loginPanel();
+            case LoadState.FAILED:
+                return exceptionDialog();
+            case LoadState.COMPLETE:
+                return this.caughtException ?
+                    exceptionDialog() :
+                    this.renderLoadedApplication();
+            default:
+                return null;
+        }
+    }
 
-        if (!authCompleted) return this.renderPreloadMask();
-        if (!authUsername)  return loginPanel();
-        if (!isInitialized) return this.renderPreloadMask();
+    renderLoadedApplication() {
+        const hoistModel = XH.hoistModel;
 
         return viewport(
             vframe(
@@ -67,14 +72,10 @@ export class AppContainer extends Component {
                 frame(Children.only(this.props.children)),
                 versionBar()
             ),
-            loadMask({model: appLoadModel, inline: false}),
-            errorDialog({model: errorDialogModel}),
-            aboutDialog({isOpen: showAbout})
+            exceptionDialog(),
+            loadMask({model: hoistModel.appLoadModel, inline: false}),
+            aboutDialog()
         );
-    }
-
-    renderPreloadMask() {
-        return loadMask({isDisplayed: true});
     }
 
     renderContextMenu() {
@@ -101,8 +102,8 @@ export class AppContainer extends Component {
     }
 
     componentDidCatch(e, info) {
-        this._caughtException = e;
-        XH.handleException(e);
+        this.setCaughtException(e);
+        XH.handleException(e, {requireReload: true});
     }
 }
 export const appContainer = elemFactory(AppContainer);

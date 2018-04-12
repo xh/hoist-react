@@ -13,15 +13,22 @@ import {Icon} from 'hoist/icon';
 import {pre, table, tbody, td, th, tr, filler} from 'hoist/layout';
 import {stringifyErrorSafely} from 'hoist/exception';
 
+import {dismissButton} from './ExceptionDialog';
+
+/**
+ * Sub-Dialog for display of exceptions details.  Includes affordances
+ * for submitting to server and copying to clipboard.
+ */
 @hoistComponent()
-export class ErrorDialogDetails extends Component {
+export class ExceptionDialogDetails extends Component {
 
     render() {
         const model = this.model,
-            {detailsVisible, exception} = model,
+            {detailsIsOpen, exception, options} = model,
+            {requireReload} = options,
             row = (label, data) => tr(th({item: `${label}:`, style: {textAlign: 'left'}}), td(data));
 
-        if (!detailsVisible || !exception) return null;
+        if (!detailsIsOpen || !exception) return null;
 
         this.errorStr = stringifyErrorSafely(exception);
         const header = table(
@@ -36,7 +43,8 @@ export class ErrorDialogDetails extends Component {
             title: 'Error Details',
             icon: Icon.search(),
             isOpen: true,
-            onClose: this.onCloseClick,
+            isCloseButtonShown: !requireReload,
+            onClose: !requireReload ? this.onCloseClick : null,
             style: {height: 600},
             items: [
                 dialogBody({
@@ -56,7 +64,7 @@ export class ErrorDialogDetails extends Component {
                                 height: 125, width: '100%'
                             },
                             placeholder: 'Add message here...',
-                            value: model.msg,
+                            value: model.userMessage,
                             onChange: this.onMessageChange
                         })]
                 }),
@@ -65,6 +73,7 @@ export class ErrorDialogDetails extends Component {
                     button({
                         icon: Icon.envelope(),
                         text: 'Send',
+                        disabled: !model.userMessage,
                         onClick: this.onSendClick
                     }),
                     clipboardButton({
@@ -73,10 +82,7 @@ export class ErrorDialogDetails extends Component {
                         clipboardSpec: {text: () => this.errorStr},
                         successMessage: 'Error details copied to clipboard.'
                     }),
-                    button({
-                        text: 'Close',
-                        onClick: this.onCloseClick
-                    })
+                    dismissButton({model})
                 ])
             ]
         });
@@ -87,7 +93,7 @@ export class ErrorDialogDetails extends Component {
     // Implementation
     //------------------------
     onMessageChange = (evt) => {
-        this.model.setMsg(evt.target.value);
+        this.model.setUserMessage(evt.target.value);
     }
 
     onSendClick = () => {
@@ -98,4 +104,4 @@ export class ErrorDialogDetails extends Component {
         this.model.close();
     }
 }
-export const errorDialogDetails = elemFactory(ErrorDialogDetails);
+export const exceptionDialogDetails = elemFactory(ExceptionDialogDetails);
