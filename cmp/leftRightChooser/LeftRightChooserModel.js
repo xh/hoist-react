@@ -44,7 +44,7 @@ export class LeftRightChooserModel {
      *
      * The data that is loaded into the store expects the following properties:
      *      text                    (string)    Text to display as item title in the chooser.
-     *      value                   (string)    The value that the item respresents.
+     *      value                   (string)    The value that the item represents.
      *      description             (string)    A user-friendly description of the item.
      *      group                   (string)    Used to group the list of items.
      *      side                    (string)    ['left','right'] Which side of the chooser the item should appear in.
