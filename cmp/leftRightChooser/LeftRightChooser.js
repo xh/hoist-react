@@ -44,7 +44,6 @@ class LeftRightChooser extends Component {
                     ]
                 }),
                 leftRightChooserDescription({
-                    title: this.model.descriptionTitle,
                     model: this.model
                 })
             ]

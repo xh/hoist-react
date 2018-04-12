@@ -17,11 +17,13 @@ import {ItemRenderer} from './ItemRenderer';
 export class LeftRightChooserModel {
     leftModel = null;
     rightModel = null;
+    descriptionEnabled = null;
+    descriptionTitle = null;
     stores = [];
 
-    _lastSelection = null;
     _ungroupedName = null;
     _hasGrouping = false;
+    _lastSelection = null;
     _fields = [
         'text', 'value', 'description', 'group',
         'side', 'locked', 'exclude'
@@ -76,6 +78,8 @@ export class LeftRightChooserModel {
         const {_leftStore: leftStore, _rightStore: rightStore} = this;
 
         this.stores = [leftStore, rightStore];
+        this.descriptionTitle = descriptionTitle;
+
         this._ungroupedName = ungroupedName;
 
         leftStore.setFilter(rec => rec.side === 'left');
@@ -117,8 +121,8 @@ export class LeftRightChooserModel {
                 it.group = this._ungroupedName;
             }
 
-            if (it.description && !this._descriptionEnabled) {
-                this._descriptionEnabled = true;
+            if (it.description && !this.descriptionEnabled) {
+                this.descriptionEnabled = true;
             }
 
             if (!it.side) it.side = 'left';
