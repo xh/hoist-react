@@ -57,7 +57,6 @@ export class App extends Component {
                     button({
                         icon: Icon.logout(),
                         intent: 'danger',
-                        hidden: true,
                         onClick: this.onLogoutClick,
                         omit: !this.model.enableLogout
                     }),
