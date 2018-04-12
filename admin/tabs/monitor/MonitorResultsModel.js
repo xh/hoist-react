@@ -72,7 +72,7 @@ export class MonitorResultsModel {
             .fetchJson({url: 'monitorAdmin/forceRunAllMonitors'})
             .then(
                 ToastManager.getToaster().show({
-                    intent: Intent.SUCCESS,
+                    intent: 'success',
                     message: 'Request received. Results will be generated shortly.',
                     icon: Icon.check({style: {alignSelf: 'center', marginLeft: '5px'}}),
                     timeout: 3 * SECONDS

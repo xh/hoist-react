@@ -43,7 +43,7 @@ export class EhCacheModel {
     onClearCacheSuccess = () => {
         this.loadAsync();
         ToastManager.getToaster().show({
-            intent: Intent.SUCCESS,
+            intent: 'success',
             message: 'Caches Cleared',
             icon: Icon.check({style: {alignSelf: 'center', marginLeft: '5px'}}),
             timeout: 3 * SECONDS

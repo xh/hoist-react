@@ -57,14 +57,14 @@ export class App extends Component {
                         themeToggleButton(),
                         button({
                             icon: Icon.logout(),
-                            intent: Intent.DANGER,
+                            intent: 'danger',
                             hidden: true,
                             onClick: this.onLogoutClick,
                             omit: !this.model.enableLogout
                         }),
                         button({
                             icon: Icon.refresh(),
-                            intent: Intent.SUCCESS,
+                            intent: 'success',
                             onClick: this.onRefreshClick
                         })
                     ]
