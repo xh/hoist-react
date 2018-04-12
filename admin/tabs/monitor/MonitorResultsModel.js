@@ -6,7 +6,6 @@
  */
 
 import {XH} from 'hoist/core';
-import {Intent} from 'hoist/kit/blueprint';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
 import {ToastManager} from 'hoist/cmp';
 import {action, observable, computed} from 'hoist/mobx';
