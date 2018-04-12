@@ -56,6 +56,7 @@ export class PreferencePanel extends Component {
 
     gridModel = new RestGridModel({
         store: this.store,
+        sortBy: [{colId: 'name'}],
         unit: 'preference',
         filterFields: ['name'],
         actionWarning: {
