@@ -30,7 +30,8 @@ class Grid extends Component {
         allowContextMenuWithControlKey: true,
         defaultColDef: {suppressMenu: true},
         groupDefaultExpanded: 1,
-        groupUseEntireRow: true
+        groupUseEntireRow: true,
+        popupParent: document.querySelector('body')
     };
 
     constructor(props) {
