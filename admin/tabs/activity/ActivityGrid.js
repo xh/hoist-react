@@ -5,25 +5,30 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import {button} from 'hoist/kit/blueprint';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {vframe, filler} from 'hoist/layout';
-import {button} from 'hoist/kit/blueprint';
 import {textField, dayField, exportButton, refreshButton, storeCountLabel, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
+
+import {activityDetail} from './ActivityDetail';
 
 @hoistComponent()
 export class ActivityGrid extends Component {
 
     render() {
+        const model = this.model;
         return vframe(
             this.renderToolbar(),
             grid({
-                model: this.model.gridModel,
+                model: model.gridModel,
                 gridOptions: {
-                    rowSelection: 'single'
+                    rowSelection: 'single',
+                    onRowDoubleClicked: this.onRowDoubleClicked
                 }
-            })
+            }),
+            activityDetail({model})
         );
     }
 
@@ -99,6 +104,10 @@ export class ActivityGrid extends Component {
 
     onGoToCurrentDateClick = () => {
         this.model.adjustDates('subtract', true);
+    }
+
+    onRowDoubleClicked = (e) => {
+        this.model.setDetailRecord(e.data);
     }
 
 }

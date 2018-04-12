@@ -16,6 +16,8 @@ fontawesome.library.add(solid, light, regular);
 
 /**
  * Singleton class to provide factories for enumerated icons, each returning a FontAwesome SVG element.
+ * By default the "regular" variant of each icon is returned. Pass a `prefix` prop of either "fas"
+ * for a heavier-weight "solid" variant or "fal" for a "light" variant.
  *
  * Currently importing the licensed "pro" library with additional icons - note this requires fetching
  * the FA npm package via a registry URL w/license token. See https://fontawesome.com/pro#license.
@@ -56,6 +58,7 @@ export const Icon = {
     envelope(p)      {return fa(p, 'envelope')},
     error(p)         {return fa(p, 'times-hexagon')},
     eye(p)           {return fa(p, 'eye')},
+    gauge(p)         {return fa(p, 'tachometer')},
     gear(p)          {return fa(p, 'cog')},
     gears(p)         {return fa(p, 'cogs')},
     hand(p)          {return fa(p, 'hand-paper')},
@@ -87,8 +90,6 @@ export const Icon = {
 //-----------------------------
 const faIcon = elemFactory(FontAwesomeIcon);
 const fa = function(props, name) {
-    if (props && props.prefix) {
-        name = [props.prefix, name];
-    }
-    return faIcon({icon: name, ...props});
+    const prefix = (props && props.prefix) ? props.prefix : 'far';  // default to regular variant
+    return faIcon({icon: [prefix, name], ...props});
 };

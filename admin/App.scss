@@ -11,6 +11,23 @@
 
 }
 
+.xh-admin-activity-detail, .xh-admin-error-detail {
+  padding: 5px 20px;
+  width: 400px;
+
+  th {
+    font-weight: normal;
+    text-align: left;
+    vertical-align: top;
+    padding: 0 20px 5px 0;
+  }
+
+  td {
+    padding-bottom: 5px;
+  }
+
+}
+
 .pt-select-popover .pt-popover-content {
   padding: 0px !important;
 }

@@ -29,21 +29,21 @@ class MonitorResultsToolbar extends Component {
                 hbox({
                     cls: !failed ? 'hidden' : '',
                     items: [
-                        Icon.error({prefix: 'far', style: {color: 'var(--xh-red)'}}),
+                        Icon.error({prefix: 'fas', cls: 'xh-red'}),
                         label(`${failed} failed`)
                     ]
                 }),
                 hbox({
                     cls: !warned ? 'hidden' : '',
                     items: [
-                        Icon.warning({prefix: 'far', style: {color: 'var(--xh-orange)'}}),
+                        Icon.warning({prefix: 'fas', cls: 'xh-orange'}),
                         label(`${warned} warned`)
                     ]
                 }),
                 hbox({
                     cls: !passed ? 'hidden' : '',
                     items: [
-                        Icon.checkCircle({prefix: 'far', style: {color: 'var(--xh-green)'}}),
+                        Icon.checkCircle({prefix: 'fas', cls: 'xh-green'}),
                         label(`${passed} passed`)
                     ]
                 }),
