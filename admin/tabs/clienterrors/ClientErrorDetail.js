@@ -34,8 +34,6 @@ class ClientErrorDetail extends Component {
         return [
             table({
                 cls: 'xh-admin-error-detail',
-                // might want to use omit here in the case of null values.
-                // Test in Activity detail. Right now we have records returning the string 'null' making this a little tricky at the moment.
                 items: [
                     tbody(
                         tr({
