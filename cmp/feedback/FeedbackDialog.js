@@ -28,7 +28,7 @@ export class FeedbackDialog extends Component {
             items: [
                 textAreaField({
                     placeholder: 'Please enter your comments...',
-                    style: {height: 250},
+                    style: {height: 250, marginBottom: 2},
                     model,
                     field: 'feedback'
                 }),
