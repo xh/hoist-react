@@ -14,6 +14,7 @@ export * from './tab';
 export * from './toolbar';
 export * from './resizable';
 export * from './LoadMask';
+export * from './LockoutPanel';
 export * from './RelativeTimestamp';
 export * from './StoreCountLabel';
 export * from './StoreFilterField';
