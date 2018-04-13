@@ -5,10 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import {castArray, isEmpty} from 'lodash';
 import {button} from 'hoist/kit/blueprint';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {filler} from 'hoist/layout';
-import {exportButton, storeCountLabel, storeFilterField, toolbar} from 'hoist/cmp';
+import {exportButton, storeCountLabel, storeFilterField, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 @hoistComponent()
@@ -26,6 +27,8 @@ export class RestGridToolbar extends Component {
             unit = model.unit,
             singleRecord = model.selection.singleRecord,
             actionEnabled = model.actionEnabled,
+            additionalItemsFn = this.props.additionalToolbarItems,
+            additionalItems = additionalItemsFn ? castArray(additionalItemsFn()) : [],
             items = [
                 button({
                     text: 'Add',
@@ -49,13 +52,15 @@ export class RestGridToolbar extends Component {
                     disabled: !singleRecord,
                     omit: !actionEnabled.del
                 }),
+                toolbarSep({omit: isEmpty(additionalItemsFn)}),
+                ...additionalItems,
                 filler(),
                 storeCountLabel({store, unit}),
                 storeFilterField({store, fields: model.filterFields}),
                 exportButton({model})
             ];
 
-        return model.enhanceToolbar ? model.enhanceToolbar(items) : items;
+        return items;
     }
 
     //-----------------------------

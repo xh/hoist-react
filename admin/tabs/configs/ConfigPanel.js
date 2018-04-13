@@ -8,7 +8,6 @@ import {Component} from 'react';
 import {button} from 'hoist/kit/blueprint';
 import {XH, hoistComponent} from 'hoist/core';
 import {fragment} from 'hoist/layout';
-import {toolbarSep} from 'hoist/cmp';
 import {boolCheckCol, baseCol} from 'hoist/columns/Core';
 import {nameCol} from 'hoist/admin/columns/Columns';
 import {Icon} from 'hoist/icon';
@@ -94,7 +93,6 @@ export class ConfigPanel extends Component {
         filterFields: ['name', 'prodValue', 'betaValue', 'stageValue', 'devValue', 'groupName', 'note'],
 
         groupBy: 'groupName',
-        enhanceToolbar: (items) => this.addDifferButton(items),
         columns: this.filterForEnv([
             nameCol({fixedWidth: 200}),
             baseCol({field: 'valueType', headerName: 'Type', fixedWidth: 80, align: 'center'}),
@@ -123,7 +121,10 @@ export class ConfigPanel extends Component {
 
     render() {
         return fragment(
-            restGrid({model: this.gridModel}),
+            restGrid({
+                model: this.gridModel,
+                additionalToolbarItems: this.additionalToolbarItems,
+            }),
             configDiffer({model: this.differModel})
         );
     }
@@ -155,16 +156,12 @@ export class ConfigPanel extends Component {
         return params.value;
     }
 
-    addDifferButton(items) {
-        items.splice(3, 0,
-            toolbarSep(),
-            button({
-                icon: Icon.diff(),
-                text: 'Compare w/ Remote',
-                onClick: this.onDifferBtnClick
-            })
-        );
-        return items;
+    additionalToolbarItems = () =>{
+        return button({
+            icon: Icon.diff(),
+            text: 'Compare w/ Remote',
+            onClick: this.onDifferBtnClick
+        });
     }
 
     onDifferBtnClick = () => {

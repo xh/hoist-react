@@ -20,10 +20,11 @@ export class RestGrid extends Component {
 
     render() {
         const model = this.model,
+            additionalToolbarItems = this.props.additionalToolbarItems,
             gridOptions = defaults(this.props.gridOptions, {onRowDoubleClicked: this.onRowDoubleClicked});
         return fragment(
             vframe(
-                restGridToolbar({model}),
+                restGridToolbar({model, additionalToolbarItems}),
                 frame(
                     grid({
                         model: model.gridModel,
