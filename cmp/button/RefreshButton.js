@@ -29,7 +29,7 @@ export class RefreshButton extends Component {
     };
 
     render() {
-        const {icon, title, onClick, ...rest} = this.props;
+        const {icon, title, onClick, model, ...rest} = this.props;
         return button({
             icon: icon || Icon.sync(),
             title: title || 'Refresh',
