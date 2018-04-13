@@ -21,7 +21,7 @@ export class App extends Component {
         if (!XH.identityService.user.isHoistAdmin) {
             return lockoutPanel({message: 'Access to this area requires administrator permissions.'});
         }
-
+        
         return vframe({
             items: [
                 this.renderNavBar(),
