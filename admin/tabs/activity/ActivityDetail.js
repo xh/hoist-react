@@ -31,46 +31,24 @@ class ActivityDetail extends Component {
     }
 
     renderDetail(rec) {
+        const user = rec.impersonating? `${rec.username} as ${rec.impersonating}`: rec.username;
         return [
             table({
                 cls: 'xh-admin-activity-detail',
                 items: [
                     tbody(
-                        tr({
-                            omit: !rec.username,
-                            items: [th('User:'), td(rec.username)]
-                        }),
-                        tr({
-                            omit: !rec.impersonating,
-                            items: [th('Impersonating:'), td(rec.impersonating)]}),
-
-                        tr({
-                            omit: !rec.msg,
-                            items: [th('Message:'), td(rec.msg)]
-                        }),
-                        tr({
-                            omit: !rec.category,
-                            items: [th('Category:'), td(rec.category)]
-                        }),
-                        tr({
-                            omit: !rec.device && !rec.browser,
-                            items: [th('Device/Browser:'), td(`${rec.device}/${rec.browser}`)]}),
-
-                        tr({ omit: !rec.userAgent,
-                            items: [th('Agent:'), td(rec.userAgent)]
-                        }),
-                        tr({
-                            omit: !rec.elapsed,
-                            items: [th('Elapsed (ms):'), td(`${rec.elapsed}`)]
-                        }),
-                        tr({
-                            omit: !rec.dateCreated,
-                            items: [th('Date:'), td(fmtDateTime(rec.dateCreated))]
-                        })
+                        tr(th('User:'), td(user)),
+                        tr(th('Message:'), td(rec.msg)),
+                        tr(th('Category:'), td(rec.category)),
+                        tr(th('Device/Browser:'), td(`${rec.device}/${rec.browser}`)),
+                        tr(th('Agent:'), td(rec.userAgent)),
+                        tr(th('Elapsed (ms):'), td(`${rec.elapsed || ''}`)),
+                        tr(th('Date:'), td(fmtDateTime(rec.dateCreated)))
                     )
                 ]
             }),
             jsonField({
+                omit: !rec.data,
                 value: rec.data,
                 disabled: true,
                 lineWrapping: true,
