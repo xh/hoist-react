@@ -58,10 +58,6 @@ export class ConfigDiffer extends Component {
                 model: model.gridModel,
                 gridOptions: {
                     onRowDoubleClicked: this.onRowDoubleClicked,
-                    // 'Empty text' cannot be changed dynamically for ag-grid
-                    // Overlays can be customized but are set once at init.
-                    // https://www.ag-grid.com/javascript-grid-overlay-component/#no-rows-overlay-interface
-                    // https://stackoverflow.com/questions/45062947/how-to-change-the-overlayloadingtemplate-in-ag-grid
                     overlayNoRowsTemplate: 'Please enter remote host for comparison'
                 }
             }),
