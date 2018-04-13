@@ -19,6 +19,7 @@ export class GridContextMenuItem {
     action;
     items;
     enableFn;
+    hideFn;
     prepareFn;
     recordsRequired;
 
@@ -38,6 +39,11 @@ export class GridContextMenuItem {
      *          The enableFn is a callback that is triggered before each time the menuitem is shown.
      *          It should return a boolean for whether or not to enable the menuitem.
      *
+     * @param hideFn, optional, function(item, record, selection).
+     *
+     *          The hideFn is a callback that is triggered before each time the menuitem is shown.
+     *          It should return a boolean for whether or not to hide the menuitem.
+     *
      * @param prepareFn, optional, function(item, record, selection).
      *
      *          The prepareFn is a callback that is triggered before each time the menuitem is shown.
@@ -56,6 +62,7 @@ export class GridContextMenuItem {
         action = null,
         items = null,
         enableFn = null,
+        hideFn = null,
         prepareFn = null,
         recordsRequired = false
     }) {
@@ -64,6 +71,7 @@ export class GridContextMenuItem {
         this.action = action;
         this.items = items;
         this.enableFn = enableFn;
+        this.hideFn = hideFn;
         this.prepareFn = prepareFn;
         this.recordsRequired = recordsRequired;
     }

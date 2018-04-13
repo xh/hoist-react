@@ -141,7 +141,20 @@ class Grid extends Component {
         let count = selection.length;
         if (rec && !selection.includes(recId)) count++;
 
-        return menu.items.map((it) => {
+        return menu.items.filter(it => {
+            // Remove menuitems that are hidden
+            return it.hideFn ? !it.hideFn(it, rec, selection) : true;
+        }).filter((it, idx, arr) => {
+            if (it === '-') {
+                // Remove starting / ending separators
+                if (idx == 0 || idx == (arr.length - 1)) return false;
+
+                // Remove consecutive separators
+                const prev = idx > 0 ? arr[idx - 1] : null;
+                if (prev === '-') return false;
+            }
+            return true;
+        }).map(it => {
             if (it === '-') return 'separator';
             if (isString(it)) return it;
 
