@@ -47,13 +47,13 @@ export class AppContainer extends Component {
         return fragment(
             this.renderContent(),
             exceptionDialog() // Always render the exception dialog -- might need it :-(
-        )
+        );
     }
 
     renderContent() {
         const hoistModel = XH.hoistModel;
 
-        if (this.caughtException) return null
+        if (this.caughtException) return null;
 
         switch (hoistModel.loadState) {
             case LoadState.PRE_AUTH:
@@ -74,7 +74,7 @@ export class AppContainer extends Component {
                     aboutDialog()
                 );
             default:
-                return null
+                return null;
         }
     }
 
