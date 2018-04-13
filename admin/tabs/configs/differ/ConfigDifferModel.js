@@ -8,7 +8,6 @@
 import React from 'react';
 import {observable, setter} from 'hoist/mobx';
 import {castArray, isEqual, remove, trimEnd} from 'lodash';
-import {Intent} from 'hoist/kit/blueprint';
 import {pluralize} from 'hoist/utils/JsUtils';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
 import {hoistModel} from 'hoist/core';
@@ -75,7 +74,7 @@ export class ConfigDifferModel  {
                 }).linkTo(
                     hoistModel.appLoadModel
                 )
-            ])
+            ]);
             this.processResponse(resp);
         } catch (e) {
             this.processFailedLoad();
