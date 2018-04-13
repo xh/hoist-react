@@ -22,9 +22,7 @@ export class ConfigDiffer extends Component {
             detailModel = model.detailModel;
         return fragment(
             dialog({
-                title: 'Compare w/Remote',
                 isOpen: model.isOpen,
-                isCloseButtonShown: true,
                 canOutsideClickClose: false,
                 onClose: this.onCloseClick,
                 style: {height: 600, width: '50%'},
@@ -41,6 +39,8 @@ export class ConfigDiffer extends Component {
         const model = this.model;
         return [
             toolbar(
+                label('Compare w/Remote'),
+                filler(),
                 label('Compare with:'),
                 comboField({
                     model,
