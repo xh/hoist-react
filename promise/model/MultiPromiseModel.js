@@ -4,9 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
 import {observable, action, computed} from 'hoist/mobx';
-
 
 /**
  * Tracks the resolution state of a stream of promise invocations.
@@ -15,6 +13,7 @@ export class MultiPromiseModel {
 
     @observable pendingCount = 0;
 
+    /** Are any linked Promises still outstanding? */
     @computed get isPending() {
         return this.pendingCount > 0;
     }
