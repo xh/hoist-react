@@ -1,11 +1,5 @@
 /*noinspection CssUnresolvedCustomProperty*/
-
-html {
-  height: 100%;
-}
-
 body {
-  height: 100%;
   --xh-black: var(--black, #212121);
   --xh-blue: var(--blue, #1565c0);
   --xh-blue-light: var(--blue-light, #0288d1);
@@ -100,6 +94,7 @@ body {
 
 /* Body */
 body.xh-app {
+  height: 100vh;
   background-color: var(--xh-bg-color);
   color: var(--xh-text-color);
   border-color: var(--xh-border-color);
