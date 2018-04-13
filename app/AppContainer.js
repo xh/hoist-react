@@ -10,7 +10,7 @@ import {ContextMenuTarget} from 'hoist/kit/blueprint';
 import {observer, observable, setter} from 'hoist/mobx';
 import {XH, elemFactory, hoistModel, LoadState} from 'hoist/core';
 import {contextMenu, loadMask} from 'hoist/cmp';
-import {frame, vframe, viewport} from 'hoist/layout';
+import {frame, vframe, viewport, fragment} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
 
 import {aboutDialog, impersonationBar, loginPanel, versionBar, exceptionDialog} from './impl';
@@ -44,7 +44,16 @@ export class AppContainer extends Component {
     }
 
     render() {
+        return fragment(
+            this.renderContent(),
+            exceptionDialog() // Always render the exception dialog -- might need it :-(
+        )
+    }
+
+    renderContent() {
         const hoistModel = XH.hoistModel;
+
+        if (this.caughtException) return null
 
         switch (hoistModel.loadState) {
             case LoadState.PRE_AUTH:
@@ -53,29 +62,20 @@ export class AppContainer extends Component {
             case LoadState.LOGIN_REQUIRED:
                 return loginPanel();
             case LoadState.FAILED:
-                return exceptionDialog();
-            case LoadState.COMPLETE:
-                return this.caughtException ?
-                    exceptionDialog() :
-                    this.renderLoadedApplication();
-            default:
                 return null;
+            case LoadState.COMPLETE:
+                return viewport(
+                    vframe(
+                        impersonationBar(),
+                        frame(Children.only(this.props.children)),
+                        versionBar()
+                    ),
+                    loadMask({model: hoistModel.appLoadModel, inline: false}),
+                    aboutDialog()
+                );
+            default:
+                return null
         }
-    }
-
-    renderLoadedApplication() {
-        const hoistModel = XH.hoistModel;
-
-        return viewport(
-            vframe(
-                impersonationBar(),
-                frame(Children.only(this.props.children)),
-                versionBar()
-            ),
-            exceptionDialog(),
-            loadMask({model: hoistModel.appLoadModel, inline: false}),
-            aboutDialog()
-        );
     }
 
     renderContextMenu() {
