@@ -95,7 +95,11 @@ body {
 
 /* Body */
 body.xh-app {
+
+  // Important for using the body as the `popupParent` for our ag-grids
   height: 100vh;
+  margin: 0;
+
   background-color: var(--xh-bg-color);
   color: var(--xh-text-color);
   border-color: var(--xh-border-color);
