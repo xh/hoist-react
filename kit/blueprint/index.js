@@ -49,7 +49,6 @@ export {
     ContextMenuTarget,
     Classes,
     HotkeysTarget,
-    Intent,
     Position,
     Toaster
 } from '@blueprintjs/core';

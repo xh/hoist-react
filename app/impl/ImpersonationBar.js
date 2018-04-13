@@ -35,7 +35,7 @@ export class ImpersonationBar extends Component {
     }
 
     render() {
-        const {impersonating, username, authUser} = XH.identityService;
+        const {isImpersonating, username, authUser} = XH.identityService;
 
         if (!authUser.isHoistAdmin) return null;
 
@@ -45,7 +45,7 @@ export class ImpersonationBar extends Component {
             style: {color: 'white', backgroundColor: 'midnightblue'},
             items: [
                 Icon.user(),
-                span(`${impersonating ? 'Impersonating' : ''} ${username}`),
+                span(`${isImpersonating ? 'Impersonating' : ''} ${username}`),
                 filler(),
                 this.switchButton(),
                 this.exitButton()
@@ -94,7 +94,7 @@ export class ImpersonationBar extends Component {
     }
 
     exitButton() {
-        const text = XH.identityService.impersonating ? 'Exit Impersonation' : 'Close';
+        const text = XH.identityService.isImpersonating ? 'Exit Impersonation' : 'Close';
         return button({
             text,
             icon: Icon.close(),

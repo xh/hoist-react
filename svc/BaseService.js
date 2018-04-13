@@ -31,7 +31,7 @@ export class BaseService extends EventSource {
         if (errs.length > 1) {
             // Enhance entire result col w/class name, we care about errs only
             results.forEach((it, idx) => {
-                it.name = svcs[idx].self.getName();
+                it.name = svcs[idx].constructor.name;
             });
             const names = errs.map(it => it.name).join(', ');
 

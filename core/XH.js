@@ -19,7 +19,7 @@ import {hoistModel} from './HoistModel';
  */
 export const XH = window.XH = new class {
 
-    // Currently set via webpack.DefinePlugin at build time (up for negotiation)
+    // Set via webpack.DefinePlugin at build time - see @xh/hoist-dev-utils/configureWebpack
     appName = xhAppName;
     appVersion = xhAppVersion;
     appBuild = xhAppBuild;
