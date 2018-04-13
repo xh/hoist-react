@@ -26,8 +26,8 @@ export class ConfigDifferModel  {
     messageModel = new MessageModel({title: 'Warning', icon: Icon.warning({size: 'lg'})});
     detailModel = new ConfigDifferDetailModel({parent: this});
 
-    @setter @observable isOpen = false;
-    @setter @observable remoteHost = null;
+    @setter @observable.ref isOpen = false;
+    @setter @observable.ref remoteHost = null;
 
     store = new LocalStore({
         fields: [
@@ -44,7 +44,7 @@ export class ConfigDifferModel  {
                 nameCol({flex: 1}),
                 baseCol({
                     field: 'status',
-                    fixedWidth: 100
+                    fixedWidth: 120
                 })
             ],
             contextMenuFn: this.contextMenuFn
