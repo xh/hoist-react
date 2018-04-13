@@ -36,10 +36,10 @@ export class ClipboardButton extends Component {
     };
 
     render() {
-        const {successMessage, clipboardSpec, ...rest} = this.props;
+        const {icon, successMessage, text, clipboardSpec, ...rest} = this.props;
         return button({
-            icon: Icon.clipboard(),
-            text: 'Copy',
+            icon: icon || Icon.clipboard(),
+            text: text || 'Copy',
             successMessage: successMessage || 'Text copied to clipboard.',
             ref: this.manageClipboard,
             ...rest
