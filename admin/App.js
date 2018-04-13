@@ -55,7 +55,7 @@ export class App extends Component {
                             onClick: this.onContactClick
                         }),
                         themeToggleButton(),
-                        logoutButton({model: this.model}),
+                        logoutButton({intent: 'danger'}),
                         button({
                             icon: Icon.refresh(),
                             intent: Intent.SUCCESS,
