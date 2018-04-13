@@ -11,6 +11,7 @@ import {castArray, isEqual, remove, trimEnd} from 'lodash';
 import {Intent} from 'hoist/kit/blueprint';
 import {pluralize} from 'hoist/utils/JsUtils';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
+import {hoistModel} from 'hoist/core';
 import {LocalStore} from 'hoist/data';
 import {GridContextMenu, GridModel} from 'hoist/grid';
 import {MessageModel, ToastManager} from 'hoist/cmp';
@@ -26,8 +27,8 @@ export class ConfigDifferModel  {
     messageModel = new MessageModel({title: 'Warning', icon: Icon.warning({size: 'lg'})});
     detailModel = new ConfigDifferDetailModel({parent: this});
 
-    @setter @observable.ref isOpen = false;
-    @setter @observable.ref remoteHost = null;
+    @setter @observable isOpen = false;
+    @setter @observable remoteHost = null;
 
     store = new LocalStore({
         fields: [
@@ -66,11 +67,15 @@ export class ConfigDifferModel  {
             const resp = await Promise.all([
                 XH.fetchJson({
                     url: XH.baseUrl + 'configDiffAdmin/configs'
-                }),
+                }).linkTo(
+                    hoistModel.appLoadModel
+                ),
                 XH.fetchJson({
                     url: trimEnd(this.remoteHost, '/') + '/configDiffAdmin/configs'
-                })
-            ]);
+                }).linkTo(
+                    hoistModel.appLoadModel
+                )
+            ])
             this.processResponse(resp);
         } catch (e) {
             this.processFailedLoad();
@@ -169,7 +174,9 @@ export class ConfigDifferModel  {
         }).finally(() => {
             this.loadAsync();
             this.detailModel.closeDetail();
-        }).catchDefault();
+        }).linkTo(
+            hoistModel.appLoadModel
+        ).catchDefault();
     }
 
     showNoDiffToast() {
