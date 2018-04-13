@@ -55,8 +55,6 @@ class ClientErrorDetail extends Component {
             toolbar(
                 filler(),
                 clipboardButton({
-                    icon: Icon.clipboard(),
-                    text: 'Copy',
                     clipboardSpec: {text: this.getErrorStr},
                     successMessage: 'Error details copied to clipboard.'
                 }),
