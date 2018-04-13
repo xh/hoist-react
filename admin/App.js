@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {XH, elemFactory, hoistComponent} from 'hoist/core';
 import {vframe, frame} from 'hoist/layout';
 import {lockoutPanel} from 'hoist/app/impl';
-import {navbar, navbarGroup, navbarHeading, button, Intent} from 'hoist/kit/blueprint';
+import {navbar, navbarGroup, navbarHeading, button} from 'hoist/kit/blueprint';
 import {logoutButton, tabContainer, themeToggleButton} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
@@ -58,7 +58,7 @@ export class App extends Component {
                         logoutButton({intent: 'danger'}),
                         button({
                             icon: Icon.refresh(),
-                            intent: Intent.SUCCESS,
+                            intent: 'success',
                             onClick: this.onRefreshClick
                         })
                     ]
