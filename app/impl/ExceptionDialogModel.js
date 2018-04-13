@@ -21,6 +21,7 @@ export class ExceptionDialogModel {
         return displayException ? displayException.exception : null;
     }
 
+    @computed
     get options() {
         const {displayException} =  XH.hoistModel;
         return displayException ? displayException.options : {};

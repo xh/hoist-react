@@ -13,9 +13,7 @@ import {hoistModel} from './HoistModel';
 
 /**
  * Top-level provider of key aliases to methods and services in Hoist.
- *
- * These are made available to application via the global XH;
- * They are also available for troubleshooting purposes via window.XH;
+ * Available to applications via import - installed as window.XH for troubleshooting purposes.
  */
 export const XH = window.XH = new class {
 

@@ -8,7 +8,7 @@
 import {Children, Component} from 'react';
 import {ContextMenuTarget} from 'hoist/kit/blueprint';
 import {observer, observable, setter} from 'hoist/mobx';
-import {elemFactory, hoistModel, LoadState} from 'hoist/core';
+import {XH, elemFactory, hoistModel, LoadState} from 'hoist/core';
 import {contextMenu, loadMask} from 'hoist/cmp';
 import {frame, vframe, viewport} from 'hoist/layout';
 import {Icon} from 'hoist/icon';

@@ -4,7 +4,6 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
 import {Component} from 'react';
 import {XH, hoistComponent, elemFactory} from 'hoist/core';
 import {button, dialog, dialogBody, textArea} from 'hoist/kit/blueprint';
@@ -16,8 +15,8 @@ import {stringifyErrorSafely} from 'hoist/exception';
 import {dismissButton} from './ExceptionDialog';
 
 /**
- * Sub-Dialog for display of exceptions details.  Includes affordances
- * for submitting to server and copying to clipboard.
+ * Sub-dialog for displaying exception details.  Includes affordances for submitting an
+ * error report to the server and copying the stacktrace to the clipboard.
  */
 @hoistComponent()
 export class ExceptionDialogDetails extends Component {
@@ -34,8 +33,8 @@ export class ExceptionDialogDetails extends Component {
         const header = table(
             tbody(
                 row('Name', exception.name),
-                row('Message', exception.msg || exception.message),
-                row('App Version', XH.getEnv('appVersion'))
+                row('Message', exception.msg || exception.message || 'N/A'),
+                row('App Version', XH.appVersion)
             )
         );
 
@@ -45,7 +44,7 @@ export class ExceptionDialogDetails extends Component {
             isOpen: true,
             isCloseButtonShown: !requireReload,
             onClose: !requireReload ? this.onCloseClick : null,
-            style: {height: 600},
+            style: {height: 600, width: 800},
             items: [
                 dialogBody({
                     items: [
@@ -77,8 +76,6 @@ export class ExceptionDialogDetails extends Component {
                         onClick: this.onSendClick
                     }),
                     clipboardButton({
-                        icon: Icon.clipboard(),
-                        text: 'Copy',
                         clipboardSpec: {text: () => this.errorStr},
                         successMessage: 'Error details copied to clipboard.'
                     }),

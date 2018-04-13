@@ -4,6 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+import {XH} from 'hoist/core';
 import {observable, setter, action} from 'hoist/mobx';
 import {MultiPromiseModel, never} from 'hoist/promise';
 import {RouterModel} from 'hoist/router';
@@ -39,7 +40,7 @@ export const LoadState = {
  * Top level model for Hoist.
  *
  * This singleton object represents the main entry point for most of the framework services
- * in Hoist. It provides a number of built-in services for applications, and manages and holds
+ * in Hoist. It provides a number of built-in services for applications and manages/holds
  * the initialization, error handling, and masking state of the app.
  */
 export class HoistModel {
@@ -57,15 +58,13 @@ export class HoistModel {
     prefService = new PrefService();
     trackService = new TrackService();
  
-    /**
-     * State of app loading -- see HoistLoadState for valid values.
-     */
+    /** State of app loading -- see HoistLoadState for valid values. */
     @setter @observable loadState = LoadState.PRE_AUTH;
 
-    /** Currently authenticated user. **/
+    /** Currently authenticated user. */
     @observable authUsername = null;
 
-    /** Dark theme active? **/
+    /** Dark theme active? */
     @observable darkTheme = true;
 
     /**
@@ -74,70 +73,66 @@ export class HoistModel {
      */
     @observable.ref displayException;
 
-    /** Show about dialog? **/
+    /** Show about dialog? */
     @observable aboutIsOpen = false;
 
-    /** Top level model for the App - assigned via BaseAppModel's constructor **/
+    /** Top level model for the App - assigned via BaseAppModel's constructor */
     appModel = null;
 
-    /** Router model for the app - used for route based navigation. **/
+    /** Router model for the App - used for route based navigation. */
     routerModel = new RouterModel();
 
     /**
      * Tracks globally loading promises.
-     * Bind any async operations that should mask the entire application to this model.
-     **/
+     * Link any async operations that should mask the entire application to this model.
+     */
     appLoadModel = new MultiPromiseModel();
+
 
     //----------------------------------
     // Application Entry points
     //----------------------------------
-    /**
-     * Trigger a full reload of the app.
-     */
+
+    /** Trigger a full reload of the app. */
     @action
     reloadApp() {
         this.appLoadModel.link(never());
         window.location.reload(true);
     }
 
-    /**
-     * Toggle the theme between light and dark variants.
-     */
+    /** Toggle the theme between light and dark variants. */
     @action
     toggleTheme() {
         this.setDarkTheme(!this.darkTheme);
     }
 
     /**
-     * Show Exception to user.
+     * Show an Exception to the user.
      *
      * Applications should typically use XH.handleException().
      * This method will fully log and track the exception before display.
+     * @see ExceptionHandler
      *
-     * @param {object} exception - exception to be shown.
-     * @param {object} options - display options.
+     * @param {Object} exception - exception to be shown.
+     * @param {Object} [options] - display options.
      */
     @action
     showException(exception, options) {
         this.displayException = {exception, options};
     }
 
-    /**
-     * Hide any displayed exception
-     */
+    /** Hide any displayed exception */
     @action
     hideException() {
         this.displayException = null;
     }
 
-    /**
-     * Show the About Dialog for this application.
-     */
+    /** Show the About Dialog for this application. */
     @action
     showAbout() {
         this.aboutIsOpen = true;
     }
+
 
     //---------------------------------
     // Framework Methods
@@ -154,12 +149,15 @@ export class HoistModel {
 
         try {
             this.setLoadState(LoadState.PRE_AUTH);
+
             const username = await this.getAuthUserFromServerAsync();
+
             if (username) {
                 return this.completeInitAsync(username);
             }
+
             if (this.appModel.requireSSO) {
-                throw XH.exception('Failed to authenticate user vis SSO');
+                throw XH.exception('Failed to authenticate user via SSO.');
             } else {
                 this.setLoadState(LoadState.LOGIN_REQUIRED);
             }
@@ -167,16 +165,13 @@ export class HoistModel {
             this.setLoadState(LoadState.FAILED);
             XH.handleException(e, {requireReload: true});
         }
-
     }
 
     /**
-     * Call to complete initialization, with the name of a verified user.
+     * Complete initialization with the name of a verified user.
+     * Not for application use. Called by framework after user identity has been confirmed.
      *
      * @param {string} username - username of verified user.
-     *
-     * Not for application use.  Called by framework to complete initialization after
-     * user identity has been determined.
      */
     @action
     async completeInitAsync(username) {
@@ -195,16 +190,15 @@ export class HoistModel {
         }
     }
 
-    //------------------------------------
+
+    //------------------------
     // Implementation
-    //------------------------------------
+    //------------------------
     async getAuthUserFromServerAsync() {
-        const authUser = await this.fetchService
+        return await this.fetchService
             .fetchJson({url: 'auth/authUser'})
             .then(r => r.authUser.username)
             .catch(() => null);
-
-        return authUser;
     }
 
 
@@ -229,7 +223,7 @@ export class HoistModel {
     }
 
     initLocalState() {
-        this.setDarkTheme(this.prefService.get('xhTheme') === 'dark');
+        this.setDarkTheme(XH.getPref('xhTheme') === 'dark');
     }
 
     initRouterModel() {

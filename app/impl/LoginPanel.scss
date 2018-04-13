@@ -15,7 +15,8 @@
 
 
   &__warning {
-    color: red;
+    color: var(--xh-red);
+    margin-bottom: var(--xh-pad-px);
     text-align: center;
   }
 }
