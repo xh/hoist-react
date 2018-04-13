@@ -27,12 +27,14 @@ export class ClientErrorModel {
     store = new LocalStore({
         fields: [
             'username', 'error', 'msg', 'browser', 'device',
-            'appVersion', 'appEnvironment', 'dateCreated'
+            'appVersion', 'appEnvironment', 'dateCreated',
+            'userAgent'
         ]
     });
 
     gridModel = new GridModel({
         store: this.store,
+        sortBy: {colId: 'dateCreated', sort: 'desc'},
         columns: [
             compactDateCol({field: 'dateCreated', fixedWidth: 100, align: 'right'}),
             usernameCol({fixedWidth: 120}),
