@@ -52,7 +52,7 @@ export class RestGridToolbar extends Component {
                     disabled: !singleRecord,
                     omit: !actionEnabled.del
                 }),
-                toolbarSep({omit: isEmpty(additionalItemsFn)}),
+                toolbarSep({omit: isEmpty(additionalItems)}),
                 ...additionalItems,
                 filler(),
                 storeCountLabel({store, unit}),
