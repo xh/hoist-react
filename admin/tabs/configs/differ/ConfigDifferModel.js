@@ -174,7 +174,7 @@ export class ConfigDifferModel  {
 
     showNoDiffToast() {
         ToastManager.getToaster().show({
-            intent: Intent.SUCCESS,
+            intent: 'success',
             message: 'Good news! All configs match remote host.',
             icon: Icon.check({style: {alignSelf: 'center', marginLeft: '5px'}}),
             timeout: 3 * SECONDS
