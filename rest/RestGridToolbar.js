@@ -27,8 +27,8 @@ export class RestGridToolbar extends Component {
             unit = model.unit,
             singleRecord = model.selection.singleRecord,
             actionEnabled = model.actionEnabled,
-            additionalItemsFn = this.props.additionalToolbarItems,
-            additionalItems = additionalItemsFn ? castArray(additionalItemsFn()) : [],
+            extraItemsFn = this.props.extraToolbarItems,
+            extraItems = extraItemsFn ? castArray(extraItemsFn()) : [],
             items = [
                 button({
                     text: 'Add',
@@ -52,8 +52,8 @@ export class RestGridToolbar extends Component {
                     disabled: !singleRecord,
                     omit: !actionEnabled.del
                 }),
-                toolbarSep({omit: isEmpty(additionalItems)}),
-                ...additionalItems,
+                toolbarSep({omit: isEmpty(extraItems)}),
+                ...extraItems,
                 filler(),
                 storeCountLabel({store, unit}),
                 storeFilterField({store, fields: model.filterFields}),

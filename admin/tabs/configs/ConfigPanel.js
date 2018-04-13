@@ -123,7 +123,7 @@ export class ConfigPanel extends Component {
         return fragment(
             restGrid({
                 model: this.gridModel,
-                additionalToolbarItems: this.additionalToolbarItems,
+                extraToolbarItems: this.extraToolbarItems
             }),
             configDiffer({model: this.differModel})
         );
@@ -156,7 +156,7 @@ export class ConfigPanel extends Component {
         return params.value;
     }
 
-    additionalToolbarItems = () =>{
+    extraToolbarItems = () => {
         return button({
             icon: Icon.diff(),
             text: 'Compare w/ Remote',
