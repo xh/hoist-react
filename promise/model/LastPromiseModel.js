@@ -4,28 +4,24 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
 import {observable, action, computed} from 'hoist/mobx';
-
 
 /**
  * Tracks the resolution state of the last of a series of promise invocations.
- *
- * Currently it only tracks the *last* invocation, but could
- * be enhanced to maintain historical statistics.
- *
- * See also MultiPromiseModel.
+ * Currently it only tracks the *last* invocation, but could be enhanced to maintain historical statistics.
+ * @see MultiPromiseModel
  */
 export class LastPromiseModel {
 
     @observable state = 'resolved';
     lastCall = null;
 
+    /** Is the last Promise to be linked to this Model still pending? */
     @computed
     get isPending() {
         return this.state === 'pending';
     }
-    
+
     @action
     link(promise) {
         this.lastCall = promise;
@@ -37,9 +33,10 @@ export class LastPromiseModel {
         });
     }
 
-    //-----------------------------
+
+    //------------------------
     // Implementation
-    //-----------------------------
+    //------------------------
     @action
     onSuccess(value) {
         this.state = 'resolved';
@@ -49,6 +46,5 @@ export class LastPromiseModel {
     onReject(reason) {
         this.state = 'rejected';
     }
+
 }
-
-
