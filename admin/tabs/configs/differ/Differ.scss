@@ -1,0 +1,37 @@
+.config-diff-table {
+  width: 100%;
+  table-layout:fixed;
+  border-collapse: collapse;
+
+  tr {
+    border-bottom: 1px solid var(--xh-gray);
+  }
+
+  tr:first-child {
+    background-color: black;
+  }
+
+  tr:nth-child(odd):not(:first-child) {
+    background-color: var(--app-alt-background-color);
+  }
+
+  tr:nth-child(even) {
+    background-color: #1f232b;
+  }
+
+  th {
+    text-align: left;
+    padding: 5px;
+  }
+
+  td {
+    width: 160px;
+    padding: 5px;
+    word-wrap: break-word;
+
+    &.diff {
+      color: green;
+    }
+  }
+
+}
