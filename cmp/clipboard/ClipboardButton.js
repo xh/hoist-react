@@ -40,7 +40,6 @@ export class ClipboardButton extends Component {
         return button({
             icon: icon || Icon.clipboard(),
             text: text || 'Copy',
-            successMessage: successMessage || 'Text copied to clipboard.',
             ref: this.manageClipboard,
             ...rest
         });
