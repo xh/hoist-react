@@ -6,7 +6,6 @@
  */
 
 import {XH} from 'hoist/core';
-import {Intent} from 'hoist/kit/blueprint';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
 import {ToastManager} from 'hoist/cmp';
 import {action, observable, computed} from 'hoist/mobx';
@@ -72,7 +71,7 @@ export class MonitorResultsModel {
             .fetchJson({url: 'monitorAdmin/forceRunAllMonitors'})
             .then(
                 ToastManager.getToaster().show({
-                    intent: Intent.SUCCESS,
+                    intent: 'success',
                     message: 'Request received. Results will be generated shortly.',
                     icon: Icon.check({style: {alignSelf: 'center', marginLeft: '5px'}}),
                     timeout: 3 * SECONDS

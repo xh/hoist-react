@@ -10,7 +10,7 @@ import {XH, elemFactory, hoistComponent} from 'hoist/core';
 import {vframe, frame} from 'hoist/layout';
 import {lockoutPanel} from 'hoist/app/impl';
 import {navbar, navbarGroup, navbarHeading, button} from 'hoist/kit/blueprint';
-import {refreshButton, tabContainer, themeToggleButton} from 'hoist/cmp';
+import {logoutButton, tabContainer, themeToggleButton} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import './App.scss';
@@ -37,44 +37,38 @@ export class App extends Component {
     // Implementation
     //------------------
     renderNavBar() {
-        return navbar(
-            navbarGroup({
-                align: 'left',
-                items: [
-                    Icon.gears({size: '2x'}),
-                    navbarHeading(`${XH.appName} Admin`)
-                ]
-            }),
-            navbarGroup({
-                align: 'right',
-                items: [
-                    button({
-                        icon: Icon.mail(),
-                        text: 'Contact',
-                        onClick: this.onContactClick
-                    }),
-                    themeToggleButton(),
-                    button({
-                        icon: Icon.logout(),
-                        intent: 'danger',
-                        onClick: this.onLogoutClick,
-                        omit: !this.model.enableLogout
-                    }),
-                    refreshButton({
-                        intent: 'success',
-                        onClick: this.onRefreshClick
-                    })
-                ]
-            })
-        );
+        return navbar({
+            items: [
+                navbarGroup({
+                    align: 'left',
+                    items: [
+                        Icon.gears({size: '2x'}),
+                        navbarHeading(`${XH.appName} Admin`)
+                    ]
+                }),
+                navbarGroup({
+                    align: 'right',
+                    items: [
+                        button({
+                            icon: Icon.mail(),
+                            text: 'Contact',
+                            onClick: this.onContactClick
+                        }),
+                        themeToggleButton(),
+                        logoutButton({intent: 'danger'}),
+                        button({
+                            icon: Icon.refresh(),
+                            intent: 'success',
+                            onClick: this.onRefreshClick
+                        })
+                    ]
+                })
+            ]
+        });
     }
 
     onContactClick = () => {
         window.open('https://xh.io/contact');
-    }
-
-    onLogoutClick = () => {
-        XH.identityService.logoutAsync();
     }
 
     onRefreshClick = () => {
