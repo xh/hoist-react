@@ -50,6 +50,7 @@ export const Icon = {
     clipboard(p)     {return fa(p, 'clipboard')},
     close(p)         {return fa(p, 'times')},
     contact(p)       {return fa(p, 'address-card')},
+    comment(p)       {return fa(p, 'comment-dots')},
     cross(p)         {return fa(p, 'times')},
     disabled(p)      {return fa(p, 'ban')},
     delete(p)        {return fa(p, 'minus-circle')},

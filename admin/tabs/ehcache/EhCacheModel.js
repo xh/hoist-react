@@ -5,7 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {Intent} from 'hoist/kit/blueprint';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
 import {ToastManager} from 'hoist/cmp';
 import {UrlStore} from 'hoist/data';
@@ -43,7 +42,7 @@ export class EhCacheModel {
     onClearCacheSuccess = () => {
         this.loadAsync();
         ToastManager.getToaster().show({
-            intent: Intent.SUCCESS,
+            intent: 'success',
             message: 'Caches Cleared',
             icon: Icon.check({style: {alignSelf: 'center', marginLeft: '5px'}}),
             timeout: 3 * SECONDS

@@ -38,8 +38,7 @@ export class RefreshButton extends Component {
         });
     }
 
-
-    //---------------------------
+    //-------------------------
     // Implementation
     //---------------------------
     onRefreshClick = () => {
