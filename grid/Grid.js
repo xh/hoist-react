@@ -10,6 +10,7 @@ import fontawesome from '@fortawesome/fontawesome';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
 import {defaults, xor, isString, isNumber, isBoolean, isEqual} from 'lodash';
+import {Icon} from 'hoist/icon';
 
 import './ag-grid';
 import {navigateSelection, agGridReact} from './ag-grid';
@@ -34,7 +35,10 @@ class Grid extends Component {
         defaultColDef: {suppressMenu: true},
         groupDefaultExpanded: 1,
         groupUseEntireRow: true,
-        popupParent: document.querySelector('body')
+        popupParent: document.querySelector('body'),
+        icons: {
+            // groupExpanded: '<i class="fa fa-plus"/>'
+        }
     };
 
     constructor(props) {
