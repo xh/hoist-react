@@ -65,7 +65,6 @@ export class ConfigDiffer extends Component {
             toolbar(
                 filler(),
                 button({
-                    icon: Icon.close(),
                     text: 'Close',
                     intent: 'primary',
                     onClick: this.onCloseClick

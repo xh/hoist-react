@@ -59,7 +59,6 @@ class ClientErrorDetail extends Component {
                     successMessage: 'Error details copied to clipboard.'
                 }),
                 button({
-                    icon: Icon.close(),
                     text: 'Close',
                     intent: 'primary',
                     onClick: this.onCloseClick
