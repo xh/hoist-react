@@ -7,7 +7,6 @@
 
 export * from './elem';
 export * from './BaseAppModel';
-export * from './ErrorDialogModel';
 export * from './HoistModel';
 export * from './HoistComponent';
 export * from './XH';

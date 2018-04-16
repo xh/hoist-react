@@ -35,15 +35,14 @@ export class ClipboardButton extends Component {
         successMessage: PT.string
     };
 
-    static defaultProps = {
-        icon: Icon.clipboard(),
-        text: 'Copy',
-        successMessage: 'Text copied to clipboard.'
-    }
-
     render() {
-        const {successMessage, clipboardSpec, ...rest} = this.props;
-        return button({...rest, ref: this.manageClipboard});
+        const {icon, successMessage, text, clipboardSpec, ...rest} = this.props;
+        return button({
+            icon: icon || Icon.clipboard(),
+            text: text || 'Copy',
+            ref: this.manageClipboard,
+            ...rest
+        });
     }
 
 

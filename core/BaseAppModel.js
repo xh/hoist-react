@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {hoistModel} from 'hoist/core';
+import {hoistModel} from './HoistModel';
 
 /**
  * Top level model for a HoistApp.

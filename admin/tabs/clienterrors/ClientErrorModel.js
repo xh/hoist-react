@@ -1,4 +1,3 @@
-
 /*
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
@@ -7,13 +6,14 @@
  */
 
 import moment from 'moment';
+import {XH} from 'hoist/core';
 import {action, observable, setter} from 'hoist/mobx';
 import {LocalStore} from 'hoist/data';
 import {GridModel} from 'hoist/grid';
 import {fmtDate} from 'hoist/format';
-
 import {baseCol} from 'hoist/columns/Core';
 import {compactDateCol} from 'hoist/columns/DatesTimes';
+
 import {usernameCol} from '../../columns/Columns';
 
 export class ClientErrorModel {
@@ -27,12 +27,13 @@ export class ClientErrorModel {
     store = new LocalStore({
         fields: [
             'username', 'error', 'msg', 'browser', 'device',
-            'appVersion', 'appEnvironment', 'dateCreated'
+            'appVersion', 'appEnvironment', 'dateCreated', 'userAgent'
         ]
     });
 
     gridModel = new GridModel({
         store: this.store,
+        sortBy: {colId: 'dateCreated', sort: 'desc'},
         columns: [
             compactDateCol({field: 'dateCreated', fixedWidth: 100, align: 'right'}),
             usernameCol({fixedWidth: 120}),
@@ -91,9 +92,10 @@ export class ClientErrorModel {
         this.endDate = date;
     }
 
-    //----------------
+
+    //------------------------
     // Implementation
-    //----------------
+    //------------------------
     getParams() {
         return {
             startDate: fmtDate(this.startDate, 'YYYYMMDD'),

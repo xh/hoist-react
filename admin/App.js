@@ -8,9 +8,8 @@
 import {Component} from 'react';
 import {XH, elemFactory, hoistComponent} from 'hoist/core';
 import {vframe, frame} from 'hoist/layout';
-import {lockoutPanel} from 'hoist/app/impl';
-import {navbar, navbarGroup, navbarHeading, button, Intent} from 'hoist/kit/blueprint';
-import {tabContainer, themeToggleButton} from 'hoist/cmp';
+import {navbar, navbarGroup, navbarHeading, button} from 'hoist/kit/blueprint';
+import {logoutButton, lockoutPanel, tabContainer, themeToggleButton, refreshButton} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import './App.scss';
@@ -21,7 +20,7 @@ export class App extends Component {
         if (!XH.identityService.user.isHoistAdmin) {
             return lockoutPanel({message: 'Access to this area requires administrator permissions.'});
         }
-
+        
         return vframe({
             items: [
                 this.renderNavBar(),
@@ -54,17 +53,15 @@ export class App extends Component {
                             text: 'Contact',
                             onClick: this.onContactClick
                         }),
-                        themeToggleButton(),
                         button({
-                            icon: Icon.logout(),
-                            intent: Intent.DANGER,
-                            hidden: true,
-                            onClick: this.onLogoutClick,
-                            omit: !this.model.enableLogout
+                            icon: Icon.openExternal(),
+                            title: 'Open app...',
+                            onClick: this.onOpenAppClick
                         }),
-                        button({
-                            icon: Icon.refresh(),
-                            intent: Intent.SUCCESS,
+                        themeToggleButton(),
+                        logoutButton({intent: 'danger'}),
+                        refreshButton({
+                            intent: 'success',
                             onClick: this.onRefreshClick
                         })
                     ]
@@ -77,8 +74,8 @@ export class App extends Component {
         window.open('https://xh.io/contact');
     }
 
-    onLogoutClick = () => {
-        XH.identityService.logoutAsync();
+    onOpenAppClick = () => {
+        window.open('/app');
     }
 
     onRefreshClick = () => {

@@ -4,36 +4,42 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {isString} from 'lodash';
 
-import {hoistModel} from 'hoist/core';
-import {BaseService} from './BaseService';
+import {Exception} from  'hoist/exception';
+import {XH} from 'hoist/core';
 
-export class ExceptionHandlerService extends BaseService {
+/**
+ * Centralized Exception Handler for Hoist Application.
+ *
+ * Manages the logging and display of exceptions.
+ */
+export class ExceptionHandler {
 
     /**
      *  Main Entry point. Called by framework constructs to handle an exception.
      *
-     *  Typical application entry points to this method are via the 'catchDefault' option
-     *  on AjaxService.request() and Promise.catchDefault()
+     *  Typical application entry points to this method are via the XH.handleException() alias and
+     *  Promise.catchDefault()
      *
-     * @param exception - Error object or String
+     * @param exception - {Error | String | Object} - Error or thrown object.  If not an Error, an Exception will be
+     *      created via Exception.create().
      * @param options (optional), includes:
      *      message {String} - optional introductory text to describe the error
      *      title {String} - optional title for modal alert
      *      alertKey {String} - optional key for modal alert, when specified only one modal will be allowed to be
-     *                  created with that key. If one is already created, it will be replaced with a new instance.
+     *              created with that key. If one is already created, it will be replaced with a new instance.
      *      logOnServer {Boolean} - default true, send the exception to the server to be stored in DB for analysis.
      *      showAlert {Boolean} - display a modal alert - default true, excepting 'isAutoRefresh' request exceptions.
      *      showAsError {Boolean} - display to user/log as "error" - default true.  If true, error details and
-     *                  reporting affordances will be shown. Apps should set to false for "expected" exceptions.
-     *      requireReload {Boolean} - present button to fully refresh the app - default false, excepting session
-     *                          expired exceptions.
+     *              reporting affordances will be shown. Apps should set to false for "expected" exceptions.
+     *      requireReload {Boolean} - force user to fully refresh the app in order to dismiss - default false, excepting
+     *              session expired exceptions.
      */
-    handleException(exception, options) {
-        if (isString(exception)) {
-            exception = {message: exception};
+    static handleException(exception, options) {
+        if (!(exception instanceof Error)) {
+            exception = Exception.create(exception);
         }
+
         options = this.parseOptions(exception, options);
 
         this.logException(exception, options);
@@ -46,40 +52,21 @@ export class ExceptionHandlerService extends BaseService {
         }
     }
 
-    // --------------------------------
-    // Template methods for override
-    // --------------------------------
-    /**
-     *  Log the processed exception.
-     *  The default implementation simply logs to the console.
-     *
-     * @param exception, exception to be handled.
-     * @param options, see handleException().  These options will already be parsed and defaults applied.
-     */
-    logException(exception, options) {
+
+    //--------------------------------
+    // Implementation
+    //--------------------------------
+    static logException(exception, options) {
         return (options.showAsError) ?
             console.error(options.message, exception) :
             console.log(options.message, exception);
     }
 
-    /**
-     * Show visual alert for the processed exception.
-     * This method will be called if showAlert = true.
-     *
-     * @param exception, exception to be handled.
-     * @param options, see handleException().  These options will already be parsed and defaults applied.
-     */
-    alertException(exception, options) {
-        hoistModel.errorDialogModel.showException(exception, options);
+    static alertException(exception, options) {
+        XH.hoistModel.showException(exception, options);
     }
 
-    /**
-     * Parse exception options described in handleException(), applying defaults and conventions as necessary.
-     *
-     * @param exception, exception to be handled.
-     * @param options, see handleException().
-     */
-    parseOptions(exception, options) {
+    static parseOptions(exception, options) {
         const ret = Object.assign({}, options),
             isAutoRefresh = exception.requestOptions && exception.requestOptions.isAutoRefresh;
 
@@ -100,11 +87,14 @@ export class ExceptionHandlerService extends BaseService {
         return ret;
     }
 
-    logErrorOnServer(exception) {
-        XH.errorTrackingService.submitAsync({exception});
+    static logErrorOnServer(exception) {
+        const errorTrackingService = XH.errorTrackingService;
+        if (errorTrackingService.isReady) {
+            errorTrackingService.submitAsync({exception});
+        }
     }
 
-    sessionExpired(exception) {
+    static sessionExpired(exception) {
         return exception && exception.httpStatus === 401;
     }
 }

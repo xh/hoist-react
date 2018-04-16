@@ -9,7 +9,7 @@ import {Component, isValidElement} from 'react';
 import fontawesome from '@fortawesome/fontawesome';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
-import {defaults, difference, isString, isNumber, isBoolean, isEqual} from 'lodash';
+import {defaults, xor, isString, isNumber, isBoolean, isEqual} from 'lodash';
 
 import './ag-grid';
 import {navigateSelection, agGridReact} from './ag-grid';
@@ -19,6 +19,9 @@ import {navigateSelection, agGridReact} from './ag-grid';
  */
 @hoistComponent()
 class Grid extends Component {
+
+
+    _scrollOnSelect = true;
 
     static gridDefaultOptions = {
         toolPanelSuppressSideButtons: true,
@@ -30,7 +33,8 @@ class Grid extends Component {
         allowContextMenuWithControlKey: true,
         defaultColDef: {suppressMenu: true},
         groupDefaultExpanded: 1,
-        groupUseEntireRow: true
+        groupUseEntireRow: true,
+        popupParent: document.querySelector('body')
     };
 
     constructor(props) {
@@ -84,7 +88,7 @@ class Grid extends Component {
         const api = this.gridOptions.api,
             modelSelection = this.model.selection.ids,
             gridSelection = api.getSelectedRows().map(it => it.id),
-            diff = difference(modelSelection, gridSelection);
+            diff = xor(modelSelection, gridSelection);
 
         // If ag-grid's selection differs from the selection model, set it to match
         if (diff.length > 0) {
@@ -92,7 +96,9 @@ class Grid extends Component {
             modelSelection.forEach(id => {
                 const node = api.getRowNode(id);
                 node.setSelected(true);
-                api.ensureNodeVisible(node);
+                if (this._scrollOnSelect) {
+                    api.ensureNodeVisible(node);
+                }
             });
         }
     }
@@ -113,46 +119,41 @@ class Grid extends Component {
 
     getContextMenuItems = (params) => {
 
-        // TODO: Display this as Blueprint Context menu, with code similar to below?
+        // TODO: Display this as Blueprint Context menu e.g:
+        // ContextMenu.show(contextMenu({menuItems}), {left:0, top:0}, () => {});
 
-        // const men = contextMenu({
-        //    menuItems: [{
-        //        text: 'Reload App',
-        //        icon: Icon.refresh(),
-        //        action: () => hoistModel.reloadApp()
-        //    }, {
-        //        text: 'About',
-        //        icon: Icon.info(),
-        //        action: () => hoistModel.setShowAbout(true)
-        //    }]
-        // });
-        // ContextMenu.show(men, { left:0, top:0}, () => {});
+        const {store, selection, contextMenuFn} = this.model;
+        if (!contextMenuFn) return null;
 
-
-        const menuFn = this.model.contextMenuFn;
-        if (!menuFn) return null;
-
-        const menu = menuFn(params),
+        const menu = contextMenuFn(params),
             recId = params.node ? params.node.id : null,
-            rec = recId ? this.model.store.getById(recId, true) : null,
-            selection = this.model.selection.ids;
+            rec = recId ? store.getById(recId, true) : null,
+            selectedIds = selection.ids;
 
-        // If the target record is not in the selection, we need to include it in the count
-        let count = selection.length;
-        if (rec && !selection.includes(recId)) count++;
-
-        return menu.items.map((it) => {
+        // Adjust selection to target record -- and sync to grid immediately.
+        if (rec && !(recId in selectedIds)) {
+            try {
+                this._scrollOnSelect = false;
+                selection.select(rec);
+            } finally {
+                this._scrollOnSelect = true;
+            }
+        }
+        if (!rec) selection.select([]);
+      
+        const count = selection.count;
+        return menu.items.map(it => {
             if (it === '-') return 'separator';
             if (isString(it)) return it;
 
             const required = it.recordsRequired,
-                requiredRecordsNotMet = (isBoolean(required) && required && count === 0) || (isNumber(required) && count !== required);
+                requiredRecordsNotMet = (isBoolean(required) && required && count === 0) ||
+                                        (isNumber(required) && count !== required);
 
-            // Disable menuitem
-            let enabled = true;
-            if (it.enableFn) enabled = it.enableFn(it, rec, selection);
+            // Potentially disable
+            const enabled = !it.enableFn || it.enableFn(it, rec, selection);
 
-            // Prepare menuitem
+            // Prepare
             if (it.prepareFn) it.prepareFn(it, rec, selection);
 
             // Convert React FontAwesomeIcon to SVG markup for display in ag-grid's context menu.
@@ -167,11 +168,9 @@ class Grid extends Component {
 
             return {
                 name: it.text,
-                icon: icon,
+                icon,
                 disabled: (it.disabled || requiredRecordsNotMet || !enabled),
-                action: () => {
-                    it.action(it, rec, selection);
-                }
+                action: () => it.action(it, rec, selection)
             };
         });
     }

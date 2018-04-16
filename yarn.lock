@@ -146,23 +146,27 @@
   version "0.1.3"
   resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome-common-types/-/fontawesome-common-types-0.1.3.tgz#8475e0f2d1ad1f858c4ec2e76ed9a2456a09ad83"
 
-"@fortawesome/fontawesome-pro-light@~5.0.9":
-  version "5.0.9"
-  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome-pro-light/-/fontawesome-pro-light-5.0.9.tgz#47ccd35d2f22d07441bee12689b1eae2894853ed"
-  dependencies:
-    "@fortawesome/fontawesome-common-types" "^0.1.3"
+"@fortawesome/fontawesome-common-types@^0.1.4":
+  version "0.1.4"
+  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome-common-types/-/fontawesome-common-types-0.1.4.tgz#1fbc66f0223646f23c5550c2c12e341078e2c262"
 
-"@fortawesome/fontawesome-pro-regular@~5.0.9":
-  version "5.0.9"
-  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome-pro-regular/-/fontawesome-pro-regular-5.0.9.tgz#74d318aef6ed1cad6b0a335f43ab4603b1d255ff"
+"@fortawesome/fontawesome-pro-light@~5.0.10":
+  version "5.0.10"
+  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome-pro-light/-/fontawesome-pro-light-5.0.10.tgz#6880ecdcfdc3dd23c9c9125502bf70697b74f715"
   dependencies:
-    "@fortawesome/fontawesome-common-types" "^0.1.3"
+    "@fortawesome/fontawesome-common-types" "^0.1.4"
 
-"@fortawesome/fontawesome-pro-solid@~5.0.9":
-  version "5.0.9"
-  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome-pro-solid/-/fontawesome-pro-solid-5.0.9.tgz#5a4f2a7def2afe9b61b3c8067d39d528908f3a1c"
+"@fortawesome/fontawesome-pro-regular@~5.0.10":
+  version "5.0.10"
+  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome-pro-regular/-/fontawesome-pro-regular-5.0.10.tgz#0d2d878d3082c6272d87ed06da79d6c193913809"
   dependencies:
-    "@fortawesome/fontawesome-common-types" "^0.1.3"
+    "@fortawesome/fontawesome-common-types" "^0.1.4"
+
+"@fortawesome/fontawesome-pro-solid@~5.0.10":
+  version "5.0.10"
+  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome-pro-solid/-/fontawesome-pro-solid-5.0.10.tgz#b0b1c1cd13cd751148828f319fc756536bf72ef7"
+  dependencies:
+    "@fortawesome/fontawesome-common-types" "^0.1.4"
 
 "@fortawesome/fontawesome@~1.1.5":
   version "1.1.5"
@@ -180,19 +184,19 @@
   version "2.0.0"
   resolved "https://repo.xh.io/repository/npm-public/@types/dom4/-/dom4-2.0.0.tgz#00dc42fed6b36a7a6dabb8f7a9c9e678ee644e05"
 
-"@xh/eslint-config@~0.1.2":
-  version "0.1.2"
-  resolved "https://repo.xh.io/repository/npm-hosted/@xh/eslint-config/-/eslint-config-0.1.2.tgz#567a9cf8ffdc8c128d606d951f36e72e11b4fd79"
+"@xh/eslint-config@~0.2.0":
+  version "0.2.0"
+  resolved "https://repo.xh.io/repository/npm-hosted/@xh/eslint-config/-/eslint-config-0.2.0.tgz#9ca7518d9b4336f55dcf76cfcbfa07f6a366f43c"
   dependencies:
     babel-eslint "~8.2.2"
     eslint "~4.19.1"
     eslint-plugin-react "~7.7.0"
 
-"@xh/hoist-dev-utils@~0.4.0":
-  version "0.4.0"
-  resolved "https://repo.xh.io/repository/npm-hosted/@xh/hoist-dev-utils/-/hoist-dev-utils-0.4.0.tgz#0df9d4ad1bd52b149cddf6c9588b1ef9d3168df6"
+"@xh/hoist-dev-utils@~0.5.0":
+  version "0.5.0"
+  resolved "https://repo.xh.io/repository/npm-hosted/@xh/hoist-dev-utils/-/hoist-dev-utils-0.5.0.tgz#73c5867d061f0711ae35b48026990aeebfcf090e"
   dependencies:
-    "@xh/eslint-config" "~0.1.2"
+    "@xh/eslint-config" "~0.2.0"
     autoprefixer "~8.2.0"
     babel-core "~6.26.0"
     babel-loader "~7.1.4"
@@ -1549,10 +1553,6 @@ center-align@^0.1.1:
     align-text "^0.1.3"
     lazy-cache "^1.0.3"
 
-chain-function@^1.0.0:
-  version "1.0.0"
-  resolved "https://repo.xh.io/repository/npm-public/chain-function/-/chain-function-1.0.0.tgz#0d4ab37e7e18ead0bdc47b920764118ce58733dc"
-
 chalk@^1.1.1, chalk@^1.1.3:
   version "1.1.3"
   resolved "https://repo.xh.io/repository/npm-public/chalk/-/chalk-1.1.3.tgz#a8115c55e4a702fe4d150abd3872822a7e09fc98"
@@ -2293,7 +2293,7 @@ dom-converter@~0.1:
   dependencies:
     utila "~0.3"
 
-dom-helpers@^3.2.0:
+dom-helpers@^3.3.1:
   version "3.3.1"
   resolved "https://repo.xh.io/repository/npm-public/dom-helpers/-/dom-helpers-3.3.1.tgz#fc1a4e15ffdf60ddde03a480a9c0fece821dd4a6"
 
@@ -4620,9 +4620,9 @@ mobx@~4.1.1:
   version "4.1.1"
   resolved "https://repo.xh.io/repository/npm-public/mobx/-/mobx-4.1.1.tgz#7ce7ef92b22e85271d1fc274a124d7fa32fcceeb"
 
-moment@~2.22.0:
-  version "2.22.0"
-  resolved "https://repo.xh.io/repository/npm-public/moment/-/moment-2.22.0.tgz#7921ade01017dd45186e7fee5f424f0b8663a730"
+moment@~2.22.1:
+  version "2.22.1"
+  resolved "https://repo.xh.io/repository/npm-public/moment/-/moment-2.22.1.tgz#529a2e9bf973f259c9643d237fda84de3a26e8ad"
 
 move-concurrently@^1.0.1:
   version "1.0.1"
@@ -5628,7 +5628,7 @@ prop-types@15.6.0:
     loose-envify "^1.3.1"
     object-assign "^4.1.1"
 
-prop-types@^15.5.8, prop-types@^15.6.0, prop-types@^15.6.1, prop-types@~15.6.1:
+prop-types@^15.6.0, prop-types@^15.6.1, prop-types@~15.6.1:
   version "15.6.1"
   resolved "https://repo.xh.io/repository/npm-public/prop-types/-/prop-types-15.6.1.tgz#36644453564255ddda391191fb3a125cbdf654ca"
   dependencies:
@@ -5779,9 +5779,9 @@ react-dom-factories@~1.0.2:
   version "1.0.2"
   resolved "https://repo.xh.io/repository/npm-public/react-dom-factories/-/react-dom-factories-1.0.2.tgz#eb7705c4db36fb501b3aa38ff759616aa0ff96e0"
 
-react-dom@~16.3.1:
-  version "16.3.1"
-  resolved "https://repo.xh.io/repository/npm-public/react-dom/-/react-dom-16.3.1.tgz#6a3c90a4fb62f915bdbcf6204422d93a7d4ca573"
+react-dom@~16.3.2:
+  version "16.3.2"
+  resolved "https://repo.xh.io/repository/npm-public/react-dom/-/react-dom-16.3.2.tgz#cb90f107e09536d683d84ed5d4888e9640e0e4df"
   dependencies:
     fbjs "^0.8.16"
     loose-envify "^1.1.0"
@@ -5795,19 +5795,17 @@ react-popper@^0.8.2:
     popper.js "^1.12.9"
     prop-types "^15.6.0"
 
-react-transition-group@~2.3.0:
-  version "2.3.0"
-  resolved "https://repo.xh.io/repository/npm-public/react-transition-group/-/react-transition-group-2.3.0.tgz#8dd1af58f6af284b19fd057f512e74f20438ad31"
+react-transition-group@~2.3.1:
+  version "2.3.1"
+  resolved "https://repo.xh.io/repository/npm-public/react-transition-group/-/react-transition-group-2.3.1.tgz#31d611b33e143a5e0f2d94c348e026a0f3b474b6"
   dependencies:
-    chain-function "^1.0.0"
-    dom-helpers "^3.2.0"
+    dom-helpers "^3.3.1"
     loose-envify "^1.3.1"
-    prop-types "^15.5.8"
-    warning "^3.0.0"
+    prop-types "^15.6.1"
 
-react@~16.3.1:
-  version "16.3.1"
-  resolved "https://repo.xh.io/repository/npm-public/react/-/react-16.3.1.tgz#4a2da433d471251c69b6033ada30e2ed1202cfd8"
+react@~16.3.2:
+  version "16.3.2"
+  resolved "https://repo.xh.io/repository/npm-public/react/-/react-16.3.2.tgz#fdc8420398533a1e58872f59091b272ce2f91ea9"
   dependencies:
     fbjs "^0.8.16"
     loose-envify "^1.1.0"
@@ -7218,12 +7216,6 @@ vm-browserify@0.0.4:
   resolved "https://repo.xh.io/repository/npm-public/vm-browserify/-/vm-browserify-0.0.4.tgz#5d7ea45bbef9e4a6ff65f95438e0a87c357d5a73"
   dependencies:
     indexof "0.0.1"
-
-warning@^3.0.0:
-  version "3.0.0"
-  resolved "https://repo.xh.io/repository/npm-public/warning/-/warning-3.0.0.tgz#32e5377cb572de4ab04753bdf8821c01ed605b7c"
-  dependencies:
-    loose-envify "^1.0.0"
 
 watchpack@^1.4.0:
   version "1.5.0"

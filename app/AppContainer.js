@@ -7,14 +7,13 @@
 
 import {Children, Component} from 'react';
 import {ContextMenuTarget} from 'hoist/kit/blueprint';
-import {observer} from 'hoist/mobx';
-import {elemFactory, hoistModel} from 'hoist/core';
+import {observer, observable, setter} from 'hoist/mobx';
+import {XH, elemFactory, LoadState} from 'hoist/core';
 import {contextMenu, loadMask} from 'hoist/cmp';
-import {errorDialog} from 'hoist/error';
-import {frame, vframe, viewport} from 'hoist/layout';
+import {frame, vframe, viewport, fragment} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
 
-import {aboutDialog, impersonationBar, lockoutPanel, loginPanel, versionBar} from './impl';
+import {aboutDialog, impersonationBar, loginPanel, versionBar, exceptionDialog} from './impl';
 
 import './AppContainer.scss';
 
@@ -37,41 +36,50 @@ import './AppContainer.scss';
 @ContextMenuTarget
 export class AppContainer extends Component {
 
+    @setter @observable.ref caughtException = null
+
     constructor() {
         super();
-        hoistModel.initAsync();
+        XH.hoistModel.initAsync();
     }
 
     render() {
-        const {authUsername, authCompleted, isInitialized, appModel, appLoadModel, errorDialogModel, showAbout} = hoistModel;
-
-        if (!authCompleted) return this.renderPreloadMask();
-
-        if (!authUsername) {
-            return appModel.requireSSO ?
-                lockoutPanel({message: 'Unable to contact UI server, or error processing single-sign on authentication'}) :
-                loginPanel();
-        }
-
-        if (!isInitialized) return this.renderPreloadMask();
-
-        return viewport(
-            vframe(
-                impersonationBar(),
-                frame(Children.only(this.props.children)),
-                versionBar()
-            ),
-            loadMask({model: appLoadModel, inline: false}),
-            errorDialog({model: errorDialogModel}),
-            aboutDialog({isOpen: showAbout})
+        return fragment(
+            this.renderContent(),
+            exceptionDialog() // Always render the exception dialog -- might need it :-(
         );
     }
 
-    renderPreloadMask() {
-        return loadMask({isDisplayed: true});
+    renderContent() {
+        const {hoistModel} = XH;
+
+        if (this.caughtException) return null;
+
+        switch (hoistModel.loadState) {
+            case LoadState.PRE_AUTH:
+            case LoadState.INITIALIZING:
+                return loadMask({isDisplayed: true});
+            case LoadState.LOGIN_REQUIRED:
+                return loginPanel();
+            case LoadState.FAILED:
+                return null;
+            case LoadState.COMPLETE:
+                return viewport(
+                    vframe(
+                        impersonationBar(),
+                        frame(Children.only(this.props.children)),
+                        versionBar()
+                    ),
+                    loadMask({model: hoistModel.appLoadModel, inline: false}),
+                    aboutDialog()
+                );
+            default:
+                return null;
+        }
     }
 
     renderContextMenu() {
+        const {hoistModel} = XH;
         return contextMenu({
             menuItems: [
                 {
@@ -92,6 +100,11 @@ export class AppContainer extends Component {
                 }
             ]
         });
+    }
+
+    componentDidCatch(e, info) {
+        this.setCaughtException(e);
+        XH.handleException(e, {requireReload: true});
     }
 }
 export const appContainer = elemFactory(AppContainer);

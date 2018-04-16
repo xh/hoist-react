@@ -8,8 +8,8 @@ import {Component} from 'react';
 import {dialog, button} from 'hoist/kit/blueprint';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {filler, table, tbody, tr, th, td} from 'hoist/layout';
-import {jsonField, toolbar} from 'hoist/cmp';
-import {Icon} from 'hoist/icon';
+import {clipboardButton, jsonField, toolbar} from 'hoist/cmp';
+import {fmtDateTime} from 'hoist/format';
 
 @hoistComponent()
 class ClientErrorDetail extends Component {
@@ -22,7 +22,7 @@ class ClientErrorDetail extends Component {
 
         return dialog({
             title: 'Error Details',
-            style: {width: 450},
+            style: {width: 1000},
             isOpen: model.detailRecord,
             onClose: this.onCloseClick,
             items: this.renderDetail(rec)
@@ -36,8 +36,12 @@ class ClientErrorDetail extends Component {
                 items: [
                     tbody(
                         tr(th('User:'), td(rec.username)),
+                        tr(th('Message:'), td(rec.msg)),
+                        tr(th('Device/Browser:'), td(`${rec.device}/${rec.browser}`)),
+                        tr(th('Agent:'), td(rec.userAgent)),
                         tr(th('App Version:'), td(rec.appVersion)),
-                        tr(th('Environment:'), td(rec.appEnvironment))
+                        tr(th('Environment:'), td(rec.appEnvironment)),
+                        tr(th('Date:'), td(fmtDateTime(rec.dateCreated)))
                     )
                 ]
             }),
@@ -45,25 +49,29 @@ class ClientErrorDetail extends Component {
                 value: rec.error,
                 disabled: true,
                 lineWrapping: true,
-                height: 300
+                height: 450
             }),
-            toolbar({
-                cls: 'xh-toolbar',
-                items: [
-                    filler(),
-                    button({
-                        icon: Icon.close(),
-                        text: 'Close',
-                        intent: 'danger',
-                        onClick: this.onCloseClick
-                    })
-                ]
-            })
+            toolbar(
+                filler(),
+                clipboardButton({
+                    clipboardSpec: {text: this.getErrorStr},
+                    successMessage: 'Error details copied to clipboard.'
+                }),
+                button({
+                    text: 'Close',
+                    intent: 'primary',
+                    onClick: this.onCloseClick
+                })
+            )
         ];
     }
 
     onCloseClick = () => {
         this.model.setDetailRecord(null);
+    }
+
+    getErrorStr = () => {
+        return this.model.detailRecord.error;
     }
 }
 export const clientErrorDetail = elemFactory(ClientErrorDetail);

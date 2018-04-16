@@ -5,13 +5,12 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import React, {Component} from 'react';
-import {XH, elemFactory, hoistComponent, hoistModel} from 'hoist/core';
+import {Component} from 'react';
+import {XH, elemFactory, hoistComponent} from 'hoist/core';
 import {vbox, filler, viewport, div} from 'hoist/layout';
 import {button, text} from 'hoist/kit/blueprint';
 import {textField, toolbar} from 'hoist/cmp';
 import {observable, computed, setter} from 'hoist/mobx';
-import {MessageModel, message} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import './LoginPanel.scss';
@@ -26,7 +25,6 @@ export class LoginPanel extends Component {
     @setter @observable username = '';
     @setter @observable password = '';
     @setter @observable warning = '';
-    messageModel = new MessageModel();
 
     @computed get isValid() {
         return this.username && this.password;
@@ -71,8 +69,7 @@ export class LoginPanel extends Component {
                             disabled: !this.isValid,
                             onClick: this.onSubmit
                         })
-                    ),
-                    message({model: this.messageModel})
+                    )
                 ]
             })
         });
@@ -88,16 +85,11 @@ export class LoginPanel extends Component {
             url: 'auth/login',
             params: {username, password}
         }).then(r => {
-            hoistModel.markAuthenticatedUser(r.success ? username : null);
-            this.setWarning(r.success ? '' : 'Login Incorrect.');
-        }).catch(e => {
-            hoistModel.markAuthenticatedUser(null);
-            this.messageModel.alert({
-                title: 'Error',
-                icon: Icon.error({size: 'lg'}),
-                message: <div>Unable to login: <b>{e.message || e.name}</b></div>
-            });
-        });
+            this.setWarning(r.success ? '' : 'Login Incorrect');
+            if (r.success) {
+                XH.hoistModel.completeInitAsync(username);
+            }
+        }).catchDefault();
     }
 
     onUsernameChange = (ev) => {this.setUsername(ev.target.value)}

@@ -1,19 +1,18 @@
-
 /*
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
 import moment from 'moment';
+import {XH} from 'hoist/core';
 import {action, observable, setter} from 'hoist/mobx';
 import {LocalStore} from 'hoist/data';
 import {GridModel} from 'hoist/grid';
 import {fmtDate, numberRenderer} from 'hoist/format';
-
 import {baseCol} from 'hoist/columns/Core';
 import {dateTimeCol} from 'hoist/columns/DatesTimes';
+
 import {usernameCol} from '../../columns/Columns';
 
 export class ActivityGridModel {
@@ -37,6 +36,7 @@ export class ActivityGridModel {
 
     gridModel = new GridModel({
         store: this.store,
+        sortBy: {colId: 'dateCreated', sort: 'desc'},
         columns: [
             baseCol({field: 'severity', fixedWidth: 90}),
             dateTimeCol({field: 'dateCreated', fixedWidth: 160, align: 'right'}),

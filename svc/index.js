@@ -8,8 +8,6 @@ export * from './BaseService';
 export * from './ConfigService';
 export * from './EnvironmentService';
 export * from './ErrorTrackingService';
-export * from './EventService';
-export * from './ExceptionHandlerService';
 export * from './FeedbackService';
 export * from './FetchService';
 export * from './LocalStorageService';

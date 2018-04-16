@@ -30,6 +30,10 @@ export class GridSelectionModel {
         return this.ids.length === 0;
     }
 
+    @computed get count() {
+        return this.ids.length;
+    }
+
     constructor({parent}) {
         this.parent = parent;
         autorun(() => {
