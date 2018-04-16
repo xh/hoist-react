@@ -36,6 +36,10 @@
   background-image: url("../public/collapsed.svg") !important;
 }
 
-.group-header-icon {
+.group-header-icon-expanded {
   margin: 5px var(--xh-pad-half-px) 0 var(--xh-pad-half-px);
+}
+
+.group-header-icon-collapsed {
+  margin: 5px var(--xh-pad-half-px) 0 8px;
 }
