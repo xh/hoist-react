@@ -31,7 +31,6 @@ export class ConfigDifferDetail extends Component {
                     filler(),
                     button({
                         text: 'Close',
-                        icon: Icon.close(),
                         intent: 'danger',
                         onClick: this.onCloseClick
                     }),

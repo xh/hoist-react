@@ -10,7 +10,6 @@ import {hoistComponent, elemFactory} from 'hoist/core';
 import {filler, table, tbody, tr, th, td} from 'hoist/layout';
 import {clipboardButton, jsonField, toolbar} from 'hoist/cmp';
 import {fmtDateTime} from 'hoist/format';
-import {Icon} from 'hoist/icon';
 
 @hoistComponent()
 class ClientErrorDetail extends Component {
@@ -59,7 +58,6 @@ class ClientErrorDetail extends Component {
                     successMessage: 'Error details copied to clipboard.'
                 }),
                 button({
-                    icon: Icon.close(),
                     text: 'Close',
                     intent: 'primary',
                     onClick: this.onCloseClick

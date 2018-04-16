@@ -10,7 +10,6 @@ import {button, dialog} from 'hoist/kit/blueprint';
 import {filler, fragment} from 'hoist/layout';
 import {grid} from 'hoist/grid';
 import {comboField, label, message, toolbar} from 'hoist/cmp';
-import {Icon} from 'hoist/icon';
 
 import {configDifferDetail} from './ConfigDifferDetail';
 
@@ -65,7 +64,6 @@ export class ConfigDiffer extends Component {
             toolbar(
                 filler(),
                 button({
-                    icon: Icon.close(),
                     text: 'Close',
                     intent: 'primary',
                     onClick: this.onCloseClick
