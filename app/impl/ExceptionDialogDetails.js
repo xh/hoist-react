@@ -42,7 +42,7 @@ export class ExceptionDialogDetails extends Component {
             title: 'Error Details',
             icon: Icon.search(),
             isOpen: true,
-            isCloseButtonShown: !requireReload,
+            isCloseButtonShown: false,
             onClose: !requireReload ? this.onCloseClick : null,
             style: {height: 600, width: 800},
             items: [

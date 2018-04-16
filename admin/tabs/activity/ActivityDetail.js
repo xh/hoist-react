@@ -25,6 +25,7 @@ class ActivityDetail extends Component {
             title: 'Activity Details',
             style: {width: 600},
             isOpen: model.detailRecord,
+            isCloseButtonShown: false,
             onClose: this.onCloseClick,
             items: this.renderDetail(rec)
         });

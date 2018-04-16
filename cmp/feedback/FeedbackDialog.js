@@ -23,6 +23,7 @@ export class FeedbackDialog extends Component {
             title: 'Submit Feedback',
             style: {width: 450},
             isOpen: model.isOpen,
+            isCloseButtonShown: false,
             onClose: this.onClose,
             canOutsideClickClose: false,
             items: [
