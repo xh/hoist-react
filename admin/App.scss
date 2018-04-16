@@ -35,3 +35,7 @@
 .ag-theme-balham .ag-group-expanded .ag-icon-contracted:empty {
   background-image: url("../public/collapsed.svg") !important;
 }
+
+.group-header-icon {
+  margin: 0 var(--xh-pad-half-px);
+}

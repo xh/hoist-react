@@ -35,10 +35,7 @@ class Grid extends Component {
         defaultColDef: {suppressMenu: true},
         groupDefaultExpanded: 1,
         groupUseEntireRow: true,
-        popupParent: document.querySelector('body'),
-        icons: {
-            // groupExpanded: '<i class="fa fa-plus"/>'
-        }
+        popupParent: document.querySelector('body')
     };
 
     constructor(props) {
@@ -47,7 +44,13 @@ class Grid extends Component {
             props.gridOptions || {},
             Grid.gridDefaultOptions,
             {navigateToNextCell: this.onNavigateToNextCell},
-            {defaultGroupSortComparator: this.sortByGroup}
+            {defaultGroupSortComparator: this.sortByGroup},
+            {
+                icons: {
+                    groupExpanded: this.convertIconToSvg(Icon.chevronDown(), {classes: ['group-header-icon']}),
+                    groupContracted: this.convertIconToSvg(Icon.chevronRight(), {classes: ['group-header-icon']})
+                }
+            }
         );
         this.addAutoRun(() => this.syncSelection());
         this.addAutoRun(() => this.syncSort());
@@ -163,11 +166,7 @@ class Grid extends Component {
             // Convert React FontAwesomeIcon to SVG markup for display in ag-grid's context menu.
             let icon = it.icon;
             if (isValidElement(icon)) {
-                const iconDef = fontawesome.findIconDefinition({
-                    prefix: icon.props.icon[0],
-                    iconName: icon.props.icon[1]
-                });
-                icon = fontawesome.icon(iconDef).html[0];
+                icon = this.convertIconToSvg(icon);
             }
 
             return {
@@ -177,6 +176,15 @@ class Grid extends Component {
                 action: () => it.action(it, rec, selection)
             };
         });
+    }
+
+    convertIconToSvg(icon, opts) {
+        const iconDef = fontawesome.findIconDefinition({
+            prefix: icon.props.icon[0],
+            iconName: icon.props.icon[1]
+        });
+        const ret = fontawesome.icon(iconDef, opts).html[0];
+        return ret;
     }
 
     //------------------------
