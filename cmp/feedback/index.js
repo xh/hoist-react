@@ -4,4 +4,5 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-export * from './ErrorDialog';
+export * from './FeedbackDialog';
+export * from './FeedbackDialogModel';

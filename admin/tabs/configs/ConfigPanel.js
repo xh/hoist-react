@@ -5,14 +5,21 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import {button} from 'hoist/kit/blueprint';
 import {XH, hoistComponent} from 'hoist/core';
+import {fragment} from 'hoist/layout';
 import {boolCheckCol, baseCol} from 'hoist/columns/Core';
+import {nameCol} from 'hoist/admin/columns/Columns';
+import {Icon} from 'hoist/icon';
 import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
 
-import {nameCol} from 'hoist/admin/columns/Columns';
+import {configDiffer} from './differ/ConfigDiffer';
+import {ConfigDifferModel} from './differ/ConfigDifferModel';
 
 @hoistComponent()
 export class ConfigPanel extends Component {
+
+    differModel = new ConfigDifferModel({});
 
     store = new RestStore({
         url: 'rest/configAdmin',
@@ -113,7 +120,13 @@ export class ConfigPanel extends Component {
     });
 
     render() {
-        return restGrid({model: this.gridModel});
+        return fragment(
+            restGrid({
+                model: this.gridModel,
+                extraToolbarItems: this.extraToolbarItems
+            }),
+            configDiffer({model: this.differModel})
+        );
     }
 
     async loadAsync() {
@@ -141,5 +154,17 @@ export class ConfigPanel extends Component {
         if (!data) return params;
         if (data.valueType === 'pwd') return '*****';
         return params.value;
+    }
+
+    extraToolbarItems = () => {
+        return button({
+            icon: Icon.diff(),
+            text: 'Compare w/ Remote',
+            onClick: this.onDifferBtnClick
+        });
+    }
+
+    onDifferBtnClick = () => {
+        this.differModel.setIsOpen(true);
     }
 }

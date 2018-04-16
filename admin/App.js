@@ -8,9 +8,8 @@
 import {Component} from 'react';
 import {XH, elemFactory, hoistComponent} from 'hoist/core';
 import {vframe, frame} from 'hoist/layout';
-import {lockoutPanel} from 'hoist/app/impl';
-import {navbar, navbarGroup, navbarHeading, button, Intent} from 'hoist/kit/blueprint';
-import {tabContainer, themeToggleButton} from 'hoist/cmp';
+import {navbar, navbarGroup, navbarHeading, button} from 'hoist/kit/blueprint';
+import {logoutButton, lockoutPanel, tabContainer, themeToggleButton} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import './App.scss';
@@ -21,7 +20,7 @@ export class App extends Component {
         if (!XH.identityService.user.isHoistAdmin) {
             return lockoutPanel({message: 'Access to this area requires administrator permissions.'});
         }
-
+        
         return vframe({
             items: [
                 this.renderNavBar(),
@@ -55,16 +54,10 @@ export class App extends Component {
                             onClick: this.onContactClick
                         }),
                         themeToggleButton(),
-                        button({
-                            icon: Icon.logout(),
-                            intent: Intent.DANGER,
-                            hidden: true,
-                            onClick: this.onLogoutClick,
-                            omit: !this.model.enableLogout
-                        }),
+                        logoutButton({intent: 'danger'}),
                         button({
                             icon: Icon.refresh(),
-                            intent: Intent.SUCCESS,
+                            intent: 'success',
                             onClick: this.onRefreshClick
                         })
                     ]
@@ -75,10 +68,6 @@ export class App extends Component {
 
     onContactClick = () => {
         window.open('https://xh.io/contact');
-    }
-
-    onLogoutClick = () => {
-        XH.identityService.logoutAsync();
     }
 
     onRefreshClick = () => {

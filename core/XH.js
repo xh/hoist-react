@@ -7,15 +7,13 @@
 
 
 import {isPlainObject} from 'lodash';
-import {Exception} from 'hoist/exception';
+import {Exception, ExceptionHandler} from 'hoist/exception';
 
 import {hoistModel} from './HoistModel';
 
 /**
  * Top-level provider of key aliases to methods and services in Hoist.
- *
- * These are made available to application via the global XH;
- * They are also available for troubleshooting purposes via window.XH;
+ * Available to applications via import - installed as window.XH for troubleshooting purposes.
  */
 export const XH = window.XH = new class {
 
@@ -51,27 +49,26 @@ export const XH = window.XH = new class {
         this.createPropAliases(this.hoistModel, [
             'configService',
             'environmentService',
-            'exceptionHandlerService',
             'errorTrackingService',
             'feedbackService',
             'fetchService',
             'identityService',
             'localStorageService',
             'prefService',
-            'trackService',
-            'eventService'
+            'trackService'
         ]);
     }
 
     aliasMethods() {
         this.createMethodAliases(this.trackService,             ['track']);
         this.createMethodAliases(this.fetchService,             ['fetchJson']);
-        this.createMethodAliases(this.exceptionHandlerService,  ['handleException']);
         this.createMethodAliases(this.identityService,          ['getUser']);
         this.createMethodAliases(this.configService,            {getConf: 'get'});
         this.createMethodAliases(this.prefService,              {getPref: 'get', setPref: 'set'});
         this.createMethodAliases(this.environmentService,       {getEnv: 'get'});
         this.createMethodAliases(Exception,                     {exception: 'create'});
+        this.createMethodAliases(ExceptionHandler,              ['handleException']);
+
     }
 
     createMethodAliases(src, aliases) {
