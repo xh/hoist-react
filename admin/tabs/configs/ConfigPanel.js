@@ -92,6 +92,7 @@ export class ConfigPanel extends Component {
         unit: 'config',
         filterFields: ['name', 'prodValue', 'betaValue', 'stageValue', 'devValue', 'groupName', 'note'],
 
+        sortBy: 'name',
         groupBy: 'groupName',
         columns: this.filterForEnv([
             nameCol({fixedWidth: 200}),
