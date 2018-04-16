@@ -183,8 +183,7 @@ class Grid extends Component {
             prefix: icon.props.icon[0],
             iconName: icon.props.icon[1]
         });
-        const ret = fontawesome.icon(iconDef, opts).html[0];
-        return ret;
+        return fontawesome.icon(iconDef, opts).html[0];
     }
 
     //------------------------
