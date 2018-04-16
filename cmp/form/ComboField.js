@@ -45,7 +45,7 @@ export class ComboField extends HoistField {
                     value = isObj ? item.value : item,
                     label = isObj ? item.label : item;
                 if (label === null) label = '-';
-                return menuItem({key: value, text: label, onClick: itemProps.handleClick});
+                return menuItem({key: value, text: label, onClick: itemProps.handleClick, active: itemProps.modifiers.active});
             },
             inputValueRenderer: s => s,
             inputProps: {
