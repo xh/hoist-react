@@ -138,9 +138,12 @@ class Grid extends Component {
             rec = recId ? this.model.store.getById(recId, true) : null,
             selection = this.model.selection.ids;
 
-        // If the target record is not in the selection, we need to include it in the count
+        // If the target record is not in the selection, we need to select it.
+        if (rec && !selection.includes(recId)) {
+            params.node.setSelected(true);
+        }
+
         let count = selection.length;
-        if (rec && !selection.includes(recId)) count++;
 
         return menu.items.map((it) => {
             if (it === '-') return 'separator';
