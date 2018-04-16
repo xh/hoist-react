@@ -24,7 +24,6 @@ export class ConfigDifferDetail extends Component {
         return dialog({
             title: 'Detail',
             isOpen: model.record,
-            isCloseButtonShown: false,
             onClose: this.onCloseClick,
             items: [
                 this.renderDiffTable(),

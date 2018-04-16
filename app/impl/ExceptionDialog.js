@@ -33,9 +33,9 @@ export class ExceptionDialog extends Component {
 
         return fragment(
             dialog({
-                title: options.title,
                 isOpen: true,
-                isCloseButtonShown: false,
+                title: options.title,
+                isCloseButtonShown: !options.requireReload,
                 onClose: !options.requireReload ? this.onCloseClick : null,
                 icon: Icon.warning({size: 'lg'}),
                 items: [

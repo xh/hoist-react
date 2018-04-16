@@ -25,7 +25,6 @@ class ClientErrorDetail extends Component {
             title: 'Error Details',
             style: {width: 1000},
             isOpen: model.detailRecord,
-            isCloseButtonShown: false,
             onClose: this.onCloseClick,
             items: this.renderDetail(rec)
         });
