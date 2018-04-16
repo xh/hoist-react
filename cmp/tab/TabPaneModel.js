@@ -4,10 +4,10 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {computed, action, observable, autorun} from 'hoist/mobx';
-import {LastPromiseModel} from 'hoist/promise';
+import {XH} from 'hoist/core';
+import {action, autorun, computed, observable} from 'hoist/mobx';
+import {LastPromiseModel, wait} from 'hoist/promise';
 import {startCase} from 'lodash';
-import {wait} from 'hoist/promise';
 
 /**
  * Model for a TabPane, representing its content's active and load state.
@@ -26,11 +26,9 @@ export class TabPaneModel {
     }
 
     /**
-     * Construct this object.
-     *
-     * @param id, String.  Unique id.  Used for generating routes.
-     * @param name, String. Display name for the tab.
-     * @param component, React Node.  Specifies component to be displayed within tab.
+     * @param {string} id - unique ID, used for generating routes.
+     * @param {string} name - display name for the tab.
+     * @param {Component} - component (or React node) to be displayed within the tab.
      */
     constructor({
         id,
@@ -72,6 +70,7 @@ export class TabPaneModel {
     markLoaded() {
         this.lastLoaded = Date.now();
     }
+
 
     //---------------------------
     // Implementation

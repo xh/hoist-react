@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {elemFactory, hoistComponent, XH} from 'hoist/core';
 import {button, dialog} from 'hoist/kit/blueprint';
 import {filler, fragment} from 'hoist/layout';
 import {grid} from 'hoist/grid';

@@ -5,13 +5,14 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {XH} from 'hoist/core';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
 import {ToastManager} from 'hoist/cmp';
 import {UrlStore} from 'hoist/data';
 import {GridModel} from 'hoist/grid';
-
 import {baseCol} from 'hoist/columns/Core';
 import {Icon} from 'hoist/icon';
+
 import {nameCol} from '../../columns/Columns';
 
 export class EhCacheModel {
@@ -23,6 +24,7 @@ export class EhCacheModel {
 
     gridModel = new GridModel({
         store: this.store,
+        sortBy: 'name',
         columns: [
             nameCol({minWidth: 360, flex: 3}),
             baseCol({field: 'heapSize', headerName: 'Heap Size (MB)', fixedWidth: 120, align: 'right'}),
