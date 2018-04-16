@@ -10,7 +10,7 @@ import {observable, setter} from 'hoist/mobx';
 import {castArray, isEqual, remove, trimEnd} from 'lodash';
 import {pluralize} from 'hoist/utils/JsUtils';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
-import {hoistModel} from 'hoist/core';
+import {XH} from 'hoist/core';
 import {LocalStore} from 'hoist/data';
 import {GridContextMenu, GridModel} from 'hoist/grid';
 import {MessageModel, ToastManager} from 'hoist/cmp';
@@ -64,17 +64,9 @@ export class ConfigDifferModel  {
     async loadAsync() {
         try {
             const resp = await Promise.all([
-                XH.fetchJson({
-                    url: XH.baseUrl + 'configDiffAdmin/configs'
-                }).linkTo(
-                    hoistModel.appLoadModel
-                ),
-                XH.fetchJson({
-                    url: trimEnd(this.remoteHost, '/') + '/configDiffAdmin/configs'
-                }).linkTo(
-                    hoistModel.appLoadModel
-                )
-            ]);
+                XH.fetchJson({url: XH.baseUrl + 'configDiffAdmin/configs'}),
+                XH.fetchJson({url: trimEnd(this.remoteHost, '/') + '/configDiffAdmin/configs'})
+            ]).linkTo(XH.hoistModel.appLoadModel);
             this.processResponse(resp);
         } catch (e) {
             this.processFailedLoad();
@@ -174,7 +166,7 @@ export class ConfigDifferModel  {
             this.loadAsync();
             this.detailModel.closeDetail();
         }).linkTo(
-            hoistModel.appLoadModel
+            XH.hoistModel.appLoadModel
         ).catchDefault();
     }
 

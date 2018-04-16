@@ -85,7 +85,7 @@ export class LoginPanel extends Component {
             url: 'auth/login',
             params: {username, password}
         }).then(r => {
-            this.setWarning(r.success ? '' : 'Login Incorrect.');
+            this.setWarning(r.success ? '' : 'Login Incorrect');
             if (r.success) {
                 XH.hoistModel.completeInitAsync(username);
             }

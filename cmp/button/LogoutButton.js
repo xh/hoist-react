@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {XH, elemFactory, hoistComponent, hoistModel} from 'hoist/core';
+import {XH, elemFactory, hoistComponent} from 'hoist/core';
 import {Icon} from 'hoist/icon';
 import {button} from 'hoist/kit/blueprint';
 
@@ -27,7 +27,7 @@ export class LogoutButton extends Component {
     };
 
     render() {
-        if (!hoistModel.appModel.enableLogout) return null;
+        if (!XH.hoistModel.appModel.enableLogout) return null;
 
         const {icon, onClick, ...rest} = this.props;
         return button({

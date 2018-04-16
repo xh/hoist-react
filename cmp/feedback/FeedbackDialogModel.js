@@ -6,7 +6,7 @@
  */
 
 import {isEmpty} from 'lodash';
-import {XH, hoistModel} from 'hoist/core';
+import {XH} from 'hoist/core';
 import {action, observable, setter} from 'hoist/mobx';
 
 export class FeedbackDialogModel {
@@ -22,7 +22,7 @@ export class FeedbackDialogModel {
 
         XH.feedbackService.submitAsync({msg: this.feedback})
             .then(() => {this.close()})
-            .linkTo(hoistModel.appLoadModel)
+            .linkTo(XH.hoistModel.appLoadModel)
             .catchDefault();
     }
 

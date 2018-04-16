@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {elemFactory, hoistComponent, hoistModel} from 'hoist/core';
+import {XH, elemFactory, hoistComponent} from 'hoist/core';
 import {Icon} from 'hoist/icon';
 import {button, hotkeys, hotkey} from 'hoist/kit/blueprint';
 
@@ -40,7 +40,7 @@ export class ThemeToggleButton extends Component {
     // Implementation
     //---------------------------
     onThemeToggleClick = () => {
-        hoistModel.toggleTheme();
+        XH.hoistModel.toggleTheme();
     }
 }
 export const themeToggleButton = elemFactory(ThemeToggleButton);
