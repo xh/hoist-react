@@ -96,7 +96,7 @@ export class IdentityService extends BaseService {
                 username: username
             }
         }).then(() => {
-            hoistModel.reloadApp();
+            XH.hoistModel.reloadApp();
         }).catchDefault({
             message: 'Failed to impersonate'
         });
@@ -109,7 +109,7 @@ export class IdentityService extends BaseService {
         return XH.fetchJson({
             url: 'hoistImpl/endImpersonate'
         }).then(() => {
-            hoistModel.reloadApp();
+            XH.hoistModel.reloadApp();
         }).catchDefault({
             message: 'Failed to end impersonation'
         });
