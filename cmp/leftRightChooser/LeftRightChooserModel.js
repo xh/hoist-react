@@ -8,8 +8,8 @@
 import {GridModel} from 'hoist/grid';
 import {baseCol} from 'hoist/columns/Core';
 import {LocalStore} from 'hoist/data';
-import {action, autorun, computed, toJS} from 'hoist/mobx';
-import {ItemRenderer} from './ItemRenderer';
+import {action, autorun, computed} from 'hoist/mobx';
+import {ItemRenderer} from './impl/ItemRenderer';
 /**
  * A Model for managing the state of a LeftRightChooser.
  */
@@ -23,22 +23,17 @@ export class LeftRightChooserModel {
 
     _ungroupedName = null;
     _hasGrouping = false;
-    _lastSelection = null;
+    _lastSelectedSide = null;
+    _leftStore = null;
+    _rightStore = null;
+
     _fields = [
         'text', 'value', 'description', 'group',
         'side', 'locked', 'exclude'
     ];
 
-    _leftStore = new LocalStore({
-        fields: this._fields
-    });
-
-    _rightStore = new LocalStore({
-        fields: this._fields
-    });
-
     @computed get value() {
-        return toJS(this._rightStore._records);
+        return this._rightStore._records;
     }
 
     /**
@@ -57,11 +52,11 @@ export class LeftRightChooserModel {
      * @param {string} descriptionTitle - Title of the description panel
      *
      * @param {string} leftTitle - Title of the left-side list
-     * @param {boolean} leftGrouping - Enable grouping on the the left-side list
+     * @param {boolean} leftGroupingEnabled - Enable grouping on the the left-side list
      * @param {Object[]} leftSortBy - One or more sorters to apply to the left-side store
      *
      * @param {string} rightTitle - Title of the right-side list
-     * @param {boolean} rightGrouping - Enable grouping on the the right-side list
+     * @param {boolean} rightGroupingEnabled - Enable grouping on the the right-side list
      * @param {Object[]} rightSortBy - One or more sorters to apply to the right-side store
      */
     constructor({
@@ -69,91 +64,99 @@ export class LeftRightChooserModel {
         ungroupedName = 'Ungrouped',
         descriptionTitle = 'Description',
         leftTitle = 'Available',
-        leftGrouping = true,
+        leftGroupingEnabled = true,
         leftSortBy = [],
         rightTitle = 'Selected',
-        rightGrouping = true,
+        rightGroupingEnabled = true,
         rightSortBy = []
     }) {
-        const {_leftStore: leftStore, _rightStore: rightStore} = this;
-
-        this.stores = [leftStore, rightStore];
         this.descriptionTitle = descriptionTitle;
-
         this._ungroupedName = ungroupedName;
-
-        leftStore.setFilter(rec => rec.side === 'left');
-        rightStore.setFilter(rec => rec.side === 'right');
 
         this.loadStores(data);
 
         this.leftModel = new GridModel({
-            store: leftStore,
+            store: this._leftStore,
             sortBy: leftSortBy,
-            groupBy: (leftGrouping && this._hasGrouping) ? 'group' : null,
+            groupBy: (leftGroupingEnabled && this._hasGrouping) ? 'group' : null,
             columns: [
                 baseCol({headerName: leftTitle, resizable: false, field: 'text', cellRendererFramework: ItemRenderer}),
-                baseCol({headerName: 'Group', resizable: false, field: 'group', hide: true})
+                baseCol({headerName: 'Group', field: 'group', hide: true})
             ]
         });
 
         this.rightModel = new GridModel({
-            store: rightStore,
+            store: this._rightStore,
             sortBy: rightSortBy,
-            groupBy: (rightGrouping && this._hasGrouping) ? 'group' : null,
+            groupBy: (rightGroupingEnabled && this._hasGrouping) ? 'group' : null,
             columns: [
                 baseCol({headerName: rightTitle, resizable: false, field: 'text', cellRendererFramework: ItemRenderer}),
-                baseCol({headerName: 'Group', resizable: false, field: 'group', hide: true})
+                baseCol({headerName: 'Group', field: 'group', hide: true})
             ]
         });
 
-        autorun(() => this.updateSelection());
+        autorun(() => this.syncSelection());
     }
 
     @action
     loadStores(data) {
+        this._leftStore = new LocalStore({
+            fields: this._fields,
+            filter: rec => rec.side === 'left'
+        });
+
+        this._rightStore = new LocalStore({
+            fields: this._fields,
+            filter: rec => rec.side === 'right'
+        });
+
+        this.stores = [this._leftStore, this._rightStore];
+
         if (!data.length) return;
 
-        const normalizedData = data.map(it => {
-            if (it.group) {
+        const normalizedData = data.map(raw => {
+            if (raw.group) {
                 this._hasGrouping = true;
             } else {
-                it.group = this._ungroupedName;
+                raw.group = this._ungroupedName;
             }
 
-            if (it.description && !this.descriptionEnabled) {
+            if (raw.description && !this.descriptionEnabled) {
                 this.descriptionEnabled = true;
             }
 
-            if (!it.side) it.side = 'left';
+            raw.side = raw.side || 'left';
 
-            return it;
+            return raw;
         });
 
         this.stores.forEach(store => store.loadData(normalizedData.filter(rec => !rec.exclude)));
     }
 
-    moveRecord = (side) => {
+    moveSelected(side) {
         const currentSide = side === 'left' ? 'right' : 'left',
-            selected = this[`${currentSide}Model`].selection.singleRecord;
+            selected = this[`${currentSide}Model`].selection.records;
 
-        if (!selected || selected.locked) return;
+        if (!selected.length) return;
 
-        selected.side = side;
+        selected.forEach(rec => {
+            if (rec.locked) return null;
+            rec.side = side;
+        });
 
         this.stores.forEach(store => store.updateRecordInternal(selected));
     }
 
-    updateSelection() {
+    syncSelection() {
         const leftSel = this.leftModel.selection.singleRecord,
             rightSel = this.rightModel.selection.singleRecord,
-            currentSel = this._lastSelection || {};
+            currentSel = this._lastSelectedSide;
 
-        if (leftSel && currentSel.id !== leftSel.id) {
-            this._lastSelection = leftSel;
+        if (leftSel && currentSel !== leftSel.side) {
+            this._lastSelectedSide = 'left';
             this.rightModel.selection.select([]);
-        } else if (rightSel && currentSel.id !== rightSel.id) {
-            this._lastSelection = rightSel;
+        } else if (rightSel && currentSel !== rightSel.side) {
+            this._lastSelectedSide = 'right';
             this.leftModel.selection.select([]);
         }
     }

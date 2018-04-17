@@ -6,11 +6,11 @@
  */
 
 import {Component} from 'react';
-import {hoistComponent, elemFactory} from 'hoist/core';
-import {callout} from 'hoist/kit/blueprint';
+import {hoistComponent, elemFactory} from 'hoist/core/index';
+import {callout} from 'hoist/kit/blueprint/index';
 
 @hoistComponent()
-class LeftRightChooserDescription extends Component {
+class Description extends Component {
     render() {
         const model = this.model,
             {descriptionEnabled, descriptionTitle, leftModel, rightModel} = model,
@@ -29,4 +29,4 @@ class LeftRightChooserDescription extends Component {
     }
 }
 
-export const leftRightChooserDescription = elemFactory(LeftRightChooserDescription);
+export const description = elemFactory(Description);

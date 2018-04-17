@@ -10,8 +10,8 @@ import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {vframe, hframe} from 'hoist/layout';
 import {grid} from 'hoist/grid';
-import {leftRightChooserDescription} from  './LeftRightChooserDescription';
-import {leftRightChooserToolbar} from './LeftRightChooserToolbar';
+import {description} from './impl/Description';
+import {chooserToolbar} from './impl/Toolbar';
 import './LeftRightChooser.scss';
 
 /**
@@ -24,7 +24,8 @@ import './LeftRightChooser.scss';
 class LeftRightChooser extends Component {
 
     render() {
-        const {leftModel, rightModel} = this.model;
+        const {model} = this,
+            {leftModel, rightModel} = model;
 
         return vframe({
             cls: 'xh-leftRightChooser',
@@ -33,19 +34,23 @@ class LeftRightChooser extends Component {
                     cls: 'gridContainer',
                     items: [
                         grid({
-                            model: leftModel
+                            model: leftModel,
+                            gridOptions: {
+                                rowSelection: 'multiple',
+                                rowDeselection: true
+                            }
                         }),
-                        leftRightChooserToolbar({
-                            model: this.model
-                        }),
+                        chooserToolbar({model}),
                         grid({
-                            model: rightModel
+                            model: rightModel,
+                            gridOptions: {
+                                rowSelection: 'multiple',
+                                rowDeselection: true
+                            }
                         })
                     ]
                 }),
-                leftRightChooserDescription({
-                    model: this.model
-                })
+                description({model})
             ]
         });
     }

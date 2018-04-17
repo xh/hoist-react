@@ -1,6 +1,6 @@
 import {Component} from 'react';
-import {div} from 'hoist/layout';
-import {Icon} from 'hoist/icon';
+import {div} from 'hoist/layout/index';
+import {Icon} from 'hoist/icon/index';
 
 export class ItemRenderer extends Component {
 
