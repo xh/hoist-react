@@ -133,6 +133,11 @@ export class HoistModel {
         this.aboutIsOpen = true;
     }
 
+    /** Hide the About Dialog for this application. */
+    @action
+    hideAbout() {
+        this.aboutIsOpen = false;
+    }
 
     //---------------------------------
     // Framework Methods

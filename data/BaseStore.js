@@ -4,16 +4,14 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
-
 import {isString} from 'lodash';
+import {XH} from 'hoist/core';
+
 import {Field} from './Field';
 
 /**
  * A managed observable set of Records.
- *
- * This class is intended to be abstract.  See LocalStore or UrlStore for
- * concrete implementations.
+ * @abstract - see LocalStore or UrlStore for concrete implementations.
  */
 export class BaseStore {
 
@@ -39,15 +37,15 @@ export class BaseStore {
     setFilter(filterFn) {}
 
     /**
-     * Get a record by id.  Return null if no record found.
+     * Get a record by ID. Return null if no record found.
      *
-     * @param {integer} id
+     * @param {number} id
      * @param {boolean} filteredOnly - set to true to skip non-filtered records
      */
     getById(id, filteredOnly) {}
 
     /**
-     * @param {Array} fields - list of Fields or valid configuration for Fields
+     * @param {(string[]|Object[])} fields - list of Fields or valid configuration for Fields
      *      (A simple string representing the field name is sufficient for an entry).
      */
     constructor({fields}) {
@@ -68,12 +66,10 @@ export class BaseStore {
     /**
      * Create a record from rawData presented.
      *
-     * This method will apply basic validation and conversion
-     * (e.g. 'date' will convert from UTC time to a JS Date object).
-     * An exception will be thrown if the validation or conversion fails.
+     * Can apply basic validation and conversion (e.g. 'date' will convert from UTC time to
+     * a JS Date object). An exception will be thrown if the validation or conversion fails.
      *
-     *  @param {Object} raw - json object containing raw data, and 'id'
-     *      property
+     *  @param {Object} raw - json object containing raw data and 'id' property
      */
     createRecord(raw) {
         const ret = {id: raw.id, raw};

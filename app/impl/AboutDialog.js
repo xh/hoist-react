@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {XH, hoistComponent, hoistModel, elemFactory} from 'hoist/core';
+import {XH, hoistComponent, elemFactory} from 'hoist/core';
 import {frame, table, tbody, tr, th, td, filler} from 'hoist/layout';
 import {toolbar} from 'hoist/cmp/toolbar';
 import {Icon} from 'hoist/icon';
@@ -76,7 +76,7 @@ export class AboutDialog extends Component {
     }
 
     onClose = () => {
-        hoistModel.setShowAbout(false);
+        XH.hoistModel.hideAbout();
     }
 }
 export const aboutDialog = elemFactory(AboutDialog);

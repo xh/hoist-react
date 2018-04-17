@@ -4,9 +4,9 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
 import moment from 'moment';
 import {forOwn} from 'lodash';
+import {XH} from 'hoist/core';
 import {observable, setter} from 'hoist/mobx';
 import {ChartModel} from 'hoist/highcharts';
 import {fmtDate} from 'hoist/format';

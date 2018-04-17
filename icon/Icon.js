@@ -72,6 +72,7 @@ export const Icon = {
     mail(p)          {return fa(p, 'envelope')},
     moon(p)          {return fa(p, 'moon')},
     office(p)        {return fa(p, 'building')},
+    openExternal(p)  {return fa(p, 'external-link')},
     portfolio(p)     {return fa(p, 'briefcase')},
     refresh(p)       {return fa(p, 'sync')},
     search(p)        {return fa(p, 'search')},

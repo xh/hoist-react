@@ -8,7 +8,7 @@
 import {Children, Component} from 'react';
 import {ContextMenuTarget} from 'hoist/kit/blueprint';
 import {observer, observable, setter} from 'hoist/mobx';
-import {XH, elemFactory, hoistModel, LoadState} from 'hoist/core';
+import {XH, elemFactory, LoadState} from 'hoist/core';
 import {contextMenu, loadMask} from 'hoist/cmp';
 import {frame, vframe, viewport, fragment} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
@@ -40,7 +40,7 @@ export class AppContainer extends Component {
 
     constructor() {
         super();
-        hoistModel.initAsync();
+        XH.hoistModel.initAsync();
     }
 
     render() {
@@ -51,7 +51,7 @@ export class AppContainer extends Component {
     }
 
     renderContent() {
-        const hoistModel = XH.hoistModel;
+        const {hoistModel} = XH;
 
         if (this.caughtException) return null;
 
@@ -79,6 +79,7 @@ export class AppContainer extends Component {
     }
 
     renderContextMenu() {
+        const {hoistModel} = XH;
         return contextMenu({
             menuItems: [
                 {

@@ -61,18 +61,17 @@ export class JsonField extends HoistField {
             theme: this.darkTheme ? 'dracula' : 'default',
             mode: 'application/json',
             lineWrapping: this.props.lineWrapping || false,
-            lineNumbers: true,
+            lineNumbers: false,
             autoCloseBrackets: true,
             extraKeys: {
                 'Cmd-P': this.onFormatKey,
                 'Ctrl-P': this.onFormatKey
             },
-            foldGutter: true,
+            foldGutter: false,
             scrollbarStyle: 'simple',
             gutters: [
-                'CodeMirror-linenumbers',
-                'CodeMirror-foldgutter',
-                'CodeMirror-lint-markers'
+                'CodeMirror-linenumbers'
+                // 'CodeMirror-foldgutter'
             ],
             readOnly: this.props.disabled,
             lint: true

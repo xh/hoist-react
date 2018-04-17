@@ -89,7 +89,6 @@ export const dismissButton = hoistComponentFactory(
                     onClick: this.onReloadClick
                 }) :
                 button({
-                    icon: Icon.close(),
                     text: 'Close',
                     onClick: this.onCloseClick
                 });

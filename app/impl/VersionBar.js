@@ -9,7 +9,6 @@ import {Component} from 'react';
 import {XH, elemFactory, hoistComponent} from 'hoist/core';
 import {box} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
-import {hoistModel} from 'hoist/core';
 import './VersionBar.scss';
 
 @hoistComponent()
@@ -37,7 +36,7 @@ export class VersionBar extends Component {
     }
 
     showAbout() {
-        hoistModel.setShowAbout(true);
+        XH.hoistModel.showAbout();
     }
 }
 export const versionBar = elemFactory(VersionBar);

@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {BaseService} from './BaseService';
-import {XH, hoistModel} from 'hoist/core';
+import {XH} from 'hoist/core';
 
 /**
  * Provides basic information related to the authenticated user, including application roles.
@@ -68,7 +68,7 @@ export class IdentityService extends BaseService {
     async logoutAsync() {
         return XH
             .fetchJson({url: 'hoistImpl/logout'})
-            .then(() => hoistModel.reloadApp())
+            .then(() => XH.hoistModel.reloadApp())
             .catchDefault();
     }
 
@@ -96,7 +96,7 @@ export class IdentityService extends BaseService {
                 username: username
             }
         }).then(() => {
-            hoistModel.reloadApp();
+            XH.hoistModel.reloadApp();
         }).catchDefault({
             message: 'Failed to impersonate'
         });
@@ -109,7 +109,7 @@ export class IdentityService extends BaseService {
         return XH.fetchJson({
             url: 'hoistImpl/endImpersonate'
         }).then(() => {
-            hoistModel.reloadApp();
+            XH.hoistModel.reloadApp();
         }).catchDefault({
             message: 'Failed to end impersonation'
         });

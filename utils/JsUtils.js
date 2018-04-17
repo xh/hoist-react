@@ -4,9 +4,10 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
+import {XH} from 'hoist/core';
 import {mixin} from 'lodash';
 import _inflection from 'lodash-inflection';
+
 mixin(_inflection);
 
 export function trimToDepth(obj, depth) {
