@@ -11,7 +11,6 @@ import {ToastManager} from 'hoist/cmp';
 import {action, observable, computed} from 'hoist/mobx';
 import {min} from 'lodash';
 import {Timer} from 'hoist/utils/Timer';
-import {Icon} from 'hoist/icon';
 
 export class MonitorResultsModel {
     @observable.ref results = [];
@@ -71,7 +70,7 @@ export class MonitorResultsModel {
             .fetchJson({url: 'monitorAdmin/forceRunAllMonitors'})
             .then(
                 ToastManager.show({
-                    // message: 'Request received. Results will be generated shortly.'
+                    message: 'Request received. Results will be generated shortly.'
                 })
             )
             .catchDefault();
