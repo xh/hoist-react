@@ -14,8 +14,8 @@ export class GridContextMenuItem {
     icon;
     action;
     items;
-    enableFn;
-    hideFn;
+    disabled;
+    hidden;
     prepareFn;
     recordsRequired;
 
@@ -25,15 +25,11 @@ export class GridContextMenuItem {
      * @param {Object[]} items - child menu items.
      * @param {function} action - function of the form (item, record, selection) => {}
      *          Executed when the user clicks the menuitem.
-     * @param {function} enableFn - function of the form (item, record, selection) => {}
-     **         The enableFn is a callback that is triggered before each time the menuitem is shown.
-     *          It should return a boolean for whether or not to enable the menuitem.*
-     * @param {function} hideFn - function of the form (item, record, selection) => {}*
-     *          The hideFn is a callback that is triggered before each time the menuitem is shown.
-     *          It should return a boolean for whether or not to hide the menuitem.*
-     * @param {function} prepareFn - function of the form (item, record, selection) => {}*
+     * @param {boolean} disabled - true to disable this item.
+     * @param {boolean} hidden - true to hide this item.
+     * @param {function} prepareFn - function of the form (item, record, selection) => {}
      *          The prepareFn is a callback that is triggered before each time the menuitem is shown.
-     *          It can be used to modify the menuitem based on the record / selection.*
+     *          It can be used to modify the menuitem based on the record / selection.
      * @param {(number|boolean)} recordsRequired - how many records must be 'active'
      *          (selected and / or clicked upon) for the menuitem to be enabled.
      *              int: specifies exactly n number of records. Defaults to 1 for single record actions.
@@ -46,8 +42,8 @@ export class GridContextMenuItem {
         icon = null,
         action = null,
         items = null,
-        enableFn = null,
-        hideFn = null,
+        disabled = false,
+        hidden = false,
         prepareFn = null,
         recordsRequired = false
     }) {
@@ -55,8 +51,8 @@ export class GridContextMenuItem {
         this.icon = icon;
         this.action = action;
         this.items = items;
-        this.enableFn = enableFn;
-        this.hideFn = hideFn;
+        this.disabled = disabled;
+        this.hidden = hidden;
         this.prepareFn = prepareFn;
         this.recordsRequired = recordsRequired;
     }

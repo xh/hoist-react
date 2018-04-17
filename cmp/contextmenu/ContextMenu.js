@@ -39,10 +39,24 @@ export class ContextMenu extends Component {
     parseMenuItems(items) {
         items = items.map(it => {
             if (it instanceof ContextMenuItem || '-') return it;
-            return new ContextMenuItem(it);
+            const ret = new ContextMenuItem(it);
+            if (ret.prepareFn) ret.prepareFn(it);
+            return ret;
         });
 
-        return items.map(item => {
+        return items.filter(it => {
+            return !it.hidden;
+        }).filter((it, idx, arr) => {
+            if (it === '-') {
+                // Remove starting / ending separators
+                if (idx == 0 || idx == (arr.length - 1)) return false;
+
+                // Remove consecutive separators
+                const prev = idx > 0 ? arr[idx - 1] : null;
+                if (prev === '-') return false;
+            }
+            return true;
+        }).map(item => {
             if (item === '-') return menuDivider();
             if (isReactElement(item))  return item;
 

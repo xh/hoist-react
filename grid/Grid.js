@@ -155,11 +155,16 @@ class Grid extends Component {
             }
         }
         if (!rec) selection.select([]);
-
         const count = selection.count;
-        return menu.items.filter(it => {
-            // Remove menuitems that are hidden
-            return it.hideFn ? !it.hideFn(it, rec, selection) : true;
+
+        // Prepare each item
+        const items = menu.items;
+        items.forEach(it => {
+            if (it.prepareFn) it.prepareFn(it, rec, selection);
+        });
+
+        return items.filter(it => {
+            return !it.hidden;
         }).filter((it, idx, arr) => {
             if (it === '-') {
                 // Remove starting / ending separators
@@ -178,12 +183,6 @@ class Grid extends Component {
                 requiredRecordsNotMet = (isBoolean(required) && required && count === 0) ||
                                         (isNumber(required) && count !== required);
 
-            // Potentially disable
-            const enabled = !it.enableFn || it.enableFn(it, rec, selection);
-
-            // Prepare
-            if (it.prepareFn) it.prepareFn(it, rec, selection);
-
             // Convert React FontAwesomeIcon to SVG markup for display in ag-grid's context menu.
             let icon = it.icon;
             if (isValidElement(icon)) {
@@ -197,7 +196,7 @@ class Grid extends Component {
             return {
                 name: it.text,
                 icon,
-                disabled: (it.disabled || requiredRecordsNotMet || !enabled),
+                disabled: (it.disabled || requiredRecordsNotMet),
                 action: () => it.action(it, rec, selection)
             };
         });
