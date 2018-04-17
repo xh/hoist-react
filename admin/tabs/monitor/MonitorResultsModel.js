@@ -70,11 +70,8 @@ export class MonitorResultsModel {
         return XH
             .fetchJson({url: 'monitorAdmin/forceRunAllMonitors'})
             .then(
-                ToastManager.getToaster().show({
-                    intent: 'success',
-                    message: 'Request received. Results will be generated shortly.',
-                    icon: Icon.check({style: {alignSelf: 'center', marginLeft: '5px'}}),
-                    timeout: 3 * SECONDS
+                ToastManager.show({
+                    // message: 'Request received. Results will be generated shortly.'
                 })
             )
             .catchDefault();

@@ -6,6 +6,8 @@
  */
 
 import {Position, Toaster} from 'hoist/kit/blueprint';
+import {Icon} from 'hoist/icon';
+import {SECONDS} from 'hoist/utils/DateTimeUtils';
 
 export const ToastManager = {
 
@@ -26,5 +28,26 @@ export const ToastManager = {
         if (position in toasters) return toasters[position];
 
         return toasters[position] = Toaster.create({position});
+    },
+
+    /**
+     * Convenience method to show a toast.
+     * The defaults can be overridden.
+     *
+     * @param message string. The message to show in the toast.
+     */
+    show({
+        message,
+        intent = 'success',
+        icon = Icon.check({style: {alignSelf: 'center', marginLeft: '5px'}}),
+        timeout = 3 * SECONDS,
+        position = Position.BOTTOM_RIGHT} = {}
+    ) {
+        this.getToaster(position).show({
+            intent: intent,
+            message: message,
+            icon: icon,
+            timeout: timeout
+        });
     }
 };
