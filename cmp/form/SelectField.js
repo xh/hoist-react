@@ -29,7 +29,7 @@ export class SelectField extends HoistField {
     delegateProps = ['className', 'style', 'disabled'];
 
     render() {
-        const {style, width, options, placeholder, disabled} = this.props;
+        const {style, width, options, placeholder, disabled, model} = this.props;
 
         const value = this.renderValue;
 
@@ -41,8 +41,13 @@ export class SelectField extends HoistField {
                 let isObj = isObject(item) && item.value,
                     value = isObj ? item.value : item,
                     label = isObj ? item.label : item;
-                if (label === null) label = '-';
-                return menuItem({key: value, text: label.toString(), onClick: itemProps.handleClick});
+                if (item == model.NULL_VALUE) label = '-';
+                return menuItem({
+                    key: value,
+                    text: label.toString(),
+                    onClick: itemProps.handleClick,
+                    active: itemProps.modifiers.active
+                });
             },
             filterable: false,
             item: button({

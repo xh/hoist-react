@@ -102,14 +102,14 @@ export class RestControl extends Component {
 
         let options;
         if (lookup) {
-            options = [null, ...lookup];
+            options = [...lookup];
         } else if (type == 'bool') {
-            options = [null, true, false];
+            options = [true, false];
         } else {
-            options = [null];
+            options = [];
         }
 
-        if (!field.nullable) remove(options, (it) => isEmpty(it));
+        if (!field.required) options.unshift(model.NULL_VALUE);
 
         return selectField({
             model,
