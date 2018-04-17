@@ -14,27 +14,12 @@ export const ToastManager = {
     _toasters: {},
 
     /**
-     * Get a toaster instance.  If the instance doesn't exist, it will be made.
-     * This method lets you get/create toasters by their Position enum values.
-     * Other toaster options cannot be set via this method.
-
-     * If non-default values are needed for a toaster, a different method must be used.
-     *
-     * @param position a Blueprintjs Position enum. Optional.
-     */
-    getToaster(position = Position.BOTTOM_RIGHT) {
-        const toasters = this._toasters;
-
-        if (position in toasters) return toasters[position];
-
-        return toasters[position] = Toaster.create({position});
-    },
-
-    /**
      * Convenience method to show a toast.
      * The defaults can be overridden.
      *
-     * @param message string. The message to show in the toast.
+     * @param {string} message - the message to show in the toast.
+     *
+     * Returns the unique key of the toast shown.
      */
     show({
         message,
@@ -44,11 +29,28 @@ export const ToastManager = {
         position = Position.BOTTOM_RIGHT
     } = {}
     ) {
-        this.getToaster(position).show({
+        return this.getToaster(position).show({
             intent: intent,
             message: message,
             icon: icon,
             timeout: timeout
         });
+    },
+
+    /**
+     * Get a toaster instance.  If the instance doesn't exist, it will be made.
+     * This method lets you get/create toasters by their Position enum values.
+     * Other toaster options cannot be set via this method.
+
+     * If non-default values are needed for a toaster, a different method must be used.
+     *
+     * @param {string} position - see Blueprintjs Position enum for allowed values. Optional.
+     */
+    getToaster(position = Position.BOTTOM_RIGHT) {
+        const toasters = this._toasters;
+
+        if (position in toasters) return toasters[position];
+
+        return toasters[position] = Toaster.create({position});
     }
 };
