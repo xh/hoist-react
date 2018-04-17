@@ -130,7 +130,9 @@ export class LeftRightChooserModel {
             return raw;
         });
 
-        this.stores.forEach(store => store.loadData(normalizedData.filter(rec => !rec.exclude)));
+        const filteredData = normalizedData.filter(rec => !rec.exclude);
+
+        this.forEachStore(store => store.loadData(filteredData));
     }
 
     moveSelected(side) {
@@ -144,7 +146,7 @@ export class LeftRightChooserModel {
             rec.side = side;
         });
 
-        this.stores.forEach(store => store.updateRecordInternal(selected));
+        this.forEachStore(store => store.updateRecordInternal(selected));
     }
 
     syncSelection() {
@@ -159,5 +161,9 @@ export class LeftRightChooserModel {
             this._lastSelectedSide = 'right';
             this.leftModel.selection.select([]);
         }
+    }
+
+    forEachStore(fn) {
+        this.stores.forEach(fn);
     }
 }
