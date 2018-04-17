@@ -7,6 +7,7 @@
 
 import {Component, isValidElement} from 'react';
 import fontawesome from '@fortawesome/fontawesome';
+import {PropTypes as PT} from 'prop-types';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
 import {defaults, xor, isString, isNumber, isBoolean, isEqual} from 'lodash';
@@ -16,14 +17,26 @@ import {navigateSelection, agGridReact} from './ag-grid';
 
 /**
  * Grid Component
+ *
+ * This is the main view component for a Hoist Grid.  It is a highly managed
+ * wrapper around AG Grid, and is the main display component for GridModel.
+ *
+ * Applications should typically create and manipulate a GridModel for most purposes,
+ * including specifying columns and rows, sorting and grouping, and interacting with
+ * the selection. Use this class to control the AG Grid UI options and specific
+ * behavior of the grid.
  */
 @hoistComponent()
 class Grid extends Component {
-
-
+    
     _scrollOnSelect = true;
 
-    static gridDefaultOptions = {
+    static propTypes = {
+        /** Options for AG Grid - See DEFAULT_GRID_OPTIONS for hoist defined defaults */
+        gridOptions: PT.object
+    };
+
+    static DEFAULT_GRID_OPTIONS = {
         toolPanelSuppressSideButtons: true,
         enableSorting: true,
         enableColResize: true,
@@ -41,9 +54,11 @@ class Grid extends Component {
         super(props);
         this.gridOptions = defaults(
             props.gridOptions || {},
-            Grid.gridDefaultOptions,
-            {navigateToNextCell: this.onNavigateToNextCell},
-            {defaultGroupSortComparator: this.sortByGroup}
+            Grid.DEFAULT_GRID_OPTIONS,
+            {
+                navigateToNextCell: this.onNavigateToNextCell,
+                defaultGroupSortComparator: this.sortByGroup
+            }
         );
         this.addAutoRun(() => this.syncSelection());
         this.addAutoRun(() => this.syncSort());
@@ -134,7 +149,7 @@ class Grid extends Component {
         if (rec && !(recId in selectedIds)) {
             try {
                 this._scrollOnSelect = false;
-                selection.select(rec);
+                selection.select(rec, false);
             } finally {
                 this._scrollOnSelect = true;
             }
