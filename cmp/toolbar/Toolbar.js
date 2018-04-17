@@ -4,7 +4,6 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
 import {Component} from 'react';
 import {button} from 'hoist/kit/blueprint';
 import {hoistComponent, elemFactory} from 'hoist/core';
@@ -13,18 +12,20 @@ import {hbox} from 'hoist/layout';
 import './Toolbar.scss';
 
 /**
- * A horizontal toolbar with built-in styling and padding
+ * A horizontal toolbar with built-in styling and padding.
+ * Child items provided as raw configs will be created as buttons by default.
  */
 @hoistComponent()
 class Toolbar extends Component {
 
     render() {
+        const {className, ...rest} = this.props;
         return hbox({
-            cls: 'xh-toolbar',
+            cls: className ? `${className} xh-toolbar` : 'xh-toolbar',
             itemSpec: {
                 factory: button
             },
-            ...this.props
+            ...rest
         });
     }
 

@@ -55,8 +55,8 @@ export class EnvironmentService extends BaseService {
             shouldUpdate = data.shouldUpdate,
             appVersion = data.appVersion;
 
-        if (shouldUpdate && appVersion !== this.get('appVersion')) {
-            console.log('New App Version Available.');
+        if (shouldUpdate && appVersion !== XH.appVersion) {
+            XH.hoistModel.showUpdateBar(data.appVersion);
         }
     }
 }
