@@ -8,8 +8,7 @@ import {Component} from 'react';
 import {hoistComponent} from 'hoist/core';
 import {baseCol, boolCheckCol} from 'hoist/columns/Core';
 import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
-
-import {nameFlexCol} from '../../columns/Columns';
+import {nameFlexCol} from 'hoist/admin/columns/Columns';
 
 @hoistComponent()
 export class MonitorEditorPanel extends Component {
@@ -43,7 +42,8 @@ export class MonitorEditorPanel extends Component {
                 type: 'int'
             },
             {
-                name: 'params'
+                name: 'params',
+                type: 'json'
             },
             {
                 name: 'notes'
