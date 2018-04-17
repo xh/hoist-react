@@ -54,7 +54,7 @@ export class LogViewerModel {
             fileStore = files.store;
         await fileStore.loadAsync();
         if (fileSelection.isEmpty) {
-            const latestAppLog = find(fileStore.records, ['filename', `${XH.appName.toLowerCase()}.log`]);
+            const latestAppLog = find(fileStore.records, ['filename', `${XH.appCode}.log`]);
             if (latestAppLog) {
                 fileSelection.select(latestAppLog);
             }

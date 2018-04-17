@@ -7,6 +7,7 @@
 
 import {Component, isValidElement} from 'react';
 import fontawesome from '@fortawesome/fontawesome';
+import {PropTypes as PT} from 'prop-types';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
 import {defaults, xor, isString, isNumber, isBoolean, isEqual} from 'lodash';
@@ -16,14 +17,26 @@ import {navigateSelection, agGridReact} from './ag-grid';
 
 /**
  * Grid Component
+ *
+ * This is the main view component for a Hoist Grid.  It is a highly managed
+ * wrapper around AG Grid, and is the main display component for GridModel.
+ *
+ * Applications should typically create and manipulate a GridModel for most purposes,
+ * including specifying columns and rows, sorting and grouping, and interacting with
+ * the selection. Use this class to control the AG Grid UI options and specific
+ * behavior of the grid.
  */
 @hoistComponent()
 class Grid extends Component {
 
-
     _scrollOnSelect = true;
 
-    static gridDefaultOptions = {
+    static propTypes = {
+        /** Options for AG Grid - See DEFAULT_GRID_OPTIONS for hoist defined defaults */
+        gridOptions: PT.object
+    };
+
+    static DEFAULT_GRID_OPTIONS = {
         toolPanelSuppressSideButtons: true,
         enableSorting: true,
         enableColResize: true,
@@ -41,9 +54,11 @@ class Grid extends Component {
         super(props);
         this.gridOptions = defaults(
             props.gridOptions || {},
-            Grid.gridDefaultOptions,
-            {navigateToNextCell: this.onNavigateToNextCell},
-            {defaultGroupSortComparator: this.sortByGroup}
+            Grid.DEFAULT_GRID_OPTIONS,
+            {
+                navigateToNextCell: this.onNavigateToNextCell,
+                defaultGroupSortComparator: this.sortByGroup
+            }
         );
         this.addAutoRun(() => this.syncSelection());
         this.addAutoRun(() => this.syncSort());
@@ -134,27 +149,39 @@ class Grid extends Component {
         if (rec && !(recId in selectedIds)) {
             try {
                 this._scrollOnSelect = false;
-                selection.select(rec);
+                selection.select(rec, false);
             } finally {
                 this._scrollOnSelect = true;
             }
         }
         if (!rec) selection.select([]);
-      
         const count = selection.count;
-        return menu.items.map(it => {
+
+        // Prepare each item
+        const items = menu.items;
+        items.forEach(it => {
+            if (it.prepareFn) it.prepareFn(it, rec, selection);
+        });
+
+        return items.filter(it => {
+            return !it.hidden;
+        }).filter((it, idx, arr) => {
+            if (it === '-') {
+                // Remove starting / ending separators
+                if (idx == 0 || idx == (arr.length - 1)) return false;
+
+                // Remove consecutive separators
+                const prev = idx > 0 ? arr[idx - 1] : null;
+                if (prev === '-') return false;
+            }
+            return true;
+        }).map(it => {
             if (it === '-') return 'separator';
             if (isString(it)) return it;
 
             const required = it.recordsRequired,
                 requiredRecordsNotMet = (isBoolean(required) && required && count === 0) ||
                                         (isNumber(required) && count !== required);
-
-            // Potentially disable
-            const enabled = !it.enableFn || it.enableFn(it, rec, selection);
-
-            // Prepare
-            if (it.prepareFn) it.prepareFn(it, rec, selection);
 
             // Convert React FontAwesomeIcon to SVG markup for display in ag-grid's context menu.
             let icon = it.icon;
@@ -169,7 +196,7 @@ class Grid extends Component {
             return {
                 name: it.text,
                 icon,
-                disabled: (it.disabled || requiredRecordsNotMet || !enabled),
+                disabled: (it.disabled || requiredRecordsNotMet),
                 action: () => it.action(it, rec, selection)
             };
         });

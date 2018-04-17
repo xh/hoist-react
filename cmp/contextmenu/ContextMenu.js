@@ -6,29 +6,32 @@
  */
 
 import {Component} from 'react';
+import {PropTypes as PT} from 'prop-types';
 import {elemFactory} from 'hoist/core';
 import {start} from 'hoist/promise';
 import {menuDivider, menuItem, menu} from 'hoist/kit/blueprint';
 import {isReactElement} from 'hoist/utils/ReactUtils';
-
 
 import {ContextMenuItem} from './ContextMenuItem';
 
 /**
  * ContextMenu
  *
- * This object can be used to specify context menus on any HoistComponent.
- * To add a ContextMenu to a component, specify a renderContextMenu() method on the component.
+ * To add a Context Menu to a component, specify a renderContextMenu() method on the
+ * component that returns this object.
  *
  * See GridContextMenu to specify a context menu on a grid.  That API will receive grid specific
  * information about rows and cells, and will provide grid specific built-in menu items.
  */
 export class ContextMenu extends Component {
 
-    /**
-     * This element expects the following properties
-     * @props items, Array of ContextMenuItems, configs to create them, React Elements,  or '-' to represent a divider
-     */
+    static propTypes = {
+        /**
+         *  Array of ContextMenuItems, configs to create them, Elements, or '-' (divider).
+         */
+        menuItems: PT.arrayOf(PT.oneOf([PT.object, PT.string, PT.element]))
+    }
+
     render() {
         return menu(this.parseMenuItems(this.props.menuItems));
     }
@@ -37,12 +40,28 @@ export class ContextMenu extends Component {
     // Implementation
     //---------------------------
     parseMenuItems(items) {
-        items = items.map(it => {
-            if (it instanceof ContextMenuItem || '-') return it;
-            return new ContextMenuItem(it);
+        items = items.map(item => {
+            if (item === '-') return item;
+            if (!(item instanceof ContextMenuItem)) {
+                item = new ContextMenuItem(item);
+            }
+            if (item.prepareFn) item.prepareFn(item);
+            return item;
         });
 
-        return items.map(item => {
+        return items.filter(it => {
+            return !it.hidden;
+        }).filter((it, idx, arr) => {
+            if (it === '-') {
+                // Remove starting / ending separators
+                if (idx == 0 || idx == (arr.length - 1)) return false;
+
+                // Remove consecutive separators
+                const prev = idx > 0 ? arr[idx - 1] : null;
+                if (prev === '-') return false;
+            }
+            return true;
+        }).map(item => {
             if (item === '-') return menuDivider();
             if (isReactElement(item))  return item;
 
