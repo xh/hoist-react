@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {XH, elemFactory, hoistComponent} from 'hoist/core';
 import {vframe, frame} from 'hoist/layout';
 import {navbar, navbarGroup, navbarHeading, button} from 'hoist/kit/blueprint';
-import {logoutButton, lockoutPanel, tabContainer, themeToggleButton} from 'hoist/cmp';
+import {logoutButton, lockoutPanel, tabContainer, themeToggleButton, refreshButton} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import './App.scss';
@@ -53,10 +53,14 @@ export class App extends Component {
                             text: 'Contact',
                             onClick: this.onContactClick
                         }),
+                        button({
+                            icon: Icon.openExternal(),
+                            title: 'Open app...',
+                            onClick: this.onOpenAppClick
+                        }),
                         themeToggleButton(),
                         logoutButton({intent: 'danger'}),
-                        button({
-                            icon: Icon.refresh(),
+                        refreshButton({
                             intent: 'success',
                             onClick: this.onRefreshClick
                         })
@@ -68,6 +72,10 @@ export class App extends Component {
 
     onContactClick = () => {
         window.open('https://xh.io/contact');
+    }
+
+    onOpenAppClick = () => {
+        window.open('/app');
     }
 
     onRefreshClick = () => {

@@ -24,6 +24,7 @@ export class ServicePanel extends Component {
             grid({
                 model: this.model.gridModel,
                 gridOptions: {
+                    rowSelection: 'multiple',
                     groupRowInnerRenderer: this.groupRowInnerRenderer
                 }
             })

@@ -23,15 +23,17 @@ export class LogoutButton extends Component {
 
     static propTypes = {
         icon: PT.element,
+        title: PT.string,
         onClick: PT.func
     };
 
     render() {
         if (!XH.hoistModel.appModel.enableLogout) return null;
 
-        const {icon, onClick, ...rest} = this.props;
+        const {icon, title, onClick, ...rest} = this.props;
         return button({
             icon: icon || Icon.logout(),
+            title: title || 'Logout',
             onClick: onClick || this.onClick,
             ...rest
         });

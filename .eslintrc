@@ -2,6 +2,7 @@
   "extends": ["@xh/eslint-config"],
 
   "globals": {
+    "xhAppCode": false,
     "xhAppName": false,
     "xhAppVersion": false,
     "xhAppBuild": false,

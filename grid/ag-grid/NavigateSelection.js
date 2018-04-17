@@ -7,39 +7,42 @@
 
 
 /**
- * Adapted from Ag-Grig Sample Docs
- * Allow KeyPresses to navigate selection.
+ * Allow Key Presses to navigate selection.
  *
- * TODO:  This looks like it does full row scans on each key press!
+ * This is *loosely* based on an example from the AG Docs.
+ * It has been modified for efficiency and to allow multi-selection.
+ *
+ * @private
  */
 export function navigateSelection(params, api) {
-    var previousCell = params.previousCellDef,
-        suggestedNextCell = params.nextCellDef;
-
-    const KEY_UP = 38, KEY_DOWN = 40, KEY_LEFT = 37, KEY_RIGHT = 39;
-
+    const {nextCellDef, previousCellDef, event} = params,
+        shiftKey = event.shiftKey,
+        prevIndex = previousCellDef ? previousCellDef.rowIndex : null,
+        nextIndex = nextCellDef ? nextCellDef.rowIndex : null,
+        prevNode = prevIndex ? api.getDisplayedRowAtIndex(prevIndex) : null,
+        nextNode = nextIndex ? api.getDisplayedRowAtIndex(nextIndex) : null,
+        KEY_UP = 38, KEY_DOWN = 40, KEY_LEFT = 37, KEY_RIGHT = 39;
+        
     switch (params.key) {
         case KEY_DOWN:
-            previousCell = params.previousCellDef;
-            // set selected cell on current cell + 1
-            api.forEachNode((node) => {
-                if (previousCell.rowIndex + 1 === node.rowIndex) {
-                    node.setSelected(true);
-                }
-            });
-            return suggestedNextCell;
         case KEY_UP:
-            previousCell = params.previousCellDef;
-            // set selected cell on current cell - 1
-            api.forEachNode((node) => {
-                if (previousCell.rowIndex - 1 === node.rowIndex) {
-                    node.setSelected(true);
+            if (nextNode) {
+                if (!shiftKey || !prevNode.isSelected()) {
+                    // 0) Simple move of selection
+                    nextNode.setSelected(true, true);
+                } else {
+                    // 1) Extend or shrink multi-selection.
+                    if (!nextNode.isSelected()) {
+                        nextNode.setSelected(true, false);
+                    } else {
+                        prevNode.setSelected(false, false);
+                    }
                 }
-            });
-            return suggestedNextCell;
+            }
+            return nextCellDef;
         case KEY_LEFT:
         case KEY_RIGHT:
-            return suggestedNextCell;
+            return nextCellDef;
         default:
     }
 }
