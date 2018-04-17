@@ -41,7 +41,8 @@ export const ToastManager = {
         intent = 'success',
         icon = Icon.check({style: {alignSelf: 'center', marginLeft: '5px'}}),
         timeout = 3 * SECONDS,
-        position = Position.BOTTOM_RIGHT} = {}
+        position = Position.BOTTOM_RIGHT
+    } = {}
     ) {
         this.getToaster(position).show({
             intent: intent,
