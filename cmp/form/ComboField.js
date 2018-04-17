@@ -30,10 +30,10 @@ export class ComboField extends HoistField {
     delegateProps = ['className', 'disabled', 'placeholder'];
 
     render() {
-        const {style, width, options, disabled, enableSuggest} = this.props;
+        const {style, width, options, disabled, model} = this.props;
 
         const value = this.renderValue,
-            itemPredicate = enableSuggest ? (q, v, index) => v.toLowerCase().includes(q.toLowerCase()) : null;
+            itemPredicate = (q, v, index) => v.toLowerCase().includes(q.toLowerCase());
 
         return suggest({
             popoverProps: {popoverClassName: Classes.MINIMAL},
@@ -44,12 +44,12 @@ export class ComboField extends HoistField {
                 let isObj = isObject(item) && item.value,
                     value = isObj ? item.value : item,
                     label = isObj ? item.label : item;
-                if (label === null) label = '-';
+                if (item == model.NULL_VALUE) label = '-';
                 return menuItem({key: value, text: label, onClick: itemProps.handleClick, active: itemProps.modifiers.active});
             },
             inputValueRenderer: s => s,
             inputProps: {
-                value: value === null ? '' : value.toString(),
+                value: value === null || value == model.NULL_VALUE ? '' : value.toString(),
                 onChange: this.onChange,
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,

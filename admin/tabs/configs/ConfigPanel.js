@@ -40,7 +40,7 @@ export class ConfigPanel extends Component {
                 lookupName: 'valueTypes',
                 lookupStrict: true,
                 editable: 'onAdd',
-                required: true
+                required: true // try this one too.
             },
             {
                 name: 'prodValue',
