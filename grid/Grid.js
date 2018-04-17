@@ -28,7 +28,7 @@ import {navigateSelection, agGridReact} from './ag-grid';
  */
 @hoistComponent()
 class Grid extends Component {
-    
+
     _scrollOnSelect = true;
 
     static propTypes = {
@@ -155,21 +155,33 @@ class Grid extends Component {
             }
         }
         if (!rec) selection.select([]);
-      
         const count = selection.count;
-        return menu.items.map(it => {
+
+        // Prepare each item
+        const items = menu.items;
+        items.forEach(it => {
+            if (it.prepareFn) it.prepareFn(it, rec, selection);
+        });
+
+        return items.filter(it => {
+            return !it.hidden;
+        }).filter((it, idx, arr) => {
+            if (it === '-') {
+                // Remove starting / ending separators
+                if (idx == 0 || idx == (arr.length - 1)) return false;
+
+                // Remove consecutive separators
+                const prev = idx > 0 ? arr[idx - 1] : null;
+                if (prev === '-') return false;
+            }
+            return true;
+        }).map(it => {
             if (it === '-') return 'separator';
             if (isString(it)) return it;
 
             const required = it.recordsRequired,
                 requiredRecordsNotMet = (isBoolean(required) && required && count === 0) ||
                                         (isNumber(required) && count !== required);
-
-            // Potentially disable
-            const enabled = !it.enableFn || it.enableFn(it, rec, selection);
-
-            // Prepare
-            if (it.prepareFn) it.prepareFn(it, rec, selection);
 
             // Convert React FontAwesomeIcon to SVG markup for display in ag-grid's context menu.
             let icon = it.icon;
@@ -184,7 +196,7 @@ class Grid extends Component {
             return {
                 name: it.text,
                 icon,
-                disabled: (it.disabled || requiredRecordsNotMet || !enabled),
+                disabled: (it.disabled || requiredRecordsNotMet),
                 action: () => it.action(it, rec, selection)
             };
         });
