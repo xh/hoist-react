@@ -39,7 +39,7 @@ export class GridModel {
     }
 
     /**
-     * @param {BaseStore} store, store containing the data for the grid.
+     * @param {BaseStore} store - store containing the data for the grid.
      * @param {Object[]} columns - collection of column specifications.
      * @param {Object[]} sortBy - one or more sorters to apply to store data.
      * @param {string} sortBy[].colId - Column ID by which to sort.
