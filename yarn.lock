@@ -192,9 +192,9 @@
     eslint "~4.19.1"
     eslint-plugin-react "~7.7.0"
 
-"@xh/hoist-dev-utils@~0.5.0":
-  version "0.5.0"
-  resolved "https://repo.xh.io/repository/npm-hosted/@xh/hoist-dev-utils/-/hoist-dev-utils-0.5.0.tgz#73c5867d061f0711ae35b48026990aeebfcf090e"
+"@xh/hoist-dev-utils@~0.6.0":
+  version "0.6.0"
+  resolved "https://repo.xh.io/repository/npm-hosted/@xh/hoist-dev-utils/-/hoist-dev-utils-0.6.0.tgz#b1299066a2605441485d24276ef4405d722a40d8"
   dependencies:
     "@xh/eslint-config" "~0.2.0"
     autoprefixer "~8.2.0"
