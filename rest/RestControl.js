@@ -6,7 +6,6 @@
  */
 
 import React, {Component} from 'react';
-import {remove, isEmpty} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {fmtDateTime} from 'hoist/format';
 import {hbox} from 'hoist/layout';

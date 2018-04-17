@@ -107,7 +107,7 @@ export class ConfigPanel extends Component {
         ]),
         editors: this.filterForEnv([
             {field: 'name'},
-            {field: 'groupName', enableSuggest: true},
+            {field: 'groupName'},
             {field: 'valueType'},
             {field: 'prodValue', env: 'Production'},
             {field: 'betaValue', env: 'Beta'},
