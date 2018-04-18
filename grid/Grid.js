@@ -47,7 +47,8 @@ class Grid extends Component {
         defaultColDef: {suppressMenu: true},
         groupDefaultExpanded: 1,
         groupUseEntireRow: true,
-        popupParent: document.querySelector('body')
+        popupParent: document.querySelector('body'),
+        overlayNoRowsTemplate: 'No records found...'
     };
 
     constructor(props) {
