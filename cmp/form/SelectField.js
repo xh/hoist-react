@@ -33,7 +33,7 @@ export class SelectField extends HoistField {
 
         const items = options.map(opt => {
             return opt == null ? HoistField.NULL_VALUE : opt;
-        })
+        });
 
         const value = this.renderValue;
 

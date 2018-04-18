@@ -34,7 +34,7 @@ export class ComboField extends HoistField {
 
         const items = options.map(opt => {
             return opt == null ? HoistField.NULL_VALUE : opt;
-        })
+        });
 
         const value = this.renderValue,
             itemPredicate = (q, v, index) => v.toLowerCase().includes(q.toLowerCase());
