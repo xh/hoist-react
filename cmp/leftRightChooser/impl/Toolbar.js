@@ -39,6 +39,7 @@ class Toolbar extends Component {
             ]
         });
     }
+
 }
 
 export const chooserToolbar = elemFactory(Toolbar);

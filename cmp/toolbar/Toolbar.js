@@ -17,6 +17,7 @@ import './Toolbar.scss';
  */
 @hoistComponent()
 class Toolbar extends Component {
+
     render() {
         const {className, vertical, ...rest} = this.props;
 

@@ -54,6 +54,7 @@ class LeftRightChooser extends Component {
             ]
         });
     }
+
 }
 
 export const leftRightChooser = elemFactory(LeftRightChooser);

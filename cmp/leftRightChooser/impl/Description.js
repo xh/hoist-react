@@ -11,6 +11,7 @@ import {callout} from 'hoist/kit/blueprint/index';
 
 @hoistComponent()
 class Description extends Component {
+
     render() {
         const model = this.model,
             {descriptionEnabled, descriptionTitle, leftModel, rightModel} = model,
@@ -24,9 +25,9 @@ class Description extends Component {
             intent: 'primary',
             icon: null,
             item: selected.description
-
         });
     }
+
 }
 
 export const description = elemFactory(Description);
