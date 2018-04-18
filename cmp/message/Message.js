@@ -4,7 +4,6 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {filler} from 'hoist/layout';
@@ -13,6 +12,7 @@ import {dialog, dialogBody, button} from 'hoist/kit/blueprint';
 
 /**
  * A modal dialog that supports imperative alert/confirm.
+ * @see MessageModel for supported configuration options.
  */
 @hoistComponent()
 class Message extends Component {

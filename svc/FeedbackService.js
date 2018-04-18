@@ -11,14 +11,19 @@ import {stripTags} from 'hoist/utils/HtmlUtils';
 export class FeedbackService extends BaseService {
 
     /**
-     * Create a feedback entry. Username, browser info, environment info, and datetime will be set automatically.
-     * @param options - Map with msg.
+     * Create a feedback entry. Username, browser info, environment info, and datetime will be
+     * recorded automatically by the server. Feedback entries are viewable via the Admin console,
+     * and feedback submissions can trigger server-side notifications.
+     * See FeedbackService.groovy within hoist-core for details.
+     *
+     * @param {Object} options
+     * @param {string} options.msg - user-supplied message to POST.
      */
-    async submitAsync({msg} = {}) {
+    async submitAsync(options) {
         await XH.fetchJson({
             url: 'hoistImpl/submitFeedback',
             params: {
-                msg: stripTags(msg),
+                msg: stripTags(options.msg),
                 appVersion: XH.getEnv('appVersion')
             }
         });

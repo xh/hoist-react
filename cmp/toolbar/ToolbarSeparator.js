@@ -11,6 +11,9 @@ import {span} from 'hoist/layout';
 
 import './Toolbar.scss';
 
+/**
+ * Convenience component to insert a pre-styled separator | between Toolbar items.
+ */
 @hoistComponent()
 class ToolbarSeparator extends Component {
 

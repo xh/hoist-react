@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {button} from 'hoist/kit/blueprint';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {elemFactory, hoistComponent} from 'hoist/core';
 import {hbox} from 'hoist/layout';
 
 import './Toolbar.scss';

@@ -10,18 +10,14 @@ import {Ref} from 'hoist/utils/Ref';
 import {frame} from 'hoist/layout';
 
 /**
- * Container for an Admin Tab
+ * Wrapper for Components to be shown inside of a TabContainer tab. Provides the following:
  *
- * This host for a content panel of an admin tab does the following:
- *  - Lazily renders the contents of the tab only when it first becomes active.
- *
- *  - Reload the active tab whenever its lastLoaded is out of date with the
- *     parent containers 'lastRefreshRequest'.
- *
- *  - Stretches the content of the child component using a flex layout.
+ *   - Lazily renders the contents of the tab only when it first becomes active.
+ *   - Reloads the active tab whenever its lastLoaded is out of date with its parent's 'lastRefreshRequest'.
+ *   - Stretches the content of the child component using a flex layout.
  *
  * Contained components that load data/state from the server should implement loadAsync(), but
- * generally leave the calling of that method to this component.
+ * generally leave the calling of that method to this component
  */
 @hoistComponent()
 export class TabPane extends Component {
@@ -48,9 +44,10 @@ export class TabPane extends Component {
         });
     }
 
-    //------------------------------
+
+    //------------------------
     // Implementation
-    //-----------------------------
+    //------------------------
     loadChild() {
         const model = this.model,
             child = this.child.value;
