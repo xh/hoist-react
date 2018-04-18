@@ -14,26 +14,27 @@ export const ToastManager = {
     _toasters: {},
 
     /**
-     * Convenience method to show a toast.
-     * The defaults can be overridden.
+     * Show a 'Toast' message.
      *
      * @param {string} message - the message to show in the toast.
-     *
-     * Returns the unique key of the toast shown.
+     * @param {element} icon - icon to be displayed
+     * @param {number} timeout - time in milliseconds to display the message.
+     * @param {string} intent - the Blueprint intent.
+     * @param {string} position - position in viewport to display. See Blueprint Position enum. 
+     * @returns {string} - the unique key of the toast shown.
      */
     show({
         message,
-        intent = 'success',
         icon = Icon.check({style: {alignSelf: 'center', marginLeft: '5px'}}),
         timeout = 3 * SECONDS,
+        intent = 'success',
         position = Position.BOTTOM_RIGHT
-    } = {}
-    ) {
+    }) {
         return this.getToaster(position).show({
-            intent: intent,
-            message: message,
-            icon: icon,
-            timeout: timeout
+            message,
+            icon,
+            timeout,
+            intent
         });
     },
 
