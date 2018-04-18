@@ -30,21 +30,25 @@ export class ComboField extends HoistField {
     delegateProps = ['className', 'disabled', 'placeholder'];
 
     render() {
-        const {style, width, options, disabled, model} = this.props;
+        const {style, width, options, disabled} = this.props;
+
+        const items = options.map(opt => {
+            return opt == null ? HoistField.NULL_VALUE : opt;
+        })
 
         const value = this.renderValue,
             itemPredicate = (q, v, index) => v.toLowerCase().includes(q.toLowerCase());
 
         return suggest({
             popoverProps: {popoverClassName: Classes.MINIMAL},
-            $items: options,
+            $items: items,
             onItemSelect: this.onItemSelect,
             itemPredicate,
             itemRenderer: (item, itemProps) => {
                 let isObj = isObject(item) && item.value,
                     value = isObj ? item.value : item,
                     label = isObj ? item.label : item;
-                if (item == model.NULL_VALUE) label = '-';
+                if (item == HoistField.NULL_VALUE) label = '-';
                 return menuItem({
                     key: value,
                     text: label,
@@ -54,7 +58,7 @@ export class ComboField extends HoistField {
             },
             inputValueRenderer: s => s,
             inputProps: {
-                value: value === null || value == model.NULL_VALUE ? '' : value.toString(),
+                value: value === null || value === HoistField.NULL_VALUE ? '' : value.toString(),
                 onChange: this.onChange,
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,
@@ -79,6 +83,10 @@ export class ComboField extends HoistField {
         if (ev.key === 'Enter') {
             this.doCommit();
         }
+    }
+
+    toExternal(value) {
+        return value === HoistField.NULL_VALUE ? null : value;
     }
 }
 export const comboField = elemFactory(ComboField);

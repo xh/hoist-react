@@ -10,8 +10,6 @@ import {isJSON} from 'hoist/utils/JsUtils';
 
 export class RestControlModel  {
 
-    NULL_VALUE = 'NULL_VALUE';
-
     field
     editor
     parent

@@ -79,7 +79,8 @@ export class RestControl extends Component {
             lookup = field.lookup;
 
         const options = [...lookup];
-        if (!field.required) options.unshift(model.NULL_VALUE);
+
+        if (!field.required) options.unshift(null);
 
         return comboField({
             model,
@@ -104,7 +105,7 @@ export class RestControl extends Component {
             options = [];
         }
 
-        if (!field.required) options.unshift(model.NULL_VALUE);
+        if (!field.required) options.unshift(null);
 
         return selectField({
             model,

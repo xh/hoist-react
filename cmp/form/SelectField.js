@@ -29,19 +29,23 @@ export class SelectField extends HoistField {
     delegateProps = ['className', 'style', 'disabled'];
 
     render() {
-        const {style, width, options, placeholder, disabled, model} = this.props;
+        const {style, width, options, placeholder, disabled} = this.props;
+
+        const items = options.map(opt => {
+            return opt == null ? HoistField.NULL_VALUE : opt;
+        })
 
         const value = this.renderValue;
 
         return select({
             popoverProps: {popoverClassName: Classes.MINIMAL},
-            $items: options,
+            $items: items,
             onItemSelect: this.onItemSelect,
             itemRenderer: (item, itemProps) => {
                 let isObj = isObject(item) && item.value,
                     value = isObj ? item.value : item,
                     label = isObj ? item.label : item;
-                if (item == model.NULL_VALUE) label = '-';
+                if (item == HoistField.NULL_VALUE) label = '-';
                 return menuItem({
                     key: value,
                     text: label.toString(),
@@ -52,7 +56,7 @@ export class SelectField extends HoistField {
             filterable: false,
             item: button({
                 rightIcon: 'caret-down',
-                text: value === null ? placeholder : value.toString(),
+                text: value === null || value === HoistField.NULL_VALUE ? placeholder : value.toString(),
                 style: {...style, width},
                 ...this.getDelegateProps()
             }),
@@ -65,6 +69,10 @@ export class SelectField extends HoistField {
     onItemSelect = (val) => {
         this.noteValueChange(val);
         this.doCommit();
+    }
+
+    toExternal(value) {
+        return value === HoistField.NULL_VALUE ? null : value;
     }
 }
 export const selectField = elemFactory(SelectField);
