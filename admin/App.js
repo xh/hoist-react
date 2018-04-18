@@ -59,7 +59,7 @@ export class App extends Component {
                             onClick: this.onOpenAppClick
                         }),
                         themeToggleButton(),
-                        logoutButton({intent: 'danger'}),
+                        logoutButton(),
                         refreshButton({
                             intent: 'success',
                             onClick: this.onRefreshClick
