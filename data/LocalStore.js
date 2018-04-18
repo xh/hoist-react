@@ -7,7 +7,6 @@
 
 import {LastPromiseModel} from 'hoist/promise';
 import {observable, action} from 'hoist/mobx';
-import {castArray} from 'lodash';
 import {BaseStore} from './BaseStore';
 
 /**
