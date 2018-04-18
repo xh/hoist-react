@@ -149,6 +149,7 @@ export class RestControl extends Component {
             model,
             type,
             field: 'value',
+            autoFocus: this.props.autoFocus,
             cls: 'pt-fill',
             disabled: !model.isEditable
         });
