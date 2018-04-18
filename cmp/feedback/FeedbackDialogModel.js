@@ -4,7 +4,6 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
 import {isEmpty} from 'lodash';
 import {XH} from 'hoist/core';
 import {action, observable, setter} from 'hoist/mobx';

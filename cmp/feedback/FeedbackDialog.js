@@ -4,7 +4,6 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
 import {Component} from 'react';
 import {button, dialog} from 'hoist/kit/blueprint';
 import {hoistComponent, elemFactory} from 'hoist/core';
@@ -12,7 +11,8 @@ import {filler} from 'hoist/layout';
 import {textAreaField, toolbar} from 'hoist/cmp';
 
 /**
- *  A simple dialog component to allow users to submit feedback in-app
+ * A simple dialog component to collect user feedback from directly within the application.
+ * @see FeedbackService
  */
 @hoistComponent()
 export class FeedbackDialog extends Component {
