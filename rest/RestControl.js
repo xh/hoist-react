@@ -16,6 +16,8 @@ import {label, checkField, comboField, jsonField, numberField, selectField, text
 export class RestControl extends Component {
 
     render() {
+        const model = this.model;
+        if (!model.isEditable && !model.value) return null;
         return hbox({
             cls: 'xh-rest-form__control',
             items: [
