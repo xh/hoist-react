@@ -94,7 +94,7 @@ export class MonitorEditorPanel extends Component {
             {field: 'metricUnit'},
             {field: 'params'},
             {field: 'notes', type: 'textarea'},
-            {field: 'active'},
+            {field: 'active', type: 'checkbox'},
             {field: 'sortOrder'},
             {field: 'lastUpdated'},
             {field: 'lastUpdatedBy'}

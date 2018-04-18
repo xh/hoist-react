@@ -44,6 +44,10 @@ export class CheckField extends HoistField {
     }
 
     onChange = (e) => {
+        // BROKEN IN BLUEPRINT v2.1.1
+        // Fix pushed to their develop branch 4/13/18
+        // https://github.com/palantir/blueprint/issues/2370
+        // https://github.com/palantir/blueprint/pull/2377/files
         this.noteValueChange(e.target.checked);
         this.doCommit();
     }
