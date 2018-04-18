@@ -10,8 +10,6 @@ import {isJSON} from 'hoist/utils/JsUtils';
 
 export class RestControlModel  {
 
-    NULL_VALUE = 'NULL_VALUE';
-
     field
     editor
     parent
@@ -31,7 +29,6 @@ export class RestControlModel  {
     }
     setValue(value) {
         const {record, field} = this;
-        if (value == this.NULL_VALUE) value = null;
         if (record) {
             this.parent.setValue(field.name, value);
         }

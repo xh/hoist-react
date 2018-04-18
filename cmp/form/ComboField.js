@@ -30,7 +30,7 @@ export class ComboField extends HoistField {
     delegateProps = ['className', 'disabled', 'placeholder'];
 
     render() {
-        const {style, width, options, disabled, model} = this.props;
+        const {style, width, options, disabled} = this.props;
 
         const value = this.renderValue,
             itemPredicate = (q, v, index) => v.toLowerCase().includes(q.toLowerCase());
@@ -44,17 +44,12 @@ export class ComboField extends HoistField {
                 let isObj = isObject(item) && item.value,
                     value = isObj ? item.value : item,
                     label = isObj ? item.label : item;
-                if (item == model.NULL_VALUE) label = '-';
-                return menuItem({
-                    key: value,
-                    text: label,
-                    onClick: itemProps.handleClick,
-                    active: itemProps.modifiers.active
-                });
+                if (label === null) label = '-';
+                return menuItem({key: value, text: label, onClick: itemProps.handleClick});
             },
             inputValueRenderer: s => s,
             inputProps: {
-                value: value === null || value == model.NULL_VALUE ? '' : value.toString(),
+                value: value === null ? '' : value.toString(),
                 onChange: this.onChange,
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,
