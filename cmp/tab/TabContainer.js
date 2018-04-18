@@ -6,14 +6,15 @@
  */
 import {Component} from 'react';
 import {elemFactory, hoistComponent} from 'hoist/core';
-import {tabs, tab} from 'hoist/kit/blueprint';
+import {tab, tabs} from 'hoist/kit/blueprint';
 
 import {tabPane} from './TabPane';
 import {TabContainerModel} from './TabContainerModel';
 import './Tabs.scss';
 
 /**
- * Display for a TabContainer.  See TabContainerModel for more details.
+ * Display for a TabContainer.
+ * @see TabContainerModel
  */
 @hoistComponent()
 export class TabContainer extends Component {
