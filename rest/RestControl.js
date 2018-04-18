@@ -10,7 +10,7 @@ import {hoistComponent, elemFactory} from 'hoist/core';
 import {fmtDateTime} from 'hoist/format';
 import {hbox} from 'hoist/layout';
 import {controlGroup} from 'hoist/kit/blueprint';
-import {label, checkField, comboField, jsonField, numberField, selectField, textAreaField, textField}  from 'hoist/cmp';
+import {label, comboField, jsonField, numberField, selectField, textAreaField, textField}  from 'hoist/cmp';
 
 @hoistComponent()
 export class RestControl extends Component {
@@ -42,10 +42,6 @@ export class RestControl extends Component {
 
         if (editorType === 'textarea') {
             return this.renderTextArea();
-        }
-
-        if (editorType == 'checkbox') {
-            return this.renderCheckField();
         }
 
         if (!isEditable) return this.renderDisplayField();
@@ -118,15 +114,6 @@ export class RestControl extends Component {
         });
     }
 
-    renderCheckField() {
-        const model = this.model;
-        return checkField({
-            model,
-            field: 'value',
-            disabled: !model.isEditable
-        });
-    }
-
     renderNumberField() {
         const model = this.model;
         return numberField({
@@ -143,7 +130,6 @@ export class RestControl extends Component {
             model,
             field: 'value',
             cls: 'pt-fill',
-            style: {height: 100},
             disabled: !model.isEditable
         });
     }
