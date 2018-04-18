@@ -12,7 +12,7 @@ import 'codemirror/addon/lint/lint.css';
 import 'codemirror/theme/dracula.css';
 
 import * as codemirror from 'codemirror';
-import * as jsonlint from 'jsonlint-mod-fix';
+import {jsonlint} from './impl/jsonlint';
 import 'codemirror/mode/javascript/javascript.js';
 import 'codemirror/addon/fold/foldcode.js';
 import 'codemirror/addon/fold/foldgutter.js';
@@ -139,7 +139,7 @@ export const jsonField = elemFactory(JsonField);
 //------------------------------------------------------------------------------------------------------
 codemirror.registerHelper('lint', 'json', function(text) {
     var found = [];
-    jsonlint.parser.parseError = function(str, hash) {
+    jsonlint.parseError = function(str, hash) {
         var loc = hash.loc;
         found.push({
             from: codemirror.Pos(loc.first_line - 1, loc.first_column),
