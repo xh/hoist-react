@@ -7,6 +7,7 @@
 
 
 import {Component} from 'react';
+import {clone} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {vframe, hframe} from 'hoist/layout';
 import {grid} from 'hoist/grid';
@@ -18,14 +19,20 @@ import './LeftRightChooser.scss';
  * A component for moving a list of items between two arbitrary groups. By convention, the left group represents
  * 'available' items and the right group represents 'selected' items. A description panel is also available
  * to give the user more in-depth information on each item.
+ *
+ * See also LeftRightChooserModel.
  */
-
 @hoistComponent()
 class LeftRightChooser extends Component {
 
     render() {
         const {model} = this,
-            {leftModel, rightModel} = model;
+            {leftModel, rightModel} = model,
+            gridOptions: {
+                rowSelection: 'multiple',
+                rowDeselection: true,
+                enableColResize: false
+            };
 
         return vframe({
             cls: 'xh-leftRightChooser',
@@ -33,28 +40,14 @@ class LeftRightChooser extends Component {
                 hframe({
                     cls: 'gridContainer',
                     items: [
-                        grid({
-                            model: leftModel,
-                            gridOptions: {
-                                rowSelection: 'multiple',
-                                rowDeselection: true
-                            }
-                        }),
+                        grid({model: leftModel, gridOptions}),
                         chooserToolbar({model}),
-                        grid({
-                            model: rightModel,
-                            gridOptions: {
-                                rowSelection: 'multiple',
-                                rowDeselection: true
-                            }
-                        })
+                        grid({model: rightModel, gridOptions})
                     ]
                 }),
                 description({model})
             ]
         });
     }
-
 }
-
 export const leftRightChooser = elemFactory(LeftRightChooser);

@@ -69,6 +69,15 @@ export class GridSelectionModel {
         this.ids = clearSelection ? ids : union(this.ids, ids);
     }
 
+
+    /**
+     * Clear the grid selection.
+     */
+    @action
+    clear() {
+        this.select([]);
+    }
+
     /**
      * Select the first row in the grid.
      */

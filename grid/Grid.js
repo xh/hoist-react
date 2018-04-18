@@ -53,7 +53,7 @@ class Grid extends Component {
     constructor(props) {
         super(props);
         this.gridOptions = defaults(
-            props.gridOptions || {},
+            {...props.gridOptions},
             Grid.DEFAULT_GRID_OPTIONS,
             {
                 navigateToNextCell: this.onNavigateToNextCell,
@@ -154,7 +154,7 @@ class Grid extends Component {
                 this._scrollOnSelect = true;
             }
         }
-        if (!rec) selection.select([]);
+        if (!rec) selection.clear();
         const count = selection.count;
 
         // Prepare each item

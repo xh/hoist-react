@@ -12,15 +12,15 @@ import {button} from 'hoist/kit/blueprint/index';
 import {Icon} from 'hoist/icon/index';
 
 /**
- * A Toolbar that contains controllers (buttons) for the LeftRightChooser
+ * A Toolbar for the LeftRightChooser.
  */
-
 @hoistComponent()
 class Toolbar extends Component {
 
     render() {
         const {model} = this,
-            {leftModel, rightModel} = model;
+            leftSel = model.leftModel.selection,
+            rightSel = model.rightModel.selection;
 
         return toolbar({
             width: 50,
@@ -28,18 +28,16 @@ class Toolbar extends Component {
             items: [
                 button({
                     icon: Icon.chevronRight(),
-                    onClick: () => model.moveSelected('right'),
-                    disabled: !leftModel.selection.count
+                    onClick: () => model.moveRows(leftSel.records),
+                    disabled: leftSel.isEmpty
                 }),
                 button({
                     icon: Icon.chevronLeft(),
-                    onClick: () => model.moveSelected('left'),
-                    disabled: !rightModel.selection.count
+                    onClick: () => model.moveRows(rightSel.records),
+                    disabled: rightSel.isEmpty
                 })
             ]
         });
     }
-
 }
-
 export const chooserToolbar = elemFactory(Toolbar);

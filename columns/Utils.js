@@ -46,10 +46,6 @@ export function fileColFactory(fileVals = {}) {
                 delete colProps.fixedWidth;
             }
 
-            if (colProps.resizable === false) {
-                colProps.suppressResize = true;
-            }
-
             return colProps;
         };
     };

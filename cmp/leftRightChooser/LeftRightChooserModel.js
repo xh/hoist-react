@@ -8,32 +8,45 @@
 import {GridModel} from 'hoist/grid';
 import {baseCol} from 'hoist/columns/Core';
 import {LocalStore} from 'hoist/data';
-import {action, autorun, computed} from 'hoist/mobx';
+import {autorun, computed, observable, setter} from 'hoist/mobx';
 import {ItemRenderer} from './impl/ItemRenderer';
+
 /**
  * A Model for managing the state of a LeftRightChooser.
  */
-
 export class LeftRightChooserModel {
+    /** Grid Model for the left-hand side */
     leftModel = null;
+
+    /** Grid Model for the right-hand side */
     rightModel = null;
-    descriptionEnabled = null;
+
+    /** Title for description panel */
     descriptionTitle = null;
-    stores = [];
 
-    _ungroupedName = null;
-    _hasGrouping = false;
+    _descriptionEnabled = null;
     _lastSelectedSide = null;
-    _leftStore = null;
-    _rightStore = null;
+    _displayFilter = null;
 
-    _fields = [
-        'text', 'value', 'description', 'group',
-        'side', 'locked', 'exclude'
-    ];
+    /**
+     * Filter for data rows to determine if they should be shown.
+     * Useful for helping users find values of interest in a large pool of rows.
+     *
+     * Note that this will *not* effect the actual 'value' property, which will consider
+     * to include unfiltered records.
+     *
+     * See also LeftRightChooserFilter, for a component to easily control this field
+     *
+     * @param {function}
+     */
+    setDisplayFilter(fn) {
+        this.leftModel.store.setFilter(fn);
+        this.rightModel.store.setFilter(fn);
+    }
 
+    /** Currently 'Selected' values on the right hand side. */
     @computed get value() {
-        return this._rightStore._records;
+        return this.rightModel.store.allRecords;
     }
 
     /**
@@ -46,7 +59,7 @@ export class LeftRightChooserModel {
      *      group                   (string)    Used to group the list of items.
      *      side                    (string)    ['left','right'] Which side of the chooser the item should appear in.
      *      locked                  (bool)      If item cannot be moved between sides of the chooser.
-     *      exclude:                (bool)      Exclude the item from the chooser entirely.
+     *      exclude                 (bool)      Exclude the item from the chooser entirely.
      *
      * @param {string} ungroupedName - Group value when an item has no group
      * @param {string} descriptionTitle - Title of the description panel
@@ -71,26 +84,30 @@ export class LeftRightChooserModel {
         rightSortBy = []
     }) {
         this.descriptionTitle = descriptionTitle;
-        this._ungroupedName = ungroupedName;
 
-        this.loadStores(data);
+        const hasGrouping = data.any(it => it.group)
+        this._hasDescription = data.any(it => it.description);
+
+        this._data = this.preprocessData(data, ungroupedName);
+
+        const fields = ['text', 'value', 'description', 'group', 'side', 'locked', 'exclude'];
 
         this.leftModel = new GridModel({
-            store: this._leftStore,
+            store: new LocalStore({fields});
             sortBy: leftSortBy,
-            groupBy: (leftGroupingEnabled && this._hasGrouping) ? 'group' : null,
+            groupBy: (leftGroupingEnabled && hasGrouping) ? 'group' : null,
             columns: [
-                baseCol({headerName: leftTitle, resizable: false, field: 'text', cellRendererFramework: ItemRenderer}),
+                baseCol({headerName: leftTitle, field: 'text', cellRendererFramework: ItemRenderer}),
                 baseCol({headerName: 'Group', field: 'group', hide: true})
             ]
         });
 
         this.rightModel = new GridModel({
-            store: this._rightStore,
+            store: new LocalStore({fields});
             sortBy: rightSortBy,
-            groupBy: (rightGroupingEnabled && this._hasGrouping) ? 'group' : null,
+            groupBy: (rightGroupingEnabled && hasGrouping) ? 'group' : null,
             columns: [
-                baseCol({headerName: rightTitle, resizable: false, field: 'text', cellRendererFramework: ItemRenderer}),
+                baseCol({headerName: rightTitle, field: 'text', cellRendererFramework: ItemRenderer}),
                 baseCol({headerName: 'Group', field: 'group', hide: true})
             ]
         });
@@ -98,72 +115,46 @@ export class LeftRightChooserModel {
         autorun(() => this.syncSelection());
     }
 
-    @action
-    loadStores(data) {
-        this._leftStore = new LocalStore({
-            fields: this._fields,
-            filter: rec => rec.side === 'left'
-        });
-
-        this._rightStore = new LocalStore({
-            fields: this._fields,
-            filter: rec => rec.side === 'right'
-        });
-
-        this.stores = [this._leftStore, this._rightStore];
-
-        if (!data.length) return;
-
-        const normalizedData = data.map(raw => {
-            if (raw.group) {
-                this._hasGrouping = true;
-            } else {
-                raw.group = this._ungroupedName;
-            }
-
-            if (raw.description && !this.descriptionEnabled) {
-                this.descriptionEnabled = true;
-            }
-
-            raw.side = raw.side || 'left';
-
-            return raw;
-        });
-
-        const filteredData = normalizedData.filter(rec => !rec.exclude);
-
-        this.forEachStore(store => store.loadData(filteredData));
+    //---------------
+    // Implementation
+    //---------------
+    preprocessData(data, ungroupedName) {
+        return data
+            .filter(rec => !rec.exclude)
+            .map(raw => {
+                raw.group = raw.group || ungroupedName;
+                raw.side = raw.side || 'left';
+                return raw;
+            });
     }
 
-    moveSelected(side) {
-        const currentSide = side === 'left' ? 'right' : 'left',
-            selected = this[`${currentSide}Model`].selection.records;
-
-        if (!selected.length) return;
-
-        selected.forEach(rec => {
-            if (rec.locked) return null;
-            rec.side = side;
+    moveRows(rows) {
+        rows.forEach(rec => {
+            if (!rec.locked) {
+                rec.side = (rec.side == 'left' ? 'right' : 'left');
+            }
         });
 
-        this.forEachStore(store => store.updateRecordInternal(selected));
+        this.refreshStores();
     }
 
     syncSelection() {
-        const leftSel = this.leftModel.selection.singleRecord,
-            rightSel = this.rightModel.selection.singleRecord,
-            currentSel = this._lastSelectedSide;
+        const leftSel = this.leftModel.selection,
+            rightSel = this.rightModel.selection,
+            lastSelectedSide = this._lastSelectedSide;
 
-        if (leftSel && currentSel !== leftSel.side) {
+        if (!leftSel.isEmpty && lastSelectedSide !== 'left') {
             this._lastSelectedSide = 'left';
-            this.rightModel.selection.select([]);
-        } else if (rightSel && currentSel !== rightSel.side) {
+            rightSel.clear();
+        } else if (!rightSel.isEmpty && lastSelectedSide !== 'right') {
             this._lastSelectedSide = 'right';
-            this.leftModel.selection.select([]);
+            leftSel.clear();
         }
     }
 
-    forEachStore(fn) {
-        this.stores.forEach(fn);
+    refreshStores() {
+        const data = this._data;
+        leftModel.store.loadData(data.filter(it => it.side == 'left'));
+        rightModel.store.loadData(data.filter(it => it.side == 'right'));
     }
 }

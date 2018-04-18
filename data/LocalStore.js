@@ -89,20 +89,14 @@ export class LocalStore extends BaseStore {
     }
 
     @action
-    updateRecordInternal(recs) {
-        recs = castArray(recs);
-        recs.forEach(rec => {
-            this._recordsMap.set(rec.id, rec);
-        });
+    updateRecordInternal(rec) {
+        this._recordsMap.set(rec.id, rec);
         this.rebuildArrays();
     }
 
     @action
-    deleteRecordInternal(recs) {
-        recs = castArray(recs);
-        recs.forEach(rec => {
-            this._recordsMap.delete(rec.id);
-        });
+    deleteRecordInternal(rec) {
+        this._recordsMap.delete(rec.id);
         this.rebuildArrays();
     }
 

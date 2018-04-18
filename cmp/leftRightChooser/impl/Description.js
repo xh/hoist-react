@@ -9,6 +9,9 @@ import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core/index';
 import {callout} from 'hoist/kit/blueprint/index';
 
+/**
+ * Description for the LeftRightChooser.
+ */
 @hoistComponent()
 class Description extends Component {
 
@@ -27,7 +30,5 @@ class Description extends Component {
             item: selected.description
         });
     }
-
 }
-
 export const description = elemFactory(Description);
