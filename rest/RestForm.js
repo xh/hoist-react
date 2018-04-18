@@ -47,10 +47,7 @@ export class RestForm extends Component {
     getForm() {
         return vframe(
             this.model.controlModels.map((model, idx) => {
-                if (idx == 0) {
-                    return restControl({model, autoFocus: true});
-                }
-                return restControl({model});
+                return idx == 0 ? restControl({model, autoFocus: true}) : restControl({model});
             })
         );
     }
