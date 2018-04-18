@@ -32,14 +32,12 @@ export class ComboField extends HoistField {
     render() {
         const {style, width, options, disabled} = this.props;
 
-        const value = this.renderValue,
-            itemPredicate = (q, v, index) => v.toLowerCase().includes(q.toLowerCase());
+        const value = this.renderValue;
 
         return suggest({
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: options,
             onItemSelect: this.onItemSelect,
-            itemPredicate,
             itemRenderer: (item, itemProps) => {
                 let isObj = isObject(item) && item.value,
                     value = isObj ? item.value : item,
