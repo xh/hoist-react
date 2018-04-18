@@ -17,11 +17,11 @@ class Description extends Component {
 
     render() {
         const model = this.model,
-            {descriptionEnabled, descriptionTitle, leftModel, rightModel} = model,
+            {hasDescription, descriptionTitle, leftModel, rightModel} = model,
             selected = leftModel.selection.singleRecord || rightModel.selection.singleRecord;
 
 
-        if (!descriptionEnabled || !(selected && selected.description)) return null;
+        if (!hasDescription || !(selected && selected.description)) return null;
 
         return callout({
             title: descriptionTitle,

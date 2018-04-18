@@ -7,7 +7,6 @@
 
 
 import {Component} from 'react';
-import {clone} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {vframe, hframe} from 'hoist/layout';
 import {grid} from 'hoist/grid';
@@ -28,7 +27,7 @@ class LeftRightChooser extends Component {
     render() {
         const {model} = this,
             {leftModel, rightModel} = model,
-            gridOptions: {
+            gridOptions = {
                 rowSelection: 'multiple',
                 rowDeselection: true,
                 enableColResize: false

@@ -8,7 +8,7 @@
 import {GridModel} from 'hoist/grid';
 import {baseCol} from 'hoist/columns/Core';
 import {LocalStore} from 'hoist/data';
-import {autorun, computed, observable, setter} from 'hoist/mobx';
+import {autorun, computed} from 'hoist/mobx';
 import {ItemRenderer} from './impl/ItemRenderer';
 
 /**
@@ -24,9 +24,10 @@ export class LeftRightChooserModel {
     /** Title for description panel */
     descriptionTitle = null;
 
-    _descriptionEnabled = null;
+    /** Property to enable/disable the description panel */
+    hasDescription = null;
+
     _lastSelectedSide = null;
-    _displayFilter = null;
 
     /**
      * Filter for data rows to determine if they should be shown.
@@ -37,7 +38,7 @@ export class LeftRightChooserModel {
      *
      * See also LeftRightChooserFilter, for a component to easily control this field
      *
-     * @param {function}
+     * @param {function} fn
      */
     setDisplayFilter(fn) {
         this.leftModel.store.setFilter(fn);
@@ -85,15 +86,15 @@ export class LeftRightChooserModel {
     }) {
         this.descriptionTitle = descriptionTitle;
 
-        const hasGrouping = data.any(it => it.group)
-        this._hasDescription = data.any(it => it.description);
+        const hasGrouping = data.some(it => it.group);
+        this.hasDescription = data.some(it => it.description);
 
         this._data = this.preprocessData(data, ungroupedName);
 
         const fields = ['text', 'value', 'description', 'group', 'side', 'locked', 'exclude'];
 
         this.leftModel = new GridModel({
-            store: new LocalStore({fields});
+            store: new LocalStore({fields}),
             sortBy: leftSortBy,
             groupBy: (leftGroupingEnabled && hasGrouping) ? 'group' : null,
             columns: [
@@ -103,7 +104,7 @@ export class LeftRightChooserModel {
         });
 
         this.rightModel = new GridModel({
-            store: new LocalStore({fields});
+            store: new LocalStore({fields}),
             sortBy: rightSortBy,
             groupBy: (rightGroupingEnabled && hasGrouping) ? 'group' : null,
             columns: [
@@ -111,6 +112,8 @@ export class LeftRightChooserModel {
                 baseCol({headerName: 'Group', field: 'group', hide: true})
             ]
         });
+
+        this.refreshStores();
 
         autorun(() => this.syncSelection());
     }
@@ -121,18 +124,20 @@ export class LeftRightChooserModel {
     preprocessData(data, ungroupedName) {
         return data
             .filter(rec => !rec.exclude)
-            .map(raw => {
+            .map((raw, idx) => {
                 raw.group = raw.group || ungroupedName;
                 raw.side = raw.side || 'left';
+                raw.id = raw.id != null ? raw.id : idx;
                 return raw;
             });
     }
 
     moveRows(rows) {
         rows.forEach(rec => {
-            if (!rec.locked) {
-                rec.side = (rec.side == 'left' ? 'right' : 'left');
-            }
+            if (rec.locked) return;
+
+            const rawRec = this._data.find(raw => raw === rec.raw);
+            rawRec.side = (rec.side === 'left' ? 'right' : 'left');
         });
 
         this.refreshStores();
@@ -143,18 +148,20 @@ export class LeftRightChooserModel {
             rightSel = this.rightModel.selection,
             lastSelectedSide = this._lastSelectedSide;
 
-        if (!leftSel.isEmpty && lastSelectedSide !== 'left') {
+        if (leftSel.singleRecord && lastSelectedSide !== 'left') {
             this._lastSelectedSide = 'left';
             rightSel.clear();
-        } else if (!rightSel.isEmpty && lastSelectedSide !== 'right') {
+        } else if (rightSel.singleRecord && lastSelectedSide !== 'right') {
             this._lastSelectedSide = 'right';
             leftSel.clear();
         }
     }
 
     refreshStores() {
-        const data = this._data;
-        leftModel.store.loadData(data.filter(it => it.side == 'left'));
-        rightModel.store.loadData(data.filter(it => it.side == 'right'));
+        const data = this._data,
+            {leftModel, rightModel} = this;
+
+        leftModel.store.loadData(data.filter(it => it.side === 'left'));
+        rightModel.store.loadData(data.filter(it => it.side === 'right'));
     }
 }
