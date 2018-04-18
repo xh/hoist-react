@@ -9,7 +9,6 @@ import React from 'react';
 import {observable, setter} from 'hoist/mobx';
 import {castArray, isEqual, remove, trimEnd} from 'lodash';
 import {pluralize} from 'hoist/utils/JsUtils';
-import {SECONDS} from 'hoist/utils/DateTimeUtils';
 import {XH} from 'hoist/core';
 import {LocalStore} from 'hoist/data';
 import {GridContextMenu, GridModel} from 'hoist/grid';
@@ -171,12 +170,7 @@ export class ConfigDifferModel  {
     }
 
     showNoDiffToast() {
-        ToastManager.getToaster().show({
-            intent: 'success',
-            message: 'Good news! All configs match remote host.',
-            icon: Icon.check({style: {alignSelf: 'center', marginLeft: '5px'}}),
-            timeout: 3 * SECONDS
-        });
+        ToastManager.show({message: 'Good news! All configs match remote host.'});
     }
 
     close() {
