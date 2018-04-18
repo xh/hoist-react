@@ -4,9 +4,15 @@
   width: 100%;
   flex: none;
   align-items: center;
+  flex-wrap: nowrap;
 
-  > *:not([class*='xh-no-pad']) {
-    margin-left: var(--xh-pad-px);
+  > * {
+    white-space: nowrap;
+    flex-shrink: 0;
+
+    &:not([class*='xh-no-pad']) {
+      margin-left: var(--xh-pad-px);
+    }
   }
 
   &__separator {
