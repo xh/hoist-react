@@ -36,6 +36,8 @@ export function fmtDate(v, opts = {}) {
 
     let ret = moment(v).format(opts.fmt);
 
+    if (ret == 'Invalid date') return '';
+
     if (opts.tipFn) {
         ret = fmtSpan(ret, {cls: 'xh-title-tip', title: opts.tipFn(opts.originalValue)});
     }
