@@ -8,6 +8,7 @@
 import {Component} from 'react';
 import {GridModel} from 'hoist/grid';
 import {baseCol} from 'hoist/columns/Core';
+import {castArray, isString} from 'lodash';
 
 /**
  * ListModel is a special implementation of GridModel, which show data in a single
@@ -23,6 +24,7 @@ export class ListModel extends GridModel {
     constructor({itemFactory, ...args}) {
         delete args.columns;
 
+        // Create list column which renders the itemFactory
         const columns = [
             baseCol({
                 field: 'id',
@@ -36,6 +38,13 @@ export class ListModel extends GridModel {
                 )
             })
         ];
+
+        // Add hidden columns for any sorters
+        castArray(args.sortBy).forEach(it => {
+            if (!it) return;
+            const field = isString(it) ? it : it.colId;
+            columns.push(baseCol({field: field, hide: true}));
+        });
 
         super({columns, ...args});
     }
