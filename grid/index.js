@@ -10,3 +10,4 @@ export * from './GridModel';
 export * from './GridContextMenu';
 export * from './GridContextMenuItem';
 export * from './GridSelectionModel';
+export * from './ListModel';

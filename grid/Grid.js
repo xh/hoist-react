@@ -211,8 +211,7 @@ class Grid extends Component {
             {model} = this;
 
         model.gridApi = api;
-        api.setSortModel(model.sortBy);
-        api.sizeColumnsToFit();
+        model.onGridReady();
     }
 
     onNavigateToNextCell = (params) => {
