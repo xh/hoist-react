@@ -16,6 +16,8 @@ const DATE_FMT = 'YYYY-MM-DD',
     TIME_FMT = 'h:mma',
     MONTH_DAY_FMT = 'MMM D';
 
+const INVALID_DATE = moment(null).format();
+
 /**
  * Render dates and times with specified format
  *
@@ -36,7 +38,7 @@ export function fmtDate(v, opts = {}) {
 
     let ret = moment(v).format(opts.fmt);
 
-    if (ret == 'Invalid date') return '';
+    if (ret == INVALID_DATE) return '';
 
     if (opts.tipFn) {
         ret = fmtSpan(ret, {cls: 'xh-title-tip', title: opts.tipFn(opts.originalValue)});
