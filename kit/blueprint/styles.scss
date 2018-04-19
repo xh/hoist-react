@@ -91,7 +91,7 @@
   &.pt-intent-success {
     background-color: var(--xh-green);
     &:disabled {
-      background-color: var(--xh-green-trans);
+      background-color: var(--xh-green-muted);
     }
   }
 

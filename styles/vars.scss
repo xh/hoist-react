@@ -1,0 +1,132 @@
+@import '~sass-material-colors/sass/sass-material-colors';
+
+// Functions to fetch Google material design colors (https://material.io/color/)
+// While not strictly following any material design conventions within Hoist, using these color
+// helps to keep things more consistent and harmonious (vs. choosing "arbitrary" color vals).
+@function mc($color-name, $color-variant) {
+  @return material-color($color-name, $color-variant);
+}
+@function mc-muted($color-name, $color-variant, $amount:50%) {
+  @return desaturate(material-color($color-name, $color-variant), $amount);
+}
+@function mc-trans($color-name, $color-variant, $amount:50%) {
+  @return transparentize(material-color($color-name, $color-variant), $amount);
+}
+
+// CSS variable declarations - non-color-related + light-theme color defaults
+body {
+  // Core colors
+  --xh-black: var(--black, mc('grey', '900'));
+  --xh-blue: var(--blue, mc('blue', '800'));
+  --xh-blue-light: var(--blue-light, mc('light-blue', '700'));
+  --xh-blue-gray: var(--blue-gray, mc('blue-grey', '600'));
+  --xh-blue-gray-light: var(--blue-gray-light, mc('blue-grey', '50'));
+  --xh-blue-gray-dark: var(--blue-gray-dark, mc('blue-grey', '900'));
+  --xh-gray: var(--gray, mc('grey', '500'));
+  --xh-gray-dark: var(--gray-dark, mc('grey', '800'));
+  --xh-gray-light: var(--gray-light, mc('grey', '50'));
+  --xh-green: var(--green, mc('green', '700'));
+  --xh-green-muted: var(--green-muted, mc-muted('green', '700'));;
+  --xh-orange: var(--orange, mc('orange', '800'));
+  --xh-red: var(--red, mc('red', '900'));
+  --xh-yellow: var(--yellow, mc('yellow', '800'));
+  --xh-yellow-light: var(--yellow-light, mc('yellow', '50'));
+
+  // Background (app / components in general)
+  --xh-bg: var(--bg, white);
+  --xh-bg-alt: var(--bg-alt, var(--xh-blue-gray-light));
+  --xh-bg-highlight: var(--bg-highlight, mc-trans('blue', '500'));
+
+  // Borders
+  --xh-border-color: var(--border-color, var(--xh-gray));
+  --xh-border-dotted: #{(var(--xh-border-width-px) dotted var(--xh-border-color))};
+  --xh-border-radius: var(--border-radius, 0);
+  --xh-border-solid: #{(var(--xh-border-width-px) solid var(--xh-border-color))};
+  --xh-border-width: var(--border-width, 1);
+  --xh-border-width-px: calc(var(--xh-border-width) * 1px);
+
+  // Buttons
+  --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
+
+  // Chart
+  --xh-chart-bg: var(-chart-bg, var(--xh-bg));
+
+  // Grid
+  --xh-grid-bg: var(--grid-bg, var(--xh-bg));
+  --xh-grid-bg-odd: var(--grid-bg-odd, var(--xh-bg-alt));
+  --xh-grid-border-color: var(--grid-border-color, var(--xh-border-color));
+  --xh-grid-cell-focus-border-color: var(--grid-cell-focus-border-color, transparent);
+  --xh-grid-font-family: var(--grid-font-family, var(--xh-font-family));
+  --xh-grid-group-bg: var(--grid-group-bg, var(--xh-blue-gray));
+  --xh-grid-header-bg: var(--grid-header-bg, var(--xh-blue-gray-light));
+
+  // Fonts
+  --xh-font-family: var(--font-family, #{(-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif)});
+  --xh-font-family-mono: var(--font-family-mono, #{(Monaco, Consolas, monospace)});
+  --xh-font-size: var(--font-size, 13);
+  --xh-font-size-px: calc(var(--xh-font-size) * 1px);
+  --xh-font-size-large-em: var(--font-size-small-em, 1.2em);
+  --xh-font-size-small-em: var(--font-size-small-em, 0.9em);
+
+  // Mask
+  --xh-mask-bg: var(--mask-bg, mc-trans('blue-grey', '900'));
+
+  // Navbar (top app toolbar)
+  --xh-navbar-bg: var(--navbar-bg, var(--xh-bg-alt));
+  --xh-navbar-color: var(--navbar-color, var(--xh-text-color-highlight));
+  --xh-navbar-title-font-size-px: var(--navbar-title-font-size-px, calc(var(--xh-font-size) * 1.8px));
+
+  // Padding / Margin (spacing in general)
+  --xh-pad: var(--pad, 10);
+  --xh-pad-px: calc(var(--xh-pad) * 1px);
+  --xh-pad-double-px: calc(var(--xh-pad) * 2px);
+  --xh-pad-half-px: calc(var(--xh-pad) * 0.5px);
+
+  // Popups / dialogs
+  --xh-popup-border-width: var(--popup-border-width, var(--xh-border-width));
+  --xh-popup-border-width-px: calc(var(--xh-popup-border-width) * 1px);
+
+  // Scrollbars (customized for webkit)
+  --xh-scrollbar-bg: var(--scrollbar-bg, var(--xh-gray-dark));
+  --xh-scrollbar-thumb: var(--scrollbar-thumb, var(--xh-gray));
+
+  // Tabs
+  --xh-tab-border-width: var(--tab-border-width, var(--xh-border-width));
+  --xh-tab-border-width-px: calc(var(--xh-tab-border-width) * 1px);
+
+  // Text
+  --xh-text-color: var(--text-color, var(--xh-blue-gray-dark));
+  --xh-text-color-accent: var(--text-color-accent, var(--xh-blue));
+  --xh-text-color-header: var(--text-color-header, var(--xh-text-color));
+  --xh-text-color-highlight: var(--text-color-highlight, mc('blue-grey', '800'));
+  --xh-text-color-muted: var(--text-color-muted, var(--xh-gray));
+
+  // Toolbars
+  --xh-tbar-bg: var(--tbar-bg, var(--xh-bg-alt));
+}
+
+// CSS variable declarations - dark-theme color overrides
+// (Note any of the color vars above can be overridden at the app level for a dark theme)
+body.xh-dark {
+  // Colors
+  --xh-green: var(--green, mc('green', '800'));
+
+  // Background (app / components in general)
+  --xh-bg: var(--bg, var(--xh-black));
+  --xh-bg-alt: var(--bg-alt, var(--xh-blue-gray-dark));
+  --xh-bg-highlight: var(--bg-highlight, mc-trans('light-blue', '800'));
+
+  // Borders
+  --xh-border-color: var(--border-color, mc('blue-grey', '900'));
+
+  // Grid
+  --xh-grid-bg-odd: var(--grid-bg-odd, var(--xh-gray-dark));
+  --xh-grid-group-bg: var(--grid-group-bg, var(--xh-black));
+  --xh-grid-header-bg: var(--grid-header-bg, mc('blue-grey', '600'));
+
+  // Text
+  --xh-text-color: var(--text-color, white);
+  --xh-text-color-accent: var(--text-color-accent, var(--xh-orange));
+  --xh-text-color-highlight: var(--text-color-highlight, white);
+  --xh-text-color-muted: var(--text-color-muted, mc('grey', '600'));
+}

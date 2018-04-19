@@ -1,0 +1,48 @@
+@import 'vars';
+
+body.xh-app {
+
+  // Important for using the body as the `popupParent` for our ag-grids
+  height: 100vh;
+  margin: 0;
+
+  background-color: var(--xh-bg);
+  color: var(--xh-text-color);
+  border-color: var(--xh-border-color);
+
+  font-family: var(--xh-font-family);
+  font-size: var(--xh-font-size-px);
+
+  :focus {
+    outline: 0;
+  }
+
+  ::-webkit-scrollbar {
+    -webkit-appearance: none;
+    background-color: var(--xh-scrollbar-bg);
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-corner {
+    background-color: var(--xh-scrollbar-bg);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--xh-scrollbar-thumb);
+  }
+
+  h1, h2, h3, h4, h5 {
+    color: var(--xh-text-color-header);
+  }
+}
+
+.xh-blue    {color: var(--xh-blue);}
+.xh-gray    {color: var(--xh-gray);}
+.xh-green   {color: var(--xh-green);}
+.xh-orange  {color: var(--xh-orange);}
+.xh-red     {color: var(--xh-red);}
+
+.xh-align-center  {text-align: center;}
+.xh-align-left    {text-align: left;}
+.xh-align-right   {text-align: right;}
