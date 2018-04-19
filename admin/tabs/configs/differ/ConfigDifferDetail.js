@@ -21,6 +21,7 @@ export class ConfigDifferDetail extends Component {
         const model = this.model;
         if (!model.record) return null;
 
+        // done test and remove before merge
         return dialog({
             title: 'Detail',
             isOpen: model.record,
@@ -76,7 +77,7 @@ export class ConfigDifferDetail extends Component {
     }
 
     onCloseClick = () => {
-        this.model.closeDetail();
+        this.model.close();
     }
 }
 export const configDifferDetail= elemFactory(ConfigDifferDetail);

@@ -38,6 +38,7 @@ export class ExceptionDialogDetails extends Component {
             )
         );
 
+        // done open/close remove this comment before merge
         return dialog({
             title: 'Error Details',
             icon: Icon.search(),

@@ -126,19 +126,19 @@ export class HoistModel {
 
     /** Hide any displayed exception */
     @action
-    hideException() {
+    closeException() {
         this.displayException = null;
     }
 
     /** Show the About Dialog for this application. */
     @action
-    showAbout() {
+    openAbout() {
         this.aboutIsOpen = true;
     }
 
     /** Hide the About Dialog for this application. */
     @action
-    hideAbout() {
+    closeAbout() {
         this.aboutIsOpen = false;
     }
 

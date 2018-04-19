@@ -163,7 +163,7 @@ export class ConfigDifferModel  {
             params: {records: JSON.stringify(records)}
         }).finally(() => {
             this.loadAsync();
-            this.detailModel.closeDetail();
+            this.detailModel.close();
         }).linkTo(
             XH.hoistModel.appLoadModel
         ).catchDefault();
@@ -171,6 +171,10 @@ export class ConfigDifferModel  {
 
     showNoDiffToast() {
         ToastManager.show({message: 'Good news! All configs match remote host.'});
+    }
+
+    open() {
+        this.setIsOpen(true);
     }
 
     close() {

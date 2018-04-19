@@ -19,7 +19,7 @@ export class VersionBar extends Component {
             version = XH.getEnv('appVersion'),
             isVisible = (env !== 'Production' || XH.getPref('xhForceEnvironmentFooter')),
             cls = `xh-version-bar xh-version-bar-${env.toLowerCase()}`,
-            info = Icon.info({onClick: this.showAbout});
+            info = Icon.info({onClick: this.openAbout});
 
         if (!isVisible) return null;
 
@@ -35,8 +35,9 @@ export class VersionBar extends Component {
         });
     }
 
-    showAbout() {
-        XH.hoistModel.showAbout();
+    // test this and remove comment
+    openAbout() {
+        XH.hoistModel.openAbout();
     }
 }
 export const versionBar = elemFactory(VersionBar);

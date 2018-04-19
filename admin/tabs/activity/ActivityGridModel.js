@@ -102,6 +102,13 @@ export class ActivityGridModel {
         this.endDate = date;
     }
 
+    openDetail(rec) {
+        this.setDetailRecord(rec);
+    }
+
+    closeDetail() {
+        this.setDetailRecord(null);
+    }
     //----------------
     // Implementation
     //----------------

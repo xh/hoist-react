@@ -22,6 +22,7 @@ export class RestForm extends Component {
         const {record, isAdd} = this.model;
         if (!record) return null;
 
+        // already following remove comment before merge
         return dialog({
             title: isAdd ? 'Add Record' : 'Edit Record',
             icon: isAdd ? Icon.add() : Icon.edit(),

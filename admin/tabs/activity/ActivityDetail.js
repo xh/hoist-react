@@ -20,6 +20,7 @@ class ActivityDetail extends Component {
 
         if (!rec) return null;
 
+        // done remove after testing and before merge
         return dialog({
             title: 'Activity Details',
             style: {width: 600},
@@ -65,7 +66,7 @@ class ActivityDetail extends Component {
     }
 
     onCloseClick = () => {
-        this.model.setDetailRecord(null);
+        this.model.closeDetail();
     }
 }
 export const activityDetail = elemFactory(ActivityDetail);

@@ -19,6 +19,8 @@ export class FeedbackDialog extends Component {
 
     render() {
         const model = this.model;
+
+        // small handler rename test and remove comment before merge
         return dialog({
             title: 'Submit Feedback',
             style: {width: 450},
@@ -36,7 +38,7 @@ export class FeedbackDialog extends Component {
                     filler(),
                     button({
                         text: 'Cancel',
-                        onClick: this.onClose
+                        onClick: this.onCancelClick
                     }),
                     button({
                         text: 'Send',
@@ -52,7 +54,7 @@ export class FeedbackDialog extends Component {
         this.model.submitFeedback();
     }
 
-    onClose = () => {
+    onCancelClick = () => {
         this.model.close();
     }
 }

@@ -21,6 +21,7 @@ import './AboutDialog.scss';
 @hoistComponent()
 export class AboutDialog extends Component {
     render() {
+        // done open/close remove before merge
         return dialog({
             isOpen: XH.hoistModel.aboutIsOpen,
             isCloseButtonShown: false,
@@ -76,7 +77,7 @@ export class AboutDialog extends Component {
     }
 
     onClose = () => {
-        XH.hoistModel.hideAbout();
+        XH.hoistModel.closeAbout();
     }
 }
 export const aboutDialog = elemFactory(AboutDialog);

@@ -20,6 +20,7 @@ export class ConfigDiffer extends Component {
         const model = this.model,
             detailModel = model.detailModel;
         return fragment(
+            // done remove before merge
             dialog({
                 isOpen: model.isOpen,
                 canOutsideClickClose: false,
@@ -82,7 +83,7 @@ export class ConfigDiffer extends Component {
     }
 
     onRowDoubleClicked = (e) => {
-        this.model.detailModel.showDetail(e.data);
+        this.model.detailModel.open(e.data);
     }
 }
 export const configDiffer = elemFactory(ConfigDiffer);

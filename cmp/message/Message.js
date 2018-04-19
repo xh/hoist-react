@@ -23,6 +23,7 @@ class Message extends Component {
 
         if (!isOpen) return null;
 
+        // dialog done remove this comment before merge
         return dialog({
             isOpen: true,
             isCloseButtonShown: false,
