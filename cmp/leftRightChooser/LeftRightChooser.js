@@ -30,7 +30,8 @@ class LeftRightChooser extends Component {
             gridOptions = {
                 rowSelection: 'multiple',
                 rowDeselection: true,
-                enableColResize: false
+                enableColResize: false,
+                onRowDoubleClicked: (e) => model.moveRows([e.data])
             };
 
         return vframe({
