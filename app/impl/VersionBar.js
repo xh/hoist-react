@@ -35,7 +35,6 @@ export class VersionBar extends Component {
         });
     }
 
-    // test this and remove comment
     openAbout() {
         XH.hoistModel.openAbout();
     }

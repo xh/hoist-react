@@ -43,6 +43,7 @@ export class MessageModel {
      * Show a confirmation, with cancellation option.
      * @param {Object} config - options for this particular show of the dialog.
      */
+    // test messages
     confirm(config) {
         Object.assign(this, this.defaults, this.initialConfig, config);
         this.open();
