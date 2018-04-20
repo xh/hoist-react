@@ -18,12 +18,12 @@ export class ConfigDifferDetailModel  {
     }
 
     @action
-    showDetail(rec) {
+    open(rec) {
         this.record = rec;
     }
 
     @action
-    closeDetail() {
+    close() {
         this.record = null;
     }
 

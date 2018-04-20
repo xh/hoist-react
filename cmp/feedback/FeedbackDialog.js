@@ -23,7 +23,7 @@ export class FeedbackDialog extends Component {
             title: 'Submit Feedback',
             style: {width: 450},
             isOpen: model.isOpen,
-            onClose: this.onClose,
+            onClose: this.onCloseClick,
             canOutsideClickClose: false,
             items: [
                 textAreaField({
@@ -36,7 +36,7 @@ export class FeedbackDialog extends Component {
                     filler(),
                     button({
                         text: 'Cancel',
-                        onClick: this.onClose
+                        onClick: this.onCloseClick
                     }),
                     button({
                         text: 'Send',
@@ -52,7 +52,7 @@ export class FeedbackDialog extends Component {
         this.model.submitFeedback();
     }
 
-    onClose = () => {
+    onCloseClick = () => {
         this.model.close();
     }
 }
