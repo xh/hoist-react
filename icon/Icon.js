@@ -69,6 +69,7 @@ export const Icon = {
     home(p)          {return fa(p, 'home')},
     info(p)          {return fa(p, 'info-circle')},
     list(p)          {return fa(p, 'align-justify')},
+    lock(p)          {return fa(p, 'lock')},
     login(p)         {return fa(p, 'sign-in')},
     logout(p)        {return fa(p, 'sign-out')},
     mail(p)          {return fa(p, 'envelope')},
