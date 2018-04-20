@@ -4,12 +4,12 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
 import {Component} from 'react';
 import {hoistComponent} from 'hoist/core';
-import {hframe, vframe, vbox, frame, filler, div} from 'hoist/layout';
+import {filler, hframe, vframe} from 'hoist/layout';
 import {grid} from 'hoist/grid';
-import {resizable, loadMask, storeFilterField, toolbar} from 'hoist/cmp';
+import {loadMask, resizable, storeFilterField, toolbar} from 'hoist/cmp';
+
 import {logViewerDisplay} from './LogViewerDisplay';
 import {LogViewerModel} from './LogViewerModel';
 import {logViewerToolbar} from './LogViewerToolbar';
@@ -24,12 +24,6 @@ export class LogViewer extends Component {
     }
 
     render() {
-        return frame(
-            this.getContents()
-        );
-    }
-
-    getContents() {
         const model = this.model,
             {files, loadModel} = model;
 
@@ -40,7 +34,6 @@ export class LogViewer extends Component {
                     side: 'right',
                     contentSize: 250,
                     isOpen: true,
-                    collapsedDisplay: toolbar(vbox(div('Log'), div('Files'))),
                     item: vframe(
                         grid({model: files}),
                         toolbar(
@@ -60,4 +53,5 @@ export class LogViewer extends Component {
             ]
         });
     }
+
 }
