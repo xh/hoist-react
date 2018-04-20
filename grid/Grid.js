@@ -6,12 +6,11 @@
  */
 
 import {Component, isValidElement} from 'react';
-import fontawesome from '@fortawesome/fontawesome';
 import {PropTypes as PT} from 'prop-types';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
 import {defaults, xor, isString, isNumber, isBoolean, isEqual} from 'lodash';
-import {Icon} from 'hoist/icon';
+import {convertIconToSvg, Icon} from 'hoist/icon';
 
 import './ag-grid';
 import {navigateSelection, agGridReact} from './ag-grid';
@@ -61,11 +60,11 @@ class Grid extends Component {
                 navigateToNextCell: this.onNavigateToNextCell,
                 defaultGroupSortComparator: this.sortByGroup,
                 icons: {
-                    groupExpanded: this.convertIconToSvg(
+                    groupExpanded: convertIconToSvg(
                         Icon.chevronDown(),
                         {classes: ['group-header-icon-expanded']}
                     ),
-                    groupContracted: this.convertIconToSvg(
+                    groupContracted: convertIconToSvg(
                         Icon.chevronRight(),
                         {classes: ['group-header-icon-contracted']}
                     )
@@ -195,10 +194,9 @@ class Grid extends Component {
                 requiredRecordsNotMet = (isBoolean(required) && required && count === 0) ||
                                         (isNumber(required) && count !== required);
 
-            // Convert React FontAwesomeIcon to SVG markup for display in ag-grid's context menu.
             let icon = it.icon;
             if (isValidElement(icon)) {
-                icon = this.convertIconToSvg(icon);
+                icon = convertIconToSvg(icon);
             }
 
             return {
@@ -208,14 +206,6 @@ class Grid extends Component {
                 action: () => it.action(it, rec, selection)
             };
         });
-    }
-
-    convertIconToSvg(icon, opts) {
-        const iconDef = fontawesome.findIconDefinition({
-            prefix: icon.props.icon[0],
-            iconName: icon.props.icon[1]
-        });
-        return fontawesome.icon(iconDef, opts).html[0];
     }
 
     //------------------------

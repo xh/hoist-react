@@ -93,6 +93,14 @@ export const Icon = {
     xCircle(p)       {return fa(p, 'times-circle')}
 };
 
+export const convertIconToSvg = function(icon, opts) {
+    const iconDef = fontawesome.findIconDefinition({
+        prefix: icon.props.icon[0],
+        iconName: icon.props.icon[1]
+    });
+    return fontawesome.icon(iconDef, opts).html[0];
+};
+
 //-----------------------------
 // Implementation
 //-----------------------------
@@ -100,4 +108,4 @@ const faIcon = elemFactory(FontAwesomeIcon);
 const fa = function(props, name) {
     const prefix = (props && props.prefix) ? props.prefix : 'far';  // default to regular variant
     return faIcon({icon: [prefix, name], ...props});
-};
+}
