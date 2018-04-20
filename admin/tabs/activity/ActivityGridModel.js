@@ -24,7 +24,8 @@ export class ActivityGridModel {
     @observable @setter category = '';
     @observable @setter device = '';
     @observable @setter browser = '';
-    @observable @setter detailRecord = null;
+
+    @observable detailRecord = null;
 
     store = new LocalStore({
         fields: [
@@ -102,13 +103,16 @@ export class ActivityGridModel {
         this.endDate = date;
     }
 
+    @action
     openDetail(rec) {
-        this.setDetailRecord(rec);
+        this.detailRecord = rec;
     }
 
+    @action
     closeDetail() {
-        this.setDetailRecord(null);
+        this.detailRecord = null;
     }
+
     //----------------
     // Implementation
     //----------------

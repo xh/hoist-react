@@ -51,6 +51,6 @@ export class ExceptionDialogModel {
     @action
     close() {
         this.detailsIsOpen = false;
-        XH.hoistModel.closeException();
+        XH.hoistModel.hideException();
     }
 }

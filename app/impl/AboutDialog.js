@@ -76,7 +76,7 @@ export class AboutDialog extends Component {
     }
 
     onClose = () => {
-        XH.hoistModel.closeAbout();
+        XH.hoistModel.hideAbout();
     }
 }
 export const aboutDialog = elemFactory(AboutDialog);

@@ -96,7 +96,7 @@ export class AppContainer extends Component {
                 {
                     text: 'About',
                     icon: Icon.info(),
-                    action: () => hoistModel.openAbout()
+                    action: () => hoistModel.showAbout()
                 },
                 {
                     text: 'Logout',
