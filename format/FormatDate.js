@@ -21,14 +21,15 @@ const INVALID_DATE = moment(null).format();
 /**
  * Render dates and times with specified format
  *
- * @param v - date to format
+ * @param {*} [v] - a date value to format, can be any value MomentJs can parse.
+ *      See: https://momentjs.com/docs/#/parsing/ for more info.
  *
- * @param opts - Options object that may include
- *   @param fmt - MomentJs format string
- *   @param tipFn - function, use to place formatted date in span with title property set to returned string
- *                            will be passed the originalValue param
- *
- *  For convenience opts may be provided as a MomentJs format string.
+ * @param {Object|string} [opts] - a MomentJs format string or an options object.
+ * @param {string} [opts.fmt] - a MomentJs format string.
+ * @param {function} [opts.tipFn] - use to place formatted date in span with title property set to returned string.
+ *      Function will be passed the originalValue param
+ * @param {*} [opts.originalValue] - used to retain an unaltered reference to the original value to be formatted.
+ *      Not typically used by applications.
  */
 export function fmtDate(v, opts = {}) {
     if (isString(v)) return v;
