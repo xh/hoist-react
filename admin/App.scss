@@ -28,14 +28,6 @@
 
 }
 
-.ag-icon-expanded {
-  background-image: url("../public/expanded.svg") !important;
-}
-
-.ag-group-expanded .ag-icon-contracted:empty {
-  background-image: url("../public/collapsed.svg") !important;
-}
-
 .group-header-icon-expanded {
   margin: 5px var(--xh-pad-half-px) 0 var(--xh-pad-half-px);
 }
