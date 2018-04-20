@@ -20,12 +20,11 @@ export class FeedbackDialog extends Component {
     render() {
         const model = this.model;
 
-        // small handler rename test and remove comment before merge
         return dialog({
             title: 'Submit Feedback',
             style: {width: 450},
             isOpen: model.isOpen,
-            onClose: this.onClose,
+            onClose: this.onCloseClick,
             canOutsideClickClose: false,
             items: [
                 textAreaField({
@@ -38,7 +37,7 @@ export class FeedbackDialog extends Component {
                     filler(),
                     button({
                         text: 'Cancel',
-                        onClick: this.onCancelClick
+                        onClick: this.onCloseClick
                     }),
                     button({
                         text: 'Send',
@@ -54,7 +53,7 @@ export class FeedbackDialog extends Component {
         this.model.submitFeedback();
     }
 
-    onCancelClick = () => {
+    onCloseClick = () => {
         this.model.close();
     }
 }
