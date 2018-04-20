@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {elemFactory, hoistComponent} from 'hoist/core';
 import {button} from 'hoist/kit/blueprint';
-import {textField, checkField, numberField, label, toolbar} from 'hoist/cmp';
+import {checkField, label, numberField, textField, toolbar} from 'hoist/cmp';
 import {filler} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
 
