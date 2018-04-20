@@ -138,6 +138,7 @@ export class RestControl extends Component {
         return textAreaField({
             model,
             field: 'value',
+            autoFocus: this.props.autoFocus,
             cls: 'pt-fill',
             style: {height: 100},
             disabled: !model.isEditable
