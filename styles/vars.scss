@@ -182,10 +182,11 @@ body.xh-dark {
   --xh-bg-highlight: var(--bg-highlight, #{mc-trans('light-blue', '500', 0.6)});
 
   // Borders
-  --xh-border-color: var(--border-color, #{mc('blue-grey', '900')});
+  --xh-border-color: var(--border-color, #{mc('blue-grey', '800')});
 
   // Grid
   --xh-grid-bg-odd: var(--grid-bg-odd, var(--xh-gray-dark));
+  --xh-grid-border-color: var(--grid-border-color, #{mc('grey', '800')});
   --xh-grid-group-bg: var(--grid-group-bg, #{mc('blue-grey', '800')});
   --xh-grid-header-bg: var(--grid-header-bg, var(--xh-black));
 
@@ -203,8 +204,8 @@ body.xh-dark {
   --xh-scrollbar-thumb: var(--scrollbar-thumb, #{mc('blue-grey', '900')});
 
   // Toolbars
-  --xh-tbar-bg: var(--tbar-bg, #{mc('blue-grey', '700')});
-  --xh-tbar-border-color: var(--tbar-border-color, #{mc('blue-grey', '900')});
+  --xh-tbar-bg: var(--tbar-bg, #{mc('blue-grey', '900')});
+  --xh-tbar-border-color: var(--tbar-border-color, #{mc('blue-grey', '800')});
 
   // Text
   --xh-text-color: var(--text-color, white);

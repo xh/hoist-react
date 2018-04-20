@@ -4,10 +4,9 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
 import {Component} from 'react';
 import {hoistComponent} from 'hoist/core';
-import {hframe, vframe, vbox, frame, filler, div} from 'hoist/layout';
+import {hframe, vframe, frame, filler} from 'hoist/layout';
 import {grid} from 'hoist/grid';
 import {resizable, loadMask, storeFilterField, toolbar} from 'hoist/cmp';
 import {logViewerDisplay} from './LogViewerDisplay';
@@ -24,12 +23,6 @@ export class LogViewer extends Component {
     }
 
     render() {
-        return frame(
-            this.getContents()
-        );
-    }
-
-    getContents() {
         const model = this.model,
             {files, loadModel} = model;
 
@@ -59,4 +52,5 @@ export class LogViewer extends Component {
             ]
         });
     }
+
 }
