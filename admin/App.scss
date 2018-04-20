@@ -29,9 +29,9 @@
 }
 
 .group-header-icon-expanded {
-  margin: 5px var(--xh-pad-half-px) 0 var(--xh-pad-half-px);
+  margin: var(--xh-pad-half-px) var(--xh-pad-half-px) 0 var(--xh-pad-half-px);
 }
 
 .group-header-icon-collapsed {
-  margin: 5px 8px 0 8px;
+  margin: var(--xh-pad-half-px) 8px 0 8px;
 }
