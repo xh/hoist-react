@@ -22,8 +22,6 @@ import {
     versionBar
 } from './impl';
 
-import './AppContainer.scss';
-
 
 /**
  * Top-level wrapper to provide core Hoist Application layout and infrastructure to an application's

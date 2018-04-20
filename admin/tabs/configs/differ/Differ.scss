@@ -4,33 +4,25 @@
   border-collapse: collapse;
 
   tr {
-    border-bottom: 1px solid var(--xh-gray);
-  }
-
-  tr:first-child {
-    background-color: black;
+    border-bottom: var(--xh-border-solid);
   }
 
   tr:nth-child(odd):not(:first-child) {
-    background-color: var(--app-alt-background-color);
-  }
-
-  tr:nth-child(even) {
-    background-color: #1f232b;
+    background-color: var(--xh-bg-alt);
   }
 
   th {
     text-align: left;
-    padding: 5px;
+    padding: var(--xh-pad-px);
   }
 
   td {
     width: 160px;
-    padding: 5px;
+    padding: var(--xh-pad-px);
     word-wrap: break-word;
 
     &.diff {
-      color: green;
+      color: var(--xh-green);
     }
   }
 

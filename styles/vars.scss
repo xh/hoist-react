@@ -1,0 +1,211 @@
+@import '~sass-material-colors/sass/sass-material-colors';
+
+// Functions to fetch Google material design colors (https://material.io/color/)
+// While not strictly following any material design conventions within Hoist, using these color
+// helps to keep things more consistent and harmonious (vs. choosing "arbitrary" color vals).
+@function mc($color-name, $color-variant) {
+  @return material-color($color-name, $color-variant);
+}
+@function mc-muted($color-name, $color-variant, $amount:30%, $lighten-amount:10%) {
+  @return lighten(desaturate(material-color($color-name, $color-variant), $amount), $lighten-amount);
+}
+@function mc-trans($color-name, $color-variant, $amount:0.5) {
+  @return transparentize(material-color($color-name, $color-variant), $amount);
+}
+
+// CSS variable declarations - non-color-related + light-theme color defaults
+body {
+  // Core colors
+  --xh-black: var(--black, #{mc('grey', '900')});
+  --xh-blue: var(--blue, #{mc('blue', '700')});
+  --xh-blue-muted: var(--blue-muted, #{mc-muted('blue', '800', 40%)});
+  --xh-blue-dark: var(--blue-light, #{mc('light-blue', '900')});
+  --xh-blue-light: var(--blue-light, #{mc('light-blue', '600')});
+  --xh-blue-gray: var(--blue-gray, #{mc('blue-grey', '600')});
+  --xh-blue-gray-light: var(--blue-gray-light, #{mc('blue-grey', '50')});
+  --xh-blue-gray-dark: var(--blue-gray-dark, #{mc('blue-grey', '900')});
+  --xh-gray: var(--gray, #{mc('grey', '500')});
+  --xh-gray-dark: var(--gray-dark, #{mc('grey', '800')});
+  --xh-gray-light: var(--gray-light, #{mc('grey', '100')});
+  --xh-green: var(--green, #{mc('green', '700')});
+  --xh-green-muted: var(--green-muted, #{mc-muted('green', '700')});
+  --xh-orange: var(--orange, #{mc('orange', '800')});
+  --xh-orange-muted: var(--orange-muted, #{mc-muted('orange', '800')});
+  --xh-red: var(--red, #{mc('red', '900')});
+  --xh-red-muted: var(--red-muted, #{mc-muted('red', '900', 40%, 20%)});
+  --xh-yellow: var(--yellow, #{mc('yellow', '800')});
+  --xh-yellow-light: var(--yellow-light, #{mc('yellow', '50')});
+
+  // Background (app / components in general)
+  --xh-bg: var(--bg, white);
+  --xh-bg-alt: var(--bg-alt, var(--xh-blue-gray-light));
+  --xh-bg-highlight: var(--bg-highlight, #{mc-trans('blue', '200')});
+
+  // Borders
+  --xh-border-color: var(--border-color, #{mc('grey', '400')});
+  --xh-border-width: var(--border-width, 1);
+  --xh-border-width-px: calc(var(--xh-border-width) * 1px);
+
+  // Borders - one-stop definitions
+  --xh-border-solid: #{(var(--xh-border-width-px) solid var(--xh-border-color))};
+  --xh-border-dotted: #{(var(--xh-border-width-px) dotted var(--xh-border-color))};
+
+  // Border Radius (buttons, panels)
+  --xh-border-radius: var(--border-radius, 4);
+  --xh-border-radius-px: calc(var(--xh-border-radius) * 1px);
+
+  // Buttons
+  --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
+  --xh-button-font-size: var(--button-font-size, var(--xh-font-size));
+  --xh-button-font-size-px: calc(var(--xh-button-font-size) * 1px);
+
+  // Chart
+  --xh-chart-bg: var(--chart-bg, var(--xh-bg));
+
+  // Grid
+  --xh-grid-bg: var(--grid-bg, var(--xh-bg));
+  --xh-grid-bg-highlight: var(--grid-bg-highlight, var(--xh-bg-highlight));
+  --xh-grid-bg-odd: var(--grid-bg-odd, #{mc('grey', '100')});
+  --xh-grid-border-color: var(--grid-border-color, var(--xh-border-color));
+  --xh-grid-cell-focus-border-color: var(--grid-cell-focus-border-color, transparent);
+  --xh-grid-font-family: var(--grid-font-family, var(--xh-font-family));
+  --xh-grid-font-size: var(--grid-font-size, var(--xh-font-size));
+  --xh-grid-font-size-px: calc(var(--xh-grid-font-size) * 1px);
+  --xh-grid-group-bg: var(--grid-group-bg, var(--xh-blue-gray));
+  --xh-grid-group-text-color: var(--grid-group-text-color, white);
+  --xh-grid-header-bg: var(--grid-header-bg, var(--xh-blue-gray-light));
+  --xh-grid-header-text-color: var(--grid-header-text-color, var(--xh-text-color));
+
+  // Fonts
+  --xh-font-family: var(--font-family, #{(-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif)});
+  --xh-font-family-headings: var(--font-family, #{(-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif)});
+  --xh-font-family-mono: var(--font-family-mono, #{(Monaco, Consolas, monospace)});
+  --xh-font-size: var(--font-size, 13);
+  --xh-font-size-large-mult: var(--font-size-large-mult, 1.2);
+  --xh-font-size-large-em: var(--font-size-large-em, 1.2em);
+  --xh-font-size-small-mult: var(--font-size-small-mult, 0.9);
+  --xh-font-size-small-em: var(--font-size-small-em, 0.9em);
+
+  // Font sizes - calculated from above
+  --xh-font-size-px: calc(var(--xh-font-size) * 1px);
+  --xh-font-size-large: calc(var(--xh-font-size) * var(--xh-font-size-large-mult));
+  --xh-font-size-large-px: calc(var(--xh-font-size-large) * 1px);
+  --xh-font-size-small: calc(var(--xh-font-size) * var(--xh-font-size-small-mult));
+  --xh-font-size-small-px: calc(var(--xh-font-size-small) * 1px);
+
+  // Mask
+  --xh-mask-bg: var(--mask-bg, #{mc-trans('blue-grey', '900')});
+
+  // Navbar (top app toolbar)
+  --xh-navbar-bg: var(--navbar-bg, var(--xh-bg-alt));
+  --xh-navbar-border-color: var(--navbar-border-color, transparent);
+  --xh-navbar-color: var(--navbar-color, var(--xh-text-color));
+  --xh-navbar-height: var(--navbar-height, 42);
+  --xh-navbar-height-px: calc(var(--xh-navbar-height) * 1px);
+  --xh-navbar-title-color: var(--navbar-title-color, #{mc('blue-grey', '700')});
+  --xh-navbar-title-font-size: var(--navbar-title-font-size, calc(var(--xh-font-size) * 1.9));
+  --xh-navbar-title-font-size-px: calc(var(--xh-navbar-title-font-size) * 1px);
+
+  // Padding / Margin (spacing in general)
+  --xh-pad: var(--pad, 10);
+  --xh-pad-px: calc(var(--xh-pad) * 1px);
+  --xh-pad-double: calc(var(--xh-pad) * 2);
+  --xh-pad-double-px: calc(var(--xh-pad-double) * 1px);
+  --xh-pad-half: calc(var(--xh-pad) * 0.5);
+  --xh-pad-half-px: calc(var(--xh-pad-half) * 1px);
+
+  // Popups / dialogs
+  --xh-popup-border-color: var(--popup-border-color, var(--xh-popup-title-bg));
+  --xh-popup-border-width: var(--popup-border-width, var(--xh-border-width));
+  --xh-popup-border-width-px: calc(var(--xh-popup-border-width) * 1px);
+  --xh-popup-title-bg: var(--popup-header-bg, var(--xh-title-bg));
+  --xh-popup-title-font-size: var(--popup-title-font-size, var(--xh-title-font-size));
+  --xh-popup-title-font-size-px: calc(var(--xh-popup-title-font-size) * 1px);
+  --xh-popup-title-text-color: var(--popup-title-text-color, var(--xh-title-text-color));
+
+  // Resizable splitter
+  --xh-resizable-bg: var(--resizable-bg, #{mc('blue-grey', '50')});
+  --xh-resizable-border-color: var(--resizable-border-color, #{mc('blue-grey', '100')});
+  --xh-resizable-border-width: var(--resizable-border-width, 1);
+  --xh-resizable-border-width-px: calc(var(--xh-resizable-border-width) * 1px);
+  --xh-resizable-button-bg: var(--resizable-button-bg, transparent);
+  --xh-resizable-button-icon-color: var(--resizable-button-icon-color, var(--xh-blue-gray));
+  --xh-resizable-size: var(--resizable-size, 8);
+  --xh-resizable-size-px: calc(var(--xh-resizable-size) * 1px);
+
+  // Scrollbars (customized for webkit)
+  --xh-scrollbar-bg: var(--scrollbar-bg, #{mc('blue-grey', '100')});
+  --xh-scrollbar-thumb: var(--scrollbar-thumb, #{mc('blue-grey', '300')});
+
+  // Tabs
+  --xh-tab-border-width: var(--tab-border-width, var(--xh-border-width));
+  --xh-tab-border-width-px: calc(var(--xh-tab-border-width) * 1px);
+
+  // Toolbars
+  --xh-tbar-bg: var(--tbar-bg, var(--xh-bg-alt));
+  --xh-tbar-border-color: var(--tbar-border-color, #{mc('grey', '400')});
+  --xh-tbar-text-color: var(--tbar-text-color, var(--xh-text-color));
+
+  // Text
+  --xh-text-color: var(--text-color, var(--xh-blue-gray-dark));
+  --xh-text-color-accent: var(--text-color-accent, var(--xh-orange));
+  --xh-text-color-headings: var(--text-color-header, var(--xh-text-color));
+  --xh-text-color-highlight: var(--text-color-highlight, #{mc('blue-grey', '800')});
+  --xh-text-color-muted: var(--text-color-muted, var(--xh-gray));
+
+  // Titles (e.g. panels, dialogs)
+  --xh-title-bg: var(--title-bg, var(--xh-blue-gray));
+  --xh-title-text-color: var(--title-text-color, var(--xh-blue-gray-light));
+  --xh-title-font-size: var(--title-font-size, var(--xh-font-size-large));
+  --xh-title-font-size-px: calc(var(--xh-title-font-size) * 1px);
+  --xh-title-pad: var(--title-pad, calc(var(--xh-pad) * 0.8));
+  --xh-title-pad-px: calc(var(--xh-title-pad) * 1px);
+}
+
+// CSS variable declarations - dark-theme color overrides
+// (Note any of the color vars above can be overridden at the app level for a dark theme)
+body.xh-dark {
+  // Colors
+  --xh-black: var(--black, #0e0e0e);
+  --xh-gray-dark: var(--green, #{mc('grey', '900')});
+  --xh-green: var(--green, #009e0a); // could not find a MC green that works, especially in grids....
+  --xh-green-muted: var(--green-muted, #{mc-muted('green', '800', 20%, 5%)});
+  --xh-red: var(--red, #{mc('red', 'a700')});
+
+  // Background (app / components in general)
+  --xh-bg: var(--bg, var(--xh-black));
+  --xh-bg-alt: var(--bg-alt, var(--xh-blue-gray-dark));
+  --xh-bg-highlight: var(--bg-highlight, #{mc-trans('light-blue', '500', 0.6)});
+
+  // Borders
+  --xh-border-color: var(--border-color, #{mc('blue-grey', '800')});
+
+  // Grid
+  --xh-grid-bg-odd: var(--grid-bg-odd, var(--xh-gray-dark));
+  --xh-grid-border-color: var(--grid-border-color, #{mc('grey', '800')});
+  --xh-grid-group-bg: var(--grid-group-bg, #{mc('blue-grey', '800')});
+  --xh-grid-header-bg: var(--grid-header-bg, var(--xh-black));
+
+  // Navbar
+  --xh-navbar-border-color: var(--navbar-border-color, #{mc('blue-grey', '700')});
+  --xh-navbar-title-color: var(--navbar-title-color, #{mc('blue-grey', '50')});
+
+  // Resizable splitter
+  --xh-resizable-bg: var(--resizable-bg, #{mc('blue-grey', '800')});
+  --xh-resizable-border-color: var(--resizable-border-color, #{mc('blue-grey', '900')});
+  --xh-resizable-button-icon-color: var(--resizable-button-icon-color, #{mc('blue-grey', '900')});
+
+  // Scrollbars (customized for webkit)
+  --xh-scrollbar-bg: var(--scrollbar-bg, #{mc('grey', '800')});
+  --xh-scrollbar-thumb: var(--scrollbar-thumb, #{mc('blue-grey', '900')});
+
+  // Toolbars
+  --xh-tbar-bg: var(--tbar-bg, #{mc('blue-grey', '900')});
+  --xh-tbar-border-color: var(--tbar-border-color, #{mc('blue-grey', '800')});
+
+  // Text
+  --xh-text-color: var(--text-color, white);
+  --xh-text-color-accent: var(--text-color-accent, var(--xh-orange));
+  --xh-text-color-highlight: var(--text-color-highlight, white);
+  --xh-text-color-muted: var(--text-color-muted, #{mc('grey', '600')});
+}
