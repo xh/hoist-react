@@ -108,4 +108,4 @@ const faIcon = elemFactory(FontAwesomeIcon);
 const fa = function(props, name) {
     const prefix = (props && props.prefix) ? props.prefix : 'far';  // default to regular variant
     return faIcon({icon: [prefix, name], ...props});
-}
+};
