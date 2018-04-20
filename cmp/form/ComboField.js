@@ -36,14 +36,13 @@ export class ComboField extends HoistField {
             return opt == null ? HoistField.NULL_VALUE : opt;
         });
 
-        const value = this.renderValue,
-            itemPredicate = (q, v, index) => v.toLowerCase().includes(q.toLowerCase());
+        const value = this.renderValue;
 
         return suggest({
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: items,
             onItemSelect: this.onItemSelect,
-            itemPredicate,
+            itemPredicate: (q, v, index) => v.toLowerCase().includes(q.toLowerCase()),
             itemRenderer: (item, itemProps) => {
                 let isObj = isObject(item) && item.value,
                     value = isObj ? item.value : item,
