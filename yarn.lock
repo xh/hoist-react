@@ -85,7 +85,7 @@
     lodash "^4.2.0"
     to-fast-properties "^2.0.0"
 
-"@blueprintjs/core@^2.0.0", "@blueprintjs/core@^2.1.1", "@blueprintjs/core@~2.1.1":
+"@blueprintjs/core@^2.0.0", "@blueprintjs/core@^2.1.1":
   version "2.1.1"
   resolved "https://repo.xh.io/repository/npm-public/@blueprintjs/core/-/core-2.1.1.tgz#8e7178c7bd0faea53a0f9a25392215a1fe62d05e"
   dependencies:
@@ -94,6 +94,19 @@
     classnames "^2.2"
     dom4 "^2.0.1"
     normalize.css "^7.0.0"
+    popper.js "^1.14.1"
+    react-popper "^0.8.2"
+    tslib "^1.9.0"
+
+"@blueprintjs/core@~2.2.0":
+  version "2.2.0"
+  resolved "https://repo.xh.io/repository/npm-public/@blueprintjs/core/-/core-2.2.0.tgz#a22756d99cef1154339152787583f42f63c476d1"
+  dependencies:
+    "@blueprintjs/icons" "^2.1.1"
+    "@types/dom4" "^2.0.0"
+    classnames "^2.2"
+    dom4 "^2.0.1"
+    normalize.css "^8.0.0"
     popper.js "^1.14.1"
     react-popper "^0.8.2"
     tslib "^1.9.0"
@@ -4803,6 +4816,10 @@ normalize-url@^1.4.0:
 normalize.css@^7.0.0:
   version "7.0.0"
   resolved "https://repo.xh.io/repository/npm-public/normalize.css/-/normalize.css-7.0.0.tgz#abfb1dd82470674e0322b53ceb1aaf412938e4bf"
+
+normalize.css@^8.0.0:
+  version "8.0.0"
+  resolved "https://repo.xh.io/repository/npm-public/normalize.css/-/normalize.css-8.0.0.tgz#14ac5e461612538a4ce9be90a7da23f86e718493"
 
 npm-run-path@^2.0.0:
   version "2.0.2"
