@@ -2,8 +2,16 @@
 // NavBar
 //------------------------
 .pt-navbar, .pt-dark .pt-navbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
   color: var(--xh-navbar-color);
   background-color: var(--xh-navbar-bg-color);
+
+  > * {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
 
   .pt-navbar-heading {
     margin-left: var(--xh-pad-px);
@@ -11,6 +19,12 @@
   }
 
   .pt-navbar-group {
+    float: none; // Replace default float behaviour in favour of flexbox
+
+    &.pt-align-left {
+      flex: 1; // Flex simulates left alignment
+    }
+
     &.pt-align-right {
       > * {
         margin-left: var(--xh-pad-half-px);
@@ -64,6 +78,7 @@
 //------------------------
 .pt-button {
   border-radius: var(--xh-border-radius);
+  white-space: nowrap;
 
   &:not([class*="pt-intent-"]) {
     color: var(--xh-button-text-color);

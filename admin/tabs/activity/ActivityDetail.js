@@ -10,7 +10,6 @@ import {hoistComponent, elemFactory} from 'hoist/core';
 import {filler, table, tbody, tr, th, td} from 'hoist/layout';
 import {jsonField, toolbar} from 'hoist/cmp';
 import {fmtDateTime} from 'hoist/format';
-import {Icon} from 'hoist/icon';
 
 @hoistComponent()
 class ActivityDetail extends Component {
@@ -57,7 +56,6 @@ class ActivityDetail extends Component {
             toolbar(
                 filler(),
                 button({
-                    icon: Icon.close(),
                     text: 'Close',
                     intent: 'primary',
                     onClick: this.onCloseClick

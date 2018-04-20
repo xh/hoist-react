@@ -76,7 +76,10 @@ export class HoistModel {
     /** Show about dialog? */
     @observable aboutIsOpen = false;
 
-    /** Top level model for the App - assigned via BaseAppModel's constructor */
+    /** Updated App version available, as reported by server. */
+    @observable updateVersion = null;
+
+    /** Top level model for the App - assigned via BaseAppModel's constructor. */
     appModel = null;
 
     /** Router model for the App - used for route based navigation. */
@@ -137,6 +140,16 @@ export class HoistModel {
     @action
     hideAbout() {
         this.aboutIsOpen = false;
+    }
+
+    /**
+     * Show the update toolbar prompt. Called by EnvironmentService when the server reports that a
+     * new (or at least different) version is available and the user should be prompted.
+     * @param {string} updateVersion
+     */
+    @action
+    showUpdateBar(updateVersion) {
+        this.updateVersion = updateVersion;
     }
 
     //---------------------------------

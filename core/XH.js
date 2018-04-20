@@ -4,23 +4,33 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
-
 import {isPlainObject} from 'lodash';
 import {Exception, ExceptionHandler} from 'hoist/exception';
 
 import {hoistModel} from './HoistModel';
 
+// noinspection JSUnresolvedVariable
 /**
  * Top-level provider of key aliases to methods and services in Hoist.
  * Available to applications via import - installed as window.XH for troubleshooting purposes.
  */
 export const XH = window.XH = new class {
+    // The `xhFoo` values below are set via webpack.DefinePlugin at build time.
+    // See @xh/hoist-dev-utils/configureWebpack.
 
-    // Set via webpack.DefinePlugin at build time - see @xh/hoist-dev-utils/configureWebpack
+    /** Short internal code for the application - matches server-side project name */
+    appCode = xhAppCode;
+
+    /** User-facing display name for the application. */
     appName = xhAppName;
+
+    /** SemVer or Snapshot version of the client build */
     appVersion = xhAppVersion;
+
+    /** Git commit hash (or equivalent) of the client build */
     appBuild = xhAppBuild;
+
+    /** Root URL context/path - prepended to all relative fetch requests */
     baseUrl = xhBaseUrl;
 
     constructor() {
@@ -87,4 +97,5 @@ export const XH = window.XH = new class {
             this[it] = src[it];
         });
     }
+
 }();

@@ -15,23 +15,27 @@ import {button} from 'hoist/kit/blueprint';
  * Convenience Button preconfigured for use as a trigger for a logout operation.
  * Accepts props documented below as well as any others supported by Blueprint's Button.
  *
- * An onClick handler can be provided to implement additional operations on logout
- * If onClick handler is provided it should call XH.identityService.logoutAsync();
+ * An onClick handler can be provided to implement additional operations on logout,
+ * but should ensure it calls `XH.identityService.logoutAsync()`.
  */
 @hoistComponent()
 export class LogoutButton extends Component {
 
     static propTypes = {
         icon: PT.element,
+        title: PT.string,
+        intent: PT.string,
         onClick: PT.func
     };
 
     render() {
         if (!XH.hoistModel.appModel.enableLogout) return null;
 
-        const {icon, onClick, ...rest} = this.props;
+        const {icon, title, intent, onClick, ...rest} = this.props;
         return button({
             icon: icon || Icon.logout(),
+            title: title || 'Logout',
+            intent: intent || 'danger',
             onClick: onClick || this.onClick,
             ...rest
         });

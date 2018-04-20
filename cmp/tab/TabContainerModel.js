@@ -5,8 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH} from 'hoist/core';
-import {computed, action, observable, autorun} from 'hoist/mobx';
-import {max, uniqBy, startCase, isPlainObject} from 'lodash';
+import {action, autorun, computed, observable} from 'hoist/mobx';
+import {isPlainObject, max, startCase, uniqBy} from 'lodash';
 import {throwIf} from 'hoist/utils/JsUtils';
 import {wait} from 'hoist/promise';
 import {TabPaneModel} from 'hoist/cmp';
@@ -16,8 +16,7 @@ import {TabPaneModel} from 'hoist/cmp';
  *
  * This TabContainer also supports managed loading and refreshing of its TabPanes.
  * In particular, TabPanes will be lazily instantiated and can also be lazily refreshed.
- *
- * See also TabPaneModel.
+ * @see TabPaneModel
  */
 export class TabContainerModel {
     id = null;
@@ -31,15 +30,15 @@ export class TabContainerModel {
     parent = null;   // For sub-tabs only
 
     /**
-     * Construct this object
-     * @param id, String.  Unique id.  Used for generating routes.
-     * @param name, String. Display name for the tab.
-     * @param orientation, 'v' or 'h'
-     * @param useRoutes, if true, component will use routes for navigation.
-     *      These routes must be setup externally in the application (See BaseApp.getRoutes()).  The routes may exist at
-     *      any level of the application, but there must be a route of the form /../../[containerId]/[childPaneId] for
-     *      each child pane in this container.
-     * @param children, configurations for TabPaneModels, or TabContainerModel
+     * @param {string} id - unique ID, used for generating routes.
+     * @param {string} [name] - display name for this container - useful in particular when displaying
+     *      nested tabs, where this model's container is a direct child of a parent TabContainer.
+     * @param {string} [orientation=h] - specify horizontal vs. vertical tabs.
+     * @param {boolean} [useRoutes=false] - true to use routes for navigation.
+     *      These routes must be setup externally in the application (See BaseApp.getRoutes()).
+     *      They may exist at any level of the application, but there must be a route of the form
+     *      `/../../[containerId]/[childPaneId]` for each child pane in this container.
+     * @param {Object[]} children - configurations for TabPaneModels or nested TabContainerModels.
      */
     constructor({
         id,

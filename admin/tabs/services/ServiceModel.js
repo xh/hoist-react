@@ -4,13 +4,10 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
-import {SECONDS} from 'hoist/utils/DateTimeUtils';
+import {XH} from 'hoist/core';
 import {ToastManager} from 'hoist/cmp';
 import {UrlStore} from 'hoist/data';
-import {Icon} from 'hoist/icon';
 import {GridModel} from 'hoist/grid';
-
 import {baseCol} from 'hoist/columns/Core';
 
 export class ServiceModel {
@@ -49,12 +46,7 @@ export class ServiceModel {
 
     onClearCacheSuccess = () => {
         this.loadAsync();
-        ToastManager.getToaster().show({
-            intent: 'success',
-            message: 'Caches Cleared',
-            icon: Icon.check({style: {alignSelf: 'center', marginLeft: '5px'}}),
-            timeout: 3 * SECONDS
-        });
+        ToastManager.show({message: 'Caches Cleared'});
     }
 
     async loadAsync() {

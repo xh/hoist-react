@@ -6,9 +6,7 @@
  */
 import {XH} from 'hoist/core';
 import {observable, setter, computed, action} from 'hoist/mobx';
-import {Icon} from 'hoist/icon';
 import {ToastManager} from 'hoist/cmp';
-import {SECONDS} from 'hoist/utils/DateTimeUtils';
 
 /**
  * Local Model to handle Exception Dialog.
@@ -37,12 +35,7 @@ export class ExceptionDialogModel {
         if (svc.isReady) {
             svc.submitAsync({exception, msg: userMessage})
                 .then(() => {
-                    ToastManager.getToaster().show({
-                        intent: 'success',
-                        message: 'Error Details Submitted',
-                        icon: Icon.check({style: {alignSelf: 'center', marginLeft: '5px'}}),
-                        timeout: 3 * SECONDS
-                    });
+                    ToastManager.show({message: 'Error Details Submitted'});
                 });
         }
 

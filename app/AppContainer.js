@@ -7,13 +7,20 @@
 
 import {Children, Component} from 'react';
 import {ContextMenuTarget} from 'hoist/kit/blueprint';
-import {observer, observable, setter} from 'hoist/mobx';
-import {XH, elemFactory, LoadState} from 'hoist/core';
+import {observable, observer, setter} from 'hoist/mobx';
+import {elemFactory, LoadState, XH} from 'hoist/core';
 import {contextMenu, loadMask} from 'hoist/cmp';
-import {frame, vframe, viewport, fragment} from 'hoist/layout';
+import {div, frame, vframe, viewport} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
 
-import {aboutDialog, impersonationBar, loginPanel, versionBar, exceptionDialog} from './impl';
+import {
+    aboutDialog,
+    exceptionDialog,
+    impersonationBar,
+    loginPanel,
+    updateBar,
+    versionBar
+} from './impl';
 
 import './AppContainer.scss';
 
@@ -44,7 +51,7 @@ export class AppContainer extends Component {
     }
 
     render() {
-        return fragment(
+        return div(
             this.renderContent(),
             exceptionDialog() // Always render the exception dialog -- might need it :-(
         );
@@ -67,6 +74,7 @@ export class AppContainer extends Component {
                 return viewport(
                     vframe(
                         impersonationBar(),
+                        updateBar(),
                         frame(Children.only(this.props.children)),
                         versionBar()
                     ),
@@ -90,12 +98,12 @@ export class AppContainer extends Component {
                 {
                     text: 'About',
                     icon: Icon.info(),
-                    action: () => hoistModel.setShowAbout(true)
+                    action: () => hoistModel.showAbout()
                 },
                 {
                     text: 'Logout',
                     icon: Icon.logout(),
-                    omit: !hoistModel.appModel.enableLogout,
+                    hidden: !hoistModel.appModel.enableLogout,
                     action: () => XH.identityService.logoutAsync()
                 }
             ]

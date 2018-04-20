@@ -4,14 +4,13 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
 import {observable, action} from 'hoist/mobx';
 
 /**
  * Model for convenient, imperative Alerting/Confirming.
  *
- * This object may be constructed with default arguments and
- * used to show multiple messages using the alert() and confirm() methods.
+ * This object may be constructed with default arguments and used to show multiple messages
+ * using the alert() and confirm() methods.
  */
 export class MessageModel {
 
@@ -19,8 +18,7 @@ export class MessageModel {
 
     /**
      * Default Settings.
-     *
-     * These can be overriden in the constructor, the alert() or the confirm() methods.
+     * These can be overridden in the constructor, the alert(), or the confirm() methods.
      */
     defaults = {
         title: null,
@@ -35,9 +33,7 @@ export class MessageModel {
     }
 
     /**
-     * Construct this object.
-     *
-     * @param config, default options for this instance.
+     * @param {Object} config - default options for this instance.
      */
     constructor(config) {
         this.initialConfig = config;
@@ -45,8 +41,7 @@ export class MessageModel {
 
     /**
      * Show a confirmation, with cancellation option.
-     *
-     * @param config, options for this display.
+     * @param {Object} config - options for this particular show of the dialog.
      */
     @action
     confirm(config) {
@@ -56,8 +51,7 @@ export class MessageModel {
 
     /**
      * Show a simple alert, with no cancellation option.
-     *
-     * @param config, options for this display.
+     * @param {Object} config - options for this particular show of the dialog.
      */
     @action
     alert(config) {
@@ -69,6 +63,10 @@ export class MessageModel {
         this.isOpen = true;
     }
 
+
+    //------------------------
+    // Implementation
+    //------------------------
     @action
     doConfirm() {
         if (this.onConfirm) this.onConfirm();

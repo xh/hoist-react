@@ -9,7 +9,7 @@ import {autorun, action, observable, computed} from 'hoist/mobx';
 import {castArray, intersection, union, orderBy} from 'lodash';
 
 /**
- * Model for managing the selection in a GridPanel.
+ * Model for managing the selection of GridModel.
  */
 export class GridSelectionModel {
 
@@ -17,23 +17,30 @@ export class GridSelectionModel {
 
     @observable.ref ids = [];
 
+    /** Single selected record, or null if multiple or no records selected. */
     @computed get singleRecord() {
         const ids = this.ids;
         return ids.length === 1 ? this.parent.store.getById(ids[0]) : null;
     }
 
+    /** Currently selected records. */
     @computed get records() {
         return this.ids.map(it => this.parent.store.getById(it));
     }
 
+    /** Is the selection empty? */
     @computed get isEmpty() {
         return this.ids.length === 0;
     }
 
+    /** Number of currently selected records. */
     @computed get count() {
         return this.ids.length;
     }
 
+    /**
+     * @param {GridModel} parent - GridModel containing this selection.
+     */
     constructor({parent}) {
         this.parent = parent;
         autorun(() => {
@@ -47,10 +54,10 @@ export class GridSelectionModel {
     }
 
     /**
-     * Set grid selection
+     * Set the grid selection.
      *
-     * @param records, supports either single record, single id, array of records or array of ids
-     * @param clearSelection, whether to clear previous selection rather than add to it.
+     * @param {Object[]} records - supports either single record, single id, array of records or array of ids
+     * @param {boolean} clearSelection - clear previous selection (rather than add to it)?
      */
     @action
     select(records, clearSelection = true) {
@@ -63,7 +70,7 @@ export class GridSelectionModel {
     }
 
     /**
-     * Selects first row in grid
+     * Select the first row in the grid.
      */
     selectFirst() {
         const {store, sortBy} = this.parent,

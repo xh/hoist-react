@@ -9,19 +9,18 @@ import {isString} from 'lodash';
 import {GridContextMenuItem} from './GridContextMenuItem';
 
 /**
- * Model for ContextMenu on Grids.
+ * Model for ContextMenu on Grid.
  *
- * To add a context menu on a grid specify a getContextMenu() method on the GridModel.
+ * To add a context menu on a grid specify the getContextMenu() method on the GridModel.
  */
 export class GridContextMenu {
 
     items = [];
 
     /**
-     * Construct this object.
-     *
-     * @param items, Array of GridContextMenuItems, configs to create them, or Strings.
-     *        If a String, value can be '-' for a seperator, or a key for a native AG Grid menu items.
+     * @param {Object[]} items - collection of GridContextMenuItems, configs to
+     *          create them, or Strings.  If a String, value can be '-' for a
+     *          seperator, or a key for a native AG Grid menu item.
      */
     constructor(items) {
         this.items = items.map(it => {

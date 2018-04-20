@@ -9,7 +9,6 @@ import {PropTypes as PT} from 'prop-types';
 import {hoistComponent, XH, elemFactory} from 'hoist/core';
 import {button} from 'hoist/kit/blueprint';
 import {ToastManager} from 'hoist/cmp';
-import {SECONDS} from 'hoist/utils/DateTimeUtils';
 import {Icon} from 'hoist/icon';
 
 import ClipboardJS from 'clipboard';
@@ -74,11 +73,9 @@ export class ClipboardButton extends Component {
 
         const {successMessage} = this.props;
         if (successMessage) {
-            ToastManager.getToaster().show({
-                icon: Icon.clipboard({style: {alignSelf: 'center', marginLeft: '5px'}}),
-                intent: 'success',
-                timeout: 3 * SECONDS,
-                message: successMessage
+            ToastManager.show({
+                message: successMessage,
+                icon: Icon.clipboard({style: {alignSelf: 'center', marginLeft: '5px'}})
             });
         }
     }

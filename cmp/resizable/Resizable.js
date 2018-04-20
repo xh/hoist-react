@@ -4,10 +4,9 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
-import React, {Component, Children} from 'react';
+import React, {Children, Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {elemFactory, hoistComponent} from 'hoist/core';
 import {box, hbox, vbox} from 'hoist/layout';
 
 import {ResizableModel} from './ResizableModel';
@@ -18,36 +17,34 @@ import {collapser} from './impl/Collapser';
  * A Resizable/Collapsible Container
  *
  * This component is designed to host a fixed-height/fixed-width child within a flex box.
- * It will allow the user to manage the fixed size via drag-drop, and button based expand/collapse.
+ * It will allow the user to manage the fixed size via drag-drop and button based expand/collapse.
  *
- * When collapsed, it will show either the configured 'collapsedDisplay' element, or, if the child panel
- * is a HoistComponent, the child component with its 'isCollapsed' property set to true.
+ * When collapsed, it will show either the configured `collapsedDisplay` element or, if the child
+ * panel is a HoistComponent, the child component with its `isCollapsed` property set to true.
  *
- * Applications should provide optional values for isOpen, contentSize, and prefName.
+ * Applications should provide optional values for `isOpen`, `contentSize`, and `prefName`.
  * Applications may provide this object with an instance of ResizableModel.
- *
- * @prop side, string - The side of this container where resizing and collapsing will be done.
- * @prop isCollapsible, boolean - Can the panel be collapsed via collapse/expand toggle button
- * @prop isDraggable, object - Can the panel be resized with drag and drop?
- * @prop side, string - The side of this container where resizing and collapsing will be done.
- * @prop isOpen, boolean - If the content panel showing?
- * @prop contentSize, integer - Size of the content panel. If side is `left` or `right` it
- *       represents the width, otherwise it represents the height.
- * @prop collapsedDisplay, React Element.
- * @prop prefName, string, Preference name to optionally store state in for this component.
  */
 @hoistComponent()
 export class Resizable extends Component {
 
     static propTypes = {
-        isCollapsible: PT.bool,
-        isDraggable: PT.bool,
+        /** The side of this container on which the resize/collapse border will appear. */
         side: PT.oneOf(['top', 'right', 'bottom', 'left']).isRequired,
+        /** Size of the content panel (width if side `left` or `right` - height otherwise). */
         contentSize: PT.number.isRequired,
+        /** Can the panel be collapsed via collapse/expand toggle button? */
+        isCollapsible: PT.bool,
+        /** Can the panel be resized via drag and drop? */
+        isDraggable: PT.bool,
+        /** Is the content panel expanded? */
         isOpen: PT.bool,
+        /** Optional preference name to store sizing and collapsed state for this component. */
         prefName: PT.string,
-        model: PT.object,
-        collapsedDisplay: PT.object
+        /** React Element to display when collapsed. */
+        collapsedDisplay: PT.element,
+        /** ResizableModel - typically constructed internally by this component. */
+        model: PT.object
     };
 
     static defaultProps = {

@@ -7,6 +7,7 @@
 import {BaseService} from './BaseService';
 import {XH} from 'hoist/core';
 import {Exception} from 'hoist/exception';
+import {castArray} from 'lodash';
 
 export class FetchService extends BaseService {
     
@@ -48,7 +49,14 @@ export class FetchService extends BaseService {
 
         // 3) preprocess and apply params
         if (params) {
-            const paramsString = Object.entries(params).map(v => `${v[0]}=${v[1]}`).join('&');
+            const paramsStrings = [];
+            Object.entries(params).forEach(v => {
+                const key = v[0],
+                    vals = castArray(v[1]);
+                vals.forEach(val => paramsStrings.push(`${key}=${val}`));
+            });
+            const paramsString = paramsStrings.join('&');
+
             if (method === 'POST') {
                 opts.body = paramsString;
             } else {

@@ -56,4 +56,4 @@ export const tr = elemFactory('tr');
 export const ul = elemFactory('ul');
 export const ol = elemFactory('ol');
 export const li = elemFactory('li');
-
+export const a = elemFactory('a');
