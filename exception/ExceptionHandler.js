@@ -34,7 +34,7 @@ export class ExceptionHandler {
      * @param {boolean} [options.showAsError] - display to user/log as "error" - default true.
      *      If true, error details and reporting options will be shown. Apps should set to false
      *      for "expected" exceptions.
-     * @paramn {boolean} [options.requireReload] - force user to fully refresh the app in order to
+     * @param {boolean} [options.requireReload] - force user to fully refresh the app in order to
      *      dismiss - default false, excepting session expired exceptions.
      */
     static handleException(exception, options) {
