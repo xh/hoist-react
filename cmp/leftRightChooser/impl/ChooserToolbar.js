@@ -40,4 +40,4 @@ class ChooserToolbar extends Component {
         });
     }
 }
-export const chooserToolbar = elemFactory(Toolbar);
+export const chooserToolbar = elemFactory(ChooserToolbar);

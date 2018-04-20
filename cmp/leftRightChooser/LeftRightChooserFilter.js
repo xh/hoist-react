@@ -6,7 +6,7 @@
  */
 
 import {StoreFilterField} from 'hoist/cmp/StoreFilterField';
-import {elemFactory} from 'hoist/core';
+import {elemFactory, hoistComponent} from 'hoist/core';
 import {escapeRegExp} from 'lodash';
 
 /**
