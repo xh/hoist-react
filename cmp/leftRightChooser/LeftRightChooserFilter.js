@@ -12,15 +12,14 @@ import {setter, observable} from 'hoist/mobx';
 import {escapeRegExp} from 'lodash';
 
 /**
- * A Component that can bind to any store and filter it,
+ * A Component that can bind to a LeftRightChooser, and filter both lists
  * based on simple text matching in selected fields.
  */
 @hoistComponent()
-export class StoreFilterField extends Component {
+class LeftRightChooserFilter extends Component {
     @setter @observable value = '';
 
     static defaultProps = {
-        store: null,
         fields: []
     };
 
@@ -45,21 +44,19 @@ export class StoreFilterField extends Component {
         this.setValue('');
         this.runFilter();
     }
-
+    
     runFilter() {
-        const {store, fields} = this.props;
-        let searchTerm = escapeRegExp(this.value);
+        const {fields} = this.props,
+            searchTerm = escapeRegExp(this.value);
 
-        let filter = null;
-        if (searchTerm && fields.length) {
-            filter = (rec) => fields.some(f => {
-                const fieldVal = rec[f];
-                return fieldVal && new RegExp('(^|\\W)' + searchTerm, 'ig').test(fieldVal);
+        const filter = (raw) => {
+            return fields.some(f => {
+                const fieldVal = !!searchTerm && raw[f];
+                return ((fieldVal && new RegExp(`(^|\\\\W)${searchTerm}`, 'ig').test(fieldVal)) || !fieldVal);
             });
-        }
-        
-        store.setFilter(filter);
+        };
+
+        this.model.setDisplayFilter(filter);
     }
 }
-
-export const storeFilterField = elemFactory(StoreFilterField);
+export const leftRightChooserFilter = elemFactory(LeftRightChooserFilter);

@@ -8,6 +8,7 @@ import {isPlainObject} from 'lodash';
 import {Exception, ExceptionHandler} from 'hoist/exception';
 
 import {hoistModel} from './HoistModel';
+import '../styles/XH.scss';
 
 // noinspection JSUnresolvedVariable
 /**

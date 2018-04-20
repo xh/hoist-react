@@ -21,6 +21,7 @@ export const boolCheckCol = colFactory({
     cellRendererFramework: (
         class extends Component {
             render() {return this.props.value ? Icon.check({prefix: 'fas', cls: 'xh-green'}) : ''}
+            refresh() {return false}
         }
     )
 });
