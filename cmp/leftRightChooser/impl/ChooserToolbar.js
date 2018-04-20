@@ -25,6 +25,7 @@ class ChooserToolbar extends Component {
         return toolbar({
             width: 50,
             vertical: true,
+            justifyContent: 'center',
             items: [
                 button({
                     icon: Icon.chevronRight(),

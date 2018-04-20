@@ -5,8 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {StoreFilterField} from 'hoist/cmp/StoreFilterField';
-import {elemFactory, hoistComponent} from 'hoist/core';
+import {Component} from 'react';
+import {hoistComponent, elemFactory} from 'hoist/core';
+import {button, inputGroup} from 'hoist/kit/blueprint';
+import {setter, observable} from 'hoist/mobx';
 import {escapeRegExp} from 'lodash';
 
 /**
@@ -14,7 +16,34 @@ import {escapeRegExp} from 'lodash';
  * based on simple text matching in selected fields.
  */
 @hoistComponent()
-class LeftRightChooserFilter extends StoreFilterField {
+class LeftRightChooserFilter extends Component {
+    @setter @observable value = '';
+
+    static defaultProps = {
+        fields: []
+    };
+
+    render() {
+        return inputGroup({
+            placeholder: 'Quick filter...',
+            value: this.value,
+            onChange: this.onValueChange,
+            rightElement: button({
+                cls: 'pt-minimal pt-icon-cross',
+                onClick: this.onClearClick
+            })
+        });
+    }
+
+    onValueChange = (e) => {
+        this.setValue(e.target.value);
+        this.runFilter();
+    }
+
+    onClearClick = () => {
+        this.setValue('');
+        this.runFilter();
+    }
     
     runFilter() {
         const {fields} = this.props,
