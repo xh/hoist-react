@@ -1,18 +1,24 @@
 .xh-resizable-collapser {
-    background-color: #959b9e;
+    background-color: var(--xh-resizable-bg);
     justify-content: center;
     align-items: center;
 }
 
 .xh-resizable-collapser.vertical {
-    height: 8px;
+    height: var(--xh-resizable-size-px);
+    border-top: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
+    border-bottom: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
 }
 
 .xh-resizable-collapser.horizontal {
-    width: 8px;
+    width: var(--xh-resizable-size-px);
+    border-left: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
+    border-right: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
 }
 
 .xh-resizable-collapser .xh-resizable-collapser-btn {
+    color: var(--xh-resizable-button-icon-color) !important;
+    background-color: var(--xh-resizable-button-bg);
     margin: 0;
     padding: 0;
     z-index: 10;

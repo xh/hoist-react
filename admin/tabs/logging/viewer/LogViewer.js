@@ -40,7 +40,6 @@ export class LogViewer extends Component {
                     side: 'right',
                     contentSize: 250,
                     isOpen: true,
-                    collapsedDisplay: toolbar(vbox(div('Log'), div('Files'))),
                     item: vframe(
                         grid({model: files}),
                         toolbar(

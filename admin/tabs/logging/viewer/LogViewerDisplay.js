@@ -4,7 +4,6 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
 import {Component} from 'react';
 import {elemFactory, hoistComponent} from 'hoist/core';
 import {Icon} from 'hoist/icon';
@@ -77,5 +76,4 @@ class LogViewerDisplay extends Component {
         }
     }
 }
-
 export const logViewerDisplay = elemFactory(LogViewerDisplay);

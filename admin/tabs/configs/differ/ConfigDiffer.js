@@ -45,11 +45,12 @@ export class ConfigDiffer extends Component {
                     model,
                     placeholder: 'https://remote-host/',
                     field: 'remoteHost',
+                    width: 200,
                     options: XH.getConf('xhAppInstances')
                 }),
                 button({
                     text: 'Load Diff',
-                    intent: 'success',
+                    intent: 'primary',
                     onClick: this.onLoadDiffClick
                 })
             ),
@@ -65,7 +66,6 @@ export class ConfigDiffer extends Component {
                 filler(),
                 button({
                     text: 'Close',
-                    intent: 'primary',
                     onClick: this.onCloseClick
                 })
             ),
