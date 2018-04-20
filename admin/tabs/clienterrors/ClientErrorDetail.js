@@ -67,7 +67,7 @@ class ClientErrorDetail extends Component {
     }
 
     onCloseClick = () => {
-        this.model.setDetailRecord(null);
+        this.model.closeDetail();
     }
 
     getErrorStr = () => {

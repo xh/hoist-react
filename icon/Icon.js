@@ -94,6 +94,14 @@ export const Icon = {
     xCircle(p)       {return fa(p, 'times-circle')}
 };
 
+export const convertIconToSvg = function(icon, opts) {
+    const iconDef = fontawesome.findIconDefinition({
+        prefix: icon.props.icon[0],
+        iconName: icon.props.icon[1]
+    });
+    return fontawesome.icon(iconDef, opts).html[0];
+};
+
 //-----------------------------
 // Implementation
 //-----------------------------
