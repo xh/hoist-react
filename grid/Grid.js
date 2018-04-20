@@ -61,8 +61,14 @@ class Grid extends Component {
                 navigateToNextCell: this.onNavigateToNextCell,
                 defaultGroupSortComparator: this.sortByGroup,
                 icons: {
-                    groupExpanded: this.convertIconToSvg(Icon.chevronDown(), {classes: ['group-header-icon-expanded']}),
-                    groupContracted: this.convertIconToSvg(Icon.chevronRight(), {classes: ['group-header-icon-collapsed']})
+                    groupExpanded: this.convertIconToSvg(
+                        Icon.chevronDown(),
+                        {classes: ['group-header-icon-expanded']}
+                    ),
+                    groupContracted: this.convertIconToSvg(
+                        Icon.chevronRight(),
+                        {classes: ['group-header-icon-contracted']}
+                    )
                 }
             }
         );
