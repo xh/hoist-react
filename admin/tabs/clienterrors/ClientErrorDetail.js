@@ -20,7 +20,6 @@ class ClientErrorDetail extends Component {
 
         if (!rec) return null;
 
-        // done test and remove comment before merge
         return dialog({
             title: 'Error Details',
             style: {width: 1000},

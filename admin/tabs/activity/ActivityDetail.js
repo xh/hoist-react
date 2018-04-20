@@ -20,7 +20,6 @@ class ActivityDetail extends Component {
 
         if (!rec) return null;
 
-        // done remove after testing and before merge
         return dialog({
             title: 'Activity Details',
             style: {width: 600},
