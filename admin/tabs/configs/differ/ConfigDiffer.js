@@ -20,7 +20,6 @@ export class ConfigDiffer extends Component {
         const model = this.model,
             detailModel = model.detailModel;
         return fragment(
-            // done remove before merge
             dialog({
                 isOpen: model.isOpen,
                 canOutsideClickClose: false,
