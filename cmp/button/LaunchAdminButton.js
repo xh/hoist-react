@@ -24,14 +24,13 @@ export class LaunchAdminButton extends Component {
     };
 
     render() {
-        if (!XH.hoistModel.appModel.enableLogout) return null;
+        if (!XH.getUser().isHoistAdmin) return null;
 
         const {icon, title, onClick, ...rest} = this.props;
         return button({
             icon: icon || Icon.wrench(),
             title: title || 'Launch admin client...',
             onClick: onClick || this.onClick,
-            omit: !XH.getUser().isHoistAdmin,
             ...rest
         });
     }
