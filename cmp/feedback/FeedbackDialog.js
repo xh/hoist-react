@@ -19,7 +19,6 @@ export class FeedbackDialog extends Component {
 
     render() {
         const model = this.model;
-
         return dialog({
             title: 'Submit Feedback',
             style: {width: 450},
