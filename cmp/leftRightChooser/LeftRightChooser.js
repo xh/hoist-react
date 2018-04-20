@@ -11,7 +11,7 @@ import {hoistComponent, elemFactory} from 'hoist/core';
 import {vframe, hframe} from 'hoist/layout';
 import {grid} from 'hoist/grid';
 import {description} from './impl/Description';
-import {chooserToolbar} from './impl/Toolbar';
+import {chooserToolbar} from './impl/ChooserToolbar';
 import './LeftRightChooser.scss';
 
 /**

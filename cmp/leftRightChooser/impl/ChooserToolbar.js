@@ -15,7 +15,7 @@ import {Icon} from 'hoist/icon/index';
  * A Toolbar for the LeftRightChooser.
  */
 @hoistComponent()
-class Toolbar extends Component {
+class ChooserToolbar extends Component {
 
     render() {
         const {model} = this,

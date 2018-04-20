@@ -13,7 +13,7 @@ import {escapeRegExp} from 'lodash';
  * A Component that can bind to a LeftRightChooser, and filter both lists
  * based on simple text matching in selected fields.
  */
-
+@hoistComponent()
 class LeftRightChooserFilter extends StoreFilterField {
     
     runFilter() {
