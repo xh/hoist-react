@@ -1,20 +1,18 @@
 .xh-about-dialog {
   &__inner {
-    background-color: var(--xh-bg-color);
+    background-color: var(--xh-bg);
   }
 
   table {
     width: 100%;
     border-collapse: collapse;
-    border-top: var(--xh-border-solid);
-    border-bottom: var(--xh-border-solid);
   }
 
   th {
     text-align: right;
     vertical-align: top;
     white-space: nowrap;
-    background-color: var(--xh-bg-color-alt);
+    background-color: var(--xh-bg-alt);
     border-bottom: var(--xh-border-solid);
     border-right: var(--xh-border-solid);
     padding: var(--xh-pad-half-px);
