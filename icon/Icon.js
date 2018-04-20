@@ -69,6 +69,7 @@ export const Icon = {
     home(p)          {return fa(p, 'home')},
     info(p)          {return fa(p, 'info-circle')},
     list(p)          {return fa(p, 'align-justify')},
+    lock(p)          {return fa(p, 'lock')},
     login(p)         {return fa(p, 'sign-in')},
     logout(p)        {return fa(p, 'sign-out')},
     mail(p)          {return fa(p, 'envelope')},
@@ -91,6 +92,14 @@ export const Icon = {
     wrench(p)        {return fa(p, 'wrench')},
     x(p)             {return fa(p, 'times')},
     xCircle(p)       {return fa(p, 'times-circle')}
+};
+
+export const convertIconToSvg = function(icon, opts) {
+    const iconDef = fontawesome.findIconDefinition({
+        prefix: icon.props.icon[0],
+        iconName: icon.props.icon[1]
+    });
+    return fontawesome.icon(iconDef, opts).html[0];
 };
 
 //-----------------------------

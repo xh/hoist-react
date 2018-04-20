@@ -48,10 +48,9 @@
     "react-dom-factories": "~1.0.2"
   },
   "devDependencies": {
-    "@xh/hoist-dev-utils": "~0.6.0",
+    "@xh/hoist-dev-utils": "~0.6.1",
     "react": "~16.3.2",
     "react-dom": "~16.3.2",
-    "react-dom-factories": "~1.0.2",
-    "sass-material-colors": "^0.0.5"
+    "react-dom-factories": "~1.0.2"
   }
 }

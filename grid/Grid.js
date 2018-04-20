@@ -6,12 +6,11 @@
  */
 
 import {Component, isValidElement} from 'react';
-import fontawesome from '@fortawesome/fontawesome';
 import {PropTypes as PT} from 'prop-types';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
-import {defaults, xor, isString, isNumber, isBoolean, isEqual} from 'lodash';
-
+import {defaults, isString, isNumber, isBoolean, isEqual, xor} from 'lodash';
+import {convertIconToSvg, Icon} from 'hoist/icon';
 import './ag-grid';
 import {navigateSelection, agGridReact} from './ag-grid';
 
@@ -54,11 +53,21 @@ class Grid extends Component {
     constructor(props) {
         super(props);
         this.gridOptions = defaults(
-            props.gridOptions || {},
+            {...props.gridOptions},
             Grid.DEFAULT_GRID_OPTIONS,
             {
                 navigateToNextCell: this.onNavigateToNextCell,
-                defaultGroupSortComparator: this.sortByGroup
+                defaultGroupSortComparator: this.sortByGroup,
+                icons: {
+                    groupExpanded: convertIconToSvg(
+                        Icon.chevronDown(),
+                        {classes: ['group-header-icon-expanded']}
+                    ),
+                    groupContracted: convertIconToSvg(
+                        Icon.chevronRight(),
+                        {classes: ['group-header-icon-contracted']}
+                    )
+                }
             }
         );
         this.addAutoRun(() => this.syncSelection());
@@ -155,7 +164,7 @@ class Grid extends Component {
                 this._scrollOnSelect = true;
             }
         }
-        if (!rec) selection.select([]);
+        if (!rec) selection.clear();
         const count = selection.count;
 
         // Prepare each item
@@ -184,14 +193,9 @@ class Grid extends Component {
                 requiredRecordsNotMet = (isBoolean(required) && required && count === 0) ||
                                         (isNumber(required) && count !== required);
 
-            // Convert React FontAwesomeIcon to SVG markup for display in ag-grid's context menu.
             let icon = it.icon;
             if (isValidElement(icon)) {
-                const iconDef = fontawesome.findIconDefinition({
-                    prefix: icon.props.icon[0],
-                    iconName: icon.props.icon[1]
-                });
-                icon = fontawesome.icon(iconDef).html[0];
+                icon = convertIconToSvg(icon);
             }
 
             return {
