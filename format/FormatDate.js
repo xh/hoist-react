@@ -24,7 +24,7 @@ const DATE_FMT = 'YYYY-MM-DD',
  *
  * @param {Object|string} [opts] - a MomentJs format string or an options object
  * @param {string} [opts.fmt] - a MomentJs format string
- * @param {function} [opts.tipFn] - use to place formatted date in span with title property set to returned string,
+ * @param {function} [opts.tipFn] - use to place formatted date in span with title property set to returned string
  *                                  will be passed the originalValue param
  * @param {*} [opts.originalValue] - used to retain an unaltered reference to the original value to be formatted
  *                                   Not typically used by applications.
