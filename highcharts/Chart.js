@@ -5,19 +5,20 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {castArray} from 'lodash';
-import {hoistComponent, elemFactory} from 'hoist/core';
-import {frame, div} from 'hoist/layout';
+import {castArray, clone, merge} from 'lodash';
+import {elemFactory, hoistComponent} from 'hoist/core';
+import {div, frame} from 'hoist/layout';
 import {Ref} from 'hoist/utils/Ref';
 import Highcharts from 'highcharts/highstock';
-import {merge, clone} from 'lodash';
-
 
 import {LightTheme} from './theme/Light';
 import {DarkTheme} from './theme/Dark';
 
+
 /**
- * Wrapper Component for Highcharts chart.
+ * Wrapper Component for a Highcharts chart. Provides basic rendering / lifecycle management
+ * as well as configuration and theme defaults. The chart's core configuration should be sourced
+ * from a ChartModel prop passed to this component.
  */
 @hoistComponent()
 export class Chart extends Component {
@@ -35,6 +36,7 @@ export class Chart extends Component {
             })
         });
     }
+
 
     //-------------------
     // Implementation
@@ -95,9 +97,9 @@ export class Chart extends Component {
         axisLabels.forEach(lbl => {
             const axis = lbl + 'Axis',
                 arr = castArray(conf[axis] || {}),
-                dfltAxisConfig = this.getDefaultAxisConfig(axis);
+                defaultAxisConfig = this.getDefaultAxisConfig(axis);
 
-            conf[axis] = arr.map(it => merge({}, dfltAxisConfig, theme[axis], it));
+            conf[axis] = arr.map(it => merge({}, defaultAxisConfig, theme[axis], it));
             theme[axis] = null;
         });
     }
