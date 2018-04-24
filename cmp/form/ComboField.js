@@ -47,7 +47,7 @@ export class ComboField extends HoistField {
                 let isObj = isObject(item) && item.value,
                     value = isObj ? item.value : item,
                     label = isObj ? item.label : item;
-                if (item == HoistField.NULL_VALUE) label = '-';
+                if (item === HoistField.NULL_VALUE) label = '-';
                 return menuItem({
                     key: value,
                     text: label,
@@ -57,7 +57,7 @@ export class ComboField extends HoistField {
             },
             inputValueRenderer: s => s,
             inputProps: {
-                value: value === null || value === HoistField.NULL_VALUE ? '' : value.toString(),
+                value: value == null || value === HoistField.NULL_VALUE ? '' : value.toString(),
                 onChange: this.onChange,
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,
