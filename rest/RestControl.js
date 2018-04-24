@@ -16,8 +16,8 @@ import {label, checkField, comboField, jsonField, numberField, selectField, text
 export class RestControl extends Component {
 
     render() {
-        const model = this.model;
-        if (!model.isEditable && !model.value) return null;
+        if (this.isBlankMetaData()) return null;
+
         return hbox({
             cls: 'xh-rest-form__control',
             items: [
@@ -169,6 +169,11 @@ export class RestControl extends Component {
             width: 343,
             height: 150
         });
+    }
+
+    isBlankMetaData() {
+        const model = this.model;
+        return !model.value && (model.field.name == 'lastUpdatedBy' || model.field.name == 'lastUpdated');
     }
 }
 export const restControl = elemFactory(RestControl);
