@@ -43,24 +43,22 @@ export class MessageModel {
      * Show a confirmation, with cancellation option.
      * @param {Object} config - options for this particular show of the dialog.
      */
-    @action
     confirm(config) {
         Object.assign(this, this.defaults, this.initialConfig, config);
-        this.isOpen = true;
+        this.open();
     }
 
     /**
      * Show a simple alert, with no cancellation option.
      * @param {Object} config - options for this particular show of the dialog.
      */
-    @action
     alert(config) {
         Object.assign(this, this.defaults, this.initialConfig, config, {
             onCancel: null,
             cancelText: null,
             cancelIntent: null
         });
-        this.isOpen = true;
+        this.open();
     }
 
 
@@ -77,6 +75,11 @@ export class MessageModel {
     doCancel() {
         if (this.onCancel) this.onCancel();
         this.close();
+    }
+
+    @action
+    open() {
+        this.isOpen = true;
     }
 
     @action

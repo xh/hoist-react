@@ -107,7 +107,7 @@ export class ClientErrorPanel extends Component {
     }
 
     onRowDoubleClicked = (e) => {
-        this.model.setDetailRecord(e.data);
+        this.model.openDetail(e.data);
     }
 
     async loadAsync() {

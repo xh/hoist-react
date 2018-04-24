@@ -82,7 +82,7 @@ export class ConfigDiffer extends Component {
     }
 
     onRowDoubleClicked = (e) => {
-        this.model.detailModel.showDetail(e.data);
+        this.model.detailModel.open(e.data);
     }
 }
 export const configDiffer = elemFactory(ConfigDiffer);
