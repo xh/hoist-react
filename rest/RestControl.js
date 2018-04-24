@@ -173,7 +173,7 @@ export class RestControl extends Component {
 
     isBlankMetaData() {
         const model = this.model;
-        return !model.value && (model.field.name == 'lastUpdatedBy' || model.field.name == 'lastUpdated');
+        return !model.value && ['lastUpdatedBy', 'lastUpdated'].includes(model.field.name);
     }
 }
 export const restControl = elemFactory(RestControl);
