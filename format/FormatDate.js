@@ -68,15 +68,17 @@ export function fmtTime(v, opts = {}) {
 /**
  * Render dates formatted based on distance in time from current day
  *
- * @param v - date to format
- * @param opts - MomentJs format string options, may include:
- *      @param sameDayFmt - format for dates matching current day, defaults to 'hh:mma'
- *      @param nearFmt - format for dates within the number of months determined by the recentThreshold, defaults to 'MMM D'
- *      @param distantFmt - format for dates outside of the number of months specified by the recentThreshold, defaults to 'YYYY-MM-DD'
- *      @param distantThreshold - int used to determined the number of months away from the current month to be considered 'recent'
- *      @param tipFn - function, use to place formatted date in span with title property set to string returned by this function
- *      @param originalValue - used to retain an unaltered reference to the original value to be formatted
- *                             Not typically used by applications.
+ * @param {*} [v] - a date value to format, can be any value MomentJs can parse.
+ *      See: https://momentjs.com/docs/#/parsing/ for more info.
+ *
+ * @param {Object} [opts] - An options object, may include:
+ * @param {string} [opts.sameDayFmt] - a MomentJs format string for dates matching current day, defaults to 'hh:mma'.
+ * @param {string} [opts.nearFmt] - format for dates within the number of months determined by the recentThreshold, defaults to 'MMM D'.
+ * @param {string} [opts.distantFmt] - format for dates outside of the number of months specified by the recentThreshold, defaults to 'YYYY-MM-DD'.
+ * @param {int} [opts.distantThreshold] - used to determined the number of months away from the current month to be considered 'recent'
+ * @param {function} [opts.tipFn] - use to place formatted date in span with title property set to string returned by this function
+ * @param {*} [opts.originalValue] - used to retain an unaltered reference to the original value to be formatted
+ *      Not typically used by applications.
  *
  * Note: Moments are mutable. Calling any of the manipulation methods will change the original moment.
  */
