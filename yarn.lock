@@ -156,6 +156,14 @@
   dependencies:
     humps "^2.0.1"
 
+"@onsenui/custom-elements@1.0.0":
+  version "1.0.0"
+  resolved "https://repo.xh.io/repository/npm-public/@onsenui/custom-elements/-/custom-elements-1.0.0.tgz#8e2b5c8968b8d94da70c6e92ecc56b47f79a0ff3"
+
+"@onsenui/fastclick@1.1.1":
+  version "1.1.1"
+  resolved "https://repo.xh.io/repository/npm-public/@onsenui/fastclick/-/fastclick-1.1.1.tgz#0708ec6c7bdca8b87a028deb0dbb66b92001f737"
+
 "@types/dom4@^2.0.0":
   version "2.0.0"
   resolved "https://repo.xh.io/repository/npm-public/@types/dom4/-/dom4-2.0.0.tgz#00dc42fed6b36a7a6dabb8f7a9c9e678ee644e05"
@@ -1856,7 +1864,7 @@ core-js@^1.0.0:
   version "1.2.7"
   resolved "https://repo.xh.io/repository/npm-public/core-js/-/core-js-1.2.7.tgz#652294c14651db28fa93bd2d5ff2983a4f08c636"
 
-core-js@^2.4.0, core-js@^2.5.0, core-js@^2.5.3:
+core-js@^2.4.0, core-js@^2.5.0, core-js@^2.5.1, core-js@^2.5.3:
   version "2.5.5"
   resolved "https://repo.xh.io/repository/npm-public/core-js/-/core-js-2.5.5.tgz#b14dde936c640c0579a6b50cabcc132dd6127e3b"
 
@@ -4906,6 +4914,14 @@ onetime@^2.0.0:
   dependencies:
     mimic-fn "^1.0.0"
 
+onsenui@~2.9.2:
+  version "2.9.2"
+  resolved "https://repo.xh.io/repository/npm-public/onsenui/-/onsenui-2.9.2.tgz#f860eb528b1e60ee4d8d5e1ec59ebd3002928355"
+  dependencies:
+    "@onsenui/custom-elements" "1.0.0"
+    "@onsenui/fastclick" "1.1.1"
+    core-js "^2.5.1"
+
 opener@^1.4.3:
   version "1.4.3"
   resolved "https://repo.xh.io/repository/npm-public/opener/-/opener-1.4.3.tgz#5c6da2c5d7e5831e8ffa3964950f8d6674ac90b8"
@@ -5726,6 +5742,12 @@ react-dom@~16.3.2:
     fbjs "^0.8.16"
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
+    prop-types "^15.6.0"
+
+react-onsenui@~1.10.0:
+  version "1.10.0"
+  resolved "https://repo.xh.io/repository/npm-public/react-onsenui/-/react-onsenui-1.10.0.tgz#45bcbe646f9937a075aaa2ed05102180e8dd8126"
+  dependencies:
     prop-types "^15.6.0"
 
 react-popper@^0.8.2:
