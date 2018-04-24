@@ -47,7 +47,9 @@ export class RestControl extends Component {
         if (field.lookup) {
             return field.lookupStrict ? this.renderSelect() : this.renderCombo();
         } else if (type === 'bool') {
+            // Boolean controls will intelligently default based on nullability, unless editor type is otherwise specified
             if (editorType === 'boolSelect') return this.renderSelect();
+            if (editorType === 'boolCheck') return this.renderCheckField();
             return field.required ? this.renderCheckField() : this.renderSelect();
         } else if (type === 'number') {
             return this.renderNumberField();
