@@ -55,7 +55,7 @@ export class ComboField extends HoistField {
                 return label.toLowerCase().includes(q.toLowerCase());
             },
             itemRenderer: (item, itemProps) => {
-                let isObj = isObject(item) && item.value,
+                let isObj = isObject(item),
                     value = isObj ? item.value : item,
                     label = isObj ? item.label : item;
                 if (item === HoistField.NULL_VALUE) label = '-';

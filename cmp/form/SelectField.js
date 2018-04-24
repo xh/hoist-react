@@ -49,7 +49,7 @@ export class SelectField extends HoistField {
             $items: items,
             onItemSelect: this.onItemSelect,
             itemRenderer: (item, itemProps) => {
-                let isObj = isObject(item) && item.value,
+                let isObj = isObject(item),
                     value = isObj ? item.value : item,
                     label = isObj ? item.label : item;
                 if (item === HoistField.NULL_VALUE) label = '-';
