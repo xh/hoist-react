@@ -45,7 +45,7 @@ export class SelectField extends HoistField {
                 let isObj = isObject(item) && item.value,
                     value = isObj ? item.value : item,
                     label = isObj ? item.label : item;
-                if (item == HoistField.NULL_VALUE) label = '-';
+                if (item === HoistField.NULL_VALUE) label = '-';
                 return menuItem({
                     key: value,
                     text: label.toString(),
