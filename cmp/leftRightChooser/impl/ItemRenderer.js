@@ -26,4 +26,8 @@ export class ItemRenderer extends Component {
             ]
         });
     }
+
+    refresh() {
+        return false;
+    }
 }
