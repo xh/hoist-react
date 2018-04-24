@@ -166,6 +166,6 @@ export class ConfigPanel extends Component {
     }
 
     onDifferBtnClick = () => {
-        this.differModel.setIsOpen(true);
+        this.differModel.open();
     }
 }

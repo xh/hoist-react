@@ -7,12 +7,12 @@
 import {isString} from 'lodash';
 
 /**
- * Default Exception (Error) creation for Hoist Apps.
+ * Standardized Exception/Error objects.
  *
- * The main application entry point for this class is the create() method.
+ * The main entry point for this class is the create() method.
  * Applications can use this method to create various generic runtime exceptions.
+ * @see ExceptionHandler.handleException
  */
-
 export class Exception {
 
     static create(cfg) {
@@ -85,7 +85,7 @@ export class Exception {
 
     //-----------------------
     // Implementation
-    //------------------------
+    //-----------------------
     static createInternal(defaults, override) {
         if (isString(override)) {
             override = {message: override};

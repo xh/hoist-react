@@ -75,7 +75,7 @@ export class ClipboardButton extends Component {
         if (successMessage) {
             ToastManager.show({
                 message: successMessage,
-                icon: Icon.clipboard({style: {alignSelf: 'center', marginLeft: '5px'}})
+                icon: Icon.clipboard()
             });
         }
     }

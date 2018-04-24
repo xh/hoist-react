@@ -24,7 +24,8 @@ export class ActivityGridModel {
     @observable @setter category = '';
     @observable @setter device = '';
     @observable @setter browser = '';
-    @observable @setter detailRecord = null;
+
+    @observable detailRecord = null;
 
     store = new LocalStore({
         fields: [
@@ -100,6 +101,16 @@ export class ActivityGridModel {
     setEndDate(date) {
         if (!this.isValidDate(date) || moment(date).isSame(this.endDate)) return;
         this.endDate = date;
+    }
+
+    @action
+    openDetail(rec) {
+        this.detailRecord = rec;
+    }
+
+    @action
+    closeDetail() {
+        this.detailRecord = null;
     }
 
     //----------------
