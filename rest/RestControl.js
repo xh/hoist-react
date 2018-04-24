@@ -47,8 +47,7 @@ export class RestControl extends Component {
         if (field.lookup) {
             return field.lookupStrict ? this.renderSelect() : this.renderCombo();
         } else if (type === 'bool') {
-            if (editorType == 'boolSelect') return this.renderSelect();
-            if (editorType == 'checkbox') return this.renderCheckField();
+            if (editorType === 'boolSelect') return this.renderSelect();
             return field.required ? this.renderCheckField() : this.renderSelect();
         } else if (type === 'number') {
             return this.renderNumberField();
