@@ -71,7 +71,7 @@ export function fmtTime(v, opts = {}) {
  * @param {*} [v] - a date value to format, can be any value MomentJs can parse.
  *      See: https://momentjs.com/docs/#/parsing/ for more info.
  *
- * @param {Object} [opts] - An options object, may include:
+ * @param {Object} [opts] - an options object, may include:
  * @param {string} [opts.sameDayFmt] - a MomentJs format string for dates matching current day, defaults to 'hh:mma'.
  * @param {string} [opts.nearFmt] - format for dates within the number of months determined by the distantThreshold, defaults to 'MMM D'.
  * @param {string} [opts.distantFmt] - format for dates outside of the number of months specified by the distantThreshold, defaults to 'YYYY-MM-DD'.
