@@ -4,15 +4,14 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
 import {Component} from 'react';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {elemFactory, hoistComponent} from 'hoist/core';
 import {button, inputGroup} from 'hoist/kit/blueprint';
-import {setter, observable} from 'hoist/mobx';
+import {observable, setter} from 'hoist/mobx';
 import {escapeRegExp} from 'lodash';
 
 /**
- * A Component that can bind to a LeftRightChooser, and filter both lists
+ * A Component that can bind to a LeftRightChooser and filter both lists
  * based on simple text matching in selected fields.
  */
 @hoistComponent()

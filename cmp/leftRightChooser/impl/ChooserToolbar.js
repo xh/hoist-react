@@ -4,12 +4,12 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
 import {Component} from 'react';
-import {hoistComponent, elemFactory} from 'hoist/core/index';
-import {toolbar} from 'hoist/cmp/index';
-import {button} from 'hoist/kit/blueprint/index';
-import {Icon} from 'hoist/icon/index';
+import {elemFactory, hoistComponent} from 'hoist/core';
+import {toolbar} from 'hoist/cmp';
+import {vspacer} from 'hoist/layout';
+import {button} from 'hoist/kit/blueprint';
+import {Icon} from 'hoist/icon';
 
 /**
  * A Toolbar for the LeftRightChooser.
@@ -25,8 +25,9 @@ class ChooserToolbar extends Component {
         return toolbar({
             width: 50,
             vertical: true,
-            justifyContent: 'center',
+            cls: 'xh-lr-chooser__toolbar',
             items: [
+                vspacer(10),
                 button({
                     icon: Icon.chevronRight(),
                     onClick: () => model.moveRows(leftSel.records),
