@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {isObject} from 'lodash';
+import {isObject, find} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {Classes, menuItem, select, button} from 'hoist/kit/blueprint';
 
@@ -32,6 +32,13 @@ export class SelectField extends HoistField {
         const {style, width, options, placeholder, disabled} = this.props;
 
         const items = options.map(opt => {
+            const isObj = isObject(opt);
+
+            if (isObj && opt.value == null) {
+                opt.value = HoistField.NULL_VALUE;
+                return opt;
+            }
+
             return opt == null ? HoistField.NULL_VALUE : opt;
         });
 
@@ -56,7 +63,7 @@ export class SelectField extends HoistField {
             filterable: false,
             item: button({
                 rightIcon: 'caret-down',
-                text: value == null || value === HoistField.NULL_VALUE ? placeholder : value.toString(),
+                text: this.getDisplayValue(value, items, placeholder),
                 style: {...style, width},
                 ...this.getDelegateProps()
             }),
@@ -67,8 +74,16 @@ export class SelectField extends HoistField {
     }
 
     onItemSelect = (val) => {
+        if (isObject(val)) val = val.value;
         this.noteValueChange(val);
         this.doCommit();
+    }
+
+    getDisplayValue(value, items, placeholder) {
+        const match = find(items, {value: value});
+
+        if (match) return match.label;
+        return value == null || value === HoistField.NULL_VALUE ? placeholder : value.toString();
     }
 }
 export const selectField = elemFactory(SelectField);

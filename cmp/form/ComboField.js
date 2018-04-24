@@ -81,13 +81,6 @@ export class ComboField extends HoistField {
         });
     }
 
-    getDisplayValue(value, items) {
-        const match = find(items, {value: value});
-        
-        if (match) return match.label;
-        return (value == null || value === HoistField.NULL_VALUE) ? '' : value.toString();
-    }
-
     onChange = (ev) => {
         this.noteValueChange(ev.target.value);
     }
@@ -102,6 +95,13 @@ export class ComboField extends HoistField {
         if (ev.key === 'Enter') {
             this.doCommit();
         }
+    }
+
+    getDisplayValue(value, items) {
+        const match = find(items, {value: value});
+
+        if (match) return match.label;
+        return (value == null || value === HoistField.NULL_VALUE) ? '' : value.toString();
     }
 }
 export const comboField = elemFactory(ComboField);
