@@ -56,7 +56,7 @@ export class SelectField extends HoistField {
             filterable: false,
             item: button({
                 rightIcon: 'caret-down',
-                text: value === null || value === HoistField.NULL_VALUE ? placeholder : value.toString(),
+                text: value == null || value === HoistField.NULL_VALUE ? placeholder : value.toString(),
                 style: {...style, width},
                 ...this.getDelegateProps()
             }),
@@ -69,10 +69,6 @@ export class SelectField extends HoistField {
     onItemSelect = (val) => {
         this.noteValueChange(val);
         this.doCommit();
-    }
-
-    toExternal(value) {
-        return value === HoistField.NULL_VALUE ? null : value;
     }
 }
 export const selectField = elemFactory(SelectField);
