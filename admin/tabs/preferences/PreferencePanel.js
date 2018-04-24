@@ -74,7 +74,7 @@ export class PreferencePanel extends Component {
             {field: 'name'},
             {field: 'type'},
             {field: 'defaultValue'},
-            {field: 'local', type: 'checkbox'},
+            {field: 'local'},
             {field: 'notes', type: 'textarea'},
             {field: 'lastUpdated'},
             {field: 'lastUpdatedBy'}

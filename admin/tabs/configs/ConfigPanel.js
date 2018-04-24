@@ -109,11 +109,11 @@ export class ConfigPanel extends Component {
             {field: 'name'},
             {field: 'groupName'},
             {field: 'valueType'},
-            {field: 'prodValue', env: 'Production'},
-            {field: 'betaValue', env: 'Beta'},
-            {field: 'stageValue', env: 'Staging'},
-            {field: 'devValue', env: 'Development'},
-            {field: 'clientVisible', type: 'checkbox'},
+            {field: 'prodValue', env: 'Production', type: 'boolSelect'}, // special handling to keep dynamically generated controls consistent
+            {field: 'betaValue', env: 'Beta', type: 'boolSelect'},
+            {field: 'stageValue', env: 'Staging', type: 'boolSelect'},
+            {field: 'devValue', env: 'Development', type: 'boolSelect'},
+            {field: 'clientVisible'},
             {field: 'note', type: 'textarea'},
             {field: 'lastUpdated'},
             {field: 'lastUpdatedBy'}

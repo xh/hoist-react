@@ -42,24 +42,18 @@ export class RestControl extends Component {
             return this.renderJsonField();
         }
 
-        if (editorType === 'textarea') {
-            return this.renderTextArea();
-        }
-
-        if (editorType == 'checkbox') {
-            return this.renderCheckField();
-        }
-
         if (!isEditable) return this.renderDisplayField();
         
         if (field.lookup) {
             return field.lookupStrict ? this.renderSelect() : this.renderCombo();
         } else if (type === 'bool') {
-            return this.renderSelect();
+            if (editorType == 'boolSelect') return this.renderSelect();
+            if (editorType == 'checkbox') return this.renderCheckField();
+            return field.required ? this.renderCheckField() : this.renderSelect();
         } else if (type === 'number') {
             return this.renderNumberField();
         } else {
-            return this.renderTextField();
+            return editorType === 'textarea' ? this.renderTextArea() : this.renderTextField();
         }
     }
 
