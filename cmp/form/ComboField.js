@@ -33,7 +33,7 @@ export class ComboField extends HoistField {
         const {style, width, options, disabled} = this.props;
 
         const items = options.map(opt => {
-            const isObj = isObject(opt)
+            const isObj = isObject(opt);
 
             if (isObj && opt.value == null) {
                 opt.value = HoistField.NULL_VALUE;
