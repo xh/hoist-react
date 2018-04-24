@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {isObject} from 'lodash';
+import {isObject, find} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {Classes, menuItem, suggest} from 'hoist/kit/blueprint';
 
@@ -33,6 +33,13 @@ export class ComboField extends HoistField {
         const {style, width, options, disabled} = this.props;
 
         const items = options.map(opt => {
+            const isObj = isObject(opt)
+
+            if (isObj && opt.value == null) {
+                opt.value = HoistField.NULL_VALUE;
+                return opt;
+            }
+
             return opt == null ? HoistField.NULL_VALUE : opt;
         });
 
@@ -42,12 +49,17 @@ export class ComboField extends HoistField {
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: items,
             onItemSelect: this.onItemSelect,
-            itemPredicate: (q, v, index) => v.toLowerCase().includes(q.toLowerCase()),
+            itemPredicate: (q, item, index) => {
+                const isObj = isObject(item),
+                    label = isObj ? item.label : item;
+                return label.toLowerCase().includes(q.toLowerCase());
+            },
             itemRenderer: (item, itemProps) => {
                 let isObj = isObject(item) && item.value,
                     value = isObj ? item.value : item,
                     label = isObj ? item.label : item;
                 if (item === HoistField.NULL_VALUE) label = '-';
+
                 return menuItem({
                     key: value,
                     text: label,
@@ -57,7 +69,7 @@ export class ComboField extends HoistField {
             },
             inputValueRenderer: s => s,
             inputProps: {
-                value: value == null || value === HoistField.NULL_VALUE ? '' : value.toString(),
+                value: this.getDisplayValue(value, items),
                 onChange: this.onChange,
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,
@@ -69,11 +81,19 @@ export class ComboField extends HoistField {
         });
     }
 
+    getDisplayValue(value, items) {
+        const match = find(items, {value: value});
+        
+        if (match) return match.label;
+        return (value == null || value === HoistField.NULL_VALUE) ? '' : value.toString();
+    }
+
     onChange = (ev) => {
         this.noteValueChange(ev.target.value);
     }
 
     onItemSelect = (val) => {
+        if (isObject(val)) val = val.value;
         this.noteValueChange(val);
         this.doCommit();
     }
