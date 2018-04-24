@@ -114,7 +114,7 @@ export class HoistField extends Component {
     }
 
     toExternal(internal) {
-        return internal;
+        return internal === HoistField.NULL_VALUE ? null : internal;
     }
 
     toInternal(external) {

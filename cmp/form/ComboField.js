@@ -83,9 +83,5 @@ export class ComboField extends HoistField {
             this.doCommit();
         }
     }
-
-    toExternal(value) {
-        return value === HoistField.NULL_VALUE ? null : value;
-    }
 }
 export const comboField = elemFactory(ComboField);
