@@ -4,22 +4,20 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
-
 import {Component} from 'react';
-import {hoistComponent, elemFactory} from 'hoist/core';
-import {vframe, hframe} from 'hoist/layout';
+import {elemFactory, hoistComponent} from 'hoist/core';
+import {hframe, vframe} from 'hoist/layout';
 import {grid} from 'hoist/grid';
+
 import {description} from './impl/Description';
 import {chooserToolbar} from './impl/ChooserToolbar';
 import './LeftRightChooser.scss';
 
 /**
- * A component for moving a list of items between two arbitrary groups. By convention, the left group represents
- * 'available' items and the right group represents 'selected' items. A description panel is also available
- * to give the user more in-depth information on each item.
- *
- * See also LeftRightChooserModel.
+ * A component for moving a list of items between two arbitrary groups. By convention, the left
+ * group represents 'available' items and the right group represents 'selected' items.
+ * A nested panel is also available to display a more in-depth description for any selected item.
+ * @see LeftRightChooserModel
  */
 @hoistComponent()
 class LeftRightChooser extends Component {
@@ -35,10 +33,10 @@ class LeftRightChooser extends Component {
             };
 
         return vframe({
-            cls: 'xh-leftRightChooser',
+            cls: 'xh-lr-chooser',
             items: [
                 hframe({
-                    cls: 'gridContainer',
+                    cls: 'xh-lr-chooser__grid-frame',
                     items: [
                         grid({model: leftModel, gridOptions}),
                         chooserToolbar({model}),
