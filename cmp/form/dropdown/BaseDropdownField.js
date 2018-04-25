@@ -40,7 +40,7 @@ export class BaseDropdownField extends HoistField {
         return options.map(o => {
             const ret = isObject(o) ?
                 {label: o.label, value: o.value} :
-                {label: o != null ? o.toString() : '-', value: o};
+                {label: o != null ? o.toString() : '-null-', value: o};
 
             ret.value = this.toInternal(ret.value);
             return ret;
