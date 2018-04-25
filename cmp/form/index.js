@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+export * from './AsyncComboField';
 export * from './CheckField';
 export * from './ComboField';
 export * from './DayField';
