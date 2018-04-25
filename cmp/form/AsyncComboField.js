@@ -5,10 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {isObject} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {observable, setter} from 'hoist/mobx';
-import {Classes, menuItem, suggest} from 'hoist/kit/blueprint';
+import {Classes, suggest} from 'hoist/kit/blueprint';
 
 import {HoistField} from './HoistField';
 
@@ -20,6 +19,7 @@ import {HoistField} from './HoistField';
  * @prop queryAsync, async function that receives (string query)
  *          Should return a collection of form [{value: string, label: string}, ...] or [val, val, ...]
  * @prop placeholder, text to display when control is empty
+ * @prop itemRenderer, optional custom itemRenderer, a function that receives (item, itemProps)
  */
 @hoistComponent()
 export class AsyncComboField extends HoistField {
@@ -37,7 +37,7 @@ export class AsyncComboField extends HoistField {
     }
 
     render() {
-        const {style, width, disabled} = this.props;
+        const {style, width, itemRenderer, disabled} = this.props;
 
         const value = this.renderValue;
 
@@ -45,13 +45,7 @@ export class AsyncComboField extends HoistField {
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: this.items,
             onItemSelect: this.onItemSelect,
-            itemRenderer: (item, itemProps) => {
-                let isObj = isObject(item) && item.value,
-                    value = isObj ? item.value : item,
-                    label = isObj ? item.label : item;
-                if (label === null) label = '-';
-                return menuItem({key: value, text: label, onClick: itemProps.handleClick});
-            },
+            itemRenderer: itemRenderer || this.defaultItemRenderer,
             inputValueRenderer: s => s,
             inputProps: {
                 value: value === null ? '' : value.toString(),
