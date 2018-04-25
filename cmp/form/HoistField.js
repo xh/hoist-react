@@ -118,7 +118,7 @@ export class HoistField extends Component {
     toInternal(external) {
         return external;
     }
-
+    
     //-----------------------------
     // Additional Utilities
     //-----------------------------

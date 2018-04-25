@@ -5,11 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {isObject} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {Classes, menuItem, select, button} from 'hoist/kit/blueprint';
 
-import {HoistField} from './HoistField';
+import {BaseDropdownField} from './BaseDropdownField';
 
 /**
  * A Select Field
@@ -18,18 +17,17 @@ import {HoistField} from './HoistField';
  *
  * @prop options, collection of form [{value: object, label: string}, ...] or [val, val, ...]
  * @prop placeholder, text to display when control is empty
+ * @prop width, width of field, in pixels
  */
 @hoistComponent()
-export class SelectField extends HoistField {
+export class SelectField extends BaseDropdownField {
 
-    static defaultProps = {
-        placeholder: 'Select'
-    }
-
-    delegateProps = ['className', 'style', 'disabled'];
+    delegateProps = ['className', 'disabled'];
 
     render() {
-        const {style, width, options, placeholder, disabled} = this.props;
+        let {style, width, options, placeholder, disabled} = this.props;
+
+        options = this.normalizeOptions(options);
 
         const value = this.renderValue;
 
@@ -38,16 +36,17 @@ export class SelectField extends HoistField {
             $items: options,
             onItemSelect: this.onItemSelect,
             itemRenderer: (item, itemProps) => {
-                let isObj = isObject(item) && item.value,
-                    value = isObj ? item.value : item,
-                    label = isObj ? item.label : item;
-                if (label === null) label = '-';
-                return menuItem({key: value, text: label.toString(), onClick: itemProps.handleClick});
+                return menuItem({
+                    key: item.value,
+                    text: item.label,
+                    onClick: itemProps.handleClick,
+                    active: itemProps.modifiers.active
+                });
             },
             filterable: false,
             item: button({
                 rightIcon: 'caret-down',
-                text: value === null ? placeholder : value.toString(),
+                text: this.getDisplayValue(value, options, placeholder),
                 style: {...style, width},
                 ...this.getDelegateProps()
             }),
@@ -55,11 +54,6 @@ export class SelectField extends HoistField {
             onFocus: this.onFocus,
             disabled
         });
-    }
-
-    onItemSelect = (val) => {
-        this.noteValueChange(val);
-        this.doCommit();
     }
 }
 export const selectField = elemFactory(SelectField);
