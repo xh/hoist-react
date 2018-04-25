@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import {observable, setter} from 'hoist/mobx';
+import {action, observable, setter} from 'hoist/mobx';
 import {castArray, isEqual, remove, trimEnd} from 'lodash';
 import {pluralize} from 'hoist/utils/JsUtils';
 import {XH} from 'hoist/core';
@@ -25,7 +25,7 @@ export class ConfigDifferModel  {
     messageModel = new MessageModel({title: 'Warning', icon: Icon.warning({size: 'lg'})});
     detailModel = new ConfigDifferDetailModel({parent: this});
 
-    @setter @observable isOpen = false;
+    @observable isOpen = false;
     @setter @observable remoteHost = null;
 
     store = new LocalStore({
@@ -163,7 +163,7 @@ export class ConfigDifferModel  {
             params: {records: JSON.stringify(records)}
         }).finally(() => {
             this.loadAsync();
-            this.detailModel.closeDetail();
+            this.detailModel.close();
         }).linkTo(
             XH.hoistModel.appLoadModel
         ).catchDefault();
@@ -173,8 +173,14 @@ export class ConfigDifferModel  {
         ToastManager.show({message: 'Good news! All configs match remote host.'});
     }
 
+    @action
+    open() {
+        this.isOpen = true;
+    }
+
+    @action
     close() {
-        this.setIsOpen(false);
+        this.isOpen = false;
         this.store.loadData([]);
         this.setRemoteHost(null);
     }

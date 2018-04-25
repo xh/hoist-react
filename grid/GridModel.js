@@ -22,7 +22,7 @@ export class GridModel {
     gridApi = null;
     selection = null;
     loadModel = new LastPromiseModel();
-    contextMenuFn = null
+    contextMenuFn = null;
 
     @observable.ref columns = [];
     @observable.ref sortBy = [];

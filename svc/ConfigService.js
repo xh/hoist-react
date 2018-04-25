@@ -9,9 +9,23 @@ import {XH} from 'hoist/core';
 import {cloneDeep} from 'lodash';
 
 /**
- * Service to read values of soft-config keys that have been made available to the client app
- * via the `clientVisible` flag on the Hoist Core AppConfig object. These values can
- * be updated via the Admin UI to allow for on-the-fly or per-environment configuration.
+ * Service to read soft-configuration values.
+ *
+ * Server-side configuration support is provided by hoist-core. AppConfigs must be predefined on the
+ * server (they can be managed by the Admin console) and are referenced by their string key. These
+ * entries can then be changed on the fly or given per-environment values that allow the app to
+ * adjust without requiring a code change or redeployment.
+ *
+ * Note that for a config to be available here on the client, it must have its `clientVisible` flag
+ * set to true. This is to provide support for configurations that should *not* be sent down for
+ * possible inspection by end-users.
+ *
+ * Configs can be specified on the server with support for different values per supported Hoist
+ * Environment. Note however that the client only receives the values for the current environment.
+ * (Values for non-production environments inherit from production if left unspecified.)
+ *
+ * Note that this service does *not* currently attempt to reload or update configs once the client
+ * application has loaded. A refresh of the application is required to load new entries.
  */
 export class ConfigService extends BaseService {
 
@@ -23,13 +37,13 @@ export class ConfigService extends BaseService {
 
     /**
      * Get the configured value for a given key.
+     * Typically accessed via convenience alias `XH.getConf()`.
      *
      * @param {string} key
-     * @param {object} [defaultValue] - value to return if the configuration key is not found - i.e.
+     * @param {*} [defaultValue] - value to return if the configuration key is not found - i.e.
      *      the config has not been created on the server - instead of throwing. Use sparingly!
-     *      In general it's better to not provide defaults here, but instead keep configs up-to-date
-     *      via the Admin client and have it be obvious when a config is missing.
-     * @returns {*}
+     *      In general it's better to not provide defaults here, but instead keep entries up-to-date
+     *      via the Admin client and have it be obvious when one is missing.
      */
     get(key, defaultValue) {
         const data = this._data;

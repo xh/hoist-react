@@ -48,6 +48,7 @@ export const Icon = {
     chevronRight(p)  {return fa(p, 'chevron-right')},
     chevronUp(p)     {return fa(p, 'chevron-up')},
     clipboard(p)     {return fa(p, 'clipboard')},
+    clock(p)         {return fa(p, 'clock')},
     close(p)         {return fa(p, 'times')},
     contact(p)       {return fa(p, 'address-card')},
     comment(p)       {return fa(p, 'comment-dots')},
@@ -68,12 +69,15 @@ export const Icon = {
     home(p)          {return fa(p, 'home')},
     info(p)          {return fa(p, 'info-circle')},
     list(p)          {return fa(p, 'align-justify')},
+    lock(p)          {return fa(p, 'lock')},
     login(p)         {return fa(p, 'sign-in')},
     logout(p)        {return fa(p, 'sign-out')},
     mail(p)          {return fa(p, 'envelope')},
     moon(p)          {return fa(p, 'moon')},
     office(p)        {return fa(p, 'building')},
     openExternal(p)  {return fa(p, 'external-link')},
+    pause(p)         {return fa(p, 'pause')},
+    play(p)          {return fa(p, 'play')},
     portfolio(p)     {return fa(p, 'briefcase')},
     refresh(p)       {return fa(p, 'sync')},
     rocket(p)        {return fa(p, 'rocket')},
@@ -88,6 +92,14 @@ export const Icon = {
     wrench(p)        {return fa(p, 'wrench')},
     x(p)             {return fa(p, 'times')},
     xCircle(p)       {return fa(p, 'times-circle')}
+};
+
+export const convertIconToSvg = function(icon, opts) {
+    const iconDef = fontawesome.findIconDefinition({
+        prefix: icon.props.icon[0],
+        iconName: icon.props.icon[1]
+    });
+    return fontawesome.icon(iconDef, opts).html[0];
 };
 
 //-----------------------------

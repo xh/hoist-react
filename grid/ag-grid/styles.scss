@@ -1,10 +1,10 @@
 .ag-theme-balham, .ag-theme-balham-dark {
-  font-family: var(--xh-font-family-grid);
-  font-size: var(--xh-font-size);
+  font-family: var(--xh-grid-font-family);
+  font-size: var(--xh-grid-font-size-px);
 
   .ag-menu {
     font-family: var(--xh-font-family);
-    background-color: var(--xh-bg-color-alt);
+    background-color: var(--xh-bg-alt);
 
     // Matching no border + box-shadow of Blueprint context menu popover
     border: none;
@@ -13,30 +13,41 @@
 
   .ag-root {
     border: none;
-    background-color: var(--xh-bg-color-grid);
+    background-color: var(--xh-grid-bg);
   }
 
   .ag-header {
-    color: var(--xh-text-color);
-    font-family: var(--xh-font-family-grid);
-    background-color: var(--xh-grid-header-bg-color);
+    color: var(--xh-grid-header-text-color);
+    background-color: var(--xh-grid-header-bg);
+    font-family: var(--xh-grid-font-family);
+    font-size: var(--xh-grid-font-size);
   }
 
   .ag-row {
-    background-color: var(--xh-bg-color-grid);
-    border-bottom-color: var(--xh-border-color-grid);
+    background-color: var(--xh-grid-bg);
+    border-bottom-color: var(--xh-grid-border-color);
 
     &.ag-row-odd {
-      background-color: var(--xh-bg-color-grid-odd);
+      background-color: var(--xh-grid-bg-odd);
     }
 
     &.ag-row-selected {
-      background-color: var(--xh-bg-color-highlight);
+      background-color: var(--xh-grid-bg-highlight);
     }
 
     &.ag-row-group {
-      color: white;
-      background-color: var(--xh-bg-color-grid-group);
+      color: var(--xh-grid-group-text-color);
+      background-color: var(--xh-grid-group-bg);
+      // TODO - determine why these group headers seem misaligned
+      padding-top: 2px;
+    }
+
+    .group-header-icon-expanded {
+      margin: var(--xh-pad-half-px) var(--xh-pad-half-px) 0 var(--xh-pad-half-px);
+    }
+
+    .group-header-icon-contracted {
+      margin: var(--xh-pad-half-px) 8px 0 8px;
     }
   }
 
@@ -48,6 +59,10 @@
     span {
       margin: 0 var(--xh-pad-half-px);
     }
+  }
+
+  .ag-tool-panel {
+    border: none;
   }
 
 }

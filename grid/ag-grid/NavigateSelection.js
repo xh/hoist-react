@@ -5,7 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-
 /**
  * Allow Key Presses to navigate selection.
  *
@@ -19,10 +18,10 @@ export function navigateSelection(params, api) {
         shiftKey = event.shiftKey,
         prevIndex = previousCellDef ? previousCellDef.rowIndex : null,
         nextIndex = nextCellDef ? nextCellDef.rowIndex : null,
-        prevNode = prevIndex ? api.getDisplayedRowAtIndex(prevIndex) : null,
-        nextNode = nextIndex ? api.getDisplayedRowAtIndex(nextIndex) : null,
+        prevNode = prevIndex != null ? api.getDisplayedRowAtIndex(prevIndex) : null,
+        nextNode = nextIndex != null ? api.getDisplayedRowAtIndex(nextIndex) : null,
         KEY_UP = 38, KEY_DOWN = 40, KEY_LEFT = 37, KEY_RIGHT = 39;
-        
+
     switch (params.key) {
         case KEY_DOWN:
         case KEY_UP:
