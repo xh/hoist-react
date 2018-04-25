@@ -47,8 +47,6 @@ import {observable, setter, computed} from 'hoist/mobx';
  */
 export class HoistField extends Component {
 
-    static NULL_VALUE = 'null_value'
-
     @observable @setter hasFocus
     @observable @setter internalValue
 
@@ -114,13 +112,13 @@ export class HoistField extends Component {
     }
 
     toExternal(internal) {
-        return internal === HoistField.NULL_VALUE ? null : internal;
+        return internal;
     }
 
     toInternal(external) {
         return external;
     }
-
+    
     //-----------------------------
     // Additional Utilities
     //-----------------------------

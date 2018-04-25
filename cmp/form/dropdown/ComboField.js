@@ -9,7 +9,7 @@ import {isObject, find} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {Classes, menuItem, suggest} from 'hoist/kit/blueprint';
 
-import {HoistField} from './HoistField';
+import {BaseDropdownField} from './BaseDropdownField';
 
 /**
  * ComboBox Field
@@ -21,55 +21,34 @@ import {HoistField} from './HoistField';
  * @prop width, width of field, in pixels
  */
 @hoistComponent()
-export class ComboField extends HoistField {
-
-    static defaultProps = {
-        placeholder: 'Select'
-    }
-
+export class ComboField extends BaseDropdownField {
+    
     delegateProps = ['className', 'disabled', 'placeholder'];
 
     render() {
-        const {style, width, options, disabled} = this.props;
+        let {style, width, options, disabled} = this.props;
 
-        const items = options.map(opt => {
-            const isObj = isObject(opt);
-
-            if (isObj && opt.value == null) {
-                opt.value = HoistField.NULL_VALUE;
-                return opt;
-            }
-
-            return opt == null ? HoistField.NULL_VALUE : opt;
-        });
-
+        options = this.normalizeOptions(options);
         const value = this.renderValue;
 
         return suggest({
             popoverProps: {popoverClassName: Classes.MINIMAL},
-            $items: items,
+            $items: options,
             onItemSelect: this.onItemSelect,
             itemPredicate: (q, item, index) => {
-                const isObj = isObject(item),
-                    label = isObj ? item.label : item;
-                return label.toLowerCase().includes(q.toLowerCase());
+                return item.label.toLowerCase().includes(q.toLowerCase());
             },
             itemRenderer: (item, itemProps) => {
-                let isObj = isObject(item),
-                    value = isObj ? item.value : item,
-                    label = isObj ? item.label : item;
-                if (item === HoistField.NULL_VALUE) label = '-';
-
                 return menuItem({
-                    key: value,
-                    text: label,
+                    key: item.value,
+                    text: item.label,
                     onClick: itemProps.handleClick,
                     active: itemProps.modifiers.active
                 });
             },
             inputValueRenderer: s => s,
             inputProps: {
-                value: this.getDisplayValue(value, items),
+                value: this.getDisplayValue(value, options, ''),
                 onChange: this.onChange,
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,
@@ -85,23 +64,10 @@ export class ComboField extends HoistField {
         this.noteValueChange(ev.target.value);
     }
 
-    onItemSelect = (val) => {
-        if (isObject(val)) val = val.value;
-        this.noteValueChange(val);
-        this.doCommit();
-    }
-
     onKeyPress = (ev) => {
         if (ev.key === 'Enter') {
             this.doCommit();
         }
-    }
-
-    getDisplayValue(value, items) {
-        const match = find(items, {value: value});
-
-        if (match) return match.label;
-        return (value == null || value === HoistField.NULL_VALUE) ? '' : value.toString();
     }
 }
 export const comboField = elemFactory(ComboField);
