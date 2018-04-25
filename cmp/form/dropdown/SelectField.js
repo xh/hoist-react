@@ -17,11 +17,12 @@ import {BaseDropdownField} from './BaseDropdownField';
  *
  * @prop options, collection of form [{value: object, label: string}, ...] or [val, val, ...]
  * @prop placeholder, text to display when control is empty
+ * @prop width, width of field, in pixels
  */
 @hoistComponent()
 export class SelectField extends BaseDropdownField {
 
-    delegateProps = ['className', 'style', 'disabled'];
+    delegateProps = ['className', 'disabled'];
 
     render() {
         let {style, width, options, placeholder, disabled} = this.props;

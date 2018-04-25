@@ -20,20 +20,10 @@ export class BaseDropdownField extends HoistField {
         placeholder: 'Select'
     }
 
-    delegateProps = ['className', 'disabled', 'placeholder'];
-
-    onItemSelect = (val) => {
-        this.noteValueChange(val.value);
-        this.doCommit();
-    }
-
-    getDisplayValue(value, items, placeholder) {
-        const match = find(items, {value});
-
-        if (match) return match.label;
-        return (value == null || value === NULL_VALUE) ? placeholder : value.toString();
-    }
-
+    //---------------------------------------------------------------------------
+    // Handling of null values.  Blueprint doesn't allow null for the value of a
+    // dropdown control, but we can use a sentinel value to represent it.
+    //----------------------------------------------------------------------------
     toExternal(internal) {
         return internal === NULL_VALUE ? null : internal;
     }
@@ -42,6 +32,10 @@ export class BaseDropdownField extends HoistField {
         return external ===  null ?  NULL_VALUE : external;
     }
 
+
+    //-----------------------------------------------------------
+    // Common handling of options, rendering of selected option
+    //-----------------------------------------------------------
     normalizeOptions(options) {
         return options.map(o => {
             const ret = isObject(o) ?
@@ -51,6 +45,19 @@ export class BaseDropdownField extends HoistField {
             ret.value = this.toInternal(ret.value);
             return ret;
         });
+    }
+
+    getDisplayValue(value, items, placeholder) {
+        const match = find(items, {value});
+
+        if (match) return match.label;
+        return (value == null || value === NULL_VALUE) ? placeholder : value.toString();
+    }
+
+
+    onItemSelect = (val) => {
+        this.noteValueChange(val.value);
+        this.doCommit();
     }
 }
 
