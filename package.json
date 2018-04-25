@@ -14,7 +14,7 @@
     "registry": "https://repo.xh.io/repository/npm-hosted/"
   },
   "dependencies": {
-    "@blueprintjs/core": "~2.1.1",
+    "@blueprintjs/core": "~2.2.0",
     "@blueprintjs/datetime": "~2.0.2",
     "@blueprintjs/icons": "~2.1.1",
     "@blueprintjs/select": "~2.0.0",

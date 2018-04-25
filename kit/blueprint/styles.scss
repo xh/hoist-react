@@ -155,3 +155,7 @@
   font-size: var(--xh-font-size);
   z-index: 1;
 }
+
+.pt-select-popover .pt-popover-content {
+  padding: 0px !important;
+}

@@ -4,10 +4,9 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
 import {Component} from 'react';
-import {div} from 'hoist/layout/index';
-import {Icon} from 'hoist/icon/index';
+import {div} from 'hoist/layout';
+import {Icon} from 'hoist/icon';
 
 /**
  * Render items in the LeftRightChooser.
@@ -19,11 +18,15 @@ export class ItemRenderer extends Component {
             lockedText = Icon.lock({cls: 'medium-gray', prefix: 'fal'});
 
         return div({
-            cls: 'item-row',
+            cls: 'xh-lr-chooser__item-row',
             items: [
                 value,
                 data.locked ? lockedText : null
             ]
         });
+    }
+
+    refresh() {
+        return false;
     }
 }

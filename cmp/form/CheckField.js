@@ -13,7 +13,7 @@ import {checkbox} from 'hoist/kit/blueprint';
 import {HoistField} from './HoistField';
 
 /**
- * CheckBox Field
+ * CheckBox Field, does not handle null values, for nullable fields use a SelectField.
  *
  * @prop rest, see properties for HoistField
  *
