@@ -53,7 +53,7 @@ export class FetchService extends BaseService {
             Object.entries(params).forEach(v => {
                 const key = v[0],
                     vals = castArray(v[1]);
-                vals.forEach(val => paramsStrings.push(`${key}=${val}`));
+                vals.forEach(val => paramsStrings.push(`${key}=${encodeURIComponent(val)}`));
             });
             const paramsString = paramsStrings.join('&');
 
