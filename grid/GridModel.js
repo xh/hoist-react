@@ -70,7 +70,7 @@ export class GridModel {
 
     onGridReady() {
         const api = this.gridApi;
-        api.setSortModel(api.sortBy);
+        api.setSortModel(this.sortBy);
         api.sizeColumnsToFit();
     }
 
