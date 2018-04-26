@@ -60,10 +60,10 @@ export class QueryComboField extends BaseDropdownField {
 
     syncOptions() {
         const value = this.internalValue,
-            {queryAsync} = this.props;
+            {queryFn} = this.props;
 
-        if (queryAsync) {
-            queryAsync(value).then(options => {
+        if (queryFn) {
+            queryFn(value).then(options => {
                 this.setOptions(this.normalizeOptions(options));
             });
         }
