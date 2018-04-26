@@ -97,7 +97,9 @@ export class JsonField extends HoistField {
         editor.on('blur',   this.onBlur);
         editor.on('keyup',  this.onKeyUp);
 
-        editor.setSize(width, height);
+        if (width || height) {
+            editor.setSize(width, height);
+        }
 
         return editor;
     }
