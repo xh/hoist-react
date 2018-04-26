@@ -76,9 +76,11 @@ export class RestControl extends Component {
 
     renderCombo() {
         const model = this.model,
-            lookup = model.field.lookup;
+            field = model.field,
+            lookup = field.lookup;
 
-        const options = [null, ...lookup];
+        const options = [...lookup];
+
         return comboField({
             model,
             field: 'value',
@@ -89,17 +91,20 @@ export class RestControl extends Component {
 
     renderSelect() {
         const model = this.model,
-            lookup = model.field.lookup,
+            field = model.field,
+            lookup = field.lookup,
             type = model.type;
 
         let options;
         if (lookup) {
-            options = [null, ...lookup];
+            options = [...lookup];
         } else if (type == 'bool') {
-            options = [null, true, false];
+            options = [true, false];
         } else {
-            options = [null];
+            options = [];
         }
+
+        if (!field.required) options.unshift(null);
 
         return selectField({
             model,

@@ -46,8 +46,5 @@ export class TextAreaField extends HoistField {
         if (ev.key === 'Enter' && !ev.shiftKey) this.doCommit();
     }
 
-    onBlur = (ev) => {
-        this.doCommit();
-    }
 }
 export const textAreaField = elemFactory(TextAreaField);

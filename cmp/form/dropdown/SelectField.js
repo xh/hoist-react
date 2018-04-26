@@ -8,7 +8,7 @@
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {Classes, select, button} from 'hoist/kit/blueprint';
 
-import {HoistField} from './HoistField';
+import {BaseDropdownField} from './BaseDropdownField';
 
 /**
  * A Select Field
@@ -20,16 +20,14 @@ import {HoistField} from './HoistField';
  * @prop itemRenderer, optional custom itemRenderer, a function that receives (item, itemProps)
  */
 @hoistComponent()
-export class SelectField extends HoistField {
+export class SelectField extends BaseDropdownField {
 
-    static defaultProps = {
-        placeholder: 'Select'
-    }
-
-    delegateProps = ['className', 'style', 'disabled'];
+    delegateProps = ['className', 'disabled'];
 
     render() {
-        const {style, width, options, placeholder, itemRenderer, disabled} = this.props;
+        let {style, width, options, placeholder, itemRenderer, disabled} = this.props;
+
+        options = this.normalizeOptions(options);
 
         const value = this.renderValue;
 
@@ -41,7 +39,7 @@ export class SelectField extends HoistField {
             filterable: false,
             item: button({
                 rightIcon: 'caret-down',
-                text: value === null ? placeholder : value.toString(),
+                text: this.getDisplayValue(value, options, placeholder),
                 style: {...style, width},
                 ...this.getDelegateProps()
             }),
@@ -49,11 +47,6 @@ export class SelectField extends HoistField {
             onFocus: this.onFocus,
             disabled
         });
-    }
-
-    onItemSelect = (val) => {
-        this.noteValueChange(val);
-        this.doCommit();
     }
 }
 export const selectField = elemFactory(SelectField);

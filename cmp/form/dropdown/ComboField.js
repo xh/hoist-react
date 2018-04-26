@@ -8,7 +8,7 @@
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {Classes, suggest} from 'hoist/kit/blueprint';
 
-import {HoistField} from './HoistField';
+import {BaseDropdownField} from './BaseDropdownField';
 
 /**
  * ComboBox Field
@@ -20,27 +20,27 @@ import {HoistField} from './HoistField';
  * @prop itemRenderer, optional custom itemRenderer, a function that receives (item, itemProps)
  */
 @hoistComponent()
-export class ComboField extends HoistField {
-
-    static defaultProps = {
-        placeholder: 'Select'
-    }
+export class ComboField extends BaseDropdownField {
 
     delegateProps = ['className', 'disabled', 'placeholder'];
 
     render() {
-        const {style, width, options, itemRenderer, disabled} = this.props;
+        let {style, width, options, itemRenderer, disabled} = this.props;
 
+        options = this.normalizeOptions(options);
         const value = this.renderValue;
 
         return suggest({
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: options,
             onItemSelect: this.onItemSelect,
+            itemPredicate: (q, item, index) => {
+                return item.label.toLowerCase().includes(q.toLowerCase());
+            },
             itemRenderer: itemRenderer || this.defaultItemRenderer,
             inputValueRenderer: s => s,
             inputProps: {
-                value: value === null ? '' : value.toString(),
+                value: this.getDisplayValue(value, options, ''),
                 onChange: this.onChange,
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,
@@ -54,11 +54,6 @@ export class ComboField extends HoistField {
 
     onChange = (ev) => {
         this.noteValueChange(ev.target.value);
-    }
-
-    onItemSelect = (val) => {
-        this.noteValueChange(val);
-        this.doCommit();
     }
 
     onKeyPress = (ev) => {
