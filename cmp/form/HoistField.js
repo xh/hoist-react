@@ -6,9 +6,8 @@
  */
 
 import {Component} from 'react';
-import {upperFirst, isObject} from 'lodash';
+import {upperFirst} from 'lodash';
 import {observable, setter, computed} from 'hoist/mobx';
-import {menuItem} from 'hoist/kit/blueprint';
 
 /**
  *
@@ -135,11 +134,4 @@ export class HoistField extends Component {
         return ret;
     }
 
-    defaultItemRenderer(item, itemProps) {
-        let isObj = isObject(item) && item.value,
-            value = isObj ? item.value : item,
-            label = isObj ? item.label : item;
-        if (label === null) label = '-';
-        return menuItem({key: value, text: label.toString(), onClick: itemProps.handleClick});
-    }
 }

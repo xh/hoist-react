@@ -9,7 +9,7 @@ import {hoistComponent, elemFactory} from 'hoist/core';
 import {observable, setter} from 'hoist/mobx';
 import {Classes, suggest} from 'hoist/kit/blueprint';
 
-import {HoistField} from './HoistField';
+import {BaseDropdownField} from './BaseDropdownField';
 
 /**
  * ComboBox Field, which populates its items via an async function (e.g. querying a remote server)
@@ -22,7 +22,7 @@ import {HoistField} from './HoistField';
  * @prop itemRenderer, optional custom itemRenderer, a function that receives (item, itemProps)
  */
 @hoistComponent()
-export class AsyncComboField extends HoistField {
+export class AsyncComboField extends BaseDropdownField {
     @observable.ref @setter items = [];
 
     static defaultProps = {
@@ -39,16 +39,17 @@ export class AsyncComboField extends HoistField {
     render() {
         const {style, width, itemRenderer, disabled} = this.props;
 
-        const value = this.renderValue;
+        const options = this.normalizeOptions(this.items),
+            value = this.renderValue;
 
         return suggest({
             popoverProps: {popoverClassName: Classes.MINIMAL},
-            $items: this.items,
+            $items: options,
             onItemSelect: this.onItemSelect,
             itemRenderer: itemRenderer || this.defaultItemRenderer,
             inputValueRenderer: s => s,
             inputProps: {
-                value: value === null ? '' : value.toString(),
+                value: this.getDisplayValue(value, options, ''),
                 onChange: this.onChange,
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,
@@ -72,11 +73,6 @@ export class AsyncComboField extends HoistField {
 
     onChange = (ev) => {
         this.noteValueChange(ev.target.value);
-    }
-
-    onItemSelect = (val) => {
-        this.noteValueChange(val);
-        this.doCommit();
     }
 
     onKeyPress = (ev) => {

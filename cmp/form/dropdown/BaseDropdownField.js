@@ -6,6 +6,7 @@
  */
 
 import {isObject, find} from 'lodash';
+import {menuItem} from 'hoist/kit/blueprint';
 
 import {HoistField} from '../HoistField';
 
@@ -47,13 +48,21 @@ export class BaseDropdownField extends HoistField {
         });
     }
 
+    defaultItemRenderer(item, itemProps) {
+        return menuItem({
+            key: item.value,
+            text: item.label,
+            onClick: itemProps.handleClick,
+            active: itemProps.modifiers.active
+        });
+    }
+
     getDisplayValue(value, items, placeholder) {
         const match = find(items, {value});
 
         if (match) return match.label;
         return (value == null || value === NULL_VALUE) ? placeholder : value.toString();
     }
-
 
     onItemSelect = (val) => {
         this.noteValueChange(val.value);
