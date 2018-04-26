@@ -23,7 +23,7 @@ import {BaseDropdownField} from './BaseDropdownField';
  */
 @hoistComponent()
 export class AsyncComboField extends BaseDropdownField {
-    @observable.ref @setter items = [];
+    @observable.ref @setter options = [];
 
     static defaultProps = {
         placeholder: 'Search'
@@ -39,17 +39,16 @@ export class AsyncComboField extends BaseDropdownField {
     render() {
         const {style, width, itemRenderer, disabled} = this.props;
 
-        const options = this.normalizeOptions(this.items),
-            value = this.renderValue;
+        const value = this.renderValue;
 
         return suggest({
             popoverProps: {popoverClassName: Classes.MINIMAL},
-            $items: options,
+            $items: this.options,
             onItemSelect: this.onItemSelect,
             itemRenderer: itemRenderer || this.defaultItemRenderer,
             inputValueRenderer: s => s,
             inputProps: {
-                value: this.getDisplayValue(value, options, ''),
+                value: this.getDisplayValue(value, this.options, ''),
                 onChange: this.onChange,
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,
@@ -66,8 +65,8 @@ export class AsyncComboField extends BaseDropdownField {
             {queryAsync} = this.props;
 
         if (!queryAsync) return;
-        queryAsync(query).then(items => {
-            this.setItems(items);
+        queryAsync(query).then(options => {
+            this.setOptions(this.normalizeOptions(options));
         });
     }
 
