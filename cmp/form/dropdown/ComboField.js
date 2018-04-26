@@ -25,7 +25,7 @@ export class ComboField extends BaseDropdownField {
     delegateProps = ['className', 'disabled', 'placeholder'];
 
     render() {
-        let {style, width, options, itemRenderer, disabled} = this.props;
+        let {style, width, options, disabled} = this.props;
 
         options = this.normalizeOptions(options);
         const value = this.renderValue;
@@ -34,10 +34,10 @@ export class ComboField extends BaseDropdownField {
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: options,
             onItemSelect: this.onItemSelect,
-            itemPredicate: (q, item, index) => {
+            itemPredicate: (q, item) => {
                 return item.label.toLowerCase().includes(q.toLowerCase());
             },
-            itemRenderer: itemRenderer || this.defaultItemRenderer,
+            itemRenderer: this.itemRenderer,
             inputValueRenderer: s => s,
             inputProps: {
                 value: this.getDisplayValue(value, options, ''),

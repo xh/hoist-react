@@ -12,6 +12,6 @@ export * from './Label';
 export * from './NumberField';
 export * from './TextAreaField';
 export * from './TextField';
-export * from './dropdown/AsyncComboField';
 export * from './dropdown/ComboField';
+export * from './dropdown/QueryComboField';
 export * from './dropdown/SelectField';

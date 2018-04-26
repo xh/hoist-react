@@ -25,7 +25,7 @@ export class SelectField extends BaseDropdownField {
     delegateProps = ['className', 'disabled'];
 
     render() {
-        let {style, width, options, placeholder, itemRenderer, disabled} = this.props;
+        let {style, width, options, placeholder, disabled} = this.props;
 
         options = this.normalizeOptions(options);
 
@@ -35,7 +35,7 @@ export class SelectField extends BaseDropdownField {
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: options,
             onItemSelect: this.onItemSelect,
-            itemRenderer: itemRenderer || this.defaultItemRenderer,
+            itemRenderer: this.itemRenderer,
             filterable: false,
             item: button({
                 rightIcon: 'caret-down',

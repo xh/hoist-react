@@ -18,11 +18,12 @@ import {BaseDropdownField} from './BaseDropdownField';
  *
  * @prop queryAsync, async function that receives (string query)
  *          Should return a collection of form [{value: string, label: string}, ...] or [val, val, ...]
+ * @prop queryDelay, ms delay used to buffer calls to the queryAsyncFn (default 100)
  * @prop placeholder, text to display when control is empty
  * @prop itemRenderer, optional custom itemRenderer, a function that receives (item, itemProps)
  */
 @hoistComponent()
-export class AsyncComboField extends BaseDropdownField {
+export class QueryComboField extends BaseDropdownField {
     @observable.ref @setter options = [];
 
     static defaultProps = {
@@ -33,11 +34,11 @@ export class AsyncComboField extends BaseDropdownField {
 
     constructor(props) {
         super(props);
-        this.addAutoRun(() => this.onQueryChange(), {delay: 100});
+        this.addAutoRun(() => this.onQueryChange(), {delay: props.queryDelay || 100});
     }
 
     render() {
-        const {style, width, itemRenderer, disabled} = this.props;
+        const {style, width, disabled} = this.props;
 
         const value = this.renderValue;
 
@@ -45,7 +46,7 @@ export class AsyncComboField extends BaseDropdownField {
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: this.options,
             onItemSelect: this.onItemSelect,
-            itemRenderer: itemRenderer || this.defaultItemRenderer,
+            itemRenderer: this.itemRenderer,
             inputValueRenderer: s => s,
             inputProps: {
                 value: this.getDisplayValue(value, this.options, ''),
@@ -81,4 +82,4 @@ export class AsyncComboField extends BaseDropdownField {
     }
 
 }
-export const asyncComboField = elemFactory(AsyncComboField);
+export const queryComboField = elemFactory(QueryComboField);
