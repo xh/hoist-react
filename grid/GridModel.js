@@ -68,12 +68,6 @@ export class GridModel {
         this.gridApi.exportDataAsExcel(params);
     }
 
-    onGridReady() {
-        const api = this.gridApi;
-        api.setSortModel(this.sortBy);
-        api.sizeColumnsToFit();
-    }
-
     @action
     setGroupBy(field) {
         const cols = this.columns;
