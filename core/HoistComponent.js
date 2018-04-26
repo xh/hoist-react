@@ -8,7 +8,7 @@ import {autorun, observer} from 'hoist/mobx';
 import {ContextMenuTarget, HotkeysTarget} from 'hoist/kit/blueprint';
 import {addProperty, mixinMethods} from 'hoist/utils/MixinUtils';
 
-import {hoistModel} from './HoistModel';
+import {XH} from './XH';
 import {elemFactory} from './elem';
 
 /**
@@ -23,7 +23,7 @@ export function hoistComponent({isObserver = true} = {}) {
         // Convenience Getters.
         //---------------------------------------------------------------------
         addProperty(C, 'darkTheme', {
-            get() {return hoistModel.darkTheme}
+            get() {return XH.darkTheme}
         });
 
         addProperty(C, 'model', {

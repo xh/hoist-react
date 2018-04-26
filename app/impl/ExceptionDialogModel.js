@@ -15,13 +15,13 @@ export class ExceptionDialogModel {
 
     @computed
     get exception() {
-        const {displayException} =  XH.hoistModel;
+        const {displayException} = XH;
         return displayException ? displayException.exception : null;
     }
 
     @computed
     get options() {
-        const {displayException} =  XH.hoistModel;
+        const {displayException} = XH;
         return displayException ? displayException.options : {};
     }
 
@@ -51,6 +51,6 @@ export class ExceptionDialogModel {
     @action
     close() {
         this.detailsIsOpen = false;
-        XH.hoistModel.hideException();
+        XH.hideException();
     }
 }

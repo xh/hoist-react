@@ -56,7 +56,7 @@ export class EnvironmentService extends BaseService {
             appVersion = data.appVersion;
 
         if (shouldUpdate && appVersion !== XH.appVersion) {
-            XH.hoistModel.showUpdateBar(data.appVersion);
+            XH.showUpdateBar(data.appVersion);
         }
     }
 }
