@@ -9,7 +9,6 @@ import {Component} from 'react';
 import {upperFirst} from 'lodash';
 import {observable, setter, computed} from 'hoist/mobx';
 
-
 /**
  *
  * A Standard Hoist Field.
@@ -47,13 +46,13 @@ import {observable, setter, computed} from 'hoist/mobx';
  */
 export class HoistField extends Component {
 
-    @observable @setter hasFocus
-    @observable @setter internalValue
+    @observable @setter hasFocus;
+    @observable @setter internalValue;
 
     //-----------------------------------------------------------
     // Handling of internal vs. External value, committing
-    //----------------------------------------------------------
-    
+    //-----------------------------------------------------------
+
     /** Return the value to be rendered internally by control. **/
     @computed
     get renderValue() {
@@ -63,6 +62,7 @@ export class HoistField extends Component {
     }
 
     /** Return the external value associated with control. **/
+    @computed
     get externalValue() {
         const {value, model, field} = this.props;
         if (model && field) {
