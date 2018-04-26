@@ -29,7 +29,7 @@ export class LogoutButton extends Component {
     };
 
     render() {
-        if (!XH.hoistModel.appModel.enableLogout) return null;
+        if (!XH.appModel.enableLogout) return null;
 
         const {icon, title, intent, onClick, ...rest} = this.props;
         return button({

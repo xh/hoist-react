@@ -22,8 +22,6 @@ import {
     versionBar
 } from './impl';
 
-import './AppContainer.scss';
-
 
 /**
  * Top-level wrapper to provide core Hoist Application layout and infrastructure to an application's
@@ -31,12 +29,12 @@ import './AppContainer.scss';
  * standard UI elements such as an impersonation bar header, version bar footer, app-wide load mask,
  * context menu, and error dialog.
  *
- * Construction of this container triggers the init of the core `hoistModel` singleton, which
+ * Construction of this container triggers the init of the core XH singleton, which
  * queries for an authorized user and then proceeds to init all core Hoist and app-level services.
  *
  * If the user is not yet known (and the app does *not* use SSO), this container will display a
  * standardized loginPanel component to prompt for a username and password. Once the user is
- * confirmed, this container will again mask until hoistModel has completed its initialization, at
+ * confirmed, this container will again mask until Hoist has completed its initialization, at
  * which point the app's UI will be rendered.
  */
 @observer
@@ -47,7 +45,7 @@ export class AppContainer extends Component {
 
     constructor() {
         super();
-        XH.hoistModel.initAsync();
+        XH.initAsync();
     }
 
     render() {
@@ -58,11 +56,9 @@ export class AppContainer extends Component {
     }
 
     renderContent() {
-        const {hoistModel} = XH;
-
         if (this.caughtException) return null;
 
-        switch (hoistModel.loadState) {
+        switch (XH.loadState) {
             case LoadState.PRE_AUTH:
             case LoadState.INITIALIZING:
                 return loadMask({isDisplayed: true});
@@ -78,7 +74,7 @@ export class AppContainer extends Component {
                         frame(Children.only(this.props.children)),
                         versionBar()
                     ),
-                    loadMask({model: hoistModel.appLoadModel, inline: false}),
+                    loadMask({model: XH.appLoadModel, inline: false}),
                     aboutDialog()
                 );
             default:
@@ -87,23 +83,22 @@ export class AppContainer extends Component {
     }
 
     renderContextMenu() {
-        const {hoistModel} = XH;
         return contextMenu({
             menuItems: [
                 {
                     text: 'Reload App',
                     icon: Icon.refresh(),
-                    action: () => hoistModel.reloadApp()
+                    action: () => XH.reloadApp()
                 },
                 {
                     text: 'About',
                     icon: Icon.info(),
-                    action: () => hoistModel.showAbout()
+                    action: () => XH.showAbout()
                 },
                 {
                     text: 'Logout',
                     icon: Icon.logout(),
-                    hidden: !hoistModel.appModel.enableLogout,
+                    hidden: !XH.appModel.enableLogout,
                     action: () => XH.identityService.logoutAsync()
                 }
             ]

@@ -6,7 +6,12 @@
   align-items: center;
   flex-wrap: nowrap;
   color: var(--xh-navbar-color);
-  background-color: var(--xh-navbar-bg-color);
+  background-color: var(--xh-navbar-bg);
+  height: var(--xh-navbar-height-px);
+  border-bottom: 1px solid var(--xh-navbar-border-color);
+
+  // Curiously, Admin Log Viewer would cause navbar to shrink without min-height
+  min-height: var(--xh-navbar-height-px);
 
   > * {
     white-space: nowrap;
@@ -14,15 +19,25 @@
   }
 
   .pt-navbar-heading {
+    color: var(--xh-navbar-title-color);
+    font-size: var(--xh-navbar-title-font-size-px);
     margin-left: var(--xh-pad-px);
-    font-size: var(--xh-font-size-app-title-px);
   }
 
   .pt-navbar-group {
-    float: none; // Replace default float behaviour in favour of flexbox
+    height: var(--xh-navbar-height-px);
+
+    // Replace default float behaviour in favour of flexbox
+    float: none;
 
     &.pt-align-left {
-      flex: 1; // Flex simulates left alignment
+      // Flex simulates left alignment
+      flex: 1;
+
+      // Primary app icon
+      svg:first-child {
+        color: var(--xh-navbar-title-color);
+      }
     }
 
     &.pt-align-right {
@@ -51,25 +66,33 @@
 //------------------------
 .pt-dialog {
   padding-bottom: 0;
-  border-radius: var(--xh-border-radius);
-  border: var(--xh-popup-border-width-px) solid var(--xh-border-color);
+  border-radius: var(--xh-border-radius-px);
+  border: var(--xh-popup-border-width-px) solid var(--xh-popup-border-color);
 
   .pt-dialog-header {
-    background-color: var(--xh-bg-color-alt);
+    color: var(--xh-popup-title-text-color);
+    background-color: var(--xh-popup-title-bg);
+    font-size: var(--xh-popup-title-font-size-px);
     padding-left: var(--xh-pad-px);
+    border-top-right-radius: var(--xh-border-radius-px);
+    border-top-left-radius: var(--xh-border-radius-px);
+
+    .pt-dialog-header-title {
+      color: var(--xh-popup-title-text-color);
+    }
 
     svg:first-child {
-      margin-right: var(--xh-pad-half-px);
+      margin-right: var(--xh-pad-px);
     }
   }
 }
 
 .pt-dialog-container {
-   background-color: var(--xh-mask-bg-color);
+  background-color: var(--xh-mask-bg);
 }
 
 .pt-dark .pt-menu, .pt-menu {
-  background-color: var(--xh-bg-color-alt);
+  background-color: var(--xh-bg-alt);
 }
 
 
@@ -77,7 +100,8 @@
 // Buttons
 //------------------------
 .pt-button {
-  border-radius: var(--xh-border-radius);
+  border-radius: var(--xh-border-radius-px);
+  font-size: var(--xh-button-font-size-px);
   white-space: nowrap;
 
   &:not([class*="pt-intent-"]) {
@@ -87,16 +111,32 @@
     }
   }
 
-    // TODO - decide if we want to go down this path....
-  &.pt-intent-success {
-    background-color: var(--xh-green);
+  &.pt-intent-primary {
+    background-color: var(--xh-blue);
     &:disabled {
-      background-color: var(--xh-green-trans);
+      background-color: var(--xh-blue-muted);
     }
   }
 
   &.pt-intent-danger {
     background-color: var(--xh-red);
+    &:disabled {
+      background-color: var(--xh-red-muted);
+    }
+  }
+
+  &.pt-intent-success {
+    background-color: var(--xh-green);
+    &:disabled {
+      background-color: var(--xh-green-muted);
+    }
+  }
+
+  &.pt-intent-warning {
+    background-color: var(--xh-orange);
+    &:disabled {
+      background-color: var(--xh-orange-muted);
+    }
   }
 }
 
@@ -114,4 +154,8 @@
   margin: var(--xh-pad-px);
   font-size: var(--xh-font-size);
   z-index: 1;
+}
+
+.pt-select-popover .pt-popover-content {
+  padding: 0px !important;
 }

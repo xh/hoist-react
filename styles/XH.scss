@@ -1,0 +1,56 @@
+@import 'vars';
+
+body.xh-app {
+  background-color: var(--xh-bg);
+  border-color: var(--xh-border-color);
+  color: var(--xh-text-color);
+  font-family: var(--xh-font-family);
+  font-size: var(--xh-font-size-px);
+
+  :focus {
+    outline: 0;
+  }
+
+  // Important for using the body as the `popupParent` for our ag-grids
+  height: 100vh;
+  margin: 0;
+
+  ::-webkit-scrollbar {
+    -webkit-appearance: none;
+    background-color: var(--xh-scrollbar-bg);
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-corner {
+    background-color: var(--xh-scrollbar-bg);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--xh-scrollbar-thumb);
+  }
+
+  h1, h2, h3, h4, h5 {
+    color: var(--xh-text-color-headings);
+  }
+}
+
+.xh-black           {color: var(--xh-black);}
+.xh-blue            {color: var(--xh-blue);}
+.xh-blue-gray       {color: var(--xh-blue-gray);}
+.xh-blue-gray-dark  {color: var(--xh-blue-gray-dark);}
+.xh-blue-gray-light {color: var(--xh-blue-gray-light);}
+.xh-blue-light      {color: var(--xh-blue-light);}
+.xh-gray            {color: var(--xh-gray);}
+.xh-gray-dark       {color: var(--xh-gray-dark);}
+.xh-gray-light      {color: var(--xh-gray-light);}
+.xh-green           {color: var(--xh-green);}
+.xh-green-muted     {color: var(--xh-green-muted);}
+.xh-orange          {color: var(--xh-orange);}
+.xh-red             {color: var(--xh-red);}
+.xh-yellow          {color: var(--xh-yellow);}
+.xh-yellow-light    {color: var(--xh-yellow-light);}
+
+.xh-align-center    {text-align: center;}
+.xh-align-left      {text-align: left;}
+.xh-align-right     {text-align: right;}

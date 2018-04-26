@@ -16,13 +16,13 @@ import {escapeRegExp} from 'lodash';
  * based on simple text matching in selected fields.
  */
 @hoistComponent()
-class StoreFilterField extends Component {
+export class StoreFilterField extends Component {
     @setter @observable value = '';
 
     static defaultProps = {
         store: null,
         fields: []
-    }
+    };
 
     render() {
         return inputGroup({

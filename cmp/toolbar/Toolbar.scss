@@ -1,6 +1,7 @@
 .xh-toolbar {
   padding: var(--xh-pad-half-px) var(--xh-pad-px) var(--xh-pad-half-px) 0;
-  background-color: var(--xh-tbar-bg-color);
+  color: var(--xh-tbar-text-color);
+  background-color: var(--xh-tbar-bg);
   width: 100%;
   flex: none;
   align-items: center;
@@ -15,7 +16,21 @@
     }
   }
 
+  &--vertical {
+    > *:not([class*='xh-no-pad']) {
+      margin-top: var(--xh-pad-px);
+    }
+  }
+
   &__separator {
     color: var(--xh-text-color-muted);
+  }
+
+  &:first-child {
+    border-bottom: 1px solid var(--xh-tbar-border-color);
+  }
+
+  &:last-child {
+    border-top: 1px solid var(--xh-tbar-border-color);
   }
 }

@@ -76,7 +76,7 @@ export class ConfigDifferDetail extends Component {
     }
 
     onCloseClick = () => {
-        this.model.closeDetail();
+        this.model.close();
     }
 }
 export const configDifferDetail= elemFactory(ConfigDifferDetail);

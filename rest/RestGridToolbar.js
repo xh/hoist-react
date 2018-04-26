@@ -28,39 +28,39 @@ export class RestGridToolbar extends Component {
             singleRecord = model.selection.singleRecord,
             actionEnabled = model.actionEnabled,
             extraItemsFn = this.props.extraToolbarItems,
-            extraItems = extraItemsFn ? castArray(extraItemsFn()) : [],
-            items = [
-                button({
-                    text: 'Add',
-                    icon: Icon.add(),
-                    intent: 'success',
-                    onClick: this.onAddClick,
-                    omit: !actionEnabled.add
-                }),
-                button({
-                    text: 'Edit',
-                    icon: Icon.edit(),
-                    onClick: this.onEditClick,
-                    disabled: !singleRecord,
-                    omit: !actionEnabled.edit
-                }),
-                button({
-                    text: 'Delete',
-                    icon: Icon.delete(),
-                    intent: 'danger',
-                    onClick: this.onDeleteClick,
-                    disabled: !singleRecord,
-                    omit: !actionEnabled.del
-                }),
-                toolbarSep({omit: isEmpty(extraItems)}),
-                ...extraItems,
-                filler(),
-                storeCountLabel({store, unit}),
-                storeFilterField({store, fields: model.filterFields}),
-                exportButton({model})
-            ];
+            extraItems = extraItemsFn ? castArray(extraItemsFn()) : [];
 
-        return items;
+        return [
+            button({
+                text: 'Add',
+                icon: Icon.add(),
+                intent: 'success',
+                onClick: this.onAddClick,
+                omit: !actionEnabled.add
+            }),
+            button({
+                text: 'Edit',
+                icon: Icon.edit(),
+                intent: 'primary',
+                onClick: this.onEditClick,
+                disabled: !singleRecord,
+                omit: !actionEnabled.edit
+            }),
+            button({
+                text: 'Delete',
+                icon: Icon.delete(),
+                intent: 'danger',
+                onClick: this.onDeleteClick,
+                disabled: !singleRecord,
+                omit: !actionEnabled.del
+            }),
+            toolbarSep({omit: isEmpty(extraItems)}),
+            ...extraItems,
+            filler(),
+            storeCountLabel({store, unit}),
+            storeFilterField({store, fields: model.filterFields}),
+            exportButton({model})
+        ];
     }
 
     //-----------------------------

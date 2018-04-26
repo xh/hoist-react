@@ -10,12 +10,14 @@ import {hoistComponent, elemFactory} from 'hoist/core';
 import {fmtDateTime} from 'hoist/format';
 import {hbox} from 'hoist/layout';
 import {controlGroup} from 'hoist/kit/blueprint';
-import {label, comboField, jsonField, numberField, selectField, textAreaField, textField}  from 'hoist/cmp';
+import {label, checkField, comboField, jsonField, numberField, selectField, textAreaField, textField}  from 'hoist/cmp';
 
 @hoistComponent()
 export class RestControl extends Component {
 
     render() {
+        if (this.isBlankMetaData()) return null;
+
         return hbox({
             cls: 'xh-rest-form__control',
             items: [
@@ -40,20 +42,19 @@ export class RestControl extends Component {
             return this.renderJsonField();
         }
 
-        if (editorType === 'textarea') {
-            return this.renderTextArea();
-        }
-
         if (!isEditable) return this.renderDisplayField();
         
         if (field.lookup) {
             return field.lookupStrict ? this.renderSelect() : this.renderCombo();
         } else if (type === 'bool') {
-            return this.renderSelect();
+            // Boolean controls will intelligently default based on nullability, unless editor type is otherwise specified
+            if (editorType === 'boolSelect') return this.renderSelect();
+            if (editorType === 'boolCheck') return this.renderCheckField();
+            return field.required ? this.renderCheckField() : this.renderSelect();
         } else if (type === 'number') {
             return this.renderNumberField();
         } else {
-            return this.renderTextField();
+            return editorType === 'textarea' ? this.renderTextArea() : this.renderTextField();
         }
     }
 
@@ -75,9 +76,11 @@ export class RestControl extends Component {
 
     renderCombo() {
         const model = this.model,
-            lookup = model.field.lookup;
+            field = model.field,
+            lookup = field.lookup;
 
-        const options = [null, ...lookup];
+        const options = [...lookup];
+
         return comboField({
             model,
             field: 'value',
@@ -88,22 +91,34 @@ export class RestControl extends Component {
 
     renderSelect() {
         const model = this.model,
-            lookup = model.field.lookup,
+            field = model.field,
+            lookup = field.lookup,
             type = model.type;
 
         let options;
         if (lookup) {
-            options = [null, ...lookup];
+            options = [...lookup];
         } else if (type == 'bool') {
-            options = [null, true, false];
+            options = [true, false];
         } else {
-            options = [null];
+            options = [];
         }
+
+        if (!field.required) options.unshift(null);
 
         return selectField({
             model,
             field: 'value',
             options,
+            disabled: !model.isEditable
+        });
+    }
+
+    renderCheckField() {
+        const model = this.model;
+        return checkField({
+            model,
+            field: 'value',
             disabled: !model.isEditable
         });
     }
@@ -123,7 +138,9 @@ export class RestControl extends Component {
         return textAreaField({
             model,
             field: 'value',
+            autoFocus: this.props.autoFocus,
             cls: 'pt-fill',
+            style: {height: 100},
             disabled: !model.isEditable
         });
     }
@@ -135,6 +152,7 @@ export class RestControl extends Component {
             model,
             type,
             field: 'value',
+            autoFocus: this.props.autoFocus,
             cls: 'pt-fill',
             disabled: !model.isEditable
         });
@@ -151,6 +169,11 @@ export class RestControl extends Component {
             width: 343,
             height: 150
         });
+    }
+
+    isBlankMetaData() {
+        const model = this.model;
+        return !model.value && ['lastUpdatedBy', 'lastUpdated'].includes(model.field.name);
     }
 }
 export const restControl = elemFactory(RestControl);

@@ -4,33 +4,23 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
 import {observable, setter} from 'hoist/mobx';
 
 
 /**
- * Model for HighChart.
- *
- * Manages configuration of a Highcharts chart.
+ * Model to hold and maintain the configuration and data series for a Highcharts chart.
  */
 export class ChartModel {
 
-    /**
-     * Highchart config of chart.
-     *
-     * This may includes all native highcharts options other than 'series',
-     * which should be set on the separate 'series' property on this object.
-     */
     @observable.ref @setter config = {};
-
-
-    /**
-     * Data series to be displayed.
-     */
     @observable.ref @setter series = [];
 
     /**
-     * Construct this object.
+     * @param opts
+     * @param {Object} opts.config - Highcharts configuration object for the managed chart.
+     *      This may includes all native highcharts options other than 'series',
+     *      which should be set on the separate 'series' property on this object.
+     * @param {Array} opts.series - Data series to be displayed.
      */
     constructor({config, series = []} = {}) {
         this.setConfig(config);

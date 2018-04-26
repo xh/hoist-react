@@ -15,6 +15,7 @@ import {elemFactory} from 'hoist/core';
 import {
     Alert,
     Button,
+    Callout,
     Checkbox,
     ControlGroup,
     Dialog,
@@ -56,6 +57,7 @@ export {
 export const
     alert = elemFactory(Alert),
     button = elemFactory(Button),
+    callout = elemFactory(Callout),
     controlGroup = elemFactory(ControlGroup),
     checkbox = elemFactory(Checkbox),
     dateInput = elemFactory(DateInput),

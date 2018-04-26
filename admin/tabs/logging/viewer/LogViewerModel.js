@@ -4,10 +4,9 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
 import {XH} from 'hoist/core';
 import {debounce, find} from 'lodash';
-import {action, observable, setter, autorun} from 'hoist/mobx';
+import {action, autorun, observable, setter} from 'hoist/mobx';
 import {LastPromiseModel} from 'hoist/promise';
 import {GridModel} from 'hoist/grid';
 import {UrlStore} from 'hoist/data';
