@@ -27,16 +27,26 @@ import './JsonField.css';
  *   A JSON Editor
  *
  * @prop rest, see general properties for HoistField
+ *      Accepts props documented below as well as any properties supported by the CodeMirror api,
+ *      with the exception of 'value', which is managed by HoistField.
+ *      Provided CodeMirror props will override any editor properties preconfigured here.
+ *      See: https://codemirror.net/doc/manual.html#api_configuration for details.
  *
  * @prop width, width of field, in pixels
  * @prop height, width of field, in pixels
- * @prop lineWrapping, Whether field should scroll or wrap for long lines. Defaults to false
+ * @prop disabled, Whether the field is readonly, Defaults to false
  */
 @hoistComponent()
 export class JsonField extends HoistField {
 
     editor = null;
     taCmp = null;
+
+    static defaultProps = {
+        width: null,
+        height: null,
+        disabled: false
+    }
 
     render() {
         return textArea({
@@ -57,10 +67,11 @@ export class JsonField extends HoistField {
     }
 
     createJsonEditor(taCmp) {
+        const {height, width, disabled, value, onChange, onCommit, model, field, style, className, ...editorProps} = this.props;
+
         const editorSpec = {
             theme: this.darkTheme ? 'dracula' : 'default',
             mode: 'application/json',
-            lineWrapping: this.props.lineWrapping || false,
             lineNumbers: true,
             autoCloseBrackets: true,
             extraKeys: {
@@ -73,25 +84,21 @@ export class JsonField extends HoistField {
                 'CodeMirror-linenumbers',
                 'CodeMirror-foldgutter'
             ],
-            readOnly: this.props.disabled,
-            lint: true
+            readOnly: disabled,
+            lint: true,
+            ...editorProps
         };
-        
-        const props = this.props,
-            taDom = ReactDOM.findDOMNode(taCmp),
+
+        const taDom = ReactDOM.findDOMNode(taCmp),
             editor = codemirror.fromTextArea(taDom, editorSpec);
 
         editor.on('change', this.handleEditorChange);
         editor.on('focus',  this.onFocus);
-        editor.on('blur',  this.onBlur);
+        editor.on('blur',   this.onBlur);
         editor.on('keyup',  this.onKeyUp);
 
-        let {height, width} = props;
-        if (!(isUndefined(height) && isUndefined(width))) {
-            width = isUndefined(width) ? null : width;
-            height = isUndefined(height) ? null : height;
-            editor.setSize(width, height);
-        }
+        editor.setSize(width, height);
+
         return editor;
     }
 
