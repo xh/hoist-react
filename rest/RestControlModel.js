@@ -27,6 +27,7 @@ export class RestControlModel  {
         const {record, field} = this;
         return record ? record[field.name] : null;
     }
+
     setValue(value) {
         const {record, field} = this;
         if (record) {

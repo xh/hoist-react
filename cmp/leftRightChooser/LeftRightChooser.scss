@@ -1,13 +1,23 @@
-.xh-leftRightChooser {
-  .gridContainer {
+.xh-lr-chooser {
+  &__grid-frame {
     > div:not(.xh-toolbar) {
       width: calc(50% - 15px);
     }
   }
 
-  .item-row {
+  &__item-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
   }
+
+  &__toolbar {
+    border-left: var(--xh-border-solid);
+    border-right: var(--xh-border-solid);
+  }
+
+  &__description {
+    border-top: var(--xh-border-solid);
+  }
+
 }

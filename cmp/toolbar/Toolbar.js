@@ -28,7 +28,7 @@ class Toolbar extends Component {
     render() {
         const {className, vertical, ...rest} = this.props;
         let baseCls = 'xh-toolbar';
-        if (vertical) baseCls += ' vertical';
+        if (vertical) baseCls += ' xh-toolbar--vertical';
 
         return (vertical ? vbox : hbox)({
             cls: className ? `${className} ${baseCls}` : baseCls,
