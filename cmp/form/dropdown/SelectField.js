@@ -35,7 +35,7 @@ export class SelectField extends BaseDropdownField {
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: options,
             onItemSelect: this.onItemSelect,
-            itemRenderer: this.itemRenderer,
+            itemRenderer: this.getItemRenderer(),
             filterable: false,
             item: button({
                 rightIcon: 'caret-down',

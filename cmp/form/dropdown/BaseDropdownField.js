@@ -21,10 +21,6 @@ export class BaseDropdownField extends HoistField {
         placeholder: 'Select'
     }
 
-    get itemRenderer() {
-        const {itemRenderer} = this.props;
-        return itemRenderer || this.defaultItemRenderer;
-    }
 
     //---------------------------------------------------------------------------
     // Handling of null values.  Blueprint doesn't allow null for the value of a
@@ -51,6 +47,10 @@ export class BaseDropdownField extends HoistField {
             ret.value = this.toInternal(ret.value);
             return ret;
         });
+    }
+
+    getItemRenderer() {
+        return this.props.itemRenderer || this.defaultItemRenderer;
     }
 
     defaultItemRenderer(item, itemProps) {

@@ -12,13 +12,14 @@ import {Classes, suggest} from 'hoist/kit/blueprint';
 import {BaseDropdownField} from './BaseDropdownField';
 
 /**
- * ComboBox Field, which populates its items via an async function (e.g. querying a remote server)
+ * ComboBox Field which populates its options dynamically based on the current value.
  *
  * @prop rest, see properties for HoistField
  *
- * @prop queryAsync, async function that receives (string query)
- *          Should return a collection of form [{value: string, label: string}, ...] or [val, val, ...]
- * @prop queryDelay, ms delay used to buffer calls to the queryAsyncFn (default 100)
+ * @prop queryFn, function to be run when value of control changes to repopulate the available items.
+ *       Should return a promise resolving to a collection of form [{value: string, label: string}, ...]
+ *       or [val, val, ...].
+ * @prop queryBuffer, ms delay used to buffer calls to the queryFn (default 100)
  * @prop placeholder, text to display when control is empty
  * @prop itemRenderer, optional custom itemRenderer, a function that receives (item, itemProps)
  */
@@ -26,15 +27,11 @@ import {BaseDropdownField} from './BaseDropdownField';
 export class QueryComboField extends BaseDropdownField {
     @observable.ref @setter options = [];
 
-    static defaultProps = {
-        placeholder: 'Search'
-    }
-
     delegateProps = ['className', 'style', 'placeholder', 'disabled'];
 
     constructor(props) {
         super(props);
-        this.addAutoRun(() => this.onQueryChange(), {delay: props.queryDelay || 100});
+        this.addAutoRun(() => this.syncOptions(), {delay: props.queryBuffer || 100});
     }
 
     render() {
@@ -46,7 +43,7 @@ export class QueryComboField extends BaseDropdownField {
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: this.options,
             onItemSelect: this.onItemSelect,
-            itemRenderer: this.itemRenderer,
+            itemRenderer: this.getItemRenderer(),
             inputValueRenderer: s => s,
             inputProps: {
                 value: this.getDisplayValue(value, this.options, ''),
@@ -61,14 +58,15 @@ export class QueryComboField extends BaseDropdownField {
         });
     }
 
-    onQueryChange() {
-        const query = this.internalValue,
+    syncOptions() {
+        const value = this.internalValue,
             {queryAsync} = this.props;
 
-        if (!queryAsync) return;
-        queryAsync(query).then(options => {
-            this.setOptions(this.normalizeOptions(options));
-        });
+        if (queryAsync) {
+            queryAsync(value).then(options => {
+                this.setOptions(this.normalizeOptions(options));
+            });
+        }
     }
 
     onChange = (ev) => {
@@ -80,6 +78,5 @@ export class QueryComboField extends BaseDropdownField {
             this.doCommit();
         }
     }
-
 }
 export const queryComboField = elemFactory(QueryComboField);

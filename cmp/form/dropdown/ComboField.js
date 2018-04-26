@@ -37,7 +37,7 @@ export class ComboField extends BaseDropdownField {
             itemPredicate: (q, item) => {
                 return item.label.toLowerCase().includes(q.toLowerCase());
             },
-            itemRenderer: this.itemRenderer,
+            itemRenderer: this.getItemRenderer(),
             inputValueRenderer: s => s,
             inputProps: {
                 value: this.getDisplayValue(value, options, ''),
