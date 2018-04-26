@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {PropTypes as PT} from 'prop-types';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {textArea} from 'hoist/kit/blueprint';
 
@@ -13,14 +14,19 @@ import {HoistField} from './HoistField';
 /**
  * A Text Area Field
  *
- * @prop rest, see general properties for HoistField
- * 
- * @prop autoFocus
- * @prop placeholder, text to display when control is empty
- * @prop width, width of field, in pixels
+ * See HoistField for properties additional to those documented below.
  */
 @hoistComponent()
 export class TextAreaField extends HoistField {
+
+    static propTypes = {
+        /** Whether field should receive focus on render */
+        autoFocus: PT.bool,
+        /** Text to display when control is empty */
+        placeholder: PT.string,
+        /** Width of field, in pixels */
+        width: PT.number
+    };
     
     delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus'];
 

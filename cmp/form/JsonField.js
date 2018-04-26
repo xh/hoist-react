@@ -1,4 +1,5 @@
 import ReactDOM from 'react-dom';
+import {PropTypes as PT} from 'prop-types';
 import {isUndefined} from 'lodash';
 import {textArea} from 'hoist/kit/blueprint';
 
@@ -22,18 +23,22 @@ import 'codemirror/addon/lint/lint.js';
 
 import './JsonField.css';
 
-
 /**
- *   A JSON Editor
+ * A JSON Editor
  *
- * @prop rest, see general properties for HoistField
- *
- * @prop width, width of field, in pixels
- * @prop height, width of field, in pixels
- * @prop lineWrapping, Whether field should scroll or wrap for long lines. Defaults to false
+ * See HoistField for properties additional to those documented below.
  */
 @hoistComponent()
 export class JsonField extends HoistField {
+
+    static propTypes = {
+        /** width of field, in pixels */
+        width: PT.number,
+        /** height of field, in pixels */
+        height: PT.number,
+        /** Whether field should scroll or wrap for long lines. */
+        lineWrapping: PT.bool
+    };
 
     editor = null;
     taCmp = null;

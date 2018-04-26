@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {PropTypes as PT} from 'prop-types';
 import {isObject, find} from 'lodash';
 import {menuItem} from 'hoist/kit/blueprint';
 
@@ -17,10 +18,14 @@ import {HoistField} from '../HoistField';
  */
 export class BaseDropdownField extends HoistField {
 
+    static propTypes = {
+        /** Text to display when control is empty */
+        placeholder: PT.string
+    };
+
     static defaultProps = {
         placeholder: 'Select'
     }
-
 
     //---------------------------------------------------------------------------
     // Handling of null values.  Blueprint doesn't allow null for the value of a

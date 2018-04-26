@@ -6,6 +6,7 @@
  */
 
 import {Component} from 'react';
+import {PropTypes as PT} from 'prop-types';
 import {upperFirst} from 'lodash';
 import {observable, setter, computed} from 'hoist/mobx';
 
@@ -32,19 +33,25 @@ import {observable, setter, computed} from 'hoist/mobx';
  * control, so that changes to its value do not cause the parent of this
  * control to re-render.
  *
- * Hoist Fields generally support the following properties.
- *
- * @prop value, string
- * @prop onChange, handler to fire when value changes
- * @prop onCommit, handler to fire when value is committed.
- *
- * @prop model, model to bind to
- * @prop field, name of property in model to bind to
- * @prop disabled, is control disabled
- * @prop style
- * @prop className
+ * Hoist Fields generally support the properties documented below.
  */
 export class HoistField extends Component {
+
+    static propTypes = {
+        value: PT.string,
+        /** handler to fire when value changes */
+        onChange: PT.func,
+        /** handler to fire when value is committed */
+        onCommit: PT.func,
+        /** model to bind to */
+        model: PT.object,
+        /** name of property in model to bind to */
+        field: PT.string,
+        /** is control disabled */
+        disabled: PT.bool,
+        style: PT.object,
+        className: PT.string
+    };
 
     @observable @setter hasFocus;
     @observable @setter internalValue;

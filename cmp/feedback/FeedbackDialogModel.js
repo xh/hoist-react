@@ -8,6 +8,9 @@ import {isEmpty} from 'lodash';
 import {XH} from 'hoist/core';
 import {action, observable, setter} from 'hoist/mobx';
 
+/**
+ * Model for a FeedbackDialog, managing its open/close state and feedback string.
+ */
 export class FeedbackDialogModel {
 
     @observable isOpen = false;

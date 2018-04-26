@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-
+import {PropTypes as PT} from 'prop-types';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {label} from 'hoist/cmp';
 import {checkbox} from 'hoist/kit/blueprint';
@@ -15,12 +15,15 @@ import {HoistField} from './HoistField';
 /**
  * CheckBox Field, does not handle null values, for nullable fields use a SelectField.
  *
- * @prop rest, see properties for HoistField
- *
- * @prop text, name for labelling field
+ * See HoistField for properties additional to those documented below.
  */
 @hoistComponent()
 export class CheckField extends HoistField {
+
+    static propTypes = {
+        /** Name for labeling field */
+        placeholder: PT.string
+    };
 
     static defaultProps = {
         text: ''
