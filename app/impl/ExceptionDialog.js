@@ -99,7 +99,7 @@ export const dismissButton = hoistComponentFactory(
         }
 
         onReloadClick = () => {
-            XH.hoistModel.reloadApp();
+            XH.reloadApp();
         }
 
         sessionExpired() {
