@@ -29,7 +29,7 @@ export class ContextMenu extends Component {
         /**
          *  Array of ContextMenuItems, configs to create them, Elements, or '-' (divider).
          */
-        menuItems: PT.arrayOf(PT.oneOf([PT.object, PT.string, PT.element]))
+        menuItems: PT.arrayOf(PT.oneOfType([PT.object, PT.string, PT.element]))
     }
 
     render() {
