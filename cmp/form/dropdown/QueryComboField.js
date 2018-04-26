@@ -6,41 +6,47 @@
  */
 
 import {hoistComponent, elemFactory} from 'hoist/core';
+import {observable, setter} from 'hoist/mobx';
 import {Classes, suggest} from 'hoist/kit/blueprint';
 
 import {BaseDropdownField} from './BaseDropdownField';
 
 /**
- * ComboBox Field
+ * ComboBox Field which populates its options dynamically based on the current value.
  *
  * @prop rest, see properties for HoistField
  *
- * @prop options, collection of form [{value: string, label: string}, ...] or [val, val, ...]
+ * @prop queryFn, function to be run when value of control changes to repopulate the available items.
+ *       Should return a promise resolving to a collection of form [{value: string, label: string}, ...]
+ *       or [val, val, ...].
+ * @prop queryBuffer, ms delay used to buffer calls to the queryFn (default 100)
  * @prop placeholder, text to display when control is empty
  * @prop itemRenderer, optional custom itemRenderer, a function that receives (item, itemProps)
  */
 @hoistComponent()
-export class ComboField extends BaseDropdownField {
+export class QueryComboField extends BaseDropdownField {
+    @observable.ref @setter options = [];
 
-    delegateProps = ['className', 'disabled', 'placeholder'];
+    delegateProps = ['className', 'style', 'placeholder', 'disabled'];
+
+    constructor(props) {
+        super(props);
+        this.addAutoRun(() => this.syncOptions(), {delay: props.queryBuffer || 100});
+    }
 
     render() {
-        let {style, width, options, disabled} = this.props;
+        const {style, width, disabled} = this.props;
 
-        options = this.normalizeOptions(options);
         const value = this.renderValue;
 
         return suggest({
             popoverProps: {popoverClassName: Classes.MINIMAL},
-            $items: options,
+            $items: this.options,
             onItemSelect: this.onItemSelect,
-            itemPredicate: (q, item) => {
-                return item.label.toLowerCase().includes(q.toLowerCase());
-            },
             itemRenderer: this.getItemRenderer(),
             inputValueRenderer: s => s,
             inputProps: {
-                value: this.getDisplayValue(value, options, ''),
+                value: this.getDisplayValue(value, this.options, ''),
                 onChange: this.onChange,
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,
@@ -50,6 +56,17 @@ export class ComboField extends BaseDropdownField {
             },
             disabled
         });
+    }
+
+    syncOptions() {
+        const value = this.internalValue,
+            {queryFn} = this.props;
+
+        if (queryFn) {
+            queryFn(value).then(options => {
+                this.setOptions(this.normalizeOptions(options));
+            });
+        }
     }
 
     onChange = (ev) => {
@@ -62,4 +79,4 @@ export class ComboField extends BaseDropdownField {
         }
     }
 }
-export const comboField = elemFactory(ComboField);
+export const queryComboField = elemFactory(QueryComboField);
