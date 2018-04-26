@@ -1,5 +1,4 @@
 import ReactDOM from 'react-dom';
-import {isUndefined} from 'lodash';
 import {textArea} from 'hoist/kit/blueprint';
 
 import {HoistField} from './HoistField';
