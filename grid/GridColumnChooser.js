@@ -6,17 +6,16 @@
  */
 
 
-
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
-import {div, filler, frame} from 'hoist/layout';
+import {filler, frame} from 'hoist/layout';
 import {button, dialog} from 'hoist/kit/blueprint/';
 import {toolbar} from 'hoist/cmp';
 import {Icon} from 'hoist/icon/';
 import {leftRightChooser} from 'hoist/cmp/leftRightChooser';
 
 
-//import './GridColumnChooser.scss';
+// import './GridColumnChooser.scss';
 
 @hoistComponent()
 export class GridColumnChooser extends Component {
@@ -31,7 +30,7 @@ export class GridColumnChooser extends Component {
             isOpen: isOpen,
             onClose: onClose,
             items: [
-                frame({item:leftRightChooser({model: leftRightChooserModel})}),
+                frame({item: leftRightChooser({model: leftRightChooserModel})}),
                 toolbar({
                     items: [
                         filler(),

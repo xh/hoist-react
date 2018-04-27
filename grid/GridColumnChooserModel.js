@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {action, observable, setter} from 'hoist/mobx';
+import {observable, setter} from 'hoist/mobx';
 import {LeftRightChooserModel} from 'hoist/cmp/leftRightChooser/LeftRightChooserModel';
 
 /**
@@ -20,8 +20,8 @@ export class GridColumnChooserModel {
 
 
     constructor({
-                    parent=null
-    }){
+        parent=null
+    }) {
         this.parent = parent;
     }
 
@@ -29,10 +29,9 @@ export class GridColumnChooserModel {
         const data = this.prepareChooserData();
         this.leftRightChooserModel = new LeftRightChooserModel({
             data: data
-        })
+        });
 
     }
-
 
     onClose = ()=> {
         this.commit();
@@ -45,16 +44,16 @@ export class GridColumnChooserModel {
 
     prepareChooserData() {
         const grid = this.parent,
-                cols = grid.columns,
-                api = grid.gridApi.gridCore.columnApi;
+            cols = grid.columns,
+            api = grid.gridApi.gridCore.columnApi;
 
         return cols.map(it=> {
             return {
                 value: it.field,
                 text: it.headerName,
                 side: api.getColumn(it.field).visible ? 'right' : 'left'
-            }
-        })
+            };
+        });
     }
 
 

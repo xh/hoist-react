@@ -80,10 +80,11 @@ export class GridModel {
         this.setSortBy(sortBy);
     }
 
-    init(api){
+    init(api) {
+        const chooserModel = this.columnChooserModel;
         this.gridApi = api;
-        if(this.columnChooserModel) {
-            this.columnChooserModel.init()
+        if (chooserModel) {
+            chooserModel.init();
         }
     }
 
