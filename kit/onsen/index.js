@@ -14,11 +14,13 @@ import {
     List,
     ListItem,
     Page,
-    Toolbar
+    Toolbar,
+    ToolbarButton
 } from 'react-onsenui';
 
 export const
     list = elemFactory(List),
     listItem = elemFactory(ListItem),
     page = elemFactory(Page),
-    toolbar = elemFactory(Toolbar);
+    toolbar = elemFactory(Toolbar),
+    toolbarButton = elemFactory(ToolbarButton);
