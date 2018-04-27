@@ -41,7 +41,7 @@ export class GridModel {
             '-',
             {
                 text: 'Column Editor',
-                hide: !model.columnChooserModel,
+                hidden: !model.columnChooserModel,
                 action: () => {
                     model.columnChooserModel.setIsOpen(true);
                 }

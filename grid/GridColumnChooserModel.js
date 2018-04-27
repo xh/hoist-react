@@ -49,7 +49,6 @@ export class GridColumnChooserModel {
                 api = grid.gridApi.gridCore.columnApi;
 
         return cols.map(it=> {
-            console.log(it);
             return {
                 value: it.field,
                 text: it.headerName,
