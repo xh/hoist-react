@@ -21,7 +21,7 @@ export class SelectField extends BaseDropdownField {
 
     static propTypes = {
         /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
-        options: PT.arrayOf(PT.oneOfType([PT.object, PT.string])),
+        options: PT.arrayOf(PT.oneOfType([PT.object, PT.string])).isRequired,
         /** Text to display when control is empty */
         placeholder: PT.string,
         /** Optional custom itemRenderer, a function that receives (item, itemProps) */

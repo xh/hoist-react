@@ -109,7 +109,7 @@ export class RestControl extends Component {
         return selectField({
             model,
             field: 'value',
-            options,
+            // options,
             disabled: !model.isEditable
         });
     }

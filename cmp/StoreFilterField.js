@@ -24,7 +24,7 @@ export class StoreFilterField extends Component {
     static propTypes = {
         /** Store to filter */
         store: PT.instanceOf(BaseStore).isRequired,
-        /** Names of record fields to use for filter string matching */
+        /** Names of fields in store's records to filter by */
         fields: PT.arrayOf(PT.string)
     };
 

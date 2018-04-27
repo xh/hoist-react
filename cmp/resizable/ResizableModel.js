@@ -27,7 +27,7 @@ export class ResizableModel {
      *
      * @param {string} [prefName=null] preference name to load/save state of resizable component
      * @param {int} [contentSize=0] default size in pixels of resizable component.
-     *      Will be used in absence of size state and opening from a collapsed state.
+     *      Will be used in absence of size state and when opening from a collapsed state.
      * @param {boolean} [isOpen] default openness of resizable component.
      *      Will be used in absence of isOpen state.
      */

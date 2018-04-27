@@ -22,7 +22,7 @@ export class CheckField extends HoistField {
 
     static propTypes = {
         /** Name for labeling field */
-        placeholder: PT.string
+        text: PT.string
     };
 
     static defaultProps = {

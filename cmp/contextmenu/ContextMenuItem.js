@@ -6,7 +6,7 @@
  */
 
 /**
- *  Basic Model Object for ContextMenu Items.
+ *  Basic Model Object for ContextMenu.
  */
 export class ContextMenuItem {
 

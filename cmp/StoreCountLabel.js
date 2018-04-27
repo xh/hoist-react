@@ -20,9 +20,10 @@ import {BaseStore} from 'hoist/data';
 class StoreCountLabel extends Component {
 
     static propTypes = {
-        /** Name of record in given store*/
-        unit: PT.string,
-        store: PT.instanceOf(BaseStore).isRequired
+        /** Store to count */
+        store: PT.instanceOf(BaseStore).isRequired,
+        /** Name of entity that record in store represents */
+        unit: PT.string
     };
 
     static defaultProps = {
