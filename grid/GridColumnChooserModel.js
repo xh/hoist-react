@@ -33,9 +33,18 @@ export class GridColumnChooserModel {
 
     }
 
-    onClose = ()=> {
-        this.commit();
-    };
+    commit() {
+        const grid = this.parent,
+            api = grid.gridApi.gridCore.columnApi; // todo: this seems a bit over the top
+
+        const model = this.leftRightChooserModel,
+            {leftModel, rightModel} = model,
+            hidden = leftModel.store.allRecords,
+            visible = rightModel.store.allRecords;
+
+        api.setColumnsVisible(hidden.map(it => it.value), false);
+        api.setColumnsVisible(visible.map(it => it.value), true);
+    }
 
 
     //---------
@@ -45,7 +54,7 @@ export class GridColumnChooserModel {
     prepareChooserData() {
         const grid = this.parent,
             cols = grid.columns,
-            api = grid.gridApi.gridCore.columnApi;
+            api = grid.gridApi.gridCore.columnApi; // todo: this seems a bit over the top
 
         return cols.map(it=> {
             return {
@@ -57,17 +66,5 @@ export class GridColumnChooserModel {
     }
 
 
-    commit() {
-        const grid = this.parent,
-            api = grid.gridApi.gridCore.columnApi;
 
-        const model = this.leftRightChooserModel,
-            {leftModel, rightModel} = model,
-            hidden = leftModel.store.allRecords,
-            visible = rightModel.store.allRecords;
-
-        api.setColumnsVisible(hidden.map(it => it.value), false);
-        api.setColumnsVisible(visible.map(it => it.value), true);
-
-    }
 }

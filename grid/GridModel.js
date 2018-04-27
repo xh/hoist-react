@@ -40,7 +40,7 @@ export class GridModel {
             'autoSizeAll',
             '-',
             {
-                text: 'Column Editor',
+                text: 'Column Chooser...',
                 hidden: !model.columnChooserModel,
                 action: () => {
                     model.columnChooserModel.setIsOpen(true);
@@ -80,6 +80,10 @@ export class GridModel {
         this.setSortBy(sortBy);
     }
 
+    /**
+     * initialization to be performed after the grid is 'ready'.
+     * @param api
+     */
     init(api) {
         const chooserModel = this.columnChooserModel;
         this.gridApi = api;

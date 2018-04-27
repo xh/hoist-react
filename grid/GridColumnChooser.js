@@ -21,20 +21,34 @@ import {leftRightChooser} from 'hoist/cmp/leftRightChooser';
 export class GridColumnChooser extends Component {
 
     render() {
-        const {isOpen, onClose, leftRightChooserModel} = this.model;
+        const model = this.model,
+            onClose = () => {model.setIsOpen(false)},
+            {isOpen,leftRightChooserModel} = model;
 
         return dialog({
             icon: Icon.gears(),
-            title: 'Column Chooser Test',
+            title: 'Column Chooser',
             cls: 'xh-grid-column-chooser',
             isOpen: isOpen,
             onClose: onClose,
             items: [
-                frame({item: leftRightChooser({model: leftRightChooserModel})}),
+                frame({
+                    height: 300,
+                    item: leftRightChooser({model: leftRightChooserModel})
+                }),
                 toolbar({
                     items: [
                         filler(),
-                        button({text: 'Apply', onClick: onClose})
+                        button({text: 'OK',
+                            onClick: () => {
+                                model.commit();
+                                onClose();
+                            }
+                        }),
+                        button({
+                            text: 'Cancel',
+                            onClick: onClose
+                        })
                     ]
                 })
             ]});
