@@ -8,7 +8,3 @@
 export function isReactElement(obj) {
     return obj.$$typeof;
 }
-
-export function hocDisplayName(name, wrappedComponent) {
-    return `${name}(${wrappedComponent.displayName || wrappedComponent.name || 'Anon'})`;
-}

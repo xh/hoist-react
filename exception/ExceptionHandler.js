@@ -65,7 +65,7 @@ export class ExceptionHandler {
     }
 
     static alertException(exception, options) {
-        XH.hoistModel.showException(exception, options);
+        XH.showException(exception, options);
     }
 
     static parseOptions(exception, options) {

@@ -68,7 +68,7 @@ export class IdentityService extends BaseService {
     async logoutAsync() {
         return XH
             .fetchJson({url: 'hoistImpl/logout'})
-            .then(() => XH.hoistModel.reloadApp())
+            .then(() => XH.reloadApp())
             .catchDefault();
     }
 
@@ -96,7 +96,7 @@ export class IdentityService extends BaseService {
                 username: username
             }
         }).then(() => {
-            XH.hoistModel.reloadApp();
+            XH.reloadApp();
         }).catchDefault({
             message: 'Failed to impersonate'
         });
@@ -109,7 +109,7 @@ export class IdentityService extends BaseService {
         return XH.fetchJson({
             url: 'hoistImpl/endImpersonate'
         }).then(() => {
-            XH.hoistModel.reloadApp();
+            XH.reloadApp();
         }).catchDefault({
             message: 'Failed to end impersonation'
         });

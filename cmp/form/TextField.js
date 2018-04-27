@@ -49,8 +49,5 @@ export class TextField extends HoistField {
         }
     }
 
-    onBlur = (ev) => {
-        this.doCommit();
-    }
 }
 export const textField = elemFactory(TextField);
