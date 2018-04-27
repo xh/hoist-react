@@ -23,7 +23,7 @@ export class GridColumnChooser extends Component {
     render() {
         const model = this.model,
             onClose = () => {model.setIsOpen(false)},
-            {isOpen,leftRightChooserModel} = model;
+            {isOpen, leftRightChooserModel} = model;
 
         return dialog({
             icon: Icon.gears(),
