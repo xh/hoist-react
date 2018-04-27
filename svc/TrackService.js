@@ -10,6 +10,19 @@ import {stripTags} from 'hoist/utils/HtmlUtils';
 
 export class TrackService extends BaseService {
 
+    /**
+     * Create a Track Log entry.
+     * Client metadata is set automatically by the server's parsing of request headers.
+     *
+     * @param {Object|string} options - if a string, it will become the msg value.
+     * @param {string} [options.msg] - user-supplied message. Required if options is an object.
+     * @param {string} [options.category] - user-supplied category.
+     * @param {Object|Array} [options.data] - user-supplied data collection.
+     * @param {number} [options.elapsed] - time in milliseconds some activity took.
+     * @param {string} [options.severity] - level flag, such as: OK|WARN|OMG
+     *                 (errors should be tracked by the ErrorTrackingService, not sent
+     *                 in this TrackService).
+     */
     track(options) {
         const params = {msg: stripTags(typeof options === 'string' ? options : options.msg)};
         try {
@@ -23,15 +36,8 @@ export class TrackService extends BaseService {
                     .filter(it => it != null)
                     .join(' | ');
 
-            const exception = options.exception;
-            if (exception) {
-                const exceptionMsg = exception.msg || exception.message || 'Unknown exception';
-                params.msg += ' | Error: ' + stripTags(exceptionMsg);
-                if (!params.severity) params.severity = 'ERROR';
-                console.error(consoleMsg, exception);
-            } else {
-                console.log(consoleMsg);
-            }
+            console.log(consoleMsg);
+
             XH.fetchJson({
                 url: 'hoistImpl/track',
                 params: params

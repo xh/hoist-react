@@ -134,7 +134,6 @@ Object.assign(Promise.prototype, {
         const startTime = Date.now();
 
         return this.catch(e => {
-            trackCfg.exception = e;
             throw e;
         }).finally(() => {
             trackCfg.elapsed = Date.now() - startTime;
