@@ -106,7 +106,7 @@ export class ConfigPanel extends Component {
             baseCol({field: 'note', minWidth: 60})
         ]),
         editors: this.filterForEnv([
-            {field: 'name'},
+            {field: 'name', spellCheck: false},
             {field: 'groupName'},
             {field: 'valueType'},
             {field: 'prodValue', env: 'Production', type: 'boolSelect'}, // special handling to keep dynamically generated controls consistent

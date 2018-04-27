@@ -53,7 +53,7 @@ export class ActivityGrid extends Component {
                 cls: 'xh-no-pad'
             }),
             toolbarSep(),
-            this.textField({field: 'username', placeholder: 'User...'}),
+            this.textField({field: 'username', placeholder: 'User...', spellCheck: false}),
             this.textField({field: 'msg', placeholder: 'Msg...'}),
             this.textField({field: 'category', placeholder: 'Category...'}),
             this.textField({field: 'device', placeholder: 'Device...'}),
