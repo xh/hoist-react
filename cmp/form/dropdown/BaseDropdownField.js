@@ -13,7 +13,7 @@ import {HoistField} from '../HoistField';
 /**
  * BaseDropdownField
  *
- * Abstract class supporting ComboField and SelectField.
+ * Abstract class supporting ComboField, QueryComboField and SelectField.
  */
 export class BaseDropdownField extends HoistField {
 
@@ -31,7 +31,7 @@ export class BaseDropdownField extends HoistField {
     }
 
     toInternal(external) {
-        return external ===  null ?  NULL_VALUE : external;
+        return external ===  null ? NULL_VALUE : external;
     }
 
 
@@ -73,6 +73,11 @@ export class BaseDropdownField extends HoistField {
         this.noteValueChange(val.value);
         this.doCommit();
     }
+
+    onBlur = () => {
+        this.setHasFocus(false);
+    }
+
 }
 
 const NULL_VALUE = 'xhNullValue';
