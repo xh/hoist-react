@@ -13,7 +13,7 @@ import {defaults, isString, isNumber, isBoolean, isEqual, xor} from 'lodash';
 import {convertIconToSvg, Icon} from 'hoist/icon';
 import './ag-grid';
 import {navigateSelection, agGridReact} from './ag-grid';
-import {gridColumnEditor} from './GridColumnEditor';
+import {gridColumnChooser} from './GridColumnChooser';
 
 /**
  * Grid Component
@@ -77,7 +77,7 @@ class Grid extends Component {
     }
 
     render() {
-        const {store, columns, columnEditorModel} = this.model;
+        const {store, columns, columnChooserModel} = this.model;
         return frame(
             div({
                 style: {flex: '1 1 auto', overflow: 'hidden'},
@@ -94,9 +94,9 @@ class Grid extends Component {
                     onComponentStateChanged: this.onComponentStateChanged
                 })
             }),
-            gridColumnEditor({
-                omit: !columnEditorModel,
-                model: columnEditorModel
+            gridColumnChooser({
+                omit: !columnChooserModel,
+                model: columnChooserModel
             })
         );
     }

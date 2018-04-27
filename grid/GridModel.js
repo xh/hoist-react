@@ -10,7 +10,7 @@ import {LastPromiseModel} from 'hoist/promise';
 import {castArray, find, isString} from 'lodash';
 import {GridSelectionModel} from './GridSelectionModel';
 import {GridContextMenu} from './GridContextMenu';
-import {GridColumnEditorModel} from './GridColumnEditorModel';
+import {GridColumnChooserModel} from './GridColumnChooserModel';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -24,7 +24,7 @@ export class GridModel {
     selection = null;
     loadModel = new LastPromiseModel();
     contextMenuFn = null;
-    columnEditorModel = null;
+    columnChooserModel = null;
 
 
     @observable.ref columns = [];
@@ -41,9 +41,9 @@ export class GridModel {
             '-',
             {
                 text: 'Column Editor',
-                hide: !model.columnEditorModel,
+                hide: !model.columnChooserModel,
                 action: () => {
-                    model.columnEditorModel.setIsOpen(true);
+                    model.columnChooserModel.setIsOpen(true);
                 }
             }
         ]);
@@ -63,7 +63,7 @@ export class GridModel {
         columns,
         sortBy = [],
         groupBy = null,
-        enableColumnEditor = false,
+        enableColumnChooser = false,
         contextMenuFn = GridModel.defaultContextMenu
     }) {
         this.store = store;
@@ -71,8 +71,8 @@ export class GridModel {
         this.contextMenuFn = contextMenuFn;
 
         this.selection = new GridSelectionModel({parent: this});
-        if (enableColumnEditor) {
-            this.columnEditorModel = new GridColumnEditorModel({parent: this});
+        if (enableColumnChooser) {
+            this.columnChooserModel = new GridColumnChooserModel({parent: this});
         }
 
 
@@ -82,8 +82,8 @@ export class GridModel {
 
     init(api){
         this.gridApi = api;
-        if(this.columnEditorModel) {
-            this.columnEditorModel.init()
+        if(this.columnChooserModel) {
+            this.columnChooserModel.init()
         }
     }
 

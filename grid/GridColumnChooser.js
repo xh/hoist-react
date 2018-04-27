@@ -16,10 +16,10 @@ import {Icon} from 'hoist/icon/';
 import {leftRightChooser} from 'hoist/cmp/leftRightChooser';
 
 
-//import './GridColumnEditor.scss';
+//import './GridColumnChooser.scss';
 
 @hoistComponent()
-export class GridColumnEditor extends Component {
+export class GridColumnChooser extends Component {
 
     render() {
         const {isOpen, onClose, leftRightChooserModel} = this.model;
@@ -42,4 +42,4 @@ export class GridColumnEditor extends Component {
     }
 }
 
-export const gridColumnEditor =  elemFactory(GridColumnEditor);
+export const gridColumnChooser =  elemFactory(GridColumnChooser);

@@ -12,7 +12,7 @@ import {LeftRightChooserModel} from 'hoist/cmp/leftRightChooser/LeftRightChooser
  * Core Model for a Grid, specifying the grid's data store, column definitions,
  * sorting/grouping/selection state, and context menu configuration.
  */
-export class GridColumnEditorModel {
+export class GridColumnChooserModel {
 
     leftRightChooserModel = null;
 
