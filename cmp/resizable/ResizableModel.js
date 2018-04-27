@@ -24,6 +24,12 @@ export class ResizableModel {
 
     /**
      * Construct this object.
+     *
+     * @param {string} [prefName=null] preference name to load/save state of resizable component
+     * @param {int} [contentSize=0] default size in pixels of resizable component.
+     *      Will be used in absence of size state and opening from a collapsed state.
+     * @param {boolean} [isOpen] default openness of resizable component.
+     *      Will be used in absence of isOpen state.
      */
     constructor({prefName = null, contentSize = 0, isOpen = true}) {
         if (prefName && !XH.prefService.hasKey(prefName)) {
@@ -33,7 +39,7 @@ export class ResizableModel {
 
         const pref = prefName ? XH.getPref(prefName) : {};
         this.prefName = prefName;
-        this.defaultContentSize =  contentSize;
+        this.defaultContentSize = contentSize;
         this.setContentSize('contentSize' in pref ? pref.contentSize : contentSize);
         this.setIsOpen('isOpen' in pref ? pref.isOpen : isOpen);
 

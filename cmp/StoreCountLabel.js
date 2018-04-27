@@ -6,9 +6,12 @@
  */
 
 import {Component} from 'react';
+import {PropTypes as PT} from 'prop-types';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {label} from 'hoist/cmp';
 import {singularize, pluralize} from 'hoist/utils/JsUtils';
+
+import {BaseStore} from 'hoist/data';
 
 /**
  * A Component that can bind to any store, provides a label for the records count
@@ -16,11 +19,19 @@ import {singularize, pluralize} from 'hoist/utils/JsUtils';
 @hoistComponent()
 class StoreCountLabel extends Component {
 
-    defaultUnit = 'record';
+    static propTypes = {
+        /** Name of record in given store*/
+        unit: PT.string,
+        store: PT.instanceOf(BaseStore).isRequired
+    };
+
+    static defaultProps = {
+        unit: 'record'
+    };
 
     constructor(props) {
         super(props);
-        const unit = props.unit || this.defaultUnit;
+        const unit = props.unit;
         this.oneUnit = singularize(unit);
         this.manyUnits = pluralize(unit);
     }

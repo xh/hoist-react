@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {PropTypes as PT} from 'prop-types';
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {viewport, frame} from 'hoist/layout';
@@ -15,15 +16,18 @@ import './LoadMask.scss';
 /**
  * Simple LoadMask.
  *
- * This Mask currently will occupy the entire viewport.
- * Localized masking will be provided by a future option.
- *
  * The mask can be explicitly shown, or reactively bound to a PromiseModel.
  */
 @hoistComponent()
 export class LoadMask extends Component {
 
     BACKGROUND = 'rgba(0,0,0, 0.25)';
+
+    static propTypes = {
+        isDisplayed: PT.bool,
+        model: PT.object,
+        inline: PT.bool
+    };
 
     static defaultProps = {
         isDisplayed: false,

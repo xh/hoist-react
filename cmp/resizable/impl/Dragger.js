@@ -17,6 +17,7 @@ export class Dragger extends Component {
     resizeState = null;
 
     static propTypes = {
+        /** Position of resize border in relation to resizable component */
         side: PT.oneOf(['top', 'right', 'bottom', 'left']).isRequired,
         onResizeStart: PT.func,
         onResize: PT.func,

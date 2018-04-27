@@ -6,6 +6,7 @@
  */
 
 import {Component} from 'react';
+import {PropTypes as PT} from 'prop-types';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {observable, setter} from 'hoist/mobx';
 import {div} from 'hoist/layout';
@@ -39,13 +40,17 @@ const defaultOptions = {
 
 /**
  * A RelativeTimestamp component - It displays time relative to `now`
- *
- * @prop timestamp, Date
- * @prop options, Object, @see {@link getRelativeTimestamp} options
  */
-
 @hoistComponent()
 class RelativeTimestamp extends Component {
+
+    static propTypes = {
+        /** Date object that will be used as reference, can also be specified in milliseconds from the epoch*/
+        timestamp: PT.oneOfType([PT.instanceOf(Date), PT.number]),
+        /** @see {@link getRelativeTimestamp} options */
+        options: PT.object
+    };
+
     @setter @observable relativeTimeString;
     timer = null;
 
@@ -83,14 +88,14 @@ export const relativeTimestamp = elemFactory(RelativeTimestamp);
 /**
  * Returns a String relative to the Timestamp provided
  *
- * @param timestamp, Date Object - Date that will be used as reference for this component
- * @param options, Object
- *          allowFuture, boolean -  Allow dates greater than new Date()
- *          futureSuffix, string - String appended to future timestamps
- *          pastSuffix, string - String appended to past timestamps
- *          nowEpsilon, integer - interval (in seconds) that will serve as threshold for the nowString. (default 30)
- *          nowString, string - String used as display property when timestamp is within the nowEpsilon interval.
- *          emptyResult, string - String to be used when timestamp is undefined
+ * @param {Date|int} timestamp - Date object or milliseconds that will be used as reference for this component
+ * @param {Object} [options]
+ * @param {boolean} [options.allowFuture=false] - Allow dates greater than new Date()
+ * @param {string} [options.futureSuffix='from now'] - Appended to future timestamps
+ * @param {string} [options.pastSuffix=ago] - Appended to past timestamps
+ * @param {integer} [options.nowEpsilon=30] - Interval (in seconds) that will serve as threshold for the nowString.
+ * @param {string} [options.nowString=''] - Used as display property when timestamp is within the nowEpsilon interval.
+ * @param {string} [options.emptyResult=''] - Used when timestamp is undefined
  */
 export const getRelativeTimestamp = (timestamp, options) => {
     const opts = Object.assign({timestamp}, defaultOptions, options);
