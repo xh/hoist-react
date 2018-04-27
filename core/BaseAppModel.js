@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {hoistModel} from './HoistModel';
+import {XH} from './XH';
 
 /**
  * Top level model for a HoistApp.
@@ -26,7 +26,7 @@ export class BaseAppModel {
 
     
     constructor() {
-        hoistModel.appModel = this;
+        XH.appModel = this;
     }
 
     /**

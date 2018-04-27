@@ -22,7 +22,7 @@ import './AboutDialog.scss';
 export class AboutDialog extends Component {
     render() {
         return dialog({
-            isOpen: XH.hoistModel.aboutIsOpen,
+            isOpen: XH.aboutIsOpen,
             isCloseButtonShown: false,
             icon: Icon.info({size: 'lg'}),
             cls: 'xh-about-dialog',
@@ -76,7 +76,7 @@ export class AboutDialog extends Component {
     }
 
     onClose = () => {
-        XH.hoistModel.hideAbout();
+        XH.hideAbout();
     }
 }
 export const aboutDialog = elemFactory(AboutDialog);

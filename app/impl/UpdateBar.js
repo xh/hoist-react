@@ -16,7 +16,7 @@ import './UpdateBar.scss';
 export class UpdateBar extends Component {
 
     render() {
-        const updateVersion = XH.hoistModel.updateVersion,
+        const {updateVersion} = XH,
             cls = 'xh-update-bar';
 
         if (!updateVersion) return null;
@@ -38,7 +38,7 @@ export class UpdateBar extends Component {
     }
 
     reloadApp() {
-        XH.hoistModel.reloadApp();
+        XH.reloadApp();
     }
 }
 export const updateBar = elemFactory(UpdateBar);

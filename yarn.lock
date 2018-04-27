@@ -85,7 +85,7 @@
     lodash "^4.2.0"
     to-fast-properties "^2.0.0"
 
-"@blueprintjs/core@^2.0.0", "@blueprintjs/core@^2.1.1", "@blueprintjs/core@~2.1.1":
+"@blueprintjs/core@^2.0.0", "@blueprintjs/core@^2.1.1":
   version "2.1.1"
   resolved "https://repo.xh.io/repository/npm-public/@blueprintjs/core/-/core-2.1.1.tgz#8e7178c7bd0faea53a0f9a25392215a1fe62d05e"
   dependencies:
@@ -94,6 +94,19 @@
     classnames "^2.2"
     dom4 "^2.0.1"
     normalize.css "^7.0.0"
+    popper.js "^1.14.1"
+    react-popper "^0.8.2"
+    tslib "^1.9.0"
+
+"@blueprintjs/core@~2.2.0":
+  version "2.2.0"
+  resolved "https://repo.xh.io/repository/npm-public/@blueprintjs/core/-/core-2.2.0.tgz#a22756d99cef1154339152787583f42f63c476d1"
+  dependencies:
+    "@blueprintjs/icons" "^2.1.1"
+    "@types/dom4" "^2.0.0"
+    classnames "^2.2"
+    dom4 "^2.0.1"
+    normalize.css "^8.0.0"
     popper.js "^1.14.1"
     react-popper "^0.8.2"
     tslib "^1.9.0"
@@ -243,19 +256,19 @@ acorn@^5.0.0, acorn@^5.3.0, acorn@^5.5.0:
   version "5.5.3"
   resolved "https://repo.xh.io/repository/npm-public/acorn/-/acorn-5.5.3.tgz#f473dd47e0277a08e28e9bec5aeeb04751f0b8c9"
 
-ag-grid-enterprise@~17.0.0:
-  version "17.0.0"
-  resolved "https://repo.xh.io/repository/npm-public/ag-grid-enterprise/-/ag-grid-enterprise-17.0.0.tgz#760769c9400f6eb60213a06ca2c5fe91c92d9fd4"
+ag-grid-enterprise@~17.1.0:
+  version "17.1.1"
+  resolved "https://repo.xh.io/repository/npm-public/ag-grid-enterprise/-/ag-grid-enterprise-17.1.1.tgz#ed8b2f9e6befc9d7371a6af4c2297c016df426a0"
 
-ag-grid-react@~17.0.0:
-  version "17.0.0"
-  resolved "https://repo.xh.io/repository/npm-public/ag-grid-react/-/ag-grid-react-17.0.0.tgz#363d78b95b9be3bb2124284d2baf70056808f287"
+ag-grid-react@~17.1.0:
+  version "17.1.0"
+  resolved "https://repo.xh.io/repository/npm-public/ag-grid-react/-/ag-grid-react-17.1.0.tgz#8c9cee63e32183787bafb2a2b85e1e966ad0be39"
   dependencies:
     prop-types "15.6.0"
 
-ag-grid@~17.0.0:
-  version "17.0.0"
-  resolved "https://repo.xh.io/repository/npm-public/ag-grid/-/ag-grid-17.0.0.tgz#b8c82268c1785e04425a3149ca53cc526376029b"
+ag-grid@~17.1.0:
+  version "17.1.1"
+  resolved "https://repo.xh.io/repository/npm-public/ag-grid/-/ag-grid-17.1.1.tgz#6c7010a65d6e8b6373e2fe97643c9eecf5417026"
 
 ajv-keywords@^2.0.0, ajv-keywords@^2.1.0:
   version "2.1.1"
@@ -4804,6 +4817,10 @@ normalize-url@^1.4.0:
 normalize.css@^7.0.0:
   version "7.0.0"
   resolved "https://repo.xh.io/repository/npm-public/normalize.css/-/normalize.css-7.0.0.tgz#abfb1dd82470674e0322b53ceb1aaf412938e4bf"
+
+normalize.css@^8.0.0:
+  version "8.0.0"
+  resolved "https://repo.xh.io/repository/npm-public/normalize.css/-/normalize.css-8.0.0.tgz#14ac5e461612538a4ce9be90a7da23f86e718493"
 
 npm-run-path@^2.0.0:
   version "2.0.2"

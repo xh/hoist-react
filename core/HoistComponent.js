@@ -6,8 +6,9 @@
  */
 import {autorun, observer} from 'hoist/mobx';
 import {ContextMenuTarget, HotkeysTarget} from 'hoist/kit/blueprint';
+import {addProperty, mixinMethods} from 'hoist/utils/MixinUtils';
 
-import {hoistModel} from './HoistModel';
+import {XH} from './XH';
 import {elemFactory} from './elem';
 
 /**
@@ -22,7 +23,7 @@ export function hoistComponent({isObserver = true} = {}) {
         // Convenience Getters.
         //---------------------------------------------------------------------
         addProperty(C, 'darkTheme', {
-            get() {return hoistModel.darkTheme}
+            get() {return XH.darkTheme}
         });
 
         addProperty(C, 'model', {
@@ -93,33 +94,4 @@ export function hoistComponent({isObserver = true} = {}) {
  */
 export function hoistComponentFactory(C, hcArgs = {}) {
     return elemFactory(hoistComponent(hcArgs)(C));
-}
-
-//-----------------------------------
-// Implementation
-//-----------------------------------
-function addProperty(C, name,  cfg) {
-    const proto = C.prototype;
-    if (!proto[name]) {
-        Object.defineProperty(proto, name, cfg);
-    }
-}
-
-function mixinMethods(C, mixins) {
-    const proto = C.prototype;
-
-    for (const name in mixins) {
-        const base = proto[name],
-            mixin = mixins[name];
-        let f = null;
-        if (!base) {
-            f = mixin;
-        } else {
-            f = function() {
-                base.apply(this, arguments);
-                mixin.apply(this, arguments);
-            };
-        }
-        proto[name] = f;
-    }
 }
