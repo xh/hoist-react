@@ -10,6 +10,7 @@ import {LastPromiseModel} from 'hoist/promise';
 import {castArray, find, isString} from 'lodash';
 import {GridSelectionModel} from './GridSelectionModel';
 import {GridContextMenu} from './GridContextMenu';
+import {GridColumnEditorModel} from './GridColumnEditorModel';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -23,20 +24,30 @@ export class GridModel {
     selection = null;
     loadModel = new LastPromiseModel();
     contextMenuFn = null;
+    columnEditorModel = null;
+
 
     @observable.ref columns = [];
     @observable.ref sortBy = [];
     @observable groupBy = null;
 
-    static defaultContextMenu = () => {
+    static defaultContextMenu = (params, model) => {
         return new GridContextMenu([
             'copy',
             'copyWithHeaders',
             '-',
             'export',
-            'autoSizeAll'
+            'autoSizeAll',
+            '-',
+            {
+                text: 'Column Editor',
+                hide: !model.columnEditorModel,
+                action: () => {
+                    model.columnEditorModel.setIsOpen(true);
+                }
+            }
         ]);
-    }
+    };
 
     /**
      * @param {BaseStore} store - store containing the data for the grid.
@@ -52,14 +63,28 @@ export class GridModel {
         columns,
         sortBy = [],
         groupBy = null,
+        enableColumnEditor = false,
         contextMenuFn = GridModel.defaultContextMenu
     }) {
         this.store = store;
         this.columns = columns;
         this.contextMenuFn = contextMenuFn;
+
         this.selection = new GridSelectionModel({parent: this});
+        if (enableColumnEditor) {
+            this.columnEditorModel = new GridColumnEditorModel({parent: this});
+        }
+
+
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
+    }
+
+    init(api){
+        this.gridApi = api;
+        if(this.columnEditorModel) {
+            this.columnEditorModel.init()
+        }
     }
 
     exportDataAsExcel(params) {
