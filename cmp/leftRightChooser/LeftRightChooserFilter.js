@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import {PropTypes as PT} from 'prop-types';
 import {elemFactory, hoistComponent} from 'hoist/core';
 import {button, inputGroup} from 'hoist/kit/blueprint';
 import {observable, setter} from 'hoist/mobx';
@@ -16,11 +17,17 @@ import {escapeRegExp} from 'lodash';
  */
 @hoistComponent()
 class LeftRightChooserFilter extends Component {
-    @setter @observable value = '';
+
+    static propTypes = {
+        /** width of field, in pixels */
+        fields: PT.arrayOf(PT.string)
+    };
 
     static defaultProps = {
         fields: []
     };
+
+    @setter @observable value = '';
 
     render() {
         return inputGroup({

@@ -19,13 +19,13 @@ export class ContextMenuItem {
     prepareFn;
 
     /**
-     * @param {string} [text] - label to be displayed.
-     * @param {Object} [icon] - optional icon to be displayed.
-     * @param {function} [action] - Executed when the user clicks the menuitem.
-     * @param {Object[]} [items] - child menu items.
-     * @param {boolean} [disabled] - true to disable this item.
-     * @param {boolean} [hidden] - true to hide this item.
-     * @param {function} [prepareFn] - function of the form (item, record, selection) => {}
+     * @param {string} text - label to be displayed.
+     * @param {Object} [icon=null] - optional icon to be displayed.
+     * @param {function} [action=null] - Executed when the user clicks the menuitem.
+     * @param {Object[]} [items=null] - child menu items.
+     * @param {boolean} [disabled=false] - true to disable this item.
+     * @param {boolean} [hidden=false] - true to hide this item.
+     * @param {function} [prepareFn=null] - function of the form (item, record, selection) => {}
      *          The prepareFn is a callback that is triggered before each time the menuitem is shown.
      *          It can be used to modify the menuitem based on the record / selection.
      */

@@ -30,7 +30,6 @@ export class Label extends HoistField { // why extend here?
     //     lineWrapping: PT.bool
     // };
 
-
     delegateProps = ['className'];
     
     render() {

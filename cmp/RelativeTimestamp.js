@@ -41,7 +41,7 @@ const defaultOptions = {
  * A RelativeTimestamp component - It displays time relative to `now`
  *
  * @prop timestamp, Date
- * @prop options, Object, see the getRelativeTimestamp options
+ * @prop options, Object, @see {@link getRelativeTimestamp} options
  */
 
 @hoistComponent()
