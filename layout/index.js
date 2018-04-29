@@ -50,6 +50,7 @@ export const pre = elemFactory('pre');
 export const span = elemFactory('span');
 export const table = elemFactory('table');
 export const tbody = elemFactory('tbody');
+export const thead = elemFactory('thead');
 export const td = elemFactory('td');
 export const th = elemFactory('th');
 export const tr = elemFactory('tr');
