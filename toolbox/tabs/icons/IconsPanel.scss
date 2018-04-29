@@ -34,6 +34,9 @@
           &:nth-child(odd) {
             background-color: var(--xh-grid-bg-odd);
           }
+          &:nth-child(even) {
+            background-color: var(--xh-grid-bg);
+          }
           div {
             display: flex;
             flex: 1;

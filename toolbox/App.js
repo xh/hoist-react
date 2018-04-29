@@ -16,6 +16,7 @@ import './App.scss';
 
 @hoistComponent()
 export class App extends Component {
+
     render() {
         return vframe({
             items: [

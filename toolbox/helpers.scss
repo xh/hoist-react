@@ -1,0 +1,40 @@
+//----------------------
+// Replace all occurrences of the search string with the replacement string
+//----------------------
+@function str-replace($string, $search, $replace: '') {
+  $index: str-index($string, $search);
+
+  @if $index {
+    @return str-slice($string, 1, $index - 1) + $replace + str-replace(str-slice($string, $index + str-length($search)), $search, $replace);
+  }
+
+  @return $string;
+}
+
+//----------------------
+// Encode urls for data-uris (for IE)
+//----------------------
+@function url-encode($string) {
+  $string: str-replace($string, '"', '\'');
+  $string: str-replace($string, '"', '\'');
+  $string: str-replace($string, '%', '%25');
+  $string: str-replace($string, '&', '%26');
+  $string: str-replace($string, '#', '%23');
+  $string: str-replace($string, '{', '%7B');
+  $string: str-replace($string, '}', '%7D');
+  $string: str-replace($string, '<', '%3C');
+  $string: str-replace($string, '>', '%3E');
+  @return $string;
+}
+
+//----------------------
+// Create an optimized svg url
+//----------------------
+@function svg-url($svg) {
+  // Ensure has correct namespace
+  @if not str-index($svg, xmlns) {
+    $svg: str-replace($svg, '<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+  }
+  $svg: url-encode($svg);
+  @return url("data:image/svg+xml,#{$svg}");
+}
