@@ -6,7 +6,7 @@
  */
 
 import {hoistComponent, elemFactory} from 'hoist/core';
-import {Classes, menuItem, select, button} from 'hoist/kit/blueprint';
+import {Classes, select, button} from 'hoist/kit/blueprint';
 
 import {BaseDropdownField} from './BaseDropdownField';
 
@@ -17,7 +17,7 @@ import {BaseDropdownField} from './BaseDropdownField';
  *
  * @prop options, collection of form [{value: object, label: string}, ...] or [val, val, ...]
  * @prop placeholder, text to display when control is empty
- * @prop width, width of field, in pixels
+ * @prop itemRenderer, optional custom itemRenderer, a function that receives (item, itemProps)
  */
 @hoistComponent()
 export class SelectField extends BaseDropdownField {
@@ -35,14 +35,7 @@ export class SelectField extends BaseDropdownField {
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: options,
             onItemSelect: this.onItemSelect,
-            itemRenderer: (item, itemProps) => {
-                return menuItem({
-                    key: item.value,
-                    text: item.label,
-                    onClick: itemProps.handleClick,
-                    active: itemProps.modifiers.active
-                });
-            },
+            itemRenderer: this.getItemRenderer(),
             filterable: false,
             item: button({
                 rightIcon: 'caret-down',

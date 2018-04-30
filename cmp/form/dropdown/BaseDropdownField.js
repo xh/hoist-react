@@ -6,19 +6,21 @@
  */
 
 import {isObject, find} from 'lodash';
+import {menuItem} from 'hoist/kit/blueprint';
 
 import {HoistField} from '../HoistField';
 
 /**
  * BaseDropdownField
  *
- * Abstract class supporting ComboField and SelectField.
+ * Abstract class supporting ComboField, QueryComboField and SelectField.
  */
 export class BaseDropdownField extends HoistField {
 
     static defaultProps = {
         placeholder: 'Select'
     }
+
 
     //---------------------------------------------------------------------------
     // Handling of null values.  Blueprint doesn't allow null for the value of a
@@ -29,7 +31,7 @@ export class BaseDropdownField extends HoistField {
     }
 
     toInternal(external) {
-        return external ===  null ?  NULL_VALUE : external;
+        return external ===  null ? NULL_VALUE : external;
     }
 
 
@@ -47,6 +49,19 @@ export class BaseDropdownField extends HoistField {
         });
     }
 
+    getItemRenderer() {
+        return this.props.itemRenderer || this.defaultItemRenderer;
+    }
+
+    defaultItemRenderer(item, itemProps) {
+        return menuItem({
+            key: item.value,
+            text: item.label,
+            onClick: itemProps.handleClick,
+            active: itemProps.modifiers.active
+        });
+    }
+
     getDisplayValue(value, items, placeholder) {
         const match = find(items, {value});
 
@@ -54,11 +69,15 @@ export class BaseDropdownField extends HoistField {
         return (value == null || value === NULL_VALUE) ? placeholder : value.toString();
     }
 
-
     onItemSelect = (val) => {
         this.noteValueChange(val.value);
         this.doCommit();
     }
+
+    onBlur = () => {
+        this.setHasFocus(false);
+    }
+
 }
 
 const NULL_VALUE = 'xhNullValue';

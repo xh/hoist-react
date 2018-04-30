@@ -36,7 +36,7 @@ export class VersionBar extends Component {
     }
 
     showAbout() {
-        XH.hoistModel.showAbout();
+        XH.showAbout();
     }
 }
 export const versionBar = elemFactory(VersionBar);

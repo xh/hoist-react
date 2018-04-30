@@ -6,7 +6,7 @@
  */
 
 import {hoistComponent, elemFactory} from 'hoist/core';
-import {Classes, menuItem, suggest} from 'hoist/kit/blueprint';
+import {Classes, suggest} from 'hoist/kit/blueprint';
 
 import {BaseDropdownField} from './BaseDropdownField';
 
@@ -17,11 +17,11 @@ import {BaseDropdownField} from './BaseDropdownField';
  *
  * @prop options, collection of form [{value: string, label: string}, ...] or [val, val, ...]
  * @prop placeholder, text to display when control is empty
- * @prop width, width of field, in pixels
+ * @prop itemRenderer, optional custom itemRenderer, a function that receives (item, itemProps)
  */
 @hoistComponent()
 export class ComboField extends BaseDropdownField {
-    
+
     delegateProps = ['className', 'disabled', 'placeholder'];
 
     render() {
@@ -34,17 +34,10 @@ export class ComboField extends BaseDropdownField {
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: options,
             onItemSelect: this.onItemSelect,
-            itemPredicate: (q, item, index) => {
+            itemPredicate: (q, item) => {
                 return item.label.toLowerCase().includes(q.toLowerCase());
             },
-            itemRenderer: (item, itemProps) => {
-                return menuItem({
-                    key: item.value,
-                    text: item.label,
-                    onClick: itemProps.handleClick,
-                    active: itemProps.modifiers.active
-                });
-            },
+            itemRenderer: this.getItemRenderer(),
             inputValueRenderer: s => s,
             inputProps: {
                 value: this.getDisplayValue(value, options, ''),
