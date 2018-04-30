@@ -18,7 +18,6 @@ import './Collapser.scss';
 export class Collapser extends Component {
 
     static propTypes = {
-        /** Position of collapse border in relation to resizable component */
         side: PT.oneOf(['top', 'right', 'bottom', 'left']).isRequired,
         isOpen: PT.bool,
         onClick: PT.func

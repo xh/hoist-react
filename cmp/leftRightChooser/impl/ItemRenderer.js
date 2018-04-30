@@ -4,7 +4,6 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {PropTypes as PT} from 'prop-types';
 import {Component} from 'react';
 import {div} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
@@ -13,14 +12,6 @@ import {Icon} from 'hoist/icon';
  * Render items in the LeftRightChooser.
  */
 export class ItemRenderer extends Component {
-
-    // not sure we need this, the props here are handled by ag-grid
-    static propTypes = {
-        /** cell value */
-        value: PT.string,
-        /** grid record */
-        data: PT.object
-    };
 
     render() {
         const {value, data} = this.props,

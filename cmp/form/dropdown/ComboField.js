@@ -12,21 +12,16 @@ import {Classes, suggest} from 'hoist/kit/blueprint';
 import {BaseDropdownField} from './BaseDropdownField';
 
 /**
- * ComboBox Field - A field with type ahead suggest and menu select
+ * ComboBox Field
  *
- * See HoistField for properties additional to those documented below.
+ * @prop rest, see properties for HoistField
+ *
+ * @prop options, collection of form [{value: string, label: string}, ...] or [val, val, ...]
+ * @prop placeholder, text to display when control is empty
+ * @prop itemRenderer, optional custom itemRenderer, a function that receives (item, itemProps)
  */
 @hoistComponent()
 export class ComboField extends BaseDropdownField {
-
-    static propTypes = {
-        /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
-        options: PT.arrayOf(PT.oneOfType([PT.object, PT.string])).isRequired,
-        /** Text to display when control is empty */
-        placeholder: PT.string,
-        /** Optional custom itemRenderer, a function that receives (item, itemProps) */
-        itemRenderer: PT.func
-    };
 
     delegateProps = ['className', 'disabled', 'placeholder'];
 

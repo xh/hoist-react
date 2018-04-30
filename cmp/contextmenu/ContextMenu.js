@@ -20,7 +20,7 @@ import {ContextMenuItem} from './ContextMenuItem';
  * To add a Context Menu to a component, specify a renderContextMenu() method on the
  * component that returns this object.
  *
- * See GridContextMenu to specify a context menu on a grid. That API will receive grid specific
+ * See GridContextMenu to specify a context menu on a grid.  That API will receive grid specific
  * information about rows and cells, and will provide grid specific built-in menu items.
  */
 export class ContextMenu extends Component {
@@ -29,7 +29,7 @@ export class ContextMenu extends Component {
         /**
          *  Array of ContextMenuItems, configs to create them, Elements, or '-' (divider).
          */
-        menuItems: PT.arrayOf(PT.oneOfType([PT.object, PT.string, PT.element])).isRequired
+        menuItems: PT.arrayOf(PT.oneOfType([PT.object, PT.string, PT.element]))
     }
 
     render() {

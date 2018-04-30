@@ -14,19 +14,14 @@ import {BaseDropdownField} from './BaseDropdownField';
 /**
  * A Select Field
  *
- * See HoistField for properties additional to those documented below.
+ * @prop rest, see properties for HoistField
+ *
+ * @prop options, collection of form [{value: object, label: string}, ...] or [val, val, ...]
+ * @prop placeholder, text to display when control is empty
+ * @prop itemRenderer, optional custom itemRenderer, a function that receives (item, itemProps)
  */
 @hoistComponent()
 export class SelectField extends BaseDropdownField {
-
-    static propTypes = {
-        /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
-        options: PT.arrayOf(PT.oneOfType([PT.object, PT.string])).isRequired,
-        /** Text to display when control is empty */
-        placeholder: PT.string,
-        /** Optional custom itemRenderer, a function that receives (item, itemProps) */
-        itemRenderer: PT.func
-    };
 
     delegateProps = ['className', 'disabled'];
 

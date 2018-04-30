@@ -6,33 +6,23 @@
  */
 
 import {Component} from 'react';
-import {PropTypes as PT} from 'prop-types';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {button, inputGroup} from 'hoist/kit/blueprint';
 import {setter, observable} from 'hoist/mobx';
 import {escapeRegExp} from 'lodash';
 
-import {BaseStore} from 'hoist/data';
-
 /**
- * A Component that can bind to any store and filter it
- * based on simple text matching in specified fields.
+ * A Component that can bind to any store and filter it,
+ * based on simple text matching in selected fields.
  */
 @hoistComponent()
 export class StoreFilterField extends Component {
-
-    static propTypes = {
-        /** Store to filter */
-        store: PT.instanceOf(BaseStore).isRequired,
-        /** Names of fields in store's records to filter by */
-        fields: PT.arrayOf(PT.string)
-    };
+    @setter @observable value = '';
 
     static defaultProps = {
+        store: null,
         fields: []
     };
-
-    @setter @observable value = '';
 
     render() {
         return inputGroup({
