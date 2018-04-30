@@ -28,7 +28,7 @@ export class VisitsChartModel {
                 type: 'datetime',
                 units: [['day', [1]], ['week', [2]], ['month', [1]]],
                 labels: {
-                    formatter: function() {return fmtDate(this.value)}
+                    formatter: function() {return fmtDate(this.value, 'D MMM')}
                 }
             },
             yAxis: {
