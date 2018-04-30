@@ -45,7 +45,7 @@ const defaultOptions = {
 class RelativeTimestamp extends Component {
 
     static propTypes = {
-        /** Date object that will be used as reference, can also be specified in milliseconds from the epoch*/
+        /** Date object that will be used as reference, can also be specified in milliseconds*/
         timestamp: PT.oneOfType([PT.instanceOf(Date), PT.number]).isRequired,
         /** @see {@link getRelativeTimestamp} options */
         options: PT.object
@@ -90,12 +90,12 @@ export const relativeTimestamp = elemFactory(RelativeTimestamp);
  *
  * @param {Date|int} timestamp - Date object or milliseconds that will be used as reference for this component
  * @param {Object} [options]
- * @param {boolean} [options.allowFuture=false] - Allow dates greater than Date.now()
- * @param {string} [options.futureSuffix=from now] - Appended to future timestamps
- * @param {string} [options.pastSuffix=ago] - Appended to past timestamps
- * @param {integer} [options.nowEpsilon=30] - Interval (in seconds) that will serve as threshold for the nowString.
- * @param {string} [options.nowString=''] - Used as display property when timestamp is within the nowEpsilon interval.
- * @param {string} [options.emptyResult=''] - Used when timestamp is undefined
+ * @param {boolean} [options.allowFuture] - Allow dates greater than Date.now()
+ * @param {string} [options.futureSuffix] - Appended to future timestamps
+ * @param {string} [options.pastSuffix] - Appended to past timestamps
+ * @param {integer} [options.nowEpsilon] - Interval (in seconds) that will serve as threshold for the nowString.
+ * @param {string} [options.nowString] - Used as display property when timestamp is within the nowEpsilon interval.
+ * @param {string} [options.emptyResult] - Used when timestamp is undefined
  */
 export const getRelativeTimestamp = (timestamp, options) => {
     const opts = Object.assign({timestamp}, defaultOptions, options);

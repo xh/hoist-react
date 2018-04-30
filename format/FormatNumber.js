@@ -27,22 +27,22 @@ const UP_TICK = '&#9652;',
  *
  * @param {int|float} v - value to format.
  * @param {Object} [opts] - formatting options, may include:
- * @param {string} [opts.nullDisplay=''] - desired display for null values.
- * @param {string} [opts.formatPattern=null] - a valid numeralJS format string.
+ * @param {string} [opts.nullDisplay] - desired display for null values.
+ * @param {string} [opts.formatPattern] - a valid numeralJS format string.
  *      @see {@link http://numeraljs.com/#format for more info}
- * @param {int|'auto'} [opts.precision='auto'] - desired number of decimal places.
- * @param {boolean} [opts.zeroPad=true] - set to false to remove trailing zeros regardless of precision.
- * @param {boolean} [opts.ledger=false] - set to true to use ledger format.
- * @param {boolean} [opts.forceLedgerAlign=true] - used to add placeholder after positive ledgers to align with negative ledgers in columns.
- * @param {boolean} [opts.withPlusSign=false] - set to true to include a '+' in positive number strings.
- * @param {boolean} [opts.withSignGlyph=false] - set to true to prepend with an up / down arrow.
- * @param {string} [opts.label=null] - label to append to value.
- * @param {string} [opts.labelCls=xh-units-label] - class to apply to label span..
- * @param {boolean|Object} [opts.colorSpec={pos: 'xh-green', neg: 'xh-red', neutral: 'xh-gray'}] - show in colored <span>, based on sign of value.
+ * @param {int|'auto'} [opts.precision] - desired number of decimal places.
+ * @param {boolean} [opts.zeroPad] - set to false to remove trailing zeros regardless of precision.
+ * @param {boolean} [opts.ledger] - set to true to use ledger format.
+ * @param {boolean} [opts.forceLedgerAlign] - used to add placeholder after positive ledgers to align with negative ledgers in columns.
+ * @param {boolean} [opts.withPlusSign] - set to true to include a '+' in positive number strings.
+ * @param {boolean} [opts.withSignGlyph] - set to true to prepend with an up / down arrow.
+ * @param {string} [opts.label] - label to append to value.
+ * @param {string} [opts.labelCls] - class to apply to label span..
+ * @param {boolean|Object} [opts.colorSpec] - show in colored <span>, based on sign of value.
  *      If truthy will default to red/green/grey. Also accepts an object of the form {pos: color, neg: color, neutral: color}.
- * @param {function} [opts.tipFn=null] - use to place formatted number in span with title property set to returned string.
+ * @param {function} [opts.tipFn] - use to place formatted number in span with title property set to returned string.
  *      Will be passed the originalValue param.
- * @param {int|float} [opts.originalValue=v] - used to retain an unaltered reference to the original value to be formatted.
+ * @param {int|float} [opts.originalValue] - used to retain an unaltered reference to the original value to be formatted.
  *      Not typically used by applications.
  *
  * This method delegates to numeralJS, @see {@link http://numeraljs.com} for more details.

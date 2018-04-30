@@ -27,7 +27,7 @@ export class TabPaneModel {
 
     /**
      * @param {string} id - unique ID, used for generating routes.
-     * @param {string} [name=startCase(id)] - display name for the tab.
+     * @param {string} [name] - display name for the tab.
      * @param {Component} component - component (or React node) to be displayed within the tab.
      */
     constructor({

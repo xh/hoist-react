@@ -31,7 +31,7 @@ export class TabContainerModel {
 
     /**
      * @param {string} id - unique ID, used for generating routes.
-     * @param {string} [name=startCase(id)] - display name for this container - useful in particular when displaying
+     * @param {string} [name] - display name for this container - useful in particular when displaying
      *      nested tabs, where this model's container is a direct child of a parent TabContainer.
      * @param {string} [orientation=h] - specify horizontal vs. vertical tabs.
      * @param {boolean} [useRoutes=false] - true to use routes for navigation.

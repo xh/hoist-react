@@ -12,7 +12,7 @@ import {Classes, suggest} from 'hoist/kit/blueprint';
 import {BaseDropdownField} from './BaseDropdownField';
 
 /**
- * ComboBox Field - A field with typeahead suggest and menu select
+ * ComboBox Field - A field with type ahead suggest and menu select
  *
  * See HoistField for properties additional to those documented below.
  */

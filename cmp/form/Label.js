@@ -28,7 +28,6 @@ export class Label extends HoistField {
     
     render() {
         const {children, style, width} = this.props;
-
         return div({
             cls: 'pt-label pt-inline',
             style: {...style, whiteSpace: 'nowrap', width},
