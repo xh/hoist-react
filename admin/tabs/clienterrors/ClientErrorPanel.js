@@ -56,7 +56,7 @@ export class ClientErrorPanel extends Component {
                 cls: 'xh-no-pad'
             }),
             toolbarSep(),
-            this.textField({field: 'username', placeholder: 'User...', spellCheck: false}),
+            this.textField({field: 'username', placeholder: 'User...'}),
             this.textField({field: 'error', placeholder: 'Error...'}),
             refreshButton({model}),
             filler(),

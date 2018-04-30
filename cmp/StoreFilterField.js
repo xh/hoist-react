@@ -29,7 +29,6 @@ export class StoreFilterField extends Component {
             placeholder: 'Quick filter...',
             value: this.value,
             onChange: this.onValueChange,
-            spellCheck: false,
             rightElement: button({
                 cls: 'pt-minimal pt-icon-cross',
                 onClick: this.onClearClick

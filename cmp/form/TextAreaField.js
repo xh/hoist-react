@@ -14,15 +14,16 @@ import {HoistField} from './HoistField';
  * A Text Area Field
  *
  * @prop rest, see general properties for HoistField
- * 
- * @prop autoFocus
- * @prop placeholder, text to display when control is empty
- * @prop width, width of field, in pixels
+ *
+ * @prop {boolean} [autoFocus=false]
+ * @prop {string} [placeholder] - text to display when control is empty
+ * @prop {number} [width] - width of field, in pixels
+ * @prop {boolean} [spellCheck=true]
  */
 @hoistComponent()
 export class TextAreaField extends HoistField {
     
-    delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus'];
+    delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus', 'spellCheck'];
 
     render() {
         const {style, width} = this.props;
