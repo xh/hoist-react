@@ -57,10 +57,11 @@ export class GridColumnChooserModel {
             api = grid.gridApi.gridCore.columnApi; // todo: this seems a bit over the top
 
         return cols.map(it=> {
+            const col = api.getColumn(it.field);
             return {
                 value: it.field,
-                text: it.headerName,
-                side: api.getColumn(it.field).visible ? 'right' : 'left'
+                text: col.colDef.headerName,
+                side: col.visible ? 'right' : 'left'
             };
         });
     }
