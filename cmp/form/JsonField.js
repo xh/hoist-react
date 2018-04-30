@@ -1,5 +1,4 @@
 import ReactDOM from 'react-dom';
-import {PropTypes as PT} from 'prop-types';
 import {isUndefined} from 'lodash';
 import {textArea} from 'hoist/kit/blueprint';
 
