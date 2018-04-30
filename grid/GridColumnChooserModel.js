@@ -60,11 +60,13 @@ export class GridColumnChooserModel {
             const col = api.getColumn(it.field);
             return {
                 value: it.field,
-                text: col.colDef.headerName,
+                text: it.text || col.colDef.headerName,
+                description: it.description,
+                locked: col.lockVisible || col.pinned,
+                group: it.chooserGroup,
+                exclude: it.excludeFromChooser,
                 side: col.visible ? 'right' : 'left'
             };
         });
     }
-
-
 }
