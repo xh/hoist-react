@@ -3,7 +3,7 @@ import {capitalize} from 'lodash';
 /**
  * Basic util for splitting a string (via ' ') and capitalizing each word - e.g. for names.
  * Not intended to handle more advanced usages such as HTML or other word boundary characters.
- * @param {string} str
+ * @param {string} [str]
  */
 export function capitalizeWords(str) {
     if (str == null || !str.length) return str;
@@ -15,7 +15,7 @@ export function capitalizeWords(str) {
 /**
  * Wrap values in a custom span
  *
- * @param {*} v - value to be place in span, will be coerced into a string
+ * @param {*} [v] - value to be place in span, will be coerced into a string
  * @param {Object} [opts] - an options object:
  * @param {string} [opts.cls] - span class
  * @param {string} [opts.title] - span title

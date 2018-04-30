@@ -25,27 +25,28 @@ const UP_TICK = '&#9652;',
 /**
  * Standard number formatting for Hoist
  *
- * @param {int|float} v - value to format.
+ * @param {int|float} [v] - value to format.
  * @param {Object} [opts] - formatting options, may include:
- * @param {string} [opts.nullDisplay] - desired display for null values.
+ * @param {string} [opts.nullDisplay] - desired display for null values, defaults to an empty string.
  * @param {string} [opts.formatPattern] - a valid numeralJS format string.
- *      @see {@link http://numeraljs.com/#format for more info}
- * @param {int|'auto'} [opts.precision] - desired number of decimal places.
+ *      See: http://numeraljs.com/#format for more info.
+ * @param {int} [opts.precision] - desired number of decimal places.
  * @param {boolean} [opts.zeroPad] - set to false to remove trailing zeros regardless of precision.
  * @param {boolean} [opts.ledger] - set to true to use ledger format.
  * @param {boolean} [opts.forceLedgerAlign] - used to add placeholder after positive ledgers to align with negative ledgers in columns.
+ *      Defaults to true.
  * @param {boolean} [opts.withPlusSign] - set to true to include a '+' in positive number strings.
  * @param {boolean} [opts.withSignGlyph] - set to true to prepend with an up / down arrow.
  * @param {string} [opts.label] - label to append to value.
- * @param {string} [opts.labelCls] - class to apply to label span..
- * @param {boolean|Object} [opts.colorSpec] - show in colored <span>, based on sign of value.
+ * @param {string} [opts.labelCls] - class to apply to label span, defaults to 'xh-units-label'.
+ * @param {boolean|Object} [opts.colorSpec] - set to true to show in colored <span>, based on sign of value.
  *      If truthy will default to red/green/grey. Also accepts an object of the form {pos: color, neg: color, neutral: color}.
  * @param {function} [opts.tipFn] - use to place formatted number in span with title property set to returned string.
  *      Will be passed the originalValue param.
- * @param {int|float} [opts.originalValue] - used to retain an unaltered reference to the original value to be formatted.
+ * @param {int|float} originalValue - used to retain an unaltered reference to the original value to be formatted.
  *      Not typically used by applications.
  *
- * This method delegates to numeralJS, @see {@link http://numeraljs.com} for more details.
+ * This method delegates to numberFormatter, see that package for more details.
  *
  * Hierarchy of params is by specificity: formatPattern => precision.
  * If no options are given, a heuristic based auto-rounding will occur.
@@ -110,8 +111,8 @@ export function fmtNumber(v, {
 /**
  * Render number in thousands.
  *
- * @param {int|float} v - value to format.
- * @param {Object} [opts] - @see {@link fmtNumber} method.
+ * @param {int|float} [v] - value to format.
+ * @param {Object} [opts] - see fmtNumber() method.
  */
 export function fmtThousands(v, opts = {})  {
     saveOriginal(v, opts);
@@ -124,8 +125,8 @@ export function fmtThousands(v, opts = {})  {
 /**
  * Render number in millions.
  *
- * @param {int|float} v - value to format.
- * @param {Object} [opts] - @see {@link fmtNumber} method.
+ * @param {int|float} [v] - value to format.
+ * @param {Object} [opts] - see fmtNumber() method.
  */
 export function fmtMillions(v, opts = {})  {
     saveOriginal(v, opts);
@@ -140,8 +141,8 @@ export function fmtMillions(v, opts = {})  {
 /**
  * Render number in billions.
  *
- * @param {int|float} v - value to format.
- * @param {Object} [opts] - @see {@link fmtNumber} method.
+ * @param {int|float} [v] - value to format.
+ * @param {Object} [opts] - see fmtNumber() method.
  */
 export function fmtBillions(v, opts = {})  {
     saveOriginal(v, opts);
@@ -155,8 +156,8 @@ export function fmtBillions(v, opts = {})  {
 /**
  * Render a quantity value, handling highly variable amounts by using 2dp millions for values > 1m
  *
- * @param {int|float} v - value to format.
- * @param {Object} [opts] - @see {@link fmtNumber} method.
+ * @param {int|float} [v] - value to format.
+ * @param {Object} [opts] - see fmtNumber() method.
  */
 export function fmtQuantity(v, opts = {}) {
     saveOriginal(v, opts);
@@ -176,8 +177,8 @@ export function fmtQuantity(v, opts = {}) {
 /**
  * Render market price
  *
- * @param {int|float} v - value to format.
- * @param {Object} [opts] - @see {@link fmtNumber} method.
+ * @param {int|float} [v] - value to format.
+ * @param {Object} [opts] - see fmtNumber() method.
  */
 export function fmtPrice(v, opts = {}) {
     saveOriginal(v, opts);
@@ -194,9 +195,9 @@ export function fmtPrice(v, opts = {}) {
 /**
  * Render a number as a percent
  *
- * @param {int|float} v - value to format.
- * @param {Object} [opts] - @see {@link fmtNumber} method. May also include:
- * @param {boolean} [opts.withParens] - set to true to surround return with parenthesis.
+ * @param {int|float} [v] - value to format.
+ * @param {Object} [opts] - see fmtNumber() method. May also include:
+ * @param {boolean} [opts.withParens], set to true to surround return with parenthesis.
  */
 export function fmtPercent(v, opts = {}) {
     saveOriginal(v, opts);
