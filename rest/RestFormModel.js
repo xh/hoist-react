@@ -10,7 +10,7 @@ import {start} from 'hoist/promise';
 import {observable, computed, action} from 'hoist/mobx';
 import {MessageModel} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
-import {isEqual} from 'lodash';
+import {forOwn, isEqual} from 'lodash';
 
 import {RestControlModel} from './RestControlModel';
 
@@ -60,6 +60,12 @@ export class RestFormModel {
                 throw XH.exception(`Unknown field '${editor.field}' in RestGrid.`);
             }
             return new RestControlModel({editor, field, parent: this});
+        });
+    }
+
+    populateFields(valueMap) {
+        forOwn(valueMap, (value, field) => {
+            if (this.record[field]) this.setValue(field, value);
         });
     }
 

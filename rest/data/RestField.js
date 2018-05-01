@@ -27,7 +27,7 @@ export class RestField extends Field {
      * @param lookup (optional).  Array of suggested values
      * @param lookupName (optional).  Name of server provided collection to populate lookup.
      * @param lookupStrict.  If lookup provided, must values come from it?
-     * @param typeField.  Name of field in this record representing containing the 'type' (See Field.type).
+     * @param typeField.  Name of field in this record representing the 'type' (See Field.type).
      * @param rest.  All arguments for Field.
      */
     constructor({
