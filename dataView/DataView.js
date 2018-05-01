@@ -8,16 +8,35 @@
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {grid} from 'hoist/grid';
+import {GridModel} from 'hoist/grid';
+import {baseCol} from 'hoist/columns/Core';
 
 @hoistComponent()
 class DataView extends Component {
 
     render() {
-        const {gridModel} = this.model,
+        const {store, selection, contextMenuFn, itemFactory} = this.model,
             {rowCls, rowHeight} = this.props;
 
         return grid({
-            model: gridModel,
+            model: new GridModel({
+                store,
+                selection,
+                contextMenuFn,
+                columns: [
+                    baseCol({
+                        field: 'id',
+                        flex: 1,
+                        cellRendererFramework: (
+                            class extends Component {
+                                render() {
+                                    return itemFactory({record: this.props.data});
+                                }
+                            }
+                        )
+                    })
+                ]
+            }),
             gridOptions: {
                 headerHeight: 0,
                 rowClass: rowCls,

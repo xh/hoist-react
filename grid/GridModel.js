@@ -6,9 +6,8 @@
  */
 
 import {action, observable} from 'hoist/mobx';
-import {LastPromiseModel} from 'hoist/promise';
-import {castArray, find, isString} from 'lodash';
-import {GridSelectionModel} from './GridSelectionModel';
+import {StoreSelectionModel} from 'hoist/data';
+import {castArray, find, isString, orderBy} from 'lodash';
 import {GridContextMenu} from './GridContextMenu';
 
 /**
@@ -21,7 +20,6 @@ export class GridModel {
     store = null;
     gridApi = null;
     selection = null;
-    loadModel = new LastPromiseModel();
     contextMenuFn = null;
 
     @observable.ref columns = [];
@@ -41,6 +39,7 @@ export class GridModel {
     /**
      * @param {BaseStore} store - store containing the data for the grid.
      * @param {Object[]} columns - collection of column specifications.
+     * @param {StoreSelectionModel} selection - optional selection model to use
      * @param {Object[]} sortBy - one or more sorters to apply to store data.
      * @param {string} sortBy[].colId - Column ID by which to sort.
      * @param {string} sortBy[].sort - sort direction [asc|desc].
@@ -50,6 +49,7 @@ export class GridModel {
     constructor({
         store,
         columns,
+        selection,
         sortBy = [],
         groupBy = null,
         contextMenuFn = GridModel.defaultContextMenu
@@ -57,7 +57,7 @@ export class GridModel {
         this.store = store;
         this.columns = columns;
         this.contextMenuFn = contextMenuFn;
-        this.selection = new GridSelectionModel({parent: this});
+        this.selection = selection || new StoreSelectionModel({store: this.store});
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
     }
@@ -66,6 +66,18 @@ export class GridModel {
         if (!this.gridApi) return;
         params.processCellCallback = this.formatValuesForExport;
         this.gridApi.exportDataAsExcel(params);
+    }
+
+    /**
+     * Select the first row in the grid.
+     */
+    selectFirst() {
+        const {store, selection, sortBy} = this,
+            colIds = sortBy.map(it => it.colId),
+            sorts = sortBy.map(it => it.sort),
+            recs = orderBy(store.records, colIds, sorts);
+
+        if (recs.length) selection.select(recs[0]);
     }
 
     @action

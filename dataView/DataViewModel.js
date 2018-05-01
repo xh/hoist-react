@@ -5,50 +5,57 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
-import {GridModel} from 'hoist/grid';
-import {baseCol} from 'hoist/columns/Core';
+import {StoreSelectionModel} from 'hoist/data';
+import {GridContextMenu} from 'hoist/grid/GridContextMenu';
 
 /**
- * DataViewModel is a wrapper around GridModel, which shows data in a single
- * column, using a defined component for rendering each item.
+ * DataViewModel is a wrapper around GridModel, which shows sorted data in
+ * a single column, using a defined component for rendering each item.
  */
 export class DataViewModel {
 
     // Immutable public properties
-    gridModel = null;
+    itemFactory = null;
+    store = null;
+    selection = null;
+    contextMenuFn = null;
 
-    get selection() {
-        return this.gridModel.selection;
+    static defaultContextMenu = () => {
+        return new GridContextMenu([
+            'copy',
+            '-',
+            'export'
+        ]);
     }
 
     /**
      * @param {function} itemFactory - elemFactory for the component used to render each item.
      *                                  Will receive record via its props.
      * @param {BaseStore} store - store containing the data for the dataview.
+     * @param {StoreSelectionModel} selection - optional selection model to use
      * @param {function} contextMenuFn - closure returning a GridContextMenu().
      */
     constructor({
         itemFactory,
         store,
-        contextMenuFn = GridModel.defaultContextMenu
+        selection,
+        contextMenuFn = DataViewModel.defaultContextMenu
     }) {
-        this.gridModel = new GridModel({
-            store,
-            contextMenuFn,
-            columns: [
-                baseCol({
-                    field: 'id',
-                    flex: 1,
-                    cellRendererFramework: (
-                        class extends Component {
-                            render() {
-                                return itemFactory({record: this.props.data});
-                            }
-                        }
-                    )
-                })
-            ]
-        });
+        this.itemFactory = itemFactory;
+        this.store = store;
+        this.selection = selection || new StoreSelectionModel({store: this.store});
+        this.contextMenuFn = contextMenuFn;
     }
+
+    /**
+     * Select the first row in the dataview.
+     * Note that dataview assumes store data is already sorted
+     */
+    selectFirst() {
+        const {store, selection} = this,
+            recs = store.records;
+
+        if (recs.length) selection.select(recs[0]);
+    }
+
 }
