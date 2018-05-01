@@ -15,7 +15,7 @@ import {baseCol} from 'hoist/columns/Core';
 class DataView extends Component {
 
     constructor(props) {
-        super();
+        super(props);
         const {store, selection, contextMenuFn, itemFactory} = props.model;
         this._gridModel = new GridModel({
             store,
