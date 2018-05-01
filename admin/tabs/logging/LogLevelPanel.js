@@ -16,6 +16,7 @@ export class LogLevelPanel extends Component {
 
     store = new RestStore({
         url: 'rest/logLevelAdmin',
+        reloadOnUpdate: 500,
         fields: [{
             name: 'name',
             label: 'Log Name',

@@ -19,12 +19,14 @@ import {RestField} from './RestField';
 export class RestStore extends UrlStore {
 
     _lookupsLoaded = false;
+    reloadOnUpdate = null;
 
     /**
      * Construct this object.
      */
-    constructor({dataRoot = 'data', ...rest}) {
+    constructor({reloadOnUpdate, dataRoot = 'data', ...rest}) {
         super({dataRoot, ...rest});
+        this.reloadOnUpdate = reloadOnUpdate;
     }
 
     get defaultFieldClass() {
@@ -66,6 +68,10 @@ export class RestStore extends UrlStore {
         return this.saveRecordInternalAsync(rec, false);
     }
 
+    async reload() {
+        return super.loadAsync();
+    }
+
     //--------------------------------
     // Implementation
     //--------------------------------
@@ -80,6 +86,7 @@ export class RestStore extends UrlStore {
         }).then(response => {
             const recs = this.createRecordMap([response.data]);
             this.updateRecordInternal(recs.values().next().value);
+            if (this.reloadOnUpdate) setTimeout(() => this.reload(), this.reloadOnUpdate);
         }).linkTo(
             this.loadModel
         );
