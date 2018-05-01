@@ -6,3 +6,14 @@
     background-image: svg-url('<svg width="21" height="21"><rect x="0" y="0" width="20" height="20" style="fill: #212121;" /></svg>');
   }
 }
+
+.xh-toolbox-wrapper-panel {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  .xh-toolbox-example-container {
+    background-color: var(--xh-bg);
+  }
+}

@@ -18,7 +18,6 @@ import {GroupedGridPanel} from './tabs/grids/GroupedGridPanel';
 import {DateColumnGridPanel} from './tabs/grids/DateColumnGridPanel';
 import {BoolCheckGridPanel} from './tabs/grids/BoolCheckGridPanel';
 import {IconsPanel} from './tabs/icons/IconsPanel';
-import {BoxLayoutPanel} from './tabs/layouts/BoxLayoutPanel';
 import {VboxLayoutPanel} from './tabs/layouts/VboxLayoutPanel';
 import {HboxLayoutPanel} from './tabs/layouts/HboxLayoutPanel';
 
@@ -99,11 +98,10 @@ export class AppModel extends BaseAppModel {
             {
                 name: 'layouts',
                 path: '/layouts',
-                forwardTo: 'default.layouts.box',
+                forwardTo: 'default.layouts.hbox',
                 children: [
-                    {name: 'box', path: '/box'},
-                    {name: 'vbox', path: '/vbox'},
-                    {name: 'hbox', path: '/hbox'}
+                    {name: 'hbox', path: '/hbox'},
+                    {name: 'vbox', path: '/vbox'}
                 ]
             }
         ];
@@ -149,9 +147,8 @@ export class AppModel extends BaseAppModel {
                 id: 'layouts',
                 orientation: 'v',
                 children: [
-                    {id: 'box', component: BoxLayoutPanel},
-                    {id: 'vbox', component: VboxLayoutPanel},
-                    {id: 'hbox', component: HboxLayoutPanel}
+                    {id: 'hbox', component: HboxLayoutPanel},
+                    {id: 'vbox', component: VboxLayoutPanel}
                 ]
             }
         ];

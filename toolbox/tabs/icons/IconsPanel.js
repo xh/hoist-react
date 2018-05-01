@@ -8,6 +8,7 @@
 import {Component} from 'react';
 import {hoistComponent} from 'hoist/core/index';
 import {div, hbox, vbox, h3} from 'hoist/layout';
+import {wrapperPanel} from '../impl/WrapperPanel';
 import {Icon} from 'hoist/icon';
 
 import './IconsPanel.scss';
@@ -16,26 +17,25 @@ import './IconsPanel.scss';
 export class IconsPanel extends Component {
 
     render() {
-        return div({
-            cls: 'xh-toolbox-icons-panel',
-            items: [
-                vbox({
-                    cls: 'xh-toolbox-icons-inner-panel',
-                    items: [
-                        h3('Available Icons'),
-                        this.renderTable()
-                    ]
-                })
-            ]
-        });
+        return wrapperPanel(
+            vbox({
+                width: 400,
+                height: '80%',
+                cls: 'xh-toolbox-icons-panel',
+                items: [
+                    h3('Available Icons'),
+                    this.renderExample()
+                ]
+            })
+        );
     }
 
-    renderTable() {
+    renderExample() {
         const header = (...labels) => hbox({ cls: 'header', items: labels.map(label => div(label))}),
             row = icon => hbox({cls: 'row', items: [div(icon.name), ...this.renderIconTiles(icon)]});
 
         return vbox({
-            cls: 'xh-toolbox-icons-table',
+            cls: 'xh-toolbox-example-container',
             items: [
                 header('name', 'regular', 'solid', 'light'),
                 vbox({
