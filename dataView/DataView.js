@@ -25,6 +25,7 @@ class DataView extends Component {
                 baseCol({
                     field: 'id',
                     flex: 1,
+                    autoHeight: true,
                     renderElement: (props) => {
                         return itemFactory({record: props.data});
                     }
@@ -34,15 +35,12 @@ class DataView extends Component {
     }
 
     render() {
-        const {rowCls, rowHeight} = this.props;
+        const {rowCls} = this.props;
         return grid({
             model: this._gridModel,
             gridOptions: {
                 headerHeight: 0,
-                rowClass: rowCls,
-                // Note: Setting a fixed row height is required for now.
-                // Ag-grid 17.1.x will introduce an 'autoHeight' property that will size rows according to content
-                rowHeight: rowHeight
+                rowClass: rowCls
             }
         });
     }
