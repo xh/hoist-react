@@ -26,14 +26,14 @@ export class DataViewModel {
             '-',
             'export'
         ]);
-    }
+    };
 
     /**
      * @param {function} itemFactory - elemFactory for the component used to render each item.
      *                                  Will receive record via its props.
      * @param {BaseStore} store - store containing the data for the dataview.
-     * @param {StoreSelectionModel} selection - optional selection model to use
-     * @param {function} contextMenuFn - closure returning a GridContextMenu().
+     * @param {StoreSelectionModel} [selection] - selection model to use
+     * @param {function} [contextMenuFn] - closure returning a GridContextMenu().
      */
     constructor({
         itemFactory,

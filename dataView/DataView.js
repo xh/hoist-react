@@ -14,29 +14,29 @@ import {baseCol} from 'hoist/columns/Core';
 @hoistComponent()
 class DataView extends Component {
 
-    render() {
-        const {store, selection, contextMenuFn, itemFactory} = this.model,
-            {rowCls, rowHeight} = this.props;
+    constructor(props) {
+        super();
+        const {store, selection, contextMenuFn, itemFactory} = props.model;
+        this._gridModel = new GridModel({
+            store,
+            selection,
+            contextMenuFn,
+            columns: [
+                baseCol({
+                    field: 'id',
+                    flex: 1,
+                    renderElement: (props) => {
+                        return itemFactory({record: props.data});
+                    }
+                })
+            ]
+        });
+    }
 
+    render() {
+        const {rowCls, rowHeight} = this.props;
         return grid({
-            model: new GridModel({
-                store,
-                selection,
-                contextMenuFn,
-                columns: [
-                    baseCol({
-                        field: 'id',
-                        flex: 1,
-                        cellRendererFramework: (
-                            class extends Component {
-                                render() {
-                                    return itemFactory({record: this.props.data});
-                                }
-                            }
-                        )
-                    })
-                ]
-            }),
+            model: this._gridModel,
             gridOptions: {
                 headerHeight: 0,
                 rowClass: rowCls,
@@ -48,4 +48,5 @@ class DataView extends Component {
     }
 
 }
+
 export const dataView = elemFactory(DataView);
