@@ -6,9 +6,9 @@
  */
 
 /**
- *  Basic Model Object for ContextMenu for Grid.
+ *  Basic Model Object for ContextMenu for Stores.
  */
-export class GridContextMenuItem {
+export class StoreContextMenuItem {
 
     text;
     icon;

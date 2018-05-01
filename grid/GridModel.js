@@ -7,8 +7,8 @@
 
 import {action, observable} from 'hoist/mobx';
 import {StoreSelectionModel} from 'hoist/data';
+import {StoreContextMenu} from 'hoist/cmp';
 import {castArray, find, isString, orderBy} from 'lodash';
-import {GridContextMenu} from './GridContextMenu';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -27,7 +27,7 @@ export class GridModel {
     @observable groupBy = null;
 
     static defaultContextMenu = () => {
-        return new GridContextMenu([
+        return new StoreContextMenu([
             'copy',
             'copyWithHeaders',
             '-',
@@ -44,7 +44,7 @@ export class GridModel {
      * @param {string} sortBy[].colId - Column ID by which to sort.
      * @param {string} sortBy[].sort - sort direction [asc|desc].
      * @param {string} groupBy - Column ID by which to group.
-     * @param {function} contextMenuFn - closure returning a GridContextMenu().
+     * @param {function} contextMenuFn - closure returning a StoreContextMenu().
      */
     constructor({
         store,

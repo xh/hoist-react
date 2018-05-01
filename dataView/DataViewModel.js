@@ -6,7 +6,7 @@
  */
 
 import {StoreSelectionModel} from 'hoist/data';
-import {GridContextMenu} from 'hoist/grid/GridContextMenu';
+import {StoreContextMenu} from 'hoist/cmp';
 
 /**
  * DataViewModel is a wrapper around GridModel, which shows sorted data in
@@ -21,7 +21,7 @@ export class DataViewModel {
     contextMenuFn = null;
 
     static defaultContextMenu = () => {
-        return new GridContextMenu([
+        return new StoreContextMenu([
             'copy',
             '-',
             'export'
@@ -33,7 +33,7 @@ export class DataViewModel {
      *                                  Will receive record via its props.
      * @param {BaseStore} store - store containing the data for the dataview.
      * @param {StoreSelectionModel} [selection] - selection model to use
-     * @param {function} [contextMenuFn] - closure returning a GridContextMenu().
+     * @param {function} [contextMenuFn] - closure returning a StoreContextMenu().
      */
     constructor({
         itemFactory,
