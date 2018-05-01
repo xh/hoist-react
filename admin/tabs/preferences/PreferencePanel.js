@@ -73,7 +73,7 @@ export class PreferencePanel extends Component {
         ],
         editors: [
             {field: 'name'},
-            {field: 'type'},
+            {field: 'type', onChange: this.onTypeChange.bind(this)},
             {field: 'defaultValue'},
             {field: 'local'},
             {field: 'notes', type: 'textarea'},
@@ -88,5 +88,16 @@ export class PreferencePanel extends Component {
 
     async loadAsync() {
         return this.store.loadAsync();
+    }
+
+    //-------------------------
+    // Implementation
+    //-------------------------
+    onTypeChange() {
+        const valueMap = {
+            defaultValue: null
+        };
+
+        this.gridModel.formModel.populateFields(valueMap);
     }
 }

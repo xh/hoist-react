@@ -109,7 +109,7 @@ export class ConfigPanel extends Component {
         editors: this.filterForEnv([
             {field: 'name'},
             {field: 'groupName'},
-            {field: 'valueType'},
+            {field: 'valueType', onChange: this.onValueTypeChange.bind(this)},
             {field: 'prodValue', env: 'Production', type: 'boolSelect'}, // special handling to keep dynamically generated controls consistent
             {field: 'betaValue', env: 'Beta', type: 'boolSelect'},
             {field: 'stageValue', env: 'Staging', type: 'boolSelect'},
@@ -169,4 +169,16 @@ export class ConfigPanel extends Component {
     onDifferBtnClick = () => {
         this.differModel.open();
     }
+
+    onValueTypeChange() {
+        const valueMap = {
+            prodValue: null,
+            betaValue: null,
+            stageValue: null,
+            devValue: null
+        };
+
+        this.gridModel.formModel.populateFields(valueMap);
+    }
+
 }

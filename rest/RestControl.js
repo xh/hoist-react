@@ -77,6 +77,7 @@ export class RestControl extends Component {
     renderCombo() {
         const model = this.model,
             field = model.field,
+            editor = model.editor,
             lookup = field.lookup;
 
         const options = [...lookup];
@@ -85,6 +86,7 @@ export class RestControl extends Component {
             model,
             field: 'value',
             options,
+            onChange: editor.onChange,
             disabled: !model.isEditable
         });
     }
@@ -92,6 +94,7 @@ export class RestControl extends Component {
     renderSelect() {
         const model = this.model,
             field = model.field,
+            editor = model.editor,
             lookup = field.lookup,
             type = model.type;
 
@@ -110,61 +113,76 @@ export class RestControl extends Component {
             model,
             field: 'value',
             options,
-            disabled: !model.isEditable,
-            onChange: field.isTypeField ? this.onTypeFieldChange : null
+            onChange: editor.onChange,
+            disabled: !model.isEditable
         });
     }
 
     renderCheckField() {
-        const model = this.model;
+        const model = this.model,
+            editor = model.editor;
+
         return checkField({
             model,
             field: 'value',
+            onChange: editor.onChange,
             disabled: !model.isEditable
         });
     }
 
     renderNumberField() {
-        const model = this.model;
+        const model = this.model,
+            editor = model.editor;
+
         return numberField({
             model,
             field: 'value',
             cls: 'pt-fill',
+            onChange: editor.onChange,
             disabled: !model.isEditable
         });
     }
 
     renderTextArea() {
-        const model = this.model;
+        const model = this.model,
+            editor = model.editor;
+
         return textAreaField({
             model,
             field: 'value',
             autoFocus: this.props.autoFocus,
             cls: 'pt-fill',
             style: {height: 100},
+            onChange: editor.onChange,
             disabled: !model.isEditable
         });
     }
 
     renderTextField() {
         const model = this.model,
+            editor = model.editor,
             type = model.type === 'pwd' ? 'password' : 'text';
+
         return textField({
             model,
             type,
             field: 'value',
             autoFocus: this.props.autoFocus,
             cls: 'pt-fill',
+            onChange: editor.onChange,
             disabled: !model.isEditable
         });
     }
 
     renderJsonField() {
-        const model = this.model;
+        const model = this.model,
+            editor = model.editor;
+
         return jsonField({
             model,
             field: 'value',
             cls: 'pt-fill',
+            onChange: editor.onChange,
             disabled: !model.isEditable,
             // setting size appears to be the only way to get scrollbars
             width: 343,
@@ -176,12 +194,6 @@ export class RestControl extends Component {
         const model = this.model;
         return !model.value && ['lastUpdatedBy', 'lastUpdated'].includes(model.field.name);
     }
-
-    onTypeFieldChange = () => {
-        const model = this.model;
-        model.parent.clearTypeFields(model.field.name);
-    }
-
 }
 export const restControl = elemFactory(RestControl);
 

@@ -10,7 +10,7 @@ import {start} from 'hoist/promise';
 import {observable, computed, action} from 'hoist/mobx';
 import {MessageModel} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
-import {isEqual} from 'lodash';
+import {forOwn, isEqual} from 'lodash';
 
 import {RestControlModel} from './RestControlModel';
 
@@ -63,11 +63,9 @@ export class RestFormModel {
         });
     }
 
-    clearTypeFields(typeField) {
-        this.fields.forEach(it => {
-            if (it.typeField == typeField) {
-                this.setValue(it.name, null);
-            }
+    populateFields(valueMap) {
+        forOwn(valueMap, (value, field) => {
+            if (this.record[field]) this.setValue(field, value);
         });
     }
 
