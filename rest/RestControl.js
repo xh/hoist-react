@@ -110,7 +110,8 @@ export class RestControl extends Component {
             model,
             field: 'value',
             options,
-            disabled: !model.isEditable
+            disabled: !model.isEditable,
+            onChange: field.isTypeField ? this.onTypeFieldChange : null
         });
     }
 
@@ -175,6 +176,12 @@ export class RestControl extends Component {
         const model = this.model;
         return !model.value && ['lastUpdatedBy', 'lastUpdated'].includes(model.field.name);
     }
+
+    onTypeFieldChange = () => {
+        const model = this.model;
+        model.parent.clearTypeFields(model.field.name);
+    }
+
 }
 export const restControl = elemFactory(RestControl);
 
