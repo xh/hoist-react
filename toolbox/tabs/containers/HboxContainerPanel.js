@@ -5,21 +5,21 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {hoistComponent} from 'hoist/core';
-import {box, vbox, hbox, h3} from 'hoist/layout';
+import {hoistComponent} from 'hoist/core/index';
+import {box, vbox, hbox, h3} from 'hoist/layout/index';
 import {wrapperPanel} from '../impl/WrapperPanel';
-import './Layouts.scss';
+import './Box.scss';
 
 @hoistComponent()
-export class HboxLayoutPanel extends Component {
+export class HboxContainerPanel extends Component {
     render() {
         return wrapperPanel(
             vbox({
                 width: 500,
                 height: '80%',
-                cls: 'xh-toolbox-hbox-panel',
+                cls: 'xh-toolbox-hboxcontainer-panel',
                 items: [
-                    h3('Hbox Layout'),
+                    h3('Hbox Container'),
                     this.renderExample()
                 ]
             })

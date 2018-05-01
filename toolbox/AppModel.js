@@ -11,6 +11,8 @@ import {TabContainerModel} from 'hoist/cmp';
 import {HomePanel} from './tabs/home/HomePanel';
 import {LeftRightChooserPanel} from './tabs/components/LeftRightChooserPanel';
 import {ToolbarPanel} from './tabs/components/ToolbarPanel';
+import {HboxContainerPanel} from './tabs/containers/HboxContainerPanel';
+import {VboxContainerPanel} from './tabs/containers/VboxContainerPanel';
 import {ResizableContainerPanel} from './tabs/containers/ResizableContainerPanel';
 import {TabPanelContainerPanel} from './tabs/containers/TabPanelContainerPanel';
 import {StandardGridPanel} from './tabs/grids/StandardGridPanel';
@@ -18,8 +20,6 @@ import {GroupedGridPanel} from './tabs/grids/GroupedGridPanel';
 import {DateColumnGridPanel} from './tabs/grids/DateColumnGridPanel';
 import {BoolCheckGridPanel} from './tabs/grids/BoolCheckGridPanel';
 import {IconsPanel} from './tabs/icons/IconsPanel';
-import {VboxLayoutPanel} from './tabs/layouts/VboxLayoutPanel';
-import {HboxLayoutPanel} from './tabs/layouts/HboxLayoutPanel';
 
 export class AppModel extends BaseAppModel {
 
@@ -74,8 +74,10 @@ export class AppModel extends BaseAppModel {
             {
                 name: 'containers',
                 path: '/containers',
-                forwardTo: 'default.containers.resizable',
+                forwardTo: 'default.containers.hbox',
                 children: [
+                    {name: 'hbox', path: '/hbox'},
+                    {name: 'vbox', path: '/vbox'},
                     {name: 'resizable', path: '/resizable'},
                     {name: 'tabPanel', path: '/tabPanel'}
                 ]
@@ -94,15 +96,6 @@ export class AppModel extends BaseAppModel {
             {
                 name: 'icons',
                 path: '/icons'
-            },
-            {
-                name: 'layouts',
-                path: '/layouts',
-                forwardTo: 'default.layouts.hbox',
-                children: [
-                    {name: 'hbox', path: '/hbox'},
-                    {name: 'vbox', path: '/vbox'}
-                ]
             }
         ];
     }
@@ -125,6 +118,8 @@ export class AppModel extends BaseAppModel {
                 id: 'containers',
                 orientation: 'v',
                 children: [
+                    {id: 'hbox', component: HboxContainerPanel},
+                    {id: 'vbox', component: VboxContainerPanel},
                     {id: 'resizable', component: ResizableContainerPanel},
                     {id: 'tabPanel', component: TabPanelContainerPanel}
                 ]
@@ -142,14 +137,6 @@ export class AppModel extends BaseAppModel {
             {
                 id: 'icons',
                 component: IconsPanel
-            },
-            {
-                id: 'layouts',
-                orientation: 'v',
-                children: [
-                    {id: 'hbox', component: HboxLayoutPanel},
-                    {id: 'vbox', component: VboxLayoutPanel}
-                ]
             }
         ];
     }
