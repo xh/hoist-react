@@ -16,15 +16,21 @@ export class TrackService extends BaseService {
      *
      * @param {Object|string} options - if a string, it will become the msg value.
      * @param {string} [options.msg] - user-supplied message. Required if options is an object.
+     * @param {string} [options.message] - same as options.msg.  Just supporting msg & message. Use either, not both.
      * @param {string} [options.category] - user-supplied category.
      * @param {Object|Array} [options.data] - user-supplied data collection.
      * @param {number} [options.elapsed] - time in milliseconds some activity took.
-     * @param {string} [options.severity] - level flag, such as: OK|WARN|OMG
+     * @param {string} [options.severity] - importance flag, such as: OK|WARN|EMERGENCY
      *                 (errors should be tracked by the ErrorTrackingService, not sent
      *                 in this TrackService).
      */
     track(options) {
-        const params = {msg: stripTags(typeof options === 'string' ? options : options.msg)};
+        let msg = options;
+        if (typeof msg !== 'string') {
+            msg = options.msg !== undefined ? options.msg : options.message;
+        }
+
+        const params = {msg: stripTags(msg)};
         try {
             if (options.category)               params.category = options.category;
             if (options.data)                   params.data = JSON.stringify(options.data);
