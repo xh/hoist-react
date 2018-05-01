@@ -28,7 +28,6 @@ export class RestField extends Field {
      * @param lookupName (optional).  Name of server provided collection to populate lookup.
      * @param lookupStrict.  If lookup provided, must values come from it?
      * @param typeField.  Name of field in this record representing the 'type' (See Field.type).
-     * @param isTypeField. Whether this field represents the type of the value fields (See Field.type)
      * @param rest.  All arguments for Field.
      */
     constructor({
@@ -38,7 +37,6 @@ export class RestField extends Field {
         lookupName = null,
         lookupStrict = false,
         typeField = null,
-        isTypeField = false,
         ...rest
     }) {
         super(rest);
@@ -48,6 +46,5 @@ export class RestField extends Field {
         this.lookupName = lookupName;
         this.lookupStrict = lookupStrict;
         this.typeField = typeField;
-        this.isTypeField = isTypeField;
     }
 }
