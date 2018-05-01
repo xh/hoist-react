@@ -36,7 +36,7 @@ export class TextField extends HoistField {
             onBlur: this.onBlur,
             onFocus: this.onFocus,
             style: {...style, width},
-            spellCheck: spellCheck || false,
+            spellCheck: spellCheck !== true,
             ...this.getDelegateProps()
         });
     }

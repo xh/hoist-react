@@ -23,10 +23,10 @@ import {HoistField} from './HoistField';
 @hoistComponent()
 export class TextAreaField extends HoistField {
     
-    delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus', 'spellCheck'];
+    delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus'];
 
     render() {
-        const {style, width} = this.props;
+        const {style, width, spellCheck} = this.props;
 
         return textArea({
             value: this.renderValue || '',
@@ -35,6 +35,7 @@ export class TextAreaField extends HoistField {
             onBlur: this.onBlur,
             onFocus: this.onFocus,
             style: {...style, width},
+            spellCheck: spellCheck !== false,
             ...this.getDelegateProps()
         });
     }
