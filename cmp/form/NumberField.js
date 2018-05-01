@@ -53,7 +53,7 @@ export class NumberField extends HoistField {
     }
 
     toInternal(val) {
-        return val ? val.toString() : '';
+        return val != null ? val.toString() : '';
     }
 }
 export const numberField = elemFactory(NumberField);
