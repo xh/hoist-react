@@ -33,17 +33,14 @@ export class HboxContainerPanel extends Component {
             items: [
                 box({
                     flex: 1,
-                    margin: 5,
                     item: 'flex: 1'
                 }),
                 box({
                     width: 100,
-                    margin: 5,
                     item: 'width: 100'
                 }),
                 box({
                     flex: 2,
-                    margin: 5,
                     item: 'flex: 2'
                 })]
         });

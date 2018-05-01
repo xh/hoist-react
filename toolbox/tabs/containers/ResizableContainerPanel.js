@@ -19,7 +19,7 @@ export class ResizableContainerPanel extends Component {
                 height: 400,
                 cls: 'xh-toolbox-resizablecontainer-panel',
                 items: [
-                    h3('TabPanel Container'),
+                    h3('Resizable Container'),
                     this.renderExample()
                 ]
             })

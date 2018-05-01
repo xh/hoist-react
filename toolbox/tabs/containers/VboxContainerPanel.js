@@ -33,17 +33,14 @@ export class VboxContainerPanel extends Component {
             items: [
                 box({
                     flex: 1,
-                    margin: 5,
                     item: 'flex: 1'
                 }),
                 box({
                     height: 50,
-                    margin: 5,
                     item: 'height: 50'
                 }),
                 box({
                     flex: 2,
-                    margin: 5,
                     item: 'flex: 2'
                 })]
         });
