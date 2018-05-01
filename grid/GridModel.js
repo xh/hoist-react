@@ -39,12 +39,12 @@ export class GridModel {
     /**
      * @param {BaseStore} store - store containing the data for the grid.
      * @param {Object[]} columns - collection of column specifications.
-     * @param {StoreSelectionModel} selection - optional selection model to use
-     * @param {Object[]} sortBy - one or more sorters to apply to store data.
-     * @param {string} sortBy[].colId - Column ID by which to sort.
-     * @param {string} sortBy[].sort - sort direction [asc|desc].
-     * @param {string} groupBy - Column ID by which to group.
-     * @param {function} contextMenuFn - closure returning a StoreContextMenu().
+     * @param {StoreSelectionModel} [selection] - selection model to use
+     * @param {Object[]} [sortBy] - one or more sorters to apply to store data.
+     * @param {string} [sortBy[].colId]- Column ID by which to sort.
+     * @param {string} [sortBy[].sort] - sort direction [asc|desc].
+     * @param {string} [groupBy] - Column ID by which to group.
+     * @param {function} [contextMenuFn] - closure returning a StoreContextMenu().
      */
     constructor({
         store,
