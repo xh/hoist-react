@@ -27,13 +27,15 @@ export class TextField extends HoistField {
         /** Text to display when control is empty */
         placeholder: PT.string,
         /** Width of field, in pixels */
-        width: PT.number
+        width: PT.number,
+        /** Whether to allow browser spell check, defaults to false */
+        spellCheck: PT.bool
     };
-    
+
     delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus'];
 
     render() {
-        const {style, width} = this.props;
+        const {style, width, spellCheck} = this.props;
 
         return inputGroup({
             value: this.renderValue || '',
@@ -42,6 +44,7 @@ export class TextField extends HoistField {
             onBlur: this.onBlur,
             onFocus: this.onFocus,
             style: {...style, width},
+            spellCheck: !!spellCheck,
             ...this.getDelegateProps()
         });
     }
