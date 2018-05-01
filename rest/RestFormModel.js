@@ -63,6 +63,14 @@ export class RestFormModel {
         });
     }
 
+    clearTypeFields(typeField) {
+        this.fields.forEach(it => {
+            if (it.typeField == typeField) {
+                this.setValue(it.name, null);
+            }
+        });
+    }
+
     //-----------------
     // Actions
     //-----------------

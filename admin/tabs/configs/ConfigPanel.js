@@ -40,6 +40,7 @@ export class ConfigPanel extends Component {
                 lookupName: 'valueTypes',
                 lookupStrict: true,
                 editable: 'onAdd',
+                isTypeField: true,
                 required: true
             },
             {

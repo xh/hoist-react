@@ -27,6 +27,7 @@ export class PreferencePanel extends Component {
                 lookupName: 'types',
                 lookupStrict: true,
                 editable: 'onAdd',
+                isTypeField: true,
                 required: true
             },
             {
