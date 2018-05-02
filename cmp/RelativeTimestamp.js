@@ -46,7 +46,7 @@ class RelativeTimestamp extends Component {
 
     static propTypes = {
         /** Date object that will be used as reference, can also be specified in milliseconds*/
-        timestamp: PT.oneOfType([PT.instanceOf(Date), PT.number]).isRequired,
+        timestamp: PT.oneOfType([PT.instanceOf(Date), PT.number]),
         /** @see {@link getRelativeTimestamp} options */
         options: PT.object
     };
