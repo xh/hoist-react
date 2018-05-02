@@ -17,7 +17,6 @@ import {Icon} from 'hoist/icon';
  */
 export class ItemRenderer extends Component {
 
-    // not sure we need this, the props here are handled by ag-grid
     static propTypes = {
         /** cell value */
         value: PT.string,
