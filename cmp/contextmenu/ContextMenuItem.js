@@ -26,8 +26,8 @@ export class ContextMenuItem {
      * @param {boolean} [disabled] - true to disable this item.
      * @param {boolean} [hidden] - true to hide this item.
      * @param {function} [prepareFn] - function of the form (item, record, selection) => {}
-     *          The prepareFn is a callback that is triggered before each time the menuitem is shown.
-     *          It can be used to modify the menuitem based on the record / selection.
+     *      The prepareFn is a callback that is triggered before each time the menuitem is shown.
+     *      It can be used to modify the menuitem based on the record / selection.
      */
     constructor({
         text,
