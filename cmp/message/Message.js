@@ -12,7 +12,7 @@ import {dialog, dialogBody, button} from 'hoist/kit/blueprint';
 
 /**
  * A modal dialog that supports imperative alert/confirm.
- * @see MessageModel for supported configuration options.
+ * See MessageModel for supported configuration options.
  */
 @hoistComponent()
 class Message extends Component {

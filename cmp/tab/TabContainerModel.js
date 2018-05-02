@@ -16,7 +16,7 @@ import {TabPaneModel} from 'hoist/cmp';
  *
  * This TabContainer also supports managed loading and refreshing of its TabPanes.
  * In particular, TabPanes will be lazily instantiated and can also be lazily refreshed.
- * @see TabPaneModel
+ * See TabPaneModel
  */
 export class TabContainerModel {
     id = null;

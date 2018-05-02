@@ -12,7 +12,7 @@ import {textAreaField, toolbar} from 'hoist/cmp';
 
 /**
  * A simple dialog component to collect user feedback from directly within the application.
- * @see FeedbackService
+ * See FeedbackService
  */
 @hoistComponent()
 export class FeedbackDialog extends Component {

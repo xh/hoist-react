@@ -47,7 +47,7 @@ class RelativeTimestamp extends Component {
     static propTypes = {
         /** Date object that will be used as reference, can also be specified in milliseconds*/
         timestamp: PT.oneOfType([PT.instanceOf(Date), PT.number]),
-        /** @see {@link getRelativeTimestamp} options */
+        /** See getRelativeTimestamp} options */
         options: PT.object
     };
 
@@ -88,7 +88,7 @@ export const relativeTimestamp = elemFactory(RelativeTimestamp);
 /**
  * Returns a String relative to the Timestamp provided
  *
- * @param {Date|int} timestamp - Date object or milliseconds that will be used as reference for this component
+ * @param {(Date|int)} timestamp - Date object or milliseconds that will be used as reference for this component
  * @param {Object} [options]
  * @param {boolean} [options.allowFuture] - Allow dates greater than Date.now()
  * @param {string} [options.futureSuffix] - Appended to future timestamps
