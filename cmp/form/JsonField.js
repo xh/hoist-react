@@ -1,4 +1,6 @@
 import ReactDOM from 'react-dom';
+import {PropTypes as PT} from 'prop-types';
+import {defaultsDeep, isUndefined} from 'lodash';
 import {textArea} from 'hoist/kit/blueprint';
 
 import {HoistField} from './HoistField';
@@ -21,31 +23,51 @@ import 'codemirror/addon/lint/lint.js';
 
 import './JsonField.css';
 
-
 /**
- *   A JSON Editor
+ * A JSON Editor
  *
- * @prop rest, see general properties for HoistField
- *      Accepts props documented below as well as any properties supported by the CodeMirror api,
- *      with the exception of 'value', which is managed by HoistField.
- *      Provided CodeMirror props will override any editor properties preconfigured here.
- *      See: https://codemirror.net/doc/manual.html#api_configuration for details.
- *
- * @prop width, width of field, in pixels
- * @prop height, width of field, in pixels
- * @prop disabled, Whether the field is readonly, Defaults to false
+ * See HoistField for properties additional to those documented below.
  */
 @hoistComponent()
 export class JsonField extends HoistField {
 
-    editor = null;
-    taCmp = null;
+    static propTypes = {
+        /** width of field, in pixels */
+        width: PT.number,
+        /** height of field, in pixels */
+        height: PT.number,
+        /**
+         * Configuration object with any properties supported by the CodeMirror api.
+         * See: https://codemirror.net/doc/manual.html#api_configuration for details.
+         * */
+        editorProps: PT.object
+    };
 
     static defaultProps = {
         width: null,
-        height: null,
-        disabled: false
+        height: null
     }
+
+    static defaultEditorProps = {
+        mode: 'application/json',
+        lineWrapping: false,
+        lineNumbers: true,
+        autoCloseBrackets: true,
+        extraKeys: {
+            'Cmd-P': this.onFormatKey,
+            'Ctrl-P': this.onFormatKey
+        },
+        foldGutter: true,
+        scrollbarStyle: 'simple',
+        gutters: [
+            'CodeMirror-linenumbers',
+            'CodeMirror-foldgutter'
+        ],
+        lint: true
+    }
+
+    editor = null;
+    taCmp = null;
 
     render() {
         return textArea({
@@ -66,34 +88,19 @@ export class JsonField extends HoistField {
     }
 
     createJsonEditor(taCmp) {
-        const {height, width, disabled, value, onChange, onCommit, model, field, style, className, ...editorProps} = this.props;
-
-        const editorSpec = {
-            theme: this.darkTheme ? 'dracula' : 'default',
-            mode: 'application/json',
-            lineNumbers: true,
-            autoCloseBrackets: true,
-            extraKeys: {
-                'Cmd-P': this.onFormatKey,
-                'Ctrl-P': this.onFormatKey
-            },
-            foldGutter: true,
-            scrollbarStyle: 'simple',
-            gutters: [
-                'CodeMirror-linenumbers',
-                'CodeMirror-foldgutter'
-            ],
-            readOnly: disabled,
-            lint: true,
-            ...editorProps
-        };
+        const {editorProps, disabled, width, height} = this.props,
+            editorSpec= defaultsDeep(
+                editorProps,
+                JsonField.defaultEditorProps,
+                {theme: this.darkTheme ? 'dracula' : 'default', readOnly: disabled}
+            );
 
         const taDom = ReactDOM.findDOMNode(taCmp),
             editor = codemirror.fromTextArea(taDom, editorSpec);
 
         editor.on('change', this.handleEditorChange);
         editor.on('focus',  this.onFocus);
-        editor.on('blur',   this.onBlur);
+        editor.on('blur',  this.onBlur);
         editor.on('keyup',  this.onKeyUp);
 
         if (width || height) {
