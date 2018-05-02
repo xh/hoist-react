@@ -34,10 +34,6 @@ export class DayField extends HoistField {
         ])
     };
 
-    static defaultProps = {
-        popoverPosition: 'auto'
-    }
-
     delegateProps = ['className', 'disabled']
 
     render() {
@@ -57,7 +53,7 @@ export class DayField extends HoistField {
             popoverProps: {
                 minimal: true,
                 usePortal: true,
-                position: popoverPosition,
+                position: popoverPosition || 'auto',
                 popoverWillClose: this.onPopoverWillClose
             },
             dayPickerProps: {fixedWeeks: true},

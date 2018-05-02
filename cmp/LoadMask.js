@@ -28,12 +28,6 @@ export class LoadMask extends Component {
         model: PT.object,
         inline: PT.bool
     };
-
-    static defaultProps = {
-        isDisplayed: false,
-        model: null,
-        inline: true
-    };
     
     render() {
         let {isDisplayed, model, inline} = this.props;
@@ -48,7 +42,7 @@ export class LoadMask extends Component {
                 style: {backgroundColor: this.BACKGROUND}
             },
             usePortal: !inline,
-            item: inline ? this.getInlineChild() : this.getViewportChild()
+            item: inline !== false ? this.getInlineChild() : this.getViewportChild()
         });
     }
 

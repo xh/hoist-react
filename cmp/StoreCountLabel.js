@@ -26,13 +26,11 @@ class StoreCountLabel extends Component {
         unit: PT.string
     };
 
-    static defaultProps = {
-        unit: 'record'
-    };
+    defaultUnit = 'record';
 
     constructor(props) {
         super(props);
-        const unit = props.unit;
+        const unit = props.unit || this.defaultUnit;
         this.oneUnit = singularize(unit);
         this.manyUnits = pluralize(unit);
     }

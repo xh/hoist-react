@@ -47,11 +47,6 @@ export class Resizable extends Component {
         model: PT.object
     };
 
-    static defaultProps = {
-        isCollapsible: true,
-        isDraggable: true
-    };
-
     constructor(props) {
         super(props);
 
@@ -84,12 +79,12 @@ export class Resizable extends Component {
             items.push(this.renderCollapsedChild());
         }
 
-        if (isCollapsible) {
+        if (isCollapsible !== false) {
             const collapser = this.getCollapser();
             items = (isContentFirst ? [...items, collapser] : [collapser, ...items]);
         }
 
-        if (isOpen && isDraggable) {
+        if (isOpen && isDraggable !== false) {
             items.push(this.getDragger());
         }
 

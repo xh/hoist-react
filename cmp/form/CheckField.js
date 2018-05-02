@@ -25,10 +25,6 @@ export class CheckField extends HoistField {
         text: PT.string
     };
 
-    static defaultProps = {
-        text: ''
-    }
-
     delegateProps = ['className', 'disabled']
 
     render() {
@@ -38,7 +34,7 @@ export class CheckField extends HoistField {
             checked: !!this.renderValue,
             onChange: this.onChange,
             style: {...style, marginBottom: '0px', marginRight: '0px'},
-            label: label(text),
+            label: label(text || ''),
             inline: true,
             onBlur: this.onBlur,
             onFocus: this.onFocus,

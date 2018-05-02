@@ -23,10 +23,6 @@ class LeftRightChooserFilter extends Component {
         fields: PT.arrayOf(PT.string)
     };
 
-    static defaultProps = {
-        fields: []
-    };
-
     @setter @observable value = '';
 
     render() {
@@ -52,7 +48,7 @@ class LeftRightChooserFilter extends Component {
     }
     
     runFilter() {
-        const {fields} = this.props,
+        const fields = this.props.fields || [],
             searchTerm = escapeRegExp(this.value);
 
         const filter = (raw) => {

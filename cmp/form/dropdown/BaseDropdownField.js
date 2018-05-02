@@ -27,6 +27,7 @@ export class BaseDropdownField extends HoistField {
         placeholder: 'Select'
     }
 
+
     //---------------------------------------------------------------------------
     // Handling of null values.  Blueprint doesn't allow null for the value of a
     // dropdown control, but we can use a sentinel value to represent it.

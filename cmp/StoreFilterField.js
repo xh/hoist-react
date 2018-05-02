@@ -28,10 +28,6 @@ export class StoreFilterField extends Component {
         fields: PT.arrayOf(PT.string)
     };
 
-    static defaultProps = {
-        fields: []
-    };
-
     @setter @observable value = '';
 
     render() {
@@ -61,7 +57,7 @@ export class StoreFilterField extends Component {
         let searchTerm = escapeRegExp(this.value);
 
         let filter = null;
-        if (searchTerm && fields.length) {
+        if (searchTerm && fields && fields.length) {
             filter = (rec) => fields.some(f => {
                 const fieldVal = rec[f];
                 return fieldVal && new RegExp('(^|\\W)' + searchTerm, 'ig').test(fieldVal);
