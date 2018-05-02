@@ -84,7 +84,7 @@ export class JsonField extends HoistField {
 
     createJsonEditor(taCmp) {
         const {editorProps, disabled, width, height} = this.props,
-            editorSpec= defaultsDeep(
+            editorSpec = defaultsDeep(
                 editorProps,
                 JsonField.defaultEditorProps,
                 {theme: this.darkTheme ? 'dracula' : 'default', readOnly: disabled}
