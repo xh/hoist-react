@@ -15,12 +15,12 @@ export class TrackService extends BaseService {
      * Activities are presented to admins in the Admin App's Client Activity > Activity grid.
      * Client metadata is set automatically by the server's parsing of request headers.
      *
-     * @param ({Object|string}) options - if a string, it will become the message value.
+     * @param {(Object|string)} options - if a string, it will become the message value.
      * @param {string} options.msg - Short description of the activity being tracked.
      *      Required if options is an object.
      *      Can be passed as `message` for backwards compatibility.
      * @param {string} [options.category] - app-supplied category.
-     * @param ({Object|Array}) [options.data] - app-supplied data collection.
+     * @param {(Object|Array)} [options.data] - app-supplied data collection.
      * @param {number} [options.elapsed] - time in milliseconds some activity took.
      * @param {string} [options.severity] - importance flag, such as: OK|WARN|EMERGENCY
      *      (errors should be tracked by the ErrorTrackingService, not sent in this TrackService).
