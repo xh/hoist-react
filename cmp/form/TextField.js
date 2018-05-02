@@ -15,10 +15,11 @@ import {HoistField} from './HoistField';
  *
  * @prop rest, see general properties for HoistField
  *
- * @prop autoFocus
- * @prop type, 'text' or 'password'
- * @prop placeholder, text to display when control is empty
- * @prop width, width of field, in pixels
+ * @prop {boolean} [autoFocus=false]
+ * @prop {string } [type] - 'text' or 'password'
+ * @prop {string} [placeholder] - text to display when control is empty
+ * @prop {number} [width] - width of field, in pixels
+ * @prop {boolean} [spellCheck=false]
  */
 @hoistComponent()
 export class TextField extends HoistField {
@@ -26,7 +27,7 @@ export class TextField extends HoistField {
     delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus'];
 
     render() {
-        const {style, width} = this.props;
+        const {style, width, spellCheck} = this.props;
 
         return inputGroup({
             value: this.renderValue || '',
@@ -35,6 +36,7 @@ export class TextField extends HoistField {
             onBlur: this.onBlur,
             onFocus: this.onFocus,
             style: {...style, width},
+            spellCheck: !!spellCheck,
             ...this.getDelegateProps()
         });
     }

@@ -40,6 +40,7 @@ export class PreferencePanel extends Component {
             {
                 name: 'local',
                 type: 'bool',
+                defaultValue: false,
                 required: true
             },
             {
@@ -73,7 +74,7 @@ export class PreferencePanel extends Component {
         editors: [
             {field: 'name'},
             {field: 'type'},
-            {field: 'defaultValue'},
+            {field: 'defaultValue', type: 'boolSelect'},
             {field: 'local'},
             {field: 'notes', type: 'textarea'},
             {field: 'lastUpdated'},
