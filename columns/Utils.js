@@ -47,10 +47,10 @@ export function fileColFactory(fileVals = {}) {
                 delete colProps.fixedWidth;
             }
 
-            if (colProps.renderElement) {
+            if (colProps.elementRenderer) {
                 colProps.cellRendererFramework = (
                     class extends Component {
-                        render() {return colProps.renderElement(this.props)}
+                        render() {return colProps.elementRenderer(this.props)}
                         refresh() {return false}
                     }
                 );

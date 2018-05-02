@@ -26,8 +26,8 @@ class DataView extends Component {
                     field: 'id',
                     flex: 1,
                     autoHeight: true,
-                    renderElement: (props) => {
-                        return itemFactory({record: props.data});
+                    elementRenderer: (record) => {
+                        return itemFactory({record: record.data});
                     }
                 })
             ]
