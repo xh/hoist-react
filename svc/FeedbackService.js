@@ -17,13 +17,15 @@ export class FeedbackService extends BaseService {
      * See FeedbackService.groovy within hoist-core for details.
      *
      * @param {Object} options
-     * @param {string} options.msg - user-supplied message to POST.
+     * @param {string} options.message - user-supplied message to POST.
      */
-    async submitAsync(options) {
+    async submitAsync({message, msg}) {
+        message = message || msg;
+
         await XH.fetchJson({
             url: 'hoistImpl/submitFeedback',
             params: {
-                msg: stripTags(options.msg),
+                msg: stripTags(message),
                 appVersion: XH.getEnv('appVersion')
             }
         });
