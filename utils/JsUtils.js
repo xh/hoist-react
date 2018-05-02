@@ -41,8 +41,8 @@ export function isJSON(value) {
     }
 }
 
-export function throwIf(condition, msg) {
+export function throwIf(condition, message) {
     if (condition) {
-        throw XH.exception(msg);
+        throw XH.exception(message);
     }
 }
