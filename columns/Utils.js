@@ -48,12 +48,14 @@ export function fileColFactory(fileVals = {}) {
             }
 
             if (colProps.elementRenderer) {
+                const {elementRenderer} = colProps;
                 colProps.cellRendererFramework = (
                     class extends Component {
-                        render() {return colProps.elementRenderer(this.props)}
+                        render() {return elementRenderer(this.props)}
                         refresh() {return false}
                     }
                 );
+                delete colProps.elementRenderer;
             }
 
             return colProps;
