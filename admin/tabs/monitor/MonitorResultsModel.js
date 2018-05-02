@@ -69,7 +69,9 @@ export class MonitorResultsModel {
         return XH
             .fetchJson({url: 'monitorAdmin/forceRunAllMonitors'})
             .then(
-                ToastManager.show({
+                // Wrapping the toast call in a function causes it to run only
+                // if the fetchJson was successful.
+                () => ToastManager.show({
                     message: 'Request received. Results will be generated shortly.'
                 })
             )
