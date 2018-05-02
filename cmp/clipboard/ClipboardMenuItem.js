@@ -7,6 +7,7 @@
 
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
+import {defaultsDeep} from 'lodash';
 import {clipboardButton} from './ClipboardButton';
 import {elemFactory} from 'hoist/core';
 import {Icon} from 'hoist/icon';
@@ -25,7 +26,7 @@ class ClipboardMenuItem extends Component {
         style: PT.object
     };
 
-    static defaultProps = {
+    static defaultOptions = {
         icon: Icon.clipboard(),
         text: 'Copy',
         cls: 'pt-minimal',
@@ -38,7 +39,8 @@ class ClipboardMenuItem extends Component {
     }
 
     render() {
-        return clipboardButton(this.props);
+        const btnProps = defaultsDeep(this.props, ClipboardMenuItem.defaultOptions);
+        return clipboardButton(btnProps);
     }
 
 }
