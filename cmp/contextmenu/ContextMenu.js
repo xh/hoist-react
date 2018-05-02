@@ -20,8 +20,8 @@ import {ContextMenuItem} from './ContextMenuItem';
  * To add a Context Menu to a component, specify a renderContextMenu() method on the
  * component that returns this object.
  *
- * See GridContextMenu to specify a context menu on a grid. That API will receive grid specific
- * information about rows and cells, and will provide grid specific built-in menu items.
+ * See StoreContextMenu to specify a context menu on store enabled components.
+ * That API will receive specific information about the current selection
  */
 export class ContextMenu extends Component {
 
