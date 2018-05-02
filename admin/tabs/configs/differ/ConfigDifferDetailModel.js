@@ -5,8 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {HoistModel} from 'hoist/core';
 import {action, observable} from 'hoist/mobx';
 
+@HoistModel()
 export class ConfigDifferDetailModel  {
 
     parent = null;

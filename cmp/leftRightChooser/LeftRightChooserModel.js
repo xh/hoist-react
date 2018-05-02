@@ -14,6 +14,7 @@ import {ItemRenderer} from './impl/ItemRenderer';
 /**
  * A Model for managing the state of a LeftRightChooser.
  */
+@HoistModel()
 export class LeftRightChooserModel {
     /** Grid Model for the left-hand side */
     leftModel = null;

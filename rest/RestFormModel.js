@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH} from 'hoist/core';
+import {XH, HoistModel} from 'hoist/core';
 import {start} from 'hoist/promise';
 import {observable, computed, action} from 'hoist/mobx';
 import {MessageModel} from 'hoist/cmp';
@@ -14,6 +14,7 @@ import {isEqual} from 'lodash';
 
 import {RestControlModel} from './RestControlModel';
 
+@HoistModel()
 export class RestFormModel {
 
     parent = null;

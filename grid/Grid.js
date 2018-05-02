@@ -70,9 +70,9 @@ class Grid extends Component {
                 }
             }
         );
-        this.addAutoRun(() => this.syncSelection());
-        this.addAutoRun(() => this.syncSort());
-        this.addAutoRun(() => this.syncColumns());
+        this.addAutorun(() => this.syncSelection());
+        this.addAutorun(() => this.syncSort());
+        this.addAutorun(() => this.syncColumns());
     }
 
     render() {
@@ -80,7 +80,7 @@ class Grid extends Component {
         return frame(
             div({
                 style: {flex: '1 1 auto', overflow: 'hidden'},
-                cls: this.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
+                cls: XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                 item: agGridReact({
                     rowData: store.records,
                     columnDefs: columns,

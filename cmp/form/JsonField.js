@@ -58,7 +58,7 @@ export class JsonField extends HoistField {
 
     createJsonEditor(taCmp) {
         const editorSpec = {
-            theme: this.darkTheme ? 'dracula' : 'default',
+            theme: XH.darkTheme ? 'dracula' : 'default',
             mode: 'application/json',
             lineWrapping: this.props.lineWrapping || false,
             lineNumbers: true,

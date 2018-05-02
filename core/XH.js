@@ -4,6 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+
+import ReactDOM from 'react-dom';
 import {isPlainObject} from 'lodash';
 import {Exception, ExceptionHandler} from 'hoist/exception';
 import {observable, setter, action} from 'hoist/mobx';
@@ -112,9 +114,20 @@ export const XH = window.XH = new class {
      */
     appLoadModel = new MultiPromiseModel();
 
-    //----------------------------------
-    // Application Entry points
-    //----------------------------------
+    /**
+     * Main entry point.   Initialize and render application code.
+     *
+     * @param {Object} appModelClass - class containing main application state and logic.
+     *      Should be a subclass of BaseAppModel.
+     * @param {Object} appComponentClass - class describing main application view. Should inherits
+     *      from Component and be decorated with @HoistComponent.
+     */
+    renderApp(appModelClass, appComponentClass) {
+        const model = new appModelClass(),
+            view = elem(appComponentClass, {model});
+
+        ReactDOM.render(appContainer(view), document.getElementById('root'));
+    }
 
     /** Route the app.  See RouterModel.navigate.  */
     navigate(...args) {

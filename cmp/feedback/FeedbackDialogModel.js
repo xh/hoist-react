@@ -5,9 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {isEmpty} from 'lodash';
-import {XH} from 'hoist/core';
+import {XH, HoistModel} from 'hoist/core';
 import {action, observable, setter} from 'hoist/mobx';
 
+@HoistModel()
 export class FeedbackDialogModel {
 
     @observable isOpen = false;
@@ -35,5 +36,4 @@ export class FeedbackDialogModel {
         this.isOpen = false;
         this.feedback = null;
     }
-
 }

@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {HoistModel} from 'hoist/core'
 import {action, observable} from 'hoist/mobx';
 import {LastPromiseModel} from 'hoist/promise';
 import {castArray, find, isString} from 'lodash';
@@ -15,6 +16,7 @@ import {GridContextMenu} from './GridContextMenu';
  * Core Model for a Grid, specifying the grid's data store, column definitions,
  * sorting/grouping/selection state, and context menu configuration.
  */
+@HoistModel()
 export class GridModel {
 
     // Immutable public properties

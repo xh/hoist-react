@@ -4,6 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+import {HoistModel} from 'hoist/core';
 import {action} from 'hoist/mobx';
 import {GridModel} from 'hoist/grid';
 import {MessageModel} from 'hoist/cmp';
@@ -16,6 +17,7 @@ import {RestFormModel} from './RestFormModel';
 /**
  * Core Model for a RestGrid.
  */
+@HoistModel()
 export class RestGridModel {
 
     //----------------

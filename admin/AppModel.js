@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {BaseAppModel} from 'hoist/core';
+import {BaseAppModel} from 'hoist/app';
 import {action} from 'hoist/mobx';
 import {TabContainerModel} from 'hoist/cmp';
 

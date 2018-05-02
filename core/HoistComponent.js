@@ -6,96 +6,82 @@
  */
 import {autorun, reaction, observer} from 'hoist/mobx';
 import {ContextMenuTarget, HotkeysTarget} from 'hoist/kit/blueprint';
-import {addProperty, mixinMethods} from 'hoist/utils/MixinUtils';
+import {addProperty, addMethods, overrideMethods} from 'hoist/utils/ClassUtils';
 
+import {EventTarget, Reactive} from './mixins';
 import {XH} from './XH';
 import {elemFactory} from './elem';
 
 /**
- * Core Decorator for Components in Hoist.
+ * Core decorator for Components in Hoist.
+ *
+ * All React Components in Hoist applications should typically be decorated with
+ * this decorator. Exceptions include highly specific low-level components provided
+ * to other APIs which maybe negatively impacted by the overhead associated with this
+ * decorator.
+ *
+ * Provides basic mobx and eventTarget functionality, model awareness, and other convenience
+ * getters.
  */
-export function hoistComponent({isObserver = true} = {}) {
+// TODO: Bomb this to capital H
+export function hoistComponent() {
 
     return function(C) {
         const proto = C.prototype;
 
-        //--------------------------------------------------------------------
-        // Convenience Getters.
-        //---------------------------------------------------------------------
-        addProperty(C, 'darkTheme', {
-            get() {return XH.darkTheme}
-        });
+        C.isHoistComponent = true;
 
-        addProperty(C, 'model', {
-            get() {return this.localModel ? this.localModel : this.props.model}
-        });
+        //-----------
+        // Mixins
+        //------------
+        C = observer(C);
+        C = Reactive(C);
+        C = EventTarget(C);
 
-        //-------------------------------------------------------
-        // Decorate with Blueprint Context Menu, HotKeys support
-        //-------------------------------------------------------
-        if (proto.renderContextMenu) {
+        if (proto.renderContextMenu){
             C = ContextMenuTarget(C);
         }
-
         if (proto.renderHotkeys) {
             C = HotkeysTarget(C);
         }
 
-        //------------------------------
-        // Support for renderCollapsed
-        //------------------------------
-        const render = proto['render'],
-            renderCollapsed = proto.renderCollapsed;
-        proto.render = function() {
-            return this.props.isCollapsed === true ?
-                (renderCollapsed ? renderCollapsed.apply(this, arguments) : null):
-                (render ? render.apply(this, arguments) : null);
-        };
-
-        //---------------------------------------------------------
-        // Mobx -- add observer and support for managed auto runs
-        //---------------------------------------------------------
-        if (isObserver) {
-            C = observer(C);
-        }
-
-        mixinMethods(C, {
-            addAutoRun: function(...autoRunArgs) {
-                this.xhAutoRuns = this.xhAutoRuns || [];
-                this.xhAutoRuns.push(autoRunArgs);
-            },
-
-            addReaction: function(...reactionArgs) {
-                this.xhReactions = this.xhReactions || [];
-                this.xhReactions.push(reactionArgs);
-            },
-
-            componentDidMount: function() {
-                const {xhAutoRuns, xhReactions} = this;
-                if (xhAutoRuns) {
-                    xhAutoRuns.forEach(args => {
-                        this.xhDisposers = this.xhDisposers || [];
-                        this.xhDisposers.push(autorun(...args));
-                    });
-                }
-                if (xhReactions) {
-                    xhReactions.forEach(args => {
-                        this.xhDisposers = this.xhDisposers || [];
-                        this.xhDisposers.push(reaction(...args));
-                    });
-                }
-            },
-
-            componentWillUnmount: function() {
-                const {xhDisposers} = this;
-                if (xhDisposers) {
-                    xhDisposers.forEach(f => f());
-                    this.xhDisposers = null;
-                }
+        /**
+         * @prop {Object} model
+         *
+         * Model class which this component is rendering.  This is a shortcut getter
+         * for either a 'localModel' property on the component or a 'model' placed in props.
+         */
+        addProperty(C, {
+            model: {
+                get() {return this.localModel ? this.localModel : this.props.model}
             }
         });
 
-        C.isHoistComponent = true;
+        /**
+         * @method renderCollapsed
+         * @param {Object} props - react props.
+         *
+         * If a method renderCollapsed() is placed on a hoist component, it will be called
+         * by render() when the isCollapsed property is set to true.
+         */
+        const baseRender = proto.render;
+        overrideMethods(C, {
+            render() {
+                return this.props.isCollapsed === true ?
+                    (this.renderCollapsed ? this.renderCollapsed() : null) :
+                    (baseRender ? baseRender() : null);
+            }
+        });
+
+        //--------------------------
+        // Implementation
+        //--------------------------
+        addMethods(C, {
+            componentWillUnmount() {
+                this.destroy();
+            }
+        });
+
         return C;
     };
 }

@@ -4,11 +4,11 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {BaseService} from './BaseService';
-import {XH} from 'hoist/core';
+import {XH, HoistService} from 'hoist/core';
 import {stripTags} from 'hoist/utils/HtmlUtils';
 
-export class TrackService extends BaseService {
+@HoistService()
+export class TrackService {
 
     track(options) {
         const params = {msg: stripTags(typeof options === 'string' ? options : options.msg)};

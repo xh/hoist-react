@@ -5,13 +5,14 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH} from 'hoist/core';
-import {observable, autorun, action} from 'hoist/mobx';
+import {XH, HoistModel} from 'hoist/core';
+import {observable, action} from 'hoist/mobx';
 import {wait} from 'hoist/promise';
 
 /**
  * A Model for managing the state of a Resizable.
  */
+@HoistModel()
 export class ResizableModel {
 
     @observable contentSize = null;
@@ -39,7 +40,7 @@ export class ResizableModel {
 
 
         if (prefName) {
-            autorun(() => this.syncToPref(), {delay: 1000});
+            this.addAutorun(() => this.syncToPref(), {delay: 1000});
         }
     }
 

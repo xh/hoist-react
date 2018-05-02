@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import moment from 'moment';
-import {XH} from 'hoist/core';
+import {XH, HoistModel} from 'hoist/core';
 import {action, observable, setter} from 'hoist/mobx';
 import {LocalStore} from 'hoist/data';
 import {GridModel} from 'hoist/grid';
@@ -15,6 +15,7 @@ import {dateTimeCol} from 'hoist/columns/DatesTimes';
 
 import {usernameCol} from '../../columns/Columns';
 
+@HoistModel()
 export class ActivityGridModel {
 
     @observable startDate = moment().toDate();

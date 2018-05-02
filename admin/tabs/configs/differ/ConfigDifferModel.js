@@ -9,7 +9,7 @@ import React from 'react';
 import {action, observable, setter} from 'hoist/mobx';
 import {castArray, isEqual, remove, trimEnd} from 'lodash';
 import {pluralize} from 'hoist/utils/JsUtils';
-import {XH} from 'hoist/core';
+import {XH, HoistModel} from 'hoist/core';
 import {LocalStore} from 'hoist/data';
 import {GridContextMenu, GridModel} from 'hoist/grid';
 import {MessageModel, ToastManager} from 'hoist/cmp';
@@ -20,6 +20,7 @@ import {Icon} from 'hoist/icon';
 
 import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
 
+@HoistModel()
 export class ConfigDifferModel  {
 
     messageModel = new MessageModel({title: 'Warning', icon: Icon.warning({size: 'lg'})});

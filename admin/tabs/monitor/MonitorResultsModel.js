@@ -5,13 +5,14 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH} from 'hoist/core';
+import {XH, HoistModel} from 'hoist/core';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
 import {ToastManager} from 'hoist/cmp';
 import {action, observable, computed} from 'hoist/mobx';
 import {min} from 'lodash';
 import {Timer} from 'hoist/utils/Timer';
 
+@HoistModel()
 export class MonitorResultsModel {
     @observable.ref results = [];
     @observable lastRun = null;

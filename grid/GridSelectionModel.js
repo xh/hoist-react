@@ -5,12 +5,14 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {autorun, action, observable, computed} from 'hoist/mobx';
+import {HoistModel} from 'hoist/core';
+import {action, observable, computed} from 'hoist/mobx';
 import {castArray, intersection, union, orderBy} from 'lodash';
 
 /**
  * Model for managing the selection of GridModel.
  */
+@HoistModel()
 export class GridSelectionModel {
 
     parent = null;
@@ -43,7 +45,7 @@ export class GridSelectionModel {
      */
     constructor({parent}) {
         this.parent = parent;
-        autorun(() => {
+        this.addAutorun(() => {
             // Remove recs from selection if they are no longer in store e.g. (due to filtering)
             const storeIds = this.parent.store.records.map(it => it.id),
                 selection = this.ids,

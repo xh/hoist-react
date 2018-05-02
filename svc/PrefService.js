@@ -4,9 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {BaseService} from './BaseService';
 import {cloneDeep, debounce, isNil, isEqual} from 'lodash';
-import {XH} from 'hoist/core';
+import {XH, HoistService} from 'hoist/core';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
 
 /**
@@ -27,7 +26,8 @@ import {SECONDS} from 'hoist/utils/DateTimeUtils';
  * user values to local storage instead. This should be used for prefs that are more natural to
  * associate with a particular machine or browser (e.g. sizing or layout related options).
  */
-export class PrefService extends BaseService {
+@HoistService()
+export class PrefService {
 
     _data = null;
     _updates = {};

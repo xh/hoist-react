@@ -6,7 +6,7 @@
  */
 
 import moment from 'moment';
-import {XH} from 'hoist/core';
+import {XH, HoistModel} from 'hoist/core';
 import {action, observable, setter} from 'hoist/mobx';
 import {LocalStore} from 'hoist/data';
 import {GridModel} from 'hoist/grid';
@@ -16,6 +16,7 @@ import {compactDateCol} from 'hoist/columns/DatesTimes';
 
 import {usernameCol} from '../../columns/Columns';
 
+@HoistModel()
 export class ClientErrorModel {
 
     @observable startDate = moment().subtract(7, 'days').toDate();

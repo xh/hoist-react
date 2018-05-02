@@ -5,12 +5,14 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {HoistModel} from 'hoist/core';
 import {UrlStore} from 'hoist/data';
 import {GridModel} from 'hoist/grid';
 
 import {baseCol, boolCheckCol} from 'hoist/columns/Core';
 import {usernameCol} from '../../columns/Columns';
 
+@HoistModel()
 export class UserModel {
 
     store = new UrlStore({

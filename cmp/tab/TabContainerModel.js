@@ -4,8 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH} from 'hoist/core';
-import {action, autorun, computed, observable} from 'hoist/mobx';
+import {XH, HoistModel} from 'hoist/core';
+import {action, computed, observable} from 'hoist/mobx';
 import {isPlainObject, max, startCase, uniqBy} from 'lodash';
 import {throwIf} from 'hoist/utils/JsUtils';
 import {wait} from 'hoist/promise';
@@ -18,6 +18,7 @@ import {TabPaneModel} from 'hoist/cmp';
  * In particular, TabPanes will be lazily instantiated and can also be lazily refreshed.
  * @see TabPaneModel
  */
+@HoistModel()
 export class TabContainerModel {
     id = null;
     name = null;

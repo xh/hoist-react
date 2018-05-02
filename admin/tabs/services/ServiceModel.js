@@ -4,12 +4,13 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH} from 'hoist/core';
+import {XH, HoistModel} from 'hoist/core';
 import {ToastManager} from 'hoist/cmp';
 import {UrlStore} from 'hoist/data';
 import {GridModel} from 'hoist/grid';
 import {baseCol} from 'hoist/columns/Core';
 
+@HoistModel()
 export class ServiceModel {
 
     store = new UrlStore({

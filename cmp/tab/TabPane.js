@@ -27,7 +27,7 @@ export class TabPane extends Component {
 
     constructor(props) {
         super(props);
-        this.addAutoRun(() => this.syncLoad());
+        this.addAutorun(() => this.syncLoad());
     }
 
     render() {

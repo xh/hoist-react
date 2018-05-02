@@ -125,7 +125,7 @@ export class Chart extends Component {
     }
 
     getThemeConfig() {
-        return this.darkTheme ? clone(DarkTheme) : clone(LightTheme);
+        return XH.darkTheme ? clone(DarkTheme) : clone(LightTheme);
     }
 
     getModelConfig() {
