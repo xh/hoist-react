@@ -21,7 +21,7 @@ export class Label extends HoistField {
         children: PT.node,
         style: PT.object,
         className: PT.string,
-        width: PT.int
+        width: PT.number
     };
 
     delegateProps = ['className'];
