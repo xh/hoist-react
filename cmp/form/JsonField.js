@@ -43,11 +43,6 @@ export class JsonField extends HoistField {
         editorProps: PT.object
     };
 
-    static defaultProps = {
-        width: null,
-        height: null
-    }
-
     static defaultEditorProps = {
         mode: 'application/json',
         lineWrapping: false,
@@ -103,7 +98,7 @@ export class JsonField extends HoistField {
         editor.on('blur',  this.onBlur);
         editor.on('keyup',  this.onKeyUp);
 
-        if (width || height) {
+        if (width != null || height != null) {
             editor.setSize(width, height);
         }
 
