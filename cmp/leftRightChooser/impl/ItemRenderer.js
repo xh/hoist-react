@@ -11,6 +11,9 @@ import {Icon} from 'hoist/icon';
 
 /**
  * Render items in the LeftRightChooser.
+ *
+ * This is an implementation class private to Hoist
+ * @private
  */
 export class ItemRenderer extends Component {
 

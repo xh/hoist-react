@@ -13,6 +13,9 @@ import {Icon} from 'hoist/icon';
 
 /**
  * A Toolbar for the LeftRightChooser.
+ *
+ * This is an implementation class private to Hoist
+ * @private
  */
 @hoistComponent()
 class ChooserToolbar extends Component {

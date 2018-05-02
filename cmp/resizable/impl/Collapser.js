@@ -14,6 +14,9 @@ import {hbox, vbox} from 'hoist/layout';
 
 import './Collapser.scss';
 
+/** This is an implementation class private to Hoist
+ * @private
+ */
 @hoistComponent()
 export class Collapser extends Component {
 

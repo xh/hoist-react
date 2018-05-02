@@ -11,6 +11,9 @@ import {elemFactory, hoistComponent} from 'hoist/core';
 import {div} from 'hoist/layout';
 import './Dragger.scss';
 
+/** This is an implementation class private to Hoist
+ * @private
+ */
 @hoistComponent()
 export class Dragger extends Component {
 
