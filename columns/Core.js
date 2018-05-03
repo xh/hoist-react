@@ -16,7 +16,7 @@ const colFactory = fileColFactory({
 export const baseCol = colFactory();
 
 export const boolCheckCol = colFactory({
-    width: 34,
+    fixedWidth: 34,
     align: 'center',
     cellRendererFramework: (
         class extends Component {
