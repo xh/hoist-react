@@ -4,7 +4,6 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {PropTypes as PT} from 'prop-types';
 import {Component} from 'react';
 import {div} from 'hoist/layout';
 import {Icon} from 'hoist/icon';

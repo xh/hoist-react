@@ -29,7 +29,7 @@ export class DayField extends HoistField {
             'bottom-right', 'bottom', 'bottom-left',
             'left-bottom', 'left', 'left-top',
             'auto'
-        ]),
+        ])
     };
 
     delegateProps = ['className', 'disabled']
