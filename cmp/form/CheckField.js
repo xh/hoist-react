@@ -32,7 +32,7 @@ export class CheckField extends HoistField {
         const {text, style} = this.props;
 
         return checkbox({
-            checked: this.renderValue,
+            checked: !!this.renderValue,
             onChange: this.onChange,
             style: {...style, marginBottom: '0px', marginRight: '0px'},
             label: label(text),

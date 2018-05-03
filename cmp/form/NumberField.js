@@ -48,11 +48,12 @@ export class NumberField extends HoistField {
     }
 
     toExternal(val) {
-        return Number.parseFloat(val);
+        const ret = Number.parseFloat(val);
+        return isFinite(ret) ? ret : null;
     }
 
     toInternal(val) {
-        return val ? val.toString() : '';
+        return val != null ? val.toString() : '';
     }
 }
 export const numberField = elemFactory(NumberField);

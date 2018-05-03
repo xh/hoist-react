@@ -6,26 +6,24 @@
  */
 
 import {isString} from 'lodash';
-import {GridContextMenuItem} from './GridContextMenuItem';
+import {StoreContextMenuItem} from './StoreContextMenuItem';
 
 /**
- * Model for ContextMenu on Grid.
- *
- * To add a context menu on a grid specify the getContextMenu() method on the GridModel.
+ * Model for ContextMenu on stores.
  */
-export class GridContextMenu {
+export class StoreContextMenu {
 
     items = [];
 
     /**
-     * @param {Object[]} items - collection of GridContextMenuItems, configs to
+     * @param {Object[]} items - collection of StoreContextMenuItems, configs to
      *          create them, or Strings.  If a String, value can be '-' for a
      *          seperator, or a key for a native AG Grid menu item.
      */
     constructor(items) {
         this.items = items.map(it => {
-            if (it instanceof GridContextMenuItem || isString(it)) return it;
-            return new GridContextMenuItem(it);
+            if (it instanceof StoreContextMenuItem || isString(it)) return it;
+            return new StoreContextMenuItem(it);
         });
     }
 }
