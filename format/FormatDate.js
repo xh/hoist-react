@@ -8,7 +8,7 @@
 import {defaults, isString} from 'lodash';
 import moment from 'moment';
 
-import {saveOriginal, createRenderer} from './FormatUtils';
+import {saveOriginal, createRenderer, createElFormatter} from './FormatUtils';
 import {fmtSpan} from './FormatMisc';
 
 const DATE_FMT = 'YYYY-MM-DD',
@@ -113,3 +113,8 @@ export const dateRenderer = createRenderer(fmtDate),
     dateTimeRenderer = createRenderer(fmtDateTime),
     timeRenderer = createRenderer(fmtTime),
     compactDateRenderer = createRenderer(fmtCompactDate);
+
+export const fmtDateEl = createElFormatter(fmtDate),
+    fmtDateTimeEl = createElFormatter(fmtDateTime),
+    fmtTimeEl = createElFormatter(fmtTime),
+    fmtCompactDateEl = createElFormatter(fmtCompactDate);
