@@ -30,7 +30,8 @@ export class LoadMask extends Component {
     };
     
     render() {
-        let {isDisplayed, model, inline} = this.props;
+        let {isDisplayed, model, inline} = this.props,
+            isInline = inline !== false;
 
         if (!(isDisplayed || (model && model.isPending))) return null;
         return overlay({
@@ -41,8 +42,8 @@ export class LoadMask extends Component {
             backdropProps: {
                 style: {backgroundColor: this.BACKGROUND}
             },
-            usePortal: !inline,
-            item: inline !== false ? this.getInlineChild() : this.getViewportChild()
+            usePortal: !isInline,
+            item: isInline ? this.getInlineChild() : this.getViewportChild()
         });
     }
 
