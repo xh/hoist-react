@@ -38,6 +38,7 @@ export class ActivityGridModel {
     gridModel = new GridModel({
         store: this.store,
         sortBy: {colId: 'dateCreated', sort: 'desc'},
+        hideEmptyText: true,
         columns: [
             baseCol({field: 'severity', fixedWidth: 90}),
             dateTimeCol({field: 'dateCreated', fixedWidth: 160, align: 'right'}),

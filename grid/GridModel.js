@@ -50,6 +50,7 @@ export class GridModel {
         store,
         columns,
         selection,
+        hideEmptyText = false,
         sortBy = [],
         groupBy = null,
         contextMenuFn = GridModel.defaultContextMenu
@@ -58,6 +59,7 @@ export class GridModel {
         this.columns = columns;
         this.contextMenuFn = contextMenuFn;
         this.selection = selection || new StoreSelectionModel({store: this.store});
+        this.hideEmptyText = hideEmptyText;
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
     }

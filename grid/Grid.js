@@ -217,6 +217,7 @@ class Grid extends Component {
         model.gridApi = api;
         api.setSortModel(model.sortBy);
         api.sizeColumnsToFit();
+        if (model.hideEmptyText) api.hideOverlay();
     }
 
     onNavigateToNextCell = (params) => {
