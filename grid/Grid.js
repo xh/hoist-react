@@ -219,7 +219,7 @@ class Grid extends Component {
         const {api} = params,
             {model} = this;
 
-        model.init(api);
+        model.gridApi = api;
         api.setSortModel(model.sortBy);
         api.sizeColumnsToFit();
     }

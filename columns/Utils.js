@@ -4,9 +4,16 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {defaults, castArray} from 'lodash';
+import {castArray, defaults, startCase} from 'lodash';
 
-const globalVals = {};
+const globalVals = {
+    field: null,            // name of field in underlying model
+    text: null,             // short title of column. Typically appears as column header. Auto-generated from field.
+    description: null,      // descriptive details of column. Visible in column chooser
+    chooserGroup: null,            // name of group for categorizing columns
+    excludeFromChooser: false,         // exclude column from column chooser
+    hide: false             // hide/show column
+};
 
 /**
  * Creates a factory for use within a Column definition file to create multiple column factories
@@ -45,6 +52,9 @@ export function fileColFactory(fileVals = {}) {
                 colProps.minWidth = colProps.fixedWidth;
                 delete colProps.fixedWidth;
             }
+
+
+            colProps.text = colProps.text || startCase(colProps.field);
 
             return colProps;
         };

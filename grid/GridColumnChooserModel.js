@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {observable, setter} from 'hoist/mobx';
+import {autorun, observable, setter} from 'hoist/mobx';
 import {LeftRightChooserModel} from 'hoist/cmp/leftRightChooser/LeftRightChooserModel';
 
 /**
@@ -18,55 +18,42 @@ export class GridColumnChooserModel {
 
     @observable @setter isOpen = false;
 
-
-    constructor({
-        parent=null
-    }) {
+    constructor({parent=null}) {
         this.parent = parent;
+        autorun( () =>{this.syncChooserData()});
     }
 
-    init() {
-        const data = this.prepareChooserData();
-        this.leftRightChooserModel = new LeftRightChooserModel({
-            data: data
-        });
-
-    }
 
     commit() {
         const grid = this.parent,
-            api = grid.gridApi.gridCore.columnApi; // todo: this seems a bit over the top
-
-        const model = this.leftRightChooserModel,
-            {leftModel, rightModel} = model,
-            hidden = leftModel.store.allRecords,
-            visible = rightModel.store.allRecords;
-
-        api.setColumnsVisible(hidden.map(it => it.value), false);
-        api.setColumnsVisible(visible.map(it => it.value), true);
+            model = this.leftRightChooserModel,
+            {leftModel} = model,
+            hidden = leftModel.store.allRecords.map(it=>it.value);
+        grid.hideColumns(hidden)
     }
 
 
     //---------
     // implementation
     //---------
-
-    prepareChooserData() {
+    syncChooserData() {
         const grid = this.parent,
-            cols = grid.columns,
-            api = grid.gridApi.gridCore.columnApi; // todo: this seems a bit over the top
+            cols = grid.columns;
 
-        return cols.map(it=> {
-            const col = api.getColumn(it.field);
+        const data = cols.map(it=> {
             return {
                 value: it.field,
-                text: it.text || col.colDef.headerName,
+                text: it.text ,
                 description: it.description,
-                locked: col.lockVisible || col.pinned,
+                locked: it.locked,
                 group: it.chooserGroup,
                 exclude: it.excludeFromChooser,
-                side: col.visible ? 'right' : 'left'
+                side: it.hide ? 'left' : 'right'
             };
+        });
+
+        this.leftRightChooserModel = new LeftRightChooserModel({
+            data: data
         });
     }
 }

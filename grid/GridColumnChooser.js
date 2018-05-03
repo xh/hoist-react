@@ -14,9 +14,6 @@ import {toolbar} from 'hoist/cmp';
 import {Icon} from 'hoist/icon/';
 import {leftRightChooser} from 'hoist/cmp/leftRightChooser';
 
-
-// import './GridColumnChooser.scss';
-
 @hoistComponent()
 export class GridColumnChooser extends Component {
 

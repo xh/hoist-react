@@ -80,18 +80,6 @@ export class GridModel {
         this.setSortBy(sortBy);
     }
 
-    /**
-     * initialization to be performed after the grid is 'ready'.
-     * @param api
-     */
-    init(api) {
-        const chooserModel = this.columnChooserModel;
-        this.gridApi = api;
-        if (chooserModel) {
-            chooserModel.init();
-        }
-    }
-
     exportDataAsExcel(params) {
         if (!this.gridApi) return;
         params.processCellCallback = this.formatValuesForExport;
@@ -132,6 +120,19 @@ export class GridModel {
 
         this.sortBy = sortBy;
     }
+
+
+    @action
+    hideColumns(colNames) {
+        const cols = this.columns;
+        cols.forEach(it =>{
+            it.hide = colNames.includes(it.field)
+        });
+
+        this.columns = [...cols];
+    }
+
+
 
 
     //-----------------------
