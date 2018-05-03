@@ -40,6 +40,7 @@ export class GridModel {
      * @param {BaseStore} store - store containing the data for the grid.
      * @param {Object[]} columns - collection of column specifications.
      * @param {StoreSelectionModel} [selection] - selection model to use
+     * @param {boolean} [hideEmptyText] - set to true to hide grid's empty text(no rows overlay)
      * @param {Object[]} [sortBy] - one or more sorters to apply to store data.
      * @param {string} [sortBy[].colId]- Column ID by which to sort.
      * @param {string} [sortBy[].sort] - sort direction [asc|desc].
