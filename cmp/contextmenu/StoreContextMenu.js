@@ -16,9 +16,8 @@ export class StoreContextMenu {
     items = [];
 
     /**
-     * @param {Object[]} items - collection of StoreContextMenuItems, configs to
-     *          create them, or Strings.  If a String, value can be '-' for a
-     *          seperator, or a key for a native AG Grid menu item.
+     * @param {Object[]} items - collection of StoreContextMenuItems, configs to create them, or Strings.
+     *      If a String, value can be '-' for a separator, or a key for a native AG Grid menu item.
      */
     constructor(items) {
         this.items = items.map(it => {

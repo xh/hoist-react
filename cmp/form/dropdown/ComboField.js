@@ -5,22 +5,26 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {PropTypes as PT} from 'prop-types';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {Classes, suggest} from 'hoist/kit/blueprint';
 
 import {BaseDropdownField} from './BaseDropdownField';
 
 /**
- * ComboBox Field
+ * ComboBox Field - A field with type ahead suggest and menu select
  *
- * @prop rest, see properties for HoistField
- *
- * @prop options, collection of form [{value: string, label: string}, ...] or [val, val, ...]
- * @prop placeholder, text to display when control is empty
- * @prop itemRenderer, optional custom itemRenderer, a function that receives (item, itemProps)
+ * @see HoistField for properties additional to those documented below.
  */
 @hoistComponent()
 export class ComboField extends BaseDropdownField {
+
+    static propTypes = {
+        /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
+        options: PT.arrayOf(PT.oneOfType([PT.object, PT.string])).isRequired,
+        /** Optional custom optionRenderer, a function that receives (option, optionProps) */
+        optionRenderer: PT.func
+    };
 
     delegateProps = ['className', 'disabled', 'placeholder'];
 
@@ -37,7 +41,7 @@ export class ComboField extends BaseDropdownField {
             itemPredicate: (q, item) => {
                 return item.label.toLowerCase().includes(q.toLowerCase());
             },
-            itemRenderer: this.getItemRenderer(),
+            itemRenderer: this.getOptionRenderer(),
             inputValueRenderer: s => s,
             inputProps: {
                 value: this.getDisplayValue(value, options, ''),
