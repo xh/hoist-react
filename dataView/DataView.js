@@ -25,7 +25,6 @@ class DataView extends Component {
                 baseCol({
                     field: 'id',
                     flex: 1,
-                    autoHeight: true,
                     elementRenderer: (record) => {
                         return itemFactory({record: record.data});
                     }
@@ -35,12 +34,13 @@ class DataView extends Component {
     }
 
     render() {
-        const {rowCls} = this.props;
+        const {rowCls, itemHeight} = this.props;
         return grid({
             model: this._gridModel,
             gridOptions: {
                 headerHeight: 0,
-                rowClass: rowCls
+                rowClass: rowCls,
+                rowHeight: itemHeight
             }
         });
     }

@@ -1,6 +1,6 @@
 import ReactDOM from 'react-dom';
 import {PropTypes as PT} from 'prop-types';
-import {isUndefined} from 'lodash';
+import {defaultsDeep} from 'lodash';
 import {textArea} from 'hoist/kit/blueprint';
 
 import {HoistField} from './HoistField';
@@ -36,9 +36,30 @@ export class JsonField extends HoistField {
         width: PT.number,
         /** height of field, in pixels */
         height: PT.number,
-        /** Whether field should scroll or wrap for long lines. */
-        lineWrapping: PT.bool
+        /**
+         * Configuration object with any properties supported by the CodeMirror api.
+         * See: https://codemirror.net/doc/manual.html#api_configuration for details.
+         * */
+        editorProps: PT.object
     };
+
+    static defaultEditorProps = {
+        mode: 'application/json',
+        lineWrapping: false,
+        lineNumbers: true,
+        autoCloseBrackets: true,
+        extraKeys: {
+            'Cmd-P': this.onFormatKey,
+            'Ctrl-P': this.onFormatKey
+        },
+        foldGutter: true,
+        scrollbarStyle: 'simple',
+        gutters: [
+            'CodeMirror-linenumbers',
+            'CodeMirror-foldgutter'
+        ],
+        lint: true
+    }
 
     editor = null;
     taCmp = null;
@@ -62,28 +83,14 @@ export class JsonField extends HoistField {
     }
 
     createJsonEditor(taCmp) {
-        const editorSpec = {
-            theme: this.darkTheme ? 'dracula' : 'default',
-            mode: 'application/json',
-            lineWrapping: this.props.lineWrapping || false,
-            lineNumbers: true,
-            autoCloseBrackets: true,
-            extraKeys: {
-                'Cmd-P': this.onFormatKey,
-                'Ctrl-P': this.onFormatKey
-            },
-            foldGutter: true,
-            scrollbarStyle: 'simple',
-            gutters: [
-                'CodeMirror-linenumbers',
-                'CodeMirror-foldgutter'
-            ],
-            readOnly: this.props.disabled,
-            lint: true
-        };
-        
-        const props = this.props,
-            taDom = ReactDOM.findDOMNode(taCmp),
+        const {editorProps, disabled, width, height} = this.props,
+            editorSpec = defaultsDeep(
+                editorProps,
+                JsonField.defaultEditorProps,
+                {theme: this.darkTheme ? 'dracula' : 'default', readOnly: disabled}
+            );
+
+        const taDom = ReactDOM.findDOMNode(taCmp),
             editor = codemirror.fromTextArea(taDom, editorSpec);
 
         editor.on('change', this.handleEditorChange);
@@ -91,12 +98,10 @@ export class JsonField extends HoistField {
         editor.on('blur',  this.onBlur);
         editor.on('keyup',  this.onKeyUp);
 
-        let {height, width} = props;
-        if (!(isUndefined(height) && isUndefined(width))) {
-            width = isUndefined(width) ? null : width;
-            height = isUndefined(height) ? null : height;
+        if (width != null || height != null) {
             editor.setSize(width, height);
         }
+
         return editor;
     }
 
