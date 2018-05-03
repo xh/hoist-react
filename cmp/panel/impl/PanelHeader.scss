@@ -1,0 +1,16 @@
+.xh-panel-header {
+  align-items: center;
+  padding: var(--xh-title-pad-px);
+  color: var(--xh-title-text-color);
+  background-color: var(--xh-title-bg);
+  font-size: var(--xh-title-font-size-px);
+  height: 36px;  // due to button in chart panel header
+
+  & > .svg-inline--fa {
+    margin: 0 5px 0 0;
+  }
+
+  button {
+    color: var(--xh-title-text-color) !important;
+  }
+}
