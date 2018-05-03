@@ -14,7 +14,7 @@ import {BaseDropdownField} from './BaseDropdownField';
 /**
  * ComboBox Field - A field with type ahead suggest and menu select
  *
- * See HoistField for properties additional to those documented below.
+ * @see HoistField for properties additional to those documented below.
  */
 @hoistComponent()
 export class ComboField extends BaseDropdownField {
@@ -22,10 +22,8 @@ export class ComboField extends BaseDropdownField {
     static propTypes = {
         /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
         options: PT.arrayOf(PT.oneOfType([PT.object, PT.string])).isRequired,
-        /** Text to display when control is empty */
-        placeholder: PT.string,
-        /** Optional custom itemRenderer, a function that receives (item, itemProps) */
-        itemRenderer: PT.func
+        /** Optional custom optionRenderer, a function that receives (option, optionProps) */
+        optionRenderer: PT.func
     };
 
     delegateProps = ['className', 'disabled', 'placeholder'];
@@ -43,7 +41,7 @@ export class ComboField extends BaseDropdownField {
             itemPredicate: (q, item) => {
                 return item.label.toLowerCase().includes(q.toLowerCase());
             },
-            itemRenderer: this.getItemRenderer(),
+            itemRenderer: this.getOptionRenderer(),
             inputValueRenderer: s => s,
             inputProps: {
                 value: this.getDisplayValue(value, options, ''),

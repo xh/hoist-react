@@ -18,10 +18,7 @@ import {HoistField} from './HoistField';
 export class Label extends HoistField {
 
     static propTypes = {
-        children: PT.node,
-        style: PT.object,
-        className: PT.string,
-        width: PT.number
+        children: PT.node
     };
 
     delegateProps = ['className'];

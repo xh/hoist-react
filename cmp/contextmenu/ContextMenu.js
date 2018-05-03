@@ -20,7 +20,7 @@ import {ContextMenuItem} from './ContextMenuItem';
  * To add a Context Menu to a component, specify a renderContextMenu() method on the
  * component that returns this object.
  *
- * See StoreContextMenu to specify a context menu on store enabled components.
+ * @see StoreContextMenu to specify a context menu on store enabled components.
  * That API will receive specific information about the current selection
  */
 export class ContextMenu extends Component {

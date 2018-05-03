@@ -15,7 +15,7 @@ import {HoistField} from './HoistField';
 /**
  * CheckBox Field, does not handle null values, for nullable fields use a SelectField.
  *
- * See HoistField for properties additional to those documented below.
+ * @see HoistField for properties additional to those documented below.
  */
 @hoistComponent()
 export class CheckField extends HoistField {

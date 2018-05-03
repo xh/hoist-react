@@ -19,7 +19,7 @@ import {escapeRegExp} from 'lodash';
 class LeftRightChooserFilter extends Component {
 
     static propTypes = {
-        /** width of field, in pixels */
+        /** Names of fields in chooser to filter by */
         fields: PT.arrayOf(PT.string)
     };
 

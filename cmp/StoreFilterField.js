@@ -25,7 +25,7 @@ export class StoreFilterField extends Component {
         /** Store to filter */
         store: PT.instanceOf(BaseStore).isRequired,
         /** Names of fields in store's records to filter by */
-        fields: PT.arrayOf(PT.string)
+        fields: PT.arrayOf(PT.string).isRequired
     };
 
     @setter @observable value = '';
@@ -57,7 +57,7 @@ export class StoreFilterField extends Component {
         let searchTerm = escapeRegExp(this.value);
 
         let filter = null;
-        if (searchTerm && fields && fields.length) {
+        if (searchTerm && fields.length) {
             filter = (rec) => fields.some(f => {
                 const fieldVal = rec[f];
                 return fieldVal && new RegExp('(^|\\W)' + searchTerm, 'ig').test(fieldVal);

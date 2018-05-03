@@ -39,7 +39,10 @@ const defaultOptions = {
 };
 
 /**
- * A RelativeTimestamp component - It displays time relative to `now`
+ * A RelativeTimestamp component
+ *
+ * Displays the approximate amount of time between a given timestamp and the present moment
+ * in a friendly, human readable form. Automatically updates on a regular interval to stay current.
  */
 @hoistComponent()
 class RelativeTimestamp extends Component {
@@ -47,7 +50,7 @@ class RelativeTimestamp extends Component {
     static propTypes = {
         /** Date object that will be used as reference, can also be specified in milliseconds*/
         timestamp: PT.oneOfType([PT.instanceOf(Date), PT.number]),
-        /** See getRelativeTimestamp} options */
+        /** @see getRelativeTimestamp options */
         options: PT.object
     };
 
@@ -94,8 +97,8 @@ export const relativeTimestamp = elemFactory(RelativeTimestamp);
  * @param {string} [options.futureSuffix] - Appended to future timestamps
  * @param {string} [options.pastSuffix] - Appended to past timestamps
  * @param {integer} [options.nowEpsilon] - Interval (in seconds) that will serve as threshold for the nowString.
- * @param {string} [options.nowString] - Used as display property when timestamp is within the nowEpsilon interval.
- * @param {string} [options.emptyResult] - Used when timestamp is undefined
+ * @param {string} [options.nowString] - Returned as display property when timestamp is within the nowEpsilon interval.
+ * @param {string} [options.emptyResult] - Returned when timestamp is undefined
  */
 export const getRelativeTimestamp = (timestamp, options) => {
     const opts = Object.assign({timestamp}, defaultOptions, options);

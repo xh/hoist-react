@@ -17,7 +17,7 @@ import './LeftRightChooser.scss';
  * A component for moving a list of items between two arbitrary groups. By convention, the left
  * group represents 'available' items and the right group represents 'selected' items.
  * A nested panel is also available to display a more in-depth description for any selected item.
- * See LeftRightChooserModel
+ * @see LeftRightChooserModel
  */
 @hoistComponent()
 class LeftRightChooser extends Component {

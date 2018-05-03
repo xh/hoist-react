@@ -14,7 +14,7 @@ import {BaseDropdownField} from './BaseDropdownField';
 /**
  * A Select Field
  *
- * See HoistField for properties additional to those documented below.
+ * @see HoistField for properties additional to those documented below.
  */
 @hoistComponent()
 export class SelectField extends BaseDropdownField {
@@ -22,9 +22,7 @@ export class SelectField extends BaseDropdownField {
     static propTypes = {
         /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
         options: PT.arrayOf(PT.oneOfType([PT.object, PT.string])).isRequired,
-        /** Text to display when control is empty */
-        placeholder: PT.string,
-        /** Optional custom itemRenderer, a function that receives (item, itemProps) */
+        /** Optional custom optionRenderer, a function that receives (option, optionProps) */
         itemRenderer: PT.func
     };
 
@@ -41,7 +39,7 @@ export class SelectField extends BaseDropdownField {
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: options,
             onItemSelect: this.onItemSelect,
-            itemRenderer: this.getItemRenderer(),
+            itemRenderer: this.getOptionRenderer(),
             filterable: false,
             item: button({
                 rightIcon: 'caret-down',

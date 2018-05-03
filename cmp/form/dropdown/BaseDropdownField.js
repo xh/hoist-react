@@ -55,16 +55,16 @@ export class BaseDropdownField extends HoistField {
         });
     }
 
-    getItemRenderer() {
-        return this.props.itemRenderer || this.defaultItemRenderer;
+    getOptionRenderer() {
+        return this.props.optionRenderer || this.defaultOptionRenderer;
     }
 
-    defaultItemRenderer(item, itemProps) {
+    defaultOptionRenderer(option, optionProps) {
         return menuItem({
-            key: item.value,
-            text: item.label,
-            onClick: itemProps.handleClick,
-            active: itemProps.modifiers.active
+            key: option.value,
+            text: option.label,
+            onClick: optionProps.handleClick,
+            active: optionProps.modifiers.active
         });
     }
 

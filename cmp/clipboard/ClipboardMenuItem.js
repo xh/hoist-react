@@ -21,9 +21,7 @@ class ClipboardMenuItem extends Component {
     static propTypes = {
         icon: PT.element,
         text: PT.string,
-        cls: PT.string,
-        successMessage: PT.string,
-        style: PT.object
+        successMessage: PT.string
     };
 
     static defaultOptions = {

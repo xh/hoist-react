@@ -33,7 +33,7 @@ export class LeftRightChooserModel {
      * Note that this will *not* affect the actual 'value' property, which will continue
      * to include unfiltered records.
      *
-     * See LeftRightChooserFilter - a component to easily control this field.
+     * @see LeftRightChooserFilter - a component to easily control this field.
      *
      * @param {function} fn
      */

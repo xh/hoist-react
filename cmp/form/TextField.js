@@ -14,7 +14,7 @@ import {HoistField} from './HoistField';
 /**
  * A Text Input Field
  *
- * See HoistField for properties additional to those documented below.
+ * @see HoistField for properties additional to those documented below.
  */
 @hoistComponent()
 export class TextField extends HoistField {
@@ -26,8 +26,6 @@ export class TextField extends HoistField {
         type: PT.oneOf(['text', 'password']),
         /** Text to display when control is empty */
         placeholder: PT.string,
-        /** Width of field, in pixels */
-        width: PT.number,
         /** Whether to allow browser spell check, defaults to false */
         spellCheck: PT.bool
     };

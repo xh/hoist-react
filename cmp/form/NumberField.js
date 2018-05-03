@@ -13,7 +13,7 @@ import {HoistField} from './HoistField';
 /**
  * A Number Input Field
  *
- * See HoistField for properties additional to those documented below.
+ * @see HoistField for properties additional to those documented below.
  */
 @hoistComponent()
 export class NumberField extends HoistField {
@@ -21,8 +21,6 @@ export class NumberField extends HoistField {
     static propTypes = {
         /** Text to display when control is empty */
         placeholder: PT.string,
-        /** Width of field, in pixels */
-        width: PT.number,
         /** minimum value */
         min: PT.number,
         /** maximum value */

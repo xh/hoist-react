@@ -14,7 +14,7 @@ import './Tabs.scss';
 
 /**
  * Display for a TabContainer.
- * See TabContainerModel
+ * @see TabContainerModel
  */
 @hoistComponent()
 export class TabContainer extends Component {

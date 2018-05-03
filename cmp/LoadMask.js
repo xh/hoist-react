@@ -25,7 +25,9 @@ export class LoadMask extends Component {
 
     static propTypes = {
         isDisplayed: PT.bool,
+        /** PromiseModel instance. If provided, loadMask will show while promise is pending */
         model: PT.object,
+        /** Dictates if this mask should be contained within its parent, if set to false will fill the viewport */
         inline: PT.bool
     };
     

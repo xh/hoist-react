@@ -60,9 +60,9 @@ export class Resizable extends Component {
     }
 
     get side()              {return this.props.side}
-    get isCollapsible()     {return this.props.isCollapsible}
+    get isCollapsible()     {return this.props.isCollapsible !== false}
     get isDraggable()       {return this.props.isDraggable}
-    get collapsedDisplay()  {return this.props.collapsedDisplay}
+    get collapsedDisplay()  {return this.props.collapsedDisplay !== false}
     get contentSize()       {return this.model.contentSize}
     get isOpen()            {return this.model.isOpen}
     get isVertical()        {return this.side === 'bottom' || this.side === 'top'}
@@ -79,12 +79,12 @@ export class Resizable extends Component {
             items.push(this.renderCollapsedChild());
         }
 
-        if (isCollapsible !== false) {
+        if (isCollapsible) {
             const collapser = this.getCollapser();
             items = (isContentFirst ? [...items, collapser] : [collapser, ...items]);
         }
 
-        if (isOpen && isDraggable !== false) {
+        if (isOpen && isDraggable) {
             items.push(this.getDragger());
         }
 

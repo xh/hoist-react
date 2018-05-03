@@ -14,7 +14,7 @@ import {HoistField} from './HoistField';
 /**
  * A Text Area Field
  *
- * See HoistField for properties additional to those documented below.
+ * @see HoistField for properties additional to those documented below.
  */
 @hoistComponent()
 export class TextAreaField extends HoistField {
@@ -24,8 +24,6 @@ export class TextAreaField extends HoistField {
         autoFocus: PT.bool,
         /** Text to display when control is empty */
         placeholder: PT.string,
-        /** Width of field, in pixels */
-        width: PT.number,
         /** Whether to allow browser spell check, defaults to true */
         spellCheck: PT.bool
     };

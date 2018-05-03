@@ -10,8 +10,6 @@ import {callout} from 'hoist/kit/blueprint';
 
 /**
  * Description panel for the LeftRightChooser.
- *
- * This is an implementation class private to Hoist
  * @private
  */
 @hoistComponent()
