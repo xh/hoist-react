@@ -39,9 +39,9 @@ export class HoistField extends Component {
 
     static propTypes = {
         value: PT.string,
-        /** handler to fire when value changes */
+        /** handler to fire when value changes, gets passed the new value */
         onChange: PT.func,
-        /** handler to fire when value is committed */
+        /** handler to fire when value is committed, gets passed the new value */
         onCommit: PT.func,
         /** model to bind to */
         model: PT.object,
