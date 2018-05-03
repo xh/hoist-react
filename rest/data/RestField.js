@@ -20,8 +20,6 @@ export class RestField extends Field {
     typeField
 
     /**
-     * Construct this object.
-     *
      * @param editable. [true | false | 'addOnly']
      * @param required. Is a non-null value required for additions and edits?
      * @param lookup (optional).  Array of suggested values

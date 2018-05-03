@@ -20,9 +20,6 @@ export class RestStore extends UrlStore {
 
     _lookupsLoaded = false;
 
-    /**
-     * Construct this object.
-     */
     constructor({dataRoot = 'data', ...rest}) {
         super({dataRoot, ...rest});
     }

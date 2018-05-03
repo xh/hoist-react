@@ -43,8 +43,6 @@ export class RestGridModel {
     get selection() {return this.gridModel.selection}
 
     /**
-     * Construct this Object.
-     *
      * @param actionEnabled, map of action (e.g. 'add'/'edit'/'delete') to boolean  See default prop
      * @param actionWarning, map of action (e.g. 'add'/'edit'/'delete') to string.  See default prop.
      * @param unit, string describing the name records in this grid
