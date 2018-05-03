@@ -85,6 +85,7 @@ export class RestControl extends Component {
             model,
             field: 'value',
             options,
+            requireSelection: true,
             disabled: !model.isEditable
         });
     }
