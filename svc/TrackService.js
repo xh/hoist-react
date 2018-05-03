@@ -10,8 +10,28 @@ import {stripTags} from 'hoist/utils/HtmlUtils';
 
 export class TrackService extends BaseService {
 
+    /**
+     * Primary service for tracking any activity that an application's admins want to track.
+     * Activities are presented to admins in the Admin App's Client Activity > Activity grid.
+     * Client metadata is set automatically by the server's parsing of request headers.
+     *
+     * @param {(Object|string)} options - if a string, it will become the message value.
+     * @param {string} options.msg - Short description of the activity being tracked.
+     *      Required if options is an object.
+     *      Can be passed as `message` for backwards compatibility.
+     * @param {string} [options.category] - app-supplied category.
+     * @param {(Object|Array)} [options.data] - app-supplied data collection.
+     * @param {number} [options.elapsed] - time in milliseconds some activity took.
+     * @param {string} [options.severity] - importance flag, such as: OK|WARN|EMERGENCY
+     *      (errors should be tracked by the ErrorTrackingService, not sent in this TrackService).
+     */
     track(options) {
-        const params = {msg: stripTags(typeof options === 'string' ? options : options.msg)};
+        let msg = options;
+        if (typeof msg !== 'string') {
+            msg = options.msg !== undefined ? options.msg : options.message;
+        }
+
+        const params = {msg: stripTags(msg)};
         try {
             if (options.category)               params.category = options.category;
             if (options.data)                   params.data = JSON.stringify(options.data);
@@ -23,15 +43,8 @@ export class TrackService extends BaseService {
                     .filter(it => it != null)
                     .join(' | ');
 
-            const exception = options.exception;
-            if (exception) {
-                const exceptionMsg = exception.msg || exception.message || 'Unknown exception';
-                params.msg += ' | Error: ' + stripTags(exceptionMsg);
-                if (!params.severity) params.severity = 'ERROR';
-                console.error(consoleMsg, exception);
-            } else {
-                console.log(consoleMsg);
-            }
+            console.log(consoleMsg);
+
             XH.fetchJson({
                 url: 'hoistImpl/track',
                 params: params
