@@ -20,7 +20,7 @@ export class GridColumnChooserModel {
 
     constructor({parent=null}) {
         this.parent = parent;
-        autorun( () =>{this.syncChooserData()});
+        autorun(() =>{this.syncChooserData()});
     }
 
 
@@ -29,7 +29,7 @@ export class GridColumnChooserModel {
             model = this.leftRightChooserModel,
             {leftModel} = model,
             hidden = leftModel.store.allRecords.map(it=>it.value);
-        grid.hideColumns(hidden)
+        grid.hideColumns(hidden);
     }
 
 
@@ -43,7 +43,7 @@ export class GridColumnChooserModel {
         const data = cols.map(it=> {
             return {
                 value: it.field,
-                text: it.text ,
+                text: it.text,
                 description: it.description,
                 locked: it.locked,
                 group: it.chooserGroup,

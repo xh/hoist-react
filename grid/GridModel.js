@@ -126,13 +126,11 @@ export class GridModel {
     hideColumns(colNames) {
         const cols = this.columns;
         cols.forEach(it =>{
-            it.hide = colNames.includes(it.field)
+            it.hide = colNames.includes(it.field);
         });
 
         this.columns = [...cols];
     }
-
-
 
 
     //-----------------------
