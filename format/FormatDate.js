@@ -22,9 +22,9 @@ const INVALID_DATE = moment(null).format();
  * Render dates and times with specified format
  *
  * @param {*} v - a date value to format, can be any value MomentJs can parse.
- *      @see {@link https://momentjs.com/docs/#/parsing/ for more info}
+ *      @see https://momentjs.com/docs/#/parsing/ for more info
  *
- * @param {Object|string} [opts] - a MomentJs format string or an options object.
+ * @param {(Object|string)} [opts] - a MomentJs format string or an options object.
  * @param {string} [opts.fmt] - a MomentJs format string.
  * @param {function} [opts.tipFn] - use to place formatted date in span with title property set to returned string.
  *      Function will be passed the originalValue param
@@ -68,8 +68,8 @@ export function fmtTime(v, opts = {}) {
 /**
  * Render dates formatted based on distance in time from current day
  *
- * @param {*} v - a date value to format, can be any value MomentJs can parse.
- *      @see {@link https://momentjs.com/docs/#/parsing/ for more info}
+ * @param {*} [v] - a date value to format, can be any value MomentJs can parse.
+ *      @see https://momentjs.com/docs/#/parsing/ for more info.
  *
  * @param {Object} [opts] - an options object, may include:
  * @param {string} [opts.sameDayFmt] - a MomentJs format string for dates matching current day, defaults to 'hh:mma'.
