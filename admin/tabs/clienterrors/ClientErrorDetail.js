@@ -48,8 +48,8 @@ class ClientErrorDetail extends Component {
             jsonField({
                 value: rec.error,
                 disabled: true,
-                lineWrapping: true,
-                height: 450
+                height: 450,
+                editorProps: {lineWrapping: true}
             }),
             toolbar(
                 filler(),

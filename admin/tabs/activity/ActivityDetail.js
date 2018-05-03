@@ -50,8 +50,8 @@ class ActivityDetail extends Component {
                 omit: !rec.data,
                 value: rec.data,
                 disabled: true,
-                lineWrapping: true,
-                height: 100
+                height: 100,
+                editorProps: {lineWrapping: true}
             }),
             toolbar(
                 filler(),

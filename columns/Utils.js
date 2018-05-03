@@ -4,6 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+import {Component} from 'react';
 import {castArray, defaults, startCase} from 'lodash';
 
 const globalVals = {
@@ -53,6 +54,16 @@ export function fileColFactory(fileVals = {}) {
                 delete colProps.fixedWidth;
             }
 
+            if (colProps.elementRenderer) {
+                const {elementRenderer} = colProps;
+                colProps.cellRendererFramework = (
+                    class extends Component {
+                        render() {return elementRenderer(this.props)}
+                        refresh() {return false}
+                    }
+                );
+                delete colProps.elementRenderer;
+            }
 
             colProps.text = colProps.text || startCase(colProps.field);
 
