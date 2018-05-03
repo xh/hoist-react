@@ -9,8 +9,6 @@ import {action, observable} from 'hoist/mobx';
 import {StoreSelectionModel} from 'hoist/data';
 import {StoreContextMenu} from 'hoist/cmp';
 import {castArray, find, isString, orderBy} from 'lodash';
-import {GridSelectionModel} from './GridSelectionModel';
-import {GridContextMenu} from './GridContextMenu';
 import {GridColumnChooserModel} from './GridColumnChooserModel';
 
 /**
