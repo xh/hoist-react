@@ -21,7 +21,7 @@ import './PanelHeader.scss';
 @hoistComponent()
 class PanelHeader extends Component {
     render() {
-        const {title, icon, children} = this.props;
+        const {title, icon, headerItems = []} = this.props;
 
         if (!title && !icon) return null;
 
@@ -36,7 +36,7 @@ class PanelHeader extends Component {
                             flex: 1,
                             item: title
                         }),
-                        children
+                        ...headerItems
                     ]
                 }) : null
             ]

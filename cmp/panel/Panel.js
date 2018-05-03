@@ -5,7 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {isObject} from 'lodash';
 import {elemFactory, hoistComponent} from 'hoist/core';
 import {vframe} from 'hoist/layout';
 import {panelHeader} from './impl/PanelHeader';
@@ -22,15 +21,15 @@ import {panelHeader} from './impl/PanelHeader';
 @hoistComponent()
 export class Panel extends Component {
     render() {
-        const {className, topToolbar, bottomToolbar, title, icon, children, ...conf} = this.props,
-            headerConfig = isObject(title) ? title : {title, icon},
+        const { className, topToolbar, bottomToolbar,
+                title, icon, headerItems, children, ...conf } = this.props,
             baseCls = 'xh-panel';
 
         return vframe({
             cls: className ? `${baseCls} ${className}` : baseCls,
             ...conf,
             items: [
-                panelHeader({...headerConfig}),
+                panelHeader({title, icon, headerItems}),
                 topToolbar ? topToolbar : null,
                 ...children,
                 bottomToolbar ? bottomToolbar : null
