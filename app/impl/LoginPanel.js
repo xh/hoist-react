@@ -7,9 +7,9 @@
 
 import {Component} from 'react';
 import {XH, elemFactory, hoistComponent} from 'hoist/core';
-import {vbox, filler, viewport, div} from 'hoist/layout';
+import {vspacer, filler, viewport} from 'hoist/layout';
 import {button, text} from 'hoist/kit/blueprint';
-import {textField, toolbar} from 'hoist/cmp';
+import {panel, textField, toolbar} from 'hoist/cmp';
 import {observable, computed, setter} from 'hoist/mobx';
 import {Icon} from 'hoist/icon';
 
@@ -34,15 +34,12 @@ export class LoginPanel extends Component {
         return viewport({
             alignItems: 'center',
             justifyContent: 'center',
-            item: vbox({
+            item: panel({
                 cls: 'xh-login',
-                justifyContent: 'right',
                 width: 300,
+                title: `Welcome to ${XH.appName}`,
                 items: [
-                    div({
-                        cls: 'xh-login__title',
-                        item: `Welcome to ${XH.appName}`
-                    }),
+                    vspacer(10),
                     textField({
                         model: this,
                         field: 'username',
@@ -56,21 +53,22 @@ export class LoginPanel extends Component {
                         type: 'password'
                     }),
                     text({
+                        omit: !this.warning,
                         item: this.warning,
                         ellipsize: true,
                         cls: 'xh-login__warning'
-                    }),
-                    toolbar(
-                        filler(),
-                        button({
-                            text: 'Login',
-                            intent: 'primary',
-                            icon: Icon.login(),
-                            disabled: !this.isValid,
-                            onClick: this.onSubmit
-                        })
-                    )
-                ]
+                    })
+                ],
+                bottomToolbar: toolbar(
+                    filler(),
+                    button({
+                        text: 'Login',
+                        intent: 'primary',
+                        icon: Icon.login(),
+                        disabled: !this.isValid,
+                        onClick: this.onSubmit
+                    })
+                )
             })
         });
     }
