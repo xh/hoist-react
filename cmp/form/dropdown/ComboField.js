@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {PropTypes as PT} from 'prop-types';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {Classes, suggest} from 'hoist/kit/blueprint';
 
