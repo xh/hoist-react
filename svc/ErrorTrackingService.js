@@ -18,9 +18,8 @@ export class ErrorTrackingService extends BaseService {
      * App version is POSTed to reflect the version the client is running (vs the version on the server)
      * @param options - Map with message & exception - both optional, although at least one should be provided!
      */
-    async submitAsync({message, msg, exception}) {
+    async submitAsync({message, exception}) {
         const error = exception ? stringifyErrorSafely(exception) : null;
-        message = message || msg;
 
         await XH.fetchJson({
             url: 'hoistImpl/submitError',
