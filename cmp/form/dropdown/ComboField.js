@@ -6,6 +6,7 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
+import {isObject} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {Classes, suggest} from 'hoist/kit/blueprint';
 
