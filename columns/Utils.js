@@ -13,7 +13,7 @@ const globalVals = {};
  * Creates a factory for use within a Column definition file to create multiple column factories
  * with a shared set of defaults.
  *
- * @param {Object} fileVals - defaults to apply.
+ * @param {Object} [fileVals] - defaults to apply.
  * @return {function} - function to create a specific column factory.
  */
 export function fileColFactory(fileVals = {}) {
