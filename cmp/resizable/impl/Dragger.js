@@ -11,12 +11,16 @@ import {elemFactory, hoistComponent} from 'hoist/core';
 import {div} from 'hoist/layout';
 import './Dragger.scss';
 
+/** This is an implementation class private to Hoist
+ * @private
+ */
 @hoistComponent()
 export class Dragger extends Component {
 
     resizeState = null;
 
     static propTypes = {
+        /** Position of resize border in relation to resizable component */
         side: PT.oneOf(['top', 'right', 'bottom', 'left']).isRequired,
         onResizeStart: PT.func,
         onResize: PT.func,

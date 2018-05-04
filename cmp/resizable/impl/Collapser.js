@@ -14,10 +14,14 @@ import {hbox, vbox} from 'hoist/layout';
 
 import './Collapser.scss';
 
+/** This is an implementation class private to Hoist
+ * @private
+ */
 @hoistComponent()
 export class Collapser extends Component {
 
     static propTypes = {
+        /** Position of collapse border in relation to resizable component */
         side: PT.oneOf(['top', 'right', 'bottom', 'left']).isRequired,
         isOpen: PT.bool,
         onClick: PT.func
