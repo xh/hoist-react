@@ -11,11 +11,8 @@ import './PanelHeader.scss';
 
 
 /**
- * A Panel container
- *
- * This component is designed to contain a box container (body), top and bottom toolbars, and
- * a title bar.
- *
+ * A standardized header for a Panel component
+ * @private
  */
 
 @hoistComponent()
@@ -23,7 +20,7 @@ class PanelHeader extends Component {
     render() {
         const {title, icon, headerItems = []} = this.props;
 
-        if (!title && !icon) return null;
+        if (!title && !icon && !headerItems.length) return null;
 
         return hbox({
             cls: 'xh-panel-header',
@@ -34,6 +31,7 @@ class PanelHeader extends Component {
                     items: [
                         box({
                             flex: 1,
+                            cls: 'xh-header-title',
                             item: title
                         }),
                         ...headerItems

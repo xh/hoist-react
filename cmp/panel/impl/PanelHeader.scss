@@ -3,8 +3,10 @@
   padding: var(--xh-title-pad-px);
   color: var(--xh-title-text-color);
   background-color: var(--xh-title-bg);
-  font-size: var(--xh-title-font-size-px);
-  height: 36px;  // due to button in chart panel header
+  height: var(--xh-title-height-px);
+  .xh-header-title {
+    font-size: var(--xh-title-font-size-px);
+  }
 
   & > .svg-inline--fa {
     margin: 0 5px 0 0;
