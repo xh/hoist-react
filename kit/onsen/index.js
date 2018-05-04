@@ -9,6 +9,9 @@ import 'onsenui/css/onsenui.css';
 import 'onsenui/css/onsen-css-components.css';
 import './styles.scss';
 
+import ons from 'onsenui';
+ons.disableAutoStyling();
+
 import {elemFactory} from 'hoist/core';
 import {
     List,
