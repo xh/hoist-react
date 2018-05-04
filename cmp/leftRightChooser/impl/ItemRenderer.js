@@ -10,6 +10,7 @@ import {Icon} from 'hoist/icon';
 
 /**
  * Render items in the LeftRightChooser.
+ * @private
  */
 export class ItemRenderer extends Component {
 

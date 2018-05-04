@@ -215,7 +215,7 @@ export function fmtPercent(v, opts = {}) {
 //---------------
 
 function signGlyph(v) {
-    if (isFinite(v)) return '';
+    if (!isFinite(v)) return '';
     return v === 0 ? fmtSpan(UP_TICK, 'transparent-color') :  v > 0 ? UP_TICK : DOWN_TICK;
 }
 

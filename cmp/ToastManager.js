@@ -22,19 +22,21 @@ export const ToastManager = {
      * Show a 'Toast' message.
      *
      * @param {string} message - the message to show in the toast.
-     * @param {element} icon - icon to be displayed
-     * @param {number} timeout - time in milliseconds to display the message.
-     * @param {string} intent - the Blueprint intent.
-     * @param {string} position - position in viewport to display. See Blueprint Position enum. 
+     * @param {element} [icon] - icon to be displayed
+     * @param {number} [timeout] - time in milliseconds to display the message.
+     * @param {string} [intent] - the Blueprint intent.
+     * @param {string} [position] - position in viewport to display. See Blueprint Position enum.
      * @returns {string} - the unique key of the toast shown.
      */
     show({
         message,
+        msg,
         icon = Icon.check(),
         timeout = 3 * SECONDS,
         intent = 'success',
         position = Position.BOTTOM_RIGHT
     }) {
+        message = message || msg;
         return this.getToaster(position).show({
             message,
             icon: this.getStyledIcon(icon),
@@ -50,7 +52,7 @@ export const ToastManager = {
 
      * If non-default values are needed for a toaster, a different method must be used.
      *
-     * @param {string} position - see Blueprintjs Position enum for allowed values. Optional.
+     * @param {string} [position] - see Blueprintjs Position enum for allowed values.
      */
     getToaster(position = Position.BOTTOM_RIGHT) {
         const toasters = this._toasters;

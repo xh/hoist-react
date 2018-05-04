@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {PropTypes as PT} from 'prop-types';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {inputGroup} from 'hoist/kit/blueprint';
 
@@ -13,17 +14,22 @@ import {HoistField} from './HoistField';
 /**
  * A Text Input Field
  *
- * @prop rest, see general properties for HoistField
- *
- * @prop {boolean} [autoFocus=false]
- * @prop {string } [type] - 'text' or 'password'
- * @prop {string} [placeholder] - text to display when control is empty
- * @prop {number} [width] - width of field, in pixels
- * @prop {boolean} [spellCheck=false]
+ * @see HoistField for properties additional to those documented below.
  */
 @hoistComponent()
 export class TextField extends HoistField {
-    
+
+    static propTypes = {
+        /** Whether field should receive focus on render */
+        autoFocus: PT.bool,
+        /** Type of input desired */
+        type: PT.oneOf(['text', 'password']),
+        /** Text to display when control is empty */
+        placeholder: PT.string,
+        /** Whether to allow browser spell check, defaults to false */
+        spellCheck: PT.bool
+    };
+
     delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus'];
 
     render() {

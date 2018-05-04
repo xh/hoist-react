@@ -6,16 +6,25 @@
  */
 
 import {Component} from 'react';
+import {PropTypes as PT} from 'prop-types';
+import {defaultsDeep} from 'lodash';
 import {clipboardButton} from './ClipboardButton';
 import {elemFactory} from 'hoist/core';
 import {Icon} from 'hoist/icon';
 
 /**
  * Convenience wrapper for a ClipboardButton to be rendered as a Blueprint menu item.
+ * Accepts props documented below as well as any supported by Blueprint's Button or ClipboardButton cmp.
  */
 class ClipboardMenuItem extends Component {
 
-    static defaultProps = {
+    static propTypes = {
+        icon: PT.element,
+        text: PT.string,
+        successMessage: PT.string
+    };
+
+    static defaultOptions = {
         icon: Icon.clipboard(),
         text: 'Copy',
         cls: 'pt-minimal',
@@ -28,7 +37,8 @@ class ClipboardMenuItem extends Component {
     }
 
     render() {
-        return clipboardButton(this.props);
+        const btnProps = defaultsDeep(this.props, ClipboardMenuItem.defaultOptions);
+        return clipboardButton(btnProps);
     }
 
 }

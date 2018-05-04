@@ -13,6 +13,7 @@ import {Icon} from 'hoist/icon';
 
 /**
  * A Toolbar for the LeftRightChooser.
+ * @private
  */
 @hoistComponent()
 class ChooserToolbar extends Component {

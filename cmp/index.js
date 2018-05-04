@@ -11,6 +11,7 @@ export * from './feedback';
 export * from './form';
 export * from './leftRightChooser';
 export * from './message';
+export * from './panel';
 export * from './tab';
 export * from './toolbar';
 export * from './resizable';

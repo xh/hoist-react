@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {PropTypes as PT} from 'prop-types';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {numericInput} from 'hoist/kit/blueprint';
 import {HoistField} from './HoistField';
@@ -12,15 +13,19 @@ import {HoistField} from './HoistField';
 /**
  * A Number Input Field
  *
- * @prop rest, see properties for HoistField
- *
- * @prop placeholder, text to display when control is empty
- * @prop width, width of field, in pixels
- * @prop min, minimum value
- * @prop max, maximum value
+ * @see HoistField for properties additional to those documented below.
  */
 @hoistComponent()
 export class NumberField extends HoistField {
+
+    static propTypes = {
+        /** Text to display when control is empty */
+        placeholder: PT.string,
+        /** minimum value */
+        min: PT.number,
+        /** maximum value */
+        max: PT.number
+    };
     
     delegateProps = ['className', 'min', 'max', 'placeholder'];
 
