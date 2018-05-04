@@ -6,12 +6,13 @@
  */
 
 import 'onsenui/css/onsenui.css';
-import 'onsenui/css/dark-onsen-css-components.css';
+import 'onsenui/css/onsen-css-components.css';
 import './styles.scss';
 
 import {elemFactory} from 'hoist/core';
 import {
     List,
+    ListHeader,
     ListItem,
     Page,
     Toolbar,
@@ -20,6 +21,7 @@ import {
 
 export const
     list = elemFactory(List),
+    listHeader = elemFactory(ListHeader),
     listItem = elemFactory(ListItem),
     page = elemFactory(Page),
     toolbar = elemFactory(Toolbar),

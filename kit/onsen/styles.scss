@@ -1,1 +1,13 @@
-// Nothing to see here yet
+.list.xh-grid {
+  .list-header {
+    padding-right: 20px;
+    position: fixed;
+    width: 100%;
+    z-index: 1;
+    border-bottom: 1px solid #CCC;
+  }
+
+  ons-list-item:first-of-type {
+    margin-top: 26px;
+  }
+}
