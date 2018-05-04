@@ -26,7 +26,7 @@ import './JsonField.css';
 /**
  * A JSON Editor
  *
- * See HoistField for properties additional to those documented below.
+ * @see HoistField for properties additional to those documented below.
  */
 @hoistComponent()
 export class JsonField extends HoistField {
@@ -38,8 +38,8 @@ export class JsonField extends HoistField {
         height: PT.number,
         /**
          * Configuration object with any properties supported by the CodeMirror api.
-         * See: https://codemirror.net/doc/manual.html#api_configuration for details.
-         * */
+         * @see https://codemirror.net/doc/manual.html#api_configuration for details.
+         */
         editorProps: PT.object
     };
 

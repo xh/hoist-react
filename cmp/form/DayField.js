@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-
+import {PropTypes as PT} from 'prop-types';
 import moment from 'moment';
 import {fmtDate} from 'hoist/format';
 import {hoistComponent, elemFactory} from 'hoist/core';
@@ -13,21 +13,24 @@ import {dateInput} from 'hoist/kit/blueprint';
 
 import {HoistField} from './HoistField';
 
-
 /**
  * A Calendar Control for choosing a Day.
  *
- * @prop rest, see properties for HoistField
- *
- * @prop width, width of field
- * @prop popoverPosition, 'top' | 'bottom' |  'auto' (auto determined),
+ * @see HoistField for properties additional to those documented below.
  */
 @hoistComponent()
 export class DayField extends HoistField {
 
-    static defaultProps = {
-        popoverPosition: 'auto'
-    }
+    static propTypes = {
+        /** Position for calendar popover. @see http://blueprintjs.com/docs/v2/#core/components/popover.position */
+        popoverPosition: PT.oneOf([
+            'top-left', 'top', 'top-right',
+            'right-top', 'right', 'right-bottom',
+            'bottom-right', 'bottom', 'bottom-left',
+            'left-bottom', 'left', 'left-top',
+            'auto'
+        ])
+    };
 
     delegateProps = ['className', 'disabled']
 
@@ -48,7 +51,7 @@ export class DayField extends HoistField {
             popoverProps: {
                 minimal: true,
                 usePortal: true,
-                position: popoverPosition,
+                position: popoverPosition || 'auto',
                 popoverWillClose: this.onPopoverWillClose
             },
             dayPickerProps: {fixedWeeks: true},
