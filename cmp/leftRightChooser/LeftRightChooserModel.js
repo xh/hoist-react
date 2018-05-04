@@ -76,6 +76,7 @@ export class LeftRightChooserModel {
      */
     constructor({
         data = [],
+        ungroupedName = 'Ungrouped',
         leftTitle = 'Available',
         leftGroupingEnabled = true,
         leftSortBy = [],
@@ -83,9 +84,9 @@ export class LeftRightChooserModel {
         rightGroupingEnabled = true,
         rightSortBy = []
     }) {
+        this._ungroupedName = ungroupedName;
         this._leftGroupingEnabled = leftGroupingEnabled;
         this._rightGroupingEnabled = rightGroupingEnabled;
-
 
         const fields = ['text', 'value', 'description', 'group', 'side', 'locked', 'exclude'];
 
@@ -131,12 +132,10 @@ export class LeftRightChooserModel {
     //------------------------
 
     preprocessData(data) {
-        const ungroupedName = 'Ungrouped';
-
         return data
             .filter(rec => !rec.exclude)
             .map((raw, idx) => {
-                raw.group = raw.group || ungroupedName;
+                raw.group = raw.group || this._ungroupedName;
                 raw.side = raw.side || 'left';
                 raw.id = raw.id != null ? raw.id : idx;
                 return raw;
