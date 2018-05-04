@@ -5,20 +5,21 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {PropTypes as PT} from 'prop-types';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {div} from 'hoist/layout';
 
 import {HoistField} from './HoistField';
+
 /**
  * A simple label for a form.
- *
- * @prop children, text to display
- * @prop style
- * @prop className
- * @prop width, width of field, in pixels
  */
 @hoistComponent()
 export class Label extends HoistField {
+
+    static propTypes = {
+        children: PT.node
+    };
 
     delegateProps = ['className'];
     

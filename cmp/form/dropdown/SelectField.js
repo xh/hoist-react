@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {PropTypes as PT} from 'prop-types';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {Classes, select, button} from 'hoist/kit/blueprint';
 
@@ -13,14 +14,17 @@ import {BaseDropdownField} from './BaseDropdownField';
 /**
  * A Select Field
  *
- * @prop rest, see properties for HoistField
- *
- * @prop options, collection of form [{value: object, label: string}, ...] or [val, val, ...]
- * @prop placeholder, text to display when control is empty
- * @prop itemRenderer, optional custom itemRenderer, a function that receives (item, itemProps)
+ * @see HoistField for properties additional to those documented below.
  */
 @hoistComponent()
 export class SelectField extends BaseDropdownField {
+
+    static propTypes = {
+        /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
+        options: PT.arrayOf(PT.oneOfType([PT.object, PT.string])).isRequired,
+        /** Optional custom optionRenderer, a function that receives (option, optionProps) */
+        itemRenderer: PT.func
+    };
 
     delegateProps = ['className', 'disabled'];
 
@@ -35,7 +39,7 @@ export class SelectField extends BaseDropdownField {
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: options,
             onItemSelect: this.onItemSelect,
-            itemRenderer: this.getItemRenderer(),
+            itemRenderer: this.getOptionRenderer(),
             filterable: false,
             item: button({
                 rightIcon: 'caret-down',
