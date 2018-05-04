@@ -29,7 +29,7 @@ export class GridModel {
     @observable.ref sortBy = [];
     @observable groupBy = null;
 
-    static defaultContextMenu = (params, model) => {
+    defaultContextMenu = () => {
         return new StoreContextMenu([
             'copy',
             'copyWithHeaders',
@@ -39,9 +39,9 @@ export class GridModel {
             '-',
             {
                 text: 'Column Chooser...',
-                hidden: !model.columnChooserModel,
+                hidden: !this.columnChooserModel,
                 action: () => {
-                    model.columnChooserModel.setIsOpen(true);
+                    this.columnChooserModel.open();
                 }
             }
         ]);
@@ -64,7 +64,7 @@ export class GridModel {
         sortBy = [],
         groupBy = null,
         enableColumnChooser = false,
-        contextMenuFn = GridModel.defaultContextMenu
+        contextMenuFn = () => this.defaultContextMenu()
     }) {
         this.store = store;
         this.columns = columns;
@@ -72,7 +72,7 @@ export class GridModel {
 
         this.selection = selection || new StoreSelectionModel({store: this.store});
         if (enableColumnChooser) {
-            this.columnChooserModel = new GridColumnChooserModel({parent: this});
+            this.columnChooserModel = new GridColumnChooserModel(this);
         }
 
         this.setGroupBy(groupBy);
@@ -133,16 +133,14 @@ export class GridModel {
     }
 
 
-    @action
-    hideColumns(colNames) {
-        const cols = this.columns;
-        cols.forEach(it =>{
-            it.hide = colNames.includes(it.field);
-        });
-
-        this.columns = [...cols];
+    cloneColumns() {
+        return [...this.columns];
     }
 
+    @action
+    setColumns(cols) {
+        this.columns = [...cols];
+    }
 
     //-----------------------
     // Implementation

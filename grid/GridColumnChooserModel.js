@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {autorun, observable, setter} from 'hoist/mobx';
+import {action, observable} from 'hoist/mobx';
 import {LeftRightChooserModel} from 'hoist/cmp/leftRightChooser/LeftRightChooserModel';
 
 /**
@@ -16,22 +16,43 @@ export class GridColumnChooserModel {
 
     leftRightChooserModel = null;
 
-    @observable @setter isOpen = false;
+    @observable isOpen = false;
 
-    constructor({parent=null}) {
+    constructor(parent) {
         this.parent = parent;
-        autorun(() =>{this.syncChooserData()});
+        this.leftRightChooserModel = new LeftRightChooserModel({
+            leftTitle: 'Available Columns',
+            rightTitle: 'Visible Columns'
+        });
     }
 
+    @action
+    open() {
+        this.syncChooserData();
+        this.isOpen = true;
+    }
+
+    @action
+    close() {
+        this.isOpen = false;
+    }
 
     commit() {
         const grid = this.parent,
             model = this.leftRightChooserModel,
-            {leftModel} = model,
-            hidden = leftModel.store.allRecords.map(it=>it.value);
-        grid.hideColumns(hidden);
-    }
+            {leftValues, rightValues} = model;
 
+        const cols = grid.cloneColumns();
+        cols.forEach(it => {
+            if (leftValues.includes(it.field)) {
+                it.hide = true;
+            } else if (rightValues.includes(it.field)) {
+                it.hide = false;
+            }
+        });
+
+        grid.setColumns(cols);
+    }
 
     //---------
     // implementation
@@ -52,8 +73,6 @@ export class GridColumnChooserModel {
             };
         });
 
-        this.leftRightChooserModel = new LeftRightChooserModel({
-            data: data
-        });
+        this.leftRightChooserModel.setData(data);
     }
 }
