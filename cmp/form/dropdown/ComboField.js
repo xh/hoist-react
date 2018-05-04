@@ -69,7 +69,6 @@ export class ComboField extends BaseDropdownField {
 
         const gate = requireSelection ? options.some((it) => it == val || it.value == val) : true;
         if (ev.key === 'Enter' && gate) {
-            debugger;
             this.doCommit(); // here
         }
     }
