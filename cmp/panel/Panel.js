@@ -12,45 +12,41 @@ import {panelHeader} from './impl/PanelHeader';
 
 
 /**
- * A Panel container
- *
- * This component is designed to contain a box container (body), top and bottom toolbars, and
- * a title bar.
- *
+ * A Panel container builds on the lower-level layout components to offer a header element
+ * w/standardized styling, title, and Icon as well as support for top and bottom toolbars.
  */
-
 @hoistComponent()
 export class Panel extends Component {
 
     static propTypes = {
-        /** A title text added to the panel's header */
+        /** A title text added to the panel's header. */
         title: PT.string,
-        /** An icon placed at the left-side of the panel's header */
+        /** An icon placed at the left-side of the panel's header. */
         icon: PT.element,
-        /** Items to be added to the right-side of the panel's header */
+        /** Items to be added to the right-side of the panel's header. */
         headerItems: PT.node,
-        /** A toolbar to be docked at the top of the panel */
+        /** A toolbar to be docked at the top of the panel. */
         topToolbar: PT.element,
-        /** A toolbar to be docked at the bottom of the panel */
+        /** A toolbar to be docked at the bottom of the panel. */
         bottomToolbar: PT.element
     };
 
+    baseCls = 'xh-panel'
+
     render() {
-        const { className, topToolbar, bottomToolbar,
-                title, icon, headerItems, children, ...rest } = this.props,
-            baseCls = 'xh-panel';
+        const {className, topToolbar, bottomToolbar,
+            title, icon, headerItems, children, ...rest} = this.props;
 
         return vframe({
-            cls: className ? `${baseCls} ${className}` : baseCls,
+            cls: className ? `${this.baseCls} ${className}` : this.baseCls,
             ...rest,
             items: [
                 panelHeader({title, icon, headerItems}),
-                topToolbar ? topToolbar : null,
+                topToolbar || null,
                 ...children,
-                bottomToolbar ? bottomToolbar : null
+                bottomToolbar || null
             ]
         });
     }
 }
-
 export const panel = elemFactory(Panel);

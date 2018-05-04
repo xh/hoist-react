@@ -158,7 +158,8 @@ body {
   --xh-title-text-color: var(--title-text-color, var(--xh-blue-gray-light));
   --xh-title-font-size: var(--title-font-size, var(--xh-font-size-large));
   --xh-title-font-size-px: calc(var(--xh-title-font-size) * 1px);
-  --xh-title-height-px: var(--title-height-px, 36);
+  --xh-title-height: var(--title-height, 36);
+  --xh-title-height-px: calc(var(--xh-title-height) * 1px);
   --xh-title-pad: var(--title-pad, calc(var(--xh-pad) * 0.8));
   --xh-title-pad-px: calc(var(--xh-title-pad) * 1px);
 }

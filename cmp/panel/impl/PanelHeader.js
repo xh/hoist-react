@@ -7,6 +7,7 @@
 import {Component} from 'react';
 import {elemFactory, hoistComponent} from 'hoist/core';
 import {box, hbox} from 'hoist/layout';
+
 import './PanelHeader.scss';
 
 
@@ -14,7 +15,6 @@ import './PanelHeader.scss';
  * A standardized header for a Panel component
  * @private
  */
-
 @hoistComponent()
 class PanelHeader extends Component {
     render() {
@@ -25,21 +25,15 @@ class PanelHeader extends Component {
         return hbox({
             cls: 'xh-panel-header',
             items: [
-                icon ? icon : null,
+                icon || null,
                 title ? box({
+                    cls: 'xh-panel-header-title',
                     flex: 1,
-                    items: [
-                        box({
-                            flex: 1,
-                            cls: 'xh-header-title',
-                            item: title
-                        }),
-                        ...headerItems
-                    ]
-                }) : null
+                    item: title
+                }) : null,
+                ...headerItems
             ]
         });
     }
 }
-
 export const panelHeader = elemFactory(PanelHeader);

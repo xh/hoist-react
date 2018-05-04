@@ -7,9 +7,9 @@
 
 import {Component} from 'react';
 import {XH, elemFactory, hoistComponent} from 'hoist/core';
-import {vbox, filler, viewport, div} from 'hoist/layout';
+import {vframe, filler, viewport} from 'hoist/layout';
 import {button, text} from 'hoist/kit/blueprint';
-import {textField, toolbar} from 'hoist/cmp';
+import {panel, textField, toolbar} from 'hoist/cmp';
 import {observable, computed, setter} from 'hoist/mobx';
 import {Icon} from 'hoist/icon';
 
@@ -34,43 +34,42 @@ export class LoginPanel extends Component {
         return viewport({
             alignItems: 'center',
             justifyContent: 'center',
-            item: vbox({
+            item: panel({
                 cls: 'xh-login',
-                justifyContent: 'right',
                 width: 300,
-                items: [
-                    div({
-                        cls: 'xh-login__title',
-                        item: `Welcome to ${XH.appName}`
-                    }),
-                    textField({
-                        model: this,
-                        field: 'username',
-                        placeholder: 'Username...',
-                        autoFocus: true
-                    }),
-                    textField({
-                        model: this,
-                        field: 'password',
-                        placeholder: 'Password...',
-                        type: 'password'
-                    }),
-                    text({
-                        item: this.warning,
-                        ellipsize: true,
-                        cls: 'xh-login__warning'
-                    }),
-                    toolbar(
-                        filler(),
-                        button({
-                            text: 'Login',
-                            intent: 'primary',
-                            icon: Icon.login(),
-                            disabled: !this.isValid,
-                            onClick: this.onSubmit
+                title: `Welcome to ${XH.appName}`,
+                item: vframe({
+                    padding: 10,
+                    items: [
+                        textField({
+                            model: this,
+                            field: 'username',
+                            placeholder: 'Username...',
+                            autoFocus: true
+                        }),
+                        textField({
+                            model: this,
+                            field: 'password',
+                            placeholder: 'Password...',
+                            type: 'password'
+                        }),
+                        text({
+                            item: this.warning,
+                            ellipsize: true,
+                            cls: 'xh-login__warning'
                         })
-                    )
-                ]
+                    ]
+                }),
+                bottomToolbar: toolbar(
+                    filler(),
+                    button({
+                        text: 'Login',
+                        intent: 'primary',
+                        icon: Icon.login(),
+                        disabled: !this.isValid,
+                        onClick: this.onSubmit
+                    })
+                )
             })
         });
     }
