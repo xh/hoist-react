@@ -7,8 +7,9 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, hoistComponent} from 'hoist/core';
-import {vframe} from 'hoist/layout';
+import {vframe, vbox} from 'hoist/layout';
 import {panelHeader} from './impl/PanelHeader';
+import {castArray} from 'lodash';
 
 
 /**
@@ -31,19 +32,20 @@ export class Panel extends Component {
         bottomToolbar: PT.element
     };
 
-    baseCls = 'xh-panel'
+    baseCls = 'xh-panel';
 
     render() {
-        const {className, topToolbar, bottomToolbar,
-            title, icon, headerItems, children, ...rest} = this.props;
+        // Note: Padding is destructured here to be discarded because it breaks layout
+        const {className, topToolbar, bottomToolbar, title, icon, headerItems, padding, children, ...rest} = this.props,
+            wrapper = this.props.width || this.props.height ? vbox : vframe;
 
-        return vframe({
+        return wrapper({
             cls: className ? `${this.baseCls} ${className}` : this.baseCls,
             ...rest,
             items: [
                 panelHeader({title, icon, headerItems}),
                 topToolbar || null,
-                ...children,
+                ...(castArray(children)),
                 bottomToolbar || null
             ]
         });
