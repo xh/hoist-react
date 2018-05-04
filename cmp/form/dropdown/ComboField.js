@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {isObject, find} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {Classes, suggest} from 'hoist/kit/blueprint';
 
@@ -54,36 +55,44 @@ export class ComboField extends BaseDropdownField {
     }
 
     onChange = (ev) => {
-        // Can leave this alone?
-        // We have to allow the interval val to change
-        // How will this affect onChange callback handling?
-        // looks like an onChange will get fired on every key stroke which seems wrong.
-        // If the inputted value is not an acceptable external value why would we call the callback?
         this.noteValueChange(ev.target.value);
     }
 
     onKeyPress = (ev) => {
-        const props = this.props,
-            {options, requireSelection} = this.props,
+        const {options, requireSelection} = this.props,
             val = this.internalValue;
 
-        const gate = requireSelection ? options.some((it) => it == val || it.value == val) : true;
-        if (ev.key === 'Enter' && gate) {
-            this.doCommit(); // here
+        if (ev.key === 'Enter') {
+            if (requireSelection) {
+                this.matchInputToOption(options, val);
+            }
+            this.doCommit();
         }
     }
 
     onBlur = () => {
-        const props = this.props,
-            {options, requireSelection} = this.props,
+        const {options, requireSelection} = this.props,
             val = this.internalValue;
 
-        const gate = requireSelection ? options.some((it) => it == val || it.value == val) : true;
-        if (gate) {
-            this.doCommit();
+        if (requireSelection) {
+            this.matchInputToOption(options, val);
         }
 
+        this.doCommit();
         this.setHasFocus(false);
     }
+
+    matchInputToOption(options, val) {
+        options = this.normalizeOptions(options);
+
+        // if value does not match an available option, reset to previous value
+        const match = find(options, (it) => it.label.toLowerCase() == val.toLowerCase()) || this.externalValue,
+            newValue = isObject(match) ? match.value : match;
+
+        // doCommit does the toInternal/toExternal conversions for us but this is perhaps clearer and safer if that should change
+        this.setInternalValue(this.toInternal(newValue));
+    }
+
+
 }
 export const comboField = elemFactory(ComboField);
