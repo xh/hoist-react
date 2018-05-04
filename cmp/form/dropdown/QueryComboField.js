@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {isObject} from 'lodash';
 import {PropTypes as PT} from 'prop-types';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {observable, setter} from 'hoist/mobx';
@@ -83,9 +84,39 @@ export class QueryComboField extends BaseDropdownField {
     }
 
     onKeyPress = (ev) => {
+        const {requireSelection} = this.props,
+            value = this.internalValue;
+
         if (ev.key === 'Enter') {
+            if (requireSelection) {
+                this.matchInputToOption(this.options, value);
+            }
             this.doCommit();
         }
     }
+
+    onBlur = () => {
+        const {requireSelection} = this.props,
+            value = this.internalValue;
+
+        if (requireSelection) {
+            this.matchInputToOption(this.options, value);
+        }
+
+        this.doCommit();
+        this.setHasFocus(false);
+    }
+
+    matchInputToOption(options, value) {
+        options = this.normalizeOptions(options);
+
+        // if value does not match an available option, reset to previous value
+        const match = find(options, (it) => it.label.toLowerCase() == value.toLowerCase()) || this.externalValue,
+            newValue = isObject(match) ? match.value : match;
+
+        // doCommit does the toInternal/toExternal conversions for us but this is perhaps clearer and safer if that should change
+        this.setInternalValue(this.toInternal(newValue));
+    }
+
 }
 export const queryComboField = elemFactory(QueryComboField);
