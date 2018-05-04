@@ -81,6 +81,8 @@ export class RestControl extends Component {
 
         const options = [...lookup];
 
+        if (!field.required) options.unshift(null);
+
         return comboField({
             model,
             field: 'value',
