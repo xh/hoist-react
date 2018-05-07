@@ -5,8 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {isObject} from 'lodash';
 import {PropTypes as PT} from 'prop-types';
+import {find} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {observable, setter} from 'hoist/mobx';
 import {Classes, suggest} from 'hoist/kit/blueprint';
@@ -108,12 +108,10 @@ export class QueryComboField extends BaseDropdownField {
     matchInputToOption(options, value) {
         options = this.normalizeOptions(options);
 
-        // if value does not match an available option, reset to previous value
-        const match = find(options, (it) => it.label.toLowerCase() == value.toLowerCase()) || this.externalValue,
-            newValue = isObject(match) ? match.value : match;
+        const match = find(options, (it) => it.label.toLowerCase() == value.toLowerCase()),
+            newValue = match ? this.toInternal(match.value) : this.externalValue;
 
-        // doCommit does the toInternal/toExternal conversions for us but this is perhaps clearer and safer if that should change
-        this.setInternalValue(this.toInternal(newValue));
+        this.setInternalValue(newValue);
     }
 
 }

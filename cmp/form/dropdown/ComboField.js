@@ -6,7 +6,7 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
-import {isObject} from 'lodash';
+import {find} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {Classes, suggest} from 'hoist/kit/blueprint';
 
@@ -85,15 +85,13 @@ export class ComboField extends BaseDropdownField {
         this.setHasFocus(false);
     }
 
-    matchInputToOption(options, val) {
+    matchInputToOption(options, value) {
         options = this.normalizeOptions(options);
 
-        // if value does not match an available option, reset to previous value
-        const match = find(options, (it) => it.label.toLowerCase() == val.toLowerCase()) || this.externalValue,
-            newValue = isObject(match) ? match.value : match;
+        const match = find(options, (it) => it.label.toLowerCase() == value.toLowerCase()),
+            newValue = match ? this.toInternal(match.value) : this.externalValue;
 
-        // doCommit does the toInternal/toExternal conversions for us but this is perhaps clearer and safer if that should change
-        this.setInternalValue(this.toInternal(newValue));
+        this.setInternalValue(newValue);
     }
 
 
