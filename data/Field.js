@@ -19,12 +19,11 @@ export class Field {
 
     /**
      * @param {string} name - unique key representing this field.
-     * @param {string} type - one of ['string', 'number', 'bool', 'json',
-     *      'date','day', 'auto'], default 'auto' indicates no conversion.
+     * @param {string} type - one of ['string', 'number', 'bool', 'json','date','day', 'auto']
+     *      Default 'auto' indicates no conversion.
      * @param {string} label - label for display
      * @param {boolean} nullable - can this field contain null?
-     * @param {*} defaultValue - value to be used for records with a null, or
-     *      non-existent value.
+     * @param {*} defaultValue - value to be used for records with a null, or non-existent value.
      */
     constructor({
         name,
