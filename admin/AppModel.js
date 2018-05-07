@@ -21,7 +21,6 @@ import {MonitorResultsPanel} from './tabs/monitor/MonitorResultsPanel';
 import {MonitorEditorPanel} from './tabs/monitor/MonitorEditorPanel';
 import {PreferencePanel} from './tabs/preferences/PreferencePanel';
 import {UserPreferencePanel} from './tabs/preferences/UserPreferencePanel';
-import {ReadmePanel} from './tabs/readme/ReadmePanel';
 import {ServicePanel} from './tabs/services/ServicePanel';
 import {UserPanel} from './tabs/users/UserPanel';
 
@@ -44,6 +43,7 @@ export class AppModel extends BaseAppModel {
             }
         ];
     }
+
 
     //------------------------
     // Implementation
@@ -72,8 +72,7 @@ export class AppModel extends BaseAppModel {
                     {name: 'services', path: '/services'},
                     {name: 'ehCache', path: '/ehCache'},
                     {name: 'dashboards', path: '/dashboards'},
-                    {name: 'users', path: '/users'},
-                    {name: 'readme', path: '/readme'}
+                    {name: 'users', path: '/users'}
                 ]
             },
             {
@@ -126,8 +125,7 @@ export class AppModel extends BaseAppModel {
                     {id: 'services', component: ServicePanel},
                     {id: 'ehCache', name: 'Caches', component: EhCachePanel},
                     {id: 'dashboards', component: DashboardPanel},
-                    {id: 'users', component: UserPanel},
-                    {id: 'readme', component: ReadmePanel}
+                    {id: 'users', component: UserPanel}
                 ]
             }, {
                 id: 'logging',
@@ -164,4 +162,5 @@ export class AppModel extends BaseAppModel {
             }
         ];
     }
+
 }
