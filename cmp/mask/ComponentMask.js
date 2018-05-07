@@ -30,6 +30,7 @@ export class ComponentMask extends Component {
     render() {
         const {isDisplayed, displayText} = this.props;
         if (!isDisplayed) return null;
+
         return overlay({
             cls: 'xh-mask',
             autoFocus: false,
@@ -44,7 +45,10 @@ export class ComponentMask extends Component {
                 height: '100%',
                 alignItems: 'center',
                 justifyContent: 'center',
-                items: displayText ? label(displayText) : null // test this null
+                style: {
+                    textAlign: 'center'
+                },
+                items: displayText || null
             })
         });
     }
