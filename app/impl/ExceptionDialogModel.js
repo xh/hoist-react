@@ -11,7 +11,7 @@ import {ToastManager} from 'hoist/cmp';
 /**
  * Local Model to handle Exception Dialog.
  */
-@HoistModel
+@HoistModel()
 export class ExceptionDialogModel {
 
     @computed

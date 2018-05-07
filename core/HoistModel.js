@@ -4,8 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {EventTarget, Reactive} from './mixins';
-
+import {EventTarget} from './mixins/EventTarget';
+import {Reactive} from './mixins/Reactive';
 
 /**
  * Core decorator for State Models in Hoist.
@@ -16,12 +16,12 @@ import {EventTarget, Reactive} from './mixins';
  */
 export function HoistModel() {
 
-    return function (C) {
+    return function(C) {
         C.isHoistModel = true;
 
         C = EventTarget(C);
         C = Reactive(C);
 
         return C;
-    }
+    };
 }

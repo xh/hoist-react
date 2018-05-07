@@ -4,12 +4,13 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {autorun, reaction, observer} from 'hoist/mobx';
+import {observer} from 'hoist/mobx';
 import {ContextMenuTarget, HotkeysTarget} from 'hoist/kit/blueprint';
-import {addProperty, addMethods, overrideMethods} from 'hoist/utils/ClassUtils';
+import {defaultMethods, chainMethods, overrideMethods} from 'hoist/utils/ClassUtils';
 
-import {EventTarget, Reactive} from './mixins';
-import {XH} from './XH';
+
+import {EventTarget} from './mixins/EventTarget';
+import {Reactive} from './mixins/Reactive';
 import {elemFactory} from './elem';
 
 /**
@@ -27,8 +28,6 @@ import {elemFactory} from './elem';
 export function hoistComponent() {
 
     return function(C) {
-        const proto = C.prototype;
-
         C.isHoistComponent = true;
 
         //-----------
@@ -38,47 +37,54 @@ export function hoistComponent() {
         C = Reactive(C);
         C = EventTarget(C);
 
-        if (proto.renderContextMenu){
+        if (C.prototype.renderContextMenu) {
             C = ContextMenuTarget(C);
         }
-        if (proto.renderHotkeys) {
+        if (C.prototype.renderHotkeys) {
             C = HotkeysTarget(C);
         }
 
-        /**
-         * @prop {Object} model
-         *
-         * Model class which this component is rendering.  This is a shortcut getter
-         * for either a 'localModel' property on the component or a 'model' placed in props.
-         */
-        addProperty(C, {
+        defaultMethods(C, {
+            /**
+             * Model class which this component is rendering.  This is a shortcut getter
+             * for either a 'localModel' property on the component or a 'model' placed in props.
+             */
             model: {
                 get() {return this.localModel ? this.localModel : this.props.model}
+            },
+
+            /**
+             * Alternative render method called on a HoistComponent when isCollapsed
+             * property is set to true.
+             */
+            renderCollapsed() {
+                return null;
+            },
+
+            /**
+             * Should this Component be rendered in collapsed mode?
+             */
+            isCollapsed: {
+                get() {return this.props.isCollapsed === true}
             }
         });
 
-        /**
-         * @method renderCollapsed
-         * @param {Object} props - react props.
-         *
-         * If a method renderCollapsed() is placed on a hoist component, it will be called
-         * by render() when the isCollapsed property is set to true.
-         */
-        const baseRender = proto.render;
-        overrideMethods(C, {
-            render() {
-                return this.props.isCollapsed === true ?
-                    (this.renderCollapsed ? this.renderCollapsed() : null) :
-                    (baseRender ? baseRender() : null);
-            }
-        });
 
         //--------------------------
         // Implementation
         //--------------------------
-        addMethods(C, {
+        chainMethods(C, {
             componentWillUnmount() {
                 this.destroy();
+            }
+        });
+
+        overrideMethods(C, {
+            render: (curr) => function() {
+                if (this.isCollapsed) {
+                    return this.renderCollapsed();
+                }
+                return curr ? curr.apply(this) : null;
             }
         });
 

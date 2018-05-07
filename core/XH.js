@@ -7,13 +7,14 @@
 
 import ReactDOM from 'react-dom';
 import {isPlainObject} from 'lodash';
+
+import {elem} from 'hoist/core';
 import {Exception, ExceptionHandler} from 'hoist/exception';
 import {observable, setter, action} from 'hoist/mobx';
 import {MultiPromiseModel, never} from 'hoist/promise';
 import {RouterModel} from 'hoist/router';
-
+import {appContainer} from 'hoist/app';
 import {
-    BaseService,
     ConfigService,
     EnvironmentService,
     ErrorTrackingService,
@@ -25,6 +26,8 @@ import {
     TrackService
 } from 'hoist/svc';
 
+
+import {initServicesAsync} from './HoistService';
 
 import '../styles/XH.scss';
 
@@ -123,10 +126,13 @@ export const XH = window.XH = new class {
      *      from Component and be decorated with @HoistComponent.
      */
     renderApp(appModelClass, appComponentClass) {
-        const model = new appModelClass(),
-            view = elem(appComponentClass, {model});
+        this.appModel = new appModelClass();
 
-        ReactDOM.render(appContainer(view), document.getElementById('root'));
+        const rootView = appContainer(
+            elem(appComponentClass, {model: this.appModel})
+        );
+
+        ReactDOM.render(rootView, document.getElementById('root'));
     }
 
     /** Route the app.  See RouterModel.navigate.  */
@@ -258,18 +264,16 @@ export const XH = window.XH = new class {
     }
 
     async initServicesAsync() {
-        const ensureReady = BaseService.ensureSvcsReadyAsync.bind(BaseService);
-
-        await ensureReady(
+        await initServicesAsync(
             this.fetchService,
             this.localStorageService,
             this.errorTrackingService
         );
-        await ensureReady(
+        await initServicesAsync(
             this.configService,
             this.prefService
         );
-        await ensureReady(
+        await initServicesAsync(
             this.environmentService,
             this.feedbackService,
             this.identityService,

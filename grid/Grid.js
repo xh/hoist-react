@@ -7,6 +7,7 @@
 
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
+import {XH} from 'hoist/core';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
 import {defaults, isString, isNumber, isBoolean, isEqual, xor} from 'lodash';
@@ -110,8 +111,10 @@ class Grid extends Component {
     }
 
     syncSelection() {
-        const api = this.gridOptions.api,
-            modelSelection = this.model.selection.ids,
+        const {api} = this.gridOptions;
+        if (!api) return;
+
+        const modelSelection = this.model.selection.ids,
             gridSelection = api.getSelectedRows().map(it => it.id),
             diff = xor(modelSelection, gridSelection);
 
@@ -129,8 +132,10 @@ class Grid extends Component {
     }
 
     syncSort() {
-        const api = this.gridOptions.api,
-            agSorters = api.getSortModel(),
+        const {api} = this.gridOptions;
+        if (!api) return;
+
+        const agSorters = api.getSortModel(),
             modelSorters = this.model.sortBy;
         if (!isEqual(agSorters, modelSorters)) {
             api.setSortModel(modelSorters);
@@ -138,8 +143,11 @@ class Grid extends Component {
     }
 
     syncColumns() {
+        const {api} = this.gridOptions;
+        if (!api) return;
+
         // Needed because AGGridReact won't recognize updates to columns prop.
-        this.gridOptions.api.setColumnDefs(this.model.columns);
+        api.setColumnDefs(this.model.columns);
     }
 
     getContextMenuItems = (params) => {

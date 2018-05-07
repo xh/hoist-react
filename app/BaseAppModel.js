@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from 'hoist/core';
+import {HoistModel} from 'hoist/core';
 
 /**
  * Top level application model for a HoistApp.   This model will be initialized by Hoist after the

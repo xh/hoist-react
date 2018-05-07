@@ -34,7 +34,6 @@ export class PrefService {
     _localStorageKey = 'localPrefs';
 
     constructor() {
-        super();
         const pushFn = () => this.pushPendingAsync();
         window.addEventListener('unload', pushFn);
         this.pushPendingBuffered = debounce(pushFn, 5 * SECONDS);

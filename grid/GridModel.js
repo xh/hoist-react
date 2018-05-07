@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel} from 'hoist/core'
+import {HoistModel} from 'hoist/core';
 import {action, observable} from 'hoist/mobx';
 import {LastPromiseModel} from 'hoist/promise';
 import {castArray, find, isString} from 'lodash';

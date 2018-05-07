@@ -4,10 +4,11 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+import {HoistModel} from 'hoist/core';
 import {GridModel} from 'hoist/grid';
 import {baseCol} from 'hoist/columns/Core';
 import {LocalStore} from 'hoist/data';
-import {autorun, computed} from 'hoist/mobx';
+import {computed} from 'hoist/mobx';
 
 import {ItemRenderer} from './impl/ItemRenderer';
 
@@ -105,7 +106,7 @@ export class LeftRightChooserModel {
 
         this.refreshStores();
 
-        autorun(() => this.syncSelection());
+        this.addAutorun(() => this.syncSelection());
     }
 
 

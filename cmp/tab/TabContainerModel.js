@@ -74,7 +74,7 @@ export class TabContainerModel {
         children.forEach(child => child.parent = this);
         this.children = children;
         this.selectedId = children[0].id;
-        wait(1).then(() => autorun(() => this.syncFromRouter()));
+        wait(1).then(() => this.addAutorun(() => this.syncFromRouter()));
     }
 
     get routeName() {
