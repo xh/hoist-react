@@ -4,9 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
-import {PropTypes as PT} from 'prop-types';
 import {Component} from 'react';
+import {PropTypes as PT} from 'prop-types';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {frame} from 'hoist/layout';
 import {overlay} from 'hoist/kit/blueprint';
