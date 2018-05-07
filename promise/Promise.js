@@ -132,7 +132,7 @@ Object.assign(Promise.prototype, {
         if (!trackCfg) return this;
 
         if (typeof trackCfg === 'string') {
-            trackCfg = {msg: trackCfg};
+            trackCfg = {message: trackCfg};
         }
 
         const startTime = Date.now();

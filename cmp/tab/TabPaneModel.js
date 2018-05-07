@@ -22,7 +22,7 @@ export class TabPaneModel {
     loadState = new LastPromiseModel();
     
     get routeName() {
-        return this.parent.routeName + '.' + this.id;
+        return `${this.parent.routeName}.${this.id}`;
     }
 
     /**
@@ -83,7 +83,7 @@ export class TabPaneModel {
             state = routerModel.currentState,
             routeName = state ? state.name : 'default';
 
-        if (routeName.startsWith(this.routeName) && parent.selectedId != id) {
+        if (routeName.startsWith(this.routeName) && parent.selectedId !== id) {
             parent.setSelectedId(id);
         }
     }

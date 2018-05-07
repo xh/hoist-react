@@ -20,7 +20,7 @@ export class FeedbackDialogModel {
             return;
         }
 
-        XH.feedbackService.submitAsync({msg: this.feedback})
+        XH.feedbackService.submitAsync({message: this.feedback})
             .then(() => {this.close()})
             .linkTo(XH.appLoadModel)
             .catchDefault();

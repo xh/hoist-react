@@ -34,6 +34,7 @@ export const Icon = {
     bolt(p)          {return fa(p, 'bolt')},
     book(p)          {return fa(p, 'book')},
     bookmark(p)      {return fa(p, 'bookmark')},
+    boxFull(p)       {return fa(p, 'box-full')},
     caretLeft(p)     {return fa(p, 'caret-left')},
     caretRight(p)    {return fa(p, 'caret-right')},
     chartArea(p)     {return fa(p, 'chart-area')},
