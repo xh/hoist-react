@@ -85,24 +85,11 @@
     lodash "^4.2.0"
     to-fast-properties "^2.0.0"
 
-"@blueprintjs/core@^2.0.0", "@blueprintjs/core@^2.1.1":
-  version "2.1.1"
-  resolved "https://repo.xh.io/repository/npm-public/@blueprintjs/core/-/core-2.1.1.tgz#8e7178c7bd0faea53a0f9a25392215a1fe62d05e"
+"@blueprintjs/core@^2.3.1", "@blueprintjs/core@~2.3.0":
+  version "2.3.1"
+  resolved "https://repo.xh.io/repository/npm-public/@blueprintjs/core/-/core-2.3.1.tgz#c998f8d22b02bfc9990b66b201f1ea095fb15450"
   dependencies:
-    "@blueprintjs/icons" "^2.1.1"
-    "@types/dom4" "^2.0.0"
-    classnames "^2.2"
-    dom4 "^2.0.1"
-    normalize.css "^7.0.0"
-    popper.js "^1.14.1"
-    react-popper "^0.8.2"
-    tslib "^1.9.0"
-
-"@blueprintjs/core@~2.2.0":
-  version "2.2.1"
-  resolved "https://repo.xh.io/repository/npm-public/@blueprintjs/core/-/core-2.2.1.tgz#5dd8ef22b2a4bd6f180ef587bc8bebee20ec137f"
-  dependencies:
-    "@blueprintjs/icons" "^2.1.1"
+    "@blueprintjs/icons" "^2.2.1"
     "@types/dom4" "^2.0.0"
     classnames "^2.2"
     dom4 "^2.0.1"
@@ -112,26 +99,26 @@
     tslib "^1.9.0"
 
 "@blueprintjs/datetime@~2.0.2":
-  version "2.0.2"
-  resolved "https://repo.xh.io/repository/npm-public/@blueprintjs/datetime/-/datetime-2.0.2.tgz#26329a5ab2d96e6151a832948df9cfbf17c357b5"
+  version "2.0.3"
+  resolved "https://repo.xh.io/repository/npm-public/@blueprintjs/datetime/-/datetime-2.0.3.tgz#7fc561231a66d7f6e4de4693c08eb22cf611eefc"
   dependencies:
-    "@blueprintjs/core" "^2.1.1"
+    "@blueprintjs/core" "^2.3.1"
     classnames "^2.2"
     react-day-picker "^7.0.7"
     tslib "^1.9.0"
 
-"@blueprintjs/icons@^2.1.1", "@blueprintjs/icons@~2.1.1":
-  version "2.1.1"
-  resolved "https://repo.xh.io/repository/npm-public/@blueprintjs/icons/-/icons-2.1.1.tgz#426b0291baf198e0181ae8f49bb5c2bc0bb55e9f"
+"@blueprintjs/icons@^2.2.1", "@blueprintjs/icons@~2.2.0":
+  version "2.2.1"
+  resolved "https://repo.xh.io/repository/npm-public/@blueprintjs/icons/-/icons-2.2.1.tgz#1b4275fc67467218a8ffec6403c87c7af24532a5"
   dependencies:
     classnames "^2.2"
     tslib "^1.9.0"
 
 "@blueprintjs/select@~2.0.0":
-  version "2.0.0"
-  resolved "https://repo.xh.io/repository/npm-public/@blueprintjs/select/-/select-2.0.0.tgz#35c1e05e1171774fe4cb6772f5f8f77d5be80c4d"
+  version "2.0.1"
+  resolved "https://repo.xh.io/repository/npm-public/@blueprintjs/select/-/select-2.0.1.tgz#4746aff7ed534113b17d0663bf548b2867dc4b2a"
   dependencies:
-    "@blueprintjs/core" "^2.0.0"
+    "@blueprintjs/core" "^2.3.1"
     classnames "^2.2"
     tslib "^1.9.0"
 
@@ -3420,7 +3407,7 @@ hoek@4.x.x:
   version "4.2.1"
   resolved "https://repo.xh.io/repository/npm-public/hoek/-/hoek-4.2.1.tgz#9634502aa12c445dd5a7c5734b572bb8738aacbb"
 
-hoist-non-react-statics@^2.3.1:
+hoist-non-react-statics@^2.5.0:
   version "2.5.0"
   resolved "https://repo.xh.io/repository/npm-public/hoist-non-react-statics/-/hoist-non-react-statics-2.5.0.tgz#d2ca2dfc19c5a91c5a6615ce8e564ef0347e2a40"
 
@@ -4565,15 +4552,16 @@ mobx-decorators@~4.1.0:
     lodash.difference "^4.5.0"
     lodash.intersection "^4.4.0"
 
-mobx-react@~5.0.0:
-  version "5.0.0"
-  resolved "https://repo.xh.io/repository/npm-public/mobx-react/-/mobx-react-5.0.0.tgz#8d5a33be376fa22b184a6f555d40a6a3a8459a16"
+mobx-react@~5.1.0:
+  version "5.1.2"
+  resolved "https://repo.xh.io/repository/npm-public/mobx-react/-/mobx-react-5.1.2.tgz#ec5c2d29a1df823dbd1b37e214fa36a0907054e2"
   dependencies:
-    hoist-non-react-statics "^2.3.1"
+    hoist-non-react-statics "^2.5.0"
+    react-lifecycles-compat "^3.0.2"
 
-mobx@~4.1.1:
-  version "4.1.1"
-  resolved "https://repo.xh.io/repository/npm-public/mobx/-/mobx-4.1.1.tgz#7ce7ef92b22e85271d1fc274a124d7fa32fcceeb"
+mobx@~4.2.0:
+  version "4.2.1"
+  resolved "https://repo.xh.io/repository/npm-public/mobx/-/mobx-4.2.1.tgz#dd4190daf1b43d41a3a228585253f9970b0a27dd"
 
 moment@~2.22.1:
   version "2.22.1"
@@ -4807,10 +4795,6 @@ normalize-url@^1.4.0:
     prepend-http "^1.0.0"
     query-string "^4.1.0"
     sort-keys "^1.0.0"
-
-normalize.css@^7.0.0:
-  version "7.0.0"
-  resolved "https://repo.xh.io/repository/npm-public/normalize.css/-/normalize.css-7.0.0.tgz#abfb1dd82470674e0322b53ceb1aaf412938e4bf"
 
 normalize.css@^8.0.0:
   version "8.0.0"
@@ -5736,8 +5720,8 @@ rc@^1.1.7:
     strip-json-comments "~2.0.1"
 
 react-day-picker@^7.0.7:
-  version "7.1.6"
-  resolved "https://repo.xh.io/repository/npm-public/react-day-picker/-/react-day-picker-7.1.6.tgz#b7e99c2c4a66192f6a0b205accaad9e61c80c9ef"
+  version "7.1.8"
+  resolved "https://repo.xh.io/repository/npm-public/react-day-picker/-/react-day-picker-7.1.8.tgz#4a31866ab2ba27c72be6d4382c4fe871ab9e4319"
   dependencies:
     prop-types "^15.6.1"
 
@@ -5753,6 +5737,10 @@ react-dom@~16.3.2:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
     prop-types "^15.6.0"
+
+react-lifecycles-compat@^3.0.2:
+  version "3.0.2"
+  resolved "https://repo.xh.io/repository/npm-public/react-lifecycles-compat/-/react-lifecycles-compat-3.0.2.tgz#7279047275bd727a912e25f734c0559527e84eff"
 
 react-popper@^0.8.2:
   version "0.8.3"
