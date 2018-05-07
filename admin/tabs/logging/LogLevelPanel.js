@@ -47,7 +47,7 @@ export class LogLevelPanel extends Component {
         ],
         editors: [
             {field: 'name'},
-            {field: 'level'}
+            {field: 'level', requireSelection: true}
         ]
     });
     

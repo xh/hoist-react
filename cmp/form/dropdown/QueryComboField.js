@@ -32,7 +32,9 @@ export class QueryComboField extends BaseDropdownField {
         /** Delay (in ms) used to buffer calls to the queryFn (default 100) */
         queryBuffer: PT.number,
         /** Optional custom optionRenderer, a function that receives (option, optionProps) */
-        optionRenderer: PT.func
+        optionRenderer: PT.func,
+        /** Whether to force values from given options. Set to true to disallow arbitrary input */
+        requireSelection: PT.bool
     };
 
     delegateProps = ['className', 'style', 'placeholder', 'disabled'];

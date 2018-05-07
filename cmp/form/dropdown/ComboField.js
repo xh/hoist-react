@@ -24,7 +24,9 @@ export class ComboField extends BaseDropdownField {
         /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
         options: PT.arrayOf(PT.oneOfType([PT.object, PT.string])).isRequired,
         /** Optional custom optionRenderer, a function that receives (option, optionProps) */
-        optionRenderer: PT.func
+        optionRenderer: PT.func,
+        /** Whether to force values from given options. Set to true to disallow arbitrary input */
+        requireSelection: PT.bool
     };
 
     delegateProps = ['className', 'disabled', 'placeholder'];

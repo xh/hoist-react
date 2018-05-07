@@ -77,6 +77,7 @@ export class RestControl extends Component {
     renderCombo() {
         const model = this.model,
             field = model.field,
+            requireSelection = model.editor.requireSelection,
             lookup = field.lookup;
 
         const options = [...lookup];
@@ -85,7 +86,7 @@ export class RestControl extends Component {
             model,
             field: 'value',
             options,
-            requireSelection: true,
+            requireSelection: requireSelection,
             disabled: !model.isEditable
         });
     }
