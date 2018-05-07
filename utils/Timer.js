@@ -40,7 +40,7 @@ export class Timer {
      * @param {number} interval - interval between runs, in milliseconds, if <=0 job will not run.
      * @param {number} [delay] - initial delay, in milliseconds
      * @param {number} [timeout] - timeout for action in milliseconds, null for no timeout.
-     * @param {Object} [scope], scope to run callback in (optional)
+     * @param {Object} [scope] - scope to run callback in
      */
     static create({runFn, interval, delay=0, timeout=3*MINUTES, scope=this}) {
         const ret = new Timer({runFn, interval, delay, timeout, scope});
