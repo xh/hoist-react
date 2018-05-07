@@ -9,6 +9,7 @@ import {PropTypes as PT} from 'prop-types';
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {frame} from 'hoist/layout';
+import {label} from 'hoist/cmp';
 import {overlay} from 'hoist/kit/blueprint';
 
 import './Mask.scss';
@@ -19,7 +20,7 @@ import './Mask.scss';
 @hoistComponent()
 export class ComponentMask extends Component {
 
-    BACKGROUND = 'rgba(0,0,0, 0.60)';
+    BACKGROUND = 'rgba(0,0,0, 0.8)';
 
     static propTypes = {
         isDisplayed: PT.bool,
@@ -43,7 +44,7 @@ export class ComponentMask extends Component {
                 height: '100%',
                 alignItems: 'center',
                 justifyContent: 'center',
-                items: displayText || null
+                items: displayText ? label(displayText) : null // test this null
             })
         });
     }

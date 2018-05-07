@@ -1,2 +1,2 @@
 export * from './LoadMask';
-export * from './DisabledMask';
+export * from './ComponentMask';
