@@ -46,7 +46,7 @@ export class ComponentMask extends Component {
                 style: {
                     textAlign: 'center'
                 },
-                items: displayText || null
+                items: displayText
             })
         });
     }
