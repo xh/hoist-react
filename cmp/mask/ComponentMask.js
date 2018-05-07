@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {PropTypes as PT} from 'prop-types';
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {frame} from 'hoist/layout';
@@ -16,16 +17,18 @@ import './Mask.scss';
  * Simple Mask for Disabled or Inactive components.
  */
 @hoistComponent()
-export class DisabledMask extends Component {
+export class ComponentMask extends Component {
 
     BACKGROUND = 'rgba(0,0,0, 0.60)';
 
-    static defaultProps = {
-        isDisplayed: false
+    static propTypes = {
+        isDisplayed: PT.bool,
+        displayText: PT.string
     };
 
     render() {
-        if (!this.props.isDisplayed) return null;
+        const {isDisplayed, displayText} = this.props;
+        if (!isDisplayed) return null;
         return overlay({
             cls: 'xh-mask',
             autoFocus: false,
@@ -39,11 +42,12 @@ export class DisabledMask extends Component {
                 width: '100%',
                 height: '100%',
                 alignItems: 'center',
-                justifyContent: 'center'
+                justifyContent: 'center',
+                items: displayText || null
             })
         });
     }
 }
-export const disabledMask = elemFactory(DisabledMask);
+export const componentMask = elemFactory(ComponentMask);
 
 
