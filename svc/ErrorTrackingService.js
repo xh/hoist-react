@@ -16,7 +16,7 @@ export class ErrorTrackingService extends BaseService {
     /**
      * Create a Client Exception entry. Client metadata will be set automatically.
      * App version is POSTed to reflect the version the client is running (vs the version on the server)
-     * @param options - Map with message & exception - both optional, although at least one should be provided!
+     * @param {Object} options - Map with message & exception - both optional, although at least one should be provided!
      */
     async submitAsync({message, exception}) {
         const error = exception ? stringifyErrorSafely(exception) : null;

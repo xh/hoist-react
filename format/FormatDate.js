@@ -68,7 +68,7 @@ export function fmtTime(v, opts = {}) {
 /**
  * Render dates formatted based on distance in time from current day
  *
- * @param {*} [v] - a date value to format, can be any value MomentJs can parse.
+ * @param {*} v - a date value to format, can be any value MomentJs can parse.
  *      @see https://momentjs.com/docs/#/parsing/ for more info.
  *
  * @param {Object} [opts] - an options object, may include:

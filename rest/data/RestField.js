@@ -20,13 +20,13 @@ export class RestField extends Field {
     typeField
 
     /**
-     * @param editable. [true | false | 'addOnly']
-     * @param required. Is a non-null value required for additions and edits?
-     * @param lookup (optional).  Array of suggested values
-     * @param lookupName (optional).  Name of server provided collection to populate lookup.
-     * @param lookupStrict.  If lookup provided, must values come from it?
-     * @param typeField.  Name of field in this record representing containing the 'type' (See Field.type).
-     * @param rest.  All arguments for Field.
+     * @param {(boolean|'addOnly')} [editable]
+     * @param {(boolean)} [required] - Is a non-null value required for additions and edits?
+     * @param {(Object[]|string[])} [lookup] - Array of suggested values
+     * @param {string} [lookupName] - Name of server provided collection to populate lookup.
+     * @param {(boolean)} [lookupStrict] - If lookup provided, must values come from it?
+     * @param {string} [typeField] - Name of field in this record representing containing the 'type' (See Field.type).
+     * @param {*} ...rest - All arguments for Field.
      */
     constructor({
         editable = true,

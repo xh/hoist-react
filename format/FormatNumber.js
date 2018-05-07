@@ -38,7 +38,7 @@ const UP_TICK = '&#9652;',
  * @param {boolean} [opts.withSignGlyph] - set to true to prepend with an up / down arrow.
  * @param {string} [opts.label] - label to append to value.
  * @param {string} [opts.labelCls] - class to apply to label span..
- * @param {boolean|Object} [opts.colorSpec] - show in colored <span>, based on sign of value.
+ * @param {(boolean|Object)} [opts.colorSpec] - show in colored <span>, based on sign of value.
  *      If truthy will default to red/green/grey. Also accepts an object of the form {pos: color, neg: color, neutral: color}.
  * @param {function} [opts.tipFn] - use to place formatted number in span with title property set to returned string.
  *      Will be passed the originalValue param.

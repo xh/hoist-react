@@ -16,7 +16,7 @@ export class TrackService extends BaseService {
      * Client metadata is set automatically by the server's parsing of request headers.
      *
      * @param {(Object|string)} options - if a string, it will become the message value.
-     * @param {string} options.msg - Short description of the activity being tracked.
+     * @param {string} [options.msg] - Short description of the activity being tracked.
      *      Required if options is an object.
      *      Can be passed as `message` for backwards compatibility.
      * @param {string} [options.category] - app-supplied category.
