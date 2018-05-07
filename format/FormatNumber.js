@@ -30,14 +30,14 @@ const UP_TICK = '&#9652;',
  * @param {string} [opts.nullDisplay] - desired display for null values.
  * @param {string} [opts.formatPattern] - a valid numeralJS format string.
  *      @see http://numeraljs.com/#format for more info
- * @param {(int|'auto')} [opts.precision] - desired number of decimal places.
+ * @param {(number|'auto')} [opts.precision] - desired number of decimal places.
  * @param {boolean} [opts.zeroPad] - set to false to remove trailing zeros regardless of precision.
  * @param {boolean} [opts.ledger] - set to true to use ledger format.
  * @param {boolean} [opts.forceLedgerAlign] - used to add placeholder after positive ledgers to align with negative ledgers in columns.
  * @param {boolean} [opts.withPlusSign] - set to true to include a '+' in positive number strings.
  * @param {boolean} [opts.withSignGlyph] - set to true to prepend with an up / down arrow.
  * @param {string} [opts.label] - label to append to value.
- * @param {string} [opts.labelCls] - class to apply to label span.
+ * @param {string} [opts.labelCls] - if provided, label will be place in a span with this set as its class.
  * @param {(boolean|Object)} [opts.colorSpec] - show in colored <span>, based on sign of value.
  *      If truthy will default to red/green/grey. Also accepts an object of the form {pos: color, neg: color, neutral: color}.
  * @param {function} [opts.tipFn] - use to place formatted number in span with title property set to returned string.

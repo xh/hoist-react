@@ -19,7 +19,7 @@ export class Field {
 
     /**
      * @param {string} name - unique key representing this field.
-     * @param {string} type - one of ['string', 'number', 'bool', 'json','date','day', 'auto']
+     * @param {string} type - one of ['string', 'number', 'bool', 'json', 'date', 'day', 'auto']
      *      Default 'auto' indicates no conversion.
      * @param {string} label - label for display
      * @param {boolean} nullable - can this field contain null?

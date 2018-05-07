@@ -15,7 +15,7 @@ export function capitalizeWords(str) {
 /**
  * Wrap values in a custom span
  *
- * @param {*} v - value to be place in span, will be coerced into a string
+ * @param {*} v - value to be placed in span, will be coerced into a string
  * @param {Object} [opts] - an options object:
  * @param {string} [opts.cls] - span class
  * @param {string} [opts.title] - span title
