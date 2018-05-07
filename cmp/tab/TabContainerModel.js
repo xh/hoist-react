@@ -36,7 +36,7 @@ export class TabContainerModel {
      *      nested tabs, where this model's container is a direct child of a parent TabContainer.
      * @param {string} [orientation=h] - specify horizontal vs. vertical tabs.
      * @param {boolean} [useRoutes=false] - true to use routes for navigation.
-     *      These routes must be setup externally in the application (See BaseApp.getRoutes()).
+     *      These routes must be setup externally in the application (@see BaseApp.getRoutes()).
      *      They may exist at any level of the application, but there must be a route of the form
      *      `/../../[containerId]/[childPaneId]` for each child pane in this container.
      * @param {Object[]} children - configurations for TabPaneModels or nested TabContainerModels.

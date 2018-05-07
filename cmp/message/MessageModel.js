@@ -35,7 +35,7 @@ export class MessageModel {
     }
 
     /**
-     * @param {Object} config - default options for this instance.
+     * @param {Object} [config] - default options for this instance.
      */
     constructor(config) {
         this.initialConfig = config;
@@ -43,7 +43,7 @@ export class MessageModel {
 
     /**
      * Show a confirmation, with cancellation option.
-     * @param {Object} config - options for this particular show of the dialog.
+     * @param {Object} [config] - options for this particular showing of the dialog.
      */
     confirm(config) {
         Object.assign(this, this.defaults, this.initialConfig, config);
@@ -52,7 +52,7 @@ export class MessageModel {
 
     /**
      * Show a simple alert, with no cancellation option.
-     * @param {Object} config - options for this particular show of the dialog.
+     * @param {Object} [config] - options for this particular showing of the dialog.
      */
     alert(config) {
         Object.assign(this, this.defaults, this.initialConfig, config, {

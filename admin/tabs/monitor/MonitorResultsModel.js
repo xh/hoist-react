@@ -70,7 +70,7 @@ export class MonitorResultsModel {
         return XH
             .fetchJson({url: 'monitorAdmin/forceRunAllMonitors'})
             .then(
-                ToastManager.show({
+                () => ToastManager.show({
                     message: 'Request received. Results will be generated shortly.'
                 })
             )

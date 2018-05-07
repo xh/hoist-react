@@ -9,6 +9,7 @@ import {XH, HoistModel} from 'hoist/core';
 import {action, observable, setter} from 'hoist/mobx';
 
 @HoistModel()
+/** Model for a FeedbackDialog, managing its open/close state and feedback string. */
 export class FeedbackDialogModel {
 
     @observable isOpen = false;
@@ -20,7 +21,7 @@ export class FeedbackDialogModel {
             return;
         }
 
-        XH.feedbackService.submitAsync({msg: this.feedback})
+        XH.feedbackService.submitAsync({message: this.feedback})
             .then(() => {this.close()})
             .linkTo(XH.appLoadModel)
             .catchDefault();
@@ -36,4 +37,5 @@ export class FeedbackDialogModel {
         this.isOpen = false;
         this.feedback = null;
     }
+
 }

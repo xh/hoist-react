@@ -11,8 +11,8 @@ import {castArray, isEqual, remove, trimEnd} from 'lodash';
 import {pluralize} from 'hoist/utils/JsUtils';
 import {XH, HoistModel} from 'hoist/core';
 import {LocalStore} from 'hoist/data';
-import {GridContextMenu, GridModel} from 'hoist/grid';
-import {MessageModel, ToastManager} from 'hoist/cmp';
+import {GridModel} from 'hoist/grid';
+import {MessageModel, ToastManager, StoreContextMenu} from 'hoist/cmp';
 import {baseCol} from 'hoist/columns/Core';
 import {nameCol} from 'hoist/admin/columns/Columns';
 import {p} from 'hoist/layout';
@@ -52,7 +52,7 @@ export class ConfigDifferModel  {
     }
 
     contextMenuFn = () => {
-        return new GridContextMenu([
+        return new StoreContextMenu([
             {
                 text: 'Apply Remote',
                 action: (item, record) => this.confirmApplyRemote(record),

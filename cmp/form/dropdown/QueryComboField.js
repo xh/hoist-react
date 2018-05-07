@@ -30,10 +30,8 @@ export class QueryComboField extends BaseDropdownField {
         queryFn: PT.func.isRequired,
         /** Delay (in ms) used to buffer calls to the queryFn (default 100) */
         queryBuffer: PT.number,
-        /** Text to display when control is empty */
-        placeholder: PT.string,
-        /** Optional custom itemRenderer, a function that receives (item, itemProps) */
-        itemRenderer: PT.func
+        /** Optional custom optionRenderer, a function that receives (option, optionProps) */
+        optionRenderer: PT.func
     };
 
     delegateProps = ['className', 'style', 'placeholder', 'disabled'];
@@ -52,7 +50,7 @@ export class QueryComboField extends BaseDropdownField {
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: this.options,
             onItemSelect: this.onItemSelect,
-            itemRenderer: this.getItemRenderer(),
+            itemRenderer: this.getOptionRenderer(),
             inputValueRenderer: s => s,
             inputProps: {
                 value: this.getDisplayValue(value, this.options, ''),

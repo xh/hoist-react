@@ -23,13 +23,13 @@ export class TabPaneModel {
     loadState = new LastPromiseModel();
     
     get routeName() {
-        return this.parent.routeName + '.' + this.id;
+        return `${this.parent.routeName}.${this.id}`;
     }
 
     /**
      * @param {string} id - unique ID, used for generating routes.
-     * @param {string} name - display name for the tab.
-     * @param {Component} - component (or React node) to be displayed within the tab.
+     * @param {string} [name] - display name for the tab.
+     * @param {Object} componentClass - class of React Component to be displayed within the tab.
      */
     constructor({
         id,
@@ -84,7 +84,7 @@ export class TabPaneModel {
             state = routerModel.currentState,
             routeName = state ? state.name : 'default';
 
-        if (routeName.startsWith(this.routeName) && parent.selectedId != id) {
+        if (routeName.startsWith(this.routeName) && parent.selectedId !== id) {
             parent.setSelectedId(id);
         }
     }

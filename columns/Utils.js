@@ -4,6 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+import {Component} from 'react';
 import {defaults, castArray} from 'lodash';
 
 const globalVals = {};
@@ -44,6 +45,17 @@ export function fileColFactory(fileVals = {}) {
                 colProps.maxWidth = colProps.fixedWidth;
                 colProps.minWidth = colProps.fixedWidth;
                 delete colProps.fixedWidth;
+            }
+
+            if (colProps.elementRenderer) {
+                const {elementRenderer} = colProps;
+                colProps.cellRendererFramework = (
+                    class extends Component {
+                        render() {return elementRenderer(this.props)}
+                        refresh() {return false}
+                    }
+                );
+                delete colProps.elementRenderer;
             }
 
             return colProps;

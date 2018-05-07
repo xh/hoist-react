@@ -7,9 +7,8 @@
 import {HoistModel} from 'hoist/core';
 import {action} from 'hoist/mobx';
 import {GridModel} from 'hoist/grid';
-import {MessageModel} from 'hoist/cmp';
+import {MessageModel, StoreContextMenu} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
-import {GridContextMenu} from 'hoist/grid';
 import {pluralize} from 'hoist/utils/JsUtils';
 
 import {RestFormModel} from './RestFormModel';
@@ -106,7 +105,7 @@ export class RestGridModel {
     }
 
     contextMenuFn = () => {
-        return new GridContextMenu([
+        return new StoreContextMenu([
             {
                 text: 'Add',
                 icon: Icon.add(),
