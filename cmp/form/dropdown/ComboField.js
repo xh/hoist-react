@@ -6,7 +6,6 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
-import {find} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {Classes, suggest} from 'hoist/kit/blueprint';
 
@@ -62,40 +61,6 @@ export class ComboField extends BaseDropdownField {
     onChange = (ev) => {
         this.noteValueChange(ev.target.value);
     }
-
-    // onKeyPress = (ev) => {
-    //     const {options, requireSelection} = this.props,
-    //         val = this.internalValue;
-    //
-    //     if (ev.key === 'Enter') {
-    //         if (requireSelection) {
-    //             this.matchInputToOption(options, val);
-    //         }
-    //         this.doCommit();
-    //     }
-    // }
-
-    // onBlur = () => {
-    //     const {options, requireSelection} = this.props,
-    //         val = this.internalValue;
-    //
-    //     if (requireSelection) {
-    //         this.matchInputToOption(options, val);
-    //     }
-    //
-    //     this.doCommit();
-    //     this.setHasFocus(false);
-    // }
-    //
-    // matchInputToOption(options, value) {
-    //     options = this.normalizeOptions(options);
-    //
-    //     const match = find(options, (it) => it.label.toLowerCase() == value.toLowerCase()),
-    //         newValue = match ? this.toInternal(match.value) : this.externalValue;
-    //
-    //     this.setInternalValue(newValue);
-    // }
-
 
 }
 export const comboField = elemFactory(ComboField);

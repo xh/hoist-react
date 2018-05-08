@@ -40,7 +40,7 @@ export class BaseDropdownField extends HoistField {
         return external ===  null ? NULL_VALUE : external;
     }
 
-
+    //-----------------------------------------------------------
     //-----------------------------------------------------------
     // Common handling of options, rendering of selected option
     //-----------------------------------------------------------
