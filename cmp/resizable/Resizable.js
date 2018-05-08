@@ -32,6 +32,10 @@ export class Resizable extends Component {
     static propTypes = {
         /** The side of this container on which the resize/collapse border will appear. */
         side: PT.oneOf(['top', 'right', 'bottom', 'left']).isRequired,
+        /** Icon to be shown as part of this component's collapsedDisplay */
+        icon: PT.element,
+        /** String to be shown as part of this component's collapsedDisplay */
+        title: PT.string,
         /** Size of the content panel (width if side `left` or `right` - height otherwise). */
         contentSize: PT.number.isRequired,
         /** Can the panel be collapsed via collapse/expand toggle button? */
@@ -59,8 +63,8 @@ export class Resizable extends Component {
     }
 
     get side()              {return this.props.side}
-    get title()             {return this.props.side}
     get icon()              {return this.props.icon}
+    get title()             {return this.props.title}
     get isCollapsible()     {return this.props.isCollapsible !== false}
     get isDraggable()       {return this.props.isDraggable !== false}
     get contentSize()       {return this.model.contentSize}
