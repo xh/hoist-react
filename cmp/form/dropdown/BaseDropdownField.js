@@ -81,7 +81,34 @@ export class BaseDropdownField extends HoistField {
     }
 
     onBlur = () => {
+        const value = this.internalValue;
+
+        if (this.props.requireSelection) {
+            this.matchValueToOption(value);
+        }
+
+        this.doCommit();
         this.setHasFocus(false);
+    }
+
+    onKeyPress = (ev) => {
+        const value = this.internalValue;
+
+        if (ev.key === 'Enter') {
+            if (this.props.requireSelection) {
+                this.matchValueToOption(value);
+            }
+            this.doCommit();
+        }
+    }
+
+    matchValueToOption(value) {
+        const baseOptions = this.options || this.props.options,
+            options = this.normalizeOptions(baseOptions),
+            match = find(options, (it) => it.label.toLowerCase() == value.toLowerCase()),
+            newValue = match ? this.toInternal(match.value) : this.externalValue;
+
+        this.setInternalValue(newValue);
     }
 
 }

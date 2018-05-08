@@ -63,38 +63,38 @@ export class ComboField extends BaseDropdownField {
         this.noteValueChange(ev.target.value);
     }
 
-    onKeyPress = (ev) => {
-        const {options, requireSelection} = this.props,
-            val = this.internalValue;
+    // onKeyPress = (ev) => {
+    //     const {options, requireSelection} = this.props,
+    //         val = this.internalValue;
+    //
+    //     if (ev.key === 'Enter') {
+    //         if (requireSelection) {
+    //             this.matchInputToOption(options, val);
+    //         }
+    //         this.doCommit();
+    //     }
+    // }
 
-        if (ev.key === 'Enter') {
-            if (requireSelection) {
-                this.matchInputToOption(options, val);
-            }
-            this.doCommit();
-        }
-    }
-
-    onBlur = () => {
-        const {options, requireSelection} = this.props,
-            val = this.internalValue;
-
-        if (requireSelection) {
-            this.matchInputToOption(options, val);
-        }
-
-        this.doCommit();
-        this.setHasFocus(false);
-    }
-
-    matchInputToOption(options, value) {
-        options = this.normalizeOptions(options);
-
-        const match = find(options, (it) => it.label.toLowerCase() == value.toLowerCase()),
-            newValue = match ? this.toInternal(match.value) : this.externalValue;
-
-        this.setInternalValue(newValue);
-    }
+    // onBlur = () => {
+    //     const {options, requireSelection} = this.props,
+    //         val = this.internalValue;
+    //
+    //     if (requireSelection) {
+    //         this.matchInputToOption(options, val);
+    //     }
+    //
+    //     this.doCommit();
+    //     this.setHasFocus(false);
+    // }
+    //
+    // matchInputToOption(options, value) {
+    //     options = this.normalizeOptions(options);
+    //
+    //     const match = find(options, (it) => it.label.toLowerCase() == value.toLowerCase()),
+    //         newValue = match ? this.toInternal(match.value) : this.externalValue;
+    //
+    //     this.setInternalValue(newValue);
+    // }
 
 
 }

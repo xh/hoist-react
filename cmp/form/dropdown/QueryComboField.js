@@ -83,38 +83,38 @@ export class QueryComboField extends BaseDropdownField {
         this.noteValueChange(ev.target.value);
     }
 
-    onKeyPress = (ev) => {
-        const {requireSelection} = this.props,
-            value = this.internalValue;
-
-        if (ev.key === 'Enter') {
-            if (requireSelection) {
-                this.matchInputToOption(this.options, value);
-            }
-            this.doCommit();
-        }
-    }
-
-    onBlur = () => {
-        const {requireSelection} = this.props,
-            value = this.internalValue;
-
-        if (requireSelection) {
-            this.matchInputToOption(this.options, value);
-        }
-
-        this.doCommit();
-        this.setHasFocus(false);
-    }
-
-    matchInputToOption(options, value) {
-        options = this.normalizeOptions(options);
-
-        const match = find(options, (it) => it.label.toLowerCase() == value.toLowerCase()),
-            newValue = match ? this.toInternal(match.value) : this.externalValue;
-
-        this.setInternalValue(newValue);
-    }
+    // onKeyPress = (ev) => {
+    //     const {requireSelection} = this.props,
+    //         value = this.internalValue;
+    //
+    //     if (ev.key === 'Enter') {
+    //         if (requireSelection) {
+    //             this.matchInputToOption(this.options, value);
+    //         }
+    //         this.doCommit();
+    //     }
+    // }
+    //
+    // onBlur = () => {
+    //     const {requireSelection} = this.props,
+    //         value = this.internalValue;
+    //
+    //     if (requireSelection) {
+    //         this.matchInputToOption(this.options, value);
+    //     }
+    //
+    //     this.doCommit();
+    //     this.setHasFocus(false);
+    // }
+    //
+    // matchInputToOption(options, value) {
+    //     options = this.normalizeOptions(options);
+    //
+    //     const match = find(options, (it) => it.label.toLowerCase() == value.toLowerCase()),
+    //         newValue = match ? this.toInternal(match.value) : this.externalValue;
+    //
+    //     this.setInternalValue(newValue);
+    // }
 
 }
 export const queryComboField = elemFactory(QueryComboField);
