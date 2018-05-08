@@ -85,13 +85,11 @@ export class RestControl extends Component {
 
         const options = [...lookup];
 
-        if (!field.required && !field.lookupStrict) options.unshift(null);
-
         return comboField({
             model,
             field: 'value',
             options,
-            requireSelection: requireSelection,
+            requireSelection,
             disabled: !model.isEditable
         });
     }
