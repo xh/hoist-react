@@ -18,7 +18,7 @@ import './Toolbar.scss';
 class ToolbarSeparator extends Component {
 
     render() {
-        return <span className="xh-toolbar__separator">|</span>;
+        return <span className="xh-toolbar__separator"></span>;
     }
 
 }
