@@ -76,10 +76,5 @@ export class QueryComboField extends BaseComboField {
             });
         }
     }
-
-    onChange = (ev) => {
-        this.noteValueChange(ev.target.value);
-    }
-
 }
 export const queryComboField = elemFactory(QueryComboField);

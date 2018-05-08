@@ -49,4 +49,8 @@ export class BaseComboField extends BaseDropdownField {
         this.noteValueChange(this.externalValue);
     }
 
+    onChange = (ev) => {
+        this.noteValueChange(ev.target.value);
+    }
+
 }

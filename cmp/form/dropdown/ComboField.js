@@ -62,9 +62,5 @@ export class ComboField extends BaseComboField {
             disabled
         });
     }
-
-    onChange = (ev) => {
-        this.noteValueChange(ev.target.value);
-    }
 }
 export const comboField = elemFactory(ComboField);
