@@ -14,7 +14,7 @@ import {HoistField} from '../HoistField';
 /**
  * BaseDropdownField
  *
- * Abstract class supporting ComboField, QueryComboField and SelectField.
+ * Abstract class supporting BaseComboField and SelectField.
  */
 export class BaseDropdownField extends HoistField {
 
@@ -26,7 +26,6 @@ export class BaseDropdownField extends HoistField {
     static defaultProps = {
         placeholder: 'Select'
     }
-
 
     //---------------------------------------------------------------------------
     // Handling of null values.  Blueprint doesn't allow null for the value of a
@@ -40,33 +39,6 @@ export class BaseDropdownField extends HoistField {
         return external ===  null ? NULL_VALUE : external;
     }
 
-    //-----------------------------------------------------------
-    // Common handling of options, rendering of selected option
-    //-----------------------------------------------------------
-    normalizeOptions(options) {
-        return options.map(o => {
-            const ret = isObject(o) ?
-                {label: o.label, value: o.value} :
-                {label: o != null ? o.toString() : '-null-', value: o};
-
-            ret.value = this.toInternal(ret.value);
-            return ret;
-        });
-    }
-
-    getOptionRenderer() {
-        return this.props.optionRenderer || this.defaultOptionRenderer;
-    }
-
-    defaultOptionRenderer(option, optionProps) {
-        return menuItem({
-            key: option.value,
-            text: option.label,
-            onClick: optionProps.handleClick,
-            active: optionProps.modifiers.active
-        });
-    }
-
     getDisplayValue(value, items, placeholder) {
         const match = find(items, {value});
 
@@ -78,38 +50,6 @@ export class BaseDropdownField extends HoistField {
         this.noteValueChange(val.value);
         this.doCommit();
     }
-
-    onBlur = () => {
-        const value = this.internalValue;
-
-        if (this.props.requireSelection) {
-            this.matchValueToOption(value);
-        }
-
-        this.doCommit();
-        this.setHasFocus(false);
-    }
-
-    onKeyPress = (ev) => {
-        const value = this.internalValue;
-
-        if (ev.key === 'Enter') {
-            if (this.props.requireSelection) {
-                this.matchValueToOption(value);
-            }
-            this.doCommit();
-        }
-    }
-
-    matchValueToOption(value) {
-        const baseOptions = this.options || this.props.options,
-            options = this.normalizeOptions(baseOptions),
-            match = find(options, (it) => it.label.toLowerCase() == value.toLowerCase()),
-            newValue = match ? this.toInternal(match.value) : this.externalValue;
-
-        this.noteValueChange(newValue);
-    }
-
 }
 
 const NULL_VALUE = 'xhNullValue';
