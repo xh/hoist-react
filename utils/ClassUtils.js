@@ -6,7 +6,7 @@
  */
 
 import {XH} from 'hoist/core';
-import {forOwn, isObject, isPlainObject} from 'lodash';
+import {forOwn, isPlainObject} from 'lodash';
 
 /**
  * Provide default methods on the prototype of a class.

@@ -29,7 +29,7 @@ import {SECONDS} from 'hoist/utils/DateTimeUtils';
 @HoistService()
 export class PrefService {
 
-    _data = null;
+    _data = {};
     _updates = {};
     _localStorageKey = 'localPrefs';
 

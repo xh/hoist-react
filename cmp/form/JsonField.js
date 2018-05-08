@@ -1,5 +1,4 @@
 import ReactDOM from 'react-dom';
-import {isUndefined} from 'lodash';
 import {XH} from 'hoist/core';
 import {PropTypes as PT} from 'prop-types';
 import {defaultsDeep} from 'lodash';
