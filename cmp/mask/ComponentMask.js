@@ -22,11 +22,11 @@ export class ComponentMask extends Component {
 
     static propTypes = {
         isDisplayed: PT.bool,
-        displayText: PT.string
+        text: PT.string
     };
 
     render() {
-        const {isDisplayed, displayText} = this.props;
+        const {isDisplayed, text} = this.props;
         if (!isDisplayed) return null;
 
         return overlay({
@@ -46,11 +46,9 @@ export class ComponentMask extends Component {
                 style: {
                     textAlign: 'center'
                 },
-                items: displayText
+                items: text
             })
         });
     }
 }
 export const componentMask = elemFactory(ComponentMask);
-
-
