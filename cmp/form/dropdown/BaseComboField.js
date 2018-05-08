@@ -45,7 +45,7 @@ export class BaseComboField extends BaseDropdownField {
             return;
         }
 
-        // 2) Otherwise, just revert
+        // 2) Otherwise, revert
         this.noteValueChange(this.externalValue);
     }
 
