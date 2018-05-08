@@ -25,7 +25,7 @@ export class ErrorTrackingService extends BaseService {
             url: 'hoistImpl/submitError',
             params: {
                 error,
-                msg: message ? stripTags(message) : null,
+                msg: message ? stripTags(message) : '',
                 appVersion: XH.getEnv('appVersion')
             }
         });
