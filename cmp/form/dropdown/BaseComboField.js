@@ -5,8 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {isObject, find} from 'lodash';
-import {menuItem} from 'hoist/kit/blueprint';
+import {find} from 'lodash';
 
 import {BaseDropdownField} from './BaseDropdownField';
 
