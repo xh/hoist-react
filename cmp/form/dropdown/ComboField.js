@@ -6,6 +6,7 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
+import {startsWith} from 'lodash';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {Classes, suggest} from 'hoist/kit/blueprint';
 
@@ -45,7 +46,7 @@ export class ComboField extends BaseComboField {
             $items: options,
             onItemSelect: this.onItemSelect,
             itemPredicate: (q, item) => {
-                return item.label.toLowerCase().includes(q.toLowerCase());
+                return startsWith(item.label.toLowerCase(), q.toLowerCase());
             },
             itemRenderer: this.getOptionRenderer(),
             inputValueRenderer: s => s,

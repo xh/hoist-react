@@ -17,30 +17,6 @@ import {BaseDropdownField} from './BaseDropdownField';
  */
 export class BaseComboField extends BaseDropdownField {
 
-    normalizeOptions(options) {
-        return options.map(o => {
-            const ret = isObject(o) ?
-                {label: o.label, value: o.value} :
-                {label: o != null ? o.toString() : '-null-', value: o};
-
-            ret.value = this.toInternal(ret.value);
-            return ret;
-        });
-    }
-
-    getOptionRenderer() {
-        return this.props.optionRenderer || this.defaultOptionRenderer;
-    }
-
-    defaultOptionRenderer(option, optionProps) {
-        return menuItem({
-            key: option.value,
-            text: option.label,
-            onClick: optionProps.handleClick,
-            active: optionProps.modifiers.active
-        });
-    }
-
     onKeyPress = (ev) => {
         if (ev.key === 'Enter') {
             this.doCommit();

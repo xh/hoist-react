@@ -27,6 +27,33 @@ export class BaseDropdownField extends HoistField {
         placeholder: 'Select'
     }
 
+    //-----------------------------------------------------------
+    // Common handling of options, rendering of selected option
+    //-----------------------------------------------------------
+    normalizeOptions(options) {
+        return options.map(o => {
+            const ret = isObject(o) ?
+                {label: o.label, value: o.value} :
+                {label: o != null ? o.toString() : '-null-', value: o};
+
+            ret.value = this.toInternal(ret.value);
+            return ret;
+        });
+    }
+
+    getOptionRenderer() {
+        return this.props.optionRenderer || this.defaultOptionRenderer;
+    }
+
+    defaultOptionRenderer(option, optionProps) {
+        return menuItem({
+            key: option.value,
+            text: option.label,
+            onClick: optionProps.handleClick,
+            active: optionProps.modifiers.active
+        });
+    }
+
     //---------------------------------------------------------------------------
     // Handling of null values.  Blueprint doesn't allow null for the value of a
     // dropdown control, but we can use a sentinel value to represent it.

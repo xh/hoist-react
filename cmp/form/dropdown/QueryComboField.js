@@ -10,13 +10,13 @@ import {hoistComponent, elemFactory} from 'hoist/core';
 import {observable, setter} from 'hoist/mobx';
 import {Classes, suggest} from 'hoist/kit/blueprint';
 
-import {BaseDropdownField} from './BaseDropdownField';
+import {BaseComboField} from './BaseComboField';
 
 /**
  * ComboBox Field which populates its options dynamically based on the current value.
  */
 @hoistComponent()
-export class QueryComboField extends BaseDropdownField {
+export class QueryComboField extends BaseComboField {
     @observable.ref @setter options = [];
 
     static propTypes = {
@@ -44,9 +44,8 @@ export class QueryComboField extends BaseDropdownField {
     }
 
     render() {
-        const {style, width, disabled} = this.props;
-
-        const value = this.renderValue;
+        const {style, width, disabled} = this.props,
+            {renderValue} = this;
 
         return suggest({
             popoverProps: {popoverClassName: Classes.MINIMAL},
@@ -55,7 +54,7 @@ export class QueryComboField extends BaseDropdownField {
             itemRenderer: this.getOptionRenderer(),
             inputValueRenderer: s => s,
             inputProps: {
-                value: this.getDisplayValue(value, this.options, ''),
+                value: this.getDisplayValue(renderValue, this.options, ''),
                 onChange: this.onChange,
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,
