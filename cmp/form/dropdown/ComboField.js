@@ -40,7 +40,6 @@ export class ComboField extends BaseComboField {
         const {style, width, disabled} = this.props,
             {renderValue, options} = this;
 
-
         return suggest({
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: options,
