@@ -41,7 +41,6 @@ export class BaseDropdownField extends HoistField {
     }
 
     //-----------------------------------------------------------
-    //-----------------------------------------------------------
     // Common handling of options, rendering of selected option
     //-----------------------------------------------------------
     normalizeOptions(options) {
