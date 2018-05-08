@@ -34,7 +34,7 @@ export function fileColFactory(fileVals = {}) {
                 colProps.cellClass.push('xh-align-right');
             }
 
-            if (colProps.flex) {
+            if (isNumber(colProps.flex)) {
                 colProps.width = colProps.flex * 1000;
             }
 
