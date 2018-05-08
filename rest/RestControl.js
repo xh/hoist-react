@@ -47,7 +47,7 @@ export class RestControl extends Component {
         if (field.lookup) {
             // Lookup controls will intelligently default based on lookupStrict, unless editor type is otherwise specified
             if (editorType === 'lookupSelect') return this.renderSelect();
-            if (editorType === 'lookupCombo') return this.renderCombo(field.lookupStrict);
+            if (editorType === 'lookupCombo') return this.renderCombo();
             return field.lookupStrict ? this.renderSelect() : this.renderCombo();
         } else if (type === 'bool') {
             // Boolean controls will intelligently default based on nullability, unless editor type is otherwise specified
@@ -77,10 +77,10 @@ export class RestControl extends Component {
         return label(value);
     }
 
-    renderCombo(strict) {
+    renderCombo() {
         const model = this.model,
             field = model.field,
-            requireSelection = strict || model.editor.requireSelection,
+            requireSelection = field.lookupStrict || model.editor.requireSelection,
             lookup = field.lookup;
 
         const options = [...lookup];
