@@ -27,6 +27,20 @@ export class BaseDropdownField extends HoistField {
         placeholder: 'Select'
     }
 
+
+    //---------------------------------------------------------------------------
+    // Handling of null values.  Blueprint doesn't allow null for the value of a
+    // dropdown control, but we can use a sentinel value to represent it.
+    //----------------------------------------------------------------------------
+    toExternal(internal) {
+        return internal === NULL_VALUE ? null : internal;
+    }
+
+    toInternal(external) {
+        return external ===  null ? NULL_VALUE : external;
+    }
+
+
     //-----------------------------------------------------------
     // Common handling of options, rendering of selected option
     //-----------------------------------------------------------
@@ -52,18 +66,6 @@ export class BaseDropdownField extends HoistField {
             onClick: optionProps.handleClick,
             active: optionProps.modifiers.active
         });
-    }
-
-    //---------------------------------------------------------------------------
-    // Handling of null values.  Blueprint doesn't allow null for the value of a
-    // dropdown control, but we can use a sentinel value to represent it.
-    //----------------------------------------------------------------------------
-    toExternal(internal) {
-        return internal === NULL_VALUE ? null : internal;
-    }
-
-    toInternal(external) {
-        return external ===  null ? NULL_VALUE : external;
     }
 
     getDisplayValue(value, items, placeholder) {
