@@ -47,7 +47,7 @@ export class LogLevelPanel extends Component {
         ],
         editors: [
             {field: 'name'},
-            {field: 'level', requireSelection: true}
+            {field: 'level', type: 'lookupSelect'} // waiting on decision regarding log level lookups null handling to decide exactly how to handle this control.
         ]
     });
     
