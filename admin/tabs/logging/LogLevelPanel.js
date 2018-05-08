@@ -23,7 +23,8 @@ export class LogLevelPanel extends Component {
         }, {
             name: 'level',
             label: 'Override',
-            lookupName: 'levels'
+            lookupName: 'levels',
+            lookupStrict: true
         },  {
             name: 'defaultLevel',
             label: 'Initial',
@@ -47,7 +48,7 @@ export class LogLevelPanel extends Component {
         ],
         editors: [
             {field: 'name'},
-            {field: 'level', type: 'lookupSelect'}
+            {field: 'level'}
         ]
     });
     
