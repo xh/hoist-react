@@ -34,7 +34,7 @@ export class Resizable extends Component {
         side: PT.oneOf(['top', 'right', 'bottom', 'left']).isRequired,
         /** Icon to be shown as part of this component's collapsedDisplay */
         icon: PT.element,
-        /** String to be shown as part of this component's collapsedDisplay */
+        /** Title to be shown as part of this component's collapsedDisplay */
         title: PT.string,
         /** Size of the content panel (width if side `left` or `right` - height otherwise). */
         contentSize: PT.number.isRequired,
