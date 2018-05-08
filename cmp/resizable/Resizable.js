@@ -12,6 +12,7 @@ import {box, hbox, vbox} from 'hoist/layout';
 import {ResizableModel} from './ResizableModel';
 import {dragger} from './impl/Dragger';
 import {collapser} from './impl/Collapser';
+import {defaultCollapsedDisplay} from './impl/DefaultCollapsedDisplay';
 
 /**
  * A Resizable/Collapsible Container
@@ -110,15 +111,17 @@ export class Resizable extends Component {
     }
 
     renderCollapsedChild() {
-        const {collapsedDisplay, props} = this;
+        const {collapsedDisplay, props} = this,
+            {icon, title} = this.props;
 
         let child = Children.only(props.children);
+
         if (collapsedDisplay) {
             child = collapsedDisplay;
         } else if (child.type.isHoistComponent) {
             child = React.cloneElement(child, {isCollapsed: true});
         } else {
-            child = null;
+            child = defaultCollapsedDisplay({icon, title});
         }
 
         return box({
