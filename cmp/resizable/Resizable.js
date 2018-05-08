@@ -12,7 +12,7 @@ import {box, hbox, vbox} from 'hoist/layout';
 import {ResizableModel} from './ResizableModel';
 import {dragger} from './impl/Dragger';
 import {collapser} from './impl/Collapser';
-import {defaultCollapsedDisplay} from './impl/DefaultCollapsedDisplay';
+import {collapsedDisplay} from './impl/CollapsedDisplay';
 
 /**
  * A Resizable/Collapsible Container
@@ -42,8 +42,6 @@ export class Resizable extends Component {
         isOpen: PT.bool,
         /** Optional preference name to store sizing and collapsed state for this component. */
         prefName: PT.string,
-        /** React Element to display when collapsed. */
-        collapsedDisplay: PT.element,
         /** ResizableModel - typically constructed internally by this component. */
         model: PT.object
     };
@@ -61,9 +59,10 @@ export class Resizable extends Component {
     }
 
     get side()              {return this.props.side}
+    get title()             {return this.props.side}
+    get icon()              {return this.props.icon}
     get isCollapsible()     {return this.props.isCollapsible !== false}
     get isDraggable()       {return this.props.isDraggable !== false}
-    get collapsedDisplay()  {return this.props.collapsedDisplay}
     get contentSize()       {return this.model.contentSize}
     get isOpen()            {return this.model.isOpen}
     get isVertical()        {return this.side === 'bottom' || this.side === 'top'}
@@ -111,17 +110,16 @@ export class Resizable extends Component {
     }
 
     renderCollapsedChild() {
-        const {collapsedDisplay, props} = this,
-            {icon, title} = this.props;
+        const {icon, title, props} = this;
 
         let child = Children.only(props.children);
 
-        if (collapsedDisplay) {
-            child = collapsedDisplay;
+        if (icon || title) {
+            child = collapsedDisplay({icon, title});
         } else if (child.type.isHoistComponent) {
             child = React.cloneElement(child, {isCollapsed: true});
         } else {
-            child = defaultCollapsedDisplay({icon, title});
+            child = null;
         }
 
         return box({

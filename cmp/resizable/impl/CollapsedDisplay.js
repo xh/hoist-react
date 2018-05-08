@@ -14,7 +14,7 @@ import {hspacer} from 'hoist/layout';
  * @private
  */
 @hoistComponent()
-class DefaultCollapsedDisplay extends Component {
+class CollapsedDisplay extends Component {
     render() {
         const {title, icon} = this.props;
         if (!title && !icon) return null;
@@ -22,4 +22,4 @@ class DefaultCollapsedDisplay extends Component {
         return toolbar(icon, hspacer(1), title);
     }
 }
-export const defaultCollapsedDisplay = elemFactory(DefaultCollapsedDisplay);
+export const collapsedDisplay = elemFactory(CollapsedDisplay);
