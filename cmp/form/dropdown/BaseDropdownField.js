@@ -108,7 +108,7 @@ export class BaseDropdownField extends HoistField {
             match = find(options, (it) => it.label.toLowerCase() == value.toLowerCase()),
             newValue = match ? this.toInternal(match.value) : this.externalValue;
 
-        this.setInternalValue(newValue);
+        this.noteValueChange(newValue);
     }
 
 }
