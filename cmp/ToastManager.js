@@ -30,13 +30,11 @@ export const ToastManager = {
      */
     show({
         message,
-        msg,
         icon = Icon.check(),
         timeout = 3 * SECONDS,
         intent = 'success',
         position = Position.BOTTOM_RIGHT
     }) {
-        message = message || msg;
         return this.getToaster(position).show({
             message,
             icon: this.getStyledIcon(icon),
