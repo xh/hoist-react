@@ -19,9 +19,7 @@ export class FeedbackService extends BaseService {
      * @param {Object} options
      * @param {string} options.message - user-supplied message to POST.
      */
-    async submitAsync({message, msg}) {
-        message = message || msg;
-
+    async submitAsync({message}) {
         await XH.fetchJson({
             url: 'hoistImpl/submitFeedback',
             params: {
