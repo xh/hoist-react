@@ -5,15 +5,16 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {defaults, castArray} from 'lodash';
+import {defaults, castArray, isNumber, omit} from 'lodash';
 
 const globalVals = {};
+const hoistColProps = ['align', 'elementRenderer', 'flex', 'fixedWidth'];
 
 /**
  * Creates a factory for use within a Column definition file to create multiple column factories
  * with a shared set of defaults.
  *
- * @param {Object} fileVals - defaults to apply.
+ * @param {Object} [fileVals] - default properties to apply.
  * @return {function} - function to create a specific column factory.
  */
 export function fileColFactory(fileVals = {}) {
@@ -26,34 +27,29 @@ export function fileColFactory(fileVals = {}) {
             if (colProps.align === 'center') {
                 colProps.headerClass.push('xh-column-header-align-center');
                 colProps.cellClass.push('xh-align-center');
-                delete colProps.align;
             }
 
             if (colProps.align === 'right') {
                 colProps.headerClass.push('xh-column-header-align-right');
                 colProps.cellClass.push('xh-align-right');
-                delete colProps.align;
             }
 
-            if (colProps.flex) {
+            if (isNumber(colProps.flex)) {
                 colProps.width = colProps.flex * 1000;
-                delete colProps.flex;
             }
 
-            if (colProps.fixedWidth) {
+            if (isNumber(colProps.fixedWidth)) {
                 colProps.width = colProps.fixedWidth;
                 colProps.maxWidth = colProps.fixedWidth;
                 colProps.minWidth = colProps.fixedWidth;
-                delete colProps.fixedWidth;
             }
 
             if (colProps.elementRenderer) {
                 const {elementRenderer} = colProps;
                 colProps.cellRendererFramework = RendererComponent;
-                delete colProps.elementRenderer;
             }
 
-            return colProps;
+            return omit(colProps, hoistColProps);
         };
     };
 }

@@ -8,7 +8,7 @@
 import {PropTypes as PT} from 'prop-types';
 import {Component} from 'react';
 import {hoistComponent, elemFactory} from 'hoist/core';
-import {viewport, frame} from 'hoist/layout';
+import {viewport, vframe, box} from 'hoist/layout';
 import {overlay, spinner} from 'hoist/kit/blueprint';
 
 import './LoadMask.scss';
@@ -28,14 +28,18 @@ export class LoadMask extends Component {
         /** PromiseModel instance. If provided, loadMask will show while promise is pending */
         model: PT.object,
         /** Dictates if this mask should be contained within its parent, if set to false will fill the viewport */
-        inline: PT.bool
+        inline: PT.bool,
+        /** A text to be displayed under the loading spinner image */
+        text: PT.string
     };
     
     render() {
-        let {isDisplayed, model, inline} = this.props,
+        let {isDisplayed, model, inline, text} = this.props,
             isInline = inline !== false;
 
         if (!(isDisplayed || (model && model.isPending))) return null;
+        text = text ? box({cls: 'xh-mask-text', item: text}) : null;
+
         return overlay({
             cls: 'xh-mask',
             autoFocus: false,
@@ -45,29 +49,30 @@ export class LoadMask extends Component {
                 style: {backgroundColor: this.BACKGROUND}
             },
             usePortal: !isInline,
-            item: isInline ? this.getInlineChild() : this.getViewportChild()
+            item: isInline ? this.getInlineChild(text) : this.getViewportChild(text)
         });
     }
 
     //-----------------
     // Implementation
     //-----------------
-    getInlineChild() {
-        return frame({
+    getInlineChild(text) {
+        return vframe({
             width: '100%',
             height: '100%',
             alignItems: 'center',
             justifyContent: 'center',
-            item: spinner()
+            item: [spinner(), text]
         });
     }
 
-    getViewportChild() {
+    getViewportChild(text) {
         return viewport({
             flex: 1,
             alignItems: 'center',
             justifyContent: 'center',
-            item: spinner()
+            flexDirection: 'column',
+            item: [spinner(), text]
         });
     }
 }

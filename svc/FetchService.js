@@ -14,8 +14,7 @@ export class FetchService {
     /**
      * Returns a Promise of a json decoded XHR result.
      *
-     * @param opts, standard options for fetch plus
-     *
+     * @param {Object} opts, standard options for fetch plus
      *      + 'url', relative path, will be enhanced with params for 'GET'
      *      + 'contentType', request contentType header as raw string, e.g. 'text/plain'
      */

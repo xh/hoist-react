@@ -32,7 +32,7 @@ export class DataViewModel {
 
     /**
      * @param {function} itemFactory - elemFactory for the component used to render each item.
-     *                                  Will receive record via its props.
+     *      Will receive record via its props.
      * @param {BaseStore} store - store containing the data for the dataview.
      * @param {StoreSelectionModel} [selection] - selection model to use
      * @param {function} [contextMenuFn] - closure returning a StoreContextMenu().
