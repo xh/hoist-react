@@ -157,7 +157,7 @@ export class AppModel extends BaseAppModel {
                 orientation: 'v',
                 children: [
                     {id: 'prefs', component: PreferencePanel},
-                    {id: 'userPrefs', component: UserPreferencePanel}
+                    {id: 'userPrefs', component: UserPreferencePanel, eagerLoad: true}
                 ]
             }
         ];

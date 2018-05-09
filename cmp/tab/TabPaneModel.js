@@ -33,11 +33,13 @@ export class TabPaneModel {
     constructor({
         id,
         name = startCase(id),
-        component
+        component,
+        eagerLoad
     }) {
         this.id = id;
         this.name = name;
         this.componentClass = component;
+        this.eagerLoad = eagerLoad;
         wait(1).then(() => autorun(() => this.syncFromRouter()));
     }
 

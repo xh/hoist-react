@@ -16,6 +16,7 @@ export class UserPreferencePanel extends Component {
 
     store = new RestStore({
         url: 'rest/userPreferenceAdmin',
+        eagerLoadLookups: true,
         fields: [
             {
                 name: 'name',

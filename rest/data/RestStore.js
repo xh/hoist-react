@@ -20,8 +20,9 @@ export class RestStore extends UrlStore {
 
     _lookupsLoaded = false;
 
-    constructor({dataRoot = 'data', ...rest}) {
+    constructor({dataRoot = 'data', eagerLoadLookups, ...rest}) {
         super({dataRoot, ...rest});
+        this.eagerLoadLookups = eagerLoadLookups;
     }
 
     get defaultFieldClass() {
@@ -29,7 +30,7 @@ export class RestStore extends UrlStore {
     }
 
     async loadAsync() {
-        if (!this._lookupsLoaded) {
+        if (!this._lookupsLoaded || this.eagerLoadLookups) {
             const lookupFields = this.fields.filter(it => !!it.lookupName);
             if (lookupFields.length) {
                 const lookupData = await XH.fetchJson({url: `${this.url}/lookupData`});
