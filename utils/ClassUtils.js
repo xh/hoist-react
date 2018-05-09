@@ -45,7 +45,7 @@ export function provideMethods(C, methods) {
     const proto = C.prototype;
     forOwn(methods, (method, name) => {
         if (proto[name]) {
-            throw XH.exception('Symbol already exists on Class.');
+            throw XH.exception(`Symbol ${name} already exists on Class.`);
         }
         if (isPlainObject(method)) {
             Object.defineProperty(proto, name, method);
