@@ -42,8 +42,8 @@ export function Reactive(C) {
         // Implemenatation
         //------------------
         addMobxDisposer(disposer) {
-            this.xhDisposers = this.xhDisposers || [];
-            this.xhDisposers.push(disposer);
+            this._disposers = this._disposers || [];
+            this._disposers.push(disposer);
         }
     });
 
@@ -52,9 +52,9 @@ export function Reactive(C) {
          * Destroy all mobx autoruns and reactions
          */
         destroy() {
-            if (this.xhDisposers) {
-                this.xhDisposers.forEach(f => f());
-                this.xhDisposers = null;
+            if (this._disposers) {
+                this._disposers.forEach(f => f());
+                this._disposers = null;
             }
         }
     });

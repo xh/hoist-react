@@ -8,7 +8,7 @@
 import ReactDOM from 'react-dom';
 import {isPlainObject} from 'lodash';
 
-import {elem} from 'hoist/core';
+import {elem, HoistModel} from 'hoist/core';
 import {Exception, ExceptionHandler} from 'hoist/exception';
 import {observable, setter, action} from 'hoist/mobx';
 import {MultiPromiseModel, never} from 'hoist/promise';
@@ -42,7 +42,8 @@ import '../styles/XH.scss';
  *
  * Available to applications via import as 'XH'- installed as window.XH for troubleshooting purposes.
  */
-export const XH = window.XH = new class {
+@HoistModel()
+class XhModel {
 
     constructor() {
         this.aliasMethods();
@@ -320,8 +321,37 @@ export const XH = window.XH = new class {
             aliases.forEach(name => bindFn(name, name));
         }
     }
-};
+    
+    destroy() {
+        this.safeDestroy(this.appLoadModel, this.routerModel);
+        this.safeDestroy(
+            this.configService,
+            this.environmentService,
+            this.errorTrackingService,
+            this.feedbackService,
+            this.fetchService,
+            this.identityService,
+            this.localStorageService,
+            this.prefService,
+            this.trackService
+        );
+    }
 
+    /**
+     * Helper method to destroy resources safely.
+     *
+     * @param args, object to be
+     *
+     * This method will gently skip input that are null or that do not implement destroy();
+     */
+    safeDestroy(...args) {
+
+        args.forEach(it => {
+            if (it && it.destroy) it.destroy();
+        });
+    }
+}
+export const XH = window.XH = new XhModel();
 
 /**
  * Enumeration of possible Load States for Hoist.

@@ -4,7 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {BaseAppModel} from 'hoist/app';
+import {XH} from 'hoist/core';
+import {HoistAppModel} from 'hoist/app';
 import {action} from 'hoist/mobx';
 import {TabContainerModel} from 'hoist/cmp';
 
@@ -24,7 +25,8 @@ import {UserPreferencePanel} from './tabs/preferences/UserPreferencePanel';
 import {ServicePanel} from './tabs/services/ServicePanel';
 import {UserPanel} from './tabs/users/UserPanel';
 
-export class AppModel extends BaseAppModel {
+@HoistAppModel
+export class AppModel {
 
     tabs = this.createTabContainer();
     
@@ -43,7 +45,6 @@ export class AppModel extends BaseAppModel {
             }
         ];
     }
-
 
     //------------------------
     // Implementation
@@ -163,4 +164,7 @@ export class AppModel extends BaseAppModel {
         ];
     }
 
+    destroy() {
+        XH.safeDestroy(this.tabs);
+    }
 }

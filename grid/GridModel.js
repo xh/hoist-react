@@ -118,6 +118,16 @@ export class GridModel {
     }
 
 
+    /** Load the underlying store. */
+    loadAsync(...args) {
+        return this.store.loadAsync(...args);
+    }
+
+    /** Load the underlying store. */
+    loadData(...args) {
+        return this.store.loadData(...args);
+    }
+
     //-----------------------
     // Implementation
     //-----------------------
@@ -129,5 +139,9 @@ export class GridModel {
         } else {
             return value;
         }
+    }
+
+    destroy() {
+        // TODO: How are Stores destroyed?
     }
 }

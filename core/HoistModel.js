@@ -16,7 +16,7 @@ import {Reactive} from './mixins/Reactive';
  */
 export function HoistModel() {
 
-    return function(C) {
+    return (C) => {
         C.isHoistModel = true;
 
         C = EventTarget(C);

@@ -110,4 +110,8 @@ export class RestFormModel {
     setValue = (field, value) => {
         this.record[field] = value;
     }
+
+    destroy() {
+        XH.safeDestroy(this.messageModel);
+    }
 }

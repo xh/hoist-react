@@ -28,16 +28,14 @@ export class ActivityGridModel {
 
     @observable detailRecord = null;
 
-    store = new LocalStore({
-        fields: [
-            'severity', 'dateCreated', 'username', 'msg', 'category',
-            'device', 'browser', 'data', 'impersonating', 'elapsed',
-            'userAgent'
-        ]
-    });
-
     gridModel = new GridModel({
-        store: this.store,
+        store: new LocalStore({
+            fields: [
+                'severity', 'dateCreated', 'username', 'msg', 'category',
+                'device', 'browser', 'data', 'impersonating', 'elapsed',
+                'userAgent'
+            ]
+        }),
         sortBy: {colId: 'dateCreated', sort: 'desc'},
         columns: [
             baseCol({field: 'severity', fixedWidth: 90}),
@@ -63,7 +61,7 @@ export class ActivityGridModel {
             url: 'trackLogAdmin',
             params: this.getParams()
         }).then(data => {
-            this.store.loadData(data);
+            this.gridModel.loadData(data);
         }).catchDefault();
     }
 
@@ -131,5 +129,9 @@ export class ActivityGridModel {
 
     isValidDate(date) {
         return date && date.toString() !== 'Invalid Date';
+    }
+
+    destroy() {
+        XH.safeDestroy(this.gridModel);
     }
 }

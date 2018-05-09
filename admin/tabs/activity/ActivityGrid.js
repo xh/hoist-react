@@ -18,7 +18,7 @@ import {activityDetail} from './ActivityDetail';
 export class ActivityGrid extends Component {
 
     render() {
-        const model = this.model;
+        const {model} = this;
         return vframe(
             this.renderToolbar(),
             grid({
@@ -61,7 +61,7 @@ export class ActivityGrid extends Component {
             refreshButton({model}),
             filler(),
             storeCountLabel({
-                store: model.store,
+                store: model.gridModel.store,
                 unit: 'log'
             }),
             exportButton({model})
@@ -109,6 +109,5 @@ export class ActivityGrid extends Component {
     onRowDoubleClicked = (e) => {
         this.model.openDetail(e.data);
     }
-
 }
 export const activityGrid = elemFactory(ActivityGrid);

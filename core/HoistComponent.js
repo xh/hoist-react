@@ -24,10 +24,9 @@ import {elemFactory} from './elem';
  * Provides basic mobx and eventTarget functionality, model awareness, and other convenience
  * getters.
  */
-// TODO: Bomb this to capital H
 export function hoistComponent() {
 
-    return function(C) {
+    return (C) => {
         C.isHoistComponent = true;
 
         //-----------
@@ -54,18 +53,18 @@ export function hoistComponent() {
             },
 
             /**
-             * Alternative render method called on a HoistComponent when isCollapsed
-             * property is set to true.
-             */
-            renderCollapsed() {
-                return null;
-            },
-
-            /**
              * Should this Component be rendered in collapsed mode?
              */
             isCollapsed: {
                 get() {return this.props.isCollapsed === true}
+            },
+
+            /**
+             * Alternative render method called on a HoistComponent collapsed.
+             * See isCollapsed.
+             */
+            renderCollapsed() {
+                return null;
             }
         });
 
@@ -76,15 +75,21 @@ export function hoistComponent() {
         chainMethods(C, {
             componentWillUnmount() {
                 this.destroy();
+            },
+
+            destroy() {
+                if (this.localModel) {
+                    this.localModel.destroy();
+                }  
             }
         });
 
         overrideMethods(C, {
-            render: (curr) => function() {
+            render: (sub) => function() {
                 if (this.isCollapsed) {
                     return this.renderCollapsed();
                 }
-                return curr ? curr.apply(this) : null;
+                return sub ? sub.apply(this) : null;
             }
         });
 

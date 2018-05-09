@@ -89,4 +89,8 @@ export class LogViewerModel {
             .linkTo(this.loadModel)
             .catchDefault();
     }, 300);
+
+    destroy() {
+        XH.safeDestroy(this.loadModel, this.files);
+    }
 }

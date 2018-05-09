@@ -132,4 +132,8 @@ export class TabContainerModel {
             parent.setSelectedId(id);
         }
     }
+
+    destroy() {
+        XH.safeDestroy(...this.children);
+    }
 }

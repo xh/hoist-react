@@ -26,7 +26,7 @@ export class ExceptionDialog extends Component {
     localModel = new ExceptionDialogModel()
 
     render() {
-        const model = this.model,
+        const {model} = this,
             {exception, options} = model;
 
         if (!exception) return null;
@@ -51,7 +51,7 @@ export class ExceptionDialog extends Component {
     // Implementation
     //--------------------------------
     getButtons() {
-        const model = this.model;
+        const {model} = this;
     
         return [
             filler(),

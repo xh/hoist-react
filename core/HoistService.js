@@ -20,7 +20,7 @@ import {Reactive} from './mixins/Reactive';
  */
 export function HoistService() {
 
-    return function(C) {
+    return (C) => {
         C.isHoistService = true;
 
         C = EventTarget(C);
@@ -46,7 +46,7 @@ export function HoistService() {
  * @param svcs, one or more HoistServices.
  */
 export async function initServicesAsync(...svcs) {
-    const promises = svcs.map(it => {it.initAsync()}),
+    const promises = svcs.map(it => it.initAsync()),
         results = await allSettled(promises),
         errs = results.filter(it => it.state === 'rejected');
 

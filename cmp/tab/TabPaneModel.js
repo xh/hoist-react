@@ -88,4 +88,8 @@ export class TabPaneModel {
             parent.setSelectedId(id);
         }
     }
+
+    destroy() {
+        XH.safeDestroy(this.loadState);
+    }
 }

@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from 'hoist/core';
+import {XH, HoistModel} from 'hoist/core';
 import {action} from 'hoist/mobx';
 import {GridModel} from 'hoist/grid';
 import {MessageModel, StoreContextMenu} from 'hoist/cmp';
@@ -39,7 +39,7 @@ export class RestGridModel {
 
     gridModel = null;
     formModel = null;
-    messageModel = new MessageModel({title: 'Warning', icon: Icon.warning({size: 'lg'})});
+    messageModel = null;
 
     get store()     {return this.gridModel.store}
     get selection() {return this.gridModel.selection}
@@ -71,9 +71,19 @@ export class RestGridModel {
         this.enhanceToolbar = enhanceToolbar;
         this.gridModel = new GridModel({contextMenuFn: this.contextMenuFn, ...rest});
         this.formModel = new RestFormModel({parent: this, editors});
+        this.messageModel = new MessageModel({title: 'Warning', icon: Icon.warning({size: 'lg'})});
     }
 
+    /** Load the underlying store. */
+    loadAsync(...args) {
+        return this.store.loadAsync(...args);
+    }
 
+    /** Load the underlying store. */
+    loadData(...args) {
+        return this.store.loadData(...args);
+    }
+    
     //-----------------
     // Actions
     //------------------
@@ -153,4 +163,10 @@ export class RestGridModel {
         const fileName = pluralize(this.unit);
         this.gridModel.exportDataAsExcel({fileName});
     }
+
+    destroy() {
+        XH.safeDestroy(this.messageModel, this.gridModel, this.formModel);
+    }
 }
+
+

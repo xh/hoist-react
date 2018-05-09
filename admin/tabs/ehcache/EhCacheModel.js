@@ -16,13 +16,11 @@ import {nameCol} from '../../columns/Columns';
 @HoistModel()
 export class EhCacheModel {
 
-    store = new UrlStore({
-        url: 'ehCacheAdmin/listCaches',
-        fields: ['name', 'heapSize', 'entries', 'status']
-    });
-
     gridModel = new GridModel({
-        store: this.store,
+        store: new UrlStore({
+            url: 'ehCacheAdmin/listCaches',
+            fields: ['name', 'heapSize', 'entries', 'status']
+        }),
         sortBy: 'name',
         columns: [
             nameCol({minWidth: 360, flex: 3}),
@@ -46,6 +44,12 @@ export class EhCacheModel {
     }
 
     async loadAsync() {
-        return this.store.loadAsync();
+        return this.gridModel.loadAsync();
+    }
+
+    destroy() {
+        XH.safeDestroy(this.gridModel);
     }
 }
+
+

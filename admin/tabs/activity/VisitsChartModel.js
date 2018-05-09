@@ -75,4 +75,7 @@ export class VisitsChartModel {
         return [{data}];
     }
 
+    destroy() {
+        XH.safeDestroy(this.chartModel);
+    }
 }

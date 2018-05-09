@@ -13,14 +13,12 @@ import {baseCol} from 'hoist/columns/Core';
 @HoistModel()
 export class ServiceModel {
 
-    store = new UrlStore({
-        url: 'serviceAdmin/listServices',
-        processRawData: this.processRawData,
-        fields: ['provider', 'name']
-    });
-
     gridModel = new GridModel({
-        store: this.store,
+        store: new UrlStore({
+            url: 'serviceAdmin/listServices',
+            processRawData: this.processRawData,
+            fields: ['provider', 'name']
+        }),
         sortBy: 'name',
         groupBy: 'provider',
         columns: [
@@ -51,7 +49,7 @@ export class ServiceModel {
     }
 
     async loadAsync() {
-        return this.store.loadAsync();
+        return this.gridModel.loadAsync();
     }
 
     processRawData(rows) {
@@ -59,5 +57,9 @@ export class ServiceModel {
             r.provider = r.name && r.name.indexOf('hoist') === 0 ? 'Hoist' : 'App';
         });
         return rows;
+    }
+
+    destroy() {
+        XH.destroy(this.gridModel);
     }
 }

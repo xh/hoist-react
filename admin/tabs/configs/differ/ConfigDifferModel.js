@@ -29,17 +29,15 @@ export class ConfigDifferModel  {
     @observable isOpen = false;
     @setter @observable remoteHost = null;
 
-    store = new LocalStore({
-        fields: [
-            'name', 'status', 'localValue', 'remoteValue'
-        ],
-        name: 'differ',
-        filter: (it) => it.status !== 'Identical'
-    });
-
     constructor() {
         this.gridModel = new GridModel({
-            store: this.store,
+            store: new LocalStore({
+                fields: [
+                    'name', 'status', 'localValue', 'remoteValue'
+                ],
+                name: 'differ',
+                filter: (it) => it.status !== 'Identical'
+            }),
             columns: [
                 nameCol({flex: 1}),
                 baseCol({
@@ -78,7 +76,7 @@ export class ConfigDifferModel  {
         const local = this.removeMetaData(resp[0].data),
             remote = this.removeMetaData(resp[1].data),
             diffedConfigs = this.diffConfigs(local, remote),
-            store = this.store;
+            {store} = this.gridModel;
 
         store.loadData(diffedConfigs);
 
@@ -182,7 +180,11 @@ export class ConfigDifferModel  {
     @action
     close() {
         this.isOpen = false;
-        this.store.loadData([]);
+        this.gridModel.loadData([]);
         this.setRemoteHost(null);
+    }
+
+    destroy() {
+        XH.safeDestroy(this.messageModel, this.detailModel, this.gridModel);
     }
 }

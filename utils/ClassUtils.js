@@ -45,7 +45,7 @@ export function provideMethods(C, methods) {
     const proto = C.prototype;
     forOwn(methods, (method, name) => {
         if (proto[name]) {
-            throw XH.exception('Symbol already exists on Class');
+            throw XH.exception('Symbol already exists on Class.');
         }
         if (isPlainObject(method)) {
             Object.defineProperty(proto, name, method);
@@ -61,7 +61,7 @@ export function provideMethods(C, methods) {
  * @param {Object} C - class to be enhanced.
  * @param {Object} methods - name-value pairs of methods to be added.
  * @param {Object} options
- * @params {string} [options.runOrder] - when to run this method if the method is
+ * @param {string} [options.runOrder] - when to run this method if the method is
  *      already defined on this class ('after' | 'before').
  */
 export function chainMethods(C, methods, {runOrder = 'before'} = {}) {

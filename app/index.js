@@ -6,4 +6,4 @@
  */
 
 export * from './AppContainer';
-export * from './BaseAppModel';
+export * from './HoistAppModel';
