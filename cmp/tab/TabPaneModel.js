@@ -29,6 +29,7 @@ export class TabPaneModel {
      * @param {string} id - unique ID, used for generating routes.
      * @param {string} [name] - display name for the tab.
      * @param {Object} componentClass - class of React Component to be displayed within the tab.
+     * @param {boolean} eagerLoad - whether to load fresh data for this tab each time it is selected
      */
     constructor({
         id,
