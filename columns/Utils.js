@@ -45,23 +45,15 @@ export function fileColFactory(fileVals = {}) {
             }
 
             if (colProps.elementRenderer) {
-                const {elementRenderer} = colProps;
-                colProps.cellRendererFramework = RendererComponent;
+                const {elementRenderer} = colProps,
+                    clazz = class extends Component {
+                        render()    {return elementRenderer(this.props)}
+                        refresh()   {return false}
+                    };
+                colProps.cellRendererFramework = clazz;
             }
 
             return omit(colProps, hoistColProps);
         };
     };
-}
-
-
-class RendererComponent extends Component {
-
-    render() {
-        return elementRenderer(this.props);
-    }
-
-    refresh() {
-        return false;
-    }
 }
