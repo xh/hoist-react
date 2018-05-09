@@ -1,4 +1,5 @@
 import {capitalize} from 'lodash';
+import {span} from 'hoist/layout';
 
 /**
  * Basic util for splitting a string (via ' ') and capitalizing each word - e.g. for names.
@@ -29,15 +30,11 @@ export function fmtSpan(v, {
     leadSpc = false,
     trailSpc = false
 } = {}) {
-
-    if (v == null) return '';
-
-    const txt = (leadSpc ? ' ' : '') + v;
-
-    let ret = '<span';
-    ret += cls ? ` class="${cls}"` : '';
-    ret += title ? ` title="${title}"` : '';
-    ret += `>${txt}</span>`;
-
-    return trailSpc ? ret + ' ' : ret;
+    if (v == null) return null;
+    const txt = (leadSpc ? ' ' : '') + v + (trailSpc ? ' ' : '');
+    return span({
+        cls: cls,
+        title: title,
+        item: txt
+    });
 }

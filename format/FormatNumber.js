@@ -9,6 +9,7 @@ import {defaults, isFinite, isString} from 'lodash';
 import numeral from 'numeral';
 
 import {Exception} from 'hoist/exception';
+import {span} from 'hoist/layout';
 
 import {createRenderer, saveOriginal} from './FormatUtils';
 import {fmtSpan} from './FormatMisc';
@@ -18,9 +19,9 @@ const THOUSAND = 1000,
     BILLION  = 1000000000,
     MAX_NUMERIC_PRECISION = 12;
 
-const UP_TICK = '&#9652;',
-    DOWN_TICK = '&#9662;',
-    LEDGER_ALIGN_PLACEHOLDER = '<span style="visibility:hidden">)</span>';
+const UP_TICK = '▴',
+    DOWN_TICK = '▾',
+    LEDGER_ALIGN_PLACEHOLDER = span({style: {visibility: 'hidden'}, item: ')'});
 
 /**
  * Standard number formatting for Hoist
@@ -69,42 +70,41 @@ export function fmtNumber(v, {
 
     if (isInvalidInput(v)) return nullDisplay;
 
+    // Format text
     formatPattern = formatPattern || buildFormatPattern(v, precision, zeroPad);
-
     let ret = numeral(v).format(formatPattern);
-
     if (ledger || withSignGlyph) ret = ret.replace('-', '');
-
+    if (ledger) ret = v < 0 ? '(' + ret + ')' : ret;
     if (withPlusSign && v > 0) {
         ret = '+' + ret;
     }
 
-    if (isString(label)) {
-        if (labelCls) {
-            ret += fmtSpan(label, {cls: labelCls});
-        } else {
-            ret += label;
-        }
-    }
+    // CSS classes
+    const cls = [];
+    if (colorSpec) cls.push(valueColor(v, colorSpec));
+    if (tipFn) cls.push('xh-title-tip');
+
+    // Compile child items
+    const items = [];
 
     if (withSignGlyph) {
-        ret = signGlyph(v) + '&nbsp;' + ret;
+        items.push(signGlyph(v));
     }
 
-    if (ledger) {
-        const plcHolder = forceLedgerAlign ? LEDGER_ALIGN_PLACEHOLDER : '';
-        ret = v < 0 ? '(' + ret + ')' : ret + plcHolder;
+    items.push(ret);
+
+    if (isString(label)) {
+        items.push(labelCls ? fmtSpan(label, {cls: labelCls}) : label);
+    }
+    if (v >= 0 && ledger && forceLedgerAlign) {
+        items.push(LEDGER_ALIGN_PLACEHOLDER);
     }
 
-    if (colorSpec) {
-        ret = fmtSpan(ret, {cls: valueColor(v, colorSpec)});
-    }
-
-    if (tipFn) {
-        ret = fmtSpan(ret, {cls: 'xh-title-tip', title: tipFn(originalValue)});
-    }
-
-    return ret;
+    return span({
+        cls: cls.join(' '),
+        title: tipFn ? tipFn(originalValue) : null,
+        items: items
+    });
 }
 
 /**
@@ -203,16 +203,13 @@ export function fmtPercent(v, opts = {}) {
     if (isInvalidInput(v)) return fmtNumber(v, opts);
 
     defaults(opts, {precision: 2, label: '%', labelCls: null});
-
-    let ret = fmtNumber(v, opts);
-    if (opts.withParens) ret = '(' + ret + ')';
-    return ret;
+    const ret = fmtNumber(v, opts);
+    return opts.withParens ? span('(', ret, ')') : ret;
 }
 
 //---------------
 // Implementation
 //---------------
-
 function signGlyph(v) {
     if (!isFinite(v)) return '';
     return v === 0 ? fmtSpan(UP_TICK, 'transparent-color') :  v > 0 ? UP_TICK : DOWN_TICK;
