@@ -4,6 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+import {XH} from 'hoist/core';
 import {observer} from 'hoist/mobx';
 import {ContextMenuTarget, HotkeysTarget} from 'hoist/kit/blueprint';
 import {defaultMethods, chainMethods, overrideMethods} from 'hoist/utils/ClassUtils';
@@ -32,7 +33,6 @@ export function hoistComponent() {
         //-----------
         // Mixins
         //------------
-        C = observer(C);
         C = Reactive(C);
         C = EventTarget(C);
 
@@ -78,9 +78,7 @@ export function hoistComponent() {
             },
 
             destroy() {
-                if (this.localModel) {
-                    this.localModel.destroy();
-                }  
+                XH.safeDestroy(this.localModel);
             }
         });
 
@@ -92,6 +90,9 @@ export function hoistComponent() {
                 return sub ? sub.apply(this) : null;
             }
         });
+
+        // This must be last, should provide the last override of render
+        C = observer(C);
 
         return C;
     };

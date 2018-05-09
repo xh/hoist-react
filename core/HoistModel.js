@@ -21,7 +21,7 @@ export function HoistModel() {
 
         C = EventTarget(C);
         C = Reactive(C);
-
+        
         return C;
     };
 }

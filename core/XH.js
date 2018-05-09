@@ -128,7 +128,7 @@ class XhModel {
      */
     renderApp(appModelClass, appComponentClass) {
         this.appModel = new appModelClass();
-
+        
         const rootView = appContainer(
             elem(appComponentClass, {model: this.appModel})
         );
