@@ -14,7 +14,7 @@ import {defaults} from 'lodash';
  * If this config is an object it will be cloned before being passed to its formatter.
  * Cloning ensures that the formatter gets a clean config object each time it is called.
  *
- * @param {function} [formatter] - an existing formatter method.
+ * @param {function} formatter - an existing formatter method.
  */
 export function createRenderer(formatter) {
     return function(config) {

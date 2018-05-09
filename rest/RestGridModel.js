@@ -43,15 +43,13 @@ export class RestGridModel {
     get selection() {return this.gridModel.selection}
 
     /**
-     * Construct this Object.
-     *
-     * @param actionEnabled, map of action (e.g. 'add'/'edit'/'delete') to boolean  See default prop
-     * @param actionWarning, map of action (e.g. 'add'/'edit'/'delete') to string.  See default prop.
-     * @param unit, string describing the name records in this grid
-     * @param filterFields, array of strings, names of fields to include in this grid's quick filter logic
-     * @param enhanceToolbar, an optional function used to mutate RestGridToolbar items
-     * @param editors, array of editors
-     * @param rest, arguments for GridModel.
+     * @param {Object} [actionEnabled] - map of action (e.g. 'add'/'edit'/'delete') to boolean  See default prop
+     * @param {Object} [actionWarning] - map of action (e.g. 'add'/'edit'/'delete') to string.  See default prop.
+     * @param {string} [unit] - name that describes records in this grid.
+     * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
+     * @param {function} [enhanceToolbar] - a function used to mutate RestGridToolbar items
+     * @param {Object[]} editors - array of editors
+     * @param {*} ...rest, arguments for GridModel.
      */
     constructor({
         actionEnabled,

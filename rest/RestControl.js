@@ -45,6 +45,9 @@ export class RestControl extends Component {
         if (!isEditable) return this.renderDisplayField();
         
         if (field.lookup) {
+            // Lookup controls will intelligently default based on lookupStrict, unless editor type is otherwise specified
+            if (editorType === 'lookupSelect') return this.renderSelect();
+            if (editorType === 'lookupCombo') return this.renderCombo();
             return field.lookupStrict ? this.renderSelect() : this.renderCombo();
         } else if (type === 'bool') {
             // Boolean controls will intelligently default based on nullability, unless editor type is otherwise specified
@@ -77,6 +80,7 @@ export class RestControl extends Component {
     renderCombo() {
         const model = this.model,
             field = model.field,
+            requireSelection = field.lookupStrict || model.editor.requireSelection,
             lookup = field.lookup;
 
         const options = [...lookup];
@@ -85,6 +89,7 @@ export class RestControl extends Component {
             model,
             field: 'value',
             options,
+            requireSelection,
             disabled: !model.isEditable
         });
     }
@@ -104,7 +109,7 @@ export class RestControl extends Component {
             options = [];
         }
 
-        if (!field.required) options.unshift(null);
+        if (!field.required && !field.lookupStrict) options.unshift(null);
 
         return selectField({
             model,
