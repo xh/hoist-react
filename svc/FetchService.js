@@ -10,15 +10,15 @@ import {Exception} from 'hoist/exception';
 import {castArray} from 'lodash';
 
 export class FetchService extends BaseService {
-    
+
     /**
-     * Returns a Promise of a json decoded XHR result.
+     * Returns a Promise of an XHR response.
      *
      * @param {Object} opts, standard options for fetch plus
      *      + 'url', relative path, will be enhanced with params for 'GET'
      *      + 'contentType', request contentType header as raw string, e.g. 'text/plain'
      */
-    async fetchJson(opts) {
+    async fetch(opts) {
         let {params, method, contentType, url} = opts;
 
         // 1) Compute / install defaults
@@ -62,9 +62,22 @@ export class FetchService extends BaseService {
                 url += '?' + paramsString;
             }
         }
-        
+
         const ret = await fetch(url, opts);
         if (!ret.ok) throw Exception.requestError(opts, ret);
-        return ret.json();
+        return ret;
+    }
+
+    /**
+     * Returns a Promise of a json decoded XHR result.
+     *
+     * @param opts, standard options for fetch plus
+     *
+     *      + 'url', relative path, will be enhanced with params for 'GET'
+     *      + 'contentType', request contentType header as raw string, e.g. 'text/plain'
+     */
+    async fetchJson(opts) {
+        const ret = await this.fetch(opts);
+        return ret.status === 204 ? null : ret.json();
     }
 }
