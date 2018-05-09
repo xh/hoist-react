@@ -68,7 +68,10 @@ export class HoistField extends Component {
             this.toInternal(this.externalValue);
     }
 
-    /** Return the external value associated with control. **/
+    /**
+     * Return the external value associated with control.
+     * This is the last value committed to the model.
+     */
     @computed
     get externalValue() {
         const {value, model, field} = this.props;
