@@ -45,7 +45,7 @@ export class GridModel {
      * @param {boolean} [emptyText] - empty text to display if grid has no records.
      *      Defaults to null, in which case no empty text will be shown.
      * @param {Object[]} [sortBy] - one or more sorters to apply to store data.
-     * @param {string} [sortBy[].colId]- Column ID by which to sort.
+     * @param {string} [sortBy[].colId] - Column ID by which to sort.
      * @param {string} [sortBy[].sort] - sort direction [asc|desc].
      * @param {string} [groupBy] - Column ID by which to group.
      * @param {function} [contextMenuFn] - closure returning a StoreContextMenu().
