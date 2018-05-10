@@ -38,6 +38,7 @@ export class ConfigDifferModel  {
                 name: 'differ',
                 filter: (it) => it.status !== 'Identical'
             }),
+            emptyText: 'Please enter remote host for comparison',
             columns: [
                 nameCol({flex: 1}),
                 baseCol({

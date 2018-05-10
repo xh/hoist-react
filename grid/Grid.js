@@ -47,8 +47,7 @@ class Grid extends Component {
         defaultColDef: {suppressMenu: true},
         groupDefaultExpanded: 1,
         groupUseEntireRow: true,
-        popupParent: document.querySelector('body'),
-        overlayNoRowsTemplate: 'No records found...'
+        popupParent: document.querySelector('body')
     };
 
     constructor(props) {
@@ -57,6 +56,7 @@ class Grid extends Component {
             {...props.gridOptions},
             Grid.DEFAULT_GRID_OPTIONS,
             {
+                overlayNoRowsTemplate: this.model.emptyText,
                 navigateToNextCell: this.onNavigateToNextCell,
                 defaultGroupSortComparator: this.sortByGroup,
                 icons: {
@@ -225,6 +225,7 @@ class Grid extends Component {
         model.gridApi = api;
         api.setSortModel(model.sortBy);
         api.sizeColumnsToFit();
+        if (!model.emptyText) api.hideOverlay();
     }
 
     onNavigateToNextCell = (params) => {
