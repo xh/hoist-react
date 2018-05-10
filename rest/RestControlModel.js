@@ -5,9 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {HoistModel} from 'hoist/core';
 import {computed} from 'hoist/mobx';
 import {isJSON} from 'hoist/utils/JsUtils';
 
+@HoistModel()
 export class RestControlModel  {
 
     field

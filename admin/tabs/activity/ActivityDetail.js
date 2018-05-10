@@ -15,7 +15,7 @@ import {fmtDateTime} from 'hoist/format';
 class ActivityDetail extends Component {
 
     render() {
-        const model = this.model,
+        const {model} = this,
             rec = model.detailRecord;
 
         if (!rec) return null;

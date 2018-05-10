@@ -6,7 +6,7 @@
  */
 
 import moment from 'moment';
-import {XH} from 'hoist/core';
+import {XH, HoistModel} from 'hoist/core';
 import {action, observable, setter} from 'hoist/mobx';
 import {LocalStore} from 'hoist/data';
 import {GridModel} from 'hoist/grid';
@@ -16,6 +16,7 @@ import {compactDateCol} from 'hoist/columns/DatesTimes';
 
 import {usernameCol} from '../../columns/Columns';
 
+@HoistModel()
 export class ClientErrorModel {
 
     @observable startDate = moment().subtract(7, 'days').toDate();
@@ -25,15 +26,13 @@ export class ClientErrorModel {
 
     @observable detailRecord = null;
 
-    store = new LocalStore({
-        fields: [
-            'username', 'error', 'msg', 'browser', 'device',
-            'appVersion', 'appEnvironment', 'dateCreated', 'userAgent'
-        ]
-    });
-
     gridModel = new GridModel({
-        store: this.store,
+        store: new LocalStore({
+            fields: [
+                'username', 'error', 'msg', 'browser', 'device',
+                'appVersion', 'appEnvironment', 'dateCreated', 'userAgent'
+            ]
+        }),
         sortBy: {colId: 'dateCreated', sort: 'desc'},
         columns: [
             compactDateCol({field: 'dateCreated', fixedWidth: 100, align: 'right'}),
@@ -52,7 +51,7 @@ export class ClientErrorModel {
             url: 'clientErrorAdmin',
             params: this.getParams()
         }).then(data => {
-            this.store.loadData(data);
+            this.gridModel.loadData(data);
         }).catchDefault();
     }
 
@@ -119,4 +118,7 @@ export class ClientErrorModel {
         return date && date.toString() !== 'Invalid Date';
     }
 
+    destroy() {
+        XH.safeDestroy(this.gridModel);
+    }
 }
