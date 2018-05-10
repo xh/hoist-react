@@ -8,14 +8,16 @@ import {defaultMethods} from 'hoist/utils/ClassUtils';
 import {HoistModel} from 'hoist/core';
 
 /**
- * Mixin to apply to top app-level model for a HoistApp.   This model will be initialized by Hoist after the
- * framework has successfully initialized and will remain available to all code via the XH.appModel getter.
+ * Mixin to apply to top app-level model for a HoistApp. This model will be initialized by Hoist
+ * after the framework has successfully initialized and will remain available to all code via the
+ * XH.appModel getter.
  *
- * Applications should specify this class to provide application level state and services and customize
- * important metadata.  Initialization of all resources (e.g. application level services)  should be done in initApp().
+ * Applications should specify this class to provide application level state and services and
+ * customize important metadata. Initialization of all resources (e.g. application level services)
+ * should be done in initApp().
  *
- * An class decorated with this function should be provided to XH.renderApp() in the main application bootstrap
- * file.
+ * An class decorated with this function should be provided to XH.renderApp() in the main
+ * application bootstrap file.
  */
 export function HoistAppModel(C) {
     C.isHoistAppModel = true;
@@ -23,7 +25,6 @@ export function HoistAppModel(C) {
     C = HoistModel()(C);
 
     defaultMethods(C, {
-
         /**
          * Should applications display a logout option - i.e. for apps using form-based auth
          * where logging out is a supported operation. Expected to be false for SSO apps.
@@ -33,8 +34,8 @@ export function HoistAppModel(C) {
         },
 
         /**
-         * Is SSO authentication expected / required for this application? If true, will prevent display of the
-         * loginPanel form and instead display a lockoutPanel if the user cannot be identified.
+         * Is SSO authentication expected / required for this application? If true, will prevent display
+         * of the loginPanel form and instead display a lockoutPanel if the user cannot be identified.
          */
         requireSSO: {
             get() {return false}

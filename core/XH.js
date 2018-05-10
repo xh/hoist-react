@@ -36,9 +36,9 @@ import '../styles/XH.scss';
 /**
  * Top-level Singleton model for Hoist.  This is the main entry point for the API.
  *
- * It provide access to the built-in Hoist services, metadata about the application and
- * environment, and convenience aliases to the most common framework operations.  It also maintains
- * key observable application state regarding dialogs, loading, and exceptions.
+ * It provide access to the built-in Hoist services, metadata about the application and environment,
+ * and convenience aliases to the most common framework operations. It also maintains key observable
+ * application state regarding dialogs, loading, and exceptions.
  *
  * Available to applications via import as 'XH'- installed as window.XH for troubleshooting purposes.
  */
@@ -106,7 +106,7 @@ class XhModel {
     /** Updated App version available, as reported by server. */
     @observable updateVersion = null;
 
-    /** Top level model for the App - assigned via BaseAppModel's constructor. */
+    /** Top level model for the App - set in `renderApp()` below. */
     appModel = null;
 
     /** Router model for the App - used for route based navigation. */
@@ -119,12 +119,12 @@ class XhModel {
     appLoadModel = new MultiPromiseModel();
 
     /**
-     * Main entry point.   Initialize and render application code.
+     * Main entry point. Initialize and render application code.
      *
      * @param {Object} appModelClass - class containing main application state and logic.
      *      Should be a subclass of BaseAppModel.
-     * @param {Object} appComponentClass - class describing main application view. Should inherits
-     *      from Component and be decorated with @HoistComponent.
+     * @param {Object} appComponentClass - class describing main application view.
+     *      Should extend Component and be decorated with @HoistComponent.
      */
     renderApp(appModelClass, appComponentClass) {
         this.appModel = new appModelClass();
@@ -169,7 +169,7 @@ class XhModel {
         this.displayException = {exception, options};
     }
 
-    /** Hide any displayed exception */
+    /** Hide any displayed exception. */
     @action
     hideException() {
         this.displayException = null;
@@ -338,11 +338,10 @@ class XhModel {
     }
 
     /**
-     * Helper method to destroy resources safely.
+     * Helper method to destroy resources safely (e.g. child HoistModels). Will quietly skip args
+     * that are null / undefined or that do not implement destroy().
      *
-     * @param args, object to be
-     *
-     * This method will gently skip input that are null or that do not implement destroy();
+     * @param {...Object} args - Objects to be destroyed.
      */
     safeDestroy(...args) {
 

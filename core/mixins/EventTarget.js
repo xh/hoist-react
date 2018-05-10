@@ -11,9 +11,7 @@ import {provideMethods, chainMethods} from 'hoist/utils/ClassUtils';
 
 /**
  * Mixin to make a class an event target.
- *
- * Provides support for adding and removing listeners, and firing
- * events on itself.
+ * Provides support for adding and removing listeners and firing events on itself.
  */
 export function EventTarget(C) {
     C.isEventTarget = true;
@@ -21,8 +19,7 @@ export function EventTarget(C) {
     provideMethods(C, {
 
         /**
-         * Map of current listeners on this target, by listener name
-         *
+         * Map of current listeners on this target, by listener name.
          * @param {string} eventName - name of event.
          * @return Array
          */
@@ -36,8 +33,7 @@ export function EventTarget(C) {
         },
 
         /**
-         * Add a listener
-         *
+         * Add a listener.
          * @param {string} eventName
          * @param {function} fn
          * @return {{eventName: string, fn: function}} - object representing the listener which was added.
@@ -52,7 +48,6 @@ export function EventTarget(C) {
 
         /**
          * Remove a listener.
-         *
          * @param {Object} listener - listener object returned by addListener().
          */
         removeListener(listener) {
@@ -63,8 +58,7 @@ export function EventTarget(C) {
         },
 
         /**
-         * Fire an event
-         *
+         * Fire an event.
          * @param {string} eventName - event to be fired.
          * @param {Object} ev - object representing data to be passed to the event handlers.
          */
@@ -86,7 +80,6 @@ export function EventTarget(C) {
             this._listeners = null;
         }
     });
-
 
     return C;
 }

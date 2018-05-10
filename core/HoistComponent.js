@@ -17,13 +17,11 @@ import {elemFactory} from './elem';
 /**
  * Core decorator for Components in Hoist.
  *
- * All React Components in Hoist applications should typically be decorated with
- * this decorator. Exceptions include highly specific low-level components provided
- * to other APIs which maybe negatively impacted by the overhead associated with this
- * decorator.
+ * All React Components in Hoist applications should typically be decorated with this decorator.
+ * Exceptions include highly specific low-level components provided to other APIs which may be
+ * negatively impacted by the overhead associated with this decorator.
  *
- * Provides basic mobx and eventTarget functionality, model awareness, and other convenience
- * getters.
+ * Adds support for managed events, mobx reactivity, model awareness, and other convenience getters.
  */
 export function hoistComponent() {
 
@@ -39,6 +37,7 @@ export function hoistComponent() {
         if (C.prototype.renderContextMenu) {
             C = ContextMenuTarget(C);
         }
+
         if (C.prototype.renderHotkeys) {
             C = HotkeysTarget(C);
         }
@@ -60,8 +59,7 @@ export function hoistComponent() {
             },
 
             /**
-             * Alternative render method called on a HoistComponent collapsed.
-             * See isCollapsed.
+             * Alternate render method called on a HoistComponent when collapsed as per `isCollapsed`.
              */
             renderCollapsed() {
                 return null;

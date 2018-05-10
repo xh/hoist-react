@@ -15,8 +15,8 @@ import {Reactive} from './mixins/Reactive';
 /**
  * Core decorator for Services in Hoist.
  *
- * All services Hoist applications should typically be decorated with
- * this function.  It provides basic functionality for initialization
+ * All services Hoist applications should typically be decorated with this function.
+ * Adds support for managed events, mobx reactivity, and lifecycle initialization.
  */
 export function HoistService() {
 
@@ -29,8 +29,8 @@ export function HoistService() {
         defaultMethods(C, {
             /**
              * Called by framework or application to initialize before application startup.
-             * Throwing an exception from this method will typically block startup.  Service
-             * writers should take care to stifle and manage all non-fatal exceptions.
+             * Throwing an exception from this method will typically block startup.
+             * Service writers should take care to stifle and manage all non-fatal exceptions.
              */
             async initAsync() {}
         });
@@ -43,7 +43,7 @@ export function HoistService() {
 /**
  * Initialize multiple services in parallel.
  *
- * @param svcs, one or more HoistServices.
+ * @param svcs - one or more HoistServices.
  */
 export async function initServicesAsync(...svcs) {
     const promises = svcs.map(it => it.initAsync()),

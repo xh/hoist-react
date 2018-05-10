@@ -166,5 +166,3 @@ export class RestGridModel {
         XH.safeDestroy(this.messageModel, this.gridModel, this.formModel);
     }
 }
-
-

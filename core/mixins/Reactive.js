@@ -9,10 +9,8 @@ import {autorun, reaction} from 'hoist/mobx';
 import {provideMethods, chainMethods} from 'hoist/utils/ClassUtils';
 
 /**
- * Mixin to support adding managed MobX reactivity
- *
- * Provides support for adding and removing managed reactions and
- * autoruns.
+ * Mixin to support adding managed MobX reactivity.
+ * Provides support for adding and removing managed reactions and autoruns.
  */
 export function Reactive(C) {
 
@@ -21,26 +19,25 @@ export function Reactive(C) {
     provideMethods(C, {
 
         /**
-         * Add and start a managed autorun
-         *
-         * @param {*} args, arguments to autorun().
+         * Add and start a managed autorun.
+         * @param {*} args - arguments to autorun().
          */
         addAutorun(...args) {
             this.addMobxDisposer(autorun(...args));
         },
 
         /**
-         * Add and start a managed reaction
-         *
+         * Add and start a managed reaction.
          * @param {*} args - arguments to reaction().
          */
         addReaction(...args) {
             this.addMobxDisposer(reaction(...args));
         },
-        
-        //------------------
-        // Implemenatation
-        //------------------
+
+
+        //------------------------
+        // Implementation
+        //------------------------
         addMobxDisposer(disposer) {
             this._disposers = this._disposers || [];
             this._disposers.push(disposer);
@@ -49,7 +46,7 @@ export function Reactive(C) {
 
     chainMethods(C, {
         /**
-         * Destroy all mobx autoruns and reactions
+         * Destroy all mobx autoruns and reactions.
          */
         destroy() {
             if (this._disposers) {
