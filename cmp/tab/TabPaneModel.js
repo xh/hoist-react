@@ -71,8 +71,8 @@ export class TabPaneModel {
     get needsLoad() {
         if (this.isActive) {
             if (!this.loadState.isPending) {
-                const {lastRefreshRequest, lastLoaded, forceReload} = this;
-                return (!lastLoaded || forceReload || (lastRefreshRequest && (lastLoaded < lastRefreshRequest)));
+                const {lastRefreshRequest, lastLoaded} = this;
+                return (!lastLoaded || (lastRefreshRequest && (lastLoaded < lastRefreshRequest)));
             }
         }
         return false;
@@ -81,7 +81,6 @@ export class TabPaneModel {
     @action
     markLoaded() {
         this.lastLoaded = Date.now();
-        this.forceReload = false;
     }
 
 
