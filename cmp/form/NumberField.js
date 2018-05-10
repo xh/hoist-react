@@ -44,7 +44,7 @@ export class NumberField extends HoistField {
             onKeyPress: this.onKeyPress,
             onBlur: this.onBlur,
             onFocus: this.onFocus,
-            style: {...style, width},
+            style: {...style, width, textAlign: 'right'},
             buttonPosition: 'none',
             // allowNumericCharactersOnly: allowNumericCharactersOnly !== false,
             allowNumericCharactersOnly: false, // test code remove, use above
