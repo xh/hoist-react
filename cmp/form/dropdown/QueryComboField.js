@@ -10,13 +10,13 @@ import {hoistComponent, elemFactory} from 'hoist/core';
 import {observable, setter} from 'hoist/mobx';
 import {Classes, suggest} from 'hoist/kit/blueprint';
 
-import {BaseDropdownField} from './BaseDropdownField';
+import {BaseComboField} from './BaseComboField';
 
 /**
  * ComboBox Field which populates its options dynamically based on the current value.
  */
 @hoistComponent()
-export class QueryComboField extends BaseDropdownField {
+export class QueryComboField extends BaseComboField {
     @observable.ref @setter options = [];
 
     static propTypes = {
@@ -31,20 +31,21 @@ export class QueryComboField extends BaseDropdownField {
         /** Delay (in ms) used to buffer calls to the queryFn (default 100) */
         queryBuffer: PT.number,
         /** Optional custom optionRenderer, a function that receives (option, optionProps) */
-        optionRenderer: PT.func
+        optionRenderer: PT.func,
+        /** Whether to force values from given options. Set to true to disallow arbitrary input */
+        requireSelection: PT.bool
     };
 
     delegateProps = ['className', 'style', 'placeholder', 'disabled'];
 
     constructor(props) {
         super(props);
-        this.addAutoRun(() => this.syncOptions(), {delay: props.queryBuffer || 100});
+        this.addAutorun(() => this.syncOptions(), {delay: props.queryBuffer || 100});
     }
 
     render() {
-        const {style, width, disabled} = this.props;
-
-        const value = this.renderValue;
+        const {style, width, disabled} = this.props,
+            {renderValue} = this;
 
         return suggest({
             popoverProps: {popoverClassName: Classes.MINIMAL},
@@ -53,7 +54,7 @@ export class QueryComboField extends BaseDropdownField {
             itemRenderer: this.getOptionRenderer(),
             inputValueRenderer: s => s,
             inputProps: {
-                value: this.getDisplayValue(value, this.options, ''),
+                value: this.getDisplayValue(renderValue, this.options, ''),
                 onChange: this.onChange,
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,
@@ -73,16 +74,6 @@ export class QueryComboField extends BaseDropdownField {
             queryFn(value).then(options => {
                 this.setOptions(this.normalizeOptions(options));
             });
-        }
-    }
-
-    onChange = (ev) => {
-        this.noteValueChange(ev.target.value);
-    }
-
-    onKeyPress = (ev) => {
-        if (ev.key === 'Enter') {
-            this.doCommit();
         }
     }
 }

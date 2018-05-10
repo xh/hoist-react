@@ -4,13 +4,14 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH} from 'hoist/core';
+import {XH, HoistModel} from 'hoist/core';
 import {observable, setter, computed, action} from 'hoist/mobx';
 import {ToastManager} from 'hoist/cmp';
 
 /**
  * Local Model to handle Exception Dialog.
  */
+@HoistModel()
 export class ExceptionDialogModel {
 
     @computed
@@ -33,7 +34,7 @@ export class ExceptionDialogModel {
         const svc = XH.errorTrackingService,
             {exception, userMessage, options} = this;
         if (svc.isReady) {
-            svc.submitAsync({exception, msg: userMessage})
+            svc.submitAsync({exception, message: userMessage})
                 .then(() => {
                     ToastManager.show({message: 'Error Details Submitted'});
                 });

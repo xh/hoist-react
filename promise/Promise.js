@@ -20,7 +20,7 @@ import RSVP from 'rsvp';
  * This establishes a minimal level of asynchronicity for the entire chain, and is especially
  * important if the chain contains calls to 'bind', 'track' or 'timeout'
  *
- * @param {function} [fn=null] - function appropriate as an argument to `then()`.
+ * @param {function} [fn] - function appropriate as an argument to `then()`.
  * @returns {Promise}
  */
 export async function start(fn) {
@@ -97,9 +97,7 @@ Object.assign(Promise.prototype, {
      * Version of catch() that will invoke default application exception handling.
      * Typically called in last line in promise chain.
      *
-     * @param {Object} [options]
-     * @param {string} [options.title]
-     * @param {string} [options.message]
+     * @param {Object} [options] - options suitable for passing to XH.handleException().
      */
     catchDefault(options) {
         return this.catch(e => XH.handleException(e, options));
@@ -109,9 +107,7 @@ Object.assign(Promise.prototype, {
      * Version of catchDefault() that will only catch certain exceptions.
      *
      * @param {function} selector - see catchWhen().
-     * @param {Object} [options]
-     * @param {string} [options.title]
-     * @param {string} [options.message]
+     * @param {Object} [options] - options suitable for passing to XH.handleException().
      */
     catchDefaultWhen(selector, options) {
         return this.catch(e => {
@@ -132,7 +128,7 @@ Object.assign(Promise.prototype, {
         if (!trackCfg) return this;
 
         if (typeof trackCfg === 'string') {
-            trackCfg = {msg: trackCfg};
+            trackCfg = {message: trackCfg};
         }
 
         const startTime = Date.now();

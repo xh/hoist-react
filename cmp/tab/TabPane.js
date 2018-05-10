@@ -27,7 +27,7 @@ export class TabPane extends Component {
 
     constructor(props) {
         super(props);
-        this.addAutoRun(() => this.syncLoad());
+        this.addAutorun(() => this.syncLoad());
     }
 
     render() {
@@ -40,6 +40,7 @@ export class TabPane extends Component {
         return frame({
             display: isActive ? 'flex' : 'none',
             margin: 4,
+            cls: 'xh-tab-pane',
             item: elem(model.componentClass, {...this.props, flex: 1, ref: this.child.ref, tabPaneModel: this.model})
         });
     }

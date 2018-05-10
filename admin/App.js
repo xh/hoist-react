@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {XH, elemFactory, hoistComponent} from 'hoist/core';
+import {XH, hoistComponent} from 'hoist/core';
 import {vframe, frame} from 'hoist/layout';
 import {navbar, navbarGroup, navbarHeading, button} from 'hoist/kit/blueprint';
 import {logoutButton, lockoutPanel, tabContainer, themeToggleButton, refreshButton} from 'hoist/cmp';
@@ -82,4 +82,3 @@ export class App extends Component {
         XH.appModel.requestRefresh();
     }
 }
-export const app = elemFactory(App);

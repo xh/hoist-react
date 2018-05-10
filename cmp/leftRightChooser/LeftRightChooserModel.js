@@ -4,16 +4,18 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+import {HoistModel, XH} from 'hoist/core';
 import {GridModel} from 'hoist/grid';
 import {baseCol} from 'hoist/columns/Core';
 import {LocalStore} from 'hoist/data';
-import {autorun, computed} from 'hoist/mobx';
+import {computed} from 'hoist/mobx';
 
 import {ItemRenderer} from './impl/ItemRenderer';
 
 /**
  * A Model for managing the state of a LeftRightChooser.
  */
+@HoistModel()
 export class LeftRightChooserModel {
     /** Grid Model for the left-hand side */
     leftModel = null;
@@ -104,9 +106,8 @@ export class LeftRightChooserModel {
 
         this.refreshStores();
 
-        autorun(() => this.syncSelection());
+        this.addAutorun(() => this.syncSelection());
     }
-
 
     //------------------------
     // Implementation
@@ -153,5 +154,9 @@ export class LeftRightChooserModel {
 
         leftModel.store.loadData(data.filter(it => it.side === 'left'));
         rightModel.store.loadData(data.filter(it => it.side === 'right'));
+    }
+
+    destroy() {
+        XH.safeDestroy(this.leftModel, this.rightModel);
     }
 }

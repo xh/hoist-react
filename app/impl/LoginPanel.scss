@@ -6,14 +6,6 @@
     margin: 0 var(--xh-pad-px) var(--xh-pad-px) var(--xh-pad-px);
   }
 
-  &__title {
-    color: var(--xh-title-text-color);
-    background-color: var(--xh-title-bg);
-    font-size: var(--xh-title-font-size-px);
-    padding: var(--xh-pad-px);
-    margin-bottom: var(--xh-pad-px);
-  }
-
   &__warning {
     color: var(--xh-red);
     margin-bottom: var(--xh-pad-px);
