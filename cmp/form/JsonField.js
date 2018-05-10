@@ -1,4 +1,5 @@
 import ReactDOM from 'react-dom';
+import {XH} from 'hoist/core';
 import {PropTypes as PT} from 'prop-types';
 import {defaultsDeep} from 'lodash';
 import {textArea} from 'hoist/kit/blueprint';
@@ -87,7 +88,7 @@ export class JsonField extends HoistField {
             editorSpec = defaultsDeep(
                 editorProps,
                 JsonField.defaultEditorProps,
-                {theme: this.darkTheme ? 'dracula' : 'default', readOnly: disabled}
+                {theme: XH.darkTheme ? 'dracula' : 'default', readOnly: disabled}
             );
 
         const taDom = ReactDOM.findDOMNode(taCmp),

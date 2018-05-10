@@ -18,7 +18,7 @@ class LogViewerDisplay extends Component {
 
     constructor(props) {
         super(props);
-        this.addAutoRun(() => this.syncTail());
+        this.addAutorun(() => this.syncTail());
     }
 
     render() {

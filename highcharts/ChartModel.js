@@ -4,12 +4,14 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+import {HoistModel} from 'hoist/core';
 import {observable, setter} from 'hoist/mobx';
 
 
 /**
  * Model to hold and maintain the configuration and data series for a Highcharts chart.
  */
+@HoistModel()
 export class ChartModel {
 
     @observable.ref @setter config = {};

@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {HoistModel} from 'hoist/core';
 import {action, observable} from 'hoist/mobx';
 import {StoreSelectionModel} from 'hoist/data';
 import {StoreContextMenu} from 'hoist/cmp';
@@ -14,6 +15,7 @@ import {castArray, find, isString, orderBy} from 'lodash';
  * Core Model for a Grid, specifying the grid's data store, column definitions,
  * sorting/grouping/selection state, and context menu configuration.
  */
+@HoistModel()
 export class GridModel {
 
     // Immutable public properties
@@ -116,6 +118,16 @@ export class GridModel {
     }
 
 
+    /** Load the underlying store. */
+    loadAsync(...args) {
+        return this.store.loadAsync(...args);
+    }
+
+    /** Load the underlying store. */
+    loadData(...args) {
+        return this.store.loadData(...args);
+    }
+
     //-----------------------
     // Implementation
     //-----------------------
@@ -127,5 +139,9 @@ export class GridModel {
         } else {
             return value;
         }
+    }
+
+    destroy() {
+        // TODO: How are Stores destroyed?
     }
 }

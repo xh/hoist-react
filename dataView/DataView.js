@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {XH, hoistComponent, elemFactory} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {GridModel} from 'hoist/grid';
 import {baseCol} from 'hoist/columns/Core';
@@ -45,6 +45,9 @@ class DataView extends Component {
         });
     }
 
+    destroy() {
+        XH.safeDestroy(this._gridModel);
+    }
 }
 
 export const dataView = elemFactory(DataView);

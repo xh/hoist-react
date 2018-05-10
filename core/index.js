@@ -6,6 +6,9 @@
  */
 
 export * from './elem';
-export * from './BaseAppModel';
+export * from './mixins/Reactive';
+export * from './mixins/EventTarget';
 export * from './HoistComponent';
+export * from './HoistModel';
+export * from './HoistService';
 export * from './XH';

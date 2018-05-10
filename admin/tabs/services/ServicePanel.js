@@ -33,13 +33,13 @@ export class ServicePanel extends Component {
 
     renderToolbar() {
         const model = this.model,
-            store = model.store;
+            {store, selection} = model.gridModel;
         return toolbar(
             button({
                 icon: Icon.sync(),
                 text: 'Clear Caches',
                 onClick: this.onClearCachesClick,
-                disabled: model.gridModel.selection.isEmpty
+                disabled: selection.isEmpty
             }),
             toolbarSep(),
             refreshButton({model}),
