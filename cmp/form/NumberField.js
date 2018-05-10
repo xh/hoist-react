@@ -34,7 +34,7 @@ export class NumberField extends HoistField {
         /** Constrain input to numeric characters, defaults to true. Set to false for advanced input evaluation */
         allowNumericCharactersOnly: PT.bool,
         /** Whether to display large values with commas */
-        displayWithCommas: PT.bool
+        displayWithDelimiters: PT.bool
     };
 
     static shortHandMatcher = /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/gi;
@@ -50,7 +50,7 @@ export class NumberField extends HoistField {
             onKeyPress: this.onKeyPress,
             onBlur: this.onBlur,
             onFocus: this.onFocus,
-            style: {...style, width, textAlign: 'right'},
+            style: {textAlign: 'right', width, ...style},
             buttonPosition: 'none',
             allowNumericCharactersOnly: allowNumericCharactersOnly !== false,
             ...this.getDelegateProps()
@@ -77,7 +77,7 @@ export class NumberField extends HoistField {
             zeroPad = !!this.props.zeroPad,
             formattedVal = fmtNumber(value, {precision, zeroPad});
 
-        return this.props.displayWithCommas ? formattedVal : this.normalizeValue(formattedVal);
+        return this.props.displayWithDelimiters ? formattedVal : this.normalizeValue(formattedVal);
     }
 
     normalizeValue(value) {
