@@ -27,7 +27,7 @@ export class NumberField extends HoistField {
         min: PT.number,
         /** maximum value */
         max: PT.number,
-        /** Number of decimal place to allow on field's value, defaults to 4*/
+        /** Number of decimal places to allow on field's value, defaults to 4*/
         precision: PT.number,
         /** Set to true to automatically fill in zeros in accord with precision */
         zeroPad: PT.bool,
@@ -78,9 +78,9 @@ export class NumberField extends HoistField {
         return this.props.displayWithDelimiters ? formattedVal : this.normalizeValue(formattedVal);
     }
 
-    normalizeValue(val) {
-        val = replace(val, /,/g, '');
-        return replace(val, /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/gi, this.expandShorthand);
+    normalizeValue(value) {
+        value = replace(value, /,/g, '');
+        return replace(value, /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/gi, this.expandShorthand);
     }
 
     expandShorthand(value) {
