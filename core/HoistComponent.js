@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {autorun, observer} from 'hoist/mobx';
+import {autorun, reaction, observer} from 'hoist/mobx';
 import {ContextMenuTarget, HotkeysTarget} from 'hoist/kit/blueprint';
 import {addProperty, mixinMethods} from 'hoist/utils/MixinUtils';
 
@@ -65,12 +65,23 @@ export function hoistComponent({isObserver = true} = {}) {
                 this.xhAutoRuns.push(autoRunArgs);
             },
 
+            addReaction: function(...reactionArgs) {
+                this.xhReactions = this.xhReactions || [];
+                this.xhReactions.push(reactionArgs);
+            },
+
             componentDidMount: function() {
-                const {xhAutoRuns} = this;
+                const {xhAutoRuns, xhReactions} = this;
                 if (xhAutoRuns) {
                     xhAutoRuns.forEach(args => {
                         this.xhDisposers = this.xhDisposers || [];
                         this.xhDisposers.push(autorun(...args));
+                    });
+                }
+                if (xhReactions) {
+                    xhReactions.forEach(args => {
+                        this.xhDisposers = this.xhDisposers || [];
+                        this.xhDisposers.push(reaction(...args));
                     });
                 }
             },

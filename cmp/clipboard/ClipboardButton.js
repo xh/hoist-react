@@ -15,6 +15,7 @@ import ClipboardJS from 'clipboard';
 
 /**
  * Button to copy text to the clipboard - via the clipboard.js library (https://clipboardjs.com).
+ * Accepts props documented below as well as any supported by Blueprint's Button.
  */
 @hoistComponent()
 export class ClipboardButton extends Component {

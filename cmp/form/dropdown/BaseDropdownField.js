@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {PropTypes as PT} from 'prop-types';
 import {isObject, find} from 'lodash';
 import {menuItem} from 'hoist/kit/blueprint';
 
@@ -13,9 +14,14 @@ import {HoistField} from '../HoistField';
 /**
  * BaseDropdownField
  *
- * Abstract class supporting ComboField and SelectField.
+ * Abstract class supporting BaseComboField and SelectField.
  */
 export class BaseDropdownField extends HoistField {
+
+    static propTypes = {
+        /** Text to display when control is empty */
+        placeholder: PT.string
+    };
 
     static defaultProps = {
         placeholder: 'Select'
@@ -31,7 +37,7 @@ export class BaseDropdownField extends HoistField {
     }
 
     toInternal(external) {
-        return external ===  null ?  NULL_VALUE : external;
+        return external ===  null ? NULL_VALUE : external;
     }
 
 
@@ -49,16 +55,16 @@ export class BaseDropdownField extends HoistField {
         });
     }
 
-    getItemRenderer() {
-        return this.props.itemRenderer || this.defaultItemRenderer;
+    getOptionRenderer() {
+        return this.props.optionRenderer || this.defaultOptionRenderer;
     }
 
-    defaultItemRenderer(item, itemProps) {
+    defaultOptionRenderer(option, optionProps) {
         return menuItem({
-            key: item.value,
-            text: item.label,
-            onClick: itemProps.handleClick,
-            active: itemProps.modifiers.active
+            key: option.value,
+            text: option.label,
+            onClick: optionProps.handleClick,
+            active: optionProps.modifiers.active
         });
     }
 

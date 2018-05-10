@@ -20,7 +20,7 @@ import RSVP from 'rsvp';
  * This establishes a minimal level of asynchronicity for the entire chain, and is especially
  * important if the chain contains calls to 'bind', 'track' or 'timeout'
  *
- * @param {function} [fn=null] - function appropriate as an argument to `then()`.
+ * @param {function} [fn] - function appropriate as an argument to `then()`.
  * @returns {Promise}
  */
 export async function start(fn) {
@@ -131,12 +131,13 @@ Object.assign(Promise.prototype, {
     track(trackCfg) {
         if (!trackCfg) return this;
 
+        if (typeof trackCfg === 'string') {
+            trackCfg = {message: trackCfg};
+        }
+
         const startTime = Date.now();
 
-        return this.catch(e => {
-            trackCfg.exception = e;
-            throw e;
-        }).finally(() => {
+        return this.finally(() => {
             trackCfg.elapsed = Date.now() - startTime;
             XH.track(trackCfg);
         });

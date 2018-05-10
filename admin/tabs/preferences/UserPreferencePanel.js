@@ -65,7 +65,7 @@ export class UserPreferencePanel extends Component {
         editors: [
             {field: 'name'},
             {field: 'username'},
-            {field: 'userValue'},
+            {field: 'userValue', type: 'boolSelect'},
             {field: 'lastUpdated'},
             {field: 'lastUpdatedBy'}
         ]

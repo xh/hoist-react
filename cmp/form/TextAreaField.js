@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {PropTypes as PT} from 'prop-types';
 import {hoistComponent, elemFactory} from 'hoist/core';
 import {textArea} from 'hoist/kit/blueprint';
 
@@ -13,19 +14,24 @@ import {HoistField} from './HoistField';
 /**
  * A Text Area Field
  *
- * @prop rest, see general properties for HoistField
- * 
- * @prop autoFocus
- * @prop placeholder, text to display when control is empty
- * @prop width, width of field, in pixels
+ * @see HoistField for properties additional to those documented below.
  */
 @hoistComponent()
 export class TextAreaField extends HoistField {
-    
+
+    static propTypes = {
+        /** Whether field should receive focus on render */
+        autoFocus: PT.bool,
+        /** Text to display when control is empty */
+        placeholder: PT.string,
+        /** Whether to allow browser spell check, defaults to true */
+        spellCheck: PT.bool
+    };
+
     delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus'];
 
     render() {
-        const {style, width} = this.props;
+        const {style, width, spellCheck} = this.props;
 
         return textArea({
             value: this.renderValue || '',
@@ -34,6 +40,7 @@ export class TextAreaField extends HoistField {
             onBlur: this.onBlur,
             onFocus: this.onFocus,
             style: {...style, width},
+            spellCheck: spellCheck !== false,
             ...this.getDelegateProps()
         });
     }

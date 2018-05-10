@@ -9,3 +9,4 @@ export * from './Field';
 export * from './BaseStore';
 export * from './LocalStore';
 export * from './UrlStore';
+export * from './StoreSelectionModel';
