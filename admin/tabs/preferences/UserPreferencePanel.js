@@ -17,7 +17,7 @@ export class UserPreferencePanel extends Component {
     localModel = new RestGridModel({
         store: new RestStore({
             url: 'rest/userPreferenceAdmin',
-            eagerLoadLookups: true,
+            reloadLookupsOnLoad: true,
             fields: [
                 {
                     name: 'name',
