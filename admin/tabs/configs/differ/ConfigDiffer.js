@@ -58,7 +58,6 @@ export class ConfigDiffer extends Component {
                 model: model.gridModel,
                 gridOptions: {
                     onRowDoubleClicked: this.onRowDoubleClicked,
-                    overlayNoRowsTemplate: 'Please enter remote host for comparison',
                     popupParent: null
                 }
             }),
