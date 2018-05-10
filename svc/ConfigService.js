@@ -4,8 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {BaseService} from './BaseService';
-import {XH} from 'hoist/core';
+import {XH, HoistService} from 'hoist/core';
 import {cloneDeep} from 'lodash';
 
 /**
@@ -27,7 +26,8 @@ import {cloneDeep} from 'lodash';
  * Note that this service does *not* currently attempt to reload or update configs once the client
  * application has loaded. A refresh of the application is required to load new entries.
  */
-export class ConfigService extends BaseService {
+@HoistService()
+export class ConfigService {
 
     _data = {};
 

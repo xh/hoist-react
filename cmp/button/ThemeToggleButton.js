@@ -30,8 +30,8 @@ export class ThemeToggleButton extends Component {
 
     render() {
         return button({
-            icon: this.darkTheme ? Icon.sun() : Icon.moon(),
-            title: this.darkTheme ? 'Switch to light theme' : 'Switch to dark theme',
+            icon: XH.darkTheme ? Icon.sun() : Icon.moon(),
+            title: XH.darkTheme ? 'Switch to light theme' : 'Switch to dark theme',
             onClick: this.onThemeToggleClick
         });
     }

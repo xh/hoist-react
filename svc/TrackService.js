@@ -4,11 +4,11 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {BaseService} from './BaseService';
-import {XH} from 'hoist/core';
+import {XH, HoistService} from 'hoist/core';
 import {stripTags} from 'hoist/utils/HtmlUtils';
 
-export class TrackService extends BaseService {
+@HoistService()
+export class TrackService {
 
     /**
      * Primary service for tracking any activity that an application's admins want to track.
@@ -16,7 +16,7 @@ export class TrackService extends BaseService {
      * Client metadata is set automatically by the server's parsing of request headers.
      *
      * @param {(Object|string)} options - if a string, it will become the message value.
-     * @param {string} options.msg - Short description of the activity being tracked.
+     * @param {string} [options.msg] - Short description of the activity being tracked.
      *      Required if options is an object.
      *      Can be passed as `message` for backwards compatibility.
      * @param {string} [options.category] - app-supplied category.

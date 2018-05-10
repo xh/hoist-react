@@ -22,7 +22,7 @@ export class MonitorResultsPanel extends Component {
     }
 
     render() {
-        const model = this.model;
+        const {model} = this;
 
         return vframe({
             cls: 'xh-monitor-results-panel',

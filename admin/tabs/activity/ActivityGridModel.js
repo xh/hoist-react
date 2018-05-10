@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import moment from 'moment';
-import {XH} from 'hoist/core';
+import {XH, HoistModel} from 'hoist/core';
 import {action, observable, setter} from 'hoist/mobx';
 import {LocalStore} from 'hoist/data';
 import {GridModel} from 'hoist/grid';
@@ -15,6 +15,7 @@ import {dateTimeCol} from 'hoist/columns/DatesTimes';
 
 import {usernameCol} from '../../columns/Columns';
 
+@HoistModel()
 export class ActivityGridModel {
 
     @observable startDate = moment().toDate();
@@ -27,16 +28,14 @@ export class ActivityGridModel {
 
     @observable detailRecord = null;
 
-    store = new LocalStore({
-        fields: [
-            'severity', 'dateCreated', 'username', 'msg', 'category',
-            'device', 'browser', 'data', 'impersonating', 'elapsed',
-            'userAgent'
-        ]
-    });
-
     gridModel = new GridModel({
-        store: this.store,
+        store: new LocalStore({
+            fields: [
+                'severity', 'dateCreated', 'username', 'msg', 'category',
+                'device', 'browser', 'data', 'impersonating', 'elapsed',
+                'userAgent'
+            ]
+        }),
         sortBy: {colId: 'dateCreated', sort: 'desc'},
         hideEmptyText: true,
         columns: [
@@ -63,7 +62,7 @@ export class ActivityGridModel {
             url: 'trackLogAdmin',
             params: this.getParams()
         }).then(data => {
-            this.store.loadData(data);
+            this.gridModel.loadData(data);
         }).catchDefault();
     }
 
@@ -131,5 +130,9 @@ export class ActivityGridModel {
 
     isValidDate(date) {
         return date && date.toString() !== 'Invalid Date';
+    }
+
+    destroy() {
+        XH.safeDestroy(this.gridModel);
     }
 }

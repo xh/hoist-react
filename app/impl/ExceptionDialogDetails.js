@@ -22,7 +22,7 @@ import {dismissButton} from './ExceptionDialog';
 export class ExceptionDialogDetails extends Component {
 
     render() {
-        const model = this.model,
+        const {model} = this,
             {detailsIsOpen, exception, options} = model,
             {requireReload} = options,
             row = (label, data) => tr(th({item: `${label}:`, style: {textAlign: 'left'}}), td(data));
