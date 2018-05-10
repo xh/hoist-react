@@ -32,7 +32,7 @@ export class AppModel {
     
     @action
     requestRefresh() {
-        this.tabs.setLastRefreshRequest(Date.now());
+        this.tabs.requestRefresh();
     }
 
     getRoutes() {

@@ -7,7 +7,7 @@
 import {XH, HoistModel} from 'hoist/core';
 import {action, computed, observable} from 'hoist/mobx';
 import {LastPromiseModel, wait} from 'hoist/promise';
-import {startCase} from 'lodash';
+import {startCase, max} from 'lodash';
 
 /**
  * Model for a TabPane, representing its content's active and load state.
@@ -18,7 +18,7 @@ export class TabPaneModel {
     name = null;
     componentClass = null;
     reloadOnShow = false;
-    forceReload = false;
+    @observable _lastRefreshRequest = null;
     parent = null;
 
     @observable lastLoaded = null;
@@ -56,9 +56,15 @@ export class TabPaneModel {
         return this.parent.selectedId === this.id && this.parent.isActive;
     }
 
+    @action
+    requestRefresh() {
+        this._lastRefreshRequest = Date.now();
+    }
+
     @computed
     get lastRefreshRequest() {
-        return this.parent.lastRefreshRequest;
+        const parentVal = this.parent && this.parent.lastRefreshRequest;
+        return max([parentVal, this._lastRefreshRequest]);
     }
 
     @computed
