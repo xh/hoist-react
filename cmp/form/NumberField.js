@@ -29,7 +29,7 @@ export class NumberField extends HoistField {
         max: PT.number,
         /** Number of decimal places to allow on field's value, defaults to 4*/
         precision: PT.number,
-        /** Allow/automatically fill trailing zeros in accord with precision, defaults to false*/
+        /** Allow/automatically fill in trailing zeros in accord with precision, defaults to false*/
         zeroPad: PT.bool,
         /** Constrain input to numeric characters, defaults to true. Set to false for advanced input evaluation */
         allowNumericCharactersOnly: PT.bool,
