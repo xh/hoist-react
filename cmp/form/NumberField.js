@@ -27,6 +27,10 @@ export class NumberField extends HoistField {
         min: PT.number,
         /** maximum value */
         max: PT.number,
+        /** Number of decimal place to allow on field's value, defaults to 4*/
+        precision: PT.number,
+        /** Set to true to automatically fill in zeros in accord with precision */
+        zeroPad: PT.bool,
         /** Constrain input to numeric characters, should be set to false for advanced input evaluation */
         allowNumericCharactersOnly: PT.bool,
         /** Whether to display large values with commas */
@@ -46,8 +50,7 @@ export class NumberField extends HoistField {
             onFocus: this.onFocus,
             style: {...style, width, textAlign: 'right'},
             buttonPosition: 'none',
-            // allowNumericCharactersOnly: allowNumericCharactersOnly !== false,
-            allowNumericCharactersOnly: false, // test code remove, use above
+            allowNumericCharactersOnly: allowNumericCharactersOnly !== false,
             ...this.getDelegateProps()
         });
     }
@@ -60,43 +63,33 @@ export class NumberField extends HoistField {
         if (ev.key === 'Enter') this.doCommit();
     }
 
-    toExternal(val) {
-        const normalizedVal = this.normalizeVal(val),
-            ret = Number.parseFloat(normalizedVal);
-        return isFinite(ret) ? ret : null;
+    toExternal(value) {
+        value = this.normalizeValue(value);
+        value = parseFloat(value);
+        return isFinite(value) ? value : null;
     }
 
-    toInternal(val) {
-        if (val == null) return '';
+    toInternal(value) {
+        if (value == null) return '';
+        const precision = this.props.precision || 4,
+            zeroPad = !!this.props.zeroPad,
+            formattedVal = fmtNumber(value, {precision, zeroPad});
 
-        // Colin believes that the client is super used to seeing '1b' if that's what they've entered However:
-        // The following won't work here, we are getting passed the external normalized value back from onCommit called onBlur
-        // if (['k', 'm', 'b'].includes(val.slice(-1))) return val;
-        // we could always do the math and abbv here but then if the client enters eg 1000 we'd be not be in a WYSIWYG place there
-        // what I think we need is a way to remember what the user entered previous to the commit to consult that, but... ew.
-        // Alternatively we can override doCommit here to
-
-        // return this.props.displayWithDelimiters ? fmtNumber(val, {formatPattern: '0,0[.]00'}) : val.toString(); // might want to think about building this pattern based on input... i.e. did they enter trailing zeros or a decimal? If so we should give them back.
-        return fmtNumber(val, {formatPattern: '0,0'}); // test code, remove and use line above
+        return this.props.displayWithDelimiters ? formattedVal : this.normalizeValue(formattedVal);
     }
 
-    onFocus = () => {
-        this.setInternalValue(this.toInternal(this.externalValue));
-        this.setHasFocus(true);
-    }
-
-    normalizeVal(val) {
+    normalizeValue(val) {
         val = replace(val, /,/g, '');
-        return replace(val, /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/gi, this.expandAbbreviatedNumber);
+        return replace(val, /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/gi, this.expandShorthand);
     }
 
-    expandAbbreviatedNumber(value) {
+    expandShorthand(value) {
         if (!value) {
             return value;
         }
 
-        const num = +value.substring(0, value.length - 1);
-        const lastChar = value.charAt(value.length - 1).toLowerCase();
+        const num = +value.substring(0, value.length - 1),
+            lastChar = value.charAt(value.length - 1).toLowerCase();
 
         let result;
 
@@ -112,8 +105,7 @@ export class NumberField extends HoistField {
 
 
         return isValid ? result.toString() : '';
-    };
-
+    }
 
 }
 export const numberField = elemFactory(NumberField);
