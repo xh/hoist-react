@@ -47,8 +47,8 @@
     js-tokens "^3.0.0"
 
 "@babel/runtime@^7.0.0-beta.44":
-  version "7.0.0-beta.44"
-  resolved "https://repo.xh.io/repository/npm-public/@babel/runtime/-/runtime-7.0.0-beta.44.tgz#ea5ad6c6fe9a2c1187b025bf42424d28050ee696"
+  version "7.0.0-beta.46"
+  resolved "https://repo.xh.io/repository/npm-public/@babel/runtime/-/runtime-7.0.0-beta.46.tgz#466a9c0498f6d12d054a185981eef742d59d4871"
   dependencies:
     core-js "^2.5.3"
     regenerator-runtime "^0.11.1"
@@ -157,13 +157,21 @@
     humps "^2.0.1"
     prop-types "^15.5.7"
 
+"@onsenui/custom-elements@1.0.0":
+  version "1.0.0"
+  resolved "https://repo.xh.io/repository/npm-public/@onsenui/custom-elements/-/custom-elements-1.0.0.tgz#8e2b5c8968b8d94da70c6e92ecc56b47f79a0ff3"
+
+"@onsenui/fastclick@1.1.1":
+  version "1.1.1"
+  resolved "https://repo.xh.io/repository/npm-public/@onsenui/fastclick/-/fastclick-1.1.1.tgz#0708ec6c7bdca8b87a028deb0dbb66b92001f737"
+
 "@types/dom4@^2.0.0":
   version "2.0.0"
   resolved "https://repo.xh.io/repository/npm-public/@types/dom4/-/dom4-2.0.0.tgz#00dc42fed6b36a7a6dabb8f7a9c9e678ee644e05"
 
 "@xh/eslint-config@~0.2.0":
   version "0.2.0"
-  resolved "https://repo.xh.io/repository/npm-hosted/@xh/eslint-config/-/eslint-config-0.2.0.tgz#9ca7518d9b4336f55dcf76cfcbfa07f6a366f43c"
+  resolved "https://repo.xh.io/repository/npm-public/@xh/eslint-config/-/eslint-config-0.2.0.tgz#9ca7518d9b4336f55dcf76cfcbfa07f6a366f43c"
   dependencies:
     babel-eslint "~8.2.2"
     eslint "~4.19.1"
@@ -171,7 +179,7 @@
 
 "@xh/hoist-dev-utils@~0.6.3":
   version "0.6.4"
-  resolved "https://repo.xh.io/repository/npm-hosted/@xh/hoist-dev-utils/-/hoist-dev-utils-0.6.4.tgz#0455d99370541985e3cddfaa044e45e80962bf82"
+  resolved "https://repo.xh.io/repository/npm-public/@xh/hoist-dev-utils/-/hoist-dev-utils-0.6.4.tgz#0455d99370541985e3cddfaa044e45e80962bf82"
   dependencies:
     "@xh/eslint-config" "~0.2.0"
     autoprefixer "~8.4.0"
@@ -268,13 +276,13 @@ ajv@^5.0.0, ajv@^5.1.0, ajv@^5.1.5, ajv@^5.2.3, ajv@^5.3.0:
     json-schema-traverse "^0.3.0"
 
 ajv@^6.1.0:
-  version "6.4.0"
-  resolved "https://repo.xh.io/repository/npm-public/ajv/-/ajv-6.4.0.tgz#d3aff78e9277549771daf0164cff48482b754fc6"
+  version "6.5.0"
+  resolved "https://repo.xh.io/repository/npm-public/ajv/-/ajv-6.5.0.tgz#4c8affdf80887d8f132c9c52ab8a2dc4d0b7b24c"
   dependencies:
-    fast-deep-equal "^1.0.0"
+    fast-deep-equal "^2.0.1"
     fast-json-stable-stringify "^2.0.0"
     json-schema-traverse "^0.3.0"
-    uri-js "^3.0.2"
+    uri-js "^4.2.1"
 
 align-text@^0.1.1, align-text@^0.1.3:
   version "0.1.4"
@@ -1351,11 +1359,11 @@ browserslist@^2.1.2:
     electron-to-chromium "^1.3.30"
 
 browserslist@^3.2.6:
-  version "3.2.6"
-  resolved "https://repo.xh.io/repository/npm-public/browserslist/-/browserslist-3.2.6.tgz#138a44d04a9af64443679191d041f28ce5b965d5"
+  version "3.2.7"
+  resolved "https://repo.xh.io/repository/npm-public/browserslist/-/browserslist-3.2.7.tgz#aa488634d320b55e88bab0256184dbbcca1e6de9"
   dependencies:
-    caniuse-lite "^1.0.30000830"
-    electron-to-chromium "^1.3.42"
+    caniuse-lite "^1.0.30000835"
+    electron-to-chromium "^1.3.45"
 
 buffer-alloc-unsafe@^0.1.0:
   version "0.1.1"
@@ -1490,12 +1498,12 @@ caniuse-api@^1.5.2:
     lodash.uniq "^4.5.0"
 
 caniuse-db@^1.0.30000529, caniuse-db@^1.0.30000634, caniuse-db@^1.0.30000639:
-  version "1.0.30000835"
-  resolved "https://repo.xh.io/repository/npm-public/caniuse-db/-/caniuse-db-1.0.30000835.tgz#6556931cdf035903d8655d6303f9501b5915fbe9"
+  version "1.0.30000839"
+  resolved "https://repo.xh.io/repository/npm-public/caniuse-db/-/caniuse-db-1.0.30000839.tgz#55a86e402c74ae17149707bea3ea399522233497"
 
-caniuse-lite@^1.0.30000792, caniuse-lite@^1.0.30000830, caniuse-lite@^1.0.30000832:
-  version "1.0.30000835"
-  resolved "https://repo.xh.io/repository/npm-public/caniuse-lite/-/caniuse-lite-1.0.30000835.tgz#517c4d3807a8527b0cbce1d84c85d4487f877268"
+caniuse-lite@^1.0.30000792, caniuse-lite@^1.0.30000832, caniuse-lite@^1.0.30000835:
+  version "1.0.30000839"
+  resolved "https://repo.xh.io/repository/npm-public/caniuse-lite/-/caniuse-lite-1.0.30000839.tgz#41fcc036cf1cb77a0e0be041210f77f1ced44a7b"
 
 case-sensitive-paths-webpack-plugin@~2.1.2:
   version "2.1.2"
@@ -1850,13 +1858,9 @@ core-js@^1.0.0:
   version "1.2.7"
   resolved "https://repo.xh.io/repository/npm-public/core-js/-/core-js-1.2.7.tgz#652294c14651db28fa93bd2d5ff2983a4f08c636"
 
-core-js@^2.4.0, core-js@^2.5.0:
+core-js@^2.4.0, core-js@^2.5.0, core-js@^2.5.1, core-js@^2.5.3:
   version "2.5.6"
   resolved "https://repo.xh.io/repository/npm-public/core-js/-/core-js-2.5.6.tgz#0fe6d45bf3cac3ac364a9d72de7576f4eb221b9d"
-
-core-js@^2.5.3:
-  version "2.5.5"
-  resolved "https://repo.xh.io/repository/npm-public/core-js/-/core-js-2.5.5.tgz#b14dde936c640c0579a6b50cabcc132dd6127e3b"
 
 core-util-is@1.0.2, core-util-is@~1.0.0:
   version "1.0.2"
@@ -2338,7 +2342,7 @@ ejs@^2.5.7:
   version "2.6.1"
   resolved "https://repo.xh.io/repository/npm-public/ejs/-/ejs-2.6.1.tgz#498ec0d495655abc6f23cd61868d926464071aa0"
 
-electron-to-chromium@^1.2.7, electron-to-chromium@^1.3.30, electron-to-chromium@^1.3.42:
+electron-to-chromium@^1.2.7, electron-to-chromium@^1.3.30, electron-to-chromium@^1.3.45:
   version "1.3.45"
   resolved "https://repo.xh.io/repository/npm-public/electron-to-chromium/-/electron-to-chromium-1.3.45.tgz#458ac1b1c5c760ce8811a16d2bfbd97ec30bafb8"
 
@@ -2788,6 +2792,10 @@ fast-deep-equal@^1.0.0:
   version "1.1.0"
   resolved "https://repo.xh.io/repository/npm-public/fast-deep-equal/-/fast-deep-equal-1.1.0.tgz#c053477817c86b51daa853c81e059b733d023614"
 
+fast-deep-equal@^2.0.1:
+  version "2.0.1"
+  resolved "https://repo.xh.io/repository/npm-public/fast-deep-equal/-/fast-deep-equal-2.0.1.tgz#7b05218ddf9667bf7f370bf7fdb2cb15fdd0aa49"
+
 fast-json-stable-stringify@^2.0.0:
   version "2.0.0"
   resolved "https://repo.xh.io/repository/npm-public/fast-json-stable-stringify/-/fast-json-stable-stringify-2.0.0.tgz#d5142c0caee6b1189f87d3a76111064f86c8bbf2"
@@ -2894,12 +2902,12 @@ filesize@^3.5.11:
   resolved "https://repo.xh.io/repository/npm-public/filesize/-/filesize-3.6.1.tgz#090bb3ee01b6f801a8a8be99d31710b3422bb317"
 
 fill-range@^2.1.0:
-  version "2.2.3"
-  resolved "https://repo.xh.io/repository/npm-public/fill-range/-/fill-range-2.2.3.tgz#50b77dfd7e469bc7492470963699fe7a8485a723"
+  version "2.2.4"
+  resolved "https://repo.xh.io/repository/npm-public/fill-range/-/fill-range-2.2.4.tgz#eb1e773abb056dcd8df2bfdf6af59b8b3a936565"
   dependencies:
     is-number "^2.1.0"
     isobject "^2.0.0"
-    randomatic "^1.1.3"
+    randomatic "^3.0.0"
     repeat-element "^1.1.2"
     repeat-string "^1.5.2"
 
@@ -3554,8 +3562,8 @@ iconv-lite@0.4.19:
   resolved "https://repo.xh.io/repository/npm-public/iconv-lite/-/iconv-lite-0.4.19.tgz#f7468f60135f5e5dad3399c0a81be9a1603a082b"
 
 iconv-lite@^0.4.17, iconv-lite@^0.4.4, iconv-lite@~0.4.13:
-  version "0.4.22"
-  resolved "https://repo.xh.io/repository/npm-public/iconv-lite/-/iconv-lite-0.4.22.tgz#c6b16b9d05bc6c307dc9303a820412995d2eea95"
+  version "0.4.23"
+  resolved "https://repo.xh.io/repository/npm-public/iconv-lite/-/iconv-lite-0.4.23.tgz#297871f63be507adcfbfca715d0cd0eed84e9a63"
   dependencies:
     safer-buffer ">= 2.1.2 < 3"
 
@@ -4306,8 +4314,8 @@ lower-case@^1.1.1:
   resolved "https://repo.xh.io/repository/npm-public/lower-case/-/lower-case-1.1.4.tgz#9a2cabd1b9e8e0ae993a4bf7d5875c39c42e8eac"
 
 lru-cache@^4.0.1, lru-cache@^4.1.1:
-  version "4.1.2"
-  resolved "https://repo.xh.io/repository/npm-public/lru-cache/-/lru-cache-4.1.2.tgz#45234b2e6e2f2b33da125624c4664929a0224c3f"
+  version "4.1.3"
+  resolved "https://repo.xh.io/repository/npm-public/lru-cache/-/lru-cache-4.1.3.tgz#a1175cf3496dfc8436c156c334b4955992bce69c"
   dependencies:
     pseudomap "^1.0.2"
     yallist "^2.1.2"
@@ -4339,6 +4347,10 @@ map-visit@^1.0.0:
 math-expression-evaluator@^1.2.14:
   version "1.2.17"
   resolved "https://repo.xh.io/repository/npm-public/math-expression-evaluator/-/math-expression-evaluator-1.2.17.tgz#de819fdbcd84dccd8fae59c6aeb79615b9d266ac"
+
+math-random@^1.0.1:
+  version "1.0.1"
+  resolved "https://repo.xh.io/repository/npm-public/math-random/-/math-random-1.0.1.tgz#8b3aac588b8a66e4975e3cdea67f7bb329601fac"
 
 md5.js@^1.3.4:
   version "1.3.4"
@@ -4919,6 +4931,14 @@ onetime@^2.0.0:
   resolved "https://repo.xh.io/repository/npm-public/onetime/-/onetime-2.0.1.tgz#067428230fd67443b2794b22bba528b6867962d4"
   dependencies:
     mimic-fn "^1.0.0"
+
+onsenui@~2.9.2:
+  version "2.9.2"
+  resolved "https://repo.xh.io/repository/npm-public/onsenui/-/onsenui-2.9.2.tgz#f860eb528b1e60ee4d8d5e1ec59ebd3002928355"
+  dependencies:
+    "@onsenui/custom-elements" "1.0.0"
+    "@onsenui/fastclick" "1.1.1"
+    core-js "^2.5.1"
 
 opener@^1.4.3:
   version "1.4.3"
@@ -5677,12 +5697,13 @@ querystringify@^2.0.0:
   version "2.0.0"
   resolved "https://repo.xh.io/repository/npm-public/querystringify/-/querystringify-2.0.0.tgz#fa3ed6e68eb15159457c89b37bc6472833195755"
 
-randomatic@^1.1.3:
-  version "1.1.7"
-  resolved "https://repo.xh.io/repository/npm-public/randomatic/-/randomatic-1.1.7.tgz#c7abe9cc8b87c0baa876b19fde83fd464797e38c"
+randomatic@^3.0.0:
+  version "3.0.0"
+  resolved "https://repo.xh.io/repository/npm-public/randomatic/-/randomatic-3.0.0.tgz#d35490030eb4f7578de292ce6dfb04a91a128923"
   dependencies:
-    is-number "^3.0.0"
-    kind-of "^4.0.0"
+    is-number "^4.0.0"
+    kind-of "^6.0.0"
+    math-random "^1.0.1"
 
 randombytes@^2.0.0, randombytes@^2.0.1, randombytes@^2.0.5:
   version "2.0.6"
@@ -5739,8 +5760,14 @@ react-dom@~16.3.2:
     prop-types "^15.6.0"
 
 react-lifecycles-compat@^3.0.2:
-  version "3.0.2"
-  resolved "https://repo.xh.io/repository/npm-public/react-lifecycles-compat/-/react-lifecycles-compat-3.0.2.tgz#7279047275bd727a912e25f734c0559527e84eff"
+  version "3.0.3"
+  resolved "https://repo.xh.io/repository/npm-public/react-lifecycles-compat/-/react-lifecycles-compat-3.0.3.tgz#473820154732f1ccd762e89324abab154255da6b"
+
+react-onsenui@~1.10.0:
+  version "1.10.0"
+  resolved "https://repo.xh.io/repository/npm-public/react-onsenui/-/react-onsenui-1.10.0.tgz#45bcbe646f9937a075aaa2ed05102180e8dd8126"
+  dependencies:
+    prop-types "^15.6.0"
 
 react-popper@^0.8.2:
   version "0.8.3"
@@ -5800,7 +5827,7 @@ read-pkg@^2.0.0:
     normalize-package-data "^2.3.2"
     path-type "^2.0.0"
 
-"readable-stream@1 || 2", readable-stream@^2.0.0, readable-stream@^2.0.1, readable-stream@^2.0.2, readable-stream@^2.0.4, readable-stream@^2.0.6, readable-stream@^2.1.5, readable-stream@^2.2.2, readable-stream@^2.2.9, readable-stream@^2.3.3:
+"readable-stream@1 || 2", readable-stream@^2.0.0, readable-stream@^2.0.1, readable-stream@^2.0.2, readable-stream@^2.0.4, readable-stream@^2.0.6, readable-stream@^2.1.5, readable-stream@^2.2.2, readable-stream@^2.2.9, readable-stream@^2.3.3, readable-stream@^2.3.6:
   version "2.3.6"
   resolved "https://repo.xh.io/repository/npm-public/readable-stream/-/readable-stream-2.3.6.tgz#b11c27d88b8ff1fbe070643cf94b0c79ae1b0aaf"
   dependencies:
@@ -6103,8 +6130,8 @@ route-node@2.0.3:
     search-params "~1.3.0"
 
 router5-transition-path@^5.1.1:
-  version "5.1.1"
-  resolved "https://repo.xh.io/repository/npm-public/router5-transition-path/-/router5-transition-path-5.1.1.tgz#89698deeaedcf0831a5c3393d8ae16c9f06a9744"
+  version "5.3.0"
+  resolved "https://repo.xh.io/repository/npm-public/router5-transition-path/-/router5-transition-path-5.3.0.tgz#113f7e09dffee5e22c7275c20fe25969c0bc1599"
 
 router5@~5.8.3:
   version "5.8.3"
@@ -6566,12 +6593,12 @@ stream-each@^1.1.0:
     stream-shift "^1.0.0"
 
 stream-http@^2.7.2:
-  version "2.8.1"
-  resolved "https://repo.xh.io/repository/npm-public/stream-http/-/stream-http-2.8.1.tgz#d0441be1a457a73a733a8a7b53570bebd9ef66a4"
+  version "2.8.2"
+  resolved "https://repo.xh.io/repository/npm-public/stream-http/-/stream-http-2.8.2.tgz#4126e8c6b107004465918aa2fc35549e77402c87"
   dependencies:
     builtin-status-codes "^3.0.0"
     inherits "^2.0.1"
-    readable-stream "^2.3.3"
+    readable-stream "^2.3.6"
     to-arraybuffer "^1.0.0"
     xtend "^4.0.0"
 
@@ -6920,8 +6947,8 @@ uglify-es@^3.3.4:
     source-map "~0.6.1"
 
 uglify-js@3.3.x:
-  version "3.3.23"
-  resolved "https://repo.xh.io/repository/npm-public/uglify-js/-/uglify-js-3.3.23.tgz#48ea43e638364d18be292a6fdc2b5b7c35f239ab"
+  version "3.3.24"
+  resolved "https://repo.xh.io/repository/npm-public/uglify-js/-/uglify-js-3.3.24.tgz#abeae7690c602ebd006f4567387a0c0c333bdc0d"
   dependencies:
     commander "~2.15.0"
     source-map "~0.6.1"
@@ -7018,9 +7045,9 @@ upper-case@^1.1.1:
   version "1.1.3"
   resolved "https://repo.xh.io/repository/npm-public/upper-case/-/upper-case-1.1.3.tgz#f6b4501c2ec4cdd26ba78be7222961de77621598"
 
-uri-js@^3.0.2:
-  version "3.0.2"
-  resolved "https://repo.xh.io/repository/npm-public/uri-js/-/uri-js-3.0.2.tgz#f90b858507f81dea4dcfbb3c4c3dbfa2b557faaa"
+uri-js@^4.2.1:
+  version "4.2.1"
+  resolved "https://repo.xh.io/repository/npm-public/uri-js/-/uri-js-4.2.1.tgz#4595a80a51f356164e22970df64c7abd6ade9850"
   dependencies:
     punycode "^2.1.0"
 
@@ -7154,8 +7181,8 @@ wbuf@^1.1.0, wbuf@^1.7.2:
     minimalistic-assert "^1.0.0"
 
 webpack-bundle-analyzer@~2.11.1:
-  version "2.11.1"
-  resolved "https://repo.xh.io/repository/npm-public/webpack-bundle-analyzer/-/webpack-bundle-analyzer-2.11.1.tgz#b9fbfb6a32c0a8c1c3237223e90890796b950ab9"
+  version "2.11.2"
+  resolved "https://repo.xh.io/repository/npm-public/webpack-bundle-analyzer/-/webpack-bundle-analyzer-2.11.2.tgz#5ae05bfccffb16683977237bf319323653e44f9f"
   dependencies:
     acorn "^5.3.0"
     bfj-node4 "^5.2.0"

@@ -27,7 +27,6 @@ class Grid extends Component {
 
     renderHeader() {
         const {leftColumn, rightColumn} = this.model;
-        console.log(leftColumn, rightColumn);
         return listHeader(
             hframe(
                 frame(leftColumn.headerName),

@@ -5,11 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {HoistModel} from 'hoist/core';
 import {observable} from 'hoist/mobx';
 
 /**
  * Core Model for a Grid, specifying the grid's data store and column definitions
  */
+@HoistModel()
 export class GridModel {
 
     // Immutable public properties
@@ -34,6 +36,16 @@ export class GridModel {
         this.leftColumn = leftColumn;
         this.rightColumn = rightColumn;
         this.handler = handler;
+    }
+
+    /** Load the underlying store. */
+    loadAsync(...args) {
+        return this.store.loadAsync(...args);
+    }
+
+    /** Load the underlying store. */
+    loadData(...args) {
+        return this.store.loadData(...args);
     }
 
 }
