@@ -105,7 +105,6 @@ export class NumberField extends HoistField {
 
         const isValid = result != null && !isNaN(result);
 
-
         return isValid ? result.toString() : '';
     }
 
