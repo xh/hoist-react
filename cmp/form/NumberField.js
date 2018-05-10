@@ -29,13 +29,15 @@ export class NumberField extends HoistField {
         max: PT.number,
         /** Number of decimal places to allow on field's value, defaults to 4*/
         precision: PT.number,
-        /** Set to true to automatically fill in zeros in accord with precision */
+        /** Allow/automatically fill trailing zeros in accord with precision, defaults to false*/
         zeroPad: PT.bool,
-        /** Constrain input to numeric characters, should be set to false for advanced input evaluation */
+        /** Constrain input to numeric characters, defaults to true. Set to false for advanced input evaluation */
         allowNumericCharactersOnly: PT.bool,
         /** Whether to display large values with commas */
-        displayWithDelimiters: PT.bool
+        displayWithCommas: PT.bool
     };
+
+    static shortHandMatcher = /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/gi;
     
     delegateProps = ['className', 'min', 'max', 'placeholder'];
 
@@ -75,12 +77,12 @@ export class NumberField extends HoistField {
             zeroPad = !!this.props.zeroPad,
             formattedVal = fmtNumber(value, {precision, zeroPad});
 
-        return this.props.displayWithDelimiters ? formattedVal : this.normalizeValue(formattedVal);
+        return this.props.displayWithCommas ? formattedVal : this.normalizeValue(formattedVal);
     }
 
     normalizeValue(value) {
         value = replace(value, /,/g, '');
-        return replace(value, /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/gi, this.expandShorthand);
+        return replace(value, NumberField.shortHandMatcher, this.expandShorthand);
     }
 
     expandShorthand(value) {
