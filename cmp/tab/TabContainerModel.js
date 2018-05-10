@@ -34,8 +34,8 @@ export class TabContainerModel {
      * @param {string} id - unique ID, used for generating routes.
      * @param {string} [name] - display name for this container - useful in particular when displaying
      *      nested tabs, where this model's container is a direct child of a parent TabContainer.
-     * @param {string} [orientation=h] - specify horizontal vs. vertical tabs.
-     * @param {boolean} [useRoutes=false] - true to use routes for navigation.
+     * @param {string} [orientation] - specify horizontal vs. vertical tabs.
+     * @param {boolean} [useRoutes] - true to use routes for navigation.
      *      These routes must be setup externally in the application (@see BaseApp.getRoutes()).
      *      They may exist at any level of the application, but there must be a route of the form
      *      `/../../[containerId]/[childPaneId]` for each child pane in this container.
@@ -87,6 +87,8 @@ export class TabContainerModel {
             child = children.find(it => it.id === id);
         
         this.selectedId = child ? id : children[0].id;
+
+        if (child.reloadOnShow) this.setLastRefreshRequest(Date.now());
 
         if (this.useRoutes) {
             const routerModel = XH.routerModel,

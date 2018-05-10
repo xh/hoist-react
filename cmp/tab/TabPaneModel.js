@@ -30,15 +30,18 @@ export class TabPaneModel {
      * @param {string} id - unique ID, used for generating routes.
      * @param {string} [name] - display name for the tab.
      * @param {Object} componentClass - class of React Component to be displayed within the tab.
+     * @param {boolean} reloadOnShow - whether to load fresh data for this tab each time it is selected
      */
     constructor({
         id,
         name = startCase(id),
-        component
+        component,
+        reloadOnShow
     }) {
         this.id = id;
         this.name = name;
         this.componentClass = component;
+        this.reloadOnShow = reloadOnShow;
         wait(1).then(() => this.addAutorun(() => this.syncFromRouter()));
     }
 

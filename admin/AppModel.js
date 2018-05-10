@@ -158,7 +158,7 @@ export class AppModel {
                 orientation: 'v',
                 children: [
                     {id: 'prefs', component: PreferencePanel},
-                    {id: 'userPrefs', component: UserPreferencePanel}
+                    {id: 'userPrefs', component: UserPreferencePanel, reloadOnShow: true}
                 ]
             }
         ];
