@@ -28,7 +28,7 @@ export class EhCachePanel extends Component {
 
     renderToolbar() {
         const model = this.model,
-            store = model.store;
+            {store} = model.gridModel;
         return toolbar(
             button({
                 icon: Icon.sync(),
@@ -56,5 +56,4 @@ export class EhCachePanel extends Component {
     async loadAsync() {
         return this.model.loadAsync();
     }
-
 }

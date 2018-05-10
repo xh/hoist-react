@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {XH} from 'hoist/core';
 import {LastPromiseModel} from 'hoist/promise';
 import {observable, action} from 'hoist/mobx';
 import {BaseStore} from './BaseStore';
@@ -119,5 +120,9 @@ export class LocalStore extends BaseStore {
             ret.set(rec.id, rec);
         });
         return ret;
+    }
+
+    destroy() {
+        XH.safeDestroy(this._loadModel);
     }
 }

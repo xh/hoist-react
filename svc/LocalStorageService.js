@@ -5,11 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {BaseService} from './BaseService';
-import {XH} from 'hoist/core';
+import {XH, HoistService} from 'hoist/core';
 import store from 'store2';
 
-export class LocalStorageService extends BaseService {
+@HoistService()
+export class LocalStorageService {
     _appId = null;
     _supported = !store.isFake();
 

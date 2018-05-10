@@ -97,9 +97,7 @@ Object.assign(Promise.prototype, {
      * Version of catch() that will invoke default application exception handling.
      * Typically called in last line in promise chain.
      *
-     * @param {Object} [options]
-     * @param {string} [options.title]
-     * @param {string} [options.message]
+     * @param {Object} [options] - options suitable for passing to XH.handleException().
      */
     catchDefault(options) {
         return this.catch(e => XH.handleException(e, options));
@@ -109,9 +107,7 @@ Object.assign(Promise.prototype, {
      * Version of catchDefault() that will only catch certain exceptions.
      *
      * @param {function} selector - see catchWhen().
-     * @param {Object} [options]
-     * @param {string} [options.title]
-     * @param {string} [options.message]
+     * @param {Object} [options] - options suitable for passing to XH.handleException().
      */
     catchDefaultWhen(selector, options) {
         return this.catch(e => {

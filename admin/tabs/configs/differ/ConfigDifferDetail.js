@@ -18,7 +18,7 @@ import './Differ.scss';
 export class ConfigDifferDetail extends Component {
 
     render() {
-        const model = this.model;
+        const {model} = this;
         if (!model.record) return null;
 
         return dialog({
