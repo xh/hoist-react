@@ -42,7 +42,8 @@ export class GridModel {
      * @param {BaseStore} store - store containing the data for the grid.
      * @param {Object[]} columns - collection of column specifications.
      * @param {StoreSelectionModel} [selection] - selection model to use
-     * @param {boolean} [hideEmptyText] - set to true to hide grid's empty text(no rows overlay)
+     * @param {boolean} [emptyText] - empty text to display if grid has no records.
+     *      Defaults to null, in which case no empty text will be shown.
      * @param {Object[]} [sortBy] - one or more sorters to apply to store data.
      * @param {string} [sortBy[].colId]- Column ID by which to sort.
      * @param {string} [sortBy[].sort] - sort direction [asc|desc].
@@ -53,7 +54,7 @@ export class GridModel {
         store,
         columns,
         selection,
-        hideEmptyText = false,
+        emptyText = null,
         sortBy = [],
         groupBy = null,
         contextMenuFn = GridModel.defaultContextMenu
@@ -62,7 +63,7 @@ export class GridModel {
         this.columns = columns;
         this.contextMenuFn = contextMenuFn;
         this.selection = selection || new StoreSelectionModel({store: this.store});
-        this.hideEmptyText = hideEmptyText;
+        this.emptyText = emptyText;
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
     }
