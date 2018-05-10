@@ -15,33 +15,31 @@ import {usernameCol} from '../../columns/Columns';
 @hoistComponent()
 export class DashboardPanel extends Component {
 
-    store = new RestStore({
-        url: 'rest/dashboardAdmin',
-        fields: [
-            {
-                name: 'appCode',
-                required: true
-            },
-            {
-                name: 'username',
-                label: 'User',
-                required: true
-            },
-            {
-                name: 'definition',
-                type: 'json',
-                required: true
-            },
-            {
-                name: 'lastUpdated',
-                type: 'date',
-                editable: false
-            }
-        ]
-    });
-
-    gridModel = new RestGridModel({
-        store: this.store,
+    localModel = new RestGridModel({
+        store: new RestStore({
+            url: 'rest/dashboardAdmin',
+            fields: [
+                {
+                    name: 'appCode',
+                    required: true
+                },
+                {
+                    name: 'username',
+                    label: 'User',
+                    required: true
+                },
+                {
+                    name: 'definition',
+                    type: 'json',
+                    required: true
+                },
+                {
+                    name: 'lastUpdated',
+                    type: 'date',
+                    editable: false
+                }
+            ]
+        }),
         actionWarning: {
             edit: 'Are you sure you want to edit this user\'s dashboard?',
             del: 'Are you sure you want to delete this user\'s dashboard?'
@@ -64,10 +62,10 @@ export class DashboardPanel extends Component {
     });
 
     render() {
-        return restGrid({model: this.gridModel});
+        return restGrid({model: this.model});
     }
 
     async loadAsync() {
-        return this.store.loadAsync();
+        return this.model.loadAsync();
     }
 }

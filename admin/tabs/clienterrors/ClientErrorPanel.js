@@ -21,7 +21,7 @@ export class ClientErrorPanel extends Component {
     localModel = new ClientErrorModel();
 
     render() {
-        const model = this.model;
+        const {model} = this;
         return vframe(
             this.renderToolbar(),
             grid({
@@ -61,7 +61,7 @@ export class ClientErrorPanel extends Component {
             refreshButton({model}),
             filler(),
             storeCountLabel({
-                store: model.store,
+                store: model.gridModel.store,
                 unit: 'client error'
             }),
             exportButton({model})
