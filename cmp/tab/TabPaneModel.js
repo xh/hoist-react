@@ -17,6 +17,8 @@ export class TabPaneModel {
     id = null;
     name = null;
     componentClass = null;
+    reloadOnShow = false;
+    forceReload = false;
     parent = null;
 
     @observable lastLoaded = null;
@@ -63,8 +65,8 @@ export class TabPaneModel {
     get needsLoad() {
         if (this.isActive) {
             if (!this.loadState.isPending) {
-                const {lastRefreshRequest, lastLoaded} = this;
-                return (!lastLoaded || (lastRefreshRequest && (lastLoaded < lastRefreshRequest)));
+                const {lastRefreshRequest, lastLoaded, forceReload} = this;
+                return (!lastLoaded || forceReload || (lastRefreshRequest && (lastLoaded < lastRefreshRequest)));
             }
         }
         return false;
@@ -73,6 +75,7 @@ export class TabPaneModel {
     @action
     markLoaded() {
         this.lastLoaded = Date.now();
+        this.forceReload = false;
     }
 
 

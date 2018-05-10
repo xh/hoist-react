@@ -88,7 +88,7 @@ export class TabContainerModel {
         
         this.selectedId = child ? id : children[0].id;
 
-        if (child.reloadOnShow) this.setLastRefreshRequest(Date.now());
+        if (child.reloadOnShow) child.forceReload = true;
 
         if (this.useRoutes) {
             const routerModel = XH.routerModel,
