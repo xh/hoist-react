@@ -42,7 +42,7 @@ export class GridModel {
      * @param {BaseStore} store - store containing the data for the grid.
      * @param {Object[]} columns - collection of column specifications.
      * @param {StoreSelectionModel} [selection] - selection model to use
-     * @param {boolean} [emptyText] - empty text to display if grid has no records.
+     * @param {boolean} [emptyText] - empty text to display if grid has no records. Can be valid HTML.
      *      Defaults to null, in which case no empty text will be shown.
      * @param {Object[]} [sortBy] - one or more sorters to apply to store data.
      * @param {string} [sortBy[].colId] - Column ID by which to sort.
