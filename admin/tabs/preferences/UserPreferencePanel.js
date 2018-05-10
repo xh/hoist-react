@@ -14,46 +14,44 @@ import {nameCol, usernameCol} from '../../columns/Columns';
 @hoistComponent()
 export class UserPreferencePanel extends Component {
 
-    store = new RestStore({
-        url: 'rest/userPreferenceAdmin',
-        eagerLoadLookups: true,
-        fields: [
-            {
-                name: 'name',
-                label: 'Pref',
-                lookupName: 'names',
-                lookupStrict: true,
-                editable: 'onAdd',
-                required: true
-            },
-            {
-                name: 'type',
-                editable: false
-            },
-            {
-                name: 'username',
-                label: 'User',
-                required: true
-            },
-            {
-                name: 'userValue',
-                typeField: 'type',
-                required: true
-            },
-            {
-                name: 'lastUpdated',
-                type: 'date',
-                editable: false
-            },
-            {
-                name: 'lastUpdatedBy',
-                editable: false
-            }
-        ]
-    });
-
-    gridModel = new RestGridModel({
-        store: this.store,
+    localModel = new RestGridModel({
+        store: new RestStore({
+            url: 'rest/userPreferenceAdmin',
+            eagerLoadLookups: true,
+            fields: [
+                {
+                    name: 'name',
+                    label: 'Pref',
+                    lookupName: 'names',
+                    lookupStrict: true,
+                    editable: 'onAdd',
+                    required: true
+                },
+                {
+                    name: 'type',
+                    editable: false
+                },
+                {
+                    name: 'username',
+                    label: 'User',
+                    required: true
+                },
+                {
+                    name: 'userValue',
+                    typeField: 'type',
+                    required: true
+                },
+                {
+                    name: 'lastUpdated',
+                    type: 'date',
+                    editable: false
+                },
+                {
+                    name: 'lastUpdatedBy',
+                    editable: false
+                }
+            ]
+        }),
         sortBy: 'name',
         unit: 'preference',
         filterFields: ['name', 'username'],
@@ -73,10 +71,10 @@ export class UserPreferencePanel extends Component {
     });
 
     render() {
-        return restGrid({model: this.gridModel});
+        return restGrid({model: this.model});
     }
 
     async loadAsync() {
-        return this.store.loadAsync();
+        return this.model.loadAsync();
     }
 }

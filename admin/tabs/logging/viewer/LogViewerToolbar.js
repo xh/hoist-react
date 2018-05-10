@@ -15,7 +15,7 @@ import {Icon} from 'hoist/icon';
 export class LogViewerToolbar extends Component {
     
     render() {
-        const model = this.model;
+        const {model} = this;
         return toolbar({
             items: [
                 label('Start Line:'),

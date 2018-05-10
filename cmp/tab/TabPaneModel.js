@@ -4,14 +4,15 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH} from 'hoist/core';
-import {action, autorun, computed, observable} from 'hoist/mobx';
+import {XH, HoistModel} from 'hoist/core';
+import {action, computed, observable} from 'hoist/mobx';
 import {LastPromiseModel, wait} from 'hoist/promise';
 import {startCase} from 'lodash';
 
 /**
  * Model for a TabPane, representing its content's active and load state.
  */
+@HoistModel()
 export class TabPaneModel {
     id = null;
     name = null;
@@ -41,7 +42,7 @@ export class TabPaneModel {
         this.name = name;
         this.componentClass = component;
         this.eagerLoad = eagerLoad;
-        wait(1).then(() => autorun(() => this.syncFromRouter()));
+        wait(1).then(() => this.addAutorun(() => this.syncFromRouter()));
     }
 
     select() {
@@ -89,5 +90,9 @@ export class TabPaneModel {
         if (routeName.startsWith(this.routeName) && parent.selectedId !== id) {
             parent.setSelectedId(id);
         }
+    }
+
+    destroy() {
+        XH.safeDestroy(this.loadState);
     }
 }

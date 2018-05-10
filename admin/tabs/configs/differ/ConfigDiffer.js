@@ -17,8 +17,8 @@ import {configDifferDetail} from './ConfigDifferDetail';
 export class ConfigDiffer extends Component {
 
     render() {
-        const model = this.model,
-            detailModel = model.detailModel;
+        const {model} = this,
+            {detailModel} = model;
         return fragment(
             dialog({
                 isOpen: model.isOpen,

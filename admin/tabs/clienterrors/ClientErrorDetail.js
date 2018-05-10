@@ -15,7 +15,7 @@ import {fmtDateTime} from 'hoist/format';
 class ClientErrorDetail extends Component {
 
     render() {
-        const model =  this.model,
+        const {model} =  this,
             rec = model.detailRecord;
 
         if (!rec) return null;
@@ -23,7 +23,7 @@ class ClientErrorDetail extends Component {
         return dialog({
             title: 'Error Details',
             style: {width: 1000},
-            isOpen: model.detailRecord,
+            isOpen: true,
             onClose: this.onCloseClick,
             items: this.renderDetail(rec)
         });

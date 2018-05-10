@@ -31,7 +31,7 @@ export class UserPanel extends Component {
 
     renderToolbar() {
         const model = this.model,
-            store = model.store;
+            {store} = model.gridModel;
         return toolbar(
             refreshButton({model}),
             filler(),
