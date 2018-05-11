@@ -5,14 +5,14 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {hoistComponent} from 'hoist/core';
+import {HoistComponent} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {vframe, filler} from 'hoist/layout';
 import {refreshButton, storeCountLabel, storeFilterField, toolbar} from 'hoist/cmp';
 
 import {UserModel} from './UserModel';
 
-@hoistComponent()
+@HoistComponent()
 export class UserPanel extends Component {
 
     localModel = new UserModel();
@@ -31,7 +31,7 @@ export class UserPanel extends Component {
 
     renderToolbar() {
         const model = this.model,
-            store = model.store;
+            {store} = model.gridModel;
         return toolbar(
             refreshButton({model}),
             filler(),

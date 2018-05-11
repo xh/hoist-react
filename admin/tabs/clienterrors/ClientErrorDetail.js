@@ -6,16 +6,16 @@
  */
 import {Component} from 'react';
 import {dialog, button} from 'hoist/kit/blueprint';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {HoistComponent, elemFactory} from 'hoist/core';
 import {filler, table, tbody, tr, th, td} from 'hoist/layout';
 import {clipboardButton, jsonField, toolbar} from 'hoist/cmp';
 import {fmtDateTime} from 'hoist/format';
 
-@hoistComponent()
+@HoistComponent()
 class ClientErrorDetail extends Component {
 
     render() {
-        const model =  this.model,
+        const {model} =  this,
             rec = model.detailRecord;
 
         if (!rec) return null;
@@ -23,7 +23,7 @@ class ClientErrorDetail extends Component {
         return dialog({
             title: 'Error Details',
             style: {width: 1000},
-            isOpen: model.detailRecord,
+            isOpen: true,
             onClose: this.onCloseClick,
             items: this.renderDetail(rec)
         });

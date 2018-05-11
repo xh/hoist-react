@@ -4,11 +4,11 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {BaseService} from './BaseService';
-import {XH} from 'hoist/core';
+import {XH, HoistService} from 'hoist/core';
 import {stripTags} from 'hoist/utils/HtmlUtils';
 
-export class FeedbackService extends BaseService {
+@HoistService()
+export class FeedbackService {
 
     /**
      * Create a feedback entry. Username, browser info, environment info, and datetime will be

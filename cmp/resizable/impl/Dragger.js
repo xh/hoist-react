@@ -7,14 +7,14 @@
 
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {elemFactory, hoistComponent} from 'hoist/core';
+import {elemFactory, HoistComponent} from 'hoist/core';
 import {div} from 'hoist/layout';
 import './Dragger.scss';
 
 /** This is an implementation class private to Hoist
  * @private
  */
-@hoistComponent()
+@HoistComponent()
 export class Dragger extends Component {
 
     resizeState = null;

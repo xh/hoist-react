@@ -4,13 +4,12 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {BaseService} from './BaseService';
-import {XH} from 'hoist/core';
+import {XH, HoistService} from 'hoist/core';
 import {Exception} from 'hoist/exception';
 import {castArray} from 'lodash';
 
-export class FetchService extends BaseService {
-
+@HoistService()
+export class FetchService {
     /**
      * Returns a Promise of an XHR response.
      *

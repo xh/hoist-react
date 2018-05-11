@@ -4,14 +4,17 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+
+import ReactDOM from 'react-dom';
 import {isPlainObject} from 'lodash';
+
+import {elem, HoistModel} from 'hoist/core';
 import {Exception, ExceptionHandler} from 'hoist/exception';
 import {observable, setter, action} from 'hoist/mobx';
 import {MultiPromiseModel, never} from 'hoist/promise';
 import {RouterModel} from 'hoist/router';
-
+import {appContainer} from 'hoist/app';
 import {
-    BaseService,
     ConfigService,
     EnvironmentService,
     ErrorTrackingService,
@@ -24,6 +27,8 @@ import {
 } from 'hoist/svc';
 
 
+import {initServicesAsync} from './HoistService';
+
 import '../styles/XH.scss';
 
 // noinspection JSUnresolvedVariable
@@ -31,13 +36,14 @@ import '../styles/XH.scss';
 /**
  * Top-level Singleton model for Hoist.  This is the main entry point for the API.
  *
- * It provide access to the built-in Hoist services, metadata about the application and
- * environment, and convenience aliases to the most common framework operations.  It also maintains
- * key observable application state regarding dialogs, loading, and exceptions.
+ * It provide access to the built-in Hoist services, metadata about the application and environment,
+ * and convenience aliases to the most common framework operations. It also maintains key observable
+ * application state regarding dialogs, loading, and exceptions.
  *
  * Available to applications via import as 'XH'- installed as window.XH for troubleshooting purposes.
  */
-export const XH = window.XH = new class {
+@HoistModel()
+class XhModel {
 
     constructor() {
         this.aliasMethods();
@@ -100,7 +106,7 @@ export const XH = window.XH = new class {
     /** Updated App version available, as reported by server. */
     @observable updateVersion = null;
 
-    /** Top level model for the App - assigned via BaseAppModel's constructor. */
+    /** Top level model for the App - set in `renderApp()` below. */
     appModel = null;
 
     /** Router model for the App - used for route based navigation. */
@@ -112,9 +118,23 @@ export const XH = window.XH = new class {
      */
     appLoadModel = new MultiPromiseModel();
 
-    //----------------------------------
-    // Application Entry points
-    //----------------------------------
+    /**
+     * Main entry point. Initialize and render application code.
+     *
+     * @param {Object} appModelClass - class containing main application state and logic.
+     *      Should be a subclass of BaseAppModel.
+     * @param {Object} appComponentClass - class describing main application view.
+     *      Should extend Component and be decorated with @HoistComponent.
+     */
+    renderApp(appModelClass, appComponentClass) {
+        this.appModel = new appModelClass();
+        
+        const rootView = appContainer(
+            elem(appComponentClass, {model: this.appModel})
+        );
+
+        ReactDOM.render(rootView, document.getElementById('root'));
+    }
 
     /** Route the app.  See RouterModel.navigate.  */
     navigate(...args) {
@@ -149,7 +169,7 @@ export const XH = window.XH = new class {
         this.displayException = {exception, options};
     }
 
-    /** Hide any displayed exception */
+    /** Hide any displayed exception. */
     @action
     hideException() {
         this.displayException = null;
@@ -245,18 +265,16 @@ export const XH = window.XH = new class {
     }
 
     async initServicesAsync() {
-        const ensureReady = BaseService.ensureSvcsReadyAsync.bind(BaseService);
-
-        await ensureReady(
+        await initServicesAsync(
             this.fetchService,
             this.localStorageService,
             this.errorTrackingService
         );
-        await ensureReady(
+        await initServicesAsync(
             this.configService,
             this.prefService
         );
-        await ensureReady(
+        await initServicesAsync(
             this.environmentService,
             this.feedbackService,
             this.identityService,
@@ -303,8 +321,36 @@ export const XH = window.XH = new class {
             aliases.forEach(name => bindFn(name, name));
         }
     }
-};
+    
+    destroy() {
+        this.safeDestroy(this.appLoadModel, this.routerModel);
+        this.safeDestroy(
+            this.configService,
+            this.environmentService,
+            this.errorTrackingService,
+            this.feedbackService,
+            this.fetchService,
+            this.identityService,
+            this.localStorageService,
+            this.prefService,
+            this.trackService
+        );
+    }
 
+    /**
+     * Helper method to destroy resources safely (e.g. child HoistModels). Will quietly skip args
+     * that are null / undefined or that do not implement destroy().
+     *
+     * @param {...Object} args - Objects to be destroyed.
+     */
+    safeDestroy(...args) {
+
+        args.forEach(it => {
+            if (it && it.destroy) it.destroy();
+        });
+    }
+}
+export const XH = window.XH = new XhModel();
 
 /**
  * Enumeration of possible Load States for Hoist.

@@ -7,12 +7,12 @@
 
 import {Component} from 'react';
 import {refreshButton, dayField, label, textField, toolbar} from 'hoist/cmp';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {HoistComponent, elemFactory} from 'hoist/core';
 import {chart} from 'hoist/highcharts';
 import {vframe, filler} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
 
-@hoistComponent()
+@HoistComponent()
 export class VisitsChart extends Component {
 
     render() {

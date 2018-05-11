@@ -4,14 +4,15 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH} from 'hoist/core';
+import {XH, HoistModel} from 'hoist/core';
 import {debounce, find} from 'lodash';
-import {action, autorun, observable, setter} from 'hoist/mobx';
+import {action, observable, setter} from 'hoist/mobx';
 import {LastPromiseModel} from 'hoist/promise';
 import {GridModel} from 'hoist/grid';
 import {UrlStore} from 'hoist/data';
 import {baseCol} from 'hoist/columns/Core';
 
+@HoistModel()
 export class LogViewerModel {
 
     // Form State/Display options
@@ -39,7 +40,7 @@ export class LogViewerModel {
     });
 
     constructor() {
-        autorun(() => {
+        this.addAutorun(() => {
             const sel = this.files.selection.singleRecord;
             this.file = sel ? sel.filename : null;
             this.loadLines();
@@ -88,4 +89,8 @@ export class LogViewerModel {
             .linkTo(this.loadModel)
             .catchDefault();
     }, 300);
+
+    destroy() {
+        XH.safeDestroy(this.loadModel, this.files);
+    }
 }

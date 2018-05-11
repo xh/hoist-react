@@ -5,14 +5,14 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, hoistComponent} from 'hoist/core';
+import {elemFactory, HoistComponent} from 'hoist/core';
 import {callout} from 'hoist/kit/blueprint';
 
 /**
  * Description panel for the LeftRightChooser.
  * @private
  */
-@hoistComponent()
+@HoistComponent()
 class Description extends Component {
 
     render() {

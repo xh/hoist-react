@@ -5,11 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, hoistComponent} from 'hoist/core';
+import {elemFactory, HoistComponent} from 'hoist/core';
 import {hbox} from 'hoist/layout';
 import {tile} from './Tile';
 
-@hoistComponent()
+@HoistComponent()
 class MonitorResultsDisplay extends Component {
     render() {
         const {results} = this.model;

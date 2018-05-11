@@ -4,7 +4,6 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-export * from './BaseService';
 export * from './ConfigService';
 export * from './EnvironmentService';
 export * from './ErrorTrackingService';

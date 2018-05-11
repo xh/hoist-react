@@ -5,58 +5,56 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {hoistComponent} from 'hoist/core';
+import {HoistComponent} from 'hoist/core';
 import {boolCheckCol, baseCol} from 'hoist/columns/Core';
 import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
 
 import {nameCol} from '../../columns/Columns';
 
-@hoistComponent()
+@HoistComponent()
 export class PreferencePanel extends Component {
 
-    store = new RestStore({
-        url: 'rest/preferenceAdmin',
-        fields: [
-            {
-                name: 'name',
-                required: true
-            },
-            {
-                name: 'type',
-                defaultValue: 'string',
-                lookupName: 'types',
-                lookupStrict: true,
-                editable: 'onAdd',
-                required: true
-            },
-            {
-                name: 'defaultValue',
-                typeField: 'type',
-                required: true
-            },
-            {
-                name: 'notes'
-            },
-            {
-                name: 'local',
-                type: 'bool',
-                defaultValue: false,
-                required: true
-            },
-            {
-                name: 'lastUpdated',
-                type: 'date',
-                editable: false
-            },
-            {
-                name: 'lastUpdatedBy',
-                editable: false
-            }
-        ]
-    });
-
-    gridModel = new RestGridModel({
-        store: this.store,
+    localModel = new RestGridModel({
+        store: new RestStore({
+            url: 'rest/preferenceAdmin',
+            fields: [
+                {
+                    name: 'name',
+                    required: true
+                },
+                {
+                    name: 'type',
+                    defaultValue: 'string',
+                    lookupName: 'types',
+                    lookupStrict: true,
+                    editable: 'onAdd',
+                    required: true
+                },
+                {
+                    name: 'defaultValue',
+                    typeField: 'type',
+                    required: true
+                },
+                {
+                    name: 'notes'
+                },
+                {
+                    name: 'local',
+                    type: 'bool',
+                    defaultValue: false,
+                    required: true
+                },
+                {
+                    name: 'lastUpdated',
+                    type: 'date',
+                    editable: false
+                },
+                {
+                    name: 'lastUpdatedBy',
+                    editable: false
+                }
+            ]
+        }),
         sortBy: 'name',
         unit: 'preference',
         filterFields: ['name'],
@@ -83,10 +81,10 @@ export class PreferencePanel extends Component {
     });
 
     render() {
-        return restGrid({model: this.gridModel});
+        return restGrid({model: this.model});
     }
 
     async loadAsync() {
-        return this.store.loadAsync();
+        return this.model.loadAsync();
     }
 }

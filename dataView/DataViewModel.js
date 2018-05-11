@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {HoistModel} from 'hoist/core';
 import {StoreSelectionModel} from 'hoist/data';
 import {StoreContextMenu} from 'hoist/cmp';
 
@@ -12,6 +13,7 @@ import {StoreContextMenu} from 'hoist/cmp';
  * DataViewModel is a wrapper around GridModel, which shows sorted data in
  * a single column, using a defined component for rendering each item.
  */
+@HoistModel()
 export class DataViewModel {
 
     // Immutable public properties
@@ -56,6 +58,16 @@ export class DataViewModel {
             recs = store.records;
 
         if (recs.length) selection.select(recs[0]);
+    }
+
+    /** Load the underlying store. */
+    loadAsync(...args) {
+        return this.store.loadAsync(...args);
+    }
+
+    /** Load the underlying store. */
+    loadData(...args) {
+        return this.store.loadData(...args);
     }
 
 }
