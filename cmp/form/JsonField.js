@@ -5,7 +5,7 @@ import {defaultsDeep} from 'lodash';
 import {textArea} from 'hoist/kit/blueprint';
 
 import {HoistField} from './HoistField';
-import {elemFactory, hoistComponent} from 'hoist/core';
+import {elemFactory, HoistComponent} from 'hoist/core';
 
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/addon/fold/foldgutter.css';
@@ -29,7 +29,7 @@ import './JsonField.css';
  *
  * @see HoistField for properties additional to those documented below.
  */
-@hoistComponent()
+@HoistComponent()
 export class JsonField extends HoistField {
 
     static propTypes = {

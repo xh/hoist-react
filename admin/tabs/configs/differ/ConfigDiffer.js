@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, hoistComponent, XH} from 'hoist/core';
+import {elemFactory, HoistComponent, XH} from 'hoist/core';
 import {button, dialog} from 'hoist/kit/blueprint';
 import {filler, fragment} from 'hoist/layout';
 import {grid} from 'hoist/grid';
@@ -13,7 +13,7 @@ import {comboField, label, message, toolbar} from 'hoist/cmp';
 
 import {configDifferDetail} from './ConfigDifferDetail';
 
-@hoistComponent()
+@HoistComponent()
 export class ConfigDiffer extends Component {
 
     render() {
@@ -58,7 +58,6 @@ export class ConfigDiffer extends Component {
                 model: model.gridModel,
                 gridOptions: {
                     onRowDoubleClicked: this.onRowDoubleClicked,
-                    overlayNoRowsTemplate: 'Please enter remote host for comparison',
                     popupParent: null
                 }
             }),

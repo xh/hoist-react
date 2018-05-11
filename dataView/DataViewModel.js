@@ -60,4 +60,14 @@ export class DataViewModel {
         if (recs.length) selection.select(recs[0]);
     }
 
+    /** Load the underlying store. */
+    loadAsync(...args) {
+        return this.store.loadAsync(...args);
+    }
+
+    /** Load the underlying store. */
+    loadData(...args) {
+        return this.store.loadData(...args);
+    }
+
 }

@@ -23,7 +23,7 @@ import {elemFactory} from './elem';
  *
  * Adds support for managed events, mobx reactivity, model awareness, and other convenience getters.
  */
-export function hoistComponent() {
+export function HoistComponent() {
 
     return (C) => {
         C.isHoistComponent = true;
@@ -100,5 +100,5 @@ export function hoistComponent() {
  * Create an elementFactory for a HoistComponent.
  */
 export function hoistComponentFactory(C, hcArgs = {}) {
-    return elemFactory(hoistComponent(hcArgs)(C));
+    return elemFactory(HoistComponent(hcArgs)(C));
 }

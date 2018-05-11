@@ -6,7 +6,7 @@
  */
 import React, {Children, Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {elemFactory, hoistComponent} from 'hoist/core';
+import {elemFactory, HoistComponent} from 'hoist/core';
 import {box, hbox, vbox} from 'hoist/layout';
 
 import {ResizableModel} from './ResizableModel';
@@ -25,7 +25,7 @@ import {collapser} from './impl/Collapser';
  * Applications should provide optional values for `isOpen`, `contentSize`, and `prefName`.
  * Applications may provide this object with an instance of ResizableModel.
  */
-@hoistComponent()
+@HoistComponent()
 export class Resizable extends Component {
 
     static propTypes = {

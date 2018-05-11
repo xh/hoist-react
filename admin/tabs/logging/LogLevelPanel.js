@@ -5,13 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {hoistComponent} from 'hoist/core';
+import {HoistComponent} from 'hoist/core';
 import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
 import {baseCol} from 'hoist/columns/Core';
 
 import {nameCol} from '../../columns/Columns';
 
-@hoistComponent()
+@HoistComponent()
 export class LogLevelPanel extends Component {
 
     localModel = new RestGridModel({

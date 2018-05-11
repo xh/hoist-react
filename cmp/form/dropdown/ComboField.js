@@ -7,7 +7,7 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {startsWith} from 'lodash';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {HoistComponent, elemFactory} from 'hoist/core';
 import {Classes, suggest} from 'hoist/kit/blueprint';
 
 import {BaseComboField} from './BaseComboField';
@@ -17,7 +17,7 @@ import {BaseComboField} from './BaseComboField';
  *
  * @see HoistField for properties additional to those documented below.
  */
-@hoistComponent()
+@HoistComponent()
 export class ComboField extends BaseComboField {
 
     static propTypes = {

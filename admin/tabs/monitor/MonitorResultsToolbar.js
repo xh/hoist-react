@@ -6,14 +6,14 @@
  */
 
 import {Component} from 'react';
-import {elemFactory, hoistComponent} from 'hoist/core';
+import {elemFactory, HoistComponent} from 'hoist/core';
 import {button} from 'hoist/kit/blueprint';
 import {label, toolbar} from 'hoist/cmp';
 import {hbox, filler} from 'hoist/layout';
 import {relativeTimestamp} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
-@hoistComponent()
+@HoistComponent()
 class MonitorResultsToolbar extends Component {
     render() {
         const {passed, warned, failed, forceRunAllMonitors, lastRun} = this.model;
