@@ -6,14 +6,14 @@
  */
 
 import {Component} from 'react';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {HoistComponent, elemFactory} from 'hoist/core';
 import {list, listHeader, listItem} from 'hoist/kit/onsen';
 import {hframe, frame, div, span} from 'hoist/layout';
 
 /**
  * Grid Component
  */
-@hoistComponent()
+@HoistComponent()
 class Grid extends Component {
 
     render() {
