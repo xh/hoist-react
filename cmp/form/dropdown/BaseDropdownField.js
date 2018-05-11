@@ -8,6 +8,7 @@
 import {PropTypes as PT} from 'prop-types';
 import {isObject, find} from 'lodash';
 import {menuItem} from 'hoist/kit/blueprint';
+import {observable, action} from 'hoist/mobx';
 
 import {HoistField} from '../HoistField';
 
@@ -17,6 +18,7 @@ import {HoistField} from '../HoistField';
  * Abstract class supporting BaseComboField and SelectField.
  */
 export class BaseDropdownField extends HoistField {
+    @observable.ref options = [];
 
     static propTypes = {
         /** Text to display when control is empty */
@@ -25,6 +27,16 @@ export class BaseDropdownField extends HoistField {
 
     static defaultProps = {
         placeholder: 'Select'
+    }
+
+    constructor(props) {
+        super(props);
+        this.setOptions(props.options);
+    }
+
+    @action
+    setOptions(options) {
+        this.options = this.normalizeOptions(options);
     }
 
 
