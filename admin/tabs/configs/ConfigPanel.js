@@ -24,6 +24,7 @@ export class ConfigPanel extends Component {
     gridModel = new RestGridModel({
         store: new RestStore({
             url: 'rest/configAdmin',
+            reloadLookupsOnLoad: true,
             fields: this.filterForEnv([
                 {
                     name: 'name',
