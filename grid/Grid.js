@@ -8,7 +8,7 @@
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {XH} from 'hoist/core';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {HoistComponent, elemFactory} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
 import {defaults, isString, isNumber, isBoolean, isEqual, xor} from 'lodash';
 import {convertIconToSvg, Icon} from 'hoist/icon';
@@ -26,7 +26,7 @@ import {navigateSelection, agGridReact} from './ag-grid';
  * the selection. Use this class to control the AG Grid UI options and specific
  * behavior of the grid.
  */
-@hoistComponent()
+@HoistComponent()
 class Grid extends Component {
 
     _scrollOnSelect = true;

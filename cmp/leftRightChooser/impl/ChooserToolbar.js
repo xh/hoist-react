@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, hoistComponent} from 'hoist/core';
+import {elemFactory, HoistComponent} from 'hoist/core';
 import {toolbar} from 'hoist/cmp';
 import {vspacer} from 'hoist/layout';
 import {button} from 'hoist/kit/blueprint';
@@ -15,7 +15,7 @@ import {Icon} from 'hoist/icon';
  * A Toolbar for the LeftRightChooser.
  * @private
  */
-@hoistComponent()
+@HoistComponent()
 class ChooserToolbar extends Component {
 
     render() {

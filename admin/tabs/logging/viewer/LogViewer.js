@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {hoistComponent} from 'hoist/core';
+import {HoistComponent} from 'hoist/core';
 import {filler, hframe, vframe} from 'hoist/layout';
 import {grid} from 'hoist/grid';
 import {loadMask, resizable, storeFilterField, toolbar} from 'hoist/cmp';
@@ -15,7 +15,7 @@ import {LogViewerModel} from './LogViewerModel';
 import {logViewerToolbar} from './LogViewerToolbar';
 import './LogViewer.scss';
 
-@hoistComponent()
+@HoistComponent()
 export class LogViewer extends Component {
     localModel = new LogViewerModel();
 

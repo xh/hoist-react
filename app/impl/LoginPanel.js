@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {XH, elemFactory, hoistComponent} from 'hoist/core';
+import {XH, elemFactory, HoistComponent} from 'hoist/core';
 import {vspacer, filler, viewport} from 'hoist/layout';
 import {button, text} from 'hoist/kit/blueprint';
 import {panel, textField, toolbar} from 'hoist/cmp';
@@ -19,7 +19,7 @@ import './LoginPanel.scss';
  * A minimal username / password prompt for applications using form-based authentication.
  * Automatically created and displayed if required by AppContainer.
  */
-@hoistComponent()
+@HoistComponent()
 export class LoginPanel extends Component {
 
     @setter @observable username = '';

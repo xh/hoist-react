@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {button} from 'hoist/kit/blueprint';
-import {XH, hoistComponent} from 'hoist/core';
+import {XH, HoistComponent} from 'hoist/core';
 import {fragment} from 'hoist/layout';
 import {boolCheckCol, baseCol} from 'hoist/columns/Core';
 import {nameCol} from 'hoist/admin/columns/Columns';
@@ -16,7 +16,7 @@ import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
 import {configDiffer} from './differ/ConfigDiffer';
 import {ConfigDifferModel} from './differ/ConfigDifferModel';
 
-@hoistComponent()
+@HoistComponent()
 export class ConfigPanel extends Component {
 
     differModel = new ConfigDifferModel({});

@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elem, elemFactory, hoistComponent} from 'hoist/core';
+import {elem, elemFactory, HoistComponent} from 'hoist/core';
 import {Ref} from 'hoist/utils/Ref';
 import {frame} from 'hoist/layout';
 
@@ -19,7 +19,7 @@ import {frame} from 'hoist/layout';
  * Contained components that load data/state from the server should implement loadAsync(), but
  * generally leave the calling of that method to this component
  */
-@hoistComponent()
+@HoistComponent()
 export class TabPane extends Component {
 
     child = new Ref();
