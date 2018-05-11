@@ -12,9 +12,12 @@
     text-align: center;
   }
 
-  + .pt-callout {
-      margin-top: 10px;
-      width: 300px;
-    }
+  .xh-login-message {
+    background-color: var(--xh-bg-alt);
+    margin: 0 var(--xh-pad-px) var(--xh-pad-px) var(--xh-pad-px);
+    padding: 0 var(--xh-pad-px);
+    line-height: var(--xh-title-height-px);
+    border-radius: var(--xh-border-radius-px);
+  }
 }
 

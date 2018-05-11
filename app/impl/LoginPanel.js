@@ -7,8 +7,8 @@
 
 import {Component} from 'react';
 import {XH, elemFactory, HoistComponent} from 'hoist/core';
-import {vspacer, filler, viewport} from 'hoist/layout';
-import {button, callout, text} from 'hoist/kit/blueprint';
+import {vspacer, box, filler, viewport} from 'hoist/layout';
+import {button, text} from 'hoist/kit/blueprint';
 import {panel, textField, toolbar} from 'hoist/cmp';
 import {observable, computed, setter} from 'hoist/mobx';
 import {Icon} from 'hoist/icon';
@@ -61,7 +61,11 @@ export class LoginPanel extends Component {
                             item: this.warning,
                             ellipsize: true,
                             cls: 'xh-login__warning'
-                        })
+                        }),
+                        loginMessage ? box({
+                            cls: 'xh-login-message',
+                            item: loginMessage
+                        }) : null
                     ],
                     bottomToolbar: toolbar(
                         filler(),
@@ -73,12 +77,7 @@ export class LoginPanel extends Component {
                             onClick: this.onSubmit
                         })
                     )
-                }),
-                loginMessage ? callout({
-                    intent: 'primary',
-                    icon: null,
-                    item: loginMessage
-                }) : null
+                })
             ]
         });
     }
