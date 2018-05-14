@@ -44,14 +44,14 @@ export class LoadMask extends Component {
             isOpen: true,
             canEscapeKeyClose: false,
             usePortal: !isInline,
-            item: this.getLoadWrapper(text)
+            item: this.getMaskBody(text)
         });
     }
 
     //-----------------
     // Implementation
     //-----------------
-    getLoadWrapper(text) {
+    getMaskBody(text) {
         return vbox({
             cls: 'xh-mask-body',
             alignItems: 'center',
