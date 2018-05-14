@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, hoistComponent} from 'hoist/core';
+import {elemFactory, HoistComponent} from 'hoist/core';
 import {hframe, vframe} from 'hoist/layout';
 import {grid} from 'hoist/grid';
 
@@ -19,7 +19,7 @@ import './LeftRightChooser.scss';
  * A nested panel is also available to display a more in-depth description for any selected item.
  * @see LeftRightChooserModel
  */
-@hoistComponent()
+@HoistComponent()
 class LeftRightChooser extends Component {
 
     render() {

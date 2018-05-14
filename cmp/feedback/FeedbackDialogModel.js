@@ -5,9 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {isEmpty} from 'lodash';
-import {XH} from 'hoist/core';
+import {XH, HoistModel} from 'hoist/core';
 import {action, observable, setter} from 'hoist/mobx';
 
+@HoistModel()
 /** Model for a FeedbackDialog, managing its open/close state and feedback string. */
 export class FeedbackDialogModel {
 

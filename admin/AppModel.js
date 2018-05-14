@@ -4,7 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {BaseAppModel} from 'hoist/core';
+import {XH} from 'hoist/core';
+import {HoistAppModel} from 'hoist/app';
 import {action} from 'hoist/mobx';
 import {TabContainerModel} from 'hoist/cmp';
 
@@ -24,13 +25,14 @@ import {UserPreferencePanel} from './tabs/preferences/UserPreferencePanel';
 import {ServicePanel} from './tabs/services/ServicePanel';
 import {UserPanel} from './tabs/users/UserPanel';
 
-export class AppModel extends BaseAppModel {
+@HoistAppModel
+export class AppModel {
 
     tabs = this.createTabContainer();
     
     @action
     requestRefresh() {
-        this.tabs.setLastRefreshRequest(Date.now());
+        this.tabs.requestRefresh();
     }
 
     getRoutes() {
@@ -43,7 +45,6 @@ export class AppModel extends BaseAppModel {
             }
         ];
     }
-
 
     //------------------------
     // Implementation
@@ -157,10 +158,13 @@ export class AppModel extends BaseAppModel {
                 orientation: 'v',
                 children: [
                     {id: 'prefs', component: PreferencePanel},
-                    {id: 'userPrefs', component: UserPreferencePanel}
+                    {id: 'userPrefs', component: UserPreferencePanel, reloadOnShow: true}
                 ]
             }
         ];
     }
 
+    destroy() {
+        XH.safeDestroy(this.tabs);
+    }
 }

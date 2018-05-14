@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {elemFactory, hoistComponent} from 'hoist/core';
+import {elemFactory, HoistComponent} from 'hoist/core';
 import {button, inputGroup} from 'hoist/kit/blueprint';
 import {observable, setter} from 'hoist/mobx';
 import {escapeRegExp} from 'lodash';
@@ -15,7 +15,7 @@ import {escapeRegExp} from 'lodash';
  * A Component that can bind to a LeftRightChooser and filter both lists
  * based on simple text matching in selected fields.
  */
-@hoistComponent()
+@HoistComponent()
 class LeftRightChooserFilter extends Component {
 
     static propTypes = {

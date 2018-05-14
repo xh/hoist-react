@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {hoistComponent} from 'hoist/core';
+import {XH, HoistComponent} from 'hoist/core';
 import {vframe} from 'hoist/layout';
 import {resizable} from 'hoist/cmp';
 
@@ -14,7 +14,7 @@ import {ActivityGridModel} from './ActivityGridModel';
 import {visitsChart} from './VisitsChart';
 import {VisitsChartModel} from './VisitsChartModel';
 
-@hoistComponent()
+@HoistComponent()
 export class ActivityPanel extends Component {
 
     activityGridModel = new ActivityGridModel();
@@ -34,5 +34,9 @@ export class ActivityPanel extends Component {
 
     async loadAsync() {
         return Promise.all([this.visitsChartModel.loadAsync(), this.activityGridModel.loadAsync()]);
+    }
+
+    destroy() {
+        XH.safeDestroy(this.activityGridModel, this.visitsChartModel);
     }
 }
