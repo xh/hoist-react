@@ -5,7 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
 import {fileColFactory} from './Utils.js';
 import {convertIconToSvg, Icon} from 'hoist/icon';
 
