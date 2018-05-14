@@ -43,7 +43,6 @@ export class LoadMask extends Component {
             autoFocus: false,
             isOpen: true,
             canEscapeKeyClose: false,
-            hasBackdrop: true,
             usePortal: !isInline,
             item: this.getLoadWrapper(text)
         });
