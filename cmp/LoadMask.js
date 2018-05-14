@@ -21,8 +21,6 @@ import './LoadMask.scss';
 @HoistComponent()
 export class LoadMask extends Component {
 
-    BACKGROUND = 'rgba(0,0,0, 0.25)';
-
     static propTypes = {
         isDisplayed: PT.bool,
         /** PromiseModel instance. If provided, loadMask will show while promise is pending */
@@ -46,9 +44,6 @@ export class LoadMask extends Component {
             isOpen: true,
             canEscapeKeyClose: false,
             hasBackdrop: true,
-            backdropProps: {
-                style: {backgroundColor: this.BACKGROUND}
-            },
             usePortal: !isInline,
             item: this.getLoadWrapper(text)
         });
