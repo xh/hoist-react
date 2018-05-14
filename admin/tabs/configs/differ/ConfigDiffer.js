@@ -9,7 +9,7 @@ import {elemFactory, HoistComponent, XH} from 'hoist/core';
 import {button, dialog} from 'hoist/kit/blueprint';
 import {filler, fragment} from 'hoist/layout';
 import {grid} from 'hoist/grid';
-import {comboField, label, message, toolbar} from 'hoist/cmp';
+import {comboField, label, message, panel, toolbar} from 'hoist/cmp';
 
 import {configDifferDetail} from './ConfigDifferDetail';
 
@@ -36,8 +36,8 @@ export class ConfigDiffer extends Component {
     //------------------------
     getDialogItems() {
         const model = this.model;
-        return [
-            toolbar(
+        return panel({
+            topToolbar: toolbar(
                 label('Compare w/Remote'),
                 filler(),
                 label('Compare with:'),
@@ -54,22 +54,24 @@ export class ConfigDiffer extends Component {
                     onClick: this.onLoadDiffClick
                 })
             ),
-            grid({
-                model: model.gridModel,
-                gridOptions: {
-                    onRowDoubleClicked: this.onRowDoubleClicked,
-                    popupParent: null
-                }
-            }),
-            toolbar(
+            items: [
+                grid({
+                    model: model.gridModel,
+                    gridOptions: {
+                        onRowDoubleClicked: this.onRowDoubleClicked,
+                        popupParent: null
+                    }
+                }),
+                message({model: model.messageModel})
+            ],
+            bottomToolbar: toolbar(
                 filler(),
                 button({
                     text: 'Close',
                     onClick: this.onCloseClick
                 })
-            ),
-            message({model: model.messageModel})
-        ];
+            )
+        });
     }
 
     onLoadDiffClick = () => {
