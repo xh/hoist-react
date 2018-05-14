@@ -10,7 +10,7 @@ import {defaults} from 'lodash';
 import {HoistComponent, elemFactory} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {frame, vframe, fragment} from 'hoist/layout';
-import {message} from 'hoist/cmp';
+import {message, panel} from 'hoist/cmp';
 
 import {restGridToolbar} from './RestGridToolbar';
 import {restForm} from './RestForm';
@@ -23,15 +23,13 @@ export class RestGrid extends Component {
             {extraToolbarItems} = this.props,
             gridOptions = defaults(this.props.gridOptions, {onRowDoubleClicked: this.onRowDoubleClicked});
         return fragment(
-            vframe(
-                restGridToolbar({model, extraToolbarItems}),
-                frame(
-                    grid({
-                        model: model.gridModel,
-                        gridOptions: gridOptions
-                    })
-                )
-            ),
+            panel({
+                topToolbar: restGridToolbar({model, extraToolbarItems}),
+                item: grid({
+                    model: model.gridModel,
+                    gridOptions: gridOptions
+                })
+            }),
             restForm({model: model.formModel}),
             message({model: model.messageModel})
         );
