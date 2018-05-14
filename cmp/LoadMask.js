@@ -7,7 +7,7 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {Component} from 'react';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {HoistComponent, elemFactory} from 'hoist/core';
 import {viewport, vframe, box} from 'hoist/layout';
 import {overlay, spinner} from 'hoist/kit/blueprint';
 
@@ -18,7 +18,7 @@ import './LoadMask.scss';
  *
  * The mask can be explicitly shown, or reactively bound to a PromiseModel.
  */
-@hoistComponent()
+@HoistComponent()
 export class LoadMask extends Component {
 
     BACKGROUND = 'rgba(0,0,0, 0.25)';

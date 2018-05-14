@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {XH, hoistComponent, elemFactory} from 'hoist/core';
+import {XH, HoistComponent, elemFactory} from 'hoist/core';
 import {button, dialog, dialogBody, textArea} from 'hoist/kit/blueprint';
 import {clipboardButton, toolbar} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
@@ -18,11 +18,11 @@ import {dismissButton} from './ExceptionDialog';
  * Sub-dialog for displaying exception details.  Includes affordances for submitting an
  * error report to the server and copying the stacktrace to the clipboard.
  */
-@hoistComponent()
+@HoistComponent()
 export class ExceptionDialogDetails extends Component {
 
     render() {
-        const model = this.model,
+        const {model} = this,
             {detailsIsOpen, exception, options} = model,
             {requireReload} = options,
             row = (label, data) => tr(th({item: `${label}:`, style: {textAlign: 'left'}}), td(data));

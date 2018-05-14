@@ -5,13 +5,12 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH} from 'hoist/core';
+import {XH, HoistService} from 'hoist/core';
 import {stripTags} from 'hoist/utils/HtmlUtils';
 import {stringifyErrorSafely} from 'hoist/exception';
 
-import {BaseService} from './BaseService';
-
-export class ErrorTrackingService extends BaseService {
+@HoistService()
+export class ErrorTrackingService {
 
     /**
      * Create a Client Exception entry. Client metadata will be set automatically.

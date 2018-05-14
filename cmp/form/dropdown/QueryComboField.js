@@ -6,7 +6,7 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {HoistComponent, elemFactory} from 'hoist/core';
 import {observable, setter} from 'hoist/mobx';
 import {Classes, suggest} from 'hoist/kit/blueprint';
 
@@ -15,7 +15,7 @@ import {BaseComboField} from './BaseComboField';
 /**
  * ComboBox Field which populates its options dynamically based on the current value.
  */
-@hoistComponent()
+@HoistComponent()
 export class QueryComboField extends BaseComboField {
     @observable.ref @setter options = [];
 
@@ -40,7 +40,7 @@ export class QueryComboField extends BaseComboField {
 
     constructor(props) {
         super(props);
-        this.addAutoRun(() => this.syncOptions(), {delay: props.queryBuffer || 100});
+        this.addAutorun(() => this.syncOptions(), {delay: props.queryBuffer || 100});
     }
 
     render() {

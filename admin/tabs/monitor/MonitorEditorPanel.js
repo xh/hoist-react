@@ -5,73 +5,71 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {hoistComponent} from 'hoist/core';
+import {HoistComponent} from 'hoist/core';
 import {baseCol, boolCheckCol} from 'hoist/columns/Core';
 import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
 import {nameFlexCol} from 'hoist/admin/columns/Columns';
 
-@hoistComponent()
+@HoistComponent()
 export class MonitorEditorPanel extends Component {
 
-    store = new RestStore({
-        url: 'rest/monitorAdmin',
-        fields: [
-            {
-                name: 'code',
-                required: true
-            },
-            {
-                name: 'name',
-                required: true
-            },
-            {
-                name: 'metricType',
-                lookupName: 'metricTypes',
-                lookupStrict: true,
-                required: true
-            },
-            {
-                name: 'metricUnit'
-            },
-            {
-                name: 'warnThreshold',
-                type: 'int'
-            },
-            {
-                name: 'failThreshold',
-                type: 'int'
-            },
-            {
-                name: 'params',
-                type: 'json'
-            },
-            {
-                name: 'notes'
-            },
-            {
-                name: 'active',
-                type: 'bool',
-                defaultValue: true,
-                required: true
-            },
-            {
-                name: 'sortOrder',
-                type: 'int'
-            },
-            {
-                name: 'lastUpdated',
-                type: 'date',
-                editable: false
-            },
-            {
-                name: 'lastUpdatedBy',
-                editable: false
-            }
-        ]
-    });
-
-    gridModel = new RestGridModel({
-        store: this.store,
+    localModel = new RestGridModel({
+        store: new RestStore({
+            url: 'rest/monitorAdmin',
+            fields: [
+                {
+                    name: 'code',
+                    required: true
+                },
+                {
+                    name: 'name',
+                    required: true
+                },
+                {
+                    name: 'metricType',
+                    lookupName: 'metricTypes',
+                    lookupStrict: true,
+                    required: true
+                },
+                {
+                    name: 'metricUnit'
+                },
+                {
+                    name: 'warnThreshold',
+                    type: 'int'
+                },
+                {
+                    name: 'failThreshold',
+                    type: 'int'
+                },
+                {
+                    name: 'params',
+                    type: 'json'
+                },
+                {
+                    name: 'notes'
+                },
+                {
+                    name: 'active',
+                    type: 'bool',
+                    defaultValue: true,
+                    required: true
+                },
+                {
+                    name: 'sortOrder',
+                    type: 'int'
+                },
+                {
+                    name: 'lastUpdated',
+                    type: 'date',
+                    editable: false
+                },
+                {
+                    name: 'lastUpdatedBy',
+                    editable: false
+                }
+            ]
+        }),
         unit: 'monitor',
         sortBy: 'sortOrder',
         filterFields: ['code', 'name'],
@@ -102,10 +100,10 @@ export class MonitorEditorPanel extends Component {
     });
 
     render() {
-        return restGrid({model: this.gridModel});
+        return restGrid({model: this.model});
     }
 
     async loadAsync() {
-        return this.store.loadAsync();
+        return this.model.loadAsync();
     }
 }

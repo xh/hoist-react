@@ -7,12 +7,12 @@
 import {Component} from 'react';
 import {castArray, isEmpty} from 'lodash';
 import {button} from 'hoist/kit/blueprint';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {HoistComponent, elemFactory} from 'hoist/core';
 import {filler} from 'hoist/layout';
 import {exportButton, storeCountLabel, storeFilterField, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
-@hoistComponent()
+@HoistComponent()
 export class RestGridToolbar extends Component {
 
     render() {
@@ -22,11 +22,9 @@ export class RestGridToolbar extends Component {
     }
 
     renderToolbarItems() {
-        const model = this.model,
-            store = model.store,
-            unit = model.unit,
-            singleRecord = model.selection.singleRecord,
-            actionEnabled = model.actionEnabled,
+        const {model} = this,
+            {store, unit, actionEnabled} = model,
+            {singleRecord} = model.selection,
             extraItemsFn = this.props.extraToolbarItems,
             extraItems = extraItemsFn ? castArray(extraItemsFn()) : [];
 

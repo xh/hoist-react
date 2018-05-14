@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {elemFactory, hoistComponent} from 'hoist/core';
+import {elemFactory, HoistComponent} from 'hoist/core';
 import {Icon} from 'hoist/icon';
 import {button} from 'hoist/kit/blueprint';
 import {hbox, vbox} from 'hoist/layout';
@@ -17,7 +17,7 @@ import './Collapser.scss';
 /** This is an implementation class private to Hoist
  * @private
  */
-@hoistComponent()
+@HoistComponent()
 export class Collapser extends Component {
 
     static propTypes = {

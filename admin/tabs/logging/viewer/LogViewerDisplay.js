@@ -5,20 +5,20 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, hoistComponent} from 'hoist/core';
+import {elemFactory, HoistComponent} from 'hoist/core';
 import {Icon} from 'hoist/icon';
 import {Ref} from 'hoist/utils/Ref';
 import {frame, table, tbody, td, tr} from 'hoist/layout';
 import {clipboardMenuItem, contextMenu} from 'hoist/cmp';
 
-@hoistComponent()
+@HoistComponent()
 class LogViewerDisplay extends Component {
 
     lastRow = new Ref();
 
     constructor(props) {
         super(props);
-        this.addAutoRun(() => this.syncTail());
+        this.addAutorun(() => this.syncTail());
     }
 
     render() {

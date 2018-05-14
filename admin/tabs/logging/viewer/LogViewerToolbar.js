@@ -5,17 +5,17 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, hoistComponent} from 'hoist/core';
+import {elemFactory, HoistComponent} from 'hoist/core';
 import {button} from 'hoist/kit/blueprint';
 import {checkField, label, numberField, textField, toolbar} from 'hoist/cmp';
 import {filler} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
 
-@hoistComponent()
+@HoistComponent()
 export class LogViewerToolbar extends Component {
     
     render() {
-        const model = this.model;
+        const {model} = this;
         return toolbar({
             items: [
                 label('Start Line:'),
