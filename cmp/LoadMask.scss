@@ -1,14 +1,14 @@
 .xh-mask {
-  position: absolute !important;
   display: flex;
   flex-direction: column;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
   align-items: center;
   justify-content: center;
-  .xh-mask-text {
-    padding-top: 5px;
+  .xh-mask-body {
+    background-color: var(--xh-loadmask-bg);
+    border-radius: var(--xh-border-radius-px);
+    padding: 10px;
+    .xh-mask-text {
+      padding-top: 5px;
+    }
   }
 }

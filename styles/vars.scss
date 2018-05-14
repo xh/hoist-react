@@ -95,6 +95,8 @@ body {
 
   // Mask
   --xh-mask-bg: var(--mask-bg, #{mc-trans('blue-grey', '900')});
+  // LoadMask
+  --xh-loadmask-bg: var(--loadmask-bg, #{mc-trans('blue-grey', '50', 0.2)});
 
   // Navbar (top app toolbar)
   --xh-navbar-bg: var(--navbar-bg, var(--xh-bg-alt));
@@ -187,6 +189,9 @@ body.xh-dark {
   --xh-grid-border-color: var(--grid-border-color, #{mc('grey', '800')});
   --xh-grid-group-bg: var(--grid-group-bg, #{mc('blue-grey', '800')});
   --xh-grid-header-bg: var(--grid-header-bg, var(--xh-black));
+
+  // LoadMask
+  --xh-loadmask-bg: var(--loadmask-bg, #{mc-trans('grey', '900', 0.2)});
 
   // Navbar
   --xh-navbar-border-color: var(--navbar-border-color, #{mc('blue-grey', '700')});
