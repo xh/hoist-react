@@ -26,17 +26,18 @@ export class LockoutPanel extends Component {
     render() {
         const msg = this.props.message || 'Access Denied';
 
-        return viewport(
-            vframe(
+        return viewport({
+            baseCls: 'xh-lockout-panel',
+            item: vframe(
                 impersonationBar(),
                 filler(),
                 box({
-                    cls: 'xh-lockout-panel',
+                    cls: 'xh-lockout-panel-body',
                     item: msg
                 }),
                 filler()
             )
-        );
+        });
     }
 }
 

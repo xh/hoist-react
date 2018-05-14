@@ -21,6 +21,7 @@ export class FeedbackDialog extends Component {
     render() {
         const model = this.model;
         return dialog({
+            baseCls: 'xh-feedback-dialog',
             title: 'Submit Feedback',
             style: {width: 450},
             isOpen: model.isOpen,

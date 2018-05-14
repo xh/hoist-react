@@ -28,6 +28,7 @@ export class LaunchAdminButton extends Component {
 
         const {icon, title, onClick, ...rest} = this.props;
         return button({
+            baseCls: 'xh-launch-admin-button',
             icon: icon || Icon.wrench(),
             title: title || 'Launch admin client...',
             onClick: onClick || this.onClick,

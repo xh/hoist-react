@@ -58,7 +58,7 @@ class RelativeTimestamp extends Component {
     timer = null;
 
     render() {
-        return div(this.relativeTimeString);
+        return div({baseCls: 'xh-relative-timestamp', item: this.relativeTimeString});
     }
 
     refreshLabel = () => {

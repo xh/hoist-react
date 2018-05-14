@@ -38,6 +38,7 @@ export class Chart extends Component {
         // Inner div required to be the ref for the chart element
         return box({
             layoutConfig: layoutConfig,
+            baseCls: 'xh-chart',
             item: div({
                 style: {flex: 'auto'},
                 ref: this._chartElem.ref

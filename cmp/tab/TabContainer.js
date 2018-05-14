@@ -25,6 +25,7 @@ export class TabContainer extends Component {
         return tabs({
             id,
             vertical,
+            baseCls: 'xh-tab-container',
             onChange: this.onTabChange,
             selectedTabId: selectedId,
             large: !vertical,

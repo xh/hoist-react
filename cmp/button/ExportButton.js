@@ -31,6 +31,7 @@ export class ExportButton extends Component {
     render() {
         const {icon, onClick, model, ...rest} = this.props;
         return button({
+            baseCls: 'xh-export-button',
             icon: icon || Icon.download(),
             title: this.title || 'Export',
             onClick: onClick || this.onExportClick,

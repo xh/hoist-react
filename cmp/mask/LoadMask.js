@@ -36,7 +36,7 @@ export class LoadMask extends Component {
         if (!(isDisplayed || (model && model.isPending))) return null;
 
         return overlay({
-            cls: `xh-mask ${Classes.OVERLAY_SCROLL_CONTAINER}`,
+            baseCls: `xh-mask ${Classes.OVERLAY_SCROLL_CONTAINER}`,
             autoFocus: false,
             isOpen: true,
             canEscapeKeyClose: false,

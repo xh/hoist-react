@@ -88,7 +88,7 @@ export class Resizable extends Component {
             items.push(this.getDragger());
         }
 
-        return cmp({flex: 'none', items});
+        return cmp({baseCls: 'xh-resizable', flex: 'none', items});
     }
 
     //----------------------------------------

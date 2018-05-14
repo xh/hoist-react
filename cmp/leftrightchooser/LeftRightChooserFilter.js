@@ -27,6 +27,7 @@ class LeftRightChooserFilter extends Component {
 
     render() {
         return inputGroup({
+            baseCls: 'xh-lr-chooser-filter',
             placeholder: 'Quick filter...',
             value: this.value,
             onChange: this.onValueChange,

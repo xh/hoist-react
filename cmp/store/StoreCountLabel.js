@@ -44,8 +44,9 @@ class StoreCountLabel extends Component {
             unitLabel = count === 1 ? this.oneUnit : this.manyUnits;
 
         return box({
+            baseCls: 'xh-store-count-label', 
             layoutConfig: this.layoutConfig,
-            item: `${countStr} ${unitLabel}`
+            item: `${count} ${unitLabel}`
         });
     }
 }

@@ -70,7 +70,7 @@ class Grid extends Component {
         return fragment(
             box({
                 layoutConfig: layoutConfig,
-                cls: `ag-grid-holder ${XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham'}`,
+                baseCls: `xh-grid ${XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham'}`,
                 item: agGridReact({
                     ...this.createDefaults(),
                     ...this.props.agOptions
