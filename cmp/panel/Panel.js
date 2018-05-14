@@ -6,10 +6,11 @@
  */
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
+import {castArray} from 'lodash';
 import {elemFactory, HoistComponent} from 'hoist/core';
 import {vframe, vbox} from 'hoist/layout';
+import {mask} from 'hoist/cmp';
 import {panelHeader} from './impl/PanelHeader';
-import {castArray} from 'lodash';
 
 
 /**
@@ -29,14 +30,16 @@ export class Panel extends Component {
         /** A toolbar to be docked at the top of the panel. */
         topToolbar: PT.element,
         /** A toolbar to be docked at the bottom of the panel. */
-        bottomToolbar: PT.element
+        bottomToolbar: PT.element,
+        /** Whether this panel should be rendered with a mask, use to disable interaction with panel*/
+        masked: PT.bool
     };
 
     baseCls = 'xh-panel';
 
     render() {
         // Note: Padding is destructured here to be discarded because it breaks layout
-        const {className, topToolbar, bottomToolbar, title, icon, headerItems, padding, children, ...rest} = this.props,
+        const {className, topToolbar, bottomToolbar, title, icon, headerItems, masked, padding, children, ...rest} = this.props,
             wrapper = this.props.width || this.props.height ? vbox : vframe;
 
         return wrapper({
@@ -46,7 +49,8 @@ export class Panel extends Component {
                 panelHeader({title, icon, headerItems}),
                 topToolbar || null,
                 ...(castArray(children)),
-                bottomToolbar || null
+                bottomToolbar || null,
+                mask({isDisplayed: masked})
             ]
         });
     }

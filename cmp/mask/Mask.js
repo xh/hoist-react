@@ -35,8 +35,6 @@ export class Mask extends Component {
             hasBackdrop: false,
             usePortal: false,
             item: frame({
-                width: '100%',
-                height: '100%',
                 alignItems: 'center',
                 justifyContent: 'center',
                 style: {
