@@ -6,10 +6,10 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from 'hoist/core';
-import {vframe} from 'hoist/layout';
 import {monitorResultsToolbar} from './MonitorResultsToolbar';
 import {monitorResultsDisplay} from './MonitorResultsDisplay';
 import {MonitorResultsModel} from './MonitorResultsModel';
+import {panel} from 'hoist/cmp';
 import './MonitorResultsPanel.scss';
 
 
@@ -24,12 +24,10 @@ export class MonitorResultsPanel extends Component {
     render() {
         const {model} = this;
 
-        return vframe({
+        return panel({
             cls: 'xh-monitor-results-panel',
-            items: [
-                monitorResultsToolbar({model}),
-                monitorResultsDisplay({model})
-            ]
+            topToolbar: monitorResultsToolbar({model}),
+            item: monitorResultsDisplay({model})
         });
     }
 }
