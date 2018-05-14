@@ -32,6 +32,7 @@ export class StoreFilterField extends Component {
 
     render() {
         return inputGroup({
+            baseCls: 'xh-store-filter-field',
             placeholder: 'Quick filter...',
             value: this.value,
             onChange: this.onValueChange,

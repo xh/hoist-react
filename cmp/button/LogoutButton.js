@@ -33,6 +33,7 @@ export class LogoutButton extends Component {
 
         const {icon, title, intent, onClick, ...rest} = this.props;
         return button({
+            baseCls: 'xh-logout-button',
             icon: icon || Icon.logout(),
             title: title || 'Logout',
             intent: intent || 'danger',

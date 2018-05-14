@@ -31,6 +31,7 @@ export class RefreshButton extends Component {
     render() {
         const {icon, title, onClick, model, ...rest} = this.props;
         return button({
+            baseCls: 'xh-refresh-button',
             icon: icon || Icon.sync(),
             title: title || 'Refresh',
             onClick: onClick || this.onRefreshClick,

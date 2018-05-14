@@ -35,11 +35,8 @@ export class Panel extends Component {
         masked: PT.bool
     };
 
-    baseCls = 'xh-panel';
-
     render() {
         let {
-            className,
             layoutConfig,
             tbar,
             bbar,
@@ -62,7 +59,7 @@ export class Panel extends Component {
         }
 
         return vbox({
-            cls: className ? `${this.baseCls} ${className}` : this.baseCls,
+            baseCls: 'xh-panel',
             layoutConfig,
             ...rest,
             items: [

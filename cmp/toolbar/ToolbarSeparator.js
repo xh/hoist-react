@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import React, {Component} from 'react';
+import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {span} from '@xh/hoist/cmp/layout';
 
@@ -18,7 +18,9 @@ import './Toolbar.scss';
 class ToolbarSeparator extends Component {
 
     render() {
-        return <span className="xh-toolbar__separator"></span>;
+        return span({
+            baseCls: 'xh-toolbar__separator'
+        });
     }
 
 }

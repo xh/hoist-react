@@ -24,6 +24,7 @@ class Message extends Component {
         if (!isOpen) return null;
 
         return dialog({
+            baseCls: 'xh-message',
             isOpen: true,
             isCloseButtonShown: false,
             title: model.title,

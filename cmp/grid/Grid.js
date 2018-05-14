@@ -78,10 +78,11 @@ class Grid extends Component {
 
     render() {
         const {store, agColDefs, colChooserModel} = this.model;
+
         return frame(
             div({
                 style: {flex: '1 1 auto', overflow: 'hidden'},
-                cls: XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
+                baseCls: `xh-grid ${XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham'}`,
                 item: agGridReact({
                     rowData: store.records,
                     columnDefs: agColDefs,

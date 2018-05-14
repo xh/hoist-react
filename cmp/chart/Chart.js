@@ -29,6 +29,7 @@ export class Chart extends Component {
     render() {
         this.renderHighChart();
         return frame({
+            baseCls: 'xh-chart',
             ...this.props,
             item: div({
                 style: {flex: 'auto', overflow: 'hidden'},

@@ -38,6 +38,7 @@ export class ClipboardButton extends Component {
     render() {
         const {icon, successMessage, text, clipboardSpec, ...rest} = this.props;
         return button({
+            baseCls: 'xh-clipboard-button',
             icon: icon || Icon.clipboard(),
             text: text || 'Copy',
             ref: this.manageClipboard,
