@@ -4,18 +4,21 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH} from 'hoist/core';
-import {action, autorun, computed, observable} from 'hoist/mobx';
+import {XH, HoistModel} from 'hoist/core';
+import {action, computed, observable} from 'hoist/mobx';
 import {LastPromiseModel, wait} from 'hoist/promise';
-import {startCase} from 'lodash';
+import {startCase, max} from 'lodash';
 
 /**
  * Model for a TabPane, representing its content's active and load state.
  */
+@HoistModel()
 export class TabPaneModel {
     id = null;
     name = null;
     componentClass = null;
+    reloadOnShow = false;
+    @observable _lastRefreshRequest = null;
     parent = null;
 
     @observable lastLoaded = null;
@@ -29,16 +32,19 @@ export class TabPaneModel {
      * @param {string} id - unique ID, used for generating routes.
      * @param {string} [name] - display name for the tab.
      * @param {Object} componentClass - class of React Component to be displayed within the tab.
+     * @param {boolean} reloadOnShow - whether to load fresh data for this tab each time it is selected
      */
     constructor({
         id,
         name = startCase(id),
-        component
+        component,
+        reloadOnShow
     }) {
         this.id = id;
         this.name = name;
         this.componentClass = component;
-        wait(1).then(() => autorun(() => this.syncFromRouter()));
+        this.reloadOnShow = reloadOnShow;
+        wait(1).then(() => this.addAutorun(() => this.syncFromRouter()));
     }
 
     select() {
@@ -50,9 +56,15 @@ export class TabPaneModel {
         return this.parent.selectedId === this.id && this.parent.isActive;
     }
 
+    @action
+    requestRefresh() {
+        this._lastRefreshRequest = Date.now();
+    }
+
     @computed
     get lastRefreshRequest() {
-        return this.parent.lastRefreshRequest;
+        const parentVal = this.parent && this.parent.lastRefreshRequest;
+        return max([parentVal, this._lastRefreshRequest]);
     }
 
     @computed
@@ -86,5 +98,9 @@ export class TabPaneModel {
         if (routeName.startsWith(this.routeName) && parent.selectedId !== id) {
             parent.setSelectedId(id);
         }
+    }
+
+    destroy() {
+        XH.safeDestroy(this.loadState);
     }
 }

@@ -5,42 +5,40 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {hoistComponent} from 'hoist/core';
+import {HoistComponent} from 'hoist/core';
 import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
 import {baseCol} from 'hoist/columns/Core';
 import {usernameCol} from '../../columns/Columns';
 import {compactDateRenderer} from '../../../format';
 
-@hoistComponent()
+@HoistComponent()
 export class FeedbackPanel extends Component {
 
-    store = new RestStore({
-        url: 'rest/feedbackAdmin',
-        fields: [{
-            name: 'username',
-            label: 'User'
-        }, {
-            name: 'msg',
-            label: 'Message'
-        }, {
-            name: 'browser'
-        }, {
-            name: 'device'
-        }, {
-            name: 'appVersion',
-            label: 'Version'
-        }, {
-            name: 'appEnvironment',
-            label: 'Environment'
-        }, {
-            name: 'dateCreated',
-            label: 'Date',
-            type: 'date'
-        }]
-    });
-
-    gridModel = new RestGridModel({
-        store: this.store,
+    localModel = new RestGridModel({
+        store: new RestStore({
+            url: 'rest/feedbackAdmin',
+            fields: [{
+                name: 'username',
+                label: 'User'
+            }, {
+                name: 'msg',
+                label: 'Message'
+            }, {
+                name: 'browser'
+            }, {
+                name: 'device'
+            }, {
+                name: 'appVersion',
+                label: 'Version'
+            }, {
+                name: 'appEnvironment',
+                label: 'Environment'
+            }, {
+                name: 'dateCreated',
+                label: 'Date',
+                type: 'date'
+            }]
+        }),
         actionEnabled: {
             add: false,
             edit: false
@@ -74,10 +72,10 @@ export class FeedbackPanel extends Component {
     });
 
     render() {
-        return restGrid({model: this.gridModel});
+        return restGrid({model: this.model});
     }
 
     async loadAsync() {
-        return this.store.loadAsync();
+        return this.model.loadAsync();
     }
 }

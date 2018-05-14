@@ -5,60 +5,59 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {hoistComponent} from 'hoist/core';
+import {HoistComponent} from 'hoist/core';
 import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
 import {baseCol} from 'hoist/columns/Core';
 
 import {nameCol, usernameCol} from '../../columns/Columns';
 
-@hoistComponent()
+@HoistComponent()
 export class UserPreferencePanel extends Component {
 
-    store = new RestStore({
-        url: 'rest/userPreferenceAdmin',
-        fields: [
-            {
-                name: 'name',
-                label: 'Pref',
-                lookupName: 'names',
-                lookupStrict: true,
-                editable: 'onAdd',
-                required: true
-            },
-            {
-                name: 'groupName',
-                label: 'Group',
-                lookupName: 'groupNames',
-                required: true
-            },
-            {
-                name: 'type',
-                editable: false
-            },
-            {
-                name: 'username',
-                label: 'User',
-                required: true
-            },
-            {
-                name: 'userValue',
-                typeField: 'type',
-                required: true
-            },
-            {
-                name: 'lastUpdated',
-                type: 'date',
-                editable: false
-            },
-            {
-                name: 'lastUpdatedBy',
-                editable: false
-            }
-        ]
-    });
-
-    gridModel = new RestGridModel({
-        store: this.store,
+    localModel = new RestGridModel({
+        store: new RestStore({
+            url: 'rest/userPreferenceAdmin',
+            reloadLookupsOnLoad: true,
+            fields: [
+                {
+                    name: 'name',
+                    label: 'Pref',
+                    lookupName: 'names',
+                    lookupStrict: true,
+                    editable: 'onAdd',
+                    required: true
+                },
+                {
+                    name: 'groupName',
+                    label: 'Group',
+                    lookupName: 'groupNames',
+                    required: true
+                },
+                {
+                    name: 'type',
+                    editable: false
+                },
+                {
+                    name: 'username',
+                    label: 'User',
+                    required: true
+                },
+                {
+                    name: 'userValue',
+                    typeField: 'type',
+                    required: true
+                },
+                {
+                    name: 'lastUpdated',
+                    type: 'date',
+                    editable: false
+                },
+                {
+                    name: 'lastUpdatedBy',
+                    editable: false
+                }
+            ]
+        }),
         sortBy: 'name',
         groupBy: 'groupName',
         unit: 'preference',
@@ -80,10 +79,10 @@ export class UserPreferencePanel extends Component {
     });
 
     render() {
-        return restGrid({model: this.gridModel});
+        return restGrid({model: this.model});
     }
 
     async loadAsync() {
-        return this.store.loadAsync();
+        return this.model.loadAsync();
     }
 }

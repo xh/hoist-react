@@ -5,39 +5,37 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {hoistComponent} from 'hoist/core';
+import {HoistComponent} from 'hoist/core';
 import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
 import {baseCol} from 'hoist/columns/Core';
 
 import {nameCol} from '../../columns/Columns';
 
-@hoistComponent()
+@HoistComponent()
 export class LogLevelPanel extends Component {
 
-    store = new RestStore({
-        url: 'rest/logLevelAdmin',
-        fields: [{
-            name: 'name',
-            label: 'Log Name',
-            required: true
-        }, {
-            name: 'level',
-            label: 'Override',
-            lookupName: 'levels',
-            lookupStrict: true
-        },  {
-            name: 'defaultLevel',
-            label: 'Initial',
-            editable: false
-        }, {
-            name: 'effectiveLevel',
-            label: 'Effective',
-            editable: false
-        }]
-    });
-
-    gridModel = new RestGridModel({
-        store: this.store,
+    localModel = new RestGridModel({
+        store: new RestStore({
+            url: 'rest/logLevelAdmin',
+            fields: [{
+                name: 'name',
+                label: 'Log Name',
+                required: true
+            }, {
+                name: 'level',
+                label: 'Override',
+                lookupName: 'levels',
+                lookupStrict: true
+            },  {
+                name: 'defaultLevel',
+                label: 'Initial',
+                editable: false
+            }, {
+                name: 'effectiveLevel',
+                label: 'Effective',
+                editable: false
+            }]
+        }),
         unit: 'log level',
         filterFields: ['name'],
         columns: [
@@ -53,10 +51,10 @@ export class LogLevelPanel extends Component {
     });
     
     render() {
-        return restGrid({model: this.gridModel});
+        return restGrid({model: this.model});
     }
 
     async loadAsync() {
-        return this.store.loadAsync();
+        return this.model.loadAsync();
     }
 }

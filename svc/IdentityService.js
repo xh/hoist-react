@@ -4,8 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {BaseService} from './BaseService';
-import {XH} from 'hoist/core';
+import {XH, HoistService} from 'hoist/core';
 
 /**
  * Provides basic information related to the authenticated user, including application roles.
@@ -14,7 +13,8 @@ import {XH} from 'hoist/core';
  * Also provides support for user impersonation, which allows application administrators to
  * act-as end-users for troubleshooting, support, and testing purposes.
  */
-export class IdentityService extends BaseService {
+@HoistService()
+export class IdentityService {
 
     _authUser = null;
     _apparentUser = null;
