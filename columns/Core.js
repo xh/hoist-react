@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {fileColFactory} from './Utils.js';
-import {Icon} from 'hoist/icon';
+import {convertIconToSvg, Icon} from 'hoist/icon';
 
 const colFactory = fileColFactory({
     field: null
@@ -18,10 +18,7 @@ export const baseCol = colFactory();
 export const boolCheckCol = colFactory({
     fixedWidth: 34,
     align: 'center',
-    cellRendererFramework: (
-        class extends Component {
-            render() {return this.props.value ? Icon.check({prefix: 'fas', cls: 'xh-green'}) : ''}
-            refresh() {return false}
-        }
-    )
+    cellRenderer: function(params) {
+        return params.value ? convertIconToSvg(Icon.check({prefix: 'fas'}), {classes: ['xh-green']}) : '';
+    }
 });
