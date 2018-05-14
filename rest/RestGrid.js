@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {defaults} from 'lodash';
 import {HoistComponent, elemFactory} from 'hoist/core';
 import {grid} from 'hoist/grid';
-import {frame, vframe, fragment} from 'hoist/layout';
+import {fragment} from 'hoist/layout';
 import {message, panel} from 'hoist/cmp';
 
 import {restGridToolbar} from './RestGridToolbar';
