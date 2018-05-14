@@ -6,17 +6,17 @@
  */
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {HoistComponent, elemFactory} from 'hoist/core';
 import {frame} from 'hoist/layout';
 import {overlay} from 'hoist/kit/blueprint';
 
 import './Mask.scss';
 
 /**
- * Simple Mask for Disabled or Inactive components.
+ * Mask for Disabled or Inactive components.
  */
-@hoistComponent()
-export class ComponentMask extends Component {
+@HoistComponent()
+export class Mask extends Component {
 
     BACKGROUND = 'rgba(0,0,0, 0.8)';
 
@@ -51,4 +51,4 @@ export class ComponentMask extends Component {
         });
     }
 }
-export const componentMask = elemFactory(ComponentMask);
+export const mask = elemFactory(Mask);

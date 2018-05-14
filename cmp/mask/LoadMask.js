@@ -14,7 +14,7 @@ import {overlay, spinner} from 'hoist/kit/blueprint';
 import './Mask.scss';
 
 /**
- * Simple LoadMask.
+ * LoadMask.
  *
  * The mask can be explicitly shown, or reactively bound to a PromiseModel.
  */
