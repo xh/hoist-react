@@ -18,8 +18,6 @@ import './Mask.scss';
 @HoistComponent()
 export class Mask extends Component {
 
-    BACKGROUND = 'rgba(0,0,0, 0.8)';
-
     static propTypes = {
         isDisplayed: PT.bool,
         text: PT.string
@@ -34,9 +32,7 @@ export class Mask extends Component {
             autoFocus: false,
             isOpen: true,
             canEscapeKeyClose: false,
-            backdropProps: {
-                style: {backgroundColor: this.BACKGROUND}
-            },
+            hasBackdrop: false,
             usePortal: false,
             item: frame({
                 width: '100%',
