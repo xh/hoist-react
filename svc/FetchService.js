@@ -10,15 +10,30 @@ import {castArray} from 'lodash';
 
 @HoistService()
 export class FetchService {
-    
     /**
-     * Returns a Promise of a json decoded XHR result.
+     * Send an HTTP request to a URL.
      *
-     * @param {Object} opts, standard options for fetch plus
-     *      + 'url', relative path, will be enhanced with params for 'GET'
-     *      + 'contentType', request contentType header as raw string, e.g. 'text/plain'
+     * Wrapper around the standard Fetch API with some enhancements to streamline the process for
+     * the most common use-cases. The Fetch API will be called with CORS enabled, credentials
+     * included, and redirects followed.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
+     *
+     * @param {Object} opts - options to pass through to fetch, with some additions.
+     *      @see https://developer.mozilla.org/en-US/docs/Web/API/Request for the available options
+     * @param {string} opts.url - target url to send the HTTP request to. Relative urls will be
+     *     appended to XH.baseUrl for the request
+     * @param {string} [opts.method] - The HTTP Request method to use for the request. If not
+     *     explicitly set in opts then the method will be set to POST if there are params,
+     *     otherwise it will be set to GET.
+     * @param {string} [opts.contentType] - value to use in the Content-Type header in the request.
+     *     If not explicitly set in opts then the contentType will be set based on the method. POST
+     *     requests will use 'application/x-www-form-urlencoded', otherwise 'text/plain' will be
+     *     used.
+     *
+     * @returns {Promise<Response>} @see https://developer.mozilla.org/en-US/docs/Web/API/Response
      */
-    async fetchJson(opts) {
+    async fetch(opts) {
         let {params, method, contentType, url} = opts;
 
         // 1) Compute / install defaults
@@ -62,9 +77,21 @@ export class FetchService {
                 url += '?' + paramsString;
             }
         }
-        
+
         const ret = await fetch(url, opts);
         if (!ret.ok) throw Exception.requestError(opts, ret);
-        return ret.json();
+        return ret;
+    }
+
+    /**
+     * Send an HTTP request to a URL, and decode the response as JSON.
+     *
+     * @see {@link fetch} for more details
+     *
+     * @returns {Promise} the decoded JSON object, or null if the response had no content.
+     */
+    async fetchJson(opts) {
+        const ret = await this.fetch(opts);
+        return ret.status === 204 ? null : ret.json();
     }
 }

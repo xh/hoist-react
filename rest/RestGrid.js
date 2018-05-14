@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {defaults} from 'lodash';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {HoistComponent, elemFactory} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {frame, vframe, fragment} from 'hoist/layout';
 import {message} from 'hoist/cmp';
@@ -15,7 +15,7 @@ import {message} from 'hoist/cmp';
 import {restGridToolbar} from './RestGridToolbar';
 import {restForm} from './RestForm';
 
-@hoistComponent()
+@HoistComponent()
 export class RestGrid extends Component {
 
     render() {

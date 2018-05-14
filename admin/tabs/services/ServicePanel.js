@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {hoistComponent} from 'hoist/core';
+import {HoistComponent} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {filler, vframe} from 'hoist/layout';
 import {button} from 'hoist/kit/blueprint';
@@ -13,7 +13,7 @@ import {refreshButton, storeCountLabel, storeFilterField, toolbar, toolbarSep} f
 import {Icon} from 'hoist/icon';
 import {ServiceModel} from './ServiceModel';
 
-@hoistComponent()
+@HoistComponent()
 export class ServicePanel extends Component {
 
     localModel = new ServiceModel();

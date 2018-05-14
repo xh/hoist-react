@@ -301,7 +301,7 @@ class XhModel {
 
     aliasMethods() {
         this.createMethodAliases(this.trackService,             ['track']);
-        this.createMethodAliases(this.fetchService,             ['fetchJson']);
+        this.createMethodAliases(this.fetchService,             ['fetchJson', 'fetch']);
         this.createMethodAliases(this.identityService,          ['getUser']);
         this.createMethodAliases(this.configService,            {getConf: 'get'});
         this.createMethodAliases(this.prefService,              {getPref: 'get', setPref: 'set'});

@@ -5,13 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {hoistComponent} from 'hoist/core';
+import {HoistComponent} from 'hoist/core';
 import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
 import {baseCol} from 'hoist/columns/Core';
 import {usernameCol} from '../../columns/Columns';
 import {compactDateRenderer} from '../../../format';
 
-@hoistComponent()
+@HoistComponent()
 export class FeedbackPanel extends Component {
 
     localModel = new RestGridModel({

@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, hoistComponent} from 'hoist/core';
+import {elemFactory, HoistComponent} from 'hoist/core';
 import {box, hbox} from 'hoist/layout';
 
 import './PanelHeader.scss';
@@ -15,7 +15,7 @@ import './PanelHeader.scss';
  * A standardized header for a Panel component
  * @private
  */
-@hoistComponent()
+@HoistComponent()
 class PanelHeader extends Component {
     render() {
         const {title, icon, headerItems = []} = this.props;

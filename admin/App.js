@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {XH, hoistComponent} from 'hoist/core';
+import {XH, HoistComponent} from 'hoist/core';
 import {vframe, frame} from 'hoist/layout';
 import {navbar, navbarGroup, navbarHeading, button} from 'hoist/kit/blueprint';
 import {logoutButton, lockoutPanel, tabContainer, themeToggleButton, refreshButton} from 'hoist/cmp';
@@ -14,7 +14,7 @@ import {Icon} from 'hoist/icon';
 
 import './App.scss';
 
-@hoistComponent()
+@HoistComponent()
 export class App extends Component {
     render() {
         if (!XH.identityService.user.isHoistAdmin) {

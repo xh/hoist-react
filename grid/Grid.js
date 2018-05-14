@@ -8,7 +8,7 @@
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {XH} from 'hoist/core';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {HoistComponent, elemFactory} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
 import {defaults, isString, isNumber, isBoolean, isEqual, xor} from 'lodash';
 import {convertIconToSvg, Icon} from 'hoist/icon';
@@ -26,7 +26,7 @@ import {navigateSelection, agGridReact} from './ag-grid';
  * the selection. Use this class to control the AG Grid UI options and specific
  * behavior of the grid.
  */
-@hoistComponent()
+@HoistComponent()
 class Grid extends Component {
 
     _scrollOnSelect = true;
@@ -47,8 +47,7 @@ class Grid extends Component {
         defaultColDef: {suppressMenu: true},
         groupDefaultExpanded: 1,
         groupUseEntireRow: true,
-        popupParent: document.querySelector('body'),
-        overlayNoRowsTemplate: 'No records found...'
+        popupParent: document.querySelector('body')
     };
 
     constructor(props) {
@@ -57,6 +56,7 @@ class Grid extends Component {
             {...props.gridOptions},
             Grid.DEFAULT_GRID_OPTIONS,
             {
+                overlayNoRowsTemplate: this.model.emptyText,
                 navigateToNextCell: this.onNavigateToNextCell,
                 defaultGroupSortComparator: this.sortByGroup,
                 icons: {
@@ -225,6 +225,7 @@ class Grid extends Component {
         model.gridApi = api;
         api.setSortModel(model.sortBy);
         api.sizeColumnsToFit();
+        if (!model.emptyText) api.hideOverlay();
     }
 
     onNavigateToNextCell = (params) => {

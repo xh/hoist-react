@@ -6,8 +6,8 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
+import {HoistComponent, elemFactory} from 'hoist/core';
 import {replace} from 'lodash';
-import {hoistComponent, elemFactory} from 'hoist/core';
 import {numericInput} from 'hoist/kit/blueprint';
 import {fmtNumber} from 'hoist/format';
 import {HoistField} from './HoistField';
@@ -17,7 +17,7 @@ import {HoistField} from './HoistField';
  *
  * @see HoistField for properties additional to those documented below.
  */
-@hoistComponent()
+@HoistComponent()
 export class NumberField extends HoistField {
 
     static propTypes = {
@@ -38,7 +38,7 @@ export class NumberField extends HoistField {
     };
 
     static shortHandMatcher = /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/gi;
-    
+
     delegateProps = ['className', 'min', 'max', 'placeholder'];
 
     render() {
