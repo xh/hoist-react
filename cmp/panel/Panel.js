@@ -35,8 +35,9 @@ export class Panel extends Component {
     baseCls = 'xh-panel';
 
     render() {
-        // Note: Padding is destructured here to be discarded because it breaks layout
-        const {className, topToolbar, bottomToolbar, title, icon, headerItems, padding, children, ...rest} = this.props,
+        // Note: Padding is destructured here to be discarded because it breaks layout.
+        //       Similarly, isCollapsed must not be to the DOM.
+        const {className, topToolbar, bottomToolbar, title, icon, headerItems, padding, isCollapsed, children, ...rest} = this.props,
             wrapper = this.props.width || this.props.height ? vbox : vframe;
 
         return wrapper({
