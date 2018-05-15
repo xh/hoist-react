@@ -8,8 +8,8 @@ import {Component} from 'react';
 import {button} from 'hoist/kit/blueprint';
 import {HoistComponent} from 'hoist/core';
 import {grid} from 'hoist/grid';
-import {filler, vframe} from 'hoist/layout';
-import {textField, dayField, exportButton, refreshButton, storeCountLabel, toolbar, toolbarSep} from 'hoist/cmp';
+import {filler} from 'hoist/layout';
+import {textField, dayField, exportButton, panel, refreshButton, storeCountLabel, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import {ClientErrorModel} from './ClientErrorModel';
@@ -22,17 +22,19 @@ export class ClientErrorPanel extends Component {
 
     render() {
         const {model} = this;
-        return vframe(
-            this.renderToolbar(),
-            grid({
-                model: model.gridModel,
-                gridOptions: {
-                    rowSelection: 'single',
-                    onRowDoubleClicked: this.onRowDoubleClicked
-                }
-            }),
-            clientErrorDetail({model})
-        );
+        return panel({
+            topToolbar: this.renderToolbar(),
+            items: [
+                grid({
+                    model: model.gridModel,
+                    gridOptions: {
+                        rowSelection: 'single',
+                        onRowDoubleClicked: this.onRowDoubleClicked
+                    }
+                }),
+                clientErrorDetail({model})
+            ]
+        });
     }
 
     renderToolbar() {
