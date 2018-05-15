@@ -26,24 +26,24 @@ export class NumberField extends HoistField {
         min: PT.number,
         /** maximum value */
         max: PT.number,
-        /** Number of decimal places to allow on field's value, defaults to 4*/
+        /** Number of decimal places to allow on field's value, defaults to 4 */
         precision: PT.number,
-        /** Allow/automatically fill in trailing zeros in accord with precision, defaults to false*/
+        /** Allow/automatically fill in trailing zeros in accord with precision, defaults to false */
         zeroPad: PT.bool,
-        /** Constrain input to numeric characters, defaults to true. Set to false for advanced input evaluation */
-        allowNumericCharactersOnly: PT.bool,
+        /** Set to true for advanced input evaluation, defaults to false. */
+        supportShorthandUnits: PT.bool,
         /** Whether to display large values with commas */
         displayWithDelimiters: PT.bool,
         /** Alignment of numbers in field, default to 'right' */
-        textAlign: PT.string
+        textAlign: PT.oneOf(['left', 'right'])
     };
 
-    static shortHandMatcher = /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/gi;
+    static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/gi;
 
     delegateProps = ['className', 'min', 'max', 'placeholder'];
 
     render() {
-        const {width, style, allowNumericCharactersOnly} = this.props,
+        const {width, style, supportShorthandUnits} = this.props,
             textAlign = this.props.textAlign || 'right';
 
         return numericInput({
@@ -54,7 +54,7 @@ export class NumberField extends HoistField {
             onFocus: this.onFocus,
             style: {textAlign, width, ...style},
             buttonPosition: 'none',
-            allowNumericCharactersOnly: allowNumericCharactersOnly !== false,
+            allowNumericCharactersOnly: !supportShorthandUnits,
             ...this.getDelegateProps()
         });
     }
@@ -69,12 +69,12 @@ export class NumberField extends HoistField {
 
     toExternal(value) {
         value = this.parseValue(value);
-        return isFinite(value) ? value : null;
+        return isNaN(value) ? null : value;
     }
 
     toInternal(value) {
         if (value == null) return '';
-        const precision = this.props.precision || 4,
+        const precision = this.props.precision != null ? this.props.precision : 4,
             zeroPad = !!this.props.zeroPad,
             formattedVal = fmtNumber(value, {precision, zeroPad});
 
@@ -84,17 +84,20 @@ export class NumberField extends HoistField {
     parseValue(value) {
         value = value.replace(/,/g, '');
 
-        if (NumberField.shortHandMatcher.test(value)) {
+        if (NumberField.shorthandValidator.test(value)) {
 
             const num = +value.substring(0, value.length - 1),
                 lastChar = value.charAt(value.length - 1).toLowerCase();
 
-            if (lastChar === 'k') {
-                value = num * 1000;
-            } else if (lastChar === 'm') {
-                value = num * 1000000;
-            } else if (lastChar === 'b') {
-                value = num * 1000000000;
+            switch (lastChar) {
+                case 'k':
+                    return num * 1000;
+                case 'm':
+                    return num * 1000000;
+                case 'b':
+                    return num * 1000000000;
+                default:
+                    return NaN;
             }
 
         }
