@@ -191,7 +191,7 @@ body.xh-dark {
   --xh-grid-header-bg: var(--grid-header-bg, var(--xh-black));
 
   // Mask
-  --mask-content-bg: var(--mask-content-bg, #{mc-trans('grey', '900', 0.2)});
+  --xh-mask-content-bg: var(--mask-content-bg, #{mc-trans('grey', '900', 0.2)});
   --xh-mask-content-color: var(--mask-content-color, var(--xh-blue-gray-dark));
 
   // Navbar
