@@ -31,18 +31,15 @@ export class ComboField extends BaseComboField {
 
     delegateProps = ['className', 'disabled', 'placeholder'];
 
-    constructor(props) {
-        super(props);
-        this.options = this.normalizeOptions(props.options);
-    }
-
     render() {
-        const {style, width, disabled} = this.props,
-            {renderValue, options} = this;
+        const {style, width, disabled, options} = this.props,
+            {renderValue} = this;
+
+        this.options = this.normalizeOptions(options);
 
         return suggest({
             popoverProps: {popoverClassName: Classes.MINIMAL},
-            $items: options,
+            $items: this.options,
             onItemSelect: this.onItemSelect,
             itemPredicate: (q, item) => {
                 return startsWith(item.label.toLowerCase(), q.toLowerCase());
@@ -50,7 +47,7 @@ export class ComboField extends BaseComboField {
             itemRenderer: this.getOptionRenderer(),
             inputValueRenderer: s => s,
             inputProps: {
-                value: this.getDisplayValue(renderValue, options, ''),
+                value: this.getDisplayValue(renderValue, this.options, ''),
                 onChange: this.onChange,
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,
