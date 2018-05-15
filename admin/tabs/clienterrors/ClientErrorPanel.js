@@ -26,7 +26,7 @@ export class ClientErrorPanel extends Component {
             this.renderToolbar(),
             grid({
                 model: model.gridModel,
-                gridOptions: {
+                agOptions: {
                     rowSelection: 'single',
                     onRowDoubleClicked: this.onRowDoubleClicked
                 }

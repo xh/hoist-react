@@ -23,7 +23,7 @@ export class GridModel {
     selection = null;
     contextMenuFn = null;
 
-    @observable.ref gridApi = null;
+    @observable.ref agApi = null;
     @observable.ref columns = [];
     @observable.ref sortBy = [];
     @observable groupBy = null;
@@ -69,9 +69,9 @@ export class GridModel {
     }
 
     exportDataAsExcel(params) {
-        if (!this.gridApi) return;
+        if (!this.agApi) return;
         params.processCellCallback = this.formatValuesForExport;
-        this.gridApi.exportDataAsExcel(params);
+        this.agApi.exportDataAsExcel(params);
     }
 
     /**
@@ -87,8 +87,8 @@ export class GridModel {
     }
 
     @action
-    setGridApi(gridApi) {
-        this.gridApi = gridApi;
+    setAgApi(agApi) {
+        this.agApi = agApi;
     }
 
     @action

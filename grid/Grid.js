@@ -33,7 +33,7 @@ class Grid extends Component {
 
     static propTypes = {
         /** Options for AG Grid - See DEFAULT_GRID_OPTIONS for hoist defined defaults */
-        gridOptions: PT.object
+        agOptions: PT.object
     };
 
     static DEFAULT_GRID_OPTIONS = {
@@ -52,8 +52,8 @@ class Grid extends Component {
 
     constructor(props) {
         super(props);
-        this.gridOptions = defaults(
-            {...props.gridOptions},
+        this.agOptions = defaults(
+            {...props.agOptions},
             Grid.DEFAULT_GRID_OPTIONS,
             {
                 overlayNoRowsTemplate: this.model.emptyText,
@@ -85,7 +85,7 @@ class Grid extends Component {
                 item: agGridReact({
                     rowData: store.records,
                     columnDefs: columns,
-                    gridOptions: this.gridOptions,
+                    gridOptions: this.agOptions,
                     getContextMenuItems: this.getContextMenuItems,
                     onGridReady: this.onGridReady,
                     onSelectionChanged: this.onSelectionChanged,
@@ -111,7 +111,7 @@ class Grid extends Component {
     }
 
     syncSelection() {
-        const api = this.model.gridApi;
+        const api = this.model.agApi;
         if (!api) return;
 
         const modelSelection = this.model.selection.ids,
@@ -132,7 +132,7 @@ class Grid extends Component {
     }
 
     syncSort() {
-        const api = this.model.gridApi;
+        const api = this.model.agApi;
         if (!api) return;
 
         const agSorters = api.getSortModel(),
@@ -143,7 +143,7 @@ class Grid extends Component {
     }
 
     syncColumns() {
-        const api = this.model.gridApi;
+        const api = this.model.agApi;
         if (!api) return;
 
         // Needed because AGGridReact won't recognize updates to columns prop.
@@ -222,14 +222,14 @@ class Grid extends Component {
         const {api} = params,
             {model} = this;
 
-        model.setGridApi(api);
+        model.setAgApi(api);
         api.setSortModel(model.sortBy);
         api.sizeColumnsToFit();
         if (!model.emptyText) api.hideOverlay();
     }
 
     onNavigateToNextCell = (params) => {
-        return navigateSelection(params, this.model.gridApi);
+        return navigateSelection(params, this.model.agApi);
     }
 
     onSelectionChanged = (ev) => {
