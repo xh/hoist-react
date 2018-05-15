@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {XH} from 'hoist/core';
 import {LastPromiseModel} from 'hoist/promise';
 import {observable, action} from 'hoist/mobx';
 import {BaseStore} from './BaseStore';
@@ -25,9 +26,8 @@ export class LocalStore extends BaseStore {
     processRawData = null;
 
     /**
-     * @param {boolean} processRawData - Function to run on data presented to
-     *      loadData() before creating records
-     * @param {function} filter = Filter function to be run on _allRecords to produce _records
+     * @param {boolean} [processRawData] - Function to run on data presented to loadData() before creating records
+     * @param {function} [filter] - Filter function to be run on _allRecords to produce _records
      * @param {*} ...rest - Additional properties to pass to BaseStore
      */
     constructor({processRawData = null, filter, ...rest}) {
@@ -120,5 +120,9 @@ export class LocalStore extends BaseStore {
             ret.set(rec.id, rec);
         });
         return ret;
+    }
+
+    destroy() {
+        XH.safeDestroy(this._loadModel);
     }
 }

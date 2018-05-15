@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, hoistComponent} from 'hoist/core';
+import {elemFactory, HoistComponent} from 'hoist/core';
 import {hframe, vframe} from 'hoist/layout';
 import {grid} from 'hoist/grid';
 
@@ -19,13 +19,13 @@ import './LeftRightChooser.scss';
  * A nested panel is also available to display a more in-depth description for any selected item.
  * @see LeftRightChooserModel
  */
-@hoistComponent()
+@HoistComponent()
 class LeftRightChooser extends Component {
 
     render() {
         const {model} = this,
             {leftModel, rightModel} = model,
-            gridOptions = {
+            agOptions = {
                 rowSelection: 'multiple',
                 rowDeselection: true,
                 enableColResize: false,
@@ -38,9 +38,9 @@ class LeftRightChooser extends Component {
                 hframe({
                     cls: 'xh-lr-chooser__grid-frame',
                     items: [
-                        grid({model: leftModel, gridOptions}),
+                        grid({model: leftModel, agOptions}),
                         chooserToolbar({model}),
-                        grid({model: rightModel, gridOptions})
+                        grid({model: rightModel, agOptions})
                     ]
                 }),
                 description({model})

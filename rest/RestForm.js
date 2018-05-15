@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {HoistComponent, elemFactory} from 'hoist/core';
 import {loadMask, message, toolbar} from 'hoist/cmp';
 import {filler, vframe} from 'hoist/layout';
 import {Icon} from 'hoist/icon';
@@ -15,7 +15,7 @@ import {button, dialog, dialogBody} from 'hoist/kit/blueprint';
 import {restControl} from './RestControl';
 import './RestForm.scss';
 
-@hoistComponent()
+@HoistComponent()
 export class RestForm extends Component {
 
     render() {

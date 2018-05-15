@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {button} from 'hoist/kit/blueprint';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {HoistComponent, elemFactory} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {vframe, filler} from 'hoist/layout';
 import {textField, dayField, exportButton, refreshButton, storeCountLabel, toolbar, toolbarSep} from 'hoist/cmp';
@@ -14,16 +14,16 @@ import {Icon} from 'hoist/icon';
 
 import {activityDetail} from './ActivityDetail';
 
-@hoistComponent()
+@HoistComponent()
 export class ActivityGrid extends Component {
 
     render() {
-        const model = this.model;
+        const {model} = this;
         return vframe(
             this.renderToolbar(),
             grid({
                 model: model.gridModel,
-                gridOptions: {
+                agOptions: {
                     rowSelection: 'single',
                     onRowDoubleClicked: this.onRowDoubleClicked
                 }
@@ -61,7 +61,7 @@ export class ActivityGrid extends Component {
             refreshButton({model}),
             filler(),
             storeCountLabel({
-                store: model.store,
+                store: model.gridModel.store,
                 unit: 'log'
             }),
             exportButton({model})
@@ -109,6 +109,5 @@ export class ActivityGrid extends Component {
     onRowDoubleClicked = (e) => {
         this.model.openDetail(e.data);
     }
-
 }
 export const activityGrid = elemFactory(ActivityGrid);

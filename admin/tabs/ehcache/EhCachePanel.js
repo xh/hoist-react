@@ -6,7 +6,7 @@
 */
 import {Component} from 'react';
 import {button} from 'hoist/kit/blueprint';
-import {hoistComponent} from 'hoist/core';
+import {HoistComponent} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {filler, vframe} from 'hoist/layout';
 import {refreshButton, storeCountLabel, storeFilterField, toolbar, toolbarSep} from 'hoist/cmp';
@@ -14,7 +14,7 @@ import {Icon} from 'hoist/icon';
 
 import {EhCacheModel} from './EhCacheModel';
 
-@hoistComponent()
+@HoistComponent()
 export class EhCachePanel extends Component {
 
     localModel = new EhCacheModel();
@@ -28,7 +28,7 @@ export class EhCachePanel extends Component {
 
     renderToolbar() {
         const model = this.model,
-            store = model.store;
+            {store} = model.gridModel;
         return toolbar(
             button({
                 icon: Icon.sync(),
@@ -56,5 +56,4 @@ export class EhCachePanel extends Component {
     async loadAsync() {
         return this.model.loadAsync();
     }
-
 }

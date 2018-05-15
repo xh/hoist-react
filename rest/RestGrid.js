@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {defaults} from 'lodash';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {HoistComponent, elemFactory} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {frame, vframe, fragment} from 'hoist/layout';
 import {message} from 'hoist/cmp';
@@ -15,20 +15,21 @@ import {message} from 'hoist/cmp';
 import {restGridToolbar} from './RestGridToolbar';
 import {restForm} from './RestForm';
 
-@hoistComponent()
+@HoistComponent()
 export class RestGrid extends Component {
 
     render() {
-        const model = this.model,
-            extraToolbarItems = this.props.extraToolbarItems,
-            gridOptions = defaults(this.props.gridOptions, {onRowDoubleClicked: this.onRowDoubleClicked});
+        const {model} = this,
+            {extraToolbarItems} = this.props,
+            agOptions = defaults(this.props.agOptions, {onRowDoubleClicked: this.onRowDoubleClicked});
+
         return fragment(
             vframe(
                 restGridToolbar({model, extraToolbarItems}),
                 frame(
                     grid({
                         model: model.gridModel,
-                        gridOptions: gridOptions
+                        agOptions: agOptions
                     })
                 )
             ),

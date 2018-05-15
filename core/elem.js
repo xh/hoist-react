@@ -22,7 +22,7 @@ import {Exception} from 'hoist/exception';
  * specified as native with a $ prefix (e.g. '$items'). This method will recognize and pass the
  * property appropriately.
  *
- * @param {(Component|string)} type - React Component, or string representing an HTML element
+ * @param {(Object|string)} type - class that extends Component, or a string representing an HTML element
  * @param {Object} [config] - config props to be applied to the Component
  * @param {string} [config.cls] - CSS classes for this element (alias for React 'className')
  * @param {(Array|Element|Object|string)} [config.items] - child element(s) specified as React

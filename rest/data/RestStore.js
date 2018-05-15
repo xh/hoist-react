@@ -21,10 +21,13 @@ export class RestStore extends UrlStore {
     _lookupsLoaded = false;
 
     /**
-     * Construct this object.
+     * @param {string} [dataRoot] - Name of root node for records in returned data
+     * @param {boolean} [reloadLookupsOnLoad] - Whether lookups should be loaded each time loadAsync is called
+     * @param {*} ...rest - Additional arguments to pass to UrlStore.
      */
-    constructor({dataRoot = 'data', ...rest}) {
+    constructor({dataRoot = 'data', reloadLookupsOnLoad = false, ...rest}) {
         super({dataRoot, ...rest});
+        this.reloadLookupsOnLoad = reloadLookupsOnLoad;
     }
 
     get defaultFieldClass() {
@@ -32,7 +35,7 @@ export class RestStore extends UrlStore {
     }
 
     async loadAsync() {
-        if (!this._lookupsLoaded) {
+        if (!this._lookupsLoaded || this.reloadLookupsOnLoad) {
             const lookupFields = this.fields.filter(it => !!it.lookupName);
             if (lookupFields.length) {
                 const lookupData = await XH.fetchJson({url: `${this.url}/lookupData`});

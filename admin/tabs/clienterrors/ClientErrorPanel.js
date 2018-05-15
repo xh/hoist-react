@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {button} from 'hoist/kit/blueprint';
-import {hoistComponent} from 'hoist/core';
+import {HoistComponent} from 'hoist/core';
 import {grid} from 'hoist/grid';
 import {filler, vframe} from 'hoist/layout';
 import {textField, dayField, exportButton, refreshButton, storeCountLabel, toolbar, toolbarSep} from 'hoist/cmp';
@@ -15,18 +15,18 @@ import {Icon} from 'hoist/icon';
 import {ClientErrorModel} from './ClientErrorModel';
 import {clientErrorDetail} from './ClientErrorDetail';
 
-@hoistComponent()
+@HoistComponent()
 export class ClientErrorPanel extends Component {
 
     localModel = new ClientErrorModel();
 
     render() {
-        const model = this.model;
+        const {model} = this;
         return vframe(
             this.renderToolbar(),
             grid({
                 model: model.gridModel,
-                gridOptions: {
+                agOptions: {
                     rowSelection: 'single',
                     onRowDoubleClicked: this.onRowDoubleClicked
                 }
@@ -61,7 +61,7 @@ export class ClientErrorPanel extends Component {
             refreshButton({model}),
             filler(),
             storeCountLabel({
-                store: model.store,
+                store: model.gridModel.store,
                 unit: 'client error'
             }),
             exportButton({model})

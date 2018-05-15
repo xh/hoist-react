@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {HoistModel} from 'hoist/core';
 import {action, observable} from 'hoist/mobx';
 import {StoreSelectionModel} from 'hoist/data';
 import {StoreContextMenu} from 'hoist/cmp';
@@ -15,16 +16,17 @@ import {GridColumnChooserModel} from './GridColumnChooserModel';
  * Core Model for a Grid, specifying the grid's data store, column definitions,
  * sorting/grouping/selection state, and context menu configuration.
  */
+@HoistModel()
 export class GridModel {
 
     // Immutable public properties
     store = null;
-    gridApi = null;
     selection = null;
     contextMenuFn = null;
     columnChooserModel = null;
 
 
+    @observable.ref agApi = null;
     @observable.ref columns = [];
     @observable.ref sortBy = [];
     @observable groupBy = null;
@@ -51,8 +53,10 @@ export class GridModel {
      * @param {BaseStore} store - store containing the data for the grid.
      * @param {Object[]} columns - collection of column specifications.
      * @param {StoreSelectionModel} [selection] - selection model to use
+     * @param {boolean} [emptyText] - empty text to display if grid has no records. Can be valid HTML.
+     *      Defaults to null, in which case no empty text will be shown.
      * @param {Object[]} [sortBy] - one or more sorters to apply to store data.
-     * @param {string} [sortBy[].colId]- Column ID by which to sort.
+     * @param {string} [sortBy[].colId] - Column ID by which to sort.
      * @param {string} [sortBy[].sort] - sort direction [asc|desc].
      * @param {string} [groupBy] - Column ID by which to group.
      * @param {function} [contextMenuFn] - closure returning a StoreContextMenu().
@@ -61,6 +65,7 @@ export class GridModel {
         store,
         columns,
         selection,
+        emptyText = null,
         sortBy = [],
         groupBy = null,
         enableColumnChooser = false,
@@ -71,6 +76,7 @@ export class GridModel {
         this.contextMenuFn = contextMenuFn;
 
         this.selection = selection || new StoreSelectionModel({store: this.store});
+        this.emptyText = emptyText;
         if (enableColumnChooser) {
             this.columnChooserModel = new GridColumnChooserModel(this);
         }
@@ -80,9 +86,9 @@ export class GridModel {
     }
 
     exportDataAsExcel(params) {
-        if (!this.gridApi) return;
+        if (!this.agApi) return;
         params.processCellCallback = this.formatValuesForExport;
-        this.gridApi.exportDataAsExcel(params);
+        this.agApi.exportDataAsExcel(params);
     }
 
     /**
@@ -95,6 +101,11 @@ export class GridModel {
             recs = orderBy(store.records, colIds, sorts);
 
         if (recs.length) selection.select(recs[0]);
+    }
+
+    @action
+    setAgApi(agApi) {
+        this.agApi = agApi;
     }
 
     @action
@@ -133,6 +144,16 @@ export class GridModel {
     }
 
 
+    /** Load the underlying store. */
+    loadAsync(...args) {
+        return this.store.loadAsync(...args);
+    }
+
+    /** Load the underlying store. */
+    loadData(...args) {
+        return this.store.loadData(...args);
+    }
+
     cloneColumns() {
         return [...this.columns];
     }
@@ -153,5 +174,9 @@ export class GridModel {
         } else {
             return value;
         }
+    }
+
+    destroy() {
+        // TODO: How are Stores destroyed?
     }
 }

@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {button} from 'hoist/kit/blueprint';
-import {XH, hoistComponent} from 'hoist/core';
+import {XH, HoistComponent} from 'hoist/core';
 import {fragment} from 'hoist/layout';
 import {boolCheckCol, baseCol} from 'hoist/columns/Core';
 import {nameCol} from 'hoist/admin/columns/Columns';
@@ -16,76 +16,75 @@ import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
 import {configDiffer} from './differ/ConfigDiffer';
 import {ConfigDifferModel} from './differ/ConfigDifferModel';
 
-@hoistComponent()
+@HoistComponent()
 export class ConfigPanel extends Component {
 
     differModel = new ConfigDifferModel({});
 
-    store = new RestStore({
-        url: 'rest/configAdmin',
-        fields: this.filterForEnv([
-            {
-                name: 'name',
-                required: true
-            },
-            {
-                name: 'groupName',
-                label: 'Group',
-                lookupName: 'groupNames',
-                required: true
-            },
-            {
-                name: 'valueType',
-                label: 'Type',
-                lookupName: 'valueTypes',
-                lookupStrict: true,
-                editable: 'onAdd',
-                required: true
-            },
-            {
-                name: 'prodValue',
-                typeField: 'valueType',
-                required: true,
-                env: 'Production'
-            },
-            {
-                name: 'betaValue',
-                typeField: 'valueType',
-                env: 'Beta'
-            },
-            {
-                name: 'stageValue',
-                typeField: 'valueType',
-                env: 'Staging'
-            },
-            {
-                name: 'devValue',
-                typeField: 'valueType',
-                env: 'Development'
-            },
-            {
-                name: 'clientVisible',
-                type: 'bool',
-                defaultValue: false,
-                required: true
-            },
-            {
-                name: 'note'
-            },
-            {
-                name: 'lastUpdated',
-                type: 'date',
-                editable: false
-            },
-            {
-                name: 'lastUpdatedBy',
-                editable: false
-            }
-        ])
-    });
-
     gridModel = new RestGridModel({
-        store: this.store,
+        store: new RestStore({
+            url: 'rest/configAdmin',
+            reloadLookupsOnLoad: true,
+            fields: this.filterForEnv([
+                {
+                    name: 'name',
+                    required: true
+                },
+                {
+                    name: 'groupName',
+                    label: 'Group',
+                    lookupName: 'groupNames',
+                    required: true
+                },
+                {
+                    name: 'valueType',
+                    label: 'Type',
+                    lookupName: 'valueTypes',
+                    lookupStrict: true,
+                    editable: 'onAdd',
+                    required: true
+                },
+                {
+                    name: 'prodValue',
+                    typeField: 'valueType',
+                    required: true,
+                    env: 'Production'
+                },
+                {
+                    name: 'betaValue',
+                    typeField: 'valueType',
+                    env: 'Beta'
+                },
+                {
+                    name: 'stageValue',
+                    typeField: 'valueType',
+                    env: 'Staging'
+                },
+                {
+                    name: 'devValue',
+                    typeField: 'valueType',
+                    env: 'Development'
+                },
+                {
+                    name: 'clientVisible',
+                    type: 'bool',
+                    defaultValue: false,
+                    required: true
+                },
+                {
+                    name: 'note'
+                },
+                {
+                    name: 'lastUpdated',
+                    type: 'date',
+                    editable: false
+                },
+                {
+                    name: 'lastUpdatedBy',
+                    editable: false
+                }
+            ])
+        }),
         actionWarning: {
             del: 'Are you sure you want to delete? Deleting configs can break running apps!'
         },
@@ -131,7 +130,7 @@ export class ConfigPanel extends Component {
     }
 
     async loadAsync() {
-        return this.store.loadAsync();
+        return this.gridModel.loadAsync();
     }
 
     //-------------------------
@@ -167,5 +166,9 @@ export class ConfigPanel extends Component {
 
     onDifferBtnClick = () => {
         this.differModel.open();
+    }
+
+    destroy() {
+        XH.safeDestroy(this.gridModel, this.differModel);
     }
 }

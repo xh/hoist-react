@@ -7,7 +7,8 @@
 
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {XH} from 'hoist/core';
+import {HoistComponent, elemFactory} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
 import {defaults, isString, isNumber, isBoolean, isEqual, xor} from 'lodash';
 import {convertIconToSvg, Icon} from 'hoist/icon';
@@ -26,14 +27,14 @@ import {gridColumnChooser} from './GridColumnChooser';
  * the selection. Use this class to control the AG Grid UI options and specific
  * behavior of the grid.
  */
-@hoistComponent()
+@HoistComponent()
 class Grid extends Component {
 
     _scrollOnSelect = true;
 
     static propTypes = {
         /** Options for AG Grid - See DEFAULT_GRID_OPTIONS for hoist defined defaults */
-        gridOptions: PT.object
+        agOptions: PT.object
     };
 
     static DEFAULT_GRID_OPTIONS = {
@@ -47,16 +48,16 @@ class Grid extends Component {
         defaultColDef: {suppressMenu: true},
         groupDefaultExpanded: 1,
         groupUseEntireRow: true,
-        popupParent: document.querySelector('body'),
-        overlayNoRowsTemplate: 'No records found...'
+        popupParent: document.querySelector('body')
     };
 
     constructor(props) {
         super(props);
-        this.gridOptions = defaults(
-            {...props.gridOptions},
+        this.agOptions = defaults(
+            {...props.agOptions},
             Grid.DEFAULT_GRID_OPTIONS,
             {
+                overlayNoRowsTemplate: this.model.emptyText,
                 navigateToNextCell: this.onNavigateToNextCell,
                 defaultGroupSortComparator: this.sortByGroup,
                 icons: {
@@ -71,9 +72,9 @@ class Grid extends Component {
                 }
             }
         );
-        this.addAutoRun(() => this.syncSelection());
-        this.addAutoRun(() => this.syncSort());
-        this.addAutoRun(() => this.syncColumns());
+        this.addAutorun(() => this.syncSelection());
+        this.addAutorun(() => this.syncSort());
+        this.addAutorun(() => this.syncColumns());
     }
 
     render() {
@@ -81,11 +82,11 @@ class Grid extends Component {
         return frame(
             div({
                 style: {flex: '1 1 auto', overflow: 'hidden'},
-                cls: this.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
+                cls: XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                 item: agGridReact({
                     rowData: store.records,
                     columnDefs: columns,
-                    gridOptions: this.gridOptions,
+                    gridOptions: this.agOptions,
                     getContextMenuItems: this.getContextMenuItems,
                     onGridReady: this.onGridReady,
                     onSelectionChanged: this.onSelectionChanged,
@@ -115,8 +116,10 @@ class Grid extends Component {
     }
 
     syncSelection() {
-        const api = this.gridOptions.api,
-            modelSelection = this.model.selection.ids,
+        const api = this.model.agApi;
+        if (!api) return;
+
+        const modelSelection = this.model.selection.ids,
             gridSelection = api.getSelectedRows().map(it => it.id),
             diff = xor(modelSelection, gridSelection);
 
@@ -134,8 +137,10 @@ class Grid extends Component {
     }
 
     syncSort() {
-        const api = this.gridOptions.api,
-            agSorters = api.getSortModel(),
+        const api = this.model.agApi;
+        if (!api) return;
+
+        const agSorters = api.getSortModel(),
             modelSorters = this.model.sortBy;
         if (!isEqual(agSorters, modelSorters)) {
             api.setSortModel(modelSorters);
@@ -143,8 +148,11 @@ class Grid extends Component {
     }
 
     syncColumns() {
+        const api = this.model.agApi;
+        if (!api) return;
+
         // Needed because AGGridReact won't recognize updates to columns prop.
-        this.gridOptions.api.setColumnDefs(this.model.columns);
+        api.setColumnDefs(this.model.columns);
     }
 
     getContextMenuItems = (params) => {
@@ -219,13 +227,14 @@ class Grid extends Component {
         const {api} = params,
             {model} = this;
 
-        model.gridApi = api;
+        model.setAgApi(api);
         api.setSortModel(model.sortBy);
         api.sizeColumnsToFit();
+        if (!model.emptyText) api.hideOverlay();
     }
 
     onNavigateToNextCell = (params) => {
-        return navigateSelection(params, this.gridOptions.api);
+        return navigateSelection(params, this.model.agApi);
     }
 
     onSelectionChanged = (ev) => {

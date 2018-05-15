@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {castArray, clone, merge} from 'lodash';
-import {elemFactory, hoistComponent} from 'hoist/core';
+import {XH, elemFactory, HoistComponent} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
 import {Ref} from 'hoist/utils/Ref';
 import Highcharts from 'highcharts/highstock';
@@ -20,7 +20,7 @@ import {DarkTheme} from './theme/Dark';
  * as well as configuration and theme defaults. The chart's core configuration should be sourced
  * from a ChartModel prop passed to this component.
  */
-@hoistComponent()
+@HoistComponent()
 export class Chart extends Component {
 
     _chartElem = new Ref();
@@ -125,7 +125,7 @@ export class Chart extends Component {
     }
 
     getThemeConfig() {
-        return this.darkTheme ? clone(DarkTheme) : clone(LightTheme);
+        return XH.darkTheme ? clone(DarkTheme) : clone(LightTheme);
     }
 
     getModelConfig() {

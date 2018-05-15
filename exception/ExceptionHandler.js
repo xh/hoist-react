@@ -72,9 +72,9 @@ export class ExceptionHandler {
         const ret = Object.assign({}, options),
             isAutoRefresh = exception.requestOptions && exception.requestOptions.isAutoRefresh;
 
-        ret.logOnServer = ret.logOnServer != null ? ret.logOnServer : true;
-        ret.showAlert = ret.showAlert != null ? ret.showAlert : !isAutoRefresh;
         ret.showAsError = ret.showAsError != null ? ret.showAsError : true;
+        ret.logOnServer = ret.logOnServer != null ? ret.logOnServer : ret.showAsError;
+        ret.showAlert = ret.showAlert != null ? ret.showAlert : !isAutoRefresh;
         ret.requireReload = !!ret.requireReload;
 
         ret.title = ret.title || (ret.showAsError ? 'Error' : 'Message');

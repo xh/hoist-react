@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, hoistComponent} from 'hoist/core';
+import {elemFactory, HoistComponent} from 'hoist/core';
 import {tab, tabs} from 'hoist/kit/blueprint';
 
 import {tabPane} from './TabPane';
@@ -16,7 +16,7 @@ import './Tabs.scss';
  * Display for a TabContainer.
  * @see TabContainerModel
  */
-@hoistComponent()
+@HoistComponent()
 export class TabContainer extends Component {
 
     render() {

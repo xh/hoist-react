@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {observable, action} from 'hoist/mobx';
+import {HoistModel} from 'hoist/core';
 
 /**
  * Model for convenient, imperative Alerting/Confirming.
@@ -12,6 +13,7 @@ import {observable, action} from 'hoist/mobx';
  * This object may be constructed with default arguments and used to show multiple messages
  * using the alert() and confirm() methods.
  */
+@HoistModel()
 export class MessageModel {
 
     @observable isOpen = false;

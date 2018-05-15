@@ -4,6 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+import {XH, HoistModel} from 'hoist/core';
 import {action} from 'hoist/mobx';
 import {GridModel} from 'hoist/grid';
 import {MessageModel, StoreContextMenu} from 'hoist/cmp';
@@ -15,6 +16,7 @@ import {RestFormModel} from './RestFormModel';
 /**
  * Core Model for a RestGrid.
  */
+@HoistModel()
 export class RestGridModel {
 
     //----------------
@@ -37,21 +39,19 @@ export class RestGridModel {
 
     gridModel = null;
     formModel = null;
-    messageModel = new MessageModel({title: 'Warning', icon: Icon.warning({size: 'lg'})});
+    messageModel = null;
 
     get store()     {return this.gridModel.store}
     get selection() {return this.gridModel.selection}
 
     /**
-     * Construct this Object.
-     *
-     * @param actionEnabled, map of action (e.g. 'add'/'edit'/'delete') to boolean  See default prop
-     * @param actionWarning, map of action (e.g. 'add'/'edit'/'delete') to string.  See default prop.
-     * @param unit, string describing the name records in this grid
-     * @param filterFields, array of strings, names of fields to include in this grid's quick filter logic
-     * @param enhanceToolbar, an optional function used to mutate RestGridToolbar items
-     * @param editors, array of editors
-     * @param rest, arguments for GridModel.
+     * @param {Object} [actionEnabled] - map of action (e.g. 'add'/'edit'/'delete') to boolean  See default prop
+     * @param {Object} [actionWarning] - map of action (e.g. 'add'/'edit'/'delete') to string.  See default prop.
+     * @param {string} [unit] - name that describes records in this grid.
+     * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
+     * @param {function} [enhanceToolbar] - a function used to mutate RestGridToolbar items
+     * @param {Object[]} editors - array of editors
+     * @param {*} ...rest, arguments for GridModel.
      */
     constructor({
         actionEnabled,
@@ -69,9 +69,19 @@ export class RestGridModel {
         this.enhanceToolbar = enhanceToolbar;
         this.gridModel = new GridModel({contextMenuFn: this.contextMenuFn, ...rest});
         this.formModel = new RestFormModel({parent: this, editors});
+        this.messageModel = new MessageModel({title: 'Warning', icon: Icon.warning({size: 'lg'})});
     }
 
+    /** Load the underlying store. */
+    loadAsync(...args) {
+        return this.store.loadAsync(...args);
+    }
 
+    /** Load the underlying store. */
+    loadData(...args) {
+        return this.store.loadData(...args);
+    }
+    
     //-----------------
     // Actions
     //------------------
@@ -150,5 +160,9 @@ export class RestGridModel {
     export() {
         const fileName = pluralize(this.unit);
         this.gridModel.exportDataAsExcel({fileName});
+    }
+
+    destroy() {
+        XH.safeDestroy(this.messageModel, this.gridModel, this.formModel);
     }
 }

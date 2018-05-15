@@ -4,7 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {BaseAppModel} from 'hoist/core';
+import {XH} from 'hoist/core';
+import {HoistAppModel} from 'hoist/app';
 import {action} from 'hoist/mobx';
 import {TabContainerModel} from 'hoist/cmp';
 
@@ -21,17 +22,17 @@ import {MonitorResultsPanel} from './tabs/monitor/MonitorResultsPanel';
 import {MonitorEditorPanel} from './tabs/monitor/MonitorEditorPanel';
 import {PreferencePanel} from './tabs/preferences/PreferencePanel';
 import {UserPreferencePanel} from './tabs/preferences/UserPreferencePanel';
-import {ReadmePanel} from './tabs/readme/ReadmePanel';
 import {ServicePanel} from './tabs/services/ServicePanel';
 import {UserPanel} from './tabs/users/UserPanel';
 
-export class AppModel extends BaseAppModel {
+@HoistAppModel
+export class AppModel {
 
     tabs = this.createTabContainer();
     
     @action
     requestRefresh() {
-        this.tabs.setLastRefreshRequest(Date.now());
+        this.tabs.requestRefresh();
     }
 
     getRoutes() {
@@ -72,8 +73,7 @@ export class AppModel extends BaseAppModel {
                     {name: 'services', path: '/services'},
                     {name: 'ehCache', path: '/ehCache'},
                     {name: 'dashboards', path: '/dashboards'},
-                    {name: 'users', path: '/users'},
-                    {name: 'readme', path: '/readme'}
+                    {name: 'users', path: '/users'}
                 ]
             },
             {
@@ -126,8 +126,7 @@ export class AppModel extends BaseAppModel {
                     {id: 'services', component: ServicePanel},
                     {id: 'ehCache', name: 'Caches', component: EhCachePanel},
                     {id: 'dashboards', component: DashboardPanel},
-                    {id: 'users', component: UserPanel},
-                    {id: 'readme', component: ReadmePanel}
+                    {id: 'users', component: UserPanel}
                 ]
             }, {
                 id: 'logging',
@@ -159,9 +158,13 @@ export class AppModel extends BaseAppModel {
                 orientation: 'v',
                 children: [
                     {id: 'prefs', component: PreferencePanel},
-                    {id: 'userPrefs', component: UserPreferencePanel}
+                    {id: 'userPrefs', component: UserPreferencePanel, reloadOnShow: true}
                 ]
             }
         ];
+    }
+
+    destroy() {
+        XH.safeDestroy(this.tabs);
     }
 }

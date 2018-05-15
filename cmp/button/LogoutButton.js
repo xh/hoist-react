@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {XH, elemFactory, hoistComponent} from 'hoist/core';
+import {XH, elemFactory, HoistComponent} from 'hoist/core';
 import {Icon} from 'hoist/icon';
 import {button} from 'hoist/kit/blueprint';
 
@@ -18,7 +18,7 @@ import {button} from 'hoist/kit/blueprint';
  * An onClick handler can be provided to implement additional operations on logout,
  * but should ensure it calls `XH.identityService.logoutAsync()`.
  */
-@hoistComponent()
+@HoistComponent()
 export class LogoutButton extends Component {
 
     static propTypes = {

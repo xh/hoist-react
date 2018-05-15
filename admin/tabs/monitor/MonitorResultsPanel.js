@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {hoistComponent} from 'hoist/core';
+import {HoistComponent} from 'hoist/core';
 import {vframe} from 'hoist/layout';
 import {monitorResultsToolbar} from './MonitorResultsToolbar';
 import {monitorResultsDisplay} from './MonitorResultsDisplay';
@@ -13,7 +13,7 @@ import {MonitorResultsModel} from './MonitorResultsModel';
 import './MonitorResultsPanel.scss';
 
 
-@hoistComponent()
+@HoistComponent()
 export class MonitorResultsPanel extends Component {
     localModel = new MonitorResultsModel(this.props.tabPaneModel);
 
@@ -22,7 +22,7 @@ export class MonitorResultsPanel extends Component {
     }
 
     render() {
-        const model = this.model;
+        const {model} = this;
 
         return vframe({
             cls: 'xh-monitor-results-panel',

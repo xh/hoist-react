@@ -5,14 +5,14 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {XH, elemFactory, hoistComponent} from 'hoist/core';
+import {XH, elemFactory, HoistComponent} from 'hoist/core';
 import {toolbar} from 'hoist/cmp';
 import {div} from 'hoist/layout';
 import {button} from 'hoist/kit/blueprint';
 import {Icon} from 'hoist/icon';
 import './UpdateBar.scss';
 
-@hoistComponent()
+@HoistComponent()
 export class UpdateBar extends Component {
 
     render() {

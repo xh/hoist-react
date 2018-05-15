@@ -4,11 +4,11 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {BaseService} from './BaseService';
-import {XH} from 'hoist/core';
+import {XH, HoistService} from 'hoist/core';
 import {stripTags} from 'hoist/utils/HtmlUtils';
 
-export class FeedbackService extends BaseService {
+@HoistService()
+export class FeedbackService {
 
     /**
      * Create a feedback entry. Username, browser info, environment info, and datetime will be
@@ -17,13 +17,13 @@ export class FeedbackService extends BaseService {
      * See FeedbackService.groovy within hoist-core for details.
      *
      * @param {Object} options
-     * @param {string} options.msg - user-supplied message to POST.
+     * @param {string} options.message - user-supplied message to POST.
      */
-    async submitAsync(options) {
+    async submitAsync({message}) {
         await XH.fetchJson({
             url: 'hoistImpl/submitFeedback',
             params: {
-                msg: stripTags(options.msg),
+                msg: stripTags(message),
                 appVersion: XH.getEnv('appVersion')
             }
         });

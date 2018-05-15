@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {HoistComponent, elemFactory} from 'hoist/core';
 import {box, viewport} from 'hoist/layout';
 import {PropTypes as PT} from 'prop-types';
 
@@ -15,7 +15,7 @@ import './LockoutPanel.scss';
 /**
  * Panel for display to prevent user access to all content.
  */
-@hoistComponent()
+@HoistComponent()
 export class LockoutPanel extends Component {
 
     static propTypes = {

@@ -5,14 +5,14 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import React from 'react';
-import {XH} from 'hoist/core';
+import {XH, HoistService} from 'hoist/core';
 import {Timer} from 'hoist/utils/Timer';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
 import {version as hoistReactVersion} from 'hoist/package.json';
-import {BaseService} from './BaseService';
 import {defaults} from 'lodash';
 
-export class EnvironmentService extends BaseService {
+@HoistService()
+export class EnvironmentService {
 
     _data = {};
     

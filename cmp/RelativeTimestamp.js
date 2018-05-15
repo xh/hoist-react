@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {HoistComponent, elemFactory} from 'hoist/core';
 import {observable, setter} from 'hoist/mobx';
 import {div} from 'hoist/layout';
 import {Timer} from 'hoist/utils/Timer';
@@ -44,7 +44,7 @@ const defaultOptions = {
  * Displays the approximate amount of time between a given timestamp and the present moment
  * in a friendly, human readable form. Automatically updates on a regular interval to stay current.
  */
-@hoistComponent()
+@HoistComponent()
 class RelativeTimestamp extends Component {
 
     static propTypes = {

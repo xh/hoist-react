@@ -6,7 +6,7 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {HoistComponent, elemFactory} from 'hoist/core';
 import {Classes, select, button} from 'hoist/kit/blueprint';
 
 import {BaseDropdownField} from './BaseDropdownField';
@@ -16,24 +16,26 @@ import {BaseDropdownField} from './BaseDropdownField';
  *
  * @see HoistField for properties additional to those documented below.
  */
-@hoistComponent()
+@HoistComponent()
 export class SelectField extends BaseDropdownField {
 
     static propTypes = {
         /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
-        options: PT.arrayOf(PT.oneOfType([PT.object, PT.string])).isRequired,
+        options: PT.arrayOf(PT.oneOfType([PT.object, PT.string, PT.bool])).isRequired,
         /** Optional custom optionRenderer, a function that receives (option, optionProps) */
         itemRenderer: PT.func
     };
 
     delegateProps = ['className', 'disabled'];
 
+    constructor(props) {
+        super(props);
+        this.options = this.normalizeOptions(props.options);
+    }
+
     render() {
-        let {style, width, options, placeholder, disabled} = this.props;
-
-        options = this.normalizeOptions(options);
-
-        const value = this.renderValue;
+        let {style, width, placeholder, disabled} = this.props,
+            {renderValue, options} = this;
 
         return select({
             popoverProps: {popoverClassName: Classes.MINIMAL},
@@ -43,7 +45,7 @@ export class SelectField extends BaseDropdownField {
             filterable: false,
             item: button({
                 rightIcon: 'caret-down',
-                text: this.getDisplayValue(value, options, placeholder),
+                text: this.getDisplayValue(renderValue, options, placeholder),
                 style: {...style, width},
                 ...this.getDelegateProps()
             }),

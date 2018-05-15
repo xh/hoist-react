@@ -4,9 +4,10 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH} from 'hoist/core';
+import {XH, HoistModel} from 'hoist/core';
 import {observable, action} from 'hoist/mobx';
 
+@HoistModel()
 export class ImpersonationBarModel {
     @observable isVisible = false;
 
