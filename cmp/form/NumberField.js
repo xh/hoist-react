@@ -66,8 +66,7 @@ export class NumberField extends HoistField {
     }
 
     toExternal(value) {
-        value = this.normalizeValue(value);
-        value = parseFloat(value);
+        value = this.parseValue(value);
         return isFinite(value) ? value : null;
     }
 
@@ -77,12 +76,13 @@ export class NumberField extends HoistField {
             zeroPad = !!this.props.zeroPad,
             formattedVal = fmtNumber(value, {precision, zeroPad});
 
-        return this.props.displayWithDelimiters ? formattedVal : this.normalizeValue(formattedVal);
+        return this.props.displayWithDelimiters ? formattedVal : replace(value, /,/g, '');
     }
 
-    normalizeValue(value) {
+    parseValue(value) {
         value = replace(value, /,/g, '');
-        return replace(value, NumberField.shortHandMatcher, this.expandShorthand);
+        value = replace(value, NumberField.shortHandMatcher, this.expandShorthand);
+        return parseFloat(value)
     }
 
     expandShorthand(value) {
