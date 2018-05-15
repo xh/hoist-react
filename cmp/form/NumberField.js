@@ -30,7 +30,8 @@ export class NumberField extends HoistField {
         precision: PT.number,
         /** Allow/automatically fill in trailing zeros in accord with precision, defaults to false */
         zeroPad: PT.bool,
-        /** Set to true for advanced input evaluation, defaults to false. */
+        /** Set to true for advanced input evaluation, defaults to false.
+            Inputs suffixed with k, m, or b will be calculated as thousands, millions, or billions respectively */
         supportShorthandUnits: PT.bool,
         /** Whether to display large values with commas */
         displayWithDelimiters: PT.bool,
@@ -74,8 +75,9 @@ export class NumberField extends HoistField {
 
     toInternal(value) {
         if (value == null) return '';
-        const precision = this.props.precision != null ? this.props.precision : 4,
-            zeroPad = !!this.props.zeroPad,
+        const props = this.props,
+            precision = props.precision != null ? props.precision : 4,
+            zeroPad = !!props.zeroPad,
             formattedVal = fmtNumber(value, {precision, zeroPad});
 
         return this.props.displayWithDelimiters ? formattedVal : formattedVal.replace(/,/g, '');
