@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {XH, elemFactory, HoistComponent} from 'hoist/core';
-import {vspacer, filler, viewport} from 'hoist/layout';
+import {vspacer, box, filler, viewport} from 'hoist/layout';
 import {button, text} from 'hoist/kit/blueprint';
 import {panel, textField, toolbar} from 'hoist/cmp';
 import {observable, computed, setter} from 'hoist/mobx';
@@ -31,45 +31,54 @@ export class LoginPanel extends Component {
     }
 
     render() {
+        const {loginMessage} = XH.appModel;
+
         return viewport({
             alignItems: 'center',
             justifyContent: 'center',
-            item: panel({
-                cls: 'xh-login',
-                width: 300,
-                title: `Welcome to ${XH.appName}`,
-                items: [
-                    vspacer(10),
-                    textField({
-                        model: this,
-                        field: 'username',
-                        placeholder: 'Username...',
-                        autoFocus: true
-                    }),
-                    textField({
-                        model: this,
-                        field: 'password',
-                        placeholder: 'Password...',
-                        type: 'password'
-                    }),
-                    text({
-                        omit: !this.warning,
-                        item: this.warning,
-                        ellipsize: true,
-                        cls: 'xh-login__warning'
-                    })
-                ],
-                bottomToolbar: toolbar(
-                    filler(),
-                    button({
-                        text: 'Login',
-                        intent: 'primary',
-                        icon: Icon.login(),
-                        disabled: !this.isValid,
-                        onClick: this.onSubmit
-                    })
-                )
-            })
+            flexDirection: 'column',
+            items: [
+                panel({
+                    cls: 'xh-login',
+                    width: 300,
+                    title: `Welcome to ${XH.appName}`,
+                    items: [
+                        vspacer(10),
+                        textField({
+                            model: this,
+                            field: 'username',
+                            placeholder: 'Username...',
+                            autoFocus: true
+                        }),
+                        textField({
+                            model: this,
+                            field: 'password',
+                            placeholder: 'Password...',
+                            type: 'password'
+                        }),
+                        text({
+                            omit: !this.warning,
+                            item: this.warning,
+                            ellipsize: true,
+                            cls: 'xh-login__warning'
+                        }),
+                        loginMessage ? box({
+                            cls: 'xh-login__message',
+                            item: loginMessage
+                        }) : null
+                    ],
+                    bottomToolbar: toolbar(
+                        filler(),
+                        button({
+                            text: 'Login',
+                            intent: 'primary',
+                            icon: Icon.login(),
+                            disabled: !this.isValid,
+                            onClick: this.onSubmit
+                        })
+                    )
+                })
+            ]
         });
     }
 
