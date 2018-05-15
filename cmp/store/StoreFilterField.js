@@ -28,11 +28,12 @@ export class StoreFilterField extends Component {
         fields: PT.arrayOf(PT.string).isRequired
     };
 
+    static baseCls = 'xh-store-filter-field';
+
     @setter @observable value = '';
 
     render() {
         return inputGroup({
-            baseCls: 'xh-store-filter-field',
             placeholder: 'Quick filter...',
             value: this.value,
             onChange: this.onValueChange,

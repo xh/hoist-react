@@ -26,6 +26,8 @@ export class Chart extends Component {
     _chartElem = new Ref();
     _chart = null;
 
+    static baseCls = 'xh-chart';
+
     render() {
         // Default flex = 1 (flex: 1 1 0) if no dimensions / flex specified, i.e. do not consult child for dimensions;
         const {layoutConfig} = this.props;
@@ -38,7 +40,6 @@ export class Chart extends Component {
         // Inner div required to be the ref for the chart element
         return box({
             layoutConfig: layoutConfig,
-            baseCls: 'xh-chart',
             item: div({
                 style: {flex: 'auto'},
                 ref: this._chartElem.ref

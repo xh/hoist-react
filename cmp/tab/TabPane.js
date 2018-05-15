@@ -25,6 +25,8 @@ export class TabPane extends Component {
     child = new Ref();
     isLazyState = true;
 
+    static baseCls = 'xh-tab-pane';
+
     constructor(props) {
         super(props);
         this.addAutorun(this.syncLoad);
@@ -40,7 +42,6 @@ export class TabPane extends Component {
         return frame({
             display: isActive ? 'flex' : 'none',
             margin: 4,
-            baseCls: 'xh-tab-pane',
             item: elem(model.componentClass, {
                 ...this.props,
                 flex: 1,

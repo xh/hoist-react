@@ -22,6 +22,8 @@ import './LeftRightChooser.scss';
 @HoistComponent({layoutSupport: true})
 class LeftRightChooser extends Component {
 
+    static baseCls = 'xh-lr-chooser';
+
     render() {
         const {model} = this,
             {layoutConfig} = this.props,
@@ -35,7 +37,6 @@ class LeftRightChooser extends Component {
 
         return vbox({
             layoutConfig,
-            baseCls: 'xh-lr-chooser',
             items: [
                 hframe({
                     cls: 'xh-lr-chooser__grid-frame',

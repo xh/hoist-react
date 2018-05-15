@@ -28,6 +28,8 @@ export class LoadMask extends Component {
         /** Text to be displayed under the loading spinner image */
         text: PT.string
     };
+
+    static baseCls = `xh-mask ${Classes.OVERLAY_SCROLL_CONTAINER}`;
     
     render() {
         let {isDisplayed, model, inline, text} = this.props,
@@ -36,7 +38,6 @@ export class LoadMask extends Component {
         if (!(isDisplayed || (model && model.isPending))) return null;
 
         return overlay({
-            baseCls: `xh-mask ${Classes.OVERLAY_SCROLL_CONTAINER}`,
             autoFocus: false,
             isOpen: true,
             canEscapeKeyClose: false,

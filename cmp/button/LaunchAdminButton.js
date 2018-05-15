@@ -23,12 +23,14 @@ export class LaunchAdminButton extends Component {
         onClick: PT.func
     };
 
+    static baseCls = 'xh-launch-admin-button';
+
     render() {
         if (!XH.getUser().isHoistAdmin) return null;
 
         const {icon, title, onClick, ...rest} = this.props;
         return button({
-            baseCls: 'xh-launch-admin-button',
+
             icon: icon || Icon.wrench(),
             title: title || 'Launch admin client...',
             onClick: onClick || this.onClick,

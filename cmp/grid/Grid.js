@@ -50,6 +50,8 @@ class Grid extends Component {
         onRowDoubleClicked: PT.func
     };
 
+    static baseCls = 'xh-grid';
+
     constructor(props) {
         super(props);
         this.addAutorun(this.syncSelection);
@@ -70,7 +72,7 @@ class Grid extends Component {
         return fragment(
             box({
                 layoutConfig: layoutConfig,
-                baseCls: `xh-grid ${XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham'}`,
+                cls: XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                 item: agGridReact({
                     ...this.createDefaults(),
                     ...this.props.agOptions

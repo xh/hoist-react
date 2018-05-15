@@ -28,10 +28,11 @@ export class ExportButton extends Component {
         model: PT.object
     };
 
+    static baseCls = 'xh-export-button';
+
     render() {
         const {icon, onClick, model, ...rest} = this.props;
         return button({
-            baseCls: 'xh-export-button',
             icon: icon || Icon.download(),
             title: this.title || 'Export',
             onClick: onClick || this.onExportClick,
