@@ -111,7 +111,7 @@ class Grid extends Component {
     }
 
     syncSelection() {
-        const {api} = this.gridOptions;
+        const api = this.model.gridApi;
         if (!api) return;
 
         const modelSelection = this.model.selection.ids,
@@ -132,7 +132,7 @@ class Grid extends Component {
     }
 
     syncSort() {
-        const {api} = this.gridOptions;
+        const api = this.model.gridApi;
         if (!api) return;
 
         const agSorters = api.getSortModel(),
@@ -143,7 +143,7 @@ class Grid extends Component {
     }
 
     syncColumns() {
-        const {api} = this.gridOptions;
+        const api = this.model.gridApi;
         if (!api) return;
 
         // Needed because AGGridReact won't recognize updates to columns prop.
@@ -222,14 +222,14 @@ class Grid extends Component {
         const {api} = params,
             {model} = this;
 
-        model.gridApi = api;
+        model.setGridApi(api);
         api.setSortModel(model.sortBy);
         api.sizeColumnsToFit();
         if (!model.emptyText) api.hideOverlay();
     }
 
     onNavigateToNextCell = (params) => {
-        return navigateSelection(params, this.gridOptions.api);
+        return navigateSelection(params, this.model.gridApi);
     }
 
     onSelectionChanged = (ev) => {

@@ -20,10 +20,10 @@ export class GridModel {
 
     // Immutable public properties
     store = null;
-    gridApi = null;
     selection = null;
     contextMenuFn = null;
 
+    @observable.ref gridApi = null;
     @observable.ref columns = [];
     @observable.ref sortBy = [];
     @observable groupBy = null;
@@ -84,6 +84,11 @@ export class GridModel {
             recs = orderBy(store.records, colIds, sorts);
 
         if (recs.length) selection.select(recs[0]);
+    }
+
+    @action
+    setGridApi(gridApi) {
+        this.gridApi = gridApi;
     }
 
     @action
