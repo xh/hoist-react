@@ -27,7 +27,7 @@ export class ConfigDifferDetail extends Component {
             onClose: this.onCloseClick,
             item: panel({
                 item: this.renderDiffTable(),
-                bottomToolbar: toolbar(
+                bbar: toolbar(
                     filler(),
                     button({
                         text: 'Close',

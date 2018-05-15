@@ -27,9 +27,9 @@ export class Panel extends Component {
         /** Items to be added to the right-side of the panel's header. */
         headerItems: PT.node,
         /** A toolbar to be docked at the top of the panel. */
-        topToolbar: PT.element,
+        tbar: PT.element,
         /** A toolbar to be docked at the bottom of the panel. */
-        bottomToolbar: PT.element
+        bbar: PT.element
     };
 
     baseCls = 'xh-panel';
@@ -37,7 +37,7 @@ export class Panel extends Component {
     render() {
         // Note: Padding is destructured here to be discarded because it breaks layout.
         //       Similarly, isCollapsed must not be rendered as a custom attribute in the DOM.
-        const {className, topToolbar, bottomToolbar, title, icon, headerItems, padding, isCollapsed, children, ...rest} = this.props,
+        const {className, tbar, bbar, title, icon, headerItems, padding, isCollapsed, children, ...rest} = this.props,
             wrapper = this.props.width || this.props.height ? vbox : vframe;
 
         return wrapper({
@@ -45,9 +45,9 @@ export class Panel extends Component {
             ...rest,
             items: [
                 panelHeader({title, icon, headerItems}),
-                topToolbar || null,
+                tbar || null,
                 ...(castArray(children)),
-                bottomToolbar || null
+                bbar || null
             ]
         });
     }

@@ -18,8 +18,8 @@ export class VisitsChart extends Component {
         return panel({
             icon: Icon.users(),
             title: 'Unique Daily Visitors',
-            bottomToolbar: this.renderToolbar(),
-            item: chart({model: this.model.chartModel})
+            item: chart({model: this.model.chartModel}),
+            bbar: this.renderToolbar()
         });
     }
 

@@ -26,7 +26,7 @@ export class MonitorResultsPanel extends Component {
 
         return panel({
             cls: 'xh-monitor-results-panel',
-            topToolbar: monitorResultsToolbar({model}),
+            tbar: monitorResultsToolbar({model}),
             item: monitorResultsDisplay({model})
         });
     }

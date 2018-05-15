@@ -24,7 +24,7 @@ export class RestGrid extends Component {
             gridOptions = defaults(this.props.gridOptions, {onRowDoubleClicked: this.onRowDoubleClicked});
         return fragment(
             panel({
-                topToolbar: restGridToolbar({model, extraToolbarItems}),
+                tbar: restGridToolbar({model, extraToolbarItems}),
                 item: grid({
                     model: model.gridModel,
                     gridOptions: gridOptions

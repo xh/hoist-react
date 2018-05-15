@@ -22,7 +22,7 @@ export class App extends Component {
         }
 
         return panel({
-            topToolbar: this.renderNavBar(),
+            tbar: this.renderNavBar(),
             item: frame({
                 cls: 'xh-admin-app-frame',
                 item: tabContainer({model: XH.appModel.tabs})

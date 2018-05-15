@@ -37,7 +37,7 @@ export class ConfigDiffer extends Component {
     getContents() {
         const model = this.model;
         return panel({
-            topToolbar: toolbar(
+            tbar: toolbar(
                 label('Compare w/Remote'),
                 filler(),
                 label('Compare with:'),
@@ -64,7 +64,7 @@ export class ConfigDiffer extends Component {
                 }),
                 message({model: model.messageModel})
             ],
-            bottomToolbar: toolbar(
+            bbar: toolbar(
                 filler(),
                 button({
                     text: 'Close',

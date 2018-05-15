@@ -20,7 +20,7 @@ export class ActivityGrid extends Component {
     render() {
         const {model} = this;
         return panel({
-            topToolbar: this.renderToolbar(),
+            tbar: this.renderToolbar(),
             items: [
                 grid({
                     model: model.gridModel,

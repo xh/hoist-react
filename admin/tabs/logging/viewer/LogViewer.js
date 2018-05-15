@@ -35,18 +35,18 @@ export class LogViewer extends Component {
                     contentSize: 250,
                     isOpen: true,
                     item: panel({
-                        bottomToolbar: toolbar(
+                        item: grid({model: files}),
+                        bbar: toolbar(
                             filler(),
                             storeFilterField({
                                 store: files.store,
                                 fields: ['filename']
                             })
-                        ),
-                        item: grid({model: files})
+                        )
                     })
                 }),
                 panel({
-                    topToolbar: logViewerToolbar({model}),
+                    tbar: logViewerToolbar({model}),
                     item: logViewerDisplay({model})
                 }),
                 loadMask({model: loadModel})

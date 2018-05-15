@@ -19,7 +19,7 @@ export class UserPanel extends Component {
 
     render() {
         return panel({
-            topToolbar: this.renderToolbar(),
+            tbar: this.renderToolbar(),
             item: grid({
                 model: this.model.gridModel,
                 gridOptions: {
