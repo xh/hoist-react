@@ -36,7 +36,7 @@ export class Panel extends Component {
 
     render() {
         // Note: Padding is destructured here to be discarded because it breaks layout.
-        //       Similarly, isCollapsed must not be passed to the DOM.
+        //       Similarly, isCollapsed must not be rendered as a custom attribute in the DOM.
         const {className, topToolbar, bottomToolbar, title, icon, headerItems, padding, isCollapsed, children, ...rest} = this.props,
             wrapper = this.props.width || this.props.height ? vbox : vframe;
 
