@@ -94,8 +94,9 @@ body {
   --xh-font-size-small-px: calc(var(--xh-font-size-small) * 1px);
 
   // Mask
-  --xh-mask-bg: var(--mask-bg, #{mc-trans('blue-grey', '900')});
+  --xh-mask-bg: var(--mask-bg, #{mc-trans('blue-grey', '900', 0.4)});
   --xh-mask-content-bg: var(--mask-content-bg, #{mc-trans('blue-grey', '50', 0.2)});
+  --xh-mask-content-color: var(--mask-content-color, var(--xh-text-color));
 
   // Navbar (top app toolbar)
   --xh-navbar-bg: var(--navbar-bg, var(--xh-bg-alt));
@@ -191,6 +192,7 @@ body.xh-dark {
 
   // Mask
   --mask-content-bg: var(--mask-content-bg, #{mc-trans('grey', '900', 0.2)});
+  --xh-mask-content-color: var(--mask-content-color, var(--xh-blue-gray-dark));
 
   // Navbar
   --xh-navbar-border-color: var(--navbar-border-color, #{mc('blue-grey', '700')});
