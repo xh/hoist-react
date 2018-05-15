@@ -7,7 +7,6 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from 'hoist/core';
-import {replace} from 'lodash';
 import {numericInput} from 'hoist/kit/blueprint';
 import {fmtNumber} from 'hoist/format';
 import {HoistField} from './HoistField';
@@ -34,7 +33,9 @@ export class NumberField extends HoistField {
         /** Constrain input to numeric characters, defaults to true. Set to false for advanced input evaluation */
         allowNumericCharactersOnly: PT.bool,
         /** Whether to display large values with commas */
-        displayWithDelimiters: PT.bool
+        displayWithDelimiters: PT.bool,
+        /** Alignment of numbers in field, default to 'right' */
+        textAlign: PT.string
     };
 
     static shortHandMatcher = /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/gi;
@@ -42,7 +43,8 @@ export class NumberField extends HoistField {
     delegateProps = ['className', 'min', 'max', 'placeholder'];
 
     render() {
-        const {width, style, allowNumericCharactersOnly} = this.props;
+        const {width, style, allowNumericCharactersOnly} = this.props,
+            textAlign = this.props.textAlign || 'right';
 
         return numericInput({
             value: this.renderValue,
@@ -50,7 +52,7 @@ export class NumberField extends HoistField {
             onKeyPress: this.onKeyPress,
             onBlur: this.onBlur,
             onFocus: this.onFocus,
-            style: {textAlign: 'right', width, ...style},
+            style: {textAlign, width, ...style},
             buttonPosition: 'none',
             allowNumericCharactersOnly: allowNumericCharactersOnly !== false,
             ...this.getDelegateProps()
@@ -76,36 +78,28 @@ export class NumberField extends HoistField {
             zeroPad = !!this.props.zeroPad,
             formattedVal = fmtNumber(value, {precision, zeroPad});
 
-        return this.props.displayWithDelimiters ? formattedVal : replace(value, /,/g, '');
+        return this.props.displayWithDelimiters ? formattedVal : formattedVal.replace(/,/g, '');
     }
 
     parseValue(value) {
-        value = replace(value, /,/g, '');
-        value = replace(value, NumberField.shortHandMatcher, this.expandShorthand);
-        return parseFloat(value)
-    }
+        value = value.replace(/,/g, '');
 
-    expandShorthand(value) {
-        if (!value) {
-            return value;
+        if (NumberField.shortHandMatcher.test(value)) {
+
+            const num = +value.substring(0, value.length - 1),
+                lastChar = value.charAt(value.length - 1).toLowerCase();
+
+            if (lastChar === 'k') {
+                value = num * 1000;
+            } else if (lastChar === 'm') {
+                value = num * 1000000;
+            } else if (lastChar === 'b') {
+                value = num * 1000000000;
+            }
+
         }
 
-        const num = +value.substring(0, value.length - 1),
-            lastChar = value.charAt(value.length - 1).toLowerCase();
-
-        let result;
-
-        if (lastChar === 'k') {
-            result = num * 1000;
-        } else if (lastChar === 'm') {
-            result = num * 1000000;
-        } else if (lastChar === 'b') {
-            result = num * 1000000000;
-        }
-
-        const isValid = result != null && !isNaN(result);
-
-        return isValid ? result.toString() : '';
+        return parseFloat(value);
     }
 
 }
