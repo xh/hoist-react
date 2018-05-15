@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from 'hoist/core';
-import {box, frame, vbox} from 'hoist/layout';
+import {box} from 'hoist/layout';
 import {Classes, overlay} from 'hoist/kit/blueprint';
 
 import './Mask.scss';
@@ -35,7 +35,7 @@ export class Mask extends Component {
             isOpen: true,
             canEscapeKeyClose: false,
             usePortal: false,
-            item: vbox({
+            item: box({
                 cls: 'xh-mask-body',
                 alignItems: 'center',
                 justifyContent: 'center',
