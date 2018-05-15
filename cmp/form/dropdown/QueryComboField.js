@@ -7,7 +7,6 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from 'hoist/core';
-import {observable, setter} from 'hoist/mobx';
 import {Classes, suggest} from 'hoist/kit/blueprint';
 
 import {BaseComboField} from './BaseComboField';
@@ -17,8 +16,6 @@ import {BaseComboField} from './BaseComboField';
  */
 @HoistComponent()
 export class QueryComboField extends BaseComboField {
-    @observable.ref @setter options = [];
-
     static propTypes = {
         /**
          * Function to be run when value of control changes to repopulate the available items.
@@ -45,16 +42,16 @@ export class QueryComboField extends BaseComboField {
 
     render() {
         const {style, width, disabled} = this.props,
-            {renderValue} = this;
+            {renderValue, options} = this;
 
         return suggest({
             popoverProps: {popoverClassName: Classes.MINIMAL},
-            $items: this.options,
+            $items: options,
             onItemSelect: this.onItemSelect,
             itemRenderer: this.getOptionRenderer(),
             inputValueRenderer: s => s,
             inputProps: {
-                value: this.getDisplayValue(renderValue, this.options, ''),
+                value: this.getDisplayValue(renderValue, options, ''),
                 onChange: this.onChange,
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,
@@ -71,9 +68,7 @@ export class QueryComboField extends BaseComboField {
             {queryFn} = this.props;
 
         if (queryFn) {
-            queryFn(value).then(options => {
-                this.setOptions(this.normalizeOptions(options));
-            });
+            queryFn(value).then(options => this.setOptions(options));
         }
     }
 }

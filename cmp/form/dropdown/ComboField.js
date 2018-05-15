@@ -31,11 +31,6 @@ export class ComboField extends BaseComboField {
 
     delegateProps = ['className', 'disabled', 'placeholder'];
 
-    constructor(props) {
-        super(props);
-        this.options = this.normalizeOptions(props.options);
-    }
-
     render() {
         const {style, width, disabled} = this.props,
             {renderValue, options} = this;

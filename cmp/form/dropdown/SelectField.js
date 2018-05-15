@@ -28,11 +28,6 @@ export class SelectField extends BaseDropdownField {
 
     delegateProps = ['className', 'disabled'];
 
-    constructor(props) {
-        super(props);
-        this.options = this.normalizeOptions(props.options);
-    }
-
     render() {
         let {style, width, placeholder, disabled} = this.props,
             {renderValue, options} = this;
@@ -55,4 +50,5 @@ export class SelectField extends BaseDropdownField {
         });
     }
 }
+
 export const selectField = elemFactory(SelectField);
