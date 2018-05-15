@@ -22,7 +22,7 @@ export class UserPanel extends Component {
             tbar: this.renderToolbar(),
             item: grid({
                 model: this.model.gridModel,
-                gridOptions: {
+                agOptions: {
                     rowSelection: 'single'
                 }
             })

@@ -21,13 +21,14 @@ export class RestGrid extends Component {
     render() {
         const {model} = this,
             {extraToolbarItems} = this.props,
-            gridOptions = defaults(this.props.gridOptions, {onRowDoubleClicked: this.onRowDoubleClicked});
+            agOptions = defaults(this.props.agOptions, {onRowDoubleClicked: this.onRowDoubleClicked});
+
         return fragment(
             panel({
                 tbar: restGridToolbar({model, extraToolbarItems}),
                 item: grid({
                     model: model.gridModel,
-                    gridOptions: gridOptions
+                    agOptions: agOptions
                 })
             }),
             restForm({model: model.formModel}),

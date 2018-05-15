@@ -57,7 +57,7 @@ export class ConfigDiffer extends Component {
             items: [
                 grid({
                     model: model.gridModel,
-                    gridOptions: {
+                    agOptions: {
                         onRowDoubleClicked: this.onRowDoubleClicked,
                         popupParent: null
                     }

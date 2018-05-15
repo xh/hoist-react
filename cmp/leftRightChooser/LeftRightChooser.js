@@ -25,7 +25,7 @@ class LeftRightChooser extends Component {
     render() {
         const {model} = this,
             {leftModel, rightModel} = model,
-            gridOptions = {
+            agOptions = {
                 rowSelection: 'multiple',
                 rowDeselection: true,
                 enableColResize: false,
@@ -38,9 +38,9 @@ class LeftRightChooser extends Component {
                 hframe({
                     cls: 'xh-lr-chooser__grid-frame',
                     items: [
-                        grid({model: leftModel, gridOptions}),
+                        grid({model: leftModel, agOptions}),
                         chooserToolbar({model}),
-                        grid({model: rightModel, gridOptions})
+                        grid({model: rightModel, agOptions})
                     ]
                 }),
                 description({model})

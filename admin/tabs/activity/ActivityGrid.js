@@ -24,7 +24,7 @@ export class ActivityGrid extends Component {
             items: [
                 grid({
                     model: model.gridModel,
-                    gridOptions: {
+                    agOptions: {
                         rowSelection: 'single',
                         onRowDoubleClicked: this.onRowDoubleClicked
                     }
