@@ -36,7 +36,7 @@ export class Mask extends Component {
             canEscapeKeyClose: false,
             usePortal: false,
             item: box({
-                cls: 'xh-mask-body',
+                cls: text ? 'xh-mask-body' : '',
                 alignItems: 'center',
                 justifyContent: 'center',
                 style: {
