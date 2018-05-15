@@ -12,11 +12,10 @@
     text-align: center;
   }
 
-  .xh-login-message {
+  &__message {
     background-color: var(--xh-bg-alt);
     margin: 0 var(--xh-pad-px) var(--xh-pad-px) var(--xh-pad-px);
-    padding: 0 var(--xh-pad-px);
-    line-height: var(--xh-title-height-px);
+    padding: var(--xh-pad-px);
     border-radius: var(--xh-border-radius-px);
   }
 }

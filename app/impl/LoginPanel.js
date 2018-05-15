@@ -63,7 +63,7 @@ export class LoginPanel extends Component {
                             cls: 'xh-login__warning'
                         }),
                         loginMessage ? box({
-                            cls: 'xh-login-message',
+                            cls: 'xh-login__message',
                             item: loginMessage
                         }) : null
                     ],
