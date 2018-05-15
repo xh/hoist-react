@@ -25,7 +25,7 @@ export class ConfigDiffer extends Component {
                 canOutsideClickClose: false,
                 onClose: this.onCloseClick,
                 style: {height: 600, width: '50%'},
-                items: this.getDialogItems()
+                item: this.getContents()
             }),
             configDifferDetail({model: detailModel})
         );
@@ -34,7 +34,7 @@ export class ConfigDiffer extends Component {
     //------------------------
     // Implementation
     //------------------------
-    getDialogItems() {
+    getContents() {
         const model = this.model;
         return panel({
             topToolbar: toolbar(

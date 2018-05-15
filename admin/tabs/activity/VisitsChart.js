@@ -19,7 +19,7 @@ export class VisitsChart extends Component {
             icon: Icon.users(),
             title: 'Unique Daily Visitors',
             bottomToolbar: this.renderToolbar(),
-            items: chart({model: this.model.chartModel})
+            item: chart({model: this.model.chartModel})
         });
     }
 
