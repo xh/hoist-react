@@ -7,8 +7,8 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from 'hoist/core';
-import {frame} from 'hoist/layout';
-import {overlay} from 'hoist/kit/blueprint';
+import {box, frame, vbox} from 'hoist/layout';
+import {Classes, overlay} from 'hoist/kit/blueprint';
 
 import './Mask.scss';
 
@@ -24,23 +24,25 @@ export class Mask extends Component {
     };
 
     render() {
-        const {isDisplayed, text} = this.props;
+        let {isDisplayed, text} = this.props;
         if (!isDisplayed) return null;
 
+        text = text ? box({cls: 'xh-mask-text', item: text}) : null;
+
         return overlay({
-            cls: 'xh-mask',
+            cls: `xh-mask ${Classes.OVERLAY_SCROLL_CONTAINER}`,
             autoFocus: false,
             isOpen: true,
             canEscapeKeyClose: false,
-            hasBackdrop: false,
             usePortal: false,
-            item: frame({
+            item: vbox({
+                cls: 'xh-mask-body',
                 alignItems: 'center',
                 justifyContent: 'center',
                 style: {
                     textAlign: 'center'
                 },
-                items: text
+                item: text
             })
         });
     }
