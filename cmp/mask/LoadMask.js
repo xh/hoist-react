@@ -8,8 +8,8 @@
 import {PropTypes as PT} from 'prop-types';
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from 'hoist/core';
-import {viewport, vframe, box} from 'hoist/layout';
-import {overlay, spinner} from 'hoist/kit/blueprint';
+import {vbox, box} from 'hoist/layout';
+import {Classes, overlay, spinner} from 'hoist/kit/blueprint';
 
 import './Mask.scss';
 
@@ -20,8 +20,6 @@ import './Mask.scss';
  */
 @HoistComponent()
 export class LoadMask extends Component {
-
-    BACKGROUND = 'rgba(0,0,0, 0.25)';
 
     static propTypes = {
         isDisplayed: PT.bool,
@@ -41,37 +39,23 @@ export class LoadMask extends Component {
         text = text ? box({cls: 'xh-mask-text', item: text}) : null;
 
         return overlay({
-            cls: 'xh-mask',
+            cls: `xh-mask ${Classes.OVERLAY_SCROLL_CONTAINER}`,
             autoFocus: false,
             isOpen: true,
             canEscapeKeyClose: false,
-            backdropProps: {
-                style: {backgroundColor: this.BACKGROUND}
-            },
             usePortal: !isInline,
-            item: isInline ? this.getInlineChild(text) : this.getViewportChild(text)
+            item: this.getMaskBody(text)
         });
     }
 
     //-----------------
     // Implementation
     //-----------------
-    getInlineChild(text) {
-        return vframe({
-            width: '100%',
-            height: '100%',
+    getMaskBody(text) {
+        return vbox({
+            cls: 'xh-mask-body',
             alignItems: 'center',
             justifyContent: 'center',
-            item: [spinner(), text]
-        });
-    }
-
-    getViewportChild(text) {
-        return viewport({
-            flex: 1,
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexDirection: 'column',
             item: [spinner(), text]
         });
     }

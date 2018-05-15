@@ -122,33 +122,33 @@
     classnames "^2.2"
     tslib "^1.9.0"
 
-"@fortawesome/fontawesome-common-types@^0.1.6":
-  version "0.1.6"
-  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome-common-types/-/fontawesome-common-types-0.1.6.tgz#3cefd6cd88a2256e1daa69b6fc9a6ab5e3c33e4a"
+"@fortawesome/fontawesome-common-types@^0.1.7":
+  version "0.1.7"
+  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome-common-types/-/fontawesome-common-types-0.1.7.tgz#4336c4b06d0b5608ff1215464b66fcf9f4795284"
 
-"@fortawesome/fontawesome-pro-light@~5.0.10":
-  version "5.0.12"
-  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome-pro-light/-/fontawesome-pro-light-5.0.12.tgz#53619a17c2dfd6ade190b6fc44244a4f8393a722"
+"@fortawesome/fontawesome-pro-light@~5.0.13":
+  version "5.0.13"
+  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome-pro-light/-/fontawesome-pro-light-5.0.13.tgz#d233f91dffeb945a93b5723c3a7cabb63d24ca98"
   dependencies:
-    "@fortawesome/fontawesome-common-types" "^0.1.6"
+    "@fortawesome/fontawesome-common-types" "^0.1.7"
 
-"@fortawesome/fontawesome-pro-regular@~5.0.10":
-  version "5.0.12"
-  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome-pro-regular/-/fontawesome-pro-regular-5.0.12.tgz#0ba67aaff5acc88df56198664cc8e862ed0c6d56"
+"@fortawesome/fontawesome-pro-regular@~5.0.13":
+  version "5.0.13"
+  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome-pro-regular/-/fontawesome-pro-regular-5.0.13.tgz#1a953a3826185d0446921ec59c89056f0564404e"
   dependencies:
-    "@fortawesome/fontawesome-common-types" "^0.1.6"
+    "@fortawesome/fontawesome-common-types" "^0.1.7"
 
-"@fortawesome/fontawesome-pro-solid@~5.0.10":
-  version "5.0.12"
-  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome-pro-solid/-/fontawesome-pro-solid-5.0.12.tgz#53acdab60eb371cd783485b802d3fde7edaafed9"
+"@fortawesome/fontawesome-pro-solid@~5.0.13":
+  version "5.0.13"
+  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome-pro-solid/-/fontawesome-pro-solid-5.0.13.tgz#f78c90c16033af861e2717dde32f94defcc528b9"
   dependencies:
-    "@fortawesome/fontawesome-common-types" "^0.1.6"
+    "@fortawesome/fontawesome-common-types" "^0.1.7"
 
-"@fortawesome/fontawesome@~1.1.5":
-  version "1.1.7"
-  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome/-/fontawesome-1.1.7.tgz#15a6508cd6ab465b6a5bd1fb83f4c962a8c7df7a"
+"@fortawesome/fontawesome@~1.1.8":
+  version "1.1.8"
+  resolved "https://repo.xh.io/repository/npm-public/@fortawesome/fontawesome/-/fontawesome-1.1.8.tgz#75fe66a60f95508160bb16bd781ad7d89b280f5b"
   dependencies:
-    "@fortawesome/fontawesome-common-types" "^0.1.6"
+    "@fortawesome/fontawesome-common-types" "^0.1.7"
 
 "@fortawesome/react-fontawesome@~0.0.18":
   version "0.0.19"
