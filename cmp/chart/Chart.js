@@ -26,10 +26,11 @@ export class Chart extends Component {
     _chartElem = new Ref();
     _chart = null;
 
+    static baseCls = 'xh-chart';
+
     render() {
         this.renderHighChart();
         return frame({
-            baseCls: 'xh-chart',
             ...this.props,
             item: div({
                 style: {flex: 'auto', overflow: 'hidden'},

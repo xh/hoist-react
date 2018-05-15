@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
+import {cloneElement} from 'react';
 import {observer} from '@xh/hoist/mobx';
 import {ContextMenuTarget, HotkeysTarget} from '@xh/hoist/kit/blueprint';
 import {defaultMethods, chainMethods, overrideMethods} from '@xh/hoist/utils/ClassUtils';
@@ -99,7 +100,24 @@ export function HoistComponent({
                 if (this.isCollapsed) {
                     return this.renderCollapsed();
                 }
-                return sub ? sub.apply(this) : null;
+
+                let el = sub ? sub.apply(this) : null;
+
+                if (el) {
+                    const classes = new Set();
+                    if (this.props.className) classes.add(this.props.className);
+                    if (el.props.className) classes.add(el.props.className);
+                    if (C.baseCls) classes.add(C.baseCls);
+
+                    if (classes.size) {
+                        el = cloneElement(el, {
+                            ...el.props,
+                            className: Array.from(classes).join(' ')
+                        });
+                    }
+                }
+
+                return el;
             }
         });
 

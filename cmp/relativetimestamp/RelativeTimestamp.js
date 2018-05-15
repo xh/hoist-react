@@ -54,11 +54,13 @@ class RelativeTimestamp extends Component {
         options: PT.object
     };
 
+    static baseCls = 'xh-relative-timestamp';
+
     @setter @observable relativeTimeString;
     timer = null;
 
     render() {
-        return div({baseCls: 'xh-relative-timestamp', item: this.relativeTimeString});
+        return div(this.relativeTimeString);
     }
 
     refreshLabel = () => {

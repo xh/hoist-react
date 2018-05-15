@@ -17,10 +17,10 @@ import './Toolbar.scss';
 @HoistComponent()
 class ToolbarSeparator extends Component {
 
+    static baseCls = 'xh-toolbar__separator';
+
     render() {
-        return span({
-            baseCls: 'xh-toolbar__separator'
-        });
+        return span();
     }
 
 }

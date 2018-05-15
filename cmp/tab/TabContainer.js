@@ -19,13 +19,14 @@ import './Tabs.scss';
 @HoistComponent()
 export class TabContainer extends Component {
 
+    static baseCls = 'xh-tab-container';
+
     render() {
         const {id, children, selectedId, vertical} = this.model;
 
         return tabs({
             id,
             vertical,
-            baseCls: 'xh-tab-container',
             onChange: this.onTabChange,
             selectedTabId: selectedId,
             large: !vertical,

@@ -17,6 +17,8 @@ import {button, hotkeys, hotkey} from '@xh/hoist/kit/blueprint';
 @HoistComponent()
 export class ThemeToggleButton extends Component {
 
+    static baseCls = 'xh-theme-toggle-button';
+
     renderHotkeys() {
         return hotkeys(
             hotkey({
@@ -30,7 +32,6 @@ export class ThemeToggleButton extends Component {
 
     render() {
         return button({
-            baseCls: 'xh-theme-toggle-button',
             icon: XH.darkTheme ? Icon.sun() : Icon.moon(),
             title: XH.darkTheme ? 'Switch to light theme' : 'Switch to dark theme',
             onClick: this.onThemeToggleClick

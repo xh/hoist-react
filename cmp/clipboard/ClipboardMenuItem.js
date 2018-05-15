@@ -36,6 +36,8 @@ class ClipboardMenuItem extends Component {
         }
     }
 
+    static baseCls = 'xh-clipboard-menu-item';
+
     render() {
         const btnProps = defaultsDeep(this.props, ClipboardMenuItem.defaultOptions);
         return clipboardButton(btnProps);

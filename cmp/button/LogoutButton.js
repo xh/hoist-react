@@ -28,12 +28,13 @@ export class LogoutButton extends Component {
         onClick: PT.func
     };
 
+    static baseCls = 'xh-logout-button';
+
     render() {
         if (!XH.appModel.enableLogout) return null;
 
         const {icon, title, intent, onClick, ...rest} = this.props;
         return button({
-            baseCls: 'xh-logout-button',
             icon: icon || Icon.logout(),
             title: title || 'Logout',
             intent: intent || 'danger',

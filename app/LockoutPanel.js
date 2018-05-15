@@ -20,13 +20,14 @@ export class LockoutPanel extends Component {
 
     static propTypes = {
         message: PT.string
-    }
+    };
+
+    static baseCls = 'xh-lockout-panel';
 
     render() {
         const msg = this.props.message || 'Access Denied';
 
         return viewport({
-            baseCls: 'xh-lockout-panel',
             alignItems: 'center',
             justifyContent: 'center',
             item: box({

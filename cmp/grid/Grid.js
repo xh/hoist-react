@@ -50,6 +50,8 @@ class Grid extends Component {
         popupParent: document.querySelector('body')
     };
 
+    static baseCls = 'xh-grid';
+
     constructor(props) {
         super(props);
         this.agOptions = defaults(
@@ -81,8 +83,8 @@ class Grid extends Component {
 
         return frame(
             div({
+                cls: XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                 style: {flex: '1 1 auto', overflow: 'hidden'},
-                baseCls: `xh-grid ${XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham'}`,
                 item: agGridReact({
                     rowData: store.records,
                     columnDefs: agColDefs,

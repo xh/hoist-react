@@ -23,11 +23,12 @@ class LeftRightChooserFilter extends Component {
         fields: PT.arrayOf(PT.string)
     };
 
+    static baseCls = 'xh-lr-chooser-filter';
+
     @setter @observable value = '';
 
     render() {
         return inputGroup({
-            baseCls: 'xh-lr-chooser-filter',
             placeholder: 'Quick filter...',
             value: this.value,
             onChange: this.onValueChange,

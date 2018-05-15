@@ -18,10 +18,11 @@ import {toolbar} from '@xh/hoist/cmp/toolbar';
 @HoistComponent()
 export class FeedbackDialog extends Component {
 
+    static baseCls = 'xh-feedback-dialog';
+
     render() {
         const model = this.model;
         return dialog({
-            baseCls: 'xh-feedback-dialog',
             title: 'Submit Feedback',
             style: {width: 450},
             isOpen: model.isOpen,

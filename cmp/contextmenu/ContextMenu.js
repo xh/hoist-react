@@ -32,6 +32,8 @@ export class ContextMenu extends Component {
         menuItems: PT.arrayOf(PT.oneOfType([PT.object, PT.string, PT.element])).isRequired
     }
 
+    static baseCls = 'xh-context-menu';
+
     render() {
         return menu(this.parseMenuItems(this.props.menuItems));
     }

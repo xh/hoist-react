@@ -35,6 +35,8 @@ export class Panel extends Component {
         masked: PT.bool
     };
 
+    static baseCls = 'xh-panel';
+
     render() {
         let {
             layoutConfig,
@@ -59,7 +61,6 @@ export class Panel extends Component {
         }
 
         return vbox({
-            baseCls: 'xh-panel',
             layoutConfig,
             ...rest,
             items: [

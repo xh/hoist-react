@@ -47,6 +47,8 @@ export class Resizable extends Component {
         model: PT.object
     };
 
+    static baseCls = 'xh-resizable';
+
     constructor(props) {
         super(props);
 
@@ -88,7 +90,7 @@ export class Resizable extends Component {
             items.push(this.getDragger());
         }
 
-        return cmp({baseCls: 'xh-resizable', flex: 'none', items});
+        return cmp({flex: 'none', items});
     }
 
     //----------------------------------------
