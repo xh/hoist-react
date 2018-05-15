@@ -13,7 +13,7 @@ import {Classes, overlay} from 'hoist/kit/blueprint';
 import './Mask.scss';
 
 /**
- * Mask for Disabled or Inactive components.
+ * Mask for disabled or inactive components.
  */
 @HoistComponent()
 export class Mask extends Component {
