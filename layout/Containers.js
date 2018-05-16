@@ -6,7 +6,6 @@
  */
 import {Component} from 'react';
 import {elemFactory, HoistComponent} from 'hoist/core';
-import {isNumber, forOwn, isEmpty} from 'lodash';
 
 /**
  * Box is just a very thin wrapper around a div with 'flex' layout.
