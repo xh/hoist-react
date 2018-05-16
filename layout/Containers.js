@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import {defaultsDeep} from 'lodash';
 import {elemFactory, HoistComponent} from 'hoist/core';
 
 /**
@@ -23,21 +24,21 @@ import {elemFactory, HoistComponent} from 'hoist/core';
 @HoistComponent()
 export class Box extends Component {
     render() {
-        return createDiv(this.props);
+        return renderDiv(this.props);
     }
 }
 
 @HoistComponent()
 export class VBox extends Component {
     render() {
-        return createDiv(this.props, {flexDirection: 'column'});
+        return renderDiv(this.props, {flexDirection: 'column'});
     }
 }
 
 @HoistComponent()
 export class HBox extends Component {
     render() {
-        return createDiv(this.props, {flexDirection: 'row'});
+        return renderDiv(this.props, {flexDirection: 'row'});
     }
 }
 
@@ -49,21 +50,21 @@ export class HBox extends Component {
 @HoistComponent()
 export class Frame extends Component {
     render() {
-        return createDiv(this.props, {flex: 'auto'});
+        return renderDiv(this.props, {flex: 'auto'});
     }
 }
 
 @HoistComponent()
 export class VFrame extends Component {
     render() {
-        return createDiv(this.props, {flex: 'auto', flexDirection: 'column'});
+        return renderDiv(this.props, {flex: 'auto', flexDirection: 'column'});
     }
 }
 
 @HoistComponent()
 export class HFrame extends Component {
     render() {
-        return createDiv(this.props, {flex: 'auto', flexDirection: 'row'});
+        return renderDiv(this.props, {flex: 'auto', flexDirection: 'row'});
     }
 }
 
@@ -74,7 +75,7 @@ export class HFrame extends Component {
 @HoistComponent()
 export class Spacer extends Component {
     render() {
-        return createDiv(this.props, {flex: 'none'});
+        return renderDiv(this.props, {flex: 'none'});
     }
 }
 
@@ -85,7 +86,7 @@ export class Spacer extends Component {
 @HoistComponent()
 export class Filler extends Component {
     render() {
-        return createDiv(this.props, {flex: 'auto'});
+        return renderDiv(this.props, {flex: 'auto'});
     }
 }
 
@@ -96,12 +97,14 @@ export class Filler extends Component {
 @HoistComponent()
 export class Viewport extends Component {
     render() {
-        return createDiv(this.props, {
-            top: 0,
-            left: 0,
+        return renderDiv(this.props, {
+            style: {
+                top: 0,
+                left: 0,
+                position: 'fixed'
+            },
             width: '100%',
-            height: '100%',
-            position: 'fixed'
+            height: '100%'
         });
     }
 }
@@ -109,13 +112,15 @@ export class Viewport extends Component {
 //-----------------------
 // Implementation
 //-----------------------
-const div = elemFactory('div');
+const div = elemFactory('div', {promoteLayoutStyles: true});
 
-function createDiv(appProps, defaultProps = {}) {
-    const props = Object.assign(
-        {display: 'flex', overflow: 'hidden', position: 'relative'},
+function renderDiv(appProps, defaultProps = {}) {
+    const conf = Object.assign({}, appProps); // need a mutable object here for defaultsDeep
+
+    const props = defaultsDeep(
+        conf,
         defaultProps,
-        appProps
+        {display: 'flex', overflow: 'hidden', style: {position: 'relative'}},
     );
 
     delete props.isCollapsed;
