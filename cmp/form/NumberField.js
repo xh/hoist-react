@@ -32,9 +32,9 @@ export class NumberField extends HoistField {
         zeroPad: PT.bool,
         /** Set to true for advanced input evaluation, defaults to false.
             Inputs suffixed with k, m, or b will be calculated as thousands, millions, or billions respectively */
-        supportShorthandUnits: PT.bool,
+        enableShorthandUnits: PT.bool,
         /** Whether to display large values with commas */
-        displayWithDelimiters: PT.bool,
+        displayWithCommas: PT.bool,
         /** Alignment of numbers in field, default to 'right' */
         textAlign: PT.oneOf(['left', 'right'])
     };
@@ -44,7 +44,7 @@ export class NumberField extends HoistField {
     delegateProps = ['className', 'min', 'max', 'placeholder'];
 
     render() {
-        const {width, style, supportShorthandUnits} = this.props,
+        const {width, style, enableShorthandUnits} = this.props,
             textAlign = this.props.textAlign || 'right';
 
         return numericInput({
@@ -55,7 +55,7 @@ export class NumberField extends HoistField {
             onFocus: this.onFocus,
             style: {textAlign, width, ...style},
             buttonPosition: 'none',
-            allowNumericCharactersOnly: !supportShorthandUnits,
+            allowNumericCharactersOnly: !enableShorthandUnits,
             ...this.getDelegateProps()
         });
     }
@@ -80,7 +80,7 @@ export class NumberField extends HoistField {
             zeroPad = !!props.zeroPad,
             formattedVal = fmtNumber(value, {precision, zeroPad});
 
-        return this.props.displayWithDelimiters ? formattedVal : formattedVal.replace(/,/g, '');
+        return props.displayWithCommas ? formattedVal : formattedVal.replace(/,/g, '');
     }
 
     parseValue(value) {
