@@ -14,9 +14,7 @@ import {Classes, overlay, spinner} from 'hoist/kit/blueprint';
 import './Mask.scss';
 
 /**
- * LoadMask.
- *
- * The mask can be explicitly shown, or reactively bound to a PromiseModel.
+ * Mask with spinner. The mask can be explicitly shown or reactively bound to a PromiseModel.
  */
 @HoistComponent()
 export class LoadMask extends Component {
@@ -27,7 +25,7 @@ export class LoadMask extends Component {
         model: PT.object,
         /** Dictates if this mask should be contained within its parent, if set to false will fill the viewport */
         inline: PT.bool,
-        /** A text to be displayed under the loading spinner image */
+        /** Text to be displayed under the loading spinner image */
         text: PT.string
     };
     
@@ -36,7 +34,6 @@ export class LoadMask extends Component {
             isInline = inline !== false;
 
         if (!(isDisplayed || (model && model.isPending))) return null;
-        text = text ? box({cls: 'xh-mask-text', item: text}) : null;
 
         return overlay({
             cls: `xh-mask ${Classes.OVERLAY_SCROLL_CONTAINER}`,
@@ -44,21 +41,17 @@ export class LoadMask extends Component {
             isOpen: true,
             canEscapeKeyClose: false,
             usePortal: !isInline,
-            item: this.getMaskBody(text)
+            item: vbox({
+                cls: 'xh-mask-body',
+                items: [
+                    spinner(),
+                    vspacer(10),
+                    text ? box({cls: 'xh-mask-text', item: text}) : null
+                ]
+            })
         });
     }
 
-    //-----------------
-    // Implementation
-    //-----------------
-    getMaskBody(text) {
-        return vbox({
-            cls: 'xh-mask-body',
-            alignItems: 'center',
-            justifyContent: 'center',
-            item: [spinner(), vspacer(10), text]
-        });
-    }
 }
 export const loadMask = elemFactory(LoadMask);
 

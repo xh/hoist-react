@@ -14,7 +14,7 @@ import './Mask.scss';
 
 /**
  * Mask for disabled or inactive components.
- * Note: Mask is built into Panel via its masked prop. See: Panel.masked.
+ * Note: Mask is built into Panel via its masked prop.
  */
 @HoistComponent()
 export class Mask extends Component {
@@ -28,8 +28,6 @@ export class Mask extends Component {
         let {isDisplayed, text} = this.props;
         if (!isDisplayed) return null;
 
-        text = text ? box({cls: 'xh-mask-text', item: text}) : null;
-
         return overlay({
             cls: `xh-mask ${Classes.OVERLAY_SCROLL_CONTAINER}`,
             autoFocus: false,
@@ -38,12 +36,7 @@ export class Mask extends Component {
             usePortal: false,
             item: box({
                 cls: 'xh-mask-body',
-                alignItems: 'center',
-                justifyContent: 'center',
-                style: {
-                    textAlign: 'center'
-                },
-                item: text
+                item: text ? box({cls: 'xh-mask-text', item: text}) : null
             })
         });
     }

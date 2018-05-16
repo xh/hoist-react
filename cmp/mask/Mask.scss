@@ -8,11 +8,19 @@
     background-color: var(--xh-mask-bg);
   }
 
-  .xh-mask-text {
-    border-radius: var(--xh-border-radius-px);
-    padding: var(--xh-pad-half-px);
-    background-color: var(--xh-mask-content-bg);
-    color: var(--xh-mask-content-color);
+  .xh-mask-body {
+    align-items: center;
+    justify-content: center;
+
+    .xh-mask-text {
+      max-width: 200px;
+      text-align: center;
+      border-radius: var(--xh-border-radius-px);
+      padding: var(--xh-pad-half-px);
+      background-color: var(--xh-mask-text-bg);
+      color: var(--xh-mask-text-color);
+    }
+
   }
 
 }
