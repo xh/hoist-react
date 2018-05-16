@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import {castArray, defaults, isArray, isPlainObject, isString} from 'lodash';
+import {castArray, defaults, forOwn, isArray, isEmpty, isNumber, isPlainObject, isString} from 'lodash';
 import {isReactElement} from 'hoist/utils/ReactUtils';
 import {Exception} from 'hoist/exception';
 
@@ -57,7 +57,13 @@ export function elem(type, config = {}) {
         }
     });
 
-    // 4) process children
+    // 4) Process promoted style props
+    const processedStyles = processStyleProps(props);
+    if (!isEmpty(processedStyles)) {
+        props.style = processedStyles;
+    }
+
+    // 5) Process children
     items = item || items;
     items = castArray(items);
     
@@ -76,7 +82,7 @@ export function elem(type, config = {}) {
             throw Exception.create(`Unable to create child element for [${it.toString()}].`);
         });
 
-    // 4a) Remove omitted children last, after elements generated from configs have been created.
+    // 5a) Remove omitted children last, after elements generated from configs have been created.
     items = items.filter(it => !it.props || !it.props.xhomit);
 
     return React.createElement(type, props, ...items);
@@ -120,4 +126,50 @@ function normalizeArgs(args) {
     }
     // Assume > 1 args or single, non-config, non-array args are children.
     return {items: args};
+}
+
+const styleKeys = [
+    'display',
+    'top', 'left', 'position',
+    'alignItems', 'alignSelf', 'alignContent',
+    'flex', 'flexBasis', 'flexDirection', 'flexGrow', 'flexShrink', 'flexWrap',
+    'overflow', 'overflowX', 'overflowY',
+    'justifyContent', 'order',
+    'margin', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft',
+    'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
+    'height', 'minHeight', 'maxHeight',
+    'width', 'minWidth', 'maxWidth'
+];
+
+const dimFragments = ['margin', 'padding', 'height', 'width'],
+    flexVals = ['flex', 'flexGrow', 'flexShrink'];
+
+function processStyleProps(appProps) {
+    const props = Object.assign({}, appProps);
+
+    // 1) Convert raw 'flex' number to string
+    flexVals.forEach(k => {
+        const val = appProps[k];
+        if (isNumber(val)) props[k] = val.toString();
+    });
+
+    // 2) Translate raw dimensions to pixels
+    forOwn(appProps, (val, key) => {
+        const k = key.toLowerCase();
+        if (isNumber(val) && dimFragments.some(it => k.includes(it))) {
+            props[k] = val + 'px';
+        }
+    });
+
+    // 3) Move properties of interest to 'style'
+    const style = Object.assign({}, props.style);
+    styleKeys.forEach(k => {
+        const val = props[k];
+        if (val !== undefined) {
+            style[k] = val;
+            delete appProps[k];
+        }
+    });
+
+    return isEmpty(style) ? null : style;
 }

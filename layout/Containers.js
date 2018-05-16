@@ -82,22 +82,7 @@ export function Viewport(props) {
 //-----------------------
 // Implementation
 //-----------------------
-const styleKeys = [
-    'display',
-    'top', 'left', 'position',
-    'alignItems', 'alignSelf', 'alignContent',
-    'flex', 'flexBasis', 'flexDirection', 'flexGrow', 'flexShrink', 'flexWrap',
-    'overflow', 'overflowX', 'overflowY',
-    'justifyContent', 'order',
-    'margin', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft',
-    'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
-    'height', 'minHeight', 'maxHeight',
-    'width', 'minWidth', 'maxWidth'
-];
-
-const dimFragments = ['margin', 'padding', 'height', 'width'],
-    flexVals = ['flex', 'flexGrow', 'flexShrink'],
-    div = elemFactory('div');
+const div = elemFactory('div');
 
 function createDiv(appProps, defaultProps = {}) {
     const props = Object.assign(
@@ -105,33 +90,6 @@ function createDiv(appProps, defaultProps = {}) {
         defaultProps,
         appProps
     );
-
-    // 1) Convert raw 'flex' number to string
-    flexVals.forEach(k => {
-        const val = appProps[k];
-        if (isNumber(val)) props[k] = val.toString();
-    });
-
-    // 2) Translate raw dimensions to pixels
-    forOwn(appProps, (val, key) => {
-        const k = key.toLowerCase();
-        if (isNumber(val) && dimFragments.some(it => k.includes(it))) {
-            props[k] = val + 'px';
-        }
-    });
-
-    // 3) Move properties of interest to 'style'
-    const style = Object.assign({}, props.style);
-    styleKeys.forEach(k => {
-        const val = props[k];
-        if (val !== undefined) {
-            style[k] = val;
-            delete props[k];
-        }
-    });
-    if (!isEmpty(style)) {
-        props.style = style;
-    }
 
     return div(props);
 }
