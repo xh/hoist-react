@@ -6,9 +6,9 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from 'hoist/core';
-import {filler, hframe, vframe} from 'hoist/layout';
+import {filler, hframe} from 'hoist/layout';
 import {grid} from 'hoist/grid';
-import {loadMask, resizable, storeFilterField, toolbar} from 'hoist/cmp';
+import {loadMask, panel, resizable, storeFilterField, toolbar} from 'hoist/cmp';
 
 import {logViewerDisplay} from './LogViewerDisplay';
 import {LogViewerModel} from './LogViewerModel';
@@ -34,21 +34,21 @@ export class LogViewer extends Component {
                     side: 'right',
                     contentSize: 250,
                     isOpen: true,
-                    item: vframe(
-                        grid({model: files}),
-                        toolbar(
+                    item: panel({
+                        item: grid({model: files}),
+                        bbar: toolbar(
                             filler(),
                             storeFilterField({
                                 store: files.store,
                                 fields: ['filename']
                             })
                         )
-                    )
+                    })
                 }),
-                vframe(
-                    logViewerToolbar({model}),
-                    logViewerDisplay({model})
-                ),
+                panel({
+                    tbar: logViewerToolbar({model}),
+                    item: logViewerDisplay({model})
+                }),
                 loadMask({model: loadModel})
             ]
         });

@@ -20,10 +20,10 @@ export class GridModel {
 
     // Immutable public properties
     store = null;
-    gridApi = null;
     selection = null;
     contextMenuFn = null;
 
+    @observable.ref agApi = null;
     @observable.ref columns = [];
     @observable.ref sortBy = [];
     @observable groupBy = null;
@@ -69,9 +69,9 @@ export class GridModel {
     }
 
     exportDataAsExcel(params) {
-        if (!this.gridApi) return;
+        if (!this.agApi) return;
         params.processCellCallback = this.formatValuesForExport;
-        this.gridApi.exportDataAsExcel(params);
+        this.agApi.exportDataAsExcel(params);
     }
 
     /**
@@ -84,6 +84,11 @@ export class GridModel {
             recs = orderBy(store.records, colIds, sorts);
 
         if (recs.length) selection.select(recs[0]);
+    }
+
+    @action
+    setAgApi(agApi) {
+        this.agApi = agApi;
     }
 
     @action

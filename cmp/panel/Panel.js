@@ -11,6 +11,7 @@ import {elemFactory, HoistComponent} from 'hoist/core';
 import {vframe, vbox} from 'hoist/layout';
 import {mask} from 'hoist/cmp';
 import {panelHeader} from './impl/PanelHeader';
+import {castArray} from 'lodash';
 
 
 /**
@@ -28,9 +29,9 @@ export class Panel extends Component {
         /** Items to be added to the right-side of the panel's header. */
         headerItems: PT.node,
         /** A toolbar to be docked at the top of the panel. */
-        topToolbar: PT.element,
+        tbar: PT.element,
         /** A toolbar to be docked at the bottom of the panel. */
-        bottomToolbar: PT.element,
+        bbar: PT.element
         /** Whether this panel should be rendered with a mask, use to disable interaction with panel*/
         masked: PT.bool
     };
@@ -38,8 +39,9 @@ export class Panel extends Component {
     baseCls = 'xh-panel';
 
     render() {
-        // Note: Padding is destructured here to be discarded because it breaks layout
-        const {className, topToolbar, bottomToolbar, title, icon, headerItems, masked, padding, children, ...rest} = this.props,
+        // Note: Padding is destructured here to be discarded because it breaks layout.
+        //       Similarly, isCollapsed must not be rendered as a custom attribute in the DOM.
+        const {className, tbar, bbar, title, icon, headerItems, padding, isCollapsed, children, ...rest} = this.props,
             wrapper = this.props.width || this.props.height ? vbox : vframe;
 
         return wrapper({
@@ -47,9 +49,9 @@ export class Panel extends Component {
             ...rest,
             items: [
                 panelHeader({title, icon, headerItems}),
-                topToolbar || null,
+                tbar || null,
                 ...(castArray(children)),
-                bottomToolbar || null,
+                bbar || null,
                 mask({isDisplayed: masked})
             ]
         });

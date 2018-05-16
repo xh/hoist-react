@@ -8,8 +8,8 @@ import {Component} from 'react';
 import {button} from 'hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from 'hoist/core';
 import {grid} from 'hoist/grid';
-import {vframe, filler} from 'hoist/layout';
-import {textField, dayField, exportButton, refreshButton, storeCountLabel, toolbar, toolbarSep} from 'hoist/cmp';
+import {filler} from 'hoist/layout';
+import {textField, dayField, exportButton, panel, refreshButton, storeCountLabel, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import {activityDetail} from './ActivityDetail';
@@ -19,17 +19,19 @@ export class ActivityGrid extends Component {
 
     render() {
         const {model} = this;
-        return vframe(
-            this.renderToolbar(),
-            grid({
-                model: model.gridModel,
-                gridOptions: {
-                    rowSelection: 'single',
-                    onRowDoubleClicked: this.onRowDoubleClicked
-                }
-            }),
-            activityDetail({model})
-        );
+        return panel({
+            tbar: this.renderToolbar(),
+            items: [
+                grid({
+                    model: model.gridModel,
+                    agOptions: {
+                        rowSelection: 'single',
+                        onRowDoubleClicked: this.onRowDoubleClicked
+                    }
+                }),
+                activityDetail({model})
+            ]
+        });
     }
 
     renderToolbar() {

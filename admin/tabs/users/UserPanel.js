@@ -7,8 +7,8 @@
 import {Component} from 'react';
 import {HoistComponent} from 'hoist/core';
 import {grid} from 'hoist/grid';
-import {vframe, filler} from 'hoist/layout';
-import {refreshButton, storeCountLabel, storeFilterField, toolbar} from 'hoist/cmp';
+import {filler} from 'hoist/layout';
+import {panel, refreshButton, storeCountLabel, storeFilterField, toolbar} from 'hoist/cmp';
 
 import {UserModel} from './UserModel';
 
@@ -18,15 +18,15 @@ export class UserPanel extends Component {
     localModel = new UserModel();
 
     render() {
-        return vframe(
-            this.renderToolbar(),
-            grid({
+        return panel({
+            tbar: this.renderToolbar(),
+            item: grid({
                 model: this.model.gridModel,
-                gridOptions: {
+                agOptions: {
                     rowSelection: 'single'
                 }
             })
-        );
+        });
     }
 
     renderToolbar() {
