@@ -118,5 +118,7 @@ function createDiv(appProps, defaultProps = {}) {
         appProps
     );
 
+    delete props.isCollapsed;
+
     return div(props);
 }
