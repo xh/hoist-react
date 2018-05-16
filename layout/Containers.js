@@ -24,25 +24,21 @@ import {isNumber, forOwn, isEmpty} from 'lodash';
 @HoistComponent()
 export class Box extends Component {
     render() {
-        const {isCollapsed, ...rest} = this.props;
-        return createDiv( ...rest);
+        return createDiv(this.props);
     }
 }
 
 @HoistComponent()
 export class VBox extends Component {
     render() {
-        const {isCollapsed, ...rest} = this.props;
-        return createDiv(...rest, {flexDirection: 'column'});
+        return createDiv(this.props, {flexDirection: 'column'});
     }
-
 }
 
 @HoistComponent()
 export class HBox extends Component {
     render() {
-        const {isCollapsed, ...rest} = this.props;
-        return createDiv(...rest, {flexDirection: 'row'});
+        return createDiv(this.props, {flexDirection: 'row'});
     }
 }
 
@@ -54,24 +50,21 @@ export class HBox extends Component {
 @HoistComponent()
 export class Frame extends Component {
     render() {
-        const {isCollapsed, ...rest} = this.props;
-        return createDiv(...rest, {flex: 'auto'});
+        return createDiv(this.props, {flex: 'auto'});
     }
 }
 
 @HoistComponent()
 export class VFrame extends Component {
     render() {
-        const {isCollapsed, ...rest} = this.props;
-        return createDiv(...rest, {flex: 'auto', flexDirection: 'column'});
+        return createDiv(this.props, {flex: 'auto', flexDirection: 'column'});
     }
 }
 
 @HoistComponent()
 export class HFrame extends Component {
     render() {
-        const {isCollapsed, ...rest} = this.props;
-        return createDiv(...rest, {flex: 'auto', flexDirection: 'row'});
+        return createDiv(this.props, {flex: 'auto', flexDirection: 'row'});
     }
 }
 
@@ -82,8 +75,7 @@ export class HFrame extends Component {
 @HoistComponent()
 export class Spacer extends Component {
     render() {
-        const {isCollapsed, ...rest} = this.props;
-        return createDiv(...rest, {flex: 'none'});
+        return createDiv(this.props, {flex: 'none'});
     }
 }
 
@@ -94,8 +86,7 @@ export class Spacer extends Component {
 @HoistComponent()
 export class Filler extends Component {
     render() {
-        const {isCollapsed, ...rest} = this.props;
-        return createDiv(...rest, {flex: 'auto'});
+        return createDiv(this.props, {flex: 'auto'});
     }
 }
 
@@ -106,8 +97,7 @@ export class Filler extends Component {
 @HoistComponent()
 export class Viewport extends Component {
     render() {
-        const {isCollapsed, ...rest} = this.props;
-        return createDiv(...rest, {
+        return createDiv(this.props, {
             top: 0,
             left: 0,
             width: '100%',
