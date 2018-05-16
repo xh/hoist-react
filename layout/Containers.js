@@ -4,7 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {elemFactory} from 'hoist/core';
+import {Component} from 'react';
+import {elemFactory, HoistComponent} from 'hoist/core';
 import {isNumber, forOwn, isEmpty} from 'lodash';
 
 /**
@@ -19,64 +20,92 @@ import {isNumber, forOwn, isEmpty} from 'lodash';
  *
  * See also VBox, HBox. 
  */
-export function Box(props) {
-    return createDiv(props);
+
+@HoistComponent()
+export class Box extends Component {
+    render() {
+        return createDiv(this.props);
+    }
 }
 
-export function VBox(props) {
-    return createDiv(props,  {flexDirection: 'column'});
+@HoistComponent()
+export class VBox extends Component {
+    render() {
+        return createDiv(this.props, {flexDirection: 'column'});
+    }
+
 }
 
-export function HBox(props) {
-    return createDiv(props, {flexDirection: 'row'});
+@HoistComponent()
+export class HBox extends Component {
+    render() {
+        return createDiv(this.props, {flexDirection: 'row'});
+    }
 }
-
 
 /**
  * A Box class that flexes to grow and stretch within its *own* parent.
  *
  * This class is useful for creating nested layouts.  See also VFrame, and HFrame.
  */
-export function Frame(props) {
-    return createDiv(props, {flex: 'auto'});
+@HoistComponent()
+export class Frame extends Component {
+    render() {
+        return createDiv(this.props, {flex: 'auto'});
+    }
 }
 
-export function VFrame(props) {
-    return createDiv(props, {flex: 'auto', flexDirection: 'column'});
+@HoistComponent()
+export class VFrame extends Component {
+    render() {
+        return createDiv(this.props, {flex: 'auto', flexDirection: 'column'});
+    }
 }
 
-export function HFrame(props) {
-    return createDiv(props, {flex: 'auto', flexDirection: 'row'});
+@HoistComponent()
+export class HFrame extends Component {
+    render() {
+        return createDiv(this.props, {flex: 'auto', flexDirection: 'row'});
+    }
 }
 
 /**
  * A component useful for inserting fixed spacing along the main axis of its
  * parent container.
  */
-export function Spacer(props) {
-    return createDiv(props, {flex: 'none'});
+@HoistComponent()
+export class Spacer extends Component {
+    render() {
+        return createDiv(this.props, {flex: 'none'});
+    }
 }
 
 /**
  * A component useful for stretching to soak up space along the main axis of its
  * parent container.
  */
-export function Filler(props) {
-    return createDiv(props, {flex: 'auto'});
+@HoistComponent()
+export class Filler extends Component {
+    render() {
+        return createDiv(this.props, {flex: 'auto'});
+    }
 }
 
 /**
  * A container for the top level of the application.
  * Will stretch to encompass the entire browser
  */
-export function Viewport(props) {
-    return createDiv(props, {
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        position: 'fixed'
-    });
+@HoistComponent()
+export class Viewport extends Component {
+    render() {
+        return createDiv(this.props, {
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            position: 'fixed'
+        });
+    }
 }
 
 //-----------------------
@@ -132,6 +161,9 @@ function createDiv(appProps, defaultProps = {}) {
     if (!isEmpty(style)) {
         props.style = style;
     }
+
+    // Remove HoistComponent prop, not intended to be rendered to the DOM
+    delete props.isCollapsed;
 
     return div(props);
 }
