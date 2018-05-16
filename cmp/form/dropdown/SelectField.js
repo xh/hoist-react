@@ -28,21 +28,28 @@ export class SelectField extends BaseDropdownField {
 
     delegateProps = ['className', 'disabled'];
 
-    render() {
-        let {style, width, placeholder, disabled, options} = this.props,
-            {renderValue} = this;
+    constructor(props) {
+        super(props);
+        this.internalOptions = this.normalizeOptions(props.options);
+    }
 
-        this.options = this.normalizeOptions(options);
+    componentDidMount() {
+        this.addAutorun(() => this.internalOptions = this.normalizeOptions(this.props.options));
+    }
+
+    render() {
+        let {style, width, placeholder, disabled} = this.props,
+            {renderValue, internalOptions} = this;
 
         return select({
             popoverProps: {popoverClassName: Classes.MINIMAL},
-            $items: this.options,
+            $items: internalOptions,
             onItemSelect: this.onItemSelect,
             itemRenderer: this.getOptionRenderer(),
             filterable: false,
             item: button({
                 rightIcon: 'caret-down',
-                text: this.getDisplayValue(renderValue, this.options, placeholder),
+                text: this.getDisplayValue(renderValue, internalOptions, placeholder),
                 style: {...style, width},
                 ...this.getDelegateProps()
             }),
