@@ -24,14 +24,16 @@ import {isNumber, forOwn, isEmpty} from 'lodash';
 @HoistComponent()
 export class Box extends Component {
     render() {
-        return createDiv(this.props);
+        const {isCollapsed, ...rest} = this.props;
+        return createDiv( ...rest);
     }
 }
 
 @HoistComponent()
 export class VBox extends Component {
     render() {
-        return createDiv(this.props, {flexDirection: 'column'});
+        const {isCollapsed, ...rest} = this.props;
+        return createDiv(...rest, {flexDirection: 'column'});
     }
 
 }
@@ -39,7 +41,8 @@ export class VBox extends Component {
 @HoistComponent()
 export class HBox extends Component {
     render() {
-        return createDiv(this.props, {flexDirection: 'row'});
+        const {isCollapsed, ...rest} = this.props;
+        return createDiv(...rest, {flexDirection: 'row'});
     }
 }
 
@@ -51,21 +54,24 @@ export class HBox extends Component {
 @HoistComponent()
 export class Frame extends Component {
     render() {
-        return createDiv(this.props, {flex: 'auto'});
+        const {isCollapsed, ...rest} = this.props;
+        return createDiv(...rest, {flex: 'auto'});
     }
 }
 
 @HoistComponent()
 export class VFrame extends Component {
     render() {
-        return createDiv(this.props, {flex: 'auto', flexDirection: 'column'});
+        const {isCollapsed, ...rest} = this.props;
+        return createDiv(...rest, {flex: 'auto', flexDirection: 'column'});
     }
 }
 
 @HoistComponent()
 export class HFrame extends Component {
     render() {
-        return createDiv(this.props, {flex: 'auto', flexDirection: 'row'});
+        const {isCollapsed, ...rest} = this.props;
+        return createDiv(...rest, {flex: 'auto', flexDirection: 'row'});
     }
 }
 
@@ -76,7 +82,8 @@ export class HFrame extends Component {
 @HoistComponent()
 export class Spacer extends Component {
     render() {
-        return createDiv(this.props, {flex: 'none'});
+        const {isCollapsed, ...rest} = this.props;
+        return createDiv(...rest, {flex: 'none'});
     }
 }
 
@@ -87,7 +94,8 @@ export class Spacer extends Component {
 @HoistComponent()
 export class Filler extends Component {
     render() {
-        return createDiv(this.props, {flex: 'auto'});
+        const {isCollapsed, ...rest} = this.props;
+        return createDiv(...rest, {flex: 'auto'});
     }
 }
 
@@ -98,7 +106,8 @@ export class Filler extends Component {
 @HoistComponent()
 export class Viewport extends Component {
     render() {
-        return createDiv(this.props, {
+        const {isCollapsed, ...rest} = this.props;
+        return createDiv(...rest, {
             top: 0,
             left: 0,
             width: '100%',
@@ -161,9 +170,6 @@ function createDiv(appProps, defaultProps = {}) {
     if (!isEmpty(style)) {
         props.style = style;
     }
-
-    // Remove HoistComponent prop, not intended to be rendered to the DOM
-    delete props.isCollapsed;
 
     return div(props);
 }
