@@ -7,9 +7,9 @@
 import {Component} from 'react';
 import {HoistComponent} from 'hoist/core';
 import {grid} from 'hoist/grid';
-import {filler, vframe} from 'hoist/layout';
+import {filler} from 'hoist/layout';
 import {button} from 'hoist/kit/blueprint';
-import {refreshButton, storeCountLabel, storeFilterField, toolbar, toolbarSep} from 'hoist/cmp';
+import {panel, refreshButton, storeCountLabel, storeFilterField, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 import {ServiceModel} from './ServiceModel';
 
@@ -19,16 +19,16 @@ export class ServicePanel extends Component {
     localModel = new ServiceModel();
 
     render() {
-        return vframe(
-            this.renderToolbar(),
-            grid({
+        return panel({
+            tbar: this.renderToolbar(),
+            item: grid({
                 model: this.model.gridModel,
                 agOptions: {
                     rowSelection: 'multiple',
                     groupRowInnerRenderer: this.groupRowInnerRenderer
                 }
             })
-        );
+        });
     }
 
     renderToolbar() {
