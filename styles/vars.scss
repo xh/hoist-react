@@ -94,8 +94,8 @@ body {
   --xh-font-size-small-px: calc(var(--xh-font-size-small) * 1px);
 
   // Mask
-  --xh-mask-bg: var(--mask-bg, #{mc-trans('blue-grey', '900', 0.4)});
-  --xh-mask-content-bg: var(--mask-content-bg, #{mc-trans('blue-grey', '50', 0.2)});
+  --xh-mask-bg: var(--mask-bg, #{mc-trans('blue-grey', '300', 0.3)});
+  --xh-mask-content-bg: var(--mask-content-bg, #{mc('blue-grey', '100')});
   --xh-mask-content-color: var(--mask-content-color, var(--xh-text-color));
 
   // Navbar (top app toolbar)
@@ -191,8 +191,9 @@ body.xh-dark {
   --xh-grid-header-bg: var(--grid-header-bg, var(--xh-black));
 
   // Mask
-  --xh-mask-content-bg: var(--mask-content-bg, #{mc-trans('grey', '900', 0.2)});
-  --xh-mask-content-color: var(--mask-content-color, var(--xh-blue-gray-dark));
+  --xh-mask-bg: var(--mask-bg, #{mc-trans('blue-grey', '900', 0.2)});
+  --xh-mask-content-bg: var(--mask-content-bg, #{mc-trans('grey', '900', 0.1)});
+  --xh-mask-content-color: var(--mask-content-color, var(--xh-text-color));
 
   // Navbar
   --xh-navbar-border-color: var(--navbar-border-color, #{mc('blue-grey', '700')});

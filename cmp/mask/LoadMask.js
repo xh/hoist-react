@@ -8,7 +8,7 @@
 import {PropTypes as PT} from 'prop-types';
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from 'hoist/core';
-import {vbox, box} from 'hoist/layout';
+import {vbox, vspacer, box} from 'hoist/layout';
 import {Classes, overlay, spinner} from 'hoist/kit/blueprint';
 
 import './Mask.scss';
@@ -56,7 +56,7 @@ export class LoadMask extends Component {
             cls: 'xh-mask-body',
             alignItems: 'center',
             justifyContent: 'center',
-            item: [spinner(), text]
+            item: [spinner(), vspacer(10), text]
         });
     }
 }
