@@ -14,6 +14,7 @@ import './Mask.scss';
 
 /**
  * Mask for disabled or inactive components.
+ * Note: Mask is built into Panel via its masked prop. See: Panel.masked.
  */
 @HoistComponent()
 export class Mask extends Component {
