@@ -10,7 +10,7 @@ import numeral from 'numeral';
 
 import {Exception} from 'hoist/exception';
 
-import {createRenderer, saveOriginal} from './FormatUtils';
+import {createRenderer, createElFormatter, saveOriginal} from './FormatUtils';
 import {fmtSpan} from './FormatMisc';
 
 const THOUSAND = 1000,
@@ -276,3 +276,11 @@ export const numberRenderer = createRenderer(fmtNumber),
     quantityRenderer = createRenderer(fmtQuantity),
     priceRenderer = createRenderer(fmtPrice),
     percentRenderer = createRenderer(fmtPercent);
+
+export const fmtNumberEl = createElFormatter(fmtNumber),
+    fmtThousandsEl = createElFormatter(fmtThousands),
+    fmtMillionsEl = createElFormatter(fmtMillions),
+    fmtBillionsEl = createElFormatter(fmtBillions),
+    fmtQuantityEl = createElFormatter(fmtQuantity),
+    fmtPriceEl = createElFormatter(fmtPrice),
+    fmtPercentEl = createElFormatter(fmtPercent);

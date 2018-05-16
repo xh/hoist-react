@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {span} from 'hoist/layout';
 import {defaults} from 'lodash';
 
 /**
@@ -24,6 +25,18 @@ export function createRenderer(formatter) {
                 val = (typeof v === 'object') ? v.value : v;
             return formatter(val, formatterConfig);
         };
+    };
+}
+
+/**
+ * Generate a formatter that returns a React Element.
+ *
+ * @param {function} [formatter] - an existing formatter method.
+ */
+export function createElFormatter(formatter) {
+    return function(v, opts) {
+        const html = {__html: formatter(v, opts)};
+        return span({dangerouslySetInnerHTML: html});
     };
 }
 
