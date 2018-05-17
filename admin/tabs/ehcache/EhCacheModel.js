@@ -9,6 +9,7 @@ import {XH, HoistModel} from 'hoist/core';
 import {GridModel} from 'hoist/cmp/grid';
 import {UrlStore} from 'hoist/data';
 import {baseCol} from 'hoist/columns/Core';
+import {ToastManager} from 'hoist/toast';
 
 import {nameCol} from '../../columns/Columns';
 
