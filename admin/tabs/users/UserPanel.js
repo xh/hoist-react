@@ -8,7 +8,8 @@ import {Component} from 'react';
 import {HoistComponent} from 'hoist/core';
 import {grid} from 'hoist/cmp/grid';
 import {filler} from 'hoist/cmp/layout';
-import {panel, refreshButton, storeCountLabel, storeFilterField, toolbar} from 'hoist/cmp';
+import {panel, refreshButton, toolbar} from 'hoist/cmp';
+import {storeCountLabel, storeFilterField} from 'hoist/cmp/store';
 
 import {UserModel} from './UserModel';
 

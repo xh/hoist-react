@@ -17,6 +17,4 @@ export * from './toolbar';
 export * from './resizable';
 export * from './mask';
 export * from './LockoutPanel';
-export * from './StoreCountLabel';
-export * from './StoreFilterField';
 export * from './ToastManager';

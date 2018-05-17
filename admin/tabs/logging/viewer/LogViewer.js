@@ -8,7 +8,8 @@ import {Component} from 'react';
 import {HoistComponent} from 'hoist/core';
 import {filler, hframe} from 'hoist/cmp/layout';
 import {grid} from 'hoist/cmp/grid';
-import {loadMask, panel, resizable, storeFilterField, toolbar} from 'hoist/cmp';
+import {loadMask, panel, resizable, toolbar} from 'hoist/cmp';
+import {storeFilterField} from 'hoist/cmp/store';
 
 import {logViewerDisplay} from './LogViewerDisplay';
 import {LogViewerModel} from './LogViewerModel';
