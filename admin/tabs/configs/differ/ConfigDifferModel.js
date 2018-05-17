@@ -11,7 +11,7 @@ import {castArray, isEqual, remove, trimEnd} from 'lodash';
 import {pluralize} from 'hoist/utils/JsUtils';
 import {XH, HoistModel} from 'hoist/core';
 import {LocalStore} from 'hoist/data';
-import {GridModel} from 'hoist/grid';
+import {GridModel} from 'hoist/cmp/grid';
 import {MessageModel, ToastManager, StoreContextMenu} from 'hoist/cmp';
 import {baseCol} from 'hoist/columns/Core';
 import {nameCol} from 'hoist/admin/columns/Columns';

@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {elemFactory, HoistComponent, XH} from 'hoist/core';
 import {button, dialog} from 'hoist/kit/blueprint';
 import {filler, fragment} from 'hoist/layout';
-import {grid} from 'hoist/grid';
+import {grid} from 'hoist/cmp/grid';
 import {comboField, label, message, panel, toolbar} from 'hoist/cmp';
 
 import {configDifferDetail} from './ConfigDifferDetail';

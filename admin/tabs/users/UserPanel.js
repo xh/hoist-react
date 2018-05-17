@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from 'hoist/core';
-import {grid} from 'hoist/grid';
+import {grid} from 'hoist/cmp/grid';
 import {filler} from 'hoist/layout';
 import {panel, refreshButton, storeCountLabel, storeFilterField, toolbar} from 'hoist/cmp';
 

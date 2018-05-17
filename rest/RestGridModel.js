@@ -6,7 +6,7 @@
  */
 import {XH, HoistModel} from 'hoist/core';
 import {action} from 'hoist/mobx';
-import {GridModel} from 'hoist/grid';
+import {GridModel} from 'hoist/cmp/grid';
 import {MessageModel, StoreContextMenu} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 import {pluralize} from 'hoist/utils/JsUtils';

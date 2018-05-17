@@ -8,7 +8,7 @@ import {XH, HoistModel} from 'hoist/core';
 import {debounce, find} from 'lodash';
 import {action, observable, setter} from 'hoist/mobx';
 import {LastPromiseModel} from 'hoist/promise';
-import {GridModel} from 'hoist/grid';
+import {GridModel} from 'hoist/cmp/grid';
 import {UrlStore} from 'hoist/data';
 import {baseCol} from 'hoist/columns/Core';
 

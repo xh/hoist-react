@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {button} from 'hoist/kit/blueprint';
 import {HoistComponent} from 'hoist/core';
-import {grid} from 'hoist/grid';
+import {grid} from 'hoist/cmp/grid';
 import {filler} from 'hoist/layout';
 import {textField, dayField, exportButton, panel, refreshButton, storeCountLabel, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
