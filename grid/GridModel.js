@@ -9,6 +9,7 @@ import {HoistModel} from 'hoist/core';
 import {action, observable} from 'hoist/mobx';
 import {StoreSelectionModel} from 'hoist/data';
 import {StoreContextMenu} from 'hoist/cmp';
+import {Icon} from 'hoist/icon';
 import {castArray, find, isString, orderBy} from 'lodash';
 import {GridColumnChooserModel} from './GridColumnChooserModel';
 
@@ -40,7 +41,8 @@ export class GridModel {
             'autoSizeAll',
             '-',
             {
-                text: 'Column Chooser...',
+                text: 'Columns...',
+                icon: Icon.grid(),
                 hidden: !this.columnChooserModel,
                 action: () => {
                     this.columnChooserModel.open();

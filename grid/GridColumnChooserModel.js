@@ -8,22 +8,19 @@ import {HoistModel} from 'hoist/core';
 import {LeftRightChooserModel} from 'hoist/cmp/leftRightChooser/LeftRightChooserModel';
 import {action, observable} from 'hoist/mobx';
 
-/**
- * Core Model for a Grid, specifying the grid's data store, column definitions,
- * sorting/grouping/selection state, and context menu configuration.
- */
 @HoistModel()
 export class GridColumnChooserModel {
 
-    leftRightChooserModel = null;
+    gridModel = null
+    lrModel = null
 
-    @observable isOpen = false;
+    @observable isOpen = false
 
-    constructor(parent) {
-        this.parent = parent;
-        this.leftRightChooserModel = new LeftRightChooserModel({
+    constructor(gridModel) {
+        this.gridModel = gridModel;
+        this.lrModel = new LeftRightChooserModel({
             leftTitle: 'Available Columns',
-            rightTitle: 'Visible Columns'
+            rightTitle: 'Displayed Columns'
         });
     }
 
@@ -39,11 +36,10 @@ export class GridColumnChooserModel {
     }
 
     commit() {
-        const grid = this.parent,
-            model = this.leftRightChooserModel,
-            {leftValues, rightValues} = model;
+        const {gridModel, lrModel} = this,
+            {leftValues, rightValues} = lrModel;
 
-        const cols = grid.cloneColumns();
+        const cols = gridModel.cloneColumns();
         cols.forEach(it => {
             if (leftValues.includes(it.field)) {
                 it.hide = true;
@@ -52,7 +48,7 @@ export class GridColumnChooserModel {
             }
         });
 
-        grid.setColumns(cols);
+        gridModel.setColumns(cols);
     }
 
 
@@ -60,10 +56,9 @@ export class GridColumnChooserModel {
     // Implementation
     //------------------------
     syncChooserData() {
-        const grid = this.parent,
-            cols = grid.columns;
+        const {gridModel, lrModel} = this;
 
-        const data = cols.map(it=> {
+        const data = gridModel.columns.map(it => {
             return {
                 value: it.field,
                 text: it.text,
@@ -75,6 +70,6 @@ export class GridColumnChooserModel {
             };
         });
 
-        this.leftRightChooserModel.setData(data);
+        lrModel.setData(data);
     }
 }
