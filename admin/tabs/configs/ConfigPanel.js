@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {button} from 'hoist/kit/blueprint';
 import {XH, HoistComponent} from 'hoist/core';
-import {fragment} from 'hoist/layout';
+import {fragment} from 'hoist/cmp/layout';
 import {boolCheckCol, baseCol} from 'hoist/columns/Core';
 import {nameCol} from 'hoist/admin/columns/Columns';
 import {Icon} from 'hoist/icon';

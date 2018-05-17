@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from 'hoist/core';
 import {loadMask, message, toolbar} from 'hoist/cmp';
-import {filler, vframe} from 'hoist/layout';
+import {filler, vframe} from 'hoist/cmp/layout';
 import {Icon} from 'hoist/icon';
 import {button, dialog, dialogBody} from 'hoist/kit/blueprint';
 

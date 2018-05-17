@@ -15,7 +15,7 @@ import {GridModel} from 'hoist/cmp/grid';
 import {MessageModel, ToastManager, StoreContextMenu} from 'hoist/cmp';
 import {baseCol} from 'hoist/columns/Core';
 import {nameCol} from 'hoist/admin/columns/Columns';
-import {p} from 'hoist/layout';
+import {p} from 'hoist/cmp/layout';
 import {Icon} from 'hoist/icon';
 
 import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';

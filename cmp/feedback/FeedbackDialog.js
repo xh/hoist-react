@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {button, dialog} from 'hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from 'hoist/core';
-import {filler} from 'hoist/layout';
+import {filler} from 'hoist/cmp/layout';
 import {textAreaField, toolbar} from 'hoist/cmp';
 
 /**

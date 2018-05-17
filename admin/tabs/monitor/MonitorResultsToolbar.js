@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {elemFactory, HoistComponent} from 'hoist/core';
 import {button} from 'hoist/kit/blueprint';
 import {label, toolbar} from 'hoist/cmp';
-import {hbox, filler} from 'hoist/layout';
+import {hbox, filler} from 'hoist/cmp/layout';
 import {relativeTimestamp} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 

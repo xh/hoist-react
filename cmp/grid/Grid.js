@@ -9,7 +9,7 @@ import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {XH} from 'hoist/core';
 import {HoistComponent, elemFactory} from 'hoist/core';
-import {div, frame} from 'hoist/layout';
+import {div, frame} from 'hoist/cmp/layout';
 import {defaults, isString, isNumber, isBoolean, isEqual, xor} from 'lodash';
 import {convertIconToSvg, Icon} from 'hoist/icon';
 import './ag-grid';

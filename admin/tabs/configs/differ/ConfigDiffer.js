@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {elemFactory, HoistComponent, XH} from 'hoist/core';
 import {button, dialog} from 'hoist/kit/blueprint';
-import {filler, fragment} from 'hoist/layout';
+import {filler, fragment} from 'hoist/cmp/layout';
 import {grid} from 'hoist/cmp/grid';
 import {comboField, label, message, panel, toolbar} from 'hoist/cmp';
 

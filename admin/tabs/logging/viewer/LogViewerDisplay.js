@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {elemFactory, HoistComponent} from 'hoist/core';
 import {Icon} from 'hoist/icon';
 import {Ref} from 'hoist/utils/Ref';
-import {frame, table, tbody, td, tr} from 'hoist/layout';
+import {frame, table, tbody, td, tr} from 'hoist/cmp/layout';
 import {clipboardMenuItem, contextMenu} from 'hoist/cmp';
 
 @HoistComponent()

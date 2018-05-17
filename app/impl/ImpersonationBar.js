@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {XH, elemFactory, HoistComponent} from 'hoist/core';
-import {vbox, filler, span, box} from 'hoist/layout';
+import {vbox, filler, span, box} from 'hoist/cmp/layout';
 import {button, popover, hotkeys, hotkey} from 'hoist/kit/blueprint';
 import {comboField, toolbar} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';

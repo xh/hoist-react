@@ -10,7 +10,7 @@ import {ContextMenuTarget} from 'hoist/kit/blueprint';
 import {observable, observer, setter} from 'hoist/mobx';
 import {elemFactory, LoadState, XH} from 'hoist/core';
 import {contextMenu, loadMask} from 'hoist/cmp';
-import {div, frame, vframe, viewport} from 'hoist/layout';
+import {div, frame, vframe, viewport} from 'hoist/cmp/layout';
 import {Icon} from 'hoist/icon';
 
 import {

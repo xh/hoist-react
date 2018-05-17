@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from 'hoist/core';
-import {filler, hframe} from 'hoist/layout';
+import {filler, hframe} from 'hoist/cmp/layout';
 import {grid} from 'hoist/cmp/grid';
 import {loadMask, panel, resizable, storeFilterField, toolbar} from 'hoist/cmp';
 

@@ -8,7 +8,7 @@
 import React, {Component} from 'react';
 import {HoistComponent, elemFactory} from 'hoist/core';
 import {fmtDateTime} from 'hoist/format';
-import {hbox} from 'hoist/layout';
+import {hbox} from 'hoist/cmp/layout';
 import {controlGroup} from 'hoist/kit/blueprint';
 import {label, checkField, comboField, jsonField, numberField, selectField, textAreaField, textField}  from 'hoist/cmp';
 

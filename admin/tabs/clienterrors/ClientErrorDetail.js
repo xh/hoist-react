@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {dialog, button} from 'hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from 'hoist/core';
-import {filler, table, tbody, tr, th, td} from 'hoist/layout';
+import {filler, table, tbody, tr, th, td} from 'hoist/cmp/layout';
 import {clipboardButton, jsonField, toolbar} from 'hoist/cmp';
 import {fmtDateTime} from 'hoist/format';
 
