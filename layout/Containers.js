@@ -4,8 +4,9 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {elemFactory} from 'hoist/core';
-import {isNumber, forOwn, isEmpty} from 'lodash';
+import {Component} from 'react';
+import {defaultsDeep} from 'lodash';
+import {elemFactory, HoistComponent} from 'hoist/core';
 
 /**
  * Box is just a very thin wrapper around a div with 'flex' layout.
@@ -19,119 +20,110 @@ import {isNumber, forOwn, isEmpty} from 'lodash';
  *
  * See also VBox, HBox. 
  */
-export function Box(props) {
-    return createDiv(props);
+
+@HoistComponent()
+export class Box extends Component {
+    render() {
+        return renderDiv(this.props);
+    }
 }
 
-export function VBox(props) {
-    return createDiv(props,  {flexDirection: 'column'});
+@HoistComponent()
+export class VBox extends Component {
+    render() {
+        return renderDiv(this.props, {flexDirection: 'column'});
+    }
 }
 
-export function HBox(props) {
-    return createDiv(props, {flexDirection: 'row'});
+@HoistComponent()
+export class HBox extends Component {
+    render() {
+        return renderDiv(this.props, {flexDirection: 'row'});
+    }
 }
-
 
 /**
  * A Box class that flexes to grow and stretch within its *own* parent.
  *
  * This class is useful for creating nested layouts.  See also VFrame, and HFrame.
  */
-export function Frame(props) {
-    return createDiv(props, {flex: 'auto'});
+@HoistComponent()
+export class Frame extends Component {
+    render() {
+        return renderDiv(this.props, {flex: 'auto'});
+    }
 }
 
-export function VFrame(props) {
-    return createDiv(props, {flex: 'auto', flexDirection: 'column'});
+@HoistComponent()
+export class VFrame extends Component {
+    render() {
+        return renderDiv(this.props, {flex: 'auto', flexDirection: 'column'});
+    }
 }
 
-export function HFrame(props) {
-    return createDiv(props, {flex: 'auto', flexDirection: 'row'});
+@HoistComponent()
+export class HFrame extends Component {
+    render() {
+        return renderDiv(this.props, {flex: 'auto', flexDirection: 'row'});
+    }
 }
 
 /**
  * A component useful for inserting fixed spacing along the main axis of its
  * parent container.
  */
-export function Spacer(props) {
-    return createDiv(props, {flex: 'none'});
+@HoistComponent()
+export class Spacer extends Component {
+    render() {
+        return renderDiv(this.props, {flex: 'none'});
+    }
 }
 
 /**
  * A component useful for stretching to soak up space along the main axis of its
  * parent container.
  */
-export function Filler(props) {
-    return createDiv(props, {flex: 'auto'});
+@HoistComponent()
+export class Filler extends Component {
+    render() {
+        return renderDiv(this.props, {flex: 'auto'});
+    }
 }
 
 /**
  * A container for the top level of the application.
  * Will stretch to encompass the entire browser
  */
-export function Viewport(props) {
-    return createDiv(props, {
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        position: 'fixed'
-    });
+@HoistComponent()
+export class Viewport extends Component {
+    render() {
+        return renderDiv(this.props, {
+            style: {
+                top: 0,
+                left: 0,
+                position: 'fixed'
+            },
+            width: '100%',
+            height: '100%'
+        });
+    }
 }
 
 //-----------------------
 // Implementation
 //-----------------------
-const styleKeys = [
-    'display',
-    'top', 'left', 'position',
-    'alignItems', 'alignSelf', 'alignContent',
-    'flex', 'flexBasis', 'flexDirection', 'flexGrow', 'flexShrink', 'flexWrap',
-    'overflow', 'overflowX', 'overflowY',
-    'justifyContent', 'order',
-    'margin', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft',
-    'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
-    'height', 'minHeight', 'maxHeight',
-    'width', 'minWidth', 'maxWidth'
-];
+const div = elemFactory('div', {promoteLayoutStyles: true});
 
-const dimFragments = ['margin', 'padding', 'height', 'width'],
-    flexVals = ['flex', 'flexGrow', 'flexShrink'],
-    div = elemFactory('div');
+function renderDiv(appProps, defaultProps = {}) {
+    const conf = Object.assign({}, appProps); // need a mutable object here for defaultsDeep
 
-function createDiv(appProps, defaultProps = {}) {
-    const props = Object.assign(
-        {display: 'flex', overflow: 'hidden', position: 'relative'},
+    const props = defaultsDeep(
+        conf,
         defaultProps,
-        appProps
+        {display: 'flex', overflow: 'hidden', style: {position: 'relative'}},
     );
 
-    // 1) Convert raw 'flex' number to string
-    flexVals.forEach(k => {
-        const val = appProps[k];
-        if (isNumber(val)) props[k] = val.toString();
-    });
-
-    // 2) Translate raw dimensions to pixels
-    forOwn(appProps, (val, key) => {
-        const k = key.toLowerCase();
-        if (isNumber(val) && dimFragments.some(it => k.includes(it))) {
-            props[k] = val + 'px';
-        }
-    });
-
-    // 3) Move properties of interest to 'style'
-    const style = Object.assign({}, props.style);
-    styleKeys.forEach(k => {
-        const val = props[k];
-        if (val !== undefined) {
-            style[k] = val;
-            delete props[k];
-        }
-    });
-    if (!isEmpty(style)) {
-        props.style = style;
-    }
+    delete props.isCollapsed;
 
     return div(props);
 }

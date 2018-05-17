@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import {castArray, defaults, isArray, isPlainObject, isString} from 'lodash';
+import {castArray, defaults, forOwn, isArray, isEmpty, isNumber, isPlainObject, isString} from 'lodash';
 import {isReactElement} from 'hoist/utils/ReactUtils';
 import {Exception} from 'hoist/exception';
 
@@ -38,7 +38,7 @@ import {Exception} from 'hoist/exception';
  */
 export function elem(type, config = {}) {
 
-    let {cls, item, items, itemSpec, omit, ...props} = config;
+    let {cls, item, items, itemSpec, omit, promoteLayoutStyles, ...props} = config;
 
     // 1) Handle basic rename
     if (cls) {
@@ -53,11 +53,16 @@ export function elem(type, config = {}) {
     ['$items', '$item', '$cls', '$itemSpec', '$omit'].forEach(key => {
         if (props.hasOwnProperty(key)) {
             props[key.substring(1)] = props[key];
-            delete props.$items;
+            delete props[key];
         }
     });
 
-    // 4) process children
+    // 4) Process promoted style props
+    if (type.isHoistComponent || promoteLayoutStyles) {
+        props = nestPropsToStyle(props);
+    }
+
+    // 5) Process children
     items = item || items;
     items = castArray(items);
     
@@ -76,7 +81,7 @@ export function elem(type, config = {}) {
             throw Exception.create(`Unable to create child element for [${it.toString()}].`);
         });
 
-    // 4a) Remove omitted children last, after elements generated from configs have been created.
+    // 5a) Remove omitted children last, after elements generated from configs have been created.
     items = items.filter(it => !it.props || !it.props.xhomit);
 
     return React.createElement(type, props, ...items);
@@ -120,4 +125,57 @@ function normalizeArgs(args) {
     }
     // Assume > 1 args or single, non-config, non-array args are children.
     return {items: args};
+}
+
+const dimKeys = [
+    'margin', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft',
+    'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
+    'height', 'minHeight', 'maxHeight',
+    'width', 'minWidth', 'maxWidth'
+];
+const flexKeys =  [
+    'flex', 'flexBasis', 'flexDirection', 'flexGrow', 'flexShrink', 'flexWrap'
+];
+const styleKeys = [
+    'display',
+    'alignItems', 'alignSelf', 'alignContent',
+    'overflow', 'overflowX', 'overflowY',
+    'justifyContent',
+    ...flexKeys,
+    ...dimKeys
+];
+
+
+function nestPropsToStyle(props) {
+    const ret = Object.assign({}, props);
+
+    // 1) Convert raw 'flex' number to string
+    flexKeys.forEach(k => {
+        const val = ret[k];
+        if (isNumber(val)) ret[k] = val.toString();
+    });
+
+    // 2) Translate raw dimensions to pixels
+    forOwn(ret, (val, key) => {
+        const k = key.toLowerCase();
+        if (isNumber(val) && dimKeys.includes(key)) {
+            ret[k] = val + 'px';
+        }
+    });
+
+    // 3) Move properties of interest to 'style'
+    const style = Object.assign({}, ret.style);
+    styleKeys.forEach(k => {
+        const val = ret[k];
+        if (val !== undefined) {
+            style[k] = val;
+            delete ret[k];
+        }
+    });
+
+    if (!isEmpty(style)) {
+        ret.style = style;
+    }
+
+    return ret;
 }
