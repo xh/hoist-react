@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from 'hoist/core';
 import {vbox, div} from 'hoist/cmp/layout';
-import {getRelativeTimestamp} from 'hoist/cmp';
+import {getRelativeTimestamp} from 'hoist/cmp/relativetimestamp';
 import {pluralize} from 'hoist/utils/JsUtils';
 import {Icon} from 'hoist/icon';
 
