@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {XH, elemFactory, HoistComponent} from 'hoist/core';
-import {toolbar} from 'hoist/cmp';
+import {toolbar} from 'hoist/cmp/toolbar';
 import {div} from 'hoist/cmp/layout';
 import {button} from 'hoist/kit/blueprint';
 import {Icon} from 'hoist/icon';

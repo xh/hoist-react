@@ -10,7 +10,8 @@ import {navbar, navbarGroup, navbarHeading, button} from 'hoist/kit/blueprint';
 import {XH, HoistComponent} from 'hoist/core';
 import {frame} from 'hoist/cmp/layout';
 import {lockoutPanel} from 'hoist/app';
-import {panel, tabContainer} from 'hoist/cmp';
+import {panel} from 'hoist/cmp/panel';
+import {tabContainer} from 'hoist/cmp/tab';
 import {logoutButton, themeToggleButton, refreshButton} from 'hoist/cmp/button';
 import {Icon} from 'hoist/icon';
 

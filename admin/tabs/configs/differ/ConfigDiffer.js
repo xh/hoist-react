@@ -9,7 +9,10 @@ import {elemFactory, HoistComponent, XH} from 'hoist/core';
 import {button, dialog} from 'hoist/kit/blueprint';
 import {filler, fragment} from 'hoist/cmp/layout';
 import {grid} from 'hoist/cmp/grid';
-import {comboField, label, message, panel, toolbar} from 'hoist/cmp';
+import {comboField, label} from 'hoist/cmp/form';
+import {message} from 'hoist/cmp/message';
+import {panel} from 'hoist/cmp/panel';
+import {toolbar} from 'hoist/cmp/toolbar';
 
 import {configDifferDetail} from './ConfigDifferDetail';
 

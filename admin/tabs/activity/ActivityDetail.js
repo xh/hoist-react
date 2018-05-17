@@ -8,7 +8,8 @@ import {Component} from 'react';
 import {dialog, button} from 'hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from 'hoist/core';
 import {filler, table, tbody, tr, th, td} from 'hoist/cmp/layout';
-import {jsonField, toolbar} from 'hoist/cmp';
+import {jsonField} from 'hoist/cmp/form';
+import {toolbar} from 'hoist/cmp/toolbar';
 import {fmtDateTime} from 'hoist/format';
 
 @HoistComponent()

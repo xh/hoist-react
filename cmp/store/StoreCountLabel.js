@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from 'hoist/core';
-import {label} from 'hoist/cmp';
+import {label} from 'hoist/cmp/form';
 import {singularize, pluralize} from 'hoist/utils/JsUtils';
 
 import {BaseStore} from 'hoist/data';

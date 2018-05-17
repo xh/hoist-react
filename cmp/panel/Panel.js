@@ -9,7 +9,7 @@ import {PropTypes as PT} from 'prop-types';
 import {castArray} from 'lodash';
 import {elemFactory, HoistComponent} from 'hoist/core';
 import {vframe, vbox} from 'hoist/cmp/layout';
-import {mask} from 'hoist/cmp';
+import {mask} from 'hoist/cmp/mask';
 import {panelHeader} from './impl/PanelHeader';
 
 /**
