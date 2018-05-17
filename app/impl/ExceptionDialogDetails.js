@@ -7,10 +7,10 @@
 import {Component} from 'react';
 import {XH, HoistComponent, elemFactory} from 'hoist/core';
 import {button, dialog, dialogBody, textArea} from 'hoist/kit/blueprint';
+import {pre, table, tbody, td, th, tr, filler} from 'hoist/cmp/layout';
 import {clipboardButton} from 'hoist/cmp/clipboard';
 import {toolbar} from 'hoist/cmp/toolbar';
 import {Icon} from 'hoist/icon';
-import {pre, table, tbody, td, th, tr, filler} from 'hoist/cmp/layout';
 import {stringifyErrorSafely} from 'hoist/exception';
 
 import {dismissButton} from './ExceptionDialog';

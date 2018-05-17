@@ -6,9 +6,9 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from 'hoist/core';
+import {button} from 'hoist/kit/blueprint';
 import {grid} from 'hoist/cmp/grid';
 import {filler} from 'hoist/cmp/layout';
-import {button} from 'hoist/kit/blueprint';
 import {panel} from 'hoist/cmp/panel';
 import {toolbar, toolbarSep} from 'hoist/cmp/toolbar';
 import {refreshButton} from 'hoist/cmp/button';
