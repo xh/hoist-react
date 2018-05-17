@@ -9,7 +9,8 @@ import {button} from 'hoist/kit/blueprint';
 import {HoistComponent} from 'hoist/core';
 import {grid} from 'hoist/cmp/grid';
 import {filler} from 'hoist/cmp/layout';
-import {panel, refreshButton, toolbar, toolbarSep} from 'hoist/cmp';
+import {panel, toolbar, toolbarSep} from 'hoist/cmp';
+import {refreshButton} from 'hoist/cmp/button';
 import {storeCountLabel, storeFilterField} from 'hoist/cmp/store';
 import {Icon} from 'hoist/icon';
 

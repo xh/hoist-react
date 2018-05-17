@@ -6,7 +6,8 @@
  */
 
 import {Component} from 'react';
-import {refreshButton, dayField, label, panel, textField, toolbar} from 'hoist/cmp';
+import {dayField, label, panel, textField, toolbar} from 'hoist/cmp';
+import {refreshButton} from 'hoist/cmp/button';
 import {HoistComponent, elemFactory} from 'hoist/core';
 import {chart} from 'hoist/cmp/chart';
 import {Icon} from 'hoist/icon';
