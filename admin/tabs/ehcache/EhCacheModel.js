@@ -6,7 +6,7 @@
  */
 
 import {XH, HoistModel} from 'hoist/core';
-import {ToastManager} from 'hoist/toast';
+import {GridModel} from 'hoist/cmp/grid';
 import {UrlStore} from 'hoist/data';
 import {GridModel} from 'hoist/cmp/grid';
 import {baseCol} from 'hoist/columns/Core';
