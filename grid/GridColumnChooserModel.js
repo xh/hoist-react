@@ -4,14 +4,15 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
-import {action, observable} from 'hoist/mobx';
+import {HoistModel} from 'hoist/core';
 import {LeftRightChooserModel} from 'hoist/cmp/leftRightChooser/LeftRightChooserModel';
+import {action, observable} from 'hoist/mobx';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
  * sorting/grouping/selection state, and context menu configuration.
  */
+@HoistModel()
 export class GridColumnChooserModel {
 
     leftRightChooserModel = null;
@@ -54,9 +55,10 @@ export class GridColumnChooserModel {
         grid.setColumns(cols);
     }
 
-    //---------
-    // implementation
-    //---------
+
+    //------------------------
+    // Implementation
+    //------------------------
     syncChooserData() {
         const grid = this.parent,
             cols = grid.columns;

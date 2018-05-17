@@ -4,17 +4,15 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
-
 import {Component} from 'react';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {HoistComponent, elemFactory} from 'hoist/core';
 import {filler, frame} from 'hoist/layout';
 import {button, dialog} from 'hoist/kit/blueprint/';
 import {toolbar} from 'hoist/cmp';
 import {Icon} from 'hoist/icon/';
 import {leftRightChooser} from 'hoist/cmp/leftRightChooser';
 
-@hoistComponent()
+@HoistComponent()
 export class GridColumnChooser extends Component {
 
     render() {

@@ -59,6 +59,8 @@ export class GridModel {
      * @param {string} [sortBy[].colId] - Column ID by which to sort.
      * @param {string} [sortBy[].sort] - sort direction [asc|desc].
      * @param {string} [groupBy] - Column ID by which to group.
+     * @param {boolean} [enableColumnChooser] - true to setup support for column chooser UI and
+     *      install a default context menu item to launch the chooser.
      * @param {function} [contextMenuFn] - closure returning a StoreContextMenu().
      */
     constructor({
