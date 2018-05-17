@@ -8,7 +8,7 @@
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {XH} from 'hoist/core';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {HoistComponent, elemFactory} from 'hoist/core';
 import {div, frame} from 'hoist/layout';
 import {defaults, isString, isNumber, isBoolean, isEqual, xor} from 'lodash';
 import {convertIconToSvg, Icon} from 'hoist/icon';
@@ -26,14 +26,14 @@ import {navigateSelection, agGridReact} from './ag-grid';
  * the selection. Use this class to control the AG Grid UI options and specific
  * behavior of the grid.
  */
-@hoistComponent()
+@HoistComponent()
 class Grid extends Component {
 
     _scrollOnSelect = true;
 
     static propTypes = {
         /** Options for AG Grid - See DEFAULT_GRID_OPTIONS for hoist defined defaults */
-        gridOptions: PT.object
+        agOptions: PT.object
     };
 
     static DEFAULT_GRID_OPTIONS = {
@@ -47,16 +47,16 @@ class Grid extends Component {
         defaultColDef: {suppressMenu: true},
         groupDefaultExpanded: 1,
         groupUseEntireRow: true,
-        popupParent: document.querySelector('body'),
-        overlayNoRowsTemplate: 'No records found...'
+        popupParent: document.querySelector('body')
     };
 
     constructor(props) {
         super(props);
-        this.gridOptions = defaults(
-            {...props.gridOptions},
+        this.agOptions = defaults(
+            {...props.agOptions},
             Grid.DEFAULT_GRID_OPTIONS,
             {
+                overlayNoRowsTemplate: this.model.emptyText,
                 navigateToNextCell: this.onNavigateToNextCell,
                 defaultGroupSortComparator: this.sortByGroup,
                 icons: {
@@ -85,7 +85,7 @@ class Grid extends Component {
                 item: agGridReact({
                     rowData: store.records,
                     columnDefs: columns,
-                    gridOptions: this.gridOptions,
+                    gridOptions: this.agOptions,
                     getContextMenuItems: this.getContextMenuItems,
                     onGridReady: this.onGridReady,
                     onSelectionChanged: this.onSelectionChanged,
@@ -111,7 +111,7 @@ class Grid extends Component {
     }
 
     syncSelection() {
-        const {api} = this.gridOptions;
+        const api = this.model.agApi;
         if (!api) return;
 
         const modelSelection = this.model.selection.ids,
@@ -132,7 +132,7 @@ class Grid extends Component {
     }
 
     syncSort() {
-        const {api} = this.gridOptions;
+        const api = this.model.agApi;
         if (!api) return;
 
         const agSorters = api.getSortModel(),
@@ -143,7 +143,7 @@ class Grid extends Component {
     }
 
     syncColumns() {
-        const {api} = this.gridOptions;
+        const api = this.model.agApi;
         if (!api) return;
 
         // Needed because AGGridReact won't recognize updates to columns prop.
@@ -222,13 +222,14 @@ class Grid extends Component {
         const {api} = params,
             {model} = this;
 
-        model.gridApi = api;
+        model.setAgApi(api);
         api.setSortModel(model.sortBy);
         api.sizeColumnsToFit();
+        if (!model.emptyText) api.hideOverlay();
     }
 
     onNavigateToNextCell = (params) => {
-        return navigateSelection(params, this.gridOptions.api);
+        return navigateSelection(params, this.model.agApi);
     }
 
     onSelectionChanged = (ev) => {

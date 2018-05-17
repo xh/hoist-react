@@ -6,24 +6,24 @@
 */
 import {Component} from 'react';
 import {button} from 'hoist/kit/blueprint';
-import {hoistComponent} from 'hoist/core';
+import {HoistComponent} from 'hoist/core';
 import {grid} from 'hoist/grid';
-import {filler, vframe} from 'hoist/layout';
-import {refreshButton, storeCountLabel, storeFilterField, toolbar, toolbarSep} from 'hoist/cmp';
+import {filler} from 'hoist/layout';
+import {panel, refreshButton, storeCountLabel, storeFilterField, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import {EhCacheModel} from './EhCacheModel';
 
-@hoistComponent()
+@HoistComponent()
 export class EhCachePanel extends Component {
 
     localModel = new EhCacheModel();
 
     render() {
-        return vframe(
-            this.renderToolbar(),
-            grid({model: this.model.gridModel})
-        );
+        return panel({
+            tbar: this.renderToolbar(),
+            item: grid({model: this.model.gridModel})
+        });
     }
 
     renderToolbar() {

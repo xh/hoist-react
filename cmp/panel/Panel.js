@@ -6,17 +6,17 @@
  */
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {elemFactory, hoistComponent} from 'hoist/core';
-import {vframe, vbox} from 'hoist/layout';
-import {panelHeader} from './impl/PanelHeader';
 import {castArray} from 'lodash';
-
+import {elemFactory, HoistComponent} from 'hoist/core';
+import {vframe, vbox} from 'hoist/layout';
+import {mask} from 'hoist/cmp';
+import {panelHeader} from './impl/PanelHeader';
 
 /**
  * A Panel container builds on the lower-level layout components to offer a header element
  * w/standardized styling, title, and Icon as well as support for top and bottom toolbars.
  */
-@hoistComponent()
+@HoistComponent()
 export class Panel extends Component {
 
     static propTypes = {
@@ -27,16 +27,19 @@ export class Panel extends Component {
         /** Items to be added to the right-side of the panel's header. */
         headerItems: PT.node,
         /** A toolbar to be docked at the top of the panel. */
-        topToolbar: PT.element,
+        tbar: PT.element,
         /** A toolbar to be docked at the bottom of the panel. */
-        bottomToolbar: PT.element
+        bbar: PT.element,
+        /** Whether this panel should be rendered with a mask, use to disable interaction with panel. */
+        masked: PT.bool
     };
 
     baseCls = 'xh-panel';
 
     render() {
-        // Note: Padding is destructured here to be discarded because it breaks layout
-        const {className, topToolbar, bottomToolbar, title, icon, headerItems, padding, children, ...rest} = this.props,
+        // Note: Padding is destructured here to be discarded because it breaks layout.
+        //       Similarly, isCollapsed must not be rendered as a custom attribute in the DOM.
+        const {className, tbar, bbar, title, icon, headerItems, masked, padding, isCollapsed, children, ...rest} = this.props,
             wrapper = this.props.width || this.props.height ? vbox : vframe;
 
         return wrapper({
@@ -44,9 +47,10 @@ export class Panel extends Component {
             ...rest,
             items: [
                 panelHeader({title, icon, headerItems}),
-                topToolbar || null,
+                tbar || null,
                 ...(castArray(children)),
-                bottomToolbar || null
+                bbar || null,
+                mask({isDisplayed: masked})
             ]
         });
     }

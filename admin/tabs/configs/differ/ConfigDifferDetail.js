@@ -6,15 +6,15 @@
  */
 import {Component} from 'react';
 import {keys, toString} from 'lodash';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {HoistComponent, elemFactory} from 'hoist/core';
 import {button, dialog} from 'hoist/kit/blueprint';
 import {filler, table, tbody, tr, th, td} from 'hoist/layout';
-import {toolbar} from 'hoist/cmp';
+import {panel, toolbar} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import './Differ.scss';
 
-@hoistComponent()
+@HoistComponent()
 export class ConfigDifferDetail extends Component {
 
     render() {
@@ -25,9 +25,9 @@ export class ConfigDifferDetail extends Component {
             title: 'Detail',
             isOpen: model.record,
             onClose: this.onCloseClick,
-            items: [
-                this.renderDiffTable(),
-                toolbar(
+            item: panel({
+                item: this.renderDiffTable(),
+                bbar: toolbar(
                     filler(),
                     button({
                         text: 'Close',
@@ -41,7 +41,7 @@ export class ConfigDifferDetail extends Component {
                         onClick: this.onAcceptRemoteClick
                     })
                 )
-            ]
+            })
         });
     }
 

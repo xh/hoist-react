@@ -30,15 +30,15 @@ export class BaseComboField extends BaseDropdownField {
     }
 
     forceSelectionToOptionOrRevert() {
-        const {options, internalValue} = this;
+        const {internalOptions, internalValue} = this;
 
         // 0) We have a match, nothing to be done
-        if (find(options, {label: internalValue})) {
+        if (find(internalOptions, {label: internalValue})) {
             return;
         }
 
         // 1) Close enough, just adjust casing
-        const match = find(options, (it) => it.label.toLowerCase() == internalValue.toLowerCase());
+        const match = find(internalOptions, (it) => it.label.toLowerCase() == internalValue.toLowerCase());
         if (match) {
             this.noteValueChange(match.value);
             return;

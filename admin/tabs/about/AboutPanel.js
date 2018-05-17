@@ -6,12 +6,12 @@
  */
 
 import React, {Component} from 'react';
-import {XH, hoistComponent} from 'hoist/core';
+import {XH, HoistComponent} from 'hoist/core';
 import {div, h3, h4, table, tbody, tr, th, td} from 'hoist/layout';
 
 import './AboutPanel.scss';
 
-@hoistComponent()
+@HoistComponent()
 export class AboutPanel extends Component {
 
     render() {

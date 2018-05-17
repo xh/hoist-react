@@ -6,13 +6,13 @@
  */
 
 import React, {Component} from 'react';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {HoistComponent, elemFactory} from 'hoist/core';
 import {fmtDateTime} from 'hoist/format';
 import {hbox} from 'hoist/layout';
 import {controlGroup} from 'hoist/kit/blueprint';
 import {label, checkField, comboField, jsonField, numberField, selectField, textAreaField, textField}  from 'hoist/cmp';
 
-@hoistComponent()
+@HoistComponent()
 export class RestControl extends Component {
 
     render() {

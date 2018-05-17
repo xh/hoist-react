@@ -6,33 +6,35 @@
  */
 import {Component} from 'react';
 import {button} from 'hoist/kit/blueprint';
-import {hoistComponent} from 'hoist/core';
+import {HoistComponent} from 'hoist/core';
 import {grid} from 'hoist/grid';
-import {filler, vframe} from 'hoist/layout';
-import {textField, dayField, exportButton, refreshButton, storeCountLabel, toolbar, toolbarSep} from 'hoist/cmp';
+import {filler} from 'hoist/layout';
+import {textField, dayField, exportButton, panel, refreshButton, storeCountLabel, toolbar, toolbarSep} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import {ClientErrorModel} from './ClientErrorModel';
 import {clientErrorDetail} from './ClientErrorDetail';
 
-@hoistComponent()
+@HoistComponent()
 export class ClientErrorPanel extends Component {
 
     localModel = new ClientErrorModel();
 
     render() {
         const {model} = this;
-        return vframe(
-            this.renderToolbar(),
-            grid({
-                model: model.gridModel,
-                gridOptions: {
-                    rowSelection: 'single',
-                    onRowDoubleClicked: this.onRowDoubleClicked
-                }
-            }),
-            clientErrorDetail({model})
-        );
+        return panel({
+            tbar: this.renderToolbar(),
+            items: [
+                grid({
+                    model: model.gridModel,
+                    agOptions: {
+                        rowSelection: 'single',
+                        onRowDoubleClicked: this.onRowDoubleClicked
+                    }
+                }),
+                clientErrorDetail({model})
+            ]
+        });
     }
 
     renderToolbar() {

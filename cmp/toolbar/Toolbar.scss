@@ -7,23 +7,37 @@
   align-items: center;
   flex-wrap: nowrap;
 
+
   > * {
     white-space: nowrap;
     flex-shrink: 0;
-
     &:not([class*='xh-no-pad']) {
       margin-left: var(--xh-pad-px);
     }
   }
 
   &--vertical {
+    padding: 0 var(--xh-pad-half-px) var(--xh-pad-px) var(--xh-pad-half-px);
     > *:not([class*='xh-no-pad']) {
       margin-top: var(--xh-pad-px);
+      margin-left: 0;
     }
+    .xh-toolbar__separator {
+      margin-top: 0;
+      + * {
+        margin-top: 0;
+      }
+      &:before {
+        content: '─'
+      }
+    };
   }
 
   &__separator {
     color: var(--xh-text-color-muted);
+    &:before {
+      content: '|'
+    }
   }
 
   &:first-child {

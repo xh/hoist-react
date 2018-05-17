@@ -20,10 +20,10 @@ export class GridModel {
 
     // Immutable public properties
     store = null;
-    gridApi = null;
     selection = null;
     contextMenuFn = null;
 
+    @observable.ref agApi = null;
     @observable.ref columns = [];
     @observable.ref sortBy = [];
     @observable groupBy = null;
@@ -42,8 +42,10 @@ export class GridModel {
      * @param {BaseStore} store - store containing the data for the grid.
      * @param {Object[]} columns - collection of column specifications.
      * @param {StoreSelectionModel} [selection] - selection model to use
+     * @param {boolean} [emptyText] - empty text to display if grid has no records. Can be valid HTML.
+     *      Defaults to null, in which case no empty text will be shown.
      * @param {Object[]} [sortBy] - one or more sorters to apply to store data.
-     * @param {string} [sortBy[].colId]- Column ID by which to sort.
+     * @param {string} [sortBy[].colId] - Column ID by which to sort.
      * @param {string} [sortBy[].sort] - sort direction [asc|desc].
      * @param {string} [groupBy] - Column ID by which to group.
      * @param {function} [contextMenuFn] - closure returning a StoreContextMenu().
@@ -52,6 +54,7 @@ export class GridModel {
         store,
         columns,
         selection,
+        emptyText = null,
         sortBy = [],
         groupBy = null,
         contextMenuFn = GridModel.defaultContextMenu
@@ -60,14 +63,15 @@ export class GridModel {
         this.columns = columns;
         this.contextMenuFn = contextMenuFn;
         this.selection = selection || new StoreSelectionModel({store: this.store});
+        this.emptyText = emptyText;
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
     }
 
     exportDataAsExcel(params) {
-        if (!this.gridApi) return;
+        if (!this.agApi) return;
         params.processCellCallback = this.formatValuesForExport;
-        this.gridApi.exportDataAsExcel(params);
+        this.agApi.exportDataAsExcel(params);
     }
 
     /**
@@ -80,6 +84,11 @@ export class GridModel {
             recs = orderBy(store.records, colIds, sorts);
 
         if (recs.length) selection.select(recs[0]);
+    }
+
+    @action
+    setAgApi(agApi) {
+        this.agApi = agApi;
     }
 
     @action

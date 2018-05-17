@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {hoistComponent, elemFactory} from 'hoist/core';
+import {HoistComponent, elemFactory} from 'hoist/core';
 import {button, inputGroup} from 'hoist/kit/blueprint';
 import {setter, observable} from 'hoist/mobx';
 import {escapeRegExp} from 'lodash';
@@ -18,7 +18,7 @@ import {BaseStore} from 'hoist/data';
  * A Component that can bind to any store and filter it
  * based on simple text matching in specified fields.
  */
-@hoistComponent()
+@HoistComponent()
 export class StoreFilterField extends Component {
 
     static propTypes = {

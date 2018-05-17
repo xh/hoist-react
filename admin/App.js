@@ -6,29 +6,27 @@
  */
 
 import {Component} from 'react';
-import {XH, hoistComponent} from 'hoist/core';
-import {vframe, frame} from 'hoist/layout';
+import {XH, HoistComponent} from 'hoist/core';
+import {frame} from 'hoist/layout';
 import {navbar, navbarGroup, navbarHeading, button} from 'hoist/kit/blueprint';
-import {logoutButton, lockoutPanel, tabContainer, themeToggleButton, refreshButton} from 'hoist/cmp';
+import {logoutButton, lockoutPanel, panel, tabContainer, themeToggleButton, refreshButton} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import './App.scss';
 
-@hoistComponent()
+@HoistComponent()
 export class App extends Component {
     render() {
         if (!XH.identityService.user.isHoistAdmin) {
             return lockoutPanel({message: 'Access to this area requires administrator permissions.'});
         }
-        
-        return vframe({
-            items: [
-                this.renderNavBar(),
-                frame({
-                    cls: 'xh-admin-app-frame',
-                    item: tabContainer({model: XH.appModel.tabs})
-                })
-            ]
+
+        return panel({
+            tbar: this.renderNavBar(),
+            item: frame({
+                cls: 'xh-admin-app-frame',
+                item: tabContainer({model: XH.appModel.tabs})
+            })
         });
     }
 
