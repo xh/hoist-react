@@ -11,7 +11,7 @@ import {fragment} from 'hoist/cmp/layout';
 import {boolCheckCol, baseCol} from 'hoist/columns/Core';
 import {nameCol} from 'hoist/admin/columns/Columns';
 import {Icon} from 'hoist/icon';
-import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
+import {restGrid, RestGridModel, RestStore} from 'hoist/cmp/rest';
 
 import {configDiffer} from './differ/ConfigDiffer';
 import {ConfigDifferModel} from './differ/ConfigDifferModel';

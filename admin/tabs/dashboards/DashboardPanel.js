@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {HoistComponent} from 'hoist/core';
 import {baseCol} from 'hoist/columns/Core';
 import {dateTimeCol} from 'hoist/columns/DatesTimes';
-import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
+import {restGrid, RestGridModel, RestStore} from 'hoist/cmp/rest';
 
 import {usernameCol} from '../../columns/Columns';
 
