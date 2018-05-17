@@ -6,10 +6,11 @@
  */
 
 import {Component} from 'react';
+import {navbar, navbarGroup, navbarHeading, button} from 'hoist/kit/blueprint';
 import {XH, HoistComponent} from 'hoist/core';
 import {frame} from 'hoist/cmp/layout';
-import {navbar, navbarGroup, navbarHeading, button} from 'hoist/kit/blueprint';
-import {logoutButton, lockoutPanel, panel, tabContainer, themeToggleButton, refreshButton} from 'hoist/cmp';
+import {lockoutPanel} from 'hoist/app';
+import {logoutButton, panel, tabContainer, themeToggleButton, refreshButton} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 
 import './App.scss';
