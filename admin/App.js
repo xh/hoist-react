@@ -17,7 +17,7 @@ import './App.scss';
 @HoistComponent()
 export class App extends Component {
     render() {
-        if (!XH.identityService.user.isHoistAdmin) {
+        if (!XH.getUser().isHoistAdmin) {
             return lockoutPanel({message: 'Access to this area requires administrator permissions.'});
         }
 
