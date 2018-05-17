@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import {castArray, defaults, forOwn, isArray, isEmpty, isNumber, isPlainObject, isString} from 'lodash';
+import {castArray, defaults, forOwn, isArray, pick, isNumber, isPlainObject, isString, merge} from 'lodash';
 import {isReactElement} from 'hoist/utils/ReactUtils';
 import {Exception} from 'hoist/exception';
 
@@ -38,31 +38,27 @@ import {Exception} from 'hoist/exception';
  */
 export function elem(type, config = {}) {
 
-    let {cls, item, items, itemSpec, omit, promoteLayoutStyles, ...props} = config;
+    // 1) seperate hoist psuedo-props from api props
+    let {cls, item, items, itemSpec, omit, ...props} = config;
 
-    // 1) Handle basic rename
+    // 2) Pre-process pseudo props.
     if (cls) {
         props.className = cls;
     }
-
-    // 2) Mark element to be skipped with a special key in props.  This element should never see the light of day
-    // if its *parent* is created using this method, but this should be safe and truthy attribute to use.
     if (omit) props.xhomit = 'true';
+    if (type.supportsLayoutProps) {
+        processLayoutProps(props);
+    }
 
-    // 3) Special handling to recapture API props that conflicted.
-    ['$items', '$item', '$cls', '$itemSpec', '$omit'].forEach(key => {
-        if (props.hasOwnProperty(key)) {
+    // 3) Special handling to recapture API props that needed '$' prefix to avoid conflicts with above
+    forOwn(props, (val, key) => {
+        if (key.startsWith('$')) {
             props[key.substring(1)] = props[key];
             delete props[key];
         }
     });
 
-    // 4) Process promoted style props
-    if (type.isHoistComponent || promoteLayoutStyles) {
-        props = nestPropsToStyle(props);
-    }
-
-    // 5) Process children
+    // 4) Process children
     items = item || items;
     items = castArray(items);
     
@@ -111,7 +107,6 @@ export function elemFactory(C, defaultProps) {
     };
 }
 
-
 //------------------------
 // Implementation
 //------------------------
@@ -127,55 +122,40 @@ function normalizeArgs(args) {
     return {items: args};
 }
 
+//-------------------------------------------------------------------------
+// Support for layoutProps
+//
+// Pre-process and bundle layout related keys below into a 'xhlayout' key
+//-------------------------------------------------------------------------
 const dimKeys = [
     'margin', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft',
     'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
     'height', 'minHeight', 'maxHeight',
     'width', 'minWidth', 'maxWidth'
 ];
-const flexKeys =  [
-    'flex', 'flexBasis', 'flexDirection', 'flexGrow', 'flexShrink', 'flexWrap'
-];
-const styleKeys = [
-    'display',
-    'alignItems', 'alignSelf', 'alignContent',
-    'overflow', 'overflowX', 'overflowY',
-    'justifyContent',
-    ...flexKeys,
-    ...dimKeys
-];
+const flexKeys = ['flex', 'flexBasis', 'flexDirection', 'flexGrow', 'flexShrink', 'flexWrap'];
+const alignKeys = ['alignItems', 'alignSelf', 'alignContent'];
+const overflowKeys = ['overflow', 'overflowX', 'overflowY'];
+const otherKeys = ['top', 'left', 'position', 'display', 'justifyContent'];
+const allKeys = [...dimKeys, ...flexKeys, ...alignKeys, ...overflowKeys, ...otherKeys];
 
+function processLayoutProps(config) {
+    // 1) Harvest, remove, and process all keys of interest
+    const layoutConfig = pick(config, allKeys);
+    forOwn(layoutConfig, (v, k) => delete config[k]);
 
-function nestPropsToStyle(props) {
-    const ret = Object.assign({}, props);
-
-    // 1) Convert raw 'flex' number to string
-    flexKeys.forEach(k => {
-        const val = ret[k];
-        if (isNumber(val)) ret[k] = val.toString();
+    // 1a) flexXXX: convert raw number to string
+    const flexConfig = pick(layoutConfig, flexKeys);
+    forOwn(flexConfig, (v, k) => {
+        if (isNumber(v)) [k] = v.toString();
     });
 
-    // 2) Translate raw dimensions to pixels
-    forOwn(ret, (val, key) => {
-        const k = key.toLowerCase();
-        if (isNumber(val) && dimKeys.includes(key)) {
-            ret[k] = val + 'px';
-        }
+    // 1b) dimensions: Translate raw int to pixels
+    const dimConfig = pick(layoutConfig, dimKeys);
+    forOwn(dimConfig, (v, k) => {
+        if (isNumber(v)) layoutConfig[k] = v + 'px';
     });
 
-    // 3) Move properties of interest to 'style'
-    const style = Object.assign({}, ret.style);
-    styleKeys.forEach(k => {
-        const val = ret[k];
-        if (val !== undefined) {
-            style[k] = val;
-            delete ret[k];
-        }
-    });
-
-    if (!isEmpty(style)) {
-        ret.style = style;
-    }
-
-    return ret;
+    // 2) Apply this config on top of any config passed in
+    config.xhlayout = config.xhlayout ? merge(config.xhlayout, layoutConfig) : layoutConfig;
 }

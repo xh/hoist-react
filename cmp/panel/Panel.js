@@ -6,10 +6,11 @@
  */
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {castArray} from 'lodash';
+import {castArray, omitBy} from 'lodash';
 import {elemFactory, HoistComponent} from 'hoist/core';
 import {vframe, vbox} from 'hoist/layout';
 import {mask} from 'hoist/cmp';
+
 import {panelHeader} from './impl/PanelHeader';
 
 /**
@@ -37,13 +38,27 @@ export class Panel extends Component {
     baseCls = 'xh-panel';
 
     render() {
-        // Note: Padding is destructured here to be discarded because it breaks layout.
-        //       Similarly, isCollapsed must not be rendered as a custom attribute in the DOM.
-        const {className, tbar, bbar, title, icon, headerItems, masked, padding, isCollapsed, children, ...rest} = this.props,
-            wrapper = this.props.width || this.props.height ? vbox : vframe;
+        let {
+            className,
+            xhlayout,
+            tbar,
+            bbar,
+            title,
+            icon,
+            headerItems,
+            masked,
+            isCollapsed,
+            children,
+            ...rest
+        } = this.props;
+
+        xhlayout = omitBy(xhlayout, (v, k) => k.toLowerCase().includes('padding'));
+
+        const wrapper = xhlayout.width || xhlayout.height ? vbox : vframe;
 
         return wrapper({
             cls: className ? `${this.baseCls} ${className}` : this.baseCls,
+            xhlayout,
             ...rest,
             items: [
                 panelHeader({title, icon, headerItems}),
