@@ -11,7 +11,7 @@ import {observable, action} from 'hoist/mobx';
 export class ImpersonationBarModel {
     @observable isVisible = false;
 
-    @observable targets = null;
+    @observable.ref targets = [];
     @observable selectedTarget = '';
     @observable targetDialogOpen = false;
 
@@ -48,7 +48,8 @@ export class ImpersonationBarModel {
     // Target dialog management
     //--------------------------
     ensureTargetsLoaded() {
-        if (this.targets != null) return;
+        if (this.targets.length) return;
+
         XH.fetchJson({
             url: 'hoistImpl/impersonationTargets'
         }).then(

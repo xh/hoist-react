@@ -67,7 +67,7 @@ export class LoginPanel extends Component {
                             item: loginMessage
                         }) : null
                     ],
-                    bottomToolbar: toolbar(
+                    bbar: toolbar(
                         filler(),
                         button({
                             text: 'Login',

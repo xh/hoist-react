@@ -42,7 +42,7 @@ export class ImpersonationBar extends Component {
         if (!this.model.isVisible) return span();  // *Not* null, so hotkeys get rendered.
 
         return toolbar({
-            style: {color: 'white', backgroundColor: 'midnightblue'},
+            style: {color: 'white', backgroundColor: 'midnightblue', zIndex: 9999},
             items: [
                 Icon.user(),
                 span(`${isImpersonating ? 'Impersonating' : ''} ${username}`),

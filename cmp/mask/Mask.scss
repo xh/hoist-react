@@ -1,0 +1,26 @@
+.xh-mask {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  .pt-overlay-backdrop {
+    background-color: var(--xh-mask-bg);
+  }
+
+  .xh-mask-body {
+    align-items: center;
+    justify-content: center;
+
+    .xh-mask-text {
+      max-width: 200px;
+      text-align: center;
+      border-radius: var(--xh-border-radius-px);
+      padding: var(--xh-pad-half-px);
+      background-color: var(--xh-mask-text-bg);
+      color: var(--xh-mask-text-color);
+    }
+
+  }
+
+}

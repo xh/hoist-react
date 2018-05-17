@@ -30,22 +30,26 @@ export class SelectField extends BaseDropdownField {
 
     constructor(props) {
         super(props);
-        this.options = this.normalizeOptions(props.options);
+        this.internalOptions = this.normalizeOptions(props.options);
+    }
+
+    componentDidMount() {
+        this.addAutorun(() => this.internalOptions = this.normalizeOptions(this.props.options));
     }
 
     render() {
         let {style, width, placeholder, disabled} = this.props,
-            {renderValue, options} = this;
+            {renderValue, internalOptions} = this;
 
         return select({
             popoverProps: {popoverClassName: Classes.MINIMAL},
-            $items: options,
+            $items: internalOptions,
             onItemSelect: this.onItemSelect,
             itemRenderer: this.getOptionRenderer(),
             filterable: false,
             item: button({
                 rightIcon: 'caret-down',
-                text: this.getDisplayValue(renderValue, options, placeholder),
+                text: this.getDisplayValue(renderValue, internalOptions, placeholder),
                 style: {...style, width},
                 ...this.getDelegateProps()
             }),
