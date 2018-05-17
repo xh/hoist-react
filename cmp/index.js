@@ -16,4 +16,3 @@ export * from './tab';
 export * from './toolbar';
 export * from './resizable';
 export * from './mask';
-export * from './ToastManager';

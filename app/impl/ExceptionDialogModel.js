@@ -6,7 +6,7 @@
  */
 import {XH, HoistModel} from 'hoist/core';
 import {observable, setter, computed, action} from 'hoist/mobx';
-import {ToastManager} from 'hoist/cmp';
+import {ToastManager} from 'hoist/toast';
 
 /**
  * Local Model to handle Exception Dialog.
