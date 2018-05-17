@@ -12,6 +12,7 @@ import {box, hbox, vbox} from 'hoist/layout';
 import {ResizableModel} from './ResizableModel';
 import {dragger} from './impl/Dragger';
 import {collapser} from './impl/Collapser';
+import {collapsedDisplay} from './impl/CollapsedDisplay';
 
 /**
  * A Resizable/Collapsible Container
@@ -31,6 +32,10 @@ export class Resizable extends Component {
     static propTypes = {
         /** The side of this container on which the resize/collapse border will appear. */
         side: PT.oneOf(['top', 'right', 'bottom', 'left']).isRequired,
+        /** Icon to be shown as part of this component's collapsedDisplay */
+        icon: PT.element,
+        /** Title to be shown as part of this component's collapsedDisplay */
+        title: PT.string,
         /** Size of the content panel (width if side `left` or `right` - height otherwise). */
         contentSize: PT.number.isRequired,
         /** Can the panel be collapsed via collapse/expand toggle button? */
@@ -41,8 +46,6 @@ export class Resizable extends Component {
         isOpen: PT.bool,
         /** Optional preference name to store sizing and collapsed state for this component. */
         prefName: PT.string,
-        /** React Element to display when collapsed. */
-        collapsedDisplay: PT.element,
         /** ResizableModel - typically constructed internally by this component. */
         model: PT.object
     };
@@ -60,9 +63,10 @@ export class Resizable extends Component {
     }
 
     get side()              {return this.props.side}
+    get icon()              {return this.props.icon}
+    get title()             {return this.props.title}
     get isCollapsible()     {return this.props.isCollapsible !== false}
     get isDraggable()       {return this.props.isDraggable !== false}
-    get collapsedDisplay()  {return this.props.collapsedDisplay}
     get contentSize()       {return this.model.contentSize}
     get isOpen()            {return this.model.isOpen}
     get isVertical()        {return this.side === 'bottom' || this.side === 'top'}
@@ -110,11 +114,12 @@ export class Resizable extends Component {
     }
 
     renderCollapsedChild() {
-        const {collapsedDisplay, props} = this;
+        const {icon, title, props} = this;
 
         let child = Children.only(props.children);
-        if (collapsedDisplay) {
-            child = collapsedDisplay;
+
+        if (icon || title) {
+            child = collapsedDisplay({icon, title});
         } else if (child.type.isHoistComponent) {
             child = React.cloneElement(child, {isCollapsed: true});
         } else {
