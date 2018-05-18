@@ -6,11 +6,11 @@
  */
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from 'hoist/core';
-import {filler, frame} from 'hoist/layout';
-import {button, dialog} from 'hoist/kit/blueprint/';
-import {toolbar} from 'hoist/cmp';
-import {Icon} from 'hoist/icon/';
-import {leftRightChooser} from 'hoist/cmp/leftRightChooser';
+import {filler, frame} from 'hoist/cmp/layout';
+import {toolbar} from 'hoist/cmp/toolbar';
+import {leftRightChooser} from 'hoist/cmp/leftrightchooser';
+import {button, dialog} from 'hoist/kit/blueprint';
+import {Icon} from 'hoist/icon';
 
 @HoistComponent()
 export class ColChooser extends Component {
