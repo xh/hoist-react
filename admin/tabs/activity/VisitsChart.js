@@ -6,9 +6,12 @@
  */
 
 import {Component} from 'react';
-import {refreshButton, dayField, label, panel, textField, toolbar} from 'hoist/cmp';
 import {HoistComponent, elemFactory} from 'hoist/core';
-import {chart} from 'hoist/highcharts';
+import {dayField, label, textField} from 'hoist/cmp/form';
+import {panel} from 'hoist/cmp/panel';
+import {toolbar} from 'hoist/cmp/toolbar';
+import {refreshButton} from 'hoist/cmp/button';
+import {chart} from 'hoist/cmp/chart';
 import {Icon} from 'hoist/icon';
 
 @HoistComponent()

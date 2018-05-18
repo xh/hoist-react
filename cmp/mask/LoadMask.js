@@ -8,7 +8,7 @@
 import {PropTypes as PT} from 'prop-types';
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from 'hoist/core';
-import {vbox, vspacer, box} from 'hoist/layout';
+import {vbox, vspacer, box} from 'hoist/cmp/layout';
 import {Classes, overlay, spinner} from 'hoist/kit/blueprint';
 
 import './Mask.scss';

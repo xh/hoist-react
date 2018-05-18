@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {castArray, clone, merge} from 'lodash';
 import {XH, elemFactory, HoistComponent} from 'hoist/core';
-import {div, frame} from 'hoist/layout';
+import {div, frame} from 'hoist/cmp/layout';
 import {Ref} from 'hoist/utils/Ref';
 import Highcharts from 'highcharts/highstock';
 

@@ -8,9 +8,10 @@
 import {Component} from 'react';
 import {defaults} from 'lodash';
 import {HoistComponent, elemFactory} from 'hoist/core';
-import {grid} from 'hoist/grid';
-import {fragment} from 'hoist/layout';
-import {message, panel} from 'hoist/cmp';
+import {grid} from 'hoist/cmp/grid';
+import {fragment} from 'hoist/cmp/layout';
+import {message} from 'hoist/cmp/message';
+import {panel} from 'hoist/cmp/panel';
 
 import {restGridToolbar} from './RestGridToolbar';
 import {restForm} from './RestForm';

@@ -7,10 +7,9 @@
 
 import {Component} from 'react';
 import {XH, HoistComponent, elemFactory, hoistComponentFactory} from 'hoist/core';
-import {fragment} from 'hoist/layout';
-import {toolbar} from 'hoist/cmp';
+import {filler, fragment} from 'hoist/cmp/layout';
+import {toolbar} from 'hoist/cmp/toolbar';
 import {Icon} from 'hoist/icon';
-import {filler} from 'hoist/layout';
 import {button, dialog, dialogBody} from 'hoist/kit/blueprint';
 
 import {ExceptionDialogModel} from './ExceptionDialogModel';

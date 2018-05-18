@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from 'hoist/core';
-import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
+import {restGrid, RestGridModel, RestStore} from 'hoist/cmp/rest';
 import {baseCol} from 'hoist/columns/Core';
 import {usernameCol} from '../../columns/Columns';
 import {compactDateRenderer} from '../../../format';

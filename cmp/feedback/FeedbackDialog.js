@@ -7,8 +7,9 @@
 import {Component} from 'react';
 import {button, dialog} from 'hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from 'hoist/core';
-import {filler} from 'hoist/layout';
-import {textAreaField, toolbar} from 'hoist/cmp';
+import {filler} from 'hoist/cmp/layout';
+import {textAreaField} from 'hoist/cmp/form';
+import {toolbar} from 'hoist/cmp/toolbar';
 
 /**
  * A simple dialog component to collect user feedback from directly within the application.

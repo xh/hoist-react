@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from 'hoist/core';
-import {GridModel} from 'hoist/grid';
+import {GridModel} from 'hoist/cmp/grid';
 import {baseCol} from 'hoist/columns/Core';
 import {LocalStore} from 'hoist/data';
 import {computed} from 'hoist/mobx';

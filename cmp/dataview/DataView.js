@@ -7,8 +7,8 @@
 
 import {Component} from 'react';
 import {XH, HoistComponent, elemFactory} from 'hoist/core';
-import {grid} from 'hoist/grid';
-import {GridModel} from 'hoist/grid';
+import {grid} from 'hoist/cmp/grid';
+import {GridModel} from 'hoist/cmp/grid';
 import {baseCol} from 'hoist/columns/Core';
 
 @HoistComponent()

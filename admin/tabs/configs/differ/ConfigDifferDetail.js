@@ -8,8 +8,9 @@ import {Component} from 'react';
 import {keys, toString} from 'lodash';
 import {HoistComponent, elemFactory} from 'hoist/core';
 import {button, dialog} from 'hoist/kit/blueprint';
-import {filler, table, tbody, tr, th, td} from 'hoist/layout';
-import {panel, toolbar} from 'hoist/cmp';
+import {filler, table, tbody, tr, th, td} from 'hoist/cmp/layout';
+import {panel} from 'hoist/cmp/panel';
+import {toolbar} from 'hoist/cmp/toolbar';
 import {Icon} from 'hoist/icon';
 
 import './Differ.scss';
