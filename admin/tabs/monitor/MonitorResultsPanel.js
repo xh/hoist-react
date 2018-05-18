@@ -9,7 +9,7 @@ import {HoistComponent} from 'hoist/core';
 import {monitorResultsToolbar} from './MonitorResultsToolbar';
 import {monitorResultsDisplay} from './MonitorResultsDisplay';
 import {MonitorResultsModel} from './MonitorResultsModel';
-import {panel} from 'hoist/cmp';
+import {panel} from 'hoist/cmp/panel';
 import './MonitorResultsPanel.scss';
 
 

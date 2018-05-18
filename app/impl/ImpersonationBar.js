@@ -6,10 +6,11 @@
  */
 
 import {Component} from 'react';
-import {XH, elemFactory, HoistComponent} from 'hoist/core';
-import {vbox, filler, span, box} from 'hoist/layout';
 import {button, popover, hotkeys, hotkey} from 'hoist/kit/blueprint';
-import {comboField, toolbar} from 'hoist/cmp';
+import {XH, elemFactory, HoistComponent} from 'hoist/core';
+import {vbox, filler, span, box} from 'hoist/cmp/layout';
+import {comboField} from 'hoist/cmp/form';
+import {toolbar} from 'hoist/cmp/toolbar';
 import {Icon} from 'hoist/icon';
 
 import {ImpersonationBarModel} from './ImpersonationBarModel';
@@ -42,7 +43,7 @@ export class ImpersonationBar extends Component {
         if (!this.model.isVisible) return span();  // *Not* null, so hotkeys get rendered.
 
         return toolbar({
-            style: {color: 'white', backgroundColor: 'midnightblue'},
+            style: {color: 'white', backgroundColor: 'midnightblue', zIndex: 9999},
             items: [
                 Icon.user(),
                 span(`${isImpersonating ? 'Impersonating' : ''} ${username}`),

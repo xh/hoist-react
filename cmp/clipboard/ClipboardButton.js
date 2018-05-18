@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, XH, elemFactory} from 'hoist/core';
 import {button} from 'hoist/kit/blueprint';
-import {ToastManager} from 'hoist/cmp';
+import {ToastManager} from 'hoist/toast';
 import {Icon} from 'hoist/icon';
 
 import ClipboardJS from 'clipboard';

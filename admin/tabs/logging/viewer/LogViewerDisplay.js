@@ -8,8 +8,9 @@ import {Component} from 'react';
 import {elemFactory, HoistComponent} from 'hoist/core';
 import {Icon} from 'hoist/icon';
 import {Ref} from 'hoist/utils/Ref';
-import {frame, table, tbody, td, tr} from 'hoist/layout';
-import {clipboardMenuItem, contextMenu} from 'hoist/cmp';
+import {frame, table, tbody, td, tr} from 'hoist/cmp/layout';
+import {clipboardMenuItem} from 'hoist/cmp/clipboard';
+import {contextMenu} from 'hoist/cmp/contextmenu';
 
 @HoistComponent()
 class LogViewerDisplay extends Component {

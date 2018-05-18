@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {XH, elemFactory, HoistComponent} from 'hoist/core';
-import {box} from 'hoist/layout';
+import {box} from 'hoist/cmp/layout';
 import {Icon} from 'hoist/icon';
 import './VersionBar.scss';
 

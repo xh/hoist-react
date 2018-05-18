@@ -8,7 +8,7 @@
 import {XH, HoistModel} from 'hoist/core';
 import {start} from 'hoist/promise';
 import {observable, computed, action} from 'hoist/mobx';
-import {MessageModel} from 'hoist/cmp';
+import {MessageModel} from 'hoist/cmp/message';
 import {Icon} from 'hoist/icon';
 import {isEqual} from 'lodash';
 

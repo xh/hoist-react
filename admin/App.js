@@ -6,10 +6,13 @@
  */
 
 import {Component} from 'react';
-import {XH, HoistComponent} from 'hoist/core';
-import {frame} from 'hoist/layout';
 import {navbar, navbarGroup, navbarHeading, button} from 'hoist/kit/blueprint';
-import {logoutButton, lockoutPanel, panel, tabContainer, themeToggleButton, refreshButton} from 'hoist/cmp';
+import {XH, HoistComponent} from 'hoist/core';
+import {lockoutPanel} from 'hoist/app';
+import {tabContainer} from 'hoist/cmp/tab';
+import {frame} from 'hoist/cmp/layout';
+import {panel} from 'hoist/cmp/panel';
+import {logoutButton, themeToggleButton, refreshButton} from 'hoist/cmp/button';
 import {Icon} from 'hoist/icon';
 
 import './App.scss';
@@ -17,7 +20,7 @@ import './App.scss';
 @HoistComponent()
 export class App extends Component {
     render() {
-        if (!XH.identityService.user.isHoistAdmin) {
+        if (!XH.getUser().isHoistAdmin) {
             return lockoutPanel({message: 'Access to this area requires administrator permissions.'});
         }
 

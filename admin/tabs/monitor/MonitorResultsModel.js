@@ -7,7 +7,7 @@
 
 import {XH, HoistModel} from 'hoist/core';
 import {SECONDS} from 'hoist/utils/DateTimeUtils';
-import {ToastManager} from 'hoist/cmp';
+import {ToastManager} from 'hoist/toast';
 import {action, observable, computed} from 'hoist/mobx';
 import {min} from 'lodash';
 import {Timer} from 'hoist/utils/Timer';

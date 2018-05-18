@@ -6,9 +6,13 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from 'hoist/core';
-import {filler, hframe} from 'hoist/layout';
-import {grid} from 'hoist/grid';
-import {loadMask, panel, resizable, storeFilterField, toolbar} from 'hoist/cmp';
+import {filler, hframe} from 'hoist/cmp/layout';
+import {grid} from 'hoist/cmp/grid';
+import {loadMask} from 'hoist/cmp/mask';
+import {panel} from 'hoist/cmp/panel';
+import {resizable} from 'hoist/cmp/resizable';
+import {toolbar} from 'hoist/cmp/toolbar';
+import {storeFilterField} from 'hoist/cmp/store';
 
 import {logViewerDisplay} from './LogViewerDisplay';
 import {LogViewerModel} from './LogViewerModel';

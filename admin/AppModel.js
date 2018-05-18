@@ -7,7 +7,7 @@
 import {XH} from 'hoist/core';
 import {HoistAppModel} from 'hoist/app';
 import {action} from 'hoist/mobx';
-import {TabContainerModel} from 'hoist/cmp';
+import {TabContainerModel} from 'hoist/cmp/tab';
 
 import {AboutPanel} from './tabs/about/AboutPanel';
 import {ActivityPanel} from './tabs/activity/ActivityPanel';

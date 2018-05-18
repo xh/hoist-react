@@ -8,7 +8,7 @@
 import {HoistModel} from 'hoist/core';
 import {action, observable} from 'hoist/mobx';
 import {StoreSelectionModel} from 'hoist/data';
-import {StoreContextMenu} from 'hoist/cmp';
+import {StoreContextMenu} from 'hoist/cmp/contextmenu';
 import {castArray, find, isString, orderBy} from 'lodash';
 
 /**

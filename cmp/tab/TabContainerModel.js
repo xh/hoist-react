@@ -9,7 +9,7 @@ import {action, computed, observable} from 'hoist/mobx';
 import {isPlainObject, max, startCase, uniqBy} from 'lodash';
 import {throwIf} from 'hoist/utils/JsUtils';
 import {wait} from 'hoist/promise';
-import {TabPaneModel} from 'hoist/cmp';
+import {TabPaneModel} from 'hoist/cmp/tab';
 
 /**
  * Model for a TabContainer, representing its layout/contents and currently selected TabPane.

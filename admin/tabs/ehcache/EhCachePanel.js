@@ -7,9 +7,12 @@
 import {Component} from 'react';
 import {button} from 'hoist/kit/blueprint';
 import {HoistComponent} from 'hoist/core';
-import {grid} from 'hoist/grid';
-import {filler} from 'hoist/layout';
-import {panel, refreshButton, storeCountLabel, storeFilterField, toolbar, toolbarSep} from 'hoist/cmp';
+import {grid} from 'hoist/cmp/grid';
+import {filler} from 'hoist/cmp/layout';
+import {panel} from 'hoist/cmp/panel';
+import {toolbar, toolbarSep} from 'hoist/cmp/toolbar';
+import {refreshButton} from 'hoist/cmp/button';
+import {storeCountLabel, storeFilterField} from 'hoist/cmp/store';
 import {Icon} from 'hoist/icon';
 
 import {EhCacheModel} from './EhCacheModel';

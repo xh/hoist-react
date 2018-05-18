@@ -7,7 +7,7 @@
 import {isEmpty} from 'lodash';
 import {XH, HoistModel} from 'hoist/core';
 import {action, observable, setter} from 'hoist/mobx';
-import {ToastManager} from 'hoist/cmp';
+import {ToastManager} from 'hoist/toast';
 
 @HoistModel()
 /** Model for a FeedbackDialog, managing its open/close state and feedback string. */
