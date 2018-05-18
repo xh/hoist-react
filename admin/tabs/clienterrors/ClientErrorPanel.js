@@ -7,8 +7,7 @@
 import {Component} from 'react';
 import {button} from 'hoist/kit/blueprint';
 import {HoistComponent} from 'hoist/core';
-import {filler} from 'hoist/cmp/layout';
-import {panel} from 'hoist/cmp/panel';
+import {filler, panel} from 'hoist/cmp/layout';
 import {grid} from 'hoist/cmp/grid';
 import {textField, dayField} from 'hoist/cmp/form';
 import {toolbar, toolbarSep} from 'hoist/cmp/toolbar';

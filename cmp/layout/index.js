@@ -8,6 +8,11 @@ import React from 'react';
 import {elemFactory} from 'hoist/core';
 import * as Containers from './Containers';
 
+export * from './panel/Panel';
+export * from './resizable/Resizable';
+export * from './resizable/ResizableModel';
+
+
 //------------------------------
 // Standard container factories
 //-------------------------------

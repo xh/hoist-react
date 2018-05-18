@@ -6,10 +6,12 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from 'hoist/core';
+import {panel} from 'hoist/cmp/layout';
+
 import {monitorResultsToolbar} from './MonitorResultsToolbar';
 import {monitorResultsDisplay} from './MonitorResultsDisplay';
 import {MonitorResultsModel} from './MonitorResultsModel';
-import {panel} from 'hoist/cmp/panel';
+
 import './MonitorResultsPanel.scss';
 
 

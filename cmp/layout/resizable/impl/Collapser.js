@@ -10,7 +10,8 @@ import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from 'hoist/core';
 import {Icon} from 'hoist/icon';
 import {button} from 'hoist/kit/blueprint';
-import {hbox, vbox} from 'hoist/cmp/layout';
+
+import {hbox, vbox} from '../../index';
 
 import './Collapser.scss';
 
