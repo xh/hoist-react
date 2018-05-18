@@ -7,7 +7,7 @@
 
 import {HoistModel} from 'hoist/core';
 import {StoreSelectionModel} from 'hoist/data';
-import {StoreContextMenu} from 'hoist/cmp/panel';
+import {StoreContextMenu} from 'hoist/cmp/contextmenu';
 
 /**
  * DataViewModel is a wrapper around GridModel, which shows sorted data in
