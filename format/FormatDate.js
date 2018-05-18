@@ -100,7 +100,7 @@ export function fmtCompactDate(v, {
         valueDay = fmtDate(v),
         recentPast = now.clone().subtract(distantThreshold, 'months').endOf('month'),
         nearFuture = now.clone().add(distantThreshold, 'months').date(1),
-        dateOpts = {tipFn: tipFn, originalValue: originalValue, asElement: asElement};
+        dateOpts = {tipFn, originalValue, asElement};
 
     if (today === valueDay) {
         dateOpts.fmt = sameDayFmt;
