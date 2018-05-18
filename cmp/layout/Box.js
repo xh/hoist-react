@@ -13,15 +13,14 @@ import {div} from './Tags';
  * A Component that supports flexbox-based layout of its contents.
  *
  * Box is the component that implements the flexbox layout properties that
- * are parsed by HoistComponent's 'layoutSupport'.  It renders a div that
- * publishes the properties in 'layoutConfig' down to the div's 'style'
- * property.
+ * are parsed and prepared by HoistComponent's 'layoutSupport'.
+ *
+ * It renders a div that publishes the properties in 'layoutConfig' down to
+ * the div's 'style' property.
  *
  * HoistComponents that provide layoutSupport should typically render a Box
- * at their root (or another component with layoutSupport: true), passing their
- * own layoutConfig to their child as a prop.
- *
- * See also VBox, HBox.
+ * or another component with {layoutSupport: true} at their root and pass their
+ * own layoutConfig to that child as a prop.
  */
 @HoistComponent({layoutSupport: true})
 export class Box extends Component {
@@ -54,4 +53,3 @@ export class HBox extends Component {
 export const box = elemFactory(Box);
 export const vbox = elemFactory(VBox);
 export const hbox = elemFactory(HBox);
-

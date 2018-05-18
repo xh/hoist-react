@@ -11,7 +11,7 @@ import {elemFactory, HoistComponent} from 'hoist/core';
 import {mask} from 'hoist/cmp/mask';
 
 import {panelHeader} from './impl/PanelHeader';
-import {vframe, vbox} from '../index';
+import {vbox} from '../index';
 
 /**
  * A Panel container builds on the lower-level layout components to offer a header element
@@ -52,11 +52,16 @@ export class Panel extends Component {
             ...rest
         } = this.props;
 
-        layoutConfig = omitBy(layoutConfig, (v, k) => k.toLowerCase().includes('padding'));
+        // Block unwanted use of padding props, which will separate the panel's header
+        // and bottom toolbar from its edges in a confusing way.
+        layoutConfig = omitBy(layoutConfig, (v, k) => k.startsWith('padding'));
 
-        const wrapper = layoutConfig.width || layoutConfig.height ? vbox : vframe;
+        // Give Panels a default flexing behavior if no dimensions / flex specified.
+        if (layoutConfig.width == null && layoutConfig.height == null && layoutConfig.flex == null) {
+            layoutConfig.flex = 'auto';
+        }
 
-        return wrapper({
+        return vbox({
             cls: className ? `${this.baseCls} ${className}` : this.baseCls,
             layoutConfig,
             ...rest,

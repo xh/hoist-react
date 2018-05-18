@@ -38,17 +38,17 @@ import {Exception} from 'hoist/exception';
  */
 export function elem(type, config = {}) {
 
-    // 1) seperate elem config from api props
+    // 1) Separate and pre-process custom elem configs (distinct from Component API props).
     let {cls, item, items, itemSpec, omit, ...props} = config;
 
-    // 2) Pre-process elem config into props.
     if (cls) props.className = cls;
-    if (omit) props.xhomit = 'true';
+    if (omit) props.xhOmit = 'true';
+
     if (type.layoutSupport) {
         processLayoutConfig(props);
     }
 
-    // 3) Special handling to recapture API props that needed '$' prefix to avoid conflicts with above
+    // 2) Special handling to recapture API props that needed '$' prefix to avoid conflicts with above.
     forOwn(props, (val, key) => {
         if (key.startsWith('$')) {
             props[key.substring(1)] = props[key];
@@ -56,7 +56,7 @@ export function elem(type, config = {}) {
         }
     });
 
-    // 4) Process children
+    // 3) Process children.
     items = item || items;
     items = castArray(items);
     
@@ -75,8 +75,8 @@ export function elem(type, config = {}) {
             throw Exception.create(`Unable to create child element for [${it.toString()}].`);
         });
 
-    // 5a) Remove omitted children last, after elements generated from configs have been created.
-    items = items.filter(it => !it.props || !it.props.xhomit);
+    // 4) Remove omitted children last, after elements generated from configs have been created.
+    items = items.filter(it => !it.props || !it.props.xhOmit);
 
     return React.createElement(type, props, ...items);
 }
@@ -122,8 +122,7 @@ function normalizeArgs(args) {
 
 //-------------------------------------------------------------------------
 // Support for layoutConfig
-//
-// Pre-process and bundle layout related keys below into a 'xhlayout' key
+// Pre-process and bundle layout related keys below into a 'layoutConfig' key
 //-------------------------------------------------------------------------
 const dimKeys = [
     'margin', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft',
@@ -132,9 +131,9 @@ const dimKeys = [
     'width', 'minWidth', 'maxWidth'
 ];
 const flexKeys = ['flex', 'flexBasis', 'flexDirection', 'flexGrow', 'flexShrink', 'flexWrap'];
-const alignKeys = ['alignItems', 'alignSelf', 'alignContent'];
+const alignKeys = ['alignItems', 'alignSelf', 'alignContent', 'justifyContent'];
 const overflowKeys = ['overflow', 'overflowX', 'overflowY'];
-const otherKeys = ['top', 'left', 'position', 'display', 'justifyContent'];
+const otherKeys = ['top', 'left', 'position', 'display'];
 const allKeys = [...dimKeys, ...flexKeys, ...alignKeys, ...overflowKeys, ...otherKeys];
 
 function processLayoutConfig(config) {
@@ -145,10 +144,10 @@ function processLayoutConfig(config) {
     // 1a) flexXXX: convert raw number to string
     const flexConfig = pick(layoutConfig, flexKeys);
     forOwn(flexConfig, (v, k) => {
-        if (isNumber(v)) [k] = v.toString();
+        if (isNumber(v)) layoutConfig[k] = v.toString();
     });
 
-    // 1b) dimensions: Translate raw int to pixels
+    // 1b) Dimensions: Translate raw into pixels
     const dimConfig = pick(layoutConfig, dimKeys);
     forOwn(dimConfig, (v, k) => {
         if (isNumber(v)) layoutConfig[k] = v + 'px';

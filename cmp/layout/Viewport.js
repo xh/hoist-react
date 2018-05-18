@@ -11,20 +11,19 @@ import {box} from './Box';
 
 /**
  * A container for the top level of the application.
- * Will stretch to encompass the entire browser
+ * Will stretch to encompass the entire browser.
  */
 @HoistComponent({layoutSupport: true})
 export class Viewport extends Component {
     render() {
-        const config = {
+        return box({
             top: 0,
             left: 0,
             position: 'fixed',
             width: '100%',
             height: '100%',
             ...this.props
-        };
-        return box(config);
+        });
     }
 }
 export const viewport = elemFactory(Viewport);
