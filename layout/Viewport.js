@@ -13,7 +13,7 @@ import {box} from './Box';
  * A container for the top level of the application.
  * Will stretch to encompass the entire browser
  */
-@HoistComponent()
+@HoistComponent({layoutSupport: true})
 export class Viewport extends Component {
     render() {
         const config = {

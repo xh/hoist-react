@@ -14,21 +14,21 @@ import {box} from './Box';
  *
  * This class is useful for creating nested layouts.  See also VFrame, and HFrame.
  */
-@HoistComponent()
+@HoistComponent({layoutSupport: true})
 export class Frame extends Component {
     render() {
         return box({flex: 'auto', ...this.props});
     }
 }
 
-@HoistComponent()
+@HoistComponent({layoutSupport: true})
 export class VFrame extends Component {
     render() {
         return box({flex: 'auto', flexDirection: 'column', ...this.props});
     }
 }
 
-@HoistComponent()
+@HoistComponent({layoutSupport: true})
 export class HFrame extends Component {
     render() {
         return box({flex: 'auto', flexDirection: 'row', ...this.props});

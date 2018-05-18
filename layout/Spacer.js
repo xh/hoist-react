@@ -13,7 +13,7 @@ import {box} from './Box';
  * A component useful for inserting fixed spacing along the main axis of its
  * parent container.
  */
-@HoistComponent()
+@HoistComponent({layoutSupport: true})
 export class Spacer extends Component {
     render() {
         return box({flex: 'none', ...this.props});
@@ -24,7 +24,7 @@ export class Spacer extends Component {
  * A component useful for stretching to soak up space along the main axis of its
  * parent container.
  */
-@HoistComponent()
+@HoistComponent({layoutSupport: true})
 export class Filler extends Component {
     render() {
         return box({flex: 'auto', ...this.props});

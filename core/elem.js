@@ -38,16 +38,14 @@ import {Exception} from 'hoist/exception';
  */
 export function elem(type, config = {}) {
 
-    // 1) seperate hoist psuedo-props from api props
+    // 1) seperate elem config from api props
     let {cls, item, items, itemSpec, omit, ...props} = config;
 
-    // 2) Pre-process pseudo props.
-    if (cls) {
-        props.className = cls;
-    }
+    // 2) Pre-process elem config into props.
+    if (cls) props.className = cls;
     if (omit) props.xhomit = 'true';
-    if (type.supportsLayoutProps) {
-        processLayoutProps(props);
+    if (type.layoutSupport) {
+        processLayoutConfig(props);
     }
 
     // 3) Special handling to recapture API props that needed '$' prefix to avoid conflicts with above
@@ -123,7 +121,7 @@ function normalizeArgs(args) {
 }
 
 //-------------------------------------------------------------------------
-// Support for layoutProps
+// Support for layoutConfig
 //
 // Pre-process and bundle layout related keys below into a 'xhlayout' key
 //-------------------------------------------------------------------------
@@ -139,7 +137,7 @@ const overflowKeys = ['overflow', 'overflowX', 'overflowY'];
 const otherKeys = ['top', 'left', 'position', 'display', 'justifyContent'];
 const allKeys = [...dimKeys, ...flexKeys, ...alignKeys, ...overflowKeys, ...otherKeys];
 
-function processLayoutProps(config) {
+function processLayoutConfig(config) {
     // 1) Harvest, remove, and process all keys of interest
     const layoutConfig = pick(config, allKeys);
     forOwn(layoutConfig, (v, k) => delete config[k]);
@@ -157,5 +155,5 @@ function processLayoutProps(config) {
     });
 
     // 2) Apply this config on top of any config passed in
-    config.xhlayout = config.xhlayout ? merge(config.xhlayout, layoutConfig) : layoutConfig;
+    config.layoutConfig = config.layoutConfig ? merge(config.layoutConfig, layoutConfig) : layoutConfig;
 }

@@ -24,14 +24,14 @@ import {elemFactory} from './elem';
  * Adds support for managed events, mobx reactivity, model awareness, and other convenience getters.
  */
 export function HoistComponent({
-    supportsLayoutProps = true,
-    isEventTarget = true,
-    isReactive = true
+    isReactive = true,
+    isEventTarget = false,
+    layoutSupport = false
 } = {}) {
 
     return (C) => {
         C.isHoistComponent = true;
-        C.supportsLayoutProps = supportsLayoutProps;
+        C.layoutSupport = layoutSupport;
 
         //-----------
         // Mixins
@@ -59,6 +59,10 @@ export function HoistComponent({
              */
             model: {
                 get() {return this.localModel ? this.localModel : this.props.model}
+            },
+
+            layoutConfig: {
+                get() {return this.props.layoutConfig}
             },
 
             /**

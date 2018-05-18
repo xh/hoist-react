@@ -17,7 +17,7 @@ import {panelHeader} from './impl/PanelHeader';
  * A Panel container builds on the lower-level layout components to offer a header element
  * w/standardized styling, title, and Icon as well as support for top and bottom toolbars.
  */
-@HoistComponent()
+@HoistComponent({layoutSupport: true})
 export class Panel extends Component {
 
     static propTypes = {
@@ -40,7 +40,7 @@ export class Panel extends Component {
     render() {
         let {
             className,
-            xhlayout,
+            layoutConfig,
             tbar,
             bbar,
             title,
@@ -52,13 +52,13 @@ export class Panel extends Component {
             ...rest
         } = this.props;
 
-        xhlayout = omitBy(xhlayout, (v, k) => k.toLowerCase().includes('padding'));
+        layoutConfig = omitBy(layoutConfig, (v, k) => k.toLowerCase().includes('padding'));
 
-        const wrapper = xhlayout.width || xhlayout.height ? vbox : vframe;
+        const wrapper = layoutConfig.width || layoutConfig.height ? vbox : vframe;
 
         return wrapper({
             cls: className ? `${this.baseCls} ${className}` : this.baseCls,
-            xhlayout,
+            layoutConfig,
             ...rest,
             items: [
                 panelHeader({title, icon, headerItems}),

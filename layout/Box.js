@@ -10,21 +10,26 @@ import {elemFactory, HoistComponent} from 'hoist/core';
 import {div} from './Tags';
 
 /**
- * Box is a div that publishes the flexbox layout related properties in
- * 'xhlayout' down to the dom level 'style' property.
+ * A Component that supports flexbox-based layout of its contents.
  *
- * Components that wish to support these properties should typically
- * render a Box as their top level element.
+ * Box is the component that implements the flexbox layout properties that
+ * are parsed by HoistComponent's 'layoutSupport'.  It renders a div that
+ * publishes the properties in 'layoutConfig' down to the div's 'style'
+ * property.
+ *
+ * HoistComponents that provide layoutSupport should typically render a Box
+ * at their root (or another component with layoutSupport: true), passing their
+ * own layoutConfig to their child as a prop.
  *
  * See also VBox, HBox.
  */
-@HoistComponent()
+@HoistComponent({layoutSupport: true})
 export class Box extends Component {
     render() {
-        let {xhlayout, isCollapsed, children, ...props} = this.props;
+        let {isCollapsed, children, layoutConfig, ...props} = this.props;
         props = merge(
             {style: {display: 'flex', overflow: 'hidden', position: 'relative'}},
-            {style: xhlayout},
+            {style: layoutConfig},
             props
         );
 
@@ -32,14 +37,14 @@ export class Box extends Component {
     }
 }
 
-@HoistComponent()
+@HoistComponent({layoutSupport: true})
 export class VBox extends Component {
     render() {
         return box({flexDirection: 'column', ...this.props});
     }
 }
 
-@HoistComponent()
+@HoistComponent({layoutSupport: true})
 export class HBox extends Component {
     render() {
         return box({flexDirection: 'row', ...this.props});
