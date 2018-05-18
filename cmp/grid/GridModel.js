@@ -4,12 +4,14 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
-import {HoistModel} from 'hoist/core';
-import {action, observable} from 'hoist/mobx';
+import {XH, HoistModel} from 'hoist/core';
+import {action, computed, observable} from 'hoist/mobx';
 import {StoreSelectionModel} from 'hoist/data';
 import {StoreContextMenu} from 'hoist/cmp/contextmenu';
+import {Icon} from 'hoist/icon';
 import {castArray, find, isString, orderBy} from 'lodash';
+
+import {ColChooserModel} from './ColChooserModel';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -22,21 +24,40 @@ export class GridModel {
     store = null;
     selection = null;
     contextMenuFn = null;
+    colChooserModel = null;
 
     @observable.ref agApi = null;
     @observable.ref columns = [];
     @observable.ref sortBy = [];
     @observable groupBy = null;
 
-    static defaultContextMenu = () => {
+    // For cols defined (as expected) via a Hoist columnFactory,
+    // strip enumerated Hoist custom configs before passing to ag-Grid.
+    @computed
+    get agColDefs() {
+        return this.columns.map(col => {
+            return col.agColDef ? col.agColDef() : col;
+        });
+    }
+
+    defaultContextMenu = () => {
         return new StoreContextMenu([
             'copy',
             'copyWithHeaders',
             '-',
             'export',
-            'autoSizeAll'
+            'autoSizeAll',
+            '-',
+            {
+                text: 'Columns...',
+                icon: Icon.grid(),
+                hidden: !this.colChooserModel,
+                action: () => {
+                    this.colChooserModel.open();
+                }
+            }
         ]);
-    }
+    };
 
     /**
      * @param {BaseStore} store - store containing the data for the grid.
@@ -48,6 +69,8 @@ export class GridModel {
      * @param {string} [sortBy[].colId] - Column ID by which to sort.
      * @param {string} [sortBy[].sort] - sort direction [asc|desc].
      * @param {string} [groupBy] - Column ID by which to group.
+     * @param {boolean} [enableColChooser] - true to setup support for column chooser UI and
+     *      install a default context menu item to launch the chooser.
      * @param {function} [contextMenuFn] - closure returning a StoreContextMenu().
      */
     constructor({
@@ -57,13 +80,20 @@ export class GridModel {
         emptyText = null,
         sortBy = [],
         groupBy = null,
-        contextMenuFn = GridModel.defaultContextMenu
+        enableColChooser = false,
+        contextMenuFn = () => this.defaultContextMenu()
     }) {
         this.store = store;
         this.columns = columns;
         this.contextMenuFn = contextMenuFn;
+
         this.selection = selection || new StoreSelectionModel({store: this.store});
         this.emptyText = emptyText;
+
+        if (enableColChooser) {
+            this.colChooserModel = new ColChooserModel(this);
+        }
+
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
     }
@@ -126,7 +156,6 @@ export class GridModel {
         this.sortBy = sortBy;
     }
 
-
     /** Load the underlying store. */
     loadAsync(...args) {
         return this.store.loadAsync(...args);
@@ -135,6 +164,22 @@ export class GridModel {
     /** Load the underlying store. */
     loadData(...args) {
         return this.store.loadData(...args);
+    }
+
+    // TODO - review options for a "true" clone here, and behavior of setColumns() below.
+    cloneColumns() {
+        return [...this.columns];
+    }
+
+    @action
+    setColumns(cols) {
+        this.columns = [...cols];
+    }
+
+    showColChooser() {
+        if (this.colChooserModel) {
+            this.colChooserModel.open();
+        }
     }
 
     //-----------------------
@@ -151,6 +196,7 @@ export class GridModel {
     }
 
     destroy() {
+        XH.safeDestroy(this.colChooserModel);
         // TODO: How are Stores destroyed?
     }
 }

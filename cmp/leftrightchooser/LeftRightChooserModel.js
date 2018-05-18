@@ -28,6 +28,9 @@ export class LeftRightChooserModel {
 
     _lastSelectedSide = null;
 
+    _leftGroupingEnabled = null;
+    _rightGroupingEnabled = null;
+
     /**
      * Filter for data rows to determine if they should be shown.
      * Useful for helping users find values of interest in a large pool of rows.
@@ -45,8 +48,15 @@ export class LeftRightChooserModel {
     }
 
     /** Currently 'selected' values on the right hand side. */
-    @computed get value() {
-        return this.rightModel.store.allRecords;
+    @computed
+    get rightValues() {
+        return this.rightModel.store.allRecords.map(it => it.value);
+    }
+
+    /** Currently 'selected' values on the left hand side. */
+    @computed
+    get leftValues() {
+        return this.leftModel.store.allRecords.map(it => it.value);
     }
 
     /**
@@ -77,17 +87,15 @@ export class LeftRightChooserModel {
         rightGroupingEnabled = true,
         rightSortBy = []
     }) {
-        const hasGrouping = data.some(it => it.group);
-        this.hasDescription = data.some(it => it.description);
-
-        this._data = this.preprocessData(data, ungroupedName);
+        this._ungroupedName = ungroupedName;
+        this._leftGroupingEnabled = leftGroupingEnabled;
+        this._rightGroupingEnabled = rightGroupingEnabled;
 
         const fields = ['text', 'value', 'description', 'group', 'side', 'locked', 'exclude'];
 
         this.leftModel = new GridModel({
             store: new LocalStore({fields}),
             sortBy: leftSortBy,
-            groupBy: (leftGroupingEnabled && hasGrouping) ? 'group' : null,
             columns: [
                 baseCol({headerName: leftTitle, field: 'text', cellRendererFramework: ItemRenderer}),
                 baseCol({headerName: 'Group', field: 'group', hide: true})
@@ -97,26 +105,39 @@ export class LeftRightChooserModel {
         this.rightModel = new GridModel({
             store: new LocalStore({fields}),
             sortBy: rightSortBy,
-            groupBy: (rightGroupingEnabled && hasGrouping) ? 'group' : null,
             columns: [
                 baseCol({headerName: rightTitle, field: 'text', cellRendererFramework: ItemRenderer}),
                 baseCol({headerName: 'Group', field: 'group', hide: true})
             ]
         });
 
-        this.refreshStores();
+        this.setData(data);
 
         this.addAutorun(() => this.syncSelection());
+    }
+
+    setData(data) {
+        const hasGrouping = data.some(it => it.group),
+            lhGroupBy = (this._leftGroupingEnabled && hasGrouping) ? 'group' : null,
+            rhGroupBy = (this._rightGroupingEnabled && hasGrouping) ? 'group' : null;
+
+        this.hasDescription = data.some(it => it.description);
+        this.leftModel.setGroupBy(lhGroupBy);
+        this.rightModel.setGroupBy(rhGroupBy);
+
+        this._data = this.preprocessData(data);
+        this.refreshStores();
     }
 
     //------------------------
     // Implementation
     //------------------------
-    preprocessData(data, ungroupedName) {
+
+    preprocessData(data) {
         return data
             .filter(rec => !rec.exclude)
             .map((raw, idx) => {
-                raw.group = raw.group || ungroupedName;
+                raw.group = raw.group || this._ungroupedName;
                 raw.side = raw.side || 'left';
                 raw.id = raw.id != null ? raw.id : idx;
                 return raw;

@@ -4,7 +4,6 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {defaults, isString, isNumber, isBoolean, isEqual, xor} from 'lodash';
@@ -14,6 +13,7 @@ import {div, frame} from 'hoist/cmp/layout';
 import {convertIconToSvg, Icon} from 'hoist/icon';
 import './ag-grid';
 import {navigateSelection, agGridReact} from './ag-grid';
+import {colChooser} from './ColChooser';
 
 /**
  * Grid Component
@@ -77,14 +77,14 @@ class Grid extends Component {
     }
 
     render() {
-        const {store, columns} = this.model;
+        const {store, agColDefs, colChooserModel} = this.model;
         return frame(
             div({
                 style: {flex: '1 1 auto', overflow: 'hidden'},
                 cls: XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                 item: agGridReact({
                     rowData: store.records,
-                    columnDefs: columns,
+                    columnDefs: agColDefs,
                     gridOptions: this.agOptions,
                     getContextMenuItems: this.getContextMenuItems,
                     onGridReady: this.onGridReady,
@@ -93,6 +93,10 @@ class Grid extends Component {
                     onGridSizeChanged: this.onGridSizeChanged,
                     onComponentStateChanged: this.onComponentStateChanged
                 })
+            }),
+            colChooser({
+                omit: !colChooserModel,
+                model: colChooserModel
             })
         );
     }
@@ -146,8 +150,7 @@ class Grid extends Component {
         const api = this.model.agApi;
         if (!api) return;
 
-        // Needed because AGGridReact won't recognize updates to columns prop.
-        api.setColumnDefs(this.model.columns);
+        api.setColumnDefs(this.model.agColDefs);
     }
 
     getContextMenuItems = (params) => {
@@ -158,7 +161,7 @@ class Grid extends Component {
         const {store, selection, contextMenuFn} = this.model;
         if (!contextMenuFn) return null;
 
-        const menu = contextMenuFn(params),
+        const menu = contextMenuFn(params, this.model),
             recId = params.node ? params.node.id : null,
             rec = recId ? store.getById(recId, true) : null,
             selectedIds = selection.ids;
