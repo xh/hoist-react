@@ -7,3 +7,4 @@
 
 export * from './Grid';
 export * from './GridModel';
+export * from './ColChooserButton';

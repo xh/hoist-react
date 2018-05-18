@@ -9,7 +9,7 @@ import {LeftRightChooserModel} from 'hoist/cmp/leftRightChooser/LeftRightChooser
 import {action, observable} from 'hoist/mobx';
 
 @HoistModel()
-export class GridColumnChooserModel {
+export class ColChooserModel {
 
     gridModel = null
     lrModel = null

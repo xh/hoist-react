@@ -11,7 +11,7 @@ import {StoreSelectionModel} from 'hoist/data';
 import {StoreContextMenu} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
 import {castArray, find, isString, orderBy} from 'lodash';
-import {GridColumnChooserModel} from './GridColumnChooserModel';
+import {ColChooserModel} from './ColChooserModel';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -24,7 +24,7 @@ export class GridModel {
     store = null;
     selection = null;
     contextMenuFn = null;
-    columnChooserModel = null;
+    colChooserModel = null;
 
     @observable.ref agApi = null;
     @observable.ref columns = [];
@@ -51,9 +51,9 @@ export class GridModel {
             {
                 text: 'Columns...',
                 icon: Icon.grid(),
-                hidden: !this.columnChooserModel,
+                hidden: !this.colChooserModel,
                 action: () => {
-                    this.columnChooserModel.open();
+                    this.colChooserModel.open();
                 }
             }
         ]);
@@ -69,7 +69,7 @@ export class GridModel {
      * @param {string} [sortBy[].colId] - Column ID by which to sort.
      * @param {string} [sortBy[].sort] - sort direction [asc|desc].
      * @param {string} [groupBy] - Column ID by which to group.
-     * @param {boolean} [enableColumnChooser] - true to setup support for column chooser UI and
+     * @param {boolean} [enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
      * @param {function} [contextMenuFn] - closure returning a StoreContextMenu().
      */
@@ -80,7 +80,7 @@ export class GridModel {
         emptyText = null,
         sortBy = [],
         groupBy = null,
-        enableColumnChooser = false,
+        enableColChooser = false,
         contextMenuFn = () => this.defaultContextMenu()
     }) {
         this.store = store;
@@ -89,8 +89,9 @@ export class GridModel {
 
         this.selection = selection || new StoreSelectionModel({store: this.store});
         this.emptyText = emptyText;
-        if (enableColumnChooser) {
-            this.columnChooserModel = new GridColumnChooserModel(this);
+
+        if (enableColChooser) {
+            this.colChooserModel = new ColChooserModel(this);
         }
 
         this.setGroupBy(groupBy);
@@ -155,7 +156,6 @@ export class GridModel {
         this.sortBy = sortBy;
     }
 
-
     /** Load the underlying store. */
     loadAsync(...args) {
         return this.store.loadAsync(...args);
@@ -173,6 +173,12 @@ export class GridModel {
     @action
     setColumns(cols) {
         this.columns = [...cols];
+    }
+
+    showColChooser() {
+        if (this.colChooserModel) {
+            this.colChooserModel.open();
+        }
     }
 
     //-----------------------

@@ -13,7 +13,7 @@ import {Icon} from 'hoist/icon/';
 import {leftRightChooser} from 'hoist/cmp/leftRightChooser';
 
 @HoistComponent()
-export class GridColumnChooser extends Component {
+export class ColChooser extends Component {
 
     render() {
         const {isOpen, lrModel} = this.model;
@@ -52,6 +52,6 @@ export class GridColumnChooser extends Component {
         this.model.commit();
         this.onClose();
     }
-}
 
-export const gridColumnChooser =  elemFactory(GridColumnChooser);
+}
+export const colChooser = elemFactory(ColChooser);

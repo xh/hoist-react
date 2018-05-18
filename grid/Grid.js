@@ -4,7 +4,6 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {XH} from 'hoist/core';
@@ -14,7 +13,7 @@ import {defaults, isString, isNumber, isBoolean, isEqual, xor} from 'lodash';
 import {convertIconToSvg, Icon} from 'hoist/icon';
 import './ag-grid';
 import {navigateSelection, agGridReact} from './ag-grid';
-import {gridColumnChooser} from './GridColumnChooser';
+import {colChooser} from './ColChooser';
 
 /**
  * Grid Component
@@ -78,7 +77,7 @@ class Grid extends Component {
     }
 
     render() {
-        const {store, agColDefs, columnChooserModel} = this.model;
+        const {store, agColDefs, colChooserModel} = this.model;
         return frame(
             div({
                 style: {flex: '1 1 auto', overflow: 'hidden'},
@@ -95,9 +94,9 @@ class Grid extends Component {
                     onComponentStateChanged: this.onComponentStateChanged
                 })
             }),
-            gridColumnChooser({
-                omit: !columnChooserModel,
-                model: columnChooserModel
+            colChooser({
+                omit: !colChooserModel,
+                model: colChooserModel
             })
         );
     }
