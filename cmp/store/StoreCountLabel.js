@@ -8,15 +8,17 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from 'hoist/core';
-import {label} from 'hoist/cmp/form';
+import {box} from 'hoist/cmp/layout';
+import {fmtNumber} from 'hoist/format';
 import {singularize, pluralize} from 'hoist/utils/JsUtils';
 
 import {BaseStore} from 'hoist/data';
 
 /**
- * A Component that can bind to any store, provides a label for the records count
+ * A component to display the number of records in a given store.
+ * Will auto-update with changes to the count, including store filtering.
  */
-@HoistComponent()
+@HoistComponent({layoutSupport: true})
 class StoreCountLabel extends Component {
 
     static propTypes = {
@@ -38,8 +40,13 @@ class StoreCountLabel extends Component {
     render() {
         const store = this.props.store,
             count = store.count,
+            countStr = fmtNumber(count, {precision: 0}),
             unitLabel = count === 1 ? this.oneUnit : this.manyUnits;
-        return label(`${count} ${unitLabel}`);
+
+        return box({
+            layoutConfig: this.layoutConfig,
+            item: `${countStr} ${unitLabel}`
+        });
     }
 }
 
