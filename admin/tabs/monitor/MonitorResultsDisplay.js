@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {elemFactory, HoistComponent} from 'hoist/core';
-import {hbox} from 'hoist/layout';
+import {hbox} from 'hoist/cmp/layout';
 import {tile} from './Tile';
 
 @HoistComponent()

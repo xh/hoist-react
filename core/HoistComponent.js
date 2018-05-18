@@ -23,16 +23,26 @@ import {elemFactory} from './elem';
  *
  * Adds support for managed events, mobx reactivity, model awareness, and other convenience getters.
  */
-export function HoistComponent() {
+export function HoistComponent({
+    isReactive = true,
+    isEventTarget = false,
+    layoutSupport = false
+} = {}) {
 
     return (C) => {
         C.isHoistComponent = true;
+        C.layoutSupport = layoutSupport;
 
         //-----------
         // Mixins
         //------------
-        C = Reactive(C);
-        C = EventTarget(C);
+        if (isReactive) {
+            C = Reactive(C);
+        }
+
+        if (isEventTarget) {
+            C = EventTarget(C);
+        }
 
         if (C.prototype.renderContextMenu) {
             C = ContextMenuTarget(C);
@@ -49,6 +59,10 @@ export function HoistComponent() {
              */
             model: {
                 get() {return this.localModel ? this.localModel : this.props.model}
+            },
+
+            layoutConfig: {
+                get() {return this.props.layoutConfig}
             },
 
             /**
@@ -90,7 +104,9 @@ export function HoistComponent() {
         });
 
         // This must be last, should provide the last override of render
-        C = observer(C);
+        if (isReactive) {
+            C = observer(C);
+        }
 
         return C;
     };

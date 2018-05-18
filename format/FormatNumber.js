@@ -9,6 +9,7 @@ import {defaults, isFinite, isString} from 'lodash';
 import numeral from 'numeral';
 
 import {Exception} from 'hoist/exception';
+import {span} from 'hoist/cmp/layout';
 
 import {createRenderer, saveOriginal} from './FormatUtils';
 import {fmtSpan} from './FormatMisc';
@@ -18,9 +19,10 @@ const THOUSAND = 1000,
     BILLION  = 1000000000,
     MAX_NUMERIC_PRECISION = 12;
 
-const UP_TICK = '&#9652;',
-    DOWN_TICK = '&#9662;',
-    LEDGER_ALIGN_PLACEHOLDER = '<span style="visibility:hidden">)</span>';
+const UP_TICK = '▴',
+    DOWN_TICK = '▾',
+    LEDGER_ALIGN_PLACEHOLDER = '<span style="visibility:hidden">)</span>',
+    LEDGER_ALIGN_PLACEHOLDER_EL = span({style: {visibility: 'hidden'}, item: ')'});
 
 /**
  * Standard number formatting for Hoist
@@ -42,6 +44,7 @@ const UP_TICK = '&#9652;',
  *      If truthy will default to red/green/grey. Also accepts an object of the form {pos: color, neg: color, neutral: color}.
  * @param {function} [opts.tipFn] - use to place formatted number in span with title property set to returned string.
  *      Will be passed the originalValue param.
+ * @param {boolean} [opts.asElement] - return a react element rather than a html string
  * @param {number} [opts.originalValue] - used to retain an unaltered reference to the original value to be formatted.
  *      Not typically used by applications.
  *
@@ -64,47 +67,24 @@ export function fmtNumber(v, {
     labelCls = 'xh-units-label',
     colorSpec = null,
     tipFn = null,
+    asElement = false,
     originalValue = v
 } = {}) {
 
     if (isInvalidInput(v)) return nullDisplay;
 
+    // Format text
     formatPattern = formatPattern || buildFormatPattern(v, precision, zeroPad);
+    let str = numeral(v).format(formatPattern);
 
-    let ret = numeral(v).format(formatPattern);
-
-    if (ledger || withSignGlyph) ret = ret.replace('-', '');
-
+    if (ledger || withSignGlyph) str = str.replace('-', '');
+    if (ledger) str = v < 0 ? '(' + str + ')' : str;
     if (withPlusSign && v > 0) {
-        ret = '+' + ret;
+        str = '+' + str;
     }
 
-    if (isString(label)) {
-        if (labelCls) {
-            ret += fmtSpan(label, {cls: labelCls});
-        } else {
-            ret += label;
-        }
-    }
-
-    if (withSignGlyph) {
-        ret = signGlyph(v) + '&nbsp;' + ret;
-    }
-
-    if (ledger) {
-        const plcHolder = forceLedgerAlign ? LEDGER_ALIGN_PLACEHOLDER : '';
-        ret = v < 0 ? '(' + ret + ')' : ret + plcHolder;
-    }
-
-    if (colorSpec) {
-        ret = fmtSpan(ret, {cls: valueColor(v, colorSpec)});
-    }
-
-    if (tipFn) {
-        ret = fmtSpan(ret, {cls: 'xh-title-tip', title: tipFn(originalValue)});
-    }
-
-    return ret;
+    const opts = {str, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tipFn, originalValue};
+    return asElement ? fmtNumberElement(v, opts) : fmtNumberString(v, opts);
 }
 
 /**
@@ -195,27 +175,85 @@ export function fmtPrice(v, opts = {}) {
  * Render a number as a percent
  *
  * @param {number} v - value to format.
- * @param {Object} [opts] - @see {@link fmtNumber} method. May also include:
- * @param {boolean} [opts.withParens] - set to true to surround return with parenthesis.
+ * @param {Object} [opts] - @see {@link fmtNumber} method.
  */
 export function fmtPercent(v, opts = {}) {
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
 
     defaults(opts, {precision: 2, label: '%', labelCls: null});
-
-    let ret = fmtNumber(v, opts);
-    if (opts.withParens) ret = '(' + ret + ')';
-    return ret;
+    return fmtNumber(v, opts);
 }
 
 //---------------
 // Implementation
 //---------------
+function fmtNumberElement(v, opts = {}) {
+    const {str, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tipFn, originalValue} = opts;
 
-function signGlyph(v) {
+    // CSS classes
+    const cls = [];
+    if (colorSpec) cls.push(valueColor(v, colorSpec));
+    if (tipFn) cls.push('xh-title-tip');
+
+    // Compile child items
+    const asElement = true,
+        items = [];
+
+    if (withSignGlyph) {
+        items.push(signGlyph(v, asElement));
+    }
+
+    items.push(str);
+
+    if (isString(label)) {
+        items.push(labelCls ? fmtSpan(label, {cls: labelCls, asElement: asElement}) : label);
+    }
+    if (v >= 0 && ledger && forceLedgerAlign) {
+        items.push(LEDGER_ALIGN_PLACEHOLDER_EL);
+    }
+
+    return span({
+        cls: cls.join(' '),
+        title: tipFn ? tipFn(originalValue) : null,
+        items: items
+    });
+}
+
+function fmtNumberString(v, opts = {}) {
+    const {ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tipFn, originalValue} = opts;
+    let str = opts.str;
+
+    if (isString(label)) {
+        if (labelCls) {
+            str += fmtSpan(label, {cls: labelCls});
+        } else {
+            str += label;
+        }
+    }
+
+    if (withSignGlyph) {
+        str = signGlyph(v) + '&nbsp;' + str;
+    }
+
+    if (v >= 0 && ledger && forceLedgerAlign) {
+        str += LEDGER_ALIGN_PLACEHOLDER;
+    }
+
+    if (colorSpec) {
+        str = fmtSpan(str, {cls: valueColor(v, colorSpec)});
+    }
+
+    if (tipFn) {
+        str = fmtSpan(str, {cls: 'xh-title-tip', title: tipFn(originalValue)});
+    }
+
+    return str;
+}
+
+function signGlyph(v, asElement) {
     if (!isFinite(v)) return '';
-    return v === 0 ? fmtSpan(UP_TICK, 'transparent-color') :  v > 0 ? UP_TICK : DOWN_TICK;
+    return v === 0 ? fmtSpan(UP_TICK, {cls: 'xh-transparent', asElement: asElement}) : v > 0 ? UP_TICK : DOWN_TICK;
 }
 
 function valueColor(v, colorSpec) {

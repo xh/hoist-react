@@ -6,8 +6,8 @@
  */
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from 'hoist/core';
-import {filler} from 'hoist/layout';
-import {toolbar} from 'hoist/cmp';
+import {filler} from 'hoist/cmp/layout';
+import {toolbar} from 'hoist/cmp/toolbar';
 import {dialog, dialogBody, button} from 'hoist/kit/blueprint';
 
 /**

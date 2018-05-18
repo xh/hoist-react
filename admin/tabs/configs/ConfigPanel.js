@@ -7,11 +7,11 @@
 import {Component} from 'react';
 import {button} from 'hoist/kit/blueprint';
 import {XH, HoistComponent} from 'hoist/core';
-import {fragment} from 'hoist/layout';
+import {restGrid, RestGridModel, RestStore} from 'hoist/cmp/rest';
+import {fragment} from 'hoist/cmp/layout';
 import {boolCheckCol, baseCol} from 'hoist/columns/Core';
 import {nameCol} from 'hoist/admin/columns/Columns';
 import {Icon} from 'hoist/icon';
-import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
 
 import {configDiffer} from './differ/ConfigDiffer';
 import {ConfigDifferModel} from './differ/ConfigDifferModel';

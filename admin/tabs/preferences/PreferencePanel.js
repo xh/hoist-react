@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {HoistComponent} from 'hoist/core';
 import {boolCheckCol, baseCol} from 'hoist/columns/Core';
-import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
+import {restGrid, RestGridModel, RestStore} from 'hoist/cmp/rest';
 
 import {nameCol} from '../../columns/Columns';
 

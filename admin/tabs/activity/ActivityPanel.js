@@ -6,8 +6,7 @@
  */
 import {Component} from 'react';
 import {XH, HoistComponent} from 'hoist/core';
-import {vframe} from 'hoist/layout';
-import {resizable} from 'hoist/cmp';
+import {vframe, resizable} from 'hoist/cmp/layout';
 
 import {activityGrid} from './ActivityGrid';
 import {ActivityGridModel} from './ActivityGridModel';

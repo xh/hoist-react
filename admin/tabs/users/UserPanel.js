@@ -6,9 +6,11 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from 'hoist/core';
-import {grid} from 'hoist/grid';
-import {filler} from 'hoist/layout';
-import {panel, refreshButton, storeCountLabel, storeFilterField, toolbar} from 'hoist/cmp';
+import {grid} from 'hoist/cmp/grid';
+import {panel, filler} from 'hoist/cmp/layout';
+import {toolbar} from 'hoist/cmp/toolbar';
+import {refreshButton} from 'hoist/cmp/button';
+import {storeCountLabel, storeFilterField} from 'hoist/cmp/store';
 
 import {UserModel} from './UserModel';
 

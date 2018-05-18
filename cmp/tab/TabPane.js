@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {elem, elemFactory, HoistComponent} from 'hoist/core';
 import {Ref} from 'hoist/utils/Ref';
-import {frame} from 'hoist/layout';
+import {frame} from 'hoist/cmp/layout';
 
 /**
  * Wrapper for Components to be shown inside of a TabContainer tab. Provides the following:
@@ -41,7 +41,12 @@ export class TabPane extends Component {
             display: isActive ? 'flex' : 'none',
             margin: 4,
             cls: 'xh-tab-pane',
-            item: elem(model.componentClass, {...this.props, flex: 1, ref: this.child.ref, tabPaneModel: this.model})
+            item: elem(model.componentClass, {
+                ...this.props,
+                flex: 1,
+                ref: this.child.ref,
+                tabPaneModel: this.model
+            })
         });
     }
 
