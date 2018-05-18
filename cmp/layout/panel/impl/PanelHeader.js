@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {elemFactory, HoistComponent} from 'hoist/core';
-import {box, hbox} from 'hoist/cmp/layout';
+import {box, hbox} from '../../index';
 
 import './PanelHeader.scss';
 

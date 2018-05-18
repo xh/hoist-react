@@ -8,9 +8,10 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {castArray, omitBy} from 'lodash';
 import {elemFactory, HoistComponent} from 'hoist/core';
-import {vframe, vbox} from 'hoist/cmp/layout';
 import {mask} from 'hoist/cmp/mask';
+
 import {panelHeader} from './impl/PanelHeader';
+import {vframe, vbox} from '../index';
 
 /**
  * A Panel container builds on the lower-level layout components to offer a header element

@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from 'hoist/core';
 import {dayField, label, textField} from 'hoist/cmp/form';
-import {panel} from 'hoist/cmp/panel';
+import {panel} from 'hoist/cmp/layout';
 import {toolbar} from 'hoist/cmp/toolbar';
 import {refreshButton} from 'hoist/cmp/button';
 import {chart} from 'hoist/cmp/chart';
