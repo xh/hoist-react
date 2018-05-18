@@ -55,7 +55,7 @@ export class ImpersonationBar extends Component {
     }
 
     switchButton() {
-        const model = this.model;
+        const {model} = this;
 
         return popover({
             target: button({
@@ -65,32 +65,30 @@ export class ImpersonationBar extends Component {
             }),
             isOpen: model.targetDialogOpen,
             hasBackdrop: true,
-            content: vbox({
-                items: [
-                    box({
-                        padding: 10,
-                        item: comboField({
-                            model,
-                            field: 'selectedTarget',
-                            options: model.targets,
-                            placeholder: 'Select User...'
-                        })
+            content: vbox(
+                box({
+                    padding: 10,
+                    item: comboField({
+                        model,
+                        field: 'selectedTarget',
+                        options: model.targets,
+                        placeholder: 'Select User...'
+                    })
+                }),
+                toolbar(
+                    filler(),
+                    button({
+                        text: 'Cancel',
+                        onClick: this.onCloseClick
                     }),
-                    toolbar(
-                        filler(),
-                        button({
-                            text: 'Cancel',
-                            onClick: this.onCloseClick
-                        }),
-                        button({
-                            text: 'OK',
-                            intent: 'primary',
-                            onClick: this.onOKClick,
-                            disabled: !model.selectedTarget
-                        })
-                    )
-                ]
-            })
+                    button({
+                        text: 'OK',
+                        intent: 'primary',
+                        onClick: this.onOKClick,
+                        disabled: !model.selectedTarget
+                    })
+                )
+            )
         });
     }
 

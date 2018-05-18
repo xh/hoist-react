@@ -6,18 +6,18 @@
  */
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {castArray} from 'lodash';
+import {castArray, omitBy} from 'lodash';
 import {elemFactory, HoistComponent} from 'hoist/core';
 import {mask} from 'hoist/cmp/mask';
 
 import {panelHeader} from './impl/PanelHeader';
-import {vframe, vbox} from '../index';
+import {vbox} from '../index';
 
 /**
  * A Panel container builds on the lower-level layout components to offer a header element
  * w/standardized styling, title, and Icon as well as support for top and bottom toolbars.
  */
-@HoistComponent()
+@HoistComponent({layoutSupport: true})
 export class Panel extends Component {
 
     static propTypes = {
@@ -38,13 +38,32 @@ export class Panel extends Component {
     baseCls = 'xh-panel';
 
     render() {
-        // Note: Padding is destructured here to be discarded because it breaks layout.
-        //       Similarly, isCollapsed must not be rendered as a custom attribute in the DOM.
-        const {className, tbar, bbar, title, icon, headerItems, masked, padding, isCollapsed, children, ...rest} = this.props,
-            wrapper = this.props.width || this.props.height ? vbox : vframe;
+        let {
+            className,
+            layoutConfig,
+            tbar,
+            bbar,
+            title,
+            icon,
+            headerItems,
+            masked,
+            isCollapsed,
+            children,
+            ...rest
+        } = this.props;
 
-        return wrapper({
+        // Block unwanted use of padding props, which will separate the panel's header
+        // and bottom toolbar from its edges in a confusing way.
+        layoutConfig = omitBy(layoutConfig, (v, k) => k.startsWith('padding'));
+
+        // Give Panels a default flexing behavior if no dimensions / flex specified.
+        if (layoutConfig.width == null && layoutConfig.height == null && layoutConfig.flex == null) {
+            layoutConfig.flex = 'auto';
+        }
+
+        return vbox({
             cls: className ? `${this.baseCls} ${className}` : this.baseCls,
+            layoutConfig,
             ...rest,
             items: [
                 panelHeader({title, icon, headerItems}),
