@@ -78,14 +78,14 @@ class Grid extends Component {
     }
 
     render() {
-        const {store, columns, columnChooserModel} = this.model;
+        const {store, agColDefs, columnChooserModel} = this.model;
         return frame(
             div({
                 style: {flex: '1 1 auto', overflow: 'hidden'},
                 cls: XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                 item: agGridReact({
                     rowData: store.records,
-                    columnDefs: columns,
+                    columnDefs: agColDefs,
                     gridOptions: this.agOptions,
                     getContextMenuItems: this.getContextMenuItems,
                     onGridReady: this.onGridReady,
@@ -151,8 +151,7 @@ class Grid extends Component {
         const api = this.model.agApi;
         if (!api) return;
 
-        // Needed because AGGridReact won't recognize updates to columns prop.
-        api.setColumnDefs(this.model.columns);
+        api.setColumnDefs(this.model.agColDefs);
     }
 
     getContextMenuItems = (params) => {

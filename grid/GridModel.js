@@ -6,7 +6,7 @@
  */
 
 import {HoistModel} from 'hoist/core';
-import {action, observable} from 'hoist/mobx';
+import {action, computed, observable} from 'hoist/mobx';
 import {StoreSelectionModel} from 'hoist/data';
 import {StoreContextMenu} from 'hoist/cmp';
 import {Icon} from 'hoist/icon';
@@ -26,11 +26,19 @@ export class GridModel {
     contextMenuFn = null;
     columnChooserModel = null;
 
-
     @observable.ref agApi = null;
     @observable.ref columns = [];
     @observable.ref sortBy = [];
     @observable groupBy = null;
+
+    // For cols defined (as expected) via a Hoist columnFactory,
+    // strip enumerated Hoist custom configs before passing to ag-Grid.
+    @computed
+    get agColDefs() {
+        return this.columns.map(col => {
+            return col.agColDef ? col.agColDef() : col;
+        });
+    }
 
     defaultContextMenu = () => {
         return new StoreContextMenu([

@@ -7,15 +7,13 @@
 import {Component} from 'react';
 import {castArray, defaults, isNumber, omit, startCase} from 'lodash';
 
-const globalVals = {
-    field: null,            // name of field in underlying model
-    text: null,             // short title of column. Typically appears as column header. Auto-generated from field.
-    description: null,      // descriptive details of column. Visible in column chooser
-    chooserGroup: null,            // name of group for categorizing columns
-    excludeFromChooser: false,         // exclude column from column chooser
-    hide: false             // hide/show column
-};
-const hoistColProps = ['align', 'elementRenderer', 'flex', 'fixedWidth'];
+// Configs specific to / added by Hoist as extensions to ag-Grid's column API.
+// Listed here so they can be deliberately omitted when outputting a colDef for ag-Grid itself.
+const hoistColConfigs = [
+    'align', 'description', 'chooserGroup', 'description',
+    'elementRenderer', 'excludeFromChooser', 'flex',
+    'fixedWidth', 'agColDef'
+];
 
 /**
  * Creates a factory for use within a Column definition file to create multiple column factories
@@ -27,42 +25,47 @@ const hoistColProps = ['align', 'elementRenderer', 'flex', 'fixedWidth'];
 export function fileColFactory(fileVals = {}) {
     return function(colVals = {}) {
         return function(instanceVals = {}) {
-            const colProps = defaults(instanceVals, colVals, fileVals, globalVals);
+            const ret = defaults(instanceVals, colVals, fileVals);
 
-            colProps.headerClass = castArray(colProps.headerClass);
-            colProps.cellClass = castArray(colProps.cellClass);
-            if (colProps.align === 'center') {
-                colProps.headerClass.push('xh-column-header-align-center');
-                colProps.cellClass.push('xh-align-center');
+            ret.headerClass = castArray(ret.headerClass);
+            ret.cellClass = castArray(ret.cellClass);
+
+            if (ret.align === 'center') {
+                ret.headerClass.push('xh-column-header-align-center');
+                ret.cellClass.push('xh-align-center');
             }
 
-            if (colProps.align === 'right') {
-                colProps.headerClass.push('xh-column-header-align-right');
-                colProps.cellClass.push('xh-align-right');
+            if (ret.align === 'right') {
+                ret.headerClass.push('xh-column-header-align-right');
+                ret.cellClass.push('xh-align-right');
             }
 
-            if (isNumber(colProps.flex)) {
-                colProps.width = colProps.flex * 1000;
+            if (isNumber(ret.flex)) {
+                ret.width = ret.flex * 1000;
             }
 
-            if (isNumber(colProps.fixedWidth)) {
-                colProps.width = colProps.fixedWidth;
-                colProps.maxWidth = colProps.fixedWidth;
-                colProps.minWidth = colProps.fixedWidth;
+            if (isNumber(ret.fixedWidth)) {
+                ret.width = ret.fixedWidth;
+                ret.maxWidth = ret.fixedWidth;
+                ret.minWidth = ret.fixedWidth;
             }
 
-            if (colProps.elementRenderer) {
-                const {elementRenderer} = colProps,
-                    clazz = class extends Component {
-                        render()    {return elementRenderer(this.props)}
-                        refresh()   {return false}
-                    };
-                colProps.cellRendererFramework = clazz;
+            const {elementRenderer} = ret;
+            if (elementRenderer) {
+                ret.cellRendererFramework = class extends Component {
+                    render()    {return elementRenderer(this.props)}
+                    refresh()   {return false}
+                };
             }
 
-            colProps.text = colProps.text || startCase(colProps.field);
+            // Default headerName from field (sampleField -> Sample Field)
+            ret.headerName = ret.headerName || startCase(ret.field);
 
-            return omit(colProps, hoistColProps);
+            // Install fn to produce definition w/o custom Hoist configs for use by ag-grid,
+            // which will complain about unknown config keys.
+            ret.agColDef = () => omit(ret, hoistColConfigs);
+
+            return ret;
         };
     };
 }

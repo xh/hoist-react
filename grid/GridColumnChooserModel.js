@@ -61,7 +61,7 @@ export class GridColumnChooserModel {
         const data = gridModel.columns.map(it => {
             return {
                 value: it.field,
-                text: it.text,
+                text: it.headerName,
                 description: it.description,
                 locked: it.locked,
                 group: it.chooserGroup,
