@@ -4,8 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
-import {HoistModel} from 'hoist/core';
+import {XH, HoistModel} from 'hoist/core';
 import {action, computed, observable} from 'hoist/mobx';
 import {StoreSelectionModel} from 'hoist/data';
 import {StoreContextMenu} from 'hoist/cmp';
@@ -166,6 +165,7 @@ export class GridModel {
         return this.store.loadData(...args);
     }
 
+    // TODO - review options for a "true" clone here, and behavior of setColumns() below.
     cloneColumns() {
         return [...this.columns];
     }
@@ -195,6 +195,7 @@ export class GridModel {
     }
 
     destroy() {
+        XH.safeDestroy(this.colChooserModel);
         // TODO: How are Stores destroyed?
     }
 }

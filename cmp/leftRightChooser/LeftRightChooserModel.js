@@ -48,7 +48,8 @@ export class LeftRightChooserModel {
     }
 
     /** Currently 'selected' values on the right hand side. */
-    @computed get rightValues() {
+    @computed
+    get rightValues() {
         return this.rightModel.store.allRecords.map(it => it.value);
     }
 

@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from 'hoist/core';
+import {XH, HoistModel} from 'hoist/core';
 import {LeftRightChooserModel} from 'hoist/cmp/leftRightChooser/LeftRightChooserModel';
 import {action, observable} from 'hoist/mobx';
 
@@ -71,5 +71,9 @@ export class ColChooserModel {
         });
 
         lrModel.setData(data);
+    }
+
+    destroy() {
+        XH.safeDestroy(this.lrModel);
     }
 }
