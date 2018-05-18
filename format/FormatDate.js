@@ -7,7 +7,7 @@
 
 import {defaults, isString} from 'lodash';
 import moment from 'moment';
-import {span} from 'hoist/layout';
+import {span} from 'hoist/cmp/layout';
 
 import {saveOriginal, createRenderer} from './FormatUtils';
 import {fmtSpan} from './FormatMisc';
