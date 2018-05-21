@@ -19,14 +19,16 @@ export class EnvironmentService {
     async initAsync() {
         const serverEnv = await XH.fetchJson({url: 'hoistImpl/environment'});
 
-        // Apply client-side data injected via Webpack build or otherwise determined here
-        this._data = defaults(serverEnv, {
+        // Favor client-side data injected via Webpack build or otherwise determined locally,
+        // then apply all other env data sourced from the server.
+        this._data = defaults({
             appName: XH.appName,
             clientVersion: XH.appVersion,
             clientBuild: XH.appBuild,
             hoistReactVersion: hoistReactVersion,
             reactVersion: React.version
-        });
+        }, serverEnv);
+
         this.startVersionChecking();
     }
 
