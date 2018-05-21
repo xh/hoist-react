@@ -6,9 +6,9 @@
  */
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {button} from 'hoist/kit/blueprint';
-import {elemFactory, HoistComponent} from 'hoist/core';
-import {hbox, vbox} from 'hoist/cmp/layout';
+import {button} from '@xh/hoist/kit/blueprint';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {hbox, vbox} from '@xh/hoist/cmp/layout';
 
 import './Toolbar.scss';
 

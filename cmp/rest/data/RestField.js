@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {Field} from 'hoist/data';
+import {Field} from '@xh/hoist/data';
 
 /**
  * Extended field for RestGrid.

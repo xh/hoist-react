@@ -6,9 +6,9 @@
  */
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {HoistComponent, elemFactory} from 'hoist/core';
-import {button} from 'hoist/kit/blueprint';
-import {Icon} from 'hoist/icon';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {button} from '@xh/hoist/kit/blueprint';
+import {Icon} from '@xh/hoist/icon';
 
 @HoistComponent()
 export class ColChooserButton extends Component {

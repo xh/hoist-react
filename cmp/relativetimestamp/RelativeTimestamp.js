@@ -7,13 +7,13 @@
 
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {HoistComponent, elemFactory} from 'hoist/core';
-import {observable, setter} from 'hoist/mobx';
-import {div} from 'hoist/cmp/layout';
-import {Timer} from 'hoist/utils/Timer';
-import {SECONDS, MINUTES, HOURS, DAYS} from 'hoist/utils/DateTimeUtils';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {observable, setter} from '@xh/hoist/mobx';
+import {div} from '@xh/hoist/cmp/layout';
+import {Timer} from '@xh/hoist/utils/Timer';
+import {SECONDS, MINUTES, HOURS, DAYS} from '@xh/hoist/utils/DateTimeUtils';
 import {flow} from 'lodash';
-import {pluralize} from 'hoist/utils/JsUtils';
+import {pluralize} from '@xh/hoist/utils/JsUtils';
 
 const FORMAT_STRINGS = {
     seconds: '<1 minute',

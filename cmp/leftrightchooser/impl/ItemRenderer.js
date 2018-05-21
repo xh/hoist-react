@@ -5,8 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {div} from 'hoist/cmp/layout';
-import {Icon} from 'hoist/icon';
+import {div} from '@xh/hoist/cmp/layout';
+import {Icon} from '@xh/hoist/icon';
 
 /**
  * Render items in the LeftRightChooser.

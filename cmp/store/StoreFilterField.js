@@ -7,12 +7,12 @@
 
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {HoistComponent, elemFactory} from 'hoist/core';
-import {button, inputGroup} from 'hoist/kit/blueprint';
-import {setter, observable} from 'hoist/mobx';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {button, inputGroup} from '@xh/hoist/kit/blueprint';
+import {setter, observable} from '@xh/hoist/mobx';
 import {escapeRegExp} from 'lodash';
 
-import {BaseStore} from 'hoist/data';
+import {BaseStore} from '@xh/hoist/data';
 
 /**
  * A Component that can bind to any store and filter it

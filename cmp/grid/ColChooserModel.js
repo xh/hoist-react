@@ -4,9 +4,9 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from 'hoist/core';
-import {action, observable} from 'hoist/mobx';
-import {LeftRightChooserModel} from 'hoist/cmp/leftrightchooser';
+import {XH, HoistModel} from '@xh/hoist/core';
+import {action, observable} from '@xh/hoist/mobx';
+import {LeftRightChooserModel} from '@xh/hoist/cmp/leftrightchooser';
 
 @HoistModel()
 export class ColChooserModel {

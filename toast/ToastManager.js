@@ -6,9 +6,9 @@
  */
 import React from 'react';
 import {defaultTo, defaults} from 'lodash';
-import {Position, Toaster} from 'hoist/kit/blueprint';
-import {Icon} from 'hoist/icon';
-import {SECONDS} from 'hoist/utils/DateTimeUtils';
+import {Position, Toaster} from '@xh/hoist/kit/blueprint';
+import {Icon} from '@xh/hoist/icon';
+import {SECONDS} from '@xh/hoist/utils/DateTimeUtils';
 
 export const ToastManager = {
 

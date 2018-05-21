@@ -6,13 +6,13 @@
  */
 
 import {Component} from 'react';
-import {HoistComponent, elemFactory} from 'hoist/core';
-import {dayField, label, textField} from 'hoist/cmp/form';
-import {panel} from 'hoist/cmp/layout';
-import {toolbar} from 'hoist/cmp/toolbar';
-import {refreshButton} from 'hoist/cmp/button';
-import {chart} from 'hoist/cmp/chart';
-import {Icon} from 'hoist/icon';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {dayField, label, textField} from '@xh/hoist/cmp/form';
+import {panel} from '@xh/hoist/cmp/layout';
+import {toolbar} from '@xh/hoist/cmp/toolbar';
+import {refreshButton} from '@xh/hoist/cmp/button';
+import {chart} from '@xh/hoist/cmp/chart';
+import {Icon} from '@xh/hoist/icon';
 
 @HoistComponent()
 export class VisitsChart extends Component {

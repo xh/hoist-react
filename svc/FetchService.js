@@ -4,8 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistService} from 'hoist/core';
-import {Exception} from 'hoist/exception';
+import {XH, HoistService} from '@xh/hoist/core';
+import {Exception} from '@xh/hoist/exception';
 import {castArray} from 'lodash';
 
 @HoistService()

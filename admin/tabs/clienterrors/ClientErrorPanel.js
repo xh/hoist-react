@@ -5,15 +5,15 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {button} from 'hoist/kit/blueprint';
-import {HoistComponent} from 'hoist/core';
-import {filler, panel} from 'hoist/cmp/layout';
-import {grid} from 'hoist/cmp/grid';
-import {textField, dayField} from 'hoist/cmp/form';
-import {toolbar, toolbarSep} from 'hoist/cmp/toolbar';
-import {exportButton, refreshButton} from 'hoist/cmp/button';
-import {storeCountLabel} from 'hoist/cmp/store';
-import {Icon} from 'hoist/icon';
+import {button} from '@xh/hoist/kit/blueprint';
+import {HoistComponent} from '@xh/hoist/core';
+import {filler, panel} from '@xh/hoist/cmp/layout';
+import {grid} from '@xh/hoist/cmp/grid';
+import {textField, dayField} from '@xh/hoist/cmp/form';
+import {toolbar, toolbarSep} from '@xh/hoist/cmp/toolbar';
+import {exportButton, refreshButton} from '@xh/hoist/cmp/button';
+import {storeCountLabel} from '@xh/hoist/cmp/store';
+import {Icon} from '@xh/hoist/icon';
 
 import {ClientErrorModel} from './ClientErrorModel';
 import {clientErrorDetail} from './ClientErrorDetail';

@@ -7,7 +7,7 @@
 import 'ag-grid-enterprise';
 import {AgGridReact} from 'ag-grid-react';
 import {LicenseManager} from 'ag-grid-enterprise';
-import {elemFactory} from 'hoist/core';
+import {elemFactory} from '@xh/hoist/core';
 import 'ag-grid/dist/styles/ag-grid.css';
 
 // TODO - determine if we can avoid importing both of these, and/or use a SASS import

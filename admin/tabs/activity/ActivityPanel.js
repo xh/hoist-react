@@ -5,8 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {XH, HoistComponent} from 'hoist/core';
-import {vframe, resizable} from 'hoist/cmp/layout';
+import {XH, HoistComponent} from '@xh/hoist/core';
+import {vframe, resizable} from '@xh/hoist/cmp/layout';
 
 import {activityGrid} from './ActivityGrid';
 import {ActivityGridModel} from './ActivityGridModel';

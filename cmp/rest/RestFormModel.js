@@ -5,11 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH, HoistModel} from 'hoist/core';
-import {start} from 'hoist/promise';
-import {observable, computed, action} from 'hoist/mobx';
-import {MessageModel} from 'hoist/cmp/message';
-import {Icon} from 'hoist/icon';
+import {XH, HoistModel} from '@xh/hoist/core';
+import {start} from '@xh/hoist/promise';
+import {observable, computed, action} from '@xh/hoist/mobx';
+import {MessageModel} from '@xh/hoist/cmp/message';
+import {Icon} from '@xh/hoist/icon';
 import {isEqual} from 'lodash';
 
 import {RestControlModel} from './RestControlModel';

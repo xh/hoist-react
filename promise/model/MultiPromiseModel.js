@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {observable, action, computed} from 'hoist/mobx';
+import {observable, action, computed} from '@xh/hoist/mobx';
 
 /**
  * Tracks the resolution state of a stream of promise invocations.

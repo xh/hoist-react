@@ -6,10 +6,10 @@
  */
 
 import {Component} from 'react';
-import {XH, HoistComponent, elemFactory} from 'hoist/core';
-import {grid} from 'hoist/cmp/grid';
-import {GridModel} from 'hoist/cmp/grid';
-import {baseCol} from 'hoist/columns/Core';
+import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
+import {grid} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {baseCol} from '@xh/hoist/columns/Core';
 
 @HoistComponent()
 class DataView extends Component {

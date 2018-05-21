@@ -6,11 +6,11 @@
  */
 
 import {Component} from 'react';
-import {XH, HoistComponent, elemFactory, hoistComponentFactory} from 'hoist/core';
-import {filler, fragment} from 'hoist/cmp/layout';
-import {toolbar} from 'hoist/cmp/toolbar';
-import {Icon} from 'hoist/icon';
-import {button, dialog, dialogBody} from 'hoist/kit/blueprint';
+import {XH, HoistComponent, elemFactory, hoistComponentFactory} from '@xh/hoist/core';
+import {filler, fragment} from '@xh/hoist/cmp/layout';
+import {toolbar} from '@xh/hoist/cmp/toolbar';
+import {Icon} from '@xh/hoist/icon';
+import {button, dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 
 import {ExceptionDialogModel} from './ExceptionDialogModel';
 import {exceptionDialogDetails} from './ExceptionDialogDetails';

@@ -5,8 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, HoistComponent} from 'hoist/core';
-import {tab, tabs} from 'hoist/kit/blueprint';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {tab, tabs} from '@xh/hoist/kit/blueprint';
 
 import {tabPane} from './TabPane';
 import {TabContainerModel} from './TabContainerModel';

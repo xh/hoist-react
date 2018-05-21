@@ -6,9 +6,9 @@
  */
 import {Component} from 'react';
 import {castArray, clone, merge} from 'lodash';
-import {XH, elemFactory, HoistComponent} from 'hoist/core';
-import {div, frame} from 'hoist/cmp/layout';
-import {Ref} from 'hoist/utils/Ref';
+import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {div, frame} from '@xh/hoist/cmp/layout';
+import {Ref} from '@xh/hoist/utils/Ref';
 import Highcharts from 'highcharts/highstock';
 
 import {LightTheme} from './theme/Light';

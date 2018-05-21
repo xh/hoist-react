@@ -7,9 +7,9 @@
 
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {elemFactory, HoistComponent} from 'hoist/core';
-import {button} from 'hoist/kit/blueprint';
-import {Icon} from 'hoist/icon';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {button} from '@xh/hoist/kit/blueprint';
+import {Icon} from '@xh/hoist/icon';
 
 /**
  * Convenience Button preconfigured for use as a trigger for an export/download of data.

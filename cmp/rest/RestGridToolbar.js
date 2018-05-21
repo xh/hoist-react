@@ -6,13 +6,13 @@
  */
 import {Component} from 'react';
 import {castArray, isEmpty} from 'lodash';
-import {button} from 'hoist/kit/blueprint';
-import {HoistComponent, elemFactory} from 'hoist/core';
-import {filler} from 'hoist/cmp/layout';
-import {toolbar, toolbarSep} from 'hoist/cmp/toolbar';
-import {exportButton} from 'hoist/cmp/button';
-import {storeCountLabel, storeFilterField} from 'hoist/cmp/store';
-import {Icon} from 'hoist/icon';
+import {button} from '@xh/hoist/kit/blueprint';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {filler} from '@xh/hoist/cmp/layout';
+import {toolbar, toolbarSep} from '@xh/hoist/cmp/toolbar';
+import {exportButton} from '@xh/hoist/cmp/button';
+import {storeCountLabel, storeFilterField} from '@xh/hoist/cmp/store';
+import {Icon} from '@xh/hoist/icon';
 
 @HoistComponent()
 export class RestGridToolbar extends Component {

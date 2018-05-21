@@ -5,8 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {HoistComponent} from 'hoist/core';
-import {panel} from 'hoist/cmp/layout';
+import {HoistComponent} from '@xh/hoist/core';
+import {panel} from '@xh/hoist/cmp/layout';
 
 import {monitorResultsToolbar} from './MonitorResultsToolbar';
 import {monitorResultsDisplay} from './MonitorResultsDisplay';

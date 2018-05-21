@@ -6,9 +6,9 @@
  */
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {elemFactory, HoistComponent} from 'hoist/core';
-import {button, inputGroup} from 'hoist/kit/blueprint';
-import {observable, setter} from 'hoist/mobx';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {button, inputGroup} from '@xh/hoist/kit/blueprint';
+import {observable, setter} from '@xh/hoist/mobx';
 import {escapeRegExp} from 'lodash';
 
 /**

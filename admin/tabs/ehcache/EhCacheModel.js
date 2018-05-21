@@ -5,11 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH, HoistModel} from 'hoist/core';
-import {GridModel} from 'hoist/cmp/grid';
-import {UrlStore} from 'hoist/data';
-import {baseCol} from 'hoist/columns/Core';
-import {ToastManager} from 'hoist/toast';
+import {XH, HoistModel} from '@xh/hoist/core';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {UrlStore} from '@xh/hoist/data';
+import {baseCol} from '@xh/hoist/columns/Core';
+import {ToastManager} from '@xh/hoist/toast';
 
 import {nameCol} from '../../columns/Columns';
 

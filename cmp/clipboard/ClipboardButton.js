@@ -6,10 +6,10 @@
  */
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {HoistComponent, XH, elemFactory} from 'hoist/core';
-import {button} from 'hoist/kit/blueprint';
-import {ToastManager} from 'hoist/toast';
-import {Icon} from 'hoist/icon';
+import {HoistComponent, XH, elemFactory} from '@xh/hoist/core';
+import {button} from '@xh/hoist/kit/blueprint';
+import {ToastManager} from '@xh/hoist/toast';
+import {Icon} from '@xh/hoist/icon';
 
 import ClipboardJS from 'clipboard';
 

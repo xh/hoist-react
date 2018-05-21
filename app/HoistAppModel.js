@@ -4,8 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {defaultMethods} from 'hoist/utils/ClassUtils';
-import {HoistModel} from 'hoist/core';
+import {defaultMethods} from '@xh/hoist/utils/ClassUtils';
+import {HoistModel} from '@xh/hoist/core';
 
 /**
  * Mixin to apply to top app-level model for a HoistApp. This model will be initialized by Hoist

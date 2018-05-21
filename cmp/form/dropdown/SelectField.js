@@ -6,8 +6,8 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
-import {HoistComponent, elemFactory} from 'hoist/core';
-import {Classes, select, button} from 'hoist/kit/blueprint';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {Classes, select, button} from '@xh/hoist/kit/blueprint';
 
 import {BaseDropdownField} from './BaseDropdownField';
 

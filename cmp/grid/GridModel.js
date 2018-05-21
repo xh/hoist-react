@@ -4,11 +4,11 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from 'hoist/core';
-import {action, computed, observable} from 'hoist/mobx';
-import {StoreSelectionModel} from 'hoist/data';
-import {StoreContextMenu} from 'hoist/cmp/contextmenu';
-import {Icon} from 'hoist/icon';
+import {XH, HoistModel} from '@xh/hoist/core';
+import {action, computed, observable} from '@xh/hoist/mobx';
+import {StoreSelectionModel} from '@xh/hoist/data';
+import {StoreContextMenu} from '@xh/hoist/cmp/contextmenu';
+import {Icon} from '@xh/hoist/icon';
 import {castArray, find, isString, orderBy} from 'lodash';
 
 import {ColChooserModel} from './ColChooserModel';

@@ -5,8 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel} from 'hoist/core';
-import {action, observable, computed} from 'hoist/mobx';
+import {HoistModel} from '@xh/hoist/core';
+import {action, observable, computed} from '@xh/hoist/mobx';
 import {castArray, intersection, union} from 'lodash';
 
 /**

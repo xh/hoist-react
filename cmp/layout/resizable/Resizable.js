@@ -6,7 +6,7 @@
  */
 import React, {Children, Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {elemFactory, HoistComponent} from 'hoist/core';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
 
 import {box, hbox, vbox} from '../index';
 import {ResizableModel} from './ResizableModel';

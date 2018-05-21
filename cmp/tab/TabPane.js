@@ -5,9 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elem, elemFactory, HoistComponent} from 'hoist/core';
-import {Ref} from 'hoist/utils/Ref';
-import {frame} from 'hoist/cmp/layout';
+import {elem, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {Ref} from '@xh/hoist/utils/Ref';
+import {frame} from '@xh/hoist/cmp/layout';
 
 /**
  * Wrapper for Components to be shown inside of a TabContainer tab. Provides the following:

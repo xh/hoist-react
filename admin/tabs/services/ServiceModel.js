@@ -4,11 +4,11 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from 'hoist/core';
-import {ToastManager} from 'hoist/toast';
-import {UrlStore} from 'hoist/data';
-import {GridModel} from 'hoist/cmp/grid';
-import {baseCol} from 'hoist/columns/Core';
+import {XH, HoistModel} from '@xh/hoist/core';
+import {ToastManager} from '@xh/hoist/toast';
+import {UrlStore} from '@xh/hoist/data';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {baseCol} from '@xh/hoist/columns/Core';
 
 @HoistModel()
 export class ServiceModel {

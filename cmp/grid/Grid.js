@@ -7,10 +7,10 @@
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {defaults, isString, isNumber, isBoolean, isEqual, xor} from 'lodash';
-import {XH} from 'hoist/core';
-import {HoistComponent, elemFactory} from 'hoist/core';
-import {div, frame} from 'hoist/cmp/layout';
-import {convertIconToSvg, Icon} from 'hoist/icon';
+import {XH} from '@xh/hoist/core';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {div, frame} from '@xh/hoist/cmp/layout';
+import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import './ag-grid';
 import {navigateSelection, agGridReact} from './ag-grid';
 import {colChooser} from './ColChooser';

@@ -6,9 +6,9 @@
  */
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {HoistComponent, elemFactory} from 'hoist/core';
-import {box} from 'hoist/cmp/layout';
-import {Classes, overlay} from 'hoist/kit/blueprint';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {box} from '@xh/hoist/cmp/layout';
+import {Classes, overlay} from '@xh/hoist/kit/blueprint';
 
 import './Mask.scss';
 

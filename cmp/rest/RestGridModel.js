@@ -4,13 +4,13 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from 'hoist/core';
-import {action} from 'hoist/mobx';
-import {GridModel} from 'hoist/cmp/grid';
-import {MessageModel} from 'hoist/cmp/message';
-import {StoreContextMenu} from 'hoist/cmp/contextmenu';
-import {Icon} from 'hoist/icon';
-import {pluralize} from 'hoist/utils/JsUtils';
+import {XH, HoistModel} from '@xh/hoist/core';
+import {action} from '@xh/hoist/mobx';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {MessageModel} from '@xh/hoist/cmp/message';
+import {StoreContextMenu} from '@xh/hoist/cmp/contextmenu';
+import {Icon} from '@xh/hoist/icon';
+import {pluralize} from '@xh/hoist/utils/JsUtils';
 
 import {RestFormModel} from './RestFormModel';
 

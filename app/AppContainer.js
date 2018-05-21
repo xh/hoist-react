@@ -6,13 +6,13 @@
  */
 
 import {Children, Component} from 'react';
-import {ContextMenuTarget} from 'hoist/kit/blueprint';
-import {observable, observer, setter} from 'hoist/mobx';
-import {elemFactory, LoadState, XH} from 'hoist/core';
-import {contextMenu} from 'hoist/cmp/contextmenu';
-import {loadMask} from 'hoist/cmp/mask';
-import {div, frame, vframe, viewport} from 'hoist/cmp/layout';
-import {Icon} from 'hoist/icon';
+import {ContextMenuTarget} from '@xh/hoist/kit/blueprint';
+import {observable, observer, setter} from '@xh/hoist/mobx';
+import {elemFactory, LoadState, XH} from '@xh/hoist/core';
+import {contextMenu} from '@xh/hoist/cmp/contextmenu';
+import {loadMask} from '@xh/hoist/cmp/mask';
+import {div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
+import {Icon} from '@xh/hoist/icon';
 
 import {
     aboutDialog,

@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, HoistComponent} from 'hoist/core';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
 
 import {box} from './Box';
 

@@ -4,8 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {trimToDepth} from 'hoist/utils/JsUtils';
-import {stripTags} from 'hoist/utils/HtmlUtils';
+import {trimToDepth} from '@xh/hoist/utils/JsUtils';
+import {stripTags} from '@xh/hoist/utils/HtmlUtils';
 
 /**
  * Stringify an error object (typically an exception) safely for submission to server.

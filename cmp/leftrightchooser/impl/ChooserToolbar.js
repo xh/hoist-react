@@ -5,11 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, HoistComponent} from 'hoist/core';
-import {toolbar} from 'hoist/cmp/toolbar';
-import {vspacer} from 'hoist/cmp/layout';
-import {button} from 'hoist/kit/blueprint';
-import {Icon} from 'hoist/icon';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {toolbar} from '@xh/hoist/cmp/toolbar';
+import {vspacer} from '@xh/hoist/cmp/layout';
+import {button} from '@xh/hoist/kit/blueprint';
+import {Icon} from '@xh/hoist/icon';
 
 /**
  * A Toolbar for the LeftRightChooser.

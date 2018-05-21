@@ -6,7 +6,7 @@
  */
 
 import {fileColFactory} from './Utils.js';
-import {convertIconToSvg, Icon} from 'hoist/icon';
+import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 
 const colFactory = fileColFactory({
     field: null

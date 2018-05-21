@@ -5,9 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel} from 'hoist/core';
-import {StoreSelectionModel} from 'hoist/data';
-import {StoreContextMenu} from 'hoist/cmp/contextmenu';
+import {HoistModel} from '@xh/hoist/core';
+import {StoreSelectionModel} from '@xh/hoist/data';
+import {StoreContextMenu} from '@xh/hoist/cmp/contextmenu';
 
 /**
  * DataViewModel is a wrapper around GridModel, which shows sorted data in

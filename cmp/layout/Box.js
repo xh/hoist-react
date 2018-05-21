@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {merge, castArray} from 'lodash';
-import {elemFactory, HoistComponent} from 'hoist/core';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {div} from './Tags';
 
 /**

@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import React from 'react';
-import {elemFactory} from 'hoist/core';
+import {elemFactory} from '@xh/hoist/core';
 
 //--------------------------------
 // React

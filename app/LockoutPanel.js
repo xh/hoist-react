@@ -6,8 +6,8 @@
  */
 
 import {Component} from 'react';
-import {HoistComponent, elemFactory} from 'hoist/core';
-import {box, viewport} from 'hoist/cmp/layout';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {box, viewport} from '@xh/hoist/cmp/layout';
 import {PropTypes as PT} from 'prop-types';
 
 import './LockoutPanel.scss';

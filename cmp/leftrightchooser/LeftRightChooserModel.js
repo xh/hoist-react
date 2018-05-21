@@ -4,11 +4,11 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from 'hoist/core';
-import {GridModel} from 'hoist/cmp/grid';
-import {baseCol} from 'hoist/columns/Core';
-import {LocalStore} from 'hoist/data';
-import {computed} from 'hoist/mobx';
+import {HoistModel, XH} from '@xh/hoist/core';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {baseCol} from '@xh/hoist/columns/Core';
+import {LocalStore} from '@xh/hoist/data';
+import {computed} from '@xh/hoist/mobx';
 
 import {ItemRenderer} from './impl/ItemRenderer';
 

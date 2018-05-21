@@ -4,9 +4,9 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH} from 'hoist/core';
-import {allSettled} from 'hoist/promise';
-import {defaultMethods} from 'hoist/utils/ClassUtils';
+import {XH} from '@xh/hoist/core';
+import {allSettled} from '@xh/hoist/promise';
+import {defaultMethods} from '@xh/hoist/utils/ClassUtils';
 
 import {EventTarget} from './mixins/EventTarget';
 import {Reactive} from './mixins/Reactive';

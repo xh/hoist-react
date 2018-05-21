@@ -7,8 +7,8 @@
 
 import React from 'react';
 import {castArray, defaults, forOwn, isArray, pick, isNumber, isPlainObject, isString, merge} from 'lodash';
-import {isReactElement} from 'hoist/utils/ReactUtils';
-import {Exception} from 'hoist/exception';
+import {isReactElement} from '@xh/hoist/utils/ReactUtils';
+import {Exception} from '@xh/hoist/exception';
 
 /**
  * Convenience method for creating React Elements. This method is designed to provide a  well-

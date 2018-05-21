@@ -5,8 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {autorun, reaction} from 'hoist/mobx';
-import {provideMethods, chainMethods} from 'hoist/utils/ClassUtils';
+import {autorun, reaction} from '@xh/hoist/mobx';
+import {provideMethods, chainMethods} from '@xh/hoist/utils/ClassUtils';
 
 /**
  * Mixin to support adding managed MobX reactivity.

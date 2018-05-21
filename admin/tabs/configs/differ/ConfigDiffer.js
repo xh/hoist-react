@@ -5,13 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, HoistComponent, XH} from 'hoist/core';
-import {button, dialog} from 'hoist/kit/blueprint';
-import {filler, fragment, panel} from 'hoist/cmp/layout';
-import {grid} from 'hoist/cmp/grid';
-import {comboField, label} from 'hoist/cmp/form';
-import {message} from 'hoist/cmp/message';
-import {toolbar} from 'hoist/cmp/toolbar';
+import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
+import {button, dialog} from '@xh/hoist/kit/blueprint';
+import {filler, fragment, panel} from '@xh/hoist/cmp/layout';
+import {grid} from '@xh/hoist/cmp/grid';
+import {comboField, label} from '@xh/hoist/cmp/form';
+import {message} from '@xh/hoist/cmp/message';
+import {toolbar} from '@xh/hoist/cmp/toolbar';
 
 import {configDifferDetail} from './ConfigDifferDetail';
 

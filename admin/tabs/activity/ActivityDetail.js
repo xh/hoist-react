@@ -5,12 +5,12 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {dialog, button} from 'hoist/kit/blueprint';
-import {HoistComponent, elemFactory} from 'hoist/core';
-import {filler, table, tbody, tr, th, td} from 'hoist/cmp/layout';
-import {jsonField} from 'hoist/cmp/form';
-import {toolbar} from 'hoist/cmp/toolbar';
-import {fmtDateTime} from 'hoist/format';
+import {dialog, button} from '@xh/hoist/kit/blueprint';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {filler, table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
+import {jsonField} from '@xh/hoist/cmp/form';
+import {toolbar} from '@xh/hoist/cmp/toolbar';
+import {fmtDateTime} from '@xh/hoist/format';
 
 @HoistComponent()
 class ActivityDetail extends Component {

@@ -5,13 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {button} from 'hoist/kit/blueprint';
-import {XH, HoistComponent} from 'hoist/core';
-import {restGrid, RestGridModel, RestStore} from 'hoist/cmp/rest';
-import {fragment} from 'hoist/cmp/layout';
-import {boolCheckCol, baseCol} from 'hoist/columns/Core';
-import {nameCol} from 'hoist/admin/columns/Columns';
-import {Icon} from 'hoist/icon';
+import {button} from '@xh/hoist/kit/blueprint';
+import {XH, HoistComponent} from '@xh/hoist/core';
+import {restGrid, RestGridModel, RestStore} from '@xh/hoist/cmp/rest';
+import {fragment} from '@xh/hoist/cmp/layout';
+import {boolCheckCol, baseCol} from '@xh/hoist/columns/Core';
+import {nameCol} from '@xh/hoist/admin/columns/Columns';
+import {Icon} from '@xh/hoist/icon';
 
 import {configDiffer} from './differ/ConfigDiffer';
 import {ConfigDifferModel} from './differ/ConfigDifferModel';

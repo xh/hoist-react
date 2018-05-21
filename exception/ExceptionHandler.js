@@ -4,8 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {Exception} from  'hoist/exception';
-import {XH} from 'hoist/core';
+import {Exception} from '@xh/hoist/exception';
+import {XH} from '@xh/hoist/core';
 
 /**
  * Centralized Exception Handler for Hoist Application.
@@ -14,10 +14,10 @@ import {XH} from 'hoist/core';
 export class ExceptionHandler {
 
     /**
-     *  Called by framework constructs to handle an exception.
+     * Called by framework constructs to handle an exception.
      *
-     *  Typical application entry points to this method are via the XH.handleException() alias and
-     *  Promise.catchDefault().
+     * Typical application entry points to this method are via the XH.handleException() alias and
+     * Promise.catchDefault().
      *
      * @param {(Error|Object|string)} exception - Error or thrown object - if not an Error, an
      *      Exception will be created via Exception.create().

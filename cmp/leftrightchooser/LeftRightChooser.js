@@ -5,9 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, HoistComponent} from 'hoist/core';
-import {hframe, vframe} from 'hoist/cmp/layout';
-import {grid} from 'hoist/cmp/grid';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {hframe, vframe} from '@xh/hoist/cmp/layout';
+import {grid} from '@xh/hoist/cmp/grid';
 
 import {description} from './impl/Description';
 import {chooserToolbar} from './impl/ChooserToolbar';

@@ -5,12 +5,12 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {HoistComponent} from 'hoist/core';
-import {filler, hframe, resizable, panel} from 'hoist/cmp/layout';
-import {grid} from 'hoist/cmp/grid';
-import {loadMask} from 'hoist/cmp/mask';
-import {toolbar} from 'hoist/cmp/toolbar';
-import {storeFilterField} from 'hoist/cmp/store';
+import {HoistComponent} from '@xh/hoist/core';
+import {filler, hframe, resizable, panel} from '@xh/hoist/cmp/layout';
+import {grid} from '@xh/hoist/cmp/grid';
+import {loadMask} from '@xh/hoist/cmp/mask';
+import {toolbar} from '@xh/hoist/cmp/toolbar';
+import {storeFilterField} from '@xh/hoist/cmp/store';
 
 import {logViewerDisplay} from './LogViewerDisplay';
 import {LogViewerModel} from './LogViewerModel';

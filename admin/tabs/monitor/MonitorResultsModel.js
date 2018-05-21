@@ -5,12 +5,12 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH, HoistModel} from 'hoist/core';
-import {SECONDS} from 'hoist/utils/DateTimeUtils';
-import {ToastManager} from 'hoist/toast';
-import {action, observable, computed} from 'hoist/mobx';
+import {XH, HoistModel} from '@xh/hoist/core';
+import {SECONDS} from '@xh/hoist/utils/DateTimeUtils';
+import {ToastManager} from '@xh/hoist/toast';
+import {action, observable, computed} from '@xh/hoist/mobx';
 import {min} from 'lodash';
-import {Timer} from 'hoist/utils/Timer';
+import {Timer} from '@xh/hoist/utils/Timer';
 
 @HoistModel()
 export class MonitorResultsModel {

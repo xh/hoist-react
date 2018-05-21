@@ -5,12 +5,12 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {HoistComponent, elemFactory} from 'hoist/core';
-import {filler, frame} from 'hoist/cmp/layout';
-import {toolbar} from 'hoist/cmp/toolbar';
-import {leftRightChooser} from 'hoist/cmp/leftrightchooser';
-import {button, dialog} from 'hoist/kit/blueprint';
-import {Icon} from 'hoist/icon';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {filler, frame} from '@xh/hoist/cmp/layout';
+import {toolbar} from '@xh/hoist/cmp/toolbar';
+import {leftRightChooser} from '@xh/hoist/cmp/leftrightchooser';
+import {button, dialog} from '@xh/hoist/kit/blueprint';
+import {Icon} from '@xh/hoist/icon';
 
 @HoistComponent()
 export class ColChooser extends Component {

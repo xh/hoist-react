@@ -4,8 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {observable, action} from 'hoist/mobx';
-import {HoistModel} from 'hoist/core';
+import {observable, action} from '@xh/hoist/mobx';
+import {HoistModel} from '@xh/hoist/core';
 
 /**
  * Model for convenient, imperative Alerting/Confirming.

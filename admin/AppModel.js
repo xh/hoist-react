@@ -4,10 +4,10 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH} from 'hoist/core';
-import {HoistAppModel} from 'hoist/app';
-import {action} from 'hoist/mobx';
-import {TabContainerModel} from 'hoist/cmp/tab';
+import {XH} from '@xh/hoist/core';
+import {HoistAppModel} from '@xh/hoist/app';
+import {action} from '@xh/hoist/mobx';
+import {TabContainerModel} from '@xh/hoist/cmp/tab';
 
 import {AboutPanel} from './tabs/about/AboutPanel';
 import {ActivityPanel} from './tabs/activity/ActivityPanel';

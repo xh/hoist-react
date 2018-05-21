@@ -6,9 +6,9 @@
  */
 
 import {Component} from 'react';
-import {XH, elemFactory, HoistComponent} from 'hoist/core';
-import {box} from 'hoist/cmp/layout';
-import {Icon} from 'hoist/icon';
+import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {box} from '@xh/hoist/cmp/layout';
+import {Icon} from '@xh/hoist/icon';
 import './VersionBar.scss';
 
 @HoistComponent()

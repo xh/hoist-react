@@ -7,12 +7,12 @@
 
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {HoistComponent, elemFactory} from 'hoist/core';
-import {box} from 'hoist/cmp/layout';
-import {fmtNumber} from 'hoist/format';
-import {singularize, pluralize} from 'hoist/utils/JsUtils';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {box} from '@xh/hoist/cmp/layout';
+import {fmtNumber} from '@xh/hoist/format';
+import {singularize, pluralize} from '@xh/hoist/utils/JsUtils';
 
-import {BaseStore} from 'hoist/data';
+import {BaseStore} from '@xh/hoist/data';
 
 /**
  * A component to display the number of records in a given store.

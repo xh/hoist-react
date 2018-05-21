@@ -4,13 +4,13 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from 'hoist/core';
+import {XH, HoistModel} from '@xh/hoist/core';
 import {debounce, find} from 'lodash';
-import {action, observable, setter} from 'hoist/mobx';
-import {LastPromiseModel} from 'hoist/promise';
-import {GridModel} from 'hoist/cmp/grid';
-import {UrlStore} from 'hoist/data';
-import {baseCol} from 'hoist/columns/Core';
+import {action, observable, setter} from '@xh/hoist/mobx';
+import {LastPromiseModel} from '@xh/hoist/promise';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {UrlStore} from '@xh/hoist/data';
+import {baseCol} from '@xh/hoist/columns/Core';
 
 @HoistModel()
 export class LogViewerModel {

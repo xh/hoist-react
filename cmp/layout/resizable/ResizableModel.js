@@ -5,9 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH, HoistModel} from 'hoist/core';
-import {observable, action} from 'hoist/mobx';
-import {wait} from 'hoist/promise';
+import {XH, HoistModel} from '@xh/hoist/core';
+import {observable, action} from '@xh/hoist/mobx';
+import {wait} from '@xh/hoist/promise';
 
 /**
  * A Model for managing the state of a Resizable.

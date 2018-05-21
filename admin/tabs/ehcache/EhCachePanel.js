@@ -5,14 +5,14 @@
 * Copyright © 2018 Extremely Heavy Industries Inc.
 */
 import {Component} from 'react';
-import {button} from 'hoist/kit/blueprint';
-import {HoistComponent} from 'hoist/core';
-import {grid} from 'hoist/cmp/grid';
-import {panel, filler} from 'hoist/cmp/layout';
-import {toolbar, toolbarSep} from 'hoist/cmp/toolbar';
-import {refreshButton} from 'hoist/cmp/button';
-import {storeCountLabel, storeFilterField} from 'hoist/cmp/store';
-import {Icon} from 'hoist/icon';
+import {button} from '@xh/hoist/kit/blueprint';
+import {HoistComponent} from '@xh/hoist/core';
+import {grid} from '@xh/hoist/cmp/grid';
+import {panel, filler} from '@xh/hoist/cmp/layout';
+import {toolbar, toolbarSep} from '@xh/hoist/cmp/toolbar';
+import {refreshButton} from '@xh/hoist/cmp/button';
+import {storeCountLabel, storeFilterField} from '@xh/hoist/cmp/store';
+import {Icon} from '@xh/hoist/icon';
 
 import {EhCacheModel} from './EhCacheModel';
 

@@ -5,11 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {button, dialog} from 'hoist/kit/blueprint';
-import {HoistComponent, elemFactory} from 'hoist/core';
-import {filler} from 'hoist/cmp/layout';
-import {textAreaField} from 'hoist/cmp/form';
-import {toolbar} from 'hoist/cmp/toolbar';
+import {button, dialog} from '@xh/hoist/kit/blueprint';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {filler} from '@xh/hoist/cmp/layout';
+import {textAreaField} from '@xh/hoist/cmp/form';
+import {toolbar} from '@xh/hoist/cmp/toolbar';
 
 /**
  * A simple dialog component to collect user feedback from directly within the application.

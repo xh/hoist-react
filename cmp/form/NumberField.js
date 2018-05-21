@@ -6,9 +6,9 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
-import {HoistComponent, elemFactory} from 'hoist/core';
-import {numericInput} from 'hoist/kit/blueprint';
-import {fmtNumber} from 'hoist/format';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {numericInput} from '@xh/hoist/kit/blueprint';
+import {fmtNumber} from '@xh/hoist/format';
 import {HoistField} from './HoistField';
 
 /**

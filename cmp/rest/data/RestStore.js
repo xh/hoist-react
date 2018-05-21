@@ -5,9 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH} from 'hoist/core';
+import {XH} from '@xh/hoist/core';
 
-import {UrlStore} from 'hoist/data';
+import {UrlStore} from '@xh/hoist/data';
 
 import {RestField} from './RestField';
 
