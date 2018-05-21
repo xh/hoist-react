@@ -61,11 +61,11 @@ export class ColChooserModel {
         const data = gridModel.columns.map(it => {
             return {
                 value: it.field,
-                text: it.headerName,
-                description: it.description,
-                locked: it.locked,
+                text: it.chooserName,
+                description: it.chooserDescription,
                 group: it.chooserGroup,
                 exclude: it.excludeFromChooser,
+                locked: it.locked,  // TODO - review AG-grid API around "locking" concepts
                 side: it.hide ? 'left' : 'right'
             };
         });

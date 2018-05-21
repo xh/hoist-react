@@ -10,9 +10,9 @@ import {castArray, defaults, isNumber, omit, startCase} from 'lodash';
 // Configs specific to / added by Hoist as extensions to ag-Grid's column API.
 // Listed here so they can be deliberately omitted when outputting a colDef for ag-Grid itself.
 const hoistColConfigs = [
-    'align', 'description', 'chooserGroup', 'description',
-    'elementRenderer', 'excludeFromChooser', 'flex',
-    'fixedWidth', 'agColDef'
+    'align', 'elementRenderer', 'fixedWidth', 'flex',
+    'chooserDescription', 'chooserGroup', 'chooserName', 'excludeFromChooser',
+    'agColDef'
 ];
 
 /**
@@ -58,8 +58,8 @@ export function fileColFactory(fileVals = {}) {
                 };
             }
 
-            // Default headerName from field (sampleField -> Sample Field)
-            ret.headerName = ret.headerName || startCase(ret.field);
+            // Default chooserName from headerName or field (sampleField -> Sample Field)
+            ret.chooserName = ret.chooserName || ret.headerName || startCase(ret.field);
 
             // Install fn to produce definition w/o custom Hoist configs for use by ag-grid,
             // which will complain about unknown config keys.
