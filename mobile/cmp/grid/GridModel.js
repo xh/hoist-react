@@ -5,8 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel} from 'hoist/core';
-import {observable} from 'hoist/mobx';
+import {HoistModel} from '@xh/hoist/core';
+import {observable} from '@xh/hoist/mobx';
 
 /**
  * Core Model for a Grid, specifying the grid's data store and column definitions

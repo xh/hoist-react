@@ -12,7 +12,7 @@ import './styles.scss';
 import ons from 'onsenui';
 ons.disableAutoStyling();
 
-import {elemFactory} from 'hoist/core';
+import {elemFactory} from '@xh/hoist/core';
 import {
     List,
     ListHeader,
