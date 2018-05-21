@@ -158,12 +158,14 @@ export class LeftRightChooserModel {
     syncSelection() {
         const leftSel = this.leftModel.selection,
             rightSel = this.rightModel.selection,
+            leftSingle = leftSel.singleRecord,
+            rightSingle = rightSel.singleRecord,
             lastSelectedSide = this._lastSelectedSide;
 
-        if (leftSel.singleRecord && lastSelectedSide !== 'left') {
+        if (leftSingle && lastSelectedSide !== 'left') {
             this._lastSelectedSide = 'left';
             rightSel.clear();
-        } else if (rightSel.singleRecord && lastSelectedSide !== 'right') {
+        } else if (rightSingle && lastSelectedSide !== 'right') {
             this._lastSelectedSide = 'right';
             leftSel.clear();
         }
