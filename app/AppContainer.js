@@ -62,7 +62,7 @@ export class AppContainer extends Component {
         switch (XH.loadState) {
             case LoadState.PRE_AUTH:
             case LoadState.INITIALIZING:
-                return loadMask({isDisplayed: true});
+                return viewport(loadMask({isDisplayed: true}));
             case LoadState.LOGIN_REQUIRED:
                 return loginPanel();
             case LoadState.FAILED:
@@ -75,7 +75,7 @@ export class AppContainer extends Component {
                         frame(Children.only(this.props.children)),
                         versionBar()
                     ),
-                    loadMask({model: XH.appLoadModel, inline: false}),
+                    loadMask({model: XH.appLoadModel}),
                     aboutDialog()
                 );
             default:
