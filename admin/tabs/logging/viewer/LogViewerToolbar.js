@@ -5,13 +5,14 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, hoistComponent} from 'hoist/core';
-import {button} from 'hoist/kit/blueprint';
-import {checkField, label, numberField, textField, toolbar} from 'hoist/cmp';
-import {filler} from 'hoist/layout';
-import {Icon} from 'hoist/icon';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {button} from '@xh/hoist/kit/blueprint';
+import {checkField, label, numberField, textField} from '@xh/hoist/cmp/form';
+import {toolbar} from '@xh/hoist/cmp/toolbar';
+import {filler} from '@xh/hoist/cmp/layout';
+import {Icon} from '@xh/hoist/icon';
 
-@hoistComponent()
+@HoistComponent()
 export class LogViewerToolbar extends Component {
     
     render() {

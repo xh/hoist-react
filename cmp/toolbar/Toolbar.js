@@ -6,9 +6,9 @@
  */
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {button} from 'hoist/kit/blueprint';
-import {elemFactory, hoistComponent} from 'hoist/core';
-import {hbox, vbox} from 'hoist/layout';
+import {button} from '@xh/hoist/kit/blueprint';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {hbox, vbox} from '@xh/hoist/cmp/layout';
 
 import './Toolbar.scss';
 
@@ -16,7 +16,7 @@ import './Toolbar.scss';
  * A toolbar with built-in styling and padding.
  * Child items provided as raw configs will be created as buttons by default.
  */
-@hoistComponent()
+@HoistComponent()
 class Toolbar extends Component {
     static propTypes = {
         /** Custom classes that will be applied to this component */

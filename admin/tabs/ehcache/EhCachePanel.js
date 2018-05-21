@@ -5,25 +5,27 @@
 * Copyright © 2018 Extremely Heavy Industries Inc.
 */
 import {Component} from 'react';
-import {button} from 'hoist/kit/blueprint';
-import {hoistComponent} from 'hoist/core';
-import {grid} from 'hoist/grid';
-import {filler, vframe} from 'hoist/layout';
-import {refreshButton, storeCountLabel, storeFilterField, toolbar, toolbarSep} from 'hoist/cmp';
-import {Icon} from 'hoist/icon';
+import {button} from '@xh/hoist/kit/blueprint';
+import {HoistComponent} from '@xh/hoist/core';
+import {grid} from '@xh/hoist/cmp/grid';
+import {panel, filler} from '@xh/hoist/cmp/layout';
+import {toolbar, toolbarSep} from '@xh/hoist/cmp/toolbar';
+import {refreshButton} from '@xh/hoist/cmp/button';
+import {storeCountLabel, storeFilterField} from '@xh/hoist/cmp/store';
+import {Icon} from '@xh/hoist/icon';
 
 import {EhCacheModel} from './EhCacheModel';
 
-@hoistComponent()
+@HoistComponent()
 export class EhCachePanel extends Component {
 
     localModel = new EhCacheModel();
 
     render() {
-        return vframe(
-            this.renderToolbar(),
-            grid({model: this.model.gridModel})
-        );
+        return panel({
+            tbar: this.renderToolbar(),
+            item: grid({model: this.model.gridModel})
+        });
     }
 
     renderToolbar() {

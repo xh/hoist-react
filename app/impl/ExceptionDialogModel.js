@@ -4,9 +4,9 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from 'hoist/core';
-import {observable, setter, computed, action} from 'hoist/mobx';
-import {ToastManager} from 'hoist/cmp';
+import {XH, HoistModel} from '@xh/hoist/core';
+import {observable, setter, computed, action} from '@xh/hoist/mobx';
+import {ToastManager} from '@xh/hoist/toast';
 
 /**
  * Local Model to handle Exception Dialog.

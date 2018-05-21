@@ -4,10 +4,10 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH} from 'hoist/core';
-import {observer} from 'hoist/mobx';
-import {ContextMenuTarget, HotkeysTarget} from 'hoist/kit/blueprint';
-import {defaultMethods, chainMethods, overrideMethods} from 'hoist/utils/ClassUtils';
+import {XH} from '@xh/hoist/core';
+import {observer} from '@xh/hoist/mobx';
+import {ContextMenuTarget, HotkeysTarget} from '@xh/hoist/kit/blueprint';
+import {defaultMethods, chainMethods, overrideMethods} from '@xh/hoist/utils/ClassUtils';
 
 
 import {EventTarget} from './mixins/EventTarget';
@@ -23,16 +23,26 @@ import {elemFactory} from './elem';
  *
  * Adds support for managed events, mobx reactivity, model awareness, and other convenience getters.
  */
-export function hoistComponent() {
+export function HoistComponent({
+    isReactive = true,
+    isEventTarget = false,
+    layoutSupport = false
+} = {}) {
 
     return (C) => {
         C.isHoistComponent = true;
+        C.layoutSupport = layoutSupport;
 
         //-----------
         // Mixins
         //------------
-        C = Reactive(C);
-        C = EventTarget(C);
+        if (isReactive) {
+            C = Reactive(C);
+        }
+
+        if (isEventTarget) {
+            C = EventTarget(C);
+        }
 
         if (C.prototype.renderContextMenu) {
             C = ContextMenuTarget(C);
@@ -49,6 +59,10 @@ export function hoistComponent() {
              */
             model: {
                 get() {return this.localModel ? this.localModel : this.props.model}
+            },
+
+            layoutConfig: {
+                get() {return this.props.layoutConfig}
             },
 
             /**
@@ -90,7 +104,9 @@ export function hoistComponent() {
         });
 
         // This must be last, should provide the last override of render
-        C = observer(C);
+        if (isReactive) {
+            C = observer(C);
+        }
 
         return C;
     };
@@ -100,5 +116,5 @@ export function hoistComponent() {
  * Create an elementFactory for a HoistComponent.
  */
 export function hoistComponentFactory(C, hcArgs = {}) {
-    return elemFactory(hoistComponent(hcArgs)(C));
+    return elemFactory(HoistComponent(hcArgs)(C));
 }

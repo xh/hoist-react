@@ -7,9 +7,9 @@
 
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {elemFactory, hoistComponent} from 'hoist/core';
-import {button} from 'hoist/kit/blueprint';
-import {Icon} from 'hoist/icon';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {button} from '@xh/hoist/kit/blueprint';
+import {Icon} from '@xh/hoist/icon';
 
 /**
  * Convenience Button preconfigured for use as a trigger for an export/download of data.
@@ -18,7 +18,7 @@ import {Icon} from 'hoist/icon';
  * Must be provided either an onClick handler *or* a model. If a model is provided, this button
  * will call export() on the model class.
  */
-@hoistComponent()
+@HoistComponent()
 export class ExportButton extends Component {
 
     static propTypes = {

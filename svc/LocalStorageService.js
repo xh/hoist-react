@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH, HoistService} from 'hoist/core';
+import {XH, HoistService} from '@xh/hoist/core';
 import store from 'store2';
 
 @HoistService()

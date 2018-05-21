@@ -5,14 +5,14 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {hoistComponent} from 'hoist/core';
-import {baseCol} from 'hoist/columns/Core';
-import {dateTimeCol} from 'hoist/columns/DatesTimes';
-import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
+import {HoistComponent} from '@xh/hoist/core';
+import {baseCol} from '@xh/hoist/columns/Core';
+import {dateTimeCol} from '@xh/hoist/columns/DatesTimes';
+import {restGrid, RestGridModel, RestStore} from '@xh/hoist/cmp/rest';
 
 import {usernameCol} from '../../columns/Columns';
 
-@hoistComponent()
+@HoistComponent()
 export class DashboardPanel extends Component {
 
     localModel = new RestGridModel({

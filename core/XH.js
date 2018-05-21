@@ -8,12 +8,12 @@
 import ReactDOM from 'react-dom';
 import {isPlainObject} from 'lodash';
 
-import {elem, HoistModel} from 'hoist/core';
-import {Exception, ExceptionHandler} from 'hoist/exception';
-import {observable, setter, action} from 'hoist/mobx';
-import {MultiPromiseModel, never} from 'hoist/promise';
-import {RouterModel} from 'hoist/router';
-import {appContainer} from 'hoist/app';
+import {elem, HoistModel} from '@xh/hoist/core';
+import {Exception, ExceptionHandler} from '@xh/hoist/exception';
+import {observable, setter, action} from '@xh/hoist/mobx';
+import {MultiPromiseModel, never} from '@xh/hoist/promise';
+import {RouterModel} from '@xh/hoist/router';
+import {appContainer} from '@xh/hoist/app';
 import {
     ConfigService,
     EnvironmentService,
@@ -24,7 +24,7 @@ import {
     LocalStorageService,
     PrefService,
     TrackService
-} from 'hoist/svc';
+} from '@xh/hoist/svc';
 
 
 import {initServicesAsync} from './HoistService';
@@ -301,7 +301,7 @@ class XhModel {
 
     aliasMethods() {
         this.createMethodAliases(this.trackService,             ['track']);
-        this.createMethodAliases(this.fetchService,             ['fetchJson']);
+        this.createMethodAliases(this.fetchService,             ['fetchJson', 'fetch']);
         this.createMethodAliases(this.identityService,          ['getUser']);
         this.createMethodAliases(this.configService,            {getConf: 'get'});
         this.createMethodAliases(this.prefService,              {getPref: 'get', setPref: 'set'});
@@ -344,7 +344,6 @@ class XhModel {
      * @param {...Object} args - Objects to be destroyed.
      */
     safeDestroy(...args) {
-
         args.forEach(it => {
             if (it && it.destroy) it.destroy();
         });

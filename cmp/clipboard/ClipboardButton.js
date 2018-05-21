@@ -6,10 +6,10 @@
  */
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {hoistComponent, XH, elemFactory} from 'hoist/core';
-import {button} from 'hoist/kit/blueprint';
-import {ToastManager} from 'hoist/cmp';
-import {Icon} from 'hoist/icon';
+import {HoistComponent, XH, elemFactory} from '@xh/hoist/core';
+import {button} from '@xh/hoist/kit/blueprint';
+import {ToastManager} from '@xh/hoist/toast';
+import {Icon} from '@xh/hoist/icon';
 
 import ClipboardJS from 'clipboard';
 
@@ -17,7 +17,7 @@ import ClipboardJS from 'clipboard';
  * Button to copy text to the clipboard - via the clipboard.js library (https://clipboardjs.com).
  * Accepts props documented below as well as any supported by Blueprint's Button.
  */
-@hoistComponent()
+@HoistComponent()
 export class ClipboardButton extends Component {
 
     static propTypes = {

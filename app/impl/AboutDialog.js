@@ -6,11 +6,11 @@
  */
 
 import {Component} from 'react';
-import {XH, hoistComponent, elemFactory} from 'hoist/core';
-import {frame, table, tbody, tr, th, td, filler} from 'hoist/layout';
-import {toolbar} from 'hoist/cmp/toolbar';
-import {Icon} from 'hoist/icon';
-import {dialog, button} from 'hoist/kit/blueprint';
+import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
+import {frame, table, tbody, tr, th, td, filler} from '@xh/hoist/cmp/layout';
+import {toolbar} from '@xh/hoist/cmp/toolbar';
+import {Icon} from '@xh/hoist/icon';
+import {dialog, button} from '@xh/hoist/kit/blueprint';
 import './AboutDialog.scss';
 
 /**
@@ -18,7 +18,7 @@ import './AboutDialog.scss';
  * and its plugins. Can also display the values of other soft-configuration entries as
  * specified by the xhAboutMenuConfigs configuration key.
  */
-@hoistComponent()
+@HoistComponent()
 export class AboutDialog extends Component {
     render() {
         return dialog({

@@ -6,15 +6,15 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
-import {hoistComponent, elemFactory} from 'hoist/core';
-import {div} from 'hoist/layout';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {div} from '@xh/hoist/cmp/layout';
 
 import {HoistField} from './HoistField';
 
 /**
  * A simple label for a form.
  */
-@hoistComponent()
+@HoistComponent()
 export class Label extends HoistField {
 
     static propTypes = {

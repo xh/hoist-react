@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {observable, action} from 'hoist/mobx';
+import {observable, action} from '@xh/hoist/mobx';
 
 /**
  * Shorthand object for creating an observable ref.

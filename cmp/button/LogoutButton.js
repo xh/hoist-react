@@ -7,9 +7,9 @@
 
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {XH, elemFactory, hoistComponent} from 'hoist/core';
-import {Icon} from 'hoist/icon';
-import {button} from 'hoist/kit/blueprint';
+import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
+import {button} from '@xh/hoist/kit/blueprint';
 
 /**
  * Convenience Button preconfigured for use as a trigger for a logout operation.
@@ -18,7 +18,7 @@ import {button} from 'hoist/kit/blueprint';
  * An onClick handler can be provided to implement additional operations on logout,
  * but should ensure it calls `XH.identityService.logoutAsync()`.
  */
-@hoistComponent()
+@HoistComponent()
 export class LogoutButton extends Component {
 
     static propTypes = {

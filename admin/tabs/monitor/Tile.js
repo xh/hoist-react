@@ -6,15 +6,15 @@
  */
 
 import {Component} from 'react';
-import {hoistComponent, elemFactory} from 'hoist/core';
-import {vbox, div} from 'hoist/layout';
-import {getRelativeTimestamp} from 'hoist/cmp';
-import {pluralize} from 'hoist/utils/JsUtils';
-import {Icon} from 'hoist/icon';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {vbox, div} from '@xh/hoist/cmp/layout';
+import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
+import {pluralize} from '@xh/hoist/utils/JsUtils';
+import {Icon} from '@xh/hoist/icon';
 
 import './Tile.scss';
 
-@hoistComponent()
+@HoistComponent()
 export class Tile extends Component {
     render() {
         const {checksInStatus, lastStatusChanged, metric, metricUnit, message, name, status} = this.props.check,

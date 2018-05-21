@@ -5,12 +5,12 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {hoistComponent} from 'hoist/core';
-import {baseCol, boolCheckCol} from 'hoist/columns/Core';
-import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
-import {nameFlexCol} from 'hoist/admin/columns/Columns';
+import {HoistComponent} from '@xh/hoist/core';
+import {baseCol, boolCheckCol} from '@xh/hoist/columns/Core';
+import {restGrid, RestGridModel, RestStore} from '@xh/hoist/cmp/rest';
+import {nameFlexCol} from '@xh/hoist/admin/columns/Columns';
 
-@hoistComponent()
+@HoistComponent()
 export class MonitorEditorPanel extends Component {
 
     localModel = new RestGridModel({

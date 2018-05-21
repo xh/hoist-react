@@ -5,18 +5,19 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {hoistComponent} from 'hoist/core';
-import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
-import {baseCol} from 'hoist/columns/Core';
+import {HoistComponent} from '@xh/hoist/core';
+import {restGrid, RestGridModel, RestStore} from '@xh/hoist/cmp/rest';
+import {baseCol} from '@xh/hoist/columns/Core';
 
 import {nameCol, usernameCol} from '../../columns/Columns';
 
-@hoistComponent()
+@HoistComponent()
 export class UserPreferencePanel extends Component {
 
     localModel = new RestGridModel({
         store: new RestStore({
             url: 'rest/userPreferenceAdmin',
+            reloadLookupsOnLoad: true,
             fields: [
                 {
                     name: 'name',

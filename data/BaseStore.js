@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {isString} from 'lodash';
-import {XH} from 'hoist/core';
+import {XH} from '@xh/hoist/core';
 
 import {Field} from './Field';
 

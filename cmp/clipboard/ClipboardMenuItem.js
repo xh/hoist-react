@@ -9,8 +9,8 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {defaultsDeep} from 'lodash';
 import {clipboardButton} from './ClipboardButton';
-import {elemFactory} from 'hoist/core';
-import {Icon} from 'hoist/icon';
+import {elemFactory} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
 
 /**
  * Convenience wrapper for a ClipboardButton to be rendered as a Blueprint menu item.

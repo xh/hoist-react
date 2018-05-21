@@ -5,9 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elem, elemFactory, hoistComponent} from 'hoist/core';
-import {Ref} from 'hoist/utils/Ref';
-import {frame} from 'hoist/layout';
+import {elem, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {Ref} from '@xh/hoist/utils/Ref';
+import {frame} from '@xh/hoist/cmp/layout';
 
 /**
  * Wrapper for Components to be shown inside of a TabContainer tab. Provides the following:
@@ -19,7 +19,7 @@ import {frame} from 'hoist/layout';
  * Contained components that load data/state from the server should implement loadAsync(), but
  * generally leave the calling of that method to this component
  */
-@hoistComponent()
+@HoistComponent()
 export class TabPane extends Component {
 
     child = new Ref();
@@ -41,7 +41,12 @@ export class TabPane extends Component {
             display: isActive ? 'flex' : 'none',
             margin: 4,
             cls: 'xh-tab-pane',
-            item: elem(model.componentClass, {...this.props, flex: 1, ref: this.child.ref, tabPaneModel: this.model})
+            item: elem(model.componentClass, {
+                ...this.props,
+                flex: 1,
+                ref: this.child.ref,
+                tabPaneModel: this.model
+            })
         });
     }
 

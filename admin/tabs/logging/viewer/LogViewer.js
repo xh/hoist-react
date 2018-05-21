@@ -5,17 +5,19 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {hoistComponent} from 'hoist/core';
-import {filler, hframe, vframe} from 'hoist/layout';
-import {grid} from 'hoist/grid';
-import {loadMask, resizable, storeFilterField, toolbar} from 'hoist/cmp';
+import {HoistComponent} from '@xh/hoist/core';
+import {filler, hframe, resizable, panel} from '@xh/hoist/cmp/layout';
+import {grid} from '@xh/hoist/cmp/grid';
+import {loadMask} from '@xh/hoist/cmp/mask';
+import {toolbar} from '@xh/hoist/cmp/toolbar';
+import {storeFilterField} from '@xh/hoist/cmp/store';
 
 import {logViewerDisplay} from './LogViewerDisplay';
 import {LogViewerModel} from './LogViewerModel';
 import {logViewerToolbar} from './LogViewerToolbar';
 import './LogViewer.scss';
 
-@hoistComponent()
+@HoistComponent()
 export class LogViewer extends Component {
     localModel = new LogViewerModel();
 
@@ -34,21 +36,21 @@ export class LogViewer extends Component {
                     side: 'right',
                     contentSize: 250,
                     isOpen: true,
-                    item: vframe(
-                        grid({model: files}),
-                        toolbar(
+                    item: panel({
+                        item: grid({model: files}),
+                        bbar: toolbar(
                             filler(),
                             storeFilterField({
                                 store: files.store,
                                 fields: ['filename']
                             })
                         )
-                    )
+                    })
                 }),
-                vframe(
-                    logViewerToolbar({model}),
-                    logViewerDisplay({model})
-                ),
+                panel({
+                    tbar: logViewerToolbar({model}),
+                    item: logViewerDisplay({model})
+                }),
                 loadMask({model: loadModel})
             ]
         });

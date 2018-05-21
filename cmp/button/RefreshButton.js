@@ -7,9 +7,9 @@
 
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {elemFactory, hoistComponent} from 'hoist/core';
-import {Icon} from 'hoist/icon';
-import {button} from 'hoist/kit/blueprint';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
+import {button} from '@xh/hoist/kit/blueprint';
 
 /**
  * Convenience Button preconfigured for use as a trigger for a refresh operation.
@@ -18,7 +18,7 @@ import {button} from 'hoist/kit/blueprint';
  * Must be provided either an onClick handler *or* a model. If a model is provided, this button
  * will call loadAsync() on the model class.
  */
-@hoistComponent()
+@HoistComponent()
 export class RefreshButton extends Component {
 
     static propTypes = {

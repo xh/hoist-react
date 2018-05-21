@@ -5,12 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {XH, hoistComponent, elemFactory} from 'hoist/core';
-import {button, dialog, dialogBody, textArea} from 'hoist/kit/blueprint';
-import {clipboardButton, toolbar} from 'hoist/cmp';
-import {Icon} from 'hoist/icon';
-import {pre, table, tbody, td, th, tr, filler} from 'hoist/layout';
-import {stringifyErrorSafely} from 'hoist/exception';
+import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
+import {button, dialog, dialogBody, textArea} from '@xh/hoist/kit/blueprint';
+import {pre, table, tbody, td, th, tr, filler} from '@xh/hoist/cmp/layout';
+import {clipboardButton} from '@xh/hoist/cmp/clipboard';
+import {toolbar} from '@xh/hoist/cmp/toolbar';
+import {Icon} from '@xh/hoist/icon';
+import {stringifyErrorSafely} from '@xh/hoist/exception';
 
 import {dismissButton} from './ExceptionDialog';
 
@@ -18,7 +19,7 @@ import {dismissButton} from './ExceptionDialog';
  * Sub-dialog for displaying exception details.  Includes affordances for submitting an
  * error report to the server and copying the stacktrace to the clipboard.
  */
-@hoistComponent()
+@HoistComponent()
 export class ExceptionDialogDetails extends Component {
 
     render() {

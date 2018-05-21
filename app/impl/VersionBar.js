@@ -6,12 +6,12 @@
  */
 
 import {Component} from 'react';
-import {XH, elemFactory, hoistComponent} from 'hoist/core';
-import {box} from 'hoist/layout';
-import {Icon} from 'hoist/icon';
+import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {box} from '@xh/hoist/cmp/layout';
+import {Icon} from '@xh/hoist/icon';
 import './VersionBar.scss';
 
-@hoistComponent()
+@HoistComponent()
 export class VersionBar extends Component {
 
     render() {

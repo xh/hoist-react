@@ -7,9 +7,9 @@
 
 import {PropTypes as PT} from 'prop-types';
 import moment from 'moment';
-import {fmtDate} from 'hoist/format';
-import {hoistComponent, elemFactory} from 'hoist/core';
-import {dateInput} from 'hoist/kit/blueprint';
+import {fmtDate} from '@xh/hoist/format';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {dateInput} from '@xh/hoist/kit/blueprint';
 
 import {HoistField} from './HoistField';
 
@@ -18,7 +18,7 @@ import {HoistField} from './HoistField';
  *
  * @see HoistField for properties additional to those documented below.
  */
-@hoistComponent()
+@HoistComponent()
 export class DayField extends HoistField {
 
     static propTypes = {

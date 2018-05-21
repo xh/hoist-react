@@ -6,15 +6,15 @@
  */
 
 import React, {Component} from 'react';
-import {hoistComponent, elemFactory} from 'hoist/core';
-import {span} from 'hoist/layout';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {span} from '@xh/hoist/cmp/layout';
 
 import './Toolbar.scss';
 
 /**
  * Convenience component to insert a pre-styled separator | between Toolbar items.
  */
-@hoistComponent()
+@HoistComponent()
 class ToolbarSeparator extends Component {
 
     render() {

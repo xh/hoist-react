@@ -5,10 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import React from 'react';
-import {XH, HoistService} from 'hoist/core';
-import {Timer} from 'hoist/utils/Timer';
-import {SECONDS} from 'hoist/utils/DateTimeUtils';
-import {version as hoistReactVersion} from 'hoist/package.json';
+import {XH, HoistService} from '@xh/hoist/core';
+import {Timer} from '@xh/hoist/utils/Timer';
+import {SECONDS} from '@xh/hoist/utils/DateTimeUtils';
+import {version as hoistReactVersion} from '@xh/hoist/package.json';
 import {defaults} from 'lodash';
 
 @HoistService()

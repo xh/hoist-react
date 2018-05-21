@@ -6,11 +6,12 @@
  */
 
 import {Component} from 'react';
-import {XH, elemFactory, hoistComponent} from 'hoist/core';
-import {vbox, filler, span, box} from 'hoist/layout';
-import {button, popover, hotkeys, hotkey} from 'hoist/kit/blueprint';
-import {comboField, toolbar} from 'hoist/cmp';
-import {Icon} from 'hoist/icon';
+import {button, popover, hotkeys, hotkey} from '@xh/hoist/kit/blueprint';
+import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {vbox, filler, span, box} from '@xh/hoist/cmp/layout';
+import {comboField} from '@xh/hoist/cmp/form';
+import {toolbar} from '@xh/hoist/cmp/toolbar';
+import {Icon} from '@xh/hoist/icon';
 
 import {ImpersonationBarModel} from './ImpersonationBarModel';
 
@@ -18,7 +19,7 @@ import {ImpersonationBarModel} from './ImpersonationBarModel';
  * An admin-only toolbar that provides a UI for impersonating application users, as well as ending
  * any current impersonation setting. Can be shown via a global Shift+i keyboard shortcut.
  */
-@hoistComponent()
+@HoistComponent()
 export class ImpersonationBar extends Component {
 
     localModel = new ImpersonationBarModel();
@@ -42,7 +43,7 @@ export class ImpersonationBar extends Component {
         if (!this.model.isVisible) return span();  // *Not* null, so hotkeys get rendered.
 
         return toolbar({
-            style: {color: 'white', backgroundColor: 'midnightblue'},
+            style: {color: 'white', backgroundColor: 'midnightblue', zIndex: 9999},
             items: [
                 Icon.user(),
                 span(`${isImpersonating ? 'Impersonating' : ''} ${username}`),
@@ -54,7 +55,7 @@ export class ImpersonationBar extends Component {
     }
 
     switchButton() {
-        const model = this.model;
+        const {model} = this;
 
         return popover({
             target: button({
@@ -64,32 +65,30 @@ export class ImpersonationBar extends Component {
             }),
             isOpen: model.targetDialogOpen,
             hasBackdrop: true,
-            content: vbox({
-                items: [
-                    box({
-                        padding: 10,
-                        item: comboField({
-                            model,
-                            field: 'selectedTarget',
-                            options: model.targets,
-                            placeholder: 'Select User...'
-                        })
+            content: vbox(
+                box({
+                    padding: 10,
+                    item: comboField({
+                        model,
+                        field: 'selectedTarget',
+                        options: model.targets,
+                        placeholder: 'Select User...'
+                    })
+                }),
+                toolbar(
+                    filler(),
+                    button({
+                        text: 'Cancel',
+                        onClick: this.onCloseClick
                     }),
-                    toolbar(
-                        filler(),
-                        button({
-                            text: 'Cancel',
-                            onClick: this.onCloseClick
-                        }),
-                        button({
-                            text: 'OK',
-                            intent: 'primary',
-                            onClick: this.onOKClick,
-                            disabled: !model.selectedTarget
-                        })
-                    )
-                ]
-            })
+                    button({
+                        text: 'OK',
+                        intent: 'primary',
+                        onClick: this.onOKClick,
+                        disabled: !model.selectedTarget
+                    })
+                )
+            )
         });
     }
 

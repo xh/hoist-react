@@ -5,34 +5,39 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {button} from 'hoist/kit/blueprint';
-import {hoistComponent} from 'hoist/core';
-import {grid} from 'hoist/grid';
-import {filler, vframe} from 'hoist/layout';
-import {textField, dayField, exportButton, refreshButton, storeCountLabel, toolbar, toolbarSep} from 'hoist/cmp';
-import {Icon} from 'hoist/icon';
+import {button} from '@xh/hoist/kit/blueprint';
+import {HoistComponent} from '@xh/hoist/core';
+import {filler, panel} from '@xh/hoist/cmp/layout';
+import {grid} from '@xh/hoist/cmp/grid';
+import {textField, dayField} from '@xh/hoist/cmp/form';
+import {toolbar, toolbarSep} from '@xh/hoist/cmp/toolbar';
+import {exportButton, refreshButton} from '@xh/hoist/cmp/button';
+import {storeCountLabel} from '@xh/hoist/cmp/store';
+import {Icon} from '@xh/hoist/icon';
 
 import {ClientErrorModel} from './ClientErrorModel';
 import {clientErrorDetail} from './ClientErrorDetail';
 
-@hoistComponent()
+@HoistComponent()
 export class ClientErrorPanel extends Component {
 
     localModel = new ClientErrorModel();
 
     render() {
         const {model} = this;
-        return vframe(
-            this.renderToolbar(),
-            grid({
-                model: model.gridModel,
-                gridOptions: {
-                    rowSelection: 'single',
-                    onRowDoubleClicked: this.onRowDoubleClicked
-                }
-            }),
-            clientErrorDetail({model})
-        );
+        return panel({
+            tbar: this.renderToolbar(),
+            items: [
+                grid({
+                    model: model.gridModel,
+                    agOptions: {
+                        rowSelection: 'single',
+                        onRowDoubleClicked: this.onRowDoubleClicked
+                    }
+                }),
+                clientErrorDetail({model})
+            ]
+        });
     }
 
     renderToolbar() {

@@ -6,20 +6,24 @@
  */
 
 import {Component} from 'react';
-import {refreshButton, dayField, label, textField, toolbar} from 'hoist/cmp';
-import {hoistComponent, elemFactory} from 'hoist/core';
-import {chart} from 'hoist/highcharts';
-import {vframe, filler} from 'hoist/layout';
-import {Icon} from 'hoist/icon';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {dayField, label, textField} from '@xh/hoist/cmp/form';
+import {panel} from '@xh/hoist/cmp/layout';
+import {toolbar} from '@xh/hoist/cmp/toolbar';
+import {refreshButton} from '@xh/hoist/cmp/button';
+import {chart} from '@xh/hoist/cmp/chart';
+import {Icon} from '@xh/hoist/icon';
 
-@hoistComponent()
+@HoistComponent()
 export class VisitsChart extends Component {
 
     render() {
-        return vframe(
-            this.renderToolbar(),
-            chart({model: this.model.chartModel})
-        );
+        return panel({
+            icon: Icon.users(),
+            title: 'Unique Daily Visitors',
+            item: chart({model: this.model.chartModel}),
+            bbar: this.renderToolbar()
+        });
     }
 
     renderCollapsed() {
@@ -32,9 +36,6 @@ export class VisitsChart extends Component {
     renderToolbar() {
         const model = this.model;
         return toolbar(
-            Icon.users(),
-            label('Unique Daily Visitors'),
-            filler(),
             this.dayField({field: 'startDate'}),
             Icon.angleRight(),
             this.dayField({field: 'endDate'}),
@@ -53,7 +54,7 @@ export class VisitsChart extends Component {
         return dayField({
             model: this.model,
             onCommit: this.onCommit,
-            popoverPosition: 'top',
+            popoverPosition: 'top-left',
             width: 100,
             ...args
         });

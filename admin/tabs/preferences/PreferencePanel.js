@@ -5,13 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {hoistComponent} from 'hoist/core';
-import {boolCheckCol, baseCol} from 'hoist/columns/Core';
-import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
+import {HoistComponent} from '@xh/hoist/core';
+import {boolCheckCol, baseCol} from '@xh/hoist/columns/Core';
+import {restGrid, RestGridModel, RestStore} from '@xh/hoist/cmp/rest';
 
 import {nameCol} from '../../columns/Columns';
 
-@hoistComponent()
+@HoistComponent()
 export class PreferencePanel extends Component {
 
     localModel = new RestGridModel({

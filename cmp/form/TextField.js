@@ -6,8 +6,8 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
-import {hoistComponent, elemFactory} from 'hoist/core';
-import {inputGroup} from 'hoist/kit/blueprint';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {inputGroup} from '@xh/hoist/kit/blueprint';
 
 import {HoistField} from './HoistField';
 
@@ -16,7 +16,7 @@ import {HoistField} from './HoistField';
  *
  * @see HoistField for properties additional to those documented below.
  */
-@hoistComponent()
+@HoistComponent()
 export class TextField extends HoistField {
 
     static propTypes = {
