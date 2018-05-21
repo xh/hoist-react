@@ -26,7 +26,7 @@ export class RestControlModel  {
             this.addReaction(
                 () => this.type,
                 () => this.setValue(null)
-            )
+            );
         }
     }
 
