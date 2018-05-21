@@ -6,8 +6,8 @@
  */
 
 import {pull} from 'lodash';
-import {wait} from 'hoist/promise';
-import {provideMethods, chainMethods} from 'hoist/utils/ClassUtils';
+import {wait} from '@xh/hoist/promise';
+import {provideMethods, chainMethods} from '@xh/hoist/utils/ClassUtils';
 
 /**
  * Mixin to make a class an event target.

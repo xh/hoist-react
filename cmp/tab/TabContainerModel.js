@@ -4,12 +4,12 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from 'hoist/core';
-import {action, computed, observable} from 'hoist/mobx';
+import {XH, HoistModel} from '@xh/hoist/core';
+import {action, computed, observable} from '@xh/hoist/mobx';
 import {isPlainObject, max, startCase, uniqBy} from 'lodash';
-import {throwIf} from 'hoist/utils/JsUtils';
-import {wait} from 'hoist/promise';
-import {TabPaneModel} from 'hoist/cmp';
+import {throwIf} from '@xh/hoist/utils/JsUtils';
+import {wait} from '@xh/hoist/promise';
+import {TabPaneModel} from '@xh/hoist/cmp/tab';
 
 /**
  * Model for a TabContainer, representing its layout/contents and currently selected TabPane.
@@ -34,8 +34,8 @@ export class TabContainerModel {
      * @param {string} id - unique ID, used for generating routes.
      * @param {string} [name] - display name for this container - useful in particular when displaying
      *      nested tabs, where this model's container is a direct child of a parent TabContainer.
-     * @param {string} [orientation=h] - specify horizontal vs. vertical tabs.
-     * @param {boolean} [useRoutes=false] - true to use routes for navigation.
+     * @param {string} [orientation] - specify horizontal vs. vertical tabs.
+     * @param {boolean} [useRoutes] - true to use routes for navigation.
      *      These routes must be setup externally in the application (@see BaseApp.getRoutes()).
      *      They may exist at any level of the application, but there must be a route of the form
      *      `/../../[containerId]/[childPaneId]` for each child pane in this container.
@@ -88,6 +88,8 @@ export class TabContainerModel {
         
         this.selectedId = child ? id : children[0].id;
 
+        if (child.reloadOnShow) child.requestRefresh();
+
         if (this.useRoutes) {
             const routerModel = XH.routerModel,
                 state = routerModel.currentState,
@@ -107,8 +109,8 @@ export class TabContainerModel {
     }
 
     @action
-    setLastRefreshRequest(timestamp) {
-        this._lastRefreshRequest = timestamp;
+    requestRefresh() {
+        this._lastRefreshRequest = Date.now();
     }
 
     @computed

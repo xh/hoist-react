@@ -6,9 +6,9 @@
  */
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {XH, elemFactory, HoistComponent} from 'hoist/core';
-import {Icon} from 'hoist/icon';
-import {button} from 'hoist/kit/blueprint';
+import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
+import {button} from '@xh/hoist/kit/blueprint';
 
 /**
  * Convenience Button to open the admin client.

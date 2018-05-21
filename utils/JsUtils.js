@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH} from 'hoist/core';
+import {XH} from '@xh/hoist/core';
 import {mixin} from 'lodash';
 import _inflection from 'lodash-inflection';
 

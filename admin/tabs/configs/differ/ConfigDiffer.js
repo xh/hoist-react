@@ -5,11 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, HoistComponent, XH} from 'hoist/core';
-import {button, dialog} from 'hoist/kit/blueprint';
-import {filler, fragment} from 'hoist/layout';
-import {grid} from 'hoist/grid';
-import {comboField, label, message, toolbar} from 'hoist/cmp';
+import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
+import {button, dialog} from '@xh/hoist/kit/blueprint';
+import {filler, fragment, panel} from '@xh/hoist/cmp/layout';
+import {grid} from '@xh/hoist/cmp/grid';
+import {comboField, label} from '@xh/hoist/cmp/form';
+import {message} from '@xh/hoist/cmp/message';
+import {toolbar} from '@xh/hoist/cmp/toolbar';
 
 import {configDifferDetail} from './ConfigDifferDetail';
 
@@ -25,7 +27,7 @@ export class ConfigDiffer extends Component {
                 canOutsideClickClose: false,
                 onClose: this.onCloseClick,
                 style: {height: 600, width: '50%'},
-                items: this.getDialogItems()
+                item: this.getContents()
             }),
             configDifferDetail({model: detailModel})
         );
@@ -34,10 +36,10 @@ export class ConfigDiffer extends Component {
     //------------------------
     // Implementation
     //------------------------
-    getDialogItems() {
+    getContents() {
         const model = this.model;
-        return [
-            toolbar(
+        return panel({
+            tbar: toolbar(
                 label('Compare w/Remote'),
                 filler(),
                 label('Compare with:'),
@@ -54,22 +56,24 @@ export class ConfigDiffer extends Component {
                     onClick: this.onLoadDiffClick
                 })
             ),
-            grid({
-                model: model.gridModel,
-                gridOptions: {
-                    onRowDoubleClicked: this.onRowDoubleClicked,
-                    popupParent: null
-                }
-            }),
-            toolbar(
+            items: [
+                grid({
+                    model: model.gridModel,
+                    agOptions: {
+                        onRowDoubleClicked: this.onRowDoubleClicked,
+                        popupParent: null
+                    }
+                }),
+                message({model: model.messageModel})
+            ],
+            bbar: toolbar(
                 filler(),
                 button({
                     text: 'Close',
                     onClick: this.onCloseClick
                 })
-            ),
-            message({model: model.messageModel})
-        ];
+            )
+        });
     }
 
     onLoadDiffClick = () => {

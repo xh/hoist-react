@@ -6,12 +6,13 @@
  */
 
 import {Component} from 'react';
-import {elemFactory, HoistComponent} from 'hoist/core';
-import {button} from 'hoist/kit/blueprint';
-import {label, toolbar} from 'hoist/cmp';
-import {hbox, filler} from 'hoist/layout';
-import {relativeTimestamp} from 'hoist/cmp';
-import {Icon} from 'hoist/icon';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {button} from '@xh/hoist/kit/blueprint';
+import {hbox, filler} from '@xh/hoist/cmp/layout';
+import {label} from '@xh/hoist/cmp/form';
+import {toolbar} from '@xh/hoist/cmp/toolbar';
+import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
+import {Icon} from '@xh/hoist/icon';
 
 @HoistComponent()
 class MonitorResultsToolbar extends Component {

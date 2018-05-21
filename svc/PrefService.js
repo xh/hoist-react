@@ -5,8 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {cloneDeep, debounce, isNil, isEqual} from 'lodash';
-import {XH, HoistService} from 'hoist/core';
-import {SECONDS} from 'hoist/utils/DateTimeUtils';
+import {XH, HoistService} from '@xh/hoist/core';
+import {SECONDS} from '@xh/hoist/utils/DateTimeUtils';
 
 /**
  * Service to read and set user-specific preference values.

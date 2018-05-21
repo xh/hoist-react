@@ -6,10 +6,10 @@
  */
 import moment from 'moment';
 import {forOwn} from 'lodash';
-import {XH, HoistModel} from 'hoist/core';
-import {observable, setter} from 'hoist/mobx';
-import {ChartModel} from 'hoist/highcharts';
-import {fmtDate} from 'hoist/format';
+import {XH, HoistModel} from '@xh/hoist/core';
+import {observable, setter} from '@xh/hoist/mobx';
+import {ChartModel} from '@xh/hoist/cmp/chart';
+import {fmtDate} from '@xh/hoist/format';
 
 @HoistModel()
 export class VisitsChartModel {

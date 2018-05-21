@@ -6,9 +6,9 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
-import {HoistComponent, elemFactory} from 'hoist/core';
-import {label} from 'hoist/cmp';
-import {checkbox} from 'hoist/kit/blueprint';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {label} from '@xh/hoist/cmp/form';
+import {checkbox} from '@xh/hoist/kit/blueprint';
 
 import {HoistField} from './HoistField';
 

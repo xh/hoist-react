@@ -5,9 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH, HoistService} from 'hoist/core';
-import {stripTags} from 'hoist/utils/HtmlUtils';
-import {stringifyErrorSafely} from 'hoist/exception';
+import {XH, HoistService} from '@xh/hoist/core';
+import {stripTags} from '@xh/hoist/utils/HtmlUtils';
+import {stringifyErrorSafely} from '@xh/hoist/exception';
 
 @HoistService()
 export class ErrorTrackingService {

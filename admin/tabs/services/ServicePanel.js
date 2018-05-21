@@ -5,12 +5,14 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {HoistComponent} from 'hoist/core';
-import {grid} from 'hoist/grid';
-import {filler, vframe} from 'hoist/layout';
-import {button} from 'hoist/kit/blueprint';
-import {refreshButton, storeCountLabel, storeFilterField, toolbar, toolbarSep} from 'hoist/cmp';
-import {Icon} from 'hoist/icon';
+import {HoistComponent} from '@xh/hoist/core';
+import {button} from '@xh/hoist/kit/blueprint';
+import {grid} from '@xh/hoist/cmp/grid';
+import {panel, filler} from '@xh/hoist/cmp/layout';
+import {toolbar, toolbarSep} from '@xh/hoist/cmp/toolbar';
+import {refreshButton} from '@xh/hoist/cmp/button';
+import {storeCountLabel, storeFilterField} from '@xh/hoist/cmp/store';
+import {Icon} from '@xh/hoist/icon';
 import {ServiceModel} from './ServiceModel';
 
 @HoistComponent()
@@ -19,16 +21,16 @@ export class ServicePanel extends Component {
     localModel = new ServiceModel();
 
     render() {
-        return vframe(
-            this.renderToolbar(),
-            grid({
+        return panel({
+            tbar: this.renderToolbar(),
+            item: grid({
                 model: this.model.gridModel,
-                gridOptions: {
+                agOptions: {
                     rowSelection: 'multiple',
                     groupRowInnerRenderer: this.groupRowInnerRenderer
                 }
             })
-        );
+        });
     }
 
     renderToolbar() {

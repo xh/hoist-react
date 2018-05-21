@@ -6,8 +6,8 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
-import {HoistComponent, elemFactory} from 'hoist/core';
-import {textArea} from 'hoist/kit/blueprint';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {textArea} from '@xh/hoist/kit/blueprint';
 
 import {HoistField} from './HoistField';
 

@@ -11,7 +11,7 @@ import '@blueprintjs/select/lib/css/blueprint-select.css';
 import '@blueprintjs/icons/lib/css/blueprint-icons.css';
 import './styles.scss';
 
-import {elemFactory} from 'hoist/core';
+import {elemFactory} from '@xh/hoist/core';
 import {
     Alert,
     Button,

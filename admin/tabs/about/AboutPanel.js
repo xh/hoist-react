@@ -6,8 +6,8 @@
  */
 
 import React, {Component} from 'react';
-import {XH, HoistComponent} from 'hoist/core';
-import {div, h3, h4, table, tbody, tr, th, td} from 'hoist/layout';
+import {XH, HoistComponent} from '@xh/hoist/core';
+import {div, h3, h4, table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
 
 import './AboutPanel.scss';
 

@@ -6,12 +6,13 @@
  */
 
 import {Children, Component} from 'react';
-import {ContextMenuTarget} from 'hoist/kit/blueprint';
-import {observable, observer, setter} from 'hoist/mobx';
-import {elemFactory, LoadState, XH} from 'hoist/core';
-import {contextMenu, loadMask} from 'hoist/cmp';
-import {div, frame, vframe, viewport} from 'hoist/layout';
-import {Icon} from 'hoist/icon';
+import {ContextMenuTarget} from '@xh/hoist/kit/blueprint';
+import {observable, observer, setter} from '@xh/hoist/mobx';
+import {elemFactory, LoadState, XH} from '@xh/hoist/core';
+import {contextMenu} from '@xh/hoist/cmp/contextmenu';
+import {loadMask} from '@xh/hoist/cmp/mask';
+import {div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
+import {Icon} from '@xh/hoist/icon';
 
 import {
     aboutDialog,
@@ -61,7 +62,7 @@ export class AppContainer extends Component {
         switch (XH.loadState) {
             case LoadState.PRE_AUTH:
             case LoadState.INITIALIZING:
-                return loadMask({isDisplayed: true});
+                return viewport(loadMask({isDisplayed: true}));
             case LoadState.LOGIN_REQUIRED:
                 return loginPanel();
             case LoadState.FAILED:
@@ -74,7 +75,7 @@ export class AppContainer extends Component {
                         frame(Children.only(this.props.children)),
                         versionBar()
                     ),
-                    loadMask({model: XH.appLoadModel, inline: false}),
+                    loadMask({model: XH.appLoadModel}),
                     aboutDialog()
                 );
             default:

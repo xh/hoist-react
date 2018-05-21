@@ -6,9 +6,9 @@
  */
 
 import {Component} from 'react';
-import {XH, elemFactory, HoistComponent} from 'hoist/core';
-import {Icon} from 'hoist/icon';
-import {button, hotkeys, hotkey} from 'hoist/kit/blueprint';
+import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
+import {button, hotkeys, hotkey} from '@xh/hoist/kit/blueprint';
 
 /**
  * Convenience Button preconfigured for use as a trigger for light/dark theme toggling.

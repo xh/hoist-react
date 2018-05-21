@@ -5,10 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import React from 'react';
-import {XH, HoistService} from 'hoist/core';
-import {Timer} from 'hoist/utils/Timer';
-import {SECONDS} from 'hoist/utils/DateTimeUtils';
-import {version as hoistReactVersion} from 'hoist/package.json';
+import {XH, HoistService} from '@xh/hoist/core';
+import {Timer} from '@xh/hoist/utils/Timer';
+import {SECONDS} from '@xh/hoist/utils/DateTimeUtils';
+import {version as hoistReactVersion} from '@xh/hoist/package.json';
 import {defaults} from 'lodash';
 
 @HoistService()
@@ -19,14 +19,16 @@ export class EnvironmentService {
     async initAsync() {
         const serverEnv = await XH.fetchJson({url: 'hoistImpl/environment'});
 
-        // Apply client-side data injected via Webpack build or otherwise determined here
-        this._data = defaults(serverEnv, {
+        // Favor client-side data injected via Webpack build or otherwise determined locally,
+        // then apply all other env data sourced from the server.
+        this._data = defaults({
             appName: XH.appName,
             clientVersion: XH.appVersion,
             clientBuild: XH.appBuild,
             hoistReactVersion: hoistReactVersion,
             reactVersion: React.version
-        });
+        }, serverEnv);
+
         this.startVersionChecking();
     }
 

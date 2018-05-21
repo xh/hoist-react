@@ -5,9 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {XH, HoistComponent} from 'hoist/core';
-import {vframe} from 'hoist/layout';
-import {resizable} from 'hoist/cmp';
+import {XH, HoistComponent} from '@xh/hoist/core';
+import {vframe, resizable} from '@xh/hoist/cmp/layout';
 
 import {activityGrid} from './ActivityGrid';
 import {ActivityGridModel} from './ActivityGridModel';
@@ -25,7 +24,7 @@ export class ActivityPanel extends Component {
             activityGrid({model: this.activityGridModel}),
             resizable({
                 side: 'top',
-                contentSize: 250,
+                contentSize: 300,
                 prefName: 'xhAdminActivityChartSize',
                 item: visitsChart({model: this.visitsChartModel})
             })

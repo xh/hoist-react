@@ -4,14 +4,14 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from 'hoist/core';
-import {observable, action} from 'hoist/mobx';
+import {XH, HoistModel} from '@xh/hoist/core';
+import {observable, action} from '@xh/hoist/mobx';
 
 @HoistModel()
 export class ImpersonationBarModel {
     @observable isVisible = false;
 
-    @observable targets = null;
+    @observable.ref targets = [];
     @observable selectedTarget = '';
     @observable targetDialogOpen = false;
 
@@ -48,7 +48,8 @@ export class ImpersonationBarModel {
     // Target dialog management
     //--------------------------
     ensureTargetsLoaded() {
-        if (this.targets != null) return;
+        if (this.targets.length) return;
+
         XH.fetchJson({
             url: 'hoistImpl/impersonationTargets'
         }).then(

@@ -6,17 +6,19 @@
  */
 
 import React from 'react';
-import {action, observable, setter} from 'hoist/mobx';
+import {action, observable, setter} from '@xh/hoist/mobx';
 import {castArray, isEqual, remove, trimEnd} from 'lodash';
-import {pluralize} from 'hoist/utils/JsUtils';
-import {XH, HoistModel} from 'hoist/core';
-import {LocalStore} from 'hoist/data';
-import {GridModel} from 'hoist/grid';
-import {MessageModel, ToastManager, StoreContextMenu} from 'hoist/cmp';
-import {baseCol} from 'hoist/columns/Core';
-import {nameCol} from 'hoist/admin/columns/Columns';
-import {p} from 'hoist/layout';
-import {Icon} from 'hoist/icon';
+import {pluralize} from '@xh/hoist/utils/JsUtils';
+import {XH, HoistModel} from '@xh/hoist/core';
+import {LocalStore} from '@xh/hoist/data';
+import {p} from '@xh/hoist/cmp/layout';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {MessageModel} from '@xh/hoist/cmp/message';
+import {StoreContextMenu} from '@xh/hoist/cmp/contextmenu';
+import {ToastManager} from '@xh/hoist/toast';
+import {baseCol} from '@xh/hoist/columns/Core';
+import {nameCol} from '@xh/hoist/admin/columns/Columns';
+import {Icon} from '@xh/hoist/icon';
 
 import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
 
