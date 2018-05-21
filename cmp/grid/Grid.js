@@ -249,7 +249,11 @@ class Grid extends Component {
     }
 
     onComponentStateChanged = (ev) => {
-        ev.api.sizeColumnsToFit();
+        const {api} = ev,
+            {model} = this;
+
+        api.sizeColumnsToFit();
+        if (!model.emptyText) api.hideOverlay();
     }
 
 }
