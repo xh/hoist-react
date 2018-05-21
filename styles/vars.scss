@@ -171,7 +171,7 @@ body {
 body.xh-dark {
   // Colors
   --xh-black: var(--black, #0e0e0e);
-  --xh-gray-dark: var(--green, #{mc('grey', '900')});
+  --xh-gray-dark: var(--gray-dark, #{mc('grey', '900')});
   --xh-green: var(--green, #009e0a); // could not find a MC green that works, especially in grids....
   --xh-green-muted: var(--green-muted, #{mc-muted('green', '800', 20%, 5%)});
   --xh-red: var(--red, #{mc('red', 'a700')});
