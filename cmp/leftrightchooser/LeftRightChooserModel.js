@@ -113,7 +113,7 @@ export class LeftRightChooserModel {
 
         this.setData(data);
 
-        this.addAutorun(() => this.syncSelection());
+        this.addReaction(this.syncSelectionReaction());
     }
 
     setData(data) {
@@ -155,18 +155,23 @@ export class LeftRightChooserModel {
         this.refreshStores();
     }
 
-    syncSelection() {
+    syncSelectionReaction() {
         const leftSel = this.leftModel.selection,
-            rightSel = this.rightModel.selection,
-            lastSelectedSide = this._lastSelectedSide;
-
-        if (leftSel.singleRecord && lastSelectedSide !== 'left') {
-            this._lastSelectedSide = 'left';
-            rightSel.clear();
-        } else if (rightSel.singleRecord && lastSelectedSide !== 'right') {
-            this._lastSelectedSide = 'right';
-            leftSel.clear();
-        }
+            rightSel = this.rightModel.selection;
+        
+        return {
+            track: () => [leftSel.singleRecord, rightSel.singleRecord],
+            run: () => {
+                const lastSelectedSide = this._lastSelectedSide;
+                if (leftSel.singleRecord && lastSelectedSide !== 'left') {
+                    this._lastSelectedSide = 'left';
+                    rightSel.clear();
+                } else if (rightSel.singleRecord && lastSelectedSide !== 'right') {
+                    this._lastSelectedSide = 'right';
+                    leftSel.clear();
+                }
+            }
+        };
     }
 
     refreshStores() {

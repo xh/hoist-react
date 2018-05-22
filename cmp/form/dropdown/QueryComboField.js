@@ -40,7 +40,10 @@ export class QueryComboField extends BaseComboField {
 
     constructor(props) {
         super(props);
-        this.addAutorun(() => this.syncOptions(), {delay: props.queryBuffer || 100});
+        this.addAutorun({
+            run: this.syncOptions,
+            delay: props.queryBuffer || 100
+        });
     }
 
     render() {
