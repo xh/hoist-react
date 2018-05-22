@@ -61,7 +61,7 @@ export function Reactive(C) {
          * the run function. The reaction will also run only when the output of the track function
          * changes, and this output is passed to the run function.
          *
-         * Choose a reactions over an autorun when you wish to explicitly declare which observables
+         * Choose a reaction over an autorun when you wish to explicitly declare which observables
          * should be tracked. A common pattern is to have the track function return these
          * observables in a simple array or object, which the run function can use as its input or
          * (commonly) ignore. This helps to clarify that the track function is only enumerating
