@@ -25,7 +25,9 @@ export class RestControlModel  {
         if (field.typeField) {
             this.addReaction({
                 track: () => this.type,
-                run: () => this.setValue(null)
+                run: () => {
+                    if (this.parent.isDirty) this.setValue(null);
+                }
             });
         }
     }

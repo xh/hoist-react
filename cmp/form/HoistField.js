@@ -108,7 +108,7 @@ export class HoistField extends Component {
 
         if (onCommit) onCommit(newValue);
 
-        this.setInternalValue(this.toInternal(this.externalValue));
+        this.setInternalValue(this.toInternal(newValue));
     }
 
     onBlur = () => {

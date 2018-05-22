@@ -19,7 +19,7 @@ body {
   --xh-black: var(--black, #{mc('grey', '900')});
   --xh-blue: var(--blue, #{mc('blue', '700')});
   --xh-blue-muted: var(--blue-muted, #{mc-muted('blue', '800', 40%)});
-  --xh-blue-dark: var(--blue-light, #{mc('light-blue', '900')});
+  --xh-blue-dark: var(--blue-dark, #{mc('light-blue', '900')});
   --xh-blue-light: var(--blue-light, #{mc('light-blue', '600')});
   --xh-blue-gray: var(--blue-gray, #{mc('blue-grey', '600')});
   --xh-blue-gray-light: var(--blue-gray-light, #{mc('blue-grey', '50')});
@@ -78,7 +78,7 @@ body {
 
   // Fonts
   --xh-font-family: var(--font-family, #{(-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif)});
-  --xh-font-family-headings: var(--font-family, #{(-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif)});
+  --xh-font-family-headings: var(--font-family-headings, #{(-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif)});
   --xh-font-family-mono: var(--font-family-mono, #{(Monaco, Consolas, monospace)});
   --xh-font-size: var(--font-size, 13);
   --xh-font-size-large-mult: var(--font-size-large-mult, 1.2);
@@ -120,7 +120,7 @@ body {
   --xh-popup-border-color: var(--popup-border-color, var(--xh-popup-title-bg));
   --xh-popup-border-width: var(--popup-border-width, var(--xh-border-width));
   --xh-popup-border-width-px: calc(var(--xh-popup-border-width) * 1px);
-  --xh-popup-title-bg: var(--popup-header-bg, var(--xh-title-bg));
+  --xh-popup-title-bg: var(--popup-title-bg, var(--xh-title-bg));
   --xh-popup-title-font-size: var(--popup-title-font-size, var(--xh-title-font-size));
   --xh-popup-title-font-size-px: calc(var(--xh-popup-title-font-size) * 1px);
   --xh-popup-title-text-color: var(--popup-title-text-color, var(--xh-title-text-color));
@@ -151,7 +151,7 @@ body {
   // Text
   --xh-text-color: var(--text-color, var(--xh-blue-gray-dark));
   --xh-text-color-accent: var(--text-color-accent, var(--xh-orange));
-  --xh-text-color-headings: var(--text-color-header, var(--xh-text-color));
+  --xh-text-color-headings: var(--text-color-headings, var(--xh-text-color));
   --xh-text-color-highlight: var(--text-color-highlight, #{mc('blue-grey', '800')});
   --xh-text-color-muted: var(--text-color-muted, var(--xh-gray));
 
@@ -171,7 +171,7 @@ body {
 body.xh-dark {
   // Colors
   --xh-black: var(--black, #0e0e0e);
-  --xh-gray-dark: var(--green, #{mc('grey', '900')});
+  --xh-gray-dark: var(--gray-dark, #{mc('grey', '900')});
   --xh-green: var(--green, #009e0a); // could not find a MC green that works, especially in grids....
   --xh-green-muted: var(--green-muted, #{mc-muted('green', '800', 20%, 5%)});
   --xh-red: var(--red, #{mc('red', 'a700')});
