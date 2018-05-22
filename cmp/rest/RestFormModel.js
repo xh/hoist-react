@@ -112,6 +112,6 @@ export class RestFormModel {
     }
 
     destroy() {
-        XH.safeDestroy(this.messageModel);
+        XH.safeDestroy(this.messageModel, ...this.controlModels);
     }
 }
