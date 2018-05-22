@@ -12,7 +12,7 @@ import {provideMethods, chainMethods} from '@xh/hoist/utils/ClassUtils';
 /**
  * Mixin to add MobX reactivity to Components, Models, and Services.
  *
- * Provides support for adding and removing 'managed' autoruns adn reactions. The artifacts
+ * Provides support for adding and removing 'managed' autoruns and reactions. The artifacts
  * created by these methods will be disposed of automatically when the owning object is destroyed,
  * ensuring that they do not block garbage collection.
  *
