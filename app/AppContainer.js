@@ -12,6 +12,7 @@ import {elemFactory, LoadState, XH} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/cmp/contextmenu';
 import {loadMask} from '@xh/hoist/cmp/mask';
 import {br, div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
+import {logoutButton} from '@xh/hoist/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
 import {
@@ -127,8 +128,16 @@ export class AppContainer extends Component {
             br(),
             `You are user: ${getUser().username}`,
             br(),
-            `Your current role(s): ${getUser().roles.join(', ')}`
+            `Your current role(s): ${getUser().roles.join(', ') || '--'}`,
+            div({
+                hidden: !XH.appModel.enableLogout,
+                items: [
+                    br(),
+                    logoutButton({text: 'Logout'})
+                ]
+            })
         );
     }
 }
+
 export const appContainer = elemFactory(AppContainer);
