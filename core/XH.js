@@ -112,6 +112,7 @@ class XhModel {
     /** Router model for the App - used for route based navigation. */
     routerModel = new RouterModel();
 
+    /** Set by output of AppModel.checkAccess() if that initial auth check fails. */
     accessDeniedMessage = null;
 
     /**
@@ -250,7 +251,7 @@ class XhModel {
 
             const access = this.appModel.checkAccess(XH.getUser());
             if (!access.hasAccess) {
-                this.accessDeniedMessage = access.message || 'User does not have access to this application.';
+                this.accessDeniedMessage = access.message || 'Access denied.';
                 this.setLoadState(LoadState.ACCESS_DENIED);
                 return;
             }

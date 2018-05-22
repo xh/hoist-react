@@ -11,7 +11,7 @@ import {observable, observer, setter} from '@xh/hoist/mobx';
 import {elemFactory, LoadState, XH} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/cmp/contextmenu';
 import {loadMask} from '@xh/hoist/cmp/mask';
-import {br, div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
+import {div, frame, vframe, viewport, vspacer} from '@xh/hoist/cmp/layout';
 import {logoutButton} from '@xh/hoist/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
@@ -32,8 +32,8 @@ import {lockoutPanel} from './';
  * standard UI elements such as an impersonation bar header, version bar footer, app-wide load mask,
  * context menu, and error dialog.
  *
- * Construction of this container triggers the init of the core XH singleton, which
- * queries for an authorized user and then proceeds to init all core Hoist and app-level services.
+ * Construction of this container triggers the init of the core XH singleton, which queries for an
+ * authorized user and then proceeds to init all core Hoist and app-level services.
  *
  * If the user is not yet known (and the app does *not* use SSO), this container will display a
  * standardized loginPanel component to prompt for a username and password. Once the user is
@@ -122,19 +122,19 @@ export class AppContainer extends Component {
     // Implementation
     //------------------------
     unauthorizedMessage() {
-        const getUser = XH.getUser;
+        const user = XH.getUser();
+
         return div(
             XH.accessDeniedMessage,
-            br(),
-            `You are user: ${getUser().username}`,
-            br(),
-            `Your current role(s): ${getUser().roles.join(', ') || '--'}`,
-            div({
-                hidden: !XH.appModel.enableLogout,
-                items: [
-                    br(),
-                    logoutButton({text: 'Logout'})
-                ]
+            vspacer(10),
+            `
+                You are logged in as ${user.username} 
+                and have the roles [${user.roles.join(', ') || '--'}].
+            `,
+            vspacer(20),
+            logoutButton({
+                text: 'Logout',
+                omit: !XH.appModel.enableLogout
             })
         );
     }

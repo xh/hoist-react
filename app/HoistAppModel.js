@@ -42,16 +42,20 @@ export function HoistAppModel(C) {
         },
 
         /**
-         * Override in apps appModel to check if user has required role.
-         * @param {Object} user - the User object found at XH.getUser()
+         * Application-level AppModel must implement with appropriate logic to determine if the
+         * current user should be able to access the UI, typically based on the user's roles.
+         * @param {Object} user - current user, as returned by XH.getUser().
          */
         checkAccess(user) {
-            return {hasAccess: false, message: 'User does not have access.'};
+            return {
+                hasAccess: false,
+                message: 'Required access control not implemented - see AppModel.checkAccess().'
+            };
         },
 
         /**
-         * Call this once when application mounted in order to trigger initial
-         * authentication and initialization of application.
+         * Call this once when application mounted in order to trigger initial authentication and
+         * initialization of the application and its services.
          */
         async initAsync() {},
 
