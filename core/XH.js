@@ -213,10 +213,15 @@ class XhModel {
         try {
             this.setLoadState(LoadState.PRE_AUTH);
 
-            const username = await this.getAuthUserFromServerAsync();
+            const authUser = await this.getAuthUserFromServerAsync();
 
-            if (username) {
-                return this.completeInitAsync(username);
+            if (authUser) {
+                if (this.userHasRequiredRole(authUser.roles)) {
+                    return this.completeInitAsync(authUser.userName);
+                } else {
+                    this.setLoadState(LoadState.UNAUTHORIZED);
+                    return;
+                }
             }
 
             if (this.appModel.requireSSO) {
@@ -260,7 +265,7 @@ class XhModel {
     async getAuthUserFromServerAsync() {
         return await this.fetchService
             .fetchJson({url: 'auth/authUser'})
-            .then(r => r.authUser.username)
+            .then(r => r.authUser)
             .catch(() => null);
     }
 
@@ -280,6 +285,10 @@ class XhModel {
             this.identityService,
             this.trackService
         );
+    }
+
+    userHasRequiredRole(usersRoles) {
+        return usersRoles.includes(this.appModel.requireRole);
     }
 
     initLocalState() {
@@ -359,6 +368,7 @@ export const XH = window.XH = new XhModel();
 export const LoadState = {
     PRE_AUTH: 'PRE_AUTH',
     LOGIN_REQUIRED: 'LOGIN_REQUIRED',
+    UNAUTHORIZED: 'UNAUTHORIZED',
     INITIALIZING: 'INITIALIZING',
     COMPLETE: 'COMPLETE',
     FAILED: 'FAILED'

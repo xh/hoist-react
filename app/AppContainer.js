@@ -5,13 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {Children, Component} from 'react';
+import React, {Children, Component} from 'react';
 import {ContextMenuTarget} from '@xh/hoist/kit/blueprint';
 import {observable, observer, setter} from '@xh/hoist/mobx';
 import {elemFactory, LoadState, XH} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/cmp/contextmenu';
 import {loadMask} from '@xh/hoist/cmp/mask';
-import {div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
+import {div, frame, span, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 
 import {
@@ -23,6 +23,7 @@ import {
     versionBar
 } from './impl';
 
+import {lockoutPanel} from './';
 
 /**
  * Top-level wrapper to provide core Hoist Application layout and infrastructure to an application's
@@ -63,6 +64,10 @@ export class AppContainer extends Component {
             case LoadState.PRE_AUTH:
             case LoadState.INITIALIZING:
                 return viewport(loadMask({isDisplayed: true}));
+            case LoadState.UNAUTHORIZED:
+                return lockoutPanel({
+                    message: this.unauthorizedMessage()
+                });
             case LoadState.LOGIN_REQUIRED:
                 return loginPanel();
             case LoadState.FAILED:
@@ -109,6 +114,15 @@ export class AppContainer extends Component {
     componentDidCatch(e, info) {
         this.setCaughtException(e);
         XH.handleException(e, {requireReload: true});
+    }
+
+
+    //------------------------
+    // Implementation
+    //------------------------
+    unauthorizedMessage() {
+        const role = XH.appModel.requireRole;
+        return span(`Permission "${role}" is required to use this application.`, <br />, 'Please request this permission from the Help Desk.');
     }
 }
 export const appContainer = elemFactory(AppContainer);

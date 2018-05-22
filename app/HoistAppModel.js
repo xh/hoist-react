@@ -42,6 +42,13 @@ export function HoistAppModel(C) {
         },
 
         /**
+         * Role a user must have to load the app UI.
+         */
+        requireRole: {
+            get() {return 'USER'}
+        },
+
+        /**
          * Call this once when application mounted in order to trigger initial
          * authentication and initialization of application.
          */

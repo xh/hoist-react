@@ -19,7 +19,7 @@ import './LockoutPanel.scss';
 export class LockoutPanel extends Component {
 
     static propTypes = {
-        message: PT.string
+        message: PT.node
     }
 
     render() {
