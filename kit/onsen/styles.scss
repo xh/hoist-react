@@ -11,3 +11,8 @@
     margin-top: 26px;
   }
 }
+
+.page__content {
+  // Required for loadmask to work. Check to see if any unintended side-effects
+  display: flex;
+}
