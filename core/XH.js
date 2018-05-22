@@ -248,10 +248,10 @@ class XhModel {
 
             this.initLocalState();
 
-            const access = this.appModel.checkAccess();
+            const access = this.appModel.checkAccess(XH.getUser());
             if (!access.hasAccess) {
                 this.accessDeniedMessage = access.message || 'User does not have access to this application.';
-                this.setLoadState(LoadState.UNAUTHORIZED);
+                this.setLoadState(LoadState.ACCESS_DENIED);
                 return;
             }
 
@@ -370,7 +370,7 @@ export const XH = window.XH = new XhModel();
 export const LoadState = {
     PRE_AUTH: 'PRE_AUTH',
     LOGIN_REQUIRED: 'LOGIN_REQUIRED',
-    UNAUTHORIZED: 'UNAUTHORIZED',
+    ACCESS_DENIED: 'ACCESS_DENIED',
     INITIALIZING: 'INITIALIZING',
     COMPLETE: 'COMPLETE',
     FAILED: 'FAILED'

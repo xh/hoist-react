@@ -32,8 +32,6 @@ export class LockoutPanel extends Component {
                 filler(),
                 box({
                     cls: 'xh-lockout-panel',
-                    justifyContent: 'center',
-                    alignItems: 'center',
                     item: msg
                 }),
                 filler()

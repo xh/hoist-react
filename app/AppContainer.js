@@ -66,7 +66,7 @@ export class AppContainer extends Component {
                 return viewport(loadMask({isDisplayed: true}));
             case LoadState.LOGIN_REQUIRED:
                 return loginPanel();
-            case LoadState.UNAUTHORIZED:
+            case LoadState.ACCESS_DENIED:
                 return lockoutPanel({
                     message: this.unauthorizedMessage()
                 });

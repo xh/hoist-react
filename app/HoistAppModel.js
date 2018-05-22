@@ -43,8 +43,9 @@ export function HoistAppModel(C) {
 
         /**
          * Override in apps appModel to check if user has required role.
+         * @param {Object} user - the User object found at XH.getUser()
          */
-        checkAccess() {
+        checkAccess(user) {
             return {hasAccess: false, message: 'User does not have access.'};
         },
 
