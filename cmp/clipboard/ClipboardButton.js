@@ -35,6 +35,8 @@ export class ClipboardButton extends Component {
         successMessage: PT.string
     };
 
+    static baseCls ='xh-clipboard-button';
+
     render() {
         const {icon, successMessage, text, clipboardSpec, ...rest} = this.props;
         return button({

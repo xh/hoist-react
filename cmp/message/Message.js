@@ -17,6 +17,8 @@ import {dialog, dialogBody, button} from '@xh/hoist/kit/blueprint';
 @HoistComponent()
 class Message extends Component {
 
+    static baseCls = 'xh-message';
+
     render() {
         const model = this.model,
             isOpen = model && model.isOpen;

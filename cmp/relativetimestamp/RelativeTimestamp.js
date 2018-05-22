@@ -54,6 +54,8 @@ class RelativeTimestamp extends Component {
         options: PT.object
     };
 
+    static baseCls = 'xh-relative-timestamp';
+
     @setter @observable relativeTimeString;
     timer = null;
 

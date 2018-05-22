@@ -17,6 +17,8 @@ import {button, hotkeys, hotkey} from '@xh/hoist/kit/blueprint';
 @HoistComponent()
 export class ThemeToggleButton extends Component {
 
+    static baseCls = 'xh-theme-toggle-button';
+
     renderHotkeys() {
         return hotkeys(
             hotkey({

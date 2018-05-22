@@ -28,6 +28,8 @@ export class ExportButton extends Component {
         model: PT.object
     };
 
+    static baseCls = 'xh-export-button';
+
     render() {
         const {icon, onClick, model, ...rest} = this.props;
         return button({

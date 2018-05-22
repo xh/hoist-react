@@ -25,13 +25,13 @@ class Toolbar extends Component {
         vertical: PT.bool
     };
 
+    static baseCls = 'xh-toolbar';
+
     render() {
-        const {className, vertical, ...rest} = this.props;
-        let baseCls = 'xh-toolbar';
-        if (vertical) baseCls += ' xh-toolbar--vertical';
+        const {vertical, ...rest} = this.props;
 
         return (vertical ? vbox : hbox)({
-            cls: className ? `${className} ${baseCls}` : baseCls,
+            cls: vertical ? 'xh-toolbar--vertical' : undefined,
             itemSpec: {
                 factory: button
             },

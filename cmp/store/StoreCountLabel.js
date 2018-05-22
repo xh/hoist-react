@@ -28,6 +28,8 @@ class StoreCountLabel extends Component {
         unit: PT.string
     };
 
+    static baseCls = 'xh-store-count-label';
+
     defaultUnit = 'record';
 
     constructor(props) {

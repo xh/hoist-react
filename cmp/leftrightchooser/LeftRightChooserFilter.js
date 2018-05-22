@@ -23,6 +23,8 @@ class LeftRightChooserFilter extends Component {
         fields: PT.arrayOf(PT.string)
     };
 
+    static baseCls = 'xh-lr-chooser-filter';
+
     @setter @observable value = '';
 
     render() {

@@ -28,6 +28,8 @@ export class RefreshButton extends Component {
         model: PT.object
     };
 
+    static baseCls = 'xh-refresh-button';
+
     render() {
         const {icon, title, onClick, model, ...rest} = this.props;
         return button({

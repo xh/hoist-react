@@ -47,6 +47,8 @@ export class Resizable extends Component {
         model: PT.object
     };
 
+    static baseCls = 'xh-resizable';
+
     constructor(props) {
         super(props);
 

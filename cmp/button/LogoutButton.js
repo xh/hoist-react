@@ -28,6 +28,8 @@ export class LogoutButton extends Component {
         onClick: PT.func
     };
 
+    static baseCls = 'xh-logout-button';
+
     render() {
         if (!XH.appModel.enableLogout) return null;
 

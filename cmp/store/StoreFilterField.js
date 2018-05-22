@@ -28,6 +28,8 @@ export class StoreFilterField extends Component {
         fields: PT.arrayOf(PT.string).isRequired
     };
 
+    static baseCls = 'xh-store-filter-field';
+
     @setter @observable value = '';
 
     render() {
