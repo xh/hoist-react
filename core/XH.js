@@ -288,6 +288,7 @@ class XhModel {
     }
 
     userHasRequiredRole(usersRoles) {
+        if (this.appModel.requireRole == 'OPEN_TO_ALL') return true;
         return usersRoles.includes(this.appModel.requireRole);
     }
 
