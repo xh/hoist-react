@@ -5,13 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import React, {Children, Component} from 'react';
+import {Children, Component} from 'react';
 import {ContextMenuTarget} from '@xh/hoist/kit/blueprint';
 import {observable, observer, setter} from '@xh/hoist/mobx';
 import {elemFactory, LoadState, XH} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/cmp/contextmenu';
 import {loadMask} from '@xh/hoist/cmp/mask';
-import {div, frame, span, vframe, viewport} from '@xh/hoist/cmp/layout';
+import {br, div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 
 import {
@@ -64,12 +64,12 @@ export class AppContainer extends Component {
             case LoadState.PRE_AUTH:
             case LoadState.INITIALIZING:
                 return viewport(loadMask({isDisplayed: true}));
+            case LoadState.LOGIN_REQUIRED:
+                return loginPanel();
             case LoadState.UNAUTHORIZED:
                 return lockoutPanel({
                     message: this.unauthorizedMessage()
                 });
-            case LoadState.LOGIN_REQUIRED:
-                return loginPanel();
             case LoadState.FAILED:
                 return null;
             case LoadState.COMPLETE:
@@ -121,8 +121,14 @@ export class AppContainer extends Component {
     // Implementation
     //------------------------
     unauthorizedMessage() {
-        const role = XH.appModel.requireRole;
-        return span(`Permission "${role}" is required to use this application.`, <br />, 'Please request this permission from the Help Desk.');
+        const getUser = XH.getUser;
+        return div(
+            XH.accessDeniedMessage,
+            br(),
+            `You are user: ${getUser().username}`,
+            br(),
+            `Your current role(s): ${getUser().roles.join(', ')}`
+        );
     }
 }
 export const appContainer = elemFactory(AppContainer);

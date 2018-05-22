@@ -42,10 +42,10 @@ export function HoistAppModel(C) {
         },
 
         /**
-         * Role a user must have to load the app UI.
+         * Override in apps appModel to check if user has required role.
          */
-        requireRole: {
-            get() {return 'USER'}
+        checkAccess() {
+            return {hasAccess: false, message: 'User does not have access.'};
         },
 
         /**

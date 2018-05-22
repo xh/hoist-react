@@ -112,6 +112,8 @@ class XhModel {
     /** Router model for the App - used for route based navigation. */
     routerModel = new RouterModel();
 
+    accessDeniedMessage = null;
+
     /**
      * Tracks globally loading promises.
      * Link any async operations that should mask the entire application to this model.
@@ -215,20 +217,17 @@ class XhModel {
 
             const authUser = await this.getAuthUserFromServerAsync();
 
-            if (authUser) {
-                if (this.userHasRequiredRole(authUser.roles)) {
-                    return this.completeInitAsync(authUser.userName);
+            if (!authUser) {
+                if (this.appModel.requireSSO) {
+                    throw XH.exception('Failed to authenticate user via SSO.');
                 } else {
-                    this.setLoadState(LoadState.UNAUTHORIZED);
+                    this.setLoadState(LoadState.LOGIN_REQUIRED);
                     return;
                 }
             }
 
-            if (this.appModel.requireSSO) {
-                throw XH.exception('Failed to authenticate user via SSO.');
-            } else {
-                this.setLoadState(LoadState.LOGIN_REQUIRED);
-            }
+            await this.completeInitAsync(authUser.username);
+
         } catch (e) {
             this.setLoadState(LoadState.FAILED);
             XH.handleException(e, {requireReload: true});
@@ -236,21 +235,28 @@ class XhModel {
     }
 
     /**
-     * Complete initialization with the name of a verified user.
+     * Complete initialization.
      * Not for application use. Called by framework after user identity has been confirmed.
      *
-     * @param {string} username - username of verified user.
      */
     @action
-    async completeInitAsync(username) {
-        this.authUsername = username;
+    async completeInitAsync() {
         this.setLoadState(LoadState.INITIALIZING);
         try {
             await this.initServicesAsync()
-                .wait(100)  // delay is workaround for styling issues in dev TODO: Remove
-                .then(() => this.initLocalState())
-                .then(() => this.appModel.initAsync())
-                .then(() => this.initRouterModel());
+                .wait(100);  // delay is workaround for styling issues in dev TODO: Remove
+
+            this.initLocalState();
+
+            const access = this.appModel.checkAccess();
+            if (!access.hasAccess) {
+                this.accessDeniedMessage = access.message || 'User does not have access to this application.';
+                this.setLoadState(LoadState.UNAUTHORIZED);
+                return;
+            }
+
+            await this.appModel.initAsync();
+            this.initRouterModel();
             this.setLoadState(LoadState.COMPLETE);
         } catch (e) {
             this.setLoadState(LoadState.FAILED);
@@ -285,11 +291,6 @@ class XhModel {
             this.identityService,
             this.trackService
         );
-    }
-
-    userHasRequiredRole(usersRoles) {
-        if (this.appModel.requireRole == 'OPEN_TO_ALL') return true;
-        return usersRoles.includes(this.appModel.requireRole);
     }
 
     initLocalState() {
