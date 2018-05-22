@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {isFunction} from 'lodash';
 import {autorun, reaction} from '@xh/hoist/mobx';
 import {provideMethods, chainMethods} from '@xh/hoist/utils/ClassUtils';
 
@@ -30,7 +31,7 @@ export function Reactive(C) {
          * @param {function} [conf.run] - function to run, the first argument to the underlying autorun() call.
          */
         addAutorun(conf) {
-            let run, options
+            let run, options;
             if (isFunction(conf)) {
                 run = conf,
                 options = {};
@@ -52,7 +53,7 @@ export function Reactive(C) {
          * @param {function} conf.run - function to run, the second argument to the underlying reaction() call.
          */
         addReaction(conf) {
-            const {track, run, ...options} = conf;
+            let {track, run, ...options} = conf;
             run = run.bind(this);
             this.addMobxDisposer(reaction(track, run, options));
         },

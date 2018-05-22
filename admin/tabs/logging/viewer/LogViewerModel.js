@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {debounce, find} from 'lodash';
+import {find} from 'lodash';
 import {action, observable, setter} from '@xh/hoist/mobx';
 import {LastPromiseModel} from '@xh/hoist/promise';
 import {GridModel} from '@xh/hoist/cmp/grid';
