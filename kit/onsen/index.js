@@ -14,9 +14,11 @@ ons.disableAutoStyling();
 
 import {elemFactory} from '@xh/hoist/core';
 import {
+    Button,
     List,
     ListHeader,
     ListItem,
+    Navigator,
     Page,
     ProgressCircular,
     Toolbar,
@@ -24,9 +26,11 @@ import {
 } from 'react-onsenui';
 
 export const
+    button = elemFactory(Button),
     list = elemFactory(List),
     listHeader = elemFactory(ListHeader),
     listItem = elemFactory(ListItem),
+    navigator = elemFactory(Navigator),
     page = elemFactory(Page),
     progressCircular = elemFactory(ProgressCircular),
     toolbar = elemFactory(Toolbar),
