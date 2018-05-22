@@ -10,7 +10,11 @@ import {provideMethods, chainMethods} from '@xh/hoist/utils/ClassUtils';
 
 /**
  * Mixin to support adding managed MobX reactivity.
- * Provides support for adding and removing managed reactions and autoruns.
+ *
+ * Provides support for adding and removing 'managed' reactions and autoruns.
+ *
+ * The artifacts created by these methods will be disposed of automatically
+ * when this object is destroyed.
  */
 export function Reactive(C) {
 
@@ -20,18 +24,37 @@ export function Reactive(C) {
 
         /**
          * Add and start a managed autorun.
-         * @param {*} args - arguments to autorun().
+         *
+         * @param {[Object | function]} conf - function to run,  or configuration containing options accepted
+         *      by mobx autorun() API, as well as argument below,
+         * @param {function} [conf.run] - function to run, the first argument to the underlying autorun() call.
          */
-        addAutorun(...args) {
-            this.addMobxDisposer(autorun(...args));
+        addAutorun(conf) {
+            let run, options
+            if (isFunction(conf)) {
+                run = conf,
+                options = {};
+            } else {
+                ({run, ...options} = conf);
+            }
+            run = run.bind(this);
+            this.addMobxDisposer(autorun(run, options));
         },
+
 
         /**
          * Add and start a managed reaction.
-         * @param {*} args - arguments to reaction().
+         *
+         * @param {Object} conf - configuration of reaction, containing options accepted by mobx
+         *      reaction() API, as well as arguments below.
+         * @param {function} conf.track - function returning data to trac, the first argument to
+         *      the underlying reaction() call
+         * @param {function} conf.run - function to run, the second argument to the underlying reaction() call.
          */
-        addReaction(...args) {
-            this.addMobxDisposer(reaction(...args));
+        addReaction(conf) {
+            const {track, run, ...options} = conf;
+            run = run.bind(this);
+            this.addMobxDisposer(reaction(track, run, options));
         },
 
 

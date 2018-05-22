@@ -40,11 +40,7 @@ export class LogViewerModel {
     });
 
     constructor() {
-        this.addAutorun(() => {
-            const sel = this.files.selection.singleRecord;
-            this.file = sel ? sel.filename : null;
-            this.loadLines();
-        });
+        this.addReaction(this.syncSelectionReaction());
     }
     
     @action
@@ -74,7 +70,7 @@ export class LogViewerModel {
     //---------------------------------
     // Implementation
     //---------------------------------
-    fetchFile = debounce(() => {
+    fetchFile() {
         return XH
             .fetchJson({
                 url: 'logViewerAdmin/getFile',
@@ -88,8 +84,19 @@ export class LogViewerModel {
             .then(rows => this.setRows(rows.content))
             .linkTo(this.loadModel)
             .catchDefault();
-    }, 300);
+    }
 
+    syncSelectionReaction() {
+        return {
+            track: () => this.files.selection.singleRecord,
+            run: (rec) => {
+                this.file = rec ? rec.filename : null;
+                this.loadLines();
+            },
+            delay: 300
+        };
+    }
+    
     destroy() {
         XH.safeDestroy(this.loadModel, this.files);
     }
