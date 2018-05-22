@@ -18,6 +18,7 @@ import {
     ListHeader,
     ListItem,
     Page,
+    ProgressCircular,
     Toolbar,
     ToolbarButton
 } from 'react-onsenui';
@@ -27,5 +28,6 @@ export const
     listHeader = elemFactory(ListHeader),
     listItem = elemFactory(ListItem),
     page = elemFactory(Page),
+    progressCircular = elemFactory(ProgressCircular),
     toolbar = elemFactory(Toolbar),
     toolbarButton = elemFactory(ToolbarButton);
