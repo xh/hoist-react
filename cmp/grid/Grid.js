@@ -56,7 +56,7 @@ class Grid extends Component {
             {...props.agOptions},
             Grid.DEFAULT_GRID_OPTIONS,
             {
-                overlayNoRowsTemplate: this.model.emptyText,
+                overlayNoRowsTemplate: this.model.emptyText || '<span></span>',
                 navigateToNextCell: this.onNavigateToNextCell,
                 defaultGroupSortComparator: this.sortByGroup,
                 icons: {
@@ -228,7 +228,6 @@ class Grid extends Component {
         model.setAgApi(api);
         api.setSortModel(model.sortBy);
         api.sizeColumnsToFit();
-        if (!model.emptyText) api.hideOverlay();
     }
 
     onNavigateToNextCell = (params) => {
