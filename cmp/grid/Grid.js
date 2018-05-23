@@ -77,7 +77,7 @@ class Grid extends Component {
     }
 
     render() {
-        const {store, agColDefs, colChooserModel} = this.model;
+        const {store, agColDefs, agExcelStyles, colChooserModel} = this.model;
         return frame(
             div({
                 style: {flex: '1 1 auto', overflow: 'hidden'},
@@ -85,6 +85,7 @@ class Grid extends Component {
                 item: agGridReact({
                     rowData: store.records,
                     columnDefs: agColDefs,
+                    excelStyles: agExcelStyles,
                     gridOptions: this.agOptions,
                     getContextMenuItems: this.getContextMenuItems,
                     onGridReady: this.onGridReady,

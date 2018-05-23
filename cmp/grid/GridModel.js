@@ -9,6 +9,7 @@ import {action, computed, observable} from '@xh/hoist/mobx';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/cmp/contextmenu';
 import {Icon} from '@xh/hoist/icon';
+import {getAgExcelStyles} from '@xh/hoist/export';
 import {castArray, find, isString, orderBy} from 'lodash';
 
 import {ColChooserModel} from './ColChooserModel';
@@ -40,12 +41,23 @@ export class GridModel {
         });
     }
 
+    @computed
+    get agExcelStyles() {
+        return getAgExcelStyles(this.columns);
+    }
+
     defaultContextMenu = () => {
         return new StoreContextMenu([
             'copy',
             'copyWithHeaders',
             '-',
-            'export',
+            // Todo: put export options in a submenu again?
+            {
+                text: 'Excel Export',
+                action: () => this.exportDataAsExcel()
+            },
+            'csvExport',
+            '-',
             'autoSizeAll',
             '-',
             {
@@ -98,8 +110,15 @@ export class GridModel {
         this.setSortBy(sortBy);
     }
 
-    exportDataAsExcel(params) {
+    exportDataAsExcel(params = {}) {
         if (!this.agApi) return;
+
+        // Exclude columns with exportCls: false
+        params.columnKeys = this.columns.filter(it => {
+            return !it.hide && it.exportCls !== false;
+        }).map(it => it.colId);
+
+        // Process cells before export
         params.processCellCallback = this.formatValuesForExport;
         this.agApi.exportDataAsExcel(params);
     }

@@ -136,7 +136,12 @@ export class RestGridModel {
             'copy',
             'copyWithHeaders',
             '-',
-            'export',
+            {
+                text: 'Excel Export',
+                action: () => this.gridModel.exportDataAsExcel()
+            },
+            'csvExport',
+            '-',
             'autoSizeAll'
         ]);
     }

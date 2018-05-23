@@ -10,7 +10,7 @@ import {castArray, defaults, isNumber, omit, startCase} from 'lodash';
 // Configs specific to / added by Hoist as extensions to ag-Grid's column API.
 // Listed here so they can be deliberately omitted when outputting a colDef for ag-Grid itself.
 const hoistColConfigs = [
-    'align', 'elementRenderer', 'fixedWidth', 'flex',
+    'align', 'elementRenderer', 'fixedWidth', 'flex', 'exportCls',
     'chooserDescription', 'chooserGroup', 'chooserName', 'excludeFromChooser',
     'agColDef'
 ];
@@ -27,8 +27,13 @@ export function fileColFactory(fileVals = {}) {
         return function(instanceVals = {}) {
             const ret = defaults(instanceVals, colVals, fileVals);
 
-            ret.headerClass = castArray(ret.headerClass);
-            ret.cellClass = castArray(ret.cellClass);
+            // Enforce colId for all columns
+            if (!ret.colId) {
+                ret.colId = ret.field;
+            }
+
+            ret.headerClass = castArray(ret.headerClass).filter(Boolean);
+            ret.cellClass = castArray(ret.cellClass).filter(Boolean);
 
             if (ret.align === 'center') {
                 ret.headerClass.push('xh-column-header-align-center');
@@ -48,6 +53,10 @@ export function fileColFactory(fileVals = {}) {
                 ret.width = ret.fixedWidth;
                 ret.maxWidth = ret.fixedWidth;
                 ret.minWidth = ret.fixedWidth;
+            }
+
+            if (ret.exportCls) {
+                ret.cellClass.push(ret.exportCls);
             }
 
             const {elementRenderer} = ret;
