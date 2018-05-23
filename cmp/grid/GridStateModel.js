@@ -5,7 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {action, computed, observable} from '@xh/hoist/mobx';
 import {cloneDeep, find} from 'lodash';
 
 @HoistModel()
@@ -146,7 +145,7 @@ export class GridStateModel {
     }
 
     ensureCompatible() {
-        const cols = this.gridModel.columns;
+        // const cols = this.gridModel.columns;
         // colsWithoutXhId = cols.filter(col => !col.getXhId());
         //
         //
