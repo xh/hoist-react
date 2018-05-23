@@ -43,6 +43,8 @@ export class HoistField extends Component {
         onChange: PT.func,
         /** handler to fire when value is committed, gets passed the new value */
         onCommit: PT.func,
+        /** config to commit changes on change instead of blur */
+        commitOnChange: PT.bool,
         /** model to bind to */
         model: PT.object,
         /** name of property in model to bind to */
@@ -83,10 +85,11 @@ export class HoistField extends Component {
 
     /** Set normalized internal value, and fire associated value changed **/
     noteValueChange(val) {
-        const {onChange} = this.props;
+        const {commitOnChange, onChange} = this.props;
 
         this.setInternalValue(val);
         if (onChange) onChange(this.toExternal(val));
+        if (commitOnChange) this.doCommit();
     }
 
     /**
