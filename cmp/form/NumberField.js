@@ -55,6 +55,7 @@ export class NumberField extends HoistField {
             onFocus: this.onFocus,
             style: {textAlign, width, ...style},
             buttonPosition: 'none',
+            intent: this.getIntent(),
             allowNumericCharactersOnly: !enableShorthandUnits,
             ...this.getDelegateProps()
         });
@@ -105,6 +106,21 @@ export class NumberField extends HoistField {
         }
 
         return parseFloat(value);
+    }
+
+    getIntent() {
+        const {min, max} = this.props,
+            value = this.externalValue;
+
+        if (!value) {
+            return null;
+        } else if (min != null && value < min) {
+            return 'danger';
+        } else if (max != null && value > max) {
+            return 'danger';
+        } else {
+            return null;
+        }
     }
 
 }
