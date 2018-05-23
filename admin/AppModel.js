@@ -29,6 +29,13 @@ import {UserPanel} from './tabs/users/UserPanel';
 export class AppModel {
 
     tabs = this.createTabContainer();
+
+    checkAccess(user) {
+        const role = 'HOIST_ADMIN',
+            hasAccess = user.hasRole(role),
+            message = hasAccess ? '' : `Admin console access requires the "${role}" role.`;
+        return {hasAccess, message};
+    }
     
     @action
     requestRefresh() {

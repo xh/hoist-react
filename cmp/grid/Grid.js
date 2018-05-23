@@ -71,9 +71,9 @@ class Grid extends Component {
                 }
             }
         );
-        this.addAutorun(() => this.syncSelection());
-        this.addAutorun(() => this.syncSort());
-        this.addAutorun(() => this.syncColumns());
+        this.addAutorun(this.syncSelection);
+        this.addAutorun(this.syncSort);
+        this.addAutorun(this.syncColumns);
     }
 
     render() {

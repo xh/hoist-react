@@ -44,7 +44,7 @@ export class TabPaneModel {
         this.name = name;
         this.componentClass = component;
         this.reloadOnShow = reloadOnShow;
-        wait(1).then(() => this.addAutorun(() => this.syncFromRouter()));
+        wait(1).then(() => this.addAutorun(this.syncFromRouter));
     }
 
     select() {

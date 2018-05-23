@@ -7,10 +7,11 @@
 
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {box, viewport} from '@xh/hoist/cmp/layout';
+import {box, filler, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {PropTypes as PT} from 'prop-types';
 
 import './LockoutPanel.scss';
+import {impersonationBar} from './impl';
 
 /**
  * Panel for display to prevent user access to all content.
@@ -19,20 +20,24 @@ import './LockoutPanel.scss';
 export class LockoutPanel extends Component {
 
     static propTypes = {
-        message: PT.string
+        message: PT.node
     }
 
     render() {
         const msg = this.props.message || 'Access Denied';
 
-        return viewport({
-            alignItems: 'center',
-            justifyContent: 'center',
-            item: box({
-                cls: 'xh-lockout-panel',
-                item: msg
-            })
-        });
+        return viewport(
+            vframe(
+                impersonationBar(),
+                filler(),
+                box({
+                    cls: 'xh-lockout-panel',
+                    item: msg
+                }),
+                filler()
+            )
+        );
     }
 }
+
 export const lockoutPanel = elemFactory(LockoutPanel);

@@ -112,6 +112,9 @@ class XhModel {
     /** Router model for the App - used for route based navigation. */
     routerModel = new RouterModel();
 
+    /** Set by output of AppModel.checkAccess() if that initial auth check fails. */
+    accessDeniedMessage = null;
+
     /**
      * Tracks globally loading promises.
      * Link any async operations that should mask the entire application to this model.
@@ -213,17 +216,19 @@ class XhModel {
         try {
             this.setLoadState(LoadState.PRE_AUTH);
 
-            const username = await this.getAuthUserFromServerAsync();
+            const authUser = await this.getAuthUserFromServerAsync();
 
-            if (username) {
-                return this.completeInitAsync(username);
+            if (!authUser) {
+                if (this.appModel.requireSSO) {
+                    throw XH.exception('Failed to authenticate user via SSO.');
+                } else {
+                    this.setLoadState(LoadState.LOGIN_REQUIRED);
+                    return;
+                }
             }
 
-            if (this.appModel.requireSSO) {
-                throw XH.exception('Failed to authenticate user via SSO.');
-            } else {
-                this.setLoadState(LoadState.LOGIN_REQUIRED);
-            }
+            await this.completeInitAsync(authUser.username);
+
         } catch (e) {
             this.setLoadState(LoadState.FAILED);
             XH.handleException(e, {requireReload: true});
@@ -231,21 +236,28 @@ class XhModel {
     }
 
     /**
-     * Complete initialization with the name of a verified user.
+     * Complete initialization.
      * Not for application use. Called by framework after user identity has been confirmed.
      *
-     * @param {string} username - username of verified user.
      */
     @action
-    async completeInitAsync(username) {
-        this.authUsername = username;
+    async completeInitAsync() {
         this.setLoadState(LoadState.INITIALIZING);
         try {
             await this.initServicesAsync()
-                .wait(100)  // delay is workaround for styling issues in dev TODO: Remove
-                .then(() => this.initLocalState())
-                .then(() => this.appModel.initAsync())
-                .then(() => this.initRouterModel());
+                .wait(100);  // delay is workaround for styling issues in dev TODO: Remove
+
+            this.initLocalState();
+
+            const access = this.appModel.checkAccess(XH.getUser());
+            if (!access.hasAccess) {
+                this.accessDeniedMessage = access.message || 'Access denied.';
+                this.setLoadState(LoadState.ACCESS_DENIED);
+                return;
+            }
+
+            await this.appModel.initAsync();
+            this.initRouterModel();
             this.setLoadState(LoadState.COMPLETE);
         } catch (e) {
             this.setLoadState(LoadState.FAILED);
@@ -260,7 +272,7 @@ class XhModel {
     async getAuthUserFromServerAsync() {
         return await this.fetchService
             .fetchJson({url: 'auth/authUser'})
-            .then(r => r.authUser.username)
+            .then(r => r.authUser)
             .catch(() => null);
     }
 
@@ -359,6 +371,7 @@ export const XH = window.XH = new XhModel();
 export const LoadState = {
     PRE_AUTH: 'PRE_AUTH',
     LOGIN_REQUIRED: 'LOGIN_REQUIRED',
+    ACCESS_DENIED: 'ACCESS_DENIED',
     INITIALIZING: 'INITIALIZING',
     COMPLETE: 'COMPLETE',
     FAILED: 'FAILED'

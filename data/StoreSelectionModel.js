@@ -45,14 +45,7 @@ export class StoreSelectionModel {
      */
     constructor({store}) {
         this.store = store;
-        this.addAutorun(() => {
-            // Remove recs from selection if they are no longer in store e.g. (due to filtering)
-            const storeIds = this.store.records.map(it => it.id),
-                selection = this.ids,
-                newSelection = intersection(storeIds, selection);
-
-            if (selection.length !== newSelection.length) this.select(newSelection);
-        });
+        this.addReaction(this.cullSelectionReaction());
     }
 
     /**
@@ -80,4 +73,22 @@ export class StoreSelectionModel {
         this.select([]);
     }
 
+
+    //-----------------------------
+    // Implementation
+    //-----------------------------
+    cullSelectionReaction() {
+        // Remove recs from selection if they are no longer in store e.g. (due to filtering)
+        return {
+            track: () => this.store.records,
+            run: (records) => {
+                const storeIds = records.map(it => it.id),
+                    selection = this.ids,
+                    newSelection = intersection(storeIds, selection);
+                if (selection.length !== newSelection.length) {
+                    this.select(newSelection);
+                }
+            }
+        };
+    }
 }

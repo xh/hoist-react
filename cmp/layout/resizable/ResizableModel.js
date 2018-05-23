@@ -8,6 +8,7 @@
 import {XH, HoistModel} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
+import {ONE_SECOND} from '@xh/hoist/utils/DateTimeUtils';
 
 /**
  * A Model for managing the state of a Resizable.
@@ -42,9 +43,11 @@ export class ResizableModel {
         this.setContentSize('contentSize' in pref ? pref.contentSize : contentSize);
         this.setIsOpen('isOpen' in pref ? pref.isOpen : isOpen);
 
-
         if (prefName) {
-            this.addAutorun(() => this.syncToPref(), {delay: 1000});
+            this.addAutorun({
+                run: this.syncToPref,
+                delay: ONE_SECOND
+            });
         }
     }
 
