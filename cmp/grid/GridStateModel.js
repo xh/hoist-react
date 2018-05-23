@@ -1,0 +1,160 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2018 Extremely Heavy Industries Inc.
+ */
+import {XH, HoistModel} from '@xh/hoist/core';
+import {action, computed, observable} from '@xh/hoist/mobx';
+import {cloneDeep, find} from 'lodash';
+
+@HoistModel()
+export class GridStateModel {
+
+    trackColumns = true;
+
+    gridModel = null;
+    xhStateId = null;
+
+    state = {};
+    userState = null;
+    defaultState = null;
+
+
+    constructor({trackColumns, xhStateId}) {
+        this.trackColumns = trackColumns;
+        this.xhStateId = xhStateId;
+    }
+
+    init(gridModel) {
+        this.gridModel = gridModel;
+
+        this.ensureCompatible();
+
+        if (this.trackColumns) {
+            this.addReaction({
+                track: () => this.gridModel.columns,
+                run: this.onColumnsChanged // need this fat arrow?
+            });
+        }
+
+        this.initializeState();
+    }
+
+    initializeState() {
+        this.userState = this.readState(this.getStateKey());
+        this.defaultState = this.readStateFromGrid();
+        console.log(this.userState);
+        this.loadState(this.userState);
+    }
+
+    readStateFromGrid() {
+        return {
+            columns: this.getColumnState()
+        };
+    }
+
+
+    //--------------------------
+    // For Extension / Override // ??? really?
+    //--------------------------
+    readState(stateKey) {
+        console.log('reading state', XH.localStorageService.get(stateKey, {}));
+        return XH.localStorageService.get(stateKey, {});
+    }
+
+    saveState(stateKey, state) {
+        console.log('saving state');
+        XH.localStorageService.set(stateKey, state);
+    }
+
+    resetState(stateKey) {
+        XH.localStorageService.remove(stateKey);
+    }
+
+
+    loadState(state) {
+        this.state = cloneDeep(state || this.readState(this.getStateKey()) || {});
+        this.updateGridColumns();
+    }
+
+
+    //--------------------------
+    // Columns
+    //--------------------------
+    onColumnsChanged() {
+        if (this.trackColumns) {
+            console.log(this, 'onColCHanged');
+            this.state.columns = this.getColumnState();
+            this.saveStateChange();
+        }
+    }
+
+    getColumnState() {
+        if (!this.trackColumns) return undefined;
+
+        const ret = [];
+
+        this.gridModel.columns.forEach(it => {
+            const colSpec = {
+                xhId: it.xhId,
+                // hidden: it.isHidden() && (!groupField || it.dataIndex != groupField)  // See Hoist #425
+                hide: it.hide
+            };
+
+            if (it.xhId != null) {
+                ret.push(colSpec);
+            }
+        });
+
+        debugger;
+
+        return ret;
+    }
+
+    updateGridColumns() {
+        const {gridModel} = this,
+            state = this.state,
+            cols = gridModel.cloneColumns();
+
+        if (this.trackColumns && state.columns) {
+            state.columns.forEach(colState => {
+                const col = find(cols, {xhId: colState.xhId});
+                if (!col) return;
+
+                col.hide = colState.hide;
+            });
+            debugger;
+            gridModel.setColumns(cols);
+        }
+
+    }
+
+    //--------------------------
+    // Helper
+    //--------------------------
+    saveStateChange() {
+        if (this.state && !this._resetting) { // ??
+            this.saveState(this.getStateKey(), this.state);
+        }
+    }
+
+    getStateKey() {
+        const xhStateId = this.xhStateId;
+        if (!xhStateId) {
+            throw XH.exception('GridModel must have a xhStateId in order to use the xhGridState plugin with storage enabled');
+        }
+        return 'gridState.' + xhStateId;
+    }
+
+    ensureCompatible() {
+        const cols = this.gridModel.columns;
+        // colsWithoutXhId = cols.filter(col => !col.getXhId());
+        //
+        //
+        // if (this.trackColumns && colsWithoutXhId.length) {
+        //     throw XH.exception('xhGridState plugin with "trackColumns=true" requires all columns to have an xhId');
+        // }
+    }
+
+}

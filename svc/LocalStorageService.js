@@ -17,6 +17,9 @@ export class LocalStorageService {
         const storage = this.getInstance(),
             val = storage.get(key, defaultValue);
 
+        console.log('val', val);
+        console.log('defaultValue', defaultValue)
+
         if (!val) throw XH.exception(`Key '${key}' not found`);
 
         return val;

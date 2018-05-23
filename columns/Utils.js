@@ -12,7 +12,7 @@ import {castArray, defaults, isNumber, omit, startCase} from 'lodash';
 const hoistColConfigs = [
     'align', 'elementRenderer', 'fixedWidth', 'flex',
     'chooserDescription', 'chooserGroup', 'chooserName', 'excludeFromChooser',
-    'agColDef'
+    'agColDef', 'xhId'
 ];
 
 /**

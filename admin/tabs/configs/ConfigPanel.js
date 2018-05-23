@@ -9,6 +9,7 @@ import {button} from '@xh/hoist/kit/blueprint';
 import {XH, HoistComponent} from '@xh/hoist/core';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/cmp/rest';
 import {fragment} from '@xh/hoist/cmp/layout';
+import {colChooserButton, GridStateModel} from '@xh/hoist/cmp/grid';
 import {boolCheckCol, baseCol} from '@xh/hoist/columns/Core';
 import {nameCol} from '@xh/hoist/admin/columns/Columns';
 import {Icon} from '@xh/hoist/icon';
@@ -22,6 +23,8 @@ export class ConfigPanel extends Component {
     differModel = new ConfigDifferModel({});
 
     gridModel = new RestGridModel({
+        enableColChooser: true,
+        gridStateModel: new GridStateModel({trackColumns: true, xhStateId: 'configPanel'}),
         store: new RestStore({
             url: 'rest/configAdmin',
             reloadLookupsOnLoad: true,
@@ -94,15 +97,15 @@ export class ConfigPanel extends Component {
         sortBy: 'name',
         groupBy: 'groupName',
         columns: this.filterForEnv([
-            nameCol({fixedWidth: 200}),
-            baseCol({field: 'valueType', headerName: 'Type', fixedWidth: 80, align: 'center'}),
-            this.valCol({field: 'prodValue', env: 'Production'}),
-            this.valCol({field: 'betaValue', env: 'Beta'}),
-            this.valCol({field: 'stageValue', env: 'Staging'}),
-            this.valCol({field: 'devValue', env: 'Development'}),
-            boolCheckCol({field: 'clientVisible', headerName: 'Client?', fixedWidth: 75}),
+            nameCol({fixedWidth: 200, xhId: 'configName'}),
+            baseCol({field: 'valueType', headerName: 'Type', fixedWidth: 80, align: 'center', xhId: 'configType'}),
+            this.valCol({field: 'prodValue', env: 'Production', xhId: 'configProdVal'}),
+            this.valCol({field: 'betaValue', env: 'Beta', xhId: 'configBetaVal'}),
+            this.valCol({field: 'stageValue', env: 'Staging', xhId: 'configStageVal'}),
+            this.valCol({field: 'devValue', env: 'Development', xhId: 'configDevVal'}),
+            boolCheckCol({field: 'clientVisible', headerName: 'Client?', fixedWidth: 75, xhId: 'configClientVisible'}),
             baseCol({field: 'groupName', headerName: 'Group', fixedWidth: 100}),
-            baseCol({field: 'note', minWidth: 60})
+            baseCol({field: 'note', minWidth: 60, xhId: 'configNote'})
         ]),
         editors: this.filterForEnv([
             {field: 'name'},
@@ -157,11 +160,14 @@ export class ConfigPanel extends Component {
     }
 
     extraToolbarItems = () => {
-        return button({
-            icon: Icon.diff(),
-            text: 'Compare w/ Remote',
-            onClick: this.onDifferBtnClick
-        });
+        return [
+            button({
+                icon: Icon.diff(),
+                text: 'Compare w/ Remote',
+                onClick: this.onDifferBtnClick
+            }),
+            colChooserButton({gridModel: this.gridModel.gridModel})
+        ];
     }
 
     onDifferBtnClick = () => {

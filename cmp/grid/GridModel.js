@@ -25,6 +25,7 @@ export class GridModel {
     selection = null;
     contextMenuFn = null;
     colChooserModel = null;
+    gridStateModel = null;
 
     @observable.ref agApi = null;
     @observable.ref columns = [];
@@ -81,6 +82,7 @@ export class GridModel {
         sortBy = [],
         groupBy = null,
         enableColChooser = false,
+        gridStateModel = null,
         contextMenuFn = () => this.defaultContextMenu()
     }) {
         this.store = store;
@@ -91,11 +93,17 @@ export class GridModel {
         this.emptyText = emptyText;
 
         if (enableColChooser) {
+            console.log('setting up col chooser');
             this.colChooserModel = new ColChooserModel(this);
         }
 
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
+
+        if (gridStateModel) {
+            this.gridStateModel = gridStateModel;
+            this.gridStateModel.init(this);
+        }
     }
 
     exportDataAsExcel(params) {
