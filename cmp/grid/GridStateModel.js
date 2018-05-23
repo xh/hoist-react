@@ -107,8 +107,6 @@ export class GridStateModel {
             }
         });
 
-        debugger;
-
         return ret;
     }
 
@@ -124,7 +122,7 @@ export class GridStateModel {
 
                 col.hide = colState.hide;
             });
-            debugger;
+
             gridModel.setColumns(cols);
         }
 
