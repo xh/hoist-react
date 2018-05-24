@@ -142,13 +142,12 @@ export class GridStateModel {
     }
 
     ensureCompatible() {
-        // const cols = this.gridModel.columns;
-        // colsWithoutXhId = cols.filter(col => !col.getXhId());
-        //
-        //
-        // if (this.trackColumns && colsWithoutXhId.length) {
-        //     throw XH.exception('xhGridState plugin with "trackColumns=true" requires all columns to have an xhId');
-        // }
+        const cols = this.gridModel.columns,
+            colsWithoutXhId = cols.filter(col => !col.xhId);
+
+        if (this.trackColumns && colsWithoutXhId.length) {
+            throw XH.exception('GridStateModel with "trackColumns=true" requires all columns to have an xhId');
+        }
     }
 
 }

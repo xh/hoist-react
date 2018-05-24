@@ -104,7 +104,7 @@ export class ConfigPanel extends Component {
             this.valCol({field: 'stageValue', env: 'Staging', xhId: 'configStageVal'}),
             this.valCol({field: 'devValue', env: 'Development', xhId: 'configDevVal'}),
             boolCheckCol({field: 'clientVisible', headerName: 'Client?', fixedWidth: 75, xhId: 'configClientVisible'}),
-            baseCol({field: 'groupName', headerName: 'Group', fixedWidth: 100}),
+            baseCol({field: 'groupName', headerName: 'Group', fixedWidth: 100, xhId: 'configGroupName'}),
             baseCol({field: 'note', minWidth: 60, xhId: 'configNote'})
         ]),
         editors: this.filterForEnv([
