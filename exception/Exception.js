@@ -84,9 +84,18 @@ export class Exception {
     }
 
     static serverUnavailable(requestOptions, e) {
+        const url = requestOptions.url;
+        let message = 'Unable to contact the server.';
+
+        if (url) {
+            const match = url.match(/^[a-z]+:\/\/[^/]+/i);
+            const origin = match ? match[0] : window.location.origin;
+            message = `Unable to contact the server at ${origin}`;
+        }
+
         return this.createInternal({
             name: 'Server Unavailable',
-            message: 'The application server is not available.',
+            message: message,
             originalMessage: e.message,
             requestOptions: requestOptions
         });

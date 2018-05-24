@@ -58,7 +58,6 @@ export class FetchService {
             headers: new Headers({'Content-Type': contentType})
         };
         opts = Object.assign(defaults, opts);
-        const completeOpts = clone(opts);
         delete opts.contentType;
         delete opts.url;
 
@@ -78,6 +77,11 @@ export class FetchService {
                 url += '?' + paramsString;
             }
         }
+
+        const completeOpts = clone(opts);
+        completeOpts.url = url;
+        completeOpts.contentType = contentType;
+        completeOpts.body = opts.body;
 
         try {
             const ret = await fetch(url, opts);
