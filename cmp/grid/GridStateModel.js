@@ -157,8 +157,11 @@ export class GridStateModel {
     }
 
     updateGridSort() {
-        const sortBy = this.state.sortBy;
-        if (sortBy) this.parent.setSortBy(sortBy);
+        const sortBy = this.state.sortBy,
+            cols = this.parent.columns,
+            gridHasCol = sortBy ? sortBy.some(it => find(cols, {field: it.colId})) : false;
+
+        if (sortBy && gridHasCol) this.parent.setSortBy(sortBy);
     }
 
     //--------------------------

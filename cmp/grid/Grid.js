@@ -95,7 +95,7 @@ class Grid extends Component {
                     // onColumnVisible: this.onColumnVisible,
                     // onColumnResized: this.onColumnResized,
                     // onColumnMoved: this.onColumnMoved,
-                    onDragStopped: this.onDragStopped,
+                    onDragStopped: this.onDragStopped
                     // onColumnRowGroupChanged: this.onColumnRowGroupChanged,
                     // onNewColumnsLoaded: this.onNewColumnsLoaded,
                     // onGridColumnsChanged: this.onGridColumnsChanged,
