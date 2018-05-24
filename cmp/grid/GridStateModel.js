@@ -33,7 +33,7 @@ export class GridStateModel {
         if (this.trackColumns) {
             this.addReaction({
                 track: () => this.gridModel.columns,
-                run: this.onColumnsChanged // need this fat arrow?
+                run: this.onColumnsChanged
             });
         }
 
@@ -43,7 +43,7 @@ export class GridStateModel {
     initializeState() {
         this.userState = this.readState(this.getStateKey());
         this.defaultState = this.readStateFromGrid();
-        console.log(this.userState);
+
         this.loadState(this.userState);
     }
 
@@ -58,12 +58,10 @@ export class GridStateModel {
     // For Extension / Override // ??? really?
     //--------------------------
     readState(stateKey) {
-        console.log('reading state', XH.localStorageService.get(stateKey, {}));
         return XH.localStorageService.get(stateKey, {});
     }
 
     saveState(stateKey, state) {
-        console.log('saving state');
         XH.localStorageService.set(stateKey, state);
     }
 
@@ -83,7 +81,6 @@ export class GridStateModel {
     //--------------------------
     onColumnsChanged() {
         if (this.trackColumns) {
-            console.log(this, 'onColCHanged');
             this.state.columns = this.getColumnState();
             this.saveStateChange();
         }
@@ -97,7 +94,7 @@ export class GridStateModel {
         this.gridModel.columns.forEach(it => {
             const colSpec = {
                 xhId: it.xhId,
-                // hidden: it.isHidden() && (!groupField || it.dataIndex != groupField)  // See Hoist #425
+                // hidden: it.isHidden() && (!groupField || it.dataIndex != groupField)  // See Hoist #425 sencha specific?
                 hide: it.hide
             };
 

@@ -93,7 +93,6 @@ export class GridModel {
         this.emptyText = emptyText;
 
         if (enableColChooser) {
-            console.log('setting up col chooser');
             this.colChooserModel = new ColChooserModel(this);
         }
 
