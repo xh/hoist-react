@@ -12,7 +12,7 @@ export class GridStateModel {
 
     trackColumns = true;
 
-    gridModel = null;
+    parent = null;
     xhStateId = null;
 
     state = {};
@@ -26,14 +26,14 @@ export class GridStateModel {
     }
 
     init(gridModel) {
-        this.gridModel = gridModel;
+        this.parent = gridModel;
 
         this.ensureCompatible();
 
         if (this.trackColumns) {
             this.addReaction({
-                track: () => this.gridModel.columns,
-                run: this.onColumnsChanged
+                track: () => this.parent.columns, // columns are not changing on reorder
+                run: this.onColumnsChanged // firing on load due to first state setting of columns, is this a problem?
             });
         }
 
@@ -89,9 +89,10 @@ export class GridStateModel {
     getColumnState() {
         if (!this.trackColumns) return undefined;
 
-        const ret = [];
+        const ret = [],
+            gridModel = this.parent;
 
-        this.gridModel.columns.forEach(it => {
+        gridModel.columns.forEach(it => {
             const colSpec = {
                 xhId: it.xhId,
                 // hidden: it.isHidden() && (!groupField || it.dataIndex != groupField)  // See Hoist #425 sencha specific?
@@ -107,19 +108,22 @@ export class GridStateModel {
     }
 
     updateGridColumns() {
-        const {gridModel} = this,
+        const {parent} = this,
             state = this.state,
-            cols = gridModel.cloneColumns();
+            cols = parent.cloneColumns(),
+            newColumns = [];
 
+        // going to need to deal with new columns and stale state here
         if (this.trackColumns && state.columns) {
             state.columns.forEach(colState => {
                 const col = find(cols, {xhId: colState.xhId});
                 if (!col) return;
 
                 col.hide = colState.hide;
+                newColumns.push(col);
             });
 
-            gridModel.setColumns(cols);
+            parent.setColumns(newColumns);
         }
 
     }
@@ -136,13 +140,13 @@ export class GridStateModel {
     getStateKey() {
         const xhStateId = this.xhStateId;
         if (!xhStateId) {
-            throw XH.exception('GridModel must have a xhStateId in order to use the xhGridState plugin with storage enabled');
+            throw XH.exception('GridStateModel must have a xhStateId in order to store state');
         }
         return 'gridState.' + xhStateId;
     }
 
     ensureCompatible() {
-        const cols = this.gridModel.columns,
+        const cols = this.parent.columns,
             colsWithoutXhId = cols.filter(col => !col.xhId);
 
         if (this.trackColumns && colsWithoutXhId.length) {

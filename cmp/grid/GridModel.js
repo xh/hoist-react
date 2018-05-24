@@ -189,6 +189,21 @@ export class GridModel {
         }
     }
 
+    syncColumnOrder() {
+        const cols = this.columns,
+            agCols = this.agApi.columnController.gridColumns,
+            orderedCols = [];
+
+        // This is best way I've found to check the column order in the grid (our observable doesn't change)
+        // Also, these have an 'actualWidth' should we choose to go down that road
+        agCols.forEach(agCol => {
+            const newCol = find(cols, {field: agCol.colDef.field}); // have to use field as agGrid doesn't retain xhId
+            orderedCols.push(newCol);
+        });
+
+        this.setColumns(orderedCols);
+    }
+
     //-----------------------
     // Implementation
     //-----------------------
