@@ -83,7 +83,7 @@ export class FetchService {
             if (ret && !ret.ok) throw Exception.requestError(opts, ret);
             return ret;
         } catch (e) {
-            if (e == 'TypeError: Failed to fetch') {
+            if (e.message == 'Failed to fetch') {
                 throw Exception.serverUnavailable(opts);
             }
             throw e;

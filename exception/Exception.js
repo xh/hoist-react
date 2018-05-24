@@ -86,7 +86,7 @@ export class Exception {
     static serverUnavailable(requestOptions) {
         return this.createInternal({
             name: 'Server Unavailable',
-            message: 'The application server is currently unavailable.',
+            message: 'The application server is not available.',
             requestOptions: requestOptions
         });
     }
