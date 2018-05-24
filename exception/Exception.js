@@ -83,7 +83,6 @@ export class Exception {
         return this.createInternal(defaults, {});
     }
 
-
     static serverUnavailable(requestOptions) {
         return this.createInternal({
             name: 'Server Unavailable',
