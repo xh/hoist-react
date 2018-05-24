@@ -108,19 +108,26 @@ export class GridStateModel {
     }
 
     updateGridColumns() {
-        const {parent} = this,
-            state = this.state,
+        const {parent, state} = this,
             cols = parent.cloneColumns(),
-            newColumns = [];
+            newColumns = [],
+            foundColumns = [];
 
-        // going to need to deal with new columns and stale state here
         if (this.trackColumns && state.columns) {
             state.columns.forEach(colState => {
                 const col = find(cols, {xhId: colState.xhId});
-                if (!col) return;
+                if (!col) return; // deals with stale col in state, will sorting on a stale col still be a problem?
+
 
                 col.hide = colState.hide;
                 newColumns.push(col);
+                foundColumns.push(col);
+            });
+
+            cols.forEach((col, idx) => {
+                if (!find(foundColumns, {xhId: col.xhId})) {
+                    newColumns.splice(idx, 0, col);
+                }
             });
 
             parent.setColumns(newColumns);

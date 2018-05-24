@@ -123,8 +123,6 @@ class Grid extends Component {
     // }
 
 
-
-
     // this has the benefit of NOT firing on grid load, but needs to be used with 'dragStopped'
     // onColumnMoved = (ev) => {
     //     const gridStateModel = this.model.gridStateModel;
