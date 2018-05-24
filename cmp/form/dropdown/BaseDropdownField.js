@@ -25,7 +25,9 @@ export class BaseDropdownField extends HoistField {
 
     static defaultProps = {
         placeholder: 'Select'
-    }
+    };
+
+    commitOnChange = true;
 
 
     //---------------------------------------------------------------------------
@@ -77,7 +79,6 @@ export class BaseDropdownField extends HoistField {
 
     onItemSelect = (val) => {
         this.noteValueChange(val.value);
-        this.doCommit();
     }
 }
 

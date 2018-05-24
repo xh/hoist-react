@@ -25,7 +25,8 @@ export class CheckField extends HoistField {
         text: PT.string
     };
 
-    delegateProps = ['className', 'disabled']
+    delegateProps = ['className', 'disabled'];
+    commitOnChange = true;
 
     render() {
         const {text, style} = this.props;
@@ -44,7 +45,6 @@ export class CheckField extends HoistField {
 
     onChange = (e) => {
         this.noteValueChange(e.target.checked);
-        this.doCommit();
     }
 }
 export const checkField = elemFactory(CheckField);
