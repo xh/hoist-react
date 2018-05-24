@@ -91,9 +91,9 @@ export class Exception {
         return this.createInternal({
             name: 'Server Unavailable',
             message: message,
-            fetchMessage: e.message,
-            fetchUrl: url,
-            fetchOptions: requestOptions
+            originalMessage: e.message,
+            url: url,
+            requestOptions: requestOptions
         });
     }
 
