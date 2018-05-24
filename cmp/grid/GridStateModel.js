@@ -133,7 +133,7 @@ export class GridStateModel {
         if (this.trackColumns && state.columns) {
             state.columns.forEach(colState => {
                 const col = find(cols, {xhId: colState.xhId});
-                if (!col) return; // deals with stale col in state, will sorting on a stale col still be a problem?
+                if (!col) return;
 
                 col.hide = colState.hide;
                 newColumns.push(col);

@@ -24,7 +24,7 @@ export class ConfigPanel extends Component {
 
     gridModel = new RestGridModel({
         enableColChooser: true,
-        gridStateModel: new GridStateModel({trackColumns: true, trackSort: true, xhStateId: 'configPanel'}),
+        gridStateModel: new GridStateModel({xhStateId: 'configPanel', trackColumns: true, trackSort: true}),
         store: new RestStore({
             url: 'rest/configAdmin',
             reloadLookupsOnLoad: true,

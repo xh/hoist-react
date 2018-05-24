@@ -92,15 +92,8 @@ class Grid extends Component {
                     onSortChanged: this.onSortChanged,
                     onGridSizeChanged: this.onGridSizeChanged,
                     onComponentStateChanged: this.onComponentStateChanged,
-                    // onColumnVisible: this.onColumnVisible,
                     // onColumnResized: this.onColumnResized,
-                    // onColumnMoved: this.onColumnMoved,
                     onDragStopped: this.onDragStopped
-                    // onColumnRowGroupChanged: this.onColumnRowGroupChanged,
-                    // onNewColumnsLoaded: this.onNewColumnsLoaded,
-                    // onGridColumnsChanged: this.onGridColumnsChanged,
-                    // onDisplayedColumnsChanged: this.onDisplayedColumnsChanged,
-                    // onColumnEverythingChanged: this.onColumnEverythingChanged
 
                 })
             }),
@@ -238,7 +231,6 @@ class Grid extends Component {
         model.setAgApi(api);
         api.setSortModel(model.sortBy);
         api.sizeColumnsToFit();
-        if (this.model.gridStateModel) console.log('onGridReady', params); // this fires once, could be used to set a flag to check so that we don';t mes with state until it's finsihed. i.e. like in onBefore render in sencha world.
     }
 
     onNavigateToNextCell = (params) => {
