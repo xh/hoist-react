@@ -111,55 +111,6 @@ class Grid extends Component {
         );
     }
 
-    // given the way we are show/hiding these columns i.e. reloading all columns into an observable this is NOT firing as we'd need.
-    // onColumnVisible = (ev) => {
-    //     if (this.model.gridStateModel) console.log('ColumnVisible change via grid event', ev);
-    // }
-
-    // I think this fires too often to be useful. It fires for every column as ANY column size changes (due to resizing cols to fit i think)
-    // col width state is not necessarily going to be supported anyway.
-    // onColumnResized = (ev) => {
-    //     if (this.model.gridStateModel) console.log('ColumnResized via grid event', ev);
-    // }
-
-
-    // this has the benefit of NOT firing on grid load, but needs to be used with 'dragStopped'
-    // onColumnMoved = (ev) => {
-    //     const gridStateModel = this.model.gridStateModel;
-    //     if (gridStateModel) {
-    //         debugger;
-    //         gridStateModel.onColumnsChanged();
-    //     }
-    // }
-    //
-    // this has the benefit of NOT firing on grid load, but needs to be used with 'dragStopped'
-    onDragStopped = (ev) => {
-        const gridStateModel = this.model.gridStateModel;
-        if (gridStateModel) {
-            this.model.syncColumnOrder();
-        }
-    }
-
-    // onColumnRowGroupChanged = (ev) => {
-    //     if (this.model.gridStateModel) console.log('ColumnRowGroupChanged via grid event', ev);
-    // }
-    //
-    // onNewColumnsLoaded = (ev) => {
-    //     if (this.model.gridStateModel) console.log('NewColumnsLoaded via grid event', ev);
-    // }
-    //
-    // onGridColumnsChanged = (ev) => {
-    //     if (this.model.gridStateModel) console.log('GridColumnsChanged via grid event', ev, this.model);
-    // }
-    //
-    // onDisplayedColumnsChanged = (ev) => {
-    //     if (this.model.gridStateModel) console.log('DiplayedColumnsChanged via grid event', ev);
-    // }
-    //
-    // onColumnEverythingChanged = (ev) => {
-    //     if (this.model.gridStateModel) console.log('ColumnEverythingChanged via grid event', ev);
-    // }
-
     //------------------------
     // Implementation
     //------------------------
@@ -301,6 +252,10 @@ class Grid extends Component {
 
     onSortChanged = (ev) => {
         this.model.setSortBy(ev.api.getSortModel());
+    }
+
+    onDragStopped = (ev) => {
+        this.model.setGridColumnOrder(ev.api.columnController.gridColumns);
     }
 
     onGridSizeChanged = (ev) => {

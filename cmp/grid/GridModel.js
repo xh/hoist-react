@@ -29,6 +29,7 @@ export class GridModel {
 
     @observable.ref agApi = null;
     @observable.ref columns = [];
+    @observable.ref gridColumnOrder = [];
     @observable.ref sortBy = [];
     @observable groupBy = null;
 
@@ -189,20 +190,10 @@ export class GridModel {
         }
     }
 
-    // kinda want to set up this business with add Reacytion instateModel for symmetry, maybe I should put an observable on this model that track current agCols?
-    syncColumnOrder() {
-        const cols = this.columns,
-            agCols = this.agApi.columnController.gridColumns,
-            orderedCols = [];
-
-        // This is best way I've found to check the column order in the grid (our observable doesn't change)
-        // Also, these have an 'actualWidth' should we choose to go down that road
-        agCols.forEach(agCol => {
-            const newCol = find(cols, {field: agCol.colDef.field}); // have to use field as agGrid doesn't retain xhId
-            orderedCols.push(newCol);
-        });
-
-        this.setColumns(orderedCols);
+    @action
+    setGridColumnOrder(columns) {
+        const fieldArr = columns.map(col => col.colId || col.field); // have to use fields/colIds as agGrid doesn't retain xhId
+        this.gridColumnOrder = fieldArr;
     }
 
     //-----------------------

@@ -34,15 +34,15 @@ export class GridStateModel {
 
         if (this.trackColumns) {
             this.addReaction({
-                track: () => this.parent.columns, // columns are not changing on reorder
+                track: () => [gridModel.columns, gridModel.gridColumnOrder], // 'columns' observable is not changed on reorder
                 run: this.onColumnsChanged // firing on load due to first state setting of columns, is this a problem?
             });
         }
 
         if (this.trackSort) {
             this.addReaction({
-                track: () => this.parent.sortBy, // columns are not changing on reorder
-                run: this.onSortChanged // firing on load due to first state setting of columns, is this a problem?
+                track: () => gridModel.sortBy,
+                run: this.onSortChanged
             });
         }
 
@@ -100,18 +100,24 @@ export class GridStateModel {
     getColumnState() {
         if (!this.trackColumns) return undefined;
 
-        const ret = [],
-            gridModel = this.parent;
+        const gridModel = this.parent,
+            colOrder = gridModel.gridColumnOrder,
+            orderedCols = [];
 
-        gridModel.columns.forEach(it => {
+        colOrder.forEach(field => {
+            const col = find(gridModel.columns, {field});
+            orderedCols.push(col);
+        });
+
+        const ret = orderedCols.map(it => {
             const colSpec = {
                 xhId: it.xhId,
                 // hidden: it.isHidden() && (!groupField || it.dataIndex != groupField)  // See Hoist #425 sencha specific?
                 hide: it.hide
             };
 
-            if (it.xhId != null) {
-                ret.push(colSpec);
+            if (it.xhId != null) { // do we need this? (we check in ensureCompatible)
+                return colSpec;
             }
         });
 
@@ -129,7 +135,6 @@ export class GridStateModel {
                 const col = find(cols, {xhId: colState.xhId});
                 if (!col) return; // deals with stale col in state, will sorting on a stale col still be a problem?
 
-
                 col.hide = colState.hide;
                 newColumns.push(col);
                 foundColumns.push(col);
@@ -141,6 +146,7 @@ export class GridStateModel {
                 }
             });
 
+            parent.setGridColumnOrder(newColumns);
             parent.setColumns(newColumns);
         }
 
