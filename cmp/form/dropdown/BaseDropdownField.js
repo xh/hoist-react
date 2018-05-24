@@ -24,10 +24,9 @@ export class BaseDropdownField extends HoistField {
     };
 
     static defaultProps = {
-        placeholder: 'Select'
+        placeholder: 'Select',
+        commitOnChange: true
     };
-
-    commitOnChange = true;
 
 
     //---------------------------------------------------------------------------

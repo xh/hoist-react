@@ -25,8 +25,11 @@ export class CheckField extends HoistField {
         text: PT.string
     };
 
+    static defaultProps = {
+        commitOnChange: true
+    }
+
     delegateProps = ['className', 'disabled'];
-    commitOnChange = true;
 
     render() {
         const {text, style} = this.props;

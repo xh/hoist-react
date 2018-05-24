@@ -55,14 +55,13 @@ export class HoistField extends Component {
         className: PT.string
     };
 
+    static defaultProps = {
+        commitOnChange: false
+    };
+
     @observable @setter hasFocus;
     @observable @setter internalValue;
 
-    constructor(props) {
-        super(props);
-        const {commitOnChange} = props;
-        if (commitOnChange != null) this.commitOnChange = commitOnChange;
-    }
 
     //-----------------------------------------------------------
     // Handling of internal vs. External value, committing
@@ -91,8 +90,7 @@ export class HoistField extends Component {
 
     /** Set normalized internal value, and fire associated value changed **/
     noteValueChange(val) {
-        const {commitOnChange, props} = this,
-            {onChange} = props;
+        const {commitOnChange, onChange} = this.props;
 
         this.setInternalValue(val);
         if (onChange) onChange(this.toExternal(val));
