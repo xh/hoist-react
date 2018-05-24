@@ -83,21 +83,17 @@ export class Exception {
         return this.createInternal(defaults, {});
     }
 
-    static serverUnavailable(requestOptions, e) {
-        const url = requestOptions.url;
-        let message = 'Unable to contact the server.';
-
-        if (url) {
-            const match = url.match(/^[a-z]+:\/\/[^/]+/i);
-            const origin = match ? match[0] : window.location.origin;
+    static serverUnavailable(url, requestOptions, e) {
+        const match = url.match(/^[a-z]+:\/\/[^/]+/i),
+            origin = match ? match[0] : window.location.origin,
             message = `Unable to contact the server at ${origin}`;
-        }
 
         return this.createInternal({
             name: 'Server Unavailable',
             message: message,
-            originalMessage: e.message,
-            requestOptions: requestOptions
+            fetchMessage: e.message,
+            fetchUrl: url,
+            fetchOptions: requestOptions
         });
     }
 

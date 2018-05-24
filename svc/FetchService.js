@@ -6,7 +6,7 @@
  */
 import {XH, HoistService} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
-import {castArray, clone} from 'lodash';
+import {castArray} from 'lodash';
 
 @HoistService()
 export class FetchService {
@@ -78,17 +78,12 @@ export class FetchService {
             }
         }
 
-        const completeOpts = clone(opts);
-        completeOpts.url = url;
-        completeOpts.contentType = contentType;
-        completeOpts.body = opts.body;
-
         try {
             const ret = await fetch(url, opts);
-            if (ret && !ret.ok) throw Exception.requestError(completeOpts, ret);
+            if (ret && !ret.ok) throw Exception.requestError(opts, ret);
             return ret;
         } catch (e) {
-            throw Exception.serverUnavailable(completeOpts, e);
+            throw Exception.serverUnavailable(url, opts, e);
         }
 
     }
