@@ -189,6 +189,7 @@ export class GridModel {
         }
     }
 
+    // kinda want to set up this business with add Reacytion instateModel for symmetry, maybe I should put an observable on this model that track current agCols?
     syncColumnOrder() {
         const cols = this.columns,
             agCols = this.agApi.columnController.gridColumns,

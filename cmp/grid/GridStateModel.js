@@ -11,6 +11,7 @@ import {cloneDeep, find} from 'lodash';
 export class GridStateModel {
 
     trackColumns = true;
+    trackSort = true;
 
     parent = null;
     xhStateId = null;
@@ -20,8 +21,9 @@ export class GridStateModel {
     defaultState = null;
 
 
-    constructor({trackColumns, xhStateId}) {
+    constructor({trackColumns, trackSort, xhStateId}) {
         this.trackColumns = trackColumns;
+        this.trackSort = trackSort;
         this.xhStateId = xhStateId;
     }
 
@@ -37,19 +39,27 @@ export class GridStateModel {
             });
         }
 
+        if (this.trackSort) {
+            this.addReaction({
+                track: () => this.parent.sortBy, // columns are not changing on reorder
+                run: this.onSortChanged // firing on load due to first state setting of columns, is this a problem?
+            });
+        }
+
         this.initializeState();
     }
 
     initializeState() {
         this.userState = this.readState(this.getStateKey());
-        this.defaultState = this.readStateFromGrid();
+        this.defaultState = this.readStateFromGrid(); // for resetting?
 
         this.loadState(this.userState);
     }
 
     readStateFromGrid() {
         return {
-            columns: this.getColumnState()
+            columns: this.getColumnState(),
+            sortBy: this.parent.sortBy
         };
     }
 
@@ -73,6 +83,7 @@ export class GridStateModel {
     loadState(state) {
         this.state = cloneDeep(state || this.readState(this.getStateKey()) || {});
         this.updateGridColumns();
+        this.updateGridSort();
     }
 
 
@@ -80,7 +91,7 @@ export class GridStateModel {
     // Columns
     //--------------------------
     onColumnsChanged() {
-        if (this.trackColumns) {
+        if (this.trackColumns) { // don't think I need this check. the 'listener' isn't added if not
             this.state.columns = this.getColumnState();
             this.saveStateChange();
         }
@@ -133,6 +144,21 @@ export class GridStateModel {
             parent.setColumns(newColumns);
         }
 
+    }
+
+    //--------------------------
+    // Sort
+    //--------------------------
+    onSortChanged() {
+        if (this.trackSort) { // see onColumnChanged above
+            this.state.sortBy = this.parent.sortBy;
+            this.saveStateChange();
+        }
+    }
+
+    updateGridSort() {
+        const sortBy = this.state.sortBy;
+        if (sortBy) this.parent.setSortBy(sortBy);
     }
 
     //--------------------------

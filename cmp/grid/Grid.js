@@ -92,15 +92,15 @@ class Grid extends Component {
                     onSortChanged: this.onSortChanged,
                     onGridSizeChanged: this.onGridSizeChanged,
                     onComponentStateChanged: this.onComponentStateChanged,
-                    onColumnVisible: this.onColumnVisible,
-                    onColumnResized: this.onColumnResized,
-                    onColumnMoved: this.onColumnMoved,
+                    // onColumnVisible: this.onColumnVisible,
+                    // onColumnResized: this.onColumnResized,
+                    // onColumnMoved: this.onColumnMoved,
                     onDragStopped: this.onDragStopped,
-                    onColumnRowGroupChanged: this.onColumnRowGroupChanged,
-                    onNewColumnsLoaded: this.onNewColumnsLoaded,
-                    onGridColumnsChanged: this.onGridColumnsChanged,
-                    onDisplayedColumnsChanged: this.onDisplayedColumnsChanged,
-                    onColumnEverythingChanged: this.onColumnEverythingChanged
+                    // onColumnRowGroupChanged: this.onColumnRowGroupChanged,
+                    // onNewColumnsLoaded: this.onNewColumnsLoaded,
+                    // onGridColumnsChanged: this.onGridColumnsChanged,
+                    // onDisplayedColumnsChanged: this.onDisplayedColumnsChanged,
+                    // onColumnEverythingChanged: this.onColumnEverythingChanged
 
                 })
             }),
