@@ -6,7 +6,6 @@
  */
 
 import {Component} from 'react';
-import {defaults} from 'lodash';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {panel, fragment} from '@xh/hoist/cmp/layout';
@@ -20,15 +19,15 @@ export class RestGrid extends Component {
 
     render() {
         const {model} = this,
-            {extraToolbarItems} = this.props,
-            agOptions = defaults(this.props.agOptions, {onRowDoubleClicked: this.onRowDoubleClicked});
+            {extraToolbarItems, agOptions} = this.props;
 
         return fragment(
             panel({
                 tbar: restGridToolbar({model, extraToolbarItems}),
                 item: grid({
                     model: model.gridModel,
-                    agOptions: agOptions
+                    onRowDoubleClicked: this.onRowDoubleClicked,
+                    agOptions
                 })
             }),
             restForm({model: model.formModel}),
