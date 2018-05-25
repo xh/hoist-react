@@ -272,8 +272,7 @@ class XhModel {
     async getAuthUserFromServerAsync() {
         return await this.fetchService
             .fetchJson({url: 'auth/authUser'})
-            .then(r => r.authUser)
-            .catch(() => null);
+            .then(r => r.authUser);
     }
 
     async initServicesAsync() {
