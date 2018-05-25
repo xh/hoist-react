@@ -25,6 +25,7 @@ export class ServicePanel extends Component {
             tbar: this.renderToolbar(),
             item: grid({
                 model: this.model.gridModel,
+                flex: 'auto',
                 agOptions: {
                     rowSelection: 'multiple',
                     groupRowInnerRenderer: this.groupRowInnerRenderer

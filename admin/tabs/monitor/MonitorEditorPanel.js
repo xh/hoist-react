@@ -100,7 +100,7 @@ export class MonitorEditorPanel extends Component {
     });
 
     render() {
-        return restGrid({model: this.model});
+        return restGrid({model: this.model, flex: 'auto'});
     }
 
     async loadAsync() {

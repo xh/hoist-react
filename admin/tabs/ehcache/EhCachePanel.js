@@ -24,7 +24,7 @@ export class EhCachePanel extends Component {
     render() {
         return panel({
             tbar: this.renderToolbar(),
-            item: grid({model: this.model.gridModel})
+            item: grid({model: this.model.gridModel, flex: 'auto'})
         });
     }
 
