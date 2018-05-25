@@ -156,7 +156,7 @@ export class GridStateModel {
     updateGridSort() {
         const sortBy = this.state.sortBy,
             cols = this.parent.columns,
-            gridHasCol = sortBy ? sortBy.some(it => find(cols, {field: it.colId})) : false;
+            gridHasCol = sortBy ? sortBy.some(it => find(cols, {field: it.colId})) : false; // might be pointless, doesn't hurt anything to just let it go
 
         if (sortBy && gridHasCol) this.parent.setSortBy(sortBy);
     }
