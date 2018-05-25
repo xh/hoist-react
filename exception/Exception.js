@@ -83,6 +83,20 @@ export class Exception {
         return this.createInternal(defaults, {});
     }
 
+    static serverUnavailable(url, requestOptions, e) {
+        const match = url.match(/^[a-z]+:\/\/[^/]+/i),
+            origin = match ? match[0] : window.location.origin,
+            message = `Unable to contact the server at ${origin}`;
+
+        return this.createInternal({
+            name: 'Server Unavailable',
+            message: message,
+            originalMessage: e.message,
+            url: url,
+            requestOptions: requestOptions
+        });
+    }
+
     //-----------------------
     // Implementation
     //-----------------------
