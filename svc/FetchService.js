@@ -78,9 +78,15 @@ export class FetchService {
             }
         }
 
-        const ret = await fetch(url, opts);
+        let ret;
+        try {
+            ret = await fetch(url, opts);
+        } catch (e) {
+            throw Exception.serverUnavailable(url, opts, e);
+        }
         if (!ret.ok) throw Exception.requestError(opts, ret);
         return ret;
+
     }
 
     /**
