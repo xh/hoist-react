@@ -30,6 +30,10 @@ export function fileColFactory(fileVals = {}) {
             ret.headerClass = castArray(ret.headerClass);
             ret.cellClass = castArray(ret.cellClass);
 
+            if (ret.xhId) {
+                ret.colId = ret.xhId;
+            }
+
             if (ret.align === 'center') {
                 ret.headerClass.push('xh-column-header-align-center');
                 ret.cellClass.push('xh-align-center');
