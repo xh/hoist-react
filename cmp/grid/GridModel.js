@@ -5,11 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {action, computed, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/cmp/contextmenu';
 import {Icon} from '@xh/hoist/icon';
-import {castArray, find, isString, isPlainObject, orderBy} from 'lodash';
+import {defaults, castArray, find, isString, isPlainObject, orderBy} from 'lodash';
 
 import {ColChooserModel} from './ColChooserModel';
 
@@ -31,14 +31,6 @@ export class GridModel {
     @observable.ref sortBy = [];
     @observable groupBy = null;
 
-    // For cols defined (as expected) via a Hoist columnFactory,
-    // strip enumerated Hoist custom configs before passing to ag-Grid.
-    @computed
-    get agColDefs() {
-        return this.columns.map(col => {
-            return col.agColDef ? col.agColDef() : col;
-        });
-    }
 
     defaultContextMenu = () => {
         return new StoreContextMenu([
@@ -62,7 +54,8 @@ export class GridModel {
     /**
      * @param {BaseStore} store - store containing the data for the grid.
      * @param {Object[]} columns - collection of column specifications.
-     * @param {StoreSelectionModel | Object} [selModel] - selection model to use, or config to create one.
+     * @param {(StoreSelectionModel|Object|String)} [selModel] - selection model to use,
+     *      config to create one, or 'mode' property for a selection model.
      * @param {string} [emptyText] - empty text to display if grid has no records. Can be valid HTML.
      *      Defaults to null, in which case no empty text will be shown.
      * @param {Object[]} [sortBy] - one or more sorters to apply to store data.
@@ -87,7 +80,7 @@ export class GridModel {
         this.columns = columns;
         this.contextMenuFn = contextMenuFn;
 
-        this.selModel = initSelModel(store, selModel);
+        this.selModel = this.parseSelModel(selModel, store);
         this.emptyText = emptyText;
 
         if (enableColChooser) {
@@ -104,6 +97,7 @@ export class GridModel {
         this.agApi.exportDataAsExcel(params);
     }
 
+
     /**
      * Select the first row in the grid.
      */
@@ -114,6 +108,25 @@ export class GridModel {
             recs = orderBy(store.records, colIds, sorts);
 
         if (recs.length) selModel.select(recs[0]);
+    }
+
+    /**
+     * Shortcut to the currently selected records (observable).
+     *
+     * @see StoreSelectionModel.records
+     */
+    get selection() {
+        return this.selModel.records;
+    }
+
+    /**
+     * Shortcut to a single selected records (observable).
+     * This will be null if multiple records are selected
+     *
+     * @see StoreSelectionModel.singleRecord
+     */
+    get singleSelection() {
+        return this.selModel.singleRecord;
     }
 
     @action
@@ -197,7 +210,6 @@ export class GridModel {
 
 
     parseSelModel(selModel, store) {
-
         if (selModel instanceof StoreSelectionModel) {
             return selModel;
         }
@@ -211,7 +223,7 @@ export class GridModel {
         if (isString(selModel)) {
             mode = selModel;
         } else  if (selModel === null) {
-            mode = 'none';
+            mode = 'disabled';
         }
 
         return new StoreSelectionModel({mode, store});

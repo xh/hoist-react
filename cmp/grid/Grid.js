@@ -6,7 +6,7 @@
  */
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {defaults, isString, isNumber, isBoolean, isEqual, xor} from 'lodash';
+import {isString, isNumber, isBoolean, isEqual, xor} from 'lodash';
 import {XH} from '@xh/hoist/core';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {div, frame} from '@xh/hoist/cmp/layout';
@@ -34,12 +34,12 @@ class Grid extends Component {
     static propTypes = {
 
         /**
-         * Options for AG Grid's gridOptions property.
+         * Options for AG Grid's API.
          *
-         * This constitutes an 'escape hatch' for application
-         * that need to get to the underlying AG Grid.  It should be used with care,
-         * and at the application developers risk.  Settings made here, may interfere
-         * with the operation of this Component and its use of the AG Grid API.
+         * This constitutes an 'escape hatch' for applications that need to get to the
+         * underlying AG Grid API.  It should be used with care and at the application
+         * developers risk.  Settings made here may interfere with the operation of this
+         * component and its use of the AG Grid API.
          */
         agOptions: PT.object,
 
@@ -47,14 +47,14 @@ class Grid extends Component {
          * Callback to call when a row is double clicked.  Function will receive an event
          * with a data node containing the row's data.
          */
-        onRowDoubleClicked: PT.function
+        onRowDoubleClicked: PT.func
     };
 
 
     constructor(props) {
         super(props);
         const {model} = this;
-        this.agOptions = merge({
+        this.defaultAgOptions = {
             toolPanelSuppressSideButtons: true,
             enableSorting: true,
             enableColResize: true,
@@ -77,11 +77,17 @@ class Grid extends Component {
                     {classes: ['group-header-icon-contracted']}
                 )
             },
-            onRowDoubleClicked: props.onRowDoubleClicked,
-            rowSelection: model.mode,
+            rowSelection: model.selModel.mode,
             rowDeselection: true,
             overlayNoRowsTemplate: model.emptyText || '<span></span>',
-        }, props.agOptions);
+            getContextMenuItems: this.getContextMenuItems,
+            onRowDoubleClicked: props.onRowDoubleClicked,
+            onGridReady: this.onGridReady,
+            onSelectionChanged: this.onSelectionChanged,
+            onSortChanged: this.onSortChanged,
+            onGridSizeChanged: this.onGridSizeChanged,
+            onComponentStateChanged: this.onComponentStateChanged
+        };
 
         this.addAutorun(this.syncSelection);
         this.addAutorun(this.syncSort);
@@ -89,21 +95,17 @@ class Grid extends Component {
     }
 
     render() {
-        const {store, agColDefs, colChooserModel} = this.model;
+        const {store, colChooserModel} = this.model;
+
         return frame(
             div({
                 style: {flex: '1 1 auto', overflow: 'hidden'},
                 cls: XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                 item: agGridReact({
                     rowData: store.records,
-                    columnDefs: agColDefs,
-                    gridOptions: this.agOptions,
-                    getContextMenuItems: this.getContextMenuItems,
-                    onGridReady: this.onGridReady,
-                    onSelectionChanged: this.onSelectionChanged,
-                    onSortChanged: this.onSortChanged,
-                    onGridSizeChanged: this.onGridSizeChanged,
-                    onComponentStateChanged: this.onComponentStateChanged
+                    columnDefs: this.agColDefs(),
+                    ...this.defaultAgOptions,
+                    ...this.props.agOptions
                 })
             }),
             colChooser({
@@ -116,6 +118,12 @@ class Grid extends Component {
     //------------------------
     // Implementation
     //------------------------
+    agColDefs() {
+        return this.model.columns.map(col => {
+            return col.agColDef ? col.agColDef() : col;
+        });
+    }
+
     sortByGroup(nodeA, nodeB) {
         if (nodeA.key < nodeB.key) {
             return -1;
@@ -127,7 +135,7 @@ class Grid extends Component {
     }
 
     syncSelection() {
-        const {model} = this
+        const {model} = this;
         const api = model.agApi;
         if (!api) return;
 
@@ -165,7 +173,7 @@ class Grid extends Component {
             api = model.agApi;
         if (!api) return;
 
-        api.setColumnDefs(model.agColDefs);
+        api.setColumnDefs(this.agColDefs());
     }
 
     getContextMenuItems = (params) => {

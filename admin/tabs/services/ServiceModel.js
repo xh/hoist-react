@@ -32,10 +32,10 @@ export class ServiceModel {
     });
 
     clearCaches() {
-        const selection = this.gridModel.selection;
-        if (selection.isEmpty) return;
+        const {selection} = this.gridModel;
+        if (selection.length) return;
 
-        const names = selection.records.map(it => it.name);
+        const names = selection.map(it => it.name);
         XH.fetchJson({
             url: 'serviceAdmin/clearCaches',
             params: {names}

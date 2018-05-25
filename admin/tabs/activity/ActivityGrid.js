@@ -27,7 +27,7 @@ export class ActivityGrid extends Component {
             items: [
                 grid({
                     model: model.gridModel,
-                    onRowDoubleClicked: this.onRowDoubleClicked,
+                    onRowDoubleClicked: this.onRowDoubleClicked
                 }),
                 activityDetail({model})
             ]

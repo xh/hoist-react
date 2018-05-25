@@ -158,8 +158,8 @@ export class LeftRightChooserModel {
     }
 
     syncSelectionReaction() {
-        const leftSel = this.leftModel.selection,
-            rightSel = this.rightModel.selection;
+        const leftSel = this.leftModel.selModel,
+            rightSel = this.rightModel.selModel;
         
         return {
             track: () => [leftSel.singleRecord, rightSel.singleRecord],

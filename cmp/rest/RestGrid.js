@@ -6,7 +6,6 @@
  */
 
 import {Component} from 'react';
-import {defaults} from 'lodash';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {panel, fragment} from '@xh/hoist/cmp/layout';

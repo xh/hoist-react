@@ -46,13 +46,12 @@ export class LogViewerModel {
     @action
     async loadAsync() {
         const files = this.files,
-            fileSelection = files.selection,
-            fileStore = files.store;
-        await fileStore.loadAsync();
-        if (fileSelection.isEmpty) {
-            const latestAppLog = find(fileStore.records, ['filename', `${XH.appCode}.log`]);
+            {store, selModel} = files;
+        await store.loadAsync();
+        if (selModel.isEmpty) {
+            const latestAppLog = find(store.records, ['filename', `${XH.appCode}.log`]);
             if (latestAppLog) {
-                fileSelection.select(latestAppLog);
+                selModel.select(latestAppLog);
             }
         }
         this.loadLines();
@@ -88,7 +87,7 @@ export class LogViewerModel {
 
     syncSelectionReaction() {
         return {
-            track: () => this.files.selection.singleRecord,
+            track: () => this.files.singleSelection,
             run: (rec) => {
                 this.file = rec ? rec.filename : null;
                 this.loadLines();

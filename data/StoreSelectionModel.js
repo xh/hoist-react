@@ -47,6 +47,7 @@ export class StoreSelectionModel {
      */
     constructor({store, mode = 'single'}) {
         this.store = store;
+        this.mode = mode;
         this.addReaction(this.cullSelectionReaction());
     }
 
@@ -59,7 +60,7 @@ export class StoreSelectionModel {
     @action
     select(records, clearSelection = true) {
         records = castArray(records);
-        if (this.mode == 'disabled')  return
+        if (this.mode == 'disabled')  return;
         if (this.mode == 'single' && records.length > 1) {
             records = [records[0]];
         }
@@ -71,7 +72,6 @@ export class StoreSelectionModel {
         this.ids = clearSelection ? ids : union(this.ids, ids);
     }
 
-
     /**
      * Clear the selection.
      */
@@ -79,8 +79,7 @@ export class StoreSelectionModel {
     clear() {
         this.select([]);
     }
-
-
+    
     //-----------------------------
     // Implementation
     //-----------------------------

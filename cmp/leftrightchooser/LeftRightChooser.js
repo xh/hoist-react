@@ -28,7 +28,7 @@ class LeftRightChooser extends Component {
             gridOptions = {
                 onRowDoubleClicked: (e) => model.moveRows([e.data]),
                 agOptions: {
-                    enableColResize: false,
+                    enableColResize: false
                 }
             };
 

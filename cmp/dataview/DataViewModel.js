@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {isPlainObject, defaults, isString} from 'lodash';
 import {HoistModel} from '@xh/hoist/core';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/cmp/contextmenu';
@@ -19,7 +20,7 @@ export class DataViewModel {
     // Immutable public properties
     itemFactory = null;
     store = null;
-    selection = null;
+    selModel = null;
     contextMenuFn = null;
 
     static defaultContextMenu = () => {
@@ -34,18 +35,19 @@ export class DataViewModel {
      * @param {function} itemFactory - elemFactory for the component used to render each item.
      *      Will receive record via its props.
      * @param {BaseStore} store - store containing the data for the dataview.
-     * @param {StoreSelectionModel} [selection] - selection model to use
+     * @param {(StoreSelectionModel|Object|String)} [selModel] - selection model to use,
+     *      config to create one, or 'mode' property for a selection model.
      * @param {function} [contextMenuFn] - closure returning a StoreContextMenu().
      */
     constructor({
         itemFactory,
         store,
-        selection,
+        selModel,
         contextMenuFn = DataViewModel.defaultContextMenu
     }) {
         this.itemFactory = itemFactory;
         this.store = store;
-        this.selection = selection || new StoreSelectionModel({store: this.store});
+        this.selModel = this.parseSelModel(selModel, store);
         this.contextMenuFn = contextMenuFn;
     }
 
@@ -54,12 +56,32 @@ export class DataViewModel {
      * Note that dataview assumes store data is already sorted
      */
     selectFirst() {
-        const {store, selection} = this,
+        const {store, selModel} = this,
             recs = store.records;
 
-        if (recs.length) selection.select(recs[0]);
+        if (recs.length) selModel.select(recs[0]);
     }
 
+    /**
+     * Shortcut to the currently selected records (observable).
+     *
+     * @see StoreSelectionModel.records
+     */
+    get selection() {
+        return this.selModel.records;
+    }
+
+    /**
+     * Shortcut to a single selected records (observable).
+     * This will be null if multiple records are selected
+     *
+     * @see StoreSelectionModel.singleRecord
+     */
+    get singleSelection() {
+        return this.selModel.singleRecord;
+    }
+
+    
     /** Load the underlying store. */
     loadAsync(...args) {
         return this.store.loadAsync(...args);
@@ -70,4 +92,26 @@ export class DataViewModel {
         return this.store.loadData(...args);
     }
 
+    //---------------------------------
+    // Implementation
+    //---------------------------------
+    parseSelModel(selModel, store) {
+        if (selModel instanceof StoreSelectionModel) {
+            return selModel;
+        }
+
+        if (isPlainObject(selModel)) {
+            return new StoreSelectionModel(defaults(selModel, {store}));
+        }
+
+        // Assume its just the mode...
+        let mode = 'single';
+        if (isString(selModel)) {
+            mode = selModel;
+        } else  if (selModel === null) {
+            mode = 'disabled';
+        }
+
+        return new StoreSelectionModel({mode, store});
+    }
 }
