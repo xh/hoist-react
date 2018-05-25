@@ -247,7 +247,7 @@ class Grid extends Component {
     }
 
     onDragStopped = (ev) => {
-        this.model.setGridColumnOrder(ev.api.columnController.gridColumns);
+        this.model.syncColumnOrder(ev.api.columnController.gridColumns);
     }
 
     onGridSizeChanged = (ev) => {

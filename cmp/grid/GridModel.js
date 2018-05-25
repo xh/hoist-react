@@ -12,6 +12,7 @@ import {Icon} from '@xh/hoist/icon';
 import {castArray, find, isString, orderBy} from 'lodash';
 
 import {ColChooserModel} from './ColChooserModel';
+import {GridStateModel} from './GridStateModel';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -25,11 +26,10 @@ export class GridModel {
     selection = null;
     contextMenuFn = null;
     colChooserModel = null;
-    gridStateModel = null;
+    stateModel = null;
 
     @observable.ref agApi = null;
     @observable.ref columns = [];
-    @observable.ref gridColumnOrder = [];
     @observable.ref sortBy = [];
     @observable groupBy = null;
 
@@ -73,6 +73,7 @@ export class GridModel {
      * @param {string} [groupBy] - Column ID by which to group.
      * @param {boolean} [enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
+     * @param {GridStateModel} stateModel - TODO: DOC THIS
      * @param {function} [contextMenuFn] - closure returning a StoreContextMenu().
      */
     constructor({
@@ -83,7 +84,7 @@ export class GridModel {
         sortBy = [],
         groupBy = null,
         enableColChooser = false,
-        gridStateModel = null,
+        stateModel = null,
         contextMenuFn = () => this.defaultContextMenu()
     }) {
         this.store = store;
@@ -100,9 +101,8 @@ export class GridModel {
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
 
-        if (gridStateModel) {
-            this.gridStateModel = gridStateModel;
-            this.gridStateModel.init(this);
+        if (stateModel) {
+            this.initGridState(stateModel);
         }
     }
 
@@ -190,10 +190,16 @@ export class GridModel {
         }
     }
 
-    @action
-    setGridColumnOrder(columns) {
-        const fieldArr = columns.map(col => col.colId || col.field); // have to use fields/colIds as agGrid doesn't retain xhId
-        this.gridColumnOrder = fieldArr;
+    syncColumnOrder(columns) {
+        const orderedCols = [];
+
+        columns.forEach(gridCol => {
+            const colId = gridCol.colId,
+                col = find(this.columns, {colId});
+            orderedCols.push(col);
+        });
+
+        this.setColumns(orderedCols);
     }
 
     //-----------------------
@@ -213,4 +219,10 @@ export class GridModel {
         XH.safeDestroy(this.colChooserModel);
         // TODO: How are Stores destroyed?
     }
+
+    initGridState(stateModel) {
+        this.stateModel = stateModel instanceof GridStateModel ? stateModel : new GridStateModel(stateModel);
+        this.stateModel.init(this);
+    }
+
 }

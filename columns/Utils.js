@@ -27,12 +27,11 @@ export function fileColFactory(fileVals = {}) {
         return function(instanceVals = {}) {
             const ret = defaults(instanceVals, colVals, fileVals);
 
+            ret.xhId = ret.xhId || ret.field;
+            ret.colId = ret.xhId;
+
             ret.headerClass = castArray(ret.headerClass);
             ret.cellClass = castArray(ret.cellClass);
-
-            if (ret.xhId) {
-                ret.colId = ret.xhId;
-            }
 
             if (ret.align === 'center') {
                 ret.headerClass.push('xh-column-header-align-center');

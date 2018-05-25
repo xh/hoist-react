@@ -7,7 +7,6 @@
 
 import {fileColFactory} from '@xh/hoist/columns/Utils.js';
 
-
 /**
  * Shared columns for the admin client.
  */

@@ -5,26 +5,25 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {cloneDeep, find} from 'lodash';
+import {cloneDeep, find, uniqBy} from 'lodash';
 
 @HoistModel()
 export class GridStateModel {
-
-    trackColumns = true;
-    trackSort = true;
-
     parent = null;
     xhStateId = null;
 
     state = {};
-    userState = null;
     defaultState = null;
 
-
-    constructor({trackColumns, trackSort, xhStateId}) {
+    /**
+    * @param {string} xhStateId - Unique grid identifier.
+    * @param {string} [trackColumns] - Save column visible state and ordering.
+    * @param {string} [trackSort] - Save grid sort.
+    */
+    constructor({xhStateId, trackColumns = true, trackSort = true}) {
+        this.xhStateId = xhStateId;
         this.trackColumns = trackColumns;
         this.trackSort = trackSort;
-        this.xhStateId = xhStateId;
     }
 
     init(gridModel) {
@@ -33,27 +32,22 @@ export class GridStateModel {
         this.ensureCompatible();
 
         if (this.trackColumns) {
-            this.addReaction({
-                track: () => [gridModel.columns, gridModel.gridColumnOrder], // 'columns' observable is not changed on reorder
-                run: this.onColumnsChanged // firing on load due to first state setting of columns, is this a problem?
-            });
+            this.addReaction(this.columnReaction());
         }
 
+        // simplify as above
         if (this.trackSort) {
-            this.addReaction({
-                track: () => gridModel.sortBy,
-                run: this.onSortChanged
-            });
+            this.addReaction(this.sortReaction());
         }
 
         this.initializeState();
     }
 
     initializeState() {
-        this.userState = this.readState(this.getStateKey());
+        const userState = this.readState(this.getStateKey());
         this.defaultState = this.readStateFromGrid(); // for resetting?
 
-        this.loadState(this.userState);
+        this.loadState(userState);
     }
 
     readStateFromGrid() {
@@ -90,36 +84,30 @@ export class GridStateModel {
     //--------------------------
     // Columns
     //--------------------------
-    onColumnsChanged() {
-        if (this.trackColumns) { // don't think I need this check. the 'listener' isn't added if not
-            this.state.columns = this.getColumnState();
-            this.saveStateChange();
-        }
+    columnReaction() {
+        const {parent} = this;
+        return {
+            track: () => [parent.columns],
+            run: () => {
+                this.state.columns = this.getColumnState();
+                this.saveStateChange();
+            }
+        };
     }
 
     getColumnState() {
         if (!this.trackColumns) return undefined;
 
-        const gridModel = this.parent,
-            colOrder = gridModel.gridColumnOrder,
-            orderedCols = [];
+        const columns = this.parent.columns,
+            ret = columns.map(it => {
+                const colSpec = {
+                    xhId: it.xhId,
+                    // hidden: it.isHidden() && (!groupField || it.dataIndex != groupField)  // See Hoist #425 sencha specific?
+                    hide: it.hide
+                };
 
-        colOrder.forEach(field => {
-            const col = find(gridModel.columns, {field});
-            orderedCols.push(col);
-        });
-
-        const ret = orderedCols.map(it => {
-            const colSpec = {
-                xhId: it.xhId,
-                // hidden: it.isHidden() && (!groupField || it.dataIndex != groupField)  // See Hoist #425 sencha specific?
-                hide: it.hide
-            };
-
-            if (it.xhId != null) { // do we need this? (we check in ensureCompatible)
                 return colSpec;
-            }
-        });
+            });
 
         return ret;
     }
@@ -146,7 +134,6 @@ export class GridStateModel {
                 }
             });
 
-            parent.setGridColumnOrder(newColumns);
             parent.setColumns(newColumns);
         }
 
@@ -155,11 +142,15 @@ export class GridStateModel {
     //--------------------------
     // Sort
     //--------------------------
-    onSortChanged() {
-        if (this.trackSort) { // see onColumnChanged above
-            this.state.sortBy = this.parent.sortBy;
-            this.saveStateChange();
-        }
+    sortReaction() {
+        const {parent} = this;
+        return {
+            track: () => parent.sortBy,
+            run: () => {
+                this.state.sortBy = parent.sortBy;
+                this.saveStateChange();
+            }
+        };
     }
 
     updateGridSort() {
@@ -189,10 +180,11 @@ export class GridStateModel {
 
     ensureCompatible() {
         const cols = this.parent.columns,
-            colsWithoutXhId = cols.filter(col => !col.xhId);
+            colsWithoutXhId = cols.filter(col => !col.xhId),
+            uniqueIds = cols.length == uniqBy(cols, 'xhId').length;
 
-        if (this.trackColumns && colsWithoutXhId.length) {
-            throw XH.exception('GridStateModel with "trackColumns=true" requires all columns to have an xhId');
+        if (this.trackColumns && (colsWithoutXhId.length || !uniqueIds)) {
+            throw XH.exception('GridStateModel with "trackColumns=true" requires all columns to have a unique xhId');
         }
     }
 
