@@ -25,7 +25,7 @@ export class ConfigPanel extends Component {
         store: new RestStore({
             url: 'rest/configAdmin',
             reloadLookupsOnLoad: true,
-            fields: this.filterForEnv([
+            fields: [
                 {
                     name: 'name',
                     required: true
@@ -45,25 +45,9 @@ export class ConfigPanel extends Component {
                     required: true
                 },
                 {
-                    name: 'prodValue',
+                    name: 'value',
                     typeField: 'valueType',
-                    required: true,
-                    env: 'Production'
-                },
-                {
-                    name: 'betaValue',
-                    typeField: 'valueType',
-                    env: 'Beta'
-                },
-                {
-                    name: 'stageValue',
-                    typeField: 'valueType',
-                    env: 'Staging'
-                },
-                {
-                    name: 'devValue',
-                    typeField: 'valueType',
-                    env: 'Development'
+                    required: true
                 },
                 {
                     name: 'clientVisible',
@@ -83,40 +67,34 @@ export class ConfigPanel extends Component {
                     name: 'lastUpdatedBy',
                     editable: false
                 }
-            ])
+            ]
         }),
         actionWarning: {
             del: 'Are you sure you want to delete? Deleting configs can break running apps!'
         },
         unit: 'config',
-        filterFields: ['name', 'prodValue', 'betaValue', 'stageValue', 'devValue', 'groupName', 'note'],
+        filterFields: ['name', 'value', 'groupName', 'note'],
 
         sortBy: 'name',
         groupBy: 'groupName',
-        columns: this.filterForEnv([
+        columns: [
             nameCol({fixedWidth: 200}),
             baseCol({field: 'valueType', headerName: 'Type', fixedWidth: 80, align: 'center'}),
-            this.valCol({field: 'prodValue', env: 'Production'}),
-            this.valCol({field: 'betaValue', env: 'Beta'}),
-            this.valCol({field: 'stageValue', env: 'Staging'}),
-            this.valCol({field: 'devValue', env: 'Development'}),
+            this.valCol({field: 'value'}),
             boolCheckCol({field: 'clientVisible', headerName: 'Client?', fixedWidth: 75}),
             baseCol({field: 'groupName', headerName: 'Group', fixedWidth: 100}),
             baseCol({field: 'note', minWidth: 60})
-        ]),
-        editors: this.filterForEnv([
+        ],
+        editors: [
             {field: 'name'},
             {field: 'groupName'},
             {field: 'valueType'},
-            {field: 'prodValue', env: 'Production', type: 'boolSelect'}, // special handling to keep dynamically generated controls consistent
-            {field: 'betaValue', env: 'Beta', type: 'boolSelect'},
-            {field: 'stageValue', env: 'Staging', type: 'boolSelect'},
-            {field: 'devValue', env: 'Development', type: 'boolSelect'},
+            {field: 'value', type: 'boolSelect'}, // special handling to keep dynamically generated controls consistent
             {field: 'clientVisible'},
             {field: 'note', type: 'textarea'},
             {field: 'lastUpdated'},
             {field: 'lastUpdatedBy'}
-        ])
+        ]
     });
 
     render() {
@@ -136,14 +114,6 @@ export class ConfigPanel extends Component {
     //-------------------------
     // Implementation
     //-------------------------
-    filterForEnv(vals) {
-        const envs = XH.getEnv('supportedEnvironments'),
-            ret = vals.filter(it => !it.env || envs.includes(it.env));
-
-        ret.forEach(it => delete it.env);
-        return ret;
-    }
-
     valCol(params) {
         return baseCol({...params, fixedWidth: 175, valueFormatter: this.maskIfPwd});
     }
