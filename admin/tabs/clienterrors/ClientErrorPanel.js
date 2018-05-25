@@ -30,10 +30,7 @@ export class ClientErrorPanel extends Component {
             items: [
                 grid({
                     model: model.gridModel,
-                    agOptions: {
-                        rowSelection: 'single',
-                        onRowDoubleClicked: this.onRowDoubleClicked
-                    }
+                    onRowDoubleClicked: this.onRowDoubleClicked
                 }),
                 clientErrorDetail({model})
             ]

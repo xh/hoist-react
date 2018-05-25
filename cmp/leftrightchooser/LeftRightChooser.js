@@ -25,11 +25,11 @@ class LeftRightChooser extends Component {
     render() {
         const {model} = this,
             {leftModel, rightModel} = model,
-            agOptions = {
-                rowSelection: 'multiple',
-                rowDeselection: true,
-                enableColResize: false,
-                onRowDoubleClicked: (e) => model.moveRows([e.data])
+            gridOptions = {
+                onRowDoubleClicked: (e) => model.moveRows([e.data]),
+                agOptions: {
+                    enableColResize: false
+                }
             };
 
         return vframe({
@@ -38,9 +38,9 @@ class LeftRightChooser extends Component {
                 hframe({
                     cls: 'xh-lr-chooser__grid-frame',
                     items: [
-                        grid({model: leftModel, agOptions}),
+                        grid({model: leftModel, ...gridOptions}),
                         chooserToolbar({model}),
-                        grid({model: rightModel, agOptions})
+                        grid({model: rightModel, ...gridOptions})
                     ]
                 }),
                 description({model})
