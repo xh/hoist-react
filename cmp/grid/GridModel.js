@@ -9,7 +9,7 @@ import {action, observable} from '@xh/hoist/mobx';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/cmp/contextmenu';
 import {Icon} from '@xh/hoist/icon';
-import {defaults, castArray, find, isString, isPlainObject, orderBy} from 'lodash';
+import {defaults, castArray, findIndex, isString, isPlainObject, orderBy} from 'lodash';
 
 import {ColChooserModel} from './ColChooserModel';
 import {GridStateModel} from './GridStateModel';
@@ -206,13 +206,16 @@ export class GridModel {
     syncColumnOrder(columns) {
         const orderedCols = [];
 
-        columns.forEach(gridCol => {
+        let orderChanged = false;
+        columns.forEach((gridCol, idx) => {
             const colId = gridCol.colId,
-                col = find(this.columns, {colId});
-            orderedCols.push(col);
+                colIdx = findIndex(this.columns, {colId});
+
+            if (idx !== colIdx) orderChanged = true;
+            orderedCols.push(columns[colIdx]);
         });
 
-        this.setColumns(orderedCols);
+        if (orderChanged) this.setColumns(orderedCols);
     }
 
     //-----------------------
