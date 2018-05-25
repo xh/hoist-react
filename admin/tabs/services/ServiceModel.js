@@ -19,6 +19,7 @@ export class ServiceModel {
             processRawData: this.processRawData,
             fields: ['provider', 'name']
         }),
+        selModel: 'multiple',
         sortBy: 'name',
         groupBy: 'provider',
         columns: [

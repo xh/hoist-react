@@ -9,7 +9,7 @@ import {action, computed, observable} from '@xh/hoist/mobx';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/cmp/contextmenu';
 import {Icon} from '@xh/hoist/icon';
-import {castArray, find, isString, orderBy} from 'lodash';
+import {castArray, find, isString, isPlainObject, orderBy} from 'lodash';
 
 import {ColChooserModel} from './ColChooserModel';
 
@@ -22,7 +22,7 @@ export class GridModel {
 
     // Immutable public properties
     store = null;
-    selection = null;
+    selModel = null;
     contextMenuFn = null;
     colChooserModel = null;
 
@@ -62,7 +62,7 @@ export class GridModel {
     /**
      * @param {BaseStore} store - store containing the data for the grid.
      * @param {Object[]} columns - collection of column specifications.
-     * @param {StoreSelectionModel} [selection] - selection model to use
+     * @param {StoreSelectionModel | Object} [selModel] - selection model to use, or config to create one.
      * @param {string} [emptyText] - empty text to display if grid has no records. Can be valid HTML.
      *      Defaults to null, in which case no empty text will be shown.
      * @param {Object[]} [sortBy] - one or more sorters to apply to store data.
@@ -76,7 +76,7 @@ export class GridModel {
     constructor({
         store,
         columns,
-        selection,
+        selModel,
         emptyText = null,
         sortBy = [],
         groupBy = null,
@@ -87,7 +87,7 @@ export class GridModel {
         this.columns = columns;
         this.contextMenuFn = contextMenuFn;
 
-        this.selection = selection || new StoreSelectionModel({store: this.store});
+        this.selModel = initSelModel(store, selModel);
         this.emptyText = emptyText;
 
         if (enableColChooser) {
@@ -108,12 +108,12 @@ export class GridModel {
      * Select the first row in the grid.
      */
     selectFirst() {
-        const {store, selection, sortBy} = this,
+        const {store, selModel, sortBy} = this,
             colIds = sortBy.map(it => it.colId),
             sorts = sortBy.map(it => it.sort),
             recs = orderBy(store.records, colIds, sorts);
 
-        if (recs.length) selection.select(recs[0]);
+        if (recs.length) selModel.select(recs[0]);
     }
 
     @action
@@ -193,6 +193,28 @@ export class GridModel {
         } else {
             return value;
         }
+    }
+
+
+    parseSelModel(selModel, store) {
+
+        if (selModel instanceof StoreSelectionModel) {
+            return selModel;
+        }
+
+        if (isPlainObject(selModel)) {
+            return new StoreSelectionModel(defaults(selModel, {store}));
+        }
+
+        // Assume its just the mode...
+        let mode = 'single';
+        if (isString(selModel)) {
+            mode = selModel;
+        } else  if (selModel === null) {
+            mode = 'none';
+        }
+
+        return new StoreSelectionModel({mode, store});
     }
 
     destroy() {
