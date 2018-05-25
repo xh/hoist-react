@@ -18,7 +18,7 @@ class Description extends Component {
     render() {
         const model = this.model,
             {hasDescription, leftModel, rightModel} = model,
-            selected = leftModel.singleSelection || rightModel.singleSelection;
+            selected = leftModel.selectedRecord || rightModel.selectedRecord;
 
         if (!hasDescription || !(selected && selected.description)) return null;
 

@@ -87,7 +87,7 @@ export class LogViewerModel {
 
     syncSelectionReaction() {
         return {
-            track: () => this.files.singleSelection,
+            track: () => this.files.selectedRecord,
             run: (rec) => {
                 this.file = rec ? rec.filename : null;
                 this.loadLines();

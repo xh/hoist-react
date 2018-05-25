@@ -72,12 +72,12 @@ export class DataViewModel {
     }
 
     /**
-     * Shortcut to a single selected records (observable).
-     * This will be null if multiple records are selected
+     * Shortcut to a single selected record (observable).
+     * This will be null if multiple records are selected.
      *
      * @see StoreSelectionModel.singleRecord
      */
-    get singleSelection() {
+    get selectedRecord() {
         return this.selModel.singleRecord;
     }
 

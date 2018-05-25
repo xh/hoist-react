@@ -45,7 +45,7 @@ export class RestGridModel {
     get store()             {return this.gridModel.store}
     get selModel()          {return this.gridModel.selModel}
     get selection()         {return this.gridModel.selection}
-    get singleSelection()   {return this.gridModel.singleSelection}
+    get selectedRecord()    {return this.gridModel.selectedRecord}
 
     /**
      * @param {Object} [actionEnabled] - map of action (e.g. 'add'/'edit'/'delete') to boolean  See default prop
@@ -95,7 +95,7 @@ export class RestGridModel {
 
     @action
     deleteSelection() {
-        const record = this.singleSelection;
+        const record = this.selectedRecord;
         if (record) this.deleteRecord(record);
     }
 
@@ -106,7 +106,7 @@ export class RestGridModel {
 
     @action
     editSelection() {
-        const record = this.singleSelection;
+        const record = this.selectedRecord;
         if (record) this.editRecord(record);
     }
 
@@ -144,7 +144,7 @@ export class RestGridModel {
     }
 
     confirmDeleteSelection() {
-        const record = this.singleSelection;
+        const record = this.selectedRecord;
         if (record) this.confirmDeleteRecord(record);
     }
 
