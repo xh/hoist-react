@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {cloneDeep, find, uniqBy} from 'lodash';
+import {cloneDeep, debounce, find, uniqBy} from 'lodash';
 
 @HoistModel()
 export class GridStateModel {
@@ -59,7 +59,7 @@ export class GridStateModel {
 
 
     //--------------------------
-    // For Extension / Override // ??? really?
+    // For Extension / Override
     //--------------------------
     readState(stateKey) {
         return XH.localStorageService.get(stateKey, {});
@@ -164,11 +164,9 @@ export class GridStateModel {
     //--------------------------
     // Helper
     //--------------------------
-    saveStateChange() {
-        if (this.state && !this._resetting) { // ??
-            this.saveState(this.getStateKey(), this.state);
-        }
-    }
+    saveStateChange = debounce(function() {
+        this.saveState(this.getStateKey(), this.state);
+    }, 500);
 
     getStateKey() {
         const xhStateId = this.xhStateId;
