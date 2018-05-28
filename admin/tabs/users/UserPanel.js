@@ -23,11 +23,7 @@ export class UserPanel extends Component {
         return panel({
             tbar: this.renderToolbar(),
             item: grid({
-                model: this.model.gridModel,
-                flex: 'auto',
-                agOptions: {
-                    rowSelection: 'single'
-                }
+                model: this.model.gridModel
             })
         });
     }

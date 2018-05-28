@@ -20,8 +20,8 @@ class ChooserToolbar extends Component {
 
     render() {
         const {model} = this,
-            leftSel = model.leftModel.selection,
-            rightSel = model.rightModel.selection;
+            leftSel = model.leftModel.selModel,
+            rightSel = model.rightModel.selModel;
 
         return toolbar({
             width: 50,

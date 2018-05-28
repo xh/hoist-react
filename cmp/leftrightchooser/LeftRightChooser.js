@@ -26,11 +26,11 @@ class LeftRightChooser extends Component {
         const {model} = this,
             {layoutConfig} = this.props,
             {leftModel, rightModel} = model,
-            agOptions = {
-                rowSelection: 'multiple',
-                rowDeselection: true,
-                enableColResize: false,
-                onRowDoubleClicked: (e) => model.moveRows([e.data])
+            gridOptions = {
+                onRowDoubleClicked: (e) => model.moveRows([e.data]),
+                agOptions: {
+                    enableColResize: false
+                }
             };
 
         return vbox({
@@ -40,9 +40,9 @@ class LeftRightChooser extends Component {
                 hframe({
                     cls: 'xh-lr-chooser__grid-frame',
                     items: [
-                        grid({model: leftModel, flex: 'auto', agOptions}),
+                        grid({model: leftModel, ...gridOptions}),
                         chooserToolbar({model}),
-                        grid({model: rightModel, flex: 'auto', agOptions})
+                        grid({model: rightModel, ...gridOptions})
                     ]
                 }),
                 description({model})

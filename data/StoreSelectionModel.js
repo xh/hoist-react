@@ -16,6 +16,7 @@ import {castArray, intersection, union} from 'lodash';
 export class StoreSelectionModel {
 
     store = null;
+    mode = null;
 
     @observable.ref ids = [];
 
@@ -42,9 +43,11 @@ export class StoreSelectionModel {
 
     /**
      * @param {BaseStore} store - Store containing the data
+     * @param {string} [mode] - 'single'/ 'multiple' / 'disabled'
      */
-    constructor({store}) {
+    constructor({store, mode = 'single'}) {
         this.store = store;
+        this.mode = mode;
         this.addReaction(this.cullSelectionReaction());
     }
 
@@ -56,14 +59,18 @@ export class StoreSelectionModel {
      */
     @action
     select(records, clearSelection = true) {
-        const ids = castArray(records).map(it => {
+        records = castArray(records);
+        if (this.mode == 'disabled')  return;
+        if (this.mode == 'single' && records.length > 1) {
+            records = [records[0]];
+        }
+        const ids = records.map(it => {
             return it.id != null ? it.id : it;
         }).filter(id => {
             return this.store.getById(id, true);
         });
         this.ids = clearSelection ? ids : union(this.ids, ids);
     }
-
 
     /**
      * Clear the selection.
@@ -72,8 +79,7 @@ export class StoreSelectionModel {
     clear() {
         this.select([]);
     }
-
-
+    
     //-----------------------------
     // Implementation
     //-----------------------------

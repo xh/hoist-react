@@ -57,7 +57,7 @@ export class UserPreferencePanel extends Component {
         filterFields: ['name', 'username'],
         columns: [
             nameCol({fixedWidth: 200}),
-            baseCol({field: 'type', fixedWidth: 70}),
+            baseCol({field: 'type', fixedWidth: 100}),
             usernameCol({fixedWidth: 120}),
             baseCol({field: 'userValue', minWidth: 200, flex: 1})
         ],

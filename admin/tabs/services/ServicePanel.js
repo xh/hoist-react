@@ -27,7 +27,6 @@ export class ServicePanel extends Component {
                 model: this.model.gridModel,
                 flex: 'auto',
                 agOptions: {
-                    rowSelection: 'multiple',
                     groupRowInnerRenderer: this.groupRowInnerRenderer
                 }
             })
@@ -35,14 +34,14 @@ export class ServicePanel extends Component {
     }
 
     renderToolbar() {
-        const model = this.model,
-            {store, selection} = model.gridModel;
+        const {model} = this,
+            {store, selModel} = model.gridModel;
         return toolbar(
             button({
                 icon: Icon.sync(),
                 text: 'Clear Caches',
                 onClick: this.onClearCachesClick,
-                disabled: selection.isEmpty
+                disabled: selModel.isEmpty
             }),
             toolbarSep(),
             refreshButton({model}),
