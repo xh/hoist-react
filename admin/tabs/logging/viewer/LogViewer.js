@@ -37,7 +37,7 @@ export class LogViewer extends Component {
                     contentSize: 250,
                     isOpen: true,
                     item: panel({
-                        item: grid({model: files, flex: 'auto'}),
+                        item: grid({model: files}),
                         bbar: toolbar(
                             filler(),
                             storeFilterField({

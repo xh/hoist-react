@@ -62,7 +62,7 @@ export class DashboardPanel extends Component {
     });
 
     render() {
-        return restGrid({model: this.model, flex: 'auto'});
+        return restGrid({model: this.model});
     }
 
     async loadAsync() {

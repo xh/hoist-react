@@ -123,7 +123,6 @@ export class ConfigPanel extends Component {
         return fragment(
             restGrid({
                 model: this.gridModel,
-                flex: 'auto',
                 extraToolbarItems: this.extraToolbarItems
             }),
             configDiffer({model: this.differModel})

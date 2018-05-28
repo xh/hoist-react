@@ -21,7 +21,7 @@ export class VisitsChart extends Component {
         return panel({
             icon: Icon.users(),
             title: 'Unique Daily Visitors',
-            item: chart({model: this.model.chartModel, flex: 'auto'}),
+            item: chart({model: this.model.chartModel}),
             bbar: this.renderToolbar()
         });
     }

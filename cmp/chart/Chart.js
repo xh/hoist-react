@@ -27,11 +27,19 @@ export class Chart extends Component {
     _chart = null;
 
     render() {
+        // Default flex = 'auto' if no dimensions / flex specified.
+        const {layoutConfig} = this.props;
+        if (layoutConfig.width == null && layoutConfig.height == null && layoutConfig.flex == null) {
+            layoutConfig.flex = 'auto';
+        }
+
         this.renderHighChart();
+
+        // Inner div required to be the ref for the chart element
         return box({
-            layoutConfig: this.layoutConfig,
+            layoutConfig: layoutConfig,
             item: div({
-                style: {flex: 'auto', overflow: 'hidden'},
+                style: {flex: 'auto'},
                 ref: this._chartElem.ref
             })
         });

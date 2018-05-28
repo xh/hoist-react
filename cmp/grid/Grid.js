@@ -50,7 +50,6 @@ class Grid extends Component {
         onRowDoubleClicked: PT.func
     };
 
-
     constructor(props) {
         super(props);
         const {model} = this;
@@ -95,11 +94,17 @@ class Grid extends Component {
     }
 
     render() {
-        const {store, colChooserModel} = this.model;
+        const {store, colChooserModel} = this.model,
+            {layoutConfig} = this.props;
+
+        // Default flex = 'auto' if no dimensions / flex specified.
+        if (layoutConfig.width == null && layoutConfig.height == null && layoutConfig.flex == null) {
+            layoutConfig.flex = 'auto';
+        }
 
         return fragment(
             box({
-                layoutConfig: this.layoutConfig,
+                layoutConfig: layoutConfig,
                 cls: `ag-grid-holder ${XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham'}`,
                 item: agGridReact({
                     rowData: store.records,
