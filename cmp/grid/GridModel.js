@@ -212,10 +212,12 @@ export class GridModel {
                 colIdx = findIndex(this.columns, {colId});
 
             if (idx !== colIdx) orderChanged = true;
-            orderedCols.push(columns[colIdx]);
+            orderedCols.push(this.columns[colIdx]);
         });
 
-        if (orderChanged) this.setColumns(orderedCols);
+        if (orderChanged) {
+            this.setColumns(orderedCols);
+        }
     }
 
     //-----------------------
