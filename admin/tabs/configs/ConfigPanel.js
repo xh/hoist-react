@@ -89,7 +89,8 @@ export class ConfigPanel extends Component {
             {field: 'name'},
             {field: 'groupName'},
             {field: 'valueType'},
-            {field: 'value', type: 'boolSelect'}, // special handling to keep dynamically generated controls consistent
+            // special handling to keep dynamically generated controls consistent
+            {field: 'value', type: 'boolSelect', height: 300},
             {field: 'clientVisible'},
             {field: 'note', type: 'textarea'},
             {field: 'lastUpdated'},

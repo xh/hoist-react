@@ -145,7 +145,7 @@ export class RestControl extends Component {
             field: 'value',
             autoFocus: this.props.autoFocus,
             cls: 'pt-fill',
-            style: {height: 100},
+            style: {height: model.editor.height || 100},
             disabled: !model.isEditable,
             spellCheck: model.editor.spellCheck
         });
@@ -174,7 +174,7 @@ export class RestControl extends Component {
             disabled: !model.isEditable,
             // setting size appears to be the only way to get scrollbars
             width: 343,
-            height: 150
+            height: model.editor.height || 150
         });
     }
 
