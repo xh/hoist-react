@@ -103,7 +103,8 @@ export class GridStateModel {
                 const colSpec = {
                     xhId: it.xhId,
                     // hidden: it.isHidden() && (!groupField || it.dataIndex != groupField)  // See Hoist #425 sencha specific?
-                    hide: it.hide
+                    hide: it.hide,
+                    width: it.width
                 };
 
                 return colSpec;
@@ -124,6 +125,7 @@ export class GridStateModel {
                 if (!col) return;
 
                 col.hide = colState.hide;
+                col.width = colState.width; // if column is fixed width should we still do this? What if it wasn't fixed but is now?
                 newColumns.push(col);
                 foundColumns.push(col);
             });

@@ -204,20 +204,34 @@ export class GridModel {
     }
 
     syncColumnOrder(columns) {
-        const orderedCols = [];
+        const xhColumns = this.columns,
+            orderedCols = [];
 
-        let orderChanged = false;
+        let orderChanged = false; // drag event that triggers this method also fires on col resize
         columns.forEach((gridCol, idx) => {
             const colId = gridCol.colId,
-                colIdx = findIndex(this.columns, {colId});
+                colIdx = findIndex(xhColumns,  {colId});
 
             if (idx !== colIdx) orderChanged = true;
-            orderedCols.push(this.columns[colIdx]);
+            orderedCols.push(xhColumns[colIdx]);
         });
 
         if (orderChanged) {
             this.setColumns(orderedCols);
         }
+    }
+
+    syncColumnWidths(columns) {
+        const xhColumns = this.cloneColumns();
+
+        columns.forEach((gridCol) => {
+            const colId = gridCol.colId,
+                xhCol = find(xhColumns, {colId});
+
+            xhCol.width = gridCol.actualWidth;
+        });
+
+        this.setColumns(xhColumns);
     }
 
     //-----------------------
