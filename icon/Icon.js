@@ -91,6 +91,7 @@ export const Icon = {
     search(p)        {return fa(p, 'search')},
     sun(p)           {return fa(p, 'sun')},
     sync(p)          {return fa(p, 'sync')},
+    toolbox(p)       {return fa(p, 'toolbox')},
     thumbsDown(p)    {return fa(p, 'thumbs-down')},
     thumbsUp(p)      {return fa(p, 'thumbs-up')},
     undo(p)          {return fa(p, 'undo')},
