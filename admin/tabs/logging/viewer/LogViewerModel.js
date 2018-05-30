@@ -101,10 +101,8 @@ export class LogViewerModel {
         return {
             track: () => this.tail,
             run: (checked) => {
-                if (checked) {
-                    this.setStartLine(null);
-                    this.fetchFile();
-                }
+                this.setStartLine(checked ? null : 1);
+                this.fetchFile();
             }
         };
     }
