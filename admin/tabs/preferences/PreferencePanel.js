@@ -15,7 +15,6 @@ import {nameCol} from '../../columns/Columns';
 export class PreferencePanel extends Component {
 
     localModel = new RestGridModel({
-        stateModel: {xhStateId: 'prefPanel', trackSort: true},
         store: new RestStore({
             url: 'rest/preferenceAdmin',
             fields: [
@@ -65,8 +64,8 @@ export class PreferencePanel extends Component {
         },
         columns: [
             boolCheckCol({field: 'local', fixedWidth: 70}),
-            nameCol({minWidth: 200}),
-            baseCol({field: 'type', minWidth: 100}),
+            nameCol({fixedWidth: 200}),
+            baseCol({field: 'type', fixedWidth: 100}),
             baseCol({field: 'defaultValue', minWidth: 150, maxWidth: 480}),
             baseCol({field: 'notes', minWidth: 200, flex: 1})
         ],
