@@ -42,7 +42,25 @@ export class ConfigDifferModel  {
             }),
             emptyText: 'Please enter remote host for comparison',
             columns: [
-                nameCol({flex: 1}),
+                nameCol({fixedWidth: 200}),
+                baseCol({
+                    field: 'type',
+                    fixedWidth: 80,
+                    valueFormatter: this.configValueTypeFormatter
+                }),
+                baseCol({
+                    field: 'localValue',
+                    flex: 1,
+                    valueFormatter: this.configValueFormatter
+                }),
+                baseCol({
+                    field: 'remoteValue',
+                    flex: 1,
+                    valueFormatter: this.configValueFormatter,
+                    cellClassRules: {
+                        'xh-green': this.setRemoteCellClass
+                    }
+                }),
                 baseCol({
                     field: 'status',
                     fixedWidth: 120
@@ -173,6 +191,39 @@ export class ConfigDifferModel  {
 
     showNoDiffToast() {
         ToastManager.show({message: 'Good news! All configs match remote host.'});
+    }
+
+    setRemoteCellClass(rec) {
+        const data = rec.data,
+            local = data.localValue,
+            remote = data.remoteValue;
+
+        if (local && remote) {
+            return local.value != remote.value;
+        }
+
+        return true;
+    }
+
+    configValueFormatter = (rec) => {
+        const config = rec.data[rec.colDef.field];
+        return config ? this.maskIfPwd(config) : null;
+    }
+
+    maskIfPwd(config) {
+        return config.valueType === 'pwd' ? '*****' : config.value;
+    }
+
+    configValueTypeFormatter(rec) {
+        const data = rec.data,
+            local = data.localValue,
+            remote = data.remoteValue;
+
+        if (local && remote) {
+            return local.valueType == remote.valueType ? local.valueType : '??';
+        }
+
+        return local ? local.valueType : remote.valueType;
     }
 
     @action
