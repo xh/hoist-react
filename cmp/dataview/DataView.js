@@ -11,15 +11,15 @@ import {grid} from '@xh/hoist/cmp/grid';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {baseCol} from '@xh/hoist/columns/Core';
 
-@HoistComponent()
+@HoistComponent({layoutSupport: true})
 class DataView extends Component {
 
     constructor(props) {
         super(props);
-        const {store, selection, contextMenuFn, itemFactory} = props.model;
+        const {store, selModel, contextMenuFn, itemFactory} = props.model;
         this._gridModel = new GridModel({
             store,
-            selection,
+            selModel,
             contextMenuFn,
             columns: [
                 baseCol({
@@ -34,8 +34,9 @@ class DataView extends Component {
     }
 
     render() {
-        const {rowCls, itemHeight} = this.props;
+        const {layoutConfig, rowCls, itemHeight} = this.props;
         return grid({
+            layoutConfig,
             model: this._gridModel,
             agOptions: {
                 headerHeight: 0,

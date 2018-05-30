@@ -54,19 +54,19 @@ class XhModel {
     // The values below are set via webpack.DefinePlugin at build time.
     // See @xh/hoist-dev-utils/configureWebpack.
     //------------------------------------------------------------------
-    /** Short internal code for the application - matches server-side project name */
+    /** Short internal code for the application. */
     appCode = xhAppCode;
 
     /** User-facing display name for the application. */
     appName = xhAppName;
 
-    /** SemVer or Snapshot version of the client build */
+    /** SemVer or Snapshot version of the client build. */
     appVersion = xhAppVersion;
 
-    /** Git commit hash (or equivalent) of the client build */
+    /** Git commit hash (or equivalent) of the client build. */
     appBuild = xhAppBuild;
 
-    /** Root URL context/path - prepended to all relative fetch requests */
+    /** Root URL context/path - prepended to all relative fetch requests. */
     baseUrl = xhBaseUrl;
 
     //---------------------------
