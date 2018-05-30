@@ -66,7 +66,8 @@ export class GridModel {
      * @param {string} [groupBy] - Column ID by which to group.
      * @param {boolean} [enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
-     * @param {GridStateModel} stateModel - TODO: DOC THIS
+     * @param {(GridStateModel|Object|String)} [stateModel] - state model to use,
+     *      config to create one, or xhStateId property for a state model
      * @param {function} [contextMenuFn] - closure returning a StoreContextMenu().
      */
     constructor({
