@@ -74,7 +74,6 @@ export class GridStateModel {
         XH.localStorageService.remove(stateKey);
     }
 
-
     loadState(state) {
         this.state = cloneDeep(state || this.readState(this.getStateKey()) || {});
         this.updateGridColumns();
@@ -119,7 +118,6 @@ export class GridStateModel {
         return columns.map(it => {
             return {
                 xhId: it.xhId,
-                // hidden: it.isHidden() && (!groupField || it.dataIndex != groupField)  // See Hoist #425 sencha specific?
                 hide: it.hide,
                 width: it.width
             };
