@@ -92,6 +92,7 @@ export const Icon = {
     sync(p)          {return fa(p, 'sync')},
     thumbsDown(p)    {return fa(p, 'thumbs-down')},
     thumbsUp(p)      {return fa(p, 'thumbs-up')},
+    undo(p)          {return fa(p, 'undo')},
     user(p)          {return fa(p, 'user-circle')},
     users(p)         {return fa(p, 'users')},
     warning(p)       {return fa(p, 'exclamation-triangle')},
