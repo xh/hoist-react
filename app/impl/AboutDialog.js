@@ -61,7 +61,7 @@ export class AboutDialog extends Component {
 
         return table({
             item: tbody(
-                row('App Name', svc.get('appName')),
+                row('App', `${svc.get('appName')} (${svc.get('appCode')})`),
                 row('Current User', XH.identityService.username),
                 row('Environment', svc.get('appEnvironment')),
                 row('Server', svc.get('appVersion')),

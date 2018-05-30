@@ -40,9 +40,9 @@ export class ClientErrorModel {
             baseCol({field: 'error', minWidth: 450, flex: 3}),
             baseCol({field: 'msg', headerName: 'Message', minWidth: 150, flex: 1}),
             baseCol({field: 'browser', fixedWidth: 100}),
-            baseCol({field: 'device', fixedWidth: 80}),
+            baseCol({field: 'device', fixedWidth: 100}),
             baseCol({field: 'appVersion', fixedWidth: 130}),
-            baseCol({field: 'appEnvironment', headerName: 'Environment', fixedWidth: 120})
+            baseCol({field: 'appEnvironment', headerName: 'Environment', fixedWidth: 130})
         ]
     });
 
