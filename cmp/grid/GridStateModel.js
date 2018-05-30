@@ -58,7 +58,6 @@ export class GridStateModel {
         };
     }
 
-
     //--------------------------
     // For Extension / Override
     //--------------------------
@@ -80,11 +79,10 @@ export class GridStateModel {
         this.updateGridSort();
     }
 
-    // why does this need to be async? Is this in case there is a db based override?
     resetStateAsync() {
         const defaultState = this.defaultState;
 
-        if (!defaultState) resolve(); // shouldn't there always be one?
+        if (!defaultState) resolve();
 
         return start(() => {
             this._resetting = true;
@@ -174,7 +172,6 @@ export class GridStateModel {
     // Helper
     //--------------------------
     saveStateChange = debounce(function() {
-        // sencha checks that there is a state (which I think there always should be) and if we are resetting (should we do the same)?
         this.saveState(this.getStateKey(), this.state);
     }, 5 * SECONDS);
 
