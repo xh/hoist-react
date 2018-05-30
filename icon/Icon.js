@@ -69,6 +69,7 @@ export const Icon = {
     gear(p)          {return fa(p, 'cog')},
     gears(p)         {return fa(p, 'cogs')},
     gift(p)          {return fa(p, 'gift')},
+    globe(p)         {return fa(p, 'globe')},
     grid(p)          {return fa(p, 'table')},
     hand(p)          {return fa(p, 'hand-paper')},
     home(p)          {return fa(p, 'home')},
