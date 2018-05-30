@@ -24,7 +24,7 @@ export class ConfigPanel extends Component {
 
     gridModel = new RestGridModel({
         enableColChooser: true,
-        stateModel: {xhStateId: 'configPanel', trackColumns: true, trackSort: true},
+        stateModel: 'configPanel',
         store: new RestStore({
             url: 'rest/configAdmin',
             reloadLookupsOnLoad: true,
@@ -97,7 +97,7 @@ export class ConfigPanel extends Component {
         sortBy: 'name',
         groupBy: 'groupName',
         columns: this.filterForEnv([
-            nameCol({fixedWidth: 200, xhId: 'configName'}),
+            nameCol({fixedWidth: 200}),
             baseCol({field: 'valueType', headerName: 'Type', fixedWidth: 80, align: 'center'}),
             this.valCol({field: 'prodValue', env: 'Production'}),
             this.valCol({field: 'betaValue', env: 'Beta'}),
@@ -160,13 +160,16 @@ export class ConfigPanel extends Component {
     }
 
     extraToolbarItems = () => {
+        const gridModel = this.gridModel.gridModel;
         return [
             button({
                 icon: Icon.diff(),
                 text: 'Compare w/ Remote',
                 onClick: this.onDifferBtnClick
             }),
-            colChooserButton({gridModel: this.gridModel.gridModel})
+            colChooserButton({gridModel}),
+            button({text: 'GroupBy Type', onClick: () => gridModel.setGroupBy('valueType')}),
+            button({text: 'Clear Grouping', onClick: () => gridModel.setGroupBy(null)})
         ];
     }
 

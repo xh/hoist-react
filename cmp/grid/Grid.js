@@ -268,9 +268,8 @@ class Grid extends Component {
     }
 
     onDragStopped = (ev) => {
-        const gridColumns = ev.api.columnController.gridColumns
+        const gridColumns = ev.api.columnController.gridColumns;
         this.model.syncColumnOrder(gridColumns);
-        this.model.syncColumnWidths(gridColumns);
     }
 
     onGridSizeChanged = (ev) => {
@@ -278,11 +277,7 @@ class Grid extends Component {
     }
 
     onComponentStateChanged = (ev) => {
-        // would like to either get rid of this or suppress on setColumns somehow
-        // change made https://github.com/exhi/hoist-react/commit/9e72fc2032f76664528425af86f265bc26a27c82
-        // this is cause the grid to jump if I want to round trip the grid column widths from the agGrid column to our gridModel columns
-
-        // ev.api.sizeColumnsToFit();
+        ev.api.sizeColumnsToFit();
     }
 
 }

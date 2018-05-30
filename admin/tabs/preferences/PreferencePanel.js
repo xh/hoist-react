@@ -15,7 +15,7 @@ import {nameCol} from '../../columns/Columns';
 export class PreferencePanel extends Component {
 
     localModel = new RestGridModel({
-        stateModel: {xhStateId: 'prefPanel', trackColumns: true, trackSort: true},
+        stateModel: {xhStateId: 'prefPanel', trackSort: true},
         store: new RestStore({
             url: 'rest/preferenceAdmin',
             fields: [

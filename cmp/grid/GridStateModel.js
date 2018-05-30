@@ -6,6 +6,7 @@
  */
 import {XH, HoistModel} from '@xh/hoist/core';
 import {cloneDeep, debounce, find, uniqBy} from 'lodash';
+import {SECONDS} from '@xh/hoist/utils/DateTimeUtils';
 
 @HoistModel()
 export class GridStateModel {
@@ -35,7 +36,6 @@ export class GridStateModel {
             this.addReaction(this.columnReaction());
         }
 
-        // simplify as above
         if (this.trackSort) {
             this.addReaction(this.sortReaction());
         }
@@ -87,7 +87,7 @@ export class GridStateModel {
     columnReaction() {
         const {parent} = this;
         return {
-            track: () => [parent.columns],
+            track: () => parent.columns,
             run: () => {
                 this.state.columns = this.getColumnState();
                 this.saveStateChange();
@@ -98,19 +98,16 @@ export class GridStateModel {
     getColumnState() {
         if (!this.trackColumns) return undefined;
 
-        const columns = this.parent.columns,
-            ret = columns.map(it => {
-                const colSpec = {
-                    xhId: it.xhId,
-                    // hidden: it.isHidden() && (!groupField || it.dataIndex != groupField)  // See Hoist #425 sencha specific?
-                    hide: it.hide,
-                    width: it.width
-                };
+        const columns = this.parent.columns;
 
-                return colSpec;
-            });
-
-        return ret;
+        return columns.map(it => {
+            return {
+                xhId: it.xhId,
+                // hidden: it.isHidden() && (!groupField || it.dataIndex != groupField)  // See Hoist #425 sencha specific?
+                hide: it.hide,
+                width: it.width
+            };
+        });
     }
 
     updateGridColumns() {
@@ -125,7 +122,6 @@ export class GridStateModel {
                 if (!col) return;
 
                 col.hide = colState.hide;
-                col.width = colState.width; // if column is fixed width should we still do this? What if it wasn't fixed but is now?
                 newColumns.push(col);
                 foundColumns.push(col);
             });
@@ -156,11 +152,8 @@ export class GridStateModel {
     }
 
     updateGridSort() {
-        const sortBy = this.state.sortBy,
-            cols = this.parent.columns,
-            gridHasCol = sortBy ? sortBy.some(it => find(cols, {field: it.colId})) : false; // might be pointless, doesn't hurt anything to just let it go
-
-        if (sortBy && gridHasCol) this.parent.setSortBy(sortBy);
+        const sortBy = this.state.sortBy;
+        if (sortBy) this.parent.setSortBy(sortBy);
     }
 
     //--------------------------
@@ -168,7 +161,7 @@ export class GridStateModel {
     //--------------------------
     saveStateChange = debounce(function() {
         this.saveState(this.getStateKey(), this.state);
-    }, 500);
+    }, 5 * SECONDS);
 
     getStateKey() {
         const xhStateId = this.xhStateId;

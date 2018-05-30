@@ -9,7 +9,7 @@ import {action, observable} from '@xh/hoist/mobx';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/cmp/contextmenu';
 import {Icon} from '@xh/hoist/icon';
-import {defaults, castArray, find, findIndex, isString, isPlainObject, orderBy} from 'lodash';
+import {defaults, castArray, find, isEqual, isString, isPlainObject, orderBy} from 'lodash';
 
 import {ColChooserModel} from './ColChooserModel';
 import {GridStateModel} from './GridStateModel';
@@ -83,8 +83,6 @@ export class GridModel {
         this.store = store;
         this.columns = columns;
         this.contextMenuFn = contextMenuFn;
-
-        this.selModel = this.parseSelModel(selModel, store);
         this.emptyText = emptyText;
 
         if (enableColChooser) {
@@ -94,9 +92,8 @@ export class GridModel {
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
 
-        if (stateModel) {
-            this.initGridState(stateModel);
-        }
+        this.selModel = this.initSelModel(selModel, store);
+        this.stateModel = this.initStateModel(stateModel);
     }
 
     exportDataAsExcel(params) {
@@ -144,7 +141,12 @@ export class GridModel {
 
     @action
     setGroupBy(field) {
-        const cols = this.columns;
+        const cols = this.columns,
+            groupCol = find(cols, {field});
+
+        // If we have an invalid groupBy field do not set
+        // Allow a falsey field to mean 'no grouping'
+        if (field && !groupCol) return;
 
         cols.forEach(it => {
             if (it.rowGroup) {
@@ -153,14 +155,11 @@ export class GridModel {
             }
         });
 
-        if (field) {
-            const col = find(cols, {field});
-            if (col) {
-                col.rowGroup = true;
-                col.hide = true;
-            }
+        if (groupCol) {
+            groupCol.rowGroup = true;
+            groupCol.hide = true;
         }
-        
+
         this.columns = [...cols];
     }
 
@@ -168,6 +167,17 @@ export class GridModel {
     setSortBy(sortBy) {
         // Normalize string, and partially specified values
         sortBy = castArray(sortBy);
+
+        // If any sort prop is invalid do not set
+        const sortIsValid = sortBy.every(it => {
+            const field = it.colId || it,
+                col = find(this.columns, {field});
+
+            return col && !col.hide;
+        });
+
+        if (!sortIsValid) return;
+
         sortBy = sortBy.map(it => {
             if (isString(it)) it = {colId: it};
             it.sort = it.sort || 'asc';
@@ -207,31 +217,21 @@ export class GridModel {
         const xhColumns = this.columns,
             orderedCols = [];
 
-        let orderChanged = false; // drag event that triggers this method also fires on col resize
-        columns.forEach((gridCol, idx) => {
+        columns.forEach((gridCol) => {
             const colId = gridCol.colId,
-                colIdx = findIndex(xhColumns,  {colId});
+                col = find(xhColumns, {colId});
 
-            if (idx !== colIdx) orderChanged = true;
-            orderedCols.push(xhColumns[colIdx]);
+            orderedCols.push(col);
         });
+
+        // Can be no-op as drag event that triggers this method also fires on col resize
+        const oldIdOrder = columns.map(it => it.colId),
+            newIdOrder = xhColumns.map(it => it.colId),
+            orderChanged = !isEqual(newIdOrder, oldIdOrder);
 
         if (orderChanged) {
             this.setColumns(orderedCols);
         }
-    }
-
-    syncColumnWidths(columns) {
-        const xhColumns = this.cloneColumns();
-
-        columns.forEach((gridCol) => {
-            const colId = gridCol.colId,
-                xhCol = find(xhColumns, {colId});
-
-            xhCol.width = gridCol.actualWidth;
-        });
-
-        this.setColumns(xhColumns);
     }
 
     //-----------------------
@@ -247,8 +247,7 @@ export class GridModel {
         }
     }
 
-
-    parseSelModel(selModel, store) {
+    initSelModel(selModel, store) {
         if (selModel instanceof StoreSelectionModel) {
             return selModel;
         }
@@ -261,21 +260,36 @@ export class GridModel {
         let mode = 'single';
         if (isString(selModel)) {
             mode = selModel;
-        } else  if (selModel === null) {
+        } else if (selModel === null) {
             mode = 'disabled';
         }
 
         return new StoreSelectionModel({mode, store});
     }
 
+    initStateModel(stateModel) {
+        if (!stateModel) return;
+        let ret;
+
+        if (stateModel instanceof GridStateModel) {
+            ret = stateModel;
+        }
+
+        if (isPlainObject(stateModel)) {
+            ret = new GridStateModel(stateModel);
+        }
+
+        if (isString(stateModel)) {
+            ret = new GridStateModel({xhStateId: stateModel});
+        }
+
+        ret.init(this);
+        return ret;
+    }
+
     destroy() {
         XH.safeDestroy(this.colChooserModel);
         // TODO: How are Stores destroyed?
-    }
-
-    initGridState(stateModel) {
-        this.stateModel = stateModel instanceof GridStateModel ? stateModel : new GridStateModel(stateModel);
-        this.stateModel.init(this);
     }
 
 }
