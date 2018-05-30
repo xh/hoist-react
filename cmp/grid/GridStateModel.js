@@ -7,6 +7,7 @@
 import {XH, HoistModel} from '@xh/hoist/core';
 import {cloneDeep, debounce, find, uniqBy} from 'lodash';
 import {SECONDS} from '@xh/hoist/utils/DateTimeUtils';
+import {start, resolve} from '@xh/hoist/promise';
 
 @HoistModel()
 export class GridStateModel {
@@ -45,7 +46,7 @@ export class GridStateModel {
 
     initializeState() {
         const userState = this.readState(this.getStateKey());
-        this.defaultState = this.readStateFromGrid(); // for resetting?
+        this.defaultState = this.readStateFromGrid();
 
         this.loadState(userState);
     }
@@ -80,6 +81,21 @@ export class GridStateModel {
         this.updateGridSort();
     }
 
+    // why does this need to be async? Is this in case there is a db based override?
+    resetStateAsync() {
+        const defaultState = this.defaultState;
+
+        if (!defaultState) resolve(); // shouldn't there always be one?
+
+        return start(() => {
+            this._resetting = true;
+            this.loadState(defaultState);
+        }).then(() => {
+            this.resetState(this.getStateKey());
+        }).finally(() =>{
+            this._resetting = false;
+        });
+    }
 
     //--------------------------
     // Columns
@@ -160,6 +176,7 @@ export class GridStateModel {
     // Helper
     //--------------------------
     saveStateChange = debounce(function() {
+        // sencha checks that there is a state (which I think there always should be) and if we are resetting (should we do the same)?
         this.saveState(this.getStateKey(), this.state);
     }, 5 * SECONDS);
 
