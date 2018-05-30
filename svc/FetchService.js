@@ -86,7 +86,6 @@ export class FetchService {
         }
         if (!ret.ok) throw Exception.requestError(opts, ret);
         return ret;
-
     }
 
     /**

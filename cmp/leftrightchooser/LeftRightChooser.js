@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {hframe, vframe} from '@xh/hoist/cmp/layout';
+import {vbox, hframe} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
 
 import {description} from './impl/Description';
@@ -19,11 +19,12 @@ import './LeftRightChooser.scss';
  * A nested panel is also available to display a more in-depth description for any selected item.
  * @see LeftRightChooserModel
  */
-@HoistComponent()
+@HoistComponent({layoutSupport: true})
 class LeftRightChooser extends Component {
 
     render() {
         const {model} = this,
+            {layoutConfig} = this.props,
             {leftModel, rightModel} = model,
             gridOptions = {
                 onRowDoubleClicked: (e) => model.moveRows([e.data]),
@@ -32,7 +33,8 @@ class LeftRightChooser extends Component {
                 }
             };
 
-        return vframe({
+        return vbox({
+            layoutConfig,
             cls: 'xh-lr-chooser',
             items: [
                 hframe({

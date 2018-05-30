@@ -9,7 +9,7 @@ import {PropTypes as PT} from 'prop-types';
 import {isString, isNumber, isBoolean, isEqual, xor} from 'lodash';
 import {XH} from '@xh/hoist/core';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {div, frame} from '@xh/hoist/cmp/layout';
+import {fragment, box} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import './ag-grid';
 import {navigateSelection, agGridReact} from './ag-grid';
@@ -26,7 +26,7 @@ import {colChooser} from './ColChooser';
  * the selection. Use this class to control the AG Grid UI options and specific
  * behavior of the grid.
  */
-@HoistComponent()
+@HoistComponent({layoutSupport: true})
 class Grid extends Component {
 
     _scrollOnSelect = true;
@@ -49,7 +49,6 @@ class Grid extends Component {
          */
         onRowDoubleClicked: PT.func
     };
-
 
     constructor(props) {
         super(props);
@@ -95,12 +94,18 @@ class Grid extends Component {
     }
 
     render() {
-        const {store, colChooserModel} = this.model;
+        const {store, colChooserModel} = this.model,
+            {layoutConfig} = this.props;
 
-        return frame(
-            div({
-                style: {flex: '1 1 auto', overflow: 'hidden'},
-                cls: XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
+        // Default flex = 'auto' if no dimensions / flex specified.
+        if (layoutConfig.width == null && layoutConfig.height == null && layoutConfig.flex == null) {
+            layoutConfig.flex = 'auto';
+        }
+
+        return fragment(
+            box({
+                layoutConfig: layoutConfig,
+                cls: `ag-grid-holder ${XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham'}`,
                 item: agGridReact({
                     rowData: store.records,
                     columnDefs: this.agColDefs(),

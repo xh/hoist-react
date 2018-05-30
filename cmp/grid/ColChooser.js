@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {filler, frame} from '@xh/hoist/cmp/layout';
+import {filler} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/cmp/toolbar';
 import {leftRightChooser} from '@xh/hoist/cmp/leftrightchooser';
 import {button, dialog} from '@xh/hoist/kit/blueprint';
@@ -27,10 +27,7 @@ export class ColChooser extends Component {
             isOpen: true,
             onClose: this.onClose,
             items: [
-                frame({
-                    height: 300,
-                    item: leftRightChooser({model: lrModel})
-                }),
+                leftRightChooser({model: lrModel, height: 300}),
                 toolbar(
                     filler(),
                     button({
