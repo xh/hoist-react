@@ -17,7 +17,7 @@ export class LogViewerModel {
 
     // Form State/Display options
     @observable @setter tail = true;
-    @observable @setter startLine = 1;
+    @observable @setter startLine = null;
     @observable @setter maxLines = 1000;
     @observable @setter pattern = '';
 
@@ -41,6 +41,7 @@ export class LogViewerModel {
 
     constructor() {
         this.addReaction(this.syncSelectionReaction());
+        this.addReaction(this.toggleTail());
     }
     
     @action
@@ -80,7 +81,7 @@ export class LogViewerModel {
                     pattern: this.pattern
                 }
             })
-            .then(rows => this.setRows(rows.content))
+            .then(rows => this.setRows(this.startLine ? rows.content : rows.content.reverse()))
             .linkTo(this.loadModel)
             .catchDefault();
     }
@@ -93,6 +94,16 @@ export class LogViewerModel {
                 this.loadLines();
             },
             delay: 300
+        };
+    }
+
+    toggleTail() {
+        return {
+            track: () => this.tail,
+            run: (checked) => {
+                this.setStartLine(checked ? null : 1);
+                this.fetchFile();
+            }
         };
     }
     
