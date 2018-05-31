@@ -23,8 +23,8 @@ class DataView extends Component {
             contextMenuFn,
             columns: [
                 baseCol({
-                    field: 'id',
                     flex: 1,
+                    valueGetter: (params) => params.data,
                     elementRenderer: (record) => {
                         return itemFactory({record: record.data});
                     }
