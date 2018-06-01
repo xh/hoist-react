@@ -77,11 +77,11 @@ export class MonitorEditorPanel extends Component {
             boolCheckCol({field: 'active', fixedWidth: 70}),
             baseCol({field: 'code', fixedWidth: 150}),
             nameFlexCol(),
-            baseCol({field: 'warnThreshold', fixedWidth: 130}),
-            baseCol({field: 'failThreshold', fixedWidth: 130}),
-            baseCol({field: 'metricUnit', fixedWidth: 100}),
+            baseCol({field: 'warnThreshold', headerName: 'Warn', fixedWidth: 130, align: 'right'}),
+            baseCol({field: 'failThreshold', headerName: 'Fail', fixedWidth: 130, align: 'right'}),
+            baseCol({field: 'metricUnit', headerName: 'Units', fixedWidth: 100}),
             baseCol({field: 'notes', minWidth: 70, flex: 1}),
-            baseCol({field: 'sortOrder', fixedWidth: 100})
+            baseCol({field: 'sortOrder', headerName: 'Sort', fixedWidth: 100})
         ],
         editors: [
             {field: 'code'},

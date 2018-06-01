@@ -95,7 +95,7 @@ export class LoginPanel extends Component {
         }).then(r => {
             this.setWarning(r.success ? '' : 'Login Incorrect');
             if (r.success) {
-                XH.completeInitAsync(username);
+                XH.completeInitAsync();
             }
         }).catchDefault();
     }

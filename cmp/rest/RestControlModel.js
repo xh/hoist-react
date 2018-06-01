@@ -23,10 +23,12 @@ export class RestControlModel  {
         this.editor = editor;
         this.parent = parent;
         if (field.typeField) {
-            this.addReaction(
-                () => this.type,
-                () => this.setValue(null)
-            );
+            this.addReaction({
+                track: () => this.type,
+                run: () => {
+                    if (this.parent.isDirty) this.setValue(null);
+                }
+            });
         }
     }
 

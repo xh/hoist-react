@@ -95,6 +95,7 @@ export class LeftRightChooserModel {
 
         this.leftModel = new GridModel({
             store: new LocalStore({fields}),
+            selModel: 'multiple',
             sortBy: leftSortBy,
             columns: [
                 baseCol({headerName: leftTitle, field: 'text', cellRendererFramework: ItemRenderer}),
@@ -104,6 +105,7 @@ export class LeftRightChooserModel {
 
         this.rightModel = new GridModel({
             store: new LocalStore({fields}),
+            selModel: 'multiple',
             sortBy: rightSortBy,
             columns: [
                 baseCol({headerName: rightTitle, field: 'text', cellRendererFramework: ItemRenderer}),
@@ -113,7 +115,7 @@ export class LeftRightChooserModel {
 
         this.setData(data);
 
-        this.addAutorun(() => this.syncSelection());
+        this.addReaction(this.syncSelectionReaction());
     }
 
     setData(data) {
@@ -155,18 +157,23 @@ export class LeftRightChooserModel {
         this.refreshStores();
     }
 
-    syncSelection() {
-        const leftSel = this.leftModel.selection,
-            rightSel = this.rightModel.selection,
-            lastSelectedSide = this._lastSelectedSide;
-
-        if (leftSel.singleRecord && lastSelectedSide !== 'left') {
-            this._lastSelectedSide = 'left';
-            rightSel.clear();
-        } else if (rightSel.singleRecord && lastSelectedSide !== 'right') {
-            this._lastSelectedSide = 'right';
-            leftSel.clear();
-        }
+    syncSelectionReaction() {
+        const leftSel = this.leftModel.selModel,
+            rightSel = this.rightModel.selModel;
+        
+        return {
+            track: () => [leftSel.singleRecord, rightSel.singleRecord],
+            run: () => {
+                const lastSelectedSide = this._lastSelectedSide;
+                if (leftSel.singleRecord && lastSelectedSide !== 'left') {
+                    this._lastSelectedSide = 'left';
+                    rightSel.clear();
+                } else if (rightSel.singleRecord && lastSelectedSide !== 'right') {
+                    this._lastSelectedSide = 'right';
+                    leftSel.clear();
+                }
+            }
+        };
     }
 
     refreshStores() {
