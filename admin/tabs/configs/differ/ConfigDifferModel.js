@@ -7,7 +7,7 @@
 
 import React from 'react';
 import {action, observable, setter} from '@xh/hoist/mobx';
-import {castArray, isEqual, remove, trimEnd} from 'lodash';
+import {isEqual, remove, trimEnd} from 'lodash';
 import {pluralize} from '@xh/hoist/utils/JsUtils';
 import {XH, HoistModel} from '@xh/hoist/core';
 import {LocalStore} from '@xh/hoist/data';
