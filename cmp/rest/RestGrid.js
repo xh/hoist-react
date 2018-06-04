@@ -14,15 +14,16 @@ import {message} from '@xh/hoist/cmp/message';
 import {restGridToolbar} from './RestGridToolbar';
 import {restForm} from './RestForm';
 
-@HoistComponent()
+@HoistComponent({layoutSupport: true})
 export class RestGrid extends Component {
 
     render() {
         const {model} = this,
-            {extraToolbarItems, agOptions} = this.props;
+            {layoutConfig, extraToolbarItems, agOptions} = this.props;
 
         return fragment(
             panel({
+                layoutConfig,
                 tbar: restGridToolbar({model, extraToolbarItems}),
                 item: grid({
                     model: model.gridModel,

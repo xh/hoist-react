@@ -11,7 +11,7 @@ import {grid} from '@xh/hoist/cmp/grid';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {baseCol} from '@xh/hoist/columns/Core';
 
-@HoistComponent()
+@HoistComponent({layoutSupport: true})
 class DataView extends Component {
 
     constructor(props) {
@@ -23,8 +23,8 @@ class DataView extends Component {
             contextMenuFn,
             columns: [
                 baseCol({
-                    field: 'id',
                     flex: 1,
+                    valueGetter: (params) => params.data,
                     elementRenderer: (record) => {
                         return itemFactory({record: record.data});
                     }
@@ -34,8 +34,9 @@ class DataView extends Component {
     }
 
     render() {
-        const {rowCls, itemHeight} = this.props;
+        const {layoutConfig, rowCls, itemHeight} = this.props;
         return grid({
+            layoutConfig,
             model: this._gridModel,
             agOptions: {
                 headerHeight: 0,
