@@ -31,7 +31,7 @@ export class ColChooser extends Component {
                 toolbar(
                     button({
                         text: 'Reset',
-                        icon: Icon.refresh({cls: 'xh-red'}),
+                        icon: Icon.undo({cls: 'xh-red'}),
                         omit: !gridModel.stateModel,
                         onClick: this.restoreDefaults
                     }),
