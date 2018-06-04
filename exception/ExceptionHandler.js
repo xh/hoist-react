@@ -90,10 +90,7 @@ export class ExceptionHandler {
     }
 
     static logErrorOnServer(exception) {
-        const errorTrackingService = XH.errorTrackingService;
-        if (errorTrackingService.isReady) {
-            errorTrackingService.submitAsync({exception});
-        }
+        XH.errorTrackingService.submitAsync({exception});
     }
 
     static sessionExpired(exception) {
