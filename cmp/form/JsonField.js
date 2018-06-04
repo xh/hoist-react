@@ -90,7 +90,8 @@ export class JsonField extends HoistField {
                         'Ctrl-P': this.onFormatKey
                     },
                     theme: XH.darkTheme ? 'dracula' : 'default',
-                    readOnly: disabled}
+                    readOnly: disabled
+                }
             );
 
         const taDom = ReactDOM.findDOMNode(taCmp),
