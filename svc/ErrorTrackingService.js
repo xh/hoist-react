@@ -18,15 +18,21 @@ export class ErrorTrackingService {
      * @param {Object} options - Map with message & exception - both optional, although at least one should be provided!
      */
     async submitAsync({message, exception}) {
-        const error = exception ? stringifyErrorSafely(exception) : null;
 
-        await XH.fetchJson({
-            url: 'hoistImpl/submitError',
-            params: {
-                error,
-                msg: message ? stripTags(message) : '',
-                appVersion: XH.getEnv('appVersion')
-            }
-        });
+        // Fail somewhat silently to avoid letting problems here mask/confuse the underlying problem.
+        try {
+            const error = exception ? stringifyErrorSafely(exception) : null;
+
+            await XH.fetchJson({
+                url: 'hoistImpl/submitError',
+                params: {
+                    error,
+                    msg: message ? stripTags(message) : '',
+                    appVersion: XH.getEnv('appVersion')
+                }
+            });
+        } catch (e) {
+            console.error('Failed sending error to server:', e);
+        }
     }
 }
