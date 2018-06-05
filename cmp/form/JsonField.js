@@ -49,10 +49,6 @@ export class JsonField extends HoistField {
         lineWrapping: false,
         lineNumbers: true,
         autoCloseBrackets: true,
-        extraKeys: {
-            'Cmd-P': this.onFormatKey,
-            'Ctrl-P': this.onFormatKey
-        },
         foldGutter: true,
         scrollbarStyle: 'simple',
         gutters: [
@@ -88,7 +84,14 @@ export class JsonField extends HoistField {
             editorSpec = defaultsDeep(
                 editorProps,
                 JsonField.defaultEditorProps,
-                {theme: XH.darkTheme ? 'dracula' : 'default', readOnly: disabled}
+                {
+                    extraKeys: {
+                        'Cmd-P': this.onFormatKey,
+                        'Ctrl-P': this.onFormatKey
+                    },
+                    theme: XH.darkTheme ? 'dracula' : 'default',
+                    readOnly: disabled
+                }
             );
 
         const taDom = ReactDOM.findDOMNode(taCmp),
