@@ -17,8 +17,8 @@ import {HoistModel} from '@xh/hoist/core';
  * a set of default settings and/or ensure that only a single message is shown at a time from
  * a given source.
  *
- * For an easier way to create one-off messages see the global aliases XH.message() and
- * XH.confirm().  These methods will use a global MessageManager to create one-time,
+ * For an easier way to create one-off messages see the global aliases XH.alert() and
+ * XH.confirm().  These methods will use a global MessageSourceModel to create one-time,
  * self-disposing messages.
  */
 @HoistModel()
@@ -45,7 +45,7 @@ export class MessageModel {
     /**
      * @param {Object} [config] - default options for this instance.
      */
-    constructor(config) {
+    constructor(config, parent) {
         this.initialConfig = config;
     }
 

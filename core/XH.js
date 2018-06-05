@@ -14,6 +14,8 @@ import {observable, setter, action} from '@xh/hoist/mobx';
 import {MultiPromiseModel, never} from '@xh/hoist/promise';
 import {RouterModel} from '@xh/hoist/router';
 import {appContainer} from '@xh/hoist/app';
+import {MessageSourceModel} from '@xh/hoist/cmp/message';
+
 import {
     ConfigService,
     EnvironmentService,
@@ -121,6 +123,8 @@ class XhModel {
      */
     appLoadModel = new MultiPromiseModel();
 
+    messageSourceModel = new MessageSourceModel();
+
     /**
      * Main entry point. Initialize and render application code.
      *
@@ -181,7 +185,8 @@ class XhModel {
     /** Show the About Dialog for this application. */
     @action
     showAbout() {
-        this.aboutIsOpen = true;
+        //this.aboutIsOpen = true;
+        this.alert({message: 'About Me'});
     }
 
     /** Hide the About Dialog for this application. */
@@ -198,6 +203,24 @@ class XhModel {
     @action
     showUpdateBar(updateVersion) {
         this.updateVersion = updateVersion;
+    }
+
+    /**
+     * Show an alert dialog.
+     *
+     * @param config, see MessageModel.alert()
+     */
+    alert(config) {
+        this.messageSourceModel.alert(config);
+    }
+
+    /**
+     * Show an alert dialog.
+     *
+     * @param config, see MessageModel.confirm()
+     */
+    confirm(config) {
+        this.messageSourceModel.confirm(config);
     }
 
     //---------------------------------

@@ -56,16 +56,13 @@ export class ConfigDiffer extends Component {
                     onClick: this.onLoadDiffClick
                 })
             ),
-            items: [
-                grid({
-                    model: model.gridModel,
-                    onRowDoubleClicked: this.onRowDoubleClicked,
-                    agOptions: {
-                        popupParent: null
-                    }
-                }),
-                message({model: model.messageModel})
-            ],
+            item: grid({
+                model: model.gridModel,
+                onRowDoubleClicked: this.onRowDoubleClicked,
+                agOptions: {
+                    popupParent: null
+                }
+            }),
             bbar: toolbar(
                 filler(),
                 button({

@@ -11,6 +11,7 @@ import {observable, observer, setter} from '@xh/hoist/mobx';
 import {elemFactory, LoadState, XH} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/cmp/contextmenu';
 import {loadMask} from '@xh/hoist/cmp/mask';
+import {messageSource} from '@xh/hoist/cmp/message';
 import {div, frame, vframe, viewport, vspacer} from '@xh/hoist/cmp/layout';
 import {logoutButton} from '@xh/hoist/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -82,6 +83,7 @@ export class AppContainer extends Component {
                         versionBar()
                     ),
                     loadMask({model: XH.appLoadModel}),
+                    messageSource({model: XH.messageSourceModel}),
                     aboutDialog()
                 );
             default:
