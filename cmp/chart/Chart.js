@@ -30,7 +30,9 @@ export class Chart extends Component {
         // Default flex if no dimensions / flex specified.
         const {layoutConfig} = this.props;
         if (layoutConfig.width == null && layoutConfig.height == null && layoutConfig.flex == null) {
-            layoutConfig.flex = '1 1 100%';
+            if (layoutConfig.flexShrink == null) layoutConfig.flexShrink = '1';
+            if (layoutConfig.flexGrow == null) layoutConfig.flexGrow = '1';
+            if (layoutConfig.flexBasis == null) layoutConfig.flexBasis = '100%';
         }
 
         this.renderHighChart();
