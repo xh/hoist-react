@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {observable, setter, computed, action} from '@xh/hoist/mobx';
+import {observable, setter, action} from '@xh/hoist/mobx';
 import {ToastManager} from '@xh/hoist/toast';
 
 /**
