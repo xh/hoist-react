@@ -15,15 +15,17 @@ import {Icon} from '@xh/hoist/icon';
 export class StoreContextMenu {
 
     items = [];
-    parent = null;
+    gridModel = null;
 
     /**
      * @param {Object[]} items - collection of StoreContextMenuItems, configs to create them, or Strings.
-     *      If a String, value can be '-' for a separator, a known token, or a key for a native AG Grid menu item.
-     * @param {Object} parent - a gridModel to bind to this contextMenu
+     *      If a String, value can be '-' for a separator, a hoist token, or a token for a native AG Grid menu item.
+     *      Hoist tokens are:
+     *          'colChooser' - Provides a column chooser for a grid, requires a gridModel
+     * @param {Object} [parent] - an optional model to bind to this contextMenu, used to control implementation of menu items
      */
-    constructor(items, parent) {
-        this.parent = parent;
+    constructor({items, gridModel}) {
+        this.gridModel = gridModel;
         this.items = items.map(it => {
             if (isString(it)) return this.parseToken(it);
             if (it instanceof StoreContextMenuItem) return it;
@@ -34,12 +36,13 @@ export class StoreContextMenu {
     parseToken(token) {
         switch (token) {
             case 'colChooser':
+                var {colChooserModel} = this.gridModel;
                 return new StoreContextMenuItem({
                     text: 'Columns...',
                     icon: Icon.grid(),
-                    hidden: !this.parent.colChooserModel,
+                    hidden: !colChooserModel,
                     action: () => {
-                        this.parent.colChooserModel.open();
+                        colChooserModel.open();
                     }
                 });
             default:
