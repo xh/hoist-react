@@ -185,8 +185,7 @@ class XhModel {
     /** Show the About Dialog for this application. */
     @action
     showAbout() {
-        //this.aboutIsOpen = true;
-        this.alert({message: 'About Me'});
+        this.aboutIsOpen = true;
     }
 
     /** Hide the About Dialog for this application. */
