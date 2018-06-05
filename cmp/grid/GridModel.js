@@ -40,14 +40,7 @@ export class GridModel {
             'export',
             'autoSizeAll',
             '-',
-            {
-                text: 'Columns...',
-                icon: Icon.grid(),
-                hidden: !this.colChooserModel,
-                action: () => {
-                    this.colChooserModel.open();
-                }
-            }
+            'colChooser'
         ]);
     };
 
