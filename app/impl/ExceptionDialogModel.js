@@ -14,16 +14,14 @@ import {ToastManager} from '@xh/hoist/toast';
 @HoistModel()
 export class ExceptionDialogModel {
 
-    @computed
     get exception() {
-        const {displayException} = XH;
-        return displayException ? displayException.exception : null;
+        const e = XH.displayException;
+        return e ? e.exception : null;
     }
 
-    @computed
     get options() {
-        const {displayException} = XH;
-        return displayException ? displayException.options : {};
+        const e = XH.displayException;
+        return e ? e.options : {};
     }
 
     @observable detailsIsOpen = false;

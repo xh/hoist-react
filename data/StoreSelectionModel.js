@@ -20,23 +20,27 @@ export class StoreSelectionModel {
     @observable.ref ids = [];
 
     /** Single selected record, or null if multiple or no records selected. */
-    @computed get singleRecord() {
+    @computed
+    get singleRecord() {
         const ids = this.ids;
         return ids.length === 1 ? this.store.getById(ids[0]) : null;
     }
 
     /** Currently selected records. */
-    @computed get records() {
+    @computed
+    get records() {
         return this.ids.map(it => this.store.getById(it));
     }
 
     /** Is the selection empty? */
-    @computed get isEmpty() {
+    @computed
+    get isEmpty() {
         return this.ids.length === 0;
     }
 
     /** Number of currently selected records. */
-    @computed get count() {
+    @computed
+    get count() {
         return this.ids.length;
     }
 
