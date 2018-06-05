@@ -41,7 +41,8 @@ export class GridModel {
                 'autoSizeAll',
                 '-',
                 'colChooser'
-            ]
+            ],
+            gridModel: this
         });
     };
 
