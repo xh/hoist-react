@@ -116,31 +116,33 @@ export class RestGridModel {
     }
 
     contextMenuFn = () => {
-        return new StoreContextMenu([
-            {
-                text: 'Add',
-                icon: Icon.add(),
-                action: () => this.addRecord()
-            },
-            {
-                text: 'Edit',
-                icon: Icon.edit(),
-                action: (item, record) => this.editRecord(record),
-                recordsRequired: 1
-            },
-            {
-                text: 'Delete',
-                icon: Icon.delete(),
-                action: (item, record) => this.confirmDeleteRecord(record),
-                recordsRequired: true
-            },
-            '-',
-            'copy',
-            'copyWithHeaders',
-            '-',
-            'export',
-            'autoSizeAll'
-        ]);
+        return new StoreContextMenu({
+            items: [
+                {
+                    text: 'Add',
+                    icon: Icon.add(),
+                    action: () => this.addRecord()
+                },
+                {
+                    text: 'Edit',
+                    icon: Icon.edit(),
+                    action: (item, record) => this.editRecord(record),
+                    recordsRequired: 1
+                },
+                {
+                    text: 'Delete',
+                    icon: Icon.delete(),
+                    action: (item, record) => this.confirmDeleteRecord(record),
+                    recordsRequired: true
+                },
+                '-',
+                'copy',
+                'copyWithHeaders',
+                '-',
+                'export',
+                'autoSizeAll'
+            ]
+        });
     }
 
     confirmDeleteSelection() {

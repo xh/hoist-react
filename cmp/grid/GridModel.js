@@ -32,15 +32,17 @@ export class GridModel {
 
 
     defaultContextMenu = () => {
-        return new StoreContextMenu([
-            'copy',
-            'copyWithHeaders',
-            '-',
-            'export',
-            'autoSizeAll',
-            '-',
-            'colChooser'
-        ]);
+        return new StoreContextMenu({
+            items: [
+                'copy',
+                'copyWithHeaders',
+                '-',
+                'export',
+                'autoSizeAll',
+                '-',
+                'colChooser'
+            ]
+        });
     };
 
     /**

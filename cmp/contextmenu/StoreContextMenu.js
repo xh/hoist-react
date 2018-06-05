@@ -22,7 +22,7 @@ export class StoreContextMenu {
      *      If a String, value can be '-' for a separator, a hoist token, or a token for a native AG Grid menu item.
      *      Hoist tokens are:
      *          'colChooser' - Provides a column chooser for a grid, requires a gridModel
-     * @param {Object} [parent] - an optional model to bind to this contextMenu, used to control implementation of menu items
+     * @param {Object} [gridModel] - an optional gridModel to bind to this contextMenu, used to control implementation of menu items
      */
     constructor({items, gridModel}) {
         this.gridModel = gridModel;

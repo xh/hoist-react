@@ -53,13 +53,15 @@ export class ConfigDifferModel  {
     }
 
     contextMenuFn = () => {
-        return new StoreContextMenu([
-            {
-                text: 'Apply Remote',
-                action: (item, record) => this.confirmApplyRemote(record),
-                recordsRequired: true
-            }
-        ]);
+        return new StoreContextMenu({
+            items: [
+                {
+                    text: 'Apply Remote',
+                    action: (item, record) => this.confirmApplyRemote(record),
+                    recordsRequired: true
+                }
+            ]
+        });
     }
 
     async loadAsync() {
