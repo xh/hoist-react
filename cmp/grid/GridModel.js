@@ -8,7 +8,6 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/cmp/contextmenu';
-import {Icon} from '@xh/hoist/icon';
 import {defaults, castArray, find, isString, isPlainObject, orderBy} from 'lodash';
 
 import {ColChooserModel} from './ColChooserModel';
