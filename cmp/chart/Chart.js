@@ -27,7 +27,7 @@ export class Chart extends Component {
     _chart = null;
 
     render() {
-        // Default flex to '1' if no dimensions / flex specified, i.e. do not consult child for dimensions;
+        // Default flex = 1 (flex: 1 1 0) if no dimensions / flex specified, i.e. do not consult child for dimensions;
         const {layoutConfig} = this.props;
         if (layoutConfig.width == null && layoutConfig.height == null && layoutConfig.flex == null) {
             layoutConfig.flex = 1;
