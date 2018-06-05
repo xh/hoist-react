@@ -11,7 +11,8 @@ import {observable, observer, setter} from '@xh/hoist/mobx';
 import {elemFactory, LoadState, XH} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/cmp/contextmenu';
 import {loadMask} from '@xh/hoist/cmp/mask';
-import {div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
+import {div, frame, vframe, viewport, vspacer} from '@xh/hoist/cmp/layout';
+import {logoutButton} from '@xh/hoist/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
 import {
@@ -23,6 +24,7 @@ import {
     versionBar
 } from './impl';
 
+import {lockoutPanel} from './';
 
 /**
  * Top-level wrapper to provide core Hoist Application layout and infrastructure to an application's
@@ -30,8 +32,8 @@ import {
  * standard UI elements such as an impersonation bar header, version bar footer, app-wide load mask,
  * context menu, and error dialog.
  *
- * Construction of this container triggers the init of the core XH singleton, which
- * queries for an authorized user and then proceeds to init all core Hoist and app-level services.
+ * Construction of this container triggers the init of the core XH singleton, which queries for an
+ * authorized user and then proceeds to init all core Hoist and app-level services.
  *
  * If the user is not yet known (and the app does *not* use SSO), this container will display a
  * standardized loginPanel component to prompt for a username and password. Once the user is
@@ -65,6 +67,10 @@ export class AppContainer extends Component {
                 return viewport(loadMask({isDisplayed: true}));
             case LoadState.LOGIN_REQUIRED:
                 return loginPanel();
+            case LoadState.ACCESS_DENIED:
+                return lockoutPanel({
+                    message: this.unauthorizedMessage()
+                });
             case LoadState.FAILED:
                 return null;
             case LoadState.COMPLETE:
@@ -110,5 +116,28 @@ export class AppContainer extends Component {
         this.setCaughtException(e);
         XH.handleException(e, {requireReload: true});
     }
+
+
+    //------------------------
+    // Implementation
+    //------------------------
+    unauthorizedMessage() {
+        const user = XH.getUser();
+
+        return div(
+            XH.accessDeniedMessage,
+            vspacer(10),
+            `
+                You are logged in as ${user.username} 
+                and have the roles [${user.roles.join(', ') || '--'}].
+            `,
+            vspacer(20),
+            logoutButton({
+                text: 'Logout',
+                omit: !XH.appModel.enableLogout
+            })
+        );
+    }
 }
+
 export const appContainer = elemFactory(AppContainer);

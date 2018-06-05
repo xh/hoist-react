@@ -22,6 +22,14 @@ export class RestControlModel  {
         this.field = field;
         this.editor = editor;
         this.parent = parent;
+        if (field.typeField) {
+            this.addReaction({
+                track: () => this.type,
+                run: () => {
+                    if (this.parent.isDirty) this.setValue(null);
+                }
+            });
+        }
     }
 
     @computed

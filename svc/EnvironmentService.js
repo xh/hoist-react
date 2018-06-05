@@ -22,6 +22,7 @@ export class EnvironmentService {
         // Favor client-side data injected via Webpack build or otherwise determined locally,
         // then apply all other env data sourced from the server.
         this._data = defaults({
+            appCode: XH.appCode,
             appName: XH.appName,
             clientVersion: XH.appVersion,
             clientBuild: XH.appBuild,

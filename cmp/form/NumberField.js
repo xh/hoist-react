@@ -41,7 +41,7 @@ export class NumberField extends HoistField {
 
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/gi;
 
-    delegateProps = ['className', 'min', 'max', 'placeholder'];
+    delegateProps = ['className', 'disabled', 'min', 'max', 'placeholder'];
 
     render() {
         const {width, style, enableShorthandUnits} = this.props,

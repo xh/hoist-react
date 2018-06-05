@@ -31,12 +31,11 @@ export class ExceptionDialogModel {
     sendReport() {
         const svc = XH.errorTrackingService,
             {exception, userMessage, options} = this;
-        if (svc.isReady) {
-            svc.submitAsync({exception, message: userMessage})
-                .then(() => {
-                    ToastManager.show({message: 'Error Details Submitted'});
-                });
-        }
+
+        svc.submitAsync({exception, message: userMessage})
+            .then(() => {
+                ToastManager.show({message: 'Error Details Submitted'});
+            });
 
         if (!options.requireReload) this.close();
     }

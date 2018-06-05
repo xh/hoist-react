@@ -25,6 +25,7 @@ export class LogViewerToolbar extends Component {
                     field: 'startLine',
                     min: 0,
                     width: 80,
+                    disabled: model.tail,
                     onCommit: this.onCommit
                 }),
                 label('Max Lines:'),

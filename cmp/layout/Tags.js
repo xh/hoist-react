@@ -15,6 +15,7 @@ export const fragment = elemFactory(React.Fragment);
 //--------------------------------
 // Standard HTML
 //--------------------------------
+export const br = elemFactory('br');
 export const code = elemFactory('code');
 export const div = elemFactory('div');
 export const h1 = elemFactory('h1');
