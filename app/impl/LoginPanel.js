@@ -27,7 +27,8 @@ export class LoginPanel extends Component {
     @setter @observable password = '';
     @setter @observable warning = '';
 
-    @computed get isValid() {
+    @computed
+    get isValid() {
         return this.username && this.password;
     }
 
