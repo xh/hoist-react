@@ -13,7 +13,6 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {LocalStore} from '@xh/hoist/data';
 import {p} from '@xh/hoist/cmp/layout';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {MessageModel} from '@xh/hoist/cmp/message';
 import {StoreContextMenu} from '@xh/hoist/cmp/contextmenu';
 import {ToastManager} from '@xh/hoist/toast';
 import {baseCol} from '@xh/hoist/columns/Core';
@@ -25,7 +24,6 @@ import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
 @HoistModel()
 export class ConfigDifferModel  {
 
-    messageModel = new MessageModel({title: 'Warning', icon: Icon.warning({size: 'lg'})});
     detailModel = new ConfigDifferDetailModel({parent: this});
 
     @observable isOpen = false;
@@ -167,7 +165,9 @@ export class ConfigDifferModel  {
             </div>
         );
 
-        this.messageModel.confirm({
+        XH.confirm({
+            title: 'Warning',
+            icon: Icon.warning({size: 'lg'}),
             message,
             onConfirm: () => this.doApplyRemote(filteredRecords)
         });
@@ -241,6 +241,6 @@ export class ConfigDifferModel  {
     }
 
     destroy() {
-        XH.safeDestroy(this.messageModel, this.detailModel, this.gridModel);
+        XH.safeDestroy(this.detailModel, this.gridModel);
     }
 }

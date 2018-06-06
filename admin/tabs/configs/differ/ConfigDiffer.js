@@ -10,7 +10,6 @@ import {button, dialog} from '@xh/hoist/kit/blueprint';
 import {filler, fragment, panel} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
 import {comboField, label} from '@xh/hoist/cmp/form';
-import {message} from '@xh/hoist/cmp/message';
 import {toolbar} from '@xh/hoist/cmp/toolbar';
 
 import {configDifferDetail} from './ConfigDifferDetail';
@@ -56,16 +55,13 @@ export class ConfigDiffer extends Component {
                     onClick: this.onLoadDiffClick
                 })
             ),
-            items: [
-                grid({
-                    model: model.gridModel,
-                    onRowDoubleClicked: this.onRowDoubleClicked,
-                    agOptions: {
-                        popupParent: null
-                    }
-                }),
-                message({model: model.messageModel})
-            ],
+            item: grid({
+                model: model.gridModel,
+                onRowDoubleClicked: this.onRowDoubleClicked,
+                agOptions: {
+                    popupParent: null
+                }
+            }),
             bbar: toolbar(
                 filler(),
                 button({

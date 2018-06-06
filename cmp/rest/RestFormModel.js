@@ -8,8 +8,6 @@
 import {XH, HoistModel} from '@xh/hoist/core';
 import {start} from '@xh/hoist/promise';
 import {observable, computed, action} from '@xh/hoist/mobx';
-import {MessageModel} from '@xh/hoist/cmp/message';
-import {Icon} from '@xh/hoist/icon';
 import {isEqual} from 'lodash';
 
 import {RestControlModel} from './RestControlModel';
@@ -19,7 +17,6 @@ export class RestFormModel {
 
     parent = null;
     controlModels = [];
-    messageModel = new MessageModel({title: 'Warning', icon: Icon.warning({size: 'lg'})});
 
     // If not null, form will be open and display it
     @observable record = null;
@@ -88,7 +85,6 @@ export class RestFormModel {
     @action
     close() {
         this.originalRecord = this.record = null;
-        this.messageModel.close();
     }
 
     @action
@@ -112,6 +108,6 @@ export class RestFormModel {
     }
 
     destroy() {
-        XH.safeDestroy(this.messageModel, ...this.controlModels);
+        XH.safeDestroy(...this.controlModels);
     }
 }
