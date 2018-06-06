@@ -39,17 +39,20 @@ export class DataViewModel {
      * @param {BaseStore} store - store containing the data for the dataview.
      * @param {(StoreSelectionModel|Object|String)} [selModel] - selection model to use,
      *      config to create one, or 'mode' property for a selection model.
+     * @param {string} [emptyText] - empty text to display if DataView has no records. Can be valid HTML.
      * @param {function} [contextMenuFn] - closure returning a StoreContextMenu().
      */
     constructor({
         itemFactory,
         store,
         selModel,
+        emptyText,
         contextMenuFn = DataViewModel.defaultContextMenu
     }) {
         this.itemFactory = itemFactory;
         this.store = store;
         this.selModel = this.parseSelModel(selModel, store);
+        this.emptyText = emptyText;
         this.contextMenuFn = contextMenuFn;
     }
 
