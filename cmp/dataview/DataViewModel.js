@@ -32,26 +32,26 @@ export class DataViewModel {
     };
 
     /**
-     * @param {function} [contextMenuFn] - closure returning a StoreContextMenu().
-     * @param {string} emptyText - empty text to display if DataView has no records. Can be valid HTML.
      * @param {function} itemFactory - elemFactory for the component used to render each item.
      *      Will receive record via its props.
+     * @param {BaseStore} store - store containing the data for the dataview.
      * @param {(StoreSelectionModel|Object|String)} [selModel] - selection model to use,
      *      config to create one, or 'mode' property for a selection model.
-     * @param {BaseStore} store - store containing the data for the dataview.
+     * @param {string} emptyText - empty text to display if DataView has no records. Can be valid HTML.
+     * @param {function} [contextMenuFn] - closure returning a StoreContextMenu().
      */
     constructor({
-        emptyText,
         itemFactory,
-        selModel,
         store,
+        selModel,
+        emptyText,
         contextMenuFn = DataViewModel.defaultContextMenu
     }) {
-        this.contextMenuFn = contextMenuFn;
-        this.emptyText = emptyText;
         this.itemFactory = itemFactory;
-        this.selModel = this.parseSelModel(selModel, store);
         this.store = store;
+        this.selModel = this.parseSelModel(selModel, store);
+        this.emptyText = emptyText;
+        this.contextMenuFn = contextMenuFn;
     }
 
     /**

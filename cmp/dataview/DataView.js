@@ -16,12 +16,12 @@ class DataView extends Component {
 
     constructor(props) {
         super(props);
-        const {contextMenuFn, emptyText, itemFactory, selModel, store} = props.model;
+        const {store, selModel, contextMenuFn, itemFactory, emptyText} = props.model;
         this._gridModel = new GridModel({
+            store,
+            selModel,
             contextMenuFn,
             emptyText,
-            selModel,
-            store,
             columns: [
                 baseCol({
                     flex: 1,
