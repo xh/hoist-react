@@ -83,7 +83,7 @@ export class ConfigPanel extends Component {
             this.valCol({field: 'value'}),
             boolCheckCol({field: 'clientVisible', headerName: 'Client?', fixedWidth: 75}),
             baseCol({field: 'groupName', headerName: 'Group', fixedWidth: 100}),
-            baseCol({field: 'note', minWidth: 60})
+            baseCol({field: 'note', minWidth: 60, flex: 2})
         ],
         editors: [
             {field: 'name'},
@@ -116,7 +116,7 @@ export class ConfigPanel extends Component {
     // Implementation
     //-------------------------
     valCol(params) {
-        return baseCol({...params, fixedWidth: 175, valueFormatter: this.maskIfPwd});
+        return baseCol({...params, minWidth: 60, flex: 1, valueFormatter: this.maskIfPwd});
     }
 
     maskIfPwd(params) {
