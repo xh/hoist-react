@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {navigator as onsenNavigator} from '@xh/hoist/kit/onsen';
 
 @HoistComponent()

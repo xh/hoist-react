@@ -14,6 +14,7 @@ ons.disableAutoStyling();
 
 import {elemFactory} from '@xh/hoist/core';
 import {
+    BottomToolbar,
     Button,
     List,
     ListHeader,
@@ -26,6 +27,7 @@ import {
 } from 'react-onsenui';
 
 export const
+    bottomToolbar = elemFactory(BottomToolbar),
     button = elemFactory(Button),
     list = elemFactory(List),
     listHeader = elemFactory(ListHeader),
