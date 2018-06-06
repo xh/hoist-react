@@ -6,5 +6,5 @@
  */
 export * from './Message';
 export * from './MessageModel';
-export * from './MessageSource';
-export * from './MessageSourceModel';
+export * from './impl/MessageSource';
+export * from './impl/MessageSourceModel';

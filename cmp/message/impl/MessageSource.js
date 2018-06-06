@@ -7,12 +7,14 @@
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {fragment} from '@xh/hoist/cmp/layout';
-import {message} from './Message';
+import {message} from '../Message';
 
 /**
- *  Component for hosting ad-hoc message dialogs in a Hoist App.
+ *  Support for hosting multiple global Message in an application.
  *
- *  See XH.alert() and XH.confirm()
+ *  Used by AppContainer.
+ *
+ *  @private
  */
 @HoistComponent()
 export class MessageSource extends Component {
