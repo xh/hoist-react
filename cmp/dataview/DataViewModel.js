@@ -24,11 +24,13 @@ export class DataViewModel {
     contextMenuFn = null;
 
     static defaultContextMenu = () => {
-        return new StoreContextMenu([
-            'copy',
-            '-',
-            'export'
-        ]);
+        return new StoreContextMenu({
+            items: [
+                'copy',
+                '-',
+                'export'
+            ]
+        });
     };
 
     /**
