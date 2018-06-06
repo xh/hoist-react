@@ -92,7 +92,7 @@ class XhModel {
     @observable authUsername = null;
 
     /** Dark theme active? */
-    @observable darkTheme = true;
+    @observable darkTheme = false; // actual default value comes from preference
 
     /**
      * Exception to be shown troubleshooting/display.
