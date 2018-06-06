@@ -31,7 +31,7 @@ import {lockoutPanel} from './';
  * Top-level wrapper to provide core Hoist Application layout and infrastructure to an application's
  * root Component. Provides initialized Hoist services and a standard viewport that also includes
  * standard UI elements such as an impersonation bar header, version bar footer, app-wide load mask,
- * context menu, and error dialog.
+ * context menu, and popup message support.
  *
  * Construction of this container triggers the init of the core XH singleton, which queries for an
  * authorized user and then proceeds to init all core Hoist and app-level services.

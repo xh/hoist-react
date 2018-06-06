@@ -10,10 +10,8 @@ import {fragment} from '@xh/hoist/cmp/layout';
 import {message} from '../Message';
 
 /**
- *  Support for hosting multiple global Message in an application.
- *
- *  Used by AppContainer.
- *
+ *  Support for hosting multiple global Messages in an application.
+ *  Automatically created and installed into the layout by AppContainer.
  *  @private
  */
 @HoistComponent()

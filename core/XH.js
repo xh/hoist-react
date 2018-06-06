@@ -219,7 +219,6 @@ class XhModel {
 
     /**
      * Show a modal 'alert' dialog.
-     *
      * This method will display an alert message with a default confirm button.
      *
      * @param {Object} config -  see MessageModel.show() for available options.
@@ -231,10 +230,9 @@ class XhModel {
 
     /**
      * Show a modal 'confirm' dialog.
-     *
      * This method will display a message with default confirm and cancel buttons.
      *
-     * @param {Object} config - see MessageModel.show() for available options.
+     *  @param {Object} config - see MessageModel.show() for available options.
      */
     confirm(config) {
         config = defaults({}, config, {confirmText: 'OK', cancelText: 'Cancel'});

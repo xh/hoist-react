@@ -9,10 +9,8 @@ import {observable, action} from '@xh/hoist/mobx';
 import {MessageModel} from '../MessageModel';
 
 /**
- *  Support for hosting global Messages in an application.
- *
+ *  Support for hosting multiple global Messages in an application.
  *  This class supports the public XH.message(), XH.alert() and XH.confirm() methods.
- *
  *  @private
  */
 @HoistModel()

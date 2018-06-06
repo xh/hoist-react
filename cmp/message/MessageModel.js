@@ -10,14 +10,15 @@ import {HoistModel} from '@xh/hoist/core';
 /**
  * Model for imperative Alerting/Confirming.
  *
- * Most applications should create an instance of this object using the global methods XH.message(),
- * XH.alert(), XH.confirm().  These methods will create on-the-fly MessageModel instances which will
- * be rendered in the global AppContainer and automatically destroyed upon closing.
+ * Rather than creating Messages / MessageModels directly, most applications can leverage the global
+ * methods XH.message(), XH.alert(), and XH.confirm(). These convenience methods will create
+ * on-the-fly MessageModel instances which will be rendered in the global AppContainer and
+ * automatically destroyed upon closing.
  *
- * Expert applications may choose to manage a dedicated instance of this class directly.  This may be useful
- * when it is desired to set and re-use default settings and/or ensure that only a single message is
- * shown at a time from a given source.  In this case, the application will be responsible for
- * rendering this model in a Message component, and destroying it when complete.
+ * Expert applications may choose to manage a dedicated instance of this class directly.  This may
+ * be useful when it is desired to set and re-use default settings and/or ensure that only a single
+ * message is shown at a time from a given source.  In this case, the application will be
+ * responsible for rendering this model in a Message component and destroying it when complete.
  */
 @HoistModel()
 export class MessageModel {
@@ -29,7 +30,6 @@ export class MessageModel {
 
     /**
      * Default Settings.
-     *
      * These will be specified in the constructor or the show() method.
      */
     defaults = {
@@ -63,8 +63,8 @@ export class MessageModel {
     /**
      * Show a message.
      *
-     * This methods accepts additional arguments for this showing that will override any initial configuration
-     * specified in the constructor.
+     * This methods accepts additional arguments for this showing that will override any initial
+     * configuration specified in the constructor.
      *
      * @param {Object} [config] - options for this particular showing of the dialog.
      * @param {String} config.message - text to be displayed.
@@ -86,7 +86,7 @@ export class MessageModel {
     /**
      * Dismiss this message programmatically.
      *
-     * Note that dimissing a message is typically triggered by user actions on provided buttons.
+     * Note that dismissing a message is typically triggered by user actions on provided buttons.
      * This method should not typically need to be called by applications.
      */
     hide() {
