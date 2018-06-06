@@ -85,6 +85,7 @@ export const Icon = {
     pause(p)         {return fa(p, 'pause')},
     play(p)          {return fa(p, 'play')},
     portfolio(p)     {return fa(p, 'briefcase')},
+    print(p)         {return fa(p, 'print')},
     refresh(p)       {return fa(p, 'sync')},
     rocket(p)        {return fa(p, 'rocket')},
     save(p)          {return fa(p, 'save')},
