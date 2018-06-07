@@ -199,6 +199,10 @@ function fmtNumberElement(v, opts = {}) {
     const asElement = true,
         items = [];
 
+    if (withSignGlyph) {
+        items.push(signGlyph(v, asElement));
+    }
+
     items.push(str);
 
     if (isString(label)) {
@@ -215,10 +219,6 @@ function fmtNumberElement(v, opts = {}) {
 
     }
 
-    if (withSignGlyph) {
-        items.unshift(signGlyph(v, asElement));
-    }
-
     return span({
         cls: cls.join(' '),
         title: tipFn ? tipFn(originalValue) : null,
@@ -229,6 +229,10 @@ function fmtNumberElement(v, opts = {}) {
 function fmtNumberString(v, opts = {}) {
     const {ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tipFn, originalValue} = opts;
     let str = opts.str;
+
+    if (withSignGlyph) {
+        str = signGlyph(v) + '&nbsp;' + str;
+    }
 
     if (isString(label)) {
         if (labelCls) {
@@ -244,10 +248,6 @@ function fmtNumberString(v, opts = {}) {
         } else if (forceLedgerAlign) {
             str += LEDGER_ALIGN_PLACEHOLDER;
         }
-    }
-
-    if (withSignGlyph) {
-        str = signGlyph(v) + '&nbsp;' + str;
     }
 
     if (colorSpec) {
