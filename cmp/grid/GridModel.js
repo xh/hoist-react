@@ -8,7 +8,6 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/cmp/contextmenu';
-import {Icon} from '@xh/hoist/icon';
 import {defaults, castArray, find, isEqual, isString, isPlainObject, orderBy} from 'lodash';
 
 import {ColChooserModel} from './ColChooserModel';
@@ -35,29 +34,23 @@ export class GridModel {
 
 
     defaultContextMenu = () => {
-        return new StoreContextMenu([
-            'copy',
-            'copyWithHeaders',
-            '-',
-            'export',
-            'autoSizeAll',
-            '-',
-            {
-                text: 'Columns...',
-                icon: Icon.grid(),
-                hidden: !this.colChooserModel,
-                action: () => {
-                    this.colChooserModel.open();
-                }
-            }
-        ]);
+        return new StoreContextMenu({
+            items: [
+                'copy',
+                'copyWithHeaders',
+                '-',
+                'export',
+                'autoSizeAll',
+                '-',
+                'colChooser'
+            ],
+            gridModel: this
+        });
     };
 
     /**
      * @param {BaseStore} store - store containing the data for the grid.
      * @param {Object[]} columns - collection of column specifications.
-     * @param {(StoreSelectionModel|Object|String)} [selModel] - selection model to use,
-     *      config to create one, or 'mode' property for a selection model.
      * @param {string} [emptyText] - empty text to display if grid has no records. Can be valid HTML.
      *      Defaults to null, in which case no empty text will be shown.
      * @param {Object[]} [sortBy] - one or more sorters to apply to store data.
@@ -66,6 +59,8 @@ export class GridModel {
      * @param {string} [groupBy] - Column ID by which to group.
      * @param {boolean} [enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
+     * @param {(StoreSelectionModel|Object|String)} [selModel] - selection model to use,
+     *      config to create one, or 'mode' property for a selection model.
      * @param {(GridStateModel|Object|String)} [stateModel] - state model to use,
      *      config to create one, or xhStateId property for a state model
      * @param {function} [contextMenuFn] - closure returning a StoreContextMenu().
@@ -147,6 +142,7 @@ export class GridModel {
 
         // If we have an invalid groupBy field do not set
         // Allow a falsey field to mean 'no grouping'
+        // this comment isn't accurate a falsey field here means "dont change the grouping"
         if (field && !groupCol) return;
 
         cols.forEach(it => {
@@ -292,5 +288,4 @@ export class GridModel {
         XH.safeDestroy(this.colChooserModel);
         // TODO: How are Stores destroyed?
     }
-
 }

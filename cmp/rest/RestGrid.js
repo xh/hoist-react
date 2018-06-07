@@ -9,7 +9,6 @@ import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {panel, fragment} from '@xh/hoist/cmp/layout';
-import {message} from '@xh/hoist/cmp/message';
 
 import {restGridToolbar} from './RestGridToolbar';
 import {restForm} from './RestForm';
@@ -31,8 +30,7 @@ export class RestGrid extends Component {
                     agOptions
                 })
             }),
-            restForm({model: model.formModel}),
-            message({model: model.messageModel})
+            restForm({model: model.formModel})
         );
     }
 

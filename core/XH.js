@@ -6,7 +6,7 @@
  */
 
 import ReactDOM from 'react-dom';
-import {isPlainObject} from 'lodash';
+import {isPlainObject, defaults} from 'lodash';
 
 import {elem, HoistModel} from '@xh/hoist/core';
 import {Exception, ExceptionHandler} from '@xh/hoist/exception';
@@ -14,6 +14,8 @@ import {observable, setter, action} from '@xh/hoist/mobx';
 import {MultiPromiseModel, never} from '@xh/hoist/promise';
 import {RouterModel} from '@xh/hoist/router';
 import {appContainer} from '@xh/hoist/app';
+import {MessageSourceModel} from '@xh/hoist/cmp/message';
+
 import {
     ConfigService,
     EnvironmentService,
@@ -92,7 +94,7 @@ class XhModel {
     @observable authUsername = null;
 
     /** Dark theme active? */
-    @observable darkTheme = true;
+    @observable darkTheme = false; // actual default value comes from preference
 
     /**
      * Exception to be shown troubleshooting/display.
@@ -120,6 +122,8 @@ class XhModel {
      * Link any async operations that should mask the entire application to this model.
      */
     appLoadModel = new MultiPromiseModel();
+
+    messageSourceModel = new MessageSourceModel();
 
     /**
      * Main entry point. Initialize and render application code.
@@ -198,6 +202,41 @@ class XhModel {
     @action
     showUpdateBar(updateVersion) {
         this.updateVersion = updateVersion;
+    }
+
+    //------------------------------
+    // Message Support
+    //------------------------------
+
+    /**
+     * Show a modal message dialog.
+     *
+     * @param {Object} config - see MessageModel.show() for available options.
+     */
+    message(config) {
+        return this.messageSourceModel.show(config);
+    }
+
+    /**
+     * Show a modal 'alert' dialog.
+     * This method will display an alert message with a default confirm button.
+     *
+     * @param {Object} config -  see MessageModel.show() for available options.
+     */
+    alert(config) {
+        config = defaults({}, config, {confirmText: 'OK'});
+        return this.messageSourceModel.show(config);
+    }
+
+    /**
+     * Show a modal 'confirm' dialog.
+     * This method will display a message with default confirm and cancel buttons.
+     *
+     *  @param {Object} config - see MessageModel.show() for available options.
+     */
+    confirm(config) {
+        config = defaults({}, config, {confirmText: 'OK', cancelText: 'Cancel'});
+        this.messageSourceModel.show(config);
     }
 
     //---------------------------------

@@ -14,7 +14,8 @@ export class MultiPromiseModel {
     @observable pendingCount = 0;
 
     /** Are any linked Promises still outstanding? */
-    @computed get isPending() {
+    @computed
+    get isPending() {
         return this.pendingCount > 0;
     }
     

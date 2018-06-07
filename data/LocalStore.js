@@ -15,7 +15,7 @@ import {BaseStore} from './BaseStore';
  */
 export class LocalStore extends BaseStore {
 
-    _recordsMap = new Map();
+    @observable.shallow _recordsMap = new Map();
 
     @observable.ref _allRecords = [];
     @observable.ref _records = [];
