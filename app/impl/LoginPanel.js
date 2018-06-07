@@ -92,7 +92,8 @@ export class LoginPanel extends Component {
         const {username, password} = this;
         return XH.fetchJson({
             url: 'auth/login',
-            params: {username, password}
+            params: {username, password},
+            isLogin: true
         }).then(r => {
             this.setWarning(r.success ? '' : 'Login Incorrect');
             if (r.success) {
