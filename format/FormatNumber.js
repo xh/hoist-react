@@ -78,7 +78,6 @@ export function fmtNumber(v, {
     let str = numeral(v).format(formatPattern);
 
     if (ledger || withSignGlyph) str = str.replace('-', '');
-    if (ledger) str = v < 0 ? '(' + str + ')' : str;
     if (withPlusSign && v > 0) {
         str = '+' + str;
     }
@@ -209,6 +208,12 @@ function fmtNumberElement(v, opts = {}) {
     if (isString(label)) {
         items.push(labelCls ? fmtSpan(label, {cls: labelCls, asElement: asElement}) : label);
     }
+
+    if (v < 0 && ledger) {
+        items.unshift('(');
+        items.push(')');
+    }
+
     if (v >= 0 && ledger && forceLedgerAlign) {
         items.push(LEDGER_ALIGN_PLACEHOLDER_EL);
     }
@@ -231,6 +236,8 @@ function fmtNumberString(v, opts = {}) {
             str += label;
         }
     }
+
+    if (ledger) str = v < 0 ? '(' + str + ')' : str;
 
     if (withSignGlyph) {
         str = signGlyph(v) + '&nbsp;' + str;
