@@ -42,7 +42,7 @@ export class BaseComboField extends BaseDropdownField {
             return;
         }
 
-        // 2) Otherwise, revert
+        // Revert if no match
         this.noteValueChange(this.externalValue);
     }
 
