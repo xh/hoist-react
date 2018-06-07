@@ -22,6 +22,11 @@ export class BaseComboField extends BaseDropdownField {
         }
     }
 
+    onItemSelect = (val) => {
+        this.noteValueChange(val.value);
+        super.doCommit();
+    }
+
     doCommit() {
         if (this.props.requireSelection) {
             this.forceSelectionToOptionOrRevert();
