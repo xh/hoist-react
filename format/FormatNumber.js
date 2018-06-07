@@ -199,23 +199,24 @@ function fmtNumberElement(v, opts = {}) {
     const asElement = true,
         items = [];
 
-    if (withSignGlyph) {
-        items.push(signGlyph(v, asElement));
-    }
-
     items.push(str);
 
     if (isString(label)) {
         items.push(labelCls ? fmtSpan(label, {cls: labelCls, asElement: asElement}) : label);
     }
 
-    if (v < 0 && ledger) {
-        items.unshift('(');
-        items.push(')');
+    if (ledger) {
+        if (v < 0) {
+            items.unshift('(');
+            items.push(')');
+        } else if (forceLedgerAlign) {
+            items.push(LEDGER_ALIGN_PLACEHOLDER_EL);
+        }
+
     }
 
-    if (v >= 0 && ledger && forceLedgerAlign) {
-        items.push(LEDGER_ALIGN_PLACEHOLDER_EL);
+    if (withSignGlyph) {
+        items.unshift(signGlyph(v, asElement));
     }
 
     return span({
@@ -237,14 +238,16 @@ function fmtNumberString(v, opts = {}) {
         }
     }
 
-    if (ledger) str = v < 0 ? '(' + str + ')' : str;
+    if (ledger) {
+        if (v < 0) {
+            str = '(' + str + ')';
+        } else if (forceLedgerAlign) {
+            str += LEDGER_ALIGN_PLACEHOLDER;
+        }
+    }
 
     if (withSignGlyph) {
         str = signGlyph(v) + '&nbsp;' + str;
-    }
-
-    if (v >= 0 && ledger && forceLedgerAlign) {
-        str += LEDGER_ALIGN_PLACEHOLDER;
     }
 
     if (colorSpec) {
