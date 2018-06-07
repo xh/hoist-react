@@ -18,6 +18,7 @@ export class BaseComboField extends BaseDropdownField {
 
     onKeyPress = (ev) => {
         if (ev.key === 'Enter') {
+            if (this.props.requireSelection) return;
             this.doCommit();
         }
     }
