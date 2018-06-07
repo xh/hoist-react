@@ -141,8 +141,7 @@ export class GridModel {
             groupCol = find(cols, {field});
 
         // If we have an invalid groupBy field do not set
-        // Allow a falsey field to mean 'no grouping'
-        // this comment isn't accurate a falsey field here means "dont change the grouping"
+        // Let a falsey field through to mean 'no grouping'
         if (field && !groupCol) return;
 
         cols.forEach(it => {
