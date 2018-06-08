@@ -173,7 +173,7 @@ export class GridStateModel {
     //--------------------------
     // Helper
     //--------------------------
-    saveStateChange = debounce(function() {
+    saveStateChange = debounce(() => {
         this.saveState(this.getStateKey(), this.state);
     }, 5 * SECONDS);
 
