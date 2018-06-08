@@ -9,7 +9,6 @@ import {button} from '@xh/hoist/kit/blueprint';
 import {XH, HoistComponent} from '@xh/hoist/core';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/cmp/rest';
 import {fragment} from '@xh/hoist/cmp/layout';
-import {colChooserButton} from '@xh/hoist/cmp/grid';
 import {boolCheckCol, baseCol} from '@xh/hoist/columns/Core';
 import {nameCol} from '@xh/hoist/admin/columns/Columns';
 import {Icon} from '@xh/hoist/icon';
@@ -23,8 +22,6 @@ export class ConfigPanel extends Component {
     differModel = new ConfigDifferModel({});
 
     gridModel = new RestGridModel({
-        enableColChooser: true,
-        stateModel: 'configPanel',
         store: new RestStore({
             url: 'rest/configAdmin',
             reloadLookupsOnLoad: true,
@@ -131,17 +128,11 @@ export class ConfigPanel extends Component {
     }
 
     extraToolbarItems = () => {
-        const gridModel = this.gridModel.gridModel;
-        return [
-            button({
-                icon: Icon.diff(),
-                text: 'Compare w/ Remote',
-                onClick: this.onDifferBtnClick
-            }),
-            colChooserButton({gridModel}),
-            button({text: 'GroupBy Type', onClick: () => gridModel.setGroupBy('valueType')}),
-            button({text: 'Clear Grouping', onClick: () => gridModel.setGroupBy(null)})
-        ];
+        return button({
+            icon: Icon.diff(),
+            text: 'Compare w/ Remote',
+            onClick: this.onDifferBtnClick
+        });
     }
 
     onDifferBtnClick = () => {
