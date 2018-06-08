@@ -17,7 +17,7 @@ export class ErrorTrackingService {
      * App version is POSTed to reflect the version the client is running (vs the version on the server)
      * @param {Object} options - Map with message & exception - both optional, although at least one should be provided!
      */
-    async submitAsync({message, exception}) {
+    async submitAsync({message, exception, userAlerted}) {
 
         // Fail somewhat silently to avoid letting problems here mask/confuse the underlying problem.
         try {
@@ -28,7 +28,8 @@ export class ErrorTrackingService {
                 params: {
                     error,
                     msg: message ? stripTags(message) : '',
-                    appVersion: XH.getEnv('appVersion')
+                    appVersion: XH.getEnv('appVersion'),
+                    userAlerted
                 }
             });
         } catch (e) {
