@@ -7,7 +7,7 @@
 import {XH, HoistModel} from '@xh/hoist/core';
 import {cloneDeep, debounce, find, uniqBy} from 'lodash';
 import {SECONDS} from '@xh/hoist/utils/DateTimeUtils';
-import {start, resolve} from '@xh/hoist/promise';
+import {start} from '@xh/hoist/promise';
 
 @HoistModel()
 export class GridStateModel {
