@@ -93,6 +93,11 @@ body {
   --xh-font-size-small: calc(var(--xh-font-size) * var(--xh-font-size-small-mult));
   --xh-font-size-small-px: calc(var(--xh-font-size-small) * 1px);
 
+  // Form fields
+  --xh-form-field-box-shadow-color-top: var(--form-field-box-shadow-color-top, #{mc-trans('blue-grey', '300', 0.15)});
+  --xh-form-field-box-shadow-color-bottom: var(--form-field-box-shadow-color-bottom, #{mc-trans('blue-grey', '300', 0.2)});
+  --xh-form-field-box-shadow: var(--form-field-box-shadow, #{inset 0 0 0 1px var(--xh-form-field-box-shadow-color-top), inset 0 1px 1px var(--xh-form-field-box-shadow-color-bottom)});
+
   // Mask
   --xh-mask-bg: var(--mask-bg, #{mc-trans('blue-grey', '300', 0.3)});
   --xh-mask-text-bg: var(--mask-text-bg, #{mc('blue-grey', '100')});
