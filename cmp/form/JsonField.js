@@ -44,20 +44,6 @@ export class JsonField extends HoistField {
         editorProps: PT.object
     };
 
-    static defaultEditorProps = {
-        mode: 'application/json',
-        lineWrapping: false,
-        lineNumbers: true,
-        autoCloseBrackets: true,
-        foldGutter: true,
-        scrollbarStyle: 'simple',
-        gutters: [
-            'CodeMirror-linenumbers',
-            'CodeMirror-foldgutter'
-        ],
-        lint: true
-    }
-
     editor = null;
     taCmp = null;
 
@@ -80,18 +66,10 @@ export class JsonField extends HoistField {
     }
 
     createJsonEditor(taCmp) {
-        const {editorProps, disabled, width, height} = this.props,
+        const {editorProps, width, height} = this.props,
             editorSpec = defaultsDeep(
                 editorProps,
-                JsonField.defaultEditorProps,
-                {
-                    extraKeys: {
-                        'Cmd-P': this.onFormatKey,
-                        'Ctrl-P': this.onFormatKey
-                    },
-                    theme: XH.darkTheme ? 'dracula' : 'default',
-                    readOnly: disabled
-                }
+                this.createDefaults()
             );
 
         const taDom = ReactDOM.findDOMNode(taCmp),
@@ -108,6 +86,29 @@ export class JsonField extends HoistField {
 
         return editor;
     }
+
+    createDefaults() {
+        const {disabled} = this.props;
+        return {
+            mode: 'application/json',
+            lint: true,
+            lineWrapping: false,
+            lineNumbers: true,
+            autoCloseBrackets: true,
+            foldGutter: true,
+            scrollbarStyle: 'simple',
+            readOnly: disabled,
+            gutters: [
+                'CodeMirror-linenumbers',
+                'CodeMirror-foldgutter'
+            ],
+            extraKeys: {
+                'Cmd-P': this.onFormatKey,
+                'Ctrl-P': this.onFormatKey
+            }
+        };
+    }
+
 
     onKeyUp = (instance, ev) => {
         if (ev.key === 'Enter' && !ev.shiftKey) this.doCommit();
