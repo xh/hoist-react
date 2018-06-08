@@ -85,7 +85,8 @@ class Grid extends Component {
             onSelectionChanged: this.onSelectionChanged,
             onSortChanged: this.onSortChanged,
             onGridSizeChanged: this.onGridSizeChanged,
-            onComponentStateChanged: this.onComponentStateChanged
+            onComponentStateChanged: this.onComponentStateChanged,
+            onDragStopped: this.onDragStopped
         };
 
         this.addAutorun(this.syncSelection);
@@ -269,6 +270,11 @@ class Grid extends Component {
 
     onSortChanged = (ev) => {
         this.model.setSortBy(ev.api.getSortModel());
+    }
+
+    onDragStopped = (ev) => {
+        const gridColumns = ev.api.columnController.gridColumns;
+        this.model.syncColumnOrder(gridColumns);
     }
 
     onGridSizeChanged = (ev) => {

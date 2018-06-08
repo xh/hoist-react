@@ -12,7 +12,7 @@ import {castArray, defaults, isNumber, omit, startCase} from 'lodash';
 const hoistColConfigs = [
     'align', 'elementRenderer', 'fixedWidth', 'flex',
     'chooserDescription', 'chooserGroup', 'chooserName', 'excludeFromChooser',
-    'agColDef'
+    'agColDef', 'xhId'
 ];
 
 /**
@@ -26,6 +26,9 @@ export function fileColFactory(fileVals = {}) {
     return function(colVals = {}) {
         return function(instanceVals = {}) {
             const ret = defaults(instanceVals, colVals, fileVals);
+
+            ret.xhId = ret.xhId || ret.field;
+            ret.colId = ret.xhId;
 
             ret.headerClass = castArray(ret.headerClass);
             ret.cellClass = castArray(ret.cellClass);
