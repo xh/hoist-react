@@ -98,7 +98,9 @@ export class LoginPanel extends Component {
             if (r.success) {
                 XH.completeInitAsync();
             }
-        }).catchDefault();
+        }).catchDefault({
+            hideParams: ['password']
+        });
     }
 
     onUsernameChange = (ev) => {this.setUsername(ev.target.value)}
