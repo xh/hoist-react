@@ -135,13 +135,17 @@ export class GridModel {
         this.agApi = agApi;
     }
 
+    /**
+     * Set row grouping
+     *
+     * This method is no-op if provided a field without a corresponding column
+     * A falsey field argument will reset grouping entirely
+     */
     @action
     setGroupBy(field) {
         const cols = this.columns,
             groupCol = find(cols, {field});
 
-        // If we have an invalid groupBy field do not set
-        // Let a falsey field through to mean 'no grouping'
         if (field && !groupCol) return;
 
         cols.forEach(it => {
@@ -159,29 +163,30 @@ export class GridModel {
         this.columns = [...cols];
     }
 
+    /**
+     * Set sort by column
+     *
+     * This method is no-op if provided any sorters without a corresponding column
+     */
     @action
     setSortBy(sortBy) {
         // Normalize string, and partially specified values
         sortBy = castArray(sortBy);
-
-        // If any sort prop is invalid do not set
-        const sortIsValid = sortBy.every(it => {
-            const field = it.colId || it,
-                col = find(this.columns, {field});
-
-            return col && !col.hide;
-        });
-
-        if (!sortIsValid) return;
-
         sortBy = sortBy.map(it => {
             if (isString(it)) it = {colId: it};
             it.sort = it.sort || 'asc';
             return it;
         });
 
+        const sortIsValid = sortBy.every(it => {
+            find(this.columns, {field: it.colId});
+        });
+
+        if (!sortIsValid) return;
+
         this.sortBy = sortBy;
     }
+
 
     /** Load the underlying store. */
     loadAsync(...args) {
@@ -209,25 +214,22 @@ export class GridModel {
         }
     }
 
-    syncColumnOrder(columns) {
+    syncColumnOrder(agColumns) {
         const xhColumns = this.columns,
-            orderedCols = [];
+            newIdOrder = agColumns.map(it => it.colId),
+            oldIdOrder = xhColumns.map(it => it.colId),
+            orderChanged = !isEqual(newIdOrder, oldIdOrder);
 
-        columns.forEach((gridCol) => {
-            const colId = gridCol.colId,
-                col = find(xhColumns, {colId});
+        // Can be no-op as drag event that triggers this method also fires on col resize
+        if (!orderChanged) return;
 
+        const orderedCols = [];
+        agColumns.forEach(gridCol => {
+            const col = find(xhColumns, {colId: gridCol.colId});
             orderedCols.push(col);
         });
 
-        // Can be no-op as drag event that triggers this method also fires on col resize
-        const oldIdOrder = columns.map(it => it.colId),
-            newIdOrder = xhColumns.map(it => it.colId),
-            orderChanged = !isEqual(newIdOrder, oldIdOrder);
-
-        if (orderChanged) {
-            this.setColumns(orderedCols);
-        }
+        this.setColumns(orderedCols);
     }
 
     //-----------------------

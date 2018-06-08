@@ -19,8 +19,8 @@ export class GridStateModel {
 
     /**
     * @param {string} xhStateId - Unique grid identifier.
-    * @param {string} [trackColumns] - Save column visible state and ordering.
-    * @param {string} [trackSort] - Save grid sort.
+    * @param {string} [trackColumns] - Set to true to save column visible state and ordering.
+    * @param {string} [trackSort] - Set to true to save sort.
     */
     constructor({xhStateId, trackColumns = true, trackSort = true}) {
         this.xhStateId = xhStateId;
@@ -44,6 +44,37 @@ export class GridStateModel {
         this.initializeState();
     }
 
+
+    //--------------------------
+    // For Extension / Override
+    //--------------------------
+    getStateKey() {
+        const xhStateId = this.xhStateId;
+        return 'gridState.' + xhStateId;
+    }
+
+    readState(stateKey) {
+        return XH.localStorageService.get(stateKey, {});
+    }
+
+    saveState(stateKey, state) {
+        XH.localStorageService.set(stateKey, state);
+    }
+
+    resetState(stateKey) {
+        XH.localStorageService.remove(stateKey);
+    }
+
+    resetStateAsync() {
+        return start(() => {
+            this.loadState(this.defaultState);
+            this.resetState(this.getStateKey());
+        });
+    }
+
+    //--------------------------
+    // Implementation
+    //--------------------------
     initializeState() {
         const userState = this.readState(this.getStateKey());
         this.defaultState = this.readStateFromGrid();
@@ -58,40 +89,10 @@ export class GridStateModel {
         };
     }
 
-    //--------------------------
-    // For Extension / Override
-    //--------------------------
-    readState(stateKey) {
-        return XH.localStorageService.get(stateKey, {});
-    }
-
-    saveState(stateKey, state) {
-        XH.localStorageService.set(stateKey, state);
-    }
-
-    resetState(stateKey) {
-        XH.localStorageService.remove(stateKey);
-    }
-
     loadState(state) {
-        this.state = cloneDeep(state || this.readState(this.getStateKey()) || {});
-        this.updateGridColumns();
-        this.updateGridSort();
-    }
-
-    resetStateAsync() {
-        const defaultState = this.defaultState;
-
-        if (!defaultState) resolve();
-
-        return start(() => {
-            this._resetting = true;
-            this.loadState(defaultState);
-        }).then(() => {
-            this.resetState(this.getStateKey());
-        }).finally(() =>{
-            this._resetting = false;
-        });
+        this.state = cloneDeep(state);
+        if (this.trackColumns) this.updateGridColumns();
+        if (this.trackSort) this.updateGridSort();
     }
 
     //--------------------------
@@ -109,9 +110,7 @@ export class GridStateModel {
     }
 
     getColumnState() {
-        if (!this.trackColumns) return undefined;
-
-        const columns = this.parent.columns;
+        const {columns} = this.parent;
 
         return columns.map(it => {
             return {
@@ -128,16 +127,18 @@ export class GridStateModel {
             newColumns = [],
             foundColumns = [];
 
-        if (this.trackColumns && state.columns) {
+        if (state.columns) {
             state.columns.forEach(colState => {
                 const col = find(cols, {xhId: colState.xhId});
-                if (!col) return;
+                if (!col) return; // Do not attempt to include stale column state
 
                 col.hide = colState.hide;
                 newColumns.push(col);
                 foundColumns.push(col);
             });
 
+            // Any parent columns that were not found in state are newly added to the code
+            // Insert these columns at the index they are specified
             cols.forEach((col, idx) => {
                 if (!find(foundColumns, {xhId: col.xhId})) {
                     newColumns.splice(idx, 0, col);
@@ -164,7 +165,7 @@ export class GridStateModel {
     }
 
     updateGridSort() {
-        const sortBy = this.state.sortBy;
+        const {sortBy} = this.state;
         if (sortBy) this.parent.setSortBy(sortBy);
     }
 
@@ -175,18 +176,15 @@ export class GridStateModel {
         this.saveState(this.getStateKey(), this.state);
     }, 5 * SECONDS);
 
-    getStateKey() {
-        const xhStateId = this.xhStateId;
+    ensureCompatible() {
+        const xhStateId = this.xhStateId,
+            cols = this.parent.columns,
+            colsWithoutXhId = cols.filter(col => !col.xhId),
+            uniqueIds = cols.length == uniqBy(cols, 'xhId').length;
+
         if (!xhStateId) {
             throw XH.exception('GridStateModel must have a xhStateId in order to store state');
         }
-        return 'gridState.' + xhStateId;
-    }
-
-    ensureCompatible() {
-        const cols = this.parent.columns,
-            colsWithoutXhId = cols.filter(col => !col.xhId),
-            uniqueIds = cols.length == uniqBy(cols, 'xhId').length;
 
         if (this.trackColumns && (colsWithoutXhId.length || !uniqueIds)) {
             throw XH.exception('GridStateModel with "trackColumns=true" requires all columns to have a unique xhId');

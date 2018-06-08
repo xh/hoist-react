@@ -57,9 +57,8 @@ export class ColChooser extends Component {
     }
 
     restoreDefaults = () => {
-        const model = this.model,
-            gridModel = model.gridModel,
-            stateModel = gridModel.stateModel;
+        const {model} = this,
+            {stateModel} = model.gridModel;
 
         stateModel.resetStateAsync().then(() => {
             model.syncChooserData();
