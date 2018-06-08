@@ -14,7 +14,6 @@ import {ActivityPanel} from './tabs/activity/ActivityPanel';
 import {ConfigPanel} from './tabs/configs/ConfigPanel';
 import {ClientErrorPanel} from './tabs/clienterrors/ClientErrorPanel';
 import {FeedbackPanel} from './tabs/feedback/FeedbackPanel';
-import {DashboardPanel} from './tabs/dashboards/DashboardPanel';
 import {EhCachePanel} from './tabs/ehcache/EhCachePanel';
 import {LogLevelPanel} from './tabs/logging/LogLevelPanel';
 import {LogViewer} from './tabs/logging/viewer/LogViewer';
@@ -79,7 +78,6 @@ export class AppModel {
                     {name: 'config', path: '/config'},
                     {name: 'services', path: '/services'},
                     {name: 'ehCache', path: '/ehCache'},
-                    {name: 'dashboards', path: '/dashboards'},
                     {name: 'users', path: '/users'}
                 ]
             },
@@ -132,7 +130,6 @@ export class AppModel {
                     {id: 'config', component: ConfigPanel},
                     {id: 'services', component: ServicePanel},
                     {id: 'ehCache', name: 'Caches', component: EhCachePanel},
-                    {id: 'dashboards', component: DashboardPanel},
                     {id: 'users', component: UserPanel}
                 ]
             }, {
