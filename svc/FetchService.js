@@ -82,10 +82,6 @@ export class FetchService {
         try {
             ret = await fetch(url, opts);
         } catch (e) {
-            if (opts.isLogin) {
-                delete opts.params;
-                delete opts.body;
-            }
             throw Exception.serverUnavailable(url, opts, e);
         }
         if (!ret.ok) throw Exception.requestError(opts, ret);

@@ -92,14 +92,15 @@ export class LoginPanel extends Component {
         const {username, password} = this;
         return XH.fetchJson({
             url: 'auth/login',
-            params: {username, password},
-            isLogin: true
+            params: {username, password}
         }).then(r => {
             this.setWarning(r.success ? '' : 'Login Incorrect');
             if (r.success) {
                 XH.completeInitAsync();
             }
-        }).catchDefault();
+        }).catchDefault({
+            hideParams: ['password']
+        });
     }
 
     onUsernameChange = (ev) => {this.setUsername(ev.target.value)}
