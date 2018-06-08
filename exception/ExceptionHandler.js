@@ -46,8 +46,8 @@ export class ExceptionHandler {
 
         options = this.parseOptions(exception, options);
 
-        if (options.hideParams && exception.requestOptions) {
-            this.hideParams(exception.requestOptions, options.hideParams);
+        if (options.hideParams) {
+            this.hideParams(exception, options);
         }
 
         this.logException(exception, options);
@@ -60,17 +60,20 @@ export class ExceptionHandler {
         }
     }
 
-
     //--------------------------------
     // Implementation
     //--------------------------------
-    static hideParams(requestOptions, params) {
-        delete requestOptions.body;
+    static hideParams(exception, options) {
+        const {requestOptions} = exception,
+            {hideParams} = options;
 
-        if (!requestOptions.params) return;
+        if (!requestOptions || !requestOptions.params) return;
 
-        params.forEach(param => {
-            requestOptions.params[param] = '******';
+        // body will just be stringfied params -- currently hide all for simplicity.
+        requestOptions.body = '******';
+
+        hideParams.forEach(it => {
+            requestOptions.params[it] = '******';
         });
     }
 
