@@ -127,6 +127,7 @@ export class GridStateModel {
             newColumns = [],
             foundColumns = [];
 
+        // Match columns in state to columns in code, apply stateful properties, and add to new columns in stateful order.
         if (state.columns) {
             state.columns.forEach(colState => {
                 const col = find(cols, {xhId: colState.xhId});
@@ -137,8 +138,8 @@ export class GridStateModel {
                 foundColumns.push(col);
             });
 
-            // Any parent columns that were not found in state are newly added to the code
-            // Insert these columns at the index they are specified
+            // Any parent columns that were not found in state are newly added to the code.
+            // Insert these columns in position based on the index at which they are defined.
             cols.forEach((col, idx) => {
                 if (!find(foundColumns, {xhId: col.xhId})) {
                     newColumns.splice(idx, 0, col);
