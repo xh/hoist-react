@@ -178,9 +178,7 @@ export class GridModel {
             return it;
         });
 
-        const sortIsValid = sortBy.every(it => {
-            find(this.columns, {field: it.colId});
-        });
+        const sortIsValid = sortBy.every(it => find(this.columns, {colId: it.colId}));
 
         if (!sortIsValid) return;
 
