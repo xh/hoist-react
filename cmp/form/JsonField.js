@@ -91,21 +91,22 @@ export class JsonField extends HoistField {
         const {disabled} = this.props;
         return {
             mode: 'application/json',
+            theme: XH.darkTheme ? 'dracula' : 'default',
             lint: true,
             lineWrapping: false,
             lineNumbers: true,
             autoCloseBrackets: true,
+            extraKeys: {
+                'Cmd-P': this.onFormatKey,
+                'Ctrl-P': this.onFormatKey
+            },
             foldGutter: true,
             scrollbarStyle: 'simple',
             readOnly: disabled,
             gutters: [
                 'CodeMirror-linenumbers',
                 'CodeMirror-foldgutter'
-            ],
-            extraKeys: {
-                'Cmd-P': this.onFormatKey,
-                'Ctrl-P': this.onFormatKey
-            }
+            ]
         };
     }
 
