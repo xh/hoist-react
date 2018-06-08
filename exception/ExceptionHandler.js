@@ -70,7 +70,7 @@ export class ExceptionHandler {
         if (!requestOptions.params) return;
 
         params.forEach(param => {
-            delete requestOptions.params[param];
+            requestOptions.params[param] = '******';
         });
     }
 
