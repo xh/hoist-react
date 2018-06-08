@@ -19,8 +19,8 @@ export class GridStateModel {
 
     /**
     * @param {string} xhStateId - Unique grid identifier.
-    * @param {string} [trackColumns] - Set to true to save column visible state and ordering.
-    * @param {string} [trackSort] - Set to true to save sort.
+    * @param {string} [trackColumns] - Set to true to save visible state and ordering of columns.
+    * @param {string} [trackSort] - Set to true to save sorting.
     */
     constructor({xhStateId, trackColumns = true, trackSort = true}) {
         this.xhStateId = xhStateId;
