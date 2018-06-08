@@ -11,7 +11,7 @@ import {start} from '@xh/hoist/promise';
 
 @HoistModel()
 export class GridStateModel {
-    parent = null;
+    gridModel = null;
     xhStateId = null;
 
     state = {};
@@ -29,7 +29,7 @@ export class GridStateModel {
     }
 
     init(gridModel) {
-        this.parent = gridModel;
+        this.gridModel = gridModel;
 
         this.ensureCompatible();
 
@@ -85,7 +85,7 @@ export class GridStateModel {
     readStateFromGrid() {
         return {
             columns: this.getColumnState(),
-            sortBy: this.parent.sortBy
+            sortBy: this.gridModel.sortBy
         };
     }
 
@@ -99,9 +99,9 @@ export class GridStateModel {
     // Columns
     //--------------------------
     columnReaction() {
-        const {parent} = this;
+        const {gridModel} = this;
         return {
-            track: () => parent.columns,
+            track: () => gridModel.columns,
             run: () => {
                 this.state.columns = this.getColumnState();
                 this.saveStateChange();
@@ -110,7 +110,7 @@ export class GridStateModel {
     }
 
     getColumnState() {
-        const {columns} = this.parent;
+        const {columns} = this.gridModel;
 
         return columns.map(it => {
             return {
@@ -122,44 +122,42 @@ export class GridStateModel {
     }
 
     updateGridColumns() {
-        const {parent, state} = this,
-            cols = parent.cloneColumns(),
-            newColumns = [],
+        const {gridModel, state} = this,
+            cols = gridModel.cloneColumns(),
             foundColumns = [];
 
+        if (!state.columns) return;
+
         // Match columns in state to columns in code, apply stateful properties, and add to new columns in stateful order.
-        if (state.columns) {
-            state.columns.forEach(colState => {
-                const col = find(cols, {xhId: colState.xhId});
-                if (!col) return; // Do not attempt to include stale column state
+        state.columns.forEach(colState => {
+            const col = find(cols, {xhId: colState.xhId});
+            if (!col) return; // Do not attempt to include stale column state.
 
-                col.hide = colState.hide;
-                newColumns.push(col);
-                foundColumns.push(col);
-            });
+            col.hide = colState.hide;
+            foundColumns.push(col);
+        });
 
-            // Any parent columns that were not found in state are newly added to the code.
-            // Insert these columns in position based on the index at which they are defined.
-            cols.forEach((col, idx) => {
-                if (!find(foundColumns, {xhId: col.xhId})) {
-                    newColumns.splice(idx, 0, col);
-                }
-            });
+        // Any grid columns that were not found in state are newly added to the code.
+        // Insert these columns in position based on the index at which they are defined.
+        const newColumns = [...foundColumns];
+        cols.forEach((col, idx) => {
+            if (!find(foundColumns, {xhId: col.xhId})) {
+                newColumns.splice(idx, 0, col);
+            }
+        });
 
-            parent.setColumns(newColumns);
-        }
-
+        gridModel.setColumns(newColumns);
     }
 
     //--------------------------
     // Sort
     //--------------------------
     sortReaction() {
-        const {parent} = this;
+        const {gridModel} = this;
         return {
-            track: () => parent.sortBy,
+            track: () => gridModel.sortBy,
             run: () => {
-                this.state.sortBy = parent.sortBy;
+                this.state.sortBy = gridModel.sortBy;
                 this.saveStateChange();
             }
         };
@@ -167,7 +165,7 @@ export class GridStateModel {
 
     updateGridSort() {
         const {sortBy} = this.state;
-        if (sortBy) this.parent.setSortBy(sortBy);
+        if (sortBy) this.gridModel.setSortBy(sortBy);
     }
 
     //--------------------------
@@ -179,7 +177,7 @@ export class GridStateModel {
 
     ensureCompatible() {
         const xhStateId = this.xhStateId,
-            cols = this.parent.columns,
+            cols = this.gridModel.columns,
             colsWithoutXhId = cols.filter(col => !col.xhId),
             uniqueIds = cols.length == uniqBy(cols, 'xhId').length;
 

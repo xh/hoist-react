@@ -138,8 +138,8 @@ export class GridModel {
     /**
      * Set row grouping
      *
-     * This method is no-op if provided a field without a corresponding column
-     * A falsey field argument will reset grouping entirely
+     * This method is no-op if provided a field without a corresponding column.
+     * A falsey field argument will remove grouping entirely.
      */
     @action
     setGroupBy(field) {
@@ -179,7 +179,6 @@ export class GridModel {
         });
 
         const sortIsValid = sortBy.every(it => find(this.columns, {colId: it.colId}));
-
         if (!sortIsValid) return;
 
         this.sortBy = sortBy;
@@ -213,12 +212,12 @@ export class GridModel {
     }
 
     syncColumnOrder(agColumns) {
+        // Check for no-op
         const xhColumns = this.columns,
             newIdOrder = agColumns.map(it => it.colId),
             oldIdOrder = xhColumns.map(it => it.colId),
             orderChanged = !isEqual(newIdOrder, oldIdOrder);
 
-        // Can be no-op as drag event that triggers this method also fires on col resize
         if (!orderChanged) return;
 
         const orderedCols = [];
