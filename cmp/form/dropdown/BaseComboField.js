@@ -6,7 +6,7 @@
  */
 
 import {observable, setter, computed} from '@xh/hoist/mobx';
-import {debounce, find} from 'lodash';
+import {debounce} from 'lodash';
 
 import {BaseDropdownField} from './BaseDropdownField';
 
