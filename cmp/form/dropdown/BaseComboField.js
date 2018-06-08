@@ -18,8 +18,14 @@ export class BaseComboField extends BaseDropdownField {
 
     onKeyPress = (ev) => {
         if (ev.key === 'Enter') {
+            if (this.props.requireSelection) return;
             this.doCommit();
         }
+    }
+
+    onItemSelect = (val) => {
+        this.noteValueChange(val.value);
+        super.doCommit();
     }
 
     doCommit() {
@@ -31,20 +37,18 @@ export class BaseComboField extends BaseDropdownField {
 
     forceSelectionToOptionOrRevert() {
         const {internalOptions, internalValue} = this;
+        if (!internalValue) return;
 
-        // 0) We have a match, nothing to be done
-        if (find(internalOptions, {label: internalValue})) {
-            return;
-        }
+        const match = find(internalOptions, (it) => {
+            return it.label.toLowerCase() == internalValue.toLowerCase();
+        });
 
-        // 1) Close enough, just adjust casing
-        const match = find(internalOptions, (it) => it.label.toLowerCase() == internalValue.toLowerCase());
         if (match) {
             this.noteValueChange(match.value);
             return;
         }
 
-        // 2) Otherwise, revert
+        // Revert if no match
         this.noteValueChange(this.externalValue);
     }
 
