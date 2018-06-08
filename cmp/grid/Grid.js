@@ -6,7 +6,7 @@
  */
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {isString, isNumber, isBoolean, isEqual, xor} from 'lodash';
+import {find, isString, isNumber, isBoolean, isEqual, xor} from 'lodash';
 import {XH} from '@xh/hoist/core';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {fragment, box} from '@xh/hoist/cmp/layout';
@@ -89,9 +89,18 @@ class Grid extends Component {
             onDragStopped: this.onDragStopped
         };
 
-        this.addAutorun(this.syncSelection);
-        this.addAutorun(this.syncSort);
-        this.addAutorun(this.syncColumns);
+        this.addReaction({
+            track: () => [model.api, model.selModel.ids],
+            run: this.syncSelection
+        });
+        this.addReaction({
+            track: () =>  [model.api, model.sortBy],
+            run: this.syncSort
+        });
+        this.addReaction({
+            track: () =>  [model.api, model.columns],
+            run: this.syncColumns
+        });
     }
 
     render() {
@@ -125,9 +134,22 @@ class Grid extends Component {
     // Implementation
     //------------------------
     agColDefs() {
-        return this.model.columns.map(col => {
+        const {sortBy, columns} = this.model;
+
+        const cols = columns.map(col => {
             return col.agColDef ? col.agColDef() : col;
         });
+
+        console.log(sortBy);
+        sortBy.forEach(it => {
+            const col = find(cols, {colId: it.colId});
+            if (col) {
+                col.sort = it.sort;
+                col.sortAt = Date.now();
+            }
+        });
+
+        return cols;
     }
 
     sortByGroup(nodeA, nodeB) {
@@ -167,6 +189,7 @@ class Grid extends Component {
             api = model.agApi;
         if (!api) return;
 
+        console.log('hi');
         const agSorters = api.getSortModel(),
             modelSorters = model.sortBy;
         if (!isEqual(agSorters, modelSorters)) {
