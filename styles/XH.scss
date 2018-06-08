@@ -33,6 +33,12 @@ body.xh-app {
   h1, h2, h3, h4, h5 {
     color: var(--xh-text-color-headings);
   }
+
+  .pt-input:not(:focus) {
+    -webkit-box-shadow: var(--xh-form-field-box-shadow);
+    -moz-box-shadow: var(--xh-form-field-box-shadow);
+    box-shadow: var(--xh-form-field-box-shadow);
+  }
 }
 
 .xh-black           {color: var(--xh-black);}

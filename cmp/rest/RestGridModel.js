@@ -7,7 +7,6 @@
 import {XH, HoistModel} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {MessageModel} from '@xh/hoist/cmp/message';
 import {StoreContextMenu} from '@xh/hoist/cmp/contextmenu';
 import {Icon} from '@xh/hoist/icon';
 import {pluralize} from '@xh/hoist/utils/JsUtils';
@@ -40,7 +39,6 @@ export class RestGridModel {
 
     gridModel = null;
     formModel = null;
-    messageModel = null;
 
     get store()             {return this.gridModel.store}
     get selModel()          {return this.gridModel.selModel}
@@ -72,7 +70,6 @@ export class RestGridModel {
         this.enhanceToolbar = enhanceToolbar;
         this.gridModel = new GridModel({contextMenuFn: this.contextMenuFn, ...rest});
         this.formModel = new RestFormModel({parent: this, editors});
-        this.messageModel = new MessageModel({title: 'Warning', icon: Icon.warning({size: 'lg'})});
     }
 
     /** Load the underlying store. */
@@ -116,31 +113,33 @@ export class RestGridModel {
     }
 
     contextMenuFn = () => {
-        return new StoreContextMenu([
-            {
-                text: 'Add',
-                icon: Icon.add(),
-                action: () => this.addRecord()
-            },
-            {
-                text: 'Edit',
-                icon: Icon.edit(),
-                action: (item, record) => this.editRecord(record),
-                recordsRequired: 1
-            },
-            {
-                text: 'Delete',
-                icon: Icon.delete(),
-                action: (item, record) => this.confirmDeleteRecord(record),
-                recordsRequired: true
-            },
-            '-',
-            'copy',
-            'copyWithHeaders',
-            '-',
-            'export',
-            'autoSizeAll'
-        ]);
+        return new StoreContextMenu({
+            items: [
+                {
+                    text: 'Add',
+                    icon: Icon.add(),
+                    action: () => this.addRecord()
+                },
+                {
+                    text: 'Edit',
+                    icon: Icon.edit(),
+                    action: (item, record) => this.editRecord(record),
+                    recordsRequired: 1
+                },
+                {
+                    text: 'Delete',
+                    icon: Icon.delete(),
+                    action: (item, record) => this.confirmDeleteRecord(record),
+                    recordsRequired: true
+                },
+                '-',
+                'copy',
+                'copyWithHeaders',
+                '-',
+                'export',
+                'autoSizeAll'
+            ]
+        });
     }
 
     confirmDeleteSelection() {
@@ -151,8 +150,10 @@ export class RestGridModel {
     confirmDeleteRecord(record) {
         const warning = this.actionWarning.del;
         if (warning) {
-            this.messageModel.confirm({
+            XH.confirm({
                 message: warning,
+                title: 'Warning',
+                icon: Icon.warning({size: 'lg'}),
                 onConfirm: () => this.deleteRecord(record)
             });
         } else {
@@ -166,6 +167,6 @@ export class RestGridModel {
     }
 
     destroy() {
-        XH.safeDestroy(this.messageModel, this.gridModel, this.formModel);
+        XH.safeDestroy(this.gridModel, this.formModel);
     }
 }

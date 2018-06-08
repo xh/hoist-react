@@ -11,6 +11,7 @@ import {observable, observer, setter} from '@xh/hoist/mobx';
 import {elemFactory, LoadState, XH} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/cmp/contextmenu';
 import {loadMask} from '@xh/hoist/cmp/mask';
+import {messageSource} from '@xh/hoist/cmp/message';
 import {div, frame, vframe, viewport, vspacer} from '@xh/hoist/cmp/layout';
 import {logoutButton} from '@xh/hoist/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -30,7 +31,7 @@ import {lockoutPanel} from './';
  * Top-level wrapper to provide core Hoist Application layout and infrastructure to an application's
  * root Component. Provides initialized Hoist services and a standard viewport that also includes
  * standard UI elements such as an impersonation bar header, version bar footer, app-wide load mask,
- * context menu, and error dialog.
+ * context menu, and popup message support.
  *
  * Construction of this container triggers the init of the core XH singleton, which queries for an
  * authorized user and then proceeds to init all core Hoist and app-level services.
@@ -82,6 +83,7 @@ export class AppContainer extends Component {
                         versionBar()
                     ),
                     loadMask({model: XH.appLoadModel}),
+                    messageSource({model: XH.messageSourceModel}),
                     aboutDialog()
                 );
             default:
