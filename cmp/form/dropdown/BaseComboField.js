@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {observable, setter, computed} from '@xh/hoist/mobx';
+import {observable, computed, action} from '@xh/hoist/mobx';
 import {debounce} from 'lodash';
 
 import {BaseDropdownField} from './BaseDropdownField';
@@ -17,7 +17,7 @@ import {BaseDropdownField} from './BaseDropdownField';
  */
 export class BaseComboField extends BaseDropdownField {
 
-    @observable @setter pendingCommit;
+    @observable pendingCommit;
 
     constructor(props) {
         super(props);
@@ -59,6 +59,11 @@ export class BaseComboField extends BaseDropdownField {
     doCommit() {
         super.doCommit();
         this.setPendingCommit(false);
+    }
+
+    @action
+    setPendingCommit(val) {
+        this.pendingCommit = val;
     }
 
     onChange = (ev) => {
