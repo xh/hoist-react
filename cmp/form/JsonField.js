@@ -92,7 +92,6 @@ export class JsonField extends HoistField {
         return {
             mode: 'application/json',
             theme: XH.darkTheme ? 'dracula' : 'default',
-            lint: true,
             lineWrapping: false,
             lineNumbers: true,
             autoCloseBrackets: true,
@@ -106,7 +105,8 @@ export class JsonField extends HoistField {
             gutters: [
                 'CodeMirror-linenumbers',
                 'CodeMirror-foldgutter'
-            ]
+            ],
+            lint: true
         };
     }
 
