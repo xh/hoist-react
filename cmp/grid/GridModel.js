@@ -155,7 +155,7 @@ export class GridModel {
             }
         });
 
-        if (groupCol) {
+        if (field && groupCol) {
             groupCol.rowGroup = true;
             groupCol.hide = true;
         }
