@@ -11,9 +11,10 @@ import {debounce} from 'lodash';
 import {BaseDropdownField} from './BaseDropdownField';
 
 /**
- * BaseComboField
+ * Abstract superclass supporting ComboField and QueryComboField.
  *
- * Abstract class supporting ComboField, QueryComboField.
+ * This includes debouncing commits due to the multiple ways committing
+ * can be triggered from these fields (blur/enter/item select).
  */
 export class BaseComboField extends BaseDropdownField {
 
@@ -34,6 +35,12 @@ export class BaseComboField extends BaseDropdownField {
     }
 
     onBlur = () => {
+        // Combos that allow custom entries (!requireSelection) will commit those on blur.
+        // Note this could be confusing in the case where the user has entered enough text to cause
+        // the pop-up suggestion list to narrow down to a single item. It would be reasonable to
+        // think that tabbing out would select that value, but instead you get a new, custom value.
+        // Suggest we revisit this in the context of a more explicit inline "New" button for these
+        // combos that allow for on-the-fly entries, so it's more clear all around.
         if (!this.props.requireSelection) {
             this.doDebouncedCommit();
         }
@@ -41,6 +48,7 @@ export class BaseComboField extends BaseDropdownField {
     }
 
     onKeyPress = (ev) => {
+        // For Combos that requireSelection, <enter> must/will trigger onItemSelect to commit.
         if (ev.key === 'Enter' && !this.props.requireSelection) {
             this.doDebouncedCommit();
         }
