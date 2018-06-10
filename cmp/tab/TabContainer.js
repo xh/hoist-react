@@ -5,16 +5,12 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {tab, tabs} from '@xh/hoist/kit/blueprint';
-
+import {elem, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {div, hframe, vframe} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from './TabContainerModel';
-import './Tabs.scss';
-import {hframe, vframe} from '../layout';
 import {tabSwitcher} from './TabSwitcher';
-import {div} from '../layout/Tags';
 import {TabPane} from './TabPane';
-import {elem} from '../../core/elem';
+import './Tabs.scss';
 
 /**
  * Display for a TabContainer.

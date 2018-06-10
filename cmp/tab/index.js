@@ -8,3 +8,4 @@ export * from './TabContainer';
 export * from './TabContainerModel';
 export * from './TabPane';
 export * from './TabPaneModel';
+export * from './TabSwitcher';
