@@ -8,9 +8,13 @@ import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {tab, tabs} from '@xh/hoist/kit/blueprint';
 
-import {tabPane} from './TabPane';
 import {TabContainerModel} from './TabContainerModel';
 import './Tabs.scss';
+import {hframe, vframe} from '../layout';
+import {tabSwitcher} from './TabSwitcher';
+import {div} from '../layout/Tags';
+import {TabPane} from './TabPane';
+import {elem} from '../../core/elem';
 
 /**
  * Display for a TabContainer.
@@ -20,33 +24,34 @@ import './Tabs.scss';
 export class TabContainer extends Component {
 
     render() {
-        const {id, children, selectedId, vertical} = this.model;
+        const {vertical, selectedId, children} = this.model,
+            outerCmp = vertical ? hframe : vframe;
 
-        return tabs({
-            id,
-            vertical,
-            onChange: this.onTabChange,
-            selectedTabId: selectedId,
-            large: !vertical,
-            items: children.map(childModel => {
-                const id = childModel.id,
-                    title = childModel.name,
-                    isSubContainer = childModel instanceof TabContainerModel,
-                    cmp = isSubContainer ? tabContainer : tabPane;
-                return tab({
-                    id,
-                    title,
-                    panel: cmp({model: childModel})
-                });
+        return outerCmp(
+            tabSwitcher({model: this.model}),
+            div({
+                cls: 'xh-tab-container',
+                items: children.map(childModel => {
+                    const childId = childModel.id,
+                        isSubContainer = childModel instanceof TabContainerModel,
+                        cmpClass = isSubContainer ? TabContainer : TabPane;
+
+                    const style = {};
+                    if (childId !== selectedId) {
+                        style.display = 'none';
+                    }
+
+                    return div({
+                        cls: 'xh-tab-panel',
+                        style,
+                        item: elem(cmpClass, {
+                            model: childModel
+                        })
+                    });
+                })
             })
-        });
-    }
-
-    //--------------------------
-    // Implementation
-    //--------------------------
-    onTabChange = (activeId) => {
-        this.model.setSelectedId(activeId);
+        );
     }
 }
+
 export const tabContainer = elemFactory(TabContainer);
