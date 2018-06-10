@@ -21,12 +21,13 @@ export class TabSwitcher extends Component {
     };
 
     render() {
-        const {vertical, id, children} = this.model;
+        const {vertical, id, children, selectedId} = this.model;
         return tabs({
             id,
             vertical,
             onChange: this.onTabChange,
             large: !vertical,
+            selectedTabId: selectedId,
             items: children.map(({id, name}) => tab({id, title: name}))
         });
     }
