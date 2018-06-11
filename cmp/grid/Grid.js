@@ -52,8 +52,47 @@ class Grid extends Component {
 
     constructor(props) {
         super(props);
-        const {model} = this;
-        this.defaultAgOptions = {
+        this.addAutorun(this.syncSelection);
+        this.addAutorun(this.syncSort);
+        this.addAutorun(this.syncColumns);
+    }
+
+
+    render() {
+        const {colChooserModel} = this.model,
+            {layoutConfig} = this.props;
+
+        // Default flex = 'auto' if no dimensions / flex specified.
+        if (layoutConfig.width == null && layoutConfig.height == null && layoutConfig.flex == null) {
+            layoutConfig.flex = 'auto';
+        }
+
+        return fragment(
+            box({
+                layoutConfig: layoutConfig,
+                cls: `ag-grid-holder ${XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham'}`,
+                item: agGridReact({
+                    ...this.createDefaults(),
+                    ...this.props.agOptions
+                })
+            }),
+            colChooser({
+                omit: !colChooserModel,
+                model: colChooserModel
+            })
+        );
+    }
+
+    //------------------------
+    // Implementation
+    //------------------------
+    createDefaults() {
+        const {model, props} = this,
+            store = model.store;
+
+        return {
+            rowData: store.records,
+            columnDefs: this.agColDefs(),
             toolPanelSuppressSideButtons: true,
             enableSorting: true,
             enableColResize: true,
@@ -85,44 +124,11 @@ class Grid extends Component {
             onSelectionChanged: this.onSelectionChanged,
             onSortChanged: this.onSortChanged,
             onGridSizeChanged: this.onGridSizeChanged,
-            onComponentStateChanged: this.onComponentStateChanged
+            onComponentStateChanged: this.onComponentStateChanged,
+            onDragStopped: this.onDragStopped
         };
-
-        this.addAutorun(this.syncSelection);
-        this.addAutorun(this.syncSort);
-        this.addAutorun(this.syncColumns);
     }
 
-    render() {
-        const {store, colChooserModel} = this.model,
-            {layoutConfig} = this.props;
-
-        // Default flex = 'auto' if no dimensions / flex specified.
-        if (layoutConfig.width == null && layoutConfig.height == null && layoutConfig.flex == null) {
-            layoutConfig.flex = 'auto';
-        }
-
-        return fragment(
-            box({
-                layoutConfig: layoutConfig,
-                cls: `ag-grid-holder ${XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham'}`,
-                item: agGridReact({
-                    rowData: store.records,
-                    columnDefs: this.agColDefs(),
-                    ...this.defaultAgOptions,
-                    ...this.props.agOptions
-                })
-            }),
-            colChooser({
-                omit: !colChooserModel,
-                model: colChooserModel
-            })
-        );
-    }
-
-    //------------------------
-    // Implementation
-    //------------------------
     agColDefs() {
         return this.model.columns.map(col => {
             return col.agColDef ? col.agColDef() : col;
@@ -269,6 +275,11 @@ class Grid extends Component {
 
     onSortChanged = (ev) => {
         this.model.setSortBy(ev.api.getSortModel());
+    }
+
+    onDragStopped = (ev) => {
+        const gridColumns = ev.api.columnController.gridColumns;
+        this.model.syncColumnOrder(gridColumns);
     }
 
     onGridSizeChanged = (ev) => {
