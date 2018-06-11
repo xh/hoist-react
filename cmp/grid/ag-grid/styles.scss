@@ -1,7 +1,7 @@
 .ag-grid-holder > div {
   // Ag-grid installs an outer div around itself.
-  // This should use flex: auto rather than height: 100%, to allow the layoutConfig to work.
-  flex: 1 1 auto;
+  // This should use height: auto rather than height: 100%, to allow the layoutConfig to work.
+  width: 100%;
   height: auto !important;
 }
 

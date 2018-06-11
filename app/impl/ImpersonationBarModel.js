@@ -61,7 +61,8 @@ export class ImpersonationBarModel {
     setTargets = (targets) => {
         this.targets = targets
             .map(t => t.username)
-            .filter(t => t !== XH.identityService.username);
+            .filter(t => t !== XH.identityService.username)
+            .sort();
     }
     
     @action

@@ -16,7 +16,7 @@ import {Icon} from '@xh/hoist/icon';
 export class ColChooser extends Component {
 
     render() {
-        const {isOpen, lrModel} = this.model;
+        const {isOpen, gridModel, lrModel} = this.model;
 
         if (!isOpen) return null;
 
@@ -29,6 +29,12 @@ export class ColChooser extends Component {
             items: [
                 leftRightChooser({model: lrModel, height: 300}),
                 toolbar(
+                    button({
+                        text: 'Reset',
+                        icon: Icon.undo({cls: 'xh-red'}),
+                        omit: !gridModel.stateModel,
+                        onClick: this.restoreDefaults
+                    }),
                     filler(),
                     button({
                         text: 'Cancel',
@@ -48,6 +54,15 @@ export class ColChooser extends Component {
     onOK = () => {
         this.model.commit();
         this.onClose();
+    }
+
+    restoreDefaults = () => {
+        const {model} = this,
+            {stateModel} = model.gridModel;
+
+        stateModel.resetStateAsync().then(() => {
+            model.syncChooserData();
+        });
     }
 
 }
