@@ -12,7 +12,6 @@ import {clipboardButton} from '@xh/hoist/cmp/clipboard';
 import {jsonField} from '@xh/hoist/cmp/form';
 import {toolbar} from '@xh/hoist/cmp/toolbar';
 import {fmtDateTime} from '@xh/hoist/format';
-import {Icon} from '@xh/hoist/icon';
 
 @HoistComponent()
 class ClientErrorDetail extends Component {
@@ -40,7 +39,7 @@ class ClientErrorDetail extends Component {
                     tbody(
                         tr(th('User:'), td(rec.username)),
                         tr(th('Message:'), td(rec.msg)),
-                        tr(th('User Alerted:'), td(rec.userAlerted ? Icon.check({prefix: 'fas', cls: 'xh-green'}) : '')),
+                        tr(th('User Alerted:'), td(rec.userAlerted.toString())),
                         tr(th('Device/Browser:'), td(`${rec.device}/${rec.browser}`)),
                         tr(th('Agent:'), td(rec.userAgent)),
                         tr(th('App Version:'), td(rec.appVersion)),
