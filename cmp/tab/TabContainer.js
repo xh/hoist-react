@@ -20,9 +20,9 @@ import './Tabs.scss';
 export class TabContainer extends Component {
 
     render() {
-        const {tabPosition, vertical, selectedId, children} = this.model,
-            switcherBefore = tabPosition === 'left' || tabPosition === 'top',
-            switcherAfter = tabPosition === 'right' || tabPosition === 'bottom';
+        const {switcherPosition, vertical, selectedId, children} = this.model,
+            switcherBefore = switcherPosition === 'left' || switcherPosition === 'top',
+            switcherAfter = switcherPosition === 'right' || switcherPosition === 'bottom';
 
         return (vertical ? hframe : vframe)({
             cls: 'xh-tab-container',

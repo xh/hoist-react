@@ -125,7 +125,7 @@ export class AppModel {
         return [
             {
                 id: 'general',
-                tabPosition: 'left',
+                switcherPosition: 'left',
                 children: [
                     {id: 'about', component: AboutPanel},
                     {id: 'config', component: ConfigPanel},
@@ -136,7 +136,7 @@ export class AppModel {
                 ]
             }, {
                 id: 'logging',
-                tabPosition: 'left',
+                switcherPosition: 'left',
                 children: [
                     {id: 'viewer', component: LogViewer},
                     {id: 'levels', component: LogLevelPanel}
@@ -144,7 +144,7 @@ export class AppModel {
             },
             {
                 id: 'monitor',
-                tabPosition: 'left',
+                switcherPosition: 'left',
                 children: [
                     {id: 'status', component: MonitorResultsPanel},
                     {id: 'editMonitors', component: MonitorEditorPanel}
@@ -152,7 +152,7 @@ export class AppModel {
             },
             {
                 id: 'clientActivity',
-                tabPosition: 'left',
+                switcherPosition: 'left',
                 children: [
                     {id: 'activity', component: ActivityPanel},
                     {id: 'clientErrors', component: ClientErrorPanel},
@@ -161,7 +161,7 @@ export class AppModel {
             },
             {
                 id: 'preferences',
-                tabPosition: 'left',
+                switcherPosition: 'left',
                 children: [
                     {id: 'prefs', component: PreferencePanel},
                     {id: 'userPrefs', component: UserPreferencePanel, reloadOnShow: true}

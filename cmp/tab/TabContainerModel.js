@@ -12,17 +12,23 @@ import {wait} from '@xh/hoist/promise';
 import {TabPaneModel} from '@xh/hoist/cmp/tab';
 
 /**
- * Model for a TabContainer, representing its layout/contents and currently selected TabPane.
+ * Model for a TabContainer, representing its layout/contents and the currently selected child.
  *
  * This TabContainer also supports managed loading and refreshing of its TabPanes.
- * In particular, TabPanes will be lazily instantiated and can also be lazily refreshed.
+ * In particular, TabPanes will be lazily rendered and loaded and can also be refreshed whenever the
+ * TabPane is shown.
  * @see TabPaneModel
+ *
+ * By default this TabContainer will install a TabSwitcher above the TabPanes to control the
+ * selected TabPane. If the switcherPosition is set to 'none' then no TabSwitcher will be installed
+ * and it will be up to the application to handle setting the selected id on this TabContainerModel
+ * when appropriate.
  */
 @HoistModel()
 export class TabContainerModel {
     id = null;
     name = null;
-    tabPosition = 'top';
+    switcherPosition = 'top';
     children = [];
 
     @observable _lastRefreshRequest = null;
@@ -34,7 +40,7 @@ export class TabContainerModel {
      * @param {string} id - unique ID, used for generating routes.
      * @param {string} [name] - display name for this container - useful in particular when displaying
      *      nested tabs, where this model's container is a direct child of a parent TabContainer.
-     * @param {string} [tabPosition] - specify top, left, bottom, right, or none. Defaults to top.
+     * @param {string} [switcherPosition] - specify top, left, bottom, right, or none. Defaults to top.
      * @param {boolean} [useRoutes] - true to use routes for navigation.
      *      These routes must be setup externally in the application (@see BaseApp.getRoutes()).
      *      They may exist at any level of the application, but there must be a route of the form
@@ -44,13 +50,13 @@ export class TabContainerModel {
     constructor({
         id,
         name = startCase(id),
-        tabPosition = 'top',
+        switcherPosition = 'top',
         useRoutes = false,
         children
     }) {
         this.id = id;
         this.name = name;
-        this.tabPosition = tabPosition;
+        this.switcherPosition = switcherPosition;
         this.useRoutes = useRoutes;
 
         // Instantiate children, if needed.
@@ -82,7 +88,7 @@ export class TabContainerModel {
     }
 
     get vertical() {
-        return this.tabPosition === 'left' || this.tabPosition === 'right';
+        return this.switcherPosition === 'left' || this.switcherPosition === 'right';
     }
 
     @action

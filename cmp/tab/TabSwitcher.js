@@ -12,6 +12,16 @@ import {TabContainerModel} from './TabContainerModel';
 
 /**
  * Switcher display for a TabContainer.
+ *
+ * This TabSwitcher controls the selected tab of a TabContainer via a shared TabContainerModel,
+ * which is expected to be provided to this TabSwitcher.
+ *
+ * The switcherPosition configuration on the TabContainerModel controls how this switcher will be
+ * rendered. For 'top' or 'bottom' switcherPositions this switcher will be rendered in horizontal
+ * and large mode. For 'left' or 'right' switcher positions this switcher will be rendered in
+ * vertical mode.
+ *
+ * @see TabContainerModel
  */
 @HoistComponent()
 export class TabSwitcher extends Component {
@@ -21,9 +31,9 @@ export class TabSwitcher extends Component {
     };
 
     render() {
-        const {tabPosition, vertical, id, children, selectedId} = this.model;
+        const {switcherPosition, vertical, id, children, selectedId} = this.model;
         return tabs({
-            cls: `xh-tab-switcher-${tabPosition}`,
+            cls: `xh-tab-switcher-${switcherPosition}`,
             id,
             vertical,
             onChange: this.onTabChange,
