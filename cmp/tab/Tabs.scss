@@ -17,10 +17,18 @@
     min-width: 0;
     min-height: 0;
     flex: 1 1 0;
-    margin-top: var(--xh-pad-half-px);
   }
 
-  .pt-tabs.pt-vertical ~ .xh-tab-panel {
-    margin-top: 0;
+  .xh-tab-switcher-top {
+    padding-bottom: var(--xh-pad-half-px);
+  }
+
+  .xh-tab-switcher-bottom {
+    padding-top: var(--xh-pad-half-px);
+
+    // Flip the indicator to be on top of the tab label
+    .pt-tab-list > .pt-tab-indicator-wrapper {
+      top: -85%;
+    }
   }
 }

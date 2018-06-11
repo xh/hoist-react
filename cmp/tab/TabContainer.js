@@ -20,13 +20,14 @@ import './Tabs.scss';
 export class TabContainer extends Component {
 
     render() {
-        const {vertical, selectedId, children} = this.model,
-            outerCmp = vertical ? hframe : vframe;
+        const {tabPosition, vertical, selectedId, children} = this.model,
+        switcherBefore = tabPosition === 'left' || tabPosition === 'top',
+        switcherAfter = tabPosition === 'right' || tabPosition === 'bottom';
 
-        return outerCmp({
+        return (vertical ? hframe : vframe)({
             cls: 'xh-tab-container',
             items: [
-                tabSwitcher({model: this.model}),
+                switcherBefore ? tabSwitcher({model: this.model}) : null,
                 ...children.map(childModel => {
                     const childId = childModel.id,
                         isSubContainer = childModel instanceof TabContainerModel,
@@ -37,7 +38,6 @@ export class TabContainer extends Component {
                         style.display = 'none';
                     }
 
-
                     return div({
                         cls: 'xh-tab-panel',
                         style,
@@ -45,7 +45,8 @@ export class TabContainer extends Component {
                             model: childModel
                         })
                     });
-                })
+                }),
+                switcherAfter ? tabSwitcher({model: this.model}) : null,
             ]
         });
     }

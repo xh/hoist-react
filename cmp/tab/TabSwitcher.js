@@ -21,8 +21,9 @@ export class TabSwitcher extends Component {
     };
 
     render() {
-        const {vertical, id, children, selectedId} = this.model;
+        const {tabPosition, vertical, id, children, selectedId} = this.model;
         return tabs({
+            cls: `xh-tab-switcher-${tabPosition}`,
             id,
             vertical,
             onChange: this.onTabChange,

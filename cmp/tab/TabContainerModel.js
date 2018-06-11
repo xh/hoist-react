@@ -22,7 +22,7 @@ import {TabPaneModel} from '@xh/hoist/cmp/tab';
 export class TabContainerModel {
     id = null;
     name = null;
-    vertical = false;
+    tabPosition = 'top';
     children = [];
 
     @observable _lastRefreshRequest = null;
@@ -34,7 +34,7 @@ export class TabContainerModel {
      * @param {string} id - unique ID, used for generating routes.
      * @param {string} [name] - display name for this container - useful in particular when displaying
      *      nested tabs, where this model's container is a direct child of a parent TabContainer.
-     * @param {string} [orientation] - specify horizontal vs. vertical tabs.
+     * @param {string} [tabPosition] - specify top, left, bottom, right, or none. Defaults to top.
      * @param {boolean} [useRoutes] - true to use routes for navigation.
      *      These routes must be setup externally in the application (@see BaseApp.getRoutes()).
      *      They may exist at any level of the application, but there must be a route of the form
@@ -44,13 +44,13 @@ export class TabContainerModel {
     constructor({
         id,
         name = startCase(id),
-        orientation = 'h',
+        tabPosition = 'top',
         useRoutes = false,
         children
     }) {
         this.id = id;
         this.name = name;
-        this.vertical = orientation === 'v';
+        this.tabPosition = tabPosition;
         this.useRoutes = useRoutes;
 
         // Instantiate children, if needed.
@@ -79,6 +79,10 @@ export class TabContainerModel {
 
     get routeName() {
         return this.parent ? this.parent.routeName + '.' + this.id : this.id;
+    }
+
+    get vertical() {
+        return this.tabPosition === 'left' || this.tabPosition === 'right';
     }
 
     @action
