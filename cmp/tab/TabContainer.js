@@ -21,8 +21,8 @@ export class TabContainer extends Component {
 
     render() {
         const {tabPosition, vertical, selectedId, children} = this.model,
-        switcherBefore = tabPosition === 'left' || tabPosition === 'top',
-        switcherAfter = tabPosition === 'right' || tabPosition === 'bottom';
+            switcherBefore = tabPosition === 'left' || tabPosition === 'top',
+            switcherAfter = tabPosition === 'right' || tabPosition === 'bottom';
 
         return (vertical ? hframe : vframe)({
             cls: 'xh-tab-container',
@@ -46,7 +46,7 @@ export class TabContainer extends Component {
                         })
                     });
                 }),
-                switcherAfter ? tabSwitcher({model: this.model}) : null,
+                switcherAfter ? tabSwitcher({model: this.model}) : null
             ]
         });
     }
