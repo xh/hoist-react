@@ -6,9 +6,9 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
-import {HoistComponent, elemFactory} from 'hoist/core';
-import {observable, setter} from 'hoist/mobx';
-import {Classes, suggest} from 'hoist/kit/blueprint';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {observable, setter} from '@xh/hoist/mobx';
+import {Classes, suggest} from '@xh/hoist/kit/blueprint';
 
 import {BaseComboField} from './BaseComboField';
 
@@ -40,7 +40,10 @@ export class QueryComboField extends BaseComboField {
 
     constructor(props) {
         super(props);
-        this.addAutorun(() => this.syncOptions(), {delay: props.queryBuffer || 100});
+        this.addAutorun({
+            run: this.syncOptions,
+            delay: props.queryBuffer || 100
+        });
     }
 
     render() {

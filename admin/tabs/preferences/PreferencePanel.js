@@ -5,9 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {HoistComponent} from 'hoist/core';
-import {boolCheckCol, baseCol} from 'hoist/columns/Core';
-import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
+import {HoistComponent} from '@xh/hoist/core';
+import {boolCheckCol, baseCol} from '@xh/hoist/columns/Core';
+import {restGrid, RestGridModel, RestStore} from '@xh/hoist/cmp/rest';
 
 import {nameCol} from '../../columns/Columns';
 
@@ -72,7 +72,7 @@ export class PreferencePanel extends Component {
         columns: [
             boolCheckCol({field: 'local', fixedWidth: 70}),
             nameCol({fixedWidth: 200}),
-            baseCol({field: 'type', fixedWidth: 70}),
+            baseCol({field: 'type', fixedWidth: 100}),
             baseCol({field: 'defaultValue', minWidth: 150, maxWidth: 480}),
             baseCol({field: 'groupName', headerName: 'Group', fixedWidth: 100}),
             baseCol({field: 'notes', minWidth: 200, flex: 1})

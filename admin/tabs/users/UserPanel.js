@@ -5,10 +5,12 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {HoistComponent} from 'hoist/core';
-import {grid} from 'hoist/grid';
-import {vframe, filler} from 'hoist/layout';
-import {refreshButton, storeCountLabel, storeFilterField, toolbar} from 'hoist/cmp';
+import {HoistComponent} from '@xh/hoist/core';
+import {grid} from '@xh/hoist/cmp/grid';
+import {panel, filler} from '@xh/hoist/cmp/layout';
+import {toolbar} from '@xh/hoist/cmp/toolbar';
+import {refreshButton} from '@xh/hoist/cmp/button';
+import {storeCountLabel, storeFilterField} from '@xh/hoist/cmp/store';
 
 import {UserModel} from './UserModel';
 
@@ -18,15 +20,12 @@ export class UserPanel extends Component {
     localModel = new UserModel();
 
     render() {
-        return vframe(
-            this.renderToolbar(),
-            grid({
-                model: this.model.gridModel,
-                gridOptions: {
-                    rowSelection: 'single'
-                }
+        return panel({
+            tbar: this.renderToolbar(),
+            item: grid({
+                model: this.model.gridModel
             })
-        );
+        });
     }
 
     renderToolbar() {

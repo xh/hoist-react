@@ -4,8 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {defaultMethods} from 'hoist/utils/ClassUtils';
-import {HoistModel} from 'hoist/core';
+import {defaultMethods} from '@xh/hoist/utils/ClassUtils';
+import {HoistModel} from '@xh/hoist/core';
 
 /**
  * Mixin to apply to top app-level model for a HoistApp. This model will be initialized by Hoist
@@ -42,8 +42,20 @@ export function HoistAppModel(C) {
         },
 
         /**
-         * Call this once when application mounted in order to trigger initial
-         * authentication and initialization of application.
+         * Application-level AppModel must implement with appropriate logic to determine if the
+         * current user should be able to access the UI, typically based on the user's roles.
+         * @param {Object} user - current user, as returned by XH.getUser().
+         */
+        checkAccess(user) {
+            return {
+                hasAccess: false,
+                message: 'Required access control not implemented - see AppModel.checkAccess().'
+            };
+        },
+
+        /**
+         * Call this once when application mounted in order to trigger initial authentication and
+         * initialization of the application and its services.
          */
         async initAsync() {},
 

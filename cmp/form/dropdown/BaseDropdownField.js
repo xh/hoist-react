@@ -7,7 +7,7 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {isObject, find} from 'lodash';
-import {menuItem} from 'hoist/kit/blueprint';
+import {menuItem} from '@xh/hoist/kit/blueprint';
 
 import {HoistField} from '../HoistField';
 

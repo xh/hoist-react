@@ -7,8 +7,8 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {startsWith} from 'lodash';
-import {HoistComponent, elemFactory} from 'hoist/core';
-import {Classes, suggest} from 'hoist/kit/blueprint';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {Classes, suggest} from '@xh/hoist/kit/blueprint';
 
 import {BaseComboField} from './BaseComboField';
 
@@ -33,16 +33,20 @@ export class ComboField extends BaseComboField {
 
     constructor(props) {
         super(props);
-        this.options = this.normalizeOptions(props.options);
+        this.internalOptions = this.normalizeOptions(props.options);
+    }
+
+    componentDidMount() {
+        this.addAutorun(() => this.internalOptions = this.normalizeOptions(this.props.options));
     }
 
     render() {
         const {style, width, disabled} = this.props,
-            {renderValue, options} = this;
+            {renderValue, internalOptions} = this;
 
         return suggest({
             popoverProps: {popoverClassName: Classes.MINIMAL},
-            $items: options,
+            $items: internalOptions,
             onItemSelect: this.onItemSelect,
             itemPredicate: (q, item) => {
                 return startsWith(item.label.toLowerCase(), q.toLowerCase());
@@ -50,7 +54,7 @@ export class ComboField extends BaseComboField {
             itemRenderer: this.getOptionRenderer(),
             inputValueRenderer: s => s,
             inputProps: {
-                value: this.getDisplayValue(renderValue, options, ''),
+                value: this.getDisplayValue(renderValue, internalOptions, ''),
                 onChange: this.onChange,
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,

@@ -4,11 +4,11 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from 'hoist/core';
-import {ToastManager} from 'hoist/cmp';
-import {UrlStore} from 'hoist/data';
-import {GridModel} from 'hoist/grid';
-import {baseCol} from 'hoist/columns/Core';
+import {XH, HoistModel} from '@xh/hoist/core';
+import {ToastManager} from '@xh/hoist/toast';
+import {UrlStore} from '@xh/hoist/data';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {baseCol} from '@xh/hoist/columns/Core';
 
 @HoistModel()
 export class ServiceModel {
@@ -19,6 +19,7 @@ export class ServiceModel {
             processRawData: this.processRawData,
             fields: ['provider', 'name']
         }),
+        selModel: 'multiple',
         sortBy: 'name',
         groupBy: 'provider',
         columns: [
@@ -31,10 +32,10 @@ export class ServiceModel {
     });
 
     clearCaches() {
-        const selection = this.gridModel.selection;
-        if (selection.isEmpty) return;
+        const {selection} = this.gridModel;
+        if (selection.length) return;
 
-        const names = selection.records.map(it => it.name);
+        const names = selection.map(it => it.name);
         XH.fetchJson({
             url: 'serviceAdmin/clearCaches',
             params: {names}

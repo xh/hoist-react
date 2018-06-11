@@ -4,9 +4,9 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from 'hoist/core';
-import {observable, setter, computed, action} from 'hoist/mobx';
-import {ToastManager} from 'hoist/cmp';
+import {XH, HoistModel} from '@xh/hoist/core';
+import {observable, setter, action} from '@xh/hoist/mobx';
+import {ToastManager} from '@xh/hoist/toast';
 
 /**
  * Local Model to handle Exception Dialog.
@@ -14,16 +14,14 @@ import {ToastManager} from 'hoist/cmp';
 @HoistModel()
 export class ExceptionDialogModel {
 
-    @computed
     get exception() {
-        const {displayException} = XH;
-        return displayException ? displayException.exception : null;
+        const e = XH.displayException;
+        return e ? e.exception : null;
     }
 
-    @computed
     get options() {
-        const {displayException} = XH;
-        return displayException ? displayException.options : {};
+        const e = XH.displayException;
+        return e ? e.options : {};
     }
 
     @observable detailsIsOpen = false;
@@ -33,12 +31,11 @@ export class ExceptionDialogModel {
     sendReport() {
         const svc = XH.errorTrackingService,
             {exception, userMessage, options} = this;
-        if (svc.isReady) {
-            svc.submitAsync({exception, message: userMessage})
-                .then(() => {
-                    ToastManager.show({message: 'Error Details Submitted'});
-                });
-        }
+
+        svc.submitAsync({exception, message: userMessage, userAlerted: true})
+            .then(() => {
+                ToastManager.show({message: 'Error Details Submitted'});
+            });
 
         if (!options.requireReload) this.close();
     }

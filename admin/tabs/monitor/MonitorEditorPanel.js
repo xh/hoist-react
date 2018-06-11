@@ -5,10 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {HoistComponent} from 'hoist/core';
-import {baseCol, boolCheckCol} from 'hoist/columns/Core';
-import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
-import {nameFlexCol} from 'hoist/admin/columns/Columns';
+import {HoistComponent} from '@xh/hoist/core';
+import {baseCol, boolCheckCol} from '@xh/hoist/columns/Core';
+import {restGrid, RestGridModel, RestStore} from '@xh/hoist/cmp/rest';
+import {nameFlexCol} from '@xh/hoist/admin/columns/Columns';
 
 @HoistComponent()
 export class MonitorEditorPanel extends Component {
@@ -77,11 +77,11 @@ export class MonitorEditorPanel extends Component {
             boolCheckCol({field: 'active', fixedWidth: 70}),
             baseCol({field: 'code', fixedWidth: 150}),
             nameFlexCol(),
-            baseCol({field: 'warnThreshold', fixedWidth: 130}),
-            baseCol({field: 'failThreshold', fixedWidth: 130}),
-            baseCol({field: 'metricUnit', fixedWidth: 100}),
+            baseCol({field: 'warnThreshold', headerName: 'Warn', fixedWidth: 130, align: 'right'}),
+            baseCol({field: 'failThreshold', headerName: 'Fail', fixedWidth: 130, align: 'right'}),
+            baseCol({field: 'metricUnit', headerName: 'Units', fixedWidth: 100}),
             baseCol({field: 'notes', minWidth: 70, flex: 1}),
-            baseCol({field: 'sortOrder', fixedWidth: 100})
+            baseCol({field: 'sortOrder', headerName: 'Sort', fixedWidth: 100})
         ],
         editors: [
             {field: 'code'},

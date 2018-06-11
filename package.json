@@ -1,6 +1,6 @@
 {
   "name": "@xh/hoist",
-  "version": "1.0.0",
+  "version": "5.0.0",
   "description": "Hoist add-on for building and deploying React Applications.",
   "module": "index.js",
   "repository": "https://github.com/exhi/hoist-react",
@@ -22,7 +22,7 @@
     "@fortawesome/fontawesome-pro-light": "~5.0.13",
     "@fortawesome/fontawesome-pro-regular": "~5.0.13",
     "@fortawesome/fontawesome-pro-solid": "~5.0.13",
-    "@fortawesome/react-fontawesome": "~0.0.18",
+    "@fortawesome/react-fontawesome": "~0.0.19",
     "ag-grid": "~17.1.0",
     "ag-grid-enterprise": "~17.1.0",
     "ag-grid-react": "~17.1.0",
@@ -48,7 +48,7 @@
     "react-dom-factories": "~1.0.2"
   },
   "devDependencies": {
-    "@xh/hoist-dev-utils": "~1.0.0",
+    "@xh/hoist-dev-utils": "~2.1.1",
     "react": "~16.3.2",
     "react-dom": "~16.3.2",
     "react-dom-factories": "~1.0.2"

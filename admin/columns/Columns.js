@@ -5,8 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {fileColFactory} from 'hoist/columns/Utils.js';
-
+import {fileColFactory} from '@xh/hoist/columns/Utils.js';
 
 /**
  * Shared columns for the admin client.

@@ -5,9 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {HoistComponent} from 'hoist/core';
-import {restGrid, RestGridModel, RestStore} from 'hoist/rest';
-import {baseCol} from 'hoist/columns/Core';
+import {HoistComponent} from '@xh/hoist/core';
+import {restGrid, RestGridModel, RestStore} from '@xh/hoist/cmp/rest';
+import {baseCol} from '@xh/hoist/columns/Core';
 
 import {nameCol, usernameCol} from '../../columns/Columns';
 
@@ -64,7 +64,7 @@ export class UserPreferencePanel extends Component {
         filterFields: ['name', 'username'],
         columns: [
             nameCol({fixedWidth: 200}),
-            baseCol({field: 'type', fixedWidth: 70}),
+            baseCol({field: 'type', fixedWidth: 100}),
             usernameCol({fixedWidth: 120}),
             baseCol({field: 'groupName', headerName: 'Group', fixedWidth: 100}),
             baseCol({field: 'userValue', minWidth: 200, flex: 1})

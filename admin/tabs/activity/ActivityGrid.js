@@ -5,12 +5,15 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {button} from 'hoist/kit/blueprint';
-import {HoistComponent, elemFactory} from 'hoist/core';
-import {grid} from 'hoist/grid';
-import {vframe, filler} from 'hoist/layout';
-import {textField, dayField, exportButton, refreshButton, storeCountLabel, toolbar, toolbarSep} from 'hoist/cmp';
-import {Icon} from 'hoist/icon';
+import {button} from '@xh/hoist/kit/blueprint';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {grid} from '@xh/hoist/cmp/grid';
+import {filler, panel} from '@xh/hoist/cmp/layout';
+import {textField, dayField} from '@xh/hoist/cmp/form';
+import {toolbar, toolbarSep} from '@xh/hoist/cmp/toolbar';
+import {exportButton, refreshButton} from '@xh/hoist/cmp/button';
+import {storeCountLabel} from '@xh/hoist/cmp/store';
+import {Icon} from '@xh/hoist/icon';
 
 import {activityDetail} from './ActivityDetail';
 
@@ -19,17 +22,16 @@ export class ActivityGrid extends Component {
 
     render() {
         const {model} = this;
-        return vframe(
-            this.renderToolbar(),
-            grid({
-                model: model.gridModel,
-                gridOptions: {
-                    rowSelection: 'single',
+        return panel({
+            tbar: this.renderToolbar(),
+            items: [
+                grid({
+                    model: model.gridModel,
                     onRowDoubleClicked: this.onRowDoubleClicked
-                }
-            }),
-            activityDetail({model})
-        );
+                }),
+                activityDetail({model})
+            ]
+        });
     }
 
     renderToolbar() {

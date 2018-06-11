@@ -11,4 +11,12 @@
     margin-bottom: var(--xh-pad-px);
     text-align: center;
   }
+
+  &__message {
+    background-color: var(--xh-bg-alt);
+    margin: 0 var(--xh-pad-px) var(--xh-pad-px) var(--xh-pad-px);
+    padding: var(--xh-pad-px);
+    border-radius: var(--xh-border-radius-px);
+  }
 }
+

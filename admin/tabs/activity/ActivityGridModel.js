@@ -5,13 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import moment from 'moment';
-import {XH, HoistModel} from 'hoist/core';
-import {action, observable, setter} from 'hoist/mobx';
-import {LocalStore} from 'hoist/data';
-import {GridModel} from 'hoist/grid';
-import {fmtDate, numberRenderer} from 'hoist/format';
-import {baseCol} from 'hoist/columns/Core';
-import {dateTimeCol} from 'hoist/columns/DatesTimes';
+import {XH, HoistModel} from '@xh/hoist/core';
+import {action, observable, setter} from '@xh/hoist/mobx';
+import {LocalStore} from '@xh/hoist/data';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {fmtDate, numberRenderer} from '@xh/hoist/format';
+import {baseCol} from '@xh/hoist/columns/Core';
+import {dateTimeCol} from '@xh/hoist/columns/DatesTimes';
 
 import {usernameCol} from '../../columns/Columns';
 
@@ -38,19 +38,19 @@ export class ActivityGridModel {
         }),
         sortBy: {colId: 'dateCreated', sort: 'desc'},
         columns: [
-            baseCol({field: 'severity', fixedWidth: 90}),
+            baseCol({field: 'severity', fixedWidth: 100}),
             dateTimeCol({field: 'dateCreated', fixedWidth: 160, align: 'right'}),
             usernameCol({fixedWidth: 120}),
             baseCol({field: 'msg', headerName: 'Message', minWidth: 150, flex: 1}),
             baseCol({field: 'category', fixedWidth: 100}),
-            baseCol({field: 'device', fixedWidth: 80}),
+            baseCol({field: 'device', fixedWidth: 100}),
             baseCol({field: 'browser', fixedWidth: 100}),
             baseCol({field: 'data', minWidth: 70, flex: 1}),
             baseCol({field: 'impersonating', fixedWidth: 140}),
             baseCol({
                 field: 'elapsed',
                 headerName: 'Elapsed (ms)',
-                fixedWidth: 120,
+                fixedWidth: 130,
                 valueFormatter: numberRenderer({precision: 0})
             })
         ]

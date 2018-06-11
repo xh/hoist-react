@@ -4,8 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {Exception} from  'hoist/exception';
-import {XH} from 'hoist/core';
+import {Exception} from '@xh/hoist/exception';
+import {XH} from '@xh/hoist/core';
 
 /**
  * Centralized Exception Handler for Hoist Application.
@@ -14,10 +14,10 @@ import {XH} from 'hoist/core';
 export class ExceptionHandler {
 
     /**
-     *  Called by framework constructs to handle an exception.
+     * Called by framework constructs to handle an exception.
      *
-     *  Typical application entry points to this method are via the XH.handleException() alias and
-     *  Promise.catchDefault().
+     * Typical application entry points to this method are via the XH.handleException() alias and
+     * Promise.catchDefault().
      *
      * @param {(Error|Object|string)} exception - Error or thrown object - if not an Error, an
      *      Exception will be created via Exception.create().
@@ -36,6 +36,8 @@ export class ExceptionHandler {
      *      for "expected" exceptions.
      * @param {boolean} [options.requireReload] - force user to fully refresh the app in order to
      *      dismiss - default false, excepting session expired exceptions.
+     * @param {Array} [options.hideParams] - A list of parameters that should be hidden from
+     *      the exception log and alert.
      */
     static handleException(exception, options) {
         if (!(exception instanceof Error)) {
@@ -44,20 +46,37 @@ export class ExceptionHandler {
 
         options = this.parseOptions(exception, options);
 
+        if (options.hideParams) {
+            this.hideParams(exception, options);
+        }
+
         this.logException(exception, options);
 
         if (options.showAlert) {
             this.alertException(exception, options);
         }
         if (options.logOnServer) {
-            this.logErrorOnServer(exception);
+            this.logErrorOnServer(exception, options);
         }
     }
-
 
     //--------------------------------
     // Implementation
     //--------------------------------
+    static hideParams(exception, options) {
+        const {requestOptions} = exception,
+            {hideParams} = options;
+
+        if (!requestOptions || !requestOptions.params) return;
+
+        // body will just be stringfied params -- currently hide all for simplicity.
+        requestOptions.body = '******';
+
+        hideParams.forEach(it => {
+            requestOptions.params[it] = '******';
+        });
+    }
+
     static logException(exception, options) {
         return (options.showAsError) ?
             console.error(options.message, exception) :
@@ -89,11 +108,8 @@ export class ExceptionHandler {
         return ret;
     }
 
-    static logErrorOnServer(exception) {
-        const errorTrackingService = XH.errorTrackingService;
-        if (errorTrackingService.isReady) {
-            errorTrackingService.submitAsync({exception});
-        }
+    static logErrorOnServer(exception, options) {
+        XH.errorTrackingService.submitAsync({exception, userAlerted: options.showAlert});
     }
 
     static sessionExpired(exception) {

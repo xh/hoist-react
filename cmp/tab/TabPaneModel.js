@@ -4,9 +4,9 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from 'hoist/core';
-import {action, computed, observable} from 'hoist/mobx';
-import {LastPromiseModel, wait} from 'hoist/promise';
+import {XH, HoistModel} from '@xh/hoist/core';
+import {action, computed, observable} from '@xh/hoist/mobx';
+import {LastPromiseModel, wait} from '@xh/hoist/promise';
 import {startCase, max} from 'lodash';
 
 /**
@@ -44,7 +44,7 @@ export class TabPaneModel {
         this.name = name;
         this.componentClass = component;
         this.reloadOnShow = reloadOnShow;
-        wait(1).then(() => this.addAutorun(() => this.syncFromRouter()));
+        wait(1).then(() => this.addAutorun(this.syncFromRouter));
     }
 
     select() {

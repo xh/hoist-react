@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {elemFactory} from 'hoist/core';
+import {elemFactory} from '@xh/hoist/core';
 
 import fontawesome from '@fortawesome/fontawesome';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
@@ -69,6 +69,8 @@ export const Icon = {
     gear(p)          {return fa(p, 'cog')},
     gears(p)         {return fa(p, 'cogs')},
     gift(p)          {return fa(p, 'gift')},
+    globe(p)         {return fa(p, 'globe')},
+    grid(p)          {return fa(p, 'table')},
     hand(p)          {return fa(p, 'hand-paper')},
     home(p)          {return fa(p, 'home')},
     info(p)          {return fa(p, 'info-circle')},
@@ -83,14 +85,17 @@ export const Icon = {
     pause(p)         {return fa(p, 'pause')},
     play(p)          {return fa(p, 'play')},
     portfolio(p)     {return fa(p, 'briefcase')},
+    print(p)         {return fa(p, 'print')},
     refresh(p)       {return fa(p, 'sync')},
     rocket(p)        {return fa(p, 'rocket')},
     save(p)          {return fa(p, 'save')},
     search(p)        {return fa(p, 'search')},
     sun(p)           {return fa(p, 'sun')},
     sync(p)          {return fa(p, 'sync')},
+    toolbox(p)       {return fa(p, 'toolbox')},
     thumbsDown(p)    {return fa(p, 'thumbs-down')},
     thumbsUp(p)      {return fa(p, 'thumbs-up')},
+    undo(p)          {return fa(p, 'undo')},
     user(p)          {return fa(p, 'user-circle')},
     users(p)         {return fa(p, 'users')},
     warning(p)       {return fa(p, 'exclamation-triangle')},

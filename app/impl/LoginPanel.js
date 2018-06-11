@@ -6,12 +6,13 @@
  */
 
 import {Component} from 'react';
-import {XH, elemFactory, HoistComponent} from 'hoist/core';
-import {vspacer, filler, viewport} from 'hoist/layout';
-import {button, text} from 'hoist/kit/blueprint';
-import {panel, textField, toolbar} from 'hoist/cmp';
-import {observable, computed, setter} from 'hoist/mobx';
-import {Icon} from 'hoist/icon';
+import {button, text} from '@xh/hoist/kit/blueprint';
+import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {panel, vspacer, box, filler, viewport} from '@xh/hoist/cmp/layout';
+import {textField} from '@xh/hoist/cmp/form';
+import {toolbar} from '@xh/hoist/cmp/toolbar';
+import {observable, computed, setter} from '@xh/hoist/mobx';
+import {Icon} from '@xh/hoist/icon';
 
 import './LoginPanel.scss';
 
@@ -26,50 +27,60 @@ export class LoginPanel extends Component {
     @setter @observable password = '';
     @setter @observable warning = '';
 
-    @computed get isValid() {
+    @computed
+    get isValid() {
         return this.username && this.password;
     }
 
     render() {
+        const {loginMessage} = XH.appModel;
+
         return viewport({
             alignItems: 'center',
             justifyContent: 'center',
-            item: panel({
-                cls: 'xh-login',
-                width: 300,
-                title: `Welcome to ${XH.appName}`,
-                items: [
-                    vspacer(10),
-                    textField({
-                        model: this,
-                        field: 'username',
-                        placeholder: 'Username...',
-                        autoFocus: true
-                    }),
-                    textField({
-                        model: this,
-                        field: 'password',
-                        placeholder: 'Password...',
-                        type: 'password'
-                    }),
-                    text({
-                        omit: !this.warning,
-                        item: this.warning,
-                        ellipsize: true,
-                        cls: 'xh-login__warning'
-                    })
-                ],
-                bottomToolbar: toolbar(
-                    filler(),
-                    button({
-                        text: 'Login',
-                        intent: 'primary',
-                        icon: Icon.login(),
-                        disabled: !this.isValid,
-                        onClick: this.onSubmit
-                    })
-                )
-            })
+            flexDirection: 'column',
+            items: [
+                panel({
+                    cls: 'xh-login',
+                    width: 300,
+                    title: `Welcome to ${XH.appName}`,
+                    items: [
+                        vspacer(10),
+                        textField({
+                            model: this,
+                            field: 'username',
+                            placeholder: 'Username...',
+                            autoFocus: true
+                        }),
+                        textField({
+                            model: this,
+                            field: 'password',
+                            placeholder: 'Password...',
+                            type: 'password'
+                        }),
+                        text({
+                            omit: !this.warning,
+                            item: this.warning,
+                            ellipsize: true,
+                            cls: 'xh-login__warning'
+                        }),
+                        loginMessage ? box({
+                            cls: 'xh-login__message',
+                            item: loginMessage
+                        }) : null
+                    ],
+                    bbar: toolbar(
+                        filler(),
+                        button({
+                            text: 'Login',
+                            intent: 'primary',
+                            icon: Icon.login(),
+                            disabled: !this.isValid,
+                            onClick: this.onSubmit
+                        })
+                    )
+                })
+            ]
         });
     }
 
@@ -85,9 +96,11 @@ export class LoginPanel extends Component {
         }).then(r => {
             this.setWarning(r.success ? '' : 'Login Incorrect');
             if (r.success) {
-                XH.completeInitAsync(username);
+                XH.completeInitAsync();
             }
-        }).catchDefault();
+        }).catchDefault({
+            hideParams: ['password']
+        });
     }
 
     onUsernameChange = (ev) => {this.setUsername(ev.target.value)}

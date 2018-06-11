@@ -4,17 +4,16 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH} from 'hoist/core';
-import {HoistAppModel} from 'hoist/app';
-import {action} from 'hoist/mobx';
-import {TabContainerModel} from 'hoist/cmp';
+import {XH} from '@xh/hoist/core';
+import {HoistAppModel} from '@xh/hoist/app';
+import {action} from '@xh/hoist/mobx';
+import {TabContainerModel} from '@xh/hoist/cmp/tab';
 
 import {AboutPanel} from './tabs/about/AboutPanel';
 import {ActivityPanel} from './tabs/activity/ActivityPanel';
 import {ConfigPanel} from './tabs/configs/ConfigPanel';
 import {ClientErrorPanel} from './tabs/clienterrors/ClientErrorPanel';
 import {FeedbackPanel} from './tabs/feedback/FeedbackPanel';
-import {DashboardPanel} from './tabs/dashboards/DashboardPanel';
 import {EhCachePanel} from './tabs/ehcache/EhCachePanel';
 import {LogLevelPanel} from './tabs/logging/LogLevelPanel';
 import {LogViewer} from './tabs/logging/viewer/LogViewer';
@@ -29,6 +28,13 @@ import {UserPanel} from './tabs/users/UserPanel';
 export class AppModel {
 
     tabs = this.createTabContainer();
+
+    checkAccess(user) {
+        const role = 'HOIST_ADMIN',
+            hasAccess = user.hasRole(role),
+            message = hasAccess ? '' : `Admin console access requires the "${role}" role.`;
+        return {hasAccess, message};
+    }
     
     @action
     requestRefresh() {
@@ -72,7 +78,6 @@ export class AppModel {
                     {name: 'config', path: '/config'},
                     {name: 'services', path: '/services'},
                     {name: 'ehCache', path: '/ehCache'},
-                    {name: 'dashboards', path: '/dashboards'},
                     {name: 'users', path: '/users'}
                 ]
             },
@@ -125,7 +130,6 @@ export class AppModel {
                     {id: 'config', component: ConfigPanel},
                     {id: 'services', component: ServicePanel},
                     {id: 'ehCache', name: 'Caches', component: EhCachePanel},
-                    {id: 'dashboards', component: DashboardPanel},
                     {id: 'users', component: UserPanel}
                 ]
             }, {

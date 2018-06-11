@@ -6,13 +6,13 @@
  */
 
 import moment from 'moment';
-import {XH, HoistModel} from 'hoist/core';
-import {action, observable, setter} from 'hoist/mobx';
-import {LocalStore} from 'hoist/data';
-import {GridModel} from 'hoist/grid';
-import {fmtDate} from 'hoist/format';
-import {baseCol} from 'hoist/columns/Core';
-import {compactDateCol} from 'hoist/columns/DatesTimes';
+import {XH, HoistModel} from '@xh/hoist/core';
+import {action, observable, setter} from '@xh/hoist/mobx';
+import {LocalStore} from '@xh/hoist/data';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {fmtDate} from '@xh/hoist/format';
+import {baseCol, boolCheckCol} from '@xh/hoist/columns/Core';
+import {compactDateCol} from '@xh/hoist/columns/DatesTimes';
 
 import {usernameCol} from '../../columns/Columns';
 
@@ -29,7 +29,7 @@ export class ClientErrorModel {
     gridModel = new GridModel({
         store: new LocalStore({
             fields: [
-                'username', 'error', 'msg', 'browser', 'device',
+                'username', 'error', 'msg', 'userAlerted', 'browser', 'device',
                 'appVersion', 'appEnvironment', 'dateCreated', 'userAgent'
             ]
         }),
@@ -39,10 +39,11 @@ export class ClientErrorModel {
             usernameCol({fixedWidth: 120}),
             baseCol({field: 'error', minWidth: 450, flex: 3}),
             baseCol({field: 'msg', headerName: 'Message', minWidth: 150, flex: 1}),
+            boolCheckCol({field: 'userAlerted', headerName: 'User Alerted?', fixedWidth: 120}),
             baseCol({field: 'browser', fixedWidth: 100}),
-            baseCol({field: 'device', fixedWidth: 80}),
+            baseCol({field: 'device', fixedWidth: 100}),
             baseCol({field: 'appVersion', fixedWidth: 130}),
-            baseCol({field: 'appEnvironment', headerName: 'Environment', fixedWidth: 120})
+            baseCol({field: 'appEnvironment', headerName: 'Environment', fixedWidth: 130})
         ]
     });
 

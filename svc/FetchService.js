@@ -4,8 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistService} from 'hoist/core';
-import {Exception} from 'hoist/exception';
+import {XH, HoistService} from '@xh/hoist/core';
+import {Exception} from '@xh/hoist/exception';
 import {castArray} from 'lodash';
 
 @HoistService()
@@ -78,7 +78,12 @@ export class FetchService {
             }
         }
 
-        const ret = await fetch(url, opts);
+        let ret;
+        try {
+            ret = await fetch(url, opts);
+        } catch (e) {
+            throw Exception.serverUnavailable(url, opts, e);
+        }
         if (!ret.ok) throw Exception.requestError(opts, ret);
         return ret;
     }

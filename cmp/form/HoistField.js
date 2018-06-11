@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {upperFirst} from 'lodash';
-import {observable, setter, computed} from 'hoist/mobx';
+import {observable, setter, computed} from '@xh/hoist/mobx';
 
 /**
  *
@@ -108,7 +108,7 @@ export class HoistField extends Component {
 
         if (onCommit) onCommit(newValue);
 
-        this.setInternalValue(this.toInternal(this.externalValue));
+        this.setInternalValue(this.toInternal(newValue));
     }
 
     onBlur = () => {

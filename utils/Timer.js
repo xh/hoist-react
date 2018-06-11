@@ -4,8 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {MINUTES} from 'hoist/utils/DateTimeUtils';
-import {start, wait} from 'hoist/promise';
+import {MINUTES} from '@xh/hoist/utils/DateTimeUtils';
+import {start, wait} from '@xh/hoist/promise';
 import {pull} from 'lodash';
 
 /**

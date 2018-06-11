@@ -11,7 +11,7 @@ import '@blueprintjs/select/lib/css/blueprint-select.css';
 import '@blueprintjs/icons/lib/css/blueprint-icons.css';
 import './styles.scss';
 
-import {elemFactory} from 'hoist/core';
+import {elemFactory} from '@xh/hoist/core';
 import {
     Alert,
     Button,
@@ -34,6 +34,7 @@ import {
     Overlay,
     Popover,
     RangeSlider,
+    Slider,
     Spinner,
     Switch,
     Tab,
@@ -78,6 +79,7 @@ export const
     overlay = elemFactory(Overlay),
     popover = elemFactory(Popover),
     rangeSlider = elemFactory(RangeSlider),
+    slider = elemFactory(Slider),
     select = elemFactory(Select),
     spinner = elemFactory(Spinner),
     suggest = elemFactory(Suggest),

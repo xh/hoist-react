@@ -5,11 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH, HoistModel} from 'hoist/core';
-import {ToastManager} from 'hoist/cmp';
-import {UrlStore} from 'hoist/data';
-import {GridModel} from 'hoist/grid';
-import {baseCol} from 'hoist/columns/Core';
+import {XH, HoistModel} from '@xh/hoist/core';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {UrlStore} from '@xh/hoist/data';
+import {baseCol} from '@xh/hoist/columns/Core';
+import {ToastManager} from '@xh/hoist/toast';
 
 import {nameCol} from '../../columns/Columns';
 
@@ -24,7 +24,7 @@ export class EhCacheModel {
         sortBy: 'name',
         columns: [
             nameCol({minWidth: 360, flex: 3}),
-            baseCol({field: 'heapSize', headerName: 'Heap Size (MB)', fixedWidth: 120, align: 'right'}),
+            baseCol({field: 'heapSize', headerName: 'Heap Size (MB)', fixedWidth: 130, align: 'right'}),
             baseCol({field: 'entries', fixedWidth: 120, align: 'right'}),
             baseCol({field: 'status', minWidth: 120, flex: 1, align: 'right'})
         ]

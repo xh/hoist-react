@@ -5,20 +5,22 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, HoistComponent} from 'hoist/core';
-import {Icon} from 'hoist/icon';
-import {Ref} from 'hoist/utils/Ref';
-import {frame, table, tbody, td, tr} from 'hoist/layout';
-import {clipboardMenuItem, contextMenu} from 'hoist/cmp';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
+import {Ref} from '@xh/hoist/utils/Ref';
+import {frame, table, tbody, td, tr} from '@xh/hoist/cmp/layout';
+import {clipboardMenuItem} from '@xh/hoist/cmp/clipboard';
+import {contextMenu} from '@xh/hoist/cmp/contextmenu';
 
 @HoistComponent()
 class LogViewerDisplay extends Component {
 
+    firstRow = new Ref();
     lastRow = new Ref();
 
     constructor(props) {
         super(props);
-        this.addAutorun(() => this.syncTail());
+        this.addAutorun(this.syncTail);
     }
 
     render() {
@@ -36,7 +38,7 @@ class LogViewerDisplay extends Component {
         return rows.map((row, idx) => {
             return tr({
                 cls: 'xh-log-display__row',
-                ref: idx === rows.length - 1 ? this.lastRow.ref : undefined,
+                ref: this.getRowRef(idx, rows.length),
                 items: [
                     td({key: `row-number-${idx}`, datakey: idx, cls: 'xh-log-display__row-number', item: row[0].toString()}),
                     td({key: `row-content-${idx}`, datakey: idx, cls: 'xh-log-display__row-content', item: row[1]})
@@ -68,12 +70,21 @@ class LogViewerDisplay extends Component {
         });
     }
 
-    syncTail() {
-        if (!this.model.tail) return;
-        const lastRowElem = this.lastRow.value;
-        if (lastRowElem) {
-            lastRowElem.scrollIntoView();
+    getRowRef(idx, total) {
+        if (idx === total - 1) {
+            return this.lastRow.ref;
+        } else if (idx === 0) {
+            return this.firstRow.ref;
         }
+
+        return undefined;
+    }
+
+    syncTail() {
+        const {tail} = this.model,
+            rowElem = this[tail ? 'lastRow' : 'firstRow'].value;
+
+        if (rowElem) rowElem.scrollIntoView();
     }
 }
 export const logViewerDisplay = elemFactory(LogViewerDisplay);

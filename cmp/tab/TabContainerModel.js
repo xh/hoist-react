@@ -4,12 +4,12 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from 'hoist/core';
-import {action, computed, observable} from 'hoist/mobx';
+import {XH, HoistModel} from '@xh/hoist/core';
+import {action, computed, observable} from '@xh/hoist/mobx';
 import {isPlainObject, max, startCase, uniqBy} from 'lodash';
-import {throwIf} from 'hoist/utils/JsUtils';
-import {wait} from 'hoist/promise';
-import {TabPaneModel} from 'hoist/cmp';
+import {throwIf} from '@xh/hoist/utils/JsUtils';
+import {wait} from '@xh/hoist/promise';
+import {TabPaneModel} from '@xh/hoist/cmp/tab';
 
 /**
  * Model for a TabContainer, representing its layout/contents and currently selected TabPane.
@@ -74,7 +74,7 @@ export class TabContainerModel {
         children.forEach(child => child.parent = this);
         this.children = children;
         this.selectedId = children[0].id;
-        wait(1).then(() => this.addAutorun(() => this.syncFromRouter()));
+        wait(1).then(() => this.addAutorun(this.syncFromRouter));
     }
 
     get routeName() {

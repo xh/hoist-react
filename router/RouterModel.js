@@ -4,8 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from 'hoist/core';
-import {observable, action} from 'hoist/mobx';
+import {HoistModel} from '@xh/hoist/core';
+import {observable, action} from '@xh/hoist/mobx';
 import createRouter from 'router5';
 import browserPlugin from 'router5/plugins/browser';
 import {hoistPlugin, hoistMiddleware} from './impl/HoistConnectors';

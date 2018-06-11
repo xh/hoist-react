@@ -5,9 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH} from 'hoist/core';
-import {LastPromiseModel} from 'hoist/promise';
-import {observable, action} from 'hoist/mobx';
+import {XH} from '@xh/hoist/core';
+import {LastPromiseModel} from '@xh/hoist/promise';
+import {observable, action} from '@xh/hoist/mobx';
 import {BaseStore} from './BaseStore';
 
 /**
@@ -15,7 +15,7 @@ import {BaseStore} from './BaseStore';
  */
 export class LocalStore extends BaseStore {
 
-    _recordsMap = new Map();
+    @observable.shallow _recordsMap = new Map();
 
     @observable.ref _allRecords = [];
     @observable.ref _records = [];
