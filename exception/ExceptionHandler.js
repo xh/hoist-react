@@ -36,6 +36,8 @@ export class ExceptionHandler {
      *      for "expected" exceptions.
      * @param {boolean} [options.requireReload] - force user to fully refresh the app in order to
      *      dismiss - default false, excepting session expired exceptions.
+     * @param {Array} [options.hideParams] - A list of parameters that should be hidden from
+     *      the exception log and alert.
      */
     static handleException(exception, options) {
         if (!(exception instanceof Error)) {
@@ -43,6 +45,10 @@ export class ExceptionHandler {
         }
 
         options = this.parseOptions(exception, options);
+
+        if (options.hideParams) {
+            this.hideParams(exception, options);
+        }
 
         this.logException(exception, options);
 
@@ -54,10 +60,23 @@ export class ExceptionHandler {
         }
     }
 
-
     //--------------------------------
     // Implementation
     //--------------------------------
+    static hideParams(exception, options) {
+        const {requestOptions} = exception,
+            {hideParams} = options;
+
+        if (!requestOptions || !requestOptions.params) return;
+
+        // body will just be stringfied params -- currently hide all for simplicity.
+        requestOptions.body = '******';
+
+        hideParams.forEach(it => {
+            requestOptions.params[it] = '******';
+        });
+    }
+
     static logException(exception, options) {
         return (options.showAsError) ?
             console.error(options.message, exception) :
