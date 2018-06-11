@@ -52,6 +52,7 @@ class Grid extends Component {
 
     constructor(props) {
         super(props);
+        const {model} = this;
         this.addReaction({
             track: () => [model.api, model.selModel.ids],
             run: this.syncSelection
@@ -136,37 +137,6 @@ class Grid extends Component {
             onComponentStateChanged: this.onComponentStateChanged,
             onDragStopped: this.onDragStopped
         };
-
-        this.addAutorun(this.syncSelection);
-        this.addAutorun(this.syncSort);
-        this.addAutorun(this.syncColumns);
-    }
-
-    render() {
-        const {store, colChooserModel} = this.model,
-            {layoutConfig} = this.props;
-
-        // Default flex = 'auto' if no dimensions / flex specified.
-        if (layoutConfig.width == null && layoutConfig.height == null && layoutConfig.flex == null) {
-            layoutConfig.flex = 'auto';
-        }
-
-        return fragment(
-            box({
-                layoutConfig: layoutConfig,
-                cls: `ag-grid-holder ${XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham'}`,
-                item: agGridReact({
-                    rowData: store.records,
-                    columnDefs: this.agColDefs(),
-                    ...this.defaultAgOptions,
-                    ...this.props.agOptions
-                })
-            }),
-            colChooser({
-                omit: !colChooserModel,
-                model: colChooserModel
-            })
-        );
     }
 
     //------------------------
@@ -179,7 +149,6 @@ class Grid extends Component {
             return col.agColDef ? col.agColDef() : col;
         });
 
-        console.log(sortBy);
         sortBy.forEach(it => {
             const col = find(cols, {colId: it.colId});
             if (col) {
