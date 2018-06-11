@@ -153,7 +153,7 @@ class Grid extends Component {
             const col = find(cols, {colId: it.colId});
             if (col) {
                 col.sort = it.sort;
-                col.sortAt = Date.now();
+                col.sortedAt = Date.now();
             }
         });
 
