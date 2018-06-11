@@ -59,7 +59,6 @@ export class AppModel {
         return new TabContainerModel({
             id: 'default',
             useRoutes: true,
-            orientation: 'h',
             children: this.createTabs()
         });
     }
@@ -124,7 +123,7 @@ export class AppModel {
         return [
             {
                 id: 'general',
-                orientation: 'v',
+                switcherPosition: 'left',
                 children: [
                     {id: 'about', component: AboutPanel},
                     {id: 'config', component: ConfigPanel},
@@ -134,7 +133,7 @@ export class AppModel {
                 ]
             }, {
                 id: 'logging',
-                orientation: 'v',
+                switcherPosition: 'left',
                 children: [
                     {id: 'viewer', component: LogViewer},
                     {id: 'levels', component: LogLevelPanel}
@@ -142,7 +141,7 @@ export class AppModel {
             },
             {
                 id: 'monitor',
-                orientation: 'v',
+                switcherPosition: 'left',
                 children: [
                     {id: 'status', component: MonitorResultsPanel},
                     {id: 'editMonitors', component: MonitorEditorPanel}
@@ -150,7 +149,7 @@ export class AppModel {
             },
             {
                 id: 'clientActivity',
-                orientation: 'v',
+                switcherPosition: 'left',
                 children: [
                     {id: 'activity', component: ActivityPanel},
                     {id: 'clientErrors', component: ClientErrorPanel},
@@ -159,7 +158,7 @@ export class AppModel {
             },
             {
                 id: 'preferences',
-                orientation: 'v',
+                switcherPosition: 'left',
                 children: [
                     {id: 'prefs', component: PreferencePanel},
                     {id: 'userPrefs', component: UserPreferencePanel, reloadOnShow: true}

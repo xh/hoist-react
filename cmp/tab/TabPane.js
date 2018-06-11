@@ -39,7 +39,6 @@ export class TabPane extends Component {
 
         return frame({
             display: isActive ? 'flex' : 'none',
-            margin: 4,
             cls: 'xh-tab-pane',
             item: elem(model.componentClass, {
                 ...this.props,
