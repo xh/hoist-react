@@ -56,7 +56,7 @@ export class ExceptionHandler {
             this.alertException(exception, options);
         }
         if (options.logOnServer) {
-            this.logErrorOnServer(exception);
+            this.logErrorOnServer(exception, options);
         }
     }
 
@@ -108,8 +108,8 @@ export class ExceptionHandler {
         return ret;
     }
 
-    static logErrorOnServer(exception) {
-        XH.errorTrackingService.submitAsync({exception});
+    static logErrorOnServer(exception, options) {
+        XH.errorTrackingService.submitAsync({exception, userAlerted: options.showAlert});
     }
 
     static sessionExpired(exception) {
