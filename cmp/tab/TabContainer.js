@@ -23,11 +23,11 @@ export class TabContainer extends Component {
         const {vertical, selectedId, children} = this.model,
             outerCmp = vertical ? hframe : vframe;
 
-        return outerCmp(
-            tabSwitcher({model: this.model}),
-            div({
-                cls: 'xh-tab-container',
-                items: children.map(childModel => {
+        return outerCmp({
+            cls: 'xh-tab-container',
+            items: [
+                tabSwitcher({model: this.model}),
+                ...children.map(childModel => {
                     const childId = childModel.id,
                         isSubContainer = childModel instanceof TabContainerModel,
                         cmpClass = isSubContainer ? TabContainer : TabPane;
@@ -37,6 +37,7 @@ export class TabContainer extends Component {
                         style.display = 'none';
                     }
 
+
                     return div({
                         cls: 'xh-tab-panel',
                         style,
@@ -45,8 +46,8 @@ export class TabContainer extends Component {
                         })
                     });
                 })
-            })
-        );
+            ]
+        });
     }
 }
 

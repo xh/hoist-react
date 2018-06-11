@@ -5,26 +5,22 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-.pt-tabs {
-  &.pt-vertical {
-    .pt-tab-panel {
-      padding-left: 0;
-    }
-  }
-}
-
 .xh-tab-container {
   display: flex;
   max-width: 100%;
   max-height: 100%;
   flex-direction: column;
   flex: 1 1 0;
-}
 
-.xh-tab-panel {
-  display: flex;
-  min-width: 0;
-  min-height: 0;
-  flex: 1 1 0;
-  margin-top: var(--xh-pad-half-px);
+  .xh-tab-panel {
+    display: flex;
+    min-width: 0;
+    min-height: 0;
+    flex: 1 1 0;
+    margin-top: var(--xh-pad-half-px);
+  }
+
+  .pt-tabs.pt-vertical ~ .xh-tab-panel {
+    margin-top: 0;
+  }
 }
