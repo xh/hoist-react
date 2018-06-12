@@ -9,6 +9,7 @@ import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {box} from '@xh/hoist/cmp/layout';
 import {slider, rangeSlider} from '@xh/hoist/kit/blueprint';
+import {throwIf} from '@xh/hoist/utils/JsUtils';
 import {isArray} from 'lodash';
 import {toJS} from 'mobx';
 import {HoistField} from './HoistField';
@@ -24,6 +25,8 @@ import {HoistField} from './HoistField';
 export class SliderField extends HoistField {
 
     static propTypes = {
+        ...HoistField.propTypes,
+
         /** minimum value */
         min: PT.number,
         /** maximum value */
@@ -38,10 +41,20 @@ export class SliderField extends HoistField {
         stepSize: PT.number
     };
 
+    static defaultProps = {
+        commitOnChange: true,
+        layoutConfig: {}
+    };
+
     delegateProps = ['className', 'disabled'];
 
+    constructor(props) {
+        super(props);
+        throwIf(!props.commitOnChange, 'A commitOnChange value of false not implemented on SliderField.');
+    }
+
     render() {
-        const {labelStepSize, labelRenderer, layoutConfig = {}, min, max, stepSize, vertical} = this.props,
+        const {labelStepSize, labelRenderer, layoutConfig, min, max, stepSize, vertical} = this.props,
             input = isArray(toJS(this.renderValue)) ? rangeSlider : slider;
 
         // Set default left / right padding
@@ -68,7 +81,6 @@ export class SliderField extends HoistField {
 
     onValueChange = (val) => {
         this.noteValueChange(val);
-        this.doCommit();
     }
 
 }
