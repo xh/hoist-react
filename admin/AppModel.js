@@ -14,7 +14,6 @@ import {ActivityPanel} from './tabs/activity/ActivityPanel';
 import {ConfigPanel} from './tabs/configs/ConfigPanel';
 import {ClientErrorPanel} from './tabs/clienterrors/ClientErrorPanel';
 import {FeedbackPanel} from './tabs/feedback/FeedbackPanel';
-import {DashboardPanel} from './tabs/dashboards/DashboardPanel';
 import {EhCachePanel} from './tabs/ehcache/EhCachePanel';
 import {LogLevelPanel} from './tabs/logging/LogLevelPanel';
 import {LogViewer} from './tabs/logging/viewer/LogViewer';
@@ -60,7 +59,6 @@ export class AppModel {
         return new TabContainerModel({
             id: 'default',
             useRoutes: true,
-            orientation: 'h',
             children: this.createTabs()
         });
     }
@@ -79,7 +77,6 @@ export class AppModel {
                     {name: 'config', path: '/config'},
                     {name: 'services', path: '/services'},
                     {name: 'ehCache', path: '/ehCache'},
-                    {name: 'dashboards', path: '/dashboards'},
                     {name: 'users', path: '/users'}
                 ]
             },
@@ -126,18 +123,17 @@ export class AppModel {
         return [
             {
                 id: 'general',
-                orientation: 'v',
+                switcherPosition: 'left',
                 children: [
                     {id: 'about', component: AboutPanel},
                     {id: 'config', component: ConfigPanel},
                     {id: 'services', component: ServicePanel},
                     {id: 'ehCache', name: 'Caches', component: EhCachePanel},
-                    {id: 'dashboards', component: DashboardPanel},
                     {id: 'users', component: UserPanel}
                 ]
             }, {
                 id: 'logging',
-                orientation: 'v',
+                switcherPosition: 'left',
                 children: [
                     {id: 'viewer', component: LogViewer},
                     {id: 'levels', component: LogLevelPanel}
@@ -145,7 +141,7 @@ export class AppModel {
             },
             {
                 id: 'monitor',
-                orientation: 'v',
+                switcherPosition: 'left',
                 children: [
                     {id: 'status', component: MonitorResultsPanel},
                     {id: 'editMonitors', component: MonitorEditorPanel}
@@ -153,7 +149,7 @@ export class AppModel {
             },
             {
                 id: 'clientActivity',
-                orientation: 'v',
+                switcherPosition: 'left',
                 children: [
                     {id: 'activity', component: ActivityPanel},
                     {id: 'clientErrors', component: ClientErrorPanel},
@@ -162,7 +158,7 @@ export class AppModel {
             },
             {
                 id: 'preferences',
-                orientation: 'v',
+                switcherPosition: 'left',
                 children: [
                     {id: 'prefs', component: PreferencePanel},
                     {id: 'userPrefs', component: UserPreferencePanel, reloadOnShow: true}

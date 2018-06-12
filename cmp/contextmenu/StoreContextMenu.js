@@ -7,6 +7,7 @@
 
 import {isString} from 'lodash';
 import {StoreContextMenuItem} from './StoreContextMenuItem';
+import {Icon} from '@xh/hoist/icon';
 
 /**
  * Model for ContextMenu on stores.
@@ -14,15 +15,38 @@ import {StoreContextMenuItem} from './StoreContextMenuItem';
 export class StoreContextMenu {
 
     items = [];
+    gridModel = null;
 
     /**
      * @param {Object[]} items - collection of StoreContextMenuItems, configs to create them, or Strings.
-     *      If a String, value can be '-' for a separator, or a key for a native AG Grid menu item.
+     *      If a String, value can be '-' for a separator, a hoist token, or a token for a native AG Grid menu item.
+     *      Hoist tokens are:
+     *          'colChooser' - Provides a column chooser for a grid, requires a gridModel
+     * @param {Object} [gridModel] - an optional gridModel to bind to this contextMenu, used to control implementation of menu items
      */
-    constructor(items) {
+    constructor({items, gridModel}) {
+        this.gridModel = gridModel;
         this.items = items.map(it => {
-            if (it instanceof StoreContextMenuItem || isString(it)) return it;
+            if (isString(it)) return this.parseToken(it);
+            if (it instanceof StoreContextMenuItem) return it;
             return new StoreContextMenuItem(it);
         });
+    }
+
+    parseToken(token) {
+        switch (token) {
+            case 'colChooser':
+                var {colChooserModel} = this.gridModel;
+                return new StoreContextMenuItem({
+                    text: 'Columns...',
+                    icon: Icon.grid(),
+                    hidden: !colChooserModel,
+                    action: () => {
+                        colChooserModel.open();
+                    }
+                });
+            default:
+                return token;
+        }
     }
 }

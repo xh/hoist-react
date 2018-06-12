@@ -78,7 +78,6 @@ export function fmtNumber(v, {
     let str = numeral(v).format(formatPattern);
 
     if (ledger || withSignGlyph) str = str.replace('-', '');
-    if (ledger) str = v < 0 ? '(' + str + ')' : str;
     if (withPlusSign && v > 0) {
         str = '+' + str;
     }
@@ -209,8 +208,15 @@ function fmtNumberElement(v, opts = {}) {
     if (isString(label)) {
         items.push(labelCls ? fmtSpan(label, {cls: labelCls, asElement: asElement}) : label);
     }
-    if (v >= 0 && ledger && forceLedgerAlign) {
-        items.push(LEDGER_ALIGN_PLACEHOLDER_EL);
+
+    if (ledger) {
+        if (v < 0) {
+            items.unshift('(');
+            items.push(')');
+        } else if (forceLedgerAlign) {
+            items.push(LEDGER_ALIGN_PLACEHOLDER_EL);
+        }
+
     }
 
     return span({
@@ -224,6 +230,10 @@ function fmtNumberString(v, opts = {}) {
     const {ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tipFn, originalValue} = opts;
     let str = opts.str;
 
+    if (withSignGlyph) {
+        str = signGlyph(v) + '&nbsp;' + str;
+    }
+
     if (isString(label)) {
         if (labelCls) {
             str += fmtSpan(label, {cls: labelCls});
@@ -232,12 +242,12 @@ function fmtNumberString(v, opts = {}) {
         }
     }
 
-    if (withSignGlyph) {
-        str = signGlyph(v) + '&nbsp;' + str;
-    }
-
-    if (v >= 0 && ledger && forceLedgerAlign) {
-        str += LEDGER_ALIGN_PLACEHOLDER;
+    if (ledger) {
+        if (v < 0) {
+            str = '(' + str + ')';
+        } else if (forceLedgerAlign) {
+            str += LEDGER_ALIGN_PLACEHOLDER;
+        }
     }
 
     if (colorSpec) {

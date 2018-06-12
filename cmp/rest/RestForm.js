@@ -6,9 +6,8 @@
  */
 
 import {Component} from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {HoistComponent, elemFactory, XH} from '@xh/hoist/core';
 import {loadMask} from '@xh/hoist/cmp/mask';
-import {message} from '@xh/hoist/cmp/message';
 import {toolbar} from '@xh/hoist/cmp/toolbar';
 import {filler, vframe} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
@@ -41,7 +40,6 @@ export class RestForm extends Component {
         return [
             dialogBody(this.getForm()),
             toolbar(this.getButtons()),
-            message({model: model.messageModel}),
             loadMask({model: model.loadModel})
         ];
     }
@@ -90,8 +88,10 @@ export class RestForm extends Component {
             warning = model.actionWarning.del;
 
         if (warning) {
-            model.messageModel.confirm({
+            XH.confirm({
                 message: warning,
+                title: 'Warning',
+                icon: Icon.warning({size: 'lg'}),
                 onConfirm: () => model.deleteRecord()
             });
         } else {
@@ -105,8 +105,10 @@ export class RestForm extends Component {
             warning = model.actionWarning[isAdd ? 'add' : 'edit'];
 
         if (warning) {
-            model.messageModel.confirm({
+            XH.confirm({
                 message: warning,
+                title: 'Warning',
+                icon: Icon.warning({size: 'lg'}),
                 onConfirm: () => model.saveRecord()
             });
         } else {

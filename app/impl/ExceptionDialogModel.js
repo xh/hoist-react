@@ -32,7 +32,7 @@ export class ExceptionDialogModel {
         const svc = XH.errorTrackingService,
             {exception, userMessage, options} = this;
 
-        svc.submitAsync({exception, message: userMessage})
+        svc.submitAsync({exception, message: userMessage, userAlerted: true})
             .then(() => {
                 ToastManager.show({message: 'Error Details Submitted'});
             });
