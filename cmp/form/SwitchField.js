@@ -21,10 +21,20 @@ import {HoistField} from './HoistField';
 export class SwitchField extends HoistField {
 
     static propTypes = {
+        ...HoistField.propTypes,
+
+        /** Value of the control */
+        value: PT.bool,
+
         /** Name for labeling field */
         text: PT.string,
+
         /** Use large styles */
         large: PT.bool
+    };
+
+    static defaultProps = {
+        commitOnChange: true
     };
 
     delegateProps = ['className', 'disabled'];
@@ -47,7 +57,6 @@ export class SwitchField extends HoistField {
 
     onChange = (e) => {
         this.noteValueChange(e.target.checked);
-        this.doCommit();
     }
 }
 export const switchField = elemFactory(SwitchField);
