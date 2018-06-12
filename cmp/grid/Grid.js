@@ -6,7 +6,7 @@
  */
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {isString, isNumber, isBoolean, isEqual, xor} from 'lodash';
+import {find, isString, isNumber, isBoolean, isEqual, xor, merge} from 'lodash';
 import {XH} from '@xh/hoist/core';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {fragment, box} from '@xh/hoist/cmp/layout';
@@ -52,29 +52,30 @@ class Grid extends Component {
 
     constructor(props) {
         super(props);
-        this.addAutorun(this.syncSelection);
-        this.addAutorun(this.syncSort);
-        this.addAutorun(this.syncColumns);
+        this.addReaction(this.selectionReaction());
+        this.addReaction(this.sortReaction());
+        this.addReaction(this.columnsReaction());
+        this.addReaction(this.dataReaction());
     }
 
 
     render() {
         const {colChooserModel} = this.model,
-            {layoutConfig} = this.props;
+            {layoutConfig, agOptions} = this.props;
 
         // Default flex = 'auto' if no dimensions / flex specified.
         if (layoutConfig.width == null && layoutConfig.height == null && layoutConfig.flex == null) {
             layoutConfig.flex = 'auto';
         }
 
+        // Note that we intentionally do *not* render the agGridReact element below with either the data
+        // or the columns.  These two bits are the most volatile in our GridModel, and this causes
+        // extra re-rendering and jumpiness.  Instead, we rely on the API methods to keep these in sync.
         return fragment(
             box({
                 layoutConfig: layoutConfig,
                 cls: `ag-grid-holder ${XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham'}`,
-                item: agGridReact({
-                    ...this.createDefaults(),
-                    ...this.props.agOptions
-                })
+                item: agGridReact(merge(this.createDefaultAgOptions(), agOptions))
             }),
             colChooser({
                 omit: !colChooserModel,
@@ -86,13 +87,10 @@ class Grid extends Component {
     //------------------------
     // Implementation
     //------------------------
-    createDefaults() {
-        const {model, props} = this,
-            store = model.store;
+    createDefaultAgOptions() {
+        const {model, props} = this;
 
         return {
-            rowData: store.records,
-            columnDefs: this.agColDefs(),
             toolPanelSuppressSideButtons: true,
             enableSorting: true,
             enableColResize: true,
@@ -129,62 +127,24 @@ class Grid extends Component {
         };
     }
 
-    agColDefs() {
-        return this.model.columns.map(col => {
+    //------------------------
+    // Support for defaults
+    //------------------------
+    getColumnDefs() {
+        const {columns, sortBy} = this.model;
+        const cols = columns.map(col => {
             return col.agColDef ? col.agColDef() : col;
         });
-    }
 
-    sortByGroup(nodeA, nodeB) {
-        if (nodeA.key < nodeB.key) {
-            return -1;
-        } else if (nodeA.key > nodeB.key) {
-            return 1;
-        } else {
-            return 0;
-        }
-    }
-
-    syncSelection() {
-        const {model} = this;
-        const api = model.agApi;
-        if (!api) return;
-
-        const modelSelection = model.selModel.ids,
-            gridSelection = api.getSelectedRows().map(it => it.id),
-            diff = xor(modelSelection, gridSelection);
-
-        // If ag-grid's selection differs from the selection model, set it to match
-        if (diff.length > 0) {
-            api.deselectAll();
-            modelSelection.forEach(id => {
-                const node = api.getRowNode(id);
-                node.setSelected(true);
-                if (this._scrollOnSelect) {
-                    api.ensureNodeVisible(node);
-                }
-            });
-        }
-    }
-
-    syncSort() {
-        const {model} = this,
-            api = model.agApi;
-        if (!api) return;
-
-        const agSorters = api.getSortModel(),
-            modelSorters = model.sortBy;
-        if (!isEqual(agSorters, modelSorters)) {
-            api.setSortModel(modelSorters);
-        }
-    }
-
-    syncColumns() {
-        const {model} = this,
-            api = model.agApi;
-        if (!api) return;
-
-        api.setColumnDefs(this.agColDefs());
+        let now = Date.now();
+        sortBy.forEach(it => {
+            const col = find(cols, {colId: it.colId});
+            if (col) {
+                col.sort = it.sort;
+                col.sortedAt = now++;
+            }
+        });
+        return cols;
     }
 
     getContextMenuItems = (params) => {
@@ -236,7 +196,7 @@ class Grid extends Component {
 
             const required = it.recordsRequired,
                 requiredRecordsNotMet = (isBoolean(required) && required && count === 0) ||
-                                        (isNumber(required) && count !== required);
+                    (isNumber(required) && count !== required);
 
             let icon = it.icon;
             if (isValidElement(icon)) {
@@ -252,16 +212,92 @@ class Grid extends Component {
         });
     }
 
+    sortByGroup(nodeA, nodeB) {
+        if (nodeA.key < nodeB.key) {
+            return -1;
+        } else if (nodeA.key > nodeB.key) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
     //------------------------
-    // Event Handlers
+    // Reactions to model
+    //------------------------
+    selectionReaction() {
+        const {model} = this;
+
+        return {
+            track: () => [model.selection, model.agApi],
+            run: () => {
+                const {agApi, selModel} = model;
+                if (!agApi) return;
+
+                const modelSelection = selModel.ids,
+                    gridSelection = agApi.getSelectedRows().map(it => it.id),
+                    diff = xor(modelSelection, gridSelection);
+
+                // If ag-grid's selection differs from the selection model, set it to match
+                if (diff.length > 0) {
+                    agApi.deselectAll();
+                    modelSelection.forEach(id => {
+                        const node = agApi.getRowNode(id);
+                        node.setSelected(true);
+                        if (this._scrollOnSelect) {
+                            agApi.ensureNodeVisible(node);
+                        }
+                    });
+                }
+            }
+        };
+    }
+
+    sortReaction() {
+        const {model} = this;
+        return {
+            track: () => [model.sortBy, model.agApi],
+            run: () => {
+                const {agApi, sortBy} = model;
+                if (agApi && !isEqual(agApi.getSortModel(), sortBy)) {
+                    agApi.setSortModel(sortBy);
+                }
+            }
+        };
+    }
+
+    columnsReaction() {
+        const {model} = this;
+        return {
+            track: () => [model.columns, model.agApi],
+            run: () => {
+                const {agApi} = model;
+                if (agApi) {
+                    agApi.setColumnDefs(this.getColumnDefs());
+                    agApi.sizeColumnsToFit();
+                }
+            }
+        };
+    }
+
+    dataReaction() {
+        const {model} = this;
+        return {
+            track: () => [model.store.records, model.agApi],
+            run: () => {
+                const {agApi} = model;
+                if (agApi) {
+                    agApi.setRowData(model.store.records);
+                }
+            }
+        };
+    }
+
+    //------------------------
+    // Event Handlers on AG Grid.
     //------------------------
     onGridReady = (params) => {
-        const {api} = params,
-            {model} = this;
-
-        model.setAgApi(api);
-        api.setSortModel(model.sortBy);
-        api.sizeColumnsToFit();
+        this.model.setAgApi(params.api);
     }
 
     onNavigateToNextCell = (params) => {
@@ -269,8 +305,7 @@ class Grid extends Component {
     }
 
     onSelectionChanged = (ev) => {
-        const {selModel} = this.model;
-        selModel.select(ev.api.getSelectedRows());
+        this.model.selModel.select(ev.api.getSelectedRows());
     }
 
     onSortChanged = (ev) => {
@@ -285,10 +320,5 @@ class Grid extends Component {
     onGridSizeChanged = (ev) => {
         ev.api.sizeColumnsToFit();
     }
-
-    onComponentStateChanged = (ev) => {
-        ev.api.sizeColumnsToFit();
-    }
-
 }
 export const grid = elemFactory(Grid);
