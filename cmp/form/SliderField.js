@@ -14,7 +14,9 @@ import {toJS} from 'mobx';
 import {HoistField} from './HoistField';
 
 /**
- * A Slider Field
+ * A Slider Field.
+ *
+ * Value can be either a single number (for a simple slider) or an array of 2 numbers (for a range)
  *
  * @see HoistField for properties additional to those documented below.
  */
@@ -42,8 +44,9 @@ export class SliderField extends HoistField {
         const {labelStepSize, labelRenderer, layoutConfig = {}, min, max, stepSize, vertical} = this.props,
             input = isArray(toJS(this.renderValue)) ? rangeSlider : slider;
 
-        if (!layoutConfig.padding && !layoutConfig.paddingLeft) layoutConfig.paddingLeft = 15;
-        if (!layoutConfig.padding && !layoutConfig.paddingRight) layoutConfig.paddingRight = 15;
+        // Set default left / right padding
+        if (!layoutConfig.padding && !layoutConfig.paddingLeft) layoutConfig.paddingLeft = 20;
+        if (!layoutConfig.padding && !layoutConfig.paddingRight) layoutConfig.paddingRight = 20;
 
         return box({
             layoutConfig,
