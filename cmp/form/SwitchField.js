@@ -13,9 +13,9 @@ import {switchControl} from '@xh/hoist/kit/blueprint';
 import {HoistField} from './HoistField';
 
 /**
- * Switch Field, does not handle null values, for nullable fields use a SelectField.
- *
- * @see HoistField for properties additional to those documented below.
+ * Switch Field. 
+ 
+ * Note that that component does not handle null values, for nullable fields use a SelectField.
  */
 @HoistComponent()
 export class SwitchField extends HoistField {
