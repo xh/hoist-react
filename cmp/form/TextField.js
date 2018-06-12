@@ -20,6 +20,11 @@ import {HoistField} from './HoistField';
 export class TextField extends HoistField {
 
     static propTypes = {
+        ...HoistField.propTypes,
+
+        /** Value of the control */
+        value: PT.string,
+
         /** Whether field should receive focus on render */
         autoFocus: PT.bool,
         /** Type of input desired */

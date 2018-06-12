@@ -26,13 +26,16 @@ import './JsonField.css';
 
 /**
  * A JSON Editor
- *
- * @see HoistField for properties additional to those documented below.
  */
 @HoistComponent()
 export class JsonField extends HoistField {
 
     static propTypes = {
+        ...HoistField.propTypes,
+
+        /** Value of the control */
+        value: PT.string,
+        
         /** width of field, in pixels */
         width: PT.number,
         /** height of field, in pixels */

@@ -22,6 +22,11 @@ import {HoistField} from './HoistField';
 export class DayField extends HoistField {
 
     static propTypes = {
+        ...HoistField.propTypes,
+
+        /** Value of the control */
+        value: PT.string,
+
         /** Position for calendar popover. @see http://blueprintjs.com/docs/v2/#core/components/popover.position */
         popoverPosition: PT.oneOf([
             'top-left', 'top', 'top-right',
