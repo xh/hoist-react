@@ -18,8 +18,6 @@ import {HoistField} from './HoistField';
  * A Slider Field.
  *
  * Value can be either a single number (for a simple slider) or an array of 2 numbers (for a range)
- *
- * @see HoistField for properties additional to those documented below.
  */
 @HoistComponent({layoutSupport: true})
 export class SliderField extends HoistField {
