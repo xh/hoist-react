@@ -13,14 +13,19 @@ import {checkbox} from '@xh/hoist/kit/blueprint';
 import {HoistField} from './HoistField';
 
 /**
- * CheckBox Field, does not handle null values, for nullable fields use a SelectField.
+ * CheckBox Field.
  *
- * @see HoistField for properties additional to those documented below.
+ * Note that this field does not handle null values.  For nullable fields use a SelectField.
  */
 @HoistComponent()
 export class CheckField extends HoistField {
 
     static propTypes = {
+        ...HoistField.propTypes,
+
+        /** Value of the control */
+        value: PT.bool,
+
         /** Name for labeling field */
         text: PT.string
     };
@@ -49,5 +54,7 @@ export class CheckField extends HoistField {
     onChange = (e) => {
         this.noteValueChange(e.target.checked);
     }
+
+
 }
 export const checkField = elemFactory(CheckField);

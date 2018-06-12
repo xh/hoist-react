@@ -20,6 +20,11 @@ import {HoistField} from './HoistField';
 export class NumberField extends HoistField {
 
     static propTypes = {
+        ...HoistField.propTypes,
+
+        /** Value of the control */
+        value: PT.number,
+
         /** Text to display when control is empty */
         placeholder: PT.string,
         /** minimum value */
