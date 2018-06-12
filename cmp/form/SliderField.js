@@ -18,7 +18,7 @@ import {HoistField} from './HoistField';
  *
  * @see HoistField for properties additional to those documented below.
  */
-@HoistComponent()
+@HoistComponent({layoutSupport: true})
 export class SliderField extends HoistField {
 
     static propTypes = {
@@ -39,11 +39,14 @@ export class SliderField extends HoistField {
     delegateProps = ['className', 'disabled'];
 
     render() {
-        const {style, labelStepSize, labelRenderer, min, max, stepSize, vertical} = this.props,
+        const {labelStepSize, labelRenderer, layoutConfig = {}, min, max, stepSize, vertical} = this.props,
             input = isArray(toJS(this.renderValue)) ? rangeSlider : slider;
 
+        if (!layoutConfig.padding && !layoutConfig.paddingLeft) layoutConfig.paddingLeft = 15;
+        if (!layoutConfig.padding && !layoutConfig.paddingRight) layoutConfig.paddingRight = 15;
+
         return box({
-            style,
+            layoutConfig,
             item: input({
                 value: this.renderValue,
                 onChange: this.onValueChange,
