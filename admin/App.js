@@ -13,6 +13,8 @@ import {tabContainer} from '@xh/hoist/cmp/tab';
 import {frame, panel} from '@xh/hoist/cmp/layout';
 import {logoutButton, themeToggleButton, refreshButton} from '@xh/hoist/cmp/button';
 import {Icon} from '@xh/hoist/icon';
+import {appBar} from '@xh/hoist/cmp/appbar';
+import {tabSwitcher} from '@xh/hoist/cmp/tab';
 
 import './App.scss';
 
@@ -36,49 +38,44 @@ export class App extends Component {
     // Implementation
     //------------------
     renderNavBar() {
-        return navbar({
-            items: [
-                navbarGroup({
-                    align: 'left',
-                    items: [
-                        Icon.gears({size: '2x'}),
-                        navbarHeading(`${XH.appName} Admin`)
-                    ]
-                }),
-                navbarGroup({
-                    align: 'right',
-                    items: [
-                        button({
-                            icon: Icon.mail(),
-                            text: 'Contact',
-                            onClick: this.onContactClick
-                        }),
-                        button({
-                            icon: Icon.openExternal(),
-                            title: 'Open app...',
-                            onClick: this.onOpenAppClick
-                        }),
-                        themeToggleButton(),
-                        logoutButton(),
-                        refreshButton({
-                            intent: 'success',
-                            onClick: this.onRefreshClick
-                        })
-                    ]
+        return appBar({
+            icon: Icon.gears({size: '2x'}),
+            title: `${XH.appName} Admin`,
+            leftItems: [
+                tabSwitcher({
+                    model: this.model.tabs,
+                    large: false,
                 })
-            ]
+            ],
+            rightItems: [
+                button({
+                    icon: Icon.mail(),
+                    text: 'Contact',
+                    onClick: this.onContactClick
+                }),
+                button({
+                    icon: Icon.openExternal(),
+                    title: 'Open app...',
+                    onClick: this.onOpenAppClick
+                }),
+                refreshButton({
+                    intent: 'success',
+                    onClick: this.onRefreshClick
+                })
+            ],
+            adminButton: false
         });
     }
 
     onContactClick = () => {
         window.open('https://xh.io/contact');
-    }
+    };
 
     onOpenAppClick = () => {
         window.open('/app');
-    }
+    };
 
     onRefreshClick = () => {
         XH.appModel.requestRefresh();
-    }
+    };
 }

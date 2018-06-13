@@ -39,7 +39,8 @@ export class TabSwitcher extends Component {
             onChange: this.onTabChange,
             large: !vertical,
             selectedTabId: selectedId,
-            items: children.map(({id, name}) => tab({id, title: name}))
+            items: children.map(({id, name}) => tab({id, title: name})),
+            ...this.props
         });
     }
 
