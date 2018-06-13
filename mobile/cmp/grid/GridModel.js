@@ -24,7 +24,7 @@ export class GridModel {
      * @param {BaseStore} store - store containing the data for the grid.
      * @param {Object} leftColumn - column specification to show in left side of grid
      * @param {Object} rightColumn - column specification to show in right side of grid
-     * @param {Function} [handler] - function to trigger on item tap. Receives record as argument.
+     * @param {function} [handler] - function to trigger on item tap. Receives record as argument.
      */
     constructor({
         store,
