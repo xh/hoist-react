@@ -6,15 +6,14 @@
  */
 
 import {Component} from 'react';
-import {navbar, navbarGroup, navbarHeading, button} from '@xh/hoist/kit/blueprint';
-import {XH, HoistComponent} from '@xh/hoist/core';
+import {button} from '@xh/hoist/kit/blueprint';
+import {HoistComponent, XH} from '@xh/hoist/core';
 import {lockoutPanel} from '@xh/hoist/app';
-import {tabContainer} from '@xh/hoist/cmp/tab';
+import {tabContainer, tabSwitcher} from '@xh/hoist/cmp/tab';
 import {frame, panel} from '@xh/hoist/cmp/layout';
-import {logoutButton, themeToggleButton, refreshButton} from '@xh/hoist/cmp/button';
+import {refreshButton} from '@xh/hoist/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {appBar} from '@xh/hoist/cmp/appbar';
-import {tabSwitcher} from '@xh/hoist/cmp/tab';
 
 import './App.scss';
 
@@ -44,7 +43,7 @@ export class App extends Component {
             leftItems: [
                 tabSwitcher({
                     model: this.model.tabs,
-                    large: false,
+                    large: false
                 })
             ],
             rightItems: [

@@ -62,7 +62,7 @@ export class AppBar extends Component {
                         ...rightItems || [],
                         themeToggleButton({omit: hideThemeButton}),
                         launchAdminButton({omit: hideAdminButton}),
-                        logoutButton({omit: hideLogoutButton}),
+                        logoutButton({omit: hideLogoutButton})
                     ]
                 })
             ]
