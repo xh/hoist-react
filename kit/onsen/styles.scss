@@ -1,0 +1,40 @@
+//--------------------
+// XH Components
+//--------------------
+.list.xh-grid {
+  .list-header {
+    padding-right: 20px;
+    position: fixed;
+    width: 100%;
+    z-index: 1;
+    border-bottom: 1px solid #CCC;
+  }
+
+  ons-list-item:first-of-type {
+    margin-top: 26px;
+  }
+}
+
+.xh-menu {
+  position: fixed !important;
+  z-index: 21;
+  background-color: white;
+  border: 1px solid #CCC;
+}
+
+//--------------------
+// Onsen Overrides
+//--------------------
+.page__content {
+  // Required for loadmask to work. Check to see if any unintended side-effects
+  display: flex;
+}
+
+.progress-circular__primary, .progress-circular__secondary {
+  stroke: white;
+}
+
+.bottom-bar > .button {
+  margin: 6px 4px;
+  line-height: 26px;
+}
