@@ -36,7 +36,9 @@ export class SliderField extends HoistField {
             Can also be a function in the format (value: number) => string */
         labelRenderer: PT.oneOfType([PT.bool, PT.func]),
         /** Increment between values. Must be greater than zero. Defaults to 1 */
-        stepSize: PT.number
+        stepSize: PT.number,
+        /** Render a solid bar between min and current values (for simple slider) or between handles (for range slider). Defaults to true */
+        showTrackFill: PT.bool
     };
 
     static defaultProps = {
@@ -52,7 +54,7 @@ export class SliderField extends HoistField {
     }
 
     render() {
-        const {labelStepSize, labelRenderer, layoutConfig, min, max, stepSize, vertical} = this.props,
+        const {labelStepSize, labelRenderer, layoutConfig, min, max, stepSize, showTrackFill, vertical} = this.props,
             input = isArray(toJS(this.renderValue)) ? rangeSlider : slider;
 
         // Set default left / right padding
@@ -71,6 +73,7 @@ export class SliderField extends HoistField {
                 min,
                 max,
                 stepSize,
+                showTrackFill,
                 vertical,
                 ...this.getDelegateProps()
             })
