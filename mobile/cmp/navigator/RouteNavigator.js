@@ -45,7 +45,7 @@ export class RouteNavigator extends Component {
             console.log(state);
 
             const currentRouteName = state.name.split('.').pop(),
-                route = this.findRouteCfgRecursive(XH.appModel.getRoutes(), currentRouteName),
+                route = this.findRouteCfgRecursive(XH.app.getRoutes(), currentRouteName),
                 {name, pageFactory} = route ? route : {};
 
             if (pageFactory) {

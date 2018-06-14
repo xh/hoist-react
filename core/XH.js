@@ -108,13 +108,13 @@ class XhModel {
     /** Updated App version available, as reported by server. */
     @observable updateVersion = null;
 
-    /** Top level model for the App - set in `renderApp()` below. */
-    appModel = null;
+    /** Currently running HoistApp - set in `renderApp()` below. */
+    app = null;
 
     /** Router model for the App - used for route based navigation. */
     routerModel = new RouterModel();
 
-    /** Set by output of AppModel.checkAccess() if that initial auth check fails. */
+    /** Set by output of app.checkAccess() if that initial auth check fails. */
     accessDeniedMessage = null;
 
     /**
@@ -128,15 +128,14 @@ class XhModel {
     /**
      * Main entry point. Initialize and render application code.
      *
-     * @param {BaseAppModel} config.modelClass - object containing main application state and logic.
-     * @param {Object} config.componentClass - class describing main application view.
-     *      This class should extend Component and be decorated with @HoistComponent.
+     * @param {Object} app - object containing main application state and logic.  Should
+     *      be an instance of a class decorated with @HoistApp.
      */
-    renderApp({appModel, componentClass}) {
-        this.appModel = appModel;
+    renderApp(app) {
+        this.app = app;
 
         const rootView = appContainer(
-            elem(componentClass, {model: this.appModel})
+            elem(app.viewClass, {model: app})
         );
 
         ReactDOM.render(rootView, document.getElementById('root'));
@@ -257,7 +256,7 @@ class XhModel {
             const authUser = await this.getAuthUserFromServerAsync();
 
             if (!authUser) {
-                if (this.appModel.requireSSO) {
+                if (this.app.requireSSO) {
                     throw XH.exception('Failed to authenticate user via SSO.');
                 } else {
                     this.setLoadState(LoadState.LOGIN_REQUIRED);
@@ -287,14 +286,14 @@ class XhModel {
 
             this.initLocalState();
 
-            const access = this.appModel.checkAccess(XH.getUser());
+            const access = this.app.checkAccess(XH.getUser());
             if (!access.hasAccess) {
                 this.accessDeniedMessage = access.message || 'Access denied.';
                 this.setLoadState(LoadState.ACCESS_DENIED);
                 return;
             }
 
-            await this.appModel.initAsync();
+            await this.app.initAsync();
             this.initRouterModel();
             this.setLoadState(LoadState.COMPLETE);
         } catch (e) {
@@ -336,7 +335,7 @@ class XhModel {
     }
 
     initRouterModel() {
-        this.routerModel.init(this.appModel.getRoutes());
+        this.routerModel.init(this.app.getRoutes());
     }
 
     @action

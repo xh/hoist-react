@@ -5,26 +5,35 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {defaultMethods} from '@xh/hoist/utils/ClassUtils';
-import {HoistModel} from '@xh/hoist/core';
+import {HoistModel} from './HoistModel';
 
 /**
  * Mixin to apply to top app-level model for a HoistApp. This model will be initialized by Hoist
  * after the framework has successfully initialized and will remain available to all code via the
- * XH.appModel getter.
+ * XH.app getter.
  *
  * Applications should specify this class to provide application level state and services and
  * customize important metadata. Initialization of all resources (e.g. application level services)
  * should be done in initApp().
  *
- * An class decorated with this function should be provided to XH.renderApp() in the main
+ * A class decorated with this function should be provided to XH.renderApp() in the main
  * application bootstrap file.
  */
-export function HoistAppModel(C) {
-    C.isHoistAppModel = true;
+export function HoistApp(C) {
+    C.isHoistApp = true;
 
     C = HoistModel()(C);
 
     defaultMethods(C, {
+
+        /**
+         * Component class for rendering this app.  Should be a subclass of Component
+         * and decorated with @HoistComponent.
+         */
+        viewClass: {
+            get() {return null}
+        },
+
         /**
          * Should applications display a logout option - i.e. for apps using form-based auth
          * where logging out is a supported operation. Expected to be false for SSO apps.
@@ -42,14 +51,14 @@ export function HoistAppModel(C) {
         },
 
         /**
-         * Application-level AppModel must implement with appropriate logic to determine if the
+         * App must implement this method with appropriate logic to determine if the
          * current user should be able to access the UI, typically based on the user's roles.
          * @param {Object} user - current user, as returned by XH.getUser().
          */
         checkAccess(user) {
             return {
                 hasAccess: false,
-                message: 'Required access control not implemented - see AppModel.checkAccess().'
+                message: 'Required access control not implemented - see App.checkAccess().'
             };
         },
 

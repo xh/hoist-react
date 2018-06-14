@@ -6,5 +6,4 @@
  */
 
 export * from './AppContainer';
-export * from './HoistAppModel';
 export * from './LockoutPanel';

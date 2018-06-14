@@ -27,7 +27,7 @@ export class LogoutButton extends Component {
     };
 
     render() {
-        if (!XH.appModel.enableLogout) return null;
+        if (!XH.app.enableLogout) return null;
 
         const {icon, onClick, ...rest} = this.props;
         return toolbarButton({
