@@ -24,10 +24,10 @@ export class App extends Component {
         }
 
         return panel({
-            tbar: this.renderNavBar(),
+            tbar: this.renderAppBar(),
             item: frame({
                 cls: 'xh-admin-app-frame',
-                item: tabContainer({model: XH.appModel.tabs})
+                item: tabContainer({model: XH.appModel.tabModel})
             })
         });
     }
@@ -35,12 +35,12 @@ export class App extends Component {
     //------------------
     // Implementation
     //------------------
-    renderNavBar() {
+    renderAppBar() {
         return appBar({
-            icon: Icon.gears({size: '2x'}),
+            icon: Icon.gears({size: '2x', prefix: 'fal'}),
             title: `${XH.appName} Admin`,
             leftItems: [
-                tabSwitcher({model: this.model.tabs})
+                tabSwitcher({model: this.model.tabModel})
             ],
             rightItems: [
                 button({
@@ -54,9 +54,8 @@ export class App extends Component {
                     onClick: this.onOpenAppClick
                 })
             ],
-            adminButton: false,
+            hideAdminButton: true,
             refreshButtonProps: {
-                intent: 'success',
                 onClick: this.onRefreshClick
             }
         });
