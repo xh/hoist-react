@@ -68,7 +68,11 @@ export class AppBar extends Component {
                         themeToggleButton({omit: hideThemeButton}),
                         launchAdminButton({omit: hideAdminButton}),
                         logoutButton({omit: hideLogoutButton}),
-                        refreshButton({omit: hideRefreshButton, ...refreshButtonProps})
+                        refreshButton({
+                            omit: hideRefreshButton,
+                            intent: 'success',
+                            ...refreshButtonProps
+                        })
                     ]
                 })
             ]
