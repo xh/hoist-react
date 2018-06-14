@@ -128,16 +128,15 @@ class XhModel {
     /**
      * Main entry point. Initialize and render application code.
      *
-     * @param {Object} appModelClass - class containing main application state and logic.
-     *      Should be a subclass of BaseAppModel.
-     * @param {Object} appComponentClass - class describing main application view.
-     *      Should extend Component and be decorated with @HoistComponent.
+     * @param {BaseAppModel} config.modelClass - object containing main application state and logic.
+     * @param {Object} config.componentClass - class describing main application view.
+     *      This class should extend Component and be decorated with @HoistComponent.
      */
-    renderApp(appModelClass, appComponentClass) {
-        this.appModel = new appModelClass();
-        
+    renderApp({appModel, componentClass}) {
+        this.appModel = appModel;
+
         const rootView = appContainer(
-            elem(appComponentClass, {model: this.appModel})
+            elem(componentClass, {model: this.appModel})
         );
 
         ReactDOM.render(rootView, document.getElementById('root'));
