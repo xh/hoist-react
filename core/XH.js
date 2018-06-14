@@ -45,7 +45,7 @@ import '../styles/XH.scss';
  * Available to applications via import as 'XH'- installed as window.XH for troubleshooting purposes.
  */
 @HoistModel()
-class XhModel {
+class XHClass {
 
     constructor() {
         this.aliasMethods();
@@ -135,7 +135,7 @@ class XhModel {
         this.app = app;
 
         const rootView = appContainer(
-            elem(app.viewClass, {model: app})
+            elem(app.componentClass, {model: app})
         );
 
         ReactDOM.render(rootView, document.getElementById('root'));
@@ -397,7 +397,7 @@ class XhModel {
         });
     }
 }
-export const XH = window.XH = new XhModel();
+export const XH = window.XH = new XHClass();
 
 /**
  * Enumeration of possible Load States for Hoist.

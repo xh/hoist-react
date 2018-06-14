@@ -36,7 +36,7 @@ export class App {
         return {hasAccess, message};
     }
 
-    get viewClass() {return AppComponent}
+    get componentClass() {return AppComponent}
     
     @action
     requestRefresh() {

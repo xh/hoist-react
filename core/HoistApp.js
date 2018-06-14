@@ -8,7 +8,7 @@ import {defaultMethods} from '@xh/hoist/utils/ClassUtils';
 import {HoistModel} from './HoistModel';
 
 /**
- * Mixin to apply to top app-level model for a HoistApp. This model will be initialized by Hoist
+ * Mixin for defining a Hoist Application. An instance of this class will be initialized by Hoist
  * after the framework has successfully initialized and will remain available to all code via the
  * XH.app getter.
  *
@@ -30,7 +30,7 @@ export function HoistApp(C) {
          * Component class for rendering this app.  Should be a subclass of Component
          * and decorated with @HoistComponent.
          */
-        viewClass: {
+        componentClass: {
             get() {return null}
         },
 
