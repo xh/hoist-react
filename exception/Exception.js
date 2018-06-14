@@ -26,7 +26,7 @@ export class Exception {
         return this.createInternal({
             name: 'Request Cancelled',
             message: reason,
-            requestOptions: requestOptions
+            requestOptions
         });
     }
 
@@ -34,18 +34,19 @@ export class Exception {
         return this.createInternal({
             name: 'Request Timeout',
             message: 'The request to the server timed out',
-            requestOptions: requestOptions
+            requestOptions
         });
     }
 
-    static requestError(requestOptions, response) {
+    static requestError(url, requestOptions, response) {
         const httpStatus = response.status,
             defaults = {
                 name: 'HTTP Error ' + (httpStatus || ''),
                 message: response.statusText,
                 httpStatus: httpStatus,
+                url,
                 serverDetails: response.responseText,
-                requestOptions: requestOptions
+                requestOptions
             };
 
         if (httpStatus === 401) {
@@ -55,25 +56,16 @@ export class Exception {
             });
         }
 
-        if (httpStatus === 0) {
-            return this.createInternal(defaults, {
-                name: 'Connection Failure',
-                message: 'Unable to connect to server. The server or the network may be unavailable, or the request may have been cancelled.'
-                // For a cancel coming from Hoist, a RequestCancelled (above) should be generated but other places
-                // in the stack may yield cancellations that are indistinguishable from connect failures
-            });
-        }
-
         // Try to "smart" decode as server provided JSON Exception (with a name)
         try {
-            const cType = response.getResponseHeader('Content-Type');
+            const cType = response.headers.get('Content-Type');
             if (cType && cType.includes('application/json')) {
                 const serverDetails = JSON.parse(response.responseText);
                 if (serverDetails && serverDetails.name) {
                     return this.createInternal(defaults, {
                         name: serverDetails.name,
                         message: serverDetails.message,
-                        serverDetails: serverDetails
+                        serverDetails
                     });
                 }
             }
@@ -90,10 +82,10 @@ export class Exception {
 
         return this.createInternal({
             name: 'Server Unavailable',
-            message: message,
+            message,
             originalMessage: e.message,
-            url: url,
-            requestOptions: requestOptions
+            url,
+            requestOptions
         });
     }
 
@@ -104,6 +96,11 @@ export class Exception {
         if (isString(override)) {
             override = {message: override};
         }
-        return Object.assign(new Error(), defaults, override);
+        const ret = Object.assign(new Error(), defaults, override),
+            status = ret.httpStatus;
+
+        if (!status || /^[45]\d\d$/.test(status)) delete ret.stack;
+
+        return ret;
     }
 }
