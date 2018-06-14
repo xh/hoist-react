@@ -84,7 +84,11 @@ export class FetchService {
         } catch (e) {
             throw Exception.serverUnavailable(url, opts, e);
         }
-        if (!ret.ok) throw Exception.requestError(opts, ret);
+
+        if (!ret.ok) {
+            ret.responseText = await ret.text();
+            throw Exception.requestError(url, opts, ret);
+        }
         return ret;
     }
 
