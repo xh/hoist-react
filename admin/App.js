@@ -11,7 +11,6 @@ import {HoistComponent, XH} from '@xh/hoist/core';
 import {lockoutPanel} from '@xh/hoist/app';
 import {tabContainer, tabSwitcher} from '@xh/hoist/cmp/tab';
 import {frame, panel} from '@xh/hoist/cmp/layout';
-import {refreshButton} from '@xh/hoist/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {appBar} from '@xh/hoist/cmp/appbar';
 
@@ -53,13 +52,13 @@ export class App extends Component {
                     icon: Icon.openExternal(),
                     title: 'Open app...',
                     onClick: this.onOpenAppClick
-                }),
-                refreshButton({
-                    intent: 'success',
-                    onClick: this.onRefreshClick
                 })
             ],
-            adminButton: false
+            adminButton: false,
+            refreshButtonProps: {
+                intent: 'success',
+                onClick: this.onRefreshClick
+            }
         });
     }
 

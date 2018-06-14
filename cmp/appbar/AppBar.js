@@ -14,6 +14,7 @@ import {span} from '@xh/hoist/cmp/layout';
 import {appBarSeparator} from '@xh/hoist/cmp/appbar';
 import {isEmpty} from 'lodash';
 import './AppBar.scss';
+import {refreshButton} from '../button/RefreshButton';
 
 /**
  * A standard application navigation bar which displays the application name and a standard set of
@@ -39,11 +40,15 @@ export class AppBar extends Component {
         /** Set to true to hide the Theme Toggle button. */
         hideThemeButton: PT.bool,
         /** Set to true to hide the Logout button. Will be automatically hidden for applications with logout disabled. */
-        hideLogoutButton: PT.bool
+        hideLogoutButton: PT.bool,
+        /** Set to true to hide the Refresh button. */
+        hideRefreshButton: PT.bool,
+        /** Allows overriding the default properties of the Refresh button. @see RefreshButton */
+        refreshButtonProps: PT.object
     };
 
     render() {
-        const {icon, title, leftItems, rightItems, hideAdminButton, hideThemeButton, hideLogoutButton} = this.props;
+        const {icon, title, leftItems, rightItems, hideAdminButton, hideThemeButton, hideLogoutButton, hideRefreshButton, refreshButtonProps = {}} = this.props;
         return navbar({
             cls: 'xh-appbar',
             items: [
@@ -62,7 +67,8 @@ export class AppBar extends Component {
                         ...rightItems || [],
                         themeToggleButton({omit: hideThemeButton}),
                         launchAdminButton({omit: hideAdminButton}),
-                        logoutButton({omit: hideLogoutButton})
+                        logoutButton({omit: hideLogoutButton}),
+                        refreshButton({omit: hideRefreshButton, ...refreshButtonProps})
                     ]
                 })
             ]
