@@ -6,9 +6,10 @@
  */
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {elemFactory, HoistComponent} from '../../core';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {tab, tabs} from '@xh/hoist/kit/blueprint';
 import {TabContainerModel} from './TabContainerModel';
+import {omit} from 'lodash';
 
 /**
  * Switcher display for a TabContainer.
@@ -18,8 +19,7 @@ import {TabContainerModel} from './TabContainerModel';
  *
  * The switcherPosition configuration on the TabContainerModel controls how this switcher will be
  * rendered. For 'top' or 'bottom' switcherPositions this switcher will be rendered in horizontal
- * and large mode. For 'left' or 'right' switcher positions this switcher will be rendered in
- * vertical mode.
+ * mode. For 'left' or 'right' switcher positions this switcher will be rendered in vertical mode.
  *
  * @see TabContainerModel
  */
@@ -37,10 +37,9 @@ export class TabSwitcher extends Component {
             id,
             vertical,
             onChange: this.onTabChange,
-            large: !vertical,
             selectedTabId: selectedId,
             items: children.map(({id, name}) => tab({id, title: name})),
-            ...this.props
+            ...omit(this.props, 'model')
         });
     }
 

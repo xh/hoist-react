@@ -41,10 +41,7 @@ export class App extends Component {
             icon: Icon.gears({size: '2x'}),
             title: `${XH.appName} Admin`,
             leftItems: [
-                tabSwitcher({
-                    model: this.model.tabs,
-                    large: false
-                })
+                tabSwitcher({model: this.model.tabs})
             ],
             rightItems: [
                 button({

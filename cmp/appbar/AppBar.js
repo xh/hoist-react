@@ -30,15 +30,15 @@ export class AppBar extends Component {
         icon: PT.element,
         /** Title to display to the left side of the AppBar. Defaults to the application name if not provided. */
         title: PT.string,
-        /** Items to be added to the left side of the AppBar, immediately after the title. */
+        /** Items to be added to the left side of the AppBar, immediately after the title (or . */
         leftItems: PT.node,
         /** Items to be added to the right side of the AppBar, before the standard buttons. */
         rightItems: PT.node,
-        /** Set to true to hide the Launch Admin button. */
+        /** Set to true to hide the Launch Admin button. Will be automatically hidden for users without the HOIST_ADMIN role. */
         hideAdminButton: PT.bool,
         /** Set to true to hide the Theme Toggle button. */
         hideThemeButton: PT.bool,
-        /** Set to true to hide the Logout button. */
+        /** Set to true to hide the Logout button. Will be automatically hidden for applications with logout disabled. */
         hideLogoutButton: PT.bool
     };
 
