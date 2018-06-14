@@ -59,6 +59,7 @@ export class AppModel {
         return new TabContainerModel({
             id: 'default',
             useRoutes: true,
+            switcherPosition: 'none',
             children: this.createTabs()
         });
     }
