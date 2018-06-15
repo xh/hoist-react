@@ -59,6 +59,11 @@ export class FetchService {
             },
             fetchOpts = Object.assign(defaults, opts);
 
+        if (opts.acceptJson) {
+            fetchOpts.headers.append('Accept', 'application/json');
+            delete fetchOpts.acceptJson;
+        }
+
         delete fetchOpts.contentType;
         delete fetchOpts.url;
 
@@ -101,6 +106,7 @@ export class FetchService {
      * @returns {Promise} the decoded JSON object, or null if the response had no content.
      */
     async fetchJson(opts) {
+        opts.acceptJson = true;
         const ret = await this.fetch(opts);
         return ret.status === 204 ? null : ret.json();
     }
