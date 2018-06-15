@@ -50,6 +50,8 @@ export class ExceptionHandler {
             this.hideParams(exception, options);
         }
 
+        this.cleanStack(exception);
+
         this.logException(exception, options);
 
         if (options.showAlert) {
@@ -114,5 +116,11 @@ export class ExceptionHandler {
 
     static sessionExpired(exception) {
         return exception && exception.httpStatus === 401;
+    }
+
+    static cleanStack(exception) {
+        // statuses of 0, 4XX, 5XX are server errors, so the javascript stack
+        // is irrelevant and potentially misleading
+        if (/^[045]/.test(exception.httpStatus)) delete exception.stack;
     }
 }

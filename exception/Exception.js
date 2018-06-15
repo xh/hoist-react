@@ -15,6 +15,9 @@ import {isString} from 'lodash';
  */
 export class Exception {
 
+    /**
+     *
+     */
     static create(cfg) {
         return this.createInternal({
             name: 'Exception',
@@ -22,29 +25,17 @@ export class Exception {
         }, cfg);
     }
 
-    static requestCancelled(requestOptions, reason) {
-        return this.createInternal({
-            name: 'Request Cancelled',
-            message: reason,
-            requestOptions
-        });
-    }
-
-    static requestTimeout(requestOptions) {
-        return this.createInternal({
-            name: 'Request Timeout',
-            message: 'The request to the server timed out',
-            requestOptions
-        });
-    }
-
-    static requestError(url, requestOptions, response) {
+    /**
+     * @param {Object} requestOptions - original options the app passed to FetchService.fetch
+     * @param {Response} response - resolved value from native fetch
+     * @returns {Error}
+     */
+    static requestError(requestOptions, response) {
         const httpStatus = response.status,
             defaults = {
                 name: 'HTTP Error ' + (httpStatus || ''),
                 message: response.statusText,
-                httpStatus: httpStatus,
-                url,
+                httpStatus,
                 serverDetails: response.responseText,
                 requestOptions
             };
@@ -75,16 +66,21 @@ export class Exception {
         return this.createInternal(defaults, {});
     }
 
-    static serverUnavailable(url, requestOptions, e) {
-        const match = url.match(/^[a-z]+:\/\/[^/]+/i),
+    /**
+     * @param {Object} requestOptions - original options the app passed to FetchService.fetch
+     * @param {Error} e - Error object created by native fetch
+     * @returns {Error}
+     */
+    static serverUnavailable(requestOptions, e) {
+        const match = requestOptions.url.match(/^[a-z]+:\/\/[^/]+/i),
             origin = match ? match[0] : window.location.origin,
             message = `Unable to contact the server at ${origin}`;
 
         return this.createInternal({
             name: 'Server Unavailable',
             message,
+            httpStatus: 0,  // native fetch doesn't put this property on its Error
             originalMessage: e.message,
-            url,
             requestOptions
         });
     }
@@ -96,11 +92,6 @@ export class Exception {
         if (isString(override)) {
             override = {message: override};
         }
-        const ret = Object.assign(new Error(), defaults, override),
-            status = ret.httpStatus;
-
-        if (!status || /^[45]\d\d$/.test(status)) delete ret.stack;
-
-        return ret;
+        return Object.assign(new Error(), defaults, override);
     }
 }
