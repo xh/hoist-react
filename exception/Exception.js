@@ -16,9 +16,9 @@ import {isString} from 'lodash';
 export class Exception {
 
     /**
-     * @param {(Object)} cfg
-     * @param {string} [cfg.name] - Title of the error.  Will be shown above 'message'.
-     * @param {string} [cfg.message] - Short description of the error.
+     * Create and get back a Javascript Error object
+     * @param {(Object)} cfg - properties to add to the Error object
+     * @returns {Error}
      */
     static create(cfg) {
         return this.createInternal({
@@ -28,18 +28,19 @@ export class Exception {
     }
 
     /**
-     * @param {Object} requestOptions - original options the app passed to FetchService.fetch
+     * Create an Error for when fetch calls go bad...
+     * @param {Object} fetchOptions - original options the app passed to FetchService.fetch
      * @param {Response} response - resolved value from native fetch
      * @returns {Error}
      */
-    static requestError(requestOptions, response) {
+    static fetchError(fetchOptions, response) {
         const httpStatus = response.status,
             defaults = {
                 name: 'HTTP Error ' + (httpStatus || ''),
                 message: response.statusText,
                 httpStatus,
                 serverDetails: response.responseText,
-                requestOptions
+                fetchOptions
             };
 
         if (httpStatus === 401) {
@@ -69,12 +70,13 @@ export class Exception {
     }
 
     /**
-     * @param {Object} requestOptions - original options the app passed to FetchService.fetch
+     * Create an Error for when the server called by fetch does not respond
+     * @param {Object} fetchOptions - original options the app passed to FetchService.fetch
      * @param {Error} e - Error object created by native fetch
      * @returns {Error}
      */
-    static serverUnavailable(requestOptions, e) {
-        const match = requestOptions.url.match(/^[a-z]+:\/\/[^/]+/i),
+    static serverUnavailable(fetchOptions, e) {
+        const match = fetchOptions.url.match(/^[a-z]+:\/\/[^/]+/i),
             origin = match ? match[0] : window.location.origin,
             message = `Unable to contact the server at ${origin}`;
 
@@ -83,7 +85,7 @@ export class Exception {
             message,
             httpStatus: 0,  // native fetch doesn't put status on its Error
             originalMessage: e.message,
-            requestOptions
+            fetchOptions
         });
     }
 

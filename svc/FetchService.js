@@ -88,7 +88,7 @@ export class FetchService {
 
         if (!ret.ok) {
             ret.responseText = await this.safeResponseTextAsync(ret);
-            throw Exception.requestError(opts, ret);
+            throw Exception.fetchError(opts, ret);
         }
         return ret;
     }
@@ -109,10 +109,6 @@ export class FetchService {
     // Implementation
     //-----------------------
 
-    /**
-     * @param {Response} response - resolved value from native fetch
-     * @returns {Promise} the decoded text string, or null if the response.body cannot be decoded with .text()
-     */
     async safeResponseTextAsync(response) {
         try {
             return await response.text();

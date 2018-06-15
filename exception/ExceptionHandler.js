@@ -66,16 +66,16 @@ export class ExceptionHandler {
     // Implementation
     //--------------------------------
     static hideParams(exception, options) {
-        const {requestOptions} = exception,
+        const {fetchOptions} = exception,
             {hideParams} = options;
 
-        if (!requestOptions || !requestOptions.params) return;
+        if (!fetchOptions || !fetchOptions.params) return;
 
         // body will just be stringfied params -- currently hide all for simplicity.
-        requestOptions.body = '******';
+        fetchOptions.body = '******';
 
         hideParams.forEach(it => {
-            requestOptions.params[it] = '******';
+            fetchOptions.params[it] = '******';
         });
     }
 
@@ -91,7 +91,7 @@ export class ExceptionHandler {
 
     static parseOptions(exception, options) {
         const ret = Object.assign({}, options),
-            isAutoRefresh = exception.requestOptions && exception.requestOptions.isAutoRefresh;
+            isAutoRefresh = exception.fetchOptions && exception.fetchOptions.isAutoRefresh;
 
         ret.showAsError = ret.showAsError != null ? ret.showAsError : true;
         ret.logOnServer = ret.logOnServer != null ? ret.logOnServer : ret.showAsError;
