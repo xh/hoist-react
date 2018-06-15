@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, computed} from '@xh/hoist/mobx';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/cmp/contextmenu';
 import {getAgExcelStyles} from '@xh/hoist/export';
@@ -32,7 +32,6 @@ export class GridModel {
     @observable.ref columns = [];
     @observable.ref sortBy = [];
     @observable groupBy = null;
-
 
     @computed
     get agExcelStyles() {
