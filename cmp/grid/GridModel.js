@@ -5,14 +5,14 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {action, computed, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/cmp/contextmenu';
-import {Icon} from '@xh/hoist/icon';
 import {getAgExcelStyles} from '@xh/hoist/export';
-import {castArray, find, isString, orderBy} from 'lodash';
+import {defaults, castArray, find, isEqual, isString, isPlainObject, orderBy} from 'lodash';
 
 import {ColChooserModel} from './ColChooserModel';
+import {GridStateModel} from './GridStateModel';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -23,23 +23,16 @@ export class GridModel {
 
     // Immutable public properties
     store = null;
-    selection = null;
+    selModel = null;
     contextMenuFn = null;
     colChooserModel = null;
+    stateModel = null;
 
     @observable.ref agApi = null;
     @observable.ref columns = [];
     @observable.ref sortBy = [];
     @observable groupBy = null;
 
-    // For cols defined (as expected) via a Hoist columnFactory,
-    // strip enumerated Hoist custom configs before passing to ag-Grid.
-    @computed
-    get agColDefs() {
-        return this.columns.map(col => {
-            return col.agColDef ? col.agColDef() : col;
-        });
-    }
 
     @computed
     get agExcelStyles() {
@@ -47,34 +40,29 @@ export class GridModel {
     }
 
     defaultContextMenu = () => {
-        return new StoreContextMenu([
-            'copy',
-            'copyWithHeaders',
-            '-',
-            // Todo: put export options in a submenu again?
-            {
-                text: 'Excel Export',
-                action: () => this.exportDataAsExcel()
-            },
-            'csvExport',
-            '-',
-            'autoSizeAll',
-            '-',
-            {
-                text: 'Columns...',
-                icon: Icon.grid(),
-                hidden: !this.colChooserModel,
-                action: () => {
-                    this.colChooserModel.open();
-                }
-            }
-        ]);
+        return new StoreContextMenu({
+            items: [
+                'copy',
+                'copyWithHeaders',
+                '-',
+                // Todo: put export options in a submenu again?
+                {
+                    text: 'Excel Export',
+                    action: () => this.exportDataAsExcel()
+                },
+                'csvExport',
+                '-',
+                'autoSizeAll',
+                '-',
+                'colChooser'
+            ],
+            gridModel: this
+        });
     };
 
     /**
      * @param {BaseStore} store - store containing the data for the grid.
      * @param {Object[]} columns - collection of column specifications.
-     * @param {StoreSelectionModel} [selection] - selection model to use
      * @param {string} [emptyText] - empty text to display if grid has no records. Can be valid HTML.
      *      Defaults to null, in which case no empty text will be shown.
      * @param {Object[]} [sortBy] - one or more sorters to apply to store data.
@@ -83,23 +71,26 @@ export class GridModel {
      * @param {string} [groupBy] - Column ID by which to group.
      * @param {boolean} [enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
+     * @param {(StoreSelectionModel|Object|String)} [selModel] - selection model to use,
+     *      config to create one, or 'mode' property for a selection model.
+     * @param {(GridStateModel|Object|String)} [stateModel] - state model to use,
+     *      config to create one, or xhStateId property for a state model
      * @param {function} [contextMenuFn] - closure returning a StoreContextMenu().
      */
     constructor({
         store,
         columns,
-        selection,
+        selModel,
         emptyText = null,
         sortBy = [],
         groupBy = null,
         enableColChooser = false,
+        stateModel = null,
         contextMenuFn = () => this.defaultContextMenu()
     }) {
         this.store = store;
         this.columns = columns;
         this.contextMenuFn = contextMenuFn;
-
-        this.selection = selection || new StoreSelectionModel({store: this.store});
         this.emptyText = emptyText;
 
         if (enableColChooser) {
@@ -108,6 +99,9 @@ export class GridModel {
 
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
+
+        this.selModel = this.initSelModel(selModel, store);
+        this.stateModel = this.initStateModel(stateModel);
     }
 
     exportDataAsExcel(params = {}) {
@@ -123,16 +117,36 @@ export class GridModel {
         this.agApi.exportDataAsExcel(params);
     }
 
+
     /**
      * Select the first row in the grid.
      */
     selectFirst() {
-        const {store, selection, sortBy} = this,
+        const {store, selModel, sortBy} = this,
             colIds = sortBy.map(it => it.colId),
             sorts = sortBy.map(it => it.sort),
             recs = orderBy(store.records, colIds, sorts);
 
-        if (recs.length) selection.select(recs[0]);
+        if (recs.length) selModel.select(recs[0]);
+    }
+
+    /**
+     * Shortcut to the currently selected records (observable).
+     *
+     * @see StoreSelectionModel.records
+     */
+    get selection() {
+        return this.selModel.records;
+    }
+
+    /**
+     * Shortcut to a single selected record (observable).
+     * This will be null if multiple records are selected.
+     *
+     * @see StoreSelectionModel.singleRecord
+     */
+    get selectedRecord() {
+        return this.selModel.singleRecord;
     }
 
     @action
@@ -140,9 +154,18 @@ export class GridModel {
         this.agApi = agApi;
     }
 
+    /**
+     * Set row grouping
+     *
+     * This method is no-op if provided a field without a corresponding column.
+     * A falsey field argument will remove grouping entirely.
+     */
     @action
     setGroupBy(field) {
-        const cols = this.columns;
+        const cols = this.columns,
+            groupCol = find(cols, {field});
+
+        if (field && !groupCol) return;
 
         cols.forEach(it => {
             if (it.rowGroup) {
@@ -151,17 +174,19 @@ export class GridModel {
             }
         });
 
-        if (field) {
-            const col = find(cols, {field});
-            if (col) {
-                col.rowGroup = true;
-                col.hide = true;
-            }
+        if (field && groupCol) {
+            groupCol.rowGroup = true;
+            groupCol.hide = true;
         }
-        
+
         this.columns = [...cols];
     }
 
+    /**
+     * Set sort by column
+     *
+     * This method is no-op if provided any sorters without a corresponding column
+     */
     @action
     setSortBy(sortBy) {
         // Normalize string, and partially specified values
@@ -172,8 +197,12 @@ export class GridModel {
             return it;
         });
 
+        const sortIsValid = sortBy.every(it => find(this.columns, {colId: it.colId}));
+        if (!sortIsValid) return;
+
         this.sortBy = sortBy;
     }
+
 
     /** Load the underlying store. */
     loadAsync(...args) {
@@ -201,6 +230,24 @@ export class GridModel {
         }
     }
 
+    syncColumnOrder(agColumns) {
+        // Check for no-op
+        const xhColumns = this.columns,
+            newIdOrder = agColumns.map(it => it.colId),
+            oldIdOrder = xhColumns.map(it => it.colId),
+            orderChanged = !isEqual(newIdOrder, oldIdOrder);
+
+        if (!orderChanged) return;
+
+        const orderedCols = [];
+        agColumns.forEach(gridCol => {
+            const col = find(xhColumns, {colId: gridCol.colId});
+            orderedCols.push(col);
+        });
+
+        this.setColumns(orderedCols);
+    }
+
     //-----------------------
     // Implementation
     //-----------------------
@@ -212,6 +259,46 @@ export class GridModel {
         } else {
             return value;
         }
+    }
+
+    initSelModel(selModel, store) {
+        if (selModel instanceof StoreSelectionModel) {
+            return selModel;
+        }
+
+        if (isPlainObject(selModel)) {
+            return new StoreSelectionModel(defaults(selModel, {store}));
+        }
+
+        // Assume its just the mode...
+        let mode = 'single';
+        if (isString(selModel)) {
+            mode = selModel;
+        } else if (selModel === null) {
+            mode = 'disabled';
+        }
+
+        return new StoreSelectionModel({mode, store});
+    }
+
+    initStateModel(stateModel) {
+        if (!stateModel) return;
+        let ret;
+
+        if (stateModel instanceof GridStateModel) {
+            ret = stateModel;
+        }
+
+        if (isPlainObject(stateModel)) {
+            ret = new GridStateModel(stateModel);
+        }
+
+        if (isString(stateModel)) {
+            ret = new GridStateModel({xhStateId: stateModel});
+        }
+
+        ret.init(this);
+        return ret;
     }
 
     destroy() {

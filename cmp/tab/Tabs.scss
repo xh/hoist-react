@@ -5,30 +5,30 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-.pt-tabs {
+.xh-tab-container {
   display: flex;
   max-width: 100%;
   max-height: 100%;
   flex-direction: column;
   flex: 1 1 0;
 
-  &.pt-vertical {
+  .xh-tab-panel {
     display: flex;
-    max-width: 100%;
-    max-height: 100%;
-    flex-direction: row;
+    min-width: 0;
+    min-height: 0;
     flex: 1 1 0;
+  }
 
-    .pt-tab-panel {
-      padding-left: 0;
+  .xh-tab-switcher-top {
+    padding-bottom: var(--xh-pad-half-px);
+  }
+
+  .xh-tab-switcher-bottom {
+    padding-top: var(--xh-pad-half-px);
+
+    // Flip the indicator to be on top of the tab label
+    .pt-tab-list > .pt-tab-indicator-wrapper {
+      top: -85%;
     }
   }
-}
-
-.pt-tab-panel {
-  display: flex;
-  min-width: 0;
-  min-height: 0;
-  flex: 1 1 0;
-  margin-top: var(--xh-pad-half-px);
 }

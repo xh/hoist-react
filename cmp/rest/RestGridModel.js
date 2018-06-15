@@ -7,7 +7,6 @@
 import {XH, HoistModel} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {MessageModel} from '@xh/hoist/cmp/message';
 import {StoreContextMenu} from '@xh/hoist/cmp/contextmenu';
 import {Icon} from '@xh/hoist/icon';
 import {pluralize} from '@xh/hoist/utils/JsUtils';
@@ -40,10 +39,11 @@ export class RestGridModel {
 
     gridModel = null;
     formModel = null;
-    messageModel = null;
 
-    get store()     {return this.gridModel.store}
-    get selection() {return this.gridModel.selection}
+    get store()             {return this.gridModel.store}
+    get selModel()          {return this.gridModel.selModel}
+    get selection()         {return this.gridModel.selection}
+    get selectedRecord()    {return this.gridModel.selectedRecord}
 
     /**
      * @param {Object} [actionEnabled] - map of action (e.g. 'add'/'edit'/'delete') to boolean  See default prop
@@ -70,7 +70,6 @@ export class RestGridModel {
         this.enhanceToolbar = enhanceToolbar;
         this.gridModel = new GridModel({contextMenuFn: this.contextMenuFn, ...rest});
         this.formModel = new RestFormModel({parent: this, editors});
-        this.messageModel = new MessageModel({title: 'Warning', icon: Icon.warning({size: 'lg'})});
     }
 
     /** Load the underlying store. */
@@ -93,7 +92,7 @@ export class RestGridModel {
 
     @action
     deleteSelection() {
-        const record = this.selection.singleRecord;
+        const record = this.selectedRecord;
         if (record) this.deleteRecord(record);
     }
 
@@ -104,7 +103,7 @@ export class RestGridModel {
 
     @action
     editSelection() {
-        const record = this.selection.singleRecord;
+        const record = this.selectedRecord;
         if (record) this.editRecord(record);
     }
 
@@ -114,48 +113,52 @@ export class RestGridModel {
     }
 
     contextMenuFn = () => {
-        return new StoreContextMenu([
-            {
-                text: 'Add',
-                icon: Icon.add(),
-                action: () => this.addRecord()
-            },
-            {
-                text: 'Edit',
-                icon: Icon.edit(),
-                action: (item, record) => this.editRecord(record),
-                recordsRequired: 1
-            },
-            {
-                text: 'Delete',
-                icon: Icon.delete(),
-                action: (item, record) => this.confirmDeleteRecord(record),
-                recordsRequired: true
-            },
-            '-',
-            'copy',
-            'copyWithHeaders',
-            '-',
-            {
-                text: 'Excel Export',
-                action: () => this.gridModel.exportDataAsExcel()
-            },
-            'csvExport',
-            '-',
-            'autoSizeAll'
-        ]);
+        return new StoreContextMenu({
+            items: [
+                {
+                    text: 'Add',
+                    icon: Icon.add(),
+                    action: () => this.addRecord()
+                },
+                {
+                    text: 'Edit',
+                    icon: Icon.edit(),
+                    action: (item, record) => this.editRecord(record),
+                    recordsRequired: 1
+                },
+                {
+                    text: 'Delete',
+                    icon: Icon.delete(),
+                    action: (item, record) => this.confirmDeleteRecord(record),
+                    recordsRequired: true
+                },
+                '-',
+                'copy',
+                'copyWithHeaders',
+                '-',
+                {
+                    text: 'Excel Export',
+                    action: () => this.gridModel.exportDataAsExcel()
+                },
+                'csvExport',
+                '-',
+                'autoSizeAll'
+            ]
+        });
     }
 
     confirmDeleteSelection() {
-        const record = this.selection.singleRecord;
+        const record = this.selectedRecord;
         if (record) this.confirmDeleteRecord(record);
     }
 
     confirmDeleteRecord(record) {
         const warning = this.actionWarning.del;
         if (warning) {
-            this.messageModel.confirm({
+            XH.confirm({
                 message: warning,
+                title: 'Warning',
+                icon: Icon.warning({size: 'lg'}),
                 onConfirm: () => this.deleteRecord(record)
             });
         } else {
@@ -169,6 +172,6 @@ export class RestGridModel {
     }
 
     destroy() {
-        XH.safeDestroy(this.messageModel, this.gridModel, this.formModel);
+        XH.safeDestroy(this.gridModel, this.formModel);
     }
 }

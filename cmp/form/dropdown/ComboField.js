@@ -14,13 +14,13 @@ import {BaseComboField} from './BaseComboField';
 
 /**
  * ComboBox Field - A field with type ahead suggest and menu select
- *
- * @see HoistField for properties additional to those documented below.
  */
 @HoistComponent()
 export class ComboField extends BaseComboField {
 
     static propTypes = {
+        ...BaseComboField.propTypes,
+
         /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
         options: PT.arrayOf(PT.oneOfType([PT.object, PT.string])).isRequired,
         /** Optional custom optionRenderer, a function that receives (option, optionProps) */

@@ -10,6 +10,8 @@ export * from './DayField';
 export * from './JsonField';
 export * from './Label';
 export * from './NumberField';
+export * from './SliderField';
+export * from './SwitchField';
 export * from './TextAreaField';
 export * from './TextField';
 export * from './dropdown/ComboField';

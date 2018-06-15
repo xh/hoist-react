@@ -8,6 +8,7 @@
 import {PropTypes as PT} from 'prop-types';
 import {isObject, find} from 'lodash';
 import {menuItem} from '@xh/hoist/kit/blueprint';
+import {throwIf} from '@xh/hoist/utils/JsUtils';
 
 import {HoistField} from '../HoistField';
 
@@ -19,14 +20,21 @@ import {HoistField} from '../HoistField';
 export class BaseDropdownField extends HoistField {
 
     static propTypes = {
+        ...HoistField.propTypes,
+
         /** Text to display when control is empty */
         placeholder: PT.string
     };
 
     static defaultProps = {
-        placeholder: 'Select'
-    }
+        placeholder: 'Select',
+        commitOnChange: true
+    };
 
+    constructor(props) {
+        super(props);
+        throwIf(!props.commitOnChange, 'A commitOnChange value of false not implemented on BaseDropdownField.');
+    }
 
     //---------------------------------------------------------------------------
     // Handling of null values.  Blueprint doesn't allow null for the value of a
@@ -77,7 +85,6 @@ export class BaseDropdownField extends HoistField {
 
     onItemSelect = (val) => {
         this.noteValueChange(val.value);
-        this.doCommit();
     }
 }
 

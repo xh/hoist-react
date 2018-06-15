@@ -7,13 +7,12 @@
 
 import React from 'react';
 import {action, observable, setter} from '@xh/hoist/mobx';
-import {castArray, isEqual, remove, trimEnd} from 'lodash';
+import {isEqual, remove, trimEnd} from 'lodash';
 import {pluralize} from '@xh/hoist/utils/JsUtils';
 import {XH, HoistModel} from '@xh/hoist/core';
 import {LocalStore} from '@xh/hoist/data';
 import {p} from '@xh/hoist/cmp/layout';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {MessageModel} from '@xh/hoist/cmp/message';
 import {StoreContextMenu} from '@xh/hoist/cmp/contextmenu';
 import {ToastManager} from '@xh/hoist/toast';
 import {baseCol} from '@xh/hoist/columns/Core';
@@ -25,7 +24,6 @@ import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
 @HoistModel()
 export class ConfigDifferModel  {
 
-    messageModel = new MessageModel({title: 'Warning', icon: Icon.warning({size: 'lg'})});
     detailModel = new ConfigDifferDetailModel({parent: this});
 
     @observable isOpen = false;
@@ -41,8 +39,27 @@ export class ConfigDifferModel  {
                 filter: (it) => it.status !== 'Identical'
             }),
             emptyText: 'Please enter remote host for comparison',
+            selModel: 'multiple',
             columns: [
-                nameCol({flex: 1}),
+                nameCol({fixedWidth: 200}),
+                baseCol({
+                    field: 'type',
+                    fixedWidth: 80,
+                    valueFormatter: this.configValueTypeFormatter
+                }),
+                baseCol({
+                    field: 'localValue',
+                    flex: 1,
+                    valueFormatter: this.configValueFormatter
+                }),
+                baseCol({
+                    field: 'remoteValue',
+                    flex: 1,
+                    valueFormatter: this.configValueFormatter,
+                    cellClassRules: {
+                        'xh-green': this.setRemoteCellClass
+                    }
+                }),
                 baseCol({
                     field: 'status',
                     fixedWidth: 120
@@ -53,13 +70,15 @@ export class ConfigDifferModel  {
     }
 
     contextMenuFn = () => {
-        return new StoreContextMenu([
-            {
-                text: 'Apply Remote',
-                action: (item, record) => this.confirmApplyRemote(record),
-                recordsRequired: true
-            }
-        ]);
+        return new StoreContextMenu({
+            items: [
+                {
+                    text: 'Apply Remote',
+                    action: (item, recordClickedOn, selModel) => this.confirmApplyRemote(selModel.records),
+                    recordsRequired: true
+                }
+            ]
+        });
     }
 
     async loadAsync() {
@@ -87,7 +106,7 @@ export class ConfigDifferModel  {
     }
 
     processFailedLoad() {
-        this.store.loadData([]);
+        this.gridModel.store.loadData([]);
     }
 
     diffConfigs(localConfigs, remoteConfigs) {
@@ -133,11 +152,10 @@ export class ConfigDifferModel  {
     }
 
     confirmApplyRemote(records) {
-        const data = castArray(records),
-            filteredData = data.filter(it => !this.isPwd(it)),
-            hadPwdConfig = data.length != filteredData.length,
-            willDeleteConfig = filteredData.some(it => !it.remoteValue),
-            confirmMsg = `Are you sure you want to apply remote values to ${pluralize('config', filteredData.length, true)}?`;
+        const filteredRecords = records.filter(it => !this.isPwd(it)),
+            hadPwdConfig = records.length != filteredRecords.length,
+            willDeleteConfig = filteredRecords.some(it => !it.remoteValue),
+            confirmMsg = `Are you sure you want to apply remote values to ${pluralize('config', filteredRecords.length, true)}?`;
 
         const message = (
             <div>
@@ -147,9 +165,11 @@ export class ConfigDifferModel  {
             </div>
         );
 
-        this.messageModel.confirm({
+        XH.confirm({
+            title: 'Warning',
+            icon: Icon.warning({size: 'lg'}),
             message,
-            onConfirm: () => this.doApplyRemote(filteredData)
+            onConfirm: () => this.doApplyRemote(filteredRecords)
         });
     }
 
@@ -175,6 +195,39 @@ export class ConfigDifferModel  {
         ToastManager.show({message: 'Good news! All configs match remote host.'});
     }
 
+    setRemoteCellClass(rec) {
+        const data = rec.data,
+            local = data.localValue,
+            remote = data.remoteValue;
+
+        if (local && remote) {
+            return local.value != remote.value;
+        }
+
+        return true;
+    }
+
+    configValueFormatter = (rec) => {
+        const config = rec.data[rec.colDef.field];
+        return config ? this.maskIfPwd(config) : null;
+    }
+
+    maskIfPwd(config) {
+        return config.valueType === 'pwd' ? '*****' : config.value;
+    }
+
+    configValueTypeFormatter(rec) {
+        const data = rec.data,
+            local = data.localValue,
+            remote = data.remoteValue;
+
+        if (local && remote) {
+            return local.valueType == remote.valueType ? local.valueType : '??';
+        }
+
+        return local ? local.valueType : remote.valueType;
+    }
+
     @action
     open() {
         this.isOpen = true;
@@ -188,6 +241,6 @@ export class ConfigDifferModel  {
     }
 
     destroy() {
-        XH.safeDestroy(this.messageModel, this.detailModel, this.gridModel);
+        XH.safeDestroy(this.detailModel, this.gridModel);
     }
 }

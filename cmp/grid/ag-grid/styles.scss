@@ -1,3 +1,10 @@
+.ag-grid-holder > div {
+  // Ag-grid installs an outer div around itself.
+  // This should use height: auto rather than height: 100%, to allow the layoutConfig to work.
+  width: 100%;
+  height: auto !important;
+}
+
 .ag-theme-balham, .ag-theme-balham-dark {
   font-family: var(--xh-grid-font-family);
   font-size: var(--xh-grid-font-size-px);

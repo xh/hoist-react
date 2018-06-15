@@ -11,10 +11,10 @@ import {LeftRightChooserModel} from '@xh/hoist/cmp/leftrightchooser';
 @HoistModel()
 export class ColChooserModel {
 
-    gridModel = null
-    lrModel = null
+    gridModel = null;
+    lrModel = null;
 
-    @observable isOpen = false
+    @observable isOpen = false;
 
     constructor(gridModel) {
         this.gridModel = gridModel;

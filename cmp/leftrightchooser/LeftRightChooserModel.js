@@ -95,6 +95,7 @@ export class LeftRightChooserModel {
 
         this.leftModel = new GridModel({
             store: new LocalStore({fields}),
+            selModel: 'multiple',
             sortBy: leftSortBy,
             columns: [
                 baseCol({headerName: leftTitle, field: 'text', cellRendererFramework: ItemRenderer}),
@@ -104,6 +105,7 @@ export class LeftRightChooserModel {
 
         this.rightModel = new GridModel({
             store: new LocalStore({fields}),
+            selModel: 'multiple',
             sortBy: rightSortBy,
             columns: [
                 baseCol({headerName: rightTitle, field: 'text', cellRendererFramework: ItemRenderer}),
@@ -156,8 +158,8 @@ export class LeftRightChooserModel {
     }
 
     syncSelectionReaction() {
-        const leftSel = this.leftModel.selection,
-            rightSel = this.rightModel.selection;
+        const leftSel = this.leftModel.selModel,
+            rightSel = this.rightModel.selModel;
         
         return {
             track: () => [leftSel.singleRecord, rightSel.singleRecord],

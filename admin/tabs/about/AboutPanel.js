@@ -32,7 +32,7 @@ export class AboutPanel extends Component {
         return [
             table({
                 item: tbody(
-                    row('App Name', svc.get('appName')),
+                    row('App', `${svc.get('appName')} (${svc.get('appCode')})`),
                     row('Environment', svc.get('appEnvironment')),
                     row('Server', svc.get('appVersion')),
                     row('Client', svc.get('clientVersion')),
@@ -57,7 +57,7 @@ export class AboutPanel extends Component {
             cls: 'xh-admin-about-panel__blurb',
             items: [
                 <p>
-                    This application is built with Hoist a plugin for rich web-application development provided
+                    This application is built with Hoist: a plugin for rich web-application development provided
                     by <a href="http://xh.io" target="_blank" rel="noopener noreferrer"> Extremely Heavy Industries</a>.
                 </p>,
                 <p>Please contact <a href="mailto:support@xh.io">support@xh.io</a> with any questions.</p>

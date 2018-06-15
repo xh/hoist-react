@@ -6,10 +6,10 @@
  */
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {defaults, isString, isNumber, isBoolean, isEqual, xor} from 'lodash';
+import {find, isString, isNumber, isBoolean, isEqual, xor, merge} from 'lodash';
 import {XH} from '@xh/hoist/core';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {div, frame} from '@xh/hoist/cmp/layout';
+import {fragment, box} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import './ag-grid';
 import {navigateSelection, agGridReact} from './ag-grid';
@@ -26,74 +26,56 @@ import {colChooser} from './ColChooser';
  * the selection. Use this class to control the AG Grid UI options and specific
  * behavior of the grid.
  */
-@HoistComponent()
+@HoistComponent({layoutSupport: true})
 class Grid extends Component {
 
     _scrollOnSelect = true;
 
     static propTypes = {
-        /** Options for AG Grid - See DEFAULT_GRID_OPTIONS for hoist defined defaults */
-        agOptions: PT.object
-    };
 
-    static DEFAULT_GRID_OPTIONS = {
-        toolPanelSuppressSideButtons: true,
-        enableSorting: true,
-        enableColResize: true,
-        deltaRowDataMode: true,
-        getRowNodeId: (data) => data.id,
-        rowSelection: 'single',
-        allowContextMenuWithControlKey: true,
-        defaultColDef: {suppressMenu: true},
-        groupDefaultExpanded: 1,
-        groupUseEntireRow: true,
-        popupParent: document.querySelector('body')
+        /**
+         * Options for AG Grid's API.
+         *
+         * This constitutes an 'escape hatch' for applications that need to get to the
+         * underlying AG Grid API.  It should be used with care and at the application
+         * developers risk.  Settings made here may interfere with the operation of this
+         * component and its use of the AG Grid API.
+         */
+        agOptions: PT.object,
+
+        /**
+         * Callback to call when a row is double clicked.  Function will receive an event
+         * with a data node containing the row's data.
+         */
+        onRowDoubleClicked: PT.func
     };
 
     constructor(props) {
         super(props);
-        this.agOptions = defaults(
-            {...props.agOptions},
-            Grid.DEFAULT_GRID_OPTIONS,
-            {
-                overlayNoRowsTemplate: this.model.emptyText || '<span></span>',
-                navigateToNextCell: this.onNavigateToNextCell,
-                defaultGroupSortComparator: this.sortByGroup,
-                icons: {
-                    groupExpanded: convertIconToSvg(
-                        Icon.chevronDown(),
-                        {classes: ['group-header-icon-expanded']}
-                    ),
-                    groupContracted: convertIconToSvg(
-                        Icon.chevronRight(),
-                        {classes: ['group-header-icon-contracted']}
-                    )
-                }
-            }
-        );
-        this.addAutorun(this.syncSelection);
-        this.addAutorun(this.syncSort);
-        this.addAutorun(this.syncColumns);
+        this.addReaction(this.selectionReaction());
+        this.addReaction(this.sortReaction());
+        this.addReaction(this.columnsReaction());
+        this.addReaction(this.dataReaction());
     }
 
+
     render() {
-        const {store, agColDefs, agExcelStyles, colChooserModel} = this.model;
-        return frame(
-            div({
-                style: {flex: '1 1 auto', overflow: 'hidden'},
-                cls: XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
-                item: agGridReact({
-                    rowData: store.records,
-                    columnDefs: agColDefs,
-                    excelStyles: agExcelStyles,
-                    gridOptions: this.agOptions,
-                    getContextMenuItems: this.getContextMenuItems,
-                    onGridReady: this.onGridReady,
-                    onSelectionChanged: this.onSelectionChanged,
-                    onSortChanged: this.onSortChanged,
-                    onGridSizeChanged: this.onGridSizeChanged,
-                    onComponentStateChanged: this.onComponentStateChanged
-                })
+        const {colChooserModel} = this.model,
+            {layoutConfig, agOptions} = this.props;
+
+        // Default flex = 'auto' if no dimensions / flex specified.
+        if (layoutConfig.width == null && layoutConfig.height == null && layoutConfig.flex == null) {
+            layoutConfig.flex = 'auto';
+        }
+
+        // Note that we intentionally do *not* render the agGridReact element below with either the data
+        // or the columns.  These two bits are the most volatile in our GridModel, and this causes
+        // extra re-rendering and jumpiness.  Instead, we rely on the API methods to keep these in sync.
+        return fragment(
+            box({
+                layoutConfig: layoutConfig,
+                cls: `ag-grid-holder ${XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham'}`,
+                item: agGridReact(merge(this.createDefaultAgOptions(), agOptions))
             }),
             colChooser({
                 omit: !colChooserModel,
@@ -105,53 +87,65 @@ class Grid extends Component {
     //------------------------
     // Implementation
     //------------------------
-    sortByGroup(nodeA, nodeB) {
-        if (nodeA.key < nodeB.key) {
-            return -1;
-        } else if (nodeA.key > nodeB.key) {
-            return 1;
-        } else {
-            return 0;
-        }
+    createDefaultAgOptions() {
+        const {model, props} = this;
+
+        return {
+            toolPanelSuppressSideButtons: true,
+            enableSorting: true,
+            enableColResize: true,
+            deltaRowDataMode: true,
+            getRowNodeId: (data) => data.id,
+            allowContextMenuWithControlKey: true,
+            defaultColDef: {suppressMenu: true},
+            groupDefaultExpanded: 1,
+            groupUseEntireRow: true,
+            popupParent: document.querySelector('body'),
+            navigateToNextCell: this.onNavigateToNextCell,
+            defaultGroupSortComparator: this.sortByGroup,
+            icons: {
+                groupExpanded: convertIconToSvg(
+                    Icon.chevronDown(),
+                    {classes: ['group-header-icon-expanded']}
+                ),
+                groupContracted: convertIconToSvg(
+                    Icon.chevronRight(),
+                    {classes: ['group-header-icon-contracted']}
+                )
+            },
+            rowSelection: model.selModel.mode,
+            rowDeselection: true,
+            overlayNoRowsTemplate: model.emptyText || '<span></span>',
+            excelStyles: model.agExcelStyles,
+            getContextMenuItems: this.getContextMenuItems,
+            onRowDoubleClicked: props.onRowDoubleClicked,
+            onGridReady: this.onGridReady,
+            onSelectionChanged: this.onSelectionChanged,
+            onSortChanged: this.onSortChanged,
+            onGridSizeChanged: this.onGridSizeChanged,
+            onComponentStateChanged: this.onComponentStateChanged,
+            onDragStopped: this.onDragStopped
+        };
     }
 
-    syncSelection() {
-        const api = this.model.agApi;
-        if (!api) return;
+    //------------------------
+    // Support for defaults
+    //------------------------
+    getColumnDefs() {
+        const {columns, sortBy} = this.model;
+        const cols = columns.map(col => {
+            return col.agColDef ? col.agColDef() : col;
+        });
 
-        const modelSelection = this.model.selection.ids,
-            gridSelection = api.getSelectedRows().map(it => it.id),
-            diff = xor(modelSelection, gridSelection);
-
-        // If ag-grid's selection differs from the selection model, set it to match
-        if (diff.length > 0) {
-            api.deselectAll();
-            modelSelection.forEach(id => {
-                const node = api.getRowNode(id);
-                node.setSelected(true);
-                if (this._scrollOnSelect) {
-                    api.ensureNodeVisible(node);
-                }
-            });
-        }
-    }
-
-    syncSort() {
-        const api = this.model.agApi;
-        if (!api) return;
-
-        const agSorters = api.getSortModel(),
-            modelSorters = this.model.sortBy;
-        if (!isEqual(agSorters, modelSorters)) {
-            api.setSortModel(modelSorters);
-        }
-    }
-
-    syncColumns() {
-        const api = this.model.agApi;
-        if (!api) return;
-
-        api.setColumnDefs(this.model.agColDefs);
+        let now = Date.now();
+        sortBy.forEach(it => {
+            const col = find(cols, {colId: it.colId});
+            if (col) {
+                col.sort = it.sort;
+                col.sortedAt = now++;
+            }
+        });
+        return cols;
     }
 
     getContextMenuItems = (params) => {
@@ -159,30 +153,30 @@ class Grid extends Component {
         // TODO: Display this as Blueprint Context menu e.g:
         // ContextMenu.show(contextMenu({menuItems}), {left:0, top:0}, () => {});
 
-        const {store, selection, contextMenuFn} = this.model;
+        const {store, selModel, contextMenuFn} = this.model;
         if (!contextMenuFn) return null;
 
         const menu = contextMenuFn(params, this.model),
             recId = params.node ? params.node.id : null,
             rec = recId ? store.getById(recId, true) : null,
-            selectedIds = selection.ids;
+            selectedIds = selModel.ids;
 
         // Adjust selection to target record -- and sync to grid immediately.
         if (rec && !(recId in selectedIds)) {
             try {
                 this._scrollOnSelect = false;
-                selection.select(rec, false);
+                selModel.select(rec, false);
             } finally {
                 this._scrollOnSelect = true;
             }
         }
-        if (!rec) selection.clear();
-        const count = selection.count;
+        if (!rec) selModel.clear();
+        const {count} = selModel;
 
         // Prepare each item
         const items = menu.items;
         items.forEach(it => {
-            if (it.prepareFn) it.prepareFn(it, rec, selection);
+            if (it.prepareFn) it.prepareFn(it, rec, selModel);
         });
 
         return items.filter(it => {
@@ -203,7 +197,7 @@ class Grid extends Component {
 
             const required = it.recordsRequired,
                 requiredRecordsNotMet = (isBoolean(required) && required && count === 0) ||
-                                        (isNumber(required) && count !== required);
+                    (isNumber(required) && count !== required);
 
             let icon = it.icon;
             if (isValidElement(icon)) {
@@ -214,21 +208,97 @@ class Grid extends Component {
                 name: it.text,
                 icon,
                 disabled: (it.disabled || requiredRecordsNotMet),
-                action: () => it.action(it, rec, selection)
+                action: () => it.action(it, rec, selModel)
             };
         });
     }
 
+    sortByGroup(nodeA, nodeB) {
+        if (nodeA.key < nodeB.key) {
+            return -1;
+        } else if (nodeA.key > nodeB.key) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
     //------------------------
-    // Event Handlers
+    // Reactions to model
+    //------------------------
+    selectionReaction() {
+        const {model} = this;
+
+        return {
+            track: () => [model.selection, model.agApi],
+            run: () => {
+                const {agApi, selModel} = model;
+                if (!agApi) return;
+
+                const modelSelection = selModel.ids,
+                    gridSelection = agApi.getSelectedRows().map(it => it.id),
+                    diff = xor(modelSelection, gridSelection);
+
+                // If ag-grid's selection differs from the selection model, set it to match
+                if (diff.length > 0) {
+                    agApi.deselectAll();
+                    modelSelection.forEach(id => {
+                        const node = agApi.getRowNode(id);
+                        node.setSelected(true);
+                        if (this._scrollOnSelect) {
+                            agApi.ensureNodeVisible(node);
+                        }
+                    });
+                }
+            }
+        };
+    }
+
+    sortReaction() {
+        const {model} = this;
+        return {
+            track: () => [model.sortBy, model.agApi],
+            run: () => {
+                const {agApi, sortBy} = model;
+                if (agApi && !isEqual(agApi.getSortModel(), sortBy)) {
+                    agApi.setSortModel(sortBy);
+                }
+            }
+        };
+    }
+
+    columnsReaction() {
+        const {model} = this;
+        return {
+            track: () => [model.columns, model.agApi],
+            run: () => {
+                const {agApi} = model;
+                if (agApi) {
+                    agApi.setColumnDefs(this.getColumnDefs());
+                    agApi.sizeColumnsToFit();
+                }
+            }
+        };
+    }
+
+    dataReaction() {
+        const {model} = this;
+        return {
+            track: () => [model.store.records, model.agApi],
+            run: () => {
+                const {agApi} = model;
+                if (agApi) {
+                    agApi.setRowData(model.store.records);
+                }
+            }
+        };
+    }
+
+    //------------------------
+    // Event Handlers on AG Grid.
     //------------------------
     onGridReady = (params) => {
-        const {api} = params,
-            {model} = this;
-
-        model.setAgApi(api);
-        api.setSortModel(model.sortBy);
-        api.sizeColumnsToFit();
+        this.model.setAgApi(params.api);
     }
 
     onNavigateToNextCell = (params) => {
@@ -236,21 +306,20 @@ class Grid extends Component {
     }
 
     onSelectionChanged = (ev) => {
-        const selection = this.model.selection;
-        selection.select(ev.api.getSelectedRows());
+        this.model.selModel.select(ev.api.getSelectedRows());
     }
 
     onSortChanged = (ev) => {
         this.model.setSortBy(ev.api.getSortModel());
     }
 
+    onDragStopped = (ev) => {
+        const gridColumns = ev.api.columnController.gridColumns;
+        this.model.syncColumnOrder(gridColumns);
+    }
+
     onGridSizeChanged = (ev) => {
         ev.api.sizeColumnsToFit();
     }
-
-    onComponentStateChanged = (ev) => {
-        ev.api.sizeColumnsToFit();
-    }
-
 }
 export const grid = elemFactory(Grid);

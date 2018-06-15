@@ -28,6 +28,12 @@ export class UserPreferencePanel extends Component {
                     required: true
                 },
                 {
+                    name: 'groupName',
+                    label: 'Group',
+                    lookupName: 'groupNames',
+                    required: true
+                },
+                {
                     name: 'type',
                     editable: false
                 },
@@ -53,12 +59,14 @@ export class UserPreferencePanel extends Component {
             ]
         }),
         sortBy: 'name',
+        groupBy: 'groupName',
         unit: 'preference',
         filterFields: ['name', 'username'],
         columns: [
             nameCol({fixedWidth: 200}),
-            baseCol({field: 'type', fixedWidth: 70}),
+            baseCol({field: 'type', fixedWidth: 100}),
             usernameCol({fixedWidth: 120}),
+            baseCol({field: 'groupName', headerName: 'Group', fixedWidth: 100}),
             baseCol({field: 'userValue', minWidth: 200, flex: 1})
         ],
         editors: [

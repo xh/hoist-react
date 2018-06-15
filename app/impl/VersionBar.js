@@ -16,7 +16,7 @@ export class VersionBar extends Component {
 
     render() {
         const env = XH.getEnv('appEnvironment'),
-            version = XH.getEnv('appVersion'),
+            version = XH.getEnv('clientVersion'),
             isVisible = (env !== 'Production' || XH.getPref('xhForceEnvironmentFooter')),
             cls = `xh-version-bar xh-version-bar-${env.toLowerCase()}`,
             info = Icon.info({onClick: this.showAbout});

@@ -20,6 +20,11 @@ import {HoistField} from './HoistField';
 export class NumberField extends HoistField {
 
     static propTypes = {
+        ...HoistField.propTypes,
+
+        /** Value of the control */
+        value: PT.number,
+
         /** Text to display when control is empty */
         placeholder: PT.string,
         /** minimum value */
@@ -41,7 +46,7 @@ export class NumberField extends HoistField {
 
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/gi;
 
-    delegateProps = ['className', 'min', 'max', 'placeholder'];
+    delegateProps = ['className', 'disabled', 'min', 'max', 'placeholder'];
 
     render() {
         const {width, style, enableShorthandUnits} = this.props,

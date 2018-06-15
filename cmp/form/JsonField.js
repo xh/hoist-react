@@ -26,13 +26,16 @@ import './JsonField.css';
 
 /**
  * A JSON Editor
- *
- * @see HoistField for properties additional to those documented below.
  */
 @HoistComponent()
 export class JsonField extends HoistField {
 
     static propTypes = {
+        ...HoistField.propTypes,
+
+        /** Value of the control */
+        value: PT.string,
+        
         /** width of field, in pixels */
         width: PT.number,
         /** height of field, in pixels */
@@ -43,24 +46,6 @@ export class JsonField extends HoistField {
          */
         editorProps: PT.object
     };
-
-    static defaultEditorProps = {
-        mode: 'application/json',
-        lineWrapping: false,
-        lineNumbers: true,
-        autoCloseBrackets: true,
-        extraKeys: {
-            'Cmd-P': this.onFormatKey,
-            'Ctrl-P': this.onFormatKey
-        },
-        foldGutter: true,
-        scrollbarStyle: 'simple',
-        gutters: [
-            'CodeMirror-linenumbers',
-            'CodeMirror-foldgutter'
-        ],
-        lint: true
-    }
 
     editor = null;
     taCmp = null;
@@ -84,11 +69,10 @@ export class JsonField extends HoistField {
     }
 
     createJsonEditor(taCmp) {
-        const {editorProps, disabled, width, height} = this.props,
+        const {editorProps, width, height} = this.props,
             editorSpec = defaultsDeep(
                 editorProps,
-                JsonField.defaultEditorProps,
-                {theme: XH.darkTheme ? 'dracula' : 'default', readOnly: disabled}
+                this.createDefaults()
             );
 
         const taDom = ReactDOM.findDOMNode(taCmp),
@@ -105,6 +89,30 @@ export class JsonField extends HoistField {
 
         return editor;
     }
+
+    createDefaults() {
+        const {disabled} = this.props;
+        return {
+            mode: 'application/json',
+            theme: XH.darkTheme ? 'dracula' : 'default',
+            lineWrapping: false,
+            lineNumbers: true,
+            autoCloseBrackets: true,
+            extraKeys: {
+                'Cmd-P': this.onFormatKey,
+                'Ctrl-P': this.onFormatKey
+            },
+            foldGutter: true,
+            scrollbarStyle: 'simple',
+            readOnly: disabled,
+            gutters: [
+                'CodeMirror-linenumbers',
+                'CodeMirror-foldgutter'
+            ],
+            lint: true
+        };
+    }
+
 
     onKeyUp = (instance, ev) => {
         if (ev.key === 'Enter' && !ev.shiftKey) this.doCommit();

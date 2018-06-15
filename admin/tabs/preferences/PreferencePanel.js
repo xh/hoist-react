@@ -23,6 +23,12 @@ export class PreferencePanel extends Component {
                     required: true
                 },
                 {
+                    name: 'groupName',
+                    label: 'Group',
+                    lookupName: 'groupNames',
+                    required: true
+                },
+                {
                     name: 'type',
                     defaultValue: 'string',
                     lookupName: 'types',
@@ -56,8 +62,9 @@ export class PreferencePanel extends Component {
             ]
         }),
         sortBy: 'name',
+        groupBy: 'groupName',
         unit: 'preference',
-        filterFields: ['name'],
+        filterFields: ['name', 'groupName'],
         actionWarning: {
             edit: 'Are you sure you want to edit? Editing preferences can break running apps!',
             del: 'Are you sure you want to delete? Deleting preferences can break running apps!'
@@ -65,12 +72,14 @@ export class PreferencePanel extends Component {
         columns: [
             boolCheckCol({field: 'local', fixedWidth: 70}),
             nameCol({fixedWidth: 200}),
-            baseCol({field: 'type', fixedWidth: 70}),
+            baseCol({field: 'type', fixedWidth: 100}),
             baseCol({field: 'defaultValue', minWidth: 150, maxWidth: 480}),
+            baseCol({field: 'groupName', headerName: 'Group', fixedWidth: 100}),
             baseCol({field: 'notes', minWidth: 200, flex: 1})
         ],
         editors: [
             {field: 'name'},
+            {field: 'groupName'},
             {field: 'type'},
             {field: 'defaultValue', type: 'boolSelect'},
             {field: 'local'},

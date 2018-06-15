@@ -6,7 +6,7 @@
  */
 
 import ReactDOM from 'react-dom';
-import {isPlainObject} from 'lodash';
+import {isPlainObject, defaults} from 'lodash';
 
 import {elem, HoistModel} from '@xh/hoist/core';
 import {Exception, ExceptionHandler} from '@xh/hoist/exception';
@@ -14,6 +14,8 @@ import {observable, setter, action} from '@xh/hoist/mobx';
 import {MultiPromiseModel, never} from '@xh/hoist/promise';
 import {RouterModel} from '@xh/hoist/router';
 import {appContainer} from '@xh/hoist/app';
+import {MessageSourceModel} from '@xh/hoist/cmp/message';
+
 import {
     ConfigService,
     EnvironmentService,
@@ -43,7 +45,7 @@ import '../styles/XH.scss';
  * Available to applications via import as 'XH'- installed as window.XH for troubleshooting purposes.
  */
 @HoistModel()
-class XhModel {
+class XHClass {
 
     constructor() {
         this.aliasMethods();
@@ -54,19 +56,19 @@ class XhModel {
     // The values below are set via webpack.DefinePlugin at build time.
     // See @xh/hoist-dev-utils/configureWebpack.
     //------------------------------------------------------------------
-    /** Short internal code for the application - matches server-side project name */
+    /** Short internal code for the application. */
     appCode = xhAppCode;
 
     /** User-facing display name for the application. */
     appName = xhAppName;
 
-    /** SemVer or Snapshot version of the client build */
+    /** SemVer or Snapshot version of the client build. */
     appVersion = xhAppVersion;
 
-    /** Git commit hash (or equivalent) of the client build */
+    /** Git commit hash (or equivalent) of the client build. */
     appBuild = xhAppBuild;
 
-    /** Root URL context/path - prepended to all relative fetch requests */
+    /** Root URL context/path - prepended to all relative fetch requests. */
     baseUrl = xhBaseUrl;
 
     //---------------------------
@@ -92,7 +94,7 @@ class XhModel {
     @observable authUsername = null;
 
     /** Dark theme active? */
-    @observable darkTheme = true;
+    @observable darkTheme = false; // actual default value comes from preference
 
     /**
      * Exception to be shown troubleshooting/display.
@@ -106,13 +108,13 @@ class XhModel {
     /** Updated App version available, as reported by server. */
     @observable updateVersion = null;
 
-    /** Top level model for the App - set in `renderApp()` below. */
-    appModel = null;
+    /** Currently running HoistApp - set in `renderApp()` below. */
+    app = null;
 
     /** Router model for the App - used for route based navigation. */
     routerModel = new RouterModel();
 
-    /** Set by output of AppModel.checkAccess() if that initial auth check fails. */
+    /** Set by output of app.checkAccess() if that initial auth check fails. */
     accessDeniedMessage = null;
 
     /**
@@ -121,19 +123,19 @@ class XhModel {
      */
     appLoadModel = new MultiPromiseModel();
 
+    messageSourceModel = new MessageSourceModel();
+
     /**
      * Main entry point. Initialize and render application code.
      *
-     * @param {Object} appModelClass - class containing main application state and logic.
-     *      Should be a subclass of BaseAppModel.
-     * @param {Object} appComponentClass - class describing main application view.
-     *      Should extend Component and be decorated with @HoistComponent.
+     * @param {Object} app - object containing main application state and logic.  Should
+     *      be an instance of a class decorated with @HoistApp.
      */
-    renderApp(appModelClass, appComponentClass) {
-        this.appModel = new appModelClass();
-        
+    renderApp(app) {
+        this.app = app;
+
         const rootView = appContainer(
-            elem(appComponentClass, {model: this.appModel})
+            elem(app.componentClass, {model: app})
         );
 
         ReactDOM.render(rootView, document.getElementById('root'));
@@ -200,6 +202,41 @@ class XhModel {
         this.updateVersion = updateVersion;
     }
 
+    //------------------------------
+    // Message Support
+    //------------------------------
+
+    /**
+     * Show a modal message dialog.
+     *
+     * @param {Object} config - see MessageModel.show() for available options.
+     */
+    message(config) {
+        return this.messageSourceModel.show(config);
+    }
+
+    /**
+     * Show a modal 'alert' dialog.
+     * This method will display an alert message with a default confirm button.
+     *
+     * @param {Object} config -  see MessageModel.show() for available options.
+     */
+    alert(config) {
+        config = defaults({}, config, {confirmText: 'OK'});
+        return this.messageSourceModel.show(config);
+    }
+
+    /**
+     * Show a modal 'confirm' dialog.
+     * This method will display a message with default confirm and cancel buttons.
+     *
+     *  @param {Object} config - see MessageModel.show() for available options.
+     */
+    confirm(config) {
+        config = defaults({}, config, {confirmText: 'OK', cancelText: 'Cancel'});
+        this.messageSourceModel.show(config);
+    }
+
     //---------------------------------
     // Framework Methods
     //---------------------------------
@@ -219,7 +256,7 @@ class XhModel {
             const authUser = await this.getAuthUserFromServerAsync();
 
             if (!authUser) {
-                if (this.appModel.requireSSO) {
+                if (this.app.requireSSO) {
                     throw XH.exception('Failed to authenticate user via SSO.');
                 } else {
                     this.setLoadState(LoadState.LOGIN_REQUIRED);
@@ -249,14 +286,14 @@ class XhModel {
 
             this.initLocalState();
 
-            const access = this.appModel.checkAccess(XH.getUser());
+            const access = this.app.checkAccess(XH.getUser());
             if (!access.hasAccess) {
                 this.accessDeniedMessage = access.message || 'Access denied.';
                 this.setLoadState(LoadState.ACCESS_DENIED);
                 return;
             }
 
-            await this.appModel.initAsync();
+            await this.app.initAsync();
             this.initRouterModel();
             this.setLoadState(LoadState.COMPLETE);
         } catch (e) {
@@ -298,7 +335,7 @@ class XhModel {
     }
 
     initRouterModel() {
-        this.routerModel.init(this.appModel.getRoutes());
+        this.routerModel.init(this.app.getRoutes());
     }
 
     @action
@@ -360,7 +397,7 @@ class XhModel {
         });
     }
 }
-export const XH = window.XH = new XhModel();
+export const XH = window.XH = new XHClass();
 
 /**
  * Enumeration of possible Load States for Hoist.

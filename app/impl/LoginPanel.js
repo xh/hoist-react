@@ -27,12 +27,13 @@ export class LoginPanel extends Component {
     @setter @observable password = '';
     @setter @observable warning = '';
 
-    @computed get isValid() {
+    @computed
+    get isValid() {
         return this.username && this.password;
     }
 
     render() {
-        const {loginMessage} = XH.appModel;
+        const {loginMessage} = XH.app;
 
         return viewport({
             alignItems: 'center',
@@ -97,7 +98,9 @@ export class LoginPanel extends Component {
             if (r.success) {
                 XH.completeInitAsync();
             }
-        }).catchDefault();
+        }).catchDefault({
+            hideParams: ['password']
+        });
     }
 
     onUsernameChange = (ev) => {this.setUsername(ev.target.value)}
