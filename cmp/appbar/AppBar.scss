@@ -11,15 +11,4 @@
     font-size: var(--xh-navbar-title-font-size-px);
     margin: 0 var(--xh-pad-px);
   }
-
-  > .pt-navbar-group {
-    > .svg-inline--fa {
-      margin: 0 5px 0 0;
-    }
-    &.pt-align-right {
-      .pt-navbar-divider {
-        margin-right: 0;
-      }
-    }
-  }
 }
