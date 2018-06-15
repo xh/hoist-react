@@ -30,6 +30,10 @@
     // Replace default float behaviour in favour of flexbox
     float: none;
 
+    > .svg-inline--fa {
+      margin: 0 5px 0 0;
+    }
+
     &.pt-align-left {
       // Flex simulates left alignment
       flex: 1;
@@ -43,6 +47,9 @@
     &.pt-align-right {
       > * {
         margin-left: var(--xh-pad-half-px);
+      }
+      .pt-navbar-divider {
+        margin-right: 0;
       }
     }
   }
