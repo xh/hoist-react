@@ -33,7 +33,7 @@ export class LoginPanel extends Component {
     }
 
     render() {
-        const {loginMessage} = XH.appModel;
+        const {loginMessage} = XH.app;
 
         return viewport({
             alignItems: 'center',

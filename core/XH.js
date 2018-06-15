@@ -45,7 +45,7 @@ import '../styles/XH.scss';
  * Available to applications via import as 'XH'- installed as window.XH for troubleshooting purposes.
  */
 @HoistModel()
-class XhModel {
+class XHClass {
 
     constructor() {
         this.aliasMethods();
@@ -108,13 +108,13 @@ class XhModel {
     /** Updated App version available, as reported by server. */
     @observable updateVersion = null;
 
-    /** Top level model for the App - set in `renderApp()` below. */
-    appModel = null;
+    /** Currently running HoistApp - set in `renderApp()` below. */
+    app = null;
 
     /** Router model for the App - used for route based navigation. */
     routerModel = new RouterModel();
 
-    /** Set by output of AppModel.checkAccess() if that initial auth check fails. */
+    /** Set by output of app.checkAccess() if that initial auth check fails. */
     accessDeniedMessage = null;
 
     /**
@@ -128,16 +128,14 @@ class XhModel {
     /**
      * Main entry point. Initialize and render application code.
      *
-     * @param {Object} appModelClass - class containing main application state and logic.
-     *      Should be a subclass of BaseAppModel.
-     * @param {Object} appComponentClass - class describing main application view.
-     *      Should extend Component and be decorated with @HoistComponent.
+     * @param {Object} app - object containing main application state and logic.  Should
+     *      be an instance of a class decorated with @HoistApp.
      */
-    renderApp(appModelClass, appComponentClass) {
-        this.appModel = new appModelClass();
-        
+    renderApp(app) {
+        this.app = app;
+
         const rootView = appContainer(
-            elem(appComponentClass, {model: this.appModel})
+            elem(app.componentClass, {model: app})
         );
 
         ReactDOM.render(rootView, document.getElementById('root'));
@@ -258,7 +256,7 @@ class XhModel {
             const authUser = await this.getAuthUserFromServerAsync();
 
             if (!authUser) {
-                if (this.appModel.requireSSO) {
+                if (this.app.requireSSO) {
                     throw XH.exception('Failed to authenticate user via SSO.');
                 } else {
                     this.setLoadState(LoadState.LOGIN_REQUIRED);
@@ -288,14 +286,14 @@ class XhModel {
 
             this.initLocalState();
 
-            const access = this.appModel.checkAccess(XH.getUser());
+            const access = this.app.checkAccess(XH.getUser());
             if (!access.hasAccess) {
                 this.accessDeniedMessage = access.message || 'Access denied.';
                 this.setLoadState(LoadState.ACCESS_DENIED);
                 return;
             }
 
-            await this.appModel.initAsync();
+            await this.app.initAsync();
             this.initRouterModel();
             this.setLoadState(LoadState.COMPLETE);
         } catch (e) {
@@ -337,7 +335,7 @@ class XhModel {
     }
 
     initRouterModel() {
-        this.routerModel.init(this.appModel.getRoutes());
+        this.routerModel.init(this.app.getRoutes());
     }
 
     @action
@@ -399,7 +397,7 @@ class XhModel {
         });
     }
 }
-export const XH = window.XH = new XhModel();
+export const XH = window.XH = new XHClass();
 
 /**
  * Enumeration of possible Load States for Hoist.
