@@ -27,7 +27,12 @@ import {UserPanel} from './tabs/users/UserPanel';
 @HoistApp
 export class App {
 
-    tabs = this.createTabContainer();
+    tabModel = new TabContainerModel({
+        id: 'default',
+        useRoutes: true,
+        switcherPosition: 'none',
+        children: this.createTabs()
+    });
 
     checkAccess(user) {
         const role = 'HOIST_ADMIN',
@@ -40,7 +45,7 @@ export class App {
     
     @action
     requestRefresh() {
-        this.tabs.requestRefresh();
+        this.tabModel.requestRefresh();
     }
 
     getRoutes() {
@@ -52,17 +57,6 @@ export class App {
                 children: this.getTabRoutes()
             }
         ];
-    }
-
-    //------------------------
-    // Implementation
-    //------------------------
-    createTabContainer() {
-        return new TabContainerModel({
-            id: 'default',
-            useRoutes: true,
-            children: this.createTabs()
-        });
     }
 
     //------------------------
@@ -99,12 +93,13 @@ export class App {
                     {name: 'status', path: '/status'},
                     {name: 'editMonitors', path: '/editMonitors'}
                 ]
-            },       {
-                name: 'clientActivity',
-                path: '/clientActivity',
-                forwardTo: 'default.clientActivity.activity',
+            },
+            {
+                name: 'activity',
+                path: '/activity',
+                forwardTo: 'default.activity.tracking',
                 children: [
-                    {name: 'activity', path: '/activity'},
+                    {name: 'tracking', path: '/tracking'},
                     {name: 'clientErrors', path: '/clientErrors'},
                     {name: 'feedback', path: '/feedback'}
                 ]
@@ -133,7 +128,8 @@ export class App {
                     {id: 'ehCache', name: 'Caches', component: EhCachePanel},
                     {id: 'users', component: UserPanel}
                 ]
-            }, {
+            },
+            {
                 id: 'logging',
                 switcherPosition: 'left',
                 children: [
@@ -150,10 +146,10 @@ export class App {
                 ]
             },
             {
-                id: 'clientActivity',
+                id: 'activity',
                 switcherPosition: 'left',
                 children: [
-                    {id: 'activity', component: ActivityPanel},
+                    {id: 'tracking', component: ActivityPanel},
                     {id: 'clientErrors', component: ClientErrorPanel},
                     {id: 'feedback', component: FeedbackPanel}
                 ]
@@ -170,6 +166,7 @@ export class App {
     }
 
     destroy() {
-        XH.safeDestroy(this.tabs);
+        XH.safeDestroy(this.tabModel);
     }
+
 }
