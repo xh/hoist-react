@@ -12,7 +12,14 @@
     margin: 0 var(--xh-pad-px);
   }
 
-  & > .pt-navbar-group > .svg-inline--fa {
-    margin: 0 5px 0 0;
+  > .pt-navbar-group {
+    > .svg-inline--fa {
+      margin: 0 5px 0 0;
+    }
+    &.pt-align-right {
+      .pt-navbar-divider {
+        margin-right: 0;
+      }
+    }
   }
 }
