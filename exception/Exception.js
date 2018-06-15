@@ -16,7 +16,9 @@ import {isString} from 'lodash';
 export class Exception {
 
     /**
-     *
+     * @param {(Object)} cfg
+     * @param {string} [cfg.name] - Title of the error.  Will be shown above 'message'.
+     * @param {string} [cfg.message] - Short description of the error.
      */
     static create(cfg) {
         return this.createInternal({
@@ -79,7 +81,7 @@ export class Exception {
         return this.createInternal({
             name: 'Server Unavailable',
             message,
-            httpStatus: 0,  // native fetch doesn't put this property on its Error
+            httpStatus: 0,  // native fetch doesn't put status on its Error
             originalMessage: e.message,
             requestOptions
         });
