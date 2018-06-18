@@ -17,7 +17,7 @@ export class Exception {
 
     /**
      * Create and get back a Javascript Error object
-     * @param {(Object)} cfg - properties to add to the Error object
+     * @param {(Object|string)} cfg - Properties to add to the Error object.  If a string, will become the 'message' value.
      * @returns {Error}
      */
     static create(cfg) {
