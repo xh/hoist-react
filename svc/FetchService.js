@@ -51,15 +51,16 @@ export class FetchService {
 
         // 2) Prepare merged options
         const defaults = {
-            method,
-            cors: true,
-            credentials: 'include',
-            redirect: 'follow',
-            headers: new Headers({'Content-Type': contentType})
-        };
-        opts = Object.assign(defaults, opts);
-        delete opts.contentType;
-        delete opts.url;
+                method,
+                cors: true,
+                credentials: 'include',
+                redirect: 'follow',
+                headers: new Headers({'Content-Type': contentType})
+            },
+            fetchOpts = Object.assign(defaults, opts);
+
+        delete fetchOpts.contentType;
+        delete fetchOpts.url;
 
         // 3) preprocess and apply params
         if (params) {
@@ -72,7 +73,7 @@ export class FetchService {
             const paramsString = paramsStrings.join('&');
 
             if (method === 'POST') {
-                opts.body = paramsString;
+                fetchOpts.body = paramsString;
             } else {
                 url += '?' + paramsString;
             }
@@ -80,11 +81,15 @@ export class FetchService {
 
         let ret;
         try {
-            ret = await fetch(url, opts);
+            ret = await fetch(url, fetchOpts);
         } catch (e) {
-            throw Exception.serverUnavailable(url, opts, e);
+            throw Exception.serverUnavailable(opts, e);
         }
-        if (!ret.ok) throw Exception.requestError(opts, ret);
+
+        if (!ret.ok) {
+            ret.responseText = await this.safeResponseTextAsync(ret);
+            throw Exception.fetchError(opts, ret);
+        }
         return ret;
     }
 
@@ -98,5 +103,17 @@ export class FetchService {
     async fetchJson(opts) {
         const ret = await this.fetch(opts);
         return ret.status === 204 ? null : ret.json();
+    }
+
+    //-----------------------
+    // Implementation
+    //-----------------------
+
+    async safeResponseTextAsync(response) {
+        try {
+            return await response.text();
+        } catch (ignore) {
+            return null;
+        }
     }
 }

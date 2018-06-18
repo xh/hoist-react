@@ -24,9 +24,9 @@ export function stringifyErrorSafely(errorObject) {
             delete err.serverDetails.lineNumber;
         }
 
-        if (err.requestOptions) {
-            delete err.requestOptions.mask;
-            delete err.requestOptions.scope;
+        if (err.fetchOptions) {
+            delete err.fetchOptions.mask;
+            delete err.fetchOptions.scope;
         }
 
         // Clean-up 'stack', and also add it last, which can be useful for stringify

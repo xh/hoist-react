@@ -15,6 +15,11 @@ import {isString} from 'lodash';
  */
 export class Exception {
 
+    /**
+     * Create and get back a Javascript Error object
+     * @param {(Object)} cfg - properties to add to the Error object
+     * @returns {Error}
+     */
     static create(cfg) {
         return this.createInternal({
             name: 'Exception',
@@ -22,30 +27,20 @@ export class Exception {
         }, cfg);
     }
 
-    static requestCancelled(requestOptions, reason) {
-        return this.createInternal({
-            name: 'Request Cancelled',
-            message: reason,
-            requestOptions: requestOptions
-        });
-    }
-
-    static requestTimeout(requestOptions) {
-        return this.createInternal({
-            name: 'Request Timeout',
-            message: 'The request to the server timed out',
-            requestOptions: requestOptions
-        });
-    }
-
-    static requestError(requestOptions, response) {
+    /**
+     * Create an Error for when fetch calls go bad...
+     * @param {Object} fetchOptions - original options the app passed to FetchService.fetch
+     * @param {Response} response - resolved value from native fetch
+     * @returns {Error}
+     */
+    static fetchError(fetchOptions, response) {
         const httpStatus = response.status,
             defaults = {
                 name: 'HTTP Error ' + (httpStatus || ''),
                 message: response.statusText,
-                httpStatus: httpStatus,
+                httpStatus,
                 serverDetails: response.responseText,
-                requestOptions: requestOptions
+                fetchOptions
             };
 
         if (httpStatus === 401) {
@@ -55,25 +50,16 @@ export class Exception {
             });
         }
 
-        if (httpStatus === 0) {
-            return this.createInternal(defaults, {
-                name: 'Connection Failure',
-                message: 'Unable to connect to server. The server or the network may be unavailable, or the request may have been cancelled.'
-                // For a cancel coming from Hoist, a RequestCancelled (above) should be generated but other places
-                // in the stack may yield cancellations that are indistinguishable from connect failures
-            });
-        }
-
         // Try to "smart" decode as server provided JSON Exception (with a name)
         try {
-            const cType = response.getResponseHeader('Content-Type');
+            const cType = response.headers.get('Content-Type');
             if (cType && cType.includes('application/json')) {
                 const serverDetails = JSON.parse(response.responseText);
                 if (serverDetails && serverDetails.name) {
                     return this.createInternal(defaults, {
                         name: serverDetails.name,
                         message: serverDetails.message,
-                        serverDetails: serverDetails
+                        serverDetails
                     });
                 }
             }
@@ -83,17 +69,23 @@ export class Exception {
         return this.createInternal(defaults, {});
     }
 
-    static serverUnavailable(url, requestOptions, e) {
-        const match = url.match(/^[a-z]+:\/\/[^/]+/i),
+    /**
+     * Create an Error for when the server called by fetch does not respond
+     * @param {Object} fetchOptions - original options the app passed to FetchService.fetch
+     * @param {Error} e - Error object created by native fetch
+     * @returns {Error}
+     */
+    static serverUnavailable(fetchOptions, e) {
+        const match = fetchOptions.url.match(/^[a-z]+:\/\/[^/]+/i),
             origin = match ? match[0] : window.location.origin,
             message = `Unable to contact the server at ${origin}`;
 
         return this.createInternal({
             name: 'Server Unavailable',
-            message: message,
+            message,
+            httpStatus: 0,  // native fetch doesn't put status on its Error
             originalMessage: e.message,
-            url: url,
-            requestOptions: requestOptions
+            fetchOptions
         });
     }
 
