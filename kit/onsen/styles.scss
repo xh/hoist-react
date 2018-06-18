@@ -22,6 +22,20 @@
   border: 1px solid #CCC;
 }
 
+.xh-field {
+  &.xh-text-field {
+    margin: 4px;
+
+    .text-input, .text-input__label {
+      padding: 0 4px;
+    }
+  }
+
+  &.xh-search-field {
+    margin: 4px;
+  }
+}
+
 //--------------------
 // Onsen Overrides
 //--------------------

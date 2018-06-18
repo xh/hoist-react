@@ -16,12 +16,14 @@ import {elemFactory} from '@xh/hoist/core';
 import {
     BottomToolbar,
     Button,
+    Input,
     List,
     ListHeader,
     ListItem,
     Navigator,
     Page,
     ProgressCircular,
+    SearchInput,
     Toolbar,
     ToolbarButton
 } from 'react-onsenui';
@@ -29,11 +31,13 @@ import {
 export const
     bottomToolbar = elemFactory(BottomToolbar),
     button = elemFactory(Button),
+    input = elemFactory(Input),
     list = elemFactory(List),
     listHeader = elemFactory(ListHeader),
     listItem = elemFactory(ListItem),
     navigator = elemFactory(Navigator),
     page = elemFactory(Page),
     progressCircular = elemFactory(ProgressCircular),
+    searchInput = elemFactory(SearchInput),
     toolbar = elemFactory(Toolbar),
     toolbarButton = elemFactory(ToolbarButton);
