@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {isString} from 'lodash';
+import {XH} from "@xh/hoist/core";
 
 /**
  * Standardized Exception/Error objects.
@@ -76,8 +77,12 @@ export class Exception {
      * @returns {Error}
      */
     static serverUnavailable(fetchOptions, e) {
-        const match = fetchOptions.url.match(/^[a-z]+:\/\/[^/]+/i),
-            origin = match ? match[0] : window.location.origin,
+        const protocolPattern = /^[a-z]+:\/\//i,
+            originPattern = /^[a-z]+:\/\/[^/]+/i,
+            match = fetchOptions.url.match(originPattern),
+            origin = match ? match[0] :
+                protocolPattern.test(XH.baseUrl) ? XH.baseUrl :
+                    window.location.origin,
             message = `Unable to contact the server at ${origin}`;
 
         return this.createInternal({
