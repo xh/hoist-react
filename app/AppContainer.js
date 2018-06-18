@@ -40,6 +40,8 @@ import {lockoutPanel} from './';
  * standardized loginPanel component to prompt for a username and password. Once the user is
  * confirmed, this container will again mask until Hoist has completed its initialization, at
  * which point the app's UI will be rendered.
+ *
+ * @private
  */
 @observer
 @ContextMenuTarget
@@ -107,7 +109,7 @@ export class AppContainer extends Component {
                 {
                     text: 'Logout',
                     icon: Icon.logout(),
-                    hidden: !XH.appModel.enableLogout,
+                    hidden: !XH.app.enableLogout,
                     action: () => XH.identityService.logoutAsync()
                 }
             ]
@@ -136,7 +138,7 @@ export class AppContainer extends Component {
             vspacer(20),
             logoutButton({
                 text: 'Logout',
-                omit: !XH.appModel.enableLogout
+                omit: !XH.app.enableLogout
             })
         );
     }

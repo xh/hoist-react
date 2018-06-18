@@ -22,11 +22,15 @@ import {observable, setter, computed} from '@xh/hoist/mobx';
  * it is updated.
  *
  * Hoist Fields also introduce the notion of "Committing" a field to the model, when
- * the user has completed a discrete act of data entry. For certain controls
- * (e.g. CheckField, SelectField) this may happen concurrently with valueChange.  For
- * text controls (e.g. ComboField, TextField, NumberField) this will happen when the user
- * hits 'enter' or 'blurs' the field.  At this time, any specified 'onCommit' handler will
- * be fired.
+ * the user has completed a discrete act of data entry. If the 'commitOnChange' property is true,
+ * this will happen concurrently with valueChange.  Otherwise, this will happen only when the user
+ * hits 'enter' or 'blurs' the field, or takes another commit action defined by the control.
+ * At this time, any specified 'onCommit' handler will be fired.
+ *
+ * The 'commitOnChange' property defaults to false, except for selected controls, such as CheckField
+ * where a true value is more intuitive.  Furthermore, a commitOnChange value of false is not currently
+ * implemented on DropdownFields and ComboBoxes. See BaseDropdownField for more information.
+
  *
  * Note that operating in bound mode may allow for more efficient rendering
  * in a mobx context, in that the bound value is only read *within* this
@@ -38,23 +42,44 @@ import {observable, setter, computed} from '@xh/hoist/mobx';
 export class HoistField extends Component {
 
     static propTypes = {
-        value: PT.string,
+
+        /** value of the control */
+        value: PT.any,
+
         /** handler to fire when value changes, gets passed the new value */
         onChange: PT.func,
         /** handler to fire when value is committed, gets passed the new value */
         onCommit: PT.func,
+        /** config to commit changes on change instead of blur */
+        commitOnChange: PT.bool,
         /** model to bind to */
         model: PT.object,
         /** name of property in model to bind to */
         field: PT.string,
         /** is control disabled */
         disabled: PT.bool,
+        /** Style block */
         style: PT.object,
+        /** css class name **/
         className: PT.string
+    };
+
+    static defaultProps = {
+        commitOnChange: false
     };
 
     @observable @setter hasFocus;
     @observable @setter internalValue;
+
+
+    /**
+     * List of properties that if passed to this control should be trampolined to the underlying
+     * blueprint control.
+     *
+     * Implementations of HoistField should use this.getDelegateProps() to get a basket of
+     * these props for passing along.
+     */
+    delegateProps = [];
 
     //-----------------------------------------------------------
     // Handling of internal vs. External value, committing
@@ -83,10 +108,11 @@ export class HoistField extends Component {
 
     /** Set normalized internal value, and fire associated value changed **/
     noteValueChange(val) {
-        const {onChange} = this.props;
+        const {commitOnChange, onChange} = this.props;
 
         this.setInternalValue(val);
         if (onChange) onChange(this.toExternal(val));
+        if (commitOnChange) this.doCommit();
     }
 
     /**
@@ -128,7 +154,7 @@ export class HoistField extends Component {
     toInternal(external) {
         return external;
     }
-    
+
     //-----------------------------
     // Additional Utilities
     //-----------------------------

@@ -20,6 +20,11 @@ import {HoistField} from './HoistField';
 export class TextAreaField extends HoistField {
 
     static propTypes = {
+        ...HoistField.propTypes,
+
+        /** Value of the control */
+        value: PT.string,
+
         /** Whether field should receive focus on render */
         autoFocus: PT.bool,
         /** Text to display when control is empty */
@@ -27,7 +32,7 @@ export class TextAreaField extends HoistField {
         /** Whether to allow browser spell check, defaults to true */
         spellCheck: PT.bool
     };
-
+    
     delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus'];
 
     render() {
@@ -52,6 +57,5 @@ export class TextAreaField extends HoistField {
     onKeyPress = (ev) => {
         if (ev.key === 'Enter' && !ev.shiftKey) this.doCommit();
     }
-
 }
 export const textAreaField = elemFactory(TextAreaField);

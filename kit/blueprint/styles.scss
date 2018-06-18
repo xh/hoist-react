@@ -30,6 +30,10 @@
     // Replace default float behaviour in favour of flexbox
     float: none;
 
+    > .svg-inline--fa {
+      margin: 0 5px 0 0;
+    }
+
     &.pt-align-left {
       // Flex simulates left alignment
       flex: 1;
@@ -43,6 +47,9 @@
     &.pt-align-right {
       > * {
         margin-left: var(--xh-pad-half-px);
+      }
+      .pt-navbar-divider {
+        margin-right: 0;
       }
     }
   }
@@ -111,31 +118,33 @@
     }
   }
 
-  &.pt-intent-primary {
-    background-color: var(--xh-blue);
-    &:disabled {
-      background-color: var(--xh-blue-muted);
+  &:not(.pt-minimal) {
+    &.pt-intent-primary {
+      background-color: var(--xh-blue);
+      &:disabled {
+        background-color: var(--xh-blue-muted);
+      }
     }
-  }
 
-  &.pt-intent-danger {
-    background-color: var(--xh-red);
-    &:disabled {
-      background-color: var(--xh-red-muted);
+    &.pt-intent-danger {
+      background-color: var(--xh-red);
+      &:disabled {
+        background-color: var(--xh-red-muted);
+      }
     }
-  }
 
-  &.pt-intent-success {
-    background-color: var(--xh-green);
-    &:disabled {
-      background-color: var(--xh-green-muted);
+    &.pt-intent-success {
+      background-color: var(--xh-green);
+      &:disabled {
+        background-color: var(--xh-green-muted);
+      }
     }
-  }
 
-  &.pt-intent-warning {
-    background-color: var(--xh-orange);
-    &:disabled {
-      background-color: var(--xh-orange-muted);
+    &.pt-intent-warning {
+      background-color: var(--xh-orange);
+      &:disabled {
+        background-color: var(--xh-orange-muted);
+      }
     }
   }
 }

@@ -20,6 +20,8 @@ export class QueryComboField extends BaseComboField {
     @observable.ref @setter options = [];
 
     static propTypes = {
+        ...BaseComboField.propTypes,
+
         /**
          * Function to be run when value of control changes to repopulate the available items.
          * Should return a promise resolving to a collection of form:

@@ -20,6 +20,8 @@ import {BaseDropdownField} from './BaseDropdownField';
 export class SelectField extends BaseDropdownField {
 
     static propTypes = {
+        ...BaseDropdownField.propTypes,
+
         /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
         options: PT.arrayOf(PT.oneOfType([PT.object, PT.string, PT.bool])).isRequired,
         /** Optional custom optionRenderer, a function that receives (option, optionProps) */

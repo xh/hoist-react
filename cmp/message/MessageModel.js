@@ -46,13 +46,13 @@ export class MessageModel {
 
     /**
      * @param {Object} [config] - default options for this instance.
-     * @param {String} config.message - icon to be displayed.
-     * @param {String} [config.title] - title of message box.
+     * @param {string} config.message - icon to be displayed.
+     * @param {string} [config.title] - title of message box.
      * @param {element} [config.icon] - icon to be displayed.
-     * @param {String} [config.confirmText] - Text for confirm button. If null, no button will be shown.
-     * @param {String} [config.cancelText] - Text for cancel button. If null, no button will be shown.
-     * @param {String} [config.confirmIntent] - Intent for confirm button.
-     * @param {String} [config.cancelIntent] - Intent for cancel button.
+     * @param {string} [config.confirmText] - Text for confirm button. If null, no button will be shown.
+     * @param {string} [config.cancelText] - Text for cancel button. If null, no button will be shown.
+     * @param {string} [config.confirmIntent] - Intent for confirm button.
+     * @param {string} [config.cancelIntent] - Intent for cancel button.
      * @param {function} [config.onConfirm] - Callback to execute when confirm is clicked.
      * @param {function} [config.onCancel] - Callback to execute when cancel is clicked.
      */
@@ -67,13 +67,13 @@ export class MessageModel {
      * configuration specified in the constructor.
      *
      * @param {Object} [config] - options for this particular showing of the dialog.
-     * @param {String} config.message - text to be displayed.
-     * @param {String} [config.title] - title of message box.
+     * @param {string} config.message - text to be displayed.
+     * @param {string} [config.title] - title of message box.
      * @param {element} [config.icon] - icon to be displayed.
-     * @param {String} [config.confirmText] - Text for confirm button. If null, button will not be shown.
-     * @param {String} [config.cancelText] - Text for cancel button. If null, button will not be shown.
-     * @param {String} [config.confirmIntent] - Intent for confirm button.
-     * @param {String} [config.cancelIntent] - Intent for cancel button.
+     * @param {string} [config.confirmText] - Text for confirm button. If null, button will not be shown.
+     * @param {string} [config.cancelText] - Text for cancel button. If null, button will not be shown.
+     * @param {string} [config.confirmIntent] - Intent for confirm button.
+     * @param {string} [config.cancelIntent] - Intent for cancel button.
      * @param {function} [config.onConfirm] - Callback to execute when confirm is clicked.
      * @param {function} [config.onCancel] - Callback to execute when cancel is clicked.
      */

@@ -1,0 +1,24 @@
+.xh-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 10, 0.8);
+  z-index: 10;
+
+  .xh-mask-body {
+    align-items: center;
+    justify-content: center;
+
+    .xh-mask-text {
+      max-width: 200px;
+      text-align: center;
+      color: white;
+    }
+  }
+}
