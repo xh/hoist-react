@@ -30,6 +30,8 @@ export class FetchService {
      *     If not explicitly set in opts then the contentType will be set based on the method. POST
      *     requests will use 'application/x-www-form-urlencoded', otherwise 'text/plain' will be
      *     used.
+     * @param {boolean} [opts.acceptJson] - if true, sets Accept header to 'application/json'.  Defaults to false.
+     *
      *
      * @returns {Promise<Response>} @see https://developer.mozilla.org/en-US/docs/Web/API/Response
      */
