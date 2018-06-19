@@ -4,13 +4,13 @@
 .list.xh-grid {
   .list-header {
     padding-right: 20px;
-    position: fixed;
+    position: absolute;
     width: 100%;
     z-index: 1;
     border-bottom: 1px solid #CCC;
   }
 
-  ons-list-item:first-of-type {
+  &:not(.xh-grid-header-hidden) ons-list-item:first-of-type {
     margin-top: 26px;
   }
 }
@@ -39,11 +39,6 @@
 //--------------------
 // Onsen Overrides
 //--------------------
-.page__content {
-  // Required for loadmask to work. Check to see if any unintended side-effects
-  display: flex;
-}
-
 .progress-circular__primary, .progress-circular__secondary {
   stroke: white;
 }

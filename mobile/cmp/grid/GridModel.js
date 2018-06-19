@@ -19,23 +19,27 @@ export class GridModel {
     handler = null;
     @observable leftColumn = null;
     @observable rightColumn = null;
+    @observable hideHeader = null;
 
     /**
      * @param {BaseStore} store - store containing the data for the grid.
      * @param {Object} leftColumn - column specification to show in left side of grid
      * @param {Object} rightColumn - column specification to show in right side of grid
      * @param {function} [handler] - function to trigger on item tap. Receives record as argument.
+     * @param {boolean} [hideHeader] - true to hide the header row
      */
     constructor({
         store,
         leftColumn,
         rightColumn,
-        handler
+        handler,
+        hideHeader = false
     }) {
         this.store = store;
         this.leftColumn = leftColumn;
         this.rightColumn = rightColumn;
         this.handler = handler;
+        this.hideHeader = hideHeader;
     }
 
     /** Load the underlying store. */
