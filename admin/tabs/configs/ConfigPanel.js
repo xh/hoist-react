@@ -19,8 +19,6 @@ import {ConfigDifferModel} from './differ/ConfigDifferModel';
 @HoistComponent()
 export class ConfigPanel extends Component {
 
-    differModel = new ConfigDifferModel(this);
-
     gridModel = new RestGridModel({
         store: new RestStore({
             url: 'rest/configAdmin',
@@ -97,6 +95,8 @@ export class ConfigPanel extends Component {
             {field: 'lastUpdatedBy'}
         ]
     });
+
+    differModel = new ConfigDifferModel(this.gridModel);
 
     render() {
         return fragment(

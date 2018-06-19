@@ -7,7 +7,7 @@
 
 import React from 'react';
 import {action, observable, setter} from '@xh/hoist/mobx';
-import {castArray, cloneDeep, isEqual, remove, trimEnd} from 'lodash';
+import {cloneDeep, isEqual, remove, trimEnd} from 'lodash';
 import {pluralize} from '@xh/hoist/utils/JsUtils';
 import {XH, HoistModel} from '@xh/hoist/core';
 import {LocalStore} from '@xh/hoist/data';
@@ -29,8 +29,8 @@ export class ConfigDifferModel  {
     @observable isOpen = false;
     @setter @observable remoteHost = null;
 
-    constructor(configPanel) {
-        this.configPanel = configPanel;
+    constructor(configGrid) {
+        this.configGrid = configGrid;
 
         this.gridModel = new GridModel({
             store: new LocalStore({
@@ -168,9 +168,8 @@ export class ConfigDifferModel  {
     }
 
     confirmApplyRemote(records) {
-        const recArray = castArray(records),
-            filteredRecords = recArray.filter(it => !this.isPwd(it)),
-            hadPwdConfig = recArray.length != filteredRecords.length,
+        const filteredRecords = records.filter(it => !this.isPwd(it)),
+            hadPwdConfig = records.length != filteredRecords.length,
             willDeleteConfig = filteredRecords.some(it => !it.remoteValue),
             confirmMsg = `Are you sure you want to apply remote values to ${pluralize('config', filteredRecords.length, true)}?`;
 
@@ -202,7 +201,7 @@ export class ConfigDifferModel  {
             params: {records: JSON.stringify(records)}
         }).finally(() => {
             this.loadAsync();
-            this.configPanel.loadAsync();
+            this.configGrid.loadAsync();
             this.detailModel.close();
         }).linkTo(
             XH.appLoadModel
