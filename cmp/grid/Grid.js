@@ -116,6 +116,7 @@ class Grid extends Component {
             rowSelection: model.selModel.mode,
             rowDeselection: true,
             overlayNoRowsTemplate: model.emptyText || '<span></span>',
+            excelStyles: model.agExcelStyles,
             getContextMenuItems: this.getContextMenuItems,
             onRowDoubleClicked: props.onRowDoubleClicked,
             onGridReady: this.onGridReady,

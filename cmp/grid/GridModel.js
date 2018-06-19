@@ -5,9 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, computed} from '@xh/hoist/mobx';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/cmp/contextmenu';
+import {getAgExcelStyles} from '@xh/hoist/export';
 import {defaults, castArray, find, isEqual, isString, isPlainObject, orderBy} from 'lodash';
 
 import {ColChooserModel} from './ColChooserModel';
@@ -32,6 +33,10 @@ export class GridModel {
     @observable.ref sortBy = [];
     @observable groupBy = null;
 
+    @computed
+    get agExcelStyles() {
+        return getAgExcelStyles(this.columns);
+    }
 
     defaultContextMenu = () => {
         return new StoreContextMenu({
@@ -39,7 +44,13 @@ export class GridModel {
                 'copy',
                 'copyWithHeaders',
                 '-',
-                'export',
+                // Todo: put export options in a submenu again?
+                {
+                    text: 'Excel Export',
+                    action: () => this.exportDataAsExcel()
+                },
+                'csvExport',
+                '-',
                 'autoSizeAll',
                 '-',
                 'colChooser'
@@ -92,8 +103,15 @@ export class GridModel {
         this.stateModel = this.initStateModel(stateModel);
     }
 
-    exportDataAsExcel(params) {
+    exportDataAsExcel(params = {}) {
         if (!this.agApi) return;
+
+        // Exclude columns with exportCls: false
+        params.columnKeys = this.columns.filter(it => {
+            return !it.hide && it.exportCls !== false;
+        }).map(it => it.colId);
+
+        // Process cells before export
         params.processCellCallback = this.formatValuesForExport;
         this.agApi.exportDataAsExcel(params);
     }
