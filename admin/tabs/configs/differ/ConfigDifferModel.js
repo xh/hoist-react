@@ -7,7 +7,7 @@
 
 import React from 'react';
 import {action, observable, setter} from '@xh/hoist/mobx';
-import {castArray, isEqual, remove, trimEnd} from 'lodash';
+import {castArray, cloneDeep, isEqual, remove, trimEnd} from 'lodash';
 import {pluralize} from '@xh/hoist/utils/JsUtils';
 import {XH, HoistModel} from '@xh/hoist/core';
 import {LocalStore} from '@xh/hoist/data';
@@ -120,7 +120,7 @@ export class ConfigDifferModel  {
                 name: local.name,
                 localValue: local,
                 remoteValue: remote,
-                status: isEqual(local, remote) ? 'Identical' : (remote ? 'Diff' : 'Local Only')
+                status: this.configsAreEqual(local, remote) ? 'Identical' : (remote ? 'Diff' : 'Local Only')
             });
 
             if (remote) {
@@ -139,6 +139,18 @@ export class ConfigDifferModel  {
         });
 
         return ret;
+    }
+
+    configsAreEqual(local, remote) {
+        const l = cloneDeep(local),
+            r = cloneDeep(remote);
+
+        if (l && r && l.valueType == 'json' && r.valueType == 'json') {
+            l.value = JSON.parse(l.value);
+            r.value = JSON.parse(r.value);
+        }
+
+        return isEqual(l, r);
     }
 
     removeMetaData(data) {
