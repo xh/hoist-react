@@ -84,7 +84,8 @@ export class ConfigDifferModel  {
     }
 
     async loadAsync() {
-        const remoteHost = `${trimEnd(this.remoteHost, '/')} + ${XH.baseUrl == '/api/' ? '/api' : '/'}`;
+        const remoteHost = `${trimEnd(this.remoteHost, '/') + (XH.baseUrl == '/api/' ? '/api' : '/')}`;
+
         try {
             const resp = await Promise.all([
                 XH.fetchJson({url: XH.baseUrl + 'configDiffAdmin/configs'}),
