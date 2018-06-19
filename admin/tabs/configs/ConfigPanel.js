@@ -19,7 +19,7 @@ import {ConfigDifferModel} from './differ/ConfigDifferModel';
 @HoistComponent()
 export class ConfigPanel extends Component {
 
-    differModel = new ConfigDifferModel({});
+    differModel = new ConfigDifferModel(this);
 
     gridModel = new RestGridModel({
         store: new RestStore({

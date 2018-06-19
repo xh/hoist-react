@@ -29,7 +29,9 @@ export class ConfigDifferModel  {
     @observable isOpen = false;
     @setter @observable remoteHost = null;
 
-    constructor() {
+    constructor(configPanel) {
+        this.configPanel = configPanel;
+
         this.gridModel = new GridModel({
             store: new LocalStore({
                 fields: [
@@ -198,6 +200,7 @@ export class ConfigDifferModel  {
             params: {records: JSON.stringify(records)}
         }).finally(() => {
             this.loadAsync();
+            this.configPanel.loadAsync();
             this.detailModel.close();
         }).linkTo(
             XH.appLoadModel
