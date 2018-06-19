@@ -7,7 +7,7 @@
 
 import React from 'react';
 import {action, observable, setter} from '@xh/hoist/mobx';
-import {isEqual, remove, trimEnd} from 'lodash';
+import {castArray, isEqual, remove, trimEnd} from 'lodash';
 import {pluralize} from '@xh/hoist/utils/JsUtils';
 import {XH, HoistModel} from '@xh/hoist/core';
 import {LocalStore} from '@xh/hoist/data';
@@ -152,8 +152,9 @@ export class ConfigDifferModel  {
     }
 
     confirmApplyRemote(records) {
-        const filteredRecords = records.filter(it => !this.isPwd(it)),
-            hadPwdConfig = records.length != filteredRecords.length,
+        const recArray = castArray(records),
+            filteredRecords = recArray.filter(it => !this.isPwd(it)),
+            hadPwdConfig = recArray.length != filteredRecords.length,
             willDeleteConfig = filteredRecords.some(it => !it.remoteValue),
             confirmMsg = `Are you sure you want to apply remote values to ${pluralize('config', filteredRecords.length, true)}?`;
 
