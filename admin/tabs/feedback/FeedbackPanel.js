@@ -15,6 +15,8 @@ import {compactDateRenderer} from '../../../format';
 export class FeedbackPanel extends Component {
 
     localModel = new RestGridModel({
+        stateModel: 'xhFeedbackGrid',
+        enableColChooser: true,
         store: new RestStore({
             url: 'rest/feedbackAdmin',
             fields: [
