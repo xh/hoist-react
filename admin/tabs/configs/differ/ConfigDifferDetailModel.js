@@ -35,6 +35,6 @@ export class ConfigDifferDetailModel  {
     }
 
     confirmApplyRemote() {
-        this.parent.confirmApplyRemote(this.record);
+        this.parent.confirmApplyRemote([this.record]);
     }
 }
