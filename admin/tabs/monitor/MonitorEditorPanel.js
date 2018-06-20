@@ -14,6 +14,8 @@ import {nameFlexCol} from '@xh/hoist/admin/columns/Columns';
 export class MonitorEditorPanel extends Component {
 
     localModel = new RestGridModel({
+        stateModel: 'xhMonitorEditorGrid',
+        enableColChooser: true,
         store: new RestStore({
             url: 'rest/monitorAdmin',
             fields: [

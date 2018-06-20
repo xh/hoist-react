@@ -16,6 +16,8 @@ import {usernameCol} from '../../columns/Columns';
 export class UserModel {
 
     gridModel = new GridModel({
+        stateModel: 'xhUserGrid',
+        enableColChooser: true,
         store: new UrlStore({
             url: 'userAdmin',
             fields: ['username', 'email', 'displayName', 'active', 'roles']

@@ -137,8 +137,10 @@ export class RestGridModel {
                 'copyWithHeaders',
                 '-',
                 'export',
-                'autoSizeAll'
-            ]
+                'autoSizeAll',
+                'colChooser'
+            ],
+            gridModel: this.gridModel
         });
     }
 
