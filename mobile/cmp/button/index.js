@@ -7,3 +7,4 @@
 export * from './ThemeToggleButton';
 export * from './LogoutButton';
 export * from './RefreshButton';
+export * from './NavigatorBackButton';

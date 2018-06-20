@@ -7,4 +7,3 @@
 
 export * from './Navigator';
 export * from './NavigatorModel';
-export * from './NavigatorBackButton';

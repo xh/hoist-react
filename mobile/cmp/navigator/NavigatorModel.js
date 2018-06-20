@@ -14,6 +14,7 @@ import {uniqueId, clone} from 'lodash';
 @HoistModel()
 export class NavigatorModel {
 
+    @observable title;
     @observable.ref pages = [];
 
     _navigator = null;
@@ -22,17 +23,20 @@ export class NavigatorModel {
     /**
      * @param {Object} page - page spec
      * @param {function} page.pageFactory - element factory for page component.
-     * @param {string} page.props - props to passed to page upon creation
+     * @param {Object} [page.props] - props to passed to page upon creation
+     * @param {string} [page.title] - title for current page.
      */
     constructor(page) {
         this.initPage = page;
+        this.onPageChange();
     }
 
     /**
      * @param {Object} page - page spec
      * @param {function} page.pageFactory - element factory for page component.
-     * @param {string} page.props - props to passed to page upon creation
-     * @param {function} callback - function to execute after the page transition
+     * @param {Object} [page.props] - props to passed to page upon creation
+     * @param {string} [page.title] - title for current page.
+     * @param {function} [callback] - function to execute after the page transition
      */
     pushPage(page, callback) {
         this._navigator.pushPage(page);
@@ -47,8 +51,9 @@ export class NavigatorModel {
         this._callback = callback;
     }
 
-    afterPageChange() {
+    onPageChange() {
         this.updatePages();
+        this.updateTitle();
         this.doCallback();
     }
 
@@ -67,6 +72,17 @@ export class NavigatorModel {
     @action
     updatePages() {
         this.pages = this._navigator ? clone(this._navigator.pages) : [];
+    }
+
+    @action
+    updateTitle() {
+        const page = this.getCurrentPageCfg();
+        this.title = page.title;
+    }
+
+    getCurrentPageCfg() {
+        const nav = this._navigator;
+        return nav ? nav.routes[nav.routes.length - 1] : this.initPage;
     }
 
     doCallback() {
