@@ -5,13 +5,16 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {uniqueId} from 'lodash';
+import {observable, action} from '@xh/hoist/mobx';
+import {uniqueId, clone} from 'lodash';
 
 /**
  * Model for handling navigation between Onsen pages
  */
 @HoistModel()
 export class NavigatorModel {
+
+    @observable.ref pages = [];
 
     _navigator = null;
     _callback = null;
@@ -44,6 +47,11 @@ export class NavigatorModel {
         this._callback = callback;
     }
 
+    afterPageChange() {
+        this.updatePages();
+        this.doCallback();
+    }
+
     //--------------------
     // Implementation
     //--------------------
@@ -54,6 +62,11 @@ export class NavigatorModel {
             key = uniqueId('page_');
 
         return pageFactory({key, ...props});
+    }
+
+    @action
+    updatePages() {
+        this.pages = this._navigator ? clone(this._navigator.pages) : [];
     }
 
     doCallback() {

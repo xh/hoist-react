@@ -14,6 +14,7 @@ ons.disableAutoStyling();
 
 import {elemFactory} from '@xh/hoist/core';
 import {
+    BackButton,
     BottomToolbar,
     Button,
     Input,
@@ -29,6 +30,7 @@ import {
 } from 'react-onsenui';
 
 export const
+    backButton = elemFactory(BackButton),
     bottomToolbar = elemFactory(BottomToolbar),
     button = elemFactory(Button),
     input = elemFactory(Input),

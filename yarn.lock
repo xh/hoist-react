@@ -4884,9 +4884,9 @@ onetime@^2.0.0:
   dependencies:
     mimic-fn "^1.0.0"
 
-onsenui@~2.9.2:
-  version "2.9.2"
-  resolved "https://repo.xh.io/repository/npm-public/onsenui/-/onsenui-2.9.2.tgz#f860eb528b1e60ee4d8d5e1ec59ebd3002928355"
+onsenui@~2.10.1:
+  version "2.10.1"
+  resolved "https://repo.xh.io/repository/npm-public/onsenui/-/onsenui-2.10.1.tgz#81099bcb455082bc208b7b7c64f86bd084604d2c"
   dependencies:
     "@onsenui/custom-elements" "1.0.0"
     "@onsenui/fastclick" "1.1.1"
@@ -5710,9 +5710,9 @@ react-lifecycles-compat@^3.0.2:
   version "3.0.4"
   resolved "https://repo.xh.io/repository/npm-public/react-lifecycles-compat/-/react-lifecycles-compat-3.0.4.tgz#4f1a273afdfc8f3488a8c516bfda78f872352362"
 
-react-onsenui@~1.10.0:
-  version "1.10.0"
-  resolved "https://repo.xh.io/repository/npm-public/react-onsenui/-/react-onsenui-1.10.0.tgz#45bcbe646f9937a075aaa2ed05102180e8dd8126"
+react-onsenui@~1.11.0:
+  version "1.11.1"
+  resolved "https://repo.xh.io/repository/npm-public/react-onsenui/-/react-onsenui-1.11.1.tgz#53e704005595ede6cacfa72c9c01323c4ac860bd"
   dependencies:
     prop-types "^15.6.0"
 

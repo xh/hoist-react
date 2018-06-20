@@ -18,8 +18,8 @@ export class Navigator extends Component {
             initialRoute: initPage,
             animationOptions: {duration: 0.2, delay: 0, timing: 'ease-in'},
             renderPage: (page, navigator) => this.model.renderPage(page, navigator),
-            onPostPush: () => this.model.doCallback(),
-            onPostPop: () => this.model.doCallback()
+            onPostPush: () => this.model.afterPageChange(),
+            onPostPop: () => this.model.afterPageChange()
         });
     }
 
