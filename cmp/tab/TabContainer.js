@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import {PropTypes as PT} from 'prop-types';
 import {elem, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from './TabContainerModel';
@@ -14,16 +15,31 @@ import './Tabs.scss';
 
 /**
  * Display for a TabContainer.
+ *
+ * By default this TabContainer will install a TabSwitcher above the TabPanes to control the
+ * selected TabPane. If the switcherPosition is set to 'none' then no TabSwitcher will be installed
+ * and it will be up to the application to handle setting the selected id on this TabContainerModel
+ * when appropriate.
+ *
  * @see TabContainerModel
  */
 @HoistComponent({layoutSupport: true})
 export class TabContainer extends Component {
+    static propTypes = {
+        /** Position of the switcher relative to the TabPanes. Set to 'none' to opt out of the default TabSwitcher. */
+        switcherPosition: PT.oneOf(['top', 'bottom', 'left', 'right', 'none'])
+    };
+
+    static defaultProps = {
+        switcherPosition: 'top'
+    };
 
     render() {
-        const {switcherPosition, vertical, selectedId, children} = this.model,
+        const {selectedId, children, componentProps = {}} = this.model,
+            {switcherPosition, layoutConfig} = Object.assign({}, this.props, componentProps),
             switcherBefore = switcherPosition === 'left' || switcherPosition === 'top',
             switcherAfter = switcherPosition === 'right' || switcherPosition === 'bottom',
-            {layoutConfig} = this.props;
+            vertical = switcherPosition === 'left' || switcherPosition === 'right';
 
         // Default flex = 'auto' if no dimensions / flex specified.
         if (layoutConfig.width === null && layoutConfig.height === null && layoutConfig.flex === null) {
@@ -34,7 +50,9 @@ export class TabContainer extends Component {
             cls: 'xh-tab-container',
             layoutConfig,
             items: [
-                switcherBefore ? tabSwitcher({model: this.model}) : null,
+                switcherBefore ?
+                    tabSwitcher({model: this.model, orientation: switcherPosition}) :
+                    null,
                 ...children.map(childModel => {
                     const childId = childModel.id,
                         isSubContainer = childModel instanceof TabContainerModel,
@@ -53,7 +71,9 @@ export class TabContainer extends Component {
                         })
                     });
                 }),
-                switcherAfter ? tabSwitcher({model: this.model}) : null
+                switcherAfter ?
+                    tabSwitcher({model: this.model, orientation: switcherPosition}) :
+                    null
             ]
         });
     }

@@ -17,9 +17,9 @@ import {omit} from 'lodash';
  * This TabSwitcher controls the selected tab of a TabContainer via a shared TabContainerModel,
  * which is expected to be provided to this TabSwitcher.
  *
- * The switcherPosition configuration on the TabContainerModel controls how this switcher will be
- * rendered. For 'top' or 'bottom' switcherPositions this switcher will be rendered in horizontal
- * mode. For 'left' or 'right' switcher positions this switcher will be rendered in vertical mode.
+ * The orientation property controls how this switcher will be rendered. For 'top' or 'bottom'
+ * orientations this switcher will be rendered in horizontal mode. For 'left' or 'right'
+ * orientations this switcher will be rendered in vertical mode.
  *
  * @see TabContainerModel
  */
@@ -27,13 +27,22 @@ import {omit} from 'lodash';
 export class TabSwitcher extends Component {
     static propTypes = {
         /** Model to switch tabs on. Should be shared with a TabContainer. */
-        model: PT.instanceOf(TabContainerModel)
+        model: PT.instanceOf(TabContainerModel),
+        /** The position relative to the TabContainer this switcher is controlling. Defaults to 'top'. */
+        orientation: PT.oneOf(['top', 'bottom', 'left', 'right'])
+    };
+
+    static defaultProps = {
+        orientation: 'top'
     };
 
     render() {
-        const {switcherPosition, vertical, id, children, selectedId} = this.model;
+        const {id, children, selectedId} = this.model,
+            {orientation} = this.props,
+            vertical = orientation === 'left' || orientation === 'right';
+
         return tabs({
-            cls: `xh-tab-switcher-${switcherPosition}`,
+            cls: `xh-tab-switcher-${orientation}`,
             id,
             vertical,
             onChange: this.onTabChange,

@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
 import {action, computed, observable} from '@xh/hoist/mobx';
 import {isPlainObject, max, startCase, uniqBy} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/JsUtils';
@@ -18,18 +18,13 @@ import {TabPaneModel} from '@xh/hoist/cmp/tab';
  * In particular, TabPanes will be lazily rendered and loaded and can also be refreshed whenever the
  * TabPane is shown.
  * @see TabPaneModel
- *
- * By default this TabContainer will install a TabSwitcher above the TabPanes to control the
- * selected TabPane. If the switcherPosition is set to 'none' then no TabSwitcher will be installed
- * and it will be up to the application to handle setting the selected id on this TabContainerModel
- * when appropriate.
  */
 @HoistModel()
 export class TabContainerModel {
     id = null;
     name = null;
-    switcherPosition = 'top';
     children = [];
+    componentProps = null;
 
     @observable _lastRefreshRequest = null;
     @observable selectedId = null;
@@ -40,24 +35,25 @@ export class TabContainerModel {
      * @param {string} id - unique ID, used for generating routes.
      * @param {string} [name] - display name for this container - useful in particular when displaying
      *      nested tabs, where this model's container is a direct child of a parent TabContainer.
-     * @param {string} [switcherPosition] - specify top, left, bottom, right, or none. Defaults to top.
      * @param {boolean} [useRoutes] - true to use routes for navigation.
      *      These routes must be setup externally in the application (@see BaseApp.getRoutes()).
      *      They may exist at any level of the application, but there must be a route of the form
      *      `/../../[containerId]/[childPaneId]` for each child pane in this container.
      * @param {Object[]} children - configurations for TabPaneModels or nested TabContainerModels.
+     * @param {Object} componentProps - additional properties to pass into the TabContainer component using
+     *      this model.
      */
     constructor({
         id,
         name = startCase(id),
-        switcherPosition = 'top',
         useRoutes = false,
-        children
+        children,
+        componentProps
     }) {
         this.id = id;
         this.name = name;
-        this.switcherPosition = switcherPosition;
         this.useRoutes = useRoutes;
+        this.componentProps = componentProps;
 
         // Instantiate children, if needed.
         children = children.map(child => {
@@ -85,10 +81,6 @@ export class TabContainerModel {
 
     get routeName() {
         return this.parent ? this.parent.routeName + '.' + this.id : this.id;
-    }
-
-    get vertical() {
-        return this.switcherPosition === 'left' || this.switcherPosition === 'right';
     }
 
     @action

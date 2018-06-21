@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistApp} from '@xh/hoist/core';
+import {HoistApp, XH} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 
@@ -30,7 +30,6 @@ export class App {
     tabModel = new TabContainerModel({
         id: 'default',
         useRoutes: true,
-        switcherPosition: 'none',
         children: this.createTabs()
     });
 
@@ -120,7 +119,9 @@ export class App {
         return [
             {
                 id: 'general',
-                switcherPosition: 'left',
+                componentProps: {
+                    switcherPosition: 'left'
+                },
                 children: [
                     {id: 'about', component: AboutPanel},
                     {id: 'config', component: ConfigPanel},
@@ -131,7 +132,9 @@ export class App {
             },
             {
                 id: 'logging',
-                switcherPosition: 'left',
+                componentProps: {
+                    switcherPosition: 'left'
+                },
                 children: [
                     {id: 'viewer', component: LogViewer},
                     {id: 'levels', component: LogLevelPanel}
@@ -139,7 +142,9 @@ export class App {
             },
             {
                 id: 'monitor',
-                switcherPosition: 'left',
+                componentProps: {
+                    switcherPosition: 'left'
+                },
                 children: [
                     {id: 'status', component: MonitorResultsPanel},
                     {id: 'editMonitors', component: MonitorEditorPanel}
@@ -147,7 +152,9 @@ export class App {
             },
             {
                 id: 'activity',
-                switcherPosition: 'left',
+                componentProps: {
+                    switcherPosition: 'left'
+                },
                 children: [
                     {id: 'tracking', component: ActivityPanel},
                     {id: 'clientErrors', component: ClientErrorPanel},
@@ -156,7 +163,9 @@ export class App {
             },
             {
                 id: 'preferences',
-                switcherPosition: 'left',
+                componentProps: {
+                    switcherPosition: 'left'
+                },
                 children: [
                     {id: 'prefs', component: PreferencePanel},
                     {id: 'userPrefs', component: UserPreferencePanel, reloadOnShow: true}

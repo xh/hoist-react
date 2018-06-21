@@ -27,7 +27,7 @@ export class AppComponent extends Component {
             tbar: this.renderAppBar(),
             item: frame({
                 cls: 'xh-admin-app-frame',
-                item: tabContainer({model: XH.app.tabModel})
+                item: tabContainer({model: XH.app.tabModel, switcherPosition: 'none'})
             })
         });
     }
