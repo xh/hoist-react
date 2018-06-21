@@ -11,6 +11,8 @@ import {LastPromiseModel} from '@xh/hoist/promise';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {UrlStore} from '@xh/hoist/data';
 import {baseCol} from '@xh/hoist/columns/Core';
+import {SECONDS} from '@xh/hoist/utils/DateTimeUtils';
+import {Timer} from '@xh/hoist/utils/Timer';
 
 @HoistModel()
 export class LogViewerModel {
@@ -24,6 +26,8 @@ export class LogViewerModel {
     // Overall State
     @observable file = null;
     @setter @observable.ref rows = [];
+    tabPaneModel = null;
+    timer = null;
 
     loadModel = new LastPromiseModel();
 
@@ -39,9 +43,15 @@ export class LogViewerModel {
         ]
     });
 
-    constructor() {
+    constructor(tabPaneModel) {
+        this.tabPaneModel = tabPaneModel;
         this.addReaction(this.syncSelectionReaction());
         this.addReaction(this.toggleTail());
+        this.timer = Timer.create({
+            runFn: this.timedRefreshLines,
+            delay: 5 * SECONDS,
+            interval: 5 * SECONDS
+        });
     }
     
     @action
@@ -84,6 +94,11 @@ export class LogViewerModel {
             .then(rows => this.setRows(this.startLine ? rows.content : rows.content.reverse()))
             .linkTo(this.loadModel)
             .catchDefault();
+    }
+
+    timedRefreshLines = () => {
+        if (!this.tabPaneModel.isActive || !this.tail) return;
+        this.fetchFile();
     }
 
     syncSelectionReaction() {
