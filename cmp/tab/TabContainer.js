@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {elem, elemFactory, HoistComponent} from '@xh/hoist/core';
-import {div, hframe, vframe} from '@xh/hoist/cmp/layout';
+import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from './TabContainerModel';
 import {tabSwitcher} from './TabSwitcher';
 import {TabPane} from './TabPane';
@@ -16,16 +16,23 @@ import './Tabs.scss';
  * Display for a TabContainer.
  * @see TabContainerModel
  */
-@HoistComponent()
+@HoistComponent({layoutSupport: true})
 export class TabContainer extends Component {
 
     render() {
         const {switcherPosition, vertical, selectedId, children} = this.model,
             switcherBefore = switcherPosition === 'left' || switcherPosition === 'top',
-            switcherAfter = switcherPosition === 'right' || switcherPosition === 'bottom';
+            switcherAfter = switcherPosition === 'right' || switcherPosition === 'bottom',
+            {layoutConfig} = this.props;
 
-        return (vertical ? hframe : vframe)({
+        // Default flex = 'auto' if no dimensions / flex specified.
+        if (layoutConfig.width === null && layoutConfig.height === null && layoutConfig.flex === null) {
+            layoutConfig.flex = 'auto';
+        }
+
+        return (vertical ? hbox : vbox)({
             cls: 'xh-tab-container',
+            layoutConfig,
             items: [
                 switcherBefore ? tabSwitcher({model: this.model}) : null,
                 ...children.map(childModel => {
