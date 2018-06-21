@@ -97,7 +97,11 @@ export class LogViewerModel {
     }
 
     timedRefreshLines = () => {
-        if (!this.tabPaneModel.isActive || !this.tail) return;
+        const lastRow = this.lastRow.value,
+            outOfView = lastRow.getBoundingClientRect().bottom > window.innerHeight;
+
+        if (!this.tabPaneModel.isActive || !this.tail || outOfView) return;
+
         this.fetchFile();
     }
 
