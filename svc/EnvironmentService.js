@@ -53,7 +53,7 @@ export class EnvironmentService {
         });
     }
 
-    checkAppVersionAsync = async() => {
+    checkAppVersionAsync = async () => {
         const data = await XH.fetchJson({url: 'hoistImpl/version'}),
             shouldUpdate = data.shouldUpdate,
             appVersion = data.appVersion;
