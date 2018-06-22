@@ -164,7 +164,7 @@ export class PrefService {
         }
 
         const evtData = map(updates, (value, key) => ({key, value}));
-        this.fireEvent('prefsPushed', evtData);
+        this.fireEvent('prefsPushed', {prefs: evtData});
     }
 
 
@@ -264,9 +264,10 @@ export class PrefService {
      * Fired when a batch of preferences updates have been pushed to storage (either local, or server).
      *
      * @event PrefService#prefsPushed
-     * @type {Object[]}
-     * @property {string} key - preference key / identifier that was changed
-     * @property {*} value - the new, just-set value
+     * @type {Object}
+     * @property {Object[]} prefs - list of preferences that were pushed
+     * @property {string} prefs.key - preference key / identifier that was changed
+     * @property {*} prefs.value - the new, just-set value
      */
 
 }
