@@ -58,8 +58,8 @@ export class NavigatorModel {
     //--------------------
     renderPage(pageModel, navigator) {
         if (!this._navigator) this._navigator = navigator;
-        const {key, pageFactory, props} = pageModel;
-        return pageFactory({key, ...props});
+        const {key, pageFactory, pageProps} = pageModel;
+        return pageFactory({key, ...pageProps});
     }
 
     @action

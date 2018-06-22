@@ -13,6 +13,7 @@ import {HoistModel} from '@xh/hoist/core';
 export class TabModel {
     id = null;
     pageFactory = null;
+    pageProps = null;
     label = null;
     icon = null;
     parent = null;
@@ -20,17 +21,20 @@ export class TabModel {
     /**
      * @param {string} id - unique ID.
      * @param {function} pageFactory - element factory for page component.
+     * @param {Object} [pageProps] - props to passed to page upon creation
      * @param {String} label - text to be displayed in the Tabbar.
      * @param {Icon} [icon] - icon to be displayed in the Tabbar.
      */
     constructor({
         id,
         pageFactory,
+        pageProps,
         label,
         icon
     }) {
         this.id = id;
         this.pageFactory = pageFactory;
+        this.pageProps = pageProps;
         this.label = label;
         this.icon = icon;
     }

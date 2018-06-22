@@ -75,10 +75,10 @@ export class TabContainerModel {
     }
 
     renderTab(tabModel) {
-        const {id, pageFactory, label, icon} = tabModel;
+        const {id, pageFactory, pageProps, label, icon} = tabModel;
 
         return {
-            content: pageFactory({key: id}),
+            content: pageFactory({key: id, ...pageProps}),
             tab: onsenTab({
                 key: id,
                 cls: 'xh-tab',

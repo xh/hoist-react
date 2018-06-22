@@ -14,21 +14,21 @@ import {uniqueId, snakeCase} from 'lodash';
 export class NavigatorPageModel {
     key = null;
     pageFactory = null;
-    props = null;
+    pageProps = null;
     title = null;
 
     /**
      * @param {function} pageFactory - element factory for page component.
-     * @param {Object} [props] - props to passed to page upon creation
+     * @param {Object} [pageProps] - props to passed to page upon creation
      * @param {string} [title] - title for page. Displayed in AppBar header.
      */
     constructor({
         pageFactory,
-        props,
+        pageProps,
         title
     }) {
         this.pageFactory = pageFactory;
-        this.props = props;
+        this.pageProps = pageProps;
         this.title = title;
 
         const key = title ? snakeCase(title) : 'page';
