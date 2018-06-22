@@ -266,8 +266,8 @@ export class PrefService {
      * @event PrefService#prefsPushed
      * @type {Object}
      * @property {Object[]} prefs - list of preferences that were pushed
-     * @property {string} prefs.key - preference key / identifier that was changed
-     * @property {*} prefs.value - the new, just-set value
+     * @property {string} prefs[].key - preference key / identifier that was changed
+     * @property {*} prefs[].value - the new, just-set value
      */
 
 }
