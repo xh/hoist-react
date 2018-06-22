@@ -58,8 +58,8 @@ class LogViewerDisplay extends Component {
     timedRefreshLines = () => {
         const {model, lastRow} = this,
             {tabPaneModel, tail} = model,
-            rect = lastRow.value.getBoundingClientRect(),
-            outOfView = rect.bottom > window.innerHeight;
+            rect = lastRow.value && lastRow.value.getBoundingClientRect(),
+            outOfView = !rect || (rect.bottom > window.innerHeight);
 
         if (!tabPaneModel.isActive || !tail || outOfView) return;
 
