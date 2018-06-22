@@ -71,7 +71,7 @@ class XHClass {
     /** Root URL context/path - prepended to all relative fetch requests. */
     baseUrl = xhBaseUrl;
 
-    /** */
+    /** Whether build is for local development */
     isDevelopmentMode = xhIsDevelopmentMode;
 
     //---------------------------

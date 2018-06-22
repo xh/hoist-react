@@ -7,8 +7,8 @@
     "xhAppVersion": false,
     "xhAppBuild": false,
     "xhBaseUrl": false,
-    "xhAgGridLicenseKey": false,
-    "xhIsDevelopmentMode": false
+    "xhIsDevelopmentMode": false,
+    "xhAgGridLicenseKey": false
   }
 
 }
