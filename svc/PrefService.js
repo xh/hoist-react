@@ -7,6 +7,7 @@
 import {cloneDeep, debounce, isNil, isEqual, isEmpty, pickBy, map} from 'lodash';
 import {XH, HoistService} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/DateTimeUtils';
+import {throwIf} from '@xh/hoist/utils/JsUtils';
 
 /**
  * Service to read and set user-specific preference values.
@@ -69,8 +70,7 @@ export class PrefService {
             ret = data[key].value;
         }
 
-        if (ret === undefined) throw XH.exception(`Preference key not found: '${key}'`);
-
+        throwIf(ret === undefined, `Preference key not found: '${key}'`);
         return cloneDeep(ret);
     }
 
@@ -199,7 +199,11 @@ export class PrefService {
 
     removeLocalValue(key) {
         const hasRemoveValue = this._data.hasOwnProperty(key);
-        if (hasRemoveValue && !this.isLocalPreference(key)) throw XH.exception(`${key} is not a local preference.`);
+
+        throwIf(
+            hasRemoveValue && !this.isLocalPreference(key),
+            `${key} is not a local preference.`
+        );
 
         const localPrefs = XH.localStorageService.get(this._localStorageKey, {});
 
@@ -218,17 +222,15 @@ export class PrefService {
     validateBeforeSet(key, value) {
         const pref = this._data[key];
 
-        if (!pref) {
-            throw XH.exception(`Cannot set preference ${key}: not found`);
-        }
 
-        if (value === undefined) {
-            throw XH.exception(`Cannot set preference ${key}: value not defined`);
-        }
+        throwIf(!pref, `Cannot set preference ${key}: not found`);
 
-        if (!this.valueIsOfType(value, pref.type)) {
-            throw XH.exception(`Cannot set preference ${key}: must be of type ${pref.type}`);
-        }
+        throwIf(value === undefined, `Cannot set preference ${key}: value not defined`);
+
+        throwIf(
+            !this.valueIsOfType(value, pref.type),
+            `Cannot set preference ${key}: must be of type ${pref.type}`
+        );
     }
 
     valueIsOfType(value, type) {
