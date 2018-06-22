@@ -25,6 +25,8 @@ import {
     Page,
     ProgressCircular,
     SearchInput,
+    Tab,
+    Tabbar,
     Toolbar,
     ToolbarButton
 } from 'react-onsenui';
@@ -41,5 +43,7 @@ export const
     page = elemFactory(Page),
     progressCircular = elemFactory(ProgressCircular),
     searchInput = elemFactory(SearchInput),
+    tab = elemFactory(Tab),
+    tabbar = elemFactory(Tabbar),
     toolbar = elemFactory(Toolbar),
     toolbarButton = elemFactory(ToolbarButton);
