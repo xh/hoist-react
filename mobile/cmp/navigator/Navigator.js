@@ -13,11 +13,11 @@ import {navigator as onsenNavigator} from '@xh/hoist/kit/onsen';
 export class Navigator extends Component {
 
     render() {
-        const {initPage} = this.model;
+        const {initPageModel} = this.model;
         return onsenNavigator({
-            initialRoute: initPage,
+            initialRoute: initPageModel,
             animationOptions: {duration: 0.2, delay: 0, timing: 'ease-in'},
-            renderPage: (page, navigator) => this.model.renderPage(page, navigator),
+            renderPage: (pageModel, navigator) => this.model.renderPage(pageModel, navigator),
             onPostPush: () => this.model.onPageChange(),
             onPostPop: () => this.model.onPageChange()
         });
