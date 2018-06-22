@@ -7,7 +7,7 @@
 
 import React from 'react';
 import {action, observable, setter} from '@xh/hoist/mobx';
-import {isEqual, remove, trimEnd} from 'lodash';
+import {cloneDeep, isEqual, remove, trimEnd} from 'lodash';
 import {pluralize} from '@xh/hoist/utils/JsUtils';
 import {XH, HoistModel} from '@xh/hoist/core';
 import {LocalStore} from '@xh/hoist/data';
@@ -29,7 +29,9 @@ export class ConfigDifferModel  {
     @observable isOpen = false;
     @setter @observable remoteHost = null;
 
-    constructor() {
+    constructor(configGrid) {
+        this.configGrid = configGrid;
+
         this.gridModel = new GridModel({
             store: new LocalStore({
                 fields: [
@@ -82,10 +84,14 @@ export class ConfigDifferModel  {
     }
 
     async loadAsync() {
+        const remoteHost = trimEnd(this.remoteHost, '/'),
+            apiAffix = XH.baseUrl[0] == '/' ? XH.baseUrl : '/',
+            remoteBaseUrl = remoteHost + apiAffix;
+
         try {
             const resp = await Promise.all([
                 XH.fetchJson({url: XH.baseUrl + 'configDiffAdmin/configs'}),
-                XH.fetchJson({url: trimEnd(this.remoteHost, '/') + '/configDiffAdmin/configs'})
+                XH.fetchJson({url: remoteBaseUrl + 'configDiffAdmin/configs'})
             ]).linkTo(XH.appLoadModel);
             this.processResponse(resp);
         } catch (e) {
@@ -120,7 +126,7 @@ export class ConfigDifferModel  {
                 name: local.name,
                 localValue: local,
                 remoteValue: remote,
-                status: isEqual(local, remote) ? 'Identical' : (remote ? 'Diff' : 'Local Only')
+                status: this.configsAreEqual(local, remote) ? 'Identical' : (remote ? 'Diff' : 'Local Only')
             });
 
             if (remote) {
@@ -139,6 +145,18 @@ export class ConfigDifferModel  {
         });
 
         return ret;
+    }
+
+    configsAreEqual(local, remote) {
+        const l = cloneDeep(local),
+            r = cloneDeep(remote);
+
+        if (l && r && l.valueType == 'json' && r.valueType == 'json') {
+            l.value = JSON.parse(l.value);
+            r.value = JSON.parse(r.value);
+        }
+
+        return isEqual(l, r);
     }
 
     removeMetaData(data) {
@@ -185,6 +203,7 @@ export class ConfigDifferModel  {
             params: {records: JSON.stringify(records)}
         }).finally(() => {
             this.loadAsync();
+            this.configGrid.loadAsync();
             this.detailModel.close();
         }).linkTo(
             XH.appLoadModel

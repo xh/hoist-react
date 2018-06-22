@@ -11,16 +11,24 @@ import {Ref} from '@xh/hoist/utils/Ref';
 import {frame, table, tbody, td, tr} from '@xh/hoist/cmp/layout';
 import {clipboardMenuItem} from '@xh/hoist/cmp/clipboard';
 import {contextMenu} from '@xh/hoist/cmp/contextmenu';
+import {SECONDS} from '@xh/hoist/utils/DateTimeUtils';
+import {Timer} from '@xh/hoist/utils/Timer';
 
 @HoistComponent()
 class LogViewerDisplay extends Component {
 
     firstRow = new Ref();
     lastRow = new Ref();
+    timer = null;
 
     constructor(props) {
         super(props);
         this.addAutorun(this.syncTail);
+        this.timer = Timer.create({
+            runFn: () => this.timedRefreshLines(),
+            delay: 5 * SECONDS,
+            interval: 5 * SECONDS
+        });
     }
 
     render() {
@@ -45,6 +53,17 @@ class LogViewerDisplay extends Component {
                 ]
             });
         });
+    }
+
+    timedRefreshLines() {
+        const {model, lastRow} = this,
+            {tabPaneModel, tail} = model,
+            rect = lastRow.value && lastRow.value.getBoundingClientRect(),
+            outOfView = !rect || (rect.bottom > window.innerHeight);
+
+        if (!tabPaneModel.isActive || !tail || outOfView) return;
+
+        model.fetchFile();
     }
 
     renderContextMenu(e) {

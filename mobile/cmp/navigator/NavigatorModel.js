@@ -5,34 +5,37 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {uniqueId} from 'lodash';
+import {observable, action} from '@xh/hoist/mobx';
+import {clone} from 'lodash';
+
+import {NavigatorPageModel} from './NavigatorPageModel';
 
 /**
  * Model for handling navigation between Onsen pages
  */
 @HoistModel()
 export class NavigatorModel {
+    initPageModel = null;
+    @observable title;
+    @observable.ref pages = [];
 
     _navigator = null;
     _callback = null;
 
     /**
-     * @param {Object} page - page spec
-     * @param {function} page.pageFactory - element factory for page component.
-     * @param {string} page.props - props to passed to page upon creation
+     * @param {Object} page - configuration for NavigatorPageModel
      */
     constructor(page) {
-        this.initPage = page;
+        this.initPageModel = new NavigatorPageModel(page);
+        this.onPageChange();
     }
 
     /**
-     * @param {Object} page - page spec
-     * @param {function} page.pageFactory - element factory for page component.
-     * @param {string} page.props - props to passed to page upon creation
-     * @param {function} callback - function to execute after the page transition
+     * @param {Object} page - configuration for NavigatorPageModel
+     * @param {function} [callback] - function to execute after the page transition
      */
     pushPage(page, callback) {
-        this._navigator.pushPage(page);
+        this._navigator.pushPage(new NavigatorPageModel(page));
         this._callback = callback;
     }
 
@@ -44,16 +47,35 @@ export class NavigatorModel {
         this._callback = callback;
     }
 
+    onPageChange() {
+        this.updatePages();
+        this.updateTitle();
+        this.doCallback();
+    }
+
     //--------------------
     // Implementation
     //--------------------
-    renderPage(page, navigator) {
+    renderPage(pageModel, navigator) {
         if (!this._navigator) this._navigator = navigator;
+        const {key, pageFactory, pageProps} = pageModel;
+        return pageFactory({key, ...pageProps});
+    }
 
-        const {pageFactory, props} = page,
-            key = uniqueId('page_');
+    @action
+    updatePages() {
+        this.pages = this._navigator ? clone(this._navigator.pages) : [];
+    }
 
-        return pageFactory({key, ...props});
+    @action
+    updateTitle() {
+        const page = this.getCurrentPageModel();
+        this.title = page.title;
+    }
+
+    getCurrentPageModel() {
+        const nav = this._navigator;
+        return nav ? nav.routes[nav.routes.length - 1] : this.initPageModel;
     }
 
     doCallback() {

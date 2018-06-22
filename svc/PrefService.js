@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {cloneDeep, debounce, isNil, isEqual} from 'lodash';
+import {cloneDeep, debounce, isNil, isEqual, isEmpty, pickBy, map} from 'lodash';
 import {XH, HoistService} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/DateTimeUtils';
 
@@ -78,9 +78,10 @@ export class PrefService {
      * Set a preference value for the current user.
      * Typically accessed via convenience alias `XH.setPref()`.
      *
-     * Values for local preferences will immediately be saved to local storage. Values for server-
-     * side preferences (the default) will be pushed to the server in a debounced manner. Both are
-     * validated client-side to ensure they (probably) are of the correct data type.
+     * Values are validated client-side to ensure they (probably) are of the correct data type.
+     *
+     * Values are saved to the server (or local storage) in an asynchronous and debounced manner.
+     * See pushAsync() and pushPendingAsync()
      *
      * @param {string} key
      * @param {*} value - the new value to save
@@ -89,18 +90,16 @@ export class PrefService {
     set(key, value) {
         this.validateBeforeSet(key, value);
 
-        const oldVal = this.get(key);
-        if (isEqual(oldVal, value)) return;
+        const oldValue = this.get(key);
+        if (isEqual(oldValue, value)) return;
 
+        // Change local value and fire.
         this._data[key].value = value;
+        this.fireEvent('prefChange', {key, value, oldValue});
 
-        if (this.isLocalPreference(key)) {
-            XH.localStorageService.apply(this._localStorageKey, {[key]: value});
-        } else {
-            this._updates[key] = value;
-            this.pushPendingBuffered();
-        }
-        this.fireEvent('prefChange', {key, value, oldVal});
+        // Schedule serialization to storage
+        this._updates[key] = value;
+        this.pushPendingBuffered();
     }
 
     /**
@@ -114,7 +113,7 @@ export class PrefService {
      * @returns {Promise}
      */
     async pushAsync(key, value) {
-        this.validateBeforeSet(key);
+        this.validateBeforeSet(key, value);
         this.set(key, value);
         return this.pushPendingAsync();
     }
@@ -137,23 +136,35 @@ export class PrefService {
     }
 
     /**
-     * Push any pending buffered updates to persist newly set values for non-local preferences
-     * back to the server. Called automatically by this server on page unload to avoid dropping
-     * changes when e.g. a user changes and option and then immediately hits a (browser) refresh.
+     * Push any pending buffered updates to persist newly set values to server or local storage.
+     * Called automatically by this app on page unload to avoid dropping changes when e.g. a user
+     * changes and option and then immediately hits a (browser) refresh.
      * @returns {Promise}
      */
     async pushPendingAsync() {
-        if (Object.keys(this._updates).length < 1) {
-            return;
+        const updates = this._updates;
+
+        if (isEmpty(updates)) return;
+
+        // clear obj state immediately to allow picking up next batch during async operation
+        this._updates = {};
+
+        const remoteUpdates = pickBy(updates, (v, k) => !this.isLocalPreference(k)),
+            localUpdates = pickBy(updates, (v, k) => this.isLocalPreference(k));
+
+        if (!isEmpty(localUpdates)) {
+            XH.localStorageService.apply(this._localStorageKey, localUpdates);
         }
 
-        const response = await XH.fetchJson({
-            url: 'hoistImpl/setPrefs',
-            params: {updates: JSON.stringify(this._updates)}
-        });
+        if (!isEmpty(remoteUpdates)) {
+            await XH.fetchJson({
+                url: 'hoistImpl/setPrefs',
+                params: {updates: JSON.stringify(remoteUpdates)}
+            });
+        }
 
-        Object.assign(this._data, response.preferences);
-        this._updates = {};
+        const evtData = map(updates, (value, key) => ({key, value}));
+        this.fireEvent('prefsPushed', {prefs: evtData});
     }
 
 
@@ -240,10 +251,23 @@ export class PrefService {
     }
 
     /**
+     * Fired when preference changed.
+     *
      * @event PrefService#prefChange
      * @type {Object}
      * @property {string} key - preference key / identifier that was changed
-     * @property {*} oldValue - the prior value
      * @property {*} value - the new, just-set value
+     * @property {*} oldValue - the prior value
      */
+
+    /**
+     * Fired when a batch of preferences updates have been pushed to storage (either local, or server).
+     *
+     * @event PrefService#prefsPushed
+     * @type {Object}
+     * @property {Object[]} prefs - list of preferences that were pushed
+     * @property {string} prefs[].key - preference key / identifier that was changed
+     * @property {*} prefs[].value - the new, just-set value
+     */
+
 }

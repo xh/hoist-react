@@ -7,6 +7,7 @@
 
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {PropTypes as PT} from 'prop-types';
 import {vbox, frame, div, hspacer} from '@xh/hoist/cmp/layout';
 import {listItem} from '@xh/hoist/kit/onsen';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
@@ -16,16 +17,28 @@ import {mask} from '@xh/hoist/mobile/cmp/mask';
  */
 @HoistComponent()
 class Menu extends Component {
+
+    static propTypes = {
+        /** the width of the menu */
+        width: PT.number,
+        /** how to interpret the provided xPos when showing */
+        align: PT.oneOf(['left', 'right'])
+    };
+
     render() {
         const {model} = this,
             {isOpen, xPos, yPos} = model,
-            {width} = this.props;
+            {width, align = 'left'} = this.props,
+            style = {};
 
         if (!isOpen) return null;
 
         const items = model.items.map((it, idx) => {
             return this.renderItem(it, idx);
         });
+
+        style.top = yPos;
+        style[align] = xPos;
 
         return frame(
             mask({
@@ -34,9 +47,9 @@ class Menu extends Component {
             }),
             vbox({
                 cls: 'xh-menu',
-                width: width,
-                style: {left: xPos, top: yPos},
-                items: items
+                width,
+                style,
+                items
             })
         );
     }

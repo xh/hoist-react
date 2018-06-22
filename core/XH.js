@@ -137,6 +137,10 @@ class XHClass {
     renderApp(app) {
         this.app = app;
 
+        if (!app.componentClass) {
+            throw new Error('A HoistApp must define a componentClass getter to specify its top-level component.');
+        }
+
         const rootView = appContainer(
             elem(app.componentClass, {model: app})
         );

@@ -15,6 +15,8 @@ import {nameCol} from '../../columns/Columns';
 export class LogLevelPanel extends Component {
 
     localModel = new RestGridModel({
+        stateModel: 'xhLogLevelGrid',
+        enableColChooser: true,
         store: new RestStore({
             url: 'rest/logLevelAdmin',
             fields: [

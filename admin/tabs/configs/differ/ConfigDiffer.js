@@ -47,7 +47,7 @@ export class ConfigDiffer extends Component {
                     placeholder: 'https://remote-host/',
                     field: 'remoteHost',
                     width: 200,
-                    options: XH.getConf('xhAppInstances')
+                    options: XH.getConf('xhAppInstances').filter(it => it != window.location.origin)
                 }),
                 button({
                     text: 'Load Diff',

@@ -17,6 +17,8 @@ import {nameCol} from '../../columns/Columns';
 export class EhCacheModel {
 
     gridModel = new GridModel({
+        stateModel: 'xhEhCacheGrid',
+        enableColChooser: true,
         store: new UrlStore({
             url: 'ehCacheAdmin/listCaches',
             fields: ['name', 'heapSize', 'entries', 'status']
