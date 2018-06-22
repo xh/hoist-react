@@ -25,7 +25,7 @@ class LogViewerDisplay extends Component {
         super(props);
         this.addAutorun(this.syncTail);
         this.timer = Timer.create({
-            runFn: this.timedRefreshLines,
+            runFn: () => this.timedRefreshLines(),
             delay: 5 * SECONDS,
             interval: 5 * SECONDS
         });
@@ -55,7 +55,7 @@ class LogViewerDisplay extends Component {
         });
     }
 
-    timedRefreshLines = () => {
+    timedRefreshLines() {
         const {model, lastRow} = this,
             {tabPaneModel, tail} = model,
             rect = lastRow.value && lastRow.value.getBoundingClientRect(),
