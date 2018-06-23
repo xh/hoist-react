@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
+import {throwIf} from '@xh/hoist/utils/JsUtils';
 import {isFunction, isNumber, castArray} from 'lodash';
 import RSVP from 'rsvp';
 
@@ -185,7 +186,7 @@ Object.assign(Promise.prototype, {
         const promise = this.finally(() => completed = true);
 
         const deadline = wait(config.interval).then(() => {
-            if (!completed) throw XH.exception(config.message);
+            throwIf(!completed, config.message);
         });
 
         return Promise.race([deadline, promise]);

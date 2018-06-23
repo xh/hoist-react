@@ -15,6 +15,7 @@ import {MultiPromiseModel, never} from '@xh/hoist/promise';
 import {RouterModel} from '@xh/hoist/router';
 import {appContainer} from '@xh/hoist/app';
 import {MessageSourceModel} from '@xh/hoist/cmp/message';
+import {throwIf} from '@xh/hoist/utils/JsUtils';
 
 import {
     ConfigService,
@@ -136,10 +137,10 @@ class XHClass {
      */
     renderApp(app) {
         this.app = app;
-
-        if (!app.componentClass) {
-            throw new Error('A HoistApp must define a componentClass getter to specify its top-level component.');
-        }
+        throwIf(
+            !app.componentClass,
+            'A HoistApp must define a componentClass getter to specify its top-level component.'
+        );
 
         const rootView = appContainer(
             elem(app.componentClass, {model: app})
@@ -263,12 +264,10 @@ class XHClass {
             const authUser = await this.getAuthUserFromServerAsync();
 
             if (!authUser) {
-                if (this.app.requireSSO) {
-                    throw XH.exception('Failed to authenticate user via SSO.');
-                } else {
-                    this.setLoadState(LoadState.LOGIN_REQUIRED);
-                    return;
-                }
+                throwIf(this.app.requireSSO, 'Failed to authenticate user via SSO.');
+
+                this.setLoadState(LoadState.LOGIN_REQUIRED);
+                return;
             }
 
             await this.completeInitAsync(authUser.username);
