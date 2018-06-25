@@ -17,8 +17,6 @@ import {appContainer} from '@xh/hoist/app';
 import {MessageSourceModel} from '@xh/hoist/cmp/message';
 import {throwIf} from '@xh/hoist/utils/JsUtils';
 
-import {FeedbackDialogModel} from '../app/impl';
-
 import {
     ConfigService,
     EnvironmentService,
@@ -113,7 +111,6 @@ class XHClass {
 
     /** Show feedback dialog? */
     @observable feedbackIsOpen = false;
-
 
     /** Updated App version available, as reported by server. */
     @observable updateVersion = null;
@@ -256,11 +253,7 @@ class XHClass {
     //-------------------
     /**
      * Show a modal 'feedback' dialog.
-     *
-     * This method will require a FeedbackDialog component that has been passed the XH.feedbackModel
-     * The dialog will usually be render in the AppComponent
      */
-
     @action
     showFeedbackDialog() {
         this.feedbackIsOpen = true;
