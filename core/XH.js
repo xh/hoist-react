@@ -251,6 +251,12 @@ class XHClass {
     //-------------------
     // Feedback Support
     //-------------------
+    /**
+     * Show a modal 'feedback' dialog.
+     *
+     * This method will require a FeedbackDialog component that has been passed the XH.feedbackModel
+     * The dialog will usually be render in the AppComponent
+     */
 
     showFeedbackDialog() {
         this.feedbackModel.open();
