@@ -9,12 +9,11 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
 import {navbar, navbarGroup} from '@xh/hoist/kit/blueprint';
-import {launchAdminButton, logoutButton, themeToggleButton} from '@xh/hoist/cmp/button';
+import {feedbackButton, launchAdminButton, logoutButton, refreshButton, themeToggleButton} from '@xh/hoist/cmp/button';
 import {span} from '@xh/hoist/cmp/layout';
 import {appBarSeparator} from '@xh/hoist/cmp/appbar';
 import {isEmpty} from 'lodash';
 import './AppBar.scss';
-import {refreshButton} from '../button/RefreshButton';
 
 /**
  * A standard application navigation bar which displays the application name and a standard set of
@@ -37,6 +36,8 @@ export class AppBar extends Component {
         rightItems: PT.node,
         /** Set to true to hide the Launch Admin button. Will be automatically hidden for users without the HOIST_ADMIN role. */
         hideAdminButton: PT.bool,
+        /** Set to true to hide the Feedback button. */
+        hideFeedbackButton: PT.bool,
         /** Set to true to hide the Theme Toggle button. */
         hideThemeButton: PT.bool,
         /** Set to true to hide the Logout button. Will be automatically hidden for applications with logout disabled. */
@@ -48,7 +49,7 @@ export class AppBar extends Component {
     };
 
     render() {
-        const {icon, title, leftItems, rightItems, hideAdminButton, hideThemeButton, hideLogoutButton, hideRefreshButton, refreshButtonProps = {}} = this.props;
+        const {icon, title, leftItems, rightItems, hideAdminButton, hideFeedbackButton, hideThemeButton, hideLogoutButton, hideRefreshButton, refreshButtonProps = {}} = this.props;
         return navbar({
             cls: 'xh-appbar',
             items: [
@@ -65,6 +66,7 @@ export class AppBar extends Component {
                     align: 'right',
                     items: [
                         ...rightItems || [],
+                        feedbackButton({omit: hideFeedbackButton}),
                         themeToggleButton({omit: hideThemeButton}),
                         launchAdminButton({omit: hideAdminButton}),
                         logoutButton({omit: hideLogoutButton}),

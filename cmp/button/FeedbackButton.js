@@ -36,7 +36,6 @@ export class FeedbackButton extends Component {
         });
     }
 
-
     //---------------------------
     // Implementation
     //---------------------------
