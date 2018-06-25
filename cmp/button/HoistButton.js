@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {button} from '@xh/hoist/kit/blueprint';
+import {button as bpButton} from '@xh/hoist/kit/blueprint';
 import {Icon} from '@xh/hoist/icon';
 
 /**
@@ -16,11 +16,10 @@ import {Icon} from '@xh/hoist/icon';
  * Hoist's most basic button is preconfigured with a generic click icon and title for override
  * Accepts props documented below as well as any supported by Blueprint's Button.
  *
- * Must be provided either an onClick handler *or* a model. If a model is provided, this button
- * will call onButtonClick() on the model class.
+ * Must be provided an onClick handler.
  */
 @HoistComponent()
-export class HoistButton extends Component {
+export class Button extends Component {
 
     static propTypes = {
         icon: PT.element,
@@ -31,21 +30,13 @@ export class HoistButton extends Component {
 
     render() {
         const {icon, onClick, model, ...rest} = this.props;
-        return button({
+        return bpButton({
             icon: icon || Icon.click(),
             title: this.title || 'Click',
-            onClick: onClick || this.onButtonClick,
+            onClick: onClick,
             ...rest
         });
     }
 
-
-    //---------------------------
-    // Implementation
-    //---------------------------
-    onButtonClick = () => {
-        this.model.onButtonClick();
-    }
-
 }
-export const hoistButton = elemFactory(HoistButton);
+export const button = elemFactory(Button);
