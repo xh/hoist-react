@@ -50,6 +50,7 @@ export const Icon = {
     chevronLeft(p)   {return fa(p, 'chevron-left')},
     chevronRight(p)  {return fa(p, 'chevron-right')},
     chevronUp(p)     {return fa(p, 'chevron-up')},
+    click(p)         {return fa(p, 'hand-pointer')},
     clipboard(p)     {return fa(p, 'clipboard')},
     clock(p)         {return fa(p, 'clock')},
     close(p)         {return fa(p, 'times')},
