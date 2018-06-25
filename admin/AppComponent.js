@@ -55,6 +55,7 @@ export class AppComponent extends Component {
                 })
             ],
             hideAdminButton: true,
+            hideFeedbackButton: true,
             refreshButtonProps: {
                 onClick: this.onRefreshClick
             }

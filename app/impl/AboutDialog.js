@@ -20,9 +20,12 @@ import './AboutDialog.scss';
  */
 @HoistComponent()
 export class AboutDialog extends Component {
+
     render() {
+        if (!XH.aboutIsOpen) return null;
+
         return dialog({
-            isOpen: XH.aboutIsOpen,
+            isOpen: true,
             isCloseButtonShown: false,
             icon: Icon.info({size: 'lg'}),
             cls: 'xh-about-dialog',
