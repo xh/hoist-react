@@ -11,3 +11,4 @@ export * from './ImpersonationBar';
 export * from './LoginPanel';
 export * from './UpdateBar';
 export * from './VersionBar';
+export * from './FeedbackDialog';

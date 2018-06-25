@@ -15,8 +15,9 @@ import {MultiPromiseModel, never} from '@xh/hoist/promise';
 import {RouterModel} from '@xh/hoist/router';
 import {appContainer} from '@xh/hoist/app';
 import {MessageSourceModel} from '@xh/hoist/cmp/message';
-import {FeedbackDialogModel} from '@xh/hoist/cmp/feedback';
 import {throwIf} from '@xh/hoist/utils/JsUtils';
+
+import {FeedbackDialogModel} from '../app/impl';
 
 import {
     ConfigService,
@@ -110,6 +111,10 @@ class XHClass {
     /** Show about dialog? */
     @observable aboutIsOpen = false;
 
+    /** Show feedback dialog? */
+    @observable feedbackIsOpen = false;
+
+
     /** Updated App version available, as reported by server. */
     @observable updateVersion = null;
 
@@ -129,8 +134,6 @@ class XHClass {
     appLoadModel = new MultiPromiseModel();
 
     messageSourceModel = new MessageSourceModel();
-
-    feedbackModel = new FeedbackDialogModel();
 
     /**
      * Main entry point. Initialize and render application code.
@@ -258,8 +261,9 @@ class XHClass {
      * The dialog will usually be render in the AppComponent
      */
 
+    @action
     showFeedbackDialog() {
-        this.feedbackModel.open();
+        this.feedbackIsOpen = true;
     }
 
     //---------------------------------
