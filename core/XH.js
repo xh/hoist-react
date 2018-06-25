@@ -15,6 +15,7 @@ import {MultiPromiseModel, never} from '@xh/hoist/promise';
 import {RouterModel} from '@xh/hoist/router';
 import {appContainer} from '@xh/hoist/app';
 import {MessageSourceModel} from '@xh/hoist/cmp/message';
+import {FeedbackDialogModel} from '@xh/hoist/cmp/feedback';
 import {throwIf} from '@xh/hoist/utils/JsUtils';
 
 import {
@@ -128,6 +129,8 @@ class XHClass {
     appLoadModel = new MultiPromiseModel();
 
     messageSourceModel = new MessageSourceModel();
+
+    feedbackModel = new FeedbackDialogModel();
 
     /**
      * Main entry point. Initialize and render application code.
@@ -243,6 +246,14 @@ class XHClass {
     confirm(config) {
         config = defaults({}, config, {confirmText: 'OK', cancelText: 'Cancel'});
         this.messageSourceModel.show(config);
+    }
+
+    //-------------------
+    // Feedback Support
+    //-------------------
+
+    showFeedbackDialog() {
+        this.feedbackModel.open();
     }
 
     //---------------------------------
