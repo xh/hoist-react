@@ -29,7 +29,7 @@ export class Button extends Component {
     };
 
     render() {
-        const {icon, onClick, model, ...rest} = this.props;
+        const {icon, onClick, ...rest} = this.props;
         return bpButton({
             icon: icon || Icon.click(),
             title: this.title || 'Click',
