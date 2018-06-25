@@ -6,11 +6,10 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {button} from '@xh/hoist/kit/blueprint';
 import {grid} from '@xh/hoist/cmp/grid';
 import {panel, filler} from '@xh/hoist/cmp/layout';
 import {toolbar, toolbarSep} from '@xh/hoist/cmp/toolbar';
-import {refreshButton} from '@xh/hoist/cmp/button';
+import {refreshButton, hoistButton} from '@xh/hoist/cmp/button';
 import {storeCountLabel, storeFilterField} from '@xh/hoist/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 import {ServiceModel} from './ServiceModel';
@@ -36,7 +35,7 @@ export class ServicePanel extends Component {
         const {model} = this,
             {store, selModel} = model.gridModel;
         return toolbar(
-            button({
+            hoistButton({
                 icon: Icon.sync(),
                 text: 'Clear Caches',
                 onClick: this.onClearCachesClick,
