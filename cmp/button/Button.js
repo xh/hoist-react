@@ -13,8 +13,7 @@ import {Icon} from '@xh/hoist/icon';
 
 /**
  * Wrapper around Blueprint's Button component.
- * Hoist's most basic button is preconfigured with a generic click icon and title for override
- * Accepts props documented below as well as any supported by Blueprint's Button.
+ * Hoist's most basic button accepts any props supported by Blueprint's Button.
  *
  * Must be provided an onClick handler.
  */
@@ -22,17 +21,12 @@ import {Icon} from '@xh/hoist/icon';
 export class Button extends Component {
 
     static propTypes = {
-        icon: PT.element,
-        title: PT.string,
-        onClick: PT.func,
-        model: PT.object
+        onClick: PT.func
     };
 
     render() {
-        const {icon, onClick, ...rest} = this.props;
+        const {onClick, ...rest} = this.props;
         return bpButton({
-            icon: icon || Icon.click(),
-            title: this.title || 'Click',
             onClick: onClick,
             ...rest
         });
