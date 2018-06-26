@@ -109,6 +109,9 @@ class XHClass {
     /** Show about dialog? */
     @observable aboutIsOpen = false;
 
+    /** Show feedback dialog? */
+    @observable feedbackIsOpen = false;
+
     /** Updated App version available, as reported by server. */
     @observable updateVersion = null;
 
@@ -243,6 +246,17 @@ class XHClass {
     confirm(config) {
         config = defaults({}, config, {confirmText: 'OK', cancelText: 'Cancel'});
         this.messageSourceModel.show(config);
+    }
+
+    //-------------------
+    // Feedback Support
+    //-------------------
+    /**
+     * Show a modal 'feedback' dialog.
+     */
+    @action
+    showFeedbackDialog() {
+        this.feedbackIsOpen = true;
     }
 
     //---------------------------------

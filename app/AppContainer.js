@@ -17,6 +17,7 @@ import {logoutButton} from '@xh/hoist/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
 import {
+    feedbackDialog,
     aboutDialog,
     exceptionDialog,
     impersonationBar,
@@ -86,6 +87,7 @@ export class AppContainer extends Component {
                     ),
                     loadMask({model: XH.appLoadModel}),
                     messageSource({model: XH.messageSourceModel}),
+                    feedbackDialog({model: XH.feedbackDialogModel}),
                     aboutDialog()
                 );
             default:

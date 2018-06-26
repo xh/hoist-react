@@ -10,3 +10,4 @@ export * from './LaunchAdminButton';
 export * from './LogoutButton';
 export * from './RefreshButton';
 export * from './ExportButton';
+export * from './FeedbackButton';
