@@ -11,7 +11,8 @@ import {div} from '@xh/hoist/cmp/layout';
 import {throwIf} from '@xh/hoist/utils/JsUtils';
 import {uniqBy} from 'lodash';
 
-import {TabModel} from './TabModel';
+import {tabPane} from './TabPane';
+import {TabPaneModel} from './TabPaneModel';
 
 /**
  * Model for a TabContainer, representing its tabs and the currently selected tab.
@@ -20,6 +21,7 @@ import {TabModel} from './TabModel';
 export class TabContainerModel {
     tabs = [];
     @observable selectedId = null;
+    @observable lastRefreshRequest = null;
 
     @computed
     get selectedIndex() {
@@ -28,14 +30,17 @@ export class TabContainerModel {
     }
 
     /**
-     * @param {Object[]} tabs - configuration for TabModels.
+     * @param {Object[]} tabs - configurations for TabPaneModels.
      * @param {String} [selectedId] - id for initially selected tab.
      */
     constructor({
         tabs,
         selectedId
     }) {
-        tabs = tabs.map(it => new TabModel(it));
+        tabs = tabs.map(tabCfg => {
+            tabCfg.parent = this;
+            return new TabPaneModel(tabCfg);
+        });
 
         // Validate and wire children
         throwIf(tabs.length == 0,
@@ -45,9 +50,8 @@ export class TabContainerModel {
             'One or more tabs in TabContainerModel has a non-unique id.'
         );
 
-        tabs.forEach(tab => tab.parent = this);
         this.tabs = tabs;
-        this.selectedId = selectedId || tabs[0].id;
+        this.setSelectedId(selectedId || tabs[0].id);
     }
 
     @action
@@ -60,7 +64,13 @@ export class TabContainerModel {
         const tabs = this.tabs,
             tab = this.findById(id);
 
+        if (tab && tab.reloadOnShow) tab.requestRefresh();
         this.selectedId = tab ? id : tabs[0].id;
+    }
+
+    @action
+    requestRefresh() {
+        this.lastRefreshRequest = Date.now();
     }
 
     //-------------------------
@@ -71,14 +81,14 @@ export class TabContainerModel {
     }
 
     renderTabs() {
-        return this.tabs.map(tabModel => this.renderTab(tabModel));
+        return this.tabs.map(tabPaneModel => this.renderTab(tabPaneModel));
     }
 
-    renderTab(tabModel) {
-        const {id, pageFactory, pageProps, label, icon} = tabModel;
+    renderTab(tabPaneModel) {
+        const {id, label, icon} = tabPaneModel;
 
         return {
-            content: pageFactory({key: id, ...pageProps}),
+            content: tabPane({key: id, model: tabPaneModel}),
             tab: onsenTab({
                 key: id,
                 cls: 'xh-tab',

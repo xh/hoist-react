@@ -7,4 +7,5 @@
 
 export * from './TabContainer';
 export * from './TabContainerModel';
-export * from './TabModel';
+export * from './TabPane';
+export * from './TabPaneModel';
