@@ -61,7 +61,7 @@ export class BaseDropdownField extends HoistField {
     getOptionRenderer() {
         return (option, optionProps) => {
             const renderer = this.props.optionRenderer || this.defaultOptionRenderer;
-            optionProps.modifiers.active = option.value == this.externalValue;
+            if (this.externalValue) optionProps.modifiers.active = option.value == this.externalValue;
             return renderer(option, optionProps);
         };
     }
