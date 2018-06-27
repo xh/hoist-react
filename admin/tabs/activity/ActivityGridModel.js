@@ -29,6 +29,8 @@ export class ActivityGridModel {
     @observable detailRecord = null;
 
     gridModel = new GridModel({
+        stateModel: 'xhActivityGrid',
+        enableColChooser: true,
         store: new LocalStore({
             fields: [
                 'severity', 'dateCreated', 'username', 'msg', 'category',

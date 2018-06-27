@@ -15,6 +15,8 @@ import {nameCol} from '../../columns/Columns';
 export class PreferencePanel extends Component {
 
     localModel = new RestGridModel({
+        stateModel: 'xhPreferenceGrid',
+        enableColChooser: true,
         store: new RestStore({
             url: 'rest/preferenceAdmin',
             fields: [

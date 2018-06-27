@@ -15,6 +15,7 @@ import {MultiPromiseModel, never} from '@xh/hoist/promise';
 import {RouterModel} from '@xh/hoist/router';
 import {appContainer} from '@xh/hoist/app';
 import {MessageSourceModel} from '@xh/hoist/cmp/message';
+import {throwIf} from '@xh/hoist/utils/JsUtils';
 
 import {
     ConfigService,
@@ -71,6 +72,9 @@ class XHClass {
     /** Root URL context/path - prepended to all relative fetch requests. */
     baseUrl = xhBaseUrl;
 
+    /** Whether build is for local development */
+    isDevelopmentMode = xhIsDevelopmentMode;
+
     //---------------------------
     // Services
     //---------------------------
@@ -105,6 +109,9 @@ class XHClass {
     /** Show about dialog? */
     @observable aboutIsOpen = false;
 
+    /** Show feedback dialog? */
+    @observable feedbackIsOpen = false;
+
     /** Updated App version available, as reported by server. */
     @observable updateVersion = null;
 
@@ -133,6 +140,10 @@ class XHClass {
      */
     renderApp(app) {
         this.app = app;
+        throwIf(
+            !app.componentClass,
+            'A HoistApp must define a componentClass getter to specify its top-level component.'
+        );
 
         const rootView = appContainer(
             elem(app.componentClass, {model: app})
@@ -237,6 +248,17 @@ class XHClass {
         this.messageSourceModel.show(config);
     }
 
+    //-------------------
+    // Feedback Support
+    //-------------------
+    /**
+     * Show a modal 'feedback' dialog.
+     */
+    @action
+    showFeedbackDialog() {
+        this.feedbackIsOpen = true;
+    }
+
     //---------------------------------
     // Framework Methods
     //---------------------------------
@@ -256,12 +278,10 @@ class XHClass {
             const authUser = await this.getAuthUserFromServerAsync();
 
             if (!authUser) {
-                if (this.app.requireSSO) {
-                    throw XH.exception('Failed to authenticate user via SSO.');
-                } else {
-                    this.setLoadState(LoadState.LOGIN_REQUIRED);
-                    return;
-                }
+                throwIf(this.app.requireSSO, 'Failed to authenticate user via SSO.');
+
+                this.setLoadState(LoadState.LOGIN_REQUIRED);
+                return;
             }
 
             await this.completeInitAsync(authUser.username);

@@ -26,7 +26,7 @@ export class RestField extends Field {
      * @param {string} [lookupName] - Name of server provided collection to populate lookup.
      * @param {(boolean)} [lookupStrict] - If lookup provided, must values come from it?
      * @param {string} [typeField] - Name of field in this record representing containing the 'type' (See Field.type).
-     * @param {*} ...rest - All arguments for Field.
+     * @param {...*} [fieldArgs] - All arguments for Field.
      */
     constructor({
         editable = true,
@@ -35,9 +35,9 @@ export class RestField extends Field {
         lookupName = null,
         lookupStrict = false,
         typeField = null,
-        ...rest
+        ...fieldArgs
     }) {
-        super(rest);
+        super(fieldArgs);
         this.editable = editable;
         this.required = required;
         this.lookup = lookup;

@@ -27,6 +27,8 @@ export class ClientErrorModel {
     @observable detailRecord = null;
 
     gridModel = new GridModel({
+        stateModel: 'xhClientErrorGrid',
+        enableColChooser: true,
         store: new LocalStore({
             fields: [
                 'username', 'error', 'msg', 'userAlerted', 'browser', 'device',

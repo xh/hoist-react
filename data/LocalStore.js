@@ -28,18 +28,17 @@ export class LocalStore extends BaseStore {
     /**
      * @param {boolean} [processRawData] - Function to run on data presented to loadData() before creating records
      * @param {function} [filter] - Filter function to be run on _allRecords to produce _records
-     * @param {*} ...rest - Additional properties to pass to BaseStore
+     * @param {...*} [baseStoreArgs] - Additional properties to pass to BaseStore
      */
-    constructor({processRawData = null, filter, ...rest}) {
-        super(rest);
+    constructor({processRawData = null, filter, ...baseStoreArgs}) {
+        super(baseStoreArgs);
         this.setFilter(filter);
         this.processRawData = processRawData;
     }
 
     /**
      * Replace existing records with new records.
-     *
-     * @param rawData, array of raw records to be loaded into the store.
+     * @param {Object[]} rawData - raw records to be loaded into the store.
      */
     loadData(rawData) {
         this.loadDataInternal(rawData);

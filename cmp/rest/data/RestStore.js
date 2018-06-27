@@ -21,12 +21,13 @@ export class RestStore extends UrlStore {
     _lookupsLoaded = false;
 
     /**
+     * @param {string} url
      * @param {string} [dataRoot] - Name of root node for records in returned data
      * @param {boolean} [reloadLookupsOnLoad] - Whether lookups should be loaded each time loadAsync is called
-     * @param {*} ...rest - Additional arguments to pass to UrlStore.
+     * @param {...*} [urlStoreArgs] - Additional arguments to pass to UrlStore.
      */
-    constructor({dataRoot = 'data', reloadLookupsOnLoad = false, ...rest}) {
-        super({dataRoot, ...rest});
+    constructor({url, dataRoot = 'data', reloadLookupsOnLoad = false, ...urlStoreArgs}) {
+        super({url, dataRoot, ...urlStoreArgs});
         this.reloadLookupsOnLoad = reloadLookupsOnLoad;
     }
 

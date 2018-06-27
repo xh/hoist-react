@@ -8,6 +8,7 @@
 import {XH, HoistModel} from '@xh/hoist/core';
 import {start} from '@xh/hoist/promise';
 import {observable, computed, action} from '@xh/hoist/mobx';
+import {throwIf} from '@xh/hoist/utils/JsUtils';
 import {isEqual} from 'lodash';
 
 import {RestControlModel} from './RestControlModel';
@@ -54,9 +55,8 @@ export class RestFormModel {
         this.parent = parent;
         this.controlModels = editors.map((editor) => {
             const field = this.store.getField(editor.field);
-            if (!field) {
-                throw XH.exception(`Unknown field '${editor.field}' in RestGrid.`);
-            }
+            throwIf(!field, `Unknown field '${editor.field}' in RestGrid.`);
+
             return new RestControlModel({editor, field, parent: this});
         });
     }

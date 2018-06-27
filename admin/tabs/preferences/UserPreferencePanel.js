@@ -15,6 +15,8 @@ import {nameCol, usernameCol} from '../../columns/Columns';
 export class UserPreferencePanel extends Component {
 
     localModel = new RestGridModel({
+        stateModel: 'xhUserPreferenceGrid',
+        enableColChooser: true,
         store: new RestStore({
             url: 'rest/userPreferenceAdmin',
             reloadLookupsOnLoad: true,

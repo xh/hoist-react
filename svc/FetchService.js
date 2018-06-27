@@ -30,6 +30,8 @@ export class FetchService {
      *     If not explicitly set in opts then the contentType will be set based on the method. POST
      *     requests will use 'application/x-www-form-urlencoded', otherwise 'text/plain' will be
      *     used.
+     * @param {boolean} [opts.acceptJson] - if true, sets Accept header to 'application/json'.  Defaults to false.
+     *
      *
      * @returns {Promise<Response>} @see https://developer.mozilla.org/en-US/docs/Web/API/Response
      */
@@ -58,6 +60,11 @@ export class FetchService {
                 headers: new Headers({'Content-Type': contentType})
             },
             fetchOpts = Object.assign(defaults, opts);
+
+        if (opts.acceptJson) {
+            fetchOpts.headers.append('Accept', 'application/json');
+            delete fetchOpts.acceptJson;
+        }
 
         delete fetchOpts.contentType;
         delete fetchOpts.url;
@@ -101,6 +108,7 @@ export class FetchService {
      * @returns {Promise} the decoded JSON object, or null if the response had no content.
      */
     async fetchJson(opts) {
+        opts.acceptJson = true;
         const ret = await this.fetch(opts);
         return ret.status === 204 ? null : ret.json();
     }

@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {list, listHeader, listItem} from '@xh/hoist/kit/onsen';
-import {hframe, frame, div, span} from '@xh/hoist/cmp/layout';
+import {hframe, frame, div} from '@xh/hoist/cmp/layout';
 
 /**
  * Grid Component
@@ -17,16 +17,18 @@ import {hframe, frame, div, span} from '@xh/hoist/cmp/layout';
 class Grid extends Component {
 
     render() {
+        const {hideHeader, store} = this.model;
         return list({
-            cls: 'xh-grid',
-            dataSource: this.model.store.records,
+            cls: `xh-grid ${hideHeader ? 'xh-grid-header-hidden' : ''}`,
+            dataSource: store.records,
             renderHeader: () => this.renderHeader(),
             renderRow: (rec) => this.renderRow(rec)
         });
     }
 
     renderHeader() {
-        const {leftColumn, rightColumn} = this.model;
+        const {hideHeader, leftColumn, rightColumn} = this.model;
+        if (hideHeader) return null;
         return listHeader(
             hframe(
                 frame(leftColumn.headerName),
@@ -56,14 +58,9 @@ class Grid extends Component {
     // Implementation
     //------------------------
     getCellValue(colDef, rec) {
-        const {field, valueFormatter} = colDef,
-            v = rec[field];
-        return valueFormatter ? this.getFormattedValue(v, valueFormatter) : v;
-    }
-
-    getFormattedValue(v, formatter) {
-        // Todo: This is temporary until we have a proper solution in place for formatters returning els
-        return span({dangerouslySetInnerHTML: {__html: formatter(v)}});
+        const {field, valueGetter, valueFormatter} = colDef,
+            v = valueGetter ? valueGetter(rec) : rec[field];
+        return valueFormatter ? valueFormatter(v) : v;
     }
 
 }

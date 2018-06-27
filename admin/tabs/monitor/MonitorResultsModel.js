@@ -47,7 +47,7 @@ export class MonitorResultsModel {
         this.loadResults();
     }
 
-    loadResults = async() => {
+    loadResults = async () => {
         if (!this.tabPaneModel.isActive) return;
 
         return XH
