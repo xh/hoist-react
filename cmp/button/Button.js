@@ -20,12 +20,16 @@ import {button as bpButton} from '@xh/hoist/kit/blueprint';
 export class Button extends Component {
 
     static propTypes = {
+        icon: PT.element,
+        text: PT.string,
         onClick: PT.func
     };
 
     render() {
-        const {onClick, ...rest} = this.props;
+        const {icon, text, onClick, ...rest} = this.props;
         return bpButton({
+            icon: icon,
+            text: text,
             onClick: onClick,
             ...rest
         });
