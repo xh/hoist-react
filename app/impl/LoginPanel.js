@@ -50,13 +50,15 @@ export class LoginPanel extends Component {
                             model: this,
                             field: 'username',
                             placeholder: 'Username...',
-                            autoFocus: true
+                            autoFocus: true,
+                            commitOnChange: true
                         }),
                         textField({
                             model: this,
                             field: 'password',
                             placeholder: 'Password...',
-                            type: 'password'
+                            type: 'password',
+                            commitOnChange: true
                         }),
                         text({
                             omit: !this.warning,

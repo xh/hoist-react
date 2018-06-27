@@ -134,7 +134,8 @@ export class RestControl extends Component {
             model,
             field: 'value',
             cls: 'pt-fill',
-            disabled: !model.isEditable
+            disabled: !model.isEditable,
+            commitOnChange: true
         });
     }
 
@@ -147,7 +148,8 @@ export class RestControl extends Component {
             cls: 'pt-fill',
             style: {height: model.editor.height || 100},
             disabled: !model.isEditable,
-            spellCheck: model.editor.spellCheck
+            spellCheck: model.editor.spellCheck,
+            commitOnChange: true
         });
     }
 
@@ -161,7 +163,8 @@ export class RestControl extends Component {
             autoFocus: this.props.autoFocus,
             cls: 'pt-fill',
             disabled: !model.isEditable,
-            spellCheck: model.editor.spellCheck
+            spellCheck: model.editor.spellCheck,
+            commitOnChange: true
         });
     }
 
@@ -174,7 +177,8 @@ export class RestControl extends Component {
             disabled: !model.isEditable,
             // setting size appears to be the only way to get scrollbars
             width: 343,
-            height: model.editor.height || 150
+            height: model.editor.height || 150,
+            commitOnChange: true
         });
     }
 
