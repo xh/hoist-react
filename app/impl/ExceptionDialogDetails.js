@@ -6,10 +6,11 @@
  */
 import {Component} from 'react';
 import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
-import {button, dialog, dialogBody, textArea} from '@xh/hoist/kit/blueprint';
+import {dialog, dialogBody, textArea} from '@xh/hoist/kit/blueprint';
 import {pre, table, tbody, td, th, tr, filler} from '@xh/hoist/cmp/layout';
 import {clipboardButton} from '@xh/hoist/cmp/clipboard';
 import {toolbar} from '@xh/hoist/cmp/toolbar';
+import {button} from '@xh/hoist/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {stringifyErrorSafely} from '@xh/hoist/exception';
 
