@@ -18,6 +18,8 @@ import {dismissButton} from './ExceptionDialog';
 /**
  * Sub-dialog for displaying exception details.  Includes affordances for submitting an
  * error report to the server and copying the stacktrace to the clipboard.
+ *
+ * @private
  */
 @HoistComponent()
 export class ExceptionDialogDetails extends Component {

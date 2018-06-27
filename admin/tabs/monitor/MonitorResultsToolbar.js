@@ -14,6 +14,9 @@ import {toolbar} from '@xh/hoist/cmp/toolbar';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {Icon} from '@xh/hoist/icon';
 
+/**
+ * @private
+ */
 @HoistComponent()
 class MonitorResultsToolbar extends Component {
     render() {

@@ -10,6 +10,8 @@ import {ToastManager} from '@xh/hoist/toast';
 
 /**
  * Local Model to handle Exception Dialog.
+ *
+ * @private
  */
 @HoistModel()
 export class ExceptionDialogModel {

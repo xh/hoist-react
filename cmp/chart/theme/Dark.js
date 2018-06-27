@@ -5,6 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+/**
+ * @private
+ */
 export const DarkTheme = {
     colors: [
         '#2b908f', '#90ee7e', '#f45b5b', '#7798BF', '#aaeeee', '#ff0066',

@@ -14,6 +14,9 @@ import {Icon} from '@xh/hoist/icon';
 
 import './Tile.scss';
 
+/**
+ * @private
+ */
 @HoistComponent()
 export class Tile extends Component {
     render() {

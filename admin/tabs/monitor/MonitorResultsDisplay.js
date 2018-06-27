@@ -9,6 +9,9 @@ import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {hbox} from '@xh/hoist/cmp/layout';
 import {tile} from './Tile';
 
+/**
+ * @private
+ */
 @HoistComponent()
 class MonitorResultsDisplay extends Component {
     render() {

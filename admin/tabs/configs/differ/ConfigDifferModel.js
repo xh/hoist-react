@@ -21,6 +21,9 @@ import {Icon} from '@xh/hoist/icon';
 
 import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
 
+/**
+ * @private
+ */
 @HoistModel()
 export class ConfigDifferModel  {
 

@@ -14,6 +14,9 @@ import {contextMenu} from '@xh/hoist/cmp/contextmenu';
 import {SECONDS} from '@xh/hoist/utils/DateTimeUtils';
 import {Timer} from '@xh/hoist/utils/Timer';
 
+/**
+ * @private
+ */
 @HoistComponent()
 class LogViewerDisplay extends Component {
 

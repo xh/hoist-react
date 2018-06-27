@@ -14,6 +14,9 @@ import {Icon} from '@xh/hoist/icon';
 
 import './Differ.scss';
 
+/**
+ * @private
+ */
 @HoistComponent()
 export class ConfigDifferDetail extends Component {
 

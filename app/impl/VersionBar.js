@@ -11,6 +11,9 @@ import {box} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import './VersionBar.scss';
 
+/**
+ * @private
+ */
 @HoistComponent()
 export class VersionBar extends Component {
 

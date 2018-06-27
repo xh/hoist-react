@@ -14,6 +14,9 @@ import {toolbar} from '@xh/hoist/cmp/toolbar';
 
 import {configDifferDetail} from './ConfigDifferDetail';
 
+/**
+ * @private
+ */
 @HoistComponent()
 export class ConfigDiffer extends Component {
 
