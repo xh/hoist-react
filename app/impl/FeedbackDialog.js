@@ -5,11 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {button, dialog} from '@xh/hoist/kit/blueprint';
+import {dialog} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory, XH} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
 import {textAreaField} from '@xh/hoist/cmp/form';
 import {toolbar} from '@xh/hoist/cmp/toolbar';
+import {button} from '@xh/hoist/cmp/button';
+
 import {FeedbackDialogModel} from './FeedbackDialogModel';
 
 /**

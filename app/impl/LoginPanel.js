@@ -6,11 +6,12 @@
  */
 
 import {Component} from 'react';
-import {button, text} from '@xh/hoist/kit/blueprint';
+import {text} from '@xh/hoist/kit/blueprint';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {panel, vspacer, box, filler, viewport} from '@xh/hoist/cmp/layout';
 import {textField} from '@xh/hoist/cmp/form';
 import {toolbar} from '@xh/hoist/cmp/toolbar';
+import {button} from '@xh/hoist/cmp/button';
 import {observable, computed, setter} from '@xh/hoist/mobx';
 import {Icon} from '@xh/hoist/icon';
 

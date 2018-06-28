@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, XH, elemFactory} from '@xh/hoist/core';
-import {button} from '@xh/hoist/kit/blueprint';
+import {button} from '@xh/hoist/cmp/button';
 import {ToastManager} from '@xh/hoist/toast';
 import {Icon} from '@xh/hoist/icon';
 

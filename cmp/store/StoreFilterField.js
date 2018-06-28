@@ -7,11 +7,11 @@
 
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {button, inputGroup} from '@xh/hoist/kit/blueprint';
-import {setter, observable} from '@xh/hoist/mobx';
 import {escapeRegExp} from 'lodash';
-
+import {inputGroup} from '@xh/hoist/kit/blueprint';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {setter, observable} from '@xh/hoist/mobx';
+import {button} from '@xh/hoist/cmp/button';
 import {BaseStore} from '@xh/hoist/data';
 
 /**

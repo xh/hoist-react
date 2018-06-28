@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {button} from '@xh/hoist/kit/blueprint';
+import {button} from '@xh/hoist/cmp/button';
 
 import {hbox, vbox} from '../../index';
 

@@ -6,12 +6,13 @@
  */
 
 import {Component} from 'react';
+import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory, XH} from '@xh/hoist/core';
 import {loadMask} from '@xh/hoist/cmp/mask';
 import {toolbar} from '@xh/hoist/cmp/toolbar';
 import {filler, vframe} from '@xh/hoist/cmp/layout';
+import {button} from '@xh/hoist/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-import {button, dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 
 import {restControl} from './RestControl';
 import './RestForm.scss';
