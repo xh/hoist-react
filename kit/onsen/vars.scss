@@ -1,0 +1,9 @@
+// Mobile specific CSS variable declarations.
+// See ./styles/vars.scss for shared vars
+body {
+  --xh-accent-color: var(--accent-color, var(--xh-blue-light));
+  --xh-list-select-color: var(--list-select-color, var(--xh-blue-light));
+  --xh-btn-color: var(--btn-color, var(--xh-bg-alt));
+  --xh-btn-text-color: var(--btn-text-color, var(--xh-text-color));
+  --xh-toolbar-btn-color: var(--toolbar-btn-color, var(--xh-blue-gray-light));
+}

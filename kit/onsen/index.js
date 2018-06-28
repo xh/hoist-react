@@ -7,6 +7,7 @@
 
 import 'onsenui/css/onsenui.css';
 import 'onsenui/css/onsen-css-components.css';
+import './theme.scss';
 import './styles.scss';
 
 import ons from 'onsenui';

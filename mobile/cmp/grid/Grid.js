@@ -42,8 +42,7 @@ class Grid extends Component {
 
         return listItem({
             key: rec.id,
-            tappable: true,
-            modifier: 'longdivider',
+            modifier: 'tappable longdivider',
             items: [
                 div({cls: 'center', item: this.getCellValue(leftColumn, rec)}),
                 div({cls: 'right', item: this.getCellValue(rightColumn, rec)})
