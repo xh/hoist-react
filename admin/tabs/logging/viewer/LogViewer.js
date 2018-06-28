@@ -17,6 +17,9 @@ import {LogViewerModel} from './LogViewerModel';
 import {logViewerToolbar} from './LogViewerToolbar';
 import './LogViewer.scss';
 
+/**
+ * @private
+ */
 @HoistComponent()
 export class LogViewer extends Component {
     localModel = new LogViewerModel(this.props.tabPaneModel);

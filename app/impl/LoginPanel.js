@@ -19,6 +19,8 @@ import './LoginPanel.scss';
 /**
  * A minimal username / password prompt for applications using form-based authentication.
  * Automatically created and displayed if required by AppContainer.
+ *
+ * @private
  */
 @HoistComponent()
 export class LoginPanel extends Component {

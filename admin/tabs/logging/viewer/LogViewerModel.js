@@ -12,6 +12,9 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {UrlStore} from '@xh/hoist/data';
 import {baseCol} from '@xh/hoist/columns/Core';
 
+/**
+ * @private
+ */
 @HoistModel()
 export class LogViewerModel {
 

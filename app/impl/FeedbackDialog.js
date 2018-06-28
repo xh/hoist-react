@@ -15,6 +15,8 @@ import {FeedbackDialogModel} from './FeedbackDialogModel';
 /**
  * A simple dialog component to collect user feedback from directly within the application.
  * @see FeedbackService
+ *
+ * @private
  */
 @HoistComponent()
 export class FeedbackDialog extends Component {

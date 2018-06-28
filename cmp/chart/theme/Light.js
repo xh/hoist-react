@@ -5,6 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+/**
+ * @private
+ */
 export const LightTheme = {
     chart: {
         resetZoomButton: {

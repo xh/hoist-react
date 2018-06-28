@@ -18,6 +18,8 @@ import {exceptionDialogDetails} from './ExceptionDialogDetails';
 /**
  * Dialog for display of exceptions, with support for viewing a detailed stacktrace
  * and an option to force the reload of the application (in the case of a fatal exception).
+ *
+ * @private
  */
 @HoistComponent()
 export class ExceptionDialog extends Component {

@@ -12,6 +12,9 @@ import {toolbar} from '@xh/hoist/cmp/toolbar';
 import {filler} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 
+/**
+ * @private
+ */
 @HoistComponent()
 export class LogViewerToolbar extends Component {
     

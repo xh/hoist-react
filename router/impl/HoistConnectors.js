@@ -7,6 +7,7 @@
 
 /**
  * A Router5 Plugin to connect Router5 to an observable RouterModel.
+ * @private
  */
 export function hoistPlugin(routerModel) {
     const ret = (router) => {
@@ -26,6 +27,7 @@ export function hoistPlugin(routerModel) {
 
 /**
  * Middleware for tracking loading.
+ * @private
  */
 export function hoistMiddleware(routerModel) {
     return (router) => (toState, fromState, done) => {

@@ -12,6 +12,9 @@ import {button} from '@xh/hoist/kit/blueprint';
 import {Icon} from '@xh/hoist/icon';
 import './UpdateBar.scss';
 
+/**
+ * @private
+ */
 @HoistComponent()
 export class UpdateBar extends Component {
 
