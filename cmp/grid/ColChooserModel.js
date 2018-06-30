@@ -20,7 +20,8 @@ export class ColChooserModel {
         this.gridModel = gridModel;
         this.lrModel = new LeftRightChooserModel({
             leftTitle: 'Available Columns',
-            rightTitle: 'Displayed Columns'
+            rightTitle: 'Displayed Columns',
+            leftSortBy: 'text'
         });
     }
 
