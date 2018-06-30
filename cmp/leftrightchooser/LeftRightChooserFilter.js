@@ -22,6 +22,7 @@ class LeftRightChooserFilter extends Component {
     static propTypes = {
         /** Names of fields in chooser to filter by */
         fields: PT.arrayOf(PT.string),
+        /** True to prevent regex start line anchor from being added */
         anyMatch: PT.bool
     };
 
