@@ -21,7 +21,8 @@ class LeftRightChooserFilter extends Component {
 
     static propTypes = {
         /** Names of fields in chooser to filter by */
-        fields: PT.arrayOf(PT.string)
+        fields: PT.arrayOf(PT.string),
+        anyMatch: PT.bool
     };
 
     @setter @observable value = '';
@@ -49,17 +50,21 @@ class LeftRightChooserFilter extends Component {
     }
     
     runFilter() {
-        const fields = this.props.fields || [],
+        const {fields = [], anyMatch} = this.props,
             searchTerm = escapeRegExp(this.value);
 
         const filter = (raw) => {
             return fields.some(f => {
                 const fieldVal = !!searchTerm && raw[f];
-                return ((fieldVal && new RegExp(`(^|\\\\W)${searchTerm}`, 'ig').test(fieldVal)) || !fieldVal);
+                return ((fieldVal && new RegExp(`${anyMatch ? '' : '(^|\\\\W)'}${searchTerm}`, 'ig').test(fieldVal)) || !fieldVal);
             });
         };
 
         this.model.setDisplayFilter(filter);
+    }
+
+    componentWillUnmount() {
+        this.onClearClick();
     }
 }
 export const leftRightChooserFilter = elemFactory(LeftRightChooserFilter);
