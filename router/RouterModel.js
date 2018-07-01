@@ -38,7 +38,7 @@ export class RouterModel {
     init(routes) {
         const config = {defaultRoute: 'default'}
 
-        const router = this.router =  createRouter(routes, config)
+        const router = this.router = createRouter(routes, config);
 
         router
             .usePlugin(browserPlugin())
