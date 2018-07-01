@@ -45,7 +45,7 @@ export class ExceptionDialogModel {
     @action
     openDetails() {
         this.detailsIsOpen = true;
-        this.msg = '';
+        this.userMessage = '';
     }
 
     @action
