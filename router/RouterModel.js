@@ -8,8 +8,6 @@ import {HoistModel} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import createRouter from 'router5';
 import browserPlugin from 'router5/plugins/browser';
-import {hoistPlugin, hoistMiddleware} from './impl/HoistConnectors';
-
 
 /**
  * Top-level model for managing routing in hoist.
@@ -40,10 +38,13 @@ export class RouterModel {
     init(routes) {
         const config = {defaultRoute: 'default'};
 
-        this.router = createRouter(routes, config)
-            .usePlugin(browserPlugin(), hoistPlugin(this))
-            .useMiddleware(hoistMiddleware(this))
-            .start();
+        const router = this.router = createRouter(routes, config);
+
+        router
+            .usePlugin(browserPlugin())
+            .subscribe(ev => this.setCurrentState(ev.route));
+
+        router.start();
     }
 
     /**
