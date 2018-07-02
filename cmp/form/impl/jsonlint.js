@@ -20,6 +20,9 @@
 
  */
 
+/**
+ * @private
+ */
 /* Jison generated parser */
 export const jsonlint = (function(){
     var parser = {trace: function trace() { },

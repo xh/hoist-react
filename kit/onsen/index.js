@@ -7,6 +7,7 @@
 
 import 'onsenui/css/onsenui.css';
 import 'onsenui/css/onsen-css-components.css';
+import './theme.scss';
 import './styles.scss';
 
 import ons from 'onsenui';
@@ -17,6 +18,7 @@ import {
     BackButton,
     BottomToolbar,
     Button,
+    Card,
     Input,
     List,
     ListHeader,
@@ -25,6 +27,8 @@ import {
     Page,
     ProgressCircular,
     SearchInput,
+    Tab,
+    Tabbar,
     Toolbar,
     ToolbarButton
 } from 'react-onsenui';
@@ -33,6 +37,7 @@ export const
     backButton = elemFactory(BackButton),
     bottomToolbar = elemFactory(BottomToolbar),
     button = elemFactory(Button),
+    card = elemFactory(Card),
     input = elemFactory(Input),
     list = elemFactory(List),
     listHeader = elemFactory(ListHeader),
@@ -41,5 +46,7 @@ export const
     page = elemFactory(Page),
     progressCircular = elemFactory(ProgressCircular),
     searchInput = elemFactory(SearchInput),
+    tab = elemFactory(Tab),
+    tabbar = elemFactory(Tabbar),
     toolbar = elemFactory(Toolbar),
     toolbarButton = elemFactory(ToolbarButton);

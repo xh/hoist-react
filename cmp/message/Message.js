@@ -5,10 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/cmp/toolbar';
-import {dialog, dialogBody, button} from '@xh/hoist/kit/blueprint';
+import {button} from '@xh/hoist/cmp/button';
 
 /**
  * A modal dialog that supports imperative alert/confirm.

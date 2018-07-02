@@ -6,11 +6,11 @@
  */
 
 import {Component} from 'react';
-import {button} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, XH} from '@xh/hoist/core';
 import {lockoutPanel} from '@xh/hoist/app';
 import {tabContainer, tabSwitcher} from '@xh/hoist/cmp/tab';
 import {frame, panel} from '@xh/hoist/cmp/layout';
+import {button} from '@xh/hoist/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {appBar} from '@xh/hoist/cmp/appbar';
 
@@ -55,6 +55,7 @@ export class AppComponent extends Component {
                 })
             ],
             hideAdminButton: true,
+            hideFeedbackButton: true,
             refreshButtonProps: {
                 onClick: this.onRefreshClick
             }

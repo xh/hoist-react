@@ -10,7 +10,6 @@ import {box, hbox} from '../../index';
 
 import './PanelHeader.scss';
 
-
 /**
  * A standardized header for a Panel component
  * @private

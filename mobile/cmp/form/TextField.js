@@ -26,7 +26,7 @@ export class TextField extends HoistField {
         value: PT.string,
 
         /** Type of input desired */
-        type: PT.oneOf(['text', 'password']),
+        type: PT.oneOf(['text', 'number', 'password']),
         /** Text to display when control is empty */
         placeholder: PT.string,
         /** Whether to allow browser spell check, defaults to false */

@@ -11,15 +11,16 @@ import {box} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import './VersionBar.scss';
 
+/**
+ * @private
+ */
 @HoistComponent()
 export class VersionBar extends Component {
 
     render() {
         const env = XH.getEnv('appEnvironment'),
             version = XH.getEnv('clientVersion'),
-            isVisible = (env !== 'Production' || XH.getPref('xhForceEnvironmentFooter')),
-            cls = `xh-version-bar xh-version-bar-${env.toLowerCase()}`,
-            info = Icon.info({onClick: this.showAbout});
+            isVisible = (env !== 'Production' || XH.getPref('xhForceEnvironmentFooter'));
 
         if (!isVisible) return null;
 
@@ -27,10 +28,10 @@ export class VersionBar extends Component {
             justifyContent: 'center',
             alignItems: 'center',
             flex: 'none',
-            cls,
+            cls: `xh-version-bar xh-version-bar-${env.toLowerCase()}`,
             items: [
                 [XH.appName, env, version].join(' • '),
-                info
+                Icon.info({onClick: this.showAbout})
             ]
         });
     }

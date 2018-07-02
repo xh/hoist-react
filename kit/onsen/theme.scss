@@ -1,0 +1,155 @@
+@import 'vars';
+
+// Override styles provided in onsenui.css and onsen-css-components.css to use variable declarations
+body.xh-app {
+
+  // Background
+  .page,
+  .page__content,
+  .page__background,
+  .textarea {
+    background-color: var(--xh-bg);
+  }
+  .page--material,
+  .page--material__background,
+  .bottom-bar,
+  .tabbar {
+    background-color: var(--xh-bg-alt);
+  }
+
+  // Title bars
+  .toolbar,
+  .toolbar__bg {
+    background-color: var(--xh-title-bg);
+  }
+  .toolbar,
+  .toolbar__center,
+  .toolbar__title {
+    color: var(--xh-title-text-color);
+  }
+  .toolbar-button,
+  .back-button {
+    color: var(--xh-toolbar-btn-color);
+  }
+  .back-button__icon {
+    fill: var(--xh-toolbar-btn-color);
+  }
+
+  // Borders
+  .toolbar,
+  .tabbar,
+  .list,
+  .list-item,
+  .list-item--longdivider {
+    // Remove Onsen's use of background-image for borders - we prefer to set borders using vars
+    background-image: none;
+  }
+  .toolbar,
+  .list,
+  .list-item,
+  .list-item--longdivider {
+    border-bottom: var(--xh-border-solid);
+  }
+  .tabbar,
+  .list {
+    border-top: var(--xh-border-solid);
+  }
+
+  .list--inset,
+  .textarea {
+    border: var(--xh-border-solid);
+  }
+  .select-input {
+    border-color: var(--xh-border-color);
+  }
+
+  // Grids
+  .list {
+    background-color: var(--xh-grid-bg);
+  }
+  .list-header {
+    background-color: var(--xh-grid-header-bg);
+  }
+  .list-item {
+    margin-top: 1px;
+    border-color: var(--xh-grid-border-color);
+  }
+  .list-item:nth-child(odd) {
+    background-color: var(--xh-grid-bg-odd);
+  }
+  .list-item--tappable:active {
+    background-color: var(--xh-list-select-color);
+  }
+
+  // Buttons
+  .button,
+  .button:active {
+    background-color: var(--xh-btn-color);
+  }
+  .button--outline,
+  .button--outline:active,
+  .button--outline:hover {
+    border-color: var(--xh-btn-color);
+  }
+  .button--quiet,
+  .button--quiet:active,
+  .tabbar__button {
+    color: var(--xh-btn-text-color);
+  }
+
+  // Accented
+  .alert-dialog-button,
+  :checked + .tabbar__button {
+    color: var(--xh-accent-color);
+  }
+  .fab,
+  .fab:active,
+  .fab--material,
+  .button--cta,
+  .button--cta:active,
+  .tabbar__border,
+  :checked + .checkbox__checkmark:before,
+  .range__input::-ms-fill-lower {
+    background-color: var(--xh-accent-color);
+  }
+  .checkbox--noborder__checkmark:after,
+  .radio-button__checkmark:after,
+  :checked + .tabbar--top-border__button {
+    border-color: var(--xh-accent-color);
+  }
+
+  // Spinners
+  .progress-bar__primary,
+  .progress-bar__secondary,
+  .progress-bar--indeterminate:before,
+  .progress-bar--indeterminate:after {
+    background-color: var(--xh-accent-color);
+  }
+  .progress-circular__primary,
+  .progress-circular__secondary {
+    stroke: var(--xh-accent-color);
+  }
+
+  // Text
+  .page,
+  .list-item,
+  .list-header,
+  .dialog-container,
+  .dialog-container--material,
+  .popover--material__content,
+  .bottom-bar,
+  .tabbar,
+  .search-input,
+  .text-input,
+  .text-input:invalid,
+  .text-input--underbar,
+  .text-input--underbar:invalid,
+  .textarea,
+  .textarea--transparent,
+  .select-input,
+  .select-input:invalid,
+  .select-input--material,
+  .select-input--underbar:invalid {
+    color: var(--xh-text-color);
+  }
+}

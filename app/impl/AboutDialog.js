@@ -6,23 +6,29 @@
  */
 
 import {Component} from 'react';
+import {dialog} from '@xh/hoist/kit/blueprint';
 import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
 import {frame, table, tbody, tr, th, td, filler} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/cmp/toolbar';
+import {button} from '@xh/hoist/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-import {dialog, button} from '@xh/hoist/kit/blueprint';
 import './AboutDialog.scss';
 
 /**
  * A dialog box showing basic metadata and version information about the Hoist application
  * and its plugins. Can also display the values of other soft-configuration entries as
  * specified by the xhAboutMenuConfigs configuration key.
+ *
+ * @private
  */
 @HoistComponent()
 export class AboutDialog extends Component {
+
     render() {
+        if (!XH.aboutIsOpen) return null;
+
         return dialog({
-            isOpen: XH.aboutIsOpen,
+            isOpen: true,
             isCloseButtonShown: false,
             icon: Icon.info({size: 'lg'}),
             cls: 'xh-about-dialog',

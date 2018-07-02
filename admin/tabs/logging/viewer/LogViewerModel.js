@@ -12,6 +12,9 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {UrlStore} from '@xh/hoist/data';
 import {baseCol} from '@xh/hoist/columns/Core';
 
+/**
+ * @private
+ */
 @HoistModel()
 export class LogViewerModel {
 
@@ -24,6 +27,7 @@ export class LogViewerModel {
     // Overall State
     @observable file = null;
     @setter @observable.ref rows = [];
+    tabPaneModel = null;
 
     loadModel = new LastPromiseModel();
 
@@ -39,7 +43,8 @@ export class LogViewerModel {
         ]
     });
 
-    constructor() {
+    constructor(tabPaneModel) {
+        this.tabPaneModel = tabPaneModel;
         this.addReaction(this.syncSelectionReaction());
         this.addReaction(this.toggleTail());
     }

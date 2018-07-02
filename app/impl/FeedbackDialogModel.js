@@ -9,11 +9,13 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {action, observable, setter} from '@xh/hoist/mobx';
 import {ToastManager} from '@xh/hoist/toast';
 
+/** Model for a FeedbackDialog, managing its open/close state and feedback string.
+ *
+ * @private
+ */
 @HoistModel()
-/** Model for a FeedbackDialog, managing its open/close state and feedback string. */
 export class FeedbackDialogModel {
 
-    @observable isOpen = false;
     @setter @observable feedback = null;
     
     submitFeedback() {
@@ -31,14 +33,10 @@ export class FeedbackDialogModel {
             .catchDefault();
     }
 
-    @action
-    open() {
-        this.isOpen = true;
-    }
 
     @action
     close() {
-        this.isOpen = false;
+        XH.feedbackIsOpen = false;
         this.feedback = null;
     }
 

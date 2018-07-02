@@ -10,6 +10,8 @@ import {ToastManager} from '@xh/hoist/toast';
 
 /**
  * Local Model to handle Exception Dialog.
+ *
+ * @private
  */
 @HoistModel()
 export class ExceptionDialogModel {
@@ -43,7 +45,7 @@ export class ExceptionDialogModel {
     @action
     openDetails() {
         this.detailsIsOpen = true;
-        this.msg = '';
+        this.userMessage = '';
     }
 
     @action

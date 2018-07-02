@@ -8,6 +8,9 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 
+/**
+ * @private
+ */
 @HoistModel()
 export class ConfigDifferDetailModel  {
 

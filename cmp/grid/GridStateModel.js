@@ -8,6 +8,7 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {cloneDeep, debounce, find, uniqBy} from 'lodash';
 import {SECONDS} from '@xh/hoist/utils/DateTimeUtils';
 import {start} from '@xh/hoist/promise';
+import {throwIf} from '@xh/hoist/utils/JsUtils';
 
 @HoistModel()
 export class GridStateModel {
@@ -181,13 +182,15 @@ export class GridStateModel {
             colsWithoutXhId = cols.filter(col => !col.xhId),
             uniqueIds = cols.length == uniqBy(cols, 'xhId').length;
 
-        if (!xhStateId) {
-            throw XH.exception('GridStateModel must have a xhStateId in order to store state');
-        }
+        throwIf(
+            !xhStateId,
+            'GridStateModel must have a xhStateId in order to store state'
+        );
 
-        if (this.trackColumns && (colsWithoutXhId.length || !uniqueIds)) {
-            throw XH.exception('GridStateModel with "trackColumns=true" requires all columns to have a unique xhId');
-        }
+        throwIf(
+            this.trackColumns && (colsWithoutXhId.length || !uniqueIds),
+            'GridStateModel with "trackColumns=true" requires all columns to have a unique xhId'
+        );
     }
 
 }

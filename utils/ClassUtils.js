@@ -5,8 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
 import {forOwn, isPlainObject} from 'lodash';
+import {throwIf} from '@xh/hoist/utils/JsUtils';
 
 /**
  * Provide default methods on the prototype of a class.
@@ -44,9 +44,8 @@ export function defaultMethods(C, methods) {
 export function provideMethods(C, methods) {
     const proto = C.prototype;
     forOwn(methods, (method, name) => {
-        if (proto[name]) {
-            throw XH.exception(`Symbol ${name} already exists on Class.`);
-        }
+        throwIf(proto[name], `Symbol ${name} already exists on Class.`);
+
         if (isPlainObject(method)) {
             Object.defineProperty(proto, name, method);
         } else {

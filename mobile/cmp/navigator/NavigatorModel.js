@@ -6,14 +6,16 @@
  */
 import {HoistModel} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
-import {uniqueId, clone} from 'lodash';
+import {clone} from 'lodash';
+
+import {NavigatorPageModel} from './NavigatorPageModel';
 
 /**
  * Model for handling navigation between Onsen pages
  */
 @HoistModel()
 export class NavigatorModel {
-
+    initPageModel = null;
     @observable title;
     @observable.ref pages = [];
 
@@ -21,25 +23,19 @@ export class NavigatorModel {
     _callback = null;
 
     /**
-     * @param {Object} page - page spec
-     * @param {function} page.pageFactory - element factory for page component.
-     * @param {Object} [page.props] - props to passed to page upon creation
-     * @param {string} [page.title] - title for current page.
+     * @param {Object} page - configuration for NavigatorPageModel
      */
     constructor(page) {
-        this.initPage = page;
+        this.initPageModel = new NavigatorPageModel(page);
         this.onPageChange();
     }
 
     /**
-     * @param {Object} page - page spec
-     * @param {function} page.pageFactory - element factory for page component.
-     * @param {Object} [page.props] - props to passed to page upon creation
-     * @param {string} [page.title] - title for current page.
+     * @param {Object} page - configuration for NavigatorPageModel
      * @param {function} [callback] - function to execute after the page transition
      */
     pushPage(page, callback) {
-        this._navigator.pushPage(page);
+        this._navigator.pushPage(new NavigatorPageModel(page));
         this._callback = callback;
     }
 
@@ -60,13 +56,10 @@ export class NavigatorModel {
     //--------------------
     // Implementation
     //--------------------
-    renderPage(page, navigator) {
+    renderPage(pageModel, navigator) {
         if (!this._navigator) this._navigator = navigator;
-
-        const {pageFactory, props} = page,
-            key = uniqueId('page_');
-
-        return pageFactory({key, ...props});
+        const {key, pageFactory, pageProps} = pageModel;
+        return pageFactory({key, ...pageProps});
     }
 
     @action
@@ -76,13 +69,13 @@ export class NavigatorModel {
 
     @action
     updateTitle() {
-        const page = this.getCurrentPageCfg();
+        const page = this.getCurrentPageModel();
         this.title = page.title;
     }
 
-    getCurrentPageCfg() {
+    getCurrentPageModel() {
         const nav = this._navigator;
-        return nav ? nav.routes[nav.routes.length - 1] : this.initPage;
+        return nav ? nav.routes[nav.routes.length - 1] : this.initPageModel;
     }
 
     doCallback() {

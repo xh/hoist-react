@@ -6,19 +6,18 @@
  */
 
 import {XH, HoistService} from '@xh/hoist/core';
+import {throwIf} from '@xh/hoist/utils/JsUtils';
 import store from 'store2';
 
 @HoistService()
 export class LocalStorageService {
-    _appId = null;
     _supported = !store.isFake();
 
     get(key, defaultValue) {
         const storage = this.getInstance(),
             val = storage.get(key, defaultValue);
 
-        if (!val) throw XH.exception(`Key '${key}' not found`);
-
+        throwIf(val === undefined, `Key '${key}' not found`);
         return val;
     }
 
@@ -45,9 +44,7 @@ export class LocalStorageService {
     //  Implementation
     //------------------
     getInstance() {
-        if (!this._appId) this._appId = XH.appName;
-        if (!this._supported) throw XH.exception('Local Storage is not supported');
-
-        return store.namespace(this._appId);
+        throwIf(!this._supported, 'Local Storage is not supported');
+        return store.namespace(XH.appName);
     }
 }

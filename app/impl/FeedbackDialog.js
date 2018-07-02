@@ -5,25 +5,34 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {button, dialog} from '@xh/hoist/kit/blueprint';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {dialog} from '@xh/hoist/kit/blueprint';
+import {HoistComponent, elemFactory, XH} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
 import {textAreaField} from '@xh/hoist/cmp/form';
 import {toolbar} from '@xh/hoist/cmp/toolbar';
+import {button} from '@xh/hoist/cmp/button';
+
+import {FeedbackDialogModel} from './FeedbackDialogModel';
 
 /**
  * A simple dialog component to collect user feedback from directly within the application.
  * @see FeedbackService
+ *
+ * @private
  */
 @HoistComponent()
 export class FeedbackDialog extends Component {
 
+    localModel = new FeedbackDialogModel();
+
     render() {
+        if (!XH.feedbackIsOpen) return null;
+
         const model = this.model;
         return dialog({
             title: 'Submit Feedback',
             style: {width: 450},
-            isOpen: model.isOpen,
+            isOpen: true,
             onClose: this.onCloseClick,
             canOutsideClickClose: false,
             items: [

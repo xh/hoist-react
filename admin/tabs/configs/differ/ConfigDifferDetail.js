@@ -7,13 +7,17 @@
 import {Component} from 'react';
 import {keys, toString} from 'lodash';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {button, dialog} from '@xh/hoist/kit/blueprint';
+import {dialog} from '@xh/hoist/kit/blueprint';
 import {panel, filler, table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/cmp/toolbar';
+import {button} from '@xh/hoist/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
 import './Differ.scss';
 
+/**
+ * @private
+ */
 @HoistComponent()
 export class ConfigDifferDetail extends Component {
 

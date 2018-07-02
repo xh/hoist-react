@@ -6,11 +6,12 @@
  */
 
 import {Component} from 'react';
-import {button, popover, hotkeys, hotkey} from '@xh/hoist/kit/blueprint';
+import {popover, hotkeys, hotkey} from '@xh/hoist/kit/blueprint';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {vbox, filler, span, box} from '@xh/hoist/cmp/layout';
 import {comboField} from '@xh/hoist/cmp/form';
 import {toolbar} from '@xh/hoist/cmp/toolbar';
+import {button} from '@xh/hoist/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
 import {ImpersonationBarModel} from './ImpersonationBarModel';
@@ -18,6 +19,8 @@ import {ImpersonationBarModel} from './ImpersonationBarModel';
 /**
  * An admin-only toolbar that provides a UI for impersonating application users, as well as ending
  * any current impersonation setting. Can be shown via a global Shift+i keyboard shortcut.
+ *
+ * @private
  */
 @HoistComponent()
 export class ImpersonationBar extends Component {

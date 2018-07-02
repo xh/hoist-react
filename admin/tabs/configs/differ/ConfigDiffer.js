@@ -6,14 +6,18 @@
  */
 import {Component} from 'react';
 import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
-import {button, dialog} from '@xh/hoist/kit/blueprint';
+import {dialog} from '@xh/hoist/kit/blueprint';
 import {filler, fragment, panel} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
 import {comboField, label} from '@xh/hoist/cmp/form';
 import {toolbar} from '@xh/hoist/cmp/toolbar';
+import {button} from '@xh/hoist/cmp/button';
 
 import {configDifferDetail} from './ConfigDifferDetail';
 
+/**
+ * @private
+ */
 @HoistComponent()
 export class ConfigDiffer extends Component {
 

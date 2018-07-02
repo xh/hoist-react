@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistService} from '@xh/hoist/core';
+import {throwIf} from '@xh/hoist/utils/JsUtils';
 import {cloneDeep} from 'lodash';
 
 /**
@@ -47,12 +48,12 @@ export class ConfigService {
      */
     get(key, defaultValue) {
         const data = this._data;
+
         if (data.hasOwnProperty(key)) {
             return cloneDeep(data[key]);
         }
-        if (defaultValue === undefined) {
-            throw XH.exception(`Config key not found: '${key}'`);
-        }
+
+        throwIf(defaultValue === undefined, `Config key not found: '${key}'`);
         return defaultValue;
     }
 

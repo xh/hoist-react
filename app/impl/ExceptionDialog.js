@@ -6,11 +6,12 @@
  */
 
 import {Component} from 'react';
+import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 import {XH, HoistComponent, elemFactory, hoistComponentFactory} from '@xh/hoist/core';
 import {filler, fragment} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {button, dialog, dialogBody} from '@xh/hoist/kit/blueprint';
+import {button} from '@xh/hoist/cmp/button';
 
 import {ExceptionDialogModel} from './ExceptionDialogModel';
 import {exceptionDialogDetails} from './ExceptionDialogDetails';
@@ -18,6 +19,8 @@ import {exceptionDialogDetails} from './ExceptionDialogDetails';
 /**
  * Dialog for display of exceptions, with support for viewing a detailed stacktrace
  * and an option to force the reload of the application (in the case of a fatal exception).
+ *
+ * @private
  */
 @HoistComponent()
 export class ExceptionDialog extends Component {

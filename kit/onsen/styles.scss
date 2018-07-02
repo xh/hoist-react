@@ -7,19 +7,24 @@
     position: absolute;
     width: 100%;
     z-index: 1;
-    border-bottom: 1px solid #CCC;
+    background-image: none;
+    border-bottom: var(--xh-border-solid);
   }
 
   &:not(.xh-grid-header-hidden) ons-list-item:first-of-type {
     margin-top: 26px;
+  }
+
+  .list-item {
+    transition: none;
   }
 }
 
 .xh-menu {
   position: fixed !important;
   z-index: 21;
-  background-color: white;
-  border: 1px solid #CCC;
+  background-color: var(--xh-bg);
+  border: var(--xh-border-solid);
 }
 
 .xh-field {
@@ -36,13 +41,26 @@
   }
 }
 
+.xh-tab {
+  .xh-tab-icon {
+    height: 28px;
+    line-height: 26px;
+    font-size: 24px;
+  }
+
+  .xh-tab-label:first-child {
+    font-size: 16px;
+  }
+
+  .xh-tab-icon + .xh-tab-label {
+    font-size: 10px;
+    line-height: 1;
+  }
+}
+
 //--------------------
 // Onsen Overrides
 //--------------------
-.progress-circular__primary, .progress-circular__secondary {
-  stroke: white;
-}
-
 .bottom-bar > .button {
   margin: 6px 4px;
   line-height: 26px;

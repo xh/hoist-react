@@ -6,11 +6,12 @@
  */
 
 import {Component} from 'react';
-import {button, text} from '@xh/hoist/kit/blueprint';
+import {text} from '@xh/hoist/kit/blueprint';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {panel, vspacer, box, filler, viewport} from '@xh/hoist/cmp/layout';
 import {textField} from '@xh/hoist/cmp/form';
 import {toolbar} from '@xh/hoist/cmp/toolbar';
+import {button} from '@xh/hoist/cmp/button';
 import {observable, computed, setter} from '@xh/hoist/mobx';
 import {Icon} from '@xh/hoist/icon';
 
@@ -19,6 +20,8 @@ import './LoginPanel.scss';
 /**
  * A minimal username / password prompt for applications using form-based authentication.
  * Automatically created and displayed if required by AppContainer.
+ *
+ * @private
  */
 @HoistComponent()
 export class LoginPanel extends Component {
@@ -50,13 +53,15 @@ export class LoginPanel extends Component {
                             model: this,
                             field: 'username',
                             placeholder: 'Username...',
-                            autoFocus: true
+                            autoFocus: true,
+                            commitOnChange: true
                         }),
                         textField({
                             model: this,
                             field: 'password',
                             placeholder: 'Password...',
-                            type: 'password'
+                            type: 'password',
+                            commitOnChange: true
                         }),
                         text({
                             omit: !this.warning,

@@ -6,10 +6,11 @@
  */
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {button, inputGroup} from '@xh/hoist/kit/blueprint';
-import {observable, setter} from '@xh/hoist/mobx';
 import {escapeRegExp} from 'lodash';
+import {inputGroup} from '@xh/hoist/kit/blueprint';
+import {observable, setter} from '@xh/hoist/mobx';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {button} from '@xh/hoist/cmp/button';
 
 /**
  * A Component that can bind to a LeftRightChooser and filter both lists

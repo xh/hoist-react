@@ -6,11 +6,10 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {button} from '@xh/hoist/kit/blueprint';
 import {grid} from '@xh/hoist/cmp/grid';
 import {panel, filler} from '@xh/hoist/cmp/layout';
 import {toolbar, toolbarSep} from '@xh/hoist/cmp/toolbar';
-import {refreshButton} from '@xh/hoist/cmp/button';
+import {refreshButton, button} from '@xh/hoist/cmp/button';
 import {storeCountLabel, storeFilterField} from '@xh/hoist/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 import {ServiceModel} from './ServiceModel';

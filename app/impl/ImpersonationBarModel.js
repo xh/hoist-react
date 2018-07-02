@@ -7,6 +7,9 @@
 import {XH, HoistModel} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 
+/**
+ * @private
+ */
 @HoistModel()
 export class ImpersonationBarModel {
     @observable isVisible = false;

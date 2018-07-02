@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {castArray, isEmpty} from 'lodash';
-import {button} from '@xh/hoist/kit/blueprint';
+import {button} from '@xh/hoist/cmp/button';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
 import {toolbar, toolbarSep} from '@xh/hoist/cmp/toolbar';

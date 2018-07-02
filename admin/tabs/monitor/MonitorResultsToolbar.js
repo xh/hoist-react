@@ -7,13 +7,16 @@
 
 import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {button} from '@xh/hoist/kit/blueprint';
 import {hbox, filler} from '@xh/hoist/cmp/layout';
 import {label} from '@xh/hoist/cmp/form';
 import {toolbar} from '@xh/hoist/cmp/toolbar';
+import {button} from '@xh/hoist/cmp/button';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {Icon} from '@xh/hoist/icon';
 
+/**
+ * @private
+ */
 @HoistComponent()
 class MonitorResultsToolbar extends Component {
     render() {

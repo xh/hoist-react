@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {toolbar} from '@xh/hoist/cmp/toolbar';
 import {vspacer} from '@xh/hoist/cmp/layout';
-import {button} from '@xh/hoist/kit/blueprint';
+import {button} from '@xh/hoist/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
 /**
