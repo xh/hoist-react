@@ -36,7 +36,7 @@ export class RouterModel {
      * @param routes, array of router 5 route objects.
      */
     init(routes) {
-        const config = {defaultRoute: 'default'}
+        const config = {defaultRoute: 'default'};
 
         const router = this.router = createRouter(routes, config);
 

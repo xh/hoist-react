@@ -9,20 +9,12 @@ import {action} from '@xh/hoist/mobx';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 
 import {AppComponent} from './AppComponent';
-import {AboutPanel} from './tabs/about/AboutPanel';
-import {ActivityPanel} from './tabs/activity/ActivityPanel';
-import {ConfigPanel} from './tabs/configs/ConfigPanel';
-import {ClientErrorPanel} from './tabs/clienterrors/ClientErrorPanel';
-import {FeedbackPanel} from './tabs/feedback/FeedbackPanel';
-import {EhCachePanel} from './tabs/ehcache/EhCachePanel';
-import {LogLevelPanel} from './tabs/logging/LogLevelPanel';
-import {LogViewer} from './tabs/logging/viewer/LogViewer';
-import {MonitorResultsPanel} from './tabs/monitor/MonitorResultsPanel';
-import {MonitorEditorPanel} from './tabs/monitor/MonitorEditorPanel';
-import {PreferencePanel} from './tabs/preferences/PreferencePanel';
-import {UserPreferencePanel} from './tabs/preferences/UserPreferencePanel';
-import {ServicePanel} from './tabs/services/ServicePanel';
-import {UserPanel} from './tabs/users/UserPanel';
+
+import {ActivityTab} from './tabs/activity/ActivityTab';
+import {GeneralTab} from './tabs/general/GeneralTab';
+import {LoggingTab} from './tabs/logging/LoggingTab';
+import {MonitorTab} from './tabs/monitor/MonitorTab';
+import {PreferencesTab} from './tabs/preferences/PreferencesTab';
 
 @HoistApp
 export class App {
@@ -30,7 +22,7 @@ export class App {
     tabModel = new TabContainerModel({
         id: 'default',
         useRoutes: true,
-        children: this.createTabs()
+        panes: this.createTabs()
     });
 
     checkAccess(user) {
@@ -117,65 +109,15 @@ export class App {
 
     createTabs() {
         return [
-            {
-                id: 'general',
-                componentProps: {
-                    switcherPosition: 'left'
-                },
-                children: [
-                    {id: 'about', component: AboutPanel},
-                    {id: 'config', component: ConfigPanel},
-                    {id: 'services', component: ServicePanel},
-                    {id: 'ehCache', name: 'Caches', component: EhCachePanel},
-                    {id: 'users', component: UserPanel}
-                ]
-            },
-            {
-                id: 'logging',
-                componentProps: {
-                    switcherPosition: 'left'
-                },
-                children: [
-                    {id: 'viewer', component: LogViewer},
-                    {id: 'levels', component: LogLevelPanel}
-                ]
-            },
-            {
-                id: 'monitor',
-                componentProps: {
-                    switcherPosition: 'left'
-                },
-                children: [
-                    {id: 'status', component: MonitorResultsPanel},
-                    {id: 'editMonitors', component: MonitorEditorPanel}
-                ]
-            },
-            {
-                id: 'activity',
-                componentProps: {
-                    switcherPosition: 'left'
-                },
-                children: [
-                    {id: 'tracking', component: ActivityPanel},
-                    {id: 'clientErrors', component: ClientErrorPanel},
-                    {id: 'feedback', component: FeedbackPanel}
-                ]
-            },
-            {
-                id: 'preferences',
-                componentProps: {
-                    switcherPosition: 'left'
-                },
-                children: [
-                    {id: 'prefs', component: PreferencePanel},
-                    {id: 'userPrefs', component: UserPreferencePanel, reloadOnShow: true}
-                ]
-            }
+            {id: 'general', content: GeneralTab},
+            {id: 'activity', content: ActivityTab},
+            {id: 'logging', content: LoggingTab},
+            {id: 'monitor', content: MonitorTab},
+            {id: 'preferences', content: PreferencesTab}
         ];
     }
 
     destroy() {
         XH.safeDestroy(this.tabModel);
     }
-
 }

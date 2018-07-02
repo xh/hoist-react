@@ -6,11 +6,11 @@
  */
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {elem, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
-import {TabContainerModel} from './TabContainerModel';
+
 import {tabSwitcher} from './TabSwitcher';
-import {TabPane} from './TabPane';
+import {tabPane} from './TabPane';
 import './Tabs.scss';
 
 /**
@@ -26,7 +26,10 @@ import './Tabs.scss';
 @HoistComponent({layoutSupport: true})
 export class TabContainer extends Component {
     static propTypes = {
-        /** Position of the switcher relative to the TabPanes. Set to 'none' to opt out of the default TabSwitcher. */
+        /**
+         * Position of the switcher relative to the TabPanes.
+         * Set to 'none' to opt out of the default TabSwitcher.
+         */
         switcherPosition: PT.oneOf(['top', 'bottom', 'left', 'right', 'none'])
     };
 
@@ -35,48 +38,41 @@ export class TabContainer extends Component {
     };
 
     render() {
-        const {selectedId, children, componentProps = {}} = this.model,
-            {switcherPosition, layoutConfig} = Object.assign({}, this.props, componentProps),
-            switcherBefore = switcherPosition === 'left' || switcherPosition === 'top',
-            switcherAfter = switcherPosition === 'right' || switcherPosition === 'bottom',
-            vertical = switcherPosition === 'left' || switcherPosition === 'right';
+        const {model} = this,
+            {selectedId, panes} = model,
+            {switcherPosition, layoutConfig} = this.props,
+            switcherBefore = ['left', 'top'].includes(switcherPosition),
+            switcherAfter = ['right', 'bottom'].includes(switcherPosition),
+            vertical = ['left', 'right'].includes(switcherPosition),
+            container = vertical ? hbox : vbox;
 
         // Default flex = 'auto' if no dimensions / flex specified.
         if (layoutConfig.width === null && layoutConfig.height === null && layoutConfig.flex === null) {
             layoutConfig.flex = 'auto';
         }
 
-        return (vertical ? hbox : vbox)({
+        return container({
             cls: 'xh-tab-container',
             layoutConfig,
             items: [
-                switcherBefore ?
-                    tabSwitcher({model: this.model, orientation: switcherPosition}) :
-                    null,
-                ...children.map(childModel => {
-                    const childId = childModel.id,
-                        isSubContainer = childModel instanceof TabContainerModel,
-                        cmpClass = isSubContainer ? TabContainer : TabPane;
+                switcherBefore ? tabSwitcher({model, orientation: switcherPosition}) : null,
+                ...panes.map(paneModel => {
+                    const paneId = paneModel.id,
+                        style = {};
 
-                    const style = {};
-                    if (childId !== selectedId) {
+                    if (paneId !== selectedId) {
                         style.display = 'none';
                     }
 
                     return div({
                         cls: 'xh-tab-panel',
                         style,
-                        item: elem(cmpClass, {
-                            model: childModel
-                        })
+                        item: tabPane({model: paneModel})
                     });
                 }),
-                switcherAfter ?
-                    tabSwitcher({model: this.model, orientation: switcherPosition}) :
-                    null
+                switcherAfter ? tabSwitcher({model, orientation: switcherPosition}) : null
             ]
         });
     }
 }
-
 export const tabContainer = elemFactory(TabContainer);

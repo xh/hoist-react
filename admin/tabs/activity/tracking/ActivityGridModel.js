@@ -4,54 +4,63 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
 import moment from 'moment';
 import {XH, HoistModel} from '@xh/hoist/core';
 import {action, observable, setter} from '@xh/hoist/mobx';
 import {LocalStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {fmtDate} from '@xh/hoist/format';
-import {baseCol, boolCheckCol} from '@xh/hoist/columns/Core';
-import {compactDateCol} from '@xh/hoist/columns/DatesTimes';
+import {fmtDate, numberRenderer} from '@xh/hoist/format';
+import {baseCol} from '@xh/hoist/columns/Core';
+import {dateTimeCol} from '@xh/hoist/columns/DatesTimes';
 
-import {usernameCol} from '../../columns/Columns';
+import {usernameCol} from '@xh/hoist/admin/columns/Columns';
 
 @HoistModel()
-export class ClientErrorModel {
+export class ActivityGridModel {
 
-    @observable startDate = moment().subtract(7, 'days').toDate();
+    @observable startDate = moment().toDate();
     @observable endDate = moment().toDate();
     @observable @setter username = '';
-    @observable @setter error = '';
+    @observable @setter msg = '';
+    @observable @setter category = '';
+    @observable @setter device = '';
+    @observable @setter browser = '';
 
     @observable detailRecord = null;
 
     gridModel = new GridModel({
-        stateModel: 'xhClientErrorGrid',
+        stateModel: 'xhActivityGrid',
         enableColChooser: true,
         store: new LocalStore({
             fields: [
-                'username', 'error', 'msg', 'userAlerted', 'browser', 'device',
-                'appVersion', 'appEnvironment', 'dateCreated', 'userAgent'
+                'severity', 'dateCreated', 'username', 'msg', 'category',
+                'device', 'browser', 'data', 'impersonating', 'elapsed',
+                'userAgent'
             ]
         }),
         sortBy: {colId: 'dateCreated', sort: 'desc'},
         columns: [
-            compactDateCol({field: 'dateCreated', fixedWidth: 100, align: 'right'}),
+            baseCol({field: 'severity', fixedWidth: 100}),
+            dateTimeCol({field: 'dateCreated', fixedWidth: 160, align: 'right'}),
             usernameCol({fixedWidth: 120}),
-            baseCol({field: 'error', minWidth: 450, flex: 3}),
             baseCol({field: 'msg', headerName: 'Message', minWidth: 150, flex: 1}),
-            boolCheckCol({field: 'userAlerted', headerName: 'User Alerted?', fixedWidth: 120}),
-            baseCol({field: 'browser', fixedWidth: 100}),
+            baseCol({field: 'category', fixedWidth: 100}),
             baseCol({field: 'device', fixedWidth: 100}),
-            baseCol({field: 'appVersion', fixedWidth: 130}),
-            baseCol({field: 'appEnvironment', headerName: 'Environment', fixedWidth: 130})
+            baseCol({field: 'browser', fixedWidth: 100}),
+            baseCol({field: 'data', minWidth: 70, flex: 1}),
+            baseCol({field: 'impersonating', fixedWidth: 140}),
+            baseCol({
+                field: 'elapsed',
+                headerName: 'Elapsed (ms)',
+                fixedWidth: 130,
+                valueFormatter: numberRenderer({precision: 0})
+            })
         ]
     });
 
     async loadAsync() {
         return XH.fetchJson({
-            url: 'clientErrorAdmin',
+            url: 'trackLogAdmin',
             params: this.getParams()
         }).then(data => {
             this.gridModel.loadData(data);
@@ -79,7 +88,7 @@ export class ClientErrorModel {
     }
 
     export() {
-        const fileName = `Client Errors: ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`;
+        const fileName = `Activity: ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`;
         this.gridModel.exportDataAsExcel({fileName});
     }
 
@@ -105,15 +114,18 @@ export class ClientErrorModel {
         this.detailRecord = null;
     }
 
-    //------------------------
+    //----------------
     // Implementation
-    //------------------------
+    //----------------
     getParams() {
         return {
             startDate: fmtDate(this.startDate, 'YYYYMMDD'),
             endDate: fmtDate(this.endDate, 'YYYYMMDD'),
             username: this.username,
-            error: this.error
+            msg: this.msg,
+            category: this.category,
+            device: this.device,
+            browser: this.browser
         };
     }
 

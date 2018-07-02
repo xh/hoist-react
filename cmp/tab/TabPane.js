@@ -5,6 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+
+import {isFunction} from 'lodash';
 import {elem, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Ref} from '@xh/hoist/utils/Ref';
 import {frame} from '@xh/hoist/cmp/layout';
@@ -31,21 +33,18 @@ export class TabPane extends Component {
     }
 
     render() {
-        const model = this.model,
-            {isActive} = model;
-
+        const {content, isActive} = this.model;
+        
         if (isActive) this.isLazyState = false;
         if (this.isLazyState) return null;
+
+        const elemArgs = {flex: 1, ref: this.child.ref},
+            item = content.constructor != null ? elem(content, elemArgs) : content(elemArgs);
 
         return frame({
             display: isActive ? 'flex' : 'none',
             cls: 'xh-tab-pane',
-            item: elem(model.componentClass, {
-                ...this.props,
-                flex: 1,
-                ref: this.child.ref,
-                tabPaneModel: this.model
-            })
+            item
         });
     }
 
@@ -54,7 +53,7 @@ export class TabPane extends Component {
     // Implementation
     //------------------------
     loadChild() {
-        const model = this.model,
+        const {model} = this,
             child = this.child.value;
 
         if (!child.loadAsync) {
@@ -71,6 +70,5 @@ export class TabPane extends Component {
         const {model, child} = this;
         if (model.needsLoad && child.value) this.loadChild();
     }
-
 }
 export const tabPane = elemFactory(TabPane);

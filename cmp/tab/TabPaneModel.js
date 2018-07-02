@@ -6,8 +6,8 @@
  */
 import {XH, HoistModel} from '@xh/hoist/core';
 import {action, computed, observable} from '@xh/hoist/mobx';
-import {LastPromiseModel, wait} from '@xh/hoist/promise';
-import {startCase, max} from 'lodash';
+import {LastPromiseModel} from '@xh/hoist/promise';
+import {startCase} from 'lodash';
 
 /**
  * Model for a TabPane, representing its content's active and load state.
@@ -16,44 +16,48 @@ import {startCase, max} from 'lodash';
 export class TabPaneModel {
     id = null;
     name = null;
-    componentClass = null;
     reloadOnShow = false;
-    @observable _lastRefreshRequest = null;
-    parent = null;
+    container = null;  // TabContainerModel containing this object.
 
     @observable lastLoaded = null;
+    @observable _lastRefreshRequest = null;
     loadState = new LastPromiseModel();
-    
+
+
     get routeName() {
-        return `${this.parent.routeName}.${this.id}`;
+        return `${this.container.routeName}.${this.id}`;
     }
 
     /**
      * @param {string} id - unique ID, used for generating routes.
      * @param {string} [name] - display name for the tab.
-     * @param {Object} componentClass - class of React Component to be displayed within the tab.
+     * @param {Object} content - content to be rendered by this tab. Component class, or a custom element factory of the
+     *      form returned by elemFactory.
      * @param {boolean} reloadOnShow - whether to load fresh data for this tab each time it is selected
      */
     constructor({
         id,
         name = startCase(id),
-        component,
+        content,
         reloadOnShow
     }) {
         this.id = id;
         this.name = name;
-        this.componentClass = component;
+        this.content = content;
         this.reloadOnShow = reloadOnShow;
-        wait(1).then(() => this.addAutorun(this.syncFromRouter));
+
+        this.addReaction(this.routerReaction());
+
     }
 
     select() {
-        this.parent.setSelectedId(this.id);
+        this.container.setSelectedId(this.id);
     }
 
     @computed
     get isActive() {
-        return this.parent.selectedId === this.id && this.parent.isActive;
+        const {container, id} = this;
+        return container.selectedId === id;
     }
 
     @action
@@ -63,8 +67,7 @@ export class TabPaneModel {
 
     @computed
     get lastRefreshRequest() {
-        const parentVal = this.parent && this.parent.lastRefreshRequest;
-        return max([parentVal, this._lastRefreshRequest]);
+        return this._lastRefreshRequest;
     }
 
     @computed
@@ -87,17 +90,23 @@ export class TabPaneModel {
     //---------------------------
     // Implementation
     //---------------------------
-    syncFromRouter() {
-        if (!this.parent.useRoutes) return;
+    routerReaction() {
+        const {routerModel} = XH.routerModel,
+            {container} = this;
 
-        const {parent, id} = this,
-            routerModel = XH.routerModel,
-            state = routerModel.currentState,
-            routeName = state ? state.name : 'default';
-
-        if (routeName.startsWith(this.routeName) && parent.selectedId !== id) {
-            parent.setSelectedId(id);
-        }
+        return {
+            track: () => [routerModel, container.selectedId],
+            react: () => {
+            //    const
+            //        routerModel = XH.routerModel,
+            //        state = routerModel.currentState,
+            //        routeName = state ? state.name : 'default';
+            //
+            //    if (routeName.startsWith(this.routeName) && parent.selectedId !== id) {
+            //        parent.setSelectedId(id);
+            //    }
+            }
+        };
     }
 
     destroy() {

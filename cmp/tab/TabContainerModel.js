@@ -5,10 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, computed, observable} from '@xh/hoist/mobx';
-import {isPlainObject, max, startCase, uniqBy} from 'lodash';
+import {action, observable} from '@xh/hoist/mobx';
+import {isPlainObject, startCase, uniqBy, find} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/JsUtils';
-import {wait} from '@xh/hoist/promise';
 import {TabPaneModel} from '@xh/hoist/cmp/tab';
 
 /**
@@ -17,19 +16,19 @@ import {TabPaneModel} from '@xh/hoist/cmp/tab';
  * This TabContainer also supports managed loading and refreshing of its TabPanes.
  * In particular, TabPanes will be lazily rendered and loaded and can also be refreshed whenever the
  * TabPane is shown.
+ *
  * @see TabPaneModel
  */
 @HoistModel()
 export class TabContainerModel {
     id = null;
     name = null;
-    children = [];
-    componentProps = null;
+    useRoutes = false;
+
+    panes = []; // TabPaneModels included in this tab container
 
     @observable _lastRefreshRequest = null;
     @observable selectedId = null;
-
-    parent = null;   // For sub-tabs only
 
     /**
      * @param {string} id - unique ID, used for generating routes.
@@ -39,60 +38,44 @@ export class TabContainerModel {
      *      These routes must be setup externally in the application (@see BaseApp.getRoutes()).
      *      They may exist at any level of the application, but there must be a route of the form
      *      `/../../[containerId]/[childPaneId]` for each child pane in this container.
-     * @param {Object[]} children - configurations for TabPaneModels or nested TabContainerModels.
-     * @param {Object} componentProps - additional properties to pass into the TabContainer component using
-     *      this model.
+     * @param {Object[]} panes - TabPaneModels, or configurations for TabPaneModels representing content to be shown.
      */
     constructor({
         id,
         name = startCase(id),
         useRoutes = false,
-        children,
-        componentProps
+        panes
     }) {
         this.id = id;
         this.name = name;
         this.useRoutes = useRoutes;
-        this.componentProps = componentProps;
 
-        // Instantiate children, if needed.
-        children = children.map(child => {
-            if (isPlainObject(child)) {
-                return (child.children) ?
-                    new TabContainerModel({useRoutes, ...child}) :
-                    new TabPaneModel(child);
-            }
-            return child;
-        });
+        // Instantiate pane configs, if needed.
+        this.panes = panes = panes.map(p => isPlainObject(p) ? new TabPaneModel(p) : p);
 
         // Validate and wire children
-        throwIf(children.length == 0,
+        throwIf(panes.length == 0,
             'TabContainerModel needs at least one child pane.'
         );
-        throwIf(children.length != uniqBy(children, 'id').length,
+        throwIf(panes.length != uniqBy(panes, 'id').length,
             'One or more Panes in TabContainerModel has a non-unique id.'
         );
 
-        children.forEach(child => child.parent = this);
-        this.children = children;
-        this.selectedId = children[0].id;
-        wait(1).then(() => this.addAutorun(this.syncFromRouter));
+        panes.forEach(p => p.container = this);
+        this.selectedId = panes[0].id;
     }
 
-    get routeName() {
-        return this.parent ? this.parent.routeName + '.' + this.id : this.id;
-    }
 
     @action
     setSelectedId(id) {
-        const children = this.children,
-            child = children.find(it => it.id === id);
+        const {useRoutes, panes} = this,
+            pane = find(panes, {id});
         
-        this.selectedId = child ? id : children[0].id;
+        this.selectedId = pane ? id : panes[0].id;
 
-        if (child.reloadOnShow) child.requestRefresh();
+        if (pane.reloadOnShow) pane.requestRefresh();
 
-        if (this.useRoutes) {
+        if (useRoutes) {
             const routerModel = XH.routerModel,
                 state = routerModel.currentState,
                 routeName = state ? state.name : 'default',
@@ -104,40 +87,15 @@ export class TabContainerModel {
         }
     }
 
-    @computed
-    get isActive() {
-        const parent = this.parent;
-        return !parent || (parent.selectedId === this.id && parent.isActive);
-    }
-
     @action
     requestRefresh() {
         this._lastRefreshRequest = Date.now();
     }
 
-    @computed
-    get lastRefreshRequest() {
-        const parentVal = this.parent && this.parent.lastRefreshRequest;
-        return max([parentVal, this._lastRefreshRequest]);
-    }
-
     //-------------------------
     // Implementation
     //-------------------------
-    syncFromRouter() {
-        if (!this.useRoutes) return;
-
-        const {parent, id} = this,
-            routerModel = XH.routerModel,
-            state = routerModel.currentState,
-            routeName = state ? state.name : 'default';
-        
-        if (parent && routeName.startsWith(this.routeName) && parent.selectedId != id) {
-            parent.setSelectedId(id);
-        }
-    }
-
     destroy() {
-        XH.safeDestroy(...this.children);
+        XH.safeDestroy(this.panes);
     }
 }

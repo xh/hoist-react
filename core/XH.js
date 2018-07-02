@@ -6,7 +6,7 @@
  */
 
 import ReactDOM from 'react-dom';
-import {isPlainObject, defaults} from 'lodash';
+import {isPlainObject, defaults, flatten} from 'lodash';
 
 import {elem, HoistModel} from '@xh/hoist/core';
 import {Exception, ExceptionHandler} from '@xh/hoist/exception';
@@ -412,6 +412,7 @@ class XHClass {
      * @param {...Object} args - Objects to be destroyed.
      */
     safeDestroy(...args) {
+        args = flatten(args);
         args.forEach(it => {
             if (it && it.destroy) it.destroy();
         });
