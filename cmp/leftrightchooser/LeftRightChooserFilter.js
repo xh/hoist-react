@@ -21,7 +21,7 @@ class LeftRightChooserFilter extends Component {
 
     static propTypes = {
         /** Names of fields in chooser to filter by */
-        fields: PT.arrayOf(PT.string),
+        fields: PT.arrayOf(PT.string).isRequired,
         /** True to prevent regex start line anchor from being added */
         anyMatch: PT.bool
     };
@@ -35,7 +35,7 @@ class LeftRightChooserFilter extends Component {
             onChange: this.onValueChange,
             rightElement: button({
                 cls: 'pt-minimal pt-icon-cross',
-                onClick: this.onClearClick
+                onClick: this.clearFilter
             })
         });
     }
@@ -45,19 +45,23 @@ class LeftRightChooserFilter extends Component {
         this.runFilter();
     }
 
-    onClearClick = () => {
+    clearFilter = () => {
         this.setValue('');
         this.runFilter();
     }
     
     runFilter() {
-        const {fields = [], anyMatch} = this.props,
-            searchTerm = escapeRegExp(this.value);
+        const {fields, anyMatch} = this.props;
+        let searchTerm = escapeRegExp(this.value);
+
+        if (!anyMatch) {
+            searchTerm = `(^|\\\\W)${searchTerm}`;
+        }
 
         const filter = (raw) => {
             return fields.some(f => {
                 const fieldVal = !!searchTerm && raw[f];
-                return ((fieldVal && new RegExp(`${anyMatch ? '' : '(^|\\\\W)'}${searchTerm}`, 'ig').test(fieldVal)) || !fieldVal);
+                return ((fieldVal && new RegExp(searchTerm, 'ig').test(fieldVal)) || !fieldVal);
             });
         };
 
@@ -65,7 +69,7 @@ class LeftRightChooserFilter extends Component {
     }
 
     componentWillUnmount() {
-        this.onClearClick();
+        this.clearFilter();
     }
 }
 export const leftRightChooserFilter = elemFactory(LeftRightChooserFilter);
