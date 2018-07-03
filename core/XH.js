@@ -24,6 +24,7 @@ import {
     FeedbackService,
     FetchService,
     IdentityService,
+    IdleService,
     LocalStorageService,
     PrefService,
     TrackService
@@ -84,6 +85,7 @@ class XHClass {
     feedbackService = new FeedbackService();
     fetchService = new FetchService();
     identityService = new IdentityService();
+    idleService = new IdleService();
     localStorageService = new LocalStorageService();
     prefService = new PrefService();
     trackService = new TrackService();
@@ -346,6 +348,7 @@ class XHClass {
             this.environmentService,
             this.feedbackService,
             this.identityService,
+            this.idleService,
             this.trackService
         );
     }
