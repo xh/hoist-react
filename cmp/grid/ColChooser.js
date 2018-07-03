@@ -39,7 +39,7 @@ export class ColChooser extends Component {
                         onClick: this.restoreDefaults
                     }),
                     toolbarSep({
-                        hidden: !gridModel.stateModel
+                        omit: !gridModel.stateModel
                     }),
                     button({
                         text: 'Cancel',
