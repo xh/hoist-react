@@ -68,6 +68,12 @@ class LeftRightChooserFilter extends Component {
         this.model.setDisplayFilter(filter);
     }
 
+    componentDidUpdate(prevProps) {
+        if (prevProps.anyMatch !== this.props.anyMatch) {
+            this.runFilter();
+        }
+    }
+
     componentWillUnmount() {
         this.clearFilter();
     }
