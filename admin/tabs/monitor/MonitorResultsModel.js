@@ -16,8 +16,8 @@ import {Timer} from '@xh/hoist/utils/Timer';
 export class MonitorResultsModel {
     @observable.ref results = [];
     @observable lastRun = null;
-    tabPaneModel = null;
     timer = null;
+    view = null;
 
     @computed
     get passed() {
@@ -34,21 +34,17 @@ export class MonitorResultsModel {
         return this.results.filter(monitor => monitor.status === 'FAIL').length;
     }
 
-    constructor(tabPaneModel) {
-        this.tabPaneModel = tabPaneModel;
+    constructor(view) {
+        this.view = view;
         this.timer = Timer.create({
-            runFn: this.loadResults,
+            runFn: () => this.loadAsync(),
             delay: 10 * SECONDS,
             interval: 10 * SECONDS
         });
     }
-
+    
     async loadAsync() {
-        this.loadResults();
-    }
-
-    loadResults = async () => {
-        if (!this.tabPaneModel.isActive) return;
+        if (!this.view.isDisplayed) return;
 
         return XH
             .fetchJson({url: 'monitorAdmin/results'})

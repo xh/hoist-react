@@ -9,7 +9,7 @@ import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {tab, tabs} from '@xh/hoist/kit/blueprint';
 import {TabContainerModel} from './TabContainerModel';
-import {omit, includes} from 'lodash';
+import {omit} from 'lodash';
 
 /**
  * Switcher display for a TabContainer.
@@ -37,7 +37,7 @@ export class TabSwitcher extends Component {
     };
 
     render() {
-        const {id, panes, selectedId} = this.model,
+        const {id, panes, activeId} = this.model,
             {orientation} = this.props,
             vertical = ['left', 'right'].includes(orientation);
 
@@ -46,14 +46,14 @@ export class TabSwitcher extends Component {
             id,
             vertical,
             onChange: this.onTabChange,
-            selectedTabId: selectedId,
+            selectedTabId: activeId,
             items: panes.map(({id, name}) => tab({id, title: name})),
             ...omit(this.props, 'model')
         });
     }
 
     onTabChange = (activeId) => {
-        this.model.setSelectedId(activeId);
+        this.model.setActiveId(activeId);
     };
 }
 

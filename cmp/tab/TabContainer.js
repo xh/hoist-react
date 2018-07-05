@@ -39,7 +39,7 @@ export class TabContainer extends Component {
 
     render() {
         const {model} = this,
-            {selectedId, panes} = model,
+            {activeId, panes} = model,
             {switcherPosition, layoutConfig} = this.props,
             switcherBefore = ['left', 'top'].includes(switcherPosition),
             switcherAfter = ['right', 'bottom'].includes(switcherPosition),
@@ -60,7 +60,7 @@ export class TabContainer extends Component {
                     const paneId = paneModel.id,
                         style = {};
 
-                    if (paneId !== selectedId) {
+                    if (paneId !== activeId) {
                         style.display = 'none';
                     }
 

@@ -6,7 +6,6 @@
  */
 import {Component} from 'react';
 
-import {isFunction} from 'lodash';
 import {elem, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Ref} from '@xh/hoist/utils/Ref';
 import {frame} from '@xh/hoist/cmp/layout';
@@ -67,8 +66,9 @@ export class TabPane extends Component {
     }
 
     syncLoad() {
-        const {model, child} = this;
-        if (model.needsLoad && child.value) this.loadChild();
+        if (this.model.needsLoad && this.child.value) {
+            this.loadChild();
+        }
     }
 }
 export const tabPane = elemFactory(TabPane);

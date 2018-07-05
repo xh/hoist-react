@@ -19,10 +19,9 @@ export class TabPaneModel {
     reloadOnShow = false;
     container = null;  // TabContainerModel containing this object.
 
+    @observable lastRefreshRequest = null;
     @observable lastLoaded = null;
-    @observable _lastRefreshRequest = null;
     loadState = new LastPromiseModel();
-
 
     get routeName() {
         return `${this.container.routeName}.${this.id}`;
@@ -46,39 +45,39 @@ export class TabPaneModel {
         this.content = content;
         this.reloadOnShow = reloadOnShow;
 
-        this.addReaction(this.routerReaction());
-
+        // this.addReaction(this.routerReaction());
     }
 
+    /**
+     * Select this pane.
+     */
     select() {
-        this.container.setSelectedId(this.id);
+        this.container.setActiveId(this.id);
     }
 
-    @computed
+    /**
+     * Is this pane currently active?
+     */
     get isActive() {
-        const {container, id} = this;
-        return container.selectedId === id;
+        return this.container.activeId === this.id;
     }
 
-    @action
+    /**
+     * Require a refresh of all contents when they are next shown.
+     */
     requestRefresh() {
-        this._lastRefreshRequest = Date.now();
+        this.lastRefreshRequest = Date.now();
     }
 
-    @computed
-    get lastRefreshRequest() {
-        return this._lastRefreshRequest;
-    }
-
+    //---------------------------
+    // Implementation
+    //---------------------------
     @computed
     get needsLoad() {
-        if (this.isActive) {
-            if (!this.loadState.isPending) {
-                const {lastRefreshRequest, lastLoaded} = this;
-                return (!lastLoaded || (lastRefreshRequest && (lastLoaded < lastRefreshRequest)));
-            }
-        }
-        return false;
+        if (!this.isActive || this.loadState.isPending) return false;
+
+        const {lastLoaded, lastRefreshRequest} = this;
+        return (!lastLoaded || (lastRefreshRequest && (lastLoaded < lastRefreshRequest)));
     }
 
     @action
@@ -86,16 +85,12 @@ export class TabPaneModel {
         this.lastLoaded = Date.now();
     }
 
-
-    //---------------------------
-    // Implementation
-    //---------------------------
     routerReaction() {
         const {routerModel} = XH.routerModel,
             {container} = this;
 
         return {
-            track: () => [routerModel, container.selectedId],
+            track: () => [routerModel, container.activeId],
             react: () => {
             //    const
             //        routerModel = XH.routerModel,

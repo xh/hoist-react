@@ -13,9 +13,8 @@ import {TabPaneModel} from '@xh/hoist/cmp/tab';
 /**
  * Model for a TabContainer, representing its layout/contents and the currently selected child.
  *
- * This TabContainer also supports managed loading and refreshing of its TabPanes.
- * In particular, TabPanes will be lazily rendered and loaded and can also be refreshed whenever the
- * TabPane is shown.
+ * This TabContainer also supports managed loading and refreshing of its TabPanes.  In particular,
+ * TabPanes will be lazily rendered and loaded and will be refreshed whenever the TabPane is shown.
  *
  * @see TabPaneModel
  */
@@ -26,9 +25,7 @@ export class TabContainerModel {
     useRoutes = false;
 
     panes = []; // TabPaneModels included in this tab container
-
-    @observable _lastRefreshRequest = null;
-    @observable selectedId = null;
+    @observable activeId = null;
 
     /**
      * @param {string} id - unique ID, used for generating routes.
@@ -51,7 +48,8 @@ export class TabContainerModel {
         this.useRoutes = useRoutes;
 
         // Instantiate pane configs, if needed.
-        this.panes = panes = panes.map(p => isPlainObject(p) ? new TabPaneModel(p) : p);
+        panes = panes.map(p => isPlainObject(p) ? new TabPaneModel(p) : p);
+        panes.forEach(p => p.container = this);
 
         // Validate and wire children
         throwIf(panes.length == 0,
@@ -61,25 +59,36 @@ export class TabContainerModel {
             'One or more Panes in TabContainerModel has a non-unique id.'
         );
 
-        panes.forEach(p => p.container = this);
-        this.selectedId = panes[0].id;
+        this.panes = panes;
+        this.activeId = panes[0].id;
     }
 
+    /**
+     * The currently selected TabPanelModel.
+     */
+    get activePane() {
+        return find(this.panes, {id: this.activeId});
+    }
 
+    /**
+     * Set the currently active TabPane.
+     * @param {int} id - unique id of tab pane to be shown.
+     */
     @action
-    setSelectedId(id) {
+    setActiveId(id) {
         const {useRoutes, panes} = this,
             pane = find(panes, {id});
-        
-        this.selectedId = pane ? id : panes[0].id;
 
+        if (!pane) return;
+
+        this.activeId = id;
         if (pane.reloadOnShow) pane.requestRefresh();
 
         if (useRoutes) {
             const routerModel = XH.routerModel,
                 state = routerModel.currentState,
                 routeName = state ? state.name : 'default',
-                selectedRouteFragment = this.routeName + '.' + this.selectedId;
+                selectedRouteFragment = this.routeName + '.' + id;
 
             if (!routeName.startsWith(selectedRouteFragment)) {
                 routerModel.navigate(selectedRouteFragment);
@@ -87,10 +96,15 @@ export class TabContainerModel {
         }
     }
 
-    @action
+
+    /**
+     * Require a refresh of all panes when they are next shown.
+     * Immediately refresh active pane.
+     */
     requestRefresh() {
-        this._lastRefreshRequest = Date.now();
+        this.panes.forEach(it => it.requestRefresh());
     }
+
 
     //-------------------------
     // Implementation

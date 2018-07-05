@@ -19,11 +19,11 @@ export class GeneralTab extends Component {
 
     localModel = new TabContainerModel({
         panes: [
-             {id: 'about', content: AboutPanel},
-             {id: 'config', content: ConfigPanel},
-             {id: 'services', content: ServicePanel},
-             {id: 'ehCache', name: 'Caches', content: EhCachePanel},
-             {id: 'users', content: UserPanel}
+            {id: 'about', content: AboutPanel},
+            {id: 'config', content: ConfigPanel},
+            {id: 'services', content: ServicePanel},
+            {id: 'ehCache', name: 'Caches', content: EhCachePanel},
+            {id: 'users', content: UserPanel}
         ]
     });
 

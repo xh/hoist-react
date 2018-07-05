@@ -4,11 +4,11 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+import ReactDom from 'react-dom';
 import {XH} from '@xh/hoist/core';
 import {observer} from '@xh/hoist/mobx';
 import {ContextMenuTarget, HotkeysTarget} from '@xh/hoist/kit/blueprint';
 import {defaultMethods, chainMethods, overrideMethods} from '@xh/hoist/utils/ClassUtils';
-
 
 import {EventTarget} from './mixins/EventTarget';
 import {Reactive} from './mixins/Reactive';
@@ -77,6 +77,36 @@ export function HoistComponent({
              */
             renderCollapsed() {
                 return null;
+            },
+
+            /**
+             * Is this component in the DOM, and not within a hidden sub-tree
+             * (e.g. hidden tab).
+             *
+             * This property is based on the underlying css 'display' property of
+             * all ancestor properties.
+             */
+            isDisplayed: {
+                get () {
+                    let elem = this.getMountedElement();
+                    if (!elem) return false;
+                    while (elem) {
+                        if (elem.style.display == 'none') return false;
+                        elem = elem.parentElement;
+                    }
+                    return true;
+                }
+
+            },
+
+            /**
+             * Get the DOM element underlying this component, or null if
+             * component is not mounted.
+             */
+            getMountedElement() {
+                return this._mounted ?
+                    ReactDom.findDOMNode(this) :
+                    null;
             }
         });
 
@@ -85,7 +115,12 @@ export function HoistComponent({
         // Implementation
         //--------------------------
         chainMethods(C, {
+            componentDidMount() {
+                this._mounted = true;
+            },
+
             componentWillUnmount() {
+                this._mounted = false;
                 this.destroy();
             },
 
