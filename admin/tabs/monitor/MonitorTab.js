@@ -15,6 +15,7 @@ import {MonitorEditorPanel} from './MonitorEditorPanel';
 export class MonitorTab extends Component {
 
     localModel = new TabContainerModel({
+        routeName: 'default.monitor',
         panes: [
             {id: 'status', content: MonitorResultsPanel},
             {id: 'editMonitors', content: MonitorEditorPanel}

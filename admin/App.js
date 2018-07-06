@@ -20,8 +20,7 @@ import {PreferencesTab} from './tabs/preferences/PreferencesTab';
 export class App {
 
     tabModel = new TabContainerModel({
-        id: 'default',
-        useRoutes: true,
+        routeName: 'default',
         panes: this.createTabs()
     });
 

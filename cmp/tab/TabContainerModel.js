@@ -6,7 +6,7 @@
  */
 import {HoistModel, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
-import {isPlainObject, startCase, uniqBy, find} from 'lodash';
+import {isPlainObject, startCase, uniqBy, find, each} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/JsUtils';
 import {TabPaneModel} from '@xh/hoist/cmp/tab';
 
@@ -20,32 +20,29 @@ import {TabPaneModel} from '@xh/hoist/cmp/tab';
  */
 @HoistModel()
 export class TabContainerModel {
-    id = null;
-    name = null;
-    useRoutes = false;
 
-    panes = []; // TabPaneModels included in this tab container
+    /**
+     * TabPaneModels included in this tab container.
+     */
+    panes = [];
+
+    /**
+     * Base route for this container.
+     */
+    routeName = null
     @observable activeId = null;
 
     /**
-     * @param {string} id - unique ID, used for generating routes.
-     * @param {string} [name] - display name for this container - useful in particular when displaying
-     *      nested tabs, where this model's container is a direct child of a parent TabContainer.
-     * @param {boolean} [useRoutes] - true to use routes for navigation.
-     *      These routes must be setup externally in the application (@see BaseApp.getRoutes()).
-     *      They may exist at any level of the application, but there must be a route of the form
-     *      `/../../[containerId]/[childPaneId]` for each child pane in this container.
-     * @param {Object[]} panes - TabPaneModels, or configurations for TabPaneModels representing content to be shown.
+     * @param {string} [routeName] - if set, this tab container will be route enabled, with the route for each tab being
+     *      "routeName/[paneId]".  These routes must be setup externally in the application (@see BaseApp.getRoutes()).
+     *      and there must be one such route for each tab pane.
+     * @param {Object[]} panes - TabPaneModels, or configurations for TabPaneModels to be displayed by this container.
      */
     constructor({
-        id,
-        name = startCase(id),
-        useRoutes = false,
+        routeName = null,
         panes
     }) {
-        this.id = id;
-        this.name = name;
-        this.useRoutes = useRoutes;
+        this.routeName = routeName;
 
         // Instantiate pane configs, if needed.
         panes = panes.map(p => isPlainObject(p) ? new TabPaneModel(p) : p);
@@ -61,6 +58,10 @@ export class TabContainerModel {
 
         this.panes = panes;
         this.activeId = panes[0].id;
+
+        if (routeName) {
+            this.addReaction(this.routerReaction()) ;
+        }
     }
 
     /**
@@ -76,7 +77,7 @@ export class TabContainerModel {
      */
     @action
     setActiveId(id) {
-        const {useRoutes, panes} = this,
+        const {routeName, panes} = this,
             pane = find(panes, {id});
 
         if (!pane) return;
@@ -84,14 +85,14 @@ export class TabContainerModel {
         this.activeId = id;
         if (pane.reloadOnShow) pane.requestRefresh();
 
-        if (useRoutes) {
-            const routerModel = XH.routerModel,
+        if (routeName) {
+            const {routerModel} = XH,
                 state = routerModel.currentState,
-                routeName = state ? state.name : 'default',
-                selectedRouteFragment = this.routeName + '.' + id;
+                currRoute = state ? state.name : 'default',
+                paneRoute = routeName + '.' + id;
 
-            if (!routeName.startsWith(selectedRouteFragment)) {
-                routerModel.navigate(selectedRouteFragment);
+            if (!currRoute.startsWith(paneRoute)) {
+                XH.navigate(paneRoute);
             }
         }
     }
@@ -109,5 +110,24 @@ export class TabContainerModel {
     //-------------------------
     destroy() {
         XH.safeDestroy(this.panes);
+    }
+
+    routerReaction() {
+       return {
+            track: () => XH.routerModel.currentState,
+            run: (state) => {
+                const currRoute = state ? state.name : 'default',
+                    {activeId, panes, routeName} = this,
+                    activatePane = panes.find(pane => {
+                        const paneId = pane.id,
+                            paneRoute = routeName + '.' + paneId;
+                        return (currRoute.startsWith(paneRoute) && activeId !== paneId)
+                    });
+                if (activatePane) {
+                    this.setActiveId(activatePane.id);
+                }
+            },
+           fireImmediately: true
+        };
     }
 }

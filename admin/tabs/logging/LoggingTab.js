@@ -15,6 +15,7 @@ import {LogViewer} from './viewer/LogViewer';
 export class LoggingTab extends Component {
 
     localModel = new TabContainerModel({
+        routeName: 'default.logging',
         panes: [
             {id: 'viewer', content: LogViewer},
             {id: 'levels', content: LogLevelPanel}

@@ -17,15 +17,11 @@ export class TabPaneModel {
     id = null;
     name = null;
     reloadOnShow = false;
-    container = null;  // TabContainerModel containing this object.
+    container = null;  // TabContainerModel containing this pane
 
     @observable lastRefreshRequest = null;
     @observable lastLoaded = null;
     loadState = new LastPromiseModel();
-
-    get routeName() {
-        return `${this.container.routeName}.${this.id}`;
-    }
 
     /**
      * @param {string} id - unique ID, used for generating routes.
@@ -44,8 +40,6 @@ export class TabPaneModel {
         this.name = name;
         this.content = content;
         this.reloadOnShow = reloadOnShow;
-
-        // this.addReaction(this.routerReaction());
     }
 
     /**
@@ -84,25 +78,6 @@ export class TabPaneModel {
     @action
     markLoaded() {
         this.lastLoaded = Date.now();
-    }
-
-    routerReaction() {
-        const {routerModel} = XH.routerModel,
-            {container} = this;
-
-        return {
-            track: () => [routerModel, container.activeId],
-            react: () => {
-            //    const
-            //        routerModel = XH.routerModel,
-            //        state = routerModel.currentState,
-            //        routeName = state ? state.name : 'default';
-            //
-            //    if (routeName.startsWith(this.routeName) && parent.selectedId !== id) {
-            //        parent.setSelectedId(id);
-            //    }
-            }
-        };
     }
 
     destroy() {
