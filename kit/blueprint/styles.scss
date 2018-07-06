@@ -118,34 +118,43 @@
     }
   }
 
+  &.pt-disabled {
+    opacity: 0.6;
+  }
+
   &:not(.pt-minimal) {
     &.pt-intent-primary {
-      background-color: var(--xh-blue);
-      &:disabled {
-        background-color: var(--xh-blue-muted);
-      }
+      background-color: var(--xh-intent-primary);
     }
-
     &.pt-intent-danger {
-      background-color: var(--xh-red);
-      &:disabled {
-        background-color: var(--xh-red-muted);
-      }
+      background-color: var(--xh-intent-danger);
     }
-
     &.pt-intent-success {
-      background-color: var(--xh-green);
-      &:disabled {
-        background-color: var(--xh-green-muted);
-      }
+      background-color: var(--xh-intent-success);
     }
-
     &.pt-intent-warning {
-      background-color: var(--xh-orange);
-      &:disabled {
-        background-color: var(--xh-orange-muted);
-      }
+      background-color: var(--xh-intent-warning);
     }
+  }
+}
+
+//------------------------
+// Toasts
+//------------------------
+.pt-toast {
+  padding-left: 5px;
+
+  &.pt-intent-primary {
+    background-color: var(--xh-intent-primary);
+  }
+  &.pt-intent-danger {
+    background-color: var(--xh-intent-danger);
+  }
+  &.pt-intent-success {
+    background-color: var(--xh-intent-success);
+  }
+  &.pt-intent-warning {
+    background-color: var(--xh-intent-warning);
   }
 }
 

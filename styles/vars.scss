@@ -169,6 +169,12 @@ body {
   --xh-title-height-px: calc(var(--xh-title-height) * 1px);
   --xh-title-pad: var(--title-pad, calc(var(--xh-pad) * 0.8));
   --xh-title-pad-px: calc(var(--xh-title-pad) * 1px);
+
+  // Blueprint intents
+  --xh-intent-primary: var(--intent-primary, var(--xh-blue-dark));
+  --xh-intent-danger: var(--intent-danger, var(--xh-red));
+  --xh-intent-success: var(--intent-success, var(--xh-green));
+  --xh-intent-warning: var(--intent-warning, var(--xh-orange-muted));
 }
 
 // CSS variable declarations - dark-theme color overrides
@@ -226,4 +232,10 @@ body.xh-dark {
   --xh-text-color-accent: var(--text-color-accent, var(--xh-orange));
   --xh-text-color-highlight: var(--text-color-highlight, white);
   --xh-text-color-muted: var(--text-color-muted, #{mc('grey', '600')});
+
+  // Blueprint intents
+  --xh-intent-primary: var(--intent-primary, var(--xh-blue-muted));
+  --xh-intent-danger: var(--intent-danger, var(--xh-red-muted));
+  --xh-intent-success: var(--intent-success, var(--xh-green-muted));
+  --xh-intent-warning: var(--intent-warning, var(--xh-orange-muted));
 }
