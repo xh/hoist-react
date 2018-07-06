@@ -50,6 +50,8 @@ export class IdleService {
         this.task.cancel();
         this.destroyAppListener();
 
+        window.dispatchEvent(new CustomEvent('appSuspended'));
+
         XH.idleComponent = XH.app.showIdleDialog(() => {
             window.location.reload();
         });
