@@ -93,12 +93,9 @@ export class TabContainerModel {
         this.activePaneId = id;
         if (pane.reloadOnShow) pane.requestRefresh();
 
-        if (route && !suppressRouting ) {
-            const {routerState} = XH,
-                currRoute = routerState ? routerState.name : 'default',
-                paneRoute = route + '.' + id;
-
-            if (!currRoute.startsWith(paneRoute)) {
+        if (route && !suppressRouting) {
+            const paneRoute = route + '.' + id;
+            if (!XH.router.isActive(paneRoute)) {
                 XH.navigate(paneRoute);
             }
         }
@@ -122,22 +119,20 @@ export class TabContainerModel {
     routerReaction() {
        return {
             track: () => XH.routerState,
-            run: (state) => {
-                const currRoute = state ? state.name : 'default',
-                    {activePaneId, defaultPaneId, panes, route} = this;
+            run: () => {
+                const {panes, route} = this,
+                    {router} = XH;
+                if (router.isActive(route)) {
+                    const activatePane = panes.find(pane => {
+                        return router.isActive(route + '.' + pane.id) && !pane.isActive;
+                    });
 
-                const activatePane = panes.find(pane => {
-                    const paneId = pane.id,
-                        paneRoute = route + '.' + paneId;
-                    return (currRoute.startsWith(paneRoute) && activePaneId !== paneId)
-                });
-
-                if (activatePane) {
-                    this.setActivePaneId(activatePane.id, true);
-                } else if (currRoute == route) {
-                    this.setActivePaneId(defaultPaneId, true);
+                    if (activatePane) {
+                        this.setActivePaneId(activatePane.id, true);
+                    }
                 }
             },
+           
            fireImmediately: true
         };
     }
