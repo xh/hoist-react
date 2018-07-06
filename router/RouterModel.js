@@ -27,7 +27,7 @@ export class RouterModel {
      * Underlying Router5 Router object implementing the routing state.
      */
     router = this.createRouter();
-    
+
     /**
      * Does the routing system already have a given route?
      * @param {String} routeName

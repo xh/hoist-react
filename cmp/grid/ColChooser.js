@@ -8,8 +8,8 @@ import {Component} from 'react';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
-import {toolbar} from '@xh/hoist/cmp/toolbar';
-import {leftRightChooser} from '@xh/hoist/cmp/leftrightchooser';
+import {toolbar, toolbarSep} from '@xh/hoist/cmp/toolbar';
+import {leftRightChooser, leftRightChooserFilter} from '@xh/hoist/cmp/leftrightchooser';
 import {button} from '@xh/hoist/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
@@ -30,13 +30,17 @@ export class ColChooser extends Component {
             items: [
                 leftRightChooser({model: lrModel, height: 300}),
                 toolbar(
+                    leftRightChooserFilter({model: lrModel, fields: ['text']}),
+                    filler(),
                     button({
                         text: 'Reset',
                         icon: Icon.undo({cls: 'xh-red'}),
                         omit: !gridModel.stateModel,
                         onClick: this.restoreDefaults
                     }),
-                    filler(),
+                    toolbarSep({
+                        omit: !gridModel.stateModel
+                    }),
                     button({
                         text: 'Cancel',
                         onClick: this.onClose
