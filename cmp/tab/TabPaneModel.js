@@ -24,9 +24,9 @@ export class TabPaneModel {
     loadState = new LastPromiseModel();
 
     /**
-     * @param {string} id - unique ID, used for generating routes.
+     * @param {string} id - unique ID, used by parent container for generating routes.
      * @param {string} [name] - display name for the tab.
-     * @param {Object} content - content to be rendered by this tab. Component class, or a custom element factory of the
+     * @param {Object} content - content to be rendered by this tab. Component class or a custom element factory of the
      *      form returned by elemFactory.
      * @param {boolean} reloadOnShow - whether to load fresh data for this tab each time it is selected
      */
@@ -46,14 +46,14 @@ export class TabPaneModel {
      * Select this pane.
      */
     select() {
-        this.container.setActiveId(this.id);
+        this.container.setActivePaneId(this.id);
     }
 
     /**
      * Is this pane currently active?
      */
     get isActive() {
-        return this.container.activeId === this.id;
+        return this.container.activePaneId === this.id;
     }
 
     /**

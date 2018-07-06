@@ -18,7 +18,7 @@ import {UserPanel} from './users/UserPanel';
 export class GeneralTab extends Component {
 
     localModel = new TabContainerModel({
-        routeName: 'default.general',
+        route: 'default.general',
         panes: [
             {id: 'about', content: AboutPanel},
             {id: 'config', content: ConfigPanel},

@@ -25,26 +25,16 @@ export class RouterModel {
 
     /**
      * Underlying Router5 Router object implementing the routing state.
-     *
-     * Applications should use this property to directly access the Router5 API.
      */
-    router = null;
-
+    router = this.createRouter();
+    
     /**
-     * Initialize this object, and the underlying Router5 routing system.
-     *
-     * @param routes, array of router 5 route objects.
+     * Does the routing system already have a given route?
+     * @param {String} routeName
      */
-    init(routes) {
-        const config = {defaultRoute: 'default'};
-
-        const router = this.router = createRouter(routes, config);
-
-        router
-            .usePlugin(browserPlugin())
-            .subscribe(ev => this.setCurrentState(ev.route));
-
-        router.start();
+    hasRoute(routeName) {
+        const flatNames = this.getRouteNames(this.router.rootNode);
+        return flatNames.includes(routeName);
     }
 
     /**
@@ -60,16 +50,29 @@ export class RouterModel {
     //-------------------------
     // Implementation
     //-------------------------
-    /**
-     * Set the current routing state.  
-     *
-     * @param state, Router5 State object.
-     *
-     * Not for use by applications.  This is used for implementing
-     * the connection between this object and the router5 system.
-     */
     @action
     setCurrentState(state) {
         this.currentState = state;
+    }
+
+    getRouteNames(node) {
+        const name = node.name,
+            ret = [];
+        node.children.forEach(child => {
+            this.getRouteNames(child).forEach(it => {
+                ret.push(name ? name + '.' + it : it);
+            })
+        })
+        if (name) ret.push(name);
+        return ret;
+    }
+
+    createRouter() {
+        const ret = createRouter([], {defaultRoute: 'default'});
+
+        ret.usePlugin(browserPlugin())
+            .subscribe(ev => this.setCurrentState(ev.route));
+
+        return ret;
     }
 }

@@ -16,7 +16,7 @@ import {FeedbackPanel} from './feedback/FeedbackPanel';
 export class ActivityTab extends Component {
 
     localModel = new TabContainerModel({
-        routeName: 'default.activity',
+        route: 'default.activity',
         panes: [
             {id: 'tracking', content: TrackingPanel},
             {id: 'clientErrors', content: ClientErrorPanel},

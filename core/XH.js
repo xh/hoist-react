@@ -152,9 +152,29 @@ class XHClass {
         ReactDOM.render(rootView, document.getElementById('root'));
     }
 
+    //-------------------------
+    // Routing support
+    //-------------------------
     /** Route the app.  See RouterModel.navigate.  */
     navigate(...args) {
         this.routerModel.navigate(...args);
+    }
+
+    /**
+     * The current routing state as an observable property.
+     * See RouterModel.currentState
+     */
+    get routerState() {
+        return this.routerModel.currentState;
+    }
+
+    /**
+     * Underlying Router5 Router object implementing the routing state.
+     *
+     * Applications should use this property to directly access the Router5 API.
+     */
+    get router() {
+        return this.routerModel.router
     }
 
     /** Trigger a full reload of the app. */
@@ -314,7 +334,7 @@ class XHClass {
             }
 
             await this.app.initAsync();
-            this.initRouterModel();
+            this.startRouter();
             this.setLoadState(LoadState.COMPLETE);
         } catch (e) {
             this.setLoadState(LoadState.FAILED);
@@ -354,8 +374,9 @@ class XHClass {
         this.setDarkTheme(XH.getPref('xhTheme') === 'dark');
     }
 
-    initRouterModel() {
-        this.routerModel.init(this.app.getRoutes());
+    startRouter() {
+        this.router.add(this.app.getRoutes());
+        this.router.start();
     }
 
     @action

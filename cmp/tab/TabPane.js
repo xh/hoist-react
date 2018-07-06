@@ -24,7 +24,7 @@ import {frame} from '@xh/hoist/cmp/layout';
 export class TabPane extends Component {
 
     child = new Ref();
-    isLazyState = true;
+    wasActivated = false;
 
     constructor(props) {
         super(props);
@@ -32,14 +32,19 @@ export class TabPane extends Component {
     }
 
     render() {
-        const {content, isActive} = this.model;
+        const {content, isActive, container} = this.model,
+            mode = container.paneRenderMode;
+
+        this.wasActivated = this.wasActivated || isActive;
+
+        if (!isActive && (mode == 'removeOnHide' || !this.wasActivated && mode == 'lazy')) {
+            return null;
+        }
+
+        const item = content.prototype.render ?
+            elem(content, {flex: 1, ref: this.child.ref}) :
+            content({flex: 1});
         
-        if (isActive) this.isLazyState = false;
-        if (this.isLazyState) return null;
-
-        const elemArgs = {flex: 1, ref: this.child.ref},
-            item = content.constructor != null ? elem(content, elemArgs) : content(elemArgs);
-
         return frame({
             display: isActive ? 'flex' : 'none',
             cls: 'xh-tab-pane',
@@ -55,7 +60,7 @@ export class TabPane extends Component {
         const {model} = this,
             child = this.child.value;
 
-        if (!child.loadAsync) {
+        if (!child || !child.loadAsync) {  // Anonymous panels won't have a loadAsync method, that's ok.
             model.markLoaded();
         } else {
             child.loadAsync()

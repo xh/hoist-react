@@ -21,46 +21,52 @@ import {TabPaneModel} from '@xh/hoist/cmp/tab';
 @HoistModel()
 export class TabContainerModel {
 
-    /**
-     * TabPaneModels included in this tab container.
-     */
+    /** TabPaneModels included in this tab container. */
     panes = [];
 
-    /**
-     * Base route for this container.
-     */
-    routeName = null
-    @observable activeId = null;
+    /** Base route for this container. */
+    route = null
+
+    /** Id of the pane to be active by default. */
+    defaultPaneId = null;
+
+    /** Id of the currently active pane. */
+    @observable activePaneId = null;
+
+    /** How should this container render hidden panes? */
+    paneRenderMode = null;
 
     /**
-     * @param {string} [routeName] - if set, this tab container will be route enabled, with the route for each tab being
-     *      "routeName/[paneId]".  These routes must be setup externally in the application (@see BaseApp.getRoutes()).
-     *      and there must be one such route for each tab pane.
      * @param {Object[]} panes - TabPaneModels, or configurations for TabPaneModels to be displayed by this container.
+     * @param {String} [defaultPaneId] - id of 'default' pane.  If not set, will default to first pane in the provided collection.
+     * @param {Object} [route] - name for Router5 route.  If set, this tab container will be route enabled,
+     *      with the route for each pane being "[route]/[pane.id]".
+     * @param {String} [paneRenderMode] - Method used to render hidden panes.
+     *      Should be one of 'lazy'|'always'|'removeOnHide';
      */
-    constructor({
-        routeName = null,
-        panes
-    }) {
-        this.routeName = routeName;
+    constructor({panes, defaultPaneId = null, route = null, paneRenderMode = 'lazy'}) {
 
-        // Instantiate pane configs, if needed.
+        this.paneRenderMode = paneRenderMode;
+
+        // 1) validate and wire panes, instantiate if needed.
+        const childIds = uniqBy(panes, 'id');
+        throwIf(panes.length == 0, 'TabContainerModel needs at least one child pane.');
+        throwIf(panes.length != childIds.length, 'One or more Panes in TabContainer has a non-unique id.');
+
         panes = panes.map(p => isPlainObject(p) ? new TabPaneModel(p) : p);
         panes.forEach(p => p.container = this);
-
-        // Validate and wire children
-        throwIf(panes.length == 0,
-            'TabContainerModel needs at least one child pane.'
-        );
-        throwIf(panes.length != uniqBy(panes, 'id').length,
-            'One or more Panes in TabContainerModel has a non-unique id.'
-        );
-
         this.panes = panes;
-        this.activeId = panes[0].id;
 
-        if (routeName) {
-            this.addReaction(this.routerReaction()) ;
+        // 2) Setup and activate default pane
+        if (defaultPaneId == null) {
+            defaultPaneId = panes[0].id;
+        }
+        this.activePaneId = this.defaultPaneId = defaultPaneId;
+
+        // 3) Setup routes
+        this.route = route;
+        if (route) {
+            this.addReaction(this.routerReaction());
         }
     }
 
@@ -68,28 +74,29 @@ export class TabContainerModel {
      * The currently selected TabPanelModel.
      */
     get activePane() {
-        return find(this.panes, {id: this.activeId});
+        return find(this.panes, {id: this.activePaneId});
     }
 
     /**
      * Set the currently active TabPane.
      * @param {int} id - unique id of tab pane to be shown.
+     * @param {boolean} [suppressRouting] - For internal use.
+     *      Set to true to avoid triggering routing based navigation.
      */
     @action
-    setActiveId(id) {
-        const {routeName, panes} = this,
+    setActivePaneId(id, suppressRouting = false) {
+        const {route, panes} = this,
             pane = find(panes, {id});
 
-        if (!pane) return;
+        throwIf(!pane, `Unknown pane ${id} in TabContainer.`);
 
-        this.activeId = id;
+        this.activePaneId = id;
         if (pane.reloadOnShow) pane.requestRefresh();
 
-        if (routeName) {
-            const {routerModel} = XH,
-                state = routerModel.currentState,
-                currRoute = state ? state.name : 'default',
-                paneRoute = routeName + '.' + id;
+        if (route && !suppressRouting ) {
+            const {routerState} = XH,
+                currRoute = routerState ? routerState.name : 'default',
+                paneRoute = route + '.' + id;
 
             if (!currRoute.startsWith(paneRoute)) {
                 XH.navigate(paneRoute);
@@ -114,17 +121,21 @@ export class TabContainerModel {
 
     routerReaction() {
        return {
-            track: () => XH.routerModel.currentState,
+            track: () => XH.routerState,
             run: (state) => {
                 const currRoute = state ? state.name : 'default',
-                    {activeId, panes, routeName} = this,
-                    activatePane = panes.find(pane => {
-                        const paneId = pane.id,
-                            paneRoute = routeName + '.' + paneId;
-                        return (currRoute.startsWith(paneRoute) && activeId !== paneId)
-                    });
+                    {activePaneId, defaultPaneId, panes, route} = this;
+
+                const activatePane = panes.find(pane => {
+                    const paneId = pane.id,
+                        paneRoute = route + '.' + paneId;
+                    return (currRoute.startsWith(paneRoute) && activePaneId !== paneId)
+                });
+
                 if (activatePane) {
-                    this.setActiveId(activatePane.id);
+                    this.setActivePaneId(activatePane.id, true);
+                } else if (currRoute == route) {
+                    this.setActivePaneId(defaultPaneId, true);
                 }
             },
            fireImmediately: true

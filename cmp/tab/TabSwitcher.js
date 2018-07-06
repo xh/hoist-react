@@ -37,7 +37,7 @@ export class TabSwitcher extends Component {
     };
 
     render() {
-        const {id, panes, activeId} = this.model,
+        const {id, panes, activePaneId} = this.model,
             {orientation} = this.props,
             vertical = ['left', 'right'].includes(orientation);
 
@@ -46,14 +46,14 @@ export class TabSwitcher extends Component {
             id,
             vertical,
             onChange: this.onTabChange,
-            selectedTabId: activeId,
+            selectedTabId: activePaneId,
             items: panes.map(({id, name}) => tab({id, title: name})),
             ...omit(this.props, 'model')
         });
     }
 
-    onTabChange = (activeId) => {
-        this.model.setActiveId(activeId);
+    onTabChange = (activePaneId) => {
+        this.model.setActivePaneId(activePaneId);
     };
 }
 
