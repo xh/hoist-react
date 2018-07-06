@@ -65,6 +65,7 @@ export class TabPaneModel {
     /**
      * Require a refresh of all contents when they are next shown.
      */
+    @action
     requestRefresh() {
         this.lastRefreshRequest = Date.now();
     }

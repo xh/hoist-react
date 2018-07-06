@@ -21,6 +21,10 @@ export class MonitorTab extends Component {
         ]
     });
 
+    async loadAsync() {
+        this.model.requestRefresh()
+    }
+    
     render() {
         return tabContainer({model: this.model, switcherPosition: 'left'});
     }

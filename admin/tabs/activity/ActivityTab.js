@@ -23,6 +23,10 @@ export class ActivityTab extends Component {
         ]
     });
 
+    async loadAsync() {
+        this.model.requestRefresh()
+    }
+    
     render() {
         return tabContainer({model: this.model, switcherPosition: 'left'});
     }

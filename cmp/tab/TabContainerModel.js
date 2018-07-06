@@ -96,7 +96,6 @@ export class TabContainerModel {
         }
     }
 
-
     /**
      * Require a refresh of all panes when they are next shown.
      * Immediately refresh active pane.
@@ -104,7 +103,6 @@ export class TabContainerModel {
     requestRefresh() {
         this.panes.forEach(it => it.requestRefresh());
     }
-
 
     //-------------------------
     // Implementation

@@ -87,7 +87,7 @@ export function HoistComponent({
              * all ancestor properties.
              */
             isDisplayed: {
-                get () {
+                get() {
                     let elem = this.getMountedElement();
                     if (!elem) return false;
                     while (elem) {
@@ -96,7 +96,6 @@ export function HoistComponent({
                     }
                     return true;
                 }
-
             },
 
             /**

@@ -27,6 +27,10 @@ export class GeneralTab extends Component {
         ]
     });
 
+    async loadAsync() {
+        this.model.requestRefresh()
+    }
+
     render() {
         return tabContainer({model: this.model, switcherPosition: 'left'});
     }

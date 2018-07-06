@@ -20,6 +20,10 @@ export class LoggingTab extends Component {
             {id: 'levels', content: LogLevelPanel}
         ]
     });
+    
+    async loadAsync() {
+        this.model.requestRefresh()
+    }
 
     render() {
         return tabContainer({model: this.model, switcherPosition: 'left'});
