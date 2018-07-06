@@ -21,6 +21,7 @@ import {
     aboutDialog,
     exceptionDialog,
     impersonationBar,
+    idleWrapper,
     loginPanel,
     updateBar,
     versionBar
@@ -58,7 +59,8 @@ export class AppContainer extends Component {
     render() {
         return div(
             this.renderContent(),
-            exceptionDialog() // Always render the exception dialog -- might need it :-(
+            exceptionDialog(), // Always render the exception dialog -- might need it :-(
+            idleWrapper()
         );
     }
 

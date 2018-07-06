@@ -8,6 +8,7 @@
 export * from './AboutDialog';
 export * from './ExceptionDialog';
 export * from './ImpersonationBar';
+export * from './IdleWrapper';
 export * from './LoginPanel';
 export * from './UpdateBar';
 export * from './VersionBar';

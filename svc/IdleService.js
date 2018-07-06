@@ -7,6 +7,7 @@
 import {XH, HoistService} from '@xh/hoist/core';
 import {SECONDS, MINUTES} from '@xh/hoist/utils/DateTimeUtils';
 import {debounce, throttle} from 'lodash';
+import {action} from '@xh/hoist/mobx';
 
 @HoistService()
 export class IdleService {
@@ -30,17 +31,6 @@ export class IdleService {
     //-------------------------------------
     // Implementation
     //-------------------------------------
-    stop() {
-        this.task.cancel();
-        this.destroyAppListener();
-
-        XH.handleException('This application is sleeping. Please reload to reactivate it.', {
-            requireReload: true,
-            showAsError: false,
-            title: 'Timeout'
-        });
-    }
-
     createAppListener() {
         window.addEventListener('keydown', this.resetTimer, true);
         window.addEventListener('mousemove', this.resetTimer, true);
@@ -55,8 +45,14 @@ export class IdleService {
         window.removeEventListener('scroll', this.resetTimer, true);
     }
 
+    @action
     timeout() {
-        this.stop();
+        this.task.cancel();
+        this.destroyAppListener();
+
+        XH.idleComponent = XH.app.showIdleDialog(() => {
+            window.location.reload();
+        });
     }
 
     resetTimer = () => {

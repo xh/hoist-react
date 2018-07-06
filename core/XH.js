@@ -108,6 +108,9 @@ class XHClass {
      */
     @observable.ref displayException;
 
+    /** A component to be rendered when the app times out */
+    @observable idleComponent;
+
     /** Show about dialog? */
     @observable aboutIsOpen = false;
 

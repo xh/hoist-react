@@ -6,6 +6,7 @@
  */
 import {defaultMethods} from '@xh/hoist/utils/ClassUtils';
 import {HoistModel} from './HoistModel';
+import {alert} from '@xh/hoist/kit/blueprint';
 
 /**
  * Mixin for defining a Hoist Application. An instance of this class will be initialized by Hoist
@@ -60,6 +61,21 @@ export function HoistApp(C) {
                 hasAccess: false,
                 message: 'Required access control not implemented - see App.checkAccess().'
             };
+        },
+
+        /**
+         * App must implement this method with appropriate logic to display a message when the app
+         * has been idle for the amount of minutes defined by the `xhxhIdleTimeoutMins` config.
+         * @param {Function} callback - A callback function to be handled by the showIdleDialog
+         */
+        showIdleDialog(callback) {
+            return alert({
+                style: {paddingBottom: '20px'},
+                isOpen: true,
+                intent: 'danger',
+                item: 'This application is sleeping. Please click OK to reactivate it.',
+                onClose: callback
+            });
         },
 
         /**
