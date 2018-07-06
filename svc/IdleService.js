@@ -7,6 +7,7 @@
 import {XH, HoistService} from '@xh/hoist/core';
 import {SECONDS, MINUTES} from '@xh/hoist/utils/DateTimeUtils';
 import {debounce, throttle} from 'lodash';
+import {Timer} from '@xh/hoist/utils/Timer';
 import {action} from '@xh/hoist/mobx';
 
 @HoistService()
@@ -51,9 +52,9 @@ export class IdleService {
     timeout() {
         this.task.cancel();
         this.destroyAppListener();
+        Timer.cancelAll();
 
         window.dispatchEvent(new CustomEvent('appSuspended'));
-
         XH.idleComponent = XH.app.showIdleDialog(() => {
             window.location.reload();
         });
