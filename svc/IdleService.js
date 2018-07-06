@@ -13,9 +13,11 @@ import {action} from '@xh/hoist/mobx';
 export class IdleService {
 
     async initAsync() {
-        const delay = this.getTimeDelay();
+        const appDisablesDetection = XH.app.disableIdleDetection,
+            userDisablesDetection = XH.getPref('xh.disableIdleDetection', false),
+            delay = this.getTimeDelay();
 
-        if (delay > 0) {
+        if (!appDisablesDetection && !userDisablesDetection && delay > 0) {
             this.resetTimer = throttle(this.resetTimer, 30 * SECONDS);
             this.task = debounce(() => this.timeout(), delay, {trailing: true});
 
