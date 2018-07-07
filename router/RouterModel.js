@@ -61,8 +61,8 @@ export class RouterModel {
         node.children.forEach(child => {
             this.getRouteNames(child).forEach(it => {
                 ret.push(name ? name + '.' + it : it);
-            })
-        })
+            });
+        });
         if (name) ret.push(name);
         return ret;
     }

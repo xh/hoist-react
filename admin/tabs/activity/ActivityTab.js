@@ -25,7 +25,7 @@ export class ActivityTab extends Component {
     });
 
     async loadAsync() {
-        this.model.requestRefresh()
+        this.model.requestRefresh();
     }
     
     render() {

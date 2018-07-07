@@ -6,7 +6,7 @@
  */
 import {HoistModel, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
-import {isPlainObject, startCase, uniqBy, find, each} from 'lodash';
+import {isPlainObject, uniqBy, find} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/JsUtils';
 import {TabPaneModel} from '@xh/hoist/cmp/tab';
 
@@ -117,7 +117,7 @@ export class TabContainerModel {
     }
 
     routerReaction() {
-       return {
+        return {
             track: () => XH.routerState,
             run: () => {
                 const {panes, route} = this,
@@ -132,8 +132,7 @@ export class TabContainerModel {
                     }
                 }
             },
-           
-           fireImmediately: true
+            fireImmediately: true
         };
     }
 }

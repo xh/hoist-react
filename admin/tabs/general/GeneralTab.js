@@ -29,7 +29,7 @@ export class GeneralTab extends Component {
     });
 
     async loadAsync() {
-        this.model.requestRefresh()
+        this.model.requestRefresh();
     }
 
     render() {
