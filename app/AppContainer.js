@@ -21,7 +21,6 @@ import {
     aboutDialog,
     exceptionDialog,
     impersonationBar,
-    idleWrapper,
     loginPanel,
     updateBar,
     versionBar
@@ -90,7 +89,7 @@ export class AppContainer extends Component {
                     messageSource({model: XH.messageSourceModel}),
                     feedbackDialog({model: XH.feedbackDialogModel}),
                     aboutDialog(),
-                    idleWrapper()
+                    XH.idleComponent ? XH.idleComponent : null
                 );
             default:
                 return null;
