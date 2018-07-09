@@ -59,8 +59,7 @@ export class AppContainer extends Component {
     render() {
         return div(
             this.renderContent(),
-            exceptionDialog(), // Always render the exception dialog -- might need it :-(
-            idleWrapper()
+            exceptionDialog() // Always render the exception dialog -- might need it :-(
         );
     }
 
@@ -90,7 +89,8 @@ export class AppContainer extends Component {
                     loadMask({model: XH.appLoadModel}),
                     messageSource({model: XH.messageSourceModel}),
                     feedbackDialog({model: XH.feedbackDialogModel}),
-                    aboutDialog()
+                    aboutDialog(),
+                    idleWrapper()
                 );
             default:
                 return null;
