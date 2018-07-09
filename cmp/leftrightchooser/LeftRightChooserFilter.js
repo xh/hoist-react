@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {escapeRegExp} from 'lodash';
+import {escapeRegExp, isEqual} from 'lodash';
 import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {observable, setter} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
@@ -69,7 +69,9 @@ class LeftRightChooserFilter extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps.anyMatch !== this.props.anyMatch) {
+        const {props} = this;
+
+        if (prevProps.anyMatch !== props.anyMatch || !isEqual(prevProps.fields, props.fields)) {
             this.runFilter();
         }
     }
