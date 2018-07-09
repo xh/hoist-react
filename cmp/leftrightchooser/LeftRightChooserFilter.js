@@ -23,7 +23,9 @@ class LeftRightChooserFilter extends Component {
         /** Names of fields in chooser to filter by */
         fields: PT.arrayOf(PT.string).isRequired,
         /** True to prevent regex start line anchor from being added */
-        anyMatch: PT.bool
+        anyMatch: PT.bool,
+        /** A LeftRightChooserModel to bind to */
+        model: PT.object.isRequired
     };
 
     @setter @observable value = '';
