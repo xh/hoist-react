@@ -64,11 +64,11 @@ export function HoistApp(C) {
         },
 
         /**
-         * App must implement this method with appropriate logic to display a message when the app
-         * has been idle for the amount of minutes defined by the `xhxhIdleTimeoutMins` config.
+         * App may override this method with appropriate logic to display a message when the app
+         * has been idle for the amount of minutes defined by the `xhIdleTimeoutMins` config.
          * @param {Function} callback - A callback function to be handled by the showIdleDialog
          */
-        showIdleDialog(callback) {
+        renderIdleDialog(callback) {
             return alert({
                 style: {paddingBottom: '20px'},
                 isOpen: true,

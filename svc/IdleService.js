@@ -52,11 +52,11 @@ export class IdleService {
     timeout() {
         this.task.cancel();
         this.destroyAppListener();
-        Timer.cancelAll();
+        this.fireEvent('appSuspended');
 
-        window.dispatchEvent(new CustomEvent('appSuspended'));
-        XH.idleComponent = XH.app.showIdleDialog(() => {
-            window.location.reload();
+        Timer.cancelAll();
+        XH.idleComponent = XH.app.renderIdleDialog(() => {
+            window.location.reload(true);
         });
     }
 
