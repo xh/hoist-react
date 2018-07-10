@@ -174,7 +174,7 @@ class XHClass {
      * Applications should use this property to directly access the Router5 API.
      */
     get router() {
-        return this.routerModel.router
+        return this.routerModel.router;
     }
 
     /** Trigger a full reload of the app. */
