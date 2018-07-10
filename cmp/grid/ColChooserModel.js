@@ -21,7 +21,8 @@ export class ColChooserModel {
         this.lrModel = new LeftRightChooserModel({
             leftTitle: 'Available Columns',
             rightTitle: 'Displayed Columns',
-            leftSortBy: 'text'
+            leftSortBy: 'text',
+            rightGroupingEnabled: false
         });
     }
 

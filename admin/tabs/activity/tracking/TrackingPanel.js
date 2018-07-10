@@ -14,7 +14,7 @@ import {visitsChart} from './VisitsChart';
 import {VisitsChartModel} from './VisitsChartModel';
 
 @HoistComponent()
-export class ActivityPanel extends Component {
+export class TrackingPanel extends Component {
 
     activityGridModel = new ActivityGridModel();
     visitsChartModel = new VisitsChartModel();

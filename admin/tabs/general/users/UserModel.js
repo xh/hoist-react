@@ -10,7 +10,7 @@ import {UrlStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 
 import {baseCol, boolCheckCol} from '@xh/hoist/columns/Core';
-import {usernameCol} from '../../columns/Columns';
+import {usernameCol} from '@xh/hoist/admin/columns/Columns';
 
 @HoistModel()
 export class UserModel {

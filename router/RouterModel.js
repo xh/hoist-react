@@ -10,48 +10,32 @@ import createRouter from 'router5';
 import browserPlugin from 'router5/plugins/browser';
 
 /**
- * Top-level model for managing routing in hoist.
+ * Top-level model for managing application routing in Hoist.
  *
- * This observable model uses router5 to manage the underlying routes,
- * presenting them to the application as a set of mobx observables.
+ * This observable model uses Router5 (https://router5.js.org/) to manage the
+ * underlying routes, presenting them to the application as a set of MobX observables.
  */
 @HoistModel()
 export class RouterModel {
 
-    /**
-     * Router5 state object representing the current state.
-     */
+    /** Router5 state object representing the current state. */
     @observable currentState;
 
-    /**
-     * Underlying Router5 Router object implementing the routing state.
-     *
-     * Applications should use this property to directly access the Router5 API.
-     */
-    router = null;
+    /** Underlying Router5 Router object implementing the routing state. */
+    router = this.createRouter();
 
     /**
-     * Initialize this object, and the underlying Router5 routing system.
-     *
-     * @param routes, array of router 5 route objects.
+     * Does the routing system already have a given route?
+     * @param {String} routeName
      */
-    init(routes) {
-        const config = {defaultRoute: 'default'};
-
-        const router = this.router = createRouter(routes, config);
-
-        router
-            .usePlugin(browserPlugin())
-            .subscribe(ev => this.setCurrentState(ev.route));
-
-        router.start();
+    hasRoute(routeName) {
+        const flatNames = this.getRouteNames(this.router.rootNode);
+        return flatNames.includes(routeName);
     }
 
     /**
-     * Navigate
-     *
-     * This is a convenience short cut for router.navigate().  See
-     * the Router5 documentation for more information.
+     * Convenience shortcut to router.navigate().
+     * See the Router5 documentation for more information.
      */
     navigate(...args) {
         this.router.navigate(...args);
@@ -60,16 +44,31 @@ export class RouterModel {
     //-------------------------
     // Implementation
     //-------------------------
-    /**
-     * Set the current routing state.  
-     *
-     * @param state, Router5 State object.
-     *
-     * Not for use by applications.  This is used for implementing
-     * the connection between this object and the router5 system.
-     */
     @action
     setCurrentState(state) {
         this.currentState = state;
+    }
+
+    getRouteNames(node) {
+        const name = node.name,
+            ret = [];
+
+        node.children.forEach(child => {
+            this.getRouteNames(child).forEach(it => {
+                ret.push(name ? name + '.' + it : it);
+            });
+        });
+
+        if (name) ret.push(name);
+        return ret;
+    }
+
+    createRouter() {
+        const ret = createRouter([], {defaultRoute: 'default'});
+
+        ret.usePlugin(browserPlugin())
+            .subscribe(ev => this.setCurrentState(ev.route));
+
+        return ret;
     }
 }
