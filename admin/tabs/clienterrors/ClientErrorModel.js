@@ -49,6 +49,12 @@ export class ClientErrorModel {
         ]
     });
 
+    constructor() {
+        this.addAutorun(() => {
+            this.gridModel.exportFilename = `Client Errors ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`;
+        });
+    }
+
     async loadAsync() {
         return XH.fetchJson({
             url: 'clientErrorAdmin',
@@ -76,11 +82,6 @@ export class ClientErrorModel {
         this.setStartDate(newStart.toDate());
         this.setEndDate(newEnd.toDate());
         this.loadAsync();
-    }
-
-    export() {
-        const fileName = `Client Errors: ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`;
-        this.gridModel.exportDataAsExcel({fileName});
     }
 
     @action

@@ -58,6 +58,12 @@ export class ActivityGridModel {
         ]
     });
 
+    constructor() {
+        this.addAutorun(() => {
+            this.gridModel.exportFilename = `Activity ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`;
+        });
+    }
+
     async loadAsync() {
         return XH.fetchJson({
             url: 'trackLogAdmin',
@@ -85,11 +91,6 @@ export class ActivityGridModel {
         this.setStartDate(newStart.toDate());
         this.setEndDate(newEnd.toDate());
         this.loadAsync();
-    }
-
-    export() {
-        const fileName = `Activity: ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`;
-        this.gridModel.exportDataAsExcel({fileName});
     }
 
     @action

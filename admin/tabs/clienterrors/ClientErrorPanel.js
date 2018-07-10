@@ -65,7 +65,7 @@ export class ClientErrorPanel extends Component {
                 store: model.gridModel.store,
                 unit: 'client error'
             }),
-            exportButton({model})
+            exportButton({model: model.gridModel})
         );
     }
 

@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import {exportFormats} from '@xh/hoist/utils/ExportUtils';
 import {castArray, defaults, isNumber, omit, startCase} from 'lodash';
 
 // Configs specific to / added by Hoist as extensions to ag-Grid's column API.
@@ -12,6 +13,7 @@ import {castArray, defaults, isNumber, omit, startCase} from 'lodash';
 const hoistColConfigs = [
     'align', 'elementRenderer', 'fixedWidth', 'flex',
     'chooserDescription', 'chooserGroup', 'chooserName', 'excludeFromChooser',
+    'exportName', 'exportValue', 'exportFormat',
     'agColDef', 'xhId'
 ];
 
@@ -63,6 +65,12 @@ export function fileColFactory(fileVals = {}) {
 
             // Default chooserName from headerName or field (sampleField -> Sample Field)
             ret.chooserName = ret.chooserName || ret.headerName || startCase(ret.field);
+
+            // Default exportName from headerName or field
+            ret.exportName = ret.exportName || ret.headerName || startCase(ret.field);
+
+            // Use default exportFormat if not defined
+            ret.exportFormat = ret.exportFormat || exportFormats.DEFAULT;
 
             // Install fn to produce definition w/o custom Hoist configs for use by ag-grid,
             // which will complain about unknown config keys.

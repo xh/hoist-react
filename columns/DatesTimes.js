@@ -6,6 +6,7 @@
  */
 import {fileColFactory} from './Utils.js';
 import {dateRenderer, dateTimeRenderer, timeRenderer, compactDateRenderer} from '../format';
+import {exportFormats} from '@xh/hoist/utils/ExportUtils';
 
 const colFactory = fileColFactory({
     cellStyle: {align: 'right'}
@@ -14,6 +15,7 @@ const colFactory = fileColFactory({
 export const dateCol = colFactory({
     headerName: 'Date',
     valueFormatter: dateRenderer(),
+    exportFormat: exportFormats.DATE_FMT,
     width: 120
 });
 
@@ -26,11 +28,13 @@ export const timeCol = colFactory({
 export const dateTimeCol = colFactory({
     headerName: 'Date',
     valueFormatter: dateTimeRenderer(),
+    exportFormat: exportFormats.DATETIME_FMT,
     width: 160
 });
 
 export const compactDateCol = colFactory({
     headerName: 'Date',
     valueFormatter: compactDateRenderer(),
+    exportFormat: exportFormats.DATE_FMT,
     width: 100
 });
