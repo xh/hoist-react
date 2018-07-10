@@ -11,10 +11,11 @@ import {throwIf} from '@xh/hoist/utils/JsUtils';
 import {TabPaneModel} from '@xh/hoist/cmp/tab';
 
 /**
- * Model for a TabContainer, representing its layout/contents and the currently selected child.
+ * Model for a TabContainer, representing its layout/contents and the currently displayed
+ * pane.
  *
- * This TabContainer also supports managed loading and refreshing of its TabPanes.  In particular,
- * TabPanes will be lazily rendered and loaded and will be refreshed whenever the TabPane is shown.
+ * This object provides support for routing based navigation, managed mounting/unmounting of
+ * hidden panes, and lazy refreshing of its active pane.
  *
  * @see TabPaneModel
  */

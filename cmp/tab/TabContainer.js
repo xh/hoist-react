@@ -14,12 +14,14 @@ import {tabPane} from './TabPane';
 import './Tabs.scss';
 
 /**
- * Display for a TabContainer.
+ * Display a set of TabPanes and (optionally) a switcher control.
  *
  * By default this TabContainer will install a TabSwitcher above the TabPanes to control the
- * selected TabPane. If the switcherPosition is set to 'none' then no TabSwitcher will be installed
- * and it will be up to the application to handle setting the selected id on this TabContainerModel
- * when appropriate.
+ * currently displayed TabPane. The 'switcherPosition' property can be adjusted to place the switcher
+ * control on alternative edges of the container; if the switcherPosition is set to 'none' then
+ * no TabSwitcher will be installed.  This latter case is useful for applications that wish to place an associated
+ * TabSwitcher elsewhere in the graphical hierarchy (e.g. a shared menu bar), or control the visible pane
+ * directly via other means.
  *
  * @see TabContainerModel
  */

@@ -11,6 +11,10 @@ import {startCase} from 'lodash';
 
 /**
  * Model for a TabPane, representing its content's active and load state.
+ *
+ * This model is not typically renderered directly by applications.  Applications will
+ * typically specify a configuration for it via the 'panes' property of the TabContainerModel
+ * constructor.
  */
 @HoistModel()
 export class TabPaneModel {

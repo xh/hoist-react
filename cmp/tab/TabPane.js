@@ -11,14 +11,19 @@ import {Ref} from '@xh/hoist/utils/Ref';
 import {frame} from '@xh/hoist/cmp/layout';
 
 /**
- * Wrapper for Components to be shown inside of a TabContainer tab. Provides the following:
+ * Wrapper for contents to be shown in a particular 'pane' of a TabContainer.
+ * This is used by TabContainer's internal implementation and not typically
+ * rendered directly by applications.
  *
- *   - Lazily renders the contents of the tab only when it first becomes active.
- *   - Reloads the active tab whenever its lastLoaded is out of date with its parent's 'lastRefreshRequest'.
- *   - Stretches the content of the child component using a flex layout.
+ * This pane provides a default implementation of the following behavior:
+ *
+ *   - Mounting/unmounting its contents according to TabContainerModel.paneRenderMode.
+ *   - Reloading its contents whenever it is visible, or made visible and has not been
+ *      refreshed since the last refresh request on the TabContainerModel.
+ *   - Stretching its contents using a flex layout.
  *
  * Contained components that load data/state from the server should implement loadAsync(), but
- * generally leave the calling of that method to this component
+ * generally leave the calling of that method to this component.
  */
 @HoistComponent()
 export class TabPane extends Component {
