@@ -11,8 +11,7 @@ import {throwIf} from '@xh/hoist/utils/JsUtils';
 import {TabPaneModel} from '@xh/hoist/cmp/tab';
 
 /**
- * Model for a TabContainer, representing its layout/contents and the currently displayed
- * pane.
+ * Model for a TabContainer, representing its layout/contents and the currently displayed pane.
  *
  * This object provides support for routing based navigation, managed mounting/unmounting of
  * hidden panes, and lazy refreshing of its active pane.
@@ -28,34 +27,35 @@ export class TabContainerModel {
     /** Base route for this container. */
     route = null
 
-    /** Id of the pane to be active by default. */
+    /** ID of the pane to be active by default. */
     defaultPaneId = null;
 
-    /** Id of the currently active pane. */
+    /** ID of the currently active pane. */
     @observable activePaneId = null;
 
     /** How should this container render hidden panes? */
     paneRenderMode = null;
 
     /**
-     * @param {Object[]} panes - TabPaneModels, or configurations for TabPaneModels to be displayed by this container.
-     * @param {String} [defaultPaneId] - id of 'default' pane.  If not set, will default to first pane in the provided collection.
-     * @param {Object} [route] - name for Router5 route.  If set, this tab container will be route enabled,
-     *      with the route for each pane being "[route]/[pane.id]".
-     * @param {String} [paneRenderMode] - Method used to render hidden panes.
-     *      Should be one of 'lazy'|'always'|'removeOnHide';
+     * @param {Object[]} panes - TabPaneModels or configurations for TabPaneModels to be displayed
+     *      by this container.
+     * @param {string} [defaultPaneId] - ID of 'default' pane.  If not set, will default to first
+     *      pane in the provided collection.
+     * @param {Object} [route] - base route name for this container. If set, this container will be
+     *      route-enabled, with the route for each pane being "[route]/[pane.id]".
+     * @param {string} [paneRenderMode] - Method used to render hidden panes.
+     *      Should be one of [lazy|always|removeOnHide].
      */
     constructor({panes, defaultPaneId = null, route = null, paneRenderMode = 'lazy'}) {
-
         this.paneRenderMode = paneRenderMode;
 
-        // 1) validate and wire panes, instantiate if needed.
+        // 1) Validate and wire panes, instantiate if needed.
         const childIds = uniqBy(panes, 'id');
         throwIf(panes.length == 0, 'TabContainerModel needs at least one child pane.');
-        throwIf(panes.length != childIds.length, 'One or more Panes in TabContainer has a non-unique id.');
+        throwIf(panes.length != childIds.length, 'One or more Panes in TabContainer has a non-unique ID.');
 
         panes = panes.map(p => isPlainObject(p) ? new TabPaneModel(p) : p);
-        panes.forEach(p => p.container = this);
+        panes.forEach(p => p.containerModel = this);
         this.panes = panes;
 
         // 2) Setup and activate default pane
@@ -80,9 +80,9 @@ export class TabContainerModel {
 
     /**
      * Set the currently active TabPane.
-     * @param {int} id - unique id of tab pane to be shown.
+     * @param {int} id - unique ID of tab pane to be shown.
      * @param {boolean} [suppressRouting] - For internal use.
-     *      Set to true to avoid triggering routing based navigation.
+     *      True to avoid triggering routing based navigation.
      */
     @action
     setActivePaneId(id, suppressRouting = false) {

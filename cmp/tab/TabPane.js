@@ -11,19 +11,18 @@ import {Ref} from '@xh/hoist/utils/Ref';
 import {frame} from '@xh/hoist/cmp/layout';
 
 /**
- * Wrapper for contents to be shown in a particular 'pane' of a TabContainer.
- * This is used by TabContainer's internal implementation and not typically
- * rendered directly by applications.
+ * Wrapper for contents to be shown in a particular 'pane' of a TabContainer. This is used by
+ * TabContainer's internal implementation and not typically rendered directly by applications.
  *
  * This pane provides a default implementation of the following behavior:
  *
  *   - Mounting/unmounting its contents according to TabContainerModel.paneRenderMode.
- *   - Reloading its contents whenever it is visible, or made visible and has not been
- *      refreshed since the last refresh request on the TabContainerModel.
+ *   - Reloading its contents whenever it is visible or is made visible and has not been refreshed
+ *     since the last refresh request on the TabContainerModel.
  *   - Stretching its contents using a flex layout.
  *
- * Contained components that load data/state from the server should implement loadAsync(), but
- * generally leave the calling of that method to this component.
+ * Contained components that load data/state from the server should implement loadAsync(),
+ * but generally leave the calling of that method to this component.
  */
 @HoistComponent()
 export class TabPane extends Component {
@@ -37,8 +36,8 @@ export class TabPane extends Component {
     }
 
     render() {
-        const {content, isActive, container} = this.model,
-            mode = container.paneRenderMode;
+        const {content, isActive, containerModel} = this.model,
+            mode = containerModel.paneRenderMode;
 
         this.wasActivated = this.wasActivated || isActive;
 

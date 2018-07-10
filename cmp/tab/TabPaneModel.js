@@ -10,18 +10,18 @@ import {LastPromiseModel} from '@xh/hoist/promise';
 import {startCase} from 'lodash';
 
 /**
- * Model for a TabPane, representing its content's active and load state.
+ * Model for a TabPane - a single tab within a container - representing its content's
+ * active and load/refresh state.
  *
- * This model is not typically renderered directly by applications.  Applications will
- * typically specify a configuration for it via the 'panes' property of the TabContainerModel
- * constructor.
+ * This model is not typically created directly within applications. Instead, specify a
+ * configuration for it via the 'panes' property of the TabContainerModel constructor.
  */
 @HoistModel()
 export class TabPaneModel {
     id = null;
     name = null;
     reloadOnShow = false;
-    container = null;  // TabContainerModel containing this pane
+    containerModel = null;
 
     @observable lastRefreshRequest = null;
     @observable lastLoaded = null;
@@ -30,15 +30,15 @@ export class TabPaneModel {
     /**
      * @param {string} id - unique ID, used by parent container for generating routes.
      * @param {string} [name] - display name for the tab.
-     * @param {Object} content - content to be rendered by this tab. Component class or a custom element factory of the
-     *      form returned by elemFactory.
-     * @param {boolean} reloadOnShow - whether to load fresh data for this tab each time it is selected
+     * @param {Object} content - content to be rendered by this tab. Component class or a custom
+     *      element factory of the form returned by elemFactory.
+     * @param {boolean} reloadOnShow - true to reload data for this tab each time it is selected.
      */
     constructor({
         id,
         name = startCase(id),
         content,
-        reloadOnShow
+        reloadOnShow = false
     }) {
         this.id = id;
         this.name = name;
@@ -50,14 +50,14 @@ export class TabPaneModel {
      * Select this pane.
      */
     select() {
-        this.container.setActivePaneId(this.id);
+        this.containerModel.setActivePaneId(this.id);
     }
 
     /**
      * Is this pane currently active?
      */
     get isActive() {
-        return this.container.activePaneId === this.id;
+        return this.containerModel.activePaneId === this.id;
     }
 
     /**

@@ -99,8 +99,8 @@ export function HoistComponent({
             },
 
             /**
-             * Get the DOM element underlying this component, or null if
-             * component is not mounted.
+             * Get the DOM element underlying this component.
+             * Returns null if component is not mounted.
              */
             getMountedElement() {
                 return this._mounted ?

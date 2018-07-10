@@ -10,10 +10,10 @@ import createRouter from 'router5';
 import browserPlugin from 'router5/plugins/browser';
 
 /**
- * Top-level model for managing routing in hoist.
+ * Top-level model for managing application routing in Hoist.
  *
- * This observable model uses router5 to manage the underlying routes,
- * presenting them to the application as a set of mobx observables.
+ * This observable model uses Router5 (https://router5.js.org/) to manage the
+ * underlying routes, presenting them to the application as a set of MobX observables.
  */
 @HoistModel()
 export class RouterModel {
@@ -38,10 +38,8 @@ export class RouterModel {
     }
 
     /**
-     * Navigate
-     *
-     * This is a convenience short cut for router.navigate().  See
-     * the Router5 documentation for more information.
+     * Convenience shortcut to router.navigate().
+     * See the Router5 documentation for more information.
      */
     navigate(...args) {
         this.router.navigate(...args);
@@ -58,11 +56,13 @@ export class RouterModel {
     getRouteNames(node) {
         const name = node.name,
             ret = [];
+
         node.children.forEach(child => {
             this.getRouteNames(child).forEach(it => {
                 ret.push(name ? name + '.' + it : it);
             });
         });
+
         if (name) ret.push(name);
         return ret;
     }

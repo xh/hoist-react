@@ -14,20 +14,27 @@ import {tabPane} from './TabPane';
 import './Tabs.scss';
 
 /**
- * Display a set of TabPanes and (optionally) a switcher control.
+ * Display a set of child TabPanes and (optionally) a switcher control.
  *
- * By default this TabContainer will install a TabSwitcher above the TabPanes to control the
- * currently displayed TabPane. The 'switcherPosition' property can be adjusted to place the switcher
- * control on alternative edges of the container; if the switcherPosition is set to 'none' then
- * no TabSwitcher will be installed.  This latter case is useful for applications that wish to place an associated
- * TabSwitcher elsewhere in the graphical hierarchy (e.g. a shared menu bar), or control the visible pane
- * directly via other means.
+ * By default this TabContainer will install a TabSwitcher above the Tabs to control the currently
+ * displayed Tab. The 'switcherPosition' property can be adjusted to place the switcher control on
+ * alternative edges of the container. If the switcherPosition is set to 'none' then no TabSwitcher
+ * will be installed.  This latter case is useful for applications that wish to place an associated
+ * TabSwitcher elsewhere in the graphical hierarchy (e.g. a shared menu bar), or control the visible
+ * Tab directly via other means.
+ *
+ * Other than the position of the Switcher and optional layoutSupport, this component is specified
+ * and controlled via its TabContainerModel.
  *
  * @see TabContainerModel
  */
 @HoistComponent({layoutSupport: true})
 export class TabContainer extends Component {
     static propTypes = {
+        /**
+         * TabContainerModel instance.
+         */
+        model: PT.object.isRequired,
         /**
          * Position of the switcher relative to the TabPanes.
          * Set to 'none' to opt out of the default TabSwitcher.
