@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {escapeRegExp} from 'lodash';
+import {escapeRegExp, isEqual} from 'lodash';
 import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {observable, setter} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
@@ -23,7 +23,9 @@ class LeftRightChooserFilter extends Component {
         /** Names of fields in chooser to filter by */
         fields: PT.arrayOf(PT.string).isRequired,
         /** True to prevent regex start line anchor from being added */
-        anyMatch: PT.bool
+        anyMatch: PT.bool,
+        /** A LeftRightChooserModel to bind to */
+        model: PT.object.isRequired
     };
 
     @setter @observable value = '';
@@ -66,6 +68,14 @@ class LeftRightChooserFilter extends Component {
         };
 
         this.model.setDisplayFilter(filter);
+    }
+
+    componentDidUpdate(prevProps) {
+        const {props} = this;
+
+        if (prevProps.anyMatch !== props.anyMatch || !isEqual(prevProps.fields, props.fields)) {
+            this.runFilter();
+        }
     }
 
     componentWillUnmount() {
