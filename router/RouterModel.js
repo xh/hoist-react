@@ -18,14 +18,10 @@ import browserPlugin from 'router5/plugins/browser';
 @HoistModel()
 export class RouterModel {
 
-    /**
-     * Router5 state object representing the current state.
-     */
+    /** Router5 state object representing the current state. */
     @observable currentState;
 
-    /**
-     * Underlying Router5 Router object implementing the routing state.
-     */
+    /** Underlying Router5 Router object implementing the routing state. */
     router = this.createRouter();
 
     /**

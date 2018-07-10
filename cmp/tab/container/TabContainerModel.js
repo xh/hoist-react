@@ -14,13 +14,13 @@ import {TabModel} from '@xh/hoist/cmp/tab';
  * Model for a TabContainer, representing its layout/contents and the currently displayed Tab.
  *
  * This object provides support for routing based navigation, managed mounting/unmounting of
- * hidden tabs, and lazy refreshing of its active Tab.
+ * inactive tabs, and lazy refreshing of its active Tab.
  */
 @HoistModel()
 export class TabContainerModel {
 
     /** TabModels included in this tab container. */
-    tabModels = [];
+    tabs = [];
 
     /** Base route for this container. */
     route = null
@@ -35,13 +35,13 @@ export class TabContainerModel {
     tabRenderMode = null;
 
     /**
-     * @param {Object[]} tabModels - TabModels or configurations for TabModels to be displayed
+     * @param {Object[]} tabs - configurations for TabModels (or TabModel instances) to be displayed
      *      by this container.
      * @param {string} [defaultTabId] - ID of Tab to be shown initially if routing does not specify
      *      otherwise. If not set, will default to first tab in the provided collection.
-     * @param {Object} [route] - base route name for this container. If set, this container will be
+     * @param {string} [route] - base route name for this container. If set, this container will be
      *      route-enabled, with the route for each tab being "[route]/[tab.id]".
-     * @param {string} [tabRenderMode] - how to render hidden tabs - [lazy|always|removeOnHide].
+     * @param {string} [tabRenderMode] - how to render hidden tabs - [lazy|always|unmountOnHide].
      */
     constructor({tabs, defaultTabId = null, route = null, tabRenderMode = 'lazy'}) {
         this.tabRenderMode = tabRenderMode;
@@ -68,9 +68,7 @@ export class TabContainerModel {
         }
     }
 
-    /**
-     * The currently selected TabModel.
-     */
+    /** @type TabModel */
     get activeTab() {
         return find(this.tabs, {id: this.activeTabId});
     }
@@ -99,8 +97,7 @@ export class TabContainerModel {
     }
 
     /**
-     * Require a refresh of all tabs when they are next shown.
-     * Immediately refresh active tab.
+     * Immediately refresh active tab and require a refresh of all other tabs when next shown.
      */
     requestRefresh() {
         this.tabs.forEach(it => it.requestRefresh());
@@ -110,10 +107,6 @@ export class TabContainerModel {
     //-------------------------
     // Implementation
     //-------------------------
-    destroy() {
-        XH.safeDestroy(this.tabs);
-    }
-
     routerReaction() {
         return {
             track: () => XH.routerState,
@@ -133,5 +126,9 @@ export class TabContainerModel {
             },
             fireImmediately: true
         };
+    }
+
+    destroy() {
+        XH.safeDestroy(this.tabs);
     }
 }

@@ -73,22 +73,19 @@ export function HoistComponent({
             },
 
             /**
-             * Alternate render method called on a HoistComponent when collapsed as per `isCollapsed`.
+             * Alternate render method called on a HoistComponent when isCollapsed == true.
              */
             renderCollapsed() {
                 return null;
             },
 
             /**
-             * Is this component in the DOM, and not within a hidden sub-tree
-             * (e.g. hidden tab).
-             *
-             * This property is based on the underlying css 'display' property of
-             * all ancestor properties.
+             * Is this component in the DOM and not within a hidden sub-tree (e.g. hidden tab).
+             * Based on the underlying css 'display' property of all ancestor properties.
              */
             isDisplayed: {
                 get() {
-                    let elem = this.getMountedElement();
+                    let elem = this.getDOMNode();
                     if (!elem) return false;
                     while (elem) {
                         if (elem.style.display == 'none') return false;
@@ -102,7 +99,7 @@ export function HoistComponent({
              * Get the DOM element underlying this component.
              * Returns null if component is not mounted.
              */
-            getMountedElement() {
+            getDOMNode() {
                 return this._mounted ?
                     ReactDom.findDOMNode(this) :
                     null;

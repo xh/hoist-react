@@ -23,7 +23,7 @@ export class GeneralTab extends Component {
             {id: 'about', content: AboutPanel},
             {id: 'config', content: ConfigPanel},
             {id: 'services', content: ServicePanel},
-            {id: 'ehCache', name: 'Caches', content: EhCachePanel},
+            {id: 'ehCache', title: 'Caches', content: EhCachePanel},
             {id: 'users', content: UserPanel}
         ]
     });

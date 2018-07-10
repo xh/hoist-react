@@ -47,7 +47,7 @@ export class Tab extends Component {
 
         this.wasActivated = this.wasActivated || isActive;
 
-        if (!isActive && (mode == 'removeOnHide' || !this.wasActivated && mode == 'lazy')) {
+        if (!isActive && (mode == 'unmountOnHide' || !this.wasActivated && mode == 'lazy')) {
             return null;
         }
 

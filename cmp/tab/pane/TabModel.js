@@ -18,7 +18,7 @@ import {startCase} from 'lodash';
 @HoistModel()
 export class TabModel {
     id = null;
-    name = null;
+    title = null;
     reloadOnShow = false;
     containerModel = null;
 
@@ -28,33 +28,27 @@ export class TabModel {
 
     /**
      * @param {string} id - unique ID, used by parent container for generating routes.
-     * @param {string} [name] - display name for the Tab in the container's TabSwitcher.
+     * @param {string} [title] - display title for the Tab in the container's TabSwitcher.
      * @param {Object} content - content to be rendered by this Tab. Component class or a custom
      *      element factory of the form returned by elemFactory.
-     * @param {boolean} reloadOnShow - true to reload data for this tab each time it is selected.
+     * @param {boolean} reloadOnShow - true to reload data for this tab each time it is activated.
      */
     constructor({
         id,
-        name = startCase(id),
+        title = startCase(id),
         content,
         reloadOnShow = false
     }) {
         this.id = id;
-        this.name = name;
+        this.title = title;
         this.content = content;
         this.reloadOnShow = reloadOnShow;
     }
 
-    /**
-     * Select this Tab.
-     */
-    select() {
+    activate() {
         this.containerModel.setActiveTabId(this.id);
     }
 
-    /**
-     * Is this Tab currently active?
-     */
     get isActive() {
         return this.containerModel.activeTabId === this.id;
     }

@@ -44,8 +44,8 @@ export class TabSwitcher extends Component {
             vertical,
             onChange: this.onTabChange,
             selectedTabId: activeTabId,
-            items: tabs.map(({id, name}) => {
-                return blueprintTab({id, title: name});
+            items: tabs.map(({id, title}) => {
+                return blueprintTab({id, title});
             }),
             ...omit(this.props, 'model')
         });

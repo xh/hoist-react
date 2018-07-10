@@ -34,7 +34,7 @@ export class MonitorResultsModel {
         return this.results.filter(monitor => monitor.status === 'FAIL').length;
     }
 
-    constructor(view) {
+    constructor({view}) {
         this.view = view;
         this.timer = Timer.create({
             runFn: () => this.loadAsync(),
