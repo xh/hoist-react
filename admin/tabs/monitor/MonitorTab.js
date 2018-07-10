@@ -16,7 +16,7 @@ export class MonitorTab extends Component {
 
     localModel = new TabContainerModel({
         route: 'default.monitor',
-        panes: [
+        tabs: [
             {id: 'status', content: MonitorResultsPanel},
             {id: 'editMonitors', content: MonitorEditorPanel}
         ]

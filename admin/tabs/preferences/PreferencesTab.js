@@ -17,7 +17,7 @@ export class PreferencesTab extends Component {
 
     localModel = new TabContainerModel({
         route: 'default.preferences',
-        panes: [
+        tabs: [
             {id: 'prefs', content: PreferencePanel},
             {id: 'userPrefs', content: UserPreferencePanel, reloadOnShow: true}
         ]

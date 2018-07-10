@@ -17,7 +17,7 @@ export class ActivityTab extends Component {
 
     localModel = new TabContainerModel({
         route: 'default.activity',
-        panes: [
+        tabs: [
             {id: 'tracking', content: TrackingPanel},
             {id: 'clientErrors', content: ClientErrorPanel},
             {id: 'feedback', content: FeedbackPanel}

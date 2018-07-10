@@ -5,27 +5,33 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-
+import {PropTypes as PT} from 'prop-types';
 import {elem, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Ref} from '@xh/hoist/utils/Ref';
 import {frame} from '@xh/hoist/cmp/layout';
+import {TabModel} from './TabModel';
 
 /**
- * Wrapper for contents to be shown in a particular 'pane' of a TabContainer. This is used by
- * TabContainer's internal implementation and not typically rendered directly by applications.
+ * Wrapper for contents to be shown within a TabContainer. This is used by TabContainer's internal
+ * implementation and not typically rendered directly by applications.
  *
- * This pane provides a default implementation of the following behavior:
+ * This wrapper component provides a default implementation of the following behavior:
  *
- *   - Mounting/unmounting its contents according to TabContainerModel.paneRenderMode.
- *   - Reloading its contents whenever it is visible or is made visible and has not been refreshed
- *     since the last refresh request on the TabContainerModel.
- *   - Stretching its contents using a flex layout.
+ *   - Mounts/unmounts its contents according to TabContainerModel.tabRenderMode.
+ *   - Reloads its contents whenever it is visible or when it is made visible and has not been
+ *      refreshed since the last refresh request on the TabContainerModel.
+ *   - Stretches its contents using a flex layout.
  *
  * Contained components that load data/state from the server should implement loadAsync(),
  * but generally leave the calling of that method to this component.
  */
 @HoistComponent()
-export class TabPane extends Component {
+export class Tab extends Component {
+
+    static propTypes = {
+        /** The controlling TabModel instance. */
+        model: PT.instanceOf(TabModel).isRequired
+    };
 
     child = new Ref();
     wasActivated = false;
@@ -37,7 +43,7 @@ export class TabPane extends Component {
 
     render() {
         const {content, isActive, containerModel} = this.model,
-            mode = containerModel.paneRenderMode;
+            mode = containerModel.tabRenderMode;
 
         this.wasActivated = this.wasActivated || isActive;
 
@@ -51,7 +57,6 @@ export class TabPane extends Component {
         
         return frame({
             display: isActive ? 'flex' : 'none',
-            cls: 'xh-tab-pane',
             item
         });
     }
@@ -80,4 +85,4 @@ export class TabPane extends Component {
         }
     }
 }
-export const tabPane = elemFactory(TabPane);
+export const tab = elemFactory(Tab);

@@ -10,14 +10,13 @@ import {LastPromiseModel} from '@xh/hoist/promise';
 import {startCase} from 'lodash';
 
 /**
- * Model for a TabPane - a single tab within a container - representing its content's
- * active and load/refresh state.
+ * Model for a Tab within a TabContainer - manages the active and refresh state of its contents.
  *
  * This model is not typically created directly within applications. Instead, specify a
- * configuration for it via the 'panes' property of the TabContainerModel constructor.
+ * configuration for it via the 'tabs' property of the TabContainerModel constructor.
  */
 @HoistModel()
-export class TabPaneModel {
+export class TabModel {
     id = null;
     name = null;
     reloadOnShow = false;
@@ -29,8 +28,8 @@ export class TabPaneModel {
 
     /**
      * @param {string} id - unique ID, used by parent container for generating routes.
-     * @param {string} [name] - display name for the tab.
-     * @param {Object} content - content to be rendered by this tab. Component class or a custom
+     * @param {string} [name] - display name for the Tab in the container's TabSwitcher.
+     * @param {Object} content - content to be rendered by this Tab. Component class or a custom
      *      element factory of the form returned by elemFactory.
      * @param {boolean} reloadOnShow - true to reload data for this tab each time it is selected.
      */
@@ -47,17 +46,17 @@ export class TabPaneModel {
     }
 
     /**
-     * Select this pane.
+     * Select this Tab.
      */
     select() {
-        this.containerModel.setActivePaneId(this.id);
+        this.containerModel.setActiveTabId(this.id);
     }
 
     /**
-     * Is this pane currently active?
+     * Is this Tab currently active?
      */
     get isActive() {
-        return this.containerModel.activePaneId === this.id;
+        return this.containerModel.activeTabId === this.id;
     }
 
     /**

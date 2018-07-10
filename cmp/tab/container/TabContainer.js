@@ -9,12 +9,13 @@ import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
 
-import {tabSwitcher} from './TabSwitcher';
-import {tabPane} from './TabPane';
-import './Tabs.scss';
+import {TabContainerModel} from './TabContainerModel';
+import {tabSwitcher} from '../switcher/TabSwitcher';
+import {tab} from '../pane/Tab';
+import '../Tabs.scss';
 
 /**
- * Display a set of child TabPanes and (optionally) a switcher control.
+ * Display a set of child Tabs and (optionally) a switcher control.
  *
  * By default this TabContainer will install a TabSwitcher above the Tabs to control the currently
  * displayed Tab. The 'switcherPosition' property can be adjusted to place the switcher control on
@@ -23,22 +24,18 @@ import './Tabs.scss';
  * TabSwitcher elsewhere in the graphical hierarchy (e.g. a shared menu bar), or control the visible
  * Tab directly via other means.
  *
- * Other than the position of the Switcher and optional layoutSupport, this component is specified
- * and controlled via its TabContainerModel.
+ * Other than switcher position and optional layout support, this component's TabContainerModel
+ * configures all other relevant aspects of this container, including its children.
  *
  * @see TabContainerModel
  */
 @HoistComponent({layoutSupport: true})
 export class TabContainer extends Component {
+
     static propTypes = {
-        /**
-         * TabContainerModel instance.
-         */
-        model: PT.object.isRequired,
-        /**
-         * Position of the switcher relative to the TabPanes.
-         * Set to 'none' to opt out of the default TabSwitcher.
-         */
+        /** The controlling TabContainerModel instance. */
+        model: PT.instanceOf(TabContainerModel).isRequired,
+        /** Position of the switcher docked within this component (or 'none'). */
         switcherPosition: PT.oneOf(['top', 'bottom', 'left', 'right', 'none'])
     };
 
@@ -48,7 +45,7 @@ export class TabContainer extends Component {
 
     render() {
         const {model} = this,
-            {activePaneId, panes} = model,
+            {activeTabId, tabs} = model,
             {switcherPosition, layoutConfig} = this.props,
             switcherBefore = ['left', 'top'].includes(switcherPosition),
             switcherAfter = ['right', 'bottom'].includes(switcherPosition),
@@ -65,18 +62,18 @@ export class TabContainer extends Component {
             layoutConfig,
             items: [
                 switcherBefore ? tabSwitcher({model, orientation: switcherPosition}) : null,
-                ...panes.map(paneModel => {
-                    const paneId = paneModel.id,
+                ...tabs.map(tabModel => {
+                    const tabId = tabModel.id,
                         style = {};
 
-                    if (paneId !== activePaneId) {
+                    if (tabId !== activeTabId) {
                         style.display = 'none';
                     }
 
                     return div({
                         cls: 'xh-tab-panel',
                         style,
-                        item: tabPane({model: paneModel})
+                        item: tab({model: tabModel})
                     });
                 }),
                 switcherAfter ? tabSwitcher({model, orientation: switcherPosition}) : null

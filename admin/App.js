@@ -21,7 +21,7 @@ export class App {
 
     tabModel = new TabContainerModel({
         route: 'default',
-        panes: this.createTabs()
+        tabs: this.createTabs()
     });
 
     checkAccess(user) {

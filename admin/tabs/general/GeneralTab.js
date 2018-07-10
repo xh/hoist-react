@@ -19,7 +19,7 @@ export class GeneralTab extends Component {
 
     localModel = new TabContainerModel({
         route: 'default.general',
-        panes: [
+        tabs: [
             {id: 'about', content: AboutPanel},
             {id: 'config', content: ConfigPanel},
             {id: 'services', content: ServicePanel},
