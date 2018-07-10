@@ -8,8 +8,9 @@ import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/cmp/rest';
 import {baseCol} from '@xh/hoist/columns/Core';
-import {usernameCol} from '../../columns/Columns';
-import {compactDateRenderer} from '../../../format';
+import {compactDateRenderer} from '@xh/hoist/format';
+
+import {usernameCol} from '@xh/hoist/admin/columns/Columns';
 
 @HoistComponent()
 export class FeedbackPanel extends Component {

@@ -59,14 +59,15 @@ class LogViewerDisplay extends Component {
     }
 
     timedRefreshLines() {
-        const {model, lastRow} = this,
-            {tabPaneModel, tail} = model,
-            rect = lastRow.value && lastRow.value.getBoundingClientRect(),
-            outOfView = !rect || (rect.bottom > window.innerHeight);
-
-        if (!tabPaneModel.isActive || !tail || outOfView) return;
-
-        model.fetchFile();
+        const {model} = this;
+        if (model.tail && this.isDisplayed) {
+            const {lastRow} = this,
+                rect = lastRow.value && lastRow.value.getBoundingClientRect(),
+                inView = rect && rect.bottom <= window.innerHeight;
+            if (inView) {
+                model.fetchFile();
+            }
+        }
     }
 
     renderContextMenu(e) {

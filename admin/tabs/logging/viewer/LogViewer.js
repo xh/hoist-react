@@ -22,7 +22,7 @@ import './LogViewer.scss';
  */
 @HoistComponent()
 export class LogViewer extends Component {
-    localModel = new LogViewerModel(this.props.tabPaneModel);
+    localModel = new LogViewerModel();
 
     async loadAsync() {
         return this.model.loadAsync();
