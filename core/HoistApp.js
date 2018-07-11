@@ -63,6 +63,27 @@ export function HoistApp(C) {
         },
 
         /**
+         * Is app suspension by IdleService disabled?
+         *
+         * @see IdleService.  App suspension is also configurable in soft config, and via user preference.
+         */
+        idleDetectionDisabled: {
+            get() {return false}
+        },
+
+        /**
+         * Component to indicate App has been suspended.
+         *
+         * The component will receive a single prop -- onReactivate -- a callback called when user has acknowledged
+         *      the suspension and wishes to reload the app and continue working.
+         *
+         * @see IdleService.
+         */
+        suspendedDialogClass:  {
+            get() {return null}
+        },
+
+        /**
          * Call this once when application mounted in order to trigger initial authentication and
          * initialization of the application and its services.
          */

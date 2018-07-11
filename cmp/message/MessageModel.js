@@ -58,6 +58,7 @@ export class MessageModel {
      */
     constructor(config) {
         this.initialConfig = config;
+        if (config.isOpen) this.show();
     }
 
     /**

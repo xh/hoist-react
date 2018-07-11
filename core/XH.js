@@ -6,14 +6,14 @@
  */
 
 import ReactDOM from 'react-dom';
-import {isPlainObject, defaults} from 'lodash';
+import {isPlainObject, defaults, flatten} from 'lodash';
 
-import {elem, HoistModel} from '@xh/hoist/core';
+import {elem, HoistModel, AppState} from '@xh/hoist/core';
 import {Exception, ExceptionHandler} from '@xh/hoist/exception';
-import {observable, setter, action} from '@xh/hoist/mobx';
+import {observable, action} from '@xh/hoist/mobx';
 import {MultiPromiseModel, never} from '@xh/hoist/promise';
 import {RouterModel} from '@xh/hoist/router';
-import {appContainer} from '@xh/hoist/app';
+import {appContainer} from '@xh/hoist/impl';
 import {MessageSourceModel} from '@xh/hoist/cmp/message';
 import {throwIf} from '@xh/hoist/utils/JsUtils';
 
@@ -24,6 +24,7 @@ import {
     FeedbackService,
     FetchService,
     IdentityService,
+    IdleService,
     LocalStorageService,
     PrefService,
     TrackService
@@ -84,6 +85,7 @@ class XHClass {
     feedbackService = new FeedbackService();
     fetchService = new FetchService();
     identityService = new IdentityService();
+    idleService = new IdleService();
     localStorageService = new LocalStorageService();
     prefService = new PrefService();
     trackService = new TrackService();
@@ -91,8 +93,8 @@ class XHClass {
     //-----------------------------
     // Observable State
     //-----------------------------
-    /** State of app loading -- see HoistLoadState for valid values. */
-    @setter @observable loadState = LoadState.PRE_AUTH;
+    /** State of app -- see AppState for valid values. */
+    @observable appState = AppState.PRE_AUTH;
 
     /** Currently authenticated user. */
     @observable authUsername = null;
@@ -135,8 +137,8 @@ class XHClass {
     /**
      * Main entry point. Initialize and render application code.
      *
-     * @param {Object} app - object containing main application state and logic.  Should
-     *      be an instance of a class decorated with @HoistApp.
+     * @param {Object} app - object containing main application state and logic.
+     *      Should be an instance of a class decorated with @HoistApp.
      */
     renderApp(app) {
         this.app = app;
@@ -152,10 +154,21 @@ class XHClass {
         ReactDOM.render(rootView, document.getElementById('root'));
     }
 
-    /** Route the app.  See RouterModel.navigate.  */
-    navigate(...args) {
-        this.routerModel.navigate(...args);
+    /**
+     * Transition the application state.
+     *
+     * @param {AppState} appState - state to transition to.
+     *
+     * Used by framework.  Not intended for application use.
+     */
+    @action
+    setAppState(appState) {
+        if (this.appState != appState) {
+            this.appState = appState;
+            this.fireEvent('appStateChanged', {appState});
+        }
     }
+
 
     /** Trigger a full reload of the app. */
     @action
@@ -206,6 +219,7 @@ class XHClass {
     /**
      * Show the update toolbar prompt. Called by EnvironmentService when the server reports that a
      * new (or at least different) version is available and the user should be prompted.
+     *
      * @param {string} updateVersion
      */
     @action
@@ -213,10 +227,36 @@ class XHClass {
         this.updateVersion = updateVersion;
     }
 
+    //-------------------------
+    // Routing support
+    //-------------------------
+    /**
+     * Route the app.
+     * @see RouterModel.navigate
+     */
+    navigate(...args) {
+        this.routerModel.navigate(...args);
+    }
+
+    /**
+     * The current routing state as an observable property.
+     * @see RouterModel.currentState
+     */
+    get routerState() {
+        return this.routerModel.currentState;
+    }
+
+    /**
+     * Underlying Router5 Router object implementing the routing state.
+     * Applications should use this property to directly access the Router5 API.
+     */
+    get router() {
+        return this.routerModel.router;
+    }
+
     //------------------------------
     // Message Support
     //------------------------------
-
     /**
      * Show a modal message dialog.
      *
@@ -227,8 +267,7 @@ class XHClass {
     }
 
     /**
-     * Show a modal 'alert' dialog.
-     * This method will display an alert message with a default confirm button.
+     * Show a modal 'alert' dialog with message and default OK button.
      *
      * @param {Object} config -  see MessageModel.show() for available options.
      */
@@ -238,8 +277,7 @@ class XHClass {
     }
 
     /**
-     * Show a modal 'confirm' dialog.
-     * This method will display a message with default confirm and cancel buttons.
+     * Show a modal 'confirm' dialog with message and default OK/Cancel buttons.
      *
      *  @param {Object} config - see MessageModel.show() for available options.
      */
@@ -263,61 +301,66 @@ class XHClass {
     // Framework Methods
     //---------------------------------
     /**
-     * Called when application mounted in order to trigger initial authentication
-     * and initialization of framework and application.
+     * Called when application mounted in order to trigger initial authentication and
+     * initialization of framework and application.
      *
      * Not for application use.
      */
     async initAsync() {
+        const S = AppState;
         // Add xh-app class to body element to power Hoist CSS selectors
         document.body.classList.add('xh-app');
 
         try {
-            this.setLoadState(LoadState.PRE_AUTH);
+            this.setAppState(S.PRE_AUTH);
 
             const authUser = await this.getAuthUserFromServerAsync();
 
             if (!authUser) {
                 throwIf(this.app.requireSSO, 'Failed to authenticate user via SSO.');
 
-                this.setLoadState(LoadState.LOGIN_REQUIRED);
+                this.setAppState(S.LOGIN_REQUIRED);
                 return;
             }
 
             await this.completeInitAsync(authUser.username);
 
         } catch (e) {
-            this.setLoadState(LoadState.FAILED);
+            this.setAppState(S.LOAD_FAILED);
             XH.handleException(e, {requireReload: true});
         }
     }
 
     /**
-     * Complete initialization.
-     * Not for application use. Called by framework after user identity has been confirmed.
+     * Complete initialization. Called after user identity has been confirmed.
      *
+     * Not for application use.
      */
     @action
     async completeInitAsync() {
-        this.setLoadState(LoadState.INITIALIZING);
+        const S = AppState;
+
+        this.setAppState(S.INITIALIZING);
         try {
+            // Delay to workaround hot-reload styling issues in dev.
+            const delay = XH.isDevelopmentMode ? 300 : 1;
             await this.initServicesAsync()
-                .wait(100);  // delay is workaround for styling issues in dev TODO: Remove
+                .wait(delay);
 
             this.initLocalState();
 
             const access = this.app.checkAccess(XH.getUser());
             if (!access.hasAccess) {
                 this.accessDeniedMessage = access.message || 'Access denied.';
-                this.setLoadState(LoadState.ACCESS_DENIED);
+                this.setAppState(S.ACCESS_DENIED);
                 return;
             }
 
             await this.app.initAsync();
-            this.initRouterModel();
-            this.setLoadState(LoadState.COMPLETE);
+            this.startRouter();
+            this.setAppState(S.RUNNING);
         } catch (e) {
-            this.setLoadState(LoadState.FAILED);
+            this.setAppState(S.LOAD_FAILED);
             XH.handleException(e, {requireReload: true});
         }
     }
@@ -346,6 +389,7 @@ class XHClass {
             this.environmentService,
             this.feedbackService,
             this.identityService,
+            this.idleService,
             this.trackService
         );
     }
@@ -354,8 +398,9 @@ class XHClass {
         this.setDarkTheme(XH.getPref('xhTheme') === 'dark');
     }
 
-    initRouterModel() {
-        this.routerModel.init(this.app.getRoutes());
+    startRouter() {
+        this.router.add(this.app.getRoutes());
+        this.router.start();
     }
 
     @action
@@ -376,7 +421,6 @@ class XHClass {
         this.createMethodAliases(this.environmentService,       {getEnv: 'get'});
         this.createMethodAliases(Exception,                     {exception: 'create'});
         this.createMethodAliases(ExceptionHandler,              ['handleException']);
-
     }
 
     createMethodAliases(src, aliases) {
@@ -412,6 +456,7 @@ class XHClass {
      * @param {...Object} args - Objects to be destroyed.
      */
     safeDestroy(...args) {
+        args = flatten(args);
         args.forEach(it => {
             if (it && it.destroy) it.destroy();
         });
@@ -419,16 +464,3 @@ class XHClass {
 }
 export const XH = window.XH = new XHClass();
 
-/**
- * Enumeration of possible Load States for Hoist.
- *
- * See XH.loadState.
- */
-export const LoadState = {
-    PRE_AUTH: 'PRE_AUTH',
-    LOGIN_REQUIRED: 'LOGIN_REQUIRED',
-    ACCESS_DENIED: 'ACCESS_DENIED',
-    INITIALIZING: 'INITIALIZING',
-    COMPLETE: 'COMPLETE',
-    FAILED: 'FAILED'
-};

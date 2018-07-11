@@ -27,7 +27,6 @@ export class LogViewerModel {
     // Overall State
     @observable file = null;
     @setter @observable.ref rows = [];
-    tabPaneModel = null;
 
     loadModel = new LastPromiseModel();
 
@@ -43,8 +42,7 @@ export class LogViewerModel {
         ]
     });
 
-    constructor(tabPaneModel) {
-        this.tabPaneModel = tabPaneModel;
+    constructor() {
         this.addReaction(this.syncSelectionReaction());
         this.addReaction(this.toggleTail());
     }

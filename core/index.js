@@ -8,6 +8,7 @@
 export * from './elem';
 export * from './mixins/Reactive';
 export * from './mixins/EventTarget';
+export * from './AppState';
 export * from './HoistApp';
 export * from './HoistComponent';
 export * from './HoistModel';
