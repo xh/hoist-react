@@ -11,7 +11,7 @@ import {UrlStore} from '@xh/hoist/data';
 import {baseCol} from '@xh/hoist/columns/Core';
 import {ToastManager} from '@xh/hoist/toast';
 
-import {nameCol} from '../../columns/Columns';
+import {nameCol} from '@xh/hoist/admin/columns/Columns';
 
 @HoistModel()
 export class EhCacheModel {

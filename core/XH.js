@@ -6,7 +6,7 @@
  */
 
 import ReactDOM from 'react-dom';
-import {isPlainObject, defaults} from 'lodash';
+import {isPlainObject, defaults, flatten} from 'lodash';
 
 import {elem, HoistModel, AppState} from '@xh/hoist/core';
 import {Exception, ExceptionHandler} from '@xh/hoist/exception';
@@ -108,9 +108,6 @@ class XHClass {
      */
     @observable.ref displayException;
 
-    /** A component to be rendered when the app times out */
-    @observable idleComponent;
-
     /** Show about dialog? */
     @observable aboutIsOpen = false;
 
@@ -140,8 +137,8 @@ class XHClass {
     /**
      * Main entry point. Initialize and render application code.
      *
-     * @param {Object} app - object containing main application state and logic.  Should
-     *      be an instance of a class decorated with @HoistApp.
+     * @param {Object} app - object containing main application state and logic.
+     *      Should be an instance of a class decorated with @HoistApp.
      */
     renderApp(app) {
         this.app = app;
@@ -172,10 +169,6 @@ class XHClass {
         }
     }
 
-    /** Route the app.  See RouterModel.navigate.  */
-    navigate(...args) {
-        this.routerModel.navigate(...args);
-    }
 
     /** Trigger a full reload of the app. */
     @action
@@ -226,6 +219,7 @@ class XHClass {
     /**
      * Show the update toolbar prompt. Called by EnvironmentService when the server reports that a
      * new (or at least different) version is available and the user should be prompted.
+     *
      * @param {string} updateVersion
      */
     @action
@@ -233,10 +227,36 @@ class XHClass {
         this.updateVersion = updateVersion;
     }
 
+    //-------------------------
+    // Routing support
+    //-------------------------
+    /**
+     * Route the app.
+     * @see RouterModel.navigate
+     */
+    navigate(...args) {
+        this.routerModel.navigate(...args);
+    }
+
+    /**
+     * The current routing state as an observable property.
+     * @see RouterModel.currentState
+     */
+    get routerState() {
+        return this.routerModel.currentState;
+    }
+
+    /**
+     * Underlying Router5 Router object implementing the routing state.
+     * Applications should use this property to directly access the Router5 API.
+     */
+    get router() {
+        return this.routerModel.router;
+    }
+
     //------------------------------
     // Message Support
     //------------------------------
-
     /**
      * Show a modal message dialog.
      *
@@ -247,8 +267,7 @@ class XHClass {
     }
 
     /**
-     * Show a modal 'alert' dialog.
-     * This method will display an alert message with a default confirm button.
+     * Show a modal 'alert' dialog with message and default OK button.
      *
      * @param {Object} config -  see MessageModel.show() for available options.
      */
@@ -258,8 +277,7 @@ class XHClass {
     }
 
     /**
-     * Show a modal 'confirm' dialog.
-     * This method will display a message with default confirm and cancel buttons.
+     * Show a modal 'confirm' dialog with message and default OK/Cancel buttons.
      *
      *  @param {Object} config - see MessageModel.show() for available options.
      */
@@ -283,8 +301,8 @@ class XHClass {
     // Framework Methods
     //---------------------------------
     /**
-     * Called when application mounted in order to trigger initial authentication
-     * and initialization of framework and application.
+     * Called when application mounted in order to trigger initial authentication and
+     * initialization of framework and application.
      *
      * Not for application use.
      */
@@ -314,9 +332,9 @@ class XHClass {
     }
 
     /**
-     * Complete initialization.
-     * Not for application use. Called by framework after user identity has been confirmed.
+     * Complete initialization. Called after user identity has been confirmed.
      *
+     * Not for application use.
      */
     @action
     async completeInitAsync() {
@@ -324,8 +342,10 @@ class XHClass {
 
         this.setAppState(S.INITIALIZING);
         try {
+            // Delay to workaround hot-reload styling issues in dev.
+            const delay = XH.isDevelopmentMode ? 300 : 1;
             await this.initServicesAsync()
-                .wait(100);  // delay is workaround for styling issues in dev TODO: Remove
+                .wait(delay);
 
             this.initLocalState();
 
@@ -339,6 +359,7 @@ class XHClass {
             await this.app.initAsync();
             this.initRouterModel();
             this.setAppState(S.RUNNING);
+            this.startRouter();
         } catch (e) {
             this.setAppState(S.LOAD_FAILED);
             XH.handleException(e, {requireReload: true});
@@ -378,8 +399,9 @@ class XHClass {
         this.setDarkTheme(XH.getPref('xhTheme') === 'dark');
     }
 
-    initRouterModel() {
-        this.routerModel.init(this.app.getRoutes());
+    startRouter() {
+        this.router.add(this.app.getRoutes());
+        this.router.start();
     }
 
     @action
@@ -400,7 +422,6 @@ class XHClass {
         this.createMethodAliases(this.environmentService,       {getEnv: 'get'});
         this.createMethodAliases(Exception,                     {exception: 'create'});
         this.createMethodAliases(ExceptionHandler,              ['handleException']);
-
     }
 
     createMethodAliases(src, aliases) {
@@ -436,6 +457,7 @@ class XHClass {
      * @param {...Object} args - Objects to be destroyed.
      */
     safeDestroy(...args) {
+        args = flatten(args);
         args.forEach(it => {
             if (it && it.destroy) it.destroy();
         });

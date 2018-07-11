@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {HoistComponent, XH} from '@xh/hoist/core';
 import {lockoutPanel} from '@xh/hoist/impl';
 import {tabContainer, tabSwitcher} from '@xh/hoist/cmp/tab';
-import {frame, panel} from '@xh/hoist/cmp/layout';
+import {panel} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {appBar} from '@xh/hoist/cmp/appbar';
@@ -25,9 +25,10 @@ export class AppComponent extends Component {
 
         return panel({
             tbar: this.renderAppBar(),
-            item: frame({
-                cls: 'xh-admin-app-frame',
-                item: tabContainer({model: XH.app.tabModel})
+            cls: 'xh-admin-app-frame',
+            item: tabContainer({
+                model: this.model.tabModel,
+                switcherPosition: 'none'
             })
         });
     }
