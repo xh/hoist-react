@@ -318,7 +318,9 @@ class Grid extends Component {
     }
 
     onGridSizeChanged = (ev) => {
-        ev.api.sizeColumnsToFit();
+        if (this.isDisplayed) {
+            ev.api.sizeColumnsToFit();
+        }
     }
 }
 export const grid = elemFactory(Grid);
