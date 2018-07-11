@@ -4,7 +4,6 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-export * from './AppContainer';
 export * from './AboutDialog';
 export * from './ExceptionDialog';
 export * from './ImpersonationBar';

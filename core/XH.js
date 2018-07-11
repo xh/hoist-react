@@ -141,13 +141,14 @@ class XHClass {
      *      Should be an instance of a class decorated with @HoistApp.
      */
     renderApp(app, appContainer) {
-        const {componentClass, containerClass} = this.app;
+        this.app = app;
+        const {componentClass, containerClass} = app;
         throwIf(!componentClass, 'A HoistApp must define a componentClass getter to specify its top-level component.');
         throwIf(!containerClass, 'A HoistApp must define a containerClass that it should be hosted within.');
 
         const rootView = elem(
             containerClass,
-            elem(componentClass, {model: app})
+            {item: elem(componentClass, {model: app})}
         );
 
         ReactDOM.render(rootView, document.getElementById('root'));
