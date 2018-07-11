@@ -6,14 +6,9 @@
  */
 
 import {Component} from 'react';
-import {dialog} from '@xh/hoist/kit/blueprint';
-import {XH, HoistComponent, elemFactory, AppState} from '@xh/hoist/core';
-import {frame, table, tbody, tr, th, td, filler} from '@xh/hoist/cmp/layout';
-import {toolbar} from '@xh/hoist/cmp/toolbar';
-import {button} from '@xh/hoist/cmp/button';
+import {HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {MessageModel, message} from '@xh/hoist/cmp/message';
-import './AboutDialog.scss';
 
 /**
  * Default display of application suspension.

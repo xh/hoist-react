@@ -10,7 +10,7 @@ import {isPlainObject, defaults, flatten} from 'lodash';
 
 import {elem, HoistModel, AppState} from '@xh/hoist/core';
 import {Exception, ExceptionHandler} from '@xh/hoist/exception';
-import {observable, setter, action} from '@xh/hoist/mobx';
+import {observable, action} from '@xh/hoist/mobx';
 import {MultiPromiseModel, never} from '@xh/hoist/promise';
 import {RouterModel} from '@xh/hoist/router';
 import {appContainer} from '@xh/hoist/impl';
@@ -357,9 +357,8 @@ class XHClass {
             }
 
             await this.app.initAsync();
-            this.initRouterModel();
-            this.setAppState(S.RUNNING);
             this.startRouter();
+            this.setAppState(S.RUNNING);
         } catch (e) {
             this.setAppState(S.LOAD_FAILED);
             XH.handleException(e, {requireReload: true});
