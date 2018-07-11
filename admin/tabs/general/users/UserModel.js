@@ -7,7 +7,7 @@
 
 import {HoistModel} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 
 import {baseCol, boolCheckCol} from '@xh/hoist/columns/Core';
 import {usernameCol} from '@xh/hoist/admin/columns/Columns';

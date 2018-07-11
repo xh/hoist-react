@@ -9,11 +9,10 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {toolbarButton} from '@xh/hoist/kit/onsen';
+import {toolbarButton} from '@xh/hoist/mobile/onsen';
 
 /**
  * Convenience Button preconfigured for use as a trigger for a refresh operation.
- * Accepts props documented below as well as any others supported by Blueprint's Button.
  *
  * Must be provided either an onClick handler *or* a model. If a model is provided, this button
  * will call loadAsync() on the model class.

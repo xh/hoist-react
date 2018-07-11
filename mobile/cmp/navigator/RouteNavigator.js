@@ -13,7 +13,7 @@ This is not functional, but has some ideas that we can revisit later
 
 import {Component} from 'react';
 import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
-import {navigator as onsenNavigator} from '@xh/hoist/kit/onsen';
+import {navigator as onsenNavigator} from '@xh/hoist/mobile/onsen';
 import {keys} from 'lodash';
 
 @HoistComponent()

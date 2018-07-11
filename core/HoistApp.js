@@ -27,6 +27,19 @@ export function HoistApp(C) {
     defaultMethods(C, {
 
         /**
+         * Container component to be used to host this application.
+         *
+         * This class is platform specific, and should be typically either
+         * @xh/hoist/desktop/AppContainer or
+         * @xh/hoist/mobile/AppContainer.
+         *
+         * No default is specified here to avoid extraneous inclusion of platform specific code.
+         */
+        containerClass: {
+            get() {return null}
+        },
+
+        /**
          * Component class for rendering this app.  Should be a subclass of Component
          * and decorated with @HoistComponent.
          */

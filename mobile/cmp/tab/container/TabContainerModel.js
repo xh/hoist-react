@@ -6,8 +6,8 @@
  */
 import {XH, HoistModel} from '@xh/hoist/core';
 import {action, computed, observable} from '@xh/hoist/mobx';
-import {tab as onsenTab} from '@xh/hoist/kit/onsen';
-import {div} from '@xh/hoist/cmp/layout';
+import {tab as onsenTab} from '@xh/hoist/mobile/onsen';
+import {div} from '@xh/hoist/layout';
 import {throwIf} from '@xh/hoist/utils/JsUtils';
 import {isPlainObject, uniqBy} from 'lodash';
 

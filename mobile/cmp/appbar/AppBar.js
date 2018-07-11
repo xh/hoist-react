@@ -8,8 +8,8 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {div} from '@xh/hoist/cmp/layout';
-import {toolbar} from '@xh/hoist/kit/onsen';
+import {div} from '@xh/hoist/layout';
+import {toolbar} from '@xh/hoist/mobile/onsen';
 import {navigatorBackButton, themeToggleButton, logoutButton, refreshButton} from '@xh/hoist/mobile/cmp/button';
 
 /**

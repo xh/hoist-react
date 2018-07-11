@@ -8,8 +8,8 @@
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {PropTypes as PT} from 'prop-types';
-import {vbox, frame, div, hspacer} from '@xh/hoist/cmp/layout';
-import {listItem} from '@xh/hoist/kit/onsen';
+import {vbox, frame, div, hspacer} from '@xh/hoist/layout';
+import {listItem} from '@xh/hoist/mobile/onsen';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 
 /**

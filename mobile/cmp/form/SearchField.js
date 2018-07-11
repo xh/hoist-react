@@ -7,7 +7,7 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {searchInput} from '@xh/hoist/kit/onsen';
+import {searchInput} from '@xh/hoist/mobile/onsen';
 
 import {HoistField} from './HoistField';
 

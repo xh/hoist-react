@@ -7,8 +7,8 @@
 
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {list, listHeader, listItem} from '@xh/hoist/kit/onsen';
-import {hframe, frame, div} from '@xh/hoist/cmp/layout';
+import {list, listHeader, listItem} from '@xh/hoist/mobile/onsen';
+import {hframe, frame, div} from '@xh/hoist/layout';
 
 /**
  * Grid Component

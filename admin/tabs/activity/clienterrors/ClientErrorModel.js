@@ -9,7 +9,7 @@ import moment from 'moment';
 import {XH, HoistModel} from '@xh/hoist/core';
 import {action, observable, setter} from '@xh/hoist/mobx';
 import {LocalStore} from '@xh/hoist/data';
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {fmtDate} from '@xh/hoist/format';
 import {baseCol, boolCheckCol} from '@xh/hoist/columns/Core';
 import {compactDateCol} from '@xh/hoist/columns/DatesTimes';

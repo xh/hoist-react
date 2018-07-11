@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {div, box} from '@xh/hoist/cmp/layout';
+import {div, box} from '@xh/hoist/layout';
 
 import './Mask.scss';
 
