@@ -10,10 +10,10 @@ import {LastPromiseModel} from '@xh/hoist/promise';
 import {max} from 'lodash';
 
 /**
- * Model for a TabPane, representing its content's active and load state.
+ * Model for a Tab within a TabContainer, representing its content's active and load state.
  */
 @HoistModel()
-export class TabPaneModel {
+export class TabModel {
     id = null;
     pageFactory = null;
     pageProps = null;
@@ -55,7 +55,7 @@ export class TabPaneModel {
 
     @computed
     get isActive() {
-        return this.parent.selectedId === this.id;
+        return this.parent.activeTabId === this.id;
     }
 
     @action

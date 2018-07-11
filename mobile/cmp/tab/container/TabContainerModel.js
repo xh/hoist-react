@@ -9,40 +9,44 @@ import {action, computed, observable} from '@xh/hoist/mobx';
 import {tab as onsenTab} from '@xh/hoist/kit/onsen';
 import {div} from '@xh/hoist/cmp/layout';
 import {throwIf} from '@xh/hoist/utils/JsUtils';
-import {uniqBy} from 'lodash';
+import {isPlainObject, uniqBy} from 'lodash';
 
-import {tabPane} from './TabPane';
-import {TabPaneModel} from './TabPaneModel';
+import {tab} from '../pane/Tab';
+import {TabModel} from '../pane/TabModel';
 
 /**
  * Model for a TabContainer, representing its tabs and the currently selected tab.
  */
 @HoistModel()
 export class TabContainerModel {
+
+    /** TabModels included in this tab container. */
     tabs = [];
-    @observable selectedId = null;
+
+    /** ID of the Tab to be active by default. */
+    defaultTabId = null;
+
+    /** ID of the currently active Tab. */
+    @observable activeTabId = null;
+
+    /** Timestamp of last call to requestRefresh(). Used to refresh children. */
     @observable lastRefreshRequest = null;
 
     @computed
-    get selectedIndex() {
-        const tab = this.findById(this.selectedId);
+    get activeTabIndex() {
+        const tab = this.findById(this.activeTabId);
         return tab ? this.tabs.indexOf(tab) : 0;
     }
 
     /**
-     * @param {Object[]} tabs - configurations for TabPaneModels.
-     * @param {String} [selectedId] - id for initially selected tab.
+     * @param {Object[]} tabs - configurations for TabModels (or TabModel instances).
+     * @param {String} [defaultTabId] - ID of Tab to be shown initially. If not set, will default to first tab in the provided collection.
      */
     constructor({
         tabs,
-        selectedId
+        defaultTabId
     }) {
-        tabs = tabs.map(tabCfg => {
-            tabCfg.parent = this;
-            return new TabPaneModel(tabCfg);
-        });
-
-        // Validate and wire children
+        // 1) Validate and wire tabs, instantiate if needed.
         throwIf(tabs.length == 0,
             'TabContainerModel needs at least one child.'
         );
@@ -50,22 +54,32 @@ export class TabContainerModel {
             'One or more tabs in TabContainerModel has a non-unique id.'
         );
 
+        tabs = tabs.map(p => {
+            if (isPlainObject(p)) {
+                p.parent = this;
+                return new TabModel(p);
+            }
+            return p;
+        });
         this.tabs = tabs;
-        this.setSelectedId(selectedId || tabs[0].id);
+
+        // 2) Setup and activate default tab
+        if (defaultTabId == null) defaultTabId = tabs[0].id;
+        this.activeTabId = this.defaultTabId = defaultTabId;
     }
 
     @action
-    setSelectedIndex(idx) {
-        this.setSelectedId(this.tabs[idx].id);
+    setActiveTabIndex(idx) {
+        this.setActiveTabId(this.tabs[idx].id);
     }
 
     @action
-    setSelectedId(id) {
+    setActiveTabId(id) {
         const tabs = this.tabs,
             tab = this.findById(id);
 
         if (tab && tab.reloadOnShow) tab.requestRefresh();
-        this.selectedId = tab ? id : tabs[0].id;
+        this.activeTabId = tab ? id : tabs[0].id;
     }
 
     @action
@@ -81,14 +95,14 @@ export class TabContainerModel {
     }
 
     renderTabs() {
-        return this.tabs.map(tabPaneModel => this.renderTab(tabPaneModel));
+        return this.tabs.map(tabModel => this.renderTab(tabModel));
     }
 
-    renderTab(tabPaneModel) {
-        const {id, label, icon} = tabPaneModel;
+    renderTab(tabModel) {
+        const {id, label, icon} = tabModel;
 
         return {
-            content: tabPane({key: id, model: tabPaneModel}),
+            content: tab({key: id, model: tabModel}),
             tab: onsenTab({
                 key: id,
                 cls: 'xh-tab',

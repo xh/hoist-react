@@ -16,7 +16,7 @@ import {Ref} from '@xh/hoist/utils/Ref';
  * generally leave the calling of that method to this component
  */
 @HoistComponent()
-export class TabPane extends Component {
+export class Tab extends Component {
 
     child = new Ref();
 
@@ -32,7 +32,7 @@ export class TabPane extends Component {
         return pageFactory({
             ...pageProps,
             ref: this.child.ref,
-            tabPaneModel: this.model
+            tabModel: this.model
         });
     }
 
@@ -60,4 +60,4 @@ export class TabPane extends Component {
 
 }
 
-export const tabPane = elemFactory(TabPane);
+export const tab = elemFactory(Tab);
