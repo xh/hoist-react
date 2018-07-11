@@ -8,7 +8,7 @@
 import {Children, Component} from 'react';
 import {ContextMenuTarget} from '@xh/hoist/kit/blueprint';
 import {observable, observer, setter} from '@xh/hoist/mobx';
-import {elemFactory, LoadState, XH} from '@xh/hoist/core';
+import {elemFactory, elem, AppState, XH} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/cmp/contextmenu';
 import {loadMask} from '@xh/hoist/cmp/mask';
 import {messageSource} from '@xh/hoist/cmp/message';
@@ -23,24 +23,25 @@ import {
     impersonationBar,
     loginPanel,
     updateBar,
-    versionBar
-} from './impl';
-
-import {lockoutPanel} from './';
+    versionBar,
+    lockoutPanel,
+    SuspendedDialog
+} from './';
 
 /**
  * Top-level wrapper to provide core Hoist Application layout and infrastructure to an application's
- * root Component. Provides initialized Hoist services and a standard viewport that also includes
- * standard UI elements such as an impersonation bar header, version bar footer, app-wide load mask,
- * context menu, and popup message support.
+ * root Component. Provides a standard viewport that includes standard UI elements such as an
+ * impersonation bar header, version bar footer, an app-wide load mask, a base context menu,
+ * popup message support, and exception rendering.
  *
- * Construction of this container triggers the init of the core XH singleton, which queries for an
- * authorized user and then proceeds to init all core Hoist and app-level services.
+ * Successful construction of this container indicates that all app code has been loaded, and is
+ * being mounted. This triggers a call to XH.initAsync() to begin the Hoist and Application loading
+ * lifecycle.
  *
- * If the user is not yet known (and the app does *not* use SSO), this container will display a
- * standardized loginPanel component to prompt for a username and password. Once the user is
- * confirmed, this container will again mask until Hoist has completed its initialization, at
- * which point the app's UI will be rendered.
+ * If the application is in the 'LOGIN_REQUIRED' state, this container will display a
+ * standardized loginPanel component to prompt for a username and password. During loading and initialization
+ * this componenent will render standard masks.  Once the application has reached "RUNNING" state it will be fully
+ * rendered.
  *
  * @private
  */
@@ -63,21 +64,23 @@ export class AppContainer extends Component {
     }
 
     renderContent() {
+        const S = AppState;
         if (this.caughtException) return null;
 
-        switch (XH.loadState) {
-            case LoadState.PRE_AUTH:
-            case LoadState.INITIALIZING:
+        switch (XH.appState) {
+            case S.PRE_AUTH:
+            case S.INITIALIZING:
                 return viewport(loadMask({isDisplayed: true}));
-            case LoadState.LOGIN_REQUIRED:
+            case S.LOGIN_REQUIRED:
                 return loginPanel();
-            case LoadState.ACCESS_DENIED:
+            case S.ACCESS_DENIED:
                 return lockoutPanel({
                     message: this.unauthorizedMessage()
                 });
-            case LoadState.FAILED:
+            case S.LOAD_FAILED:
                 return null;
-            case LoadState.COMPLETE:
+            case S.RUNNING:
+            case S.SUSPENDED:
                 return viewport(
                     vframe(
                         impersonationBar(),
@@ -89,7 +92,7 @@ export class AppContainer extends Component {
                     messageSource({model: XH.messageSourceModel}),
                     feedbackDialog({model: XH.feedbackDialogModel}),
                     aboutDialog(),
-                    XH.idleComponent ? XH.idleComponent : null
+                    this.renderSuspendedDialog()
                 );
             default:
                 return null;
@@ -128,6 +131,14 @@ export class AppContainer extends Component {
     //------------------------
     // Implementation
     //------------------------
+    renderSuspendedDialog() {
+        const dialogClass = XH.app.suspendedDialogClass || SuspendedDialog;
+
+        return XH.appState == AppState.SUSPENDED && dialogClass ?
+            elem(dialogClass, {onReactivate: () => XH.reloadApp()}) :
+            null;
+    }
+
     unauthorizedMessage() {
         const user = XH.getUser();
 

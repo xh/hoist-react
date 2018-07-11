@@ -18,11 +18,7 @@ import {cloneDeep} from 'lodash';
  *
  * Note that for a config to be available here on the client, it must have its `clientVisible` flag
  * set to true. This is to provide support for configurations that should *not* be sent down for
- * possible inspection by end-users.
- *
- * Configs can be specified on the server with support for different values per supported Hoist
- * Environment. Note however that the client only receives the values for the current environment.
- * (Values for non-production environments inherit from production if left unspecified.)
+ * possible inspection by end users.
  *
  * Note that this service does *not* currently attempt to reload or update configs once the client
  * application has loaded. A refresh of the application is required to load new entries.

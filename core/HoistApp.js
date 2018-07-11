@@ -5,8 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {defaultMethods} from '@xh/hoist/utils/ClassUtils';
+import {Icon} from '@xh/hoist/icon';
 import {HoistModel} from './HoistModel';
-import {alert} from '@xh/hoist/kit/blueprint';
 
 /**
  * Mixin for defining a Hoist Application. An instance of this class will be initialized by Hoist
@@ -64,18 +64,24 @@ export function HoistApp(C) {
         },
 
         /**
-         * App may override this method with appropriate logic to display a message when the app
-         * has been idle for the amount of minutes defined by the `xhIdleTimeoutMins` config.
-         * @param {Function} callback - A callback function to be handled by the showIdleDialog
+         * Is app suspension by IdleService disabled?
+         *
+         * @see IdleService.  App suspension is also configurable in soft config, and via user preference.
          */
-        renderIdleDialog(callback) {
-            return alert({
-                style: {paddingBottom: '20px'},
-                isOpen: true,
-                intent: 'danger',
-                item: 'This application is sleeping. Please click OK to reactivate it.',
-                onClose: callback
-            });
+        idleDetectionDisabled: {
+            get() {return false}
+        },
+
+        /**
+         * Component to indicate App has been suspended.
+         *
+         * The component will receive a single prop -- onReactivate -- a callback called when user has acknowledged
+         *      the suspension and wishes to reload the app and continue working.
+         *
+         * @see IdleService.
+         */
+        suspendedDialogClass:  {
+            get() {return null}
         },
 
         /**

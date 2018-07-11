@@ -4,63 +4,53 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistService} from '@xh/hoist/core';
-import {SECONDS, MINUTES} from '@xh/hoist/utils/DateTimeUtils';
-import {debounce, throttle} from 'lodash';
+import {XH, HoistService, AppState} from '@xh/hoist/core';
+import {MINUTES} from '@xh/hoist/utils/DateTimeUtils';
+import {debounce} from 'lodash';
 import {Timer} from '@xh/hoist/utils/Timer';
-import {action} from '@xh/hoist/mobx';
 
+/**
+ * Manage the idling/suspension of this application after a certain period of user
+ * inactivity.
+ *
+ * This service is goverened by the property App.disableIdleDetection, the configuration
+ * 'xhIdleTimeoutMins', and the user-specific preference 'xh.disableIdleDetection' respectively.
+ * Any of these can be used to disable app suspension.
+ */
 @HoistService()
 export class IdleService {
 
+    ACTIVITY_EVENTS = ['keydown', 'mousemove', 'mousedown', 'scroll'];
+
     async initAsync() {
-        const appDisablesDetection = XH.app.disableIdleDetection,
-            userDisablesDetection = XH.getPref('xh.disableIdleDetection', false),
-            delay = this.getTimeDelay();
+        const timeout = XH.getConf('xhIdleTimeoutMins') * MINUTES,
+            appDisabled = XH.app.idleDetectionDisabled,
+            configDisabled = timeout <= 0,
+            userDisabled = XH.getPref('xhIdleDetectionDisabled');
 
-        if (!appDisablesDetection && !userDisablesDetection && delay > 0) {
-            this.resetTimer = throttle(this.resetTimer, 30 * SECONDS);
-            this.task = debounce(() => this.timeout(), delay, {trailing: true});
-
-            this.resetTimer();
-            this.createAppListener();
+        if (!appDisabled && !configDisabled && !userDisabled) {
+            this.startCountdown = debounce(() => this.suspendApp(), timeout, {trailing: true});
+            this.startCountdown();
+            this.createAppListeners();
         }
-    }
-
-    getTimeDelay() {
-        return XH.getConf('xhIdleTimeoutMins', 0) * MINUTES;
     }
 
     //-------------------------------------
     // Implementation
     //-------------------------------------
-    createAppListener() {
-        window.addEventListener('keydown', this.resetTimer, true);
-        window.addEventListener('mousemove', this.resetTimer, true);
-        window.addEventListener('mousedown', this.resetTimer, true);
-        window.addEventListener('scroll', this.resetTimer, true);
+    createAppListeners() {
+        this.ACTIVITY_EVENTS.forEach(e => addEventListener(e, this.startCountdown, true));
     }
 
-    destroyAppListener() {
-        window.removeEventListener('keydown', this.resetTimer, true);
-        window.removeEventListener('mousemove', this.resetTimer, true);
-        window.removeEventListener('mousedown', this.resetTimer, true);
-        window.removeEventListener('scroll', this.resetTimer, true);
+    destroyAppListeners() {
+        this.ACTIVITY_EVENTS.forEach(e => removeEventListener(e, this.startCountdown, true));
     }
 
-    @action
-    timeout() {
-        this.task.cancel();
-        this.destroyAppListener();
-        this.fireEvent('appSuspended');
-
-        Timer.cancelAll();
-        XH.idleComponent = XH.app.renderIdleDialog(() => {
-            window.location.reload(true);
-        });
-    }
-
-    resetTimer = () => {
-        this.task();
+    suspendApp() {
+        if (XH.appState != AppState.SUSPENDED) {
+            XH.setAppState(AppState.SUSPENDED);
+            this.destroyAppListeners();
+            Timer.cancelAll();
+        }
     }
 }

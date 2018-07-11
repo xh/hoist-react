@@ -8,12 +8,12 @@
 import ReactDOM from 'react-dom';
 import {isPlainObject, defaults} from 'lodash';
 
-import {elem, HoistModel} from '@xh/hoist/core';
+import {elem, HoistModel, AppState} from '@xh/hoist/core';
 import {Exception, ExceptionHandler} from '@xh/hoist/exception';
 import {observable, setter, action} from '@xh/hoist/mobx';
 import {MultiPromiseModel, never} from '@xh/hoist/promise';
 import {RouterModel} from '@xh/hoist/router';
-import {appContainer} from '@xh/hoist/app';
+import {appContainer} from '@xh/hoist/impl';
 import {MessageSourceModel} from '@xh/hoist/cmp/message';
 import {throwIf} from '@xh/hoist/utils/JsUtils';
 
@@ -93,8 +93,8 @@ class XHClass {
     //-----------------------------
     // Observable State
     //-----------------------------
-    /** State of app loading -- see HoistLoadState for valid values. */
-    @setter @observable loadState = LoadState.PRE_AUTH;
+    /** State of app -- see AppState for valid values. */
+    @observable appState = AppState.PRE_AUTH;
 
     /** Currently authenticated user. */
     @observable authUsername = null;
@@ -155,6 +155,21 @@ class XHClass {
         );
 
         ReactDOM.render(rootView, document.getElementById('root'));
+    }
+
+    /**
+     * Transition the application state.
+     *
+     * @param {AppState} appState - state to transition to.
+     *
+     * Used by framework.  Not intended for application use.
+     */
+    @action
+    setAppState(appState) {
+        if (this.appState != appState) {
+            this.appState = appState;
+            this.fireEvent('appStateChanged', {appState});
+        }
     }
 
     /** Route the app.  See RouterModel.navigate.  */
@@ -274,25 +289,26 @@ class XHClass {
      * Not for application use.
      */
     async initAsync() {
+        const S = AppState;
         // Add xh-app class to body element to power Hoist CSS selectors
         document.body.classList.add('xh-app');
 
         try {
-            this.setLoadState(LoadState.PRE_AUTH);
+            this.setAppState(S.PRE_AUTH);
 
             const authUser = await this.getAuthUserFromServerAsync();
 
             if (!authUser) {
                 throwIf(this.app.requireSSO, 'Failed to authenticate user via SSO.');
 
-                this.setLoadState(LoadState.LOGIN_REQUIRED);
+                this.setAppState(S.LOGIN_REQUIRED);
                 return;
             }
 
             await this.completeInitAsync(authUser.username);
 
         } catch (e) {
-            this.setLoadState(LoadState.FAILED);
+            this.setAppState(S.LOAD_FAILED);
             XH.handleException(e, {requireReload: true});
         }
     }
@@ -304,7 +320,9 @@ class XHClass {
      */
     @action
     async completeInitAsync() {
-        this.setLoadState(LoadState.INITIALIZING);
+        const S = AppState;
+
+        this.setAppState(S.INITIALIZING);
         try {
             await this.initServicesAsync()
                 .wait(100);  // delay is workaround for styling issues in dev TODO: Remove
@@ -314,15 +332,15 @@ class XHClass {
             const access = this.app.checkAccess(XH.getUser());
             if (!access.hasAccess) {
                 this.accessDeniedMessage = access.message || 'Access denied.';
-                this.setLoadState(LoadState.ACCESS_DENIED);
+                this.setAppState(S.ACCESS_DENIED);
                 return;
             }
 
             await this.app.initAsync();
             this.initRouterModel();
-            this.setLoadState(LoadState.COMPLETE);
+            this.setAppState(S.RUNNING);
         } catch (e) {
-            this.setLoadState(LoadState.FAILED);
+            this.setAppState(S.LOAD_FAILED);
             XH.handleException(e, {requireReload: true});
         }
     }
@@ -425,16 +443,3 @@ class XHClass {
 }
 export const XH = window.XH = new XHClass();
 
-/**
- * Enumeration of possible Load States for Hoist.
- *
- * See XH.loadState.
- */
-export const LoadState = {
-    PRE_AUTH: 'PRE_AUTH',
-    LOGIN_REQUIRED: 'LOGIN_REQUIRED',
-    ACCESS_DENIED: 'ACCESS_DENIED',
-    INITIALIZING: 'INITIALIZING',
-    COMPLETE: 'COMPLETE',
-    FAILED: 'FAILED'
-};
