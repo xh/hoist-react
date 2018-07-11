@@ -8,7 +8,8 @@
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {MessageModel, message} from '@xh/hoist/desktop/cmp/message';
+import {MessageModel} from '@xh/hoist/cmp/message';
+import {message} from '@xh/hoist/desktop/cmp/message';
 
 /**
  * Default display of application suspension.

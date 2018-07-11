@@ -6,7 +6,7 @@
  */
 import React from 'react';
 import {defaultTo, defaults} from 'lodash';
-import {Position, Toaster} from '@xh/hoist/kit/blueprint';
+import {Position, Toaster} from '@xh/hoist/desktop/blueprint';
 import {Icon} from '@xh/hoist/icon';
 import {SECONDS} from '@xh/hoist/utils/DateTimeUtils';
 

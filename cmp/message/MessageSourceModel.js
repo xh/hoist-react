@@ -6,7 +6,7 @@
  */
 import {HoistModel} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
-import {MessageModel} from '../MessageModel';
+import {MessageModel} from './MessageModel';
 
 /**
  *  Support for hosting multiple global Messages in an application.

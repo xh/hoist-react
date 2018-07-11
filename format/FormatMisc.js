@@ -1,5 +1,5 @@
 import {capitalize} from 'lodash';
-import {span} from '@xh/hoist/cmp/layout';
+import {span} from '@xh/hoist/layout';
 
 /**
  * Basic util for splitting a string (via ' ') and capitalizing each word - e.g. for names.

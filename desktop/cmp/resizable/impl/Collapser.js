@@ -11,7 +11,7 @@ import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/desktop/cmp/button';
 
-import {hbox, vbox} from '../../index';
+import {hbox, vbox} from '@xh/hoist/layout';
 
 import './Collapser.scss';
 

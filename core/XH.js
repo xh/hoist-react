@@ -15,7 +15,7 @@ import {MultiPromiseModel, never} from '@xh/hoist/promise';
 import {RouterModel} from '@xh/hoist/router';
 import {throwIf} from '@xh/hoist/utils/JsUtils';
 
-import {MessageSourceModel} from './message/MessageSourceModel';
+import {MessageSourceModel} from '@xh/hoist/cmp/message/MessageSourceModel';
 
 import {
     ConfigService,

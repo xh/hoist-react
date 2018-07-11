@@ -9,7 +9,7 @@ import {defaults, isFinite, isString} from 'lodash';
 import numeral from 'numeral';
 
 import {Exception} from '@xh/hoist/exception';
-import {span} from '@xh/hoist/cmp/layout';
+import {span} from '@xh/hoist/layout';
 
 import {createRenderer, saveOriginal} from './FormatUtils';
 import {fmtSpan} from './FormatMisc';

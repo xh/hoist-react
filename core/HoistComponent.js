@@ -7,7 +7,7 @@
 import ReactDom from 'react-dom';
 import {XH} from '@xh/hoist/core';
 import {observer} from '@xh/hoist/mobx';
-import {ContextMenuTarget, HotkeysTarget} from '@xh/hoist/kit/blueprint';
+import {ContextMenuTarget, HotkeysTarget} from '@xh/hoist/desktop/blueprint';
 import {defaultMethods, chainMethods, overrideMethods} from '@xh/hoist/utils/ClassUtils';
 
 import {EventTarget} from './mixins/EventTarget';

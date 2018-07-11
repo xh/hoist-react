@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
-import {dialog} from '@xh/hoist/kit/blueprint';
+import {dialog} from '@xh/hoist/desktop/blueprint';
 import {filler, fragment} from '@xh/hoist/layout';
 import {grid} from '@xh/hoist/desktop/cmp/grid';
 import {comboField, label} from '@xh/hoist/desktop/cmp/form';

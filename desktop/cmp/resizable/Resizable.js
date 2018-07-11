@@ -7,8 +7,8 @@
 import React, {Children, Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {box, hbox, vbox} from '@xh/hoist/layout';
 
-import {box, hbox, vbox} from '../index';
 import {ResizableModel} from './ResizableModel';
 import {dragger} from './impl/Dragger';
 import {collapser} from './impl/Collapser';

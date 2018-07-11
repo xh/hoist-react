@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {keys, toString} from 'lodash';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {dialog} from '@xh/hoist/kit/blueprint';
+import {dialog} from '@xh/hoist/desktop/blueprint';
 import {filler, table, tbody, tr, th, td} from '@xh/hoist/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
