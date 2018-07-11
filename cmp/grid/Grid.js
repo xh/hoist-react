@@ -320,10 +320,9 @@ class Grid extends Component {
     onGridSizeChanged = (ev) => {
         const {api} = ev;
 
-        if (api.gridPanel.getWidthForSizeColsToFit()) {
+        if (this.isDisplayed) {
             api.sizeColumnsToFit();
         }
-
     }
 }
 export const grid = elemFactory(Grid);
