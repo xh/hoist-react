@@ -29,14 +29,16 @@ export class ConfigService {
     _data = {};
 
     async initAsync() {
-        this._data = await XH.fetchJson({url: 'hoistImpl/getConfig'});
+        this._data = await XH.fetchJson({
+            url: 'hoistImpl/getConfig',
+            params: {clientUsername: XH.getUsername()}
+        });
     }
 
     /**
-     * Get the configured value for a given key.
-     * Typically accessed via convenience alias `XH.getConf()`.
+     * Get the configured value for a given key. Typically accessed via `XH.getConf()` alias.
      *
-     * @param {string} key
+     * @param {string} key - config identifier to return.
      * @param {*} [defaultValue] - value to return if the configuration key is not found - i.e.
      *      the config has not been created on the server - instead of throwing. Use sparingly!
      *      In general it's better to not provide defaults here, but instead keep entries up-to-date

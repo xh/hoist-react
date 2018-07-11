@@ -32,7 +32,8 @@ export class ErrorTrackingService {
                     error,
                     msg: message ? stripTags(message) : '',
                     appVersion: XH.getEnv('appVersion'),
-                    userAlerted
+                    userAlerted,
+                    clientUsername: XH.getUsername()
                 }
             });
         } catch (e) {
