@@ -2,16 +2,14 @@
   "name": "@xh/hoist",
   "version": "7.2.0",
   "description": "Hoist add-on for building and deploying React Applications.",
-  "module": "index.js",
-  "repository": "https://github.com/exhi/hoist-react",
+  "repository": "github:exhi/hoist-react",
+  "homepage": "https://github.com/exhi/hoist-react",
+  "bugs": "https://github.com/exhi/hoist-react/issues",
   "author": "Extremely Heavy Industries, Inc.",
   "license": "UNLICENSED",
+  "module": "index.js",
   "scripts": {
-    "lint": "yarn run eslint lint .",
-    "publishHoist": "yarn publish --registry=\"https://repo.xh.io/repository/npm-hosted/\""
-  },
-  "publishConfig": {
-    "registry": "https://repo.xh.io/repository/npm-hosted/"
+    "lint": "yarn run eslint lint ."
   },
   "dependencies": {
     "@blueprintjs/core": "~2.3.0",
