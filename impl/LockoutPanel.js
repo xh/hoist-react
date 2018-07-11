@@ -11,7 +11,7 @@ import {box, filler, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {PropTypes as PT} from 'prop-types';
 
 import './LockoutPanel.scss';
-import {impersonationBar} from './impl';
+import {impersonationBar} from './';
 
 /**
  * Panel for display to prevent user access to all content.

@@ -32,7 +32,9 @@ export class App {
     }
 
     get componentClass() {return AppComponent}
-    
+
+    get idleDetectionDisabled() {return true}
+
     @action
     requestRefresh() {
         this.tabModel.requestRefresh();

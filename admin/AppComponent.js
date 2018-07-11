@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {HoistComponent, XH} from '@xh/hoist/core';
-import {lockoutPanel} from '@xh/hoist/app';
+import {lockoutPanel} from '@xh/hoist/impl';
 import {tabContainer, tabSwitcher} from '@xh/hoist/cmp/tab';
 import {panel} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/cmp/button';
