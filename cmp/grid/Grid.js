@@ -318,10 +318,8 @@ class Grid extends Component {
     }
 
     onGridSizeChanged = (ev) => {
-        const {api} = ev;
-
         if (this.isDisplayed) {
-            api.sizeColumnsToFit();
+            ev.api.sizeColumnsToFit();
         }
     }
 }
