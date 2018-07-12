@@ -131,7 +131,10 @@ export class PrefService {
      */
     async clearAllAsync() {
         this.clearLocalValues();
-        await XH.fetchJson({url: 'hoistImpl/clearPrefs'});
+        await XH.fetchJson({
+            url: 'hoistImpl/clearPrefs',
+            params: {clientUsername: XH.getUsername()}
+        });
         return this.loadPrefsAsync();
     }
 
@@ -159,7 +162,10 @@ export class PrefService {
         if (!isEmpty(remoteUpdates)) {
             await XH.fetchJson({
                 url: 'hoistImpl/setPrefs',
-                params: {updates: JSON.stringify(remoteUpdates)}
+                params: {
+                    updates: JSON.stringify(remoteUpdates),
+                    clientUsername: XH.getUsername()
+                }
             });
         }
 
@@ -172,7 +178,10 @@ export class PrefService {
     //  Implementation
     //-------------------
     async loadPrefsAsync() {
-        this._data = await XH.fetchJson({url: 'hoistImpl/getPrefs'});
+        this._data = await XH.fetchJson({
+            url: 'hoistImpl/getPrefs',
+            params: {clientUsername: XH.getUsername()}
+        });
         this.syncLocalPrefs();
     }
 

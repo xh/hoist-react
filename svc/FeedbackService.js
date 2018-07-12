@@ -24,7 +24,8 @@ export class FeedbackService {
             url: 'hoistImpl/submitFeedback',
             params: {
                 msg: stripTags(message),
-                appVersion: XH.getEnv('appVersion')
+                appVersion: XH.getEnv('appVersion'),
+                clientUsername: XH.getUsername()
             }
         });
     }
