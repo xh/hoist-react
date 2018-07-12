@@ -1,0 +1,25 @@
+.xh-version-bar {
+  color: white;
+  font-size: 12px;
+  background-color: var(--xh-green-muted);
+  padding: var(--xh-pad-half-px);
+
+  &-production {
+    background-color: var(--xh-red);
+  }
+
+  &-staging {
+    background-color: var(--xh-blue);
+  }
+
+  .button {
+    display: flex;
+    padding: 0 10px;
+    background: none !important;
+
+    svg {
+      color: white;
+      cursor: pointer;
+    }
+  }
+}

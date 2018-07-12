@@ -12,4 +12,3 @@ export * from './LoginPanel';
 export * from './UpdateBar';
 export * from './VersionBar';
 export * from './FeedbackDialog';
-export * from './SuspendedDialog';

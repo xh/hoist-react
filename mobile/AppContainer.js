@@ -7,7 +7,7 @@
 
 import {Children, Component} from 'react';
 import {observable, observer, setter} from '@xh/hoist/mobx';
-import {elemFactory, elem, AppState, XH} from '@xh/hoist/core';
+import {elemFactory, AppState, XH} from '@xh/hoist/core';
 import {loadMask} from '@xh/hoist/mobile/cmp/mask';
 import {messageSource} from '@xh/hoist/mobile/cmp/message';
 import {div, frame, vframe, viewport, vspacer} from '@xh/hoist/cmp/layout';
@@ -20,8 +20,7 @@ import {
     loginPanel,
     updateBar,
     versionBar,
-    lockoutPanel,
-    SuspendedDialog
+    lockoutPanel
 } from './impl';
 
 /**
@@ -79,8 +78,7 @@ export class AppContainer extends Component {
                     loadMask({model: XH.appLoadModel}),
                     messageSource({model: XH.messageSourceModel}),
                     feedbackDialog({model: XH.feedbackDialogModel}),
-                    aboutDialog(),
-                    this.renderSuspendedDialog()
+                    aboutDialog()
                 );
             default:
                 return null;
@@ -96,14 +94,6 @@ export class AppContainer extends Component {
     //------------------------
     // Implementation
     //------------------------
-    renderSuspendedDialog() {
-        const dialogClass = XH.app.suspendedDialogClass || SuspendedDialog;
-
-        return XH.appState == AppState.SUSPENDED && dialogClass ?
-            elem(dialogClass, {onReactivate: () => XH.reloadApp()}) :
-            null;
-    }
-
     unauthorizedMessage() {
         const user = XH.getUser();
 
