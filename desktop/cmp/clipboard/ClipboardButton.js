@@ -40,7 +40,7 @@ export class ClipboardButton extends Component {
         return button({
             icon: icon || Icon.clipboard(),
             text: text || 'Copy',
-            ref: this.manageClipboard,
+            elementRef: this.manageClipboard,
             ...rest
         });
     }
@@ -49,9 +49,9 @@ export class ClipboardButton extends Component {
     //---------------------------
     // Implementation
     //---------------------------
-    manageClipboard = (btn) => {
-        if (btn && btn.buttonRef) {
-            this.createClipboard(btn.buttonRef);
+    manageClipboard = (elementRef) => {
+        if (elementRef) {
+            this.createClipboard(elementRef);
         } else {
             this.destroyClipboard();
         }
