@@ -9,6 +9,7 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {button as onsenButton} from '@xh/hoist/kit/onsen';
+import {hspacer} from '@xh/hoist/cmp/layout';
 
 /**
  * Wrapper around Onsen's Button component.
@@ -27,12 +28,22 @@ export class Button extends Component {
     };
 
     render() {
-        const {icon, text, modifier, onClick, ...rest} = this.props;
+        const {icon, text, modifier, onClick, ...rest} = this.props,
+            items = [];
+
+        if (icon && text) {
+            items.push(icon, hspacer(10), text);
+        } else if (icon) {
+            items.push(icon);
+        } else {
+            items.push(text);
+        }
 
         return onsenButton({
-            items: [icon, text].filter(Boolean),
-            modifier: modifier,
-            onClick: onClick,
+            cls: 'xh-button',
+            items,
+            modifier,
+            onClick,
             ...rest
         });
     }
