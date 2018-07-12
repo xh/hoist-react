@@ -8,8 +8,8 @@
 import {PropTypes as PT} from 'prop-types';
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {div, vbox, vspacer, box} from '@xh/hoist/layout';
-import {progressCircular} from '@xh/hoist/mobile/onsen';
+import {div, vbox, vspacer, box} from '@xh/hoist/cmp/layout';
+import {progressCircular} from '@xh/hoist/kit/onsen';
 
 import './Mask.scss';
 

@@ -6,11 +6,11 @@
  */
 
 import {Component} from 'react';
-import {dialog, dialogBody} from '@xh/hoist/desktop/blueprint';
+import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory, XH} from '@xh/hoist/core';
 import {loadMask} from '@xh/hoist/desktop/cmp/mask';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {filler, vframe} from '@xh/hoist/layout';
+import {filler, vframe} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 

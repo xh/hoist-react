@@ -9,7 +9,7 @@ import {PropTypes as PT} from 'prop-types';
 import moment from 'moment';
 import {fmtDate} from '@xh/hoist/format';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {dateInput} from '@xh/hoist/desktop/blueprint';
+import {dateInput} from '@xh/hoist/kit/blueprint';
 
 import {HoistField} from './HoistField';
 

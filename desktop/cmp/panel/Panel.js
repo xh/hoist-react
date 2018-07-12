@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {castArray, omitBy} from 'lodash';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {vbox} from '@xh/hoist/layout';
+import {vbox} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 
 import {panelHeader} from './impl/PanelHeader';

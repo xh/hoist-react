@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {escapeRegExp, isEqual} from 'lodash';
-import {inputGroup} from '@xh/hoist/desktop/blueprint';
+import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {observable, setter} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';

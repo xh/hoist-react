@@ -7,7 +7,7 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {inputGroup} from '@xh/hoist/desktop/blueprint';
+import {inputGroup} from '@xh/hoist/kit/blueprint';
 
 import {HoistField} from './HoistField';
 

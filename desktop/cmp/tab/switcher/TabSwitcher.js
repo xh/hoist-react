@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {tab as blueprintTab, tabs as blueprintTabs} from '@xh/hoist/desktop/blueprint';
+import {tab as blueprintTab, tabs as blueprintTabs} from '@xh/hoist/kit/blueprint';
 import {TabContainerModel} from '../container/TabContainerModel';
 import {omit} from 'lodash';
 

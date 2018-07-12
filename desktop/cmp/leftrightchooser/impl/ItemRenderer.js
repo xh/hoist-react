@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {div} from '@xh/hoist/layout';
+import {div} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 
 /**

@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {fragment} from '@xh/hoist/layout';
+import {fragment} from '@xh/hoist/cmp/layout';
 import {message} from './Message';
 
 /**

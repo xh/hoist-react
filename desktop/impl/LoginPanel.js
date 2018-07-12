@@ -6,9 +6,9 @@
  */
 
 import {Component} from 'react';
-import {text} from '@xh/hoist/desktop/blueprint';
+import {text} from '@xh/hoist/kit/blueprint';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
-import {vspacer, box, filler, viewport} from '@xh/hoist/layout';
+import {vspacer, box, filler, viewport} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {textField} from '@xh/hoist/desktop/cmp/form';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';

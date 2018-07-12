@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {toolbarButton} from '@xh/hoist/mobile/onsen';
+import {toolbarButton} from '@xh/hoist/kit/onsen';
 
 /**
  * Convenience Button preconfigured for use as a trigger for a logout operation.

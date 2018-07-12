@@ -9,7 +9,7 @@ import {PropTypes as PT} from 'prop-types';
 import {find, isString, isNumber, isBoolean, isEqual, xor, merge} from 'lodash';
 import {XH} from '@xh/hoist/core';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {fragment, box} from '@xh/hoist/layout';
+import {fragment, box} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import './ag-grid';
 import {navigateSelection, agGridReact} from './ag-grid';

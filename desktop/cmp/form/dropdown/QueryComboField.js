@@ -8,7 +8,7 @@
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {observable, setter} from '@xh/hoist/mobx';
-import {Classes, suggest} from '@xh/hoist/desktop/blueprint';
+import {Classes, suggest} from '@xh/hoist/kit/blueprint';
 
 import {BaseComboField} from './BaseComboField';
 

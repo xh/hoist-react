@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {div, hbox, vbox} from '@xh/hoist/layout';
+import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
 
 import {TabContainerModel} from './TabContainerModel';
 import {tabSwitcher} from '../switcher/TabSwitcher';

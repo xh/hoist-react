@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {toolbarButton} from '@xh/hoist/mobile/onsen';
+import {toolbarButton} from '@xh/hoist/kit/onsen';
 
 /**
  * Convenience Button preconfigured for use as a trigger for light/dark theme toggling.

@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {callout} from '@xh/hoist/desktop/blueprint';
+import {callout} from '@xh/hoist/kit/blueprint';
 
 /**
  * Description panel for the LeftRightChooser.

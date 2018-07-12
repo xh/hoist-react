@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/blueprint';
+import {button} from '@xh/hoist/kit/blueprint';
 import {Icon} from '@xh/hoist/icon';
 
 /**

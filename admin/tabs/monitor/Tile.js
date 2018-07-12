@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {vbox, div} from '@xh/hoist/layout';
+import {vbox, div} from '@xh/hoist/cmp/layout';
 import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {pluralize} from '@xh/hoist/utils/JsUtils';
 import {Icon} from '@xh/hoist/icon';

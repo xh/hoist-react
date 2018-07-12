@@ -18,7 +18,7 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 class Message extends Component {
 
     render() {
-        return null
+        return null;
     }
 }
 export const message = elemFactory(Message);

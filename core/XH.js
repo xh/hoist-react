@@ -140,7 +140,7 @@ class XHClass {
      * @param {Object} app - object containing main application state and logic.
      *      Should be an instance of a class decorated with @HoistApp.
      */
-    renderApp(app, appContainer) {
+    renderApp(app) {
         this.app = app;
         const {componentClass, containerClass} = app;
         throwIf(!componentClass, 'A HoistApp must define a componentClass getter to specify its top-level component.');

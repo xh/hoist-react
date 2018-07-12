@@ -10,7 +10,7 @@ import {observable, observer, setter} from '@xh/hoist/mobx';
 import {elemFactory, elem, AppState, XH} from '@xh/hoist/core';
 import {loadMask} from '@xh/hoist/mobile/cmp/mask';
 import {messageSource} from '@xh/hoist/mobile/cmp/message';
-import {div, frame, vframe, viewport, vspacer} from '@xh/hoist/layout';
+import {div, frame, vframe, viewport, vspacer} from '@xh/hoist/cmp/layout';
 
 import {
     feedbackDialog,

@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {backButton} from '@xh/hoist/mobile/onsen';
+import {backButton} from '@xh/hoist/kit/onsen';
 
 @HoistComponent()
 export class NavigatorBackButton extends Component {

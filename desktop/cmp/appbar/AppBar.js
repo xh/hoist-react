@@ -8,9 +8,9 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
-import {navbar, navbarGroup} from '@xh/hoist/desktop/blueprint';
+import {navbar, navbarGroup} from '@xh/hoist/kit/blueprint';
 import {feedbackButton, launchAdminButton, logoutButton, refreshButton, themeToggleButton} from '@xh/hoist/desktop/cmp/button';
-import {span} from '@xh/hoist/layout';
+import {span} from '@xh/hoist/cmp/layout';
 import {appBarSeparator} from '@xh/hoist/desktop/cmp/appbar';
 import {isEmpty} from 'lodash';
 import './AppBar.scss';

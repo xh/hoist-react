@@ -11,7 +11,7 @@ import {cloneDeep, isEqual, remove, trimEnd} from 'lodash';
 import {pluralize} from '@xh/hoist/utils/JsUtils';
 import {XH, HoistModel} from '@xh/hoist/core';
 import {LocalStore} from '@xh/hoist/data';
-import {p} from '@xh/hoist/layout';
+import {p} from '@xh/hoist/cmp/layout';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {ToastManager} from '@xh/hoist/toast';

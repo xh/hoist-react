@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {elemFactory} from '@xh/hoist/core';
-import {navbarDivider} from '@xh/hoist/desktop/blueprint';
+import {navbarDivider} from '@xh/hoist/kit/blueprint';
 
 /**
  * Convenience component for adding a separator between AppBar items.

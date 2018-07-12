@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {filler, hframe} from '@xh/hoist/layout';
+import {filler, hframe} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {resizable} from '@xh/hoist/desktop/cmp/resizable';
 import {grid} from '@xh/hoist/desktop/cmp/grid';

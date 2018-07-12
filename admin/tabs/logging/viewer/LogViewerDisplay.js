@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {Ref} from '@xh/hoist/utils/Ref';
-import {frame, table, tbody, td, tr} from '@xh/hoist/layout';
+import {frame, table, tbody, td, tr} from '@xh/hoist/cmp/layout';
 import {clipboardMenuItem} from '@xh/hoist/desktop/cmp/clipboard';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {SECONDS} from '@xh/hoist/utils/DateTimeUtils';

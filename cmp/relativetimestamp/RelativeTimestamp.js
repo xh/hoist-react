@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {observable, setter} from '@xh/hoist/mobx';
-import {div} from '@xh/hoist/layout';
+import {div} from '@xh/hoist/cmp/layout';
 import {Timer} from '@xh/hoist/utils/Timer';
 import {SECONDS, MINUTES, HOURS, DAYS} from '@xh/hoist/utils/DateTimeUtils';
 import {flow} from 'lodash';

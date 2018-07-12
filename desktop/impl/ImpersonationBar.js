@@ -6,9 +6,9 @@
  */
 
 import {Component} from 'react';
-import {popover, hotkeys, hotkey} from '@xh/hoist/desktop/blueprint';
+import {popover, hotkeys, hotkey} from '@xh/hoist/kit/blueprint';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
-import {vbox, filler, span, box} from '@xh/hoist/layout';
+import {vbox, filler, span, box} from '@xh/hoist/cmp/layout';
 import {comboField} from '@xh/hoist/desktop/cmp/form';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';

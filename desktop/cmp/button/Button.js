@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {button as bpButton} from '@xh/hoist/desktop/blueprint';
+import {button as bpButton} from '@xh/hoist/kit/blueprint';
 
 /**
  * Wrapper around Blueprint's Button component.

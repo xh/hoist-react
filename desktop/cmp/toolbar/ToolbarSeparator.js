@@ -7,7 +7,7 @@
 
 import React, {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {span} from '@xh/hoist/layout';
+import {span} from '@xh/hoist/cmp/layout';
 
 import './Toolbar.scss';
 

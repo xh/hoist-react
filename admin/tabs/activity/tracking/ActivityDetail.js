@@ -5,10 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {dialog} from '@xh/hoist/desktop/blueprint';
+import {dialog} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {filler, table, tbody, tr, th, td} from '@xh/hoist/layout';
+import {filler, table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
 import {jsonField} from '@xh/hoist/desktop/cmp/form';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {fmtDateTime} from '@xh/hoist/format';

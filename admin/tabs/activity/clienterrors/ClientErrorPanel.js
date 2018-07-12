@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {filler} from '@xh/hoist/layout';
+import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {grid} from '@xh/hoist/desktop/cmp/grid';
 import {textField, dayField} from '@xh/hoist/desktop/cmp/form';

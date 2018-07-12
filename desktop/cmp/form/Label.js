@@ -7,7 +7,7 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {div} from '@xh/hoist/layout';
+import {div} from '@xh/hoist/cmp/layout';
 
 import {HoistField} from './HoistField';
 

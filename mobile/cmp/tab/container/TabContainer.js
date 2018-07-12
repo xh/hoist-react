@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {tabbar} from '@xh/hoist/mobile/onsen';
+import {tabbar} from '@xh/hoist/kit/onsen';
 
 /**
  * Display for a TabContainer.

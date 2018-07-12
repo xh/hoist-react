@@ -8,7 +8,7 @@
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {label} from '@xh/hoist/desktop/cmp/form';
-import {switchControl} from '@xh/hoist/desktop/blueprint';
+import {switchControl} from '@xh/hoist/kit/blueprint';
 
 import {HoistField} from './HoistField';
 

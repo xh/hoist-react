@@ -9,11 +9,11 @@ import {Children, Component} from 'react';
 import {observable, observer, setter} from '@xh/hoist/mobx';
 import {elemFactory, elem, AppState, XH} from '@xh/hoist/core'
     ;
-import {ContextMenuTarget} from '@xh/hoist/desktop/blueprint';
+import {ContextMenuTarget} from '@xh/hoist/kit/blueprint';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {loadMask} from '@xh/hoist/desktop/cmp/mask';
 import {messageSource} from '@xh/hoist/desktop/cmp/message';
-import {div, frame, vframe, viewport, vspacer} from '@xh/hoist/layout';
+import {div, frame, vframe, viewport, vspacer} from '@xh/hoist/cmp/layout';
 import {logoutButton} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 

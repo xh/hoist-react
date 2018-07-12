@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {castArray, isEmpty} from 'lodash';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {filler} from '@xh/hoist/layout';
+import {filler} from '@xh/hoist/cmp/layout';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {exportButton} from '@xh/hoist/desktop/cmp/button';
 import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';

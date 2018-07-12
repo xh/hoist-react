@@ -2,7 +2,7 @@ import ReactDOM from 'react-dom';
 import {XH} from '@xh/hoist/core';
 import {PropTypes as PT} from 'prop-types';
 import {defaultsDeep} from 'lodash';
-import {textArea} from '@xh/hoist/desktop/blueprint';
+import {textArea} from '@xh/hoist/kit/blueprint';
 
 import {HoistField} from './HoistField';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';

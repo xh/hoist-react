@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {div} from '@xh/hoist/layout';
+import {div} from '@xh/hoist/cmp/layout';
 import './Dragger.scss';
 
 /** This is an implementation class private to Hoist
