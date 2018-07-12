@@ -13,7 +13,6 @@ import {toolbarButton} from '@xh/hoist/kit/onsen';
 
 /**
  * Convenience Button preconfigured for use as a trigger for a refresh operation.
- * Accepts props documented below as well as any others supported by Blueprint's Button.
  *
  * Must be provided either an onClick handler *or* a model. If a model is provided, this button
  * will call loadAsync() on the model class.

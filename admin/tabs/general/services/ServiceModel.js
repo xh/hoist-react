@@ -7,7 +7,7 @@
 import {XH, HoistModel} from '@xh/hoist/core';
 import {ToastManager} from '@xh/hoist/toast';
 import {UrlStore} from '@xh/hoist/data';
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {baseCol} from '@xh/hoist/columns/Core';
 
 @HoistModel()

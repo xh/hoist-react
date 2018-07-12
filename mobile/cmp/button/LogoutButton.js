@@ -13,7 +13,6 @@ import {toolbarButton} from '@xh/hoist/kit/onsen';
 
 /**
  * Convenience Button preconfigured for use as a trigger for a logout operation.
- * Accepts props documented below as well as any others supported by Blueprint's Button.
  *
  * An onClick handler can be provided to implement additional operations on logout,
  * but should ensure it calls `XH.identityService.logoutAsync()`.

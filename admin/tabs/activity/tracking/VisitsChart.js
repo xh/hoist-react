@@ -7,11 +7,11 @@
 
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {dayField, label, textField} from '@xh/hoist/cmp/form';
-import {panel} from '@xh/hoist/cmp/layout';
-import {toolbar} from '@xh/hoist/cmp/toolbar';
-import {refreshButton} from '@xh/hoist/cmp/button';
-import {chart} from '@xh/hoist/cmp/chart';
+import {dayField, label, textField} from '@xh/hoist/desktop/cmp/form';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {refreshButton} from '@xh/hoist/desktop/cmp/button';
+import {chart} from '@xh/hoist/desktop/cmp/chart';
 import {Icon} from '@xh/hoist/icon';
 
 @HoistComponent()

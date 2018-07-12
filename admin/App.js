@@ -6,10 +6,10 @@
  */
 import {HoistApp, XH} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
-import {TabContainerModel} from '@xh/hoist/cmp/tab';
+import {AppContainer} from '@xh/hoist/desktop/AppContainer';
+import {TabContainerModel} from '@xh/hoist/desktop/cmp/tab';
 
 import {AppComponent} from './AppComponent';
-
 import {ActivityTab} from './tabs/activity/ActivityTab';
 import {GeneralTab} from './tabs/general/GeneralTab';
 import {LoggingTab} from './tabs/logging/LoggingTab';
@@ -32,6 +32,7 @@ export class App {
     }
 
     get componentClass() {return AppComponent}
+    get containerClass() {return AppContainer}
 
     get idleDetectionDisabled() {return true}
 

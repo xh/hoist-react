@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {panel} from '@xh/hoist/cmp/layout';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 
 import {monitorResultsToolbar} from './MonitorResultsToolbar';
 import {monitorResultsDisplay} from './MonitorResultsDisplay';

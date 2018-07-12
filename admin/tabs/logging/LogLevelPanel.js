@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {restGrid, RestGridModel, RestStore} from '@xh/hoist/cmp/rest';
+import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 import {baseCol} from '@xh/hoist/columns/Core';
 
 import {nameCol} from '@xh/hoist/admin/columns/Columns';

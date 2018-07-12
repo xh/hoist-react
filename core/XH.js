@@ -13,9 +13,9 @@ import {Exception, ExceptionHandler} from '@xh/hoist/exception';
 import {observable, action} from '@xh/hoist/mobx';
 import {MultiPromiseModel, never} from '@xh/hoist/promise';
 import {RouterModel} from '@xh/hoist/router';
-import {appContainer} from '@xh/hoist/impl';
-import {MessageSourceModel} from '@xh/hoist/cmp/message';
 import {throwIf} from '@xh/hoist/utils/JsUtils';
+
+import {MessageSourceModel} from '@xh/hoist/cmp/message/MessageSourceModel';
 
 import {
     ConfigService,
@@ -142,13 +142,13 @@ class XHClass {
      */
     renderApp(app) {
         this.app = app;
-        throwIf(
-            !app.componentClass,
-            'A HoistApp must define a componentClass getter to specify its top-level component.'
-        );
+        const {componentClass, containerClass} = app;
+        throwIf(!componentClass, 'A HoistApp must define a componentClass getter to specify its top-level component.');
+        throwIf(!containerClass, 'A HoistApp must define a containerClass that it should be hosted within.');
 
-        const rootView = appContainer(
-            elem(app.componentClass, {model: app})
+        const rootView = elem(
+            containerClass,
+            {item: elem(componentClass, {model: app})}
         );
 
         ReactDOM.render(rootView, document.getElementById('root'));

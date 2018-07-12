@@ -4,7 +4,5 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-export * from './Message';
 export * from './MessageModel';
-export * from './impl/MessageSource';
-export * from './impl/MessageSourceModel';
+export * from './MessageSourceModel';
