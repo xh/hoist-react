@@ -4,6 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+export * from './Button';
 export * from './ThemeToggleButton';
 export * from './LogoutButton';
 export * from './RefreshButton';
