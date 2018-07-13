@@ -82,19 +82,28 @@ body.xh-app {
   }
 
   // Buttons
-  .button,
-  .button:active {
+  .button:not(.button--outline):not(.button--quiet):not(.button--light) {
     background-color: var(--xh-btn-color);
+    &:active {
+      background-color: var(--xh-btn-color);
+    }
   }
+
   .button--outline,
   .button--outline:active,
   .button--outline:hover {
     border-color: var(--xh-btn-color);
   }
+  .button--light,
+  .button--light:active,
+  .button--light:hover {
+    border-color: var(--xh-text-color-muted);
+    color: var(--xh-text-color-muted);
+  }
   .button--quiet,
   .button--quiet:active,
   .tabbar__button {
-    color: var(--xh-btn-text-color);
+    color: var(--xh-text-color);
   }
 
   // Accented
