@@ -8,9 +8,11 @@
 import {Children, Component} from 'react';
 import {observable, observer, setter} from '@xh/hoist/mobx';
 import {elemFactory, AppState, XH} from '@xh/hoist/core';
+import {div, frame, vframe, viewport, vspacer} from '@xh/hoist/cmp/layout';
 import {loadMask} from '@xh/hoist/mobile/cmp/mask';
 import {messageSource} from '@xh/hoist/mobile/cmp/message';
-import {div, frame, vframe, viewport, vspacer} from '@xh/hoist/cmp/layout';
+import {button} from '@xh/hoist/mobile/cmp/button';
+import {Icon} from '@xh/hoist/icon';
 
 import {
     feedbackDialog,
@@ -104,7 +106,15 @@ export class AppContainer extends Component {
                 You are logged in as ${user.username} 
                 and have the roles [${user.roles.join(', ') || '--'}].
             `,
-            vspacer(20)
+            vspacer(20),
+            button({
+                icon: Icon.logout(),
+                text: 'Logout',
+                omit: !XH.app.enableLogout,
+                onClick: () => {
+                    XH.identityService.logoutAsync();
+                }
+            })
         );
     }
 }
