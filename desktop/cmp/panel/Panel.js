@@ -16,6 +16,9 @@ import {panelHeader} from './impl/PanelHeader';
 /**
  * A Panel container builds on the lower-level layout components to offer a header element
  * w/standardized styling, title, and Icon as well as support for top and bottom toolbars.
+ *
+ * This component also includes support for collapsing its contents.  When collapsed, it will
+ * render its header element only.
  */
 @HoistComponent({layoutSupport: true})
 export class Panel extends Component {
@@ -32,7 +35,18 @@ export class Panel extends Component {
         /** A toolbar to be docked at the bottom of the panel. */
         bbar: PT.element,
         /** Whether this panel should be rendered with a mask, use to disable interaction with panel. */
-        masked: PT.bool
+        masked: PT.bool,
+        /** Should the panel be rendered with its main content and toolbars hidden? */
+        isCollapsed: PT.bool,
+        /** How should collapsed content be rendered?  Defaults to 'lazy'. */
+        collapseRenderMode: PropTypes.oneOf(['lazy', 'always', 'unmountOnHide'])
+        /**
+         * Orientation of collapsing.
+         * Defaults to 'top', indicating that the header element will simply stay in a horizontal position
+         * and layout when collapsed. If 'side', header element will be re-rendered as a tall, narrow bar
+         * appropriate for a side position in its parent container.
+         */
+        collapseOrientation: PropTypes.oneOf(['top', 'side'])
     };
 
     baseCls = 'xh-panel';
@@ -61,15 +75,22 @@ export class Panel extends Component {
             layoutConfig.flex = 'auto';
         }
 
+        children = [panelHeader({title, icon, headerItems})];
+        if (isCollapsed) {
+            children.push()
+            tbar || null,
+        ...(castArray(children)),
+            bbar || null,
+
+        }
+
         return vbox({
             cls: className ? `${this.baseCls} ${className}` : this.baseCls,
             layoutConfig,
             ...rest,
             items: [
                 panelHeader({title, icon, headerItems}),
-                tbar || null,
-                ...(castArray(children)),
-                bbar || null,
+
                 mask({isDisplayed: masked})
             ]
         });
