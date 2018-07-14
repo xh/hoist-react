@@ -37,14 +37,7 @@ export class RestStore extends UrlStore {
 
     async loadAsync() {
         if (!this._lookupsLoaded || this.reloadLookupsOnLoad) {
-            const lookupFields = this.fields.filter(it => !!it.lookupName);
-            if (lookupFields.length) {
-                const lookupData = await XH.fetchJson({url: `${this.url}/lookupData`});
-                lookupFields.forEach(f => {
-                    f.lookup = lookupData[f.lookupName];
-                });
-                this._lookupsLoaded = true;
-            }
+            this.updateLookupData();
         }
         return super.loadAsync();
     }
@@ -84,8 +77,28 @@ export class RestStore extends UrlStore {
         }).then(response => {
             const recs = this.createRecordMap([response.data]);
             this.updateRecordInternal(recs.values().next().value);
+            this.updateLookupData();
         }).linkTo(
             this.loadModel
         );
+    }
+
+    getLookupFields() {
+        return this.fields.filter(it => !!it.lookupName);
+    }
+
+    async updateLookupData() {
+        const lookupFields = this.getLookupFields();
+
+        if (lookupFields.length) {
+            const lookupData = await XH.fetchJson({url: `${this.url}/lookupData`});
+            lookupFields.forEach(f => {
+                f.lookup = lookupData[f.lookupName];
+            });
+
+            if (!this._lookupsLoaded) {
+                this._lookupsLoaded = true;
+            }
+        }
     }
 }
