@@ -6,11 +6,8 @@
  */
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {div, filler} from '@xh/hoist/cmp/layout';
-import {dialog} from '@xh/hoist/kit/onsen';
+import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {button} from '@xh/hoist/mobile/cmp/button';
-
-import './Message.scss';
 
 /**
  * A modal dialog that supports imperative alert/confirm.
@@ -25,44 +22,33 @@ class Message extends Component {
     render() {
         const model = this.model,
             isOpen = model && model.isOpen,
-            {icon, title, message, confirmText, cancelText} = model,
-            showToolbar = confirmText || cancelText;
+            {icon, title, message, cancelText, confirmText} = model,
+            buttons = [];
 
         if (!isOpen) return null;
 
+        if (cancelText) {
+            buttons.push(button({
+                text: cancelText,
+                modifier: 'quiet',
+                onClick: this.onCancel
+            }));
+        }
+
+        if (confirmText) {
+            buttons.push(button({
+                text: confirmText,
+                onClick: this.onConfirm
+            }));
+        }
+
         return dialog({
-            isOpen: true,
-            isCancelable: true,
-            onCancel: this.onCancel,
-            cls: 'xh-message',
-            items: [
-                div({
-                    cls: 'xh-message__title',
-                    items: [icon, title]
-                }),
-                div({
-                    cls: 'xh-message__inner',
-                    item: message
-                }),
-                div({
-                    cls: 'xh-message__toolbar',
-                    omit: !showToolbar,
-                    items: [
-                        filler(),
-                        button({
-                            text: cancelText,
-                            omit: !cancelText,
-                            modifier: 'quiet',
-                            onClick: this.onCancel
-                        }),
-                        button({
-                            text: confirmText,
-                            omit: !confirmText,
-                            onClick: this.onConfirm
-                        })
-                    ]
-                })
-            ]
+            isOpen,
+            icon,
+            title,
+            buttons,
+            content: message,
+            onCancel: this.onCancel
         });
     }
 

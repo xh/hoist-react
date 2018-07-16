@@ -7,8 +7,8 @@
 
 import {Component} from 'react';
 import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
-import {frame, table, tbody, tr, th, td, div} from '@xh/hoist/cmp/layout';
-import {dialog} from '@xh/hoist/kit/onsen';
+import {table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
+import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {Icon} from '@xh/hoist/icon';
 
 import './AboutDialog.scss';
@@ -27,20 +27,12 @@ export class AboutDialog extends Component {
         if (!XH.aboutIsOpen) return null;
 
         return dialog({
-            isOpen: true,
-            isCancelable: true,
-            onCancel: this.onClose,
+            icon: Icon.info(),
+            title: `About ${XH.appName}`,
             cls: 'xh-about-dialog',
-            items: [
-                div({
-                    cls: 'xh-about-dialog__title',
-                    items: [Icon.info(), `About ${XH.appName}`]
-                }),
-                frame({
-                    cls: 'xh-about-dialog__inner',
-                    item: this.renderTable()
-                })
-            ]
+            isOpen: true,
+            onCancel: this.onClose,
+            content: this.renderTable()
         });
     }
 
