@@ -1,0 +1,18 @@
+.xh-update-bar {
+  padding-left: 10px;
+  display: flex;
+  align-items: center;
+  color: white;
+  background-color: var(--xh-orange);
+  font-size: 14px;
+
+  & > svg {
+    margin-right: 10px;
+  }
+
+  .xh-button {
+    margin: 5px;
+    font-size: 14px;
+    line-height: 20px;
+  }
+}
