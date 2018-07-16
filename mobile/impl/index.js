@@ -6,6 +6,7 @@
  */
 export * from './AboutDialog';
 export * from './ExceptionDialog';
+export * from './ExceptionDialogDetails';
 export * from './ImpersonationBar';
 export * from './LockoutPanel';
 export * from './LoginPanel';

@@ -1,0 +1,42 @@
+.xh-exception-dialog-details {
+  .dialog {
+    width: 90%;
+    height: 90%;
+  }
+
+  .dialog-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .xh-dialog__inner {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+
+      th {
+        width: 90px;
+      }
+
+      pre {
+        overflow: auto;
+        font-size: 10px;
+        flex: 2;
+        border: var(--xh-border-solid);
+        border-radius: var(--xh-border-radius-px);
+        box-shadow: none;
+      }
+
+      textarea {
+        flex: 1;
+        margin: 0;
+        padding: var(--xh-pad-px);
+        line-height: 1.5;
+        resize: none;
+        border: var(--xh-border-solid);
+        border-radius: var(--xh-border-radius-px);
+      }
+    }
+  }
+
+}

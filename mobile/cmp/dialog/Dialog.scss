@@ -22,5 +22,9 @@
     padding: var(--xh-pad-px);
     border-top: var(--xh-border-solid);
     background-color: var(--xh-bg-alt);
+
+    .xh-button:not(:last-of-type) {
+      margin-right: var(--xh-pad-px);
+    }
   }
 }
