@@ -10,7 +10,7 @@ import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/kit/onsen';
-import {navigatorBackButton, themeToggleButton, logoutButton, refreshButton} from '@xh/hoist/mobile/cmp/button';
+import {navigatorBackButton, feedbackButton, themeToggleButton, logoutButton, refreshButton} from '@xh/hoist/mobile/cmp/button';
 
 /**
  * A standard application navigation bar which displays the current page title and a standard set of
@@ -32,6 +32,8 @@ export class AppBar extends Component {
         leftItems: PT.node,
         /** Items to be added to the right side of the AppBar, before the standard buttons. */
         rightItems: PT.node,
+        /** Set to true to hide the Feedback button. */
+        hideFeedbackButton: PT.bool,
         /** Set to true to hide the Theme Toggle button. */
         hideThemeButton: PT.bool,
         /** Set to true to hide the Logout button. Will be automatically hidden for applications with logout disabled. */
@@ -45,7 +47,7 @@ export class AppBar extends Component {
     };
 
     render() {
-        const {navigatorModel, title, leftItems, rightItems, hideThemeButton, hideLogoutButton, hideRefreshButton, backButtonProps, refreshButtonProps = {}} = this.props;
+        const {navigatorModel, title, leftItems, rightItems, hideFeedbackButton, hideThemeButton, hideLogoutButton, hideRefreshButton, backButtonProps, refreshButtonProps = {}} = this.props;
 
         return toolbar({
             cls: 'xh-appbar',
@@ -66,6 +68,7 @@ export class AppBar extends Component {
                     cls: 'right',
                     items: [
                         ...rightItems || [],
+                        feedbackButton({omit: hideFeedbackButton}),
                         themeToggleButton({omit: hideThemeButton}),
                         logoutButton({omit: hideLogoutButton}),
                         refreshButton({
