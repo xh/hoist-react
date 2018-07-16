@@ -63,7 +63,7 @@
   }
 
   .ag-cell-focus {
-    border-color: var(--xh-grid-cell-focus-border-color);
+    border-color: var(--xh-grid-cell-focus-border-color) !important;
   }
 
   .ag-group-expanded, .ag-group-contracted {
