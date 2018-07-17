@@ -19,6 +19,7 @@ export class PreferencePanel extends Component {
         enableColChooser: true,
         store: new RestStore({
             url: 'rest/preferenceAdmin',
+            reloadLookupsOnLoad: true,
             fields: [
                 {
                     name: 'name',

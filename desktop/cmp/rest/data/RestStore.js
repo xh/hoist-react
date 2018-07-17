@@ -23,7 +23,8 @@ export class RestStore extends UrlStore {
     /**
      * @param {string} url
      * @param {string} [dataRoot] - Name of root node for records in returned data
-     * @param {boolean} [reloadLookupsOnLoad] - Whether lookups should be loaded each time loadAsync is called
+     * @param {boolean} [reloadLookupsOnLoad] - Whether lookups should be loaded each time
+     *      new data is loaded or updated by this client.
      * @param {...*} [urlStoreArgs] - Additional arguments to pass to UrlStore.
      */
     constructor({url, dataRoot = 'data', reloadLookupsOnLoad = false, ...urlStoreArgs}) {
@@ -36,16 +37,7 @@ export class RestStore extends UrlStore {
     }
 
     async loadAsync() {
-        if (!this._lookupsLoaded || this.reloadLookupsOnLoad) {
-            const lookupFields = this.fields.filter(it => !!it.lookupName);
-            if (lookupFields.length) {
-                const lookupData = await XH.fetchJson({url: `${this.url}/lookupData`});
-                lookupFields.forEach(f => {
-                    f.lookup = lookupData[f.lookupName];
-                });
-                this._lookupsLoaded = true;
-            }
-        }
+        await this.ensureLookupsLoadedAsync();
         return super.loadAsync();
     }
 
@@ -84,8 +76,23 @@ export class RestStore extends UrlStore {
         }).then(response => {
             const recs = this.createRecordMap([response.data]);
             this.updateRecordInternal(recs.values().next().value);
+        }).then(() => {
+            return this.ensureLookupsLoadedAsync();
         }).linkTo(
             this.loadModel
         );
+    }
+
+    async ensureLookupsLoadedAsync() {
+        if (!this._lookupsLoaded || this.reloadLookupsOnLoad) {
+            const lookupFields = this.fields.filter(it => !!it.lookupName);
+            if (lookupFields.length) {
+                const lookupData = await XH.fetchJson({url: `${this.url}/lookupData`});
+                lookupFields.forEach(f => {
+                    f.lookup = lookupData[f.lookupName];
+                });
+            }
+            this._lookupsLoaded = true;
+        }
     }
 }
