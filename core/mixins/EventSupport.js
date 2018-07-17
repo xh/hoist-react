@@ -10,11 +10,10 @@ import {wait} from '@xh/hoist/promise';
 import {provideMethods, chainMethods} from '@xh/hoist/utils/ClassUtils';
 
 /**
- * Mixin to make a class an event target.
- * Provides support for adding and removing listeners and firing events on itself.
+ * Provide support for adding and removing listeners and firing events on itself.
  */
-export function EventTarget(C) {
-    C.isEventTarget = true;
+export function EventSupport(C) {
+    C.hasEventSupport = true;
 
     provideMethods(C, {
 

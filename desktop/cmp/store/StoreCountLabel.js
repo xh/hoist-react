@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {box} from '@xh/hoist/cmp/layout';
 import {fmtNumber} from '@xh/hoist/format';
 import {singularize, pluralize} from '@xh/hoist/utils/JsUtils';
@@ -18,7 +18,8 @@ import {BaseStore} from '@xh/hoist/data';
  * A component to display the number of records in a given store.
  * Will auto-update with changes to the count, including store filtering.
  */
-@HoistComponent({layoutSupport: true})
+@HoistComponent()
+@LayoutSupport
 class StoreCountLabel extends Component {
 
     static propTypes = {

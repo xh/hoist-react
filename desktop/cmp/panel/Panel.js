@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {castArray, omitBy} from 'lodash';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {vbox} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 
@@ -17,7 +17,8 @@ import {panelHeader} from './impl/PanelHeader';
  * A Panel container builds on the lower-level layout components to offer a header element
  * w/standardized styling, title, and Icon as well as support for top and bottom toolbars.
  */
-@HoistComponent({layoutSupport: true})
+@HoistComponent()
+@LayoutSupport
 export class Panel extends Component {
 
     static propTypes = {

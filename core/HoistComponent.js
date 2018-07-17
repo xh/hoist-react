@@ -9,7 +9,7 @@ import {XH} from '@xh/hoist/core';
 import {observer} from '@xh/hoist/mobx';
 import {defaultMethods, chainMethods, overrideMethods} from '@xh/hoist/utils/ClassUtils';
 
-import {Reactive} from './mixins/Reactive';
+import {ReactiveSupport} from './mixins/ReactiveSupport';
 import {elemFactory} from './elem';
 
 /**
@@ -22,23 +22,17 @@ import {elemFactory} from './elem';
  * Adds support for managed events, mobx reactivity, model awareness, and other convenience getters.
  *
  * @param {Object} [config] - configuration for the decorator.
- * @param {boolean} [config.isReactive] - apply Reactive and associated mobx Observer mixin to the component Class.
- * @param {boolean} [config.layoutSupport] - Does component support layout styles for flexbox as
- *      first class properties?  If true, these properties will be parsed and placed into a
- *      managed 'layoutConfig' on this component. See HoistComponent.layoutConfig, elem, and Box for more
- *      information.
+ * @param {boolean} [config.isReactive] - apply the ReactiveSupport and mobX Observer mixins to the component Class.
  */
 export function HoistComponent({
-    isReactive = true,
-    layoutSupport = false
+    isReactive = true
 } = {}) {
 
     return (C) => {
         C.isHoistComponent = true;
-        C.layoutSupport = layoutSupport;
 
         if (isReactive) {
-            C = Reactive(C);
+            C = ReactiveSupport(C);
         }
 
         defaultMethods(C, {
@@ -48,29 +42,6 @@ export function HoistComponent({
              */
             model: {
                 get() {return this.localModel ? this.localModel : this.props.model}
-            },
-
-            /**
-             * Flexbox related styles that were set as top-level properties on this component.
-             * These styles are parsed, and bundled into a single map prop -- 'layoutConfig'.
-             *
-             * This property bundle will be available if 'layoutSupport' is set to true when defining
-             * this component.
-             *
-             * The following properties will be supported:
-             *      margin', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft',
-             *     'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
-             *     'height', 'minHeight', 'maxHeight','width', 'minWidth', 'maxWidth',
-             *     'flex', 'flexBasis', 'flexDirection', 'flexGrow', 'flexShrink', 'flexWrap',
-             *     'alignItems', 'alignSelf', 'alignContent', 'justifyContent',
-             *     'overflow', 'overflowX', 'overflowY',
-             *     'top', 'left', 'position', 'display'
-             *
-             *  Important Note: This property relies on processing in elem() for its implementation.
-             *  See that function for more details.
-             */
-            layoutConfig: {
-                get() {return this.props.layoutConfig}
             },
 
             /**

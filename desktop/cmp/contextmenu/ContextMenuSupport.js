@@ -12,16 +12,13 @@ import {ContextMenuTarget} from '@xh/hoist/kit/blueprint';
 /**
  * Mixin to allow a Component to show a ContextMenu.
  *
- * Components that use this mixin should implement a getContextMenuItems()
- * method.
+ * Components that use this mixin should implement a getContextMenuItems() method.
  *
- * See Blueprint documentation for more information about the implementation of this
- * behavior.
+ * See the BlueprintJS docs for more information about the implementation of this mixin.
  */
 export function ContextMenuSupport(C) {
-    C.isContextMenuSupport = true;
+    C.hasContextMenuSupport = true;
 
-    C = ContextMenuTarget(C);
     defaultMethods(C, {
 
         /**
@@ -44,10 +41,11 @@ export function ContextMenuSupport(C) {
          */
         renderContextMenu(e) {
             const items = this.getContextMenuItems(e);
-
             return items ? contextMenu({menuItems: items}) : null;
         }
     });
+    
+    C = ContextMenuTarget(C);
 
     return C;
 }
