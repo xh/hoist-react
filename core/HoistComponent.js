@@ -7,10 +7,8 @@
 import ReactDom from 'react-dom';
 import {XH} from '@xh/hoist/core';
 import {observer} from '@xh/hoist/mobx';
-import {ContextMenuTarget, HotkeysTarget} from '@xh/hoist/kit/blueprint';
 import {defaultMethods, chainMethods, overrideMethods} from '@xh/hoist/utils/ClassUtils';
 
-import {EventTarget} from './mixins/EventTarget';
 import {Reactive} from './mixins/Reactive';
 import {elemFactory} from './elem';
 
@@ -22,10 +20,16 @@ import {elemFactory} from './elem';
  * negatively impacted by the overhead associated with this decorator.
  *
  * Adds support for managed events, mobx reactivity, model awareness, and other convenience getters.
+ *
+ * @param {Object} [config] - configuration for the decorator.
+ * @param {boolean} [config.isReactive] - apply Reactive and associated mobx Observer mixin to the component Class.
+ * @param {boolean} [config.layoutSupport] - Does component support layout styles for flexbox as
+ *      first class properties?  If true, these properties will be parsed and placed into a
+ *      managed 'layoutConfig' on this component. See HoistComponent.layoutConfig, elem, and Box for more
+ *      information.
  */
 export function HoistComponent({
     isReactive = true,
-    isEventTarget = false,
     layoutSupport = false
 } = {}) {
 
@@ -33,23 +37,8 @@ export function HoistComponent({
         C.isHoistComponent = true;
         C.layoutSupport = layoutSupport;
 
-        //-----------
-        // Mixins
-        //------------
         if (isReactive) {
             C = Reactive(C);
-        }
-
-        if (isEventTarget) {
-            C = EventTarget(C);
-        }
-
-        if (C.prototype.renderContextMenu) {
-            C = ContextMenuTarget(C);
-        }
-
-        if (C.prototype.renderHotkeys) {
-            C = HotkeysTarget(C);
         }
 
         defaultMethods(C, {
@@ -61,6 +50,25 @@ export function HoistComponent({
                 get() {return this.localModel ? this.localModel : this.props.model}
             },
 
+            /**
+             * Flexbox related styles that were set as top-level properties on this component.
+             * These styles are parsed, and bundled into a single map prop -- 'layoutConfig'.
+             *
+             * This property bundle will be available if 'layoutSupport' is set to true when defining
+             * this component.
+             *
+             * The following properties will be supported:
+             *      margin', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft',
+             *     'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
+             *     'height', 'minHeight', 'maxHeight','width', 'minWidth', 'maxWidth',
+             *     'flex', 'flexBasis', 'flexDirection', 'flexGrow', 'flexShrink', 'flexWrap',
+             *     'alignItems', 'alignSelf', 'alignContent', 'justifyContent',
+             *     'overflow', 'overflowX', 'overflowY',
+             *     'top', 'left', 'position', 'display'
+             *
+             *  Important Note: This property relies on processing in elem() for its implementation.
+             *  See that function for more details.
+             */
             layoutConfig: {
                 get() {return this.props.layoutConfig}
             },

@@ -7,15 +7,11 @@
 
 import {Children, Component} from 'react';
 import {observable, observer, setter} from '@xh/hoist/mobx';
-import {elemFactory, elem, AppState, XH} from '@xh/hoist/core'
-    ;
-import {ContextMenuTarget} from '@xh/hoist/kit/blueprint';
-import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
+import {elemFactory, elem, AppState, XH} from '@xh/hoist/core';
 import {loadMask} from '@xh/hoist/desktop/cmp/mask';
 import {messageSource} from '@xh/hoist/desktop/cmp/message';
 import {div, frame, vframe, viewport, vspacer} from '@xh/hoist/cmp/layout';
 import {logoutButton} from '@xh/hoist/desktop/cmp/button';
-import {Icon} from '@xh/hoist/icon';
 
 import {
     feedbackDialog,
@@ -40,7 +36,6 @@ import {
  * @see HoistApp.containerClass
  */
 @observer
-@ContextMenuTarget
 export class AppContainer extends Component {
 
     @setter @observable.ref caughtException = null
@@ -93,34 +88,10 @@ export class AppContainer extends Component {
         }
     }
 
-    renderContextMenu() {
-        return contextMenu({
-            menuItems: [
-                {
-                    text: 'Reload App',
-                    icon: Icon.refresh(),
-                    action: () => XH.reloadApp()
-                },
-                {
-                    text: 'About',
-                    icon: Icon.info(),
-                    action: () => XH.showAbout()
-                },
-                {
-                    text: 'Logout',
-                    icon: Icon.logout(),
-                    hidden: !XH.app.enableLogout,
-                    action: () => XH.identityService.logoutAsync()
-                }
-            ]
-        });
-    }
-
     componentDidCatch(e, info) {
         this.setCaughtException(e);
         XH.handleException(e, {requireReload: true});
     }
-
 
     //------------------------
     // Implementation
