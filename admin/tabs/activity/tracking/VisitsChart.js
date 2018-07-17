@@ -7,27 +7,24 @@
 
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {dayField, label, textField} from '@xh/hoist/desktop/cmp/form';
+import {dayField, textField} from '@xh/hoist/desktop/cmp/form';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {chart} from '@xh/hoist/desktop/cmp/chart';
 import {Icon} from '@xh/hoist/icon';
 
-@HoistComponent()
+@HoistComponent({collapseSupport: true})
 export class VisitsChart extends Component {
-
+    
     render() {
         return panel({
             icon: Icon.users(),
             title: 'Unique Daily Visitors',
             item: chart({model: this.model.chartModel}),
+            collapsed: this.collapsed,
             bbar: this.renderToolbar()
         });
-    }
-
-    renderCollapsed() {
-        return toolbar(Icon.users(), label('Unique Daily Visitors'));
     }
 
     //-----------------------------

@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {castArray, omitBy} from 'lodash';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {vbox} from '@xh/hoist/cmp/layout';
+import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 
 import {panelHeader} from './impl/PanelHeader';
@@ -20,8 +20,13 @@ import {panelHeader} from './impl/PanelHeader';
  * This component also includes support for collapsing its contents.  When collapsed, it will
  * render its header element only.
  */
-@HoistComponent({layoutSupport: true})
+@HoistComponent({
+    collapseSupport: true,
+    layoutSupport: true
+})
 export class Panel extends Component {
+
+    _wasDisplayed = false;
 
     static propTypes = {
         /** A title text added to the panel's header. */
@@ -37,16 +42,10 @@ export class Panel extends Component {
         /** Whether this panel should be rendered with a mask, use to disable interaction with panel. */
         masked: PT.bool,
         /** Should the panel be rendered with its main content and toolbars hidden? */
-        isCollapsed: PT.bool,
+        collapsed: PT.oneOf(['top', 'bottom', 'left', 'right', false]),
         /** How should collapsed content be rendered?  Defaults to 'lazy'. */
-        collapseRenderMode: PropTypes.oneOf(['lazy', 'always', 'unmountOnHide'])
-        /**
-         * Orientation of collapsing.
-         * Defaults to 'top', indicating that the header element will simply stay in a horizontal position
-         * and layout when collapsed. If 'side', header element will be re-rendered as a tall, narrow bar
-         * appropriate for a side position in its parent container.
-         */
-        collapseOrientation: PropTypes.oneOf(['top', 'side'])
+        collapseRenderMode: PT.oneOf(['lazy', 'always', 'unmountOnHide']),
+        
     };
 
     baseCls = 'xh-panel';
@@ -61,10 +60,15 @@ export class Panel extends Component {
             icon,
             headerItems,
             masked,
-            isCollapsed,
+            collapsed,
+            collapsedRenderMode,
             children,
             ...rest
         } = this.props;
+
+
+        collapsed = (collapsed != undefined ? collapsed : null);
+        collapsedRenderMode = (collapsedRenderMode != undefined ? collapsedRenderMode : 'always');
 
         // Block unwanted use of padding props, which will separate the panel's header
         // and bottom toolbar from its edges in a confusing way.
@@ -75,13 +79,17 @@ export class Panel extends Component {
             layoutConfig.flex = 'auto';
         }
 
-        children = [panelHeader({title, icon, headerItems})];
-        if (isCollapsed) {
-            children.push()
-            tbar || null,
-        ...(castArray(children)),
-            bbar || null,
-
+        this._wasDisplayed = this._wasDisplayed || !collapsed;
+        let coreContents = null;
+        if (!collapsed || collapsedRenderMode == 'always' || (collapsedRenderMode == 'lazy' && this._wasDisplayed)) {
+            coreContents = vframe({
+                style: {display: collapsed ? 'none' : 'flex'},
+                items: [
+                    tbar || null,
+                    ...(castArray(children)),
+                    bbar || null
+                ]
+            });
         }
 
         return vbox({
@@ -89,8 +97,8 @@ export class Panel extends Component {
             layoutConfig,
             ...rest,
             items: [
-                panelHeader({title, icon, headerItems}),
-
+                panelHeader({title, icon, collapsed, headerItems}),
+                coreContents,
                 mask({isDisplayed: masked})
             ]
         });

@@ -8,6 +8,7 @@ import React, {Children, Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
+import {throwIf} from '@xh/hoist/utils/JsUtils';
 
 import {ResizableModel} from './ResizableModel';
 import {dragger} from './impl/Dragger';
@@ -17,13 +18,15 @@ import {collapser} from './impl/Collapser';
  * A Resizable/Collapsible Container
  *
  * This component is designed to host a fixed-height/fixed-width child within a flex box.
- * It will allow the user to manage the fixed size via drag-drop and button based expand/collapse.
+ * It will optionally allow the user to manage the fixed size of its child via drag-drop
+ * or the 'collapsed' state via a button-based affordance.
  *
- * When collapsed, it will show either the configured `collapsedDisplay` element or, if the child
- * panel is a HoistComponent, the child component with its `isCollapsed` property set to true.
+ * If collapsing is enabled via 'isCollapsible' property, and the component's contents do *not*
+ * support collapsing, an error will be thrown. @see HoistComponent.supportsCollapse.
  *
  * Applications should provide optional values for `isOpen`, `contentSize`, and `prefName`.
- * Applications may provide this object with an instance of ResizableModel.
+ * Applications may alternatively provide this object with an instance of ResizableModel, if they
+ * wish to manipulate its state directly.
  */
 @HoistComponent()
 export class Resizable extends Component {
@@ -33,19 +36,18 @@ export class Resizable extends Component {
         side: PT.oneOf(['top', 'right', 'bottom', 'left']).isRequired,
         /** Size of the content panel (width if side `left` or `right` - height otherwise). */
         contentSize: PT.number.isRequired,
-        /** Can the panel be collapsed via collapse/expand toggle button? */
+        /** Can the panel be collapsed via collapse/expand toggle button? Defaults to true*/
         isCollapsible: PT.bool,
-        /** Can the panel be resized via drag and drop? */
+        /** Can the panel be resized via drag and drop? Defaults to true.*/
         isDraggable: PT.bool,
         /** Is the content panel expanded? */
         isOpen: PT.bool,
         /** Optional preference name to store sizing and collapsed state for this component. */
         prefName: PT.string,
-        /** React Element to display when collapsed. */
-        collapsedDisplay: PT.element,
-        /** ResizableModel - typically constructed internally by this component. */
+        /** An instance of ResizableModel. Specify to manipulate/track the state of this object. */
         model: PT.object
     };
+
 
     constructor(props) {
         super(props);
@@ -62,7 +64,6 @@ export class Resizable extends Component {
     get side()              {return this.props.side}
     get isCollapsible()     {return this.props.isCollapsible !== false}
     get isDraggable()       {return this.props.isDraggable !== false}
-    get collapsedDisplay()  {return this.props.collapsedDisplay}
     get contentSize()       {return this.model.contentSize}
     get isOpen()            {return this.model.isOpen}
     get isVertical()        {return this.side === 'bottom' || this.side === 'top'}
@@ -99,8 +100,8 @@ export class Resizable extends Component {
             dim = isVertical ? 'height' : 'width';
 
         let child = Children.only(this.props.children);
-        if (child.type.isHoistComponent) {
-            child = React.cloneElement(child, {isCollapsed: false});
+        if (child.type.collapseSupport) {
+            child = React.cloneElement(child, {collapsed: false});
         }
 
         return box({
@@ -110,16 +111,16 @@ export class Resizable extends Component {
     }
 
     renderCollapsedChild() {
-        const {collapsedDisplay, props} = this;
+        const {props} = this;
 
         let child = Children.only(props.children);
-        if (collapsedDisplay) {
-            child = collapsedDisplay;
-        } else if (child.type.isHoistComponent) {
-            child = React.cloneElement(child, {isCollapsed: true});
-        } else {
-            child = null;
-        }
+
+        throwIf(
+            !child.type.collapseSupport,
+            'Cannot place non-collapsible child component in Resizable with isCollapsible=true'
+        )
+        
+        child = React.cloneElement(child, {collapsed: this.side});
 
         return box({
             item: child,
