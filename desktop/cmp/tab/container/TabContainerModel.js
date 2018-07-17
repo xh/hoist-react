@@ -6,7 +6,7 @@
  */
 import {HoistModel, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
-import {isPlainObject, uniqBy, find} from 'lodash';
+import {find, isPlainObject, uniqBy} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/JsUtils';
 import {TabModel} from '@xh/hoist/desktop/cmp/tab';
 
@@ -85,14 +85,14 @@ export class TabContainerModel {
 
         throwIf(!tab, `Unknown Tab ${id} in TabContainer.`);
 
-        this.activeTabId = id;
-        if (tab.reloadOnShow) tab.requestRefresh();
-
         if (route && !suppressRouting) {
             const tabRoute = route + '.' + id;
             if (!XH.router.isActive(tabRoute)) {
                 XH.navigate(tabRoute);
             }
+        } else {
+            this.activeTabId = id;
+            if (tab.reloadOnShow) tab.requestRefresh();
         }
     }
 
