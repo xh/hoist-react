@@ -11,6 +11,7 @@ import {elemFactory, AppState, XH} from '@xh/hoist/core';
 import {div, frame, vframe, viewport, vspacer} from '@xh/hoist/cmp/layout';
 import {loadMask} from '@xh/hoist/mobile/cmp/mask';
 import {messageSource} from '@xh/hoist/mobile/cmp/message';
+import {toastManager} from '@xh/hoist/mobile/cmp/toast';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
@@ -79,6 +80,7 @@ export class AppContainer extends Component {
                     ),
                     loadMask({model: XH.appLoadModel}),
                     messageSource({model: XH.messageSourceModel}),
+                    toastManager({model: XH.toastManagerModel}),
                     feedbackDialog({model: XH.feedbackDialogModel}),
                     aboutDialog()
                 );

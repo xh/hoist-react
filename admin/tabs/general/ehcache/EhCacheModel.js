@@ -9,7 +9,6 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {UrlStore} from '@xh/hoist/data';
 import {baseCol} from '@xh/hoist/columns/Core';
-import {ToastManager} from '@xh/hoist/toast';
 
 import {nameCol} from '@xh/hoist/admin/columns/Columns';
 
@@ -42,7 +41,7 @@ export class EhCacheModel {
 
     onClearCacheSuccess = () => {
         this.loadAsync();
-        ToastManager.show({message: 'Caches Cleared'});
+        XH.toast({message: 'Caches Cleared'});
     }
 
     async loadAsync() {

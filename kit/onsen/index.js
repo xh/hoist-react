@@ -30,6 +30,7 @@ import {
     SearchInput,
     Tab,
     Tabbar,
+    Toast,
     Toolbar,
     ToolbarButton
 } from 'react-onsenui';
@@ -50,5 +51,6 @@ export const
     searchInput = elemFactory(SearchInput),
     tab = elemFactory(Tab),
     tabbar = elemFactory(Tabbar),
+    toast = elemFactory(Toast),
     toolbar = elemFactory(Toolbar),
     toolbarButton = elemFactory(ToolbarButton);

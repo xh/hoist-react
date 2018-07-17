@@ -16,6 +16,7 @@ import {RouterModel} from '@xh/hoist/router';
 import {throwIf} from '@xh/hoist/utils/JsUtils';
 
 import {MessageSourceModel} from '@xh/hoist/cmp/message/MessageSourceModel';
+import {ToastManagerModel} from '@xh/hoist/cmp/toast/ToastManagerModel';
 
 import {
     ConfigService,
@@ -133,6 +134,8 @@ class XHClass {
     appLoadModel = new MultiPromiseModel();
 
     messageSourceModel = new MessageSourceModel();
+
+    toastManagerModel = new ToastManagerModel();
 
     /**
      * Main entry point. Initialize and render application code.
@@ -284,6 +287,18 @@ class XHClass {
     confirm(config) {
         config = defaults({}, config, {confirmText: 'OK', cancelText: 'Cancel'});
         this.messageSourceModel.show(config);
+    }
+
+    //------------------------------
+    // Toast Support
+    //------------------------------
+    /**
+     * Show a Toast.
+     *
+     * @param {Object} config - see ToastModel for available options.
+     */
+    toast(config) {
+        this.toastManagerModel.show(config);
     }
 
     //-------------------
