@@ -23,7 +23,7 @@ export class TabContainerModel {
     tabs = [];
 
     /** Base route for this container. */
-    route = null
+    route = null;
 
     /** ID of the Tab to be active by default. */
     defaultTabId = null;
@@ -75,24 +75,21 @@ export class TabContainerModel {
 
     /**
      * Set the currently active Tab.
-     * @param {int} id - unique ID of Tab to be shown.
-     * @param {boolean} [suppressRouting] - for internal use - true to suppress routing based navigation.
+     *
+     * If using routing, this method will navigate to the new tab via the router and the active Tab
+     * will only be updated once the router state changes. Otherwise the active Tab will be updated
+     * immediately.
+     *
+     * @param {int} id - unique ID of Tab to activate.
      */
-    @action
-    setActiveTabId(id, suppressRouting = false) {
-        const {route, tabs} = this,
-            tab = find(tabs, {id});
+    activateTab(id) {
+        if (this.activeTabId === id) return;
 
-        throwIf(!tab, `Unknown Tab ${id} in TabContainer.`);
-
-        if (route && !suppressRouting) {
-            const tabRoute = route + '.' + id;
-            if (!XH.router.isActive(tabRoute)) {
-                XH.navigate(tabRoute);
-            }
+        const {route} = this;
+        if (route) {
+            XH.navigate(route + '.' + id);
         } else {
-            this.activeTabId = id;
-            if (tab.reloadOnShow) tab.requestRefresh();
+            this.setActiveTabId(id);
         }
     }
 
@@ -103,10 +100,20 @@ export class TabContainerModel {
         this.tabs.forEach(it => it.requestRefresh());
     }
 
-
     //-------------------------
     // Implementation
     //-------------------------
+    @action
+    setActiveTabId(id) {
+        const {tabs} = this,
+            tab = find(tabs, {id});
+
+        throwIf(!tab, `Unknown Tab ${id} in TabContainer.`);
+
+        this.activeTabId = id;
+        if (tab.reloadOnShow) tab.requestRefresh();
+    }
+
     routerReaction() {
         return {
             track: () => XH.routerState,
@@ -120,7 +127,7 @@ export class TabContainerModel {
                     });
 
                     if (activateTab) {
-                        this.setActiveTabId(activateTab.id, true);
+                        this.setActiveTabId(activateTab.id);
                     }
                 }
             },
