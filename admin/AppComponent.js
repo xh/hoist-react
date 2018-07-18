@@ -13,10 +13,12 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {appBar} from '@xh/hoist/desktop/cmp/appbar';
+import {ContextMenuSupport, ContextMenuItem} from '@xh/hoist/desktop/cmp/contextmenu';
 
 import './App.scss';
 
 @HoistComponent()
+@ContextMenuSupport
 export class AppComponent extends Component {
     render() {
         if (!XH.getUser().isHoistAdmin) {
@@ -31,6 +33,11 @@ export class AppComponent extends Component {
                 switcherPosition: 'none'
             })
         });
+    }
+
+    getContextMenuItems() {
+        const Item = ContextMenuItem;
+        return [Item.reloadApp(), Item.about(), Item.logout()];
     }
 
     //------------------

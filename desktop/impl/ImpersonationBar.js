@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {popover, hotkeys, hotkey} from '@xh/hoist/kit/blueprint';
+import {HotkeysTarget, popover, hotkeys, hotkey} from '@xh/hoist/kit/blueprint';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {vbox, filler, span, box} from '@xh/hoist/cmp/layout';
 import {comboField} from '@xh/hoist/desktop/cmp/form';
@@ -23,6 +23,7 @@ import {ImpersonationBarModel} from './ImpersonationBarModel';
  * @private
  */
 @HoistComponent()
+@HotkeysTarget
 export class ImpersonationBar extends Component {
 
     localModel = new ImpersonationBarModel();

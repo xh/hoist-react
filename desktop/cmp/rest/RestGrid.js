@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/desktop/cmp/grid';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {fragment} from '@xh/hoist/cmp/layout';
@@ -14,7 +14,8 @@ import {fragment} from '@xh/hoist/cmp/layout';
 import {restGridToolbar} from './RestGridToolbar';
 import {restForm} from './RestForm';
 
-@HoistComponent({layoutSupport: true})
+@HoistComponent()
+@LayoutSupport
 export class RestGrid extends Component {
 
     render() {

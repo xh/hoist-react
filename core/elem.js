@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import {castArray, defaults, forOwn, isArray, pick, isNumber, isPlainObject, isString, merge} from 'lodash';
+import {castArray, defaults, forOwn, isArray, isPlainObject, isString} from 'lodash';
 import {isReactElement} from '@xh/hoist/utils/ReactUtils';
 import {Exception} from '@xh/hoist/exception';
 
@@ -44,8 +44,8 @@ export function elem(type, config = {}) {
     if (cls) props.className = cls;
     if (omit) props.xhOmit = 'true';
 
-    if (type.layoutSupport) {
-        processLayoutConfig(props);
+    if (type.hasLayoutSupport) {
+        type.processLayoutProps(props);
     }
 
     // 2) Special handling to recapture API props that needed '$' prefix to avoid conflicts with above.
@@ -120,39 +120,3 @@ function normalizeArgs(args) {
     return {items: args};
 }
 
-//-------------------------------------------------------------------------
-// Support for layoutConfig
-// Pre-process and bundle layout related keys below into a 'layoutConfig' key
-//-------------------------------------------------------------------------
-const dimKeys = [
-    'margin', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft',
-    'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
-    'height', 'minHeight', 'maxHeight',
-    'width', 'minWidth', 'maxWidth'
-];
-const flexKeys = ['flex', 'flexBasis', 'flexDirection', 'flexGrow', 'flexShrink', 'flexWrap'];
-const alignKeys = ['alignItems', 'alignSelf', 'alignContent', 'justifyContent'];
-const overflowKeys = ['overflow', 'overflowX', 'overflowY'];
-const otherKeys = ['top', 'left', 'position', 'display'];
-const allKeys = [...dimKeys, ...flexKeys, ...alignKeys, ...overflowKeys, ...otherKeys];
-
-function processLayoutConfig(config) {
-    // 1) Harvest, remove, and process all keys of interest
-    const layoutConfig = pick(config, allKeys);
-    forOwn(layoutConfig, (v, k) => delete config[k]);
-
-    // 1a) flexXXX: convert raw number to string
-    const flexConfig = pick(layoutConfig, flexKeys);
-    forOwn(flexConfig, (v, k) => {
-        if (isNumber(v)) layoutConfig[k] = v.toString();
-    });
-
-    // 1b) Dimensions: Translate raw into pixels
-    const dimConfig = pick(layoutConfig, dimKeys);
-    forOwn(dimConfig, (v, k) => {
-        if (isNumber(v)) layoutConfig[k] = v + 'px';
-    });
-
-    // 2) Apply this config on top of any config passed in
-    config.layoutConfig = config.layoutConfig ? merge(config.layoutConfig, layoutConfig) : layoutConfig;
-}
