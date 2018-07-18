@@ -18,9 +18,9 @@ import {provideMethods, chainMethods} from '@xh/hoist/utils/ClassUtils';
  *
  * See https://mobx.js.org/refguide/api.html for full details on the underlying MobX APIs.
  */
-export function Reactive(C) {
+export function ReactiveSupport(C) {
 
-    C.isReactive = true;
+    C.hasReactiveSupport = true;
 
     provideMethods(C, {
 

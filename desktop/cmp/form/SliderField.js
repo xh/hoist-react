@@ -6,7 +6,7 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {box} from '@xh/hoist/cmp/layout';
 import {slider, rangeSlider} from '@xh/hoist/kit/blueprint';
 import {throwIf} from '@xh/hoist/utils/JsUtils';
@@ -19,7 +19,8 @@ import {HoistField} from './HoistField';
  *
  * Value can be either a single number (for a simple slider) or an array of 2 numbers (for a range)
  */
-@HoistComponent({layoutSupport: true})
+@HoistComponent()
+@LayoutSupport
 export class SliderField extends HoistField {
 
     static propTypes = {

@@ -6,12 +6,13 @@
  */
 
 import {Component} from 'react';
-import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
+import {XH, HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/desktop/cmp/grid';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {baseCol} from '@xh/hoist/columns/Core';
 
-@HoistComponent({layoutSupport: true})
+@HoistComponent()
+@LayoutSupport
 class DataView extends Component {
 
     constructor(props) {

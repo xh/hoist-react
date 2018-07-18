@@ -17,8 +17,9 @@ import {ContextMenuItem} from './ContextMenuItem';
 /**
  * ContextMenu
  *
- * To add a Context Menu to a component, specify a renderContextMenu() method on the
- * component that returns this object.
+ * Not typically used directly by applications.  To add a Context Menu to a
+ * component, decorate the component with ContextMenuSupport and implement
+ * getContextMenuItems().
  *
  * @see StoreContextMenu to specify a context menu on store enabled components.
  * That API will receive specific information about the current selection
@@ -41,7 +42,8 @@ export class ContextMenu extends Component {
     //---------------------------
     parseMenuItems(items) {
         items = items.map(item => {
-            if (item === '-') return item;
+            if (item === '-' || isReactElement(item)) return item;
+
             if (!(item instanceof ContextMenuItem)) {
                 item = new ContextMenuItem(item);
             }
@@ -63,14 +65,15 @@ export class ContextMenu extends Component {
             return true;
         }).map(item => {
             if (item === '-') return menuDivider();
-            if (isReactElement(item))  return item;
-
+            if (isReactElement(item)) {
+                return menuItem({text: item});
+            }
+            
             const items = item.items ? this.parseMenuItems(item.items) : null;
-
             return menuItem({
                 text: item.text,
                 icon: item.icon,
-                onClick: () => start(item.action),    // do async to allow menu to close
+                onClick: item.action ? () => start(item.action) : null,    // do async to allow menu to close
                 disabled: item.disabled,
                 items
             });

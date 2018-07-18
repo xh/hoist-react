@@ -27,7 +27,7 @@ class ClipboardMenuItem extends Component {
     static defaultOptions = {
         icon: Icon.clipboard(),
         text: 'Copy',
-        cls: 'pt-minimal',
+        minimal: true,
         successMessage: 'Text copied to clipboard.',
         style: {
             display: 'flex',
@@ -37,7 +37,7 @@ class ClipboardMenuItem extends Component {
     }
 
     render() {
-        const btnProps = defaultsDeep(this.props, ClipboardMenuItem.defaultOptions);
+        const btnProps = defaultsDeep({}, this.props, ClipboardMenuItem.defaultOptions);
         return clipboardButton(btnProps);
     }
 

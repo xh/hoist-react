@@ -8,8 +8,8 @@ import {XH} from '@xh/hoist/core';
 import {allSettled} from '@xh/hoist/promise';
 import {defaultMethods} from '@xh/hoist/utils/ClassUtils';
 
-import {EventTarget} from './mixins/EventTarget';
-import {Reactive} from './mixins/Reactive';
+import {EventSupport} from './mixins/EventSupport';
+import {ReactiveSupport} from './mixins/ReactiveSupport';
 
 
 /**
@@ -23,8 +23,8 @@ export function HoistService() {
     return (C) => {
         C.isHoistService = true;
 
-        C = EventTarget(C);
-        C = Reactive(C);
+        C = EventSupport(C);
+        C = ReactiveSupport(C);
 
         defaultMethods(C, {
             /**

@@ -7,11 +7,9 @@
 import ReactDom from 'react-dom';
 import {XH} from '@xh/hoist/core';
 import {observer} from '@xh/hoist/mobx';
-import {ContextMenuTarget, HotkeysTarget} from '@xh/hoist/kit/blueprint';
 import {defaultMethods, chainMethods, overrideMethods} from '@xh/hoist/utils/ClassUtils';
 
-import {EventTarget} from './mixins/EventTarget';
-import {Reactive} from './mixins/Reactive';
+import {ReactiveSupport} from './mixins/ReactiveSupport';
 import {elemFactory} from './elem';
 
 /**
@@ -22,34 +20,19 @@ import {elemFactory} from './elem';
  * negatively impacted by the overhead associated with this decorator.
  *
  * Adds support for managed events, mobx reactivity, model awareness, and other convenience getters.
+ *
+ * @param {Object} [config] - configuration for the decorator.
+ * @param {boolean} [config.isReactive] - apply the ReactiveSupport and mobX Observer mixins to the component Class.
  */
 export function HoistComponent({
-    isReactive = true,
-    isEventTarget = false,
-    layoutSupport = false
+    isReactive = true
 } = {}) {
 
     return (C) => {
         C.isHoistComponent = true;
-        C.layoutSupport = layoutSupport;
 
-        //-----------
-        // Mixins
-        //------------
         if (isReactive) {
-            C = Reactive(C);
-        }
-
-        if (isEventTarget) {
-            C = EventTarget(C);
-        }
-
-        if (C.prototype.renderContextMenu) {
-            C = ContextMenuTarget(C);
-        }
-
-        if (C.prototype.renderHotkeys) {
-            C = HotkeysTarget(C);
+            C = ReactiveSupport(C);
         }
 
         defaultMethods(C, {
@@ -59,10 +42,6 @@ export function HoistComponent({
              */
             model: {
                 get() {return this.localModel ? this.localModel : this.props.model}
-            },
-
-            layoutConfig: {
-                get() {return this.props.layoutConfig}
             },
 
             /**
