@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 
 import {box} from './Box';
 
@@ -13,7 +13,8 @@ import {box} from './Box';
  * A container for the top level of the application.
  * Will stretch to encompass the entire browser.
  */
-@HoistComponent({layoutSupport: true})
+@HoistComponent()
+@LayoutSupport
 export class Viewport extends Component {
     render() {
         return box({

@@ -6,12 +6,13 @@
  */
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {grid} from '@xh/hoist/cmp/grid';
-import {filler, panel} from '@xh/hoist/cmp/layout';
-import {textField, dayField} from '@xh/hoist/cmp/form';
-import {toolbar, toolbarSep} from '@xh/hoist/cmp/toolbar';
-import {button, exportButton, refreshButton} from '@xh/hoist/cmp/button';
-import {storeCountLabel} from '@xh/hoist/cmp/store';
+import {grid} from '@xh/hoist/desktop/cmp/grid';
+import {filler} from '@xh/hoist/cmp/layout';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {textField, dayField} from '@xh/hoist/desktop/cmp/form';
+import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
+import {button, exportButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
+import {storeCountLabel} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 
 import {activityDetail} from './ActivityDetail';

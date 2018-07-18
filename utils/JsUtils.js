@@ -5,21 +5,30 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
-import {mixin} from 'lodash';
+import {isObject, forOwn, mixin} from 'lodash';
 import _inflection from 'lodash-inflection';
 
 mixin(_inflection);
 
+/**
+ * Output a shallow copy of an object up to a given depth, beyond which child objects will be
+ * replaced by a placeholder string. Typically used prior to stringifying potentially recursive
+ * or deeply nested objects.
+ *
+ * @param {Object} obj - the object to evaluate
+ * @param {number} depth - maximum depth within the object tree that will be returned
+ */
 export function trimToDepth(obj, depth) {
     if (depth < 1) return null;
 
     const ret = {};
-    Object.entries(obj).forEach(([key, val]) => {
-        if (typeof val === 'object') {
+    forOwn(obj, (val, key) => {
+        if (isObject(val)) {
             val = depth > 1 ? trimToDepth(val, depth - 1) : '{...}';
         }
         ret[key] = val;
     });
+
     return ret;
 }
 

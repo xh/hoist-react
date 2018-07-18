@@ -8,7 +8,7 @@ import moment from 'moment';
 import {forOwn} from 'lodash';
 import {XH, HoistModel} from '@xh/hoist/core';
 import {observable, setter} from '@xh/hoist/mobx';
-import {ChartModel} from '@xh/hoist/cmp/chart';
+import {ChartModel} from '@xh/hoist/desktop/cmp/chart';
 import {fmtDate} from '@xh/hoist/format';
 
 @HoistModel()

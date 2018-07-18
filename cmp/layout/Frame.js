@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 
 import {box} from './Box';
 
@@ -14,21 +14,24 @@ import {box} from './Box';
  *
  * This class is useful for creating nested layouts.  See also VFrame, and HFrame.
  */
-@HoistComponent({layoutSupport: true})
+@HoistComponent()
+@LayoutSupport
 export class Frame extends Component {
     render() {
         return box({flex: 'auto', ...this.props});
     }
 }
 
-@HoistComponent({layoutSupport: true})
+@HoistComponent()
+@LayoutSupport
 export class VFrame extends Component {
     render() {
         return box({flex: 'auto', flexDirection: 'column', ...this.props});
     }
 }
 
-@HoistComponent({layoutSupport: true})
+@HoistComponent()
+@LayoutSupport
 export class HFrame extends Component {
     render() {
         return box({flex: 'auto', flexDirection: 'row', ...this.props});

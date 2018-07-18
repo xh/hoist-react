@@ -38,13 +38,19 @@ export class IdentityService {
         return this._apparentUser;
     }
 
-    /** Method form of the user getter for aliasing by the XH global. */
+    /** The current acting user's username. */
+    get username() {
+        return this._apparentUser ? this._apparentUser.username : null;
+    }
+
+    /** The current acting user - method form for aliasing by XH. */
     getUser() {
         return this.user;
     }
 
-    get username() {
-        return this._apparentUser ? this._apparentUser.username : null;
+    /** The current acting user's username - method form for aliasing by XH. */
+    getUsername() {
+        return this.username;
     }
 
     /**

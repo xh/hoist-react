@@ -13,9 +13,9 @@ import {Exception, ExceptionHandler} from '@xh/hoist/exception';
 import {observable, action} from '@xh/hoist/mobx';
 import {MultiPromiseModel, never} from '@xh/hoist/promise';
 import {RouterModel} from '@xh/hoist/router';
-import {appContainer} from '@xh/hoist/impl';
-import {MessageSourceModel} from '@xh/hoist/cmp/message';
 import {throwIf} from '@xh/hoist/utils/JsUtils';
+
+import {MessageSourceModel} from '@xh/hoist/cmp/message/MessageSourceModel';
 
 import {
     ConfigService,
@@ -40,11 +40,11 @@ import '../styles/XH.scss';
 /**
  * Top-level Singleton model for Hoist.  This is the main entry point for the API.
  *
- * It provide access to the built-in Hoist services, metadata about the application and environment,
+ * Provides access to the built-in Hoist services, metadata about the application and environment,
  * and convenience aliases to the most common framework operations. It also maintains key observable
  * application state regarding dialogs, loading, and exceptions.
  *
- * Available to applications via import as 'XH'- installed as window.XH for troubleshooting purposes.
+ * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
  */
 @HoistModel()
 class XHClass {
@@ -142,13 +142,13 @@ class XHClass {
      */
     renderApp(app) {
         this.app = app;
-        throwIf(
-            !app.componentClass,
-            'A HoistApp must define a componentClass getter to specify its top-level component.'
-        );
+        const {componentClass, containerClass} = app;
+        throwIf(!componentClass, 'A HoistApp must define a componentClass getter to specify its top-level component.');
+        throwIf(!containerClass, 'A HoistApp must define a containerClass that it should be hosted within.');
 
-        const rootView = appContainer(
-            elem(app.componentClass, {model: app})
+        const rootView = elem(
+            containerClass,
+            {item: elem(componentClass, {model: app})}
         );
 
         ReactDOM.render(rootView, document.getElementById('root'));
@@ -382,13 +382,15 @@ class XHClass {
             this.errorTrackingService
         );
         await initServicesAsync(
+            this.identityService
+        );
+        await initServicesAsync(
             this.configService,
             this.prefService
         );
         await initServicesAsync(
             this.environmentService,
             this.feedbackService,
-            this.identityService,
             this.idleService,
             this.trackService
         );
@@ -414,8 +416,8 @@ class XHClass {
 
     aliasMethods() {
         this.createMethodAliases(this.trackService,             ['track']);
-        this.createMethodAliases(this.fetchService,             ['fetchJson', 'fetch']);
-        this.createMethodAliases(this.identityService,          ['getUser']);
+        this.createMethodAliases(this.fetchService,             ['fetch', 'fetchJson']);
+        this.createMethodAliases(this.identityService,          ['getUser', 'getUsername']);
         this.createMethodAliases(this.configService,            {getConf: 'get'});
         this.createMethodAliases(this.prefService,              {getPref: 'get', setPref: 'set'});
         this.createMethodAliases(this.environmentService,       {getEnv: 'get'});

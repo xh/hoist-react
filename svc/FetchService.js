@@ -23,6 +23,8 @@ export class FetchService {
      *      @see https://developer.mozilla.org/en-US/docs/Web/API/Request for the available options
      * @param {string} opts.url - target url to send the HTTP request to. Relative urls will be
      *     appended to XH.baseUrl for the request
+     * @param {Object} [opts.params] - parameters to encode and send with the request body (for POSTs)
+     *      or append as a query string.
      * @param {string} [opts.method] - The HTTP Request method to use for the request. If not
      *     explicitly set in opts then the method will be set to POST if there are params,
      *     otherwise it will be set to GET.
@@ -31,8 +33,6 @@ export class FetchService {
      *     requests will use 'application/x-www-form-urlencoded', otherwise 'text/plain' will be
      *     used.
      * @param {boolean} [opts.acceptJson] - if true, sets Accept header to 'application/json'.  Defaults to false.
-     *
-     *
      * @returns {Promise<Response>} @see https://developer.mozilla.org/en-US/docs/Web/API/Response
      */
     async fetch(opts) {
@@ -69,7 +69,7 @@ export class FetchService {
         delete fetchOpts.contentType;
         delete fetchOpts.url;
 
-        // 3) preprocess and apply params
+        // 3) Preprocess and apply params
         if (params) {
             const paramsStrings = [];
             Object.entries(params).forEach(v => {
@@ -103,8 +103,19 @@ export class FetchService {
     /**
      * Send an HTTP request to a URL, and decode the response as JSON.
      *
-     * @see {@link fetch} for more details
-     *
+     * @param {Object} opts - options to pass through to fetch, with some additions.
+     *      @see https://developer.mozilla.org/en-US/docs/Web/API/Request for the available options
+     * @param {string} opts.url - target url to send the HTTP request to. Relative urls will be
+     *     appended to XH.baseUrl for the request
+     * @param {Object} [opts.params] - parameters to encode and send with the request body (for POSTs)
+     *      or append as a query string.
+     * @param {string} [opts.method] - The HTTP Request method to use for the request. If not
+     *     explicitly set in opts then the method will be set to POST if there are params,
+     *     otherwise it will be set to GET.
+     * @param {string} [opts.contentType] - value to use in the Content-Type header in the request.
+     *     If not explicitly set in opts then the contentType will be set based on the method. POST
+     *     requests will use 'application/x-www-form-urlencoded', otherwise 'text/plain' will be
+     *     used.
      * @returns {Promise} the decoded JSON object, or null if the response had no content.
      */
     async fetchJson(opts) {

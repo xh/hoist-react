@@ -6,9 +6,9 @@
  */
 import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {button} from '@xh/hoist/cmp/button';
-import {checkField, label, numberField, textField} from '@xh/hoist/cmp/form';
-import {toolbar} from '@xh/hoist/cmp/toolbar';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {checkField, label, numberField, textField} from '@xh/hoist/desktop/cmp/form';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {filler} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 

@@ -7,11 +7,12 @@
 import {Component} from 'react';
 import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {filler, fragment, panel} from '@xh/hoist/cmp/layout';
-import {grid} from '@xh/hoist/cmp/grid';
-import {comboField, label} from '@xh/hoist/cmp/form';
-import {toolbar} from '@xh/hoist/cmp/toolbar';
-import {button} from '@xh/hoist/cmp/button';
+import {filler, fragment} from '@xh/hoist/cmp/layout';
+import {grid} from '@xh/hoist/desktop/cmp/grid';
+import {comboField, label} from '@xh/hoist/desktop/cmp/form';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 
 import {configDifferDetail} from './ConfigDifferDetail';
 

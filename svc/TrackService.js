@@ -31,7 +31,11 @@ export class TrackService {
             msg = options.msg !== undefined ? options.msg : options.message;
         }
 
-        const params = {msg: stripTags(msg)};
+        const params = {
+            msg: stripTags(msg),
+            clientUsername: XH.getUsername()
+        };
+
         try {
             if (options.category)               params.category = options.category;
             if (options.data)                   params.data = JSON.stringify(options.data);
