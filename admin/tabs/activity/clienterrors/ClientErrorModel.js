@@ -29,6 +29,7 @@ export class ClientErrorModel {
     gridModel = new GridModel({
         stateModel: 'xhClientErrorGrid',
         enableColChooser: true,
+        exportFilename: () => `Client Errors ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`,
         store: new LocalStore({
             fields: [
                 'username', 'error', 'msg', 'userAlerted', 'browser', 'device',
@@ -48,12 +49,6 @@ export class ClientErrorModel {
             baseCol({field: 'appEnvironment', headerName: 'Environment', fixedWidth: 130})
         ]
     });
-
-    constructor() {
-        this.addAutorun(() => {
-            this.gridModel.exportFilename = `Client Errors ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`;
-        });
-    }
 
     async loadAsync() {
         return XH.fetchJson({

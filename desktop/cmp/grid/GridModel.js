@@ -8,7 +8,7 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {exportToFile} from '@xh/hoist/utils/ExportUtils';
+import {ExportManager} from '@xh/hoist/export';
 import {defaults, castArray, find, isEqual, isString, isPlainObject, orderBy} from 'lodash';
 
 import {ColChooserModel} from './ColChooserModel';
@@ -63,8 +63,8 @@ export class GridModel {
      * @param {string} [sortBy[].colId] - Column ID by which to sort.
      * @param {string} [sortBy[].sort] - sort direction [asc|desc].
      * @param {string} [groupBy] - Column ID by which to group.
-     * @param {string} [exportFilename] - Filename for exported file.
-     * @param {string} [exportFiletype] - Filetypes for export file. One of ['excel', 'excelTable', 'csv']
+     * @param {function|string} [exportFilename] - Filename for exported file, or a closure to generate one.
+     * @param {string} [exportFiletype] - Filetype for export file. One of ['excel', 'excelTable', 'csv']
      * @param {boolean} [enableExport] - false to disable export context menu items.
      * @param {boolean} [enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
@@ -82,7 +82,7 @@ export class GridModel {
         sortBy = [],
         groupBy = null,
         exportFilename = 'export',
-        exportFiletype,
+        exportFiletype = 'excelTable',
         enableExport = true,
         enableColChooser = false,
         stateModel = null,
@@ -92,7 +92,7 @@ export class GridModel {
         this.columns = columns;
         this.emptyText = emptyText;
         this.exportFilename = exportFilename;
-        this.exportFiletype = ['excel', 'excelTable', 'csv'].includes(exportFiletype) ? exportFiletype : 'excelTable';
+        this.exportFiletype = exportFiletype;
         this.enableExport = enableExport;
         this.contextMenuFn = contextMenuFn;
 
@@ -114,7 +114,7 @@ export class GridModel {
         const filename = options.filename || this.exportFilename,
             filetype = options.filetype || this.exportFiletype;
 
-        exportToFile(this, filename, filetype);
+        ExportManager.export(this, filename, filetype);
     }
 
 

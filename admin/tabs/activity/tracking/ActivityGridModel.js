@@ -31,6 +31,7 @@ export class ActivityGridModel {
     gridModel = new GridModel({
         stateModel: 'xhActivityGrid',
         enableColChooser: true,
+        exportFilename: () => `Activity ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`,
         store: new LocalStore({
             fields: [
                 'severity', 'dateCreated', 'username', 'msg', 'category',
@@ -57,12 +58,6 @@ export class ActivityGridModel {
             })
         ]
     });
-
-    constructor() {
-        this.addAutorun(() => {
-            this.gridModel.exportFilename = `Activity ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`;
-        });
-    }
 
     async loadAsync() {
         return XH.fetchJson({

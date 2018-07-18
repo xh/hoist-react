@@ -36,9 +36,10 @@ export class StoreContextMenu {
     }
 
     parseToken(token) {
+        const gridModel = this.gridModel;
         switch (token) {
             case 'colChooser':
-                var {colChooserModel} = this.gridModel;
+                var {colChooserModel} = gridModel;
                 return new StoreContextMenuItem({
                     text: 'Columns...',
                     icon: Icon.grid(),
@@ -51,20 +52,20 @@ export class StoreContextMenu {
                 return new StoreContextMenuItem({
                     text: 'Export to Excel',
                     icon: Icon.download(),
-                    hidden: !this.gridModel,
-                    disabled: !this.gridModel.store.count,
+                    hidden: !gridModel,
+                    disabled: !gridModel.store.count,
                     action: () => {
-                        this.gridModel.export({filetype: 'excelTable'});
+                        gridModel.export({filetype: 'excelTable'});
                     }
                 });
             case 'exportCsv':
                 return new StoreContextMenuItem({
                     text: 'Export to CSV',
                     icon: Icon.download(),
-                    hidden: !this.gridModel,
-                    disabled: !this.gridModel.store.count,
+                    hidden: !gridModel,
+                    disabled: !gridModel.store.count,
                     action: () => {
-                        this.gridModel.export({filetype: 'csv'});
+                        gridModel.export({filetype: 'csv'});
                     }
                 });
             default:

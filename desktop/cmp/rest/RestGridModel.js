@@ -165,8 +165,8 @@ export class RestGridModel {
         }
     }
 
-    export(params) {
-        this.gridModel.export(params);
+    export(...args) {
+        this.gridModel.export(...args);
     }
 
     destroy() {
