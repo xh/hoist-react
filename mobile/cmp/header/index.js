@@ -6,3 +6,4 @@
  */
 
 export * from './AppBar';
+export * from './AppMenuModel';

@@ -40,6 +40,7 @@ body.xh-app {
   .tabbar,
   .list,
   .list-item,
+  .list-item__center,
   .list-item--longdivider {
     // Remove Onsen's use of background-image for borders - we prefer to set borders using vars
     background-image: none;

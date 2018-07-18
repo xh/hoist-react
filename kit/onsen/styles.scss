@@ -25,6 +25,10 @@
   z-index: 21;
   background-color: var(--xh-bg);
   border: var(--xh-border-solid);
+
+  .list-item {
+    background-color: var(--xh-grid-bg) !important;
+  }
 }
 
 .xh-field {

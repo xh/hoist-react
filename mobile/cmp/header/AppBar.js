@@ -10,7 +10,7 @@ import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/kit/onsen';
-import {navigatorBackButton, feedbackButton, themeToggleButton, logoutButton, refreshButton} from '@xh/hoist/mobile/cmp/button';
+import {navigatorBackButton, menuButton, refreshButton} from '@xh/hoist/mobile/cmp/button';
 
 /**
  * A standard application navigation bar which displays the current page title and a standard set of
@@ -24,20 +24,14 @@ import {navigatorBackButton, feedbackButton, themeToggleButton, logoutButton, re
 export class AppBar extends Component {
 
     static propTypes = {
-        /** Navigator model. Bound to back button and title. */
+        /** NavigatorModel. Bound to back button and title. */
         navigatorModel: PT.object,
+        /** AppMenuModel. Used to populate main menu. */
+        appMenuModel: PT.object,
         /** Title to display to the center the AppBar. Defaults to the current page title if not provided. */
         title: PT.string,
-        /** Items to be added to the left side of the AppBar, immediately after the back button . */
-        leftItems: PT.node,
-        /** Items to be added to the right side of the AppBar, before the standard buttons. */
+        /** Items to be added to the right side of the AppBar, before the refresh buttons. */
         rightItems: PT.node,
-        /** Set to true to hide the Feedback button. */
-        hideFeedbackButton: PT.bool,
-        /** Set to true to hide the Theme Toggle button. */
-        hideThemeButton: PT.bool,
-        /** Set to true to hide the Logout button. Will be automatically hidden for applications with logout disabled. */
-        hideLogoutButton: PT.bool,
         /** Set to true to hide the Refresh button. */
         hideRefreshButton: PT.bool,
         /** Allows overriding the default properties of the Back button. @see NavigatorBackButton */
@@ -47,18 +41,23 @@ export class AppBar extends Component {
     };
 
     render() {
-        const {navigatorModel, title, leftItems, rightItems, hideFeedbackButton, hideThemeButton, hideLogoutButton, hideRefreshButton, backButtonProps, refreshButtonProps = {}} = this.props;
+        const {navigatorModel, appMenuModel, title, rightItems, hideRefreshButton, backButtonProps, refreshButtonProps = {}} = this.props;
 
         return toolbar({
             cls: 'xh-appbar',
             items: [
                 div({
                     cls: 'left',
-                    item: navigatorBackButton({
-                        model: navigatorModel,
-                        ...backButtonProps
-                    }),
-                    ...leftItems || []
+                    items: [
+                        navigatorBackButton({
+                            model: navigatorModel,
+                            ...backButtonProps
+                        }),
+                        menuButton({
+                            omit: !appMenuModel,
+                            model: appMenuModel
+                        })
+                    ]
                 }),
                 div({
                     cls: 'center',
@@ -68,9 +67,6 @@ export class AppBar extends Component {
                     cls: 'right',
                     items: [
                         ...rightItems || [],
-                        feedbackButton({omit: hideFeedbackButton}),
-                        themeToggleButton({omit: hideThemeButton}),
-                        logoutButton({omit: hideLogoutButton}),
                         refreshButton({
                             omit: hideRefreshButton,
                             ...refreshButtonProps

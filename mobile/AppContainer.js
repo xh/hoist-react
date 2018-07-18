@@ -12,6 +12,7 @@ import {div, frame, vframe, viewport, vspacer} from '@xh/hoist/cmp/layout';
 import {loadMask} from '@xh/hoist/mobile/cmp/mask';
 import {messageSource} from '@xh/hoist/mobile/cmp/message';
 import {toastManager} from '@xh/hoist/mobile/cmp/toast';
+import {menu} from '@xh/hoist/mobile/cmp/menu';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
@@ -39,7 +40,7 @@ import {
 @observer
 export class AppContainer extends Component {
 
-    @setter @observable.ref caughtException = null
+    @setter @observable.ref caughtException = null;
 
     constructor() {
         super();
@@ -76,7 +77,8 @@ export class AppContainer extends Component {
                         impersonationBar(),
                         updateBar(),
                         frame(Children.only(this.props.children)),
-                        versionBar()
+                        versionBar(),
+                        this.renderAppMenu()
                     ),
                     loadMask({model: XH.appLoadModel}),
                     messageSource({model: XH.messageSourceModel}),
@@ -98,6 +100,16 @@ export class AppContainer extends Component {
     //------------------------
     // Implementation
     //------------------------
+    renderAppMenu() {
+        const model = XH.app.appMenuModel;
+        if (!model) return null;
+        return menu({
+            model: model,
+            width: 260,
+            align: 'left'
+        });
+    }
+
     unauthorizedMessage() {
         const user = XH.getUser();
 
