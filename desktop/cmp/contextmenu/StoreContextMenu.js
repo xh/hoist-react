@@ -55,7 +55,8 @@ export class StoreContextMenu {
                     hidden: !gridModel,
                     disabled: !gridModel.store.count,
                     action: () => {
-                        gridModel.export({filetype: 'excelTable'});
+                        const type = gridModel.exportLocal ? 'localExcel' : 'excelTable';
+                        gridModel.export({type});
                     }
                 });
             case 'exportCsv':
@@ -65,7 +66,8 @@ export class StoreContextMenu {
                     hidden: !gridModel,
                     disabled: !gridModel.store.count,
                     action: () => {
-                        gridModel.export({filetype: 'csv'});
+                        const type = gridModel.exportLocal ? 'localCsv' : 'csv';
+                        gridModel.export({type});
                     }
                 });
             default:

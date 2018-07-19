@@ -16,7 +16,7 @@ import download from 'downloadjs';
 import {ExportFormat} from './ExportFormat';
 
 /**
- * Exports a grid to either Excel or CSV.
+ * Exports a grid to either Excel or CSV, using Hoist's server-side export.
  *
  * Columns can install the following properties to manage how they are exported:
  *
@@ -33,12 +33,12 @@ export class ExportManager {
      *
      * @param {GridModel} gridModel - GridModel to export.
      * @param {function|string} filename - Filename for exported file, or a closure to generate one.
-     * @param {string} filetype - Filetype for export file. One of ['excel', 'excelTable', 'csv'].
+     * @param {string} type - Type of export. One of ['excel', 'excelTable', 'csv'].
      */
-    static export(gridModel, filename, filetype) {
+    static export(gridModel, filename, type) {
         throwIf(!gridModel, 'GridModel required for export');
         throwIf(!isString(filename) && !isFunction(filename), 'Export filename must be either a string or a closure');
-        throwIf(!['excel', 'excelTable', 'csv'].includes(filetype), 'Export filetype must be either "excel", "excelTable" or "csv"');
+        throwIf(!['excel', 'excelTable', 'csv'].includes(type), `Invalid export type "${type}". Must be either "excel", "excelTable" or "csv"`);
 
         if (isFunction(filename)) filename = filename();
 
@@ -54,7 +54,7 @@ export class ExportManager {
             return;
         }
 
-        rows.push(this.getHeaderRow(columns, filetype));
+        rows.push(this.getHeaderRow(columns, type));
         records.forEach(record => {
             rows.push(this.getRecordRow(record, columns));
         });
@@ -69,7 +69,7 @@ export class ExportManager {
             url: 'hoistImpl/export',
             params: {
                 filename: filename,
-                filetype: filetype,
+                filetype: type,
                 rows: JSON.stringify(rows),
                 meta: JSON.stringify(meta)
             }
@@ -96,9 +96,9 @@ export class ExportManager {
         });
     }
 
-    static getHeaderRow(columns, filetype) {
+    static getHeaderRow(columns, type) {
         const headers = columns.map(it => it.exportName);
-        if (filetype === 'excelTable' && uniq(headers).length !== headers.length) {
+        if (type === 'excelTable' && uniq(headers).length !== headers.length) {
             console.warn('Excel tables require unique headers on each column. Consider using the "exportName" property to ensure unique headers.');
         }
         return {data: headers, depth: 0};

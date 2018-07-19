@@ -27,8 +27,9 @@ export class GridModel {
     contextMenuFn = null;
     colChooserModel = null;
     stateModel = null;
+    exportLocal = null;
+    exportType = null;
     exportFilename = null;
-    exportFiletype = null;
     enableExport = null;
 
     @observable.ref agApi = null;
@@ -63,8 +64,9 @@ export class GridModel {
      * @param {string} [sortBy[].colId] - Column ID by which to sort.
      * @param {string} [sortBy[].sort] - sort direction [asc|desc].
      * @param {string} [groupBy] - Column ID by which to group.
+     * @param {boolean} [exportLocal] - true to use agGrid's export. false to use Hoist provided server-side export.
      * @param {function|string} [exportFilename] - Filename for exported file, or a closure to generate one.
-     * @param {string} [exportFiletype] - Filetype for export file. One of ['excel', 'excelTable', 'csv']
+     * @param {string} [exportType] - Filetype for export file. One of ['excel', 'excelTable', 'csv', 'localExcel', 'localCsv']
      * @param {boolean} [enableExport] - false to disable export context menu items.
      * @param {boolean} [enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
@@ -81,8 +83,9 @@ export class GridModel {
         emptyText = null,
         sortBy = [],
         groupBy = null,
+        exportLocal = false,
+        exportType = exportLocal ? 'localExcel' : 'excelTable',
         exportFilename = 'export',
-        exportFiletype = 'excelTable',
         enableExport = true,
         enableColChooser = false,
         stateModel = null,
@@ -91,8 +94,9 @@ export class GridModel {
         this.store = store;
         this.columns = columns;
         this.emptyText = emptyText;
+        this.exportLocal = exportLocal;
+        this.exportType = exportType;
         this.exportFilename = exportFilename;
-        this.exportFiletype = exportFiletype;
         this.enableExport = enableExport;
         this.contextMenuFn = contextMenuFn;
 
@@ -112,11 +116,28 @@ export class GridModel {
      */
     export(options = {}) {
         const filename = options.filename || this.exportFilename,
-            filetype = options.filetype || this.exportFiletype;
+            type = options.type || this.exportType;
 
-        ExportManager.export(this, filename, filetype);
+        if (type.startsWith('local')) {
+            this.localExport(filename, type);
+        } else {
+            ExportManager.export(this, filename, type);
+        }
     }
 
+    /**
+     * Exports the grid using agGrid's client-side export
+     */
+    localExport(fileName, type, params = {}) {
+        if (!this.agApi) return;
+        defaults(params, {fileName, processCellCallback: this.formatValuesForExport});
+
+        if (type === 'localExcel') {
+            this.agApi.exportDataAsExcel(params);
+        } else if (type === 'localCsv') {
+            this.agApi.exportDataAsCsv(params);
+        }
+    }
 
     /**
      * Select the first row in the grid.
