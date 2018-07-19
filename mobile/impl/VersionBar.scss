@@ -12,10 +12,11 @@
     background-color: var(--xh-blue);
   }
 
-  .button {
+  .xh-button {
     display: flex;
     padding: 0 10px;
     background: none !important;
+    height: 14px;
 
     svg {
       color: white;

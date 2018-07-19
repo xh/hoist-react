@@ -48,6 +48,12 @@ export class AppMenuModel extends MenuModel {
                 prepareFn: (item) => item.hidden = hideThemeItem
             },
             {
+                icon: Icon.user(),
+                text: 'Impersonate',
+                action: () => XH.identityService.showBar(),
+                prepareFn: (item) => item.hidden = !XH.identityService.authUser.isHoistAdmin
+            },
+            {
                 icon: Icon.logout(),
                 text: 'Logout',
                 action: () => XH.identityService.logoutAsync(),

@@ -12,43 +12,32 @@ import {observable, action} from '@xh/hoist/mobx';
  */
 @HoistModel()
 export class ImpersonationBarModel {
-    @observable isVisible = false;
-
     @observable.ref targets = [];
-    @observable selectedTarget = '';
-    @observable targetDialogOpen = false;
 
     constructor() {
-        this.isVisible = XH.identityService.isImpersonating;
-        if (this.isVisible) this.ensureTargetsLoaded();
+        this.addAutorun(() => {
+            if (XH.identityService.isBarVisible) this.ensureTargetsLoaded();
+        });
     }
 
     @action
-    toggleVisibility() {
-        this.targetDialogOpen = false;
-        this.isVisible = !this.isVisible || XH.identityService.isImpersonating;
-        if (this.isVisible) this.ensureTargetsLoaded();
-    }
-
-    @action
-    doImpersonate = () => {
-        if (this.selectedTarget) {
-            this.closeTargetDialog();
-            XH.identityService.impersonateAsync(this.selectedTarget);
-        }
+    doImpersonate = (target) => {
+        const svc = XH.identityService;
+        svc.hideBar();
+        svc.impersonateAsync(target);
     }
 
     doExit = () => {
-        if (XH.identityService.isImpersonating) {
-            this.closeTargetDialog();
-            XH.identityService.endImpersonateAsync();
+        const svc = XH.identityService;
+        if (svc.isImpersonating) {
+            svc.endImpersonateAsync();
         } else {
-            this.toggleVisibility();
+            svc.hideBar();
         }
     }
 
     //--------------------------
-    // Target dialog management
+    // Target management
     //--------------------------
     ensureTargetsLoaded() {
         if (this.targets.length) return;
@@ -67,20 +56,5 @@ export class ImpersonationBarModel {
             .filter(t => t !== XH.identityService.username)
             .sort();
     }
-    
-    @action
-    closeTargetDialog = () => {
-        this.targetDialogOpen = false;
-    }
 
-    @action
-    openTargetDialog = () => {
-        this.selectedTarget = '';
-        this.targetDialogOpen = true;
-    }
-
-    @action
-    setSelectedTarget = (data) => {
-        this.selectedTarget = data;
-    }
 }
