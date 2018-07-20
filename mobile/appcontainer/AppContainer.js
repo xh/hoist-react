@@ -1,0 +1,110 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2018 Extremely Heavy Industries Inc.
+ */
+
+import {Children, Component} from 'react';
+import {observable, setter} from '@xh/hoist/mobx';
+import {HoistComponent, elemFactory, AppState, XH} from '@xh/hoist/core';
+import {div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
+import {loadMask} from '@xh/hoist/mobile/cmp/mask';
+import {menu} from '@xh/hoist/mobile/cmp/menu';
+
+import {aboutDialog} from './AboutDialog';
+import {feedbackDialog} from './FeedbackDialog';
+import {exceptionDialog} from './ExceptionDialog';
+import {impersonationBar} from './ImpersonationBar';
+import {loginPanel} from './LoginPanel';
+import {updateBar} from './UpdateBar';
+import {versionBar}  from './VersionBar';
+import {lockoutPanel} from './LockoutPanel';
+import {toastSource} from './ToastSource';
+import {messageSource} from './MessageSource';
+
+/**
+ * Top-level wrapper for Mobile applications.
+ *
+ * This class provide core Hoist Application layout and infrastructure to an application's
+ * root Component. Provides a standard viewport that includes standard UI elements such as an
+ * impersonation bar header, version bar footer, an app-wide load mask, a base context menu,
+ * popup message support, and exception rendering.
+ *
+ * @see HoistApp.containerClass
+ */
+@HoistComponent()
+export class AppContainer extends Component {
+
+    @setter @observable.ref caughtException = null;
+
+    constructor() {
+        super();
+        XH.initAsync();
+    }
+
+    render() {
+        return div(
+            this.renderContent(),
+            // Always be prepared to render exceptions :-(
+            exceptionDialog({
+                model: this.model.exceptionDialogModel
+            })
+        );
+    }
+
+    renderContent() {
+        const S = AppState,
+            {model} = this;
+        if (this.caughtException) return null;
+
+        switch (XH.appState) {
+            case S.PRE_AUTH:
+            case S.INITIALIZING:
+                return viewport(loadMask({isDisplayed: true}));
+            case S.LOGIN_REQUIRED:
+                return loginPanel({model: this.loginPanelModel});
+            case S.ACCESS_DENIED:
+                return lockoutPanel({model});
+            case S.LOAD_FAILED:
+                return null;
+            case S.RUNNING:
+            case S.SUSPENDED:
+                return viewport(
+                    vframe(
+                        impersonationBar({model: model.impersonationBarModel}),
+                        updateBar({model}),
+                        frame(Children.only(this.props.children)),
+                        versionBar({model}),
+                        this.renderAppMenu()
+                    ),
+                    loadMask({model: model.appLoadModel}),
+                    messageSource({model: model.messageSourceModel}),
+                    toastSource({model: model.toastSourceModel}),
+                    feedbackDialog({model: model.feedbackDialogModel}),
+                    aboutDialog({model: model.aboutDialogModel})
+                );
+            default:
+                return null;
+        }
+    }
+
+    componentDidCatch(e, info) {
+        this.setCaughtException(e);
+        XH.handleException(e, {requireReload: true});
+    }
+    
+    //------------------------
+    // Implementation
+    //------------------------
+    renderAppMenu() {
+        const model = XH.app.appMenuModel;
+        if (!model) return null;
+        return menu({
+            model: model,
+            width: 260,
+            align: 'left'
+        });
+    }
+}
+export const appContainer = elemFactory(AppContainer);

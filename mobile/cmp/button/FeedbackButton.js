@@ -15,7 +15,7 @@ import {Icon} from '@xh/hoist/icon';
  * Convenience Button preconfigured for use as a trigger for the XH feedback dialog
  * Accepts props documented below as well as any supported by Blueprint's Button.
  *
- * Can be provided an onClick handler, otherwise will call `XH.showFeedbackDialog()`.
+ * Can be provided an onClick handler, otherwise will use default action provided by framework.
  */
 @HoistComponent()
 export class FeedbackButton extends Component {

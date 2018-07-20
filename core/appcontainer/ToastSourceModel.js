@@ -1,0 +1,49 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2018 Extremely Heavy Industries Inc.
+ */
+import {observable, action} from '@xh/hoist/mobx';
+import {XH, HoistModel} from '@xh/hoist/core';
+import {ToastModel} from './ToastModel';
+
+/**
+ *  Supports displaying pop-up Toast.
+ *
+ *  @private
+ */
+@HoistModel()
+export class ToastSourceModel {
+
+    @observable.ref toastModels = [];
+
+    show(config) {
+        const ret = new ToastModel(config);
+        this.addModel(ret);
+        return ret;
+    }
+
+    //-----------------------------------
+    // Implementation
+    //------------------------------------
+    @action
+    addModel(model) {
+        this.toastModels.push(model);
+        this.cull();
+    }
+
+    @action
+    cull() {
+        const models = this.toastModels,
+            keepModels = models.filter(it => !it.isDismissed),
+            cullModels = models.filter(it => it.isDismissed);
+
+        this.toastModels = keepModels;
+        cullModels.forEach(it => it.destroy());
+    }
+
+    destroy() {
+        XH.safeDestroy(this.toastModels);
+    }
+}

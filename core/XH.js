@@ -6,23 +6,17 @@
  */
 
 import ReactDOM from 'react-dom';
-import {isPlainObject, defaults, flatten} from 'lodash';
+import {flatten} from 'lodash';
 
 import {elem, HoistModel, AppState} from '@xh/hoist/core';
-import {Exception, ExceptionHandler} from '@xh/hoist/exception';
+import {Exception} from '@xh/hoist/exception';
 import {observable, action} from '@xh/hoist/mobx';
-import {MultiPromiseModel, never} from '@xh/hoist/promise';
-import {RouterModel} from '@xh/hoist/router';
+import {never, wait} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/JsUtils';
-
-import {MessageSourceModel} from '@xh/hoist/cmp/message/MessageSourceModel';
-import {ToastManagerModel} from '@xh/hoist/cmp/toast/ToastManagerModel';
 
 import {
     ConfigService,
     EnvironmentService,
-    ErrorTrackingService,
-    FeedbackService,
     FetchService,
     IdentityService,
     IdleService,
@@ -31,6 +25,9 @@ import {
     TrackService
 } from '@xh/hoist/svc';
 
+import {AppContainerModel} from './appcontainer/AppContainerModel';
+import {RouterModel} from './RouterModel';
+import {ExceptionHandler} from './ExceptionHandler';
 
 import {initServicesAsync} from './HoistService';
 
@@ -49,10 +46,6 @@ import '../styles/XH.scss';
  */
 @HoistModel()
 class XHClass {
-
-    constructor() {
-        this.aliasMethods();
-    }
 
     //------------------------------------------------------------------
     // Metadata
@@ -82,8 +75,6 @@ class XHClass {
     //---------------------------
     configService = new ConfigService();
     environmentService = new EnvironmentService();
-    errorTrackingService = new ErrorTrackingService();
-    feedbackService = new FeedbackService();
     fetchService = new FetchService();
     identityService = new IdentityService();
     idleService = new IdleService();
@@ -91,51 +82,25 @@ class XHClass {
     prefService = new PrefService();
     trackService = new TrackService();
 
+    //-------------------------------
+    // Models
+    //-------------------------------
+    appContainerModel = new AppContainerModel();
+    routerModel = new RouterModel();
+
     //-----------------------------
-    // Observable State
+    // Other State
     //-----------------------------
+    exceptionHandler = new ExceptionHandler();
+
     /** State of app -- see AppState for valid values. */
     @observable appState = AppState.PRE_AUTH;
 
     /** Currently authenticated user. */
     @observable authUsername = null;
 
-    /** Dark theme active? */
-    @observable darkTheme = false; // actual default value comes from preference
-
-    /**
-     * Exception to be shown troubleshooting/display.
-     * An object of the form {exception: exception, options: options}
-     */
-    @observable.ref displayException;
-
-    /** Show about dialog? */
-    @observable aboutIsOpen = false;
-
-    /** Show feedback dialog? */
-    @observable feedbackIsOpen = false;
-
-    /** Updated App version available, as reported by server. */
-    @observable updateVersion = null;
-
     /** Currently running HoistApp - set in `renderApp()` below. */
     app = null;
-
-    /** Router model for the App - used for route based navigation. */
-    routerModel = new RouterModel();
-
-    /** Set by output of app.checkAccess() if that initial auth check fails. */
-    accessDeniedMessage = null;
-
-    /**
-     * Tracks globally loading promises.
-     * Link any async operations that should mask the entire application to this model.
-     */
-    appLoadModel = new MultiPromiseModel();
-
-    messageSourceModel = new MessageSourceModel();
-
-    toastManagerModel = new ToastManagerModel();
 
     /**
      * Main entry point. Initialize and render application code.
@@ -151,7 +116,10 @@ class XHClass {
 
         const rootView = elem(
             containerClass,
-            {item: elem(componentClass, {model: app})}
+            {
+                model: this.appContainerModel,
+                item: elem(componentClass, {model: app})
+            }
         );
 
         ReactDOM.render(rootView, document.getElementById('root'));
@@ -172,7 +140,6 @@ class XHClass {
         }
     }
 
-
     /** Trigger a full reload of the app. */
     @action
     reloadApp() {
@@ -180,75 +147,34 @@ class XHClass {
         window.location.reload(true);
     }
 
+    /**
+     * Tracks globally loading promises.
+     * Link any async operations that should mask the entire application to this model.
+     */
+    get appLoadModel() {
+        return this.acm.appLoadModel;
+    }
+
+    //------------------------
+    // Theme Support
+    //------------------------
     /** Toggle the theme between light and dark variants. */
-    @action
     toggleTheme() {
-        this.setDarkTheme(!this.darkTheme);
+        return this.acm.themeModel.toggleTheme();
     }
 
-    /**
-     * Show an Exception to the user.
-     *
-     * Applications should typically use XH.handleException().
-     * This method will fully log and track the exception before display.
-     * @see ExceptionHandler
-     *
-     * @param {Object} exception - exception to be shown.
-     * @param {Object} [options] - display options.
-     */
-    @action
-    showException(exception, options) {
-        this.displayException = {exception, options};
+    /** Is the app currently rendering in dark theme? */
+    get isDarkTheme() {
+        return this.acm.themeModel.isDarkTheme;
     }
 
-    /** Hide any displayed exception. */
-    @action
-    hideException() {
-        this.displayException = null;
-    }
-
-    /** Show the About Dialog for this application. */
-    @action
-    showAbout() {
-        this.aboutIsOpen = true;
-    }
-
-    /** Hide the About Dialog for this application. */
-    @action
-    hideAbout() {
-        this.aboutIsOpen = false;
-    }
-
-    /**
-     * Show the update toolbar prompt. Called by EnvironmentService when the server reports that a
-     * new (or at least different) version is available and the user should be prompted.
-     *
-     * @param {string} updateVersion
-     */
-    @action
-    showUpdateBar(updateVersion) {
-        this.updateVersion = updateVersion;
+    set isDarkTheme(value) {
+        return this.acm.themeModel.setIsDarkTheme(value);
     }
 
     //-------------------------
     // Routing support
     //-------------------------
-    /**
-     * Route the app.
-     * @see RouterModel.navigate
-     */
-    navigate(...args) {
-        this.routerModel.navigate(...args);
-    }
-
-    /**
-     * The current routing state as an observable property.
-     * @see RouterModel.currentState
-     */
-    get routerState() {
-        return this.routerModel.currentState;
-    }
-
     /**
      * Underlying Router5 Router object implementing the routing state.
      * Applications should use this property to directly access the Router5 API.
@@ -257,59 +183,113 @@ class XHClass {
         return this.routerModel.router;
     }
 
+    /**
+     * The current routing state as an observable property.
+     * @see RoutingManager.currentState
+     */
+    get routerState() {
+        return this.routerModel.currentState;
+    }
+
+    /**
+     * Route the app.
+     *
+     * Shortcut to this.router.navigate.
+     */
+    navigate(...args) {
+        return this.router.navigate(...args);
+    }
+
     //------------------------------
     // Message Support
     //------------------------------
     /**
      * Show a modal message dialog.
-     *
      * @param {Object} config - see MessageModel.show() for available options.
      */
     message(config) {
-        return this.messageSourceModel.show(config);
+        return this.acm.messageSourceModel.show(config);
     }
 
     /**
      * Show a modal 'alert' dialog with message and default OK button.
-     *
      * @param {Object} config -  see MessageModel.show() for available options.
      */
     alert(config) {
-        config = defaults({}, config, {confirmText: 'OK'});
-        return this.messageSourceModel.show(config);
+        return this.acm.messageSourceModel.alert(config);
     }
 
     /**
      * Show a modal 'confirm' dialog with message and default OK/Cancel buttons.
-     *
      *  @param {Object} config - see MessageModel.show() for available options.
      */
     confirm(config) {
-        config = defaults({}, config, {confirmText: 'OK', cancelText: 'Cancel'});
-        this.messageSourceModel.show(config);
+        return this.acm.messageSourceModel.confirm(config);
     }
 
-    //------------------------------
-    // Toast Support
-    //------------------------------
+    //--------------------------
+    // Exception Support
+    //--------------------------
+    /**
+     * Handle an exception.
+     */
+    handleException(...args) {
+        return this.exceptionHandler.handleException(...args);
+    }
+
+    /**
+     * Create an exception.
+     */
+    exception(...args) {
+        return Exception.create(...args);
+    }
+
+    //---------------------------
+    // Miscellaneous
+    //---------------------------
     /**
      * Show a Toast.
-     *
      * @param {Object} config - see ToastModel for available options.
      */
     toast(config) {
-        this.toastManagerModel.show(config);
+        return this.acm.toastSourceModel.show(config);
     }
 
-    //-------------------
-    // Feedback Support
-    //-------------------
-    /**
-     * Show a modal 'feedback' dialog.
-     */
-    @action
+    /** Show a dialog to elicit feedback text from users. */
     showFeedbackDialog() {
-        this.feedbackIsOpen = true;
+        return this.acm.feedbackDialogModel.show();
+    }
+
+    /** Show 'about' dialog with info about the app and environment. */
+    showAboutDialog() {
+        return this.acm.aboutDialogModel.show();
+    }
+    
+    //----------------------------
+    // Service Aliases
+    //----------------------------
+    track(...args)          {return this.trackService.track(...args)}
+    fetch(...args)          {return this.fetchService.fetch(...args)}
+    fetchJson(...args)      {return this.fetchService.fetchJson(...args)}
+    getUser(...args)        {return this.identityService.getUser(...args)}
+    getUsername(...args)    {return this.identityService.getUsername(...args)}
+    getConf(...args)        {return this.configService.get(...args)}
+    getPref(...args)        {return this.prefService.get(...args)}
+    setPref(...args)        {return this.prefService.set(...args)}
+    getEnv(...args)         {return this.environmentService.get(...args)}
+
+
+    /**
+     * Helper method to destroy resources safely (e.g. child HoistModels). Will quietly skip args
+     * that are null / undefined or that do not implement destroy().
+     *
+     * @param {...Object} args - Objects to be destroyed.
+     */
+    safeDestroy(...args) {
+        args = flatten(args);
+        args.forEach(it => {
+            if (it && it.destroy) it.destroy();
+        });
     }
 
     //---------------------------------
@@ -342,7 +322,7 @@ class XHClass {
 
         } catch (e) {
             this.setAppState(S.LOAD_FAILED);
-            XH.handleException(e, {requireReload: true});
+            this.handleException(e, {requireReload: true});
         }
     }
 
@@ -357,16 +337,15 @@ class XHClass {
 
         this.setAppState(S.INITIALIZING);
         try {
-            // Delay to workaround hot-reload styling issues in dev.
-            const delay = XH.isDevelopmentMode ? 300 : 1;
             await this.initServicesAsync()
-                .wait(delay);
+            this.initModels();
 
-            this.initLocalState();
+            // Delay to workaround hot-reload styling issues in dev.
+            await wait(XH.isDevelopmentMode ? 300 : 1);
 
             const access = this.app.checkAccess(XH.getUser());
             if (!access.hasAccess) {
-                this.accessDeniedMessage = access.message || 'Access denied.';
+                this.appManager.showAccessDenied(access.message || 'Access denied.');
                 this.setAppState(S.ACCESS_DENIED);
                 return;
             }
@@ -376,10 +355,9 @@ class XHClass {
             this.setAppState(S.RUNNING);
         } catch (e) {
             this.setAppState(S.LOAD_FAILED);
-            XH.handleException(e, {requireReload: true});
+            this.handleException(e, {requireReload: true});
         }
     }
-
 
     //------------------------
     // Implementation
@@ -393,8 +371,7 @@ class XHClass {
     async initServicesAsync() {
         await initServicesAsync(
             this.fetchService,
-            this.localStorageService,
-            this.errorTrackingService
+            this.localStorageService
         );
         await initServicesAsync(
             this.identityService
@@ -405,14 +382,13 @@ class XHClass {
         );
         await initServicesAsync(
             this.environmentService,
-            this.feedbackService,
             this.idleService,
             this.trackService
         );
     }
 
-    initLocalState() {
-        this.setDarkTheme(XH.getPref('xhTheme') === 'dark');
+    initModels() {
+        this.acm.init();
     }
 
     startRouter() {
@@ -420,63 +396,21 @@ class XHClass {
         this.router.start();
     }
 
-    @action
-    setDarkTheme(value) {
-        const classList = document.body.classList;
-        classList.toggle('xh-dark', value);
-        classList.toggle('pt-dark', value);
-        this.darkTheme = value;
-        this.prefService.set('xhTheme', value ? 'dark' : 'light');
-    }
+    get acm() {return this.appContainerModel}
 
-    aliasMethods() {
-        this.createMethodAliases(this.trackService,             ['track']);
-        this.createMethodAliases(this.fetchService,             ['fetch', 'fetchJson']);
-        this.createMethodAliases(this.identityService,          ['getUser', 'getUsername']);
-        this.createMethodAliases(this.configService,            {getConf: 'get'});
-        this.createMethodAliases(this.prefService,              {getPref: 'get', setPref: 'set'});
-        this.createMethodAliases(this.environmentService,       {getEnv: 'get'});
-        this.createMethodAliases(Exception,                     {exception: 'create'});
-        this.createMethodAliases(ExceptionHandler,              ['handleException']);
-    }
-
-    createMethodAliases(src, aliases) {
-        const bindFn = (tgtName, srcName) => this[tgtName] = src[srcName].bind(src);
-        if (isPlainObject(aliases)) {
-            for (const name in aliases) {
-                bindFn(name, aliases[name]);
-            }
-        } else {
-            aliases.forEach(name => bindFn(name, name));
-        }
-    }
-    
     destroy() {
-        this.safeDestroy(this.appLoadModel, this.routerModel);
         this.safeDestroy(
+            this.appContainerModel,
+            this.routerModel,
+
             this.configService,
             this.environmentService,
-            this.errorTrackingService,
-            this.feedbackService,
             this.fetchService,
             this.identityService,
             this.localStorageService,
             this.prefService,
             this.trackService
         );
-    }
-
-    /**
-     * Helper method to destroy resources safely (e.g. child HoistModels). Will quietly skip args
-     * that are null / undefined or that do not implement destroy().
-     *
-     * @param {...Object} args - Objects to be destroyed.
-     */
-    safeDestroy(...args) {
-        args = flatten(args);
-        args.forEach(it => {
-            if (it && it.destroy) it.destroy();
-        });
     }
 }
 export const XH = window.XH = new XHClass();
