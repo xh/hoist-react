@@ -345,7 +345,7 @@ class XHClass {
 
             const access = this.app.checkAccess(XH.getUser());
             if (!access.hasAccess) {
-                this.appManager.showAccessDenied(access.message || 'Access denied.');
+                this.acm.showAccessDenied(access.message || 'Access denied.');
                 this.setAppState(S.ACCESS_DENIED);
                 return;
             }

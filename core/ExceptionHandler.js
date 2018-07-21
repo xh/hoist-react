@@ -57,7 +57,7 @@ export class ExceptionHandler {
         this.logException(exception, options);
 
         if (options.showAlert) {
-            XH.appContainerModel.exceptionDialogModel.showException(exception, options);
+            XH.appContainerModel.exceptionDialogModel.show(exception, options);
         }
         if (options.logOnServer) {
             this.logOnServerAsync(exception, {exception, userAlerted: options.showAlert});

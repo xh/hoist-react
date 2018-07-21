@@ -22,7 +22,7 @@ export class ImpersonationBarModel {
 
     init() {
         this.addAutorun(() => {
-            if (this.isBarVisible) this.ensureTargetsLoaded();
+            if (this.isOpen) this.ensureTargetsLoaded();
         });
     }
 
@@ -114,7 +114,7 @@ export class ImpersonationBarModel {
     setTargets(targets) {
         this.targets = targets
             .map(t => t.username)
-            .filter(t => t !== XH.identityService.getsername)
+            .filter(t => t !== XH.getUsername())
             .sort();
     }
 }
