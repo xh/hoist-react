@@ -57,7 +57,7 @@ export class ExceptionDialogModel {
     sendReport() {
         const {exception, userMessage, options} = this;
 
-        XH.exceptionManager
+        XH.exceptionHandler
             .submitAsync({exception, userMessage, userAlerted: true})
             .then(() => {
                 if (!options.requireReload) this.close();
