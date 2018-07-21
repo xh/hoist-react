@@ -17,7 +17,7 @@ import {throwIf} from '@xh/hoist/utils/JsUtils';
 @HoistModel()
 export class ImpersonationBarModel {
 
-    @observable barRequested = false;
+    @observable showRequested = false;
     @observable.ref targets = [];
 
     init() {
@@ -26,8 +26,8 @@ export class ImpersonationBarModel {
         });
     }
 
-    get isBarVisible() {
-        return this.barRequested || this.isImpersonating;
+    get isOpen() {
+        return this.showRequested || this.isImpersonating;
     }
 
     get isImpersonating() {
@@ -39,14 +39,23 @@ export class ImpersonationBarModel {
     }
 
     @action
-    showBar() {
+    show() {
         this.ensurePermission();
-        this.barRequested = true;
+        this.showRequested = true;
     }
 
     @action
-    hideBar() {
-        this.barRequested = false;
+    hide() {
+        this.showRequested = false;
+    }
+
+    @action
+    toggleVisibility() {
+        if (this.isOpen) {
+            this.hide();
+        } else {
+            this.show();
+        }
     }
 
     /**
@@ -87,7 +96,7 @@ export class ImpersonationBarModel {
     //--------------------
     // Implementation
     //--------------------
-    ensureAdmin() {
+    ensurePermission() {
         throwIf(!this.canImpersonate, 'User does not have right to impersonate.');
     }
 

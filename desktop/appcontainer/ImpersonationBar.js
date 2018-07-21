@@ -36,10 +36,10 @@ export class ImpersonationBar extends Component {
     }
 
     render() {
-        const {canImpersonate, isImpersonating, isBarVisible, targets} = this.model;
+        const {canImpersonate, isImpersonating, isOpen, targets} = this.model;
 
         if (!canImpersonate) return null;
-        if (!isBarVisible) return span();  // *Not* null, so hotkeys get rendered.
+        if (!isOpen) return span();  // *Not* null, so hotkeys get rendered.
         
         const username = XH.getUsername(),
             options = [username, ...targets];
@@ -86,7 +86,7 @@ export class ImpersonationBar extends Component {
         if (model.isImpersonating) {
             model.endImpersonateAsync();
         } else {
-            model.hideBar();
+            model.hide();
         }
     }
 }

@@ -31,9 +31,10 @@ export class ToastSource {
     //------------------------------------
     displayPendingToasts(models) {
         models.forEach(model => {
-            const {wasShown, isOpen, icon, position, ...rest} = model;
+            let {wasShown, isOpen, icon, position, ...rest} = model;
             if (wasShown || !isOpen) return;
 
+            position = position || Position.BOTTOM_RIGHT;
             this.getToaster(position).show({
                 icon: this.getStyledIcon(icon),
                 onDismiss: () => model.dismiss(),

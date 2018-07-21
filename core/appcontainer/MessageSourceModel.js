@@ -49,10 +49,10 @@ export class MessageSourceModel {
     @action
     cull() {
         const models = this.msgModels,
-            keepModels = models.filter(it => !it.isOpen),
-            cullModels = models.filter(it => it.isOpen);
+            keepModels = models.filter(it => it.isOpen),
+            cullModels = models.filter(it => !it.isOpen);
 
-        this.toastModels = keepModels;
+        this.msgModels = keepModels;
         cullModels.forEach(it => it.destroy());
     }
 

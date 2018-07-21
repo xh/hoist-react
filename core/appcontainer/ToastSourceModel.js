@@ -36,8 +36,8 @@ export class ToastSourceModel {
     @action
     cull() {
         const models = this.toastModels,
-            keepModels = models.filter(it => !it.isDismissed),
-            cullModels = models.filter(it => it.isDismissed);
+            keepModels = models.filter(it => it.isOpen),
+            cullModels = models.filter(it => !it.isOpen);
 
         this.toastModels = keepModels;
         cullModels.forEach(it => it.destroy());

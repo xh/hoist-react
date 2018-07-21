@@ -44,10 +44,12 @@ export class MessageModel {
      * @param {function} [config.onCancel] - Callback to execute when cancel is clicked.
      */
     constructor(config) {
+        this.message = config.message;
         this.title = config.title;
         this.icon = config.icon;
-        this.message = config.message;
         this.confirmText = config.confirmText;
+        this.cancelText = config.cancelText;
+        this.confirmIntent = config.confirmIntent;
         this.cancelIntent = config.cancelIntent;
         this.onConfirm = config.onConfirm;
         this.onCancel = config.onCancel;
