@@ -8,6 +8,7 @@
 import {Component} from 'react';
 import {HotkeysTarget, hotkeys, hotkey} from '@xh/hoist/kit/blueprint';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {observable, setter} from '@xh/hoist/mobx';
 import {filler, span} from '@xh/hoist/cmp/layout';
 import {comboField} from '@xh/hoist/desktop/cmp/form';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -23,6 +24,8 @@ import {Icon} from '@xh/hoist/icon';
 @HoistComponent()
 @HotkeysTarget
 export class ImpersonationBar extends Component {
+
+    @observable @setter pendingTarget = null
 
     renderHotkeys() {
         return hotkeys(
@@ -40,10 +43,7 @@ export class ImpersonationBar extends Component {
 
         if (!canImpersonate) return null;
         if (!isOpen) return span();  // *Not* null, so hotkeys get rendered.
-        
-        const username = XH.getUsername(),
-            options = [username, ...targets];
-
+    
         return toolbar({
             style: {color: 'white', backgroundColor: 'midnightblue', zIndex: 9999},
             items: [
@@ -51,9 +51,11 @@ export class ImpersonationBar extends Component {
                 span(`${isImpersonating ? 'Impersonating' : ''} ${XH.getUsername()}`),
                 filler(),
                 comboField({
-                    value: username,
-                    options,
+                    model: this,
+                    field: 'pendingTarget',
+                    options: targets,
                     placeholder: 'Select User...',
+                    requireSelection: true,
                     onCommit: this.onCommit
                 }),
                 this.exitButton()
@@ -77,8 +79,8 @@ export class ImpersonationBar extends Component {
         this.model.toggleVisibility();
     }
 
-    onCommit = (target) => {
-        this.model.impersonateAsync(target);
+    onCommit = () => {
+        this.model.impersonateAsync(this.pendingTarget);
     }
 
     onExitClick = () => {
