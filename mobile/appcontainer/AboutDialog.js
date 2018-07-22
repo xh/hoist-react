@@ -32,7 +32,7 @@ export class AboutDialog extends Component {
             cls: 'xh-about-dialog',
             isOpen: true,
             onCancel: this.onClose,
-            content: model.renderTable()
+            content: model.getTable()
         });
     }
 

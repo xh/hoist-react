@@ -21,8 +21,8 @@ import './FeedbackDialog.scss';
 export class FeedbackDialog extends Component {
 
     render() {
-        const mgr = XH.feedbackManager;
-        if (!mgr.dialogIsOpen) return null;
+        const {model} = this;
+        if (!model.isOpen) return null;
 
         return dialog({
             title: 'Submit Feedback',
@@ -31,7 +31,7 @@ export class FeedbackDialog extends Component {
             onCancel: this.onCancelClick,
             content: textAreaField({
                 placeholder: 'Please enter your comments...',
-                model: mgr,
+                model,
                 field: 'message'
             }),
             buttons: [

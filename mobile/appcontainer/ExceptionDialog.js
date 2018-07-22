@@ -24,8 +24,6 @@ import {exceptionDialogDetails} from './ExceptionDialogDetails';
 @HoistComponent()
 export class ExceptionDialog extends Component {
 
-    localModel = new ExceptionDialogModel();
-
     render() {
         const {model} = this,
             {exception, options} = model;

@@ -27,8 +27,8 @@ export class ToastSource extends Component {
 
         if (!next) return null;
 
-        if (!next.timeoutHandler) {
-            next.timeoutHandler = wait(next.timeout).then(() => next.onDismiss());
+        if (!next.dismissFn) {
+            next.dismissFn = wait(next.timeout).then(() => next.dismiss());
         }
         return toast({model: next});
     }

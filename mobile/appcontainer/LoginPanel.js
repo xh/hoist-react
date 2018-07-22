@@ -59,8 +59,8 @@ export class LoginPanel extends Component {
                         }),
                         div({
                             cls: 'xh-login__warning',
-                            omit: !this.warning,
-                            item: this.warning
+                            omit: !model.warning,
+                            item: model.warning
                         }),
                         div({
                             cls: 'xh-login__message',
@@ -84,7 +84,7 @@ export class LoginPanel extends Component {
     // Implementation
     //------------------------
     onSubmit = () => {
-        this.model.onSubmit();
+        this.model.submit();
     }
 }
 export const loginPanel = elemFactory(LoginPanel);

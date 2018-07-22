@@ -25,7 +25,7 @@ export class LockoutPanel extends Component {
 
     render() {
         return page(
-            impersonationBar({model: this.model.impersonationBarManager}),
+            impersonationBar({model: this.model.impersonationBarModel}),
             div({
                 cls: 'xh-lockout-panel',
                 item: this.unauthorizedMessage()

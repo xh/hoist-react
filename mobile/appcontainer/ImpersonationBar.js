@@ -24,12 +24,12 @@ import './ImpersonationBar.scss';
 export class ImpersonationBar extends Component {
 
     render() {
-        const {isBarVisible, targets} = this.model,
-            username = XH.getUsername();
+        const {isOpen, targets} = this.model;
 
-        if (!isBarVisible) return null;
+        if (!isOpen) return null;
 
-        const options = [username, ...targets];
+        const username = XH.getUsername(),
+            options = [username, ...targets];
 
         return div({
             cls: 'xh-impersonation-bar',

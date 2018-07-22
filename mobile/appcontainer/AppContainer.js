@@ -63,7 +63,7 @@ export class AppContainer extends Component {
             case S.INITIALIZING:
                 return viewport(loadMask({isDisplayed: true}));
             case S.LOGIN_REQUIRED:
-                return loginPanel({model: this.loginPanelModel});
+                return loginPanel({model: model.loginPanelModel});
             case S.ACCESS_DENIED:
                 return lockoutPanel({model});
             case S.LOAD_FAILED:
