@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -41,7 +41,7 @@ export class UpdateBar extends Component {
     }
 
     reloadApp() {
-        this.model.reloadApp();
+        XH.reloadApp();
     }
 }
 export const updateBar = elemFactory(UpdateBar);

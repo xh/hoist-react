@@ -59,7 +59,7 @@ export class EnvironmentService {
             appVersion = data.appVersion;
 
         if (shouldUpdate && appVersion !== XH.appVersion) {
-            XH.showUpdateBar(data.appVersion);
+            XH.appContainerModel.showUpdateBar(data.appVersion);
         }
     }
 }
