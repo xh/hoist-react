@@ -56,8 +56,8 @@ export class LoginPanel extends Component {
                             commitOnChange: true
                         }),
                         text({
-                            omit: !this.warning,
-                            item: this.warning,
+                            omit: !model.warning,
+                            item: model.warning,
                             ellipsize: true,
                             cls: 'xh-login__warning'
                         }),
