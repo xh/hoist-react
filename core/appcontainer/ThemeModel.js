@@ -32,7 +32,6 @@ export class ThemeModel {
         XH.setPref('xhTheme', value ? 'dark' : 'light');
     }
 
-
     init() {
         this.setDarkTheme(XH.getPref('xhTheme') === 'dark');
     }

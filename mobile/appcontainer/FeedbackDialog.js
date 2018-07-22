@@ -49,12 +49,11 @@ export class FeedbackDialog extends Component {
     }
 
     onSendClick = () => {
-        XH.feedbackManager.submitAsync();
+        this.model.submitAsync();
     }
 
     onCancelClick = () => {
-        XH.feedbackManager.closeDialog();
+        this.model.hide();
     }
-
 }
 export const feedbackDialog = elemFactory(FeedbackDialog);

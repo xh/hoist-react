@@ -35,8 +35,8 @@ export class FeedbackDialog extends Component {
                 textAreaField({
                     placeholder: 'Please enter your comments...',
                     style: {height: 250, marginBottom: 2},
-                    model: XH.feedbackManager,
-                    field: 'feedback'
+                    model,
+                    field: 'message'
                 }),
                 toolbar(
                     filler(),
