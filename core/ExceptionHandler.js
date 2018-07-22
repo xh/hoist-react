@@ -59,8 +59,9 @@ export class ExceptionHandler {
         if (options.showAlert) {
             XH.appContainerModel.exceptionDialogModel.show(exception, options);
         }
+        
         if (options.logOnServer) {
-            this.logOnServerAsync(exception, {exception, userAlerted: options.showAlert});
+            this.logOnServerAsync({exception, userAlerted: options.showAlert});
         }
     }
 
@@ -91,7 +92,6 @@ export class ExceptionHandler {
                     clientUsername: XH.getUsername()
                 }
             });
-            XH.toast({message: 'Error Details Submitted'});
         } catch (e) {
             console.error('Failed sending error to server:', e);
         }

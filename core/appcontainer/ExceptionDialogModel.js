@@ -54,13 +54,15 @@ export class ExceptionDialogModel {
         this.userMessage = '';
     }
     
-    sendReport() {
+    async sendReportAsync() {
         const {exception, userMessage, options} = this;
 
-        XH.exceptionHandler
-            .submitAsync({exception, userMessage, userAlerted: true})
-            .then(() => {
-                if (!options.requireReload) this.close();
-            });
+        await XH.exceptionHandler.logOnServerAsync({
+            exception,
+            userMessage,
+            userAlerted: true
+        });
+
+        if (!options.requireReload) this.close();
     }
 }

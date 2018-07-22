@@ -98,7 +98,7 @@ export class ExceptionDialogDetails extends Component {
     }
 
     onSendClick = () => {
-        this.model.sendReport();
+        this.model.sendReportAsync();
     }
 
     onCloseClick = () => {
