@@ -168,10 +168,6 @@ class XHClass {
         return this.acm.themeModel.darkTheme;
     }
 
-    set darkTheme(value) {
-        return this.acm.themeModel.setDarkTheme(value);
-    }
-
     //-------------------------
     // Routing support
     //-------------------------
