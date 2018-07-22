@@ -55,7 +55,7 @@ export class AppContainerModel {
         ];
         this.models.forEach(it => {
             if (it.init) it.init();
-        })
+        });
     }
 
     /** Updated App version available, as reported by server. */

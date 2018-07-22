@@ -333,7 +333,7 @@ class XHClass {
 
         this.setAppState(S.INITIALIZING);
         try {
-            await this.initServicesAsync()
+            await this.initServicesAsync();
             this.initModels();
 
             // Delay to workaround hot-reload styling issues in dev.

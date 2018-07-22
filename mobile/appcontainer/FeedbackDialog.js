@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {textAreaField} from '@xh/hoist/mobile/cmp/form';

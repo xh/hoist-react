@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {HoistComponent, elemFactory, XH} from '@xh/hoist/core';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
 import {textAreaField} from '@xh/hoist/desktop/cmp/form';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';

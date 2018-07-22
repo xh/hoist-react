@@ -6,7 +6,7 @@
  */
 
 import {Children, Component} from 'react';
-import {observable, observer, setter} from '@xh/hoist/mobx';
+import {observable, setter} from '@xh/hoist/mobx';
 import {HoistComponent, elemFactory, elem, AppState, XH} from '@xh/hoist/core';
 import {loadMask} from '@xh/hoist/desktop/cmp/mask';
 import {div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
