@@ -164,12 +164,12 @@ class XHClass {
     }
 
     /** Is the app currently rendering in dark theme? */
-    get isDarkTheme() {
-        return this.acm.themeModel.isDarkTheme;
+    get darkTheme() {
+        return this.acm.themeModel.darkTheme;
     }
 
-    set isDarkTheme(value) {
-        return this.acm.themeModel.setIsDarkTheme(value);
+    set darkTheme(value) {
+        return this.acm.themeModel.setDarkTheme(value);
     }
 
     //-------------------------
