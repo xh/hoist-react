@@ -4,5 +4,5 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
-export * from './AppBar';
+export * from './Toast';
+export * from './ToastManager';

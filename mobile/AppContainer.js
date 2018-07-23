@@ -7,10 +7,14 @@
 
 import {Children, Component} from 'react';
 import {observable, observer, setter} from '@xh/hoist/mobx';
-import {elemFactory, elem, AppState, XH} from '@xh/hoist/core';
+import {elemFactory, AppState, XH} from '@xh/hoist/core';
+import {div, frame, vframe, viewport, vspacer} from '@xh/hoist/cmp/layout';
 import {loadMask} from '@xh/hoist/mobile/cmp/mask';
 import {messageSource} from '@xh/hoist/mobile/cmp/message';
-import {div, frame, vframe, viewport, vspacer} from '@xh/hoist/cmp/layout';
+import {toastManager} from '@xh/hoist/mobile/cmp/toast';
+import {menu} from '@xh/hoist/mobile/cmp/menu';
+import {button} from '@xh/hoist/mobile/cmp/button';
+import {Icon} from '@xh/hoist/icon';
 
 import {
     feedbackDialog,
@@ -20,8 +24,7 @@ import {
     loginPanel,
     updateBar,
     versionBar,
-    lockoutPanel,
-    SuspendedDialog
+    lockoutPanel
 } from './impl';
 
 /**
@@ -37,7 +40,7 @@ import {
 @observer
 export class AppContainer extends Component {
 
-    @setter @observable.ref caughtException = null
+    @setter @observable.ref caughtException = null;
 
     constructor() {
         super();
@@ -74,13 +77,14 @@ export class AppContainer extends Component {
                         impersonationBar(),
                         updateBar(),
                         frame(Children.only(this.props.children)),
-                        versionBar()
+                        versionBar(),
+                        this.renderAppMenu()
                     ),
                     loadMask({model: XH.appLoadModel}),
                     messageSource({model: XH.messageSourceModel}),
+                    toastManager({model: XH.toastManagerModel}),
                     feedbackDialog({model: XH.feedbackDialogModel}),
-                    aboutDialog(),
-                    this.renderSuspendedDialog()
+                    aboutDialog()
                 );
             default:
                 return null;
@@ -96,12 +100,14 @@ export class AppContainer extends Component {
     //------------------------
     // Implementation
     //------------------------
-    renderSuspendedDialog() {
-        const dialogClass = XH.app.suspendedDialogClass || SuspendedDialog;
-
-        return XH.appState == AppState.SUSPENDED && dialogClass ?
-            elem(dialogClass, {onReactivate: () => XH.reloadApp()}) :
-            null;
+    renderAppMenu() {
+        const model = XH.app.appMenuModel;
+        if (!model) return null;
+        return menu({
+            model: model,
+            width: 260,
+            align: 'left'
+        });
     }
 
     unauthorizedMessage() {
@@ -114,7 +120,15 @@ export class AppContainer extends Component {
                 You are logged in as ${user.username} 
                 and have the roles [${user.roles.join(', ') || '--'}].
             `,
-            vspacer(20)
+            vspacer(20),
+            button({
+                icon: Icon.logout(),
+                text: 'Logout',
+                omit: !XH.app.enableLogout,
+                onClick: () => {
+                    XH.identityService.logoutAsync();
+                }
+            })
         );
     }
 }

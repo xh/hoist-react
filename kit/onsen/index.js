@@ -19,6 +19,7 @@ import {
     BottomToolbar,
     Button,
     Card,
+    Dialog,
     Input,
     List,
     ListHeader,
@@ -27,8 +28,10 @@ import {
     Page,
     ProgressCircular,
     SearchInput,
+    Select,
     Tab,
     Tabbar,
+    Toast,
     Toolbar,
     ToolbarButton
 } from 'react-onsenui';
@@ -38,6 +41,7 @@ export const
     bottomToolbar = elemFactory(BottomToolbar),
     button = elemFactory(Button),
     card = elemFactory(Card),
+    dialog = elemFactory(Dialog),
     input = elemFactory(Input),
     list = elemFactory(List),
     listHeader = elemFactory(ListHeader),
@@ -46,7 +50,9 @@ export const
     page = elemFactory(Page),
     progressCircular = elemFactory(ProgressCircular),
     searchInput = elemFactory(SearchInput),
+    select = elemFactory(Select),
     tab = elemFactory(Tab),
     tabbar = elemFactory(Tabbar),
+    toast = elemFactory(Toast),
     toolbar = elemFactory(Toolbar),
     toolbarButton = elemFactory(ToolbarButton);

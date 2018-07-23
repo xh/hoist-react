@@ -7,7 +7,6 @@
 import {isEmpty} from 'lodash';
 import {XH, HoistModel} from '@xh/hoist/core';
 import {action, observable, setter} from '@xh/hoist/mobx';
-import {ToastManager} from '@xh/hoist/toast';
 
 /** Model for a FeedbackDialog, managing its open/close state and feedback string.
  *
@@ -26,7 +25,7 @@ export class FeedbackDialogModel {
 
         XH.feedbackService.submitAsync({message: this.feedback})
             .then(() => {
-                ToastManager.show({message: 'Your feedback was submitted'});
+                XH.toast({message: 'Your feedback was submitted'});
                 this.close();
             })
             .linkTo(XH.appLoadModel)

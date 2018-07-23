@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistService} from '@xh/hoist/core';
+import {observable, action} from '@xh/hoist/mobx';
 
 /**
  * Provides basic information related to the authenticated user, including application roles.
@@ -15,6 +16,7 @@ import {XH, HoistService} from '@xh/hoist/core';
  */
 @HoistService()
 export class IdentityService {
+    @observable barVisible = false;
 
     _authUser = null;
     _apparentUser = null;
@@ -85,6 +87,21 @@ export class IdentityService {
     /** Is an impersonation session currently active? */
     get isImpersonating() {
         return this._authUser !== this._apparentUser;
+    }
+
+    /** Is the impersonation bar visible? */
+    get isBarVisible() {
+        return this._authUser.isHoistAdmin && (this.barVisible || this.isImpersonating);
+    }
+
+    @action
+    showBar() {
+        this.barVisible = true;
+    }
+
+    @action
+    hideBar() {
+        this.barVisible = false;
     }
 
     /**

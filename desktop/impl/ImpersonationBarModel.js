@@ -12,22 +12,26 @@ import {observable, action} from '@xh/hoist/mobx';
  */
 @HoistModel()
 export class ImpersonationBarModel {
-    @observable isVisible = false;
-
     @observable.ref targets = [];
     @observable selectedTarget = '';
     @observable targetDialogOpen = false;
 
     constructor() {
-        this.isVisible = XH.identityService.isImpersonating;
-        if (this.isVisible) this.ensureTargetsLoaded();
+        this.addAutorun(() => {
+            if (XH.identityService.isBarVisible) this.ensureTargetsLoaded();
+        });
     }
 
     @action
     toggleVisibility() {
-        this.targetDialogOpen = false;
-        this.isVisible = !this.isVisible || XH.identityService.isImpersonating;
-        if (this.isVisible) this.ensureTargetsLoaded();
+        const svc = XH.identityService;
+
+        this.closeTargetDialog();
+        if (svc.isBarVisible) {
+            svc.hideBar();
+        } else {
+            svc.showBar();
+        }
     }
 
     @action
@@ -39,11 +43,12 @@ export class ImpersonationBarModel {
     }
 
     doExit = () => {
-        if (XH.identityService.isImpersonating) {
+        const svc = XH.identityService;
+        if (svc.isImpersonating) {
             this.closeTargetDialog();
-            XH.identityService.endImpersonateAsync();
+            svc.endImpersonateAsync();
         } else {
-            this.toggleVisibility();
+            svc.hideBar();
         }
     }
 

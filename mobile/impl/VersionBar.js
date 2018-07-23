@@ -6,15 +6,44 @@
  */
 
 import {Component} from 'react';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {box} from '@xh/hoist/cmp/layout';
+import {Icon} from '@xh/hoist/icon';
+import {button} from '@xh/hoist/mobile/cmp/button';
+import './VersionBar.scss';
 
 /**
  * @private
  */
 @HoistComponent()
 export class VersionBar extends Component {
+
     render() {
-        return null;
+        const env = XH.getEnv('appEnvironment'),
+            version = XH.getEnv('clientVersion'),
+            isVisible = (env !== 'Production' || XH.getPref('xhForceEnvironmentFooter'));
+
+        if (!isVisible) return null;
+
+        return box({
+            justifyContent: 'center',
+            alignItems: 'center',
+            flex: 'none',
+            cls: `xh-version-bar xh-version-bar-${env.toLowerCase()}`,
+            items: [
+                [XH.appName, env, version].join(' • '),
+                button({
+                    icon: Icon.info(),
+                    modifier: 'quiet',
+                    onClick: () => this.showAbout()
+                })
+            ]
+        });
     }
+
+    showAbout() {
+        XH.showAbout();
+    }
+
 }
 export const versionBar = elemFactory(VersionBar);

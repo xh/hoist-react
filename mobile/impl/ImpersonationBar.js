@@ -6,7 +6,13 @@
  */
 
 import {Component} from 'react';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {div} from '@xh/hoist/cmp/layout';
+import {selectField} from '@xh/hoist/mobile/cmp/form';
+import {button} from '@xh/hoist/mobile/cmp/button';
+import {Icon} from '@xh/hoist/icon';
+
+import './ImpersonationBar.scss';
 import {ImpersonationBarModel} from './ImpersonationBarModel';
 
 /**
@@ -21,7 +27,41 @@ export class ImpersonationBar extends Component {
     localModel = new ImpersonationBarModel();
     
     render() {
-        return null;
+        const {isBarVisible, username} = XH.identityService,
+            {targets} = this.model;
+
+        if (!isBarVisible) return null;
+
+        const options = [username, ...targets];
+
+        return div({
+            cls: 'xh-impersonation-bar',
+            items: [
+                Icon.user({size: 'lg'}),
+                selectField({
+                    value: username,
+                    options: options,
+                    commitOnChange: true,
+                    onCommit: this.onCommit
+                }),
+                button({
+                    icon: Icon.close(),
+                    onClick: this.onExitClick
+                })
+            ]
+        });
     }
+
+    //---------------------
+    // Implementation
+    //---------------------
+    onCommit = (target) => {
+        this.model.doImpersonate(target);
+    }
+
+    onExitClick = () => {
+        this.model.doExit();
+    }
+
 }
 export const impersonationBar = elemFactory(ImpersonationBar);

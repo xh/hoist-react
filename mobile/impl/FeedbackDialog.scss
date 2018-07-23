@@ -1,0 +1,13 @@
+.xh-feedback-dialog .xh-dialog__inner {
+  padding: 0;
+  display: flex;
+
+  textarea {
+    margin: 0;
+    padding: var(--xh-pad-px);
+    height: 250px;
+    width: 100%;
+    line-height: 1.5;
+    resize: none;
+  }
+}

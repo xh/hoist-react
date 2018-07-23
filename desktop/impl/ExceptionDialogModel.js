@@ -6,7 +6,6 @@
  */
 import {XH, HoistModel} from '@xh/hoist/core';
 import {observable, setter, action} from '@xh/hoist/mobx';
-import {ToastManager} from '@xh/hoist/toast';
 
 /**
  * Local Model to handle Exception Dialog.
@@ -36,7 +35,7 @@ export class ExceptionDialogModel {
 
         svc.submitAsync({exception, message: userMessage, userAlerted: true})
             .then(() => {
-                ToastManager.show({message: 'Error Details Submitted'});
+                XH.toast({message: 'Error Details Submitted'});
             });
 
         if (!options.requireReload) this.close();

@@ -22,7 +22,8 @@ import {
     updateBar,
     versionBar,
     lockoutPanel,
-    SuspendedDialog
+    SuspendedDialog,
+    ToastManager
 } from './impl';
 
 /**
@@ -40,8 +41,11 @@ export class AppContainer extends Component {
 
     @setter @observable.ref caughtException = null
 
+    toastManager = null;
+
     constructor() {
         super();
+        this.toastManager = new ToastManager({model: XH.toastManagerModel});
         XH.initAsync();
     }
 
