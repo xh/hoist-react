@@ -29,7 +29,7 @@ export class DayField extends HoistField {
         /** Value of the control */
         value: PT.string,
 
-        /** Position for calendar popover. @see http://blueprintjs.com/docs/v2/#core/components/popover.position */
+        /** Position for calendar popover. @see http://blueprintjs.com/docs/ */
         popoverPosition: PT.oneOf([
             'top-left', 'top', 'top-right',
             'right-top', 'right', 'right-bottom',
@@ -38,6 +38,7 @@ export class DayField extends HoistField {
             'auto'
         ]),
 
+        /** Props passed to ReactDayPicker component. @see http://react-day-picker.js.org/ */
         dayPickerProps: PT.object
     };
 
