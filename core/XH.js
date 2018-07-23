@@ -274,11 +274,11 @@ class XHClass {
      * Show a Toast.
      *
      * @param {Object} config - options for toast instance.
-     * @param {string} message - the message to show in the toast.
-     * @param {element} [icon] - icon to be displayed
-     * @param {number} [timeout] - time in milliseconds to display the toast.
-     * @param {string} [intent] - The Blueprint intent (desktop only)
-     * @param {Object} [position] - Position in viewport to display toast. See Blueprint Position enum (desktop only).
+     * @param {string} config.message - the message to show in the toast.
+     * @param {element} [config.icon] - icon to be displayed
+     * @param {number} [config.timeout] - time in milliseconds to display the toast.
+     * @param {string} [config.intent] - The Blueprint intent (desktop only)
+     * @param {Object} [config.position] - Position in viewport to display toast. See Blueprint Position enum (desktop only).
      */
     toast(config) {
         return this.acm.toastSourceModel.show(config);
