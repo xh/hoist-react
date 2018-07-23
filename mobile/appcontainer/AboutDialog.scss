@@ -1,0 +1,23 @@
+.xh-about-dialog .xh-dialog__inner {
+  padding: 0;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th {
+    text-align: right;
+    vertical-align: top;
+    white-space: nowrap;
+    background-color: var(--xh-bg-alt);
+    border-bottom: var(--xh-border-solid);
+    border-right: var(--xh-border-solid);
+    padding: var(--xh-pad-half-px);
+  }
+
+  td {
+    border-bottom: var(--xh-border-solid);
+    padding: var(--xh-pad-half-px);
+  }
+}

@@ -6,6 +6,9 @@
  */
 import {HoistModel} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
+import {isPlainObject} from 'lodash';
+
+import {MenuItemModel} from './MenuItemModel';
 
 @HoistModel()
 /** Model for a floating drop down, managing its open/close state and items. */
@@ -14,16 +17,17 @@ export class MenuModel {
     @observable isOpen = false;
     @observable xPos = 0;
     @observable yPos = 0;
-    @observable.ref items = false;
+    @observable.ref itemModels = false;
 
     /**
-     * Items support the following props:
-     *      icon:       icon to display to left of text
-     *      text:       string / Element to display.
-     *      handler:    function to trigger on item tap.
+     * @param {Object[]} itemModels - configurations for MenuItemModels (or MenuItemModel instances).
+     * @param {number} [xPos] - Screen X position to display the menu. Can also be set via openAt().
+     * @param {number} [yPos] - Screen Y position to display the menu. Can also be set via openAt().
      */
-    constructor({items}) {
-        this.items = items;
+    constructor({itemModels = [], xPos = 0, yPos = 0}) {
+        this.itemModels = itemModels.map(i => isPlainObject(i) ? new MenuItemModel(i) : i);
+        this.xPos = xPos;
+        this.yPos = yPos;
     }
 
     @action

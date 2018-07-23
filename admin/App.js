@@ -6,7 +6,7 @@
  */
 import {HoistApp, XH} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
-import {AppContainer} from '@xh/hoist/desktop/AppContainer';
+import {AppContainer} from '@xh/hoist/desktop/appcontainer';
 import {TabContainerModel} from '@xh/hoist/desktop/cmp/tab';
 
 import {AppComponent} from './AppComponent';

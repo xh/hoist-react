@@ -1,0 +1,39 @@
+.xh-toast {
+  .toast {
+    padding: var(--xh-pad-px);
+    background-color: var(--xh-blue-gray-dark);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+  }
+
+  &.xh-intent-primary .toast {
+    background-color: var(--xh-intent-primary);
+  }
+  &.xh-intent-danger .toast {
+    background-color: var(--xh-intent-danger);
+  }
+  &.xh-intent-success .toast {
+    background-color: var(--xh-intent-success);
+  }
+  &.xh-intent-warning .toast {
+    background-color: var(--xh-intent-warning);
+  }
+
+  .toast__message {
+    margin: 0;
+    display: flex;
+    align-items: center;
+
+    & > svg {
+      margin-left: var(--xh-pad-half-px);
+      margin-right: var(--xh-pad-px);
+    }
+
+    & > span {
+      flex: 1;
+    }
+
+    .xh-button {
+      color: white;
+    }
+  }
+}
