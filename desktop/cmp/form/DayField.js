@@ -7,7 +7,7 @@
 
 import {PropTypes as PT} from 'prop-types';
 import moment from 'moment';
-import {defaultsDeep} from 'lodash';
+import {assign} from 'lodash';
 
 import {fmtDate} from '@xh/hoist/format';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
@@ -44,9 +44,12 @@ export class DayField extends HoistField {
 
     delegateProps = ['className', 'disabled']
 
+
     render() {
-        const {width, popoverPosition, style, dayPickerProps} = this.props,
-            dayPickerSpec = defaultsDeep(dayPickerProps, {fixedWeeks: true});
+        let {width, popoverPosition, style, dayPickerProps} = this.props;
+
+        dayPickerProps = assign({fixedWeeks: true}, dayPickerProps);
+
 
         return dateInput({
             value: this.renderValue,
@@ -65,7 +68,7 @@ export class DayField extends HoistField {
                 position: popoverPosition || 'auto',
                 popoverWillClose: this.onPopoverWillClose
             },
-            dayPickerProps: dayPickerSpec,
+            dayPickerProps,
             ...this.getDelegateProps()
         });
     }
