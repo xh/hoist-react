@@ -26,23 +26,12 @@ export class MessageModel {
     onConfirm: null;
     onCancel: null;
 
-    /**
-     * Is the message currently being displayed?
-     */
+    // Promise to be resolved when user has clicked on choice and its internal resolver
+    result: null;
+    _resolver: null;
+
     @observable isOpen = true;
 
-    /**
-     * @param {Object} [config] - default options for this instance.
-     * @param {string} config.message - icon to be displayed.
-     * @param {string} [config.title] - title of message box.
-     * @param {element} [config.icon] - icon to be displayed.
-     * @param {string} [config.confirmText] - Text for confirm button. If null, no button will be shown.
-     * @param {string} [config.cancelText] - Text for cancel button. If null, no button will be shown.
-     * @param {string} [config.confirmIntent] - Intent for confirm button.
-     * @param {string} [config.cancelIntent] - Intent for cancel button.
-     * @param {function} [config.onConfirm] - Callback to execute when confirm is clicked.
-     * @param {function} [config.onCancel] - Callback to execute when cancel is clicked.
-     */
     constructor(config) {
         this.message = config.message;
         this.title = config.title;
@@ -53,6 +42,7 @@ export class MessageModel {
         this.cancelIntent = config.cancelIntent;
         this.onConfirm = config.onConfirm;
         this.onCancel = config.onCancel;
+        this.result = new Promise(resolve => this._resolver = resolve);
     }
 
     //------------------------
@@ -61,15 +51,20 @@ export class MessageModel {
     @action
     doConfirm() {
         if (this.onConfirm) this.onConfirm();
+        this._resolver(true);
         this.close();
     }
 
     @action
     doCancel() {
         if (this.onCancel) this.onCancel();
+        this._resolver(false);
         this.close();
     }
 
+    //-----------------------
+    // Implementation
+    //-----------------------
     @action
     close() {
         this.isOpen = false;

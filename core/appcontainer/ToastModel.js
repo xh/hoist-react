@@ -25,18 +25,8 @@ export class ToastModel {
     intent = null;
     position = null;
 
-    /**
-     * Is the toast currently being displayed?
-     */
     @observable isOpen = true;
 
-    /**
-     * @param {string} message - the message to show in the toast.
-     * @param {element} [icon] - icon to be displayed
-     * @param {number} [timeout] - time in milliseconds to display the toast.
-     * @param {string} [intent] - the Blueprint intent.
-     * @param {Object} [position] - position in viewport to display. Desktop only. See Blueprint Position enum.
-     */
     constructor({
         message,
         icon = Icon.check(),

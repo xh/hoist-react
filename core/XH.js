@@ -201,23 +201,38 @@ class XHClass {
     //------------------------------
     /**
      * Show a modal message dialog.
-     * @param {Object} config - see MessageModel.show() for available options.
+     *
+     * @param {Object} [config] - options for message to be displayed
+     * @param {string} config.message - message text to be displayed.
+     * @param {string} [config.title] - title of message box.
+     * @param {element} [config.icon] - icon to be displayed.
+     * @param {string} [config.confirmText] - Text for confirm button. If null, no button will be shown.
+     * @param {string} [config.cancelText] - Text for cancel button. If null, no button will be shown.
+     * @param {string} [config.confirmIntent] - Blueprint Intent for confirm button (desktop only).
+     * @param {string} [config.cancelIntent] - Blueprint Intent for cancel button (desktop only).
+     * @param {function} [config.onConfirm] - Callback to execute when confirm is clicked.
+     * @param {function} [config.onCancel] - Callback to execute when cancel is clicked.
+     * @returns {Promise} - A Promise that will resolve to true if user confirms, and false if user cancels.
      */
     message(config) {
-        return this.acm.messageSourceModel.show(config);
+        return this.acm.messageSourceModel.message(config);
     }
 
     /**
-     * Show a modal 'alert' dialog with message and default OK button.
-     * @param {Object} config -  see MessageModel.show() for available options.
+     * Show a modal 'alert' dialog with message and default 'OK' button.
+     *
+     * @param {Object} config -  see XH.message() for available options.
+     * @returns {Promise} - A Promise that will resolve to true when user acknowledges alert.
      */
     alert(config) {
         return this.acm.messageSourceModel.alert(config);
     }
 
     /**
-     * Show a modal 'confirm' dialog with message and default OK/Cancel buttons.
-     *  @param {Object} config - see MessageModel.show() for available options.
+     * Show a modal 'confirm' dialog with message and default 'OK'/'Cancel' buttons.
+     *
+     * @param {Object} config - see XH.message() for available options.
+     * @returns {Promise} - A Promise that will resolve to true if user confirms, and false if user cancels.
      */
     confirm(config) {
         return this.acm.messageSourceModel.confirm(config);
@@ -228,13 +243,25 @@ class XHClass {
     //--------------------------
     /**
      * Handle an exception.
+     *
+     * This method may be called by applications in order to provide logging, reporting, and display of
+     * exceptions.  It it typically called directly in catch() blocks.
+     *
+     * This method is an alias for ExceptionHandler.handleException(). See that method for more information
+     * about available options.
+     *
+     * See also Promise.catchDefault().  That method will delegate its arguments to this method and provides a
+     * more convenient interface for Promise-based code.
      */
     handleException(...args) {
         return this.exceptionHandler.handleException(...args);
     }
 
     /**
-     * Create an exception.
+     * Create a new exception.
+     *
+     * This method is an alias for the static method Exception.create().
+     * See that method for more information.
      */
     exception(...args) {
         return Exception.create(...args);
@@ -245,7 +272,13 @@ class XHClass {
     //---------------------------
     /**
      * Show a Toast.
-     * @param {Object} config - see ToastModel for available options.
+     *
+     * @param {Object} config - options for toast instance.
+     * @param {string} message - the message to show in the toast.
+     * @param {element} [icon] - icon to be displayed
+     * @param {number} [timeout] - time in milliseconds to display the toast.
+     * @param {string} [intent] - The Blueprint intent (desktop only)
+     * @param {Object} [position] - Position in viewport to display toast. See Blueprint Position enum (desktop only).
      */
     toast(config) {
         return this.acm.toastSourceModel.show(config);

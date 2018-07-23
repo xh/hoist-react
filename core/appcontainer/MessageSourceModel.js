@@ -21,20 +21,20 @@ export class MessageSourceModel {
 
     @observable.ref msgModels = [];
 
-    show(config) {
+    message(config) {
         const ret = new MessageModel(config);
         this.addModel(ret);
-        return ret;
+        return ret.result;
     }
 
     alert(config) {
         config = defaults({}, config, {confirmText: 'OK'});
-        return this.show(config);
+        return this.message(config);
     }
 
     confirm(config) {
         config = defaults({}, config, {confirmText: 'OK', cancelText: 'Cancel'});
-        this.show(config);
+        return this.message(config);
     }
 
     //-----------------------------------
