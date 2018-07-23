@@ -7,8 +7,8 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {Component} from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {vbox, vspacer, box} from '@xh/hoist/cmp/layout';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {box, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {Classes, overlay, spinner} from '@xh/hoist/kit/blueprint';
 
 import './Mask.scss';
@@ -41,6 +41,7 @@ export class LoadMask extends Component {
             isOpen: true,
             canEscapeKeyClose: false,
             usePortal: !isInline,
+            enforceFocus: !isInline,
             item: vbox({
                 cls: 'xh-mask-body',
                 items: [

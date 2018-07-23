@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {box} from '@xh/hoist/cmp/layout';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
 
@@ -34,6 +34,7 @@ export class Mask extends Component {
             isOpen: true,
             canEscapeKeyClose: false,
             usePortal: false,
+            enforceFocus: false,
             item: box({
                 cls: 'xh-mask-body',
                 item: text ? box({cls: 'xh-mask-text', item: text}) : null
