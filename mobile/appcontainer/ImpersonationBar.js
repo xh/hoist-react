@@ -61,7 +61,7 @@ export class ImpersonationBar extends Component {
         if (model.isImpersonating) {
             model.endImpersonateAsync();
         } else {
-            model.hideBar();
+            model.hide();
         }
     }
 }
