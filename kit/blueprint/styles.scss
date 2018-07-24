@@ -169,11 +169,29 @@
 .pt-input-group svg:not(.pt-icon) {
   position: absolute;
   top: 0;
-  margin: var(--xh-pad-px);
-  font-size: var(--xh-font-size);
+  line-height: 1;
+  font-size: var(--xh-font-size-large-px);
+  font-weight: 400;
+  font-style: normal;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
   z-index: 1;
+  margin: 7px;
+  color: var(--xh-blue-gray);
+}
+
+.pt-dark .pt-input-group svg:not(.pt-icon) {
+  color: var(--xh-text-color);
+}
+
+.pt-button svg:not(.pt-icon):first-child:last-child, .pt-button .pt-spinner + svg:not(.pt-icon):last-child {
+  margin-left: 0;
+}
+
+.pt-input-group .pt-input:not(:focus) + .pt-button.pt-minimal:not(:hover):not(:focus) svg:not(.pt-icon), .pt-input-group .pt-input:not(:focus) + .pt-input-action .pt-button.pt-minimal:not(:hover):not(:focus) svg:not(.pt-icon) {
+  color: var(--xh-blue-gray);
 }
 
 .pt-select-popover .pt-popover-content {
-  padding: 0px !important;
+  padding: 0 !important;
 }
