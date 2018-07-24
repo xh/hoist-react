@@ -161,7 +161,7 @@ class Grid extends Component {
             selectedIds = selModel.ids;
 
         // Adjust selection to target record -- and sync to grid immediately.
-        if (rec && !(recId in selectedIds)) {
+        if (rec && !(selectedIds.includes(recId))) {
             try {
                 this._scrollOnSelect = false;
                 selModel.select(rec);
