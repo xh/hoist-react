@@ -26,7 +26,10 @@ export class StoreFilterField extends Component {
         store: PT.instanceOf(BaseStore).isRequired,
         /** Names of fields in store's records to filter by */
         fields: PT.arrayOf(PT.string).isRequired,
-        /** Delay (in ms) used to buffer filtering of the store after the value changes from user input (default is 200ms). Set to 0 to filter immediately after user input. */
+        /**
+         * Delay (in ms) used to buffer filtering of the store after the value changes from user
+         * input (default is 200ms). Set to 0 to filter immediately after user input.
+         */
         filterBuffer: PT.number
     };
 
