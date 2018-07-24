@@ -1,4 +1,8 @@
 .xh-dialog {
+  & > .dialog {
+    max-width: 90%;
+  }
+
   &__title {
     display: flex;
     align-items: center;
@@ -15,6 +19,7 @@
 
   &__inner {
     padding: var(--xh-pad-px);
+    background-color: var(--xh-bg);
   }
 
   &__toolbar {
