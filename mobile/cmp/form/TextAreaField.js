@@ -37,6 +37,7 @@ export class TextAreaField extends HoistField {
         const {style, width, spellCheck} = this.props;
 
         return textarea({
+            cls: 'xh-field xh-textarea-field',
             value: this.renderValue || '',
             onChange: this.onChange,
             onBlur: this.onBlur,

@@ -43,6 +43,12 @@
   &.xh-search-field {
     margin: 4px;
   }
+
+  &.xh-textarea-field {
+    background-color: var(--xh-bg);
+    color: var(--xh-text-color);
+    border: none;
+  }
 }
 
 .xh-tab {
