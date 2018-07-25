@@ -36,3 +36,5 @@ export const ol = elemFactory('ol');
 export const li = elemFactory('li');
 export const a = elemFactory('a');
 export const img = elemFactory('img');
+export const textarea = elemFactory('textarea');
+export const option = elemFactory('option');

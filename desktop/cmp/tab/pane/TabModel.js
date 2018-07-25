@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
 import {action, computed, observable} from '@xh/hoist/mobx';
 import {LastPromiseModel} from '@xh/hoist/promise';
 import {startCase} from 'lodash';
@@ -46,7 +46,7 @@ export class TabModel {
     }
 
     activate() {
-        this.containerModel.setActiveTabId(this.id);
+        this.containerModel.activateTab(this.id);
     }
 
     get isActive() {

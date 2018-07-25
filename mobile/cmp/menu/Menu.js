@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {PropTypes as PT} from 'prop-types';
-import {vbox, frame, div, hspacer} from '@xh/hoist/cmp/layout';
+import {vbox, fragment, div, hspacer} from '@xh/hoist/cmp/layout';
 import {listItem} from '@xh/hoist/kit/onsen';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 
@@ -33,14 +33,15 @@ class Menu extends Component {
 
         if (!isOpen) return null;
 
-        const items = model.items.map((it, idx) => {
+        const items = model.itemModels.map((it, idx) => {
+            if (it.prepareFn) it.prepareFn(it);
             return this.renderItem(it, idx);
         });
 
         style.top = yPos;
         style[align] = xPos;
 
-        return frame(
+        return fragment(
             mask({
                 isDisplayed: true,
                 onClick: () => model.close()
@@ -54,17 +55,17 @@ class Menu extends Component {
         );
     }
 
-    renderItem(item, idx) {
-        const {icon, text, handler} = item,
+    renderItem(itemModel, idx) {
+        const {text, icon, action, hidden} = itemModel,
             labelItems = icon ? [icon, hspacer(10), text] : [text];
 
         return listItem({
             key: idx,
             tappable: true,
-            modifier: 'longdivider',
-            items: [div({cls: 'center', items: labelItems})],
+            item: div({cls: 'center', items: labelItems}),
+            omit: hidden,
             onClick: () => {
-                if (handler) handler();
+                if (action) action();
                 this.model.close();
             }
         });

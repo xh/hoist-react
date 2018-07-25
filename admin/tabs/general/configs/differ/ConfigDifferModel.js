@@ -14,7 +14,6 @@ import {LocalStore} from '@xh/hoist/data';
 import {p} from '@xh/hoist/cmp/layout';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {ToastManager} from '@xh/hoist/toast';
 import {baseCol} from '@xh/hoist/columns/Core';
 import {nameCol} from '@xh/hoist/admin/columns/Columns';
 import {Icon} from '@xh/hoist/icon';
@@ -214,7 +213,7 @@ export class ConfigDifferModel  {
     }
 
     showNoDiffToast() {
-        ToastManager.show({message: 'Good news! All configs match remote host.'});
+        XH.toast({message: 'Good news! All configs match remote host.'});
     }
 
     setRemoteCellClass(rec) {

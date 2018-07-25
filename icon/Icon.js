@@ -31,6 +31,7 @@ export const Icon = {
     arrowUp(p)       {return fa(p, 'arrow-up')},
     arrowDown(p)     {return fa(p, 'arrow-down')},
     balanceScale(p)  {return fa(p, 'balance-scale')},
+    bars(p)          {return fa(p, 'bars')},
     bolt(p)          {return fa(p, 'bolt')},
     book(p)          {return fa(p, 'book')},
     bookmark(p)      {return fa(p, 'bookmark')},

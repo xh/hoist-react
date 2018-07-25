@@ -5,7 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 export * from './Exception';
-export * from './ExceptionHandler';
 export * from './Stringify';
 
 

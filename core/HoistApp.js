@@ -97,6 +97,13 @@ export function HoistApp(C) {
         },
 
         /**
+         * Is the app designed to be run on mobile devices?
+         */
+        isMobile: {
+            get() {return false}
+        },
+
+        /**
          * Call this once when application mounted in order to trigger initial authentication and
          * initialization of the application and its services.
          */

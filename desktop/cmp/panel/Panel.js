@@ -7,6 +7,8 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {castArray, omitBy} from 'lodash';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {vbox} from '@xh/hoist/cmp/layout';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
@@ -20,10 +22,8 @@ import {panelHeader} from './impl/PanelHeader';
  * This component also includes support for collapsing its contents.  When collapsed, it will
  * render its header element only.
  */
-@HoistComponent({
-    collapseSupport: true,
-    layoutSupport: true
-})
+@HoistComponent({collapseSupport:true})
+@LayoutSupport
 export class Panel extends Component {
 
     _wasDisplayed = false;
@@ -45,7 +45,7 @@ export class Panel extends Component {
         collapsed: PT.oneOf(['top', 'bottom', 'left', 'right', false]),
         /** How should collapsed content be rendered?  Defaults to 'lazy'. */
         collapseRenderMode: PT.oneOf(['lazy', 'always', 'unmountOnHide']),
-        
+
     };
 
     baseCls = 'xh-panel';

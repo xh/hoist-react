@@ -5,6 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {XH} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
+import {assign} from 'lodash';
+
 /**
  *  Basic Model Object for ContextMenu.
  */
@@ -45,5 +49,33 @@ export class ContextMenuItem {
         this.disabled = disabled;
         this.hidden = hidden;
         this.prepareFn = prepareFn;
+    }
+
+    /**
+     * Standard Framework Menu Items
+     */
+    static reloadApp(defs) {
+        return assign({
+            text: 'Reload App',
+            icon: Icon.refresh(),
+            action: () => XH.reloadApp()
+        }, defs);
+    }
+
+    static about(defs) {
+        return assign({
+            text: 'About',
+            icon: Icon.info(),
+            action: () => XH.showAbout()
+        }, defs);
+    }
+
+    static logout(defs) {
+        return assign({
+            text: 'Logout',
+            icon: Icon.logout(),
+            hidden: !XH.app.enableLogout,
+            action: () => XH.identityService.logoutAsync()
+        }, defs);
     }
 }

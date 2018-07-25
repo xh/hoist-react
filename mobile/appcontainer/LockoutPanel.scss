@@ -1,0 +1,12 @@
+.xh-lockout-panel {
+  margin: 40px;
+  padding: var(--xh-pad-double-px);
+  background-color: var(--xh-red);
+  color: white;
+  text-align: center;
+  line-height: 1.6;
+
+  .xh-button {
+    background-color: var(--xh-red-muted) !important;
+  }
+}

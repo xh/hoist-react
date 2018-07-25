@@ -52,7 +52,7 @@ export class TabSwitcher extends Component {
     }
 
     onTabChange = (activeTabId) => {
-        this.model.setActiveTabId(activeTabId);
+        this.model.activateTab(activeTabId);
     };
 }
 export const tabSwitcher = elemFactory(TabSwitcher);

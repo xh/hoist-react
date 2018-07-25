@@ -10,7 +10,7 @@ import {Icon} from '@xh/hoist/icon';
 import {Ref} from '@xh/hoist/utils/Ref';
 import {frame, table, tbody, td, tr} from '@xh/hoist/cmp/layout';
 import {clipboardMenuItem} from '@xh/hoist/desktop/cmp/clipboard';
-import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
+import {ContextMenuSupport} from '@xh/hoist/desktop/cmp/contextmenu';
 import {SECONDS} from '@xh/hoist/utils/DateTimeUtils';
 import {Timer} from '@xh/hoist/utils/Timer';
 
@@ -18,6 +18,7 @@ import {Timer} from '@xh/hoist/utils/Timer';
  * @private
  */
 @HoistComponent()
+@ContextMenuSupport
 class LogViewerDisplay extends Component {
 
     firstRow = new Ref();
@@ -70,27 +71,24 @@ class LogViewerDisplay extends Component {
         }
     }
 
-    renderContextMenu(e) {
+    getContextMenuItems(e) {
         const rows = this.model.rows,
             currentRow = e.target.getAttribute('datakey');
 
-        return contextMenu({
-            style: {width: '200px'},
-            menuItems: [
-                clipboardMenuItem({
-                    text: 'Copy Current Line',
-                    icon: Icon.list(),
-                    disabled: (currentRow == null),
-                    successMessage: 'Log line copied to the clipboard.',
-                    clipboardSpec: {text: () => rows[currentRow].join(': ')}
-                }),
-                clipboardMenuItem({
-                    text: 'Copy All Lines',
-                    successMessage: 'Log lines copied to the clipboard.',
-                    clipboardSpec: {text: () => rows.map(row => row.join(': ')).join('\n')}
-                })
-            ]
-        });
+        return [
+            clipboardMenuItem({
+                text: 'Copy Current Line',
+                icon: Icon.list(),
+                disabled: (currentRow == null),
+                successMessage: 'Log line copied to the clipboard.',
+                clipboardSpec: {text: () => rows[currentRow].join(': ')}
+            }),
+            clipboardMenuItem({
+                text: 'Copy All Lines',
+                successMessage: 'Log lines copied to the clipboard.',
+                clipboardSpec: {text: () => rows.map(row => row.join(': ')).join('\n')}
+            })
+        ];
     }
 
     getRowRef(idx, total) {

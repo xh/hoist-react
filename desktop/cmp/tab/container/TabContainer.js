@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
 
 import {TabContainerModel} from './TabContainerModel';
@@ -29,7 +29,8 @@ import '../Tabs.scss';
  *
  * @see TabContainerModel
  */
-@HoistComponent({layoutSupport: true})
+@HoistComponent()
+@LayoutSupport
 export class TabContainer extends Component {
 
     static propTypes = {

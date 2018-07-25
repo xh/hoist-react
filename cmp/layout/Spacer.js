@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 
 import {box} from './Box';
 
@@ -13,7 +13,8 @@ import {box} from './Box';
  * A component useful for inserting fixed spacing along the main axis of its
  * parent container.
  */
-@HoistComponent({layoutSupport: true})
+@HoistComponent()
+@LayoutSupport
 export class Spacer extends Component {
     render() {
         return box({flex: 'none', ...this.props});
@@ -24,7 +25,8 @@ export class Spacer extends Component {
  * A component useful for stretching to soak up space along the main axis of its
  * parent container.
  */
-@HoistComponent({layoutSupport: true})
+@HoistComponent()
+@LayoutSupport
 export class Filler extends Component {
     render() {
         return box({flex: 'auto', ...this.props});
