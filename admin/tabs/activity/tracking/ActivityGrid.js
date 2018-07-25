@@ -66,7 +66,7 @@ export class ActivityGrid extends Component {
                 store: model.gridModel.store,
                 unit: 'log'
             }),
-            exportButton({model})
+            exportButton({model: model.gridModel})
         );
     }
     

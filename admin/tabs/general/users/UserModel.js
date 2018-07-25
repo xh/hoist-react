@@ -18,6 +18,7 @@ export class UserModel {
     gridModel = new GridModel({
         stateModel: 'xhUserGrid',
         enableColChooser: true,
+        enableExport: true,
         store: new UrlStore({
             url: 'userAdmin',
             fields: ['username', 'email', 'displayName', 'active', 'roles']

@@ -31,6 +31,7 @@ export class LogViewerModel {
     loadModel = new LastPromiseModel();
 
     files = new GridModel({
+        enableExport: true,
         store: new UrlStore({
             url: 'logViewerAdmin/listFiles',
             dataRoot: 'files',

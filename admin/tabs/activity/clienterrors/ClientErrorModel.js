@@ -29,6 +29,8 @@ export class ClientErrorModel {
     gridModel = new GridModel({
         stateModel: 'xhClientErrorGrid',
         enableColChooser: true,
+        enableExport: true,
+        exportFilename: () => `Client Errors ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`,
         store: new LocalStore({
             fields: [
                 'username', 'error', 'msg', 'userAlerted', 'browser', 'device',
@@ -76,11 +78,6 @@ export class ClientErrorModel {
         this.setStartDate(newStart.toDate());
         this.setEndDate(newEnd.toDate());
         this.loadAsync();
-    }
-
-    export() {
-        const fileName = `Client Errors: ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`;
-        this.gridModel.exportDataAsExcel({fileName});
     }
 
     @action

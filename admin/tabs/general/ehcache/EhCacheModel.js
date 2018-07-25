@@ -18,6 +18,7 @@ export class EhCacheModel {
     gridModel = new GridModel({
         stateModel: 'xhEhCacheGrid',
         enableColChooser: true,
+        enableExport: true,
         store: new UrlStore({
             url: 'ehCacheAdmin/listCaches',
             fields: ['name', 'heapSize', 'entries', 'status']
