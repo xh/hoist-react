@@ -8,7 +8,6 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, XH, elemFactory} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {ToastManager} from '@xh/hoist/toast';
 import {Icon} from '@xh/hoist/icon';
 
 import ClipboardJS from 'clipboard';
@@ -74,7 +73,7 @@ export class ClipboardButton extends Component {
 
         const {successMessage} = this.props;
         if (successMessage) {
-            ToastManager.show({
+            XH.toast({
                 message: successMessage,
                 icon: Icon.clipboard()
             });

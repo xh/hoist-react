@@ -6,8 +6,6 @@
  */
 export * from './ConfigService';
 export * from './EnvironmentService';
-export * from './ErrorTrackingService';
-export * from './FeedbackService';
 export * from './FetchService';
 export * from './IdleService';
 export * from './LocalStorageService';
