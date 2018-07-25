@@ -6,7 +6,6 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {ToastManager} from '@xh/hoist/toast';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {throwIf} from '@xh/hoist/utils/JsUtils';
@@ -50,7 +49,7 @@ export class ExportManager {
             rows = [];
 
         if (records.length === 0) {
-            ToastManager.show({message: 'No data found to export', intent: 'danger', icon: Icon.warning()});
+            XH.toast({message: 'No data found to export', intent: 'danger', icon: Icon.warning()});
             return;
         }
 
@@ -62,7 +61,7 @@ export class ExportManager {
         // Show separate 'started' and 'complete' toasts for larger (i.e. slower) exports.
         // We use cell count as a heuristic for speed - this may need to be tweaked.
         if (rows.length * columns.length > 5000) {
-            ToastManager.show({message: 'Export started', intent: 'primary', icon: Icon.download()});
+            XH.toast({message: 'Export started', intent: 'primary', icon: Icon.download()});
         }
 
         XH.fetch({
@@ -77,7 +76,7 @@ export class ExportManager {
             return response.status === 204 ? null : response.blob();
         }).then(blob => {
             download(blob, filename);
-            ToastManager.show({message: 'Export complete', intent: 'success'});
+            XH.toast({message: 'Export complete', intent: 'success'});
         });
     }
 
