@@ -8,7 +8,6 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {ExportManager} from '@xh/hoist/export';
 import {defaults, castArray, find, isEqual, isString, isPlainObject, orderBy} from 'lodash';
 
 import {ColChooserModel} from './ColChooserModel';
@@ -27,8 +26,6 @@ export class GridModel {
     contextMenuFn = null;
     colChooserModel = null;
     stateModel = null;
-    exportLocal = null;
-    exportType = null;
     exportFilename = null;
     enableExport = null;
 
@@ -64,12 +61,10 @@ export class GridModel {
      * @param {string} [sortBy[].colId] - Column ID by which to sort.
      * @param {string} [sortBy[].sort] - sort direction [asc|desc].
      * @param {string} [groupBy] - Column ID by which to group.
-     * @param {boolean} [exportLocal] - true to use agGrid's export. false to use Hoist provided server-side export.
-     * @param {function|string} [exportFilename] - Filename for exported file, or a closure to generate one.
-     * @param {string} [exportType] - Filetype for export file. One of ['excel', 'excelTable', 'csv', 'localExcel', 'localCsv']
-     * @param {boolean} [enableExport] - false to disable export context menu items.
      * @param {boolean} [enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
+     * @param {boolean} [enableExport] - false to disable export context menu items.
+     * @param {function|string} [exportFilename] - Filename for exported file, or a closure to generate one.
      * @param {(StoreSelectionModel|Object|String)} [selModel] - selection model to use,
      *      config to create one, or 'mode' property for a selection model.
      * @param {(GridStateModel|Object|String)} [stateModel] - state model to use,
@@ -83,21 +78,17 @@ export class GridModel {
         emptyText = null,
         sortBy = [],
         groupBy = null,
-        exportLocal = false,
-        exportType = exportLocal ? 'localExcel' : 'excelTable',
-        exportFilename = 'export',
-        enableExport = true,
         enableColChooser = false,
+        enableExport = true,
+        exportFilename = 'export',
         stateModel = null,
         contextMenuFn = () => this.defaultContextMenu()
     }) {
         this.store = store;
         this.columns = columns;
         this.emptyText = emptyText;
-        this.exportLocal = exportLocal;
-        this.exportType = exportType;
-        this.exportFilename = exportFilename;
         this.enableExport = enableExport;
+        this.exportFilename = exportFilename;
         this.contextMenuFn = contextMenuFn;
 
         if (enableColChooser) {
@@ -112,29 +103,31 @@ export class GridModel {
     }
 
     /**
-     * Exports the grid to a file
+     * Exports the grid using Hoist's server-side export.
+     *
+     * @param {Object} options
+     * @param {function|string} options.filename - Filename for exported file, or a closure to generate one.
+     * @param {string} options.type - Type of export. One of ['excel', 'excelTable', 'csv'].
      */
     export(options = {}) {
-        const filename = options.filename || this.exportFilename,
-            type = options.type || this.exportType;
-
-        if (type.startsWith('local')) {
-            this.localExport(filename, type);
-        } else {
-            ExportManager.export(this, filename, type);
-        }
+        const {type, filename = this.exportFilename} = options;
+        XH.exportManager.exportAsync(this, filename, type);
     }
 
     /**
      * Exports the grid using agGrid's client-side export
+     *
+     * @param {string} fileName - Filename for exported file.
+     * @param {string} type - Type of export. One of ['excel', 'csv'].
+     * @param {Object} params - passed to agGrids export functions.
      */
     localExport(fileName, type, params = {}) {
         if (!this.agApi) return;
         defaults(params, {fileName, processCellCallback: this.formatValuesForExport});
 
-        if (type === 'localExcel') {
+        if (type === 'excel') {
             this.agApi.exportDataAsExcel(params);
-        } else if (type === 'localCsv') {
+        } else if (type === 'csv') {
             this.agApi.exportDataAsCsv(params);
         }
     }

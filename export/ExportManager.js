@@ -34,7 +34,7 @@ export class ExportManager {
      * @param {function|string} filename - Filename for exported file, or a closure to generate one.
      * @param {string} type - Type of export. One of ['excel', 'excelTable', 'csv'].
      */
-    static export(gridModel, filename, type) {
+    async exportAsync(gridModel, filename, type) {
         throwIf(!gridModel, 'GridModel required for export');
         throwIf(!isString(filename) && !isFunction(filename), 'Export filename must be either a string or a closure');
         throwIf(!['excel', 'excelTable', 'csv'].includes(type), `Invalid export type "${type}". Must be either "excel", "excelTable" or "csv"`);
@@ -64,7 +64,7 @@ export class ExportManager {
             XH.toast({message: 'Export started', intent: 'primary', icon: Icon.download()});
         }
 
-        XH.fetch({
+        const response = await XH.fetch({
             url: 'hoistImpl/export',
             params: {
                 filename: filename,
@@ -72,18 +72,17 @@ export class ExportManager {
                 rows: JSON.stringify(rows),
                 meta: JSON.stringify(meta)
             }
-        }).then(response => {
-            return response.status === 204 ? null : response.blob();
-        }).then(blob => {
-            download(blob, filename);
-            XH.toast({message: 'Export complete', intent: 'success'});
         });
+
+        const blob = response.status === 204 ? null : await response.blob();
+        download(blob, filename);
+        XH.toast({message: 'Export complete', intent: 'success'});
     }
 
     //-----------------------
     // Implementation
     //-----------------------
-    static getColumnMetadata(columns) {
+    getColumnMetadata(columns) {
         return columns.map(column => {
             const {field, exportFormat} = column;
 
@@ -95,7 +94,7 @@ export class ExportManager {
         });
     }
 
-    static getHeaderRow(columns, type) {
+    getHeaderRow(columns, type) {
         const headers = columns.map(it => it.exportName);
         if (type === 'excelTable' && uniq(headers).length !== headers.length) {
             console.warn('Excel tables require unique headers on each column. Consider using the "exportName" property to ensure unique headers.');
@@ -103,14 +102,14 @@ export class ExportManager {
         return {data: headers, depth: 0};
     }
 
-    static getRecordRow(record, columns) {
+    getRecordRow(record, columns) {
         const data = columns.map(column => {
             return this.getCellData(record, column);
         });
         return {data, depth: 0};
     }
 
-    static getCellData(record, column) {
+    getCellData(record, column) {
         const {field, exportValue, exportFormat} = column;
 
         // Modify value using exportValue

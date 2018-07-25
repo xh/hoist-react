@@ -25,11 +25,12 @@ export class ExportButton extends Component {
         icon: PT.element,
         title: PT.string,
         onClick: PT.func,
-        model: PT.object
+        model: PT.object,
+        exportType: PT.string
     };
 
     render() {
-        const {icon, onClick, model, ...rest} = this.props;
+        const {icon, onClick, ...rest} = this.props;
         return button({
             icon: icon || Icon.download(),
             title: this.title || 'Export',
@@ -43,7 +44,8 @@ export class ExportButton extends Component {
     // Implementation
     //---------------------------
     onExportClick = () => {
-        this.model.export();
+        const type = this.props.exportType;
+        this.model.export({type});
     }
 
 }

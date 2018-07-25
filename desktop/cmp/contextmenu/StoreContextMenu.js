@@ -52,22 +52,20 @@ export class StoreContextMenu {
                 return new StoreContextMenuItem({
                     text: 'Export to Excel',
                     icon: Icon.download(),
-                    hidden: !gridModel,
+                    hidden: !gridModel || !gridModel.enableExport,
                     disabled: !gridModel.store.count,
                     action: () => {
-                        const type = gridModel.exportLocal ? 'localExcel' : 'excelTable';
-                        gridModel.export({type});
+                        gridModel.export({type: 'excelTable'});
                     }
                 });
             case 'exportCsv':
                 return new StoreContextMenuItem({
                     text: 'Export to CSV',
                     icon: Icon.download(),
-                    hidden: !gridModel,
+                    hidden: !gridModel || !gridModel.enableExport,
                     disabled: !gridModel.store.count,
                     action: () => {
-                        const type = gridModel.exportLocal ? 'localCsv' : 'csv';
-                        gridModel.export({type});
+                        gridModel.export({type: 'csv'});
                     }
                 });
             default:
