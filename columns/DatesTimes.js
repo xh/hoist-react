@@ -5,8 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {fileColFactory} from './Utils.js';
+import {ExportFormat} from './ExportFormat';
 import {dateRenderer, dateTimeRenderer, timeRenderer, compactDateRenderer} from '../format';
-import {ExportFormat} from '@xh/hoist/export';
 
 const colFactory = fileColFactory({
     cellStyle: {align: 'right'}

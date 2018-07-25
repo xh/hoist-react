@@ -12,6 +12,7 @@ import {defaults, castArray, find, isEqual, isString, isPlainObject, orderBy} fr
 
 import {ColChooserModel} from './ColChooserModel';
 import {GridStateModel} from './GridStateModel';
+import {ExportManager} from './ExportManager';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -63,7 +64,7 @@ export class GridModel {
      * @param {string} [groupBy] - Column ID by which to group.
      * @param {boolean} [enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
-     * @param {boolean} [enableExport] - false to disable export context menu items.
+     * @param {boolean} [enableExport] - true to install default export context menu items.
      * @param {function|string} [exportFilename] - Filename for exported file, or a closure to generate one.
      * @param {(StoreSelectionModel|Object|String)} [selModel] - selection model to use,
      *      config to create one, or 'mode' property for a selection model.
@@ -79,7 +80,7 @@ export class GridModel {
         sortBy = [],
         groupBy = null,
         enableColChooser = false,
-        enableExport = true,
+        enableExport = false,
         exportFilename = 'export',
         stateModel = null,
         contextMenuFn = () => this.defaultContextMenu()
@@ -110,8 +111,10 @@ export class GridModel {
      * @param {string} options.type - Type of export. One of ['excel', 'excelTable', 'csv'].
      */
     export(options = {}) {
-        const {type, filename = this.exportFilename} = options;
-        XH.exportManager.exportAsync(this, filename, type);
+        const {type, filename = this.exportFilename} = options,
+            exportManager = new ExportManager();
+
+        exportManager.exportAsync(this, filename, type);
     }
 
     /**
@@ -119,7 +122,7 @@ export class GridModel {
      *
      * @param {string} fileName - Filename for exported file.
      * @param {string} type - Type of export. One of ['excel', 'csv'].
-     * @param {Object} params - passed to agGrids export functions.
+     * @param {Object} params - passed to agGrid's export functions.
      */
     localExport(fileName, type, params = {}) {
         if (!this.agApi) return;

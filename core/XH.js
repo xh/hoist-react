@@ -28,7 +28,6 @@ import {
 import {AppContainerModel} from './appcontainer/AppContainerModel';
 import {RouterModel} from './RouterModel';
 import {ExceptionHandler} from './ExceptionHandler';
-import {ExportManager} from '../export';
 
 import {initServicesAsync} from './HoistService';
 
@@ -93,7 +92,6 @@ class XHClass {
     // Other State
     //-----------------------------
     exceptionHandler = new ExceptionHandler();
-    exportManager = new ExportManager();
 
     /** State of app -- see AppState for valid values. */
     @observable appState = AppState.PRE_AUTH;

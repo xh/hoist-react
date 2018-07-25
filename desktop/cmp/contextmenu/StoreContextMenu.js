@@ -53,7 +53,7 @@ export class StoreContextMenu {
                     text: 'Export to Excel',
                     icon: Icon.download(),
                     hidden: !gridModel || !gridModel.enableExport,
-                    disabled: !gridModel.store.count,
+                    disabled: !gridModel || !gridModel.store.count,
                     action: () => {
                         gridModel.export({type: 'excelTable'});
                     }
@@ -63,7 +63,7 @@ export class StoreContextMenu {
                     text: 'Export to CSV',
                     icon: Icon.download(),
                     hidden: !gridModel || !gridModel.enableExport,
-                    disabled: !gridModel.store.count,
+                    disabled: !gridModel || !gridModel.store.count,
                     action: () => {
                         gridModel.export({type: 'csv'});
                     }

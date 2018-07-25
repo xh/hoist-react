@@ -35,6 +35,7 @@ export class ConfigDifferModel  {
         this.configGrid = configGrid;
 
         this.gridModel = new GridModel({
+            enableExport: true,
             store: new LocalStore({
                 fields: [
                     'name', 'status', 'localValue', 'remoteValue'

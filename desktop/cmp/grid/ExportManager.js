@@ -9,10 +9,9 @@ import {XH} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {throwIf} from '@xh/hoist/utils/JsUtils';
+import {ExportFormat} from '@xh/hoist/columns';
 import {orderBy, uniq, isString, isFunction} from 'lodash';
 import download from 'downloadjs';
-
-import {ExportFormat} from './ExportFormat';
 
 /**
  * Exports a grid to either Excel or CSV, using Hoist's server-side export.
@@ -39,7 +38,7 @@ export class ExportManager {
         throwIf(!isString(filename) && !isFunction(filename), 'Export filename must be either a string or a closure');
         throwIf(!['excel', 'excelTable', 'csv'].includes(type), `Invalid export type "${type}". Must be either "excel", "excelTable" or "csv"`);
 
-        if (isFunction(filename)) filename = filename();
+        if (isFunction(filename)) filename = filename(gridModel);
 
         const {store, sortBy, columns} = gridModel,
             colIds = sortBy.map(it => it.colId),

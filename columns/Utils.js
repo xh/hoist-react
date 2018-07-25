@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {ExportFormat} from '@xh/hoist/export';
+import {ExportFormat} from './ExportFormat';
 import {castArray, defaults, isNumber, omit, startCase} from 'lodash';
 
 // Configs specific to / added by Hoist as extensions to ag-Grid's column API.
