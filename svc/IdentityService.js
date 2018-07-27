@@ -10,8 +10,8 @@ import {XH, HoistService} from '@xh/hoist/core';
  * Provides basic information related to the authenticated user, including application roles.
  * This service loads its data from Hoist Core's server-side identity service.
  *
- * Also provides support for user impersonation, which allows application administrators to
- * act-as end-users for troubleshooting, support, and testing purposes.
+ * Also provides support for recognizing impersonation and distinguishing between the apparent and
+ * actual underlying user.
  */
 @HoistService()
 export class IdentityService {
@@ -78,7 +78,6 @@ export class IdentityService {
             .catchDefault();
     }
 
-
     //------------------------
     // Impersonation
     //------------------------
@@ -86,41 +85,6 @@ export class IdentityService {
     get isImpersonating() {
         return this._authUser !== this._apparentUser;
     }
-
-    /**
-     * Begin an impersonation session to act as another user. The UI server will allow this only
-     * if the actual authenticated user has the HOIST_ADMIN role, and is attempting to impersonate
-     * a known user who has permission to and has accessed the app themselves. If successful,
-     * the application will reload and the admin will now be acting as the other user.
-     *
-     * @param {string} username - the end-user to impersonate
-     */
-    async impersonateAsync(username) {
-        return XH.fetchJson({
-            url: 'hoistImpl/impersonate',
-            params: {
-                username: username
-            }
-        }).then(() => {
-            XH.reloadApp();
-        }).catchDefault({
-            message: 'Failed to impersonate'
-        });
-    }
-
-    /**
-     * Exit any active impersonation, reloading the app to resume normal day-to-day life as yourself.
-     */
-    async endImpersonateAsync() {
-        return XH.fetchJson({
-            url: 'hoistImpl/endImpersonate'
-        }).then(() => {
-            XH.reloadApp();
-        }).catchDefault({
-            message: 'Failed to end impersonation'
-        });
-    }
-
 
     //------------------------
     // Implementation

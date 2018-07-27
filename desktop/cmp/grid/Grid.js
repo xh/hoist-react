@@ -6,13 +6,12 @@
  */
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {find, isString, isNumber, isBoolean, isEqual, xor, merge} from 'lodash';
-import {XH} from '@xh/hoist/core';
-import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
-import {fragment, box} from '@xh/hoist/cmp/layout';
+import {find, isBoolean, isEqual, isNumber, isString, merge, xor} from 'lodash';
+import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
+import {box, fragment} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import './ag-grid';
-import {navigateSelection, agGridReact} from './ag-grid';
+import {agGridReact, navigateSelection} from './ag-grid';
 import {colChooser} from './ColChooser';
 
 /**
@@ -162,10 +161,10 @@ class Grid extends Component {
             selectedIds = selModel.ids;
 
         // Adjust selection to target record -- and sync to grid immediately.
-        if (rec && !(recId in selectedIds)) {
+        if (rec && !(selectedIds.includes(recId))) {
             try {
                 this._scrollOnSelect = false;
-                selModel.select(rec, false);
+                selModel.select(rec);
             } finally {
                 this._scrollOnSelect = true;
             }

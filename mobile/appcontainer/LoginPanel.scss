@@ -1,0 +1,35 @@
+.xh-login {
+  margin: 40px;
+
+  &__fields {
+    margin-bottom: 40px;
+    border: var(--xh-border-solid);
+    border-radius: var(--xh-border-radius-px);
+
+    .xh-field {
+      margin: 0;
+      padding: 4px 8px;
+
+      &:not(:last-child) {
+        border-bottom: var(--xh-border-solid);
+      }
+    }
+  }
+
+  &__warning {
+    margin-bottom: 20px;
+    background-color: var(--xh-red-muted);
+    padding: var(--xh-pad-px);
+    border-radius: var(--xh-border-radius-px);
+    color: white;
+    text-align: center;
+  }
+
+  &__message {
+    margin-bottom: 20px;
+    background-color: var(--xh-bg-alt);
+    padding: var(--xh-pad-px);
+    border-radius: var(--xh-border-radius-px);
+  }
+
+}

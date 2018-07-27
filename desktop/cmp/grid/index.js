@@ -9,3 +9,4 @@ export * from './Grid';
 export * from './GridModel';
 export * from './GridStateModel';
 export * from './ColChooserButton';
+export * from './ExportManager';

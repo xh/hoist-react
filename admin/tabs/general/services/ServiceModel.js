@@ -5,7 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {ToastManager} from '@xh/hoist/toast';
 import {UrlStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {baseCol} from '@xh/hoist/columns/Core';
@@ -14,6 +13,7 @@ import {baseCol} from '@xh/hoist/columns/Core';
 export class ServiceModel {
 
     gridModel = new GridModel({
+        enableExport: true,
         store: new UrlStore({
             url: 'serviceAdmin/listServices',
             processRawData: this.processRawData,
@@ -46,7 +46,7 @@ export class ServiceModel {
 
     onClearCacheSuccess = () => {
         this.loadAsync();
-        ToastManager.show({message: 'Caches Cleared'});
+        XH.toast({message: 'Caches Cleared'});
     }
 
     async loadAsync() {

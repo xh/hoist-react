@@ -31,6 +31,8 @@ export class ActivityGridModel {
     gridModel = new GridModel({
         stateModel: 'xhActivityGrid',
         enableColChooser: true,
+        enableExport: true,
+        exportFilename: () => `Activity ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`,
         store: new LocalStore({
             fields: [
                 'severity', 'dateCreated', 'username', 'msg', 'category',
@@ -85,11 +87,6 @@ export class ActivityGridModel {
         this.setStartDate(newStart.toDate());
         this.setEndDate(newEnd.toDate());
         this.loadAsync();
-    }
-
-    export() {
-        const fileName = `Activity: ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`;
-        this.gridModel.exportDataAsExcel({fileName});
     }
 
     @action

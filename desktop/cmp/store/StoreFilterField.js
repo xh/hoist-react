@@ -7,10 +7,10 @@
 
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {escapeRegExp} from 'lodash';
+import {debounce, escapeRegExp} from 'lodash';
 import {inputGroup} from '@xh/hoist/kit/blueprint';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {setter, observable} from '@xh/hoist/mobx';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {observable, setter} from '@xh/hoist/mobx';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {BaseStore} from '@xh/hoist/data';
 
@@ -25,10 +25,22 @@ export class StoreFilterField extends Component {
         /** Store to filter */
         store: PT.instanceOf(BaseStore).isRequired,
         /** Names of fields in store's records to filter by */
-        fields: PT.arrayOf(PT.string).isRequired
+        fields: PT.arrayOf(PT.string).isRequired,
+        /**
+         * Delay (in ms) used to buffer filtering of the store after the value changes from user
+         * input (default is 200ms). Set to 0 to filter immediately after user input.
+         */
+        filterBuffer: PT.number
     };
 
     @setter @observable value = '';
+
+    constructor(props) {
+        super(props);
+
+        const {filterBuffer = 200} = this.props;
+        this._debouncedFilter = debounce(this.runFilter, filterBuffer);
+    }
 
     render() {
         return inputGroup({
@@ -44,11 +56,14 @@ export class StoreFilterField extends Component {
 
     onValueChange = (e) => {
         this.setValue(e.target.value);
-        this.runFilter();
+        this._debouncedFilter();
     }
 
     onClearClick = () => {
         this.setValue('');
+
+        // Cancel pending filter and run it immediately
+        this._debouncedFilter.cancel();
         this.runFilter();
     }
 

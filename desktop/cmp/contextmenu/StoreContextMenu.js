@@ -22,6 +22,8 @@ export class StoreContextMenu {
      *      If a String, value can be '-' for a separator, a hoist token, or a token for a native AG Grid menu item.
      *      Hoist tokens are:
      *          'colChooser' - Provides a column chooser for a grid, requires a gridModel
+     *          'exportExcel' - Export the grid to excel, requires a gridModel
+     *          'exportCsv' - Export the grid to csv, requires a gridModel
      * @param {Object} [gridModel] - an optional gridModel to bind to this contextMenu, used to control implementation of menu items
      */
     constructor({items, gridModel}) {
@@ -34,15 +36,36 @@ export class StoreContextMenu {
     }
 
     parseToken(token) {
+        const gridModel = this.gridModel;
         switch (token) {
             case 'colChooser':
-                var {colChooserModel} = this.gridModel;
+                var {colChooserModel} = gridModel;
                 return new StoreContextMenuItem({
                     text: 'Columns...',
                     icon: Icon.grid(),
                     hidden: !colChooserModel,
                     action: () => {
                         colChooserModel.open();
+                    }
+                });
+            case 'exportExcel':
+                return new StoreContextMenuItem({
+                    text: 'Export to Excel',
+                    icon: Icon.download(),
+                    hidden: !gridModel || !gridModel.enableExport,
+                    disabled: !gridModel || !gridModel.store.count,
+                    action: () => {
+                        gridModel.export({type: 'excelTable'});
+                    }
+                });
+            case 'exportCsv':
+                return new StoreContextMenuItem({
+                    text: 'Export to CSV',
+                    icon: Icon.download(),
+                    hidden: !gridModel || !gridModel.enableExport,
+                    disabled: !gridModel || !gridModel.store.count,
+                    action: () => {
+                        gridModel.export({type: 'csv'});
                     }
                 });
             default:

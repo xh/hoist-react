@@ -24,7 +24,7 @@ export class IdleService {
 
     async initAsync() {
         const timeout = XH.getConf('xhIdleTimeoutMins') * MINUTES,
-            appDisabled = XH.app.idleDetectionDisabled,
+            appDisabled = XH.app.isMobile || XH.app.idleDetectionDisabled,
             configDisabled = timeout <= 0,
             userDisabled = XH.getPref('xhIdleDetectionDisabled');
 

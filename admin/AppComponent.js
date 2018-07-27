@@ -7,7 +7,6 @@
 
 import {Component} from 'react';
 import {HoistComponent, XH} from '@xh/hoist/core';
-import {lockoutPanel} from '@xh/hoist/desktop/impl';
 import {tabContainer, tabSwitcher} from '@xh/hoist/desktop/cmp/tab';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -21,10 +20,6 @@ import './App.scss';
 @ContextMenuSupport
 export class AppComponent extends Component {
     render() {
-        if (!XH.getUser().isHoistAdmin) {
-            return lockoutPanel({message: 'Access to this area requires administrator permissions.'});
-        }
-
         return panel({
             tbar: this.renderAppBar(),
             cls: 'xh-admin-app-frame',
