@@ -102,9 +102,8 @@ export class ExportManager {
     }
 
     getRecordRow(record, columns) {
-        const data = columns.map(column => {
-            return this.getCellData(record, column);
-        });
+        const exportableColumns = columns.filter(it => it.field !== null),
+            data = exportableColumns.map(it => this.getCellData(record, it));
         return {data, depth: 0};
     }
 
