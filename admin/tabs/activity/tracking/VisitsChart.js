@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {HoistComponent, elemFactory, CollapseSupport} from '@xh/hoist/core';
 import {dayField, textField} from '@xh/hoist/desktop/cmp/form';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -14,7 +14,8 @@ import {refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {chart} from '@xh/hoist/desktop/cmp/chart';
 import {Icon} from '@xh/hoist/icon';
 
-@HoistComponent({collapseSupport: true})
+@HoistComponent()
+@CollapseSupport
 export class VisitsChart extends Component {
     
     render() {
@@ -22,7 +23,8 @@ export class VisitsChart extends Component {
             icon: Icon.users(),
             title: 'Unique Daily Visitors',
             item: chart({model: this.model.chartModel}),
-            collapsed: this.collapsed,
+            collapseModel
+            onCollapsedChange
             bbar: this.renderToolbar()
         });
     }

@@ -20,7 +20,7 @@ import {div} from './Tags';
 @LayoutSupport
 export class Box extends Component {
     render() {
-        let {isCollapsed, children, layoutConfig, ...props} = this.props;
+        let {collapsed, children, layoutConfig, ...props} = this.props;
         props = merge(
             {style: {display: 'flex', overflow: 'hidden', position: 'relative'}},
             {style: layoutConfig},

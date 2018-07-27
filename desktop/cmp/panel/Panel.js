@@ -6,10 +6,9 @@
  */
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
+import {observable, action} from 'mobx';
 import {castArray, omitBy} from 'lodash';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
-import {vbox} from '@xh/hoist/cmp/layout';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport, CollapseSupport} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 
@@ -20,13 +19,16 @@ import {panelHeader} from './impl/PanelHeader';
  * w/standardized styling, title, and Icon as well as support for top and bottom toolbars.
  *
  * This component also includes support for collapsing its contents.  When collapsed, it will
- * render its header element only.
+ * render portions of it header element only.
  */
-@HoistComponent({collapseSupport:true})
+@HoistComponent()
 @LayoutSupport
+@CollapseSupport
 export class Panel extends Component {
 
+    @observable _collapsed = false;
     _wasDisplayed = false;
+
 
     static propTypes = {
         /** A title text added to the panel's header. */
@@ -41,11 +43,14 @@ export class Panel extends Component {
         bbar: PT.element,
         /** Whether this panel should be rendered with a mask, use to disable interaction with panel. */
         masked: PT.bool,
-        /** Should the panel be rendered with its main content and toolbars hidden? */
-        collapsed: PT.oneOf(['top', 'bottom', 'left', 'right', false]),
+        /** Side to which Panel is collapsed, or false to indicate panel is not collapsed. @See CollapseSupport. */
+        collapsed: PT.oneOf(['top', 'bottom', 'left', 'right', true, false]),
         /** How should collapsed content be rendered?  Defaults to 'lazy'. */
         collapseRenderMode: PT.oneOf(['lazy', 'always', 'unmountOnHide']),
-
+        /** Enable Affordance to toggle collapse state */
+        collapseToggleOnDblClick: PT.bool,
+        /** Callback when collapse toggled. Will receive new value of collapsed, */
+        onCollapsedChange: PT.func
     };
 
     baseCls = 'xh-panel';
@@ -61,14 +66,17 @@ export class Panel extends Component {
             headerItems,
             masked,
             collapsed,
-            collapsedRenderMode,
+            collapsedRenderMode = 'always',
+            collapseToggleOnDblClick = true,
+            onCollapsedChange,
             children,
             ...rest
         } = this.props;
 
-
-        collapsed = (collapsed != undefined ? collapsed : null);
-        collapsedRenderMode = (collapsedRenderMode != undefined ? collapsedRenderMode : 'always');
+        if (collapsed != undefined) {
+            this.setCollapsed(collapsed);
+        }
+        const {_collapsed, _wasDisplayed} = this;
 
         // Block unwanted use of padding props, which will separate the panel's header
         // and bottom toolbar from its edges in a confusing way.
@@ -79,11 +87,10 @@ export class Panel extends Component {
             layoutConfig.flex = 'auto';
         }
 
-        this._wasDisplayed = this._wasDisplayed || !collapsed;
         let coreContents = null;
-        if (!collapsed || collapsedRenderMode == 'always' || (collapsedRenderMode == 'lazy' && this._wasDisplayed)) {
+        if (!_collapsed || collapsedRenderMode == 'always' || (collapsedRenderMode == 'lazy' && _wasDisplayed)) {
             coreContents = vframe({
-                style: {display: collapsed ? 'none' : 'flex'},
+                style: {display: _collapsed ? 'none' : 'flex'},
                 items: [
                     tbar || null,
                     ...(castArray(children)),
@@ -92,16 +99,31 @@ export class Panel extends Component {
             });
         }
 
+        this._wasDisplayed = _wasDisplayed || !_collapsed;
+
         return vbox({
             cls: className ? `${this.baseCls} ${className}` : this.baseCls,
             layoutConfig,
             ...rest,
             items: [
-                panelHeader({title, icon, collapsed, headerItems}),
+                panelHeader({panel: this}),
                 coreContents,
                 mask({isDisplayed: masked})
             ]
         });
+    }
+
+
+    //----------------------------
+    // Implementation
+    //----------------------------
+    @action
+    setCollapsed(value) {
+        this._collapsed = value;
+        const {onCollapsedChange} = this.props;
+        if (onCollapsedChange) {
+            onCollapsedChange(value);
+        }
     }
 }
 export const panel = elemFactory(Panel);

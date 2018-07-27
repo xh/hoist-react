@@ -21,8 +21,8 @@ import {collapser} from './impl/Collapser';
  * It will optionally allow the user to manage the fixed size of its child via drag-drop
  * or the 'collapsed' state via a button-based affordance.
  *
- * If collapsing is enabled via 'isCollapsible' property, and the component's contents do *not*
- * support collapsing, an error will be thrown. @see HoistComponent.supportsCollapse.
+ * If collapsing is enabled via 'isCollapsible' property, and the component's contents do not
+ * have the CollapseSupport mixin, an error will be thrown.
  *
  * Applications should provide optional values for `isOpen`, `contentSize`, and `prefName`.
  * Applications may alternatively provide this object with an instance of ResizableModel, if they
@@ -100,7 +100,7 @@ export class Resizable extends Component {
             dim = isVertical ? 'height' : 'width';
 
         let child = Children.only(this.props.children);
-        if (child.type.collapseSupport) {
+        if (child.type.hasCollapseSupport) {
             child = React.cloneElement(child, {collapsed: false});
         }
 
@@ -116,16 +116,13 @@ export class Resizable extends Component {
         let child = Children.only(props.children);
 
         throwIf(
-            !child.type.collapseSupport,
+            !child.type.hasCollapseSupport,
             'Cannot place non-collapsible child component in Resizable with isCollapsible=true'
         )
-        
+
         child = React.cloneElement(child, {collapsed: this.side});
 
-        return box({
-            item: child,
-            onDoubleClick: this.onCollapseToggle
-        });
+        return box(child);
     }
 
     getCollapser() {

@@ -7,7 +7,7 @@
 import ReactDom from 'react-dom';
 import {XH} from '@xh/hoist/core';
 import {observer} from '@xh/hoist/mobx';
-import {defaultMethods, chainMethods, overrideMethods} from '@xh/hoist/utils/ClassUtils';
+import {defaultMethods, chainMethods} from '@xh/hoist/utils/ClassUtils';
 
 import {ReactiveSupport} from './mixins/ReactiveSupport';
 import {elemFactory} from './elem';
@@ -23,19 +23,13 @@ import {elemFactory} from './elem';
  *
  * @param {Object} [config] - configuration for the decorator.
  * @param {boolean} [config.isReactive] - apply the ReactiveSupport and mobX Observer mixins to the component Class.
- * @param boolean [config.collapseSupport] - Does component support collapsing?  If true, the component
- *      should respond to a 'collapsed' property setting on it, and render itself appropriately.  See
- *      Panel for an example of this behavior.  If true, this component should support a "collapsed"
- *      property.
  */
 export function HoistComponent({
-    isReactive = true,
-    collapseSupport = false
+    isReactive = true
 } = {}) {
 
     return (C) => {
         C.isHoistComponent = true;
-        C.collapseSupport = collapseSupport;
 
         if (isReactive) {
             C = ReactiveSupport(C);
@@ -48,19 +42,6 @@ export function HoistComponent({
              */
             model: {
                 get() {return this.localModel ? this.localModel : this.props.model}
-            },
-
-            /**
-             * Should this component be displayed as collapsed on a given edge?
-             *
-             * Valid values include 'top', 'left', 'right', 'bottom', true or
-             * false.  A value of true is considered equivalent to 'top'.
-             *
-             * This component should indicate support for this property by setting 'collapsibleSupport'
-             * to true when defining this component.
-             */
-            collapsed: {
-                get() {return this.props.collapsed}
             },
 
 
