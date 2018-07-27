@@ -82,19 +82,21 @@ export class ExportManager {
     // Implementation
     //-----------------------
     getColumnMetadata(columns) {
-        return columns.map(column => {
-            const {field, exportFormat} = column;
+        return this.getExportableColumns(columns)
+            .map(column => {
+                const {field, exportFormat} = column;
 
-            let type = null;
-            if (exportFormat === ExportFormat.DATE_FMT) type = 'date';
-            if (exportFormat === ExportFormat.DATETIME_FMT) type = 'datetime';
+                let type = null;
+                if (exportFormat === ExportFormat.DATE_FMT) type = 'date';
+                if (exportFormat === ExportFormat.DATETIME_FMT) type = 'datetime';
 
-            return {field, type, format: exportFormat};
-        });
+                return {field, type, format: exportFormat};
+            });
     }
 
     getHeaderRow(columns, type) {
-        const headers = columns.map(it => it.exportName);
+        const headers = this.getExportableColumns(columns)
+            .map(it => it.exportName);
         if (type === 'excelTable' && uniq(headers).length !== headers.length) {
             console.warn('Excel tables require unique headers on each column. Consider using the "exportName" property to ensure unique headers.');
         }
@@ -102,10 +104,14 @@ export class ExportManager {
     }
 
     getRecordRow(record, columns) {
-        const data = columns.map(column => {
-            return this.getCellData(record, column);
-        });
+        const data = this.getExportableColumns(columns)
+            .map(it => this.getCellData(record, it));
         return {data, depth: 0};
+    }
+
+    getExportableColumns(columns) {
+        // if field === null, the column is likely a flex column used to fill space
+        return columns.filter(it => it.field !== null);
     }
 
     getCellData(record, column) {

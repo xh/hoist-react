@@ -20,10 +20,15 @@ export class StoreContextMenu {
     /**
      * @param {Object[]} items - collection of StoreContextMenuItems, configs to create them, or Strings.
      *      If a String, value can be '-' for a separator, a hoist token, or a token for a native AG Grid menu item.
+     *
      *      Hoist tokens are:
      *          'colChooser' - Provides a column chooser for a grid, requires a gridModel
      *          'exportExcel' - Export the grid to excel, requires a gridModel
      *          'exportCsv' - Export the grid to csv, requires a gridModel
+     *
+     *      Note: to get an AG Grid native 'export' menu, use token 'exportLocal'. This is to avoid conflicting with the Hoist
+     *      server-side export tokens.
+     *
      * @param {Object} [gridModel] - an optional gridModel to bind to this contextMenu, used to control implementation of menu items
      */
     constructor({items, gridModel}) {
@@ -48,6 +53,7 @@ export class StoreContextMenu {
                         colChooserModel.open();
                     }
                 });
+            case 'export':
             case 'exportExcel':
                 return new StoreContextMenuItem({
                     text: 'Export to Excel',
@@ -68,6 +74,8 @@ export class StoreContextMenu {
                         gridModel.export({type: 'csv'});
                     }
                 });
+            case 'exportLocal':
+                return 'export';
             default:
                 return token;
         }
