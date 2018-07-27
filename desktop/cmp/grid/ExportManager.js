@@ -82,15 +82,16 @@ export class ExportManager {
     // Implementation
     //-----------------------
     getColumnMetadata(columns) {
-        return columns.map(column => {
-            const {field, exportFormat} = column;
+        return this.getExportableColumns(columns)
+            .map(column => {
+                const {field, exportFormat} = column;
 
-            let type = null;
-            if (exportFormat === ExportFormat.DATE_FMT) type = 'date';
-            if (exportFormat === ExportFormat.DATETIME_FMT) type = 'datetime';
+                let type = null;
+                if (exportFormat === ExportFormat.DATE_FMT) type = 'date';
+                if (exportFormat === ExportFormat.DATETIME_FMT) type = 'datetime';
 
-            return {field, type, format: exportFormat};
-        });
+                return {field, type, format: exportFormat};
+            });
     }
 
     getHeaderRow(columns, type) {
