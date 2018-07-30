@@ -21,7 +21,7 @@ import download from 'downloadjs';
  *      {(string|function)} exportValue - modifies the value used in export:
  *              If string, can be used to point to a different field on the record.
  *              If function, can be used to transform the value.
- *      {string} - Excel export format pattern.
+ *      {string} exportFormat - Excel export format pattern.
  *              @see ExportFormat for available constants.
  */
 export class ExportManager {
