@@ -38,6 +38,9 @@ export class DayField extends HoistField {
             'auto'
         ]),
 
+        minDate: PT.instanceOf(Date),
+        maxDate: PT.instanceOf(Date),
+
         /** Props passed to ReactDayPicker component. @see http://react-day-picker.js.org/ */
         dayPickerProps: PT.object
     };
@@ -45,7 +48,7 @@ export class DayField extends HoistField {
     delegateProps = ['className', 'disabled']
 
     render() {
-        let {width, popoverPosition, style, dayPickerProps} = this.props;
+        let {minDate, maxDate, width, popoverPosition, style, dayPickerProps} = this.props;
 
         dayPickerProps = assign({fixedWeeks: true}, dayPickerProps);
 
@@ -66,6 +69,8 @@ export class DayField extends HoistField {
                 position: popoverPosition || 'auto',
                 popoverWillClose: this.onPopoverWillClose
             },
+            minDate,
+            maxDate,
             dayPickerProps,
             ...this.getDelegateProps()
         });
