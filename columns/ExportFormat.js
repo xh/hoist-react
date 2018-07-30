@@ -6,8 +6,8 @@
  */
 
 /**
- * Cell formats used in excel exports.
- * Can be applied to columns via the 'exportFormat' prop.
+ * Data-type specific cell formats used in server-side Excel exports.
+ * Specify on a column definition via the `exportFormat` config.
  */
 export const ExportFormat = {
     DEFAULT:            'General',

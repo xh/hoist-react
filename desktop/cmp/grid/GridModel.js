@@ -107,8 +107,8 @@ export class GridModel {
      * Exports the grid using Hoist's server-side export.
      *
      * @param {Object} options
-     * @param {function|string} options.filename - Filename for exported file, or a closure to generate one.
-     * @param {string} options.type - Type of export. One of ['excel', 'excelTable', 'csv'].
+     * @param {(string|function)} options.filename - name for exported file or closure to generate.
+     * @param {string} options.type - type of export - one of ['excel', 'excelTable', 'csv'].
      */
     export(options = {}) {
         const {type, filename = this.exportFilename} = options,
@@ -120,13 +120,13 @@ export class GridModel {
     /**
      * Exports the grid using agGrid's client-side export
      *
-     * @param {string} fileName - Filename for exported file.
-     * @param {string} type - Type of export. One of ['excel', 'csv'].
+     * @param {string} filename - name for exported file.
+     * @param {string} type - type of export - one of ['excel', 'csv'].
      * @param {Object} params - passed to agGrid's export functions.
      */
-    localExport(fileName, type, params = {}) {
+    localExport(filename, type, params = {}) {
         if (!this.agApi) return;
-        defaults(params, {fileName, processCellCallback: this.formatValuesForExport});
+        defaults(params, {fileName: filename, processCellCallback: this.formatValuesForExport});
 
         if (type === 'excel') {
             this.agApi.exportDataAsExcel(params);
