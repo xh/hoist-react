@@ -81,6 +81,14 @@
   }
 }
 
+.ag-overlay .ag-overlay-loading-wrapper {
+  background-color: var(--xh-mask-bg);
+
+  .ag-overlay-loading-center {
+    display: none;
+  }
+}
+
 .xh-column-header-align-right .ag-header-cell-label {
   width: auto;
   float: none;
