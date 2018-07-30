@@ -111,8 +111,7 @@ export class ExportManager {
     }
 
     getExportableColumns(columns) {
-        // if field === null, the column is likely a flex column used to fill space
-        return columns.filter(it => it.field !== null);
+        return columns.filter(it => !it.excludeFromExport);
     }
 
     getCellData(record, column) {
