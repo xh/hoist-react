@@ -6,9 +6,8 @@
  */
 import {elemFactory} from '@xh/hoist/core';
 
-import fontawesome from '@fortawesome/fontawesome-pro';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {library} from '@fortawesome/fontawesome-svg-core';
+import {library, findIconDefinition, icon} from '@fortawesome/fontawesome-svg-core';
 
 import {
     faAddressCard,
@@ -430,12 +429,12 @@ export const Icon = {
     xCircle(p)       {return fa(p, 'times-circle')}
 };
 
-export const convertIconToSvg = function(icon, opts) {
-    const iconDef = fontawesome.findIconDefinition({
-        prefix: icon.props.icon[0],
-        iconName: icon.props.icon[1]
+export const convertIconToSvg = function(iconElem, opts) {
+    const iconDef = findIconDefinition({
+        prefix: iconElem.props.icon[0],
+        iconName: iconElem.props.icon[1]
     });
-    return fontawesome.icon(iconDef, opts).html[0];
+    return icon(iconDef, opts).html[0];
 };
 
 //-----------------------------
@@ -446,5 +445,3 @@ const fa = function(props, name) {
     const prefix = (props && props.prefix) ? props.prefix : 'far';  // default to regular variant
     return faIcon({icon: [prefix, name], ...props});
 };
-
-
