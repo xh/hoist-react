@@ -48,7 +48,7 @@ export class StoreFilterField extends Component {
             value: this.value,
             onChange: this.onValueChange,
             rightElement: button({
-                cls: 'pt-minimal pt-icon-cross',
+                cls: 'bp3-minimal bp3-icon-cross',
                 onClick: this.onClearClick
             })
         });
