@@ -12,6 +12,7 @@ import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {observable, setter} from '@xh/hoist/mobx';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {Icon} from '@xh/hoist/icon';
 import {BaseStore} from '@xh/hoist/data';
 
 /**
@@ -48,7 +49,7 @@ export class StoreFilterField extends Component {
             value: this.value,
             onChange: this.onValueChange,
             rightElement: button({
-                icon: 'cross',
+                icon: Icon.x(),
                 minimal: true,
                 onClick: this.onClearClick
             })

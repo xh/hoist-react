@@ -10,6 +10,7 @@ import {escapeRegExp, isEqual} from 'lodash';
 import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {observable, setter} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/desktop/cmp/button';
 
 /**
@@ -36,7 +37,7 @@ class LeftRightChooserFilter extends Component {
             value: this.value,
             onChange: this.onValueChange,
             rightElement: button({
-                icon: 'cross',
+                icon: Icon.x(),
                 minimal: true,
                 onClick: this.clearFilter
             })

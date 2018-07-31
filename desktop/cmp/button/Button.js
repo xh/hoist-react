@@ -18,9 +18,7 @@ import {button as bpButton} from '@xh/hoist/kit/blueprint';
 export class Button extends Component {
 
     static propTypes = {
-        // Support (Blueprint icon def) string for icon due to edge-case required within fields.
-        // See https://github.com/exhi/hoist-react/issues/490.
-        icon: PT.oneOfType([PT.element, PT.string]),
+        icon: PT.element,
         text: PT.string,
         onClick: PT.func
     };
