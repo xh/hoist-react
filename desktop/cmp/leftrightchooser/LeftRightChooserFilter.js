@@ -36,7 +36,8 @@ class LeftRightChooserFilter extends Component {
             value: this.value,
             onChange: this.onValueChange,
             rightElement: button({
-                cls: 'pt-minimal pt-icon-cross',
+                icon: 'cross',
+                minimal: true,
                 onClick: this.clearFilter
             })
         });

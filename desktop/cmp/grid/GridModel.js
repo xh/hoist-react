@@ -12,6 +12,7 @@ import {defaults, castArray, find, isEqual, isString, isPlainObject, orderBy} fr
 
 import {ColChooserModel} from './ColChooserModel';
 import {GridStateModel} from './GridStateModel';
+import {ExportManager} from './ExportManager';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -26,6 +27,8 @@ export class GridModel {
     contextMenuFn = null;
     colChooserModel = null;
     stateModel = null;
+    exportFilename = null;
+    enableExport = null;
 
     @observable.ref agApi = null;
     @observable.ref columns = [];
@@ -39,7 +42,9 @@ export class GridModel {
                 'copy',
                 'copyWithHeaders',
                 '-',
-                'export',
+                'exportExcel',
+                'exportCsv',
+                '-',
                 'autoSizeAll',
                 '-',
                 'colChooser'
@@ -59,6 +64,8 @@ export class GridModel {
      * @param {string} [groupBy] - Column ID by which to group.
      * @param {boolean} [enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
+     * @param {boolean} [enableExport] - true to install default export context menu items.
+     * @param {function|string} [exportFilename] - Filename for exported file, or a closure to generate one.
      * @param {(StoreSelectionModel|Object|String)} [selModel] - selection model to use,
      *      config to create one, or 'mode' property for a selection model.
      * @param {(GridStateModel|Object|String)} [stateModel] - state model to use,
@@ -73,13 +80,17 @@ export class GridModel {
         sortBy = [],
         groupBy = null,
         enableColChooser = false,
+        enableExport = false,
+        exportFilename = 'export',
         stateModel = null,
         contextMenuFn = () => this.defaultContextMenu()
     }) {
         this.store = store;
         this.columns = columns;
-        this.contextMenuFn = contextMenuFn;
         this.emptyText = emptyText;
+        this.enableExport = enableExport;
+        this.exportFilename = exportFilename;
+        this.contextMenuFn = contextMenuFn;
 
         if (enableColChooser) {
             this.colChooserModel = new ColChooserModel(this);
@@ -92,12 +103,37 @@ export class GridModel {
         this.stateModel = this.initStateModel(stateModel);
     }
 
-    exportDataAsExcel(params) {
-        if (!this.agApi) return;
-        params.processCellCallback = this.formatValuesForExport;
-        this.agApi.exportDataAsExcel(params);
+    /**
+     * Exports the grid using Hoist's server-side export.
+     *
+     * @param {Object} options
+     * @param {(string|function)} options.filename - name for exported file or closure to generate.
+     * @param {string} options.type - type of export - one of ['excel', 'excelTable', 'csv'].
+     */
+    export(options = {}) {
+        const {type, filename = this.exportFilename} = options,
+            exportManager = new ExportManager();
+
+        exportManager.exportAsync(this, filename, type);
     }
 
+    /**
+     * Exports the grid using agGrid's client-side export
+     *
+     * @param {string} filename - name for exported file.
+     * @param {string} type - type of export - one of ['excel', 'csv'].
+     * @param {Object} params - passed to agGrid's export functions.
+     */
+    localExport(filename, type, params = {}) {
+        if (!this.agApi) return;
+        defaults(params, {fileName: filename, processCellCallback: this.formatValuesForExport});
+
+        if (type === 'excel') {
+            this.agApi.exportDataAsExcel(params);
+        } else if (type === 'csv') {
+            this.agApi.exportDataAsCsv(params);
+        }
+    }
 
     /**
      * Select the first row in the grid.

@@ -32,7 +32,7 @@ export class UpdateBar extends Component {
                 button({
                     icon: Icon.refresh(),
                     intent: 'primary',
-                    cls: 'pt-small',
+                    small: true,
                     text: `Update to ${updateVersion}`,
                     onClick: this.reloadApp
                 })

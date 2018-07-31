@@ -13,6 +13,7 @@ import {baseCol} from '@xh/hoist/columns/Core';
 export class ServiceModel {
 
     gridModel = new GridModel({
+        enableExport: true,
         store: new UrlStore({
             url: 'serviceAdmin/listServices',
             processRawData: this.processRawData,
