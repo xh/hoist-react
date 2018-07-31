@@ -180,15 +180,15 @@
   color: var(--xh-blue-gray);
 }
 
-.pt-dark .pt-input-group svg:not(.pt-icon) {
+.bp3-dark .bp3-input-group svg:not(.bp3-icon) {
   color: var(--xh-text-color);
 }
 
-.pt-button svg:not(.pt-icon):first-child:last-child, .pt-button .pt-spinner + svg:not(.pt-icon):last-child {
+.bp3-button svg:not(.bp3-icon):first-child:last-child, .bp3-button .bp3-spinner + svg:not(.bp3-icon):last-child {
   margin-left: 0;
 }
 
-.pt-input-group .pt-input:not(:focus) + .pt-button.pt-minimal:not(:hover):not(:focus) svg:not(.pt-icon), .pt-input-group .pt-input:not(:focus) + .pt-input-action .pt-button.pt-minimal:not(:hover):not(:focus) svg:not(.pt-icon) {
+.bp3-input-group .bp3-input:not(:focus) + .bp3-button.bp3-minimal:not(:hover):not(:focus) svg:not(.bp3-icon), .bp3-input-group .bp3-input:not(:focus) + .bp3-input-action .bp3-button.bp3-minimal:not(:hover):not(:focus) svg:not(.bp3-icon) {
   color: var(--xh-blue-gray);
 }
 
