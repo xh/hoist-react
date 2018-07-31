@@ -6,7 +6,7 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {observable, setter} from '@xh/hoist/mobx';
 import {Classes, suggest} from '@xh/hoist/kit/blueprint';
 
@@ -35,10 +35,14 @@ export class QueryComboField extends BaseComboField {
         /** Optional custom optionRenderer, a function that receives (option, optionProps) */
         optionRenderer: PT.func,
         /** Whether to force values from given options. Set to true to disallow arbitrary input */
-        requireSelection: PT.bool
+        requireSelection: PT.bool,
+        /** Icon to display on the left side of the field */
+        leftIcon: PT.element,
+        /** Element to display on the right side of the field */
+        rightElement: PT.element
     };
 
-    delegateProps = ['className', 'style', 'placeholder', 'disabled'];
+    delegateProps = ['className', 'style', 'placeholder', 'disabled', 'leftIcon', 'rightElement'];
 
     constructor(props) {
         super(props);

@@ -8,10 +8,11 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {debounce, escapeRegExp} from 'lodash';
-import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {observable, setter} from '@xh/hoist/mobx';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {textField} from '@xh/hoist/desktop/cmp/form';
+import {Icon} from '@xh/hoist/icon';
 import {BaseStore} from '@xh/hoist/data';
 
 /**
@@ -43,20 +44,20 @@ export class StoreFilterField extends Component {
     }
 
     render() {
-        return inputGroup({
+        return textField({
             placeholder: 'Quick filter...',
             value: this.value,
             onChange: this.onValueChange,
             rightElement: button({
-                icon: 'cross',
+                icon: Icon.x(),
                 minimal: true,
                 onClick: this.onClearClick
             })
         });
     }
 
-    onValueChange = (e) => {
-        this.setValue(e.target.value);
+    onValueChange = (v) => {
+        this.setValue(v);
         this._debouncedFilter();
     }
 

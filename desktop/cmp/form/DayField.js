@@ -10,7 +10,7 @@ import moment from 'moment';
 import {assign} from 'lodash';
 
 import {fmtDate} from '@xh/hoist/format';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {dateInput} from '@xh/hoist/kit/blueprint';
 
 import {HoistField} from './HoistField';
@@ -42,13 +42,17 @@ export class DayField extends HoistField {
         maxDate: PT.instanceOf(Date),
 
         /** Props passed to ReactDayPicker component. @see http://react-day-picker.js.org/ */
-        dayPickerProps: PT.object
+        dayPickerProps: PT.object,
+        /** Icon to display on the left side of the field */
+        leftIcon: PT.element,
+        /** Element to display on the right side of the field */
+        rightElement: PT.element
     };
 
-    delegateProps = ['className', 'disabled']
+    delegateProps = ['className', 'disabled', 'rightElement'];
 
     render() {
-        let {minDate, maxDate, width, popoverPosition, style, dayPickerProps} = this.props;
+        let {minDate, maxDate, width, popoverPosition, style, dayPickerProps, leftIcon} = this.props;
 
         dayPickerProps = assign({fixedWeeks: true}, dayPickerProps);
 
@@ -61,7 +65,8 @@ export class DayField extends HoistField {
                 style: {...style, width},
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,
-                onFocus: this.onFocus
+                onFocus: this.onFocus,
+                leftIcon
             },
             popoverProps: {
                 minimal: true,

@@ -6,7 +6,7 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {inputGroup} from '@xh/hoist/kit/blueprint';
 
 import {HoistField} from './HoistField';
@@ -32,10 +32,14 @@ export class TextField extends HoistField {
         /** Text to display when control is empty */
         placeholder: PT.string,
         /** Whether to allow browser spell check, defaults to false */
-        spellCheck: PT.bool
+        spellCheck: PT.bool,
+        /** Icon to display on the left side of the field */
+        leftIcon: PT.element,
+        /** Element to display on the right side of the field */
+        rightElement: PT.element
     };
 
-    delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus'];
+    delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus', 'leftIcon', 'rightElement'];
 
     render() {
         const {style, width, spellCheck} = this.props;

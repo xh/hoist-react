@@ -169,11 +169,29 @@
 .bp3-input-group svg:not(.bp3-icon) {
   position: absolute;
   top: 0;
-  margin: var(--xh-pad-px);
-  font-size: var(--xh-font-size);
+  line-height: 1;
+  font-size: var(--xh-font-size-large-px);
+  font-weight: 400;
+  font-style: normal;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
   z-index: 1;
+  margin: 7px;
+  color: var(--xh-blue-gray);
+}
+
+.bp3-dark .bp3-input-group svg:not(.bp3-icon) {
+  color: var(--xh-text-color);
+}
+
+.bp3-button svg:not(.bp3-icon):first-child:last-child, .bp3-button .bp3-spinner + svg:not(.bp3-icon):last-child {
+  margin-left: 0;
+}
+
+.bp3-input-group .bp3-input:not(:focus) + .bp3-button.bp3-minimal:not(:hover):not(:focus) svg:not(.bp3-icon), .bp3-input-group .bp3-input:not(:focus) + .bp3-input-action .bp3-button.bp3-minimal:not(:hover):not(:focus) svg:not(.bp3-icon) {
+  color: var(--xh-blue-gray);
 }
 
 .bp3-select-popover .bp3-popover-content {
-  padding: 0px !important;
+  padding: 0 !important;
 }

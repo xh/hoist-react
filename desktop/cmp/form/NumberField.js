@@ -6,7 +6,7 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {fmtNumber} from '@xh/hoist/format';
 import {HoistField} from './HoistField';
@@ -41,12 +41,14 @@ export class NumberField extends HoistField {
         /** Whether to display large values with commas */
         displayWithCommas: PT.bool,
         /** Alignment of numbers in field, default to 'right' */
-        textAlign: PT.oneOf(['left', 'right'])
+        textAlign: PT.oneOf(['left', 'right']),
+        /** Icon to display on the left side of the field */
+        leftIcon: PT.element
     };
 
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/gi;
 
-    delegateProps = ['className', 'disabled', 'min', 'max', 'placeholder'];
+    delegateProps = ['className', 'disabled', 'min', 'max', 'placeholder', 'leftIcon'];
 
     render() {
         const {width, style, enableShorthandUnits} = this.props,
