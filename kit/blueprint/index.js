@@ -95,6 +95,6 @@ export const
 // Convenience Functions
 //-------------------------
 
-export const dialogBody = elemFactory('div', {cls: 'pt-dialog-body'});
-export const dialogFooter = elemFactory('div', {cls: 'pt-dialog-footer'});
-export const dialogFooterActions = elemFactory('div', {cls: 'pt-dialog-footer-actions'});
+export const dialogBody = elemFactory('div', {cls: 'bp3-dialog-body'});
+export const dialogFooter = elemFactory('div', {cls: 'bp3-dialog-footer'});
+export const dialogFooterActions = elemFactory('div', {cls: 'bp3-dialog-footer-actions'});
