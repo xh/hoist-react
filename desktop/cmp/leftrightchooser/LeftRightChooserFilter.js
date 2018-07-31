@@ -7,11 +7,11 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {escapeRegExp, isEqual} from 'lodash';
-import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {observable, setter} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {textField} from '@xh/hoist/desktop/cmp/form';
 
 /**
  * A Component that can bind to a LeftRightChooser and filter both lists
@@ -32,7 +32,7 @@ class LeftRightChooserFilter extends Component {
     @setter @observable value = '';
 
     render() {
-        return inputGroup({
+        return textField({
             placeholder: 'Quick filter...',
             value: this.value,
             onChange: this.onValueChange,
@@ -44,8 +44,8 @@ class LeftRightChooserFilter extends Component {
         });
     }
 
-    onValueChange = (e) => {
-        this.setValue(e.target.value);
+    onValueChange = (v) => {
+        this.setValue(v);
         this.runFilter();
     }
 
