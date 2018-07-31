@@ -122,7 +122,6 @@ class Grid extends Component {
             onSelectionChanged: this.onSelectionChanged,
             onSortChanged: this.onSortChanged,
             onGridSizeChanged: this.onGridSizeChanged,
-            onComponentStateChanged: this.onComponentStateChanged,
             onDragStopped: this.onDragStopped
         };
     }
