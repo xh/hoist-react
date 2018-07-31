@@ -58,7 +58,6 @@ class Grid extends Component {
         this.addReaction(this.dataReaction());
     }
 
-
     render() {
         const {colChooserModel} = this.model,
             {layoutConfig, agOptions} = this.props;
@@ -122,7 +121,8 @@ class Grid extends Component {
             onSelectionChanged: this.onSelectionChanged,
             onSortChanged: this.onSortChanged,
             onGridSizeChanged: this.onGridSizeChanged,
-            onDragStopped: this.onDragStopped
+            onDragStopped: this.onDragStopped,
+            onRowDataUpdated: this.onRowDataUpdated
         };
     }
 
@@ -228,10 +228,10 @@ class Grid extends Component {
         const {model} = this;
 
         return {
-            track: () => [model.selection, model.agApi],
+            track: () => [model.selection, model.agApi, model.agNodesRendered],
             run: () => {
-                const {agApi, selModel} = model;
-                if (!agApi) return;
+                const {agApi, agNodesRendered, selModel} = model;
+                if (!agApi || !agNodesRendered) return;
 
                 const modelSelection = selModel.ids,
                     gridSelection = agApi.getSelectedRows().map(it => it.id),
@@ -286,6 +286,7 @@ class Grid extends Component {
             run: () => {
                 const {agApi} = model;
                 if (agApi) {
+                    model.setAgNodesRendered(false);
                     agApi.setRowData(model.store.records);
                 }
             }
@@ -304,6 +305,7 @@ class Grid extends Component {
     }
 
     onSelectionChanged = (ev) => {
+        if (!this.model.agNodesRendered) return;
         this.model.selModel.select(ev.api.getSelectedRows());
     }
 
@@ -321,5 +323,10 @@ class Grid extends Component {
             ev.api.sizeColumnsToFit();
         }
     }
+
+    onRowDataUpdated = () => {
+        this.model.setAgNodesRendered(true);
+    }
+
 }
 export const grid = elemFactory(Grid);
