@@ -58,8 +58,8 @@ export class StoreSelectionModel {
     /**
      * Set the selection.
      *
-     * @param {Object[]} records - supports either single record, single id, array of records or array of ids
-     * @param {boolean} [clearSelection] - clear previous selection (rather than add to it)?
+     * @param {(Object[]|Object)} records - single record/ID or array of records/IDs to select.
+     * @param {boolean} [clearSelection] - true to clear previous selection (rather than add to it).
      */
     @action
     select(records, clearSelection = true) {

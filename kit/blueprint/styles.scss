@@ -1,7 +1,7 @@
 //------------------------
 // NavBar
 //------------------------
-.pt-navbar, .pt-dark .pt-navbar {
+.bp3-navbar, .bp3-dark .bp3-navbar {
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
@@ -18,13 +18,13 @@
     flex-shrink: 0;
   }
 
-  .pt-navbar-heading {
+  .bp3-navbar-heading {
     color: var(--xh-navbar-title-color);
     font-size: var(--xh-navbar-title-font-size-px);
     margin-left: var(--xh-pad-px);
   }
 
-  .pt-navbar-group {
+  .bp3-navbar-group {
     height: var(--xh-navbar-height-px);
 
     // Replace default float behaviour in favour of flexbox
@@ -34,7 +34,7 @@
       margin: 0 5px 0 0;
     }
 
-    &.pt-align-left {
+    &.bp3-align-left {
       // Flex simulates left alignment
       flex: 1;
 
@@ -44,11 +44,11 @@
       }
     }
 
-    &.pt-align-right {
+    &.bp3-align-right {
       > * {
         margin-left: var(--xh-pad-half-px);
       }
-      .pt-navbar-divider {
+      .bp3-navbar-divider {
         margin-right: 0;
       }
     }
@@ -59,11 +59,11 @@
 //------------------------
 // Tabs
 //------------------------
-.pt-tab-panel > div {
+.bp3-tab-panel > div {
   margin: 0 !important;  // TODO - investigate this....
 }
 
-.pt-tabs:not(.pt-vertical) > .pt-tab-list {
+.bp3-tabs:not(.bp3-vertical) > .bp3-tab-list {
   padding-left: var(--xh-pad-px);
 }
 
@@ -71,12 +71,12 @@
 //------------------------
 // Dialog + Masking
 //------------------------
-.pt-dialog {
+.bp3-dialog {
   padding-bottom: 0;
   border-radius: var(--xh-border-radius-px);
   border: var(--xh-popup-border-width-px) solid var(--xh-popup-border-color);
 
-  .pt-dialog-header {
+  .bp3-dialog-header {
     color: var(--xh-popup-title-text-color);
     background-color: var(--xh-popup-title-bg);
     font-size: var(--xh-popup-title-font-size-px);
@@ -84,7 +84,7 @@
     border-top-right-radius: var(--xh-border-radius-px);
     border-top-left-radius: var(--xh-border-radius-px);
 
-    .pt-dialog-header-title {
+    .bp3-heading, .bp3-icon {
       color: var(--xh-popup-title-text-color);
     }
 
@@ -94,11 +94,11 @@
   }
 }
 
-.pt-dialog-container {
+.bp3-dialog-container {
   background-color: var(--xh-mask-bg);
 }
 
-.pt-dark .pt-menu, .pt-menu {
+.bp3-dark .bp3-menu, .bp3-menu {
   background-color: var(--xh-bg-alt);
 }
 
@@ -106,33 +106,33 @@
 //------------------------
 // Buttons
 //------------------------
-.pt-button {
+.bp3-button {
   border-radius: var(--xh-border-radius-px);
   font-size: var(--xh-button-font-size-px);
   white-space: nowrap;
 
-  &:not([class*="pt-intent-"]) {
+  &:not([class*="bp3-intent-"]) {
     color: var(--xh-button-text-color);
-    .pt-dark & {
+    .bp3-dark & {
       color: var(--xh-button-text-color);
     }
   }
 
-  &.pt-disabled {
+  &.bp3-disabled {
     opacity: 0.6;
   }
 
-  &:not(.pt-minimal) {
-    &.pt-intent-primary {
+  &:not(.bp3-minimal) {
+    &.bp3-intent-primary {
       background-color: var(--xh-intent-primary);
     }
-    &.pt-intent-danger {
+    &.bp3-intent-danger {
       background-color: var(--xh-intent-danger);
     }
-    &.pt-intent-success {
+    &.bp3-intent-success {
       background-color: var(--xh-intent-success);
     }
-    &.pt-intent-warning {
+    &.bp3-intent-warning {
       background-color: var(--xh-intent-warning);
     }
   }
@@ -141,19 +141,19 @@
 //------------------------
 // Toasts
 //------------------------
-.pt-toast {
+.bp3-toast {
   padding-left: 5px;
 
-  &.pt-intent-primary {
+  &.bp3-intent-primary {
     background-color: var(--xh-intent-primary);
   }
-  &.pt-intent-danger {
+  &.bp3-intent-danger {
     background-color: var(--xh-intent-danger);
   }
-  &.pt-intent-success {
+  &.bp3-intent-success {
     background-color: var(--xh-intent-success);
   }
-  &.pt-intent-warning {
+  &.bp3-intent-warning {
     background-color: var(--xh-intent-warning);
   }
 }
@@ -161,12 +161,12 @@
 //------------------------
 // Forms + Inputs
 //------------------------
-.pt-input {
+.bp3-input {
   font-size: var(--xh-font-size);
 }
 
 /* Apply blueprint styling to non-blueprint icons within input groups */
-.pt-input-group svg:not(.pt-icon) {
+.bp3-input-group svg:not(.bp3-icon) {
   position: absolute;
   top: 0;
   margin: var(--xh-pad-px);
@@ -174,6 +174,6 @@
   z-index: 1;
 }
 
-.pt-select-popover .pt-popover-content {
+.bp3-select-popover .bp3-popover-content {
   padding: 0px !important;
 }

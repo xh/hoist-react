@@ -16,22 +16,23 @@ import download from 'downloadjs';
 /**
  * Exports a grid to either Excel or CSV, using Hoist's server-side export.
  *
- * Columns can install the following properties to manage how they are exported:
- *
- *      {string} exportName - specified title to appear at top of grid
- *      {string|function} exportValue - modifies the value used in export
- *              If string, can be used to point to a different field on the record
- *              If function, can be used to transform the value
- *      {exportFormat} - Excel export format pattern.
+ * Columns support the following properties on their definitions to manage how they are exported:
+ *      {string} exportName - custom header for exported grid column.
+ *      {(string|function)} exportValue - modifies the value used in export:
+ *              If string, can be used to point to a different field on the record.
+ *              If function, can be used to transform the value.
+ *      {string} exportFormat - Excel export format pattern.
+ *              @see ExportFormat for available constants.
  */
 export class ExportManager {
 
     /**
-     * Export a GridModel to a file. Typically not called directly, but via the `export` convenience method on GridModel.
+     * Export a GridModel to a file. Typically not called directly, but via the `export` convenience
+     * method on GridModel.
      *
      * @param {GridModel} gridModel - GridModel to export.
-     * @param {function|string} filename - Filename for exported file, or a closure to generate one.
-     * @param {string} type - Type of export. One of ['excel', 'excelTable', 'csv'].
+     * @param {(string|function)} filename - name for exported file or closure to generate.
+     * @param {string} type - type of export - one of ['excel', 'excelTable', 'csv'].
      */
     async exportAsync(gridModel, filename, type) {
         throwIf(!gridModel, 'GridModel required for export');
@@ -41,9 +42,9 @@ export class ExportManager {
         if (isFunction(filename)) filename = filename(gridModel);
 
         const {store, sortBy, columns} = gridModel,
-            colIds = sortBy.map(it => it.colId),
+            sortColIds = sortBy.map(it => it.colId),
             sorts = sortBy.map(it => it.sort),
-            records = orderBy(store.records, colIds, sorts),
+            records = orderBy(store.records, sortColIds, sorts),
             meta = this.getColumnMetadata(columns),
             rows = [];
 
