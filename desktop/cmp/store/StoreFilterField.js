@@ -48,6 +48,7 @@ export class StoreFilterField extends Component {
             placeholder: 'Quick filter...',
             value: this.value,
             onChange: this.onValueChange,
+            leftIcon: Icon.filter(),
             rightElement: button({
                 icon: Icon.x(),
                 minimal: true,
