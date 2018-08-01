@@ -7,7 +7,7 @@
 
 import React, {Component} from 'react';
 import {XH, HoistComponent} from '@xh/hoist/core';
-import {div, h3, h4, table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
+import {br, div, h1, h2, table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
 
 import './AboutPanel.scss';
 
@@ -18,7 +18,7 @@ export class AboutPanel extends Component {
         return div({
             cls: 'xh-admin-about-panel',
             items: [
-                h3('About This Application'),
+                h1('About This Application'),
                 ...this.renderTables(),
                 this.renderBlurb()
             ]
@@ -39,7 +39,7 @@ export class AboutPanel extends Component {
                     row('Build', svc.get('clientBuild'))
                 )
             }),
-            h4('Framework Versions'),
+            h2('Framework Versions'),
             table({
                 item: tbody(
                     row('Hoist Core', svc.get('hoistCoreVersion')),
@@ -57,8 +57,8 @@ export class AboutPanel extends Component {
             cls: 'xh-admin-about-panel__blurb',
             items: [
                 <p>
-                    This application is built with Hoist: a plugin for rich web-application development provided
-                    by <a href="http://xh.io" target="_blank" rel="noopener noreferrer"> Extremely Heavy Industries</a>.
+                    Built with Hoist: a plugin for rich web-application development provided by
+                    <a href="http://xh.io" target="_blank" rel="noopener noreferrer"> Extremely Heavy Industries</a>.
                 </p>,
                 <p>Please contact <a href="mailto:support@xh.io">support@xh.io</a> with any questions.</p>
             ]
