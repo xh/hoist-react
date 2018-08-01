@@ -49,6 +49,10 @@ export class DayField extends HoistField {
         rightElement: PT.element
     };
 
+    static defaultProps = {
+        commitOnChange: true
+    }
+
     delegateProps = ['className', 'disabled', 'rightElement'];
 
     render() {
@@ -89,7 +93,8 @@ export class DayField extends HoistField {
         return moment(dateString, 'YYYY-MM-DD', true).toDate();
     }
 
-    onChange = (date) => {
+    onChange = (date, isUserChange) => {
+        if (!isUserChange) return;
         this.noteValueChange(date);
     }
 
