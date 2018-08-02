@@ -7,9 +7,9 @@
 
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {HoistComponent, LayoutSupport, elemFactory} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
-import {div} from '@xh/hoist/cmp/layout';
+import {box} from '@xh/hoist/cmp/layout';
 import {Timer} from '@xh/hoist/utils/Timer';
 import {SECONDS, MINUTES, HOURS, DAYS} from '@xh/hoist/utils/DateTimeUtils';
 import {flow} from 'lodash';
@@ -45,6 +45,7 @@ const defaultOptions = {
  * in a friendly, human readable form. Automatically updates on a regular interval to stay current.
  */
 @HoistComponent()
+@LayoutSupport
 class RelativeTimestamp extends Component {
 
     static propTypes = {
@@ -54,11 +55,17 @@ class RelativeTimestamp extends Component {
         options: PT.object
     };
 
+    baseCls = 'xh-relative-timestamp';
+
     @observable relativeTimeString;
     timer = null;
 
     render() {
-        return div(this.relativeTimeString);
+        return box({
+            cls: this.getClassNames(),
+            layoutConfig: this.layoutConfig,
+            item: this.relativeTimeString
+        });
     }
 
     refreshLabel = () => {
@@ -97,7 +104,7 @@ export const relativeTimestamp = elemFactory(RelativeTimestamp);
  * @param {boolean} [options.allowFuture] - Allow dates greater than Date.now()
  * @param {string} [options.futureSuffix] - Appended to future timestamps
  * @param {string} [options.pastSuffix] - Appended to past timestamps
- * @param {integer} [options.nowEpsilon] - Interval (in seconds) that will serve as threshold for the nowString.
+ * @param {int} [options.nowEpsilon] - Interval (in seconds) that will serve as threshold for the nowString.
  * @param {string} [options.nowString] - Returned as display property when timestamp is within the nowEpsilon interval.
  * @param {string} [options.emptyResult] - Returned when timestamp is undefined
  */

@@ -50,6 +50,8 @@ class Grid extends Component {
         onRowDoubleClicked: PT.func
     };
 
+    baseCls = 'xh-grid';
+
     constructor(props) {
         super(props);
         this.addReaction(this.selectionReaction());
@@ -69,12 +71,12 @@ class Grid extends Component {
         }
 
         // Note that we intentionally do *not* render the agGridReact element below with either the data
-        // or the columns.  These two bits are the most volatile in our GridModel, and this causes
+        // or the columns. These two bits are the most volatile in our GridModel, and this causes
         // extra re-rendering and jumpiness.  Instead, we rely on the API methods to keep these in sync.
         return fragment(
             box({
                 layoutConfig: layoutConfig,
-                cls: `ag-grid-holder ${XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham'}`,
+                cls: this.getClassNames('ag-grid-holder', XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham'),
                 item: agGridReact(merge(this.createDefaultAgOptions(), agOptions))
             }),
             colChooser({
