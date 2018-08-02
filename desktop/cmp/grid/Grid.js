@@ -7,6 +7,7 @@
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {find, isBoolean, isEqual, isNil, isNumber, isString, merge, xor} from 'lodash';
+import {observable, action} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
@@ -30,6 +31,9 @@ import {colChooser} from './ColChooser';
 class Grid extends Component {
 
     _scrollOnSelect = true;
+
+    // Trackable stamp incremented everytime the agGrid receives a new set of data.
+    @observable _dataVersion = 0;
 
     static propTypes = {
 
@@ -223,11 +227,29 @@ class Grid extends Component {
     //------------------------
     // Reactions to model
     //------------------------
+    @action
+    incrementDataVersion() {
+        this._dataVersion++;
+    }
+
+    dataReaction() {
+        const {model} = this;
+        return {
+            track: () => [model.store.records, model.agApi],
+            run: () => {
+                const {agApi} = model;
+                if (agApi) {
+                    agApi.setRowData(model.store.records);
+                    this.incrementDataVersion();
+                }
+            }
+        };
+    }
+
     selectionReaction() {
         const {model} = this;
-
         return {
-            track: () => [model.selection, model.agApi],
+            track: () => [model.selection, model.agApi, this.dataVersion],
             run: () => {
                 const {agApi, selModel} = model;
                 if (!agApi) return;
@@ -241,9 +263,11 @@ class Grid extends Component {
                     agApi.deselectAll();
                     modelSelection.forEach(id => {
                         const node = agApi.getRowNode(id);
-                        node.setSelected(true);
-                        if (this._scrollOnSelect) {
-                            agApi.ensureNodeVisible(node);
+                        if (node) {
+                            node.setSelected(true);
+                            if (this._scrollOnSelect) {
+                                agApi.ensureNodeVisible(node);
+                            }
                         }
                     });
                 }
@@ -273,19 +297,6 @@ class Grid extends Component {
                 if (agApi) {
                     agApi.setColumnDefs(this.getColumnDefs());
                     agApi.sizeColumnsToFit();
-                }
-            }
-        };
-    }
-
-    dataReaction() {
-        const {model} = this;
-        return {
-            track: () => [model.store.records, model.agApi],
-            run: () => {
-                const {agApi} = model;
-                if (agApi) {
-                    agApi.setRowData(model.store.records);
                 }
             }
         };
