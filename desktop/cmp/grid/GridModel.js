@@ -34,7 +34,7 @@ export class GridModel {
     @observable.ref columns = [];
     @observable.ref sortBy = [];
     @observable groupBy = null;
-
+    @observable agNodesRendered = false;
 
     defaultContextMenu = () => {
         return new StoreContextMenu({
@@ -169,6 +169,11 @@ export class GridModel {
     @action
     setAgApi(agApi) {
         this.agApi = agApi;
+    }
+
+    @action
+    setAgNodesRendered(val) {
+        this.agNodesRendered = val;
     }
 
     /**
