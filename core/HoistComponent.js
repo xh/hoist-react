@@ -87,6 +87,9 @@ export function HoistComponent({
              * Concatenate a CSS baseCls (if defined on component) with any instance-specific
              * className provided via props and optional extra names provided at render-time.
              *
+             * Components should call this to produce a combined class list and apply it to their
+             * outermost (or otherwise most appropriate) rendered component.
+             *
              * @param {...string} extraClassNames - additional classNames to append.
              */
             getClassNames(...extraClassNames) {
