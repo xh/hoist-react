@@ -24,12 +24,14 @@ export class Mask extends Component {
         text: PT.string
     };
 
+    baseCls = 'xh-mask';
+
     render() {
         let {isDisplayed, text} = this.props;
         if (!isDisplayed) return null;
 
         return overlay({
-            cls: `xh-mask ${Classes.OVERLAY_SCROLL_CONTAINER}`,
+            cls: this.getClassNames(Classes.OVERLAY_SCROLL_CONTAINER),
             autoFocus: false,
             isOpen: true,
             canEscapeKeyClose: false,

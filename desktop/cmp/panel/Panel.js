@@ -12,6 +12,7 @@ import {vbox} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 
 import {panelHeader} from './impl/PanelHeader';
+import './Panel.scss';
 
 /**
  * A Panel container builds on the lower-level layout components to offer a header element
@@ -32,15 +33,16 @@ export class Panel extends Component {
         tbar: PT.element,
         /** A toolbar to be docked at the bottom of the panel. */
         bbar: PT.element,
-        /** Whether this panel should be rendered with a mask, use to disable interaction with panel. */
-        masked: PT.bool
+        /** True to render this panel with a mask, disabling any interaction. */
+        masked: PT.bool,
+        /** Text to display within this panel's mask. */
+        maskText: PT.string
     };
 
     baseCls = 'xh-panel';
 
     render() {
         let {
-            className,
             layoutConfig,
             tbar,
             bbar,
@@ -48,6 +50,7 @@ export class Panel extends Component {
             icon,
             headerItems,
             masked,
+            maskText,
             isCollapsed,
             children,
             ...rest
@@ -63,16 +66,19 @@ export class Panel extends Component {
         }
 
         return vbox({
-            cls: className ? `${this.baseCls} ${className}` : this.baseCls,
+            cls: this.getClassNames(),
             layoutConfig,
-            ...rest,
             items: [
                 panelHeader({title, icon, headerItems}),
                 tbar || null,
                 ...(castArray(children)),
                 bbar || null,
-                mask({isDisplayed: masked})
-            ]
+                mask({
+                    isDisplayed: masked,
+                    text: maskText
+                })
+            ],
+            ...rest
         });
     }
 }

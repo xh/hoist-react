@@ -18,12 +18,15 @@ import {restForm} from './RestForm';
 @LayoutSupport
 export class RestGrid extends Component {
 
+    baseCls = 'xh-rest-grid';
+
     render() {
         const {model} = this,
             {layoutConfig, extraToolbarItems, agOptions} = this.props;
 
         return fragment(
             panel({
+                cls: this.getClassNames(),
                 layoutConfig,
                 tbar: restGridToolbar({model, extraToolbarItems}),
                 item: grid({
