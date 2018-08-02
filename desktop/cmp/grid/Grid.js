@@ -10,7 +10,6 @@ import {find, isBoolean, isEqual, isNil, isNumber, isString, merge, xor} from 'l
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
-import classNames from 'classnames';
 import './ag-grid';
 import {agGridReact, navigateSelection} from './ag-grid';
 import {colChooser} from './ColChooser';
@@ -71,16 +70,13 @@ class Grid extends Component {
             layoutConfig.flex = 'auto';
         }
 
-        const agClassNames = `ag-grid-holder ${XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham'}`,
-            gridClassNames = classNames(this.classNames, agClassNames);
-
         // Note that we intentionally do *not* render the agGridReact element below with either the data
         // or the columns. These two bits are the most volatile in our GridModel, and this causes
         // extra re-rendering and jumpiness.  Instead, we rely on the API methods to keep these in sync.
         return fragment(
             box({
                 layoutConfig: layoutConfig,
-                cls: gridClassNames,
+                cls: this.getClassNames('ag-grid-holder', XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham'),
                 item: agGridReact(merge(this.createDefaultAgOptions(), agOptions))
             }),
             colChooser({

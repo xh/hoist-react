@@ -20,7 +20,7 @@ export class Spacer extends Component {
     render() {
         return box({
             flex: 'none',
-            cls: this.classNames,
+            cls: this.getClassNames(),
             ...this.props
         });
     }
@@ -36,7 +36,7 @@ export class Filler extends Component {
     render() {
         return box({
             flex: 'auto',
-            cls: this.classNames,
+            cls: this.getClassNames(),
             ...this.props
         });
     }

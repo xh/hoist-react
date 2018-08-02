@@ -24,7 +24,7 @@ export class Viewport extends Component {
             position: 'fixed',
             width: '100%',
             height: '100%',
-            cls: this.classNames,
+            cls: this.getClassNames(),
             ...this.props
         });
     }

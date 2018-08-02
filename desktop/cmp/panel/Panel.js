@@ -66,7 +66,7 @@ export class Panel extends Component {
         }
 
         return vbox({
-            cls: this.classNames,
+            cls: this.getClassNames(),
             layoutConfig,
             items: [
                 panelHeader({title, icon, headerItems}),

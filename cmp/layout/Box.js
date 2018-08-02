@@ -39,7 +39,7 @@ export class VBox extends Component {
     render() {
         return box({
             flexDirection: 'column',
-            cls: this.classNames,
+            cls: this.getClassNames(),
             ...this.props
         });
     }
@@ -52,7 +52,7 @@ export class HBox extends Component {
     render() {
         return box({
             flexDirection: 'row',
-            cls: this.classNames,
+            cls: this.getClassNames(),
             ...this.props
         });
     }

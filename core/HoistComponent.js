@@ -84,12 +84,13 @@ export function HoistComponent({
             },
 
             /**
-             * Concats a CSS baseCls (if defined on component) with any instance-specific classes.
+             * Concatenate a CSS baseCls (if defined on component) with any instance-specific
+             * className provided via props and optional extra names provided at render-time.
+             *
+             * @param {...string} extraClassNames - additional classNames to append.
              */
-            classNames: {
-                get() {
-                    return classNames(this.baseCls, this.props.className);
-                }
+            getClassNames(...extraClassNames) {
+                return classNames(this.baseCls, this.props.className, ...extraClassNames);
             }
         });
 

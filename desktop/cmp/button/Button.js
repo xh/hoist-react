@@ -31,7 +31,7 @@ export class Button extends Component {
             icon: icon,
             text: text,
             onClick: onClick,
-            cls: this.classNames,
+            cls: this.getClassNames(),
             ...rest
         });
     }

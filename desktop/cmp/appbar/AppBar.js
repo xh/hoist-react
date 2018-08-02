@@ -53,7 +53,7 @@ export class AppBar extends Component {
     render() {
         const {icon, title, leftItems, rightItems, hideAdminButton, hideFeedbackButton, hideThemeButton, hideLogoutButton, hideRefreshButton, refreshButtonProps = {}} = this.props;
         return navbar({
-            cls: this.classNames,
+            cls: this.getClassNames(),
             items: [
                 navbarGroup({
                     align: 'left',

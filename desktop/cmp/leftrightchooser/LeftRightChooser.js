@@ -38,7 +38,7 @@ class LeftRightChooser extends Component {
 
         return vbox({
             layoutConfig,
-            cls: this.classNames,
+            cls: this.getClassNames(),
             items: [
                 hframe({
                     cls: 'xh-lr-chooser__grid-frame',
