@@ -101,10 +101,7 @@ export class DayField extends HoistField {
         if (!isUserChange) return;
         this.noteValueChange(date);
 
-        // this is necessary to overcome the Blueprint UX
-        // decision to only close the popover if the new date is in
-        // the same month as the old date
-        // @see https://github.com/palantir/blueprint/blame/develop/packages/datetime/src/dateInput.tsx#L281
+        // Blueprint won't always close popover (e.g. choosing a date in previous month). Force it to.
         this.child.value.setState({isOpen: false});
     }
 
