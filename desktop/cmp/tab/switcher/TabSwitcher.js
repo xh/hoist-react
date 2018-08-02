@@ -33,13 +33,15 @@ export class TabSwitcher extends Component {
         orientation: 'top'
     };
 
+    baseCls = 'xh-tab-switcher';
+
     render() {
         const {id, tabs, activeTabId} = this.model,
             {orientation} = this.props,
             vertical = ['left', 'right'].includes(orientation);
 
         return blueprintTabs({
-            cls: `xh-tab-switcher-${orientation}`,
+            cls: this.getClassNames(`xh-tab-switcher--${orientation}`),
             id,
             vertical,
             onChange: this.onTabChange,

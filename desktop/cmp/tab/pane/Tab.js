@@ -33,6 +33,8 @@ export class Tab extends Component {
         model: PT.instanceOf(TabModel).isRequired
     };
 
+    baseCls = 'xh-tab';
+
     child = new Ref();
     wasActivated = false;
 
@@ -57,6 +59,7 @@ export class Tab extends Component {
         
         return frame({
             display: isActive ? 'flex' : 'none',
+            cls: this.getClassNames(),
             item
         });
     }

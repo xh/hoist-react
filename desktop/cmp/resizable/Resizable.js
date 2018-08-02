@@ -68,6 +68,8 @@ export class Resizable extends Component {
     get isVertical()        {return this.side === 'bottom' || this.side === 'top'}
     get isContentFirst()    {return this.side === 'right' || this.side === 'bottom'}
 
+    baseCls = 'xh-resizable';
+
     render() {
         const {isVertical, isContentFirst, isCollapsible, isOpen, isDraggable} = this,
             cmp = isVertical ? vbox : hbox;
@@ -88,7 +90,11 @@ export class Resizable extends Component {
             items.push(this.getDragger());
         }
 
-        return cmp({cls: 'xh-resizable', flex: 'none', items});
+        return cmp({
+            cls: this.getClassNames(),
+            flex: 'none',
+            items
+        });
     }
 
     //----------------------------------------
