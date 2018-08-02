@@ -6,7 +6,7 @@
  */
 import {XH, HoistModel} from '@xh/hoist/core';
 import {stripTags} from '@xh/hoist/utils/HtmlUtils';
-import {observable, action, setter} from '@xh/hoist/mobx';
+import {observable, action} from '@xh/hoist/mobx';
 
 /**
  * Manages built-in collection of user feedback.
@@ -16,7 +16,7 @@ import {observable, action, setter} from '@xh/hoist/mobx';
 export class FeedbackDialogModel {
 
     @observable isOpen = false;
-    @setter @observable message = null;
+    @observable message = null;
 
     @action
     show() {
@@ -28,6 +28,11 @@ export class FeedbackDialogModel {
     hide() {
         this.isOpen = false;
         this.message = null;
+    }
+
+    @action
+    setMessage(message) {
+        this.message = message;
     }
 
     /**

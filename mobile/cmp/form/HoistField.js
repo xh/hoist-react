@@ -7,8 +7,9 @@
 
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {upperFirst} from 'lodash';
-import {observable, setter, computed} from '@xh/hoist/mobx';
+import {upperFirst, isFunction} from 'lodash';
+import {throwIf} from '@xh/hoist/utils/JsUtils';
+import {observable, computed, action, runInAction} from '@xh/hoist/mobx';
 
 /**
  * A Standard Hoist Field.
@@ -62,8 +63,8 @@ export class HoistField extends Component {
         commitOnChange: false
     };
 
-    @observable @setter hasFocus;
-    @observable @setter internalValue;
+    @observable hasFocus;
+    @observable internalValue;
 
 
     /**
@@ -99,6 +100,12 @@ export class HoistField extends Component {
         return value;
     }
 
+    /** Set internal value **/
+    @action
+    setInternalValue(val) {
+        this.internalValue = val;
+    }
+
     /** Set normalized internal value, and fire associated value changed **/
     noteValueChange(val) {
         const {commitOnChange, onChange} = this.props;
@@ -121,6 +128,7 @@ export class HoistField extends Component {
 
         if (model && field) {
             const setterName = `set${upperFirst(field)}`;
+            throwIf(!isFunction(model[setterName]), `Required function '${setterName}()' not found on bound model`);
             model[setterName](newValue);
             newValue = this.externalValue; // Round trip this, in case model decides to intervene.
         }
@@ -132,12 +140,12 @@ export class HoistField extends Component {
 
     onBlur = () => {
         this.doCommit();
-        this.setHasFocus(false);
+        runInAction(() => this.hasFocus = false);
     }
 
     onFocus = () => {
         this.setInternalValue(this.toInternal(this.externalValue));
-        this.setHasFocus(true);
+        runInAction(() => this.hasFocus = true);
     }
 
     toExternal(internal) {

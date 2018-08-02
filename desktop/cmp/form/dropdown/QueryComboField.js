@@ -7,7 +7,7 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {observable, setter} from '@xh/hoist/mobx';
+import {observable} from '@xh/hoist/mobx';
 import {Classes, suggest} from '@xh/hoist/kit/blueprint';
 
 import {BaseComboField} from './BaseComboField';
@@ -17,7 +17,7 @@ import {BaseComboField} from './BaseComboField';
  */
 @HoistComponent()
 export class QueryComboField extends BaseComboField {
-    @observable.ref @setter options = [];
+    @observable.ref options = [];
 
     static propTypes = {
         ...BaseComboField.propTypes,
@@ -80,8 +80,8 @@ export class QueryComboField extends BaseComboField {
             {queryFn} = this.props;
 
         if (queryFn) {
-            queryFn(value).then(options => {
-                this.setOptions(this.normalizeOptions(options));
+            queryFn(value).thenAction(options => {
+                this.options = this.normalizeOptions(options);
             });
         }
     }

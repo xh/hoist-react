@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, LayoutSupport, elemFactory} from '@xh/hoist/core';
-import {observable, setter} from '@xh/hoist/mobx';
+import {observable, action} from '@xh/hoist/mobx';
 import {box} from '@xh/hoist/cmp/layout';
 import {Timer} from '@xh/hoist/utils/Timer';
 import {SECONDS, MINUTES, HOURS, DAYS} from '@xh/hoist/utils/DateTimeUtils';
@@ -57,7 +57,7 @@ class RelativeTimestamp extends Component {
 
     baseCls = 'xh-relative-timestamp';
 
-    @setter @observable relativeTimeString;
+    @observable relativeTimeString;
     timer = null;
 
     render() {
@@ -72,9 +72,10 @@ class RelativeTimestamp extends Component {
         this.updateRelativeTimeString(this.props);
     }
 
+    @action
     updateRelativeTimeString(props) {
         const {timestamp, options} = props;
-        this.setRelativeTimeString(getRelativeTimestamp(timestamp, options));
+        this.relativeTimeString = getRelativeTimestamp(timestamp, options);
     }
 
     componentDidMount() {
