@@ -7,7 +7,7 @@
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {find, isBoolean, isEqual, isNil, isNumber, isString, merge, xor} from 'lodash';
-import {observable, action} from '@xh/hoist/mobx';
+import {observable, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
@@ -227,20 +227,16 @@ class Grid extends Component {
     //------------------------
     // Reactions to model
     //------------------------
-    @action
-    incrementDataVersion() {
-        this._dataVersion++;
-    }
-
     dataReaction() {
         const {model} = this;
         return {
-            track: () => [model.store.records, model.agApi],
-            run: () => {
-                const {agApi} = model;
-                if (agApi) {
-                    agApi.setRowData(model.store.records);
-                    this.incrementDataVersion();
+            track: () => [model.agApi, model.store.records],
+            run: ([api, records]) => {
+                if (api) {
+                    runInAction(() => {
+                        api.setRowData(records);
+                        this._dataVersion++;
+                    });
                 }
             }
         };
@@ -249,24 +245,23 @@ class Grid extends Component {
     selectionReaction() {
         const {model} = this;
         return {
-            track: () => [model.selection, model.agApi, this.dataVersion],
-            run: () => {
-                const {agApi, selModel} = model;
-                if (!agApi) return;
+            track: () => [model.agApi, model.selection, this._dataVersion],
+            run: ([api, ...rest]) => {
+                if (!api) return;
 
-                const modelSelection = selModel.ids,
-                    gridSelection = agApi.getSelectedRows().map(it => it.id),
+                const modelSelection = model.selModel.ids,
+                    gridSelection = api.getSelectedRows().map(it => it.id),
                     diff = xor(modelSelection, gridSelection);
 
                 // If ag-grid's selection differs from the selection model, set it to match
                 if (diff.length > 0) {
-                    agApi.deselectAll();
+                    api.deselectAll();
                     modelSelection.forEach(id => {
-                        const node = agApi.getRowNode(id);
+                        const node = api.getRowNode(id);
                         if (node) {
                             node.setSelected(true);
                             if (this._scrollOnSelect) {
-                                agApi.ensureNodeVisible(node);
+                                api.ensureNodeVisible(node);
                             }
                         }
                     });
@@ -276,27 +271,23 @@ class Grid extends Component {
     }
 
     sortReaction() {
-        const {model} = this;
         return {
-            track: () => [model.sortBy, model.agApi],
-            run: () => {
-                const {agApi, sortBy} = model;
-                if (agApi && !isEqual(agApi.getSortModel(), sortBy)) {
-                    agApi.setSortModel(sortBy);
+            track: () => [this.model.agApi, this.model.sortBy],
+            run: ([api, sortBy]) => {
+                if (api && !isEqual(api.getSortModel(), sortBy)) {
+                    api.setSortModel(sortBy);
                 }
             }
         };
     }
 
     columnsReaction() {
-        const {model} = this;
         return {
-            track: () => [model.columns, model.agApi],
-            run: () => {
-                const {agApi} = model;
-                if (agApi) {
-                    agApi.setColumnDefs(this.getColumnDefs());
-                    agApi.sizeColumnsToFit();
+            track: () => [this.model.agApi, this.model.columns],
+            run: ([api, columns]) => {
+                if (api) {
+                    api.setColumnDefs(this.getColumnDefs());
+                    api.sizeColumnsToFit();
                 }
             }
         };
