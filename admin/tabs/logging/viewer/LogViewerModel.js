@@ -6,7 +6,7 @@
  */
 import {XH, HoistModel} from '@xh/hoist/core';
 import {find} from 'lodash';
-import {action, observable, setter} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {LastPromiseModel} from '@xh/hoist/promise';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {UrlStore} from '@xh/hoist/data';
@@ -19,14 +19,14 @@ import {baseCol} from '@xh/hoist/columns/Core';
 export class LogViewerModel {
 
     // Form State/Display options
-    @observable @setter tail = true;
-    @observable @setter startLine = null;
-    @observable @setter maxLines = 1000;
-    @observable @setter pattern = '';
+    @observable tail = true;
+    @observable startLine = null;
+    @observable maxLines = 1000;
+    @observable pattern = '';
 
     // Overall State
     @observable file = null;
-    @setter @observable.ref rows = [];
+    @observable.ref rows = [];
 
     loadModel = new LastPromiseModel();
 
@@ -65,10 +65,30 @@ export class LogViewerModel {
     @action
     loadLines() {
         if (!this.file) {
-            this.setRows([]);
+            this.rows = [];
         } else {
             this.fetchFile();
         }
+    }
+
+    @action
+    setTail(tail) {
+        this.tail = tail;
+    }
+
+    @action
+    setStartLine(startLine) {
+        this.startLine = startLine;
+    }
+
+    @action
+    setMaxLines(maxLines) {
+        this.maxLines = maxLines;
+    }
+
+    @action
+    setPattern(pattern) {
+        this.pattern = pattern;
     }
 
     //---------------------------------
@@ -85,7 +105,7 @@ export class LogViewerModel {
                     pattern: this.pattern
                 }
             })
-            .then(rows => this.setRows(this.startLine ? rows.content : rows.content.reverse()))
+            .thenAction(rows => this.rows = this.startLine ? rows.content : rows.content.reverse())
             .linkTo(this.loadModel)
             .catchDefault();
     }

@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {observable, setter, computed} from '@xh/hoist/mobx';
+import {observable, computed, action} from '@xh/hoist/mobx';
 
 /**
  * Support for Forms-based Login.
@@ -15,13 +15,23 @@ import {observable, setter, computed} from '@xh/hoist/mobx';
 @HoistModel()
 export class LoginPanelModel {
 
-    @setter @observable username = '';
-    @setter @observable password = '';
-    @setter @observable warning = '';
+    @observable username = '';
+    @observable password = '';
+    @observable warning = '';
 
     @computed
     get isValid() {
         return this.username && this.password;
+    }
+
+    @action
+    setUsername(username) {
+        this.username = username;
+    }
+
+    @action
+    setPassword(password) {
+        this.password = password;
     }
 
     submit() {
@@ -29,8 +39,8 @@ export class LoginPanelModel {
         return XH.fetchJson({
             url: 'auth/login',
             params: {username, password}
-        }).then(r => {
-            this.setWarning(r.success ? '' : 'Login Incorrect');
+        }).thenAction(r => {
+            this.warning = r.success ? '' : 'Login Incorrect';
             if (r.success) {
                 XH.completeInitAsync();
             }

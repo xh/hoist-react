@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {escapeRegExp, isEqual} from 'lodash';
-import {observable, setter} from '@xh/hoist/mobx';
+import {observable, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -29,7 +29,7 @@ class LeftRightChooserFilter extends Component {
         model: PT.object.isRequired
     };
 
-    @setter @observable value = '';
+    @observable value = '';
 
     render() {
         return textField({
@@ -46,12 +46,12 @@ class LeftRightChooserFilter extends Component {
     }
 
     onValueChange = (v) => {
-        this.setValue(v);
+        runInAction(() => this.value = v);
         this.runFilter();
     }
 
     clearFilter = () => {
-        this.setValue('');
+        runInAction(() => this.value = '');
         this.runFilter();
     }
     

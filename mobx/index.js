@@ -7,8 +7,7 @@
 
 import {configure} from 'mobx';
 
-export {observable, action, autorun, reaction, computed, when, toJS, trace, untracked} from 'mobx';
+export {observable, action, autorun, reaction, computed, when, toJS, trace, untracked, runInAction} from 'mobx';
 export {observer} from 'mobx-react';
-export {setter} from 'mobx-decorators/lib';
 
 configure({enforceActions: true});
