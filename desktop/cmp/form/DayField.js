@@ -12,6 +12,7 @@ import {assign} from 'lodash';
 import {fmtDate} from '@xh/hoist/format';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {dateInput} from '@xh/hoist/kit/blueprint';
+import {Ref} from '@xh/hoist/utils/Ref';
 
 import {HoistField} from './HoistField';
 
@@ -53,6 +54,8 @@ export class DayField extends HoistField {
         commitOnChange: true
     }
 
+    child = new Ref();
+
     delegateProps = ['className', 'disabled', 'rightElement'];
 
     render() {
@@ -61,6 +64,7 @@ export class DayField extends HoistField {
         dayPickerProps = assign({fixedWeeks: true}, dayPickerProps);
 
         return dateInput({
+            ref: this.child.ref,
             value: this.renderValue,
             onChange: this.onChange,
             formatDate: this.formatDate,
@@ -96,6 +100,12 @@ export class DayField extends HoistField {
     onChange = (date, isUserChange) => {
         if (!isUserChange) return;
         this.noteValueChange(date);
+
+        // this is necessary to overcome the Blueprint UX
+        // decision to only close the popover if the new date is in
+        // the same month as the old date
+        // @see https://github.com/palantir/blueprint/blame/develop/packages/datetime/src/dateInput.tsx#L281
+        this.child.value.setState({isOpen: false});
     }
 
     onKeyPress = (ev) => {
