@@ -10,26 +10,35 @@ import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {box} from './Box';
 
 /**
- * A component useful for inserting fixed spacing along the main axis of its
- * parent container.
+ * A component for inserting a fixed-sized spacer along the main axis of its parent container.
+ * Convenience ElemFactories hspacer() and vspacer() each take a pixel size directly.
  */
 @HoistComponent()
 @LayoutSupport
 export class Spacer extends Component {
+    baseCls = 'xh-spacer';
     render() {
-        return box({flex: 'none', ...this.props});
+        return box({
+            flex: 'none',
+            cls: this.classNames,
+            ...this.props
+        });
     }
 }
 
 /**
- * A component useful for stretching to soak up space along the main axis of its
- * parent container.
+ * A component that stretches to soak up space along the main axis of its parent container.
  */
 @HoistComponent()
 @LayoutSupport
 export class Filler extends Component {
+    baseCls = 'xh-filler';
     render() {
-        return box({flex: 'auto', ...this.props});
+        return box({
+            flex: 'auto',
+            cls: this.classNames,
+            ...this.props
+        });
     }
 }
 

@@ -9,6 +9,7 @@ import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {hbox, vbox} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import classNames from 'classnames';
 
 import './Toolbar.scss';
 
@@ -25,13 +26,17 @@ class Toolbar extends Component {
         vertical: PT.bool
     };
 
+    baseCls = 'xh-toolbar';
+
     render() {
-        const {className, vertical, ...rest} = this.props;
-        let baseCls = 'xh-toolbar';
-        if (vertical) baseCls += ' xh-toolbar--vertical';
+        const {vertical, ...rest} = this.props;
+
+        const barClassNames = vertical ?
+            classNames(this.classNames, 'xh-toolbar--vertical') :
+            this.classNames;
 
         return (vertical ? vbox : hbox)({
-            cls: className ? `${className} ${baseCls}` : baseCls,
+            cls: barClassNames,
             itemSpec: {
                 factory: button
             },

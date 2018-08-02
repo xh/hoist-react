@@ -16,6 +16,7 @@ import {box} from './Box';
 @HoistComponent()
 @LayoutSupport
 export class Viewport extends Component {
+    baseCls = 'xh-viewport';
     render() {
         return box({
             top: 0,
@@ -23,6 +24,7 @@ export class Viewport extends Component {
             position: 'fixed',
             width: '100%',
             height: '100%',
+            cls: this.classNames,
             ...this.props
         });
     }

@@ -44,6 +44,8 @@ export class TabContainer extends Component {
         switcherPosition: 'top'
     };
 
+    baseCls = 'xh-tab-container';
+
     render() {
         const {model} = this,
             {activeTabId, tabs} = model,
@@ -59,7 +61,7 @@ export class TabContainer extends Component {
         }
 
         return container({
-            cls: 'xh-tab-container',
+            cls: this.classNames,
             layoutConfig,
             items: [
                 switcherBefore ? tabSwitcher({model, orientation: switcherPosition}) : null,

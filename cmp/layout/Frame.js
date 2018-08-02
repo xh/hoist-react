@@ -10,9 +10,10 @@ import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {box} from './Box';
 
 /**
- * A Box class that flexes to grow and stretch within its *own* parent.
+ * A Box class that flexes to grow and stretch within its *own* parent via flex:'auto', useful for
+ * creating nested layouts.
  *
- * This class is useful for creating nested layouts.  See also VFrame, and HFrame.
+ * VFrame and HFrame variants support internal vertical (column) and horizontal (row) flex layouts.
  */
 @HoistComponent()
 @LayoutSupport
@@ -25,16 +26,28 @@ export class Frame extends Component {
 @HoistComponent()
 @LayoutSupport
 export class VFrame extends Component {
+    baseCls = 'xh-vframe';
     render() {
-        return box({flex: 'auto', flexDirection: 'column', ...this.props});
+        return box({
+            flex: 'auto',
+            flexDirection: 'column',
+            cls: this.classNames,
+            ...this.props
+        });
     }
 }
 
 @HoistComponent()
 @LayoutSupport
 export class HFrame extends Component {
+    baseCls = 'xh-hframe';
     render() {
-        return box({flex: 'auto', flexDirection: 'row', ...this.props});
+        return box({
+            flex: 'auto',
+            flexDirection: 'row',
+            cls: this.classNames,
+            ...this.props
+        });
     }
 }
 

@@ -48,10 +48,12 @@ export class AppBar extends Component {
         refreshButtonProps: PT.object
     };
 
+    baseCls = 'xh-appbar';
+
     render() {
         const {icon, title, leftItems, rightItems, hideAdminButton, hideFeedbackButton, hideThemeButton, hideLogoutButton, hideRefreshButton, refreshButtonProps = {}} = this.props;
         return navbar({
-            cls: 'xh-appbar',
+            cls: this.classNames,
             items: [
                 navbarGroup({
                     align: 'left',

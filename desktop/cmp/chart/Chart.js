@@ -24,6 +24,8 @@ import {DarkTheme} from './theme/Dark';
 @LayoutSupport
 export class Chart extends Component {
 
+    baseCls = 'xh-chart';
+
     _chartElem = new Ref();
     _chart = null;
 
@@ -39,6 +41,7 @@ export class Chart extends Component {
         // Inner div required to be the ref for the chart element
         return box({
             layoutConfig: layoutConfig,
+            cls: this.classNames,
             item: div({
                 style: {flex: 'auto'},
                 ref: this._chartElem.ref

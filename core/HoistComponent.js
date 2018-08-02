@@ -8,6 +8,7 @@ import ReactDom from 'react-dom';
 import {XH} from '@xh/hoist/core';
 import {observer} from '@xh/hoist/mobx';
 import {defaultMethods, chainMethods, overrideMethods} from '@xh/hoist/utils/ClassUtils';
+import classNames from 'classnames';
 
 import {ReactiveSupport} from './mixins/ReactiveSupport';
 import {elemFactory} from './elem';
@@ -79,9 +80,16 @@ export function HoistComponent({
              * Returns null if component is not mounted.
              */
             getDOMNode() {
-                return this._mounted ?
-                    ReactDom.findDOMNode(this) :
-                    null;
+                return this._mounted ? ReactDom.findDOMNode(this) : null;
+            },
+
+            /**
+             * Concats a CSS baseCls (if defined on component) with any instance-specific classes.
+             */
+            classNames: {
+                get() {
+                    return classNames(this.baseCls, this.props.className);
+                }
             }
         });
 
