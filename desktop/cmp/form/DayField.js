@@ -50,10 +50,6 @@ export class DayField extends HoistField {
         rightElement: PT.element
     };
 
-    static defaultProps = {
-        commitOnChange: true
-    }
-
     child = new Ref();
 
     delegateProps = ['className', 'disabled', 'rightElement'];
