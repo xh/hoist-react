@@ -6,7 +6,7 @@
  */
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {find, isBoolean, isEqual, isNumber, isString, merge, xor} from 'lodash';
+import {find, isBoolean, isEqual, isNil, isNumber, isString, merge, xor} from 'lodash';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
@@ -122,7 +122,6 @@ class Grid extends Component {
             onSelectionChanged: this.onSelectionChanged,
             onSortChanged: this.onSortChanged,
             onGridSizeChanged: this.onGridSizeChanged,
-            onComponentStateChanged: this.onComponentStateChanged,
             onDragStopped: this.onDragStopped
         };
     }
@@ -148,7 +147,6 @@ class Grid extends Component {
     }
 
     getContextMenuItems = (params) => {
-
         // TODO: Display this as Blueprint Context menu e.g:
         // ContextMenu.show(contextMenu({menuItems}), {left:0, top:0}, () => {});
 
@@ -157,7 +155,7 @@ class Grid extends Component {
 
         const menu = contextMenuFn(params, this.model),
             recId = params.node ? params.node.id : null,
-            rec = recId ? store.getById(recId, true) : null,
+            rec = isNil(recId) ? null : store.getById(recId, true),
             selectedIds = selModel.ids;
 
         // Adjust selection to target record -- and sync to grid immediately.

@@ -27,7 +27,7 @@ export class ThemeModel {
     setDarkTheme(value) {
         const classList = document.body.classList;
         classList.toggle('xh-dark', value);
-        classList.toggle('pt-dark', value);
+        classList.toggle('bp3-dark', value);
         this.darkTheme = value;
         XH.setPref('xhTheme', value ? 'dark' : 'light');
     }

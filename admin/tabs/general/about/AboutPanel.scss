@@ -5,7 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 .xh-admin-about-panel {
-  padding: var(--xh-pad-px) 0 0 var(--xh-pad-double-px);
+  padding: 0 0 0 var(--xh-pad-double-px);
+
+  h1, h2 {
+    font-weight: 400;
+  }
 
   table {
     margin: var(--xh-pad-px);

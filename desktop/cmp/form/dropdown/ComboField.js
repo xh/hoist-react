@@ -7,7 +7,7 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {startsWith} from 'lodash';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Classes, suggest} from '@xh/hoist/kit/blueprint';
 
 import {BaseComboField} from './BaseComboField';
@@ -26,10 +26,14 @@ export class ComboField extends BaseComboField {
         /** Optional custom optionRenderer, a function that receives (option, optionProps) */
         optionRenderer: PT.func,
         /** Whether to force values from given options. Set to true to disallow arbitrary input */
-        requireSelection: PT.bool
+        requireSelection: PT.bool,
+        /** Icon to display on the left side of the field */
+        leftIcon: PT.element,
+        /** Element to display on the right side of the field */
+        rightElement: PT.element
     };
 
-    delegateProps = ['className', 'disabled', 'placeholder'];
+    delegateProps = ['className', 'disabled', 'placeholder', 'leftIcon', 'rightElement'];
 
     constructor(props) {
         super(props);
