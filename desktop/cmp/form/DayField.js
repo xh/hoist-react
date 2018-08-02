@@ -12,6 +12,7 @@ import {assign} from 'lodash';
 import {fmtDate} from '@xh/hoist/format';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {dateInput} from '@xh/hoist/kit/blueprint';
+import {Ref} from '@xh/hoist/utils/Ref';
 
 import {HoistField} from './HoistField';
 
@@ -49,6 +50,8 @@ export class DayField extends HoistField {
         rightElement: PT.element
     };
 
+    child = new Ref();
+
     delegateProps = ['className', 'disabled', 'rightElement'];
 
     render() {
@@ -57,6 +60,7 @@ export class DayField extends HoistField {
         dayPickerProps = assign({fixedWeeks: true}, dayPickerProps);
 
         return dateInput({
+            ref: this.child.ref,
             value: this.renderValue,
             onChange: this.onChange,
             formatDate: this.formatDate,
@@ -89,8 +93,12 @@ export class DayField extends HoistField {
         return moment(dateString, 'YYYY-MM-DD', true).toDate();
     }
 
-    onChange = (date) => {
+    onChange = (date, isUserChange) => {
+        if (!isUserChange) return;
         this.noteValueChange(date);
+
+        // Blueprint won't always close popover (e.g. choosing a date in previous month). Force it to.
+        this.child.value.setState({isOpen: false});
     }
 
     onKeyPress = (ev) => {
