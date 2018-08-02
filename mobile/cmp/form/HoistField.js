@@ -7,7 +7,8 @@
 
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {upperFirst} from 'lodash';
+import {upperFirst, isFunction} from 'lodash';
+import {throwIf} from '@xh/hoist/utils/JsUtils';
 import {observable, computed, action, runInAction} from '@xh/hoist/mobx';
 
 /**
@@ -127,6 +128,7 @@ export class HoistField extends Component {
 
         if (model && field) {
             const setterName = `set${upperFirst(field)}`;
+            throwIf(!isFunction(model[setterName]), `Required function '${setterName}()' not found on bound model`);
             model[setterName](newValue);
             newValue = this.externalValue; // Round trip this, in case model decides to intervene.
         }
