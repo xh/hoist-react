@@ -7,7 +7,7 @@
 
 import moment from 'moment';
 import {XH, HoistModel} from '@xh/hoist/core';
-import {action, observable, setter} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {LocalStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {fmtDate} from '@xh/hoist/format';
@@ -21,8 +21,8 @@ export class ClientErrorModel {
 
     @observable startDate = moment().subtract(7, 'days').toDate();
     @observable endDate = moment().toDate();
-    @observable @setter username = '';
-    @observable @setter error = '';
+    @observable username = '';
+    @observable error = '';
 
     @observable detailRecord = null;
 
@@ -90,6 +90,16 @@ export class ClientErrorModel {
     setEndDate(date) {
         if (!this.isValidDate(date) || moment(date).isSame(this.endDate)) return;
         this.endDate = date;
+    }
+
+    @action
+    setUsername(username) {
+        this.username = username;
+    }
+
+    @action
+    setError(error) {
+        this.error = error;
     }
 
     @action

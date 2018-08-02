@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {observable, computed, action} from '@xh/hoist/mobx';
+import {observable, computed, action, runInAction} from '@xh/hoist/mobx';
 import {debounce} from 'lodash';
 
 import {BaseDropdownField} from './BaseDropdownField';
@@ -44,7 +44,7 @@ export class BaseComboField extends BaseDropdownField {
         if (!this.props.requireSelection) {
             this.doDebouncedCommit();
         }
-        this.setHasFocus(false);
+        runInAction(() => this.hasFocus = false);
     }
 
     onKeyPress = (ev) => {

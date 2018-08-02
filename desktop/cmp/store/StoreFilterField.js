@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {debounce, escapeRegExp} from 'lodash';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {observable, setter} from '@xh/hoist/mobx';
+import {observable, runInAction} from '@xh/hoist/mobx';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {textField} from '@xh/hoist/desktop/cmp/form';
 import {Icon} from '@xh/hoist/icon';
@@ -34,7 +34,7 @@ export class StoreFilterField extends Component {
         filterBuffer: PT.number
     };
 
-    @setter @observable value = '';
+    @observable value = '';
 
     constructor(props) {
         super(props);
@@ -57,13 +57,16 @@ export class StoreFilterField extends Component {
         });
     }
 
+    //------------------------
+    // Implementation
+    //------------------------
     onValueChange = (v) => {
-        this.setValue(v);
+        runInAction(() => this.value = v);
         this._debouncedFilter();
     }
 
     onClearClick = () => {
-        this.setValue('');
+        runInAction(() => this.value = '');
 
         // Cancel pending filter and run it immediately
         this._debouncedFilter.cancel();

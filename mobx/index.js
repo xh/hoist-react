@@ -21,6 +21,5 @@ export {
 } from 'mobx';
 
 export {observer} from 'mobx-react';
-export {setter} from 'mobx-decorators/lib';
 
 configure({enforceActions: true});

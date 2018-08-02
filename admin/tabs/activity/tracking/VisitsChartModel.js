@@ -7,16 +7,16 @@
 import moment from 'moment';
 import {forOwn} from 'lodash';
 import {XH, HoistModel} from '@xh/hoist/core';
-import {observable, setter} from '@xh/hoist/mobx';
+import {observable, action} from '@xh/hoist/mobx';
 import {ChartModel} from '@xh/hoist/desktop/cmp/chart';
 import {fmtDate} from '@xh/hoist/format';
 
 @HoistModel()
 export class VisitsChartModel {
 
-    @observable @setter startDate = moment().subtract(3, 'months').toDate();
-    @observable @setter endDate =  new Date();
-    @observable @setter username = '';
+    @observable startDate = moment().subtract(3, 'months').toDate();
+    @observable endDate = new Date();
+    @observable username = '';
 
     chartModel = new ChartModel({
         config: {
@@ -45,7 +45,6 @@ export class VisitsChartModel {
 
         if ((!this.isValidDate(startDate)) || !this.isValidDate(endDate)) return;
 
-
         return XH.fetchJson({
             url: 'trackLogAdmin/dailyVisitors',
             params: {
@@ -56,6 +55,21 @@ export class VisitsChartModel {
         }).then(data => {
             this.chartModel.setSeries(this.getSeriesData(data));
         }).catchDefault();
+    }
+
+    @action
+    setStartDate(date) {
+        this.startDate = date;
+    }
+
+    @action
+    setEndDate(date) {
+        this.endDate = date;
+    }
+
+    @action
+    setUsername(username) {
+        this.username = username;
     }
 
     //----------------

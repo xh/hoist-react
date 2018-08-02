@@ -121,6 +121,12 @@ body {
   --xh-pad-half: calc(var(--xh-pad) * 0.5);
   --xh-pad-half-px: calc(var(--xh-pad-half) * 1px);
 
+  // Panels
+  --xh-panel-bg: var(--panel-bg, transparent);
+  --xh-panel-border-color: var(--panel-border-color, var(--xh-border-color));
+  --xh-panel-border-width: var(--panel-border-width, 0);
+  --xh-panel-border-width-px: calc(var(--xh-panel-border-width) * 1px);
+
   // Popups / dialogs
   --xh-popup-border-color: var(--popup-border-color, var(--xh-popup-title-bg));
   --xh-popup-border-width: var(--popup-border-width, var(--xh-border-width));

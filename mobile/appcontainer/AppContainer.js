@@ -6,7 +6,7 @@
  */
 
 import {Children, Component} from 'react';
-import {observable, setter} from '@xh/hoist/mobx';
+import {observable, runInAction} from '@xh/hoist/mobx';
 import {HoistComponent, elemFactory, AppState, XH} from '@xh/hoist/core';
 import {div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {loadMask} from '@xh/hoist/mobile/cmp/mask';
@@ -36,7 +36,7 @@ import {messageSource} from './MessageSource';
 @HoistComponent()
 export class AppContainer extends Component {
 
-    @setter @observable.ref caughtException = null;
+    @observable.ref caughtException = null;
 
     constructor() {
         super();
@@ -90,7 +90,7 @@ export class AppContainer extends Component {
     }
 
     componentDidCatch(e, info) {
-        this.setCaughtException(e);
+        runInAction(() => this.caughtException = e);
         XH.handleException(e, {requireReload: true});
     }
     
