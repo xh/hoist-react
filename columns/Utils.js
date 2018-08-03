@@ -13,7 +13,7 @@ import {castArray, defaults, isNumber, omit, startCase} from 'lodash';
 const hoistColConfigs = [
     'align', 'elementRenderer', 'fixedWidth', 'flex',
     'chooserDescription', 'chooserGroup', 'chooserName', 'excludeFromChooser',
-    'exportName', 'exportValue', 'exportFormat',
+    'exportName', 'exportValue', 'exportFormat', 'excludeFromExport',
     'agColDef', 'xhId'
 ];
 
@@ -63,14 +63,17 @@ export function fileColFactory(fileVals = {}) {
                 };
             }
 
-            // Default chooserName from headerName or field (sampleField -> Sample Field)
+            // Default chooserName from headerName or field (sampleField -> Sample Field).
             ret.chooserName = ret.chooserName || ret.headerName || startCase(ret.field);
 
-            // Default exportName from headerName or field
+            // Default exportName from headerName or field.
             ret.exportName = ret.exportName || ret.headerName || startCase(ret.field);
 
-            // Use default exportFormat if not defined
+            // Use default exportFormat if not defined.
             ret.exportFormat = ret.exportFormat || ExportFormat.DEFAULT;
+
+            // Default excludeFromExport to true for all cols w/o a field.
+            ret.excludeFromExport = ret.excludeFromExport || !ret.field;
 
             // Install fn to produce definition w/o custom Hoist configs for use by ag-grid,
             // which will complain about unknown config keys.
