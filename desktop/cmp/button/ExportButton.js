@@ -30,7 +30,7 @@ export class ExportButton extends Component {
     };
 
     render() {
-        const {icon, onClick, ...rest} = this.props;
+        const {icon, onClick, exportType, ...rest} = this.props;
         return button({
             icon: icon || Icon.download(),
             title: this.title || 'Export',
