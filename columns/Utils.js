@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {ExportFormat} from './ExportFormat';
-import {castArray, defaults, isNil, isNumber, omit, startCase} from 'lodash';
+import {castArray, defaults, isNumber, omit, startCase} from 'lodash';
 
 // Configs specific to / added by Hoist as extensions to ag-Grid's column API.
 // Listed here so they can be deliberately omitted when outputting a colDef for ag-Grid itself.
@@ -73,7 +73,7 @@ export function fileColFactory(fileVals = {}) {
             ret.exportFormat = ret.exportFormat || ExportFormat.DEFAULT;
 
             // Default excludeFromExport to true for all cols w/o a field.
-            ret.excludeFromExport = ret.excludeFromExport || isNil(ret.field);
+            ret.excludeFromExport = ret.excludeFromExport || !ret.field;
 
             // Install fn to produce definition w/o custom Hoist configs for use by ag-grid,
             // which will complain about unknown config keys.
