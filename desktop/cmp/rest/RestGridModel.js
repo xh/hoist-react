@@ -31,7 +31,7 @@ export class RestGridModel {
     actionWarning = {
         add: null,
         edit: null,
-        del: 'Are you sure you want to delete the selected record(s)?'
+        del: 'Are you sure you want to delete the selected record?'
     };
 
     unit = null;
