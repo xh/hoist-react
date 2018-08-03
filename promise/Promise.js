@@ -6,6 +6,7 @@
  */
 import {XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/JsUtils';
+import {action} from '@xh/hoist/mobx';
 import {isFunction, isNumber, castArray} from 'lodash';
 import RSVP from 'rsvp';
 
@@ -77,6 +78,16 @@ export async function allSettled(promises) {
 // Promise prototype extensions
 //--------------------------------
 Object.assign(Promise.prototype, {
+
+    /**
+     * Version of then() that wraps the callback in a MobX action.
+     * This should be used in a promise chain that modifies MobX observables.
+     *
+     * @param {function} [fn] - function appropriate as an argument to `then()`.
+     */
+    thenAction(fn) {
+        return this.then(action(fn));
+    },
 
     /**
      * Version of catch() that will only catch certain exceptions.

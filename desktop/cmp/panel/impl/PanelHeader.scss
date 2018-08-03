@@ -12,11 +12,13 @@
     text-overflow: ellipsis;
   }
 
+  // Header glyph.
   & > .svg-inline--fa {
     margin: 0 5px 0 0;
   }
 
-  button.pt-minimal {
+  // Header "tool" buttons.
+  button.bp3-minimal {
     color: var(--xh-title-text-color) !important;
   }
 }

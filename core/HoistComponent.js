@@ -8,6 +8,7 @@ import ReactDom from 'react-dom';
 import {XH} from '@xh/hoist/core';
 import {observer} from '@xh/hoist/mobx';
 import {defaultMethods, chainMethods} from '@xh/hoist/utils/ClassUtils';
+import classNames from 'classnames';
 
 import {ReactiveSupport} from './mixins/ReactiveSupport';
 import {elemFactory} from './elem';
@@ -66,9 +67,20 @@ export function HoistComponent({
              * Returns null if component is not mounted.
              */
             getDOMNode() {
-                return this._mounted ?
-                    ReactDom.findDOMNode(this) :
-                    null;
+                return this._mounted ? ReactDom.findDOMNode(this) : null;
+            },
+
+            /**
+             * Concatenate a CSS baseCls (if defined on component) with any instance-specific
+             * className provided via props and optional extra names provided at render-time.
+             *
+             * Components should call this to produce a combined class list and apply it to their
+             * outermost (or otherwise most appropriate) rendered component.
+             *
+             * @param {...string} extraClassNames - additional classNames to append.
+             */
+            getClassNames(...extraClassNames) {
+                return classNames(this.baseCls, this.props.className, ...extraClassNames);
             }
         });
 

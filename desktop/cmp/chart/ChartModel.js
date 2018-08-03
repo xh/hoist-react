@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {observable, setter} from '@xh/hoist/mobx';
+import {observable, action} from '@xh/hoist/mobx';
 
 
 /**
@@ -14,8 +14,8 @@ import {observable, setter} from '@xh/hoist/mobx';
 @HoistModel()
 export class ChartModel {
 
-    @observable.ref @setter config = {};
-    @observable.ref @setter series = [];
+    @observable.ref config = {};
+    @observable.ref series = [];
 
     /**
      * @param opts
@@ -25,7 +25,18 @@ export class ChartModel {
      * @param {Array} opts.series - Data series to be displayed.
      */
     constructor({config, series = []} = {}) {
-        this.setConfig(config);
-        this.setSeries(series);
+        this.config = config;
+        this.series = series;
     }
+
+    @action
+    setConfig(config) {
+        this.config = config;
+    }
+
+    @action
+    setSeries(series) {
+        this.series = series;
+    }
+
 }

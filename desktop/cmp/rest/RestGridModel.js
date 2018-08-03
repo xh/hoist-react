@@ -31,7 +31,7 @@ export class RestGridModel {
     actionWarning = {
         add: null,
         edit: null,
-        del: 'Are you sure you want to delete the selected record(s)?'
+        del: 'Are you sure you want to delete the selected record?'
     };
 
     unit = null;
@@ -68,7 +68,7 @@ export class RestGridModel {
         this.unit = unit;
         this.filterFields = filterFields;
         this.enhanceToolbar = enhanceToolbar;
-        this.gridModel = new GridModel({contextMenuFn: this.contextMenuFn, ...rest});
+        this.gridModel = new GridModel({contextMenuFn: this.contextMenuFn, exportFilename: pluralize(unit), ...rest});
         this.formModel = new RestFormModel({parent: this, editors});
     }
 
@@ -136,7 +136,9 @@ export class RestGridModel {
                 'copy',
                 'copyWithHeaders',
                 '-',
-                'export',
+                'exportExcel',
+                'exportCsv',
+                '-',
                 'autoSizeAll',
                 'colChooser'
             ],
@@ -163,9 +165,8 @@ export class RestGridModel {
         }
     }
 
-    export() {
-        const fileName = pluralize(this.unit);
-        this.gridModel.exportDataAsExcel({fileName});
+    export(...args) {
+        this.gridModel.export(...args);
     }
 
     destroy() {

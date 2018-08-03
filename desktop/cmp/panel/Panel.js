@@ -13,6 +13,7 @@ import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 
 import {panelHeader} from './impl/PanelHeader';
+import './Panel.scss';
 
 /**
  * A Panel container builds on the lower-level layout components to offer a header element
@@ -41,8 +42,10 @@ export class Panel extends Component {
         tbar: PT.element,
         /** A toolbar to be docked at the bottom of the panel. */
         bbar: PT.element,
-        /** Whether this panel should be rendered with a mask, use to disable interaction with panel. */
+        /** True to render this panel with a mask, disabling any interaction. */
         masked: PT.bool,
+        /** Text to display within this panel's mask. */
+        maskText: PT.string,
         /** Side to which Panel is collapsed, or false to indicate panel is not collapsed. @See CollapseSupport. */
         collapsed: PT.oneOf(['top', 'bottom', 'left', 'right', true, false]),
         /** How should collapsed content be rendered?  Defaults to 'lazy'. */
@@ -57,7 +60,6 @@ export class Panel extends Component {
 
     render() {
         let {
-            className,
             layoutConfig,
             tbar,
             bbar,
@@ -65,6 +67,8 @@ export class Panel extends Component {
             icon,
             headerItems,
             masked,
+            maskText,
+            isCollapsed,
             collapsed,
             collapsedRenderMode = 'always',
             collapseToggleOnDblClick = true,
@@ -102,13 +106,16 @@ export class Panel extends Component {
         this._wasDisplayed = _wasDisplayed || !_collapsed;
 
         return vbox({
-            cls: className ? `${this.baseCls} ${className}` : this.baseCls,
+            cls: this.getClassNames(),
             layoutConfig,
             ...rest,
             items: [
                 panelHeader({panel: this}),
                 coreContents,
-                mask({isDisplayed: masked})
+                mask({
+                    isDisplayed: masked,
+                    text: maskText
+                })
             ]
         });
     }

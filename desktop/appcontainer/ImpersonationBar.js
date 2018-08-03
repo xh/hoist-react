@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {HotkeysTarget, hotkeys, hotkey} from '@xh/hoist/kit/blueprint';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
-import {observable, setter} from '@xh/hoist/mobx';
+import {observable, action} from '@xh/hoist/mobx';
 import {filler, span} from '@xh/hoist/cmp/layout';
 import {comboField} from '@xh/hoist/desktop/cmp/form';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -25,7 +25,7 @@ import {Icon} from '@xh/hoist/icon';
 @HotkeysTarget
 export class ImpersonationBar extends Component {
 
-    @observable @setter pendingTarget = null
+    @observable pendingTarget = null;
 
     renderHotkeys() {
         return hotkeys(
@@ -91,5 +91,11 @@ export class ImpersonationBar extends Component {
             model.hide();
         }
     }
+
+    @action
+    setPendingTarget(pendingTarget) {
+        this.pendingTarget = pendingTarget;
+    }
+
 }
 export const impersonationBar = elemFactory(ImpersonationBar);

@@ -8,10 +8,11 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {debounce, escapeRegExp} from 'lodash';
-import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {observable, setter} from '@xh/hoist/mobx';
+import {observable, runInAction} from '@xh/hoist/mobx';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {textField} from '@xh/hoist/desktop/cmp/form';
+import {Icon} from '@xh/hoist/icon';
 import {BaseStore} from '@xh/hoist/data';
 
 /**
@@ -33,7 +34,7 @@ export class StoreFilterField extends Component {
         filterBuffer: PT.number
     };
 
-    @setter @observable value = '';
+    @observable value = '';
 
     constructor(props) {
         super(props);
@@ -43,24 +44,29 @@ export class StoreFilterField extends Component {
     }
 
     render() {
-        return inputGroup({
+        return textField({
             placeholder: 'Quick filter...',
             value: this.value,
             onChange: this.onValueChange,
+            leftIcon: Icon.filter(),
             rightElement: button({
-                cls: 'pt-minimal pt-icon-cross',
+                icon: Icon.x(),
+                minimal: true,
                 onClick: this.onClearClick
             })
         });
     }
 
-    onValueChange = (e) => {
-        this.setValue(e.target.value);
+    //------------------------
+    // Implementation
+    //------------------------
+    onValueChange = (v) => {
+        runInAction(() => this.value = v);
         this._debouncedFilter();
     }
 
     onClearClick = () => {
-        this.setValue('');
+        runInAction(() => this.value = '');
 
         // Cancel pending filter and run it immediately
         this._debouncedFilter.cancel();

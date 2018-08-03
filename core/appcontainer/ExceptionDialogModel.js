@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {observable, action, setter} from '@xh/hoist/mobx';
+import {observable, action} from '@xh/hoist/mobx';
 
 /**
  * Manages the default display of exceptions.
@@ -34,7 +34,7 @@ export class ExceptionDialogModel {
     }
 
     /** Optional user supplied message */
-    @setter @observable userMessage = '';
+    @observable userMessage = '';
 
 
     @action
@@ -52,6 +52,11 @@ export class ExceptionDialogModel {
     openDetails() {
         this.detailsIsOpen = true;
         this.userMessage = '';
+    }
+
+    @action
+    setUserMessage(userMessage) {
+        this.userMessage = userMessage;
     }
     
     async sendReportAsync() {

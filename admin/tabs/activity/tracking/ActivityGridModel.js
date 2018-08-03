@@ -6,7 +6,7 @@
  */
 import moment from 'moment';
 import {XH, HoistModel} from '@xh/hoist/core';
-import {action, observable, setter} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {LocalStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
@@ -20,17 +20,19 @@ export class ActivityGridModel {
 
     @observable startDate = moment().toDate();
     @observable endDate = moment().toDate();
-    @observable @setter username = '';
-    @observable @setter msg = '';
-    @observable @setter category = '';
-    @observable @setter device = '';
-    @observable @setter browser = '';
+    @observable username = '';
+    @observable msg = '';
+    @observable category = '';
+    @observable device = '';
+    @observable browser = '';
 
     @observable detailRecord = null;
 
     gridModel = new GridModel({
         stateModel: 'xhActivityGrid',
         enableColChooser: true,
+        enableExport: true,
+        exportFilename: () => `Activity ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`,
         store: new LocalStore({
             fields: [
                 'severity', 'dateCreated', 'username', 'msg', 'category',
@@ -87,11 +89,6 @@ export class ActivityGridModel {
         this.loadAsync();
     }
 
-    export() {
-        const fileName = `Activity: ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`;
-        this.gridModel.exportDataAsExcel({fileName});
-    }
-
     @action
     setStartDate(date) {
         if (!this.isValidDate(date) || moment(date).isSame(this.startDate)) return;
@@ -102,6 +99,31 @@ export class ActivityGridModel {
     setEndDate(date) {
         if (!this.isValidDate(date) || moment(date).isSame(this.endDate)) return;
         this.endDate = date;
+    }
+
+    @action
+    setUsername(username) {
+        this.username = username;
+    }
+
+    @action
+    setMsg(msg) {
+        this.msg = msg;
+    }
+
+    @action
+    setCategory(category) {
+        this.category = category;
+    }
+
+    @action
+    setDevice(device) {
+        this.device = device;
+    }
+
+    @action
+    setBrowser(browser) {
+        this.browser = browser;
     }
 
     @action

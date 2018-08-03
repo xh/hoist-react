@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import {action, observable, setter} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {cloneDeep, isEqual, remove, trimEnd} from 'lodash';
 import {pluralize} from '@xh/hoist/utils/JsUtils';
 import {XH, HoistModel} from '@xh/hoist/core';
@@ -29,12 +29,13 @@ export class ConfigDifferModel  {
     detailModel = new ConfigDifferDetailModel({parent: this});
 
     @observable isOpen = false;
-    @setter @observable remoteHost = null;
+    @observable remoteHost = null;
 
     constructor(configGrid) {
         this.configGrid = configGrid;
 
         this.gridModel = new GridModel({
+            enableExport: true,
             store: new LocalStore({
                 fields: [
                     'name', 'status', 'localValue', 'remoteValue'
@@ -247,6 +248,11 @@ export class ConfigDifferModel  {
         }
 
         return local ? local.valueType : remote.valueType;
+    }
+
+    @action
+    setRemoteHost(remoteHost) {
+        this.remoteHost = remoteHost;
     }
 
     @action

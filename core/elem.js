@@ -91,17 +91,18 @@ export function elem(type, config = {}) {
  *      need to be applied directly to the Element.
  *   2) Allows the addition of fixed default props to be applied before passing to the elem factory.
  *
- * @param {Component} C - React Component for which this factory will create Elements
+ * @param {(Object|string)} type - class that extends Component - or a string representing an HTML
+ *      element - for which this factory will create Elements.
  * @param {Object} [defaultProps] - optional defaults to be applied to the elem props
  * @return {function}
  */
-export function elemFactory(C, defaultProps) {
+export function elemFactory(type, defaultProps) {
     return function(...args) {
         args = normalizeArgs(args);
         if (defaultProps) {
             defaults(args, defaultProps);
         }
-        return elem(C, args);
+        return elem(type, args);
     };
 }
 

@@ -6,7 +6,8 @@
  */
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {find, isBoolean, isEqual, isNumber, isString, merge, xor} from 'lodash';
+import {find, isBoolean, isEqual, isNil, isNumber, isString, merge, xor} from 'lodash';
+import {observable, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
@@ -31,6 +32,9 @@ class Grid extends Component {
 
     _scrollOnSelect = true;
 
+    // Trackable stamp incremented everytime the agGrid receives a new set of data.
+    @observable _dataVersion = 0;
+
     static propTypes = {
 
         /**
@@ -49,6 +53,8 @@ class Grid extends Component {
          */
         onRowDoubleClicked: PT.func
     };
+
+    baseCls = 'xh-grid';
 
     constructor(props) {
         super(props);
@@ -69,12 +75,12 @@ class Grid extends Component {
         }
 
         // Note that we intentionally do *not* render the agGridReact element below with either the data
-        // or the columns.  These two bits are the most volatile in our GridModel, and this causes
+        // or the columns. These two bits are the most volatile in our GridModel, and this causes
         // extra re-rendering and jumpiness.  Instead, we rely on the API methods to keep these in sync.
         return fragment(
             box({
                 layoutConfig: layoutConfig,
-                cls: `ag-grid-holder ${XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham'}`,
+                cls: this.getClassNames('ag-grid-holder', XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham'),
                 item: agGridReact(merge(this.createDefaultAgOptions(), agOptions))
             }),
             colChooser({
@@ -122,7 +128,6 @@ class Grid extends Component {
             onSelectionChanged: this.onSelectionChanged,
             onSortChanged: this.onSortChanged,
             onGridSizeChanged: this.onGridSizeChanged,
-            onComponentStateChanged: this.onComponentStateChanged,
             onDragStopped: this.onDragStopped
         };
     }
@@ -148,7 +153,6 @@ class Grid extends Component {
     }
 
     getContextMenuItems = (params) => {
-
         // TODO: Display this as Blueprint Context menu e.g:
         // ContextMenu.show(contextMenu({menuItems}), {left:0, top:0}, () => {});
 
@@ -157,7 +161,7 @@ class Grid extends Component {
 
         const menu = contextMenuFn(params, this.model),
             recId = params.node ? params.node.id : null,
-            rec = recId ? store.getById(recId, true) : null,
+            rec = isNil(recId) ? null : store.getById(recId, true),
             selectedIds = selModel.ids;
 
         // Adjust selection to target record -- and sync to grid immediately.
@@ -225,27 +229,42 @@ class Grid extends Component {
     //------------------------
     // Reactions to model
     //------------------------
+    dataReaction() {
+        const {model} = this;
+        return {
+            track: () => [model.agApi, model.store.records],
+            run: ([api, records]) => {
+                if (api) {
+                    runInAction(() => {
+                        api.setRowData(records);
+                        this._dataVersion++;
+                    });
+                }
+            }
+        };
+    }
+
     selectionReaction() {
         const {model} = this;
-
         return {
-            track: () => [model.selection, model.agApi],
-            run: () => {
-                const {agApi, selModel} = model;
-                if (!agApi) return;
+            track: () => [model.agApi, model.selection, this._dataVersion],
+            run: ([api, ...rest]) => {
+                if (!api) return;
 
-                const modelSelection = selModel.ids,
-                    gridSelection = agApi.getSelectedRows().map(it => it.id),
+                const modelSelection = model.selModel.ids,
+                    gridSelection = api.getSelectedRows().map(it => it.id),
                     diff = xor(modelSelection, gridSelection);
 
                 // If ag-grid's selection differs from the selection model, set it to match
                 if (diff.length > 0) {
-                    agApi.deselectAll();
+                    api.deselectAll();
                     modelSelection.forEach(id => {
-                        const node = agApi.getRowNode(id);
-                        node.setSelected(true);
-                        if (this._scrollOnSelect) {
-                            agApi.ensureNodeVisible(node);
+                        const node = api.getRowNode(id);
+                        if (node) {
+                            node.setSelected(true);
+                            if (this._scrollOnSelect) {
+                                api.ensureNodeVisible(node);
+                            }
                         }
                     });
                 }
@@ -254,40 +273,23 @@ class Grid extends Component {
     }
 
     sortReaction() {
-        const {model} = this;
         return {
-            track: () => [model.sortBy, model.agApi],
-            run: () => {
-                const {agApi, sortBy} = model;
-                if (agApi && !isEqual(agApi.getSortModel(), sortBy)) {
-                    agApi.setSortModel(sortBy);
+            track: () => [this.model.agApi, this.model.sortBy],
+            run: ([api, sortBy]) => {
+                if (api && !isEqual(api.getSortModel(), sortBy)) {
+                    api.setSortModel(sortBy);
                 }
             }
         };
     }
 
     columnsReaction() {
-        const {model} = this;
         return {
-            track: () => [model.columns, model.agApi],
-            run: () => {
-                const {agApi} = model;
-                if (agApi) {
-                    agApi.setColumnDefs(this.getColumnDefs());
-                    agApi.sizeColumnsToFit();
-                }
-            }
-        };
-    }
-
-    dataReaction() {
-        const {model} = this;
-        return {
-            track: () => [model.store.records, model.agApi],
-            run: () => {
-                const {agApi} = model;
-                if (agApi) {
-                    agApi.setRowData(model.store.records);
+            track: () => [this.model.agApi, this.model.columns],
+            run: ([api, columns]) => {
+                if (api) {
+                    api.setColumnDefs(this.getColumnDefs());
+                    api.sizeColumnsToFit();
                 }
             }
         };

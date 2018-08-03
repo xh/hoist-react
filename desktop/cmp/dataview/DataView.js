@@ -15,6 +15,8 @@ import {baseCol} from '@xh/hoist/columns/Core';
 @LayoutSupport
 class DataView extends Component {
 
+    baseCls = 'xh-data-view';
+
     constructor(props) {
         super(props);
         const {store, selModel, contextMenuFn, itemFactory, emptyText} = props.model;
@@ -39,6 +41,7 @@ class DataView extends Component {
         const {layoutConfig, rowCls, itemHeight} = this.props;
         return grid({
             layoutConfig,
+            cls: this.getClassNames(),
             model: this._gridModel,
             agOptions: {
                 headerHeight: 0,

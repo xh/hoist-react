@@ -22,6 +22,7 @@ export class ConfigPanel extends Component {
     gridModel = new RestGridModel({
         stateModel: 'xhConfigGrid',
         enableColChooser: true,
+        enableExport: true,
         store: new RestStore({
             url: 'rest/configAdmin',
             reloadLookupsOnLoad: true,

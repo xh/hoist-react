@@ -77,6 +77,12 @@
   height: 28px;
 }
 
+.xh-page {
+  .xh-page-no-scroll .page__content {
+    overflow: hidden;
+  }
+}
+
 //--------------------
 // Onsen Overrides
 //--------------------

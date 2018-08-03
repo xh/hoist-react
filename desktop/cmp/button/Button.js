@@ -13,8 +13,6 @@ import {button as bpButton} from '@xh/hoist/kit/blueprint';
 /**
  * Wrapper around Blueprint's Button component.
  * Hoist's most basic button accepts any props supported by Blueprint's Button.
- *
- * Must be provided an onClick handler.
  */
 @HoistComponent()
 export class Button extends Component {
@@ -25,12 +23,15 @@ export class Button extends Component {
         onClick: PT.func
     };
 
+    baseCls = 'xh-button';
+
     render() {
         const {icon, text, onClick, ...rest} = this.props;
         return bpButton({
             icon: icon,
             text: text,
             onClick: onClick,
+            cls: this.getClassNames(),
             ...rest
         });
     }

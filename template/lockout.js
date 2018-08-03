@@ -3,7 +3,7 @@
         hasPromise = PRM !== undefined && 
             PRM !== null && 
             Object.prototype.toString.call(PRM.resolve()) === '[object Promise]' &&
-            PRM.prototype.finally !== undefined;
+            PRM.prototype['finally'] !== undefined;
 
     if (!hasPromise) {
         D.body.style.backgroundColor = '#d9d9d9';
