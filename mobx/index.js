@@ -7,7 +7,19 @@
 
 import {configure} from 'mobx';
 
-export {observable, action, autorun, reaction, computed, when, toJS, trace, untracked, runInAction} from 'mobx';
+export {
+    action,
+    autorun,
+    computed,
+    observable,
+    reaction,
+    runInAction,
+    toJS,
+    trace,
+    untracked,
+    when
+} from 'mobx';
+
 export {observer} from 'mobx-react';
 
 configure({enforceActions: true});
