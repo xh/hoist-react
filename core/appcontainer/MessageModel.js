@@ -16,19 +16,19 @@ import {HoistModel} from '@xh/hoist/core';
 export class MessageModel {
 
     // Immutable properties
-    title: null;
-    icon: null;
-    message: null;
-    confirmText: null;
-    cancelText: null;
-    confirmIntent: null;
-    cancelIntent: null;
-    onConfirm: null;
-    onCancel: null;
+    title = null;
+    icon = null;
+    message = null;
+    confirmText = null;
+    cancelText = null;
+    confirmIntent = null;
+    cancelIntent = null;
+    onConfirm = null;
+    onCancel = null;
 
     // Promise to be resolved when user has clicked on choice and its internal resolver
-    result: null;
-    _resolver: null;
+    result = null;
+    _resolver = null;
 
     @observable isOpen = true;
 
