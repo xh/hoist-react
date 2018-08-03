@@ -35,20 +35,21 @@ export class GridModel {
     @observable.ref sortBy = [];
     @observable groupBy = null;
 
+    static defaultContextMenuTokens = [
+        'copy',
+        'copyWithHeaders',
+        '-',
+        'exportExcel',
+        'exportCsv',
+        '-',
+        'autoSizeAll',
+        '-',
+        'colChooser'
+    ];
 
     defaultContextMenu = () => {
         return new StoreContextMenu({
-            items: [
-                'copy',
-                'copyWithHeaders',
-                '-',
-                'exportExcel',
-                'exportCsv',
-                '-',
-                'autoSizeAll',
-                '-',
-                'colChooser'
-            ],
+            items: GridModel.defaultContextMenuTokens,
             gridModel: this
         });
     };
