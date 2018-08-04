@@ -8,9 +8,10 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {observable, action} from 'mobx';
 import {castArray, omitBy} from 'lodash';
-import {elemFactory, HoistComponent, LayoutSupport, CollapseSupport} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
+import {CollapseModel, CollapseState} from '@xh/hoist/desktop/cmp/mask';
 
 import {panelHeader} from './impl/PanelHeader';
 import './Panel.scss';
@@ -27,9 +28,7 @@ import './Panel.scss';
 @CollapseSupport
 export class Panel extends Component {
 
-    @observable _collapsed = false;
-    _wasDisplayed = false;
-
+    wasDisplayed = false;
 
     static propTypes = {
         /** A title text added to the panel's header. */
@@ -46,14 +45,10 @@ export class Panel extends Component {
         masked: PT.bool,
         /** Text to display within this panel's mask. */
         maskText: PT.string,
-        /** Side to which Panel is collapsed, or false to indicate panel is not collapsed. @See CollapseSupport. */
-        collapsed: PT.oneOf(['top', 'bottom', 'left', 'right', true, false]),
-        /** How should collapsed content be rendered?  Defaults to 'lazy'. */
-        collapseRenderMode: PT.oneOf(['lazy', 'always', 'unmountOnHide']),
-        /** Enable Affordance to toggle collapse state */
-        collapseToggleOnDblClick: PT.bool,
-        /** Callback when collapse toggled. Will receive new value of collapsed, */
-        onCollapsedChange: PT.func
+        /** Model governing Collapse state of the panel. @See CollapseSupport. */
+        collapseModel: PT.instanceOf(CollapseModel),
+        /** Enable Affordance to toggle collapse state when double clicking header.*/
+        collapseToggleOnDblClick: PT.bool
     };
 
     baseCls = 'xh-panel';
@@ -68,19 +63,16 @@ export class Panel extends Component {
             headerItems,
             masked,
             maskText,
-            isCollapsed,
-            collapsed,
-            collapsedRenderMode = 'always',
+            collapseModel,
             collapseToggleOnDblClick = true,
-            onCollapsedChange,
             children,
             ...rest
         } = this.props;
 
-        if (collapsed != undefined) {
-            this.setCollapsed(collapsed);
-        }
-        const {_collapsed, _wasDisplayed} = this;
+        const collapsed = collapseModel && collapseModel.collapsed,
+            collapsedSide = collapsed ? collapsedModel.side : null,
+            renderMode = collapseModel && collapseModel.renderMode,
+            wasDisplayed = this.wasDisplayed
 
         // Block unwanted use of padding props, which will separate the panel's header
         // and bottom toolbar from its edges in a confusing way.
@@ -92,7 +84,7 @@ export class Panel extends Component {
         }
 
         let coreContents = null;
-        if (!_collapsed || collapsedRenderMode == 'always' || (collapsedRenderMode == 'lazy' && _wasDisplayed)) {
+        if (!collapsed || renderMode == 'always' || (renderMode == 'lazy' && wasDisplayed)) {
             coreContents = vframe({
                 style: {display: _collapsed ? 'none' : 'flex'},
                 items: [
@@ -103,14 +95,20 @@ export class Panel extends Component {
             });
         }
 
-        this._wasDisplayed = _wasDisplayed || !_collapsed;
+        this.wasDisplayed = wasDisplayed || !collapsed;
 
         return vbox({
             cls: this.getClassNames(),
             layoutConfig,
             ...rest,
             items: [
-                panelHeader({panel: this}),
+                panelHeader({
+                    title,
+                    icon,
+                    headerItems,
+                    vertical: ['left', 'right'].includes(collapsedSide),
+                    onDblClick: () => this.onHeaderDblClick
+                }),
                 coreContents,
                 mask({
                     isDisplayed: masked,
@@ -125,11 +123,10 @@ export class Panel extends Component {
     // Implementation
     //----------------------------
     @action
-    setCollapsed(value) {
-        this._collapsed = value;
-        const {onCollapsedChange} = this.props;
-        if (onCollapsedChange) {
-            onCollapsedChange(value);
+    onHeaderDblClick = () => {
+        const {collapseModel, collapseToggleOnDblClick} = this;
+        if (collapseModel && collapseToggleOnDblClick) {
+            collapseModel.toggleCollapsed();
         }
     }
 }

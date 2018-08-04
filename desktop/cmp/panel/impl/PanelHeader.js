@@ -18,11 +18,11 @@ import './PanelHeader.scss';
 class PanelHeader extends Component {
 
     render() {
-        const {title, icon, headerItems = [], collapseDirection} = this.panel.props;
-
+        const {title, icon, headerItems = []} = this.props;
+        
         if (!title && !icon && !headerItems.length) return null;
 
-        if (['top', 'left'].includes(collapseDirection)) {
+        if (!vertical) {
             return hbox({
                 cls: 'xh-panel-header',
                 items: [
@@ -34,29 +34,15 @@ class PanelHeader extends Component {
                     }) : null,
                     ...headerItems
                 ],
-                onDoubleClick: this.onDoubleClick
+                onDoubleClick
             });
         } else {
             return vbox({
                 cls: 'xh-panel-header',
                 items: icon || null,   // TODO:  Add vertically rotated text.
-                onDoubleClick: this.onDoubleClick
+                onDoubleClick
             });
         }
-    }
-
-    //-------------------------
-    // Implementation
-    //-------------------------
-    onDoubleClick = () => {
-        const {panel} = this;
-        if (panel.props.collapseToggleOnDblClick) {
-            panel.toggleCollapsed(true);
-        }
-    }
-
-    get panel() {
-        return this.props.panel;
     }
 }
 export const panelHeader = elemFactory(PanelHeader);
