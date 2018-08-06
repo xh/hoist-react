@@ -31,12 +31,22 @@
   }
 }
 
+.xh-field-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--xh-text-color-muted);
+}
+
 .xh-field {
+  &, input, textarea, select {
+    font-size: 14px;
+  }
+
   &.xh-text-field {
     margin: 4px;
 
     .text-input, .text-input__label {
-      padding: 0 4px;
+      padding: 0 var(--xh-pad-px);
     }
   }
 
@@ -44,10 +54,17 @@
     margin: 4px;
   }
 
+  &.xh-select-field select {
+    padding: 0 var(--xh-pad-px);
+    background-position: calc(100% - 10px) center;
+  }
+
   &.xh-textarea-field {
+    padding: var(--xh-pad-px);
     background-color: var(--xh-bg);
     color: var(--xh-text-color);
     border: none;
+    resize: none;
   }
 }
 

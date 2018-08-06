@@ -59,6 +59,7 @@ export class SelectField extends HoistField {
 
     onChange = (ev) => {
         this.noteValueChange(ev.target.value);
+        this.doCommit();
     }
 
 }
