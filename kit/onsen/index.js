@@ -56,7 +56,7 @@ export {
     Toast,
     Toolbar,
     ToolbarButton
-}
+};
 
 
 export const
