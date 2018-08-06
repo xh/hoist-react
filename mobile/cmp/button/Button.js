@@ -40,7 +40,7 @@ export class Button extends Component {
         }
 
         return onsenButton({
-            cls: 'xh-button',
+            className: 'xh-button',
             items,
             modifier,
             onClick,

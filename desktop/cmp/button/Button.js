@@ -23,16 +23,16 @@ export class Button extends Component {
         onClick: PT.func
     };
 
-    baseCls = 'xh-button';
+    baseClassName = 'xh-button';
 
     render() {
         const {icon, text, onClick, ...rest} = this.props;
         return bpButton({
-            icon: icon,
-            text: text,
-            onClick: onClick,
-            cls: this.getClassNames(),
-            ...rest
+            icon,
+            text,
+            onClick,
+            ...rest,
+            className: this.getClassName()
         });
     }
 

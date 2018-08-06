@@ -24,24 +24,24 @@ import {DarkTheme} from './theme/Dark';
 @LayoutSupport
 export class Chart extends Component {
 
-    baseCls = 'xh-chart';
+    baseClassName = 'xh-chart';
 
     _chartElem = new Ref();
     _chart = null;
 
     render() {
         // Default flex = 1 (flex: 1 1 0) if no dimensions / flex specified, i.e. do not consult child for dimensions;
-        const {layoutConfig} = this.props;
-        if (layoutConfig.width == null && layoutConfig.height == null && layoutConfig.flex == null) {
-            layoutConfig.flex = 1;
+        const layoutProps = this.getLayoutProps();
+        if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
+            layoutProps.flex = 1;
         }
 
         this.renderHighChart();
 
         // Inner div required to be the ref for the chart element
         return box({
-            layoutConfig: layoutConfig,
-            cls: this.getClassNames(),
+            ...layoutProps,
+            className: this.getClassName(),
             item: div({
                 style: {flex: 'auto'},
                 ref: this._chartElem.ref

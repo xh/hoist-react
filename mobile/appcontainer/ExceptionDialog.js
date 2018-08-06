@@ -34,7 +34,7 @@ export class ExceptionDialog extends Component {
             dialog({
                 isOpen: true,
                 title: options.title,
-                cls: 'xh-exception-dialog',
+                className: 'xh-exception-dialog',
                 icon: Icon.warning(),
                 content: options.message,
                 onCancel: !options.requireReload ? this.onCloseClick : null,

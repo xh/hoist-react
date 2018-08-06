@@ -30,7 +30,7 @@ export class Dragger extends Component {
     render() {
         const {side} = this.props;
         return div({
-            cls: `xh-resizable-dragger ${side}`,
+            className: `xh-resizable-dragger ${side}`,
             onDrag: this.onDrag,
             onDragStart: this.onDragStart,
             onDragEnd: this.onDragEnd,

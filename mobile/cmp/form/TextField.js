@@ -41,7 +41,7 @@ export class TextField extends HoistField {
         const {style, width, spellCheck} = this.props;
 
         return input({
-            cls: 'xh-field xh-text-field',
+            className: 'xh-field xh-text-field',
             value: this.renderValue || '',
             onChange: this.onChange,
             onBlur: this.onBlur,

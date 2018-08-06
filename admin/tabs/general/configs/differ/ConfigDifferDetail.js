@@ -58,12 +58,12 @@ export class ConfigDifferDetail extends Component {
         const rows = fields.map(field => {
             const cls = this.model.createDiffClass(field, local, remote),
                 localCell = local ? toString(local[field]) : '',
-                remoteCell = remote ? {cls: cls, item: toString(remote[field])} : '';
+                remoteCell = remote ? {className: cls, item: toString(remote[field])} : '';
             return tr(td(field), td(localCell), td(remoteCell));
         });
 
         return table({
-            cls: 'config-diff-table',
+            className: 'config-diff-table',
             item: tbody(
                 tr(
                     th('Property'),

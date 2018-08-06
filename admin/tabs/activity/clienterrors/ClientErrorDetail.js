@@ -35,7 +35,7 @@ class ClientErrorDetail extends Component {
     renderDetail(rec) {
         return [
             table({
-                cls: 'xh-admin-error-detail',
+                className: 'xh-admin-error-detail',
                 items: [
                     tbody(
                         tr(th('User:'), td(rec.username)),

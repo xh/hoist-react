@@ -38,7 +38,7 @@ class LogViewerDisplay extends Component {
     render() {
         const {rows} = this.model;
         return frame({
-            cls: 'xh-log-display',
+            className: 'xh-log-display',
             overflow: 'scroll',
             item: table(
                 tbody(...this.getTableRows(rows))
@@ -49,11 +49,11 @@ class LogViewerDisplay extends Component {
     getTableRows(rows) {
         return rows.map((row, idx) => {
             return tr({
-                cls: 'xh-log-display__row',
+                className: 'xh-log-display__row',
                 ref: this.getRowRef(idx, rows.length),
                 items: [
-                    td({key: `row-number-${idx}`, datakey: idx, cls: 'xh-log-display__row-number', item: row[0].toString()}),
-                    td({key: `row-content-${idx}`, datakey: idx, cls: 'xh-log-display__row-content', item: row[1]})
+                    td({key: `row-number-${idx}`, datakey: idx, className: 'xh-log-display__row-number', item: row[0].toString()}),
+                    td({key: `row-content-${idx}`, datakey: idx, className: 'xh-log-display__row-content', item: row[1]})
                 ]
             });
         });

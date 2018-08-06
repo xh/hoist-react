@@ -36,7 +36,7 @@ export class LoginPanel extends Component {
             flexDirection: 'column',
             items: [
                 panel({
-                    cls: 'xh-login',
+                    className: 'xh-login',
                     width: 300,
                     title: `Welcome to ${XH.appName}`,
                     items: [
@@ -59,10 +59,10 @@ export class LoginPanel extends Component {
                             omit: !model.warning,
                             item: model.warning,
                             ellipsize: true,
-                            cls: 'xh-login__warning'
+                            className: 'xh-login__warning'
                         }),
                         loginMessage ? box({
-                            cls: 'xh-login__message',
+                            className: 'xh-login__message',
                             item: loginMessage
                         }) : null
                     ],

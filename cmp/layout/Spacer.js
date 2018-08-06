@@ -16,12 +16,12 @@ import {box} from './Box';
 @HoistComponent()
 @LayoutSupport
 export class Spacer extends Component {
-    baseCls = 'xh-spacer';
+    baseClassName = 'xh-spacer';
     render() {
         return box({
             flex: 'none',
-            cls: this.getClassNames(),
-            ...this.props
+            ...this.props,
+            className: this.getClassName()
         });
     }
 }
@@ -32,12 +32,12 @@ export class Spacer extends Component {
 @HoistComponent()
 @LayoutSupport
 export class Filler extends Component {
-    baseCls = 'xh-filler';
+    baseClassName = 'xh-filler';
     render() {
         return box({
             flex: 'auto',
-            cls: this.getClassNames(),
-            ...this.props
+            ...this.props,
+            className: this.getClassName()
         });
     }
 }

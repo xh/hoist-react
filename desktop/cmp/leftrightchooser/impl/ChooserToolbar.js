@@ -26,7 +26,7 @@ class ChooserToolbar extends Component {
         return toolbar({
             width: 50,
             vertical: true,
-            cls: 'xh-lr-chooser__toolbar',
+            className: 'xh-lr-chooser__toolbar',
             items: [
                 vspacer(10),
                 button({

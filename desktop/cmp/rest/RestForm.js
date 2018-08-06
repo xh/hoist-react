@@ -20,7 +20,7 @@ import './RestForm.scss';
 @HoistComponent()
 export class RestForm extends Component {
 
-    baseCls = 'xh-rest-form';
+    baseClassName = 'xh-rest-form';
 
     render() {
         const {record, isAdd} = this.model;
@@ -29,7 +29,7 @@ export class RestForm extends Component {
         return dialog({
             title: isAdd ? 'Add Record' : 'Edit Record',
             icon: isAdd ? Icon.add() : Icon.edit(),
-            cls: this.getClassNames(),
+            className: this.getClassName(),
             isOpen: true,
             isCloseButtonShown: false,
             items: this.getDialogItems()

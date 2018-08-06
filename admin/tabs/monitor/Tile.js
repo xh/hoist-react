@@ -26,28 +26,28 @@ export class Tile extends Component {
             relativeString = getRelativeTimestamp(new Date(lastStatusChanged), {pastSuffix: ''});
 
         return vbox({
-            cls: tileClass,
+            className: tileClass,
             items: [
                 div({
-                    cls: 'xh-status-tile__name',
+                    className: 'xh-status-tile__name',
                     item: name
                 }),
                 vbox({
-                    cls: 'xh-status-tile__content',
+                    className: 'xh-status-tile__content',
                     items: [
                         icon,
                         div({
-                            cls: 'xh-status-tile__elapsed',
+                            className: 'xh-status-tile__elapsed',
                             item: `${statusText} for ${relativeString} (${pluralize('check', checksInStatus, true)})`,
                             hidden: !!status.match('UNKNOWN|INACTIVE')
                         }),
                         div({
-                            cls: 'xh-status-tile__metric',
+                            className: 'xh-status-tile__metric',
                             item: `${metric} ${metricUnit || ''}`,
                             hidden: metric == null
                         }),
                         div({
-                            cls: 'xh-status-tile__message',
+                            className: 'xh-status-tile__message',
                             item: `${message}`,
                             hidden: !message
                         })

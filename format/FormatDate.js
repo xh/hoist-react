@@ -45,7 +45,7 @@ export function fmtDate(v, opts = {}) {
     if (ret == INVALID_DATE) {
         ret = '';
     } else if (opts.tipFn) {
-        ret = fmtSpan(ret, {cls: 'xh-title-tip', title: opts.tipFn(opts.originalValue), asElement: opts.asElement});
+        ret = fmtSpan(ret, {className: 'xh-title-tip', title: opts.tipFn(opts.originalValue), asElement: opts.asElement});
     }
 
     return opts.asElement ? span(ret) : ret;

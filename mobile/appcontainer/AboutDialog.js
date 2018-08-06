@@ -29,7 +29,7 @@ export class AboutDialog extends Component {
         return dialog({
             icon: Icon.info(),
             title: `About ${XH.appName}`,
-            cls: 'xh-about-dialog',
+            className: 'xh-about-dialog',
             isOpen: true,
             onCancel: this.onClose,
             content: model.getTable()

@@ -24,7 +24,7 @@ export class ColChooser extends Component {
         return dialog({
             icon: Icon.grid(),
             title: 'Choose Columns',
-            cls: 'xh-grid-column-chooser',
+            className: 'xh-grid-column-chooser',
             isOpen: true,
             onClose: this.onClose,
             items: [
@@ -34,7 +34,7 @@ export class ColChooser extends Component {
                     filler(),
                     button({
                         text: 'Reset',
-                        icon: Icon.undo({cls: 'xh-red'}),
+                        icon: Icon.undo({className: 'xh-red'}),
                         omit: !gridModel.stateModel,
                         onClick: this.restoreDefaults
                     }),
@@ -47,7 +47,7 @@ export class ColChooser extends Component {
                     }),
                     button({
                         text: 'Save',
-                        icon: Icon.check({cls: 'xh-green'}),
+                        icon: Icon.check({className: 'xh-green'}),
                         onClick: this.onOK
                     })
                 )

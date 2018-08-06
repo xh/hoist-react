@@ -50,12 +50,12 @@ export class ClientErrorPanel extends Component {
             button({
                 icon: Icon.caretRight(),
                 onClick: this.onDateGoForwardClick,
-                cls: 'xh-no-pad'
+                className: 'xh-no-pad'
             }),
             button({
                 icon: Icon.arrowToRight(),
                 onClick: this.onGoToCurrentDateClick,
-                cls: 'xh-no-pad'
+                className: 'xh-no-pad'
             }),
             toolbarSep(),
             this.textField({field: 'username', placeholder: 'User...'}),

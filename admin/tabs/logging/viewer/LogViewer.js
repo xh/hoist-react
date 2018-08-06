@@ -35,7 +35,7 @@ export class LogViewer extends Component {
             {files, loadModel} = model;
 
         return hframe({
-            cls: 'xh-log-viewer',
+            className: 'xh-log-viewer',
             items: [
                 resizable({
                     side: 'right',

@@ -28,7 +28,7 @@ export class Label extends HoistField {
     render() {
         const {children, style, width} = this.props;
         return div({
-            cls: 'bp3-label bp3-inline',
+            className: 'bp3-label bp3-inline',
             style: {...style, whiteSpace: 'nowrap', width},
             items: children,
             ...this.getDelegateProps()

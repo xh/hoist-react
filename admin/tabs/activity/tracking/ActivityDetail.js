@@ -35,7 +35,7 @@ class ActivityDetail extends Component {
         const user = rec.impersonating? `${rec.username} as ${rec.impersonating}`: rec.username;
         return [
             table({
-                cls: 'xh-admin-activity-detail',
+                className: 'xh-admin-activity-detail',
                 items: [
                     tbody(
                         tr(th('User:'), td(user)),

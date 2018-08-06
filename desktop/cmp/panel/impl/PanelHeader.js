@@ -22,11 +22,11 @@ class PanelHeader extends Component {
         if (!title && !icon && !headerItems.length) return null;
 
         return hbox({
-            cls: 'xh-panel-header',
+            className: 'xh-panel-header',
             items: [
                 icon || null,
                 title ? box({
-                    cls: 'xh-panel-header-title',
+                    className: 'xh-panel-header-title',
                     flex: 1,
                     item: title
                 }) : null,
