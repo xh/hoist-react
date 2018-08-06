@@ -23,7 +23,7 @@ import './LeftRightChooser.scss';
 @LayoutSupport
 class LeftRightChooser extends Component {
 
-    baseCls = 'xh-lr-chooser';
+    baseClassName = 'xh-lr-chooser';
 
     render() {
         const {model} = this,
@@ -36,7 +36,7 @@ class LeftRightChooser extends Component {
             };
 
         return vbox({
-            ...this.layoutProps(),
+            ...this.getLayoutProps(),
             className: this.getClassName(),
             items: [
                 hframe({

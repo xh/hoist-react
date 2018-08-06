@@ -16,7 +16,7 @@ import {box} from './Box';
 @HoistComponent()
 @LayoutSupport
 export class Viewport extends Component {
-    baseCls = 'xh-viewport';
+    baseClassName = 'xh-viewport';
     render() {
         return box({
             top: 0,

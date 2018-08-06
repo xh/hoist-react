@@ -24,7 +24,7 @@ class Toolbar extends Component {
         vertical: PT.bool
     };
 
-    baseCls = 'xh-toolbar';
+    baseClassName = 'xh-toolbar';
 
     render() {
         const {vertical, ...rest} = this.props;

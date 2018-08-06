@@ -24,7 +24,7 @@ export class Mask extends Component {
         text: PT.string
     };
 
-    baseCls = 'xh-mask';
+    baseClassName = 'xh-mask';
 
     render() {
         let {isDisplayed, text} = this.props;

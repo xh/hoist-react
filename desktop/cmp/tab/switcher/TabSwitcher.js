@@ -33,7 +33,7 @@ export class TabSwitcher extends Component {
         orientation: 'top'
     };
 
-    baseCls = 'xh-tab-switcher';
+    baseClassName = 'xh-tab-switcher';
 
     render() {
         const {id, tabs, activeTabId} = this.model,

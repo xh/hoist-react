@@ -24,14 +24,14 @@ import {DarkTheme} from './theme/Dark';
 @LayoutSupport
 export class Chart extends Component {
 
-    baseCls = 'xh-chart';
+    baseClassName = 'xh-chart';
 
     _chartElem = new Ref();
     _chart = null;
 
     render() {
         // Default flex = 1 (flex: 1 1 0) if no dimensions / flex specified, i.e. do not consult child for dimensions;
-        const layoutProps = this.layoutProps();
+        const layoutProps = this.getLayoutProps();
         if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
             layoutProps.flex = 1;
         }

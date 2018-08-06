@@ -54,7 +54,7 @@ class Grid extends Component {
         onRowDoubleClicked: PT.func
     };
 
-    baseCls = 'xh-grid';
+    baseClassName = 'xh-grid';
 
     constructor(props) {
         super(props);
@@ -68,7 +68,7 @@ class Grid extends Component {
     render() {
         const {colChooserModel} = this.model,
             {agOptions} = this.props,
-            layoutProps = this.layoutProps();
+            layoutProps = this.getLayoutProps();
 
         // Default flex = 'auto' if no dimensions / flex specified.
         if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {

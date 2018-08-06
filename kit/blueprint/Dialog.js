@@ -14,7 +14,7 @@ import {div} from '@xh/hoist/cmp/layout';
  */
 @HoistComponent()
 export class DialogBody extends Component {
-    baseCls = 'bp3-dialog-body';
+    baseClassName = 'bp3-dialog-body';
     render() {
         return div({...this.props, className: this.getClassName()});
     }
@@ -25,7 +25,7 @@ export class DialogBody extends Component {
  */
 @HoistComponent()
 export class DialogFooter extends Component {
-    baseCls = 'bp3-dialog-footer';
+    baseClassName = 'bp3-dialog-footer';
     render() {
         return div({...this.props, className: this.getClassName()});
     }
@@ -36,7 +36,7 @@ export class DialogFooter extends Component {
  */
 @HoistComponent()
 export class DialogFooterActions extends Component {
-    baseCls = 'bp3-dialog-footer-actions';
+    baseClassName = 'bp3-dialog-footer-actions';
     render() {
         return div({...this.props, className: this.getClassName()});
     }

@@ -83,7 +83,7 @@ export function HoistComponent({isReactive = true} = {}) {
             },
 
             /**
-             * Concatenate a CSS baseCls (if defined on component) with any instance-specific
+             * Concatenate a CSS baseClassName (if defined on component) with any instance-specific
              * className provided via props and optional extra names provided at render-time.
              *
              * Components should call this to produce a combined class list and apply it to their
@@ -92,7 +92,7 @@ export function HoistComponent({isReactive = true} = {}) {
              * @param {...string} extraClassNames - additional classNames to append.
              */
             getClassName(...extraClassNames) {
-                return classNames(this.baseCls, this.props.className, ...extraClassNames);
+                return classNames(this.baseClassName, this.props.className, ...extraClassNames);
             }
         });
 

@@ -45,7 +45,7 @@ class StoreCountLabel extends Component {
             unitLabel = count === 1 ? this.oneUnit : this.manyUnits;
 
         return box({
-            ...this.layoutProps(),
+            ...this.getLayoutProps(),
             item: `${countStr} ${unitLabel}`
         });
     }

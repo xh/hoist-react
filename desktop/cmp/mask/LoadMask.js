@@ -29,7 +29,7 @@ export class LoadMask extends Component {
         text: PT.string
     };
 
-    baseCls = 'xh-mask';
+    baseClassName = 'xh-mask';
     
     render() {
         let {isDisplayed, model, inline, text} = this.props,

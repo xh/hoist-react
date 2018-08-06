@@ -48,7 +48,7 @@ export class AppBar extends Component {
         refreshButtonProps: PT.object
     };
 
-    baseCls = 'xh-appbar';
+    baseClassName = 'xh-appbar';
 
     render() {
         const {

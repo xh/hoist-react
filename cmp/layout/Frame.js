@@ -26,7 +26,7 @@ export class Frame extends Component {
 @HoistComponent()
 @LayoutSupport
 export class VFrame extends Component {
-    baseCls = 'xh-vframe';
+    baseClassName = 'xh-vframe';
     render() {
         return box({
             flex: 'auto',
@@ -40,7 +40,7 @@ export class VFrame extends Component {
 @HoistComponent()
 @LayoutSupport
 export class HFrame extends Component {
-    baseCls = 'xh-hframe';
+    baseClassName = 'xh-hframe';
     render() {
         return box({
             flex: 'auto',

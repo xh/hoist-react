@@ -20,7 +20,7 @@ import './RestForm.scss';
 @HoistComponent()
 export class RestForm extends Component {
 
-    baseCls = 'xh-rest-form';
+    baseClassName = 'xh-rest-form';
 
     render() {
         const {record, isAdd} = this.model;

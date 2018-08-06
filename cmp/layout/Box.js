@@ -21,10 +21,10 @@ import {div} from './Tags';
 @LayoutSupport
 export class Box extends Component {
     render() {
-        let {isCollapsed, children, ...props} = this.nonLayoutProps();
+        let {isCollapsed, children, ...props} = this.getNonLayoutProps();
         props = merge(
             {style: {display: 'flex', overflow: 'hidden', position: 'relative'}},
-            {style: this.layoutProps()},
+            {style: this.getLayoutProps()},
             props
         );
 
@@ -35,7 +35,7 @@ export class Box extends Component {
 @HoistComponent()
 @LayoutSupport
 export class VBox extends Component {
-    baseCls = 'xh-vbox';
+    baseClassName = 'xh-vbox';
     render() {
         return box({
             flexDirection: 'column',
@@ -48,7 +48,7 @@ export class VBox extends Component {
 @HoistComponent()
 @LayoutSupport
 export class HBox extends Component {
-    baseCls = 'xh-hbox';
+    baseClassName = 'xh-hbox';
     render() {
         return box({
             flexDirection: 'row',

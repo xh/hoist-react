@@ -44,7 +44,7 @@ export class TabContainer extends Component {
         switcherPosition: 'top'
     };
 
-    baseCls = 'xh-tab-container';
+    baseClassName = 'xh-tab-container';
 
     render() {
         const {model} = this,
@@ -56,7 +56,7 @@ export class TabContainer extends Component {
             container = vertical ? hbox : vbox;
 
         // Default flex = 'auto' if no dimensions / flex specified.
-        const layoutProps = this.layoutProps();
+        const layoutProps = this.getLayoutProps();
         if (layoutProps.width === null && layoutProps.height === null && layoutProps.flex === null) {
             layoutProps.flex = 'auto';
         }

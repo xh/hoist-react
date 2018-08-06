@@ -33,7 +33,7 @@ export class Tab extends Component {
         model: PT.instanceOf(TabModel).isRequired
     };
 
-    baseCls = 'xh-tab';
+    baseClassName = 'xh-tab';
 
     child = new Ref();
     wasActivated = false;

@@ -180,7 +180,7 @@ export function fmtPercent(v, opts = {}) {
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
 
-    defaults(opts, {precision: 2, label: '%', labelclassName: null});
+    defaults(opts, {precision: 2, label: '%', labelCls: null});
     return fmtNumber(v, opts);
 }
 

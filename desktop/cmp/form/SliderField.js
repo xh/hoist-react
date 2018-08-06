@@ -58,7 +58,7 @@ export class SliderField extends HoistField {
             input = isArray(toJS(this.renderValue)) ? rangeSlider : slider;
 
         // Set default left / right padding
-        const layoutProps = this.layoutProps();
+        const layoutProps = this.getLayoutProps();
         if (!layoutProps.padding && !layoutProps.paddingLeft) layoutProps.paddingLeft = 20;
         if (!layoutProps.padding && !layoutProps.paddingRight) layoutProps.paddingRight = 20;
 

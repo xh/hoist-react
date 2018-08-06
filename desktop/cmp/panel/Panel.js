@@ -39,7 +39,7 @@ export class Panel extends Component {
         maskText: PT.string
     };
 
-    baseCls = 'xh-panel';
+    baseClassName = 'xh-panel';
 
     render() {
         let {
@@ -53,11 +53,11 @@ export class Panel extends Component {
             isCollapsed,
             children,
             ...rest
-        } = this.nonLayoutProps();
+        } = this.getNonLayoutProps();
 
         // Block unwanted use of padding props, which will separate the panel's header
         // and bottom toolbar from its edges in a confusing way.
-        const layoutProps = omitBy(this.layoutProps(), (v, k) => k.startsWith('padding'));
+        const layoutProps = omitBy(this.getLayoutProps(), (v, k) => k.startsWith('padding'));
 
         // Give Panels a default flexing behavior if no dimensions / flex specified.
         if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {

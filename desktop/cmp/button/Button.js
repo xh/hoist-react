@@ -23,7 +23,7 @@ export class Button extends Component {
         onClick: PT.func
     };
 
-    baseCls = 'xh-button';
+    baseClassName = 'xh-button';
 
     render() {
         const {icon, text, onClick, ...rest} = this.props;

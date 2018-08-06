@@ -39,10 +39,9 @@ export function LayoutSupport(C) {
          * This method implements some minor translations, to allow a more
          * user friendly specification than that afforded by the underlying flexbox styles.
          *
-         * In particular, it affords a more general specification of flex and sizing props as
-         * raw numbers rather than string.
+         * In particular, it accepts flex and sizing props as raw numbers rather than strings.
          */
-        layoutProps() {
+        getLayoutProps() {
 
             // Harvest all keys of interest
             const ret = pick(this.props, allKeys);
@@ -66,7 +65,7 @@ export function LayoutSupport(C) {
         /**
          * Return all non-layout related props found in props.
          */
-        nonLayoutProps() {
+        getNonLayoutProps() {
             return omit(this.props, allKeys);
         }
         
