@@ -16,10 +16,10 @@ export class ItemRenderer extends Component {
 
     render() {
         const {value, data} = this.props,
-            lockedText = Icon.lock({cls: 'medium-gray', prefix: 'fal'});
+            lockedText = Icon.lock({className: 'medium-gray', prefix: 'fal'});
 
         return div({
-            cls: 'xh-lr-chooser__item-row',
+            className: 'xh-lr-chooser__item-row',
             items: [
                 value,
                 data.locked ? lockedText : null

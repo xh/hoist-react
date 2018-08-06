@@ -32,7 +32,7 @@ export class ImpersonationBar extends Component {
             options = [username, ...targets];
 
         return div({
-            cls: 'xh-impersonation-bar',
+            className: 'xh-impersonation-bar',
             items: [
                 Icon.user({size: 'lg'}),
                 selectField({

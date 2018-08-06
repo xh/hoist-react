@@ -105,10 +105,10 @@ export class TabContainerModel {
             content: tab({key: id, model: tabModel}),
             tab: onsenTab({
                 key: id,
-                cls: 'xh-tab',
+                className: 'xh-tab',
                 items: [
-                    div({cls: 'xh-tab-icon', item: icon, omit: !icon}),
-                    div({cls: 'xh-tab-label', item: label})
+                    div({className: 'xh-tab-icon', item: icon, omit: !icon}),
+                    div({className: 'xh-tab-label', item: label})
                 ]
             })
         };

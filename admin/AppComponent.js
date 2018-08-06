@@ -22,7 +22,7 @@ export class AppComponent extends Component {
     render() {
         return panel({
             tbar: this.renderAppBar(),
-            cls: 'xh-admin-app-frame',
+            className: 'xh-admin-app-frame',
             item: tabContainer({
                 model: this.model.tabModel,
                 switcherPosition: 'none'

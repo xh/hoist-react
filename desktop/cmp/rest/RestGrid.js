@@ -26,7 +26,7 @@ export class RestGrid extends Component {
 
         return fragment(
             panel({
-                cls: this.getClassNames(),
+                className: this.getClassName(),
                 layoutConfig,
                 tbar: restGridToolbar({model, extraToolbarItems}),
                 item: grid({

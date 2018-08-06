@@ -27,18 +27,18 @@ class Dialog extends Component {
             isOpen: true,
             isCancelable: true,
             onCancel: onCancel,
-            cls: className ? `${baseCls} ${className}` : baseCls,
+            className: className ? `${baseCls} ${className}` : baseCls,
             items: [
                 div({
-                    cls: `${baseCls}__title`,
+                    className: `${baseCls}__title`,
                     items: [icon, title]
                 }),
                 div({
-                    cls: `${baseCls}__inner`,
+                    className: `${baseCls}__inner`,
                     item: content
                 }),
                 div({
-                    cls: `${baseCls}__toolbar`,
+                    className: `${baseCls}__toolbar`,
                     omit: !buttons.length,
                     items: [
                         filler(),

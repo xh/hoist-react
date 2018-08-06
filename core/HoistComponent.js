@@ -25,9 +25,7 @@ import {elemFactory} from './elem';
  * @param {Object} [config] - configuration for the decorator.
  * @param {boolean} [config.isReactive] - apply the ReactiveSupport and mobX Observer mixins to the component Class.
  */
-export function HoistComponent({
-    isReactive = true
-} = {}) {
+export function HoistComponent({isReactive = true} = {}) {
 
     return (C) => {
         C.isHoistComponent = true;
@@ -36,6 +34,7 @@ export function HoistComponent({
             C = ReactiveSupport(C);
         }
 
+        
         defaultMethods(C, {
             /**
              * Model class which this component is rendering.  This is a shortcut getter
@@ -92,7 +91,7 @@ export function HoistComponent({
              *
              * @param {...string} extraClassNames - additional classNames to append.
              */
-            getClassNames(...extraClassNames) {
+            getClassName(...extraClassNames) {
                 return classNames(this.baseCls, this.props.className, ...extraClassNames);
             }
         });

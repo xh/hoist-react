@@ -80,7 +80,7 @@ class Grid extends Component {
         return fragment(
             box({
                 layoutConfig: layoutConfig,
-                cls: this.getClassNames('ag-grid-holder', XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham'),
+                className: this.getClassName('ag-grid-holder', XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham'),
                 item: agGridReact(merge(this.createDefaultAgOptions(), agOptions))
             }),
             colChooser({

@@ -44,7 +44,7 @@ function fmtSpanElement(v, opts = {}) {
         txt = (leadSpc ? ' ' : '') + v + (trailSpc ? ' ' : '');
 
     return span({
-        cls: cls,
+        className: cls,
         title: title,
         item: txt
     });

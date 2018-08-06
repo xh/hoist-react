@@ -32,13 +32,13 @@ export class LoadMask extends Component {
         if (!(isDisplayed || (model && model.isPending))) return null;
 
         return div({
-            cls: 'xh-mask',
+            className: 'xh-mask',
             item: vbox({
-                cls: 'xh-mask-body',
+                className: 'xh-mask-body',
                 items: [
                     progressCircular({indeterminate: true}),
                     vspacer(10),
-                    text ? box({cls: 'xh-mask-text', item: text}) : null
+                    text ? box({className: 'xh-mask-text', item: text}) : null
                 ]
             })
         });

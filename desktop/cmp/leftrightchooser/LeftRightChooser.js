@@ -38,10 +38,10 @@ class LeftRightChooser extends Component {
 
         return vbox({
             layoutConfig,
-            cls: this.getClassNames(),
+            className: this.getClassName(),
             items: [
                 hframe({
-                    cls: 'xh-lr-chooser__grid-frame',
+                    className: 'xh-lr-chooser__grid-frame',
                     items: [
                         grid({model: leftModel, ...gridOptions}),
                         chooserToolbar({model}),

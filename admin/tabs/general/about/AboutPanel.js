@@ -16,7 +16,7 @@ export class AboutPanel extends Component {
 
     render() {
         return div({
-            cls: 'xh-admin-about-panel',
+            className: 'xh-admin-about-panel',
             items: [
                 h1('About This Application'),
                 ...this.renderTables(),
@@ -54,7 +54,7 @@ export class AboutPanel extends Component {
 
     renderBlurb() {
         return div({
-            cls: 'xh-admin-about-panel__blurb',
+            className: 'xh-admin-about-panel__blurb',
             items: [
                 <p>
                     Built with Hoist: a plugin for rich web-application development provided by

@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {provideMethods} from '@xh/hoist/utils/ClassUtils';
+import {provideMethods, defaultMethods} from '@xh/hoist/utils/ClassUtils';
 import {pick, isNumber, merge, forOwn} from 'lodash';
 
 /**
@@ -33,16 +33,8 @@ export function LayoutSupport(C) {
 
     C.hasLayoutSupport = true;
 
-    /**
-     * Process flexbox related style keys from a configuration,
-     * placing them in a nested 'layoutConfig' property.
-     *
-     * Not typically called directly by applications.  This function
-     * is called by elem() factory for pre-processing props for this Component.
-     *
-     * @param {Object} config -- basket of component properties to be parsed and processed.
-     */
-    C.processLayoutProps = (config) => {
+
+    C.processElemProps = (config) => {
         // 1) Harvest, remove, and process all keys of interest
         const layoutConfig = pick(config, allKeys);
         forOwn(layoutConfig, (v, k) => delete config[k]);
@@ -61,8 +53,8 @@ export function LayoutSupport(C) {
 
         // 2) Apply this config on top of any config passed in
         config.layoutConfig = config.layoutConfig ? merge(config.layoutConfig, layoutConfig) : layoutConfig;
-    };
-
+    }
+   
     // Instance methods
     provideMethods(C, {
 

@@ -59,7 +59,7 @@ export class Tab extends Component {
         
         return frame({
             display: isActive ? 'flex' : 'none',
-            cls: this.getClassNames(),
+            className: this.getClassName(),
             item
         });
     }

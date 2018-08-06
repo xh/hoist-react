@@ -44,10 +44,10 @@ export class AppBar extends Component {
         const {navigatorModel, appMenuModel, title, rightItems, hideRefreshButton, backButtonProps, refreshButtonProps = {}} = this.props;
 
         return toolbar({
-            cls: 'xh-appbar',
+            className: 'xh-appbar',
             items: [
                 div({
-                    cls: 'left',
+                    className: 'left',
                     items: [
                         navigatorBackButton({
                             model: navigatorModel,
@@ -60,11 +60,11 @@ export class AppBar extends Component {
                     ]
                 }),
                 div({
-                    cls: 'center',
+                    className: 'center',
                     item: title || navigatorModel.title
                 }),
                 div({
-                    cls: 'right',
+                    className: 'right',
                     items: [
                         ...rightItems || [],
                         refreshButton({

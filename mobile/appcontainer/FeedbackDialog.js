@@ -26,7 +26,7 @@ export class FeedbackDialog extends Component {
 
         return dialog({
             title: 'Submit Feedback',
-            cls: 'xh-feedback-dialog',
+            className: 'xh-feedback-dialog',
             isOpen: true,
             onCancel: this.onCancelClick,
             content: textAreaField({

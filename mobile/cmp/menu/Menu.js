@@ -47,7 +47,7 @@ class Menu extends Component {
                 onClick: () => model.close()
             }),
             vbox({
-                cls: 'xh-menu',
+                className: 'xh-menu',
                 width,
                 style,
                 items
@@ -62,7 +62,7 @@ class Menu extends Component {
         return listItem({
             key: idx,
             tappable: true,
-            item: div({cls: 'center', items: labelItems}),
+            item: div({className: 'center', items: labelItems}),
             omit: hidden,
             onClick: () => {
                 if (action) action();

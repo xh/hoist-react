@@ -23,7 +23,7 @@ export class UpdateBar extends Component {
         if (!updateVersion) return null;
 
         return div({
-            cls: 'xh-update-bar',
+            className: 'xh-update-bar',
             items: [
                 Icon.rocket({size: 'lg'}),
                 div('An update is available!'),

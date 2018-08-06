@@ -31,8 +31,8 @@ export class VFrame extends Component {
         return box({
             flex: 'auto',
             flexDirection: 'column',
-            cls: this.getClassNames(),
-            ...this.props
+            ...this.props,
+            className: this.getClassName()
         });
     }
 }
@@ -45,8 +45,8 @@ export class HFrame extends Component {
         return box({
             flex: 'auto',
             flexDirection: 'row',
-            cls: this.getClassNames(),
-            ...this.props
+            ...this.props,
+            className: this.getClassName()
         });
     }
 }

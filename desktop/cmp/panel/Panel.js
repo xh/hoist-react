@@ -66,7 +66,6 @@ export class Panel extends Component {
         }
 
         return vbox({
-            cls: this.getClassNames(),
             layoutConfig,
             items: [
                 panelHeader({title, icon, headerItems}),
@@ -78,7 +77,8 @@ export class Panel extends Component {
                     text: maskText
                 })
             ],
-            ...rest
+            ...rest,
+            className: this.getClassName()
         });
     }
 }

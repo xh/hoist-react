@@ -25,7 +25,7 @@ export class Page extends Component {
 
         return fragment(
             onsenPage({
-                cls: ['xh-page', className, noscrollCls].filter(Boolean).join(' '),
+                className: ['xh-page', className, noscrollCls].filter(Boolean).join(' '),
                 items: [
                     ...castArray(children),
                     loadModel ? loadMask({model: loadModel}) : null

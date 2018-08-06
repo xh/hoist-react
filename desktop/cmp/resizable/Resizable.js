@@ -91,7 +91,7 @@ export class Resizable extends Component {
         }
 
         return cmp({
-            cls: this.getClassNames(),
+            className: this.getClassName(),
             flex: 'none',
             items
         });

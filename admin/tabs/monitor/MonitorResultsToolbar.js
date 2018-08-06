@@ -30,23 +30,23 @@ class MonitorResultsToolbar extends Component {
                     onClick: forceRunAllMonitors
                 }),
                 hbox({
-                    cls: !failed ? 'hidden' : '',
+                    className: !failed ? 'hidden' : '',
                     items: [
-                        Icon.error({prefix: 'fas', cls: 'xh-red'}),
+                        Icon.error({prefix: 'fas', className: 'xh-red'}),
                         label(`${failed} failed`)
                     ]
                 }),
                 hbox({
-                    cls: !warned ? 'hidden' : '',
+                    className: !warned ? 'hidden' : '',
                     items: [
-                        Icon.warning({prefix: 'fas', cls: 'xh-orange'}),
+                        Icon.warning({prefix: 'fas', className: 'xh-orange'}),
                         label(`${warned} warned`)
                     ]
                 }),
                 hbox({
-                    cls: !passed ? 'hidden' : '',
+                    className: !passed ? 'hidden' : '',
                     items: [
-                        Icon.checkCircle({prefix: 'fas', cls: 'xh-green'}),
+                        Icon.checkCircle({prefix: 'fas', className: 'xh-green'}),
                         label(`${passed} passed`)
                     ]
                 }),

@@ -29,7 +29,7 @@ export class RestForm extends Component {
         return dialog({
             title: isAdd ? 'Add Record' : 'Edit Record',
             icon: isAdd ? Icon.add() : Icon.edit(),
-            cls: this.getClassNames(),
+            className: this.getClassName(),
             isOpen: true,
             isCloseButtonShown: false,
             items: this.getDialogItems()

@@ -180,7 +180,7 @@ export function fmtPercent(v, opts = {}) {
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
 
-    defaults(opts, {precision: 2, label: '%', labelCls: null});
+    defaults(opts, {precision: 2, label: '%', labelclassName: null});
     return fmtNumber(v, opts);
 }
 
@@ -206,7 +206,7 @@ function fmtNumberElement(v, opts = {}) {
     items.push(str);
 
     if (isString(label)) {
-        items.push(labelCls ? fmtSpan(label, {cls: labelCls, asElement: asElement}) : label);
+        items.push(labelCls ? fmtSpan(label, {className: labelCls, asElement: asElement}) : label);
     }
 
     if (ledger) {
@@ -220,7 +220,7 @@ function fmtNumberElement(v, opts = {}) {
     }
 
     return span({
-        cls: cls.join(' '),
+        className: cls.join(' '),
         title: tipFn ? tipFn(originalValue) : null,
         items: items
     });
@@ -236,7 +236,7 @@ function fmtNumberString(v, opts = {}) {
 
     if (isString(label)) {
         if (labelCls) {
-            str += fmtSpan(label, {cls: labelCls});
+            str += fmtSpan(label, {className: labelCls});
         } else {
             str += label;
         }
@@ -251,11 +251,11 @@ function fmtNumberString(v, opts = {}) {
     }
 
     if (colorSpec) {
-        str = fmtSpan(str, {cls: valueColor(v, colorSpec)});
+        str = fmtSpan(str, {className: valueColor(v, colorSpec)});
     }
 
     if (tipFn) {
-        str = fmtSpan(str, {cls: 'xh-title-tip', title: tipFn(originalValue)});
+        str = fmtSpan(str, {className: 'xh-title-tip', title: tipFn(originalValue)});
     }
 
     return str;
@@ -263,7 +263,7 @@ function fmtNumberString(v, opts = {}) {
 
 function signGlyph(v, asElement) {
     if (!isFinite(v)) return '';
-    return v === 0 ? fmtSpan(UP_TICK, {cls: 'xh-transparent', asElement: asElement}) : v > 0 ? UP_TICK : DOWN_TICK;
+    return v === 0 ? fmtSpan(UP_TICK, {className: 'xh-transparent', asElement: asElement}) : v > 0 ? UP_TICK : DOWN_TICK;
 }
 
 function valueColor(v, colorSpec) {

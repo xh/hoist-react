@@ -43,7 +43,7 @@ export class ExceptionDialogDetails extends Component {
 
         return dialog({
             title: 'Error Details',
-            cls: 'xh-exception-dialog-details',
+            className: 'xh-exception-dialog-details',
             icon: Icon.search(),
             isOpen: true,
             isCloseButtonShown: !requireReload,

@@ -41,7 +41,7 @@ export class TabSwitcher extends Component {
             vertical = ['left', 'right'].includes(orientation);
 
         return blueprintTabs({
-            cls: this.getClassNames(`xh-tab-switcher--${orientation}`),
+            className: this.getClassName(`xh-tab-switcher--${orientation}`),
             id,
             vertical,
             onChange: this.onTabChange,

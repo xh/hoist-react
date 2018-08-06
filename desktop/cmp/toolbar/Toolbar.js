@@ -8,7 +8,6 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {hbox, vbox} from '@xh/hoist/cmp/layout';
-import {button} from '@xh/hoist/desktop/cmp/button';
 
 import './Toolbar.scss';
 
@@ -31,10 +30,7 @@ class Toolbar extends Component {
         const {vertical, ...rest} = this.props;
 
         return (vertical ? vbox : hbox)({
-            cls: this.getClassNames(vertical ? 'xh-toolbar--vertical' : null),
-            itemSpec: {
-                factory: button
-            },
+            className: this.getClassName(vertical ? 'xh-toolbar--vertical' : null),
             ...rest
         });
     }

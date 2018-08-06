@@ -61,7 +61,7 @@ export class TabContainer extends Component {
         }
 
         return container({
-            cls: this.getClassNames(),
+            className: this.getClassName(),
             layoutConfig,
             items: [
                 switcherBefore ? tabSwitcher({model, orientation: switcherPosition}) : null,
@@ -74,7 +74,7 @@ export class TabContainer extends Component {
                     }
 
                     return div({
-                        cls: 'xh-tab-panel',
+                        className: 'xh-tab-panel',
                         style,
                         item: tab({model: tabModel})
                     });
