@@ -13,7 +13,7 @@ import {div} from './Tags';
  * A Component that supports flexbox-based layout of its contents.
  *
  * Box is the component that provides the core implementation of the LayoutSupport mixin.
- * It renders a div and merges the properties in 'layoutConfig' down to that div's `style` property.
+ * It renders a div and merges all layout props to that div's `style` property.
  *
  * VBox and HBox variants support internal vertical (column) and horizontal (row) flex layouts.
  */
@@ -21,10 +21,10 @@ import {div} from './Tags';
 @LayoutSupport
 export class Box extends Component {
     render() {
-        let {isCollapsed, children, layoutConfig, ...props} = this.props;
+        let {isCollapsed, children, ...props} = this.nonLayoutProps();
         props = merge(
             {style: {display: 'flex', overflow: 'hidden', position: 'relative'}},
-            {style: layoutConfig},
+            {style: this.layoutProps()},
             props
         );
 

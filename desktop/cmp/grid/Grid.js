@@ -67,11 +67,12 @@ class Grid extends Component {
 
     render() {
         const {colChooserModel} = this.model,
-            {layoutConfig, agOptions} = this.props;
+            {agOptions} = this.props,
+            layoutProps = this.layoutProps();
 
         // Default flex = 'auto' if no dimensions / flex specified.
-        if (layoutConfig.width == null && layoutConfig.height == null && layoutConfig.flex == null) {
-            layoutConfig.flex = 'auto';
+        if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
+            layoutProps.flex = 'auto';
         }
 
         // Note that we intentionally do *not* render the agGridReact element below with either the data
@@ -79,7 +80,7 @@ class Grid extends Component {
         // extra re-rendering and jumpiness.  Instead, we rely on the API methods to keep these in sync.
         return fragment(
             box({
-                layoutConfig: layoutConfig,
+                ...layoutProps,
                 className: this.getClassName('ag-grid-holder', XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham'),
                 item: agGridReact(merge(this.createDefaultAgOptions(), agOptions))
             }),

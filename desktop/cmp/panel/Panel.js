@@ -43,7 +43,6 @@ export class Panel extends Component {
 
     render() {
         let {
-            layoutConfig,
             tbar,
             bbar,
             title,
@@ -54,19 +53,19 @@ export class Panel extends Component {
             isCollapsed,
             children,
             ...rest
-        } = this.props;
+        } = this.nonLayoutProps();
 
         // Block unwanted use of padding props, which will separate the panel's header
         // and bottom toolbar from its edges in a confusing way.
-        layoutConfig = omitBy(layoutConfig, (v, k) => k.startsWith('padding'));
+        const layoutProps = omitBy(this.layoutProps(), (v, k) => k.startsWith('padding'));
 
         // Give Panels a default flexing behavior if no dimensions / flex specified.
-        if (layoutConfig.width == null && layoutConfig.height == null && layoutConfig.flex == null) {
-            layoutConfig.flex = 'auto';
+        if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
+            layoutProps.flex = 'auto';
         }
 
         return vbox({
-            layoutConfig,
+            ...layoutProps,
             items: [
                 panelHeader({title, icon, headerItems}),
                 tbar || null,

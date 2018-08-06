@@ -31,16 +31,16 @@ export class Chart extends Component {
 
     render() {
         // Default flex = 1 (flex: 1 1 0) if no dimensions / flex specified, i.e. do not consult child for dimensions;
-        const {layoutConfig} = this.props;
-        if (layoutConfig.width == null && layoutConfig.height == null && layoutConfig.flex == null) {
-            layoutConfig.flex = 1;
+        const layoutProps = this.layoutProps();
+        if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
+            layoutProps.flex = 1;
         }
 
         this.renderHighChart();
 
         // Inner div required to be the ref for the chart element
         return box({
-            layoutConfig: layoutConfig,
+            ...layoutProps,
             className: this.getClassName(),
             item: div({
                 style: {flex: 'auto'},

@@ -39,13 +39,13 @@ class StoreCountLabel extends Component {
     }
 
     render() {
-        const store = this.props.store,
-            count = store.count,
+        const {store} = this.props,
+            {count} = store,
             countStr = fmtNumber(count, {precision: 0}),
             unitLabel = count === 1 ? this.oneUnit : this.manyUnits;
 
         return box({
-            layoutConfig: this.layoutConfig,
+            ...this.layoutProps(),
             item: `${countStr} ${unitLabel}`
         });
     }

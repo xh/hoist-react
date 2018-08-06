@@ -22,12 +22,12 @@ export class RestGrid extends Component {
 
     render() {
         const {model} = this,
-            {layoutConfig, extraToolbarItems, agOptions} = this.props;
+            {extraToolbarItems, agOptions} = this.props;
 
         return fragment(
             panel({
                 className: this.getClassName(),
-                layoutConfig,
+                ...this.layoutProps(),
                 tbar: restGridToolbar({model, extraToolbarItems}),
                 item: grid({
                     model: model.gridModel,

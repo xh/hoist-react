@@ -12,7 +12,7 @@ import {div} from '@xh/hoist/cmp/layout';
 /**
  * Dialog Body for Blueprint, wrapped as HoistComponent.
  */
-@HoistComponent
+@HoistComponent()
 export class DialogBody extends Component {
     baseCls = 'bp3-dialog-body';
     render() {
@@ -23,7 +23,7 @@ export class DialogBody extends Component {
 /**
  * Dialog Footer for Blueprint, wrapped as HoistComponent.
  */
-@HoistComponent
+@HoistComponent()
 export class DialogFooter extends Component {
     baseCls = 'bp3-dialog-footer';
     render() {
@@ -34,7 +34,7 @@ export class DialogFooter extends Component {
 /**
  * Dialog Footer for Blueprint, wrapped as HoistComponent.
  */
-@HoistComponent
+@HoistComponent()
 export class DialogFooterActions extends Component {
     baseCls = 'bp3-dialog-footer-actions';
     render() {

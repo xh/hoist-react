@@ -38,9 +38,9 @@ class DataView extends Component {
     }
 
     render() {
-        const {layoutConfig, rowCls, itemHeight} = this.props;
+        const {rowCls, itemHeight} = this.props;
         return grid({
-            layoutConfig,
+            ...this.layoutProps(),
             className: this.getClassName(),
             model: this._gridModel,
             agOptions: {

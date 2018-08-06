@@ -27,7 +27,6 @@ class LeftRightChooser extends Component {
 
     render() {
         const {model} = this,
-            {layoutConfig} = this.props,
             {leftModel, rightModel} = model,
             gridOptions = {
                 onRowDoubleClicked: (e) => model.moveRows([e.data]),
@@ -37,7 +36,7 @@ class LeftRightChooser extends Component {
             };
 
         return vbox({
-            layoutConfig,
+            ...this.layoutProps(),
             className: this.getClassName(),
             items: [
                 hframe({

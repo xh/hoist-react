@@ -43,8 +43,7 @@ export class SliderField extends HoistField {
     };
 
     static defaultProps = {
-        commitOnChange: true,
-        layoutConfig: {}
+        commitOnChange: true
     };
 
     delegateProps = ['className', 'disabled'];
@@ -55,15 +54,16 @@ export class SliderField extends HoistField {
     }
 
     render() {
-        const {labelStepSize, labelRenderer, layoutConfig, min, max, stepSize, showTrackFill, vertical} = this.props,
+        const {labelStepSize, labelRenderer, min, max, stepSize, showTrackFill, vertical} = this.props,
             input = isArray(toJS(this.renderValue)) ? rangeSlider : slider;
 
         // Set default left / right padding
-        if (!layoutConfig.padding && !layoutConfig.paddingLeft) layoutConfig.paddingLeft = 20;
-        if (!layoutConfig.padding && !layoutConfig.paddingRight) layoutConfig.paddingRight = 20;
+        const layoutProps = this.layoutProps();
+        if (!layoutProps.padding && !layoutProps.paddingLeft) layoutProps.paddingLeft = 20;
+        if (!layoutProps.padding && !layoutProps.paddingRight) layoutProps.paddingRight = 20;
 
         return box({
-            layoutConfig,
+            ...layoutProps,
             item: input({
                 value: this.renderValue,
                 onChange: this.onValueChange,

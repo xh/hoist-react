@@ -49,20 +49,21 @@ export class TabContainer extends Component {
     render() {
         const {model} = this,
             {activeTabId, tabs} = model,
-            {switcherPosition, layoutConfig} = this.props,
+            {switcherPosition} = this.props,
             switcherBefore = ['left', 'top'].includes(switcherPosition),
             switcherAfter = ['right', 'bottom'].includes(switcherPosition),
             vertical = ['left', 'right'].includes(switcherPosition),
             container = vertical ? hbox : vbox;
 
         // Default flex = 'auto' if no dimensions / flex specified.
-        if (layoutConfig.width === null && layoutConfig.height === null && layoutConfig.flex === null) {
-            layoutConfig.flex = 'auto';
+        const layoutProps = this.layoutProps();
+        if (layoutProps.width === null && layoutProps.height === null && layoutProps.flex === null) {
+            layoutProps.flex = 'auto';
         }
 
         return container({
             className: this.getClassName(),
-            layoutConfig,
+            ...layoutProps,
             items: [
                 switcherBefore ? tabSwitcher({model, orientation: switcherPosition}) : null,
                 ...tabs.map(tabModel => {

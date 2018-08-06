@@ -18,19 +18,14 @@ import {isReactElement} from '@xh/hoist/utils/ReactUtils';
  * An important feature of this method is that elements given a config of `omit=true` will be removed from the
  * element tree, allowing for conditional inclusion of elements in a declarative style.
  *
- * Note, also that property "pre-processing" may be specified by particular components by specifying a static
- * processElemProps() method.
- *
  * Note that if a React Component has a native property that conflicts with the properties described below,
  * it may be specified as native with a '$' prefix (e.g. '$items'). This method will recognize and pass the
  * property appropriately.
  *
  * @param {(Object|string)} type - class that extends Component, or a string representing an HTML element
  * @param {Object} [config] - config props to be applied to the Component
- * @param {(Array|Element|Object|string)} [config.items] - child element(s) specified as React
- *      Elements, raw JS objects, or strings. Elements will be created for any raw objects by
- *      calling a factory as per config.itemSpec (below).
- * @param {(Element|Object|string)} [config.item] - a single child - equivalent to items, offered
+ * @param {(Array|Element|string)} [config.items] - child element(s).
+ * @param {(Element|string)} [config.item] - a single child - equivalent to items, offered
  *      for code clarity when only one child is needed.
  * @param {*} [config...props] - any additional props to apply to this element
  * @return ReactElement
@@ -39,11 +34,8 @@ export function elem(type, config = {}) {
 
     const {item, items, omit, ...props} = config;
 
-    // 1) Process props -- omitted element gets marked with dom-safe, unique prop
+    // 1) An omitted element gets marked with dom-safe, unique prop
     if (omit) props.xhOmit = 'true';
-    if (type.processElemProps) {
-        type.processElemProps(props);
-    }
 
     // 2) Process children -- skip empty and omitted
     let children = castArray(item || items);
