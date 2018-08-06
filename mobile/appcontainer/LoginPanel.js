@@ -31,16 +31,16 @@ export class LoginPanel extends Component {
         return page({
             renderToolbar: () => toolbar(
                 div({
-                    cls: 'center',
+                    className: 'center',
                     item: `Welcome to ${XH.appName}`
                 })
             ),
             items: [
                 vframe({
-                    cls: 'xh-login',
+                    className: 'xh-login',
                     items: [
                         vbox({
-                            cls: 'xh-login__fields',
+                            className: 'xh-login__fields',
                             items: [
                                 textField({
                                     model,
@@ -58,12 +58,12 @@ export class LoginPanel extends Component {
                             ]
                         }),
                         div({
-                            cls: 'xh-login__warning',
+                            className: 'xh-login__warning',
                             omit: !model.warning,
                             item: model.warning
                         }),
                         div({
-                            cls: 'xh-login__message',
+                            className: 'xh-login__message',
                             omit: !loginMessage,
                             item: loginMessage
                         }),

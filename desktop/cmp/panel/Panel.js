@@ -51,11 +51,10 @@ export class Panel extends Component {
         collapseToggleOnDblClick: PT.bool
     };
 
-    baseCls = 'xh-panel';
+    baseClassName = 'xh-panel';
 
     render() {
         let {
-            layoutConfig,
             tbar,
             bbar,
             title,
@@ -67,7 +66,7 @@ export class Panel extends Component {
             collapseToggleOnDblClick = true,
             children,
             ...rest
-        } = this.props;
+        } = this.getNonLayoutProps();
 
         const collapsed = collapseModel && collapseModel.collapsed,
             collapsedSide = collapsed ? collapsedModel.side : null,
@@ -76,11 +75,11 @@ export class Panel extends Component {
 
         // Block unwanted use of padding props, which will separate the panel's header
         // and bottom toolbar from its edges in a confusing way.
-        layoutConfig = omitBy(layoutConfig, (v, k) => k.startsWith('padding'));
+        const layoutProps = omitBy(this.getLayoutProps(), (v, k) => k.startsWith('padding'));
 
         // Give Panels a default flexing behavior if no dimensions / flex specified.
-        if (layoutConfig.width == null && layoutConfig.height == null && layoutConfig.flex == null) {
-            layoutConfig.flex = 'auto';
+        if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
+            layoutProps.flex = 'auto';
         }
 
         let coreContents = null;
@@ -98,8 +97,8 @@ export class Panel extends Component {
         this.wasDisplayed = wasDisplayed || !collapsed;
 
         return vbox({
+            ...layoutProps,
             cls: this.getClassNames(),
-            layoutConfig,
             ...rest,
             items: [
                 panelHeader({
@@ -114,6 +113,9 @@ export class Panel extends Component {
                     isDisplayed: masked,
                     text: maskText
                 })
+            ],
+            ...rest,
+            className: this.getClassName()
             ]
         });
     }

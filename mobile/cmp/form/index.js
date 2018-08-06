@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+export * from './Label';
 export * from './SearchField';
 export * from './TextField';
 export * from './TextAreaField';

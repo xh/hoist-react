@@ -39,7 +39,7 @@ export class SearchField extends HoistField {
         const {style, width, spellCheck} = this.props;
 
         return searchInput({
-            cls: 'xh-field xh-search-field',
+            className: 'xh-field xh-search-field',
             value: this.renderValue || '',
             onChange: this.onChange,
             onBlur: this.onBlur,

@@ -37,7 +37,7 @@ export class SelectField extends HoistField {
         const {options, style, width} = this.props;
 
         return select({
-            cls: 'xh-field xh-select-field',
+            className: 'xh-field xh-select-field',
             value: this.renderValue || '',
             onChange: this.onChange,
             style: {...style, width},
@@ -59,6 +59,7 @@ export class SelectField extends HoistField {
 
     onChange = (ev) => {
         this.noteValueChange(ev.target.value);
+        this.doCommit();
     }
 
 }

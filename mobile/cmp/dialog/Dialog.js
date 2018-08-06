@@ -19,7 +19,7 @@ class Dialog extends Component {
 
     render() {
         const {isOpen, onCancel, icon, title, content, className, buttons = []} = this.props,
-            baseCls = 'xh-dialog';
+            baseClassName = 'xh-dialog';
 
         if (!isOpen) return null;
 
@@ -27,18 +27,18 @@ class Dialog extends Component {
             isOpen: true,
             isCancelable: true,
             onCancel: onCancel,
-            cls: className ? `${baseCls} ${className}` : baseCls,
+            className: className ? `${baseClassName} ${className}` : baseClassName,
             items: [
                 div({
-                    cls: `${baseCls}__title`,
+                    className: `${baseClassName}__title`,
                     items: [icon, title]
                 }),
                 div({
-                    cls: `${baseCls}__inner`,
+                    className: `${baseClassName}__inner`,
                     item: content
                 }),
                 div({
-                    cls: `${baseCls}__toolbar`,
+                    className: `${baseClassName}__toolbar`,
                     omit: !buttons.length,
                     items: [
                         filler(),

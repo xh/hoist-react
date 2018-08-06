@@ -38,9 +38,9 @@ export class Collapser extends Component {
 
         const cmp = isVertical ? hbox : vbox,
             cfg = {
-                cls: `xh-resizable-collapser ${isVertical ? 'vertical' : 'horizontal'}`,
+                className: `xh-resizable-collapser ${isVertical ? 'vertical' : 'horizontal'}`,
                 item: button({
-                    cls: 'xh-resizable-collapser-btn',
+                    className: 'xh-resizable-collapser-btn',
                     icon: Icon[this.getChevron()](),
                     onClick: this.props.onClick
                 })

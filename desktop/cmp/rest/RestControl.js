@@ -19,7 +19,7 @@ export class RestControl extends Component {
         if (this.isBlankMetaData()) return null;
 
         return hbox({
-            cls: 'xh-rest-form__control',
+            className: 'xh-rest-form__control',
             items: [
                 this.renderLabel(),
                 //  Needed to stretch control, and also avoid focus clipping?
@@ -133,7 +133,7 @@ export class RestControl extends Component {
         return numberField({
             model,
             field: 'value',
-            cls: 'bp3-fill',
+            className: 'bp3-fill',
             disabled: !model.isEditable,
             commitOnChange: true
         });
@@ -145,7 +145,7 @@ export class RestControl extends Component {
             model,
             field: 'value',
             autoFocus: this.props.autoFocus,
-            cls: 'bp3-fill',
+            className: 'bp3-fill',
             style: {height: model.editor.height || 100},
             disabled: !model.isEditable,
             spellCheck: model.editor.spellCheck,
@@ -161,7 +161,7 @@ export class RestControl extends Component {
             type,
             field: 'value',
             autoFocus: this.props.autoFocus,
-            cls: 'bp3-fill',
+            className: 'bp3-fill',
             disabled: !model.isEditable,
             spellCheck: model.editor.spellCheck,
             commitOnChange: true
@@ -173,7 +173,7 @@ export class RestControl extends Component {
         return jsonField({
             model,
             field: 'value',
-            cls: 'bp3-fill',
+            className: 'bp3-fill',
             disabled: !model.isEditable,
             // setting size appears to be the only way to get scrollbars
             width: 343,

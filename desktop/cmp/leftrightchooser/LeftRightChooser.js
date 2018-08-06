@@ -23,11 +23,10 @@ import './LeftRightChooser.scss';
 @LayoutSupport
 class LeftRightChooser extends Component {
 
-    baseCls = 'xh-lr-chooser';
+    baseClassName = 'xh-lr-chooser';
 
     render() {
         const {model} = this,
-            {layoutConfig} = this.props,
             {leftModel, rightModel} = model,
             gridOptions = {
                 onRowDoubleClicked: (e) => model.moveRows([e.data]),
@@ -37,11 +36,11 @@ class LeftRightChooser extends Component {
             };
 
         return vbox({
-            layoutConfig,
-            cls: this.getClassNames(),
+            ...this.getLayoutProps(),
+            className: this.getClassName(),
             items: [
                 hframe({
-                    cls: 'xh-lr-chooser__grid-frame',
+                    className: 'xh-lr-chooser__grid-frame',
                     items: [
                         grid({model: leftModel, ...gridOptions}),
                         chooserToolbar({model}),

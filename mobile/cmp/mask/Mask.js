@@ -27,11 +27,11 @@ export class Mask extends Component {
         if (!isDisplayed) return null;
 
         return div({
-            cls: 'xh-mask',
+            className: 'xh-mask',
             onClick: onClick ? () => onClick() : null,
             item: box({
-                cls: 'xh-mask-body',
-                item: text ? box({cls: 'xh-mask-text', item: text}) : null
+                className: 'xh-mask-body',
+                item: text ? box({className: 'xh-mask-text', item: text}) : null
             })
         });
     }

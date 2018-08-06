@@ -16,19 +16,18 @@ import './PanelHeader.scss';
  */
 @HoistComponent()
 class PanelHeader extends Component {
-
     render() {
         const {title, icon, headerItems = []} = this.props;
-        
+
         if (!title && !icon && !headerItems.length) return null;
 
         if (!vertical) {
             return hbox({
-                cls: 'xh-panel-header',
+                className: 'xh-panel-header',
                 items: [
                     icon || null,
                     title ? box({
-                        cls: 'xh-panel-header-title',
+                        className: 'xh-panel-header-title',
                         flex: 1,
                         item: title
                     }) : null,
@@ -38,11 +37,23 @@ class PanelHeader extends Component {
             });
         } else {
             return vbox({
-                cls: 'xh-panel-header',
+                className: 'xh-panel-header',
                 items: icon || null,   // TODO:  Add vertically rotated text.
                 onDoubleClick
             });
         }
+        return hbox({
+            className: 'xh-panel-header',
+            items: [
+                icon || null,
+                title ? box({
+                    className: 'xh-panel-header-title',
+                    flex: 1,
+                    item: title
+                }) : null,
+                ...headerItems
+            ]
+        });
     }
 }
 export const panelHeader = elemFactory(PanelHeader);

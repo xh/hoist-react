@@ -18,7 +18,7 @@ class MonitorResultsDisplay extends Component {
         const {results} = this.model;
 
         return hbox({
-            cls: 'xh-monitor-status-display',
+            className: 'xh-monitor-status-display',
             items: results.map((check, idx) => tile({
                 key: `tile-${idx}`,
                 check

@@ -24,7 +24,7 @@ class Description extends Component {
 
         return callout({
             title: selected.text,
-            cls: 'xh-lr-chooser__description',
+            className: 'xh-lr-chooser__description',
             intent: 'primary',
             icon: null,
             item: selected.description

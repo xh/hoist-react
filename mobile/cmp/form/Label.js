@@ -28,11 +28,12 @@ export class Label extends HoistField {
     render() {
         const {children, style, width} = this.props;
         return div({
-            className: 'bp3-label bp3-inline',
+            cls: 'xh-field-label',
             style: {...style, whiteSpace: 'nowrap', width},
             items: children,
             ...this.getDelegateProps()
         });
     }
 }
+
 export const label = elemFactory(Label);

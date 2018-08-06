@@ -6,11 +6,11 @@
  */
 
 import {provideMethods} from '@xh/hoist/utils/ClassUtils';
-import {pick, isNumber, merge, forOwn} from 'lodash';
+import {pick, isNumber, forOwn, omit} from 'lodash';
 
 /**
  * This mixin provides support for flexbox related styles that are set as top-level properties
- * on a component.  These styles are parsed, and bundled into a single map prop -- 'layoutConfig'.
+ * on a component.
  *
  * The following properties will be supported:
  *      margin', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft',
@@ -25,55 +25,50 @@ import {pick, isNumber, merge, forOwn} from 'lodash';
  * properties.  See Box for an example of a Component that does this via rendering of
  * a div with appropriate styles.  Other components will typically delegate
  * this responsibility to a child component that also implements LayoutSupport.
- *
- * Note: This mixin relies on preprocessing triggered by elem() for its implementation.
- * Passing layout props directly to the component via JSX is not supported.
  */
 export function LayoutSupport(C) {
 
     C.hasLayoutSupport = true;
 
-    /**
-     * Process flexbox related style keys from a configuration,
-     * placing them in a nested 'layoutConfig' property.
-     *
-     * Not typically called directly by applications.  This function
-     * is called by elem() factory for pre-processing props for this Component.
-     *
-     * @param {Object} config -- basket of component properties to be parsed and processed.
-     */
-    C.processLayoutProps = (config) => {
-        // 1) Harvest, remove, and process all keys of interest
-        const layoutConfig = pick(config, allKeys);
-        forOwn(layoutConfig, (v, k) => delete config[k]);
-
-        // 1a) flexXXX: convert raw number to string
-        const flexConfig = pick(layoutConfig, flexKeys);
-        forOwn(flexConfig, (v, k) => {
-            if (isNumber(v)) layoutConfig[k] = v.toString();
-        });
-
-        // 1b) Dimensions: Translate raw into pixels
-        const dimConfig = pick(layoutConfig, dimKeys);
-        forOwn(dimConfig, (v, k) => {
-            if (isNumber(v)) layoutConfig[k] = v + 'px';
-        });
-
-        // 2) Apply this config on top of any config passed in
-        config.layoutConfig = config.layoutConfig ? merge(config.layoutConfig, layoutConfig) : layoutConfig;
-    };
-
     // Instance methods
     provideMethods(C, {
 
         /**
-         * Shortcut for 'this.props.layoutConfig'.
+         * Return all layout related props found in props.
          *
-         * Bundle of parsed props produced by this mixin.
+         * This method implements some minor translations, to allow a more
+         * user friendly specification than that afforded by the underlying flexbox styles.
+         *
+         * In particular, it accepts flex and sizing props as raw numbers rather than strings.
          */
-        layoutConfig: {
-            get() {return this.props.layoutConfig}
+        getLayoutProps() {
+
+            // Harvest all keys of interest
+            const ret = pick(this.props, allKeys);
+
+            // flexXXX: convert raw number to string
+            const flexConfig = pick(ret, flexKeys);
+            forOwn(flexConfig, (v, k) => {
+                if (isNumber(v)) ret[k] = v.toString();
+            });
+
+            // Dimensions: Translate raw into pixels
+            const dimConfig = pick(ret, dimKeys);
+            forOwn(dimConfig, (v, k) => {
+                if (isNumber(v)) ret[k] = v + 'px';
+            });
+
+            return ret;
+        },
+
+
+        /**
+         * Return all non-layout related props found in props.
+         */
+        getNonLayoutProps() {
+            return omit(this.props, allKeys);
         }
+        
     });
     return C;
 }

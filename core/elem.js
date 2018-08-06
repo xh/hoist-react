@@ -6,49 +6,42 @@
  */
 
 import React from 'react';
-import {castArray, defaults, forOwn, isArray, isPlainObject, isString} from 'lodash';
+import {castArray, isArray, isPlainObject, forOwn} from 'lodash';
 import {isReactElement} from '@xh/hoist/utils/ReactUtils';
-import {Exception} from '@xh/hoist/exception';
 
 /**
- * Convenience method for creating React Elements. This method is designed to provide a  well-
- * formatted, declarative native javascript approach to configuring Elements and their children
- * without writing JSX.
+ * Convenience method for creating React Elements. This method is designed to provide a well-
+ * formatted, declarative native javascript approach to configuring Elements and their children. It
+ * serves as an alternative to JSX, and is especially useful for code-heavy element trees.  For element
+ * trees with a signifigant amount of hypertext, consider JSX instead.
  *
- * An important feature of this factory is that children with property `omit` set to true will be
- * skipped, allowing for conditional inclusion of elements in the vDOM in a declarative style.
+ * An important feature of this method is that elements given a config of `omit=true` will be removed from the
+ * element tree, allowing for conditional inclusion of elements in a declarative style.
  *
- * Note that if a React Component has a native property that conflicts with this API, it should be
- * specified as native with a $ prefix (e.g. '$items'). This method will recognize and pass the
+ * Note that if a React Component has a native property that conflicts with the properties described below,
+ * it may be specified as native with a '$' prefix (e.g. '$items'). This method will recognize and pass the
  * property appropriately.
  *
  * @param {(Object|string)} type - class that extends Component, or a string representing an HTML element
  * @param {Object} [config] - config props to be applied to the Component
- * @param {string} [config.cls] - CSS classes for this element (alias for React 'className')
- * @param {(Array|Element|Object|string)} [config.items] - child element(s) specified as React
- *      Elements, raw JS objects, or strings. Elements will be created for any raw objects by
- *      calling a factory as per config.itemSpec (below).
- * @param {(Element|Object|string)} [config.item] - a single child - equivalent to items, offered
+ * @param {(Array|Element|string)} [config.items] - child element(s).
+ * @param {(Element|string)} [config.item] - a single child - equivalent to items, offered
  *      for code clarity when only one child is needed.
- * @param {(function|Object)} [config.itemSpec] - element factory to be used to create child items
- *      from raw objects, or an object of the form {factory, ...props}, where props will serve as
- *      defaults for children.
  * @param {*} [config...props] - any additional props to apply to this element
  * @return ReactElement
  */
 export function elem(type, config = {}) {
 
-    // 1) Separate and pre-process custom elem configs (distinct from Component API props).
-    let {cls, item, items, itemSpec, omit, ...props} = config;
+    const {item, items, omit, ...props} = config;
 
-    if (cls) props.className = cls;
+    // 1) An omitted element gets marked with dom-safe, unique prop
     if (omit) props.xhOmit = 'true';
 
-    if (type.hasLayoutSupport) {
-        type.processLayoutProps(props);
-    }
+    // 2) Process children -- skip empty and omitted
+    let children = castArray(item || items);
+    children = children.filter(c => c != null && !(c.props && c.props.xhOmit));
 
-    // 2) Special handling to recapture API props that needed '$' prefix to avoid conflicts with above.
+    // 3) Recapture API props that needed '$' prefix to avoid conflicts with above.
     forOwn(props, (val, key) => {
         if (key.startsWith('$')) {
             props[key.substring(1)] = props[key];
@@ -56,53 +49,26 @@ export function elem(type, config = {}) {
         }
     });
 
-    // 3) Process children.
-    items = item || items;
-    items = castArray(items);
-    
-    itemSpec = isPlainObject(itemSpec) ? itemSpec : {factory: itemSpec};
-    const {factory, ...defaultParams} = itemSpec;
-    items = items
-        .filter(it => it != null)
-        .map(it => {
-            if (isReactElement(it) || isString(it)) {
-                return it;
-            } else {
-                const fct = it.factory || factory;
-                if (fct) return fct(defaults(it, defaultParams));
-            }
-
-            throw Exception.create(`Unable to create child element for [${it.toString()}].`);
-        });
-
-    // 4) Remove omitted children last, after elements generated from configs have been created.
-    items = items.filter(it => !it.props || !it.props.xhOmit);
-
-    return React.createElement(type, props, ...items);
+    return React.createElement(type, props, ...children);
 }
 
 
 /**
  * Returns a factory function that can create a ReactElement using native JS (i.e. not JSX).
- * This is a 'curried' version of the raw elem() method and adds two critical features:
+ * This is a 'curried' version of the raw elem() method.
  *
- *   1) Allows argument to be an array, or rest arguments that are children to be directly passed
- *      to the new Element. Equivalent to specifying `{items: args}`. Useful when no attributes
- *      need to be applied directly to the Element.
- *   2) Allows the addition of fixed default props to be applied before passing to the elem factory.
- *
+ * One critical enhancement provided by this factory is that its arguments may be *either* a single config for elem(),
+ * or alternatively, an array or rest argument representing just the the children to be passed to the new Element.
+ * This latter case is fully equivalent to specifying `{items: [,]}` and is useful when no attributes need to be
+ * applied directly to the Element.
+
  * @param {(Object|string)} type - class that extends Component - or a string representing an HTML
  *      element - for which this factory will create Elements.
- * @param {Object} [defaultProps] - optional defaults to be applied to the elem props
  * @return {function}
  */
-export function elemFactory(type, defaultProps) {
+export function elemFactory(type) {
     return function(...args) {
-        args = normalizeArgs(args);
-        if (defaultProps) {
-            defaults(args, defaultProps);
-        }
-        return elem(type, args);
+        return elem(type, normalizeArgs(args));
     };
 }
 

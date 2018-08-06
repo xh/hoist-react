@@ -28,7 +28,7 @@ class Toast extends Component {
         return onsenToast({
             isOpen: true,
             timeout: timeout,
-            cls: cls,
+            className: cls,
             items: [
                 icon,
                 span(message),

@@ -33,12 +33,12 @@ export class AboutDialog extends Component {
             isOpen: true,
             isCloseButtonShown: false,
             icon: Icon.info({size: 'lg'}),
-            cls: 'xh-about-dialog',
+            className: 'xh-about-dialog',
             title: `About ${XH.appName}`,
             style: {width: 450},
             items: [
                 frame({
-                    cls: 'xh-about-dialog__inner',
+                    className: 'xh-about-dialog__inner',
                     item: model.getTable()
                 }),
                 toolbar({

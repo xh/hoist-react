@@ -29,7 +29,7 @@ export class LoadMask extends Component {
         text: PT.string
     };
 
-    baseCls = 'xh-mask';
+    baseClassName = 'xh-mask';
     
     render() {
         let {isDisplayed, model, inline, text} = this.props,
@@ -38,18 +38,18 @@ export class LoadMask extends Component {
         if (!(isDisplayed || (model && model.isPending))) return null;
 
         return overlay({
-            cls: this.getClassNames(Classes.OVERLAY_SCROLL_CONTAINER),
+            className: this.getClassName(Classes.OVERLAY_SCROLL_CONTAINER),
             autoFocus: false,
             isOpen: true,
             canEscapeKeyClose: false,
             usePortal: !isInline,
             enforceFocus: !isInline,
             item: vbox({
-                cls: 'xh-mask-body',
+                className: 'xh-mask-body',
                 items: [
                     spinner(),
                     vspacer(10),
-                    text ? box({cls: 'xh-mask-text', item: text}) : null
+                    text ? box({className: 'xh-mask-text', item: text}) : null
                 ]
             })
         });

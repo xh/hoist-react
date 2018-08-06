@@ -24,22 +24,22 @@ export class Mask extends Component {
         text: PT.string
     };
 
-    baseCls = 'xh-mask';
+    baseClassName = 'xh-mask';
 
     render() {
         let {isDisplayed, text} = this.props;
         if (!isDisplayed) return null;
 
         return overlay({
-            cls: this.getClassNames(Classes.OVERLAY_SCROLL_CONTAINER),
+            className: this.getClassName(Classes.OVERLAY_SCROLL_CONTAINER),
             autoFocus: false,
             isOpen: true,
             canEscapeKeyClose: false,
             usePortal: false,
             enforceFocus: false,
             item: box({
-                cls: 'xh-mask-body',
-                item: text ? box({cls: 'xh-mask-text', item: text}) : null
+                className: 'xh-mask-body',
+                item: text ? box({className: 'xh-mask-text', item: text}) : null
             })
         });
     }

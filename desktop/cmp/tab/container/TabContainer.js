@@ -44,25 +44,26 @@ export class TabContainer extends Component {
         switcherPosition: 'top'
     };
 
-    baseCls = 'xh-tab-container';
+    baseClassName = 'xh-tab-container';
 
     render() {
         const {model} = this,
             {activeTabId, tabs} = model,
-            {switcherPosition, layoutConfig} = this.props,
+            {switcherPosition} = this.props,
             switcherBefore = ['left', 'top'].includes(switcherPosition),
             switcherAfter = ['right', 'bottom'].includes(switcherPosition),
             vertical = ['left', 'right'].includes(switcherPosition),
             container = vertical ? hbox : vbox;
 
         // Default flex = 'auto' if no dimensions / flex specified.
-        if (layoutConfig.width === null && layoutConfig.height === null && layoutConfig.flex === null) {
-            layoutConfig.flex = 'auto';
+        const layoutProps = this.getLayoutProps();
+        if (layoutProps.width === null && layoutProps.height === null && layoutProps.flex === null) {
+            layoutProps.flex = 'auto';
         }
 
         return container({
-            cls: this.getClassNames(),
-            layoutConfig,
+            className: this.getClassName(),
+            ...layoutProps,
             items: [
                 switcherBefore ? tabSwitcher({model, orientation: switcherPosition}) : null,
                 ...tabs.map(tabModel => {
@@ -74,7 +75,7 @@ export class TabContainer extends Component {
                     }
 
                     return div({
-                        cls: 'xh-tab-panel',
+                        className: 'xh-tab-panel',
                         style,
                         item: tab({model: tabModel})
                     });

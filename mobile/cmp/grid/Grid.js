@@ -19,7 +19,7 @@ class Grid extends Component {
     render() {
         const {hideHeader, store} = this.model;
         return list({
-            cls: `xh-grid ${hideHeader ? 'xh-grid-header-hidden' : ''}`,
+            className: `xh-grid ${hideHeader ? 'xh-grid-header-hidden' : ''}`,
             dataSource: store.records,
             renderHeader: () => this.renderHeader(),
             renderRow: (rec) => this.renderRow(rec)
@@ -44,8 +44,8 @@ class Grid extends Component {
             key: rec.id,
             modifier: 'tappable longdivider',
             items: [
-                div({cls: 'center', item: this.getCellValue(leftColumn, rec)}),
-                div({cls: 'right', item: this.getCellValue(rightColumn, rec)})
+                div({className: 'center', item: this.getCellValue(leftColumn, rec)}),
+                div({className: 'right', item: this.getCellValue(rightColumn, rec)})
             ],
             onClick: () => {
                 if (handler) handler(rec);

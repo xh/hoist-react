@@ -55,15 +55,15 @@ class RelativeTimestamp extends Component {
         options: PT.object
     };
 
-    baseCls = 'xh-relative-timestamp';
+    baseClassName = 'xh-relative-timestamp';
 
     @observable relativeTimeString;
     timer = null;
 
     render() {
         return box({
-            cls: this.getClassNames(),
-            layoutConfig: this.layoutConfig,
+            className: this.getClassName(),
+            ...this.getLayoutProps(),
             item: this.relativeTimeString
         });
     }

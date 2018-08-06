@@ -15,7 +15,7 @@ import {baseCol} from '@xh/hoist/columns/Core';
 @LayoutSupport
 class DataView extends Component {
 
-    baseCls = 'xh-data-view';
+    baseClassName = 'xh-data-view';
 
     constructor(props) {
         super(props);
@@ -38,10 +38,10 @@ class DataView extends Component {
     }
 
     render() {
-        const {layoutConfig, rowCls, itemHeight} = this.props;
+        const {rowCls, itemHeight} = this.props;
         return grid({
-            layoutConfig,
-            cls: this.getClassNames(),
+            ...this.getLayoutProps(),
+            className: this.getClassName(),
             model: this._gridModel,
             agOptions: {
                 headerHeight: 0,
