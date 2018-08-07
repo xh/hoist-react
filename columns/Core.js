@@ -11,15 +11,14 @@ import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 export const baseCol = colFactory({});
 
 export const emptyFlexCol = colFactory({
+    colId: 'emptyFlex',
+    headerName: null,
     flex: true
 });
 
 export const boolCheckCol = colFactory({
     width: 34,
     align: 'center',
-    agOptions: {
-        cellRenderer: function (params) {
-            return params.value ? convertIconToSvg(Icon.check({prefix: 'fas'}), {classes: ['xh-green']}) : '';
-        }
-    }
+    resizable: false,
+    renderer: (v) => v ? convertIconToSvg(Icon.check({prefix: 'fas'}), {classes: ['xh-green']}) : ''
 });

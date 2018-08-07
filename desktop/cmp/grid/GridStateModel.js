@@ -115,7 +115,7 @@ export class GridStateModel {
 
         return columns.map(it => {
             return {
-                xhId: it.xhId,
+                colId: it.colId,
                 hide: it.hide,
                 width: it.width
             };
@@ -131,7 +131,7 @@ export class GridStateModel {
 
         // Match columns in state to columns in code, apply stateful properties, and add to new columns in stateful order.
         state.columns.forEach(colState => {
-            const col = find(cols, {xhId: colState.xhId});
+            const col = find(cols, {colId: colState.colId});
             if (!col) return; // Do not attempt to include stale column state.
 
             col.hide = colState.hide;
@@ -142,7 +142,7 @@ export class GridStateModel {
         // Insert these columns in position based on the index at which they are defined.
         const newColumns = [...foundColumns];
         cols.forEach((col, idx) => {
-            if (!find(foundColumns, {xhId: col.xhId})) {
+            if (!find(foundColumns, {colId: col.colId})) {
                 newColumns.splice(idx, 0, col);
             }
         });
@@ -179,8 +179,8 @@ export class GridStateModel {
     ensureCompatible() {
         const xhStateId = this.xhStateId,
             cols = this.gridModel.columns,
-            colsWithoutXhId = cols.filter(col => !col.xhId),
-            uniqueIds = cols.length == uniqBy(cols, 'xhId').length;
+            colsWithoutColId = cols.filter(col => !col.colId),
+            uniqueIds = cols.length == uniqBy(cols, 'colId').length;
 
         throwIf(
             !xhStateId,
@@ -188,8 +188,8 @@ export class GridStateModel {
         );
 
         throwIf(
-            this.trackColumns && (colsWithoutXhId.length || !uniqueIds),
-            'GridStateModel with "trackColumns=true" requires all columns to have a unique xhId'
+            this.trackColumns && (colsWithoutColId.length || !uniqueIds),
+            'GridStateModel with "trackColumns=true" requires all columns to have a unique colId'
         );
     }
 

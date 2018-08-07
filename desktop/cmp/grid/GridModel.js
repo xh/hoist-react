@@ -248,23 +248,15 @@ export class GridModel {
         }
     }
 
-    syncColumnOrder(agColumns) {
-        // Check for no-op
-        const xhColumns = this.columns,
-            newIdOrder = agColumns.map(it => it.colId),
-            oldIdOrder = xhColumns.map(it => it.colId),
-            orderChanged = !isEqual(newIdOrder, oldIdOrder);
-
-        if (!orderChanged) return;
-
-        const orderedCols = [];
-        agColumns.forEach(gridCol => {
-            const col = find(xhColumns, {colId: gridCol.colId});
-            orderedCols.push(col);
+    noteAgColumnStateChanged(agColumnState) {
+        const newCols = agColumnState.map(agCol => {
+            const col = find(this.columns, {colId: agCol.colId});
+            if (!col.flex) col.width = agCol.width;
+            return col;
         });
-
-        this.setColumns(orderedCols);
+        this.setColumns(newCols);
     }
+
 
     //-----------------------
     // Implementation

@@ -81,7 +81,7 @@ export class ConfigPanel extends Component {
         columns: [
             nameCol({width: 200}),
             baseCol({field: 'valueType', headerName: 'Type', width: 80, align: 'center'}),
-            baseCol({field: 'value', minWidth: 60, flex: true, renderer: this.maskIfPwd}),
+            baseCol({field: 'value', width: 200, renderer: this.maskIfPwd}),
             boolCheckCol({field: 'clientVisible', headerName: 'Client?', width: 75}),
             baseCol({field: 'groupName', headerName: 'Group', width: 100}),
             baseCol({field: 'note', minWidth: 60, flex: true})

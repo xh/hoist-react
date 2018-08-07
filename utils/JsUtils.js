@@ -55,3 +55,7 @@ export function throwIf(condition, message) {
         throw XH.exception(message);
     }
 }
+
+export function withDefault(...params) {
+    return params.find(it => it !== undefined);
+}

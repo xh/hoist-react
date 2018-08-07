@@ -297,8 +297,8 @@ export class Grid extends Component {
     //------------------------
     // Event Handlers on AG Grid.
     //------------------------
-    onGridReady = (params) => {
-        this.model.setAgApi(params.api);
+    onGridReady = (ev) => {
+        this.model.setAgApi(ev.api);
     }
 
     onNavigateToNextCell = (params) => {
@@ -314,8 +314,7 @@ export class Grid extends Component {
     }
 
     onDragStopped = (ev) => {
-        const gridColumns = ev.api.columnController.gridColumns;
-        this.model.syncColumnOrder(gridColumns);
+        this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
     }
 
     onGridSizeChanged = (ev) => {

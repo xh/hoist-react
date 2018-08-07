@@ -6,9 +6,9 @@
  */
 
 import {Component} from 'react';
-import {startCase, defaults} from 'lodash';
+import {startCase, defaults, defaultTo} from 'lodash';
 import {ExportFormat} from './ExportFormat';
-
+import {withDefault} from '@xh/hoist/utils/JsUtils';
 
 /**
  * Definition of display and other meta-data for a grid column.
@@ -20,16 +20,17 @@ export class Column {
      *
      * Note that this is not a typical entry point for applications looking
      * to create a new column. Applications should typically use a columnFactory
-     * which will include appropriate defaults.  See column() for the generic uses.
+     * which will include appropriate defaults.  See baseCol() for the generic uses.
      */
     constructor({
         field,
-        xhId,
+        colId,
         headerName,
         align,
         width,
         minWidth,
         flex,
+        resizable,
         format,
         renderer,
         elementRenderer,
@@ -45,26 +46,27 @@ export class Column {
     }) {
 
         this.field = field;
-        this.xhId = xhId || field;
-        this.headerName = headerName || startCase(this.xhId);
+        this.colId = withDefault(colId, field);
+        this.headerName = withDefault(headerName, startCase(this.colId));
 
         this.align = align;
         this.width = width;
         this.minWidth = minWidth;
         this.flex = flex;
+        this.resizable = !!withDefault(resizable, true);
 
         this.renderer = renderer;
         this.elementRenderer = elementRenderer;
 
-        this.chooserName = chooserName || headerName;
+        this.chooserName = withDefault(chooserName, headerName);
         this.chooserGroup = chooserGroup;
         this.chooserDescription = chooserDescription;
         this.excludeFromChooser = !!excludeFromChooser;
 
-        this.exportName = exportName || headerName;
+        this.exportName = withDefault(exportName, headerName);
         this.exportValue = exportValue;
-        this.exportFormat = exportFormat || ExportFormat.DEFAULT;
-        this.excludeFromExport = excludeFromExport !== undefined ? excludeFromExport : !field;
+        this.exportFormat = withDefault(exportFormat, ExportFormat.DEFAULT);
+        this.excludeFromExport = withDefault(excludeFromExport, !field);
 
         this.agOptions = agOptions;
     }
@@ -76,6 +78,7 @@ export class Column {
 
         const ret = {
             field: this.field,
+            colId: this.colId,
             headerName: this.headerName,
             ...this.agOptions
         };
@@ -97,16 +100,20 @@ export class Column {
             ret.width = this.width || 0;
         }
 
+        if (!this.resizable) {
+            ret.suppressResize = true;
+        }
+
         const {renderer, elementRenderer} = this;
-        if (elementRenderer) {
+        if (renderer) {
+            ret.cellRenderer = (params) => renderer(params.value, params.data);
+        } else if (elementRenderer) {
             ret.cellRendererFramework = class extends Component {
                 render() {return elementRenderer(this.props)}
                 refresh() {return false}
             };
-        } else if (renderer) {
-            ret.valueFormatter = renderer;
         }
-
+        
         return ret;
     }
 }
