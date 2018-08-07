@@ -19,7 +19,7 @@ import {Timer} from '@xh/hoist/utils/Timer';
  */
 @HoistComponent()
 @ContextMenuSupport
-class LogViewerDisplay extends Component {
+export class LogViewerDisplay extends Component {
 
     firstRow = new Ref();
     lastRow = new Ref();

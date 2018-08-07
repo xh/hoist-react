@@ -15,7 +15,7 @@ import './Dialog.scss';
  * A wrapper around Onsen's dialog, with support for standard layout + styling, titles and buttons
  */
 @HoistComponent()
-class Dialog extends Component {
+export class Dialog extends Component {
 
     render() {
         const {isOpen, onCancel, icon, title, content, className, buttons = []} = this.props,

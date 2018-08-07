@@ -15,7 +15,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {fmtDateTime} from '@xh/hoist/format';
 
 @HoistComponent()
-class ClientErrorDetail extends Component {
+export class ClientErrorDetail extends Component {
 
     render() {
         const {model} =  this,

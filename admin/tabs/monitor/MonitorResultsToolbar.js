@@ -18,7 +18,7 @@ import {Icon} from '@xh/hoist/icon';
  * @private
  */
 @HoistComponent()
-class MonitorResultsToolbar extends Component {
+export class MonitorResultsToolbar extends Component {
     render() {
         const {passed, warned, failed, forceRunAllMonitors, lastRun} = this.model;
 
