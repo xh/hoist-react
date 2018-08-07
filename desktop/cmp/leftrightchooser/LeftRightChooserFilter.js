@@ -18,7 +18,7 @@ import {textField} from '@xh/hoist/desktop/cmp/form';
  * based on simple text matching in selected fields.
  */
 @HoistComponent()
-class LeftRightChooserFilter extends Component {
+export class LeftRightChooserFilter extends Component {
 
     static propTypes = {
         /** Names of fields in chooser to filter by */

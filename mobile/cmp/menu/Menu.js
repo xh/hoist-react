@@ -16,7 +16,7 @@ import {mask} from '@xh/hoist/mobile/cmp/mask';
  * Menu Component
  */
 @HoistComponent()
-class Menu extends Component {
+export class Menu extends Component {
 
     static propTypes = {
         /** the width of the menu */

@@ -17,7 +17,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
  * @private
  */
 @HoistComponent()
-class Message extends Component {
+export class Message extends Component {
 
     render() {
         const model = this.model,

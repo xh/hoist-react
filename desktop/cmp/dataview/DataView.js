@@ -13,7 +13,7 @@ import {baseCol} from '@xh/hoist/columns/Core';
 
 @HoistComponent()
 @LayoutSupport
-class DataView extends Component {
+export class DataView extends Component {
 
     baseClassName = 'xh-data-view';
 
