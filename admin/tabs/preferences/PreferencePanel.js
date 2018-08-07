@@ -6,10 +6,9 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {boolCheckCol, baseCol} from '@xh/hoist/columns/Core';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
-
-import {nameCol} from '@xh/hoist/admin/columns/Columns';
+import {boolCheckCol, baseCol} from '@xh/hoist/columns';
+import {nameCol} from '@xh/hoist/admin/columns';
 
 @HoistComponent()
 export class PreferencePanel extends Component {
@@ -74,12 +73,12 @@ export class PreferencePanel extends Component {
             del: 'Are you sure you want to delete? Deleting preferences can break running apps!'
         },
         columns: [
-            boolCheckCol({field: 'local', fixedWidth: 70}),
-            nameCol({fixedWidth: 200}),
-            baseCol({field: 'type', fixedWidth: 100}),
+            boolCheckCol({field: 'local', width: 70}),
+            nameCol({width: 200}),
+            baseCol({field: 'type', width: 100}),
             baseCol({field: 'defaultValue', minWidth: 150, maxWidth: 480}),
-            baseCol({field: 'groupName', headerName: 'Group', fixedWidth: 100}),
-            baseCol({field: 'notes', minWidth: 200, flex: 1})
+            baseCol({field: 'groupName', headerName: 'Group', width: 100}),
+            baseCol({field: 'notes', minWidth: 200, flex: true})
         ],
         editors: [
             {field: 'name'},

@@ -10,10 +10,8 @@ import {action, observable} from '@xh/hoist/mobx';
 import {LocalStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
-import {baseCol} from '@xh/hoist/columns/Core';
-import {dateTimeCol} from '@xh/hoist/columns/DatesTimes';
-
-import {usernameCol} from '@xh/hoist/admin/columns/Columns';
+import {baseCol, dateTimeCol} from '@xh/hoist/columns';
+import {usernameCol} from '@xh/hoist/admin/columns';
 
 @HoistModel()
 export class ActivityGridModel {
@@ -42,20 +40,20 @@ export class ActivityGridModel {
         }),
         sortBy: {colId: 'dateCreated', sort: 'desc'},
         columns: [
-            baseCol({field: 'severity', fixedWidth: 100}),
-            dateTimeCol({field: 'dateCreated', fixedWidth: 160, align: 'right'}),
-            usernameCol({fixedWidth: 120}),
-            baseCol({field: 'msg', headerName: 'Message', minWidth: 150, flex: 1}),
-            baseCol({field: 'category', fixedWidth: 100}),
-            baseCol({field: 'device', fixedWidth: 100}),
-            baseCol({field: 'browser', fixedWidth: 100}),
-            baseCol({field: 'data', minWidth: 70, flex: 1}),
-            baseCol({field: 'impersonating', fixedWidth: 140}),
+            baseCol({field: 'severity', width: 100}),
+            dateTimeCol({field: 'dateCreated', width: 160, align: 'right'}),
+            usernameCol({width: 120}),
+            baseCol({field: 'msg', headerName: 'Message', minWidth: 150, flex: true}),
+            baseCol({field: 'category', width: 100}),
+            baseCol({field: 'device', width: 100}),
+            baseCol({field: 'browser', width: 100}),
+            baseCol({field: 'data', minWidth: 70, flex: true}),
+            baseCol({field: 'impersonating', width: 140}),
             baseCol({
                 field: 'elapsed',
                 headerName: 'Elapsed (ms)',
-                fixedWidth: 130,
-                valueFormatter: numberRenderer({precision: 0})
+                width: 130,
+                renderer: numberRenderer({precision: 0})
             })
         ]
     });

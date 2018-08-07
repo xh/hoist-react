@@ -4,37 +4,39 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {fileColFactory} from './Utils.js';
+import {colFactory} from './Column.js';
 import {ExportFormat} from './ExportFormat';
 import {dateRenderer, dateTimeRenderer, timeRenderer, compactDateRenderer} from '../format';
 
-const colFactory = fileColFactory({
-    cellStyle: {align: 'right'}
-});
+const defaults = {align: 'right'};
 
 export const dateCol = colFactory({
+    ...defaults,
     headerName: 'Date',
-    valueFormatter: dateRenderer(),
+    renderer: dateRenderer(),
     exportFormat: ExportFormat.DATE_FMT,
     width: 120
 });
 
 export const timeCol = colFactory({
+    ...defaults,
     headerName: 'Time',
-    valueFormatter: timeRenderer(),
+    renderer: timeRenderer(),
     width: 90
 });
 
 export const dateTimeCol = colFactory({
+    ...defaults,
     headerName: 'Date',
-    valueFormatter: dateTimeRenderer(),
+    renderer: dateTimeRenderer(),
     exportFormat: ExportFormat.DATETIME_FMT,
     width: 160
 });
 
 export const compactDateCol = colFactory({
+    ...defaults,
     headerName: 'Date',
-    valueFormatter: compactDateRenderer(),
+    renderer: compactDateRenderer(),
     exportFormat: ExportFormat.DATE_FMT,
     width: 100
 });

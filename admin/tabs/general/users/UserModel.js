@@ -8,9 +8,8 @@
 import {HoistModel} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
-
-import {baseCol, boolCheckCol} from '@xh/hoist/columns/Core';
-import {usernameCol} from '@xh/hoist/admin/columns/Columns';
+import {baseCol, boolCheckCol} from '@xh/hoist/columns';
+import {usernameCol} from '@xh/hoist/admin/columns';
 
 @HoistModel()
 export class UserModel {
@@ -24,11 +23,11 @@ export class UserModel {
             fields: ['username', 'email', 'displayName', 'active', 'roles']
         }),
         columns: [
-            usernameCol({fixedWidth: 175}),
-            baseCol({field: 'email', fixedWidth: 175}),
-            baseCol({field: 'displayName', fixedWidth: 150}),
-            boolCheckCol({field: 'active', fixedWidth: 75}),
-            baseCol({field: 'roles', minWidth: 130, flex: 1})
+            usernameCol({width: 175}),
+            baseCol({field: 'email', width: 175}),
+            baseCol({field: 'displayName', width: 150}),
+            boolCheckCol({field: 'active', width: 75}),
+            baseCol({field: 'roles', minWidth: 130, flex: true})
         ]
     });
 

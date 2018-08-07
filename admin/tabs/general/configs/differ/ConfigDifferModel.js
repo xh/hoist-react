@@ -14,8 +14,8 @@ import {LocalStore} from '@xh/hoist/data';
 import {p} from '@xh/hoist/cmp/layout';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {baseCol} from '@xh/hoist/columns/Core';
-import {nameCol} from '@xh/hoist/admin/columns/Columns';
+import {baseCol} from '@xh/hoist/columns';
+import {nameCol} from '@xh/hoist/admin/columns';
 import {Icon} from '@xh/hoist/icon';
 
 import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
@@ -46,28 +46,30 @@ export class ConfigDifferModel  {
             emptyText: 'Please enter remote host for comparison',
             selModel: 'multiple',
             columns: [
-                nameCol({fixedWidth: 200}),
+                nameCol({width: 200}),
                 baseCol({
                     field: 'type',
-                    fixedWidth: 80,
-                    valueFormatter: this.configValueTypeFormatter
+                    width: 80,
+                    renderer: this.configValueTypeFormatter
                 }),
                 baseCol({
                     field: 'localValue',
-                    flex: 1,
-                    valueFormatter: this.configValueFormatter
+                    flex: true,
+                    renderer: this.configValueFormatter
                 }),
                 baseCol({
                     field: 'remoteValue',
-                    flex: 1,
-                    valueFormatter: this.configValueFormatter,
-                    cellClassRules: {
-                        'xh-green': this.setRemoteCellClass
+                    flex: true,
+                    renderer: this.configValueFormatter,
+                    agOptions: {
+                        cellClassRules: {
+                            'xh-green': this.setRemoteCellClass
+                        }
                     }
                 }),
                 baseCol({
                     field: 'status',
-                    fixedWidth: 120
+                    width: 120
                 })
             ],
             contextMenuFn: this.contextMenuFn

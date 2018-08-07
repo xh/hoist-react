@@ -8,9 +8,8 @@
 import {XH, HoistModel} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {UrlStore} from '@xh/hoist/data';
-import {baseCol} from '@xh/hoist/columns/Core';
-
-import {nameCol} from '@xh/hoist/admin/columns/Columns';
+import {baseCol} from '@xh/hoist/columns';
+import {nameCol} from '@xh/hoist/admin/columns';
 
 @HoistModel()
 export class EhCacheModel {
@@ -25,10 +24,10 @@ export class EhCacheModel {
         }),
         sortBy: 'name',
         columns: [
-            nameCol({minWidth: 360, flex: 3}),
-            baseCol({field: 'heapSize', headerName: 'Heap Size (MB)', fixedWidth: 130, align: 'right'}),
-            baseCol({field: 'entries', fixedWidth: 120, align: 'right'}),
-            baseCol({field: 'status', minWidth: 120, flex: 1, align: 'right'})
+            nameCol({minWidth: 360, flex: true}),
+            baseCol({field: 'heapSize', headerName: 'Heap Size (MB)', width: 130, align: 'right'}),
+            baseCol({field: 'entries', width: 120, align: 'right'}),
+            baseCol({field: 'status', minWidth: 120, flex: true, align: 'right'})
         ]
     });
 

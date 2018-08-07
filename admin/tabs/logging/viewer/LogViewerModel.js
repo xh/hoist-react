@@ -10,7 +10,7 @@ import {action, observable} from '@xh/hoist/mobx';
 import {LastPromiseModel} from '@xh/hoist/promise';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {UrlStore} from '@xh/hoist/data';
-import {baseCol} from '@xh/hoist/columns/Core';
+import {baseCol} from '@xh/hoist/columns';
 
 /**
  * @private

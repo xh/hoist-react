@@ -138,10 +138,8 @@ class Grid extends Component {
     //------------------------
     getColumnDefs() {
         const {columns, sortBy} = this.model;
-        const cols = columns.map(col => {
-            return col.agColDef ? col.agColDef() : col;
-        });
-
+        const cols = columns.map(c => c.getAgSpec());
+        
         let now = Date.now();
         sortBy.forEach(it => {
             const col = find(cols, {colId: it.colId});

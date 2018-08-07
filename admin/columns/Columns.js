@@ -5,12 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {fileColFactory} from '@xh/hoist/columns/Utils.js';
+import {colFactory} from '@xh/hoist/columns';
 
 /**
  * Shared columns for the admin client.
  */
-const colFactory = fileColFactory();
 
 export const nameCol = colFactory({
     field: 'name',
@@ -20,7 +19,7 @@ export const nameCol = colFactory({
 export const nameFlexCol = colFactory({
     field: 'name',
     minWidth: 120,
-    flex: 1
+    flex: true
 });
 
 export const usernameCol = colFactory({
