@@ -18,21 +18,21 @@ export function capitalizeWords(str) {
  *
  * @param {*} v - value to be placed in span, will be coerced into a string
  * @param {Object} [opts] - an options object:
- * @param {string} [opts.cls] - span class
+ * @param {string} [opts.className] - span class
  * @param {string} [opts.title] - span title
  * @param {boolean} [opts.leadSpc] - set to true to add a space before the v to be wrapped
  * @param {boolean} [opts.trailSpc] - set to true to add a space after the span to be returned
  * @param {boolean} [opts.asElement] - return a react element rather than a html string
  */
 export function fmtSpan(v, {
-    cls = null,
+    className = null,
     title = null,
     leadSpc = false,
     trailSpc = false,
     asElement = false
 } = {}) {
     if (v == null) return '';
-    const opts = {cls, title, leadSpc, trailSpc};
+    const opts = {className, title, leadSpc, trailSpc};
     return asElement ? fmtSpanElement(v, opts) : fmtSpanHtml(v, opts);
 }
 
@@ -40,22 +40,22 @@ export function fmtSpan(v, {
 // Implementation
 //-----------------
 function fmtSpanElement(v, opts = {}) {
-    const {cls, title, leadSpc, trailSpc} = opts,
+    const {className, title, leadSpc, trailSpc} = opts,
         txt = (leadSpc ? ' ' : '') + v + (trailSpc ? ' ' : '');
 
     return span({
-        className: cls,
+        className: className,
         title: title,
         item: txt
     });
 }
 
 function fmtSpanHtml(v, opts = {}) {
-    const {cls, title, leadSpc, trailSpc} = opts,
+    const {className, title, leadSpc, trailSpc} = opts,
         txt = (leadSpc ? ' ' : '') + v;
 
     let ret = '<span';
-    ret += cls ? ` class="${cls}"` : '';
+    ret += className ? ` class="${className}"` : '';
     ret += title ? ` title="${title}"` : '';
     ret += `>${txt}</span>`;
 
