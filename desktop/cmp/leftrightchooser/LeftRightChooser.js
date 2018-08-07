@@ -21,7 +21,7 @@ import './LeftRightChooser.scss';
  */
 @HoistComponent()
 @LayoutSupport
-class LeftRightChooser extends Component {
+export class LeftRightChooser extends Component {
 
     baseClassName = 'xh-lr-chooser';
 

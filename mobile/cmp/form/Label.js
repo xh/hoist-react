@@ -28,7 +28,7 @@ export class Label extends HoistField {
     render() {
         const {children, style, width} = this.props;
         return div({
-            cls: 'xh-field-label',
+            className: 'xh-field-label',
             style: {...style, whiteSpace: 'nowrap', width},
             items: children,
             ...this.getDelegateProps()

@@ -46,7 +46,7 @@ const defaultOptions = {
  */
 @HoistComponent()
 @LayoutSupport
-class RelativeTimestamp extends Component {
+export class RelativeTimestamp extends Component {
 
     static propTypes = {
         /** Date object that will be used as reference, can also be specified in milliseconds*/

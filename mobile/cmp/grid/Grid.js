@@ -14,7 +14,7 @@ import {hframe, frame, div} from '@xh/hoist/cmp/layout';
  * Grid Component
  */
 @HoistComponent()
-class Grid extends Component {
+export class Grid extends Component {
 
     render() {
         const {hideHeader, store} = this.model;

@@ -28,7 +28,7 @@ import {colChooser} from './ColChooser';
  */
 @HoistComponent()
 @LayoutSupport
-class Grid extends Component {
+export class Grid extends Component {
 
     _scrollOnSelect = true;
 

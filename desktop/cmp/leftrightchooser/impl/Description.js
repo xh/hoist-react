@@ -13,7 +13,7 @@ import {callout} from '@xh/hoist/kit/blueprint';
  * @private
  */
 @HoistComponent()
-class Description extends Component {
+export class Description extends Component {
 
     render() {
         const model = this.model,

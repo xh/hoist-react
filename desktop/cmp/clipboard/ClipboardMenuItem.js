@@ -9,14 +9,15 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {defaultsDeep} from 'lodash';
 import {clipboardButton} from './ClipboardButton';
-import {elemFactory} from '@xh/hoist/core';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 
 /**
  * Convenience wrapper for a ClipboardButton to be rendered as a Blueprint menu item.
  * Accepts props documented below as well as any supported by Blueprint's Button or ClipboardButton cmp.
  */
-class ClipboardMenuItem extends Component {
+@HoistComponent()
+export class ClipboardMenuItem extends Component {
 
     static propTypes = {
         icon: PT.element,

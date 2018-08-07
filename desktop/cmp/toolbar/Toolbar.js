@@ -16,7 +16,7 @@ import './Toolbar.scss';
  * Child items provided as raw configs will be created as buttons by default.
  */
 @HoistComponent()
-class Toolbar extends Component {
+export class Toolbar extends Component {
     static propTypes = {
         /** Custom classes that will be applied to this component */
         className: PT.string,
