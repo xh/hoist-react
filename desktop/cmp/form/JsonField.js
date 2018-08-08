@@ -47,6 +47,14 @@ export class JsonField extends HoistField {
         editorProps: PT.object
     };
 
+    constructor() {
+        super();
+        this.addReaction({
+            track: () => XH.darkTheme,
+            run: () => this.editor.setOption('theme', XH.darkTheme ? 'dracula' : 'default')
+        });
+    }
+
     editor = null;
     taCmp = null;
 
