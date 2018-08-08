@@ -27,7 +27,7 @@ export class EhCacheModel {
             {field: 'name', width: 360},
             {field: 'heapSize', headerName: 'Heap Size (MB)', width: 130, align: 'right'},
             {field: 'entries', width: 120, align: 'right'},
-            {field: 'status', minWidth: 120, align: 'right'},
+            {field: 'status', width: 120, align: 'right'},
             {...emptyFlexCol}
         ]
     });

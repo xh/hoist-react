@@ -75,7 +75,7 @@ export class PreferencePanel extends Component {
             {field: 'local', ...boolCheckCol, width: 70},
             {field: 'name', width: 200},
             {field: 'type', width: 100},
-            {field: 'defaultValue', minWidth: 150, maxWidth: 480},
+            {field: 'defaultValue', width: 200},
             {field: 'groupName', headerName: 'Group', width: 100},
             {field: 'notes', minWidth: 200, flex: true}
         ],

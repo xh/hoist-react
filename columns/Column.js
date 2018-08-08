@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {startCase} from 'lodash';
 import {ExportFormat} from './ExportFormat';
-import {withDefault, throwIf} from '@xh/hoist/utils/JsUtils';
+import {withDefault, withDefaultTrue, withDefaultFalse, throwIf} from '@xh/hoist/utils/JsUtils';
 
 /**
  * Definition of display and other meta-data for a grid column.
@@ -45,16 +45,16 @@ export class Column {
 
         this.field = field;
         this.colId = withDefault(colId, field);
-        throwIf(!this.colId, 'Must specify colId or field in column.');
+        throwIf(!this.colId, 'Must specify colId or field in Column.');
 
         this.headerName = withDefault(headerName, startCase(this.colId));
-        this.hide = !!withDefault(hide, false);
+        this.hide = withDefaultFalse(hide);
         this.align = align;
         this.width = width;
         this.minWidth = minWidth;
         this.maxWidth = maxWidth;
-        this.flex = !!withDefault(flex, false);
-        this.resizable = !!withDefault(resizable, true);
+        this.flex = withDefaultFalse(flex);
+        this.resizable = withDefaultTrue(resizable);
 
         this.renderer = renderer;
         this.elementRenderer = elementRenderer;
@@ -62,7 +62,7 @@ export class Column {
         this.chooserName = chooserName || this.headerName || this.colId;
         this.chooserGroup = chooserGroup;
         this.chooserDescription = chooserDescription;
-        this.excludeFromChooser = !!withDefault(excludeFromChooser, false);
+        this.excludeFromChooser = withDefaultFalse(excludeFromChooser, false);
 
         this.exportName = exportName || this.headerName || this.colId;
         this.exportValue = exportValue;
@@ -92,8 +92,8 @@ export class Column {
         if (align === 'center' || align === 'right') {
             ret.headerClass = ret.headerClass || [];
             ret.cellClass = ret.cellClass || [];
-            ret.headerClass.push(['xh-column-header-align-'+align]);
-            ret.cellClass.push(['xh-align-'+align]);
+            ret.headerClass.push('xh-column-header-align-'+align);
+            ret.cellClass.push('xh-align-'+align);
         }
 
         if (this.flex) {

@@ -8,7 +8,7 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {defaults, castArray, find, isString, isPlainObject, orderBy, pull, last} from 'lodash';
+import {defaults, castArray, find, isString, isPlainObject, orderBy, pull, last, findLast} from 'lodash';
 
 import {Column} from '@xh/hoist/columns';
 import {warnIf} from '@xh/hoist/utils/JsUtils';
@@ -69,8 +69,7 @@ export class GridModel {
      * @param {function|string} [exportFilename] - Filename for exported file, or a closure to generate one.
      * @param {(StoreSelectionModel|Object|String)} [selModel] - selection model to use,
      *      config to create one, or 'mode' property for a selection model.
-     * @param {(GridStateModel|Object|String)} [stateModel] - state model to use,
-     *      config to create one, or xhStateId property for a state model
+     * @param {(String|Object)} [stateModel] - xhStateId or config for a GridStateModel.
      * @param {function} [contextMenuFn] - closure returning a StoreContextMenu().
      */
     constructor({
@@ -254,13 +253,13 @@ export class GridModel {
         const {columns} = this;
         // Gether cols in correct order, and apply updated widths.
         let newCols = agColumnState.map(agCol => {
-            const col = find(this.columns, {colId: agCol.colId});
+            const col = find(columns, {colId: agCol.colId});
             if (!col.flex) col.width = agCol.width;
             return col;
         });
 
-        // Force any emptyFlexCol at end to stay at end!
-        const emptyFlex = find(columns, {colId: 'emptyFlex'});
+        // Force any emptyFlexCol that is last to stay last (avoid user dragging)!
+        const emptyFlex = findLast(columns, {colId: 'emptyFlex'});
         if (emptyFlex && last(columns) == emptyFlex  && last(newCols) != emptyFlex) {
             pull(newCols, emptyFlex).push(emptyFlex);
         }
@@ -282,16 +281,16 @@ export class GridModel {
             );
 
             // Prevent flex col from becoming hidden inadvertently.  Can be avoided by setting minWidth to null or 0.
-            if (c.flex && this.minWidth === undefined && c.length >0) {
-                this.minWidth = 10;
+            if (c.flex && this.minWidth === undefined && columns.length > 1) {
+                this.minWidth = 30;
             }
         });
 
         const flexCols = columns.filter(c => c.flex);
         warnIf(
             !flexCols.length,
-            `No columns have flex set (flex=true). This may yield empty space for large grids. Consider making the
-             last column a flex column, or adding an 'emptyFlexCol' at the end of your columns array.`
+            `No columns have flex set (flex=true). Consider making the last column a flex column, 
+            or adding an 'emptyFlexCol' at the end of your columns array.`
         );
     }
 
@@ -328,10 +327,7 @@ export class GridModel {
 
     initStateModel(stateModel) {
         let ret = null;
-
-        if (stateModel instanceof GridStateModel) {
-            ret = stateModel;
-        } else if (isPlainObject(stateModel)) {
+        if (isPlainObject(stateModel)) {
             ret = new GridStateModel(stateModel);
         } else if (isString(stateModel)) {
             ret = new GridStateModel({xhStateId: stateModel});
@@ -342,7 +338,6 @@ export class GridModel {
     }
 
     destroy() {
-        XH.safeDestroy(this.colChooserModel);
-        // TODO: How are Stores destroyed?
+        XH.safeDestroy(this.colChooserModel, this.stateModel);
     }
 }
