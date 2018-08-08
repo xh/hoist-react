@@ -68,12 +68,12 @@ export class Column {
         this.renderer = renderer;
         this.elementRenderer = elementRenderer;
 
-        this.chooserName = withDefault(chooserName, headerName);
+        this.chooserName = chooserName || this.headerName || this.colId;
         this.chooserGroup = chooserGroup;
         this.chooserDescription = chooserDescription;
         this.excludeFromChooser = !!withDefault(excludeFromChooser, false);
 
-        this.exportName = withDefault(exportName, headerName);
+        this.exportName = exportName || this.headerName || this.colId;
         this.exportValue = exportValue;
         this.exportFormat = withDefault(exportFormat, ExportFormat.DEFAULT);
         this.excludeFromExport = withDefault(excludeFromExport, !field);

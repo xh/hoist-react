@@ -92,24 +92,22 @@ export class LeftRightChooserModel {
 
         const fields = ['text', 'value', 'description', 'group', 'side', 'locked', 'exclude'];
 
+        const textCol = {field: 'text', flex: true, resizable: false, cellRendererFramework: ItemRenderer},
+            groupCol = {field: 'group', headerName: 'Group', hide: true}
+
+
         this.leftModel = new GridModel({
             store: new LocalStore({fields}),
             selModel: 'multiple',
             sortBy: leftSortBy,
-            columns: [
-                {field: 'text', headerName: leftTitle, flex: true, cellRendererFramework: ItemRenderer},
-                {field: 'group', headerName: 'Group', hide: true}
-            ]
+            columns: [{...textCol, headerName: leftTitle}, groupCol]
         });
 
         this.rightModel = new GridModel({
             store: new LocalStore({fields}),
             selModel: 'multiple',
             sortBy: rightSortBy,
-            columns: [
-                {field: 'text', headerName: rightTitle, flex: true, cellRendererFramework: ItemRenderer},
-                {field: 'group', headerName: 'Group', hide: true}
-            ]
+            columns: [{...textCol, headerName: rightTitle}, groupCol]
         });
 
         this.setData(data);
