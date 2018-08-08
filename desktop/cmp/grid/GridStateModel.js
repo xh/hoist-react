@@ -12,6 +12,10 @@ import {throwIf} from '@xh/hoist/utils/JsUtils';
 
 @HoistModel()
 export class GridStateModel {
+
+    // Version of grid state.  Increment *only* when we need to abandon all existing grid state in the wild.
+    static gridStateVersion = 1;
+
     gridModel = null;
     xhStateId = null;
 
@@ -51,8 +55,7 @@ export class GridStateModel {
     // For Extension / Override
     //--------------------------
     getStateKey() {
-        const xhStateId = this.xhStateId;
-        return 'gridState.' + xhStateId;
+        return `gridState.${this.constructor.gridStateVersion}.${this.xhStateId}`;
     }
 
     readState(stateKey) {
@@ -136,6 +139,7 @@ export class GridStateModel {
             if (!col) return; // Do not attempt to include stale column state.
 
             col.hide = colState.hide;
+            col.width = colState.width;
             foundColumns.push(col);
         });
 
