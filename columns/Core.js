@@ -6,6 +6,7 @@
  */
 
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
+import {numberRenderer} from '../format';
 
 export const emptyFlexCol =  {
     colId: 'emptyFlex',
@@ -22,3 +23,9 @@ export const boolCheckCol = {
     resizable: false,
     renderer: (v) => v ? convertIconToSvg(Icon.check({prefix: 'fas'}), {classes: ['xh-green']}) : ''
 };
+
+export const numberCol = {
+    align: 'right',
+    renderer: numberRenderer()
+};
+

@@ -8,7 +8,7 @@
 import {XH, HoistModel} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {UrlStore} from '@xh/hoist/data';
-import {emptyFlexCol} from '@xh/hoist/columns';
+import {emptyFlexCol, numberCol} from '@xh/hoist/columns';
 
 
 @HoistModel()
@@ -25,9 +25,9 @@ export class EhCacheModel {
         sortBy: 'name',
         columns: [
             {field: 'name', width: 360},
-            {field: 'heapSize', headerName: 'Heap Size (MB)', width: 130, align: 'right'},
-            {field: 'entries', width: 120, align: 'right'},
-            {field: 'status', width: 120, align: 'right'},
+            {field: 'heapSize', ...numberCol, headerName: 'Heap Size', width: 130},
+            {field: 'entries', ...numberCol, width: 120},
+            {field: 'status', width: 120},
             {...emptyFlexCol}
         ]
     });
