@@ -21,5 +21,5 @@ export {
 } from '@blueprintjs/core';
 
 
-export * from './Wrappers.js';
+export * from './Wrappers';
 export * from './Dialog';
