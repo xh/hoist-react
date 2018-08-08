@@ -24,7 +24,7 @@ export class Panel extends Component {
 
     static propTypes = {
         /** A title text added to the panel's header. */
-        title: PT.string,
+        title: PT.oneOfType([PT.string, PT.node]),
         /** An icon placed at the left-side of the panel's header. */
         icon: PT.element,
         /** Items to be added to the right-side of the panel's header. */
