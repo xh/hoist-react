@@ -14,8 +14,6 @@ import {LocalStore} from '@xh/hoist/data';
 import {p} from '@xh/hoist/cmp/layout';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {baseCol} from '@xh/hoist/columns';
-import {nameCol} from '@xh/hoist/admin/columns';
 import {Icon} from '@xh/hoist/icon';
 
 import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
@@ -46,18 +44,18 @@ export class ConfigDifferModel  {
             emptyText: 'Please enter remote host for comparison',
             selModel: 'multiple',
             columns: [
-                nameCol({width: 200}),
-                baseCol({
+                {field: 'name', width: 200},
+                {
                     field: 'type',
                     width: 80,
                     renderer: this.configValueTypeFormatter
-                }),
-                baseCol({
+                },
+                {
                     field: 'localValue',
                     flex: true,
                     renderer: this.configValueFormatter
-                }),
-                baseCol({
+                },
+                {
                     field: 'remoteValue',
                     flex: true,
                     renderer: this.configValueFormatter,
@@ -66,11 +64,11 @@ export class ConfigDifferModel  {
                             'xh-green': this.setRemoteCellClass
                         }
                     }
-                }),
-                baseCol({
+                },
+                {
                     field: 'status',
                     width: 120
-                })
+                }
             ],
             contextMenuFn: this.contextMenuFn
         });

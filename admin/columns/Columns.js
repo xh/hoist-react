@@ -5,25 +5,16 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {colFactory} from '@xh/hoist/columns';
 
 /**
  * Shared columns for the admin client.
  */
-
-export const nameCol = colFactory({
-    field: 'name',
-    width: 200
-});
-
-export const nameFlexCol = colFactory({
-    field: 'name',
+export const nameFlexCol = {
     minWidth: 120,
     flex: true
-});
+};
 
-export const usernameCol = colFactory({
+export const usernameCol = {
     headerName: 'User',
-    field: 'username',
     width: 120
-});
+};

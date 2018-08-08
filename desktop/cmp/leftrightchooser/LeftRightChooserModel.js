@@ -6,7 +6,6 @@
  */
 import {HoistModel, XH} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
-import {baseCol} from '@xh/hoist/columns/Core';
 import {LocalStore} from '@xh/hoist/data';
 import {computed} from '@xh/hoist/mobx';
 
@@ -98,8 +97,8 @@ export class LeftRightChooserModel {
             selModel: 'multiple',
             sortBy: leftSortBy,
             columns: [
-                baseCol({headerName: leftTitle, field: 'text', cellRendererFramework: ItemRenderer}),
-                baseCol({headerName: 'Group', field: 'group', hide: true})
+                {field: 'text', headerName: leftTitle, cellRendererFramework: ItemRenderer},
+                {field: 'group', headerName: 'Group', hide: true}
             ]
         });
 
@@ -108,8 +107,8 @@ export class LeftRightChooserModel {
             selModel: 'multiple',
             sortBy: rightSortBy,
             columns: [
-                baseCol({headerName: rightTitle, field: 'text', cellRendererFramework: ItemRenderer}),
-                baseCol({headerName: 'Group', field: 'group', hide: true})
+                {field: 'text', headerName: rightTitle, cellRendererFramework: ItemRenderer},
+                {field: 'group', headerName: 'Group', hide: true}
             ]
         });
 
@@ -134,7 +133,6 @@ export class LeftRightChooserModel {
     //------------------------
     // Implementation
     //------------------------
-
     preprocessData(data) {
         return data
             .filter(rec => !rec.exclude)

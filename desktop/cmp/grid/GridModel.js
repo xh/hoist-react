@@ -8,8 +8,9 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {defaults, castArray, find, isEqual, isString, isPlainObject, orderBy} from 'lodash';
+import {defaults, castArray, find, isString, isPlainObject, orderBy} from 'lodash';
 
+import {Column} from '@xh/hoist/columns';
 import {ColChooserModel} from './ColChooserModel';
 import {GridStateModel} from './GridStateModel';
 import {ExportManager} from './ExportManager';
@@ -56,7 +57,7 @@ export class GridModel {
 
     /**
      * @param {BaseStore} store - store containing the data for the grid.
-     * @param {Object[]} columns - collection of column specifications.
+     * @param {Object[]} columns - collection of Columns or configs to create them.
      * @param {string} [emptyText] - empty text to display if grid has no records. Can be valid HTML.
      *      Defaults to null, in which case no empty text will be shown.
      * @param {Object[]} [sortBy] - one or more sorters to apply to store data.
@@ -87,7 +88,7 @@ export class GridModel {
         contextMenuFn = () => this.defaultContextMenu()
     }) {
         this.store = store;
-        this.columns = columns;
+        this.columns = columns.map(c => c instanceof Column ? c : new Column(c));
         this.emptyText = emptyText;
         this.enableExport = enableExport;
         this.exportFilename = exportFilename;
@@ -292,22 +293,17 @@ export class GridModel {
     }
 
     initStateModel(stateModel) {
-        if (!stateModel) return;
-        let ret;
+        let ret = null;
 
         if (stateModel instanceof GridStateModel) {
             ret = stateModel;
-        }
-
-        if (isPlainObject(stateModel)) {
+        } else if (isPlainObject(stateModel)) {
             ret = new GridStateModel(stateModel);
-        }
-
-        if (isString(stateModel)) {
+        } else if (isString(stateModel)) {
             ret = new GridStateModel({xhStateId: stateModel});
         }
+        if (ret) ret.init(this);
 
-        ret.init(this);
         return ret;
     }
 

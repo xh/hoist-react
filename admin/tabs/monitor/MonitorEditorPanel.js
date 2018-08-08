@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {baseCol, boolCheckCol} from '@xh/hoist/columns';
+import {boolCheckCol} from '@xh/hoist/columns';
 import {nameFlexCol} from '@xh/hoist/admin/columns';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 
@@ -77,14 +77,14 @@ export class MonitorEditorPanel extends Component {
         sortBy: 'sortOrder',
         filterFields: ['code', 'name'],
         columns: [
-            boolCheckCol({field: 'active', width: 70}),
-            baseCol({field: 'code', width: 150}),
-            nameFlexCol(),
-            baseCol({field: 'warnThreshold', headerName: 'Warn', width: 130, align: 'right'}),
-            baseCol({field: 'failThreshold', headerName: 'Fail', width: 130, align: 'right'}),
-            baseCol({field: 'metricUnit', headerName: 'Units', width: 100}),
-            baseCol({field: 'notes', minWidth: 70, flex: true}),
-            baseCol({field: 'sortOrder', headerName: 'Sort', width: 100})
+            {field: 'active', ...boolCheckCol, width: 70},
+            {field: 'code', width: 150},
+            {field: 'name', ...nameFlexCol},
+            {field: 'warnThreshold', headerName: 'Warn', width: 130, align: 'right'},
+            {field: 'failThreshold', headerName: 'Fail', width: 130, align: 'right'},
+            {field: 'metricUnit', headerName: 'Units', width: 100},
+            {field: 'notes', minWidth: 70, flex: true},
+            {field: 'sortOrder', headerName: 'Sort', width: 100}
         ],
         editors: [
             {field: 'code'},

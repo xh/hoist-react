@@ -7,8 +7,6 @@
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
-import {baseCol} from '@xh/hoist/columns';
-import {nameCol} from '@xh/hoist/admin/columns';
 
 @HoistComponent()
 export class LogLevelPanel extends Component {
@@ -46,10 +44,10 @@ export class LogLevelPanel extends Component {
         unit: 'log level',
         filterFields: ['name'],
         columns: [
-            nameCol({minWidth: 200, flex: true}),
-            baseCol({field: 'defaultLevel', headerName: 'Initial', width: 110}),
-            baseCol({field: 'level', headerName: 'Override', width: 110}),
-            baseCol({field: 'effectiveLevel', headerName: 'Effective', width: 110})
+            {field: 'name', minWidth: 200, flex: true},
+            {field: 'defaultLevel', headerName: 'Initial', width: 110},
+            {field: 'level', headerName: 'Override', width: 110},
+            {field: 'effectiveLevel', headerName: 'Effective', width: 110}
         ],
         editors: [
             {field: 'name'},

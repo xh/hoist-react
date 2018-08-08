@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {startCase, defaults, defaultTo} from 'lodash';
+import {startCase} from 'lodash';
 import {ExportFormat} from './ExportFormat';
 import {withDefault} from '@xh/hoist/utils/JsUtils';
 
@@ -17,15 +17,12 @@ export class Column {
 
     /**
      * Create a new column.
-     *
-     * Note that this is not a typical entry point for applications looking
-     * to create a new column. Applications should typically use a columnFactory
-     * which will include appropriate defaults.  See baseCol() for the generic uses.
      */
     constructor({
         field,
         colId,
         headerName,
+        hide,
         align,
         width,
         minWidth,
@@ -49,6 +46,7 @@ export class Column {
         this.colId = withDefault(colId, field);
         this.headerName = withDefault(headerName, startCase(this.colId));
 
+        this.hide = !!withDefault(hide, false);
         this.align = align;
         this.width = width;
         this.minWidth = minWidth;
@@ -61,7 +59,7 @@ export class Column {
         this.chooserName = withDefault(chooserName, headerName);
         this.chooserGroup = chooserGroup;
         this.chooserDescription = chooserDescription;
-        this.excludeFromChooser = !!excludeFromChooser;
+        this.excludeFromChooser = !!withDefault(excludeFromChooser, false);
 
         this.exportName = withDefault(exportName, headerName);
         this.exportValue = exportValue;
@@ -70,6 +68,7 @@ export class Column {
 
         this.agOptions = agOptions;
     }
+
 
     /**
      * Produce a Column definition appropriate for AG Grid.
@@ -116,14 +115,4 @@ export class Column {
         
         return ret;
     }
-}
-
-
-/**
- * Create a function for use to create a specific Column instance.
- */
-export function colFactory(config) {
-    return function(instanceVals = {}) {
-        return new Column(defaults(instanceVals, config));
-    };
 }

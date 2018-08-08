@@ -7,8 +7,7 @@
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
-import {baseCol} from '@xh/hoist/columns';
-import {nameCol, usernameCol} from '@xh/hoist/admin/columns';
+import {usernameCol} from '@xh/hoist/admin/columns';
 
 @HoistComponent()
 export class UserPreferencePanel extends Component {
@@ -65,11 +64,11 @@ export class UserPreferencePanel extends Component {
         unit: 'preference',
         filterFields: ['name', 'username'],
         columns: [
-            nameCol({width: 200}),
-            baseCol({field: 'type', width: 100}),
-            usernameCol({width: 120}),
-            baseCol({field: 'groupName', headerName: 'Group', width: 100}),
-            baseCol({field: 'userValue', minWidth: 200, flex: true})
+            {field: 'name', width: 200},
+            {field: 'type', width: 100},
+            {field: 'username', ...usernameCol, width: 120},
+            {field: 'groupName', headerName: 'Group', width: 100},
+            {field: 'userValue', minWidth: 200, flex: true}
         ],
         editors: [
             {field: 'name'},

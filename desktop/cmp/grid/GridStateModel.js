@@ -19,10 +19,11 @@ export class GridStateModel {
     defaultState = null;
 
     /**
-    * @param {string} xhStateId - Unique grid identifier.
-    * @param {string} [trackColumns] - Set to true to save visible state and ordering of columns.
-    * @param {string} [trackSort] - Set to true to save sorting.
-    */
+     * @param {object} config
+     * @param {string} config.xhStateId - Unique grid identifier.
+     * @param {boolean} [config.trackColumns] - Set to true to save state of columns (including ordering, and widths).
+     * @param {boolean} [config.trackSort] - Set to true to save sorting.
+     */
     constructor({xhStateId, trackColumns = true, trackSort = true}) {
         this.xhStateId = xhStateId;
         this.trackColumns = trackColumns;
@@ -32,7 +33,7 @@ export class GridStateModel {
     init(gridModel) {
         this.gridModel = gridModel;
 
-        this.ensureCompatible();
+        this.ensureValid();
 
         if (this.trackColumns) {
             this.addReaction(this.columnReaction());
@@ -176,16 +177,13 @@ export class GridStateModel {
         this.saveState(this.getStateKey(), this.state);
     }, 5 * SECONDS);
 
-    ensureCompatible() {
+    ensureValid() {
         const xhStateId = this.xhStateId,
             cols = this.gridModel.columns,
             colsWithoutColId = cols.filter(col => !col.colId),
             uniqueIds = cols.length == uniqBy(cols, 'colId').length;
 
-        throwIf(
-            !xhStateId,
-            'GridStateModel must have a xhStateId in order to store state'
-        );
+        throwIf(!xhStateId, 'GridStateModel must have an xhStateId');
 
         throwIf(
             this.trackColumns && (colsWithoutColId.length || !uniqueIds),

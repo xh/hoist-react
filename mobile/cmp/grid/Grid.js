@@ -57,11 +57,10 @@ export class Grid extends Component {
     // Implementation
     //------------------------
     getCellValue(colDef, rec) {
-        const {field, valueGetter, valueFormatter} = colDef,
+        const {field, valueGetter, renderer} = colDef,
             v = valueGetter ? valueGetter(rec) : rec[field];
-        return valueFormatter ? valueFormatter(v) : v;
+        return renderer ? renderer(v) : v;
     }
-
 }
 
 export const grid = elemFactory(Grid);

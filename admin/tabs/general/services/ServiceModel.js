@@ -7,7 +7,6 @@
 import {XH, HoistModel} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
-import {baseCol} from '@xh/hoist/columns';
 
 @HoistModel()
 export class ServiceModel {
@@ -23,8 +22,8 @@ export class ServiceModel {
         sortBy: 'name',
         groupBy: 'provider',
         columns: [
-            baseCol({field: 'provider', width: 100}),
-            baseCol({field: 'name', minWidth: 300, flex: true})
+            {field: 'provider', width: 100},
+            {field: 'name', minWidth: 300, flex: true}
         ]
     });
 
