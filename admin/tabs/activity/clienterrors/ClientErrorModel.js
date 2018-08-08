@@ -37,15 +37,14 @@ export class ClientErrorModel {
         }),
         sortBy: {colId: 'dateCreated', sort: 'desc'},
         columns: [
-            {field: 'dateCreated', ...compactDateCol, width: 100, align: 'right'},
-            {field: 'username', ...usernameCol, width: 120},
-            {field: 'error', minWidth: 450, flex: true},
-            {field: 'msg', headerName: 'Message', minWidth: 150, flex: true},
-            {field: 'userAlerted', ...boolCheckCol, headerName: 'User Alerted?', width: 120},
+            {field: 'dateCreated', ...compactDateCol, width: 100},
+            {field: 'username', ...usernameCol},
+            {field: 'userAlerted', ...boolCheckCol, headerName: 'Alerted', width: 90},
             {field: 'browser', width: 100},
             {field: 'device', width: 100},
             {field: 'appVersion', width: 130},
-            {field: 'appEnvironment', headerName: 'Environment', width: 130}
+            {field: 'appEnvironment', headerName: 'Environment', width: 130},
+            {field: 'error', flex: true, minWidth: 150},
         ]
     });
 

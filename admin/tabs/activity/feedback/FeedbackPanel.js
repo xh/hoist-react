@@ -63,12 +63,12 @@ export class FeedbackPanel extends Component {
                 align: 'right',
                 renderer: compactDateRenderer()
             },
-            {field: 'username', ...usernameCol, width: 120},
-            {field: 'msg', headerName: 'Message', minWidth: 60, flex: true},
+            {field: 'username', ...usernameCol},
             {field: 'browser', width: 120},
             {field: 'device', width: 100},
             {field: 'appVersion', headerName: 'Version', width: 120},
-            {field: 'appEnvironment', headerName: 'Environment', width: 130}
+            {field: 'appEnvironment', headerName: 'Environment', width: 130},
+            {field: 'msg', headerName: 'Message', minWidth: 120, flex: true}
         ],
         editors: [
             {field: 'username'},

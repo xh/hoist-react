@@ -9,11 +9,6 @@
 /**
  * Shared columns for the admin client.
  */
-export const nameFlexCol = {
-    minWidth: 120,
-    flex: true
-};
-
 export const usernameCol = {
     headerName: 'User',
     width: 120

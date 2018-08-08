@@ -10,7 +10,10 @@ import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 export const emptyFlexCol =  {
     colId: 'emptyFlex',
     headerName: null,
-    flex: true
+    flex: true,
+    minWidth: 0,
+    excludeFromChooser: true,
+    excludeFromExport: true
 };
 
 export const boolCheckCol = {

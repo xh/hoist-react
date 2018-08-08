@@ -7,7 +7,6 @@
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
 import {boolCheckCol} from '@xh/hoist/columns';
-import {nameFlexCol} from '@xh/hoist/admin/columns';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 
 @HoistComponent()
@@ -79,7 +78,7 @@ export class MonitorEditorPanel extends Component {
         columns: [
             {field: 'active', ...boolCheckCol, width: 70},
             {field: 'code', width: 150},
-            {field: 'name', ...nameFlexCol},
+            {field: 'name', width: 200},
             {field: 'warnThreshold', headerName: 'Warn', width: 130, align: 'right'},
             {field: 'failThreshold', headerName: 'Fail', width: 130, align: 'right'},
             {field: 'metricUnit', headerName: 'Units', width: 100},

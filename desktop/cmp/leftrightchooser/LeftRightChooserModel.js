@@ -97,7 +97,7 @@ export class LeftRightChooserModel {
             selModel: 'multiple',
             sortBy: leftSortBy,
             columns: [
-                {field: 'text', headerName: leftTitle, cellRendererFramework: ItemRenderer},
+                {field: 'text', headerName: leftTitle, flex: true, cellRendererFramework: ItemRenderer},
                 {field: 'group', headerName: 'Group', hide: true}
             ]
         });
@@ -107,7 +107,7 @@ export class LeftRightChooserModel {
             selModel: 'multiple',
             sortBy: rightSortBy,
             columns: [
-                {field: 'text', headerName: rightTitle, cellRendererFramework: ItemRenderer},
+                {field: 'text', headerName: rightTitle, flex: true, cellRendererFramework: ItemRenderer},
                 {field: 'group', headerName: 'Group', hide: true}
             ]
         });

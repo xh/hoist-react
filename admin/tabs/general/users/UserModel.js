@@ -23,7 +23,7 @@ export class UserModel {
             fields: ['username', 'email', 'displayName', 'active', 'roles']
         }),
         columns: [
-            {field: 'username', ...usernameCol, width: 175},
+            {field: 'username', ...usernameCol},
             {field: 'email', width: 175},
             {field: 'displayName', width: 150},
             {field: 'active', ...boolCheckCol, width: 75},

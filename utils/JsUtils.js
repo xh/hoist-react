@@ -56,6 +56,12 @@ export function throwIf(condition, message) {
     }
 }
 
+export function warnIf(condition, message) {
+    if (condition) {
+        console.warn(message);
+    }
+}
+
 export function withDefault(...params) {
     return params.find(it => it !== undefined);
 }

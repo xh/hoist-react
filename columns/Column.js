@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {startCase} from 'lodash';
 import {ExportFormat} from './ExportFormat';
-import {withDefault} from '@xh/hoist/utils/JsUtils';
+import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/JsUtils';
 
 /**
  * Definition of display and other meta-data for a grid column.
@@ -26,6 +26,7 @@ export class Column {
         align,
         width,
         minWidth,
+        maxWidth,
         flex,
         resizable,
         format,
@@ -44,14 +45,25 @@ export class Column {
 
         this.field = field;
         this.colId = withDefault(colId, field);
-        this.headerName = withDefault(headerName, startCase(this.colId));
+        throwIf(!this.colId , 'Must specify colId or field in column.');
 
+        this.headerName = withDefault(headerName, startCase(this.colId));
         this.hide = !!withDefault(hide, false);
         this.align = align;
         this.width = width;
         this.minWidth = minWidth;
-        this.flex = flex;
+        this.maxWidth = maxWidth;
+        this.flex = !!withDefault(flex, false);
         this.resizable = !!withDefault(resizable, true);
+
+        warnIf(
+            flex && width,
+            `Column ${colId} should not be specified with both flex = true && width.  Width will be ignored.`,
+        )
+
+        if (flex && this.minWidth === undefined) {
+            this.minWidth = 10
+        }
 
         this.renderer = renderer;
         this.elementRenderer = elementRenderer;
@@ -79,21 +91,23 @@ export class Column {
             field: this.field,
             colId: this.colId,
             headerName: this.headerName,
+            hide: this.hide,
+            minWidth: this.minWidth,
+            maxWidth: this.maxWidth,
             ...this.agOptions
         };
 
-        if (this.align === 'center') {
-            ret.headerClass = ['xh-column-header-align-center'];
-            ret.cellClass = ['xh-align-center'];
-        } else if (this.align === 'right') {
-            ret.headerClass = ['xh-column-header-align-right'];
-            ret.cellClass = ['xh-align-right'];
+        const {align} = this;
+        if (align === 'center'  || align === 'right'){
+            ret.headerClass = ret.headerClass || [];
+            ret.cellClass = ret.cellClass || [];
+            ret.headerClass.push(['xh-column-header-align-'+align]);
+            ret.cellClass.push(['xh-align-'+align]);
         }
 
         if (this.flex) {
             ret.suppressResize = true;
             ret.width = Number.MAX_SAFE_INTEGER;
-            ret.minWidth = this.minWidth;
         } else {
             ret.suppressSizeToFit = true;
             ret.width = this.width || 0;
