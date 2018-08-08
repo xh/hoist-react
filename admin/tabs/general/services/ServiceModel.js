@@ -20,7 +20,6 @@ export class ServiceModel {
         }),
         selModel: 'multiple',
         sortBy: 'name',
-        groupBy: 'provider',
         columns: [
             {field: 'provider', width: 100},
             {field: 'name', minWidth: 300, flex: true}

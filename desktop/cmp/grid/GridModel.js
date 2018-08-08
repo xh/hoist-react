@@ -44,8 +44,6 @@ export class GridModel {
         'exportExcel',
         'exportCsv',
         '-',
-        'autoSizeAll',
-        '-',
         'colChooser'
     ];
 
