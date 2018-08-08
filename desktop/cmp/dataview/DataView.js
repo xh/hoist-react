@@ -31,7 +31,7 @@ export class DataView extends Component {
                     elementRenderer: (record) => itemFactory({record: record.data}),
                     agOptions: {
                         valueGetter: (params) => params.data
-                    },
+                    }
                 }
             ]
         });

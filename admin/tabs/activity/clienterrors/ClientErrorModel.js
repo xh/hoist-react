@@ -44,7 +44,7 @@ export class ClientErrorModel {
             {field: 'device', width: 100},
             {field: 'appVersion', width: 130},
             {field: 'appEnvironment', headerName: 'Environment', width: 130},
-            {field: 'error', flex: true, minWidth: 150},
+            {field: 'error', flex: true, minWidth: 150}
         ]
     });
 

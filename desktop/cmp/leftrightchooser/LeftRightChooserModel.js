@@ -93,7 +93,7 @@ export class LeftRightChooserModel {
         const fields = ['text', 'value', 'description', 'group', 'side', 'locked', 'exclude'];
 
         const textCol = {field: 'text', flex: true, resizable: false, cellRendererFramework: ItemRenderer},
-            groupCol = {field: 'group', headerName: 'Group', hide: true}
+            groupCol = {field: 'group', headerName: 'Group', hide: true};
 
 
         this.leftModel = new GridModel({

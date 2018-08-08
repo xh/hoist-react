@@ -8,9 +8,10 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {defaults, castArray, find, isString, isPlainObject, orderBy} from 'lodash';
+import {defaults, castArray, find, isString, isPlainObject, orderBy, pull, last} from 'lodash';
 
 import {Column} from '@xh/hoist/columns';
+import {warnIf} from '@xh/hoist/utils/JsUtils';
 import {ColChooserModel} from './ColChooserModel';
 import {GridStateModel} from './GridStateModel';
 import {ExportManager} from './ExportManager';
@@ -93,6 +94,8 @@ export class GridModel {
         this.enableExport = enableExport;
         this.exportFilename = exportFilename;
         this.contextMenuFn = contextMenuFn;
+
+        this.validateAndAdjustColumns();
 
         if (enableColChooser) {
             this.colChooserModel = new ColChooserModel(this);
@@ -250,11 +253,20 @@ export class GridModel {
     }
 
     noteAgColumnStateChanged(agColumnState) {
-        const newCols = agColumnState.map(agCol => {
+        const {columns} = this;
+        // Gether cols in correct order, and apply updated widths.
+        let newCols = agColumnState.map(agCol => {
             const col = find(this.columns, {colId: agCol.colId});
             if (!col.flex) col.width = agCol.width;
             return col;
         });
+
+        // Force any emptyFlexCol at end to stay at end!
+        const emptyFlex = find(columns, {colId: 'emptyFlex'});
+        if (emptyFlex && last(columns) == emptyFlex  && last(newCols) != emptyFlex) {
+            pull(newCols, emptyFlex).push(emptyFlex);
+        }
+
         this.setColumns(newCols);
     }
 
@@ -262,6 +274,30 @@ export class GridModel {
     //-----------------------
     // Implementation
     //-----------------------
+    validateAndAdjustColumns() {
+        const {columns} = this;
+        columns.forEach(c => {
+
+            warnIf(
+                c.flex && c.width,
+                `Column ${c.colId} should not be specified with both flex = true && width.  Width will be ignored.`,
+            );
+
+            // Prevent flex col from becoming hidden inadvertently.  Can be avoided by setting minWidth to null or 0.
+            if (c.flex && this.minWidth === undefined && c.length >0) {
+                this.minWidth = 10;
+            }
+        });
+
+        const flexCols = columns.filter(c => c.flex);
+        warnIf(
+            !flexCols.length,
+            `No columns have flex set (flex=true). This may yield empty space for large grids. Consider making the
+             last column a flex column, or adding an 'emptyFlexCol' at the end of your columns array.`
+        );
+    }
+
+
     formatValuesForExport(params) {
         const value = params.value,
             fmt = params.column.colDef.valueFormatter;

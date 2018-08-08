@@ -10,7 +10,7 @@ import {action, observable} from '@xh/hoist/mobx';
 import {LocalStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
-import {dateTimeCol, emptyFlexCol} from '@xh/hoist/columns';
+import {dateTimeCol} from '@xh/hoist/columns';
 import {usernameCol} from '@xh/hoist/admin/columns';
 
 @HoistModel()

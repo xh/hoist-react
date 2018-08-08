@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {startCase} from 'lodash';
 import {ExportFormat} from './ExportFormat';
-import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/JsUtils';
+import {withDefault, throwIf} from '@xh/hoist/utils/JsUtils';
 
 /**
  * Definition of display and other meta-data for a grid column.
@@ -45,7 +45,7 @@ export class Column {
 
         this.field = field;
         this.colId = withDefault(colId, field);
-        throwIf(!this.colId , 'Must specify colId or field in column.');
+        throwIf(!this.colId, 'Must specify colId or field in column.');
 
         this.headerName = withDefault(headerName, startCase(this.colId));
         this.hide = !!withDefault(hide, false);
@@ -55,15 +55,6 @@ export class Column {
         this.maxWidth = maxWidth;
         this.flex = !!withDefault(flex, false);
         this.resizable = !!withDefault(resizable, true);
-
-        warnIf(
-            flex && width,
-            `Column ${colId} should not be specified with both flex = true && width.  Width will be ignored.`,
-        )
-
-        if (flex && this.minWidth === undefined) {
-            this.minWidth = 10
-        }
 
         this.renderer = renderer;
         this.elementRenderer = elementRenderer;
@@ -98,7 +89,7 @@ export class Column {
         };
 
         const {align} = this;
-        if (align === 'center'  || align === 'right'){
+        if (align === 'center' || align === 'right') {
             ret.headerClass = ret.headerClass || [];
             ret.cellClass = ret.cellClass || [];
             ret.headerClass.push(['xh-column-header-align-'+align]);
