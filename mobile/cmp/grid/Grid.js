@@ -57,8 +57,8 @@ export class Grid extends Component {
     // Implementation
     //------------------------
     getCellValue(colDef, rec) {
-        const {field, valueGetter, renderer} = colDef,
-            v = valueGetter ? valueGetter(rec) : rec[field];
+        const {field, renderer} = colDef,
+            v = rec[field];
         return renderer ? renderer(v) : v;
     }
 }
