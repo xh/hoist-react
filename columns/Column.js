@@ -82,7 +82,7 @@ export class Column {
         this.exportFormat = withDefault(exportFormat, ExportFormat.DEFAULT);
         this.excludeFromExport = withDefault(excludeFromExport, !field);
 
-        this.agOptions = agOptions;
+        this.agOptions = agOptions || {};
     }
 
 
