@@ -51,7 +51,10 @@ export class JsonField extends HoistField {
         super();
         this.addReaction({
             track: () => XH.darkTheme,
-            run: () => this.editor.setOption('theme', XH.darkTheme ? 'dracula' : 'default')
+            run: () => {
+                const {editor} = this;
+                if (editor) editor.setOption('theme', XH.darkTheme ? 'dracula' : 'default');
+            }
         });
     }
 
@@ -151,7 +154,7 @@ export class JsonField extends HoistField {
 
     // CodeMirror docs: If you dynamically create and destroy editors made with `fromTextArea`
     // ...you should make sure to call `toTextArea` to remove the editor
-    componentWillUnmount() {
+    destroy() {
         if (this.editor) this.editor.toTextArea();
     }
 
