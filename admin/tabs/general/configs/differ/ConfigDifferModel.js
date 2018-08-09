@@ -229,9 +229,9 @@ export class ConfigDifferModel  {
         return true;
     }
 
-    valueRenderer(v, data) {
+    valueRenderer(v) {
         if (v == null) return '';
-        return data.valueType === 'pwd' ? '*****' : v;
+        return v.valueType === 'pwd' ? '*****' : v.value;
     }
 
     configValueTypeFormatter(v, data) {
