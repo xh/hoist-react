@@ -149,6 +149,11 @@ export class GridModel {
         if (recs.length) selModel.select(recs[0]);
     }
 
+    /** Does the grid have any records to show? */
+    get empty() {
+        return this.store.empty;
+    }
+
     /**
      * Shortcut to the currently selected records (observable).
      *
