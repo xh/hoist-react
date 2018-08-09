@@ -91,8 +91,6 @@ export class ConfigDifferModel  {
             apiAffix = XH.baseUrl[0] == '/' ? XH.baseUrl : '/',
             remoteBaseUrl = remoteHost + apiAffix;
 
-        //console.log(remoteHost);
-        //console.log(apiAffix);
         try {
             const resp = await Promise.all([
                 XH.fetchJson({url: XH.baseUrl + 'configDiffAdmin/configs'}),
