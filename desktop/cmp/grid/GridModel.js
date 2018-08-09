@@ -8,10 +8,10 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {defaults, castArray, find, isString, isPlainObject, orderBy, pull, last, findLast} from 'lodash';
+import {defaults, castArray, find, isString, isPlainObject, orderBy, pull, last, findLast, uniqBy} from 'lodash';
 
 import {Column} from '@xh/hoist/columns';
-import {warnIf} from '@xh/hoist/utils/JsUtils';
+import {throwIf, warnIf} from '@xh/hoist/utils/JsUtils';
 import {ColChooserModel} from './ColChooserModel';
 import {GridStateModel} from './GridStateModel';
 import {ExportManager} from './ExportManager';
@@ -92,7 +92,7 @@ export class GridModel {
         this.exportFilename = exportFilename;
         this.contextMenuFn = contextMenuFn;
 
-        this.validateAndAdjustColumns();
+        this.validateColumns();
 
         if (enableColChooser) {
             this.colChooserModel = new ColChooserModel(this);
@@ -271,24 +271,14 @@ export class GridModel {
     //-----------------------
     // Implementation
     //-----------------------
-    validateAndAdjustColumns() {
-        const {columns} = this;
-        columns.forEach(c => {
+    validateColumns() {
+        const {columns} = this,
+            hasDupes = columns.length != uniqBy(columns, 'colId').length;
 
-            warnIf(
-                c.flex && c.width,
-                `Column ${c.colId} should not be specified with both flex = true && width.  Width will be ignored.`,
-            );
+        throwIf(hasDupes, `All colIds in column collection must be unique.`);
 
-            // Prevent flex col from becoming hidden inadvertently.  Can be avoided by setting minWidth to null or 0.
-            if (c.flex && this.minWidth === undefined && columns.length > 1) {
-                this.minWidth = 30;
-            }
-        });
-
-        const flexCols = columns.filter(c => c.flex);
         warnIf(
-            !flexCols.length,
+            !columns.some(c => c.flex),
             `No columns have flex set (flex=true). Consider making the last column a flex column, 
             or adding an 'emptyFlexCol' at the end of your columns array.`
         );

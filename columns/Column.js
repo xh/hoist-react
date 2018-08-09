@@ -8,12 +8,15 @@
 import {Component} from 'react';
 import {startCase} from 'lodash';
 import {ExportFormat} from './ExportFormat';
-import {withDefault, withDefaultTrue, withDefaultFalse, throwIf} from '@xh/hoist/utils/JsUtils';
+import {withDefault, withDefaultTrue, withDefaultFalse, throwIf, warnIf} from '@xh/hoist/utils/JsUtils';
 
 /**
  * Definition of display and other meta-data for a grid column.
  */
 export class Column {
+
+    static DEFAULT_WIDTH = 60;
+    static FLEX_COL_MIN_WIDTH = 30;
 
     /**
      * Create a new column.
@@ -29,6 +32,7 @@ export class Column {
         maxWidth,
         flex,
         resizable,
+        movable,
         format,
         renderer,
         elementRenderer,
@@ -50,11 +54,20 @@ export class Column {
         this.headerName = withDefault(headerName, startCase(this.colId));
         this.hide = withDefaultFalse(hide);
         this.align = align;
-        this.width = width;
-        this.minWidth = minWidth;
-        this.maxWidth = maxWidth;
+
+        warnIf(
+            flex && width,
+            `Column ${this.colId} should not be specified with both flex = true && width.  Width will be ignored.`,
+        );
         this.flex = withDefaultFalse(flex);
+        this.width = this.flex ? null : width || Column.DEFAULT_WIDTH;
+
+        // Prevent flex col from becoming hidden inadvertently.  Can be avoided by setting minWidth to null or 0.
+        this.minWidth = withDefault(minWidth, this.flex ? Column.FLEX_COL_MIN_WIDTH : null);
+        this.maxWidth = maxWidth;
+
         this.resizable = withDefaultTrue(resizable);
+        this.movable = withDefaultTrue(movable);
 
         this.renderer = renderer;
         this.elementRenderer = elementRenderer;
@@ -85,6 +98,8 @@ export class Column {
             hide: this.hide,
             minWidth: this.minWidth,
             maxWidth: this.maxWidth,
+            suppressResize: !this.resizable,
+            suppressMovable: !this.movable,
             ...this.agOptions
         };
 
@@ -101,11 +116,7 @@ export class Column {
             ret.width = Number.MAX_SAFE_INTEGER;
         } else {
             ret.suppressSizeToFit = true;
-            ret.width = this.width || 0;
-        }
-
-        if (!this.resizable) {
-            ret.suppressResize = true;
+            ret.width = this.width;
         }
 
         const {renderer, elementRenderer} = this;

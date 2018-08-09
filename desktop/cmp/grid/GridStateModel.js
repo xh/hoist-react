@@ -37,8 +37,6 @@ export class GridStateModel {
     init(gridModel) {
         this.gridModel = gridModel;
 
-        this.ensureValid();
-
         if (this.trackColumns) {
             this.addReaction(this.columnReaction());
         }
@@ -50,12 +48,8 @@ export class GridStateModel {
         this.initializeState();
     }
 
-
-    //--------------------------
-    // For Extension / Override
-    //--------------------------
     getStateKey() {
-        return `gridState.${this.constructor.gridStateVersion}.${this.xhStateId}`;
+        return `gridState.v${GridStateModel.gridStateVersion}.${this.xhStateId}`;
     }
 
     readState(stateKey) {
@@ -179,20 +173,5 @@ export class GridStateModel {
     //--------------------------
     saveStateChange = debounce(() => {
         this.saveState(this.getStateKey(), this.state);
-    }, 5 * SECONDS);
-
-    ensureValid() {
-        const xhStateId = this.xhStateId,
-            cols = this.gridModel.columns,
-            colsWithoutColId = cols.filter(col => !col.colId),
-            uniqueIds = cols.length == uniqBy(cols, 'colId').length;
-
-        throwIf(!xhStateId, 'GridStateModel must have an xhStateId');
-
-        throwIf(
-            this.trackColumns && (colsWithoutColId.length || !uniqueIds),
-            'GridStateModel with "trackColumns=true" requires all columns to have a unique colId'
-        );
-    }
-
+    }, 500);
 }

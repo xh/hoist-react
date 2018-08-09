@@ -53,12 +53,12 @@ export class ConfigDifferModel  {
                 {
                     field: 'localValue',
                     flex: true,
-                    renderer: this.configValueFormatter
+                    renderer: this.valueRenderer
                 },
                 {
                     field: 'remoteValue',
                     flex: true,
-                    renderer: this.configValueFormatter,
+                    renderer: this.valueRenderer,
                     agOptions: {
                         cellClassRules: {
                             'xh-green': this.setRemoteCellClass
@@ -229,18 +229,14 @@ export class ConfigDifferModel  {
         return true;
     }
 
-    configValueFormatter = (rec) => {
-        const config = rec.data[rec.colDef.field];
-        return config ? this.maskIfPwd(config) : null;
+    valueRenderer(v, data) {
+        return 'hi';
+        if (v == null) return '';
+        return data.valueType === 'pwd' ? '*****' : v;
     }
 
-    maskIfPwd(config) {
-        return config.valueType === 'pwd' ? '*****' : config.value;
-    }
-
-    configValueTypeFormatter(rec) {
-        const data = rec.data,
-            local = data.localValue,
+    configValueTypeFormatter(v, data) {
+        const local = data.localValue,
             remote = data.remoteValue;
 
         if (local && remote) {

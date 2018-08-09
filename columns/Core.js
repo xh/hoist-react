@@ -13,8 +13,13 @@ export const emptyFlexCol =  {
     headerName: null,
     flex: true,
     minWidth: 0,
+    movable: false,
+    resizable: false,
     excludeFromChooser: true,
-    excludeFromExport: true
+    excludeFromExport: true,
+    agOptions: {
+        suppressSorting: true
+    }
 };
 
 export const boolCheckCol = {
