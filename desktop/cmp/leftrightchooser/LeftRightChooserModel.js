@@ -8,8 +8,8 @@ import {HoistModel, XH} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {LocalStore} from '@xh/hoist/data';
 import {computed} from '@xh/hoist/mobx';
-
-import {ItemRenderer} from './impl/ItemRenderer';
+import {div} from '@xh/hoist/cmp/layout';
+import {Icon} from '@xh/hoist/icon';
 
 /**
  * A Model for managing the state of a LeftRightChooser.
@@ -92,7 +92,7 @@ export class LeftRightChooserModel {
 
         const fields = ['text', 'value', 'description', 'group', 'side', 'locked', 'exclude'];
 
-        const textCol = {field: 'text', flex: true, resizable: false, cellRendererFramework: ItemRenderer},
+        const textCol = {field: 'text', flex: true, elementRenderer: this.textColRenderer},
             groupCol = {field: 'group', headerName: 'Group', hide: true};
 
 
@@ -131,6 +131,19 @@ export class LeftRightChooserModel {
     //------------------------
     // Implementation
     //------------------------
+    textColRenderer(props) {
+        const {value, data} = props,
+            lockedText = Icon.lock({prefix: 'fal'});
+
+        return div({
+            className: 'xh-lr-chooser__item-row',
+            items: [
+                value,
+                data.locked ? lockedText : null
+            ]
+        });
+    }
+
     preprocessData(data) {
         return data
             .filter(rec => !rec.exclude)
