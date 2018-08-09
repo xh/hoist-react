@@ -55,6 +55,7 @@ export class VisitsChart extends Component {
             model: this.model,
             onCommit: this.onCommit,
             popoverPosition: 'top-left',
+            commitOnChange: true,
             width: 100,
             ...args
         });
