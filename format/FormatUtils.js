@@ -5,29 +5,37 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {defaults} from 'lodash';
+import {defaults, isPlainObject} from 'lodash';
 
 /**
- * Generate a renderer. Renderers return a given formatter function.
+ * Generate a renderer for a given formatter function.
  *
- * Renderers take a config for its formatter method.
- * If this config is an object it will be cloned before being passed to its formatter.
- * Cloning ensures that the formatter gets a clean config object each time it is called.
+ * The returned renderer takes an optional config for its assigned formatter and itself returns
+ * a function that takes only a value, for convenient use with e.g. grid cell rendering.
+ *
+ * If the formatter config is an object it will be cloned before being passed to its formatter
+ * to ensure that the formatter gets its own clean copy each time it is called.
  *
  * @param {function} formatter - an existing formatter method.
+ * @return {function(Object):function} - a configurable renderer.
  */
 export function createRenderer(formatter) {
     return function(config) {
-        const isObj = (typeof config === 'object');
-        return (v) => {
-            const formatterConfig = isObj ? defaults({}, config) : config,
-                val = (typeof v === 'object') ? v.value : v;
-            return formatter(val, formatterConfig);
+        const isObj = isPlainObject(config);
+        return v => {
+            const formatterConfig = isObj ? defaults({}, config) : config;
+            return formatter(v, formatterConfig);
         };
     };
 }
 
-
+/**
+ * Install a value on an options object as `originalValue` for later reference, if an
+ * originalValue key has not already been set.
+ *
+ * @param v - value to store.
+ * @param {Object} opts - object on which the value can be stored.
+ */
 export function saveOriginal(v, opts) {
     if (opts.originalValue === undefined) {
         opts.originalValue = v;
