@@ -5,10 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {cloneDeep, debounce, find, uniqBy} from 'lodash';
-import {SECONDS} from '@xh/hoist/utils/DateTimeUtils';
+import {cloneDeep, debounce, find} from 'lodash';
 import {start} from '@xh/hoist/promise';
-import {throwIf} from '@xh/hoist/utils/JsUtils';
 
 @HoistModel()
 export class GridStateModel {

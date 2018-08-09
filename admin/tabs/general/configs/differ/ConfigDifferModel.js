@@ -230,7 +230,6 @@ export class ConfigDifferModel  {
     }
 
     valueRenderer(v, data) {
-        return 'hi';
         if (v == null) return '';
         return data.valueType === 'pwd' ? '*****' : v;
     }

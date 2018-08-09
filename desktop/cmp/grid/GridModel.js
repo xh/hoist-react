@@ -275,7 +275,7 @@ export class GridModel {
         const {columns} = this,
             hasDupes = columns.length != uniqBy(columns, 'colId').length;
 
-        throwIf(hasDupes, `All colIds in column collection must be unique.`);
+        throwIf(hasDupes, 'All colIds in column collection must be unique.');
 
         warnIf(
             !columns.some(c => c.flex),
