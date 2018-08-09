@@ -61,14 +61,14 @@ export class BaseStore {
      * Is the store empty after filters have been applied?
      */
     get empty() {
-        return this.records.count == 0;
+        return this.records.length == 0;
     }
 
     /**
      * Is this store empty before filters have been applied?
      */
     get allEmpty() {
-        return this.allRecords.count == 0;
+        return this.allRecords.length == 0;
     }
     
     //--------------------
