@@ -121,7 +121,7 @@ export class Column {
 
         const {renderer, elementRenderer} = this;
         if (renderer) {
-            ret.cellRenderer = (params) => renderer(params.value, params.data);
+            ret.cellRenderer = (params) => renderer(params.value, params.data, {colId: params.column.colId});
         } else if (elementRenderer) {
             ret.cellRendererFramework = class extends Component {
                 render() {return elementRenderer(this.props)}
