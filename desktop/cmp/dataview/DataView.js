@@ -9,7 +9,6 @@ import {Component} from 'react';
 import {XH, HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/desktop/cmp/grid';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
-import {baseCol} from '@xh/hoist/columns/Core';
 
 @HoistComponent()
 @LayoutSupport
@@ -26,13 +25,14 @@ export class DataView extends Component {
             contextMenuFn,
             emptyText,
             columns: [
-                baseCol({
-                    flex: 1,
-                    valueGetter: (params) => params.data,
-                    elementRenderer: (record) => {
-                        return itemFactory({record: record.data});
+                {
+                    colId: 'data',
+                    flex: true,
+                    elementRenderer: (record) => itemFactory({record: record.data}),
+                    agOptions: {
+                        valueGetter: (params) => params.data
                     }
-                })
+                }
             ]
         });
     }

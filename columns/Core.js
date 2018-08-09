@@ -5,19 +5,32 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {fileColFactory} from './Utils.js';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
+import {numberRenderer} from '../format';
 
-const colFactory = fileColFactory({
-    field: null
-});
-
-export const baseCol = colFactory();
-
-export const boolCheckCol = colFactory({
-    fixedWidth: 34,
-    align: 'center',
-    cellRenderer: function(params) {
-        return params.value ? convertIconToSvg(Icon.check({prefix: 'fas'}), {classes: ['xh-green']}) : '';
+export const emptyFlexCol =  {
+    colId: 'emptyFlex',
+    headerName: null,
+    flex: true,
+    minWidth: 0,
+    movable: false,
+    resizable: false,
+    excludeFromChooser: true,
+    excludeFromExport: true,
+    agOptions: {
+        suppressSorting: true
     }
-});
+};
+
+export const boolCheckCol = {
+    width: 34,
+    align: 'center',
+    resizable: false,
+    renderer: (v) => v ? convertIconToSvg(Icon.check({prefix: 'fas'}), {classes: ['xh-green']}) : ''
+};
+
+export const numberCol = {
+    align: 'right',
+    renderer: numberRenderer()
+};
+

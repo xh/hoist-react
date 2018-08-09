@@ -7,10 +7,8 @@
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
-import {baseCol} from '@xh/hoist/columns/Core';
-import {compactDateRenderer} from '@xh/hoist/format';
-
-import {usernameCol} from '@xh/hoist/admin/columns/Columns';
+import {compactDateCol} from '@xh/hoist/columns';
+import {usernameCol} from '@xh/hoist/admin/columns';
 
 @HoistComponent()
 export class FeedbackPanel extends Component {
@@ -58,19 +56,13 @@ export class FeedbackPanel extends Component {
         unit: 'report',
         filterFields: ['username', 'msg'],
         columns: [
-            baseCol({
-                field: 'dateCreated',
-                headerName: 'Date',
-                fixedWidth: 100,
-                align: 'right',
-                valueFormatter: compactDateRenderer()
-            }),
-            usernameCol({fixedWidth: 120}),
-            baseCol({field: 'msg', headerName: 'Message', minWidth: 60, flex: 1}),
-            baseCol({field: 'browser', fixedWidth: 120}),
-            baseCol({field: 'device', fixedWidth: 100}),
-            baseCol({field: 'appVersion', headerName: 'Version', fixedWidth: 120}),
-            baseCol({field: 'appEnvironment', headerName: 'Environment', fixedWidth: 130})
+            {field: 'dateCreated', ...compactDateCol, width: 100},
+            {field: 'username', ...usernameCol},
+            {field: 'browser', width: 120},
+            {field: 'device', width: 100},
+            {field: 'appVersion', headerName: 'Version', width: 120},
+            {field: 'appEnvironment', headerName: 'Environment', width: 130},
+            {field: 'msg', headerName: 'Message', minWidth: 120, flex: true}
         ],
         editors: [
             {field: 'username'},

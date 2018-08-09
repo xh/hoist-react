@@ -6,11 +6,10 @@
  */
 import {HoistModel, XH} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
-import {baseCol} from '@xh/hoist/columns/Core';
 import {LocalStore} from '@xh/hoist/data';
 import {computed} from '@xh/hoist/mobx';
-
-import {ItemRenderer} from './impl/ItemRenderer';
+import {div} from '@xh/hoist/cmp/layout';
+import {Icon} from '@xh/hoist/icon';
 
 /**
  * A Model for managing the state of a LeftRightChooser.
@@ -93,24 +92,22 @@ export class LeftRightChooserModel {
 
         const fields = ['text', 'value', 'description', 'group', 'side', 'locked', 'exclude'];
 
+        const textCol = {field: 'text', flex: true, elementRenderer: this.textColRenderer},
+            groupCol = {field: 'group', headerName: 'Group', hide: true};
+
+
         this.leftModel = new GridModel({
             store: new LocalStore({fields}),
             selModel: 'multiple',
             sortBy: leftSortBy,
-            columns: [
-                baseCol({headerName: leftTitle, field: 'text', cellRendererFramework: ItemRenderer}),
-                baseCol({headerName: 'Group', field: 'group', hide: true})
-            ]
+            columns: [{...textCol, headerName: leftTitle}, groupCol]
         });
 
         this.rightModel = new GridModel({
             store: new LocalStore({fields}),
             selModel: 'multiple',
             sortBy: rightSortBy,
-            columns: [
-                baseCol({headerName: rightTitle, field: 'text', cellRendererFramework: ItemRenderer}),
-                baseCol({headerName: 'Group', field: 'group', hide: true})
-            ]
+            columns: [{...textCol, headerName: rightTitle}, groupCol]
         });
 
         this.setData(data);
@@ -134,6 +131,18 @@ export class LeftRightChooserModel {
     //------------------------
     // Implementation
     //------------------------
+    textColRenderer(props) {
+        const {value, data} = props,
+            lockedText = Icon.lock({prefix: 'fal'});
+
+        return div({
+            className: 'xh-lr-chooser__item-row',
+            items: [
+                value,
+                data.locked ? lockedText : null
+            ]
+        });
+    }
 
     preprocessData(data) {
         return data

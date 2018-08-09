@@ -55,3 +55,21 @@ export function throwIf(condition, message) {
         throw XH.exception(message);
     }
 }
+
+export function warnIf(condition, message) {
+    if (condition) {
+        console.warn(message);
+    }
+}
+
+export function withDefault(...args) {
+    return args.find(it => it !== undefined);
+}
+
+export function withDefaultTrue(v) {
+    return v !== undefined ? !!v : true;
+}
+
+export function withDefaultFalse(v) {
+    return v !== undefined ? !!v : false;
+}
