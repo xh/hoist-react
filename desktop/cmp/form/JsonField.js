@@ -16,6 +16,7 @@ import 'codemirror/theme/dracula.css';
 import * as codemirror from 'codemirror';
 import {jsonlint} from './impl/jsonlint';
 import 'codemirror/mode/javascript/javascript.js';
+import 'codemirror/mode/jsx/jsx';
 import 'codemirror/addon/fold/foldcode.js';
 import 'codemirror/addon/fold/foldgutter.js';
 import 'codemirror/addon/fold/brace-fold.js';
