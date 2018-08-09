@@ -79,6 +79,7 @@ export class ActivityGrid extends Component {
             popoverPosition: 'bottom',
             width: 100,
             onCommit: this.onCommit,
+            commitOnChange: true,
             ...args
         });
     }
