@@ -19,7 +19,7 @@ import './Toast.scss';
  * @private
  */
 @HoistComponent()
-class Toast extends Component {
+export class Toast extends Component {
 
     render() {
         const {icon, message, timeout, intent} = this.model,

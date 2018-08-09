@@ -5,13 +5,15 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {cloneDeep, debounce, find, uniqBy} from 'lodash';
-import {SECONDS} from '@xh/hoist/utils/DateTimeUtils';
+import {cloneDeep, debounce, find} from 'lodash';
 import {start} from '@xh/hoist/promise';
-import {throwIf} from '@xh/hoist/utils/JsUtils';
 
 @HoistModel()
 export class GridStateModel {
+
+    // Version of grid state.  Increment *only* when we need to abandon all existing grid state in the wild.
+    static gridStateVersion = 1;
+
     gridModel = null;
     xhStateId = null;
 
@@ -19,10 +21,11 @@ export class GridStateModel {
     defaultState = null;
 
     /**
-    * @param {string} xhStateId - Unique grid identifier.
-    * @param {string} [trackColumns] - Set to true to save visible state and ordering of columns.
-    * @param {string} [trackSort] - Set to true to save sorting.
-    */
+     * @param {object} config
+     * @param {string} config.xhStateId - Unique grid identifier.
+     * @param {boolean} [config.trackColumns] - Set to true to save state of columns (including ordering, and widths).
+     * @param {boolean} [config.trackSort] - Set to true to save sorting.
+     */
     constructor({xhStateId, trackColumns = true, trackSort = true}) {
         this.xhStateId = xhStateId;
         this.trackColumns = trackColumns;
@@ -31,8 +34,6 @@ export class GridStateModel {
 
     init(gridModel) {
         this.gridModel = gridModel;
-
-        this.ensureCompatible();
 
         if (this.trackColumns) {
             this.addReaction(this.columnReaction());
@@ -45,13 +46,8 @@ export class GridStateModel {
         this.initializeState();
     }
 
-
-    //--------------------------
-    // For Extension / Override
-    //--------------------------
     getStateKey() {
-        const xhStateId = this.xhStateId;
-        return 'gridState.' + xhStateId;
+        return `gridState.v${GridStateModel.gridStateVersion}.${this.xhStateId}`;
     }
 
     readState(stateKey) {
@@ -115,7 +111,7 @@ export class GridStateModel {
 
         return columns.map(it => {
             return {
-                xhId: it.xhId,
+                colId: it.colId,
                 hide: it.hide,
                 width: it.width
             };
@@ -131,10 +127,11 @@ export class GridStateModel {
 
         // Match columns in state to columns in code, apply stateful properties, and add to new columns in stateful order.
         state.columns.forEach(colState => {
-            const col = find(cols, {xhId: colState.xhId});
+            const col = find(cols, {colId: colState.colId});
             if (!col) return; // Do not attempt to include stale column state.
 
             col.hide = colState.hide;
+            col.width = colState.width;
             foundColumns.push(col);
         });
 
@@ -142,7 +139,7 @@ export class GridStateModel {
         // Insert these columns in position based on the index at which they are defined.
         const newColumns = [...foundColumns];
         cols.forEach((col, idx) => {
-            if (!find(foundColumns, {xhId: col.xhId})) {
+            if (!find(foundColumns, {colId: col.colId})) {
                 newColumns.splice(idx, 0, col);
             }
         });
@@ -174,23 +171,5 @@ export class GridStateModel {
     //--------------------------
     saveStateChange = debounce(() => {
         this.saveState(this.getStateKey(), this.state);
-    }, 5 * SECONDS);
-
-    ensureCompatible() {
-        const xhStateId = this.xhStateId,
-            cols = this.gridModel.columns,
-            colsWithoutXhId = cols.filter(col => !col.xhId),
-            uniqueIds = cols.length == uniqBy(cols, 'xhId').length;
-
-        throwIf(
-            !xhStateId,
-            'GridStateModel must have a xhStateId in order to store state'
-        );
-
-        throwIf(
-            this.trackColumns && (colsWithoutXhId.length || !uniqueIds),
-            'GridStateModel with "trackColumns=true" requires all columns to have a unique xhId'
-        );
-    }
-
+    }, 500);
 }

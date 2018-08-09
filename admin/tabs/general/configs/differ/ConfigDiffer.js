@@ -49,6 +49,7 @@ export class ConfigDiffer extends Component {
                 label('Compare with:'),
                 comboField({
                     model,
+                    commitOnChange: true,
                     placeholder: 'https://remote-host/',
                     field: 'remoteHost',
                     width: 200,

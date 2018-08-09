@@ -77,6 +77,7 @@ export class ClientErrorPanel extends Component {
         return dayField({
             model: this.model,
             onCommit: this.onCommit,
+            commitOnChange: true,
             popoverPosition: 'bottom',
             width: 100,
             ...args

@@ -15,7 +15,7 @@ import './PanelHeader.scss';
  * @private
  */
 @HoistComponent()
-class PanelHeader extends Component {
+export class PanelHeader extends Component {
     render() {
         const {title, icon, headerItems = []} = this.props;
 

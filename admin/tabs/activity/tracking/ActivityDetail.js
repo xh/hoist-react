@@ -14,7 +14,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {fmtDateTime} from '@xh/hoist/format';
 
 @HoistComponent()
-class ActivityDetail extends Component {
+export class ActivityDetail extends Component {
 
     render() {
         const {model} = this,

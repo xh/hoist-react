@@ -14,8 +14,6 @@ import {LocalStore} from '@xh/hoist/data';
 import {p} from '@xh/hoist/cmp/layout';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {baseCol} from '@xh/hoist/columns/Core';
-import {nameCol} from '@xh/hoist/admin/columns/Columns';
 import {Icon} from '@xh/hoist/icon';
 
 import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
@@ -46,29 +44,31 @@ export class ConfigDifferModel  {
             emptyText: 'Please enter remote host for comparison',
             selModel: 'multiple',
             columns: [
-                nameCol({fixedWidth: 200}),
-                baseCol({
+                {field: 'name', width: 200},
+                {
                     field: 'type',
-                    fixedWidth: 80,
-                    valueFormatter: this.configValueTypeFormatter
-                }),
-                baseCol({
+                    width: 80,
+                    renderer: this.configValueTypeFormatter
+                },
+                {
                     field: 'localValue',
-                    flex: 1,
-                    valueFormatter: this.configValueFormatter
-                }),
-                baseCol({
+                    flex: true,
+                    renderer: this.valueRenderer
+                },
+                {
                     field: 'remoteValue',
-                    flex: 1,
-                    valueFormatter: this.configValueFormatter,
-                    cellClassRules: {
-                        'xh-green': this.setRemoteCellClass
+                    flex: true,
+                    renderer: this.valueRenderer,
+                    agOptions: {
+                        cellClassRules: {
+                            'xh-green': this.setRemoteCellClass
+                        }
                     }
-                }),
-                baseCol({
+                },
+                {
                     field: 'status',
-                    fixedWidth: 120
-                })
+                    width: 120
+                }
             ],
             contextMenuFn: this.contextMenuFn
         });
@@ -229,18 +229,13 @@ export class ConfigDifferModel  {
         return true;
     }
 
-    configValueFormatter = (rec) => {
-        const config = rec.data[rec.colDef.field];
-        return config ? this.maskIfPwd(config) : null;
+    valueRenderer(v) {
+        if (v == null) return '';
+        return v.valueType === 'pwd' ? '*****' : v.value;
     }
 
-    maskIfPwd(config) {
-        return config.valueType === 'pwd' ? '*****' : config.value;
-    }
-
-    configValueTypeFormatter(rec) {
-        const data = rec.data,
-            local = data.localValue,
+    configValueTypeFormatter(v, data) {
+        const local = data.localValue,
             remote = data.remoteValue;
 
         if (local && remote) {

@@ -20,7 +20,7 @@ import {BaseStore} from '@xh/hoist/data';
  */
 @HoistComponent()
 @LayoutSupport
-class StoreCountLabel extends Component {
+export class StoreCountLabel extends Component {
 
     static propTypes = {
         /** Store to count */

@@ -16,7 +16,7 @@ import {Icon} from '@xh/hoist/icon';
  * @private
  */
 @HoistComponent()
-class ChooserToolbar extends Component {
+export class ChooserToolbar extends Component {
 
     render() {
         const {model} = this,

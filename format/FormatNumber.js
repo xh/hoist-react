@@ -58,7 +58,7 @@ export function fmtNumber(v, {
     nullDisplay = '',
     formatPattern = null,
     precision = 'auto',
-    zeroPad = true,
+    zeroPad = (precision != 'auto'),
     ledger = false,
     forceLedgerAlign = true,
     withPlusSign = false,
@@ -73,7 +73,6 @@ export function fmtNumber(v, {
 
     if (isInvalidInput(v)) return nullDisplay;
 
-    // Format text
     formatPattern = formatPattern || buildFormatPattern(v, precision, zeroPad);
     let str = numeral(v).format(formatPattern);
 

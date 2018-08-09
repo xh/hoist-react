@@ -8,8 +8,7 @@ import {Component} from 'react';
 import {XH, HoistComponent} from '@xh/hoist/core';
 import {fragment} from '@xh/hoist/cmp/layout';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
-import {boolCheckCol, baseCol} from '@xh/hoist/columns/Core';
-import {nameCol} from '@xh/hoist/admin/columns/Columns';
+import {boolCheckCol} from '@xh/hoist/columns';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
@@ -79,12 +78,12 @@ export class ConfigPanel extends Component {
         sortBy: 'name',
         groupBy: 'groupName',
         columns: [
-            nameCol({fixedWidth: 200}),
-            baseCol({field: 'valueType', headerName: 'Type', fixedWidth: 80, align: 'center'}),
-            this.valCol({field: 'value'}),
-            boolCheckCol({field: 'clientVisible', headerName: 'Client?', fixedWidth: 75}),
-            baseCol({field: 'groupName', headerName: 'Group', fixedWidth: 100}),
-            baseCol({field: 'note', minWidth: 60, flex: 2})
+            {field: 'name', width: 200},
+            {field: 'valueType', headerName: 'Type', width: 80, align: 'center'},
+            {field: 'value', width: 200, renderer: this.maskIfPwd},
+            {field: 'clientVisible', ...boolCheckCol, headerName: 'Client?', width: 75},
+            {field: 'groupName', headerName: 'Group', width: 100},
+            {field: 'note', minWidth: 60, flex: true}
         ],
         editors: [
             {field: 'name'},
@@ -118,16 +117,8 @@ export class ConfigPanel extends Component {
     //-------------------------
     // Implementation
     //-------------------------
-    valCol(params) {
-        return baseCol({...params, minWidth: 60, flex: 1, valueFormatter: this.maskIfPwd});
-    }
-
-    maskIfPwd(params) {
-        if (!params) return;
-        const data = params.data;
-        if (!data) return params;
-        if (data.valueType === 'pwd') return '*****';
-        return params.value;
+    maskIfPwd(value, data) {
+        return data.valueType === 'pwd' ? '*****' : value;
     }
 
     extraToolbarItems = () => {

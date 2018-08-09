@@ -13,7 +13,7 @@ import {tile} from './Tile';
  * @private
  */
 @HoistComponent()
-class MonitorResultsDisplay extends Component {
+export class MonitorResultsDisplay extends Component {
     render() {
         const {results} = this.model;
 

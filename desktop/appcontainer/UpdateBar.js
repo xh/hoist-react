@@ -20,12 +20,12 @@ export class UpdateBar extends Component {
 
     render() {
         const {updateVersion} = this.model,
-            cls = 'xh-update-bar';
+            className = 'xh-update-bar';
 
         if (!updateVersion) return null;
 
         return toolbar({
-            cls,
+            className,
             items: [
                 Icon.rocket({size: 'lg'}),
                 div('An application update is available!'),

@@ -11,10 +11,8 @@ import {action, observable} from '@xh/hoist/mobx';
 import {LocalStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {fmtDate} from '@xh/hoist/format';
-import {baseCol, boolCheckCol} from '@xh/hoist/columns/Core';
-import {compactDateCol} from '@xh/hoist/columns/DatesTimes';
-
-import {usernameCol} from '@xh/hoist/admin/columns/Columns';
+import {boolCheckCol, compactDateCol} from '@xh/hoist/columns';
+import {usernameCol} from '@xh/hoist/admin/columns';
 
 @HoistModel()
 export class ClientErrorModel {
@@ -39,15 +37,14 @@ export class ClientErrorModel {
         }),
         sortBy: {colId: 'dateCreated', sort: 'desc'},
         columns: [
-            compactDateCol({field: 'dateCreated', fixedWidth: 100, align: 'right'}),
-            usernameCol({fixedWidth: 120}),
-            baseCol({field: 'error', minWidth: 450, flex: 3}),
-            baseCol({field: 'msg', headerName: 'Message', minWidth: 150, flex: 1}),
-            boolCheckCol({field: 'userAlerted', headerName: 'User Alerted?', fixedWidth: 120}),
-            baseCol({field: 'browser', fixedWidth: 100}),
-            baseCol({field: 'device', fixedWidth: 100}),
-            baseCol({field: 'appVersion', fixedWidth: 130}),
-            baseCol({field: 'appEnvironment', headerName: 'Environment', fixedWidth: 130})
+            {field: 'dateCreated', ...compactDateCol, width: 100},
+            {field: 'username', ...usernameCol},
+            {field: 'userAlerted', ...boolCheckCol, headerName: 'Alerted', width: 90},
+            {field: 'browser', width: 100},
+            {field: 'device', width: 100},
+            {field: 'appVersion', width: 130},
+            {field: 'appEnvironment', headerName: 'Environment', width: 130},
+            {field: 'error', flex: true, minWidth: 150}
         ]
     });
 
