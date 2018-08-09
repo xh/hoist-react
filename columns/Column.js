@@ -82,7 +82,7 @@ export class Column {
         this.exportFormat = withDefault(exportFormat, ExportFormat.DEFAULT);
         this.excludeFromExport = withDefault(excludeFromExport, !field);
 
-        this.agOptions = agOptions;
+        this.agOptions = agOptions || {};
     }
 
 
@@ -121,7 +121,10 @@ export class Column {
 
         const {renderer, elementRenderer} = this;
         if (renderer) {
-            ret.cellRenderer = (params) => renderer(params.value, params.data);
+            ret.cellRenderer = (params) => {
+                const metaData = {colId: params.column.colId};
+                return renderer(params.value, params.data, metaData);
+            };
         } else if (elementRenderer) {
             ret.cellRendererFramework = class extends Component {
                 render() {return elementRenderer(this.props)}
