@@ -31,7 +31,6 @@ import {observable, computed, action, runInAction} from '@xh/hoist/mobx';
  * The 'commitOnChange' property defaults to false, except for selected controls, such as CheckField
  * where a true value is more intuitive.  Furthermore, a commitOnChange value of false is not currently
  * implemented on DropdownFields and ComboBoxes. See BaseDropdownField for more information.
-
  *
  * Note that operating in bound mode may allow for more efficient rendering
  * in a mobx context, in that the bound value is only read *within* this
@@ -46,7 +45,6 @@ export class HoistField extends Component {
 
         /** value of the control */
         value: PT.any,
-
         /** handler to fire when value changes, gets passed the new value */
         onChange: PT.func,
         /** handler to fire when value is committed, gets passed the new value */
