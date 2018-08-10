@@ -96,8 +96,6 @@ export class LeftRightChooserModel {
         this.rightGroupingEnabled = rightGroupingEnabled;
         this.leftGroupingExpanded = leftGroupingExpanded;
         this.rightGroupingExpanded = rightGroupingExpanded;
-        this.leftTitle = leftTitle;
-        this.rightTitle = rightTitle;
 
         const fields = ['text', 'value', 'description', 'group', 'side', 'locked', 'exclude'];
 
@@ -145,9 +143,9 @@ export class LeftRightChooserModel {
             groupClass = groupingEnabled ? 'xh-lr-chooser__group-row' : '';
 
         return (v, data, meta) => {
-            return `<div class='xh-lr-chooser__item-row ${groupClass}'>` +
-                        `${v}${data.locked ? convertIconToSvg(Icon.lock({prefix: 'fal'})) : ''}` +
-                   '</div>';
+            return `<div class='xh-lr-chooser__item-row ${groupClass}'>
+                        ${v}${data.locked ? convertIconToSvg(Icon.lock({prefix: 'fal'})) : ''}
+                   </div>`;
         };
 
     }
