@@ -293,7 +293,16 @@ class XHClass {
     showAboutDialog() {
         return this.acm.aboutDialogModel.show();
     }
-    
+
+    /** Clear grid state and preferences */
+    async restoreDefaultsAsync(reload = true) {
+        return XH.prefService.clearAllAsync().then(() => {
+            XH.localStorageService.clear();
+        }).then(() => {
+            if (reload) XH.reloadApp();
+        });
+    }
+
     //----------------------------
     // Service Aliases
     //----------------------------
