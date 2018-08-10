@@ -29,13 +29,14 @@ export class LeftRightChooser extends Component {
     render() {
         const {model} = this,
             {leftModel, rightModel, leftGroupingExpanded, rightGroupingExpanded} = model,
-            leftGridOptions = {
+            gridOptions = {
                 onRowDoubleClicked: (e) => model.moveRows([e.data]),
                 agOptions: {
                     enableColResize: false
                 }
             },
-            rightGridOptions = cloneDeep(leftGridOptions);
+            leftGridOptions = cloneDeep(gridOptions),
+            rightGridOptions = cloneDeep(gridOptions);
 
         if (!leftGroupingExpanded) leftGridOptions.agOptions.groupDefaultExpanded = 0;
         if (!rightGroupingExpanded) rightGridOptions.agOptions.groupDefaultExpanded = 0;
