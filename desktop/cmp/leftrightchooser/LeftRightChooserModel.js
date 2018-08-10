@@ -107,16 +107,14 @@ export class LeftRightChooserModel {
             store: new LocalStore({fields}),
             selModel: 'multiple',
             sortBy: leftSortBy,
-            columns: [{...leftTextCol, headerName: leftTitle}, groupCol],
-            agOptions: leftGroupingExpanded ? {} : {groupDefaultExpanded: 0}
+            columns: [{...leftTextCol, headerName: leftTitle}, groupCol]
         });
 
         this.rightModel = new GridModel({
             store: new LocalStore({fields}),
             selModel: 'multiple',
             sortBy: rightSortBy,
-            columns: [{...rightTextCol, headerName: rightTitle}, groupCol],
-            agOptions: rightGroupingExpanded ? {} : {groupDefaultExpanded: 0}
+            columns: [{...rightTextCol, headerName: rightTitle}, groupCol]
         });
 
         this.setData(data);
@@ -143,7 +141,7 @@ export class LeftRightChooserModel {
     textColRenderer(props, groupingEnabled) {
         const {value, data} = props,
             lockedText = Icon.lock({prefix: 'fal'}),
-            groupClass = groupingEnabled ? 'xh-lr-chooser__group-row' : ''
+            groupClass = groupingEnabled ? 'xh-lr-chooser__group-row' : '';
 
         return div({
             className: `xh-lr-chooser__item-row ${groupClass}`,
