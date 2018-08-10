@@ -7,7 +7,6 @@
 import {Component} from 'react';
 import {XH, HoistComponent} from '@xh/hoist/core';
 import {vframe} from '@xh/hoist/cmp/layout';
-import {resizable} from '@xh/hoist/desktop/cmp/resizable';
 
 import {activityGrid} from './ActivityGrid';
 import {ActivityGridModel} from './ActivityGridModel';
@@ -23,15 +22,10 @@ export class TrackingPanel extends Component {
     render() {
         return vframe(
             activityGrid({model: this.activityGridModel}),
-            resizable({
-                side: 'top',
-                contentSize: 300,
-                prefName: 'xhAdminActivityChartSize',
-                item: visitsChart({model: this.visitsChartModel})
-            })
+            visitsChart({model: this.visitsChartModel})
         );
     }
-
+    
     async loadAsync() {
         return Promise.all([this.visitsChartModel.loadAsync(), this.activityGridModel.loadAsync()]);
     }

@@ -17,10 +17,12 @@ import './PanelHeader.scss';
 @HoistComponent()
 export class PanelHeader extends Component {
     render() {
-        const {title, icon, headerItems = []} = this.props;
+        const {title, icon, headerItems = [], sizingModel} = this.props,
+            {collapsible, collapsed, side} = sizingModel || {};
 
-        if (!title && !icon && !headerItems.length) return null;
+        if (!collapsible && !title && !icon && !headerItems.length) return null;
 
+        const vertical = collapsed && ['left', 'right'].includes(side);
         if (!vertical) {
             return hbox({
                 className: 'xh-panel-header',
@@ -33,27 +35,24 @@ export class PanelHeader extends Component {
                     }) : null,
                     ...headerItems
                 ],
-                onDoubleClick
+                onDoubleClick: this.onDblClick
             });
         } else {
             return vbox({
                 className: 'xh-panel-header',
-                items: icon || null,   // TODO:  Add vertically rotated text.
-                onDoubleClick
+                items: icon || null,
+                // TODO:  Add vertically rotated text.
+                onDoubleClick: this.onDblClick
             });
         }
-        return hbox({
-            className: 'xh-panel-header',
-            items: [
-                icon || null,
-                title ? box({
-                    className: 'xh-panel-header-title',
-                    flex: 1,
-                    item: title
-                }) : null,
-                ...headerItems
-            ]
-        });
     }
 }
+
+onDblClick = () => {
+    const {sizingModel} = this.props;
+    if (sizingModel && sizingModel.collapsible) {
+        sizingModel.toggleCollapsed();
+    }
+}
+
 export const panelHeader = elemFactory(PanelHeader);

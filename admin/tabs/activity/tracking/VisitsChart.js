@@ -13,19 +13,18 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {chart} from '@xh/hoist/desktop/cmp/chart';
 import {Icon} from '@xh/hoist/icon';
-import {CollapseSupport} from '@xh/hoist/cmp/collapse';
 
 @HoistComponent()
-@CollapseSupport
 export class VisitsChart extends Component {
     
     render() {
+        const {sizingModel, chartModel} = this.model;
         return panel({
             icon: Icon.users(),
             title: 'Unique Daily Visitors',
-            item: chart({model: this.model.chartModel}),
-            collapseModel: this.collapseModel,
-            bbar: this.renderToolbar()
+            item: chart({model: chartModel}),
+            bbar: this.renderToolbar(),
+            sizingModel
         });
     }
 

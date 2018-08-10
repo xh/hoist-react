@@ -9,25 +9,22 @@ import {defaultMethods} from '@xh/hoist/utils/ClassUtils';
 
 
 /**
- * This mixin indicates support for a "collapsed" prop.
- *
  * Components that carry this mixin will behave as a controlled component
- * responding to a CollapseModel.
+ * responding to a SizingModel.
  *
  * See Panel for the canonical implementation of this behavior.
- * Most application components implementing CollapseSupport will simply
+ * Most application components implementing SizingSupport will simply
  * delegate to Panel.
  */
-export function CollapseSupport(C) {
+export function SizingSupport(C) {
 
-    C.hasCollapseSupport = true;
+    C.hasSizingSupport = true;
 
-    // Instance methods
     defaultMethods(C, {
 
-        /** Model governing collapse behavior of this object. **/
-        collapseModel: {
-            get() {return this.props.collapseModel}
+        /** Model governing sizing behavior of this object. **/
+        sizingModel: {
+            get() {return this.props.sizingModel}
         }
     });
     return C;

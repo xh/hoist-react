@@ -15,52 +15,13 @@ import {dragger} from './impl/Dragger';
 import {collapser} from './impl/Collapser';
 
 /**
- * A Resizable/Collapsible Container
+ * A Resizable/Collapsible Container used by Panel to implement SizableSupport.
  *
- * This component is designed to host a fixed-height/fixed-width child within a flex box.
- * It will optionally allow the user to manage the fixed size of its child via drag-drop
- * or the 'collapsed' state via a button-based affordance.
- *
- * If collapsing is enabled via 'isCollapsible' property, and the component's contents do not
- * have the CollapseSupport mixin, an error will be thrown.
- *
- * Applications should provide optional values for `isOpen`, `contentSize`, and `prefName`.
- * Applications may alternatively provide this object with an instance of ResizableModel, if they
- * wish to manipulate its state directly.
+ * @private
  */
 @HoistComponent()
 export class Resizable extends Component {
-
-    static propTypes = {
-        /** The side of this container on which the resize/collapse border will appear. */
-        side: PT.oneOf(['top', 'right', 'bottom', 'left']).isRequired,
-        /** Size of the content panel (width if side `left` or `right` - height otherwise). */
-        contentSize: PT.number.isRequired,
-        /** Can the panel be collapsed via collapse/expand toggle button? Defaults to true*/
-        isCollapsible: PT.bool,
-        /** Can the panel be resized via drag and drop? Defaults to true.*/
-        isDraggable: PT.bool,
-        /** Is the content panel expanded? */
-        isOpen: PT.bool,
-        /** Optional preference name to store sizing and collapsed state for this component. */
-        prefName: PT.string,
-        /** An instance of ResizableModel. Specify to manipulate/track the state of this object. */
-        model: PT.object
-    };
-
-
-    constructor(props) {
-        super(props);
-
-        if (!props.model) {
-            this.localModel = new ResizableModel({
-                contentSize: props.contentSize,
-                isOpen: props.isOpen,
-                prefName: props.prefName
-            });
-        }
-    }
-
+    
     get side()              {return this.props.side}
     get isCollapsible()     {return this.props.isCollapsible !== false}
     get isDraggable()       {return this.props.isDraggable !== false}

@@ -11,7 +11,7 @@ import {castArray, omitBy} from 'lodash';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
-import {CollapseModel, CollapseState} from '@xh/hoist/desktop/cmp/mask';
+import {SizingSupport} from '@xh/hoist/cmp/sizing';
 
 import {panelHeader} from './impl/PanelHeader';
 import './Panel.scss';
@@ -20,12 +20,12 @@ import './Panel.scss';
  * A Panel container builds on the lower-level layout components to offer a header element
  * w/standardized styling, title, and Icon as well as support for top and bottom toolbars.
  *
- * This component also includes support for collapsing its contents.  When collapsed, it will
- * render portions of it header element only.
+ * This component also includes support for resizing and collapsing its contents, if given a
+ * SizingModel.
  */
 @HoistComponent()
 @LayoutSupport
-@CollapseSupport
+@SizingSupport
 export class Panel extends Component {
 
     wasDisplayed = false;
@@ -46,15 +46,13 @@ export class Panel extends Component {
         /** Text to display within this panel's mask. */
         maskText: PT.string,
         /** Model governing Collapse state of the panel. @See CollapseSupport. */
-        collapseModel: PT.instanceOf(CollapseModel),
-        /** Enable Affordance to toggle collapse state when double clicking header.*/
-        collapseToggleOnDblClick: PT.bool
+        sizingModel: PT.instanceOf(SizingModel),
     };
 
     baseClassName = 'xh-panel';
 
     render() {
-        let {
+        const {
             tbar,
             bbar,
             title,
@@ -62,17 +60,12 @@ export class Panel extends Component {
             headerItems,
             masked,
             maskText,
-            collapseModel,
-            collapseToggleOnDblClick = true,
+            sizingModel,
             children,
             ...rest
         } = this.getNonLayoutProps();
 
-        const collapsed = collapseModel && collapseModel.collapsed,
-            collapsedSide = collapsed ? collapsedModel.side : null,
-            renderMode = collapseModel && collapseModel.renderMode,
-            wasDisplayed = this.wasDisplayed
-
+        // 1) Pre-process layout
         // Block unwanted use of padding props, which will separate the panel's header
         // and bottom toolbar from its edges in a confusing way.
         const layoutProps = omitBy(this.getLayoutProps(), (v, k) => k.startsWith('padding'));
@@ -82,10 +75,18 @@ export class Panel extends Component {
             layoutProps.flex = 'auto';
         }
 
+        // 2) Prepare 'core' contents according to collapsed state
+        const {
+            resizable = false,
+            collapsible = false,
+            collapsed = false,
+            collapsedRenderMode = null
+        } = sizingModel || {};
+
         let coreContents = null;
-        if (!collapsed || renderMode == 'always' || (renderMode == 'lazy' && wasDisplayed)) {
+        if (!collapsed || collapsedRenderMode == 'always' || (collapsedRenderMode == 'lazy' && this.wasDisplayed)) {
             coreContents = vframe({
-                style: {display: _collapsed ? 'none' : 'flex'},
+                style: {display: collapsed ? 'none' : 'flex'},
                 items: [
                     tbar || null,
                     ...(castArray(children)),
@@ -93,43 +94,27 @@ export class Panel extends Component {
                 ]
             });
         }
+        if (!collapsed) this.wasDisplayed = true;
 
-        this.wasDisplayed = wasDisplayed || !collapsed;
-
-        return vbox({
+        // 3) Prepare combined layout with header above core.  This is what layout props are trampolined to
+        const ret = vbox({
             ...layoutProps,
             cls: this.getClassNames(),
             ...rest,
             items: [
-                panelHeader({
-                    title,
-                    icon,
-                    headerItems,
-                    vertical: ['left', 'right'].includes(collapsedSide),
-                    onDblClick: () => this.onHeaderDblClick
-                }),
+                panelHeader({title, icon, headerItems, sizingModel}),
                 coreContents,
                 mask({
                     isDisplayed: masked,
                     text: maskText
                 })
-            ],
-            ...rest,
-            className: this.getClassName()
             ]
         });
-    }
 
-
-    //----------------------------
-    // Implementation
-    //----------------------------
-    @action
-    onHeaderDblClick = () => {
-        const {collapseModel, collapseToggleOnDblClick} = this;
-        if (collapseModel && collapseToggleOnDblClick) {
-            collapseModel.toggleCollapsed();
-        }
+        // 4) Return, wrapped in resizable and its affordances if needed.
+        return resizable || collapsible ?
+            resizable({sizingModel, item: ret}) :
+            ret;
     }
 }
 export const panel = elemFactory(Panel);
