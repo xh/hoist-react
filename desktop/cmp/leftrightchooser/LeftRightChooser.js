@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import {cloneDeep} from 'lodash';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {vbox, hframe} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/desktop/cmp/grid';
@@ -27,13 +28,18 @@ export class LeftRightChooser extends Component {
 
     render() {
         const {model} = this,
-            {leftModel, rightModel} = model,
+            {leftModel, rightModel, leftGroupingExpanded, rightGroupingExpanded} = model,
             gridOptions = {
                 onRowDoubleClicked: (e) => model.moveRows([e.data]),
                 agOptions: {
                     enableColResize: false
                 }
-            };
+            },
+            leftGridOptions = cloneDeep(gridOptions),
+            rightGridOptions = cloneDeep(gridOptions);
+
+        if (!leftGroupingExpanded) leftGridOptions.agOptions.groupDefaultExpanded = 0;
+        if (!rightGroupingExpanded) rightGridOptions.agOptions.groupDefaultExpanded = 0;
 
         return vbox({
             ...this.getLayoutProps(),
@@ -42,9 +48,9 @@ export class LeftRightChooser extends Component {
                 hframe({
                     className: 'xh-lr-chooser__grid-frame',
                     items: [
-                        grid({model: leftModel, ...gridOptions}),
+                        grid({model: leftModel, ...leftGridOptions}),
                         chooserToolbar({model}),
-                        grid({model: rightModel, ...gridOptions})
+                        grid({model: rightModel, ...rightGridOptions})
                     ]
                 }),
                 description({model})
