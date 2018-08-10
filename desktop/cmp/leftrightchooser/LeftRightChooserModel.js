@@ -29,6 +29,8 @@ export class LeftRightChooserModel {
 
     _leftGroupingEnabled = null;
     _rightGroupingEnabled = null;
+    leftGroupingExpanded = null;
+    rightGroupingExpanded = null;
 
     /**
      * Filter for data rows to determine if they should be shown.
@@ -75,39 +77,46 @@ export class LeftRightChooserModel {
      * @param {string} rightTitle - title of the right-side list.
      * @param {boolean} rightGroupingEnabled - true to enable grouping on the the right-side list.
      * @param {Object[]} rightSortBy - one or more sorters to apply to the right-side store.
+     * @param {boolean} collapseGroupsOnRender - true to override default one level group expansion
      */
     constructor({
         data = [],
         ungroupedName = 'Ungrouped',
         leftTitle = 'Available',
         leftGroupingEnabled = true,
+        leftGroupingExpanded = true,
         leftSortBy = [],
         rightTitle = 'Selected',
         rightGroupingEnabled = true,
+        rightGroupingExpanded = true,
         rightSortBy = []
     }) {
         this._ungroupedName = ungroupedName;
         this._leftGroupingEnabled = leftGroupingEnabled;
         this._rightGroupingEnabled = rightGroupingEnabled;
+        this.leftGroupingExpanded = leftGroupingExpanded;
+        this.rightGroupingExpanded = rightGroupingExpanded;
 
         const fields = ['text', 'value', 'description', 'group', 'side', 'locked', 'exclude'];
 
-        const textCol = {field: 'text', flex: true, elementRenderer: this.textColRenderer},
+        const leftTextCol = {field: 'text', flex: true, elementRenderer: (params) => this.textColRenderer(params, leftGroupingEnabled)},
+            rightTextCol = {field: 'text', flex: true, elementRenderer: (params) => this.textColRenderer(params, rightGroupingEnabled)},
             groupCol = {field: 'group', headerName: 'Group', hide: true};
-
 
         this.leftModel = new GridModel({
             store: new LocalStore({fields}),
             selModel: 'multiple',
             sortBy: leftSortBy,
-            columns: [{...textCol, headerName: leftTitle}, groupCol]
+            columns: [{...leftTextCol, headerName: leftTitle}, groupCol],
+            agOptions: leftGroupingExpanded ? {} : {groupDefaultExpanded: 0}
         });
 
         this.rightModel = new GridModel({
             store: new LocalStore({fields}),
             selModel: 'multiple',
             sortBy: rightSortBy,
-            columns: [{...textCol, headerName: rightTitle}, groupCol]
+            columns: [{...rightTextCol, headerName: rightTitle}, groupCol],
+            agOptions: rightGroupingExpanded ? {} : {groupDefaultExpanded: 0}
         });
 
         this.setData(data);
@@ -131,12 +140,13 @@ export class LeftRightChooserModel {
     //------------------------
     // Implementation
     //------------------------
-    textColRenderer(props) {
+    textColRenderer(props, groupingEnabled) {
         const {value, data} = props,
-            lockedText = Icon.lock({prefix: 'fal'});
+            lockedText = Icon.lock({prefix: 'fal'}),
+            groupClass = groupingEnabled ? 'xh-lr-chooser__group-row' : ''
 
         return div({
-            className: 'xh-lr-chooser__item-row',
+            className: `xh-lr-chooser__item-row ${groupClass}`,
             items: [
                 value,
                 data.locked ? lockedText : null
