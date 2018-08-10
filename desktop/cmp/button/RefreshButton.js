@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {button} from '@xh/hoist/kit/blueprint';
+import {button} from './Button';
 
 /**
  * Convenience Button preconfigured for use as a trigger for a refresh operation.
@@ -22,18 +22,25 @@ import {button} from '@xh/hoist/kit/blueprint';
 export class RefreshButton extends Component {
 
     static propTypes = {
+        /** Icon to display for the button. Defaults to Icon.sync(). */
         icon: PT.element,
+        /** Tooltip text to display when the mouse is over the button. Defaults to 'Refresh'. */
         title: PT.string,
+        /** Function to call when the button is clicked. Should only be used if not passing model. */
         onClick: PT.func,
+        /**
+         * Model to call loadAsync() on when the button is clicked. Should only be used if not
+         * using the onClick property.
+         */
         model: PT.object
     };
 
     render() {
-        const {icon, title, onClick, model, ...rest} = this.props;
+        const {icon = Icon.sync(), title = 'Refresh', onClick = this.onRefreshClick, ...rest} = this.props;
         return button({
-            icon: icon || Icon.sync(),
-            title: title || 'Refresh',
-            onClick: onClick || this.onRefreshClick,
+            icon,
+            title,
+            onClick,
             ...rest
         });
     }
