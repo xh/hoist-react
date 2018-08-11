@@ -65,7 +65,6 @@ export class Panel extends Component {
         }
 
         return vbox({
-            ...layoutProps,
             items: [
                 panelHeader({title, icon, headerItems}),
                 tbar || null,
@@ -77,6 +76,7 @@ export class Panel extends Component {
                 })
             ],
             ...rest,
+            ...layoutProps,
             className: this.getClassName()
         });
     }
