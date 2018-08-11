@@ -19,7 +19,10 @@ import {box} from './Box';
 @LayoutSupport
 export class Frame extends Component {
     render() {
-        return box({flex: 'auto', ...this.props});
+        return box({
+            ...this.props,
+            flex: 'auto'
+        });
     }
 }
 
@@ -29,9 +32,9 @@ export class VFrame extends Component {
     baseClassName = 'xh-vframe';
     render() {
         return box({
+            ...this.props,
             flex: 'auto',
             flexDirection: 'column',
-            ...this.props,
             className: this.getClassName()
         });
     }
@@ -43,9 +46,9 @@ export class HFrame extends Component {
     baseClassName = 'xh-hframe';
     render() {
         return box({
+            ...this.props,
             flex: 'auto',
             flexDirection: 'row',
-            ...this.props,
             className: this.getClassName()
         });
     }
