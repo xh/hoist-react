@@ -6,14 +6,15 @@
  */
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {observable, action} from 'mobx';
 import {castArray, omitBy} from 'lodash';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
-import {SizingSupport} from '@xh/hoist/cmp/sizing';
 
+import {PanelSizingModel} from './PanelSizingModel';
 import {panelHeader} from './impl/PanelHeader';
+import {resizeContainer} from './impl/ResizeContainer';
+
 import './Panel.scss';
 
 /**
@@ -21,11 +22,10 @@ import './Panel.scss';
  * w/standardized styling, title, and Icon as well as support for top and bottom toolbars.
  *
  * This component also includes support for resizing and collapsing its contents, if given a
- * SizingModel.
+ * PanelSizingModel.
  */
 @HoistComponent()
 @LayoutSupport
-@SizingSupport
 export class Panel extends Component {
 
     wasDisplayed = false;
@@ -45,8 +45,8 @@ export class Panel extends Component {
         masked: PT.bool,
         /** Text to display within this panel's mask. */
         maskText: PT.string,
-        /** Model governing Collapse state of the panel. @See CollapseSupport. */
-        sizingModel: PT.instanceOf(SizingModel),
+        /** Model governing Resizing and Collapsing of the panel.*/
+        sizingModel: PT.instanceOf(PanelSizingModel)
     };
 
     baseClassName = 'xh-panel';
@@ -97,9 +97,9 @@ export class Panel extends Component {
         if (!collapsed) this.wasDisplayed = true;
 
         // 3) Prepare combined layout with header above core.  This is what layout props are trampolined to
-        const ret = vbox({
+        const item = vbox({
             ...layoutProps,
-            cls: this.getClassNames(),
+            className: this.getClassName(),
             ...rest,
             items: [
                 panelHeader({title, icon, headerItems, sizingModel}),
@@ -113,8 +113,8 @@ export class Panel extends Component {
 
         // 4) Return, wrapped in resizable and its affordances if needed.
         return resizable || collapsible ?
-            resizable({sizingModel, item: ret}) :
-            ret;
+            resizeContainer({item, model: sizingModel}) :
+            item;
     }
 }
 export const panel = elemFactory(Panel);

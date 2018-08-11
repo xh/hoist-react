@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {box, hbox} from '@xh/hoist/cmp/layout';
+import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
 
 import './PanelHeader.scss';
 
@@ -17,41 +17,43 @@ import './PanelHeader.scss';
 @HoistComponent()
 export class PanelHeader extends Component {
     render() {
-        const {title, icon, headerItems = [], sizingModel} = this.props,
-            {collapsible, collapsed, side} = sizingModel || {};
+        let {title, icon, headerItems = [], sizingModel} = this.props,
+            {collapsible, collapsed, vertical} = sizingModel || {};
 
-        if (!collapsible && !title && !icon && !headerItems.length) return null;
+        if (!title && !icon && !headerItems.length) return null;
 
-        const vertical = collapsed && ['left', 'right'].includes(side);
-        if (!vertical) {
+        if (!collapsed || vertical) {
             return hbox({
                 className: 'xh-panel-header',
                 items: [
                     icon || null,
-                    title ? box({
-                        className: 'xh-panel-header-title',
-                        flex: 1,
-                        item: title
-                    }) : null,
-                    ...headerItems
+                    title ?
+                        box({
+                            className: 'xh-panel-header-title',
+                            flex: 1,
+                            item: title
+                        }) :
+                        null,
+                    ...(!collapsed ? headerItems : [])
                 ],
                 onDoubleClick: this.onDblClick
             });
         } else {
+            // For Compressed vertical layout, skip header items.
+            // TODO:  Add rotated Text box.
             return vbox({
                 className: 'xh-panel-header',
                 items: icon || null,
-                // TODO:  Add vertically rotated text.
                 onDoubleClick: this.onDblClick
             });
         }
     }
-}
 
-onDblClick = () => {
-    const {sizingModel} = this.props;
-    if (sizingModel && sizingModel.collapsible) {
-        sizingModel.toggleCollapsed();
+    onDblClick = () => {
+        const {sizingModel} = this.props;
+        if (sizingModel && sizingModel.collapsible) {
+            sizingModel.toggleCollapsed();
+        }
     }
 }
 

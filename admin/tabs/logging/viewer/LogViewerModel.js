@@ -10,6 +10,7 @@ import {action, observable} from '@xh/hoist/mobx';
 import {LastPromiseModel} from '@xh/hoist/promise';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {UrlStore} from '@xh/hoist/data';
+import {PanelSizingModel} from '@xh/hoist/desktop/cmp/panel';
 
 /**
  * @private
@@ -29,9 +30,9 @@ export class LogViewerModel {
 
     loadModel = new LastPromiseModel();
 
-    filesSizingModel = new SizingModel({
-        sizingSide: 'left',
-        defaultSize: 250,
+    filesSizingModel = new PanelSizingModel({
+        side: 'left',
+        defaultSize: 250
     });
 
     filesGridModel = new GridModel({

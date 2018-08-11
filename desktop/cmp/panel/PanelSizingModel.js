@@ -7,17 +7,14 @@
 
 import {XH, HoistModel} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
-import {ONE_SECOND} from '@xh/hoist/utils/DateTimeUtils';
 import {withDefault} from '@xh/hoist/utils/JsUtils';
 import {start} from '@xh/hoist/promise';
 
 /**
  * This class provides the underlying state for Components that can be resized or collapsed by the user.
- *
- * See also SizingSupport.
  */
-@HoistModel
-export class SizingModel {
+@HoistModel()
+export class PanelSizingModel {
 
     //-----------------------
     // Immutable Properties
@@ -30,35 +27,38 @@ export class SizingModel {
     collapsedRenderMode;
     prefName;
 
+    get vertical()              {return this.side === 'top' || this.side === 'bottom'}
+    get contentFirst()          {return this.side === 'top' || this.side === 'left'}
+
     //---------------------
     // Observable State
     //---------------------
-    /** Is the related content rendering in a collapsed state? */
+    /** Is the Panel rendering in a collapsed state? */
     @observable collapsed;
 
     /** Size in pixels along sizing dimension.  Used when object is *not* collapsed. */
     @observable size = null;
 
-    /** Is this object currently resizing? */
+    /** Is this panel currently resizing? */
     @observable isResizing = false;
 
     /**
      * @param {Object} config
-     * @param {boolean} [config.resizable] - Can content be resized ?
-     * @param {boolean} [config.collapsible] - Can content be fully collapsed?
+     * @param {boolean} [config.resizable] - Can panel be resized?
+     * @param {boolean} [config.collapsible] - Can panel be collapsed, showing only its header?
      * @param {int} config.defaultSize - Default size of content (in pixels).
      * @param {int} [config.defaultCollapsed] - Default collapsed state.
-     * @param {string} [config.side] - Side of Panel which it collapses to, or shrinks toward.
+     * @param {string} [config.side] - Side of panel which it collapses to/shrinks toward.
      * @param {string} [config.collapsedRenderMode] - How should collapsed content be rendered?
      *      Valid values include 'lazy', 'always', and 'unmountOnHide'.
-     * @param {string} [config.prefName] - preference name to store sizing and collapsed state for this component.
+     * @param {string} [config.prefName] - preference name to store sizing and collapsed state.
      */
     constructor({
         collapsible = true,
         resizable = true,
         defaultSize,
         defaultCollapsed = false,
-        side ='top',
+        side ='bottom',
         collapsedRenderMode = 'lazy',
         prefName = null
     }) {
@@ -91,8 +91,8 @@ export class SizingModel {
     //----------------------
     @action
     setCollapsed(collapsed) {
-        // When opening from collapsed position restore *default* size.  This ay be a suboptimal in some cases
-        // (you lose user "size"), but avoids confusing behavior where 'opening' a panel could cause it to shrink.
+        // When opening from collapsed position restore *default* size.  This may be suboptimal in some cases
+        // -- you lose user set "size" -- but avoids confusing behavior where 'opening' a panel could cause it to shrink.
         if (this.collapsed === true && !collapsed) {
             this.size = this.defaultSize;
         }
@@ -105,9 +105,9 @@ export class SizingModel {
     }
 
     @action
-    setIsResizing(isResizing) {
-        this.isResizing = isResizing;
-        if (!isResizing) this.dispatchResize();
+    setIsResizing(v) {
+        this.isResizing = v;
+        if (!v) this.dispatchResize();
     }
 
     toggleCollapsed() {

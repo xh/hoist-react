@@ -6,7 +6,6 @@
  */
 
 import {Component} from 'react';
-import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -15,34 +14,24 @@ import {hbox, vbox} from '@xh/hoist/cmp/layout';
 
 import './Collapser.scss';
 
-/** This is an implementation class private to Hoist
+/**
  * @private
  */
 @HoistComponent()
 export class Collapser extends Component {
 
-    static propTypes = {
-        /** Position of collapse border in relation to resizable component */
-        side: PT.oneOf(['top', 'right', 'bottom', 'left']).isRequired,
-        isOpen: PT.bool,
-        onClick: PT.func
-    };
-
-    get side()                  {return this.props.side}
-    get isOpen()                {return this.props.isOpen}
-    get isVertical()            {return this.side === 'top' || this.side === 'bottom'}
-    get isContentFirst()        {return this.side === 'right' || this.side === 'bottom'}
+    get contentFirst()  {return }
 
     render() {
-        const {isVertical} = this;
+        const {vertical} = this.model;
 
-        const cmp = isVertical ? hbox : vbox,
+        const cmp = vertical ? hbox : vbox,
             cfg = {
-                className: `xh-resizable-collapser ${isVertical ? 'vertical' : 'horizontal'}`,
+                className: `xh-resizable-collapser ${vertical ? 'vertical' : 'horizontal'}`,
                 item: button({
                     className: 'xh-resizable-collapser-btn',
                     icon: Icon[this.getChevron()](),
-                    onClick: this.props.onClick
+                    onClick: this.onClick
                 })
             };
 
@@ -50,12 +39,15 @@ export class Collapser extends Component {
     }
 
     getChevron() {
-        const {isVertical, isContentFirst, isOpen} = this,
-            directions = [['chevronUp', 'chevronDown'], ['chevronLeft', 'chevronRight']],
-            type = isVertical ? 0 : 1,
-            idx = isContentFirst ? 0 : 1;
+        const {vertical, collapsed, side, contentFirst} = this.model,
+            directions = vertical ? ['chevronUp', 'chevronDown'] : ['chevronLeft', 'chevronRight'],
+            idx = (contentFirst != collapsed ? 0 : 1);
 
-        return isOpen ? directions[type][idx] : directions[type][1 - idx];
+        return directions[idx];
+    }
+
+    onClick = () => {
+        this.model.toggleCollapsed();
     }
 }
 export const collapser = elemFactory(Collapser);

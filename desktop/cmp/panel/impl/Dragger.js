@@ -6,7 +6,6 @@
  */
 
 import {Component} from 'react';
-import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import './Dragger.scss';
@@ -18,17 +17,10 @@ import './Dragger.scss';
 export class Dragger extends Component {
 
     resizeState = null;
-
-    static propTypes = {
-        /** Position of resize border in relation to resizable component */
-        side: PT.oneOf(['top', 'right', 'bottom', 'left']).isRequired,
-        onResizeStart: PT.func,
-        onResize: PT.func,
-        onResizeEnd: PT.func
-    };
+    startSize = null;
 
     render() {
-        const {side} = this.props;
+        const {side} = this.model;
         return div({
             className: `xh-resizable-dragger ${side}`,
             onDrag: this.onDrag,
@@ -40,8 +32,8 @@ export class Dragger extends Component {
     
     onDragStart = (e) => {
         this.resizeState = {startX: e.clientX, startY: e.clientY};
-        const {onResizeStart} = this.props;
-        if (onResizeStart) onResizeStart(e);
+        this.startSize = this.model.size;
+        this.model.setIsResizing(true);
         e.stopPropagation();
     }
 
@@ -52,7 +44,7 @@ export class Dragger extends Component {
             return;
         }
 
-        const {side} = this.props,
+        const {side} = this.model,
             {screenX, screenY, clientX, clientY} = e,
             {startX, startY} = this.resizeState;
 
@@ -62,19 +54,22 @@ export class Dragger extends Component {
         }
 
         let diff;
-        if (side === 'right') diff = clientX - startX;
-        if (side === 'left') diff = startX - clientX;
-        if (side === 'top') diff = startY - clientY;
-        if (side === 'bottom') diff = clientY - startY;
+        switch (side) {
+            case 'left':    diff = clientX - startX; break;
+            case 'right':   diff = startX - clientX; break;
+            case 'bottom':  diff = startY - clientY; break;
+            case 'top':     diff = clientY - startY; break;
+        }
 
-        const {onResize} = this.props;
-        if (onResize) onResize(diff);
+        if (this.startSize !== null) {
+            this.model.setSize(this.startSize + diff);
+        }
     }
 
     onDragEnd = () => {
         this.resizeState = null;
-        const {onResizeEnd} = this.props;
-        if (onResizeEnd) onResizeEnd();
+        this.startSize = null;
+        this.model.setIsResizing(false);
     }
 }
 export const dragger = elemFactory(Dragger);

@@ -10,7 +10,7 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {ChartModel} from '@xh/hoist/desktop/cmp/chart';
 import {fmtDate} from '@xh/hoist/format';
-import {SizingModel} from '@xh/hoist/SizingModel';
+import {PanelSizingModel} from '@xh/hoist/desktop/cmp/panel';
 
 @HoistModel()
 export class VisitsChartModel {
@@ -19,7 +19,7 @@ export class VisitsChartModel {
     @observable endDate = new Date();
     @observable username = '';
 
-    sizingModel = new SizingModel({
+    sizingModel = new PanelSizingModel({
         defaultSize: 500,
         sizingPref: 'visitsChart'
     });
