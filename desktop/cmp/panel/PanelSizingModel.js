@@ -48,7 +48,8 @@ export class PanelSizingModel {
      * @param {boolean} [config.collapsible] - Can panel be collapsed, showing only its header?
      * @param {int} config.defaultSize - Default size of content (in pixels).
      * @param {int} [config.defaultCollapsed] - Default collapsed state.
-     * @param {string} [config.side] - Side of panel which it collapses to/shrinks toward.
+     * @param {string} [config.side] - Side of panel that it collapses/shrinks toward. This also corresponds
+     *      to the position within a parent vbox or hbox in which the panel should be placed.
      * @param {string} [config.collapsedRenderMode] - How should collapsed content be rendered?
      *      Valid values include 'lazy', 'always', and 'unmountOnHide'.
      * @param {string} [config.prefName] - preference name to store sizing and collapsed state.
