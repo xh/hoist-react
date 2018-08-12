@@ -10,29 +10,34 @@ import {XH} from '@xh/hoist/core';
 import {Field} from './Field';
 
 /**
- * A managed observable set of Records.
- * @abstract - see LocalStore or UrlStore for concrete implementations.
+ * A managed and observable set of Records.
+ * @see LocalStore
+ * @see UrlStore
+ * @abstract
  */
 export class BaseStore {
 
-    /** List of fields contained in each record.  **/
+    /**
+     * Fields contained in each record.
+     * @type {HoistField[]}
+     */
     fields = null;
 
-    /** Get a specific field, by name.  **/
+    /** Get a specific field, by name. */
     getField(name) {
         return this.fields.find(it => it.name === name);
     }
 
-    /** Current loading state. **/
+    /** Current loading state. */
     get loadModel() {}
 
-    /** Current records. These represent the post-filtered records. **/
+    /** Current records. These represent the post-filtered records. */
     get records() {}
 
-    /** All records.  These are the pre-filtered records. **/
+    /** All records.  These are the pre-filtered records. */
     get allRecords() {}
 
-    /** Filter.  Filter function to be applied. **/
+    /** Filter.  Filter function to be applied. */
     get filter() {}
     setFilter(filterFn) {}
 
@@ -40,13 +45,13 @@ export class BaseStore {
      * Get a record by ID. Return null if no record found.
      *
      * @param {number} id
-     * @param {boolean} filteredOnly - set to true to skip non-filtered records
+     * @param {boolean} filteredOnly - true to skip non-filtered records.
      */
     getById(id, filteredOnly) {}
 
     /**
-     * @param {(string[]|Object[])} fields - list of Fields or valid configuration for Fields
-     *      (A simple string representing the field name is sufficient for an entry).
+     * @param {Object} c - BaseStore configuration.
+     * @param {(string[]|Object[]|HoistField[])} c.fields - names or config objects for Fields.
      */
     constructor({fields}) {
         this.fields = fields.map(f => {
@@ -84,7 +89,7 @@ export class BaseStore {
      * Can apply basic validation and conversion (e.g. 'date' will convert from UTC time to
      * a JS Date object). An exception will be thrown if the validation or conversion fails.
      *
-     *  @param {Object} raw - json object containing raw data and 'id' property
+     * @param {Object} raw - json object containing raw data and 'id' property
      */
     createRecord(raw) {
         const ret = {id: raw.id, raw};

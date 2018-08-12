@@ -8,6 +8,12 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {LeftRightChooserModel} from '@xh/hoist/desktop/cmp/leftrightchooser';
 
+/**
+ * State management for the ColChooser component.
+ *
+ * It is not necessary to manually create instances of this class within an application.
+ * @private
+ */
 @HoistModel()
 export class ColChooserModel {
 

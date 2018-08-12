@@ -14,21 +14,16 @@ import {orderBy, uniq, isString, isFunction} from 'lodash';
 import download from 'downloadjs';
 
 /**
- * Exports a grid to either Excel or CSV, using Hoist's server-side export.
+ * Exports Grid data to either Excel or CSV via using Hoist's server-side export.
+ * @see HoistColumn constructor API for options to control exported values and formats.
  *
- * Columns support the following properties on their definitions to manage how they are exported:
- *      {string} exportName - custom header for exported grid column.
- *      {(string|function)} exportValue - modifies the value used in export:
- *              If string, can be used to point to a different field on the record.
- *              If function, can be used to transform the value.
- *      {string} exportFormat - Excel export format pattern.
- *              @see ExportFormat for available constants.
+ * It is not necessary to manually create instances of this class within an application.
+ * @private
  */
 export class ExportManager {
 
     /**
-     * Export a GridModel to a file. Typically not called directly, but via the `export` convenience
-     * method on GridModel.
+     * Export a GridModel to a file. Called via `GridModel.export()`.
      *
      * @param {GridModel} gridModel - GridModel to export.
      * @param {(string|function)} filename - name for exported file or closure to generate.

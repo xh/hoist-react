@@ -15,10 +15,16 @@ import {convertIconToSvg, Icon} from '@xh/hoist/icon';
  */
 @HoistModel()
 export class LeftRightChooserModel {
-    /** Grid Model for the left-hand side */
+    /**
+     * Grid Model for the left-hand side
+     * @type GridModel
+     */
     leftModel = null;
 
-    /** Grid Model for the right-hand side */
+    /**
+     * Grid Model for the right-hand side
+     * @type GridModel
+     */
     rightModel = null;
 
     /** Property to enable/disable the description panel */
@@ -140,12 +146,15 @@ export class LeftRightChooserModel {
     //------------------------
     getTextColRenderer(side) {
         const groupingEnabled = side == 'left' ? this.leftGroupingEnabled : this.rightGroupingEnabled,
-            groupClass = groupingEnabled ? 'xh-lr-chooser__group-row' : '';
+            groupClass = groupingEnabled ? 'xh-lr-chooser__group-row' : '',
+            lockSvg = convertIconToSvg(Icon.lock({prefix: 'fal'}));
 
-        return (v, data, meta) => {
-            return `<div class='xh-lr-chooser__item-row ${groupClass}'>
-                        ${v}${data.locked ? convertIconToSvg(Icon.lock({prefix: 'fal'})) : ''}
-                   </div>`;
+        return (v, data) => {
+            return `
+                <div class='xh-lr-chooser__item-row ${groupClass}'>
+                    ${v} ${data.locked ? lockSvg : ''}
+               </div>
+            `;
         };
 
     }

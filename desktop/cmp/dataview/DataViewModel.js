@@ -11,8 +11,10 @@ import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 
 /**
- * DataViewModel is a wrapper around GridModel, which shows sorted data in
- * a single column, using a defined component for rendering each item.
+ * DataViewModel is a wrapper around GridModel, which shows sorted data in a single column,
+ * using a defined component for rendering each item.
+ *
+ * This is the primary application entry-point for specifying DataView component options and behavior.
  */
 @HoistModel()
 export class DataViewModel {
@@ -34,13 +36,14 @@ export class DataViewModel {
     };
 
     /**
-     * @param {function} itemFactory - elemFactory for the component used to render each item.
+     * @param {Object} c - DataViewModel configuration.
+     * @param {function} c.itemFactory - elemFactory for the component used to render each item.
      *      Will receive record via its props.
-     * @param {BaseStore} store - store containing the data for the dataview.
-     * @param {(StoreSelectionModel|Object|String)} [selModel] - selection model to use,
-     *      config to create one, or 'mode' property for a selection model.
-     * @param {string} [emptyText] - empty text to display if DataView has no records. Can be valid HTML.
-     * @param {function} [contextMenuFn] - closure returning a StoreContextMenu().
+     * @param {BaseStore} c.store - store containing the data to be displayed.
+     * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
+     *      config or string `mode` with which to create one.
+     * @param {string} [c.emptyText] - text/HTML to display if view has no records.
+     * @param {function} [c.contextMenuFn] - closure returning a StoreContextMenu().
      */
     constructor({
         itemFactory,
@@ -86,7 +89,6 @@ export class DataViewModel {
         return this.selModel.singleRecord;
     }
 
-    
     /** Load the underlying store. */
     loadAsync(...args) {
         return this.store.loadAsync(...args);
@@ -97,9 +99,10 @@ export class DataViewModel {
         return this.store.loadData(...args);
     }
 
-    //---------------------------------
+
+    //------------------------
     // Implementation
-    //---------------------------------
+    //------------------------
     parseSelModel(selModel, store) {
         if (selModel instanceof StoreSelectionModel) {
             return selModel;

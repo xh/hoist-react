@@ -8,26 +8,41 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {cloneDeep, debounce, find} from 'lodash';
 import {start} from '@xh/hoist/promise';
 
+/**
+ * Model for serializing/de-serializing saved grid state across user browsing sessions
+ * and applying saved state to its parent GridModel upon that model's construction.
+ *
+ * GridModels can enable persistent grid state via their stateModel config, typically
+ * provided as a simple string gridId to identify a given grid instance.
+ *
+ * It is not necessary to manually create instances of this class within an application.
+ * @private
+ */
 @HoistModel()
 export class GridStateModel {
 
-    // Version of grid state.  Increment *only* when we need to abandon all existing grid state in the wild.
-    static gridStateVersion = 1;
+    /**
+     * Version of grid state definitions currently supported by this model.
+     * Increment *only* when we need to abandon all existing grid state that might be saved on
+     * user workstations to ensure compatibility with a new serialization or approach.
+     */
+    static GRID_STATE_VERSION = 1;
 
     gridModel = null;
-    xhStateId = null;
+    gridId = null;
 
     state = {};
     defaultState = null;
 
     /**
-     * @param {object} config
-     * @param {string} config.xhStateId - Unique grid identifier.
-     * @param {boolean} [config.trackColumns] - Set to true to save state of columns (including ordering, and widths).
-     * @param {boolean} [config.trackSort] - Set to true to save sorting.
+     * @param {Object} c - GridStateModel configuration.
+     * @param {string} c.gridId - unique identifier for a Grid instance.
+     * @param {boolean} [c.trackColumns] - true to save state of columns,
+     *      including visibility, ordering and pixel widths.
+     * @param {boolean} [c.trackSort] - true to save sorting.
      */
-    constructor({xhStateId, trackColumns = true, trackSort = true}) {
-        this.xhStateId = xhStateId;
+    constructor({gridId, trackColumns = true, trackSort = true}) {
+        this.gridId = gridId;
         this.trackColumns = trackColumns;
         this.trackSort = trackSort;
     }
@@ -47,7 +62,7 @@ export class GridStateModel {
     }
 
     getStateKey() {
-        return `gridState.v${GridStateModel.gridStateVersion}.${this.xhStateId}`;
+        return `gridState.v${GridStateModel.GRID_STATE_VERSION}.${this.gridId}`;
     }
 
     readState(stateKey) {

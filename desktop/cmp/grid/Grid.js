@@ -16,15 +16,16 @@ import {agGridReact, navigateSelection} from './ag-grid';
 import {colChooser} from './ColChooser';
 
 /**
- * Grid Component
+ * The primary rich data grid component within the Hoist desktop toolkit.
+ * It is a highly managed wrapper around AG-Grid, and is the main display component for GridModel.
  *
- * This is the main view component for a Hoist Grid.  It is a highly managed
- * wrapper around AG Grid, and is the main display component for GridModel.
+ * Applications should typically configure and interact with Grids via a GridModel, which provides
+ * support for specifying the Grid's data Store, Column definitions, sorting and grouping state,
+ * selection API, and more.
  *
- * Applications should typically create and manipulate a GridModel for most purposes,
- * including specifying columns and rows, sorting and grouping, and interacting with
- * the selection. Use this class to control the AG Grid UI options and specific
- * behavior of the grid.
+ * Use this class to control the AG-Grid UI options and specific behavior of the grid.
+ * @see {@link https://www.ag-grid.com/javascript-grid-reference-overview/|AG-Grid Docs}
+ * @see GridModel
  */
 @HoistComponent()
 @LayoutSupport
@@ -32,7 +33,7 @@ export class Grid extends Component {
 
     _scrollOnSelect = true;
 
-    // Trackable stamp incremented everytime the agGrid receives a new set of data.
+    // Trackable stamp incremented every time the agGrid receives a new set of data.
     @observable _dataVersion = 0;
 
     static propTypes = {

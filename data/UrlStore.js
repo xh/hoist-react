@@ -18,9 +18,10 @@ export class UrlStore extends LocalStore {
     dataRoot = null;
 
     /**
-     * @param {string} url
-     * @param {string} [dataRoot] - Name of root node for records in returned data
-     * @param {...*} [localStoreArgs] - Additional arguments to pass to LocalStore.
+     * @param {Object} c - UrlStore configuration.
+     * @param {string} c.url - URL from which to load data.
+     * @param {string} [c.dataRoot] - Name of root node for records in returned data.
+     * @param {...*} [c.localStoreArgs] - Additional arguments to pass to LocalStore.
      */
     constructor({url, dataRoot = null, ...localStoreArgs}) {
         super(localStoreArgs);
