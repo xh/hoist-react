@@ -60,7 +60,7 @@ export class ActivityGrid extends Component {
             this.textField({field: 'category', placeholder: 'Category...'}),
             this.textField({field: 'device', placeholder: 'Device...'}),
             this.textField({field: 'browser', placeholder: 'Browser...'}),
-            refreshButton({model, icon: Icon.portfolio(), title: 'poop'}),
+            refreshButton({model}),
             filler(),
             storeCountLabel({
                 store: model.gridModel.store,
