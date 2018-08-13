@@ -76,7 +76,7 @@ export class DayField extends HoistField {
                 minimal: true,
                 usePortal: true,
                 position: popoverPosition || 'auto',
-                popoverWillClose: this.onPopoverWillClose
+                onClose: this.onPopoverWillClose
             },
             minDate,
             maxDate,
