@@ -185,14 +185,14 @@ export class Grid extends Component {
             return !it.hidden;
         }).filter((it, idx, arr) => {
             if (it === '-') {
-                // Remove starting / ending separators
-                if (idx == 0 || idx == (arr.length - 1)) return false;
-
                 // Remove consecutive separators
                 const prev = idx > 0 ? arr[idx - 1] : null;
                 if (prev === '-') return false;
             }
             return true;
+        }).filter((it, idx, arr) => {
+            // Remove starting / ending separators
+            return it !== '-' || (idx > 0 && idx < arr.length - 1);
         }).map(it => {
             if (it === '-') return 'separator';
             if (isString(it)) return it;
