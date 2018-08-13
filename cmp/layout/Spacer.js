@@ -19,8 +19,8 @@ export class Spacer extends Component {
     baseClassName = 'xh-spacer';
     render() {
         return box({
-            flex: 'none',
             ...this.props,
+            flex: 'none',
             className: this.getClassName()
         });
     }
@@ -35,8 +35,8 @@ export class Filler extends Component {
     baseClassName = 'xh-filler';
     render() {
         return box({
-            flex: 'auto',
             ...this.props,
+            flex: 'auto',
             className: this.getClassName()
         });
     }

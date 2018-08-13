@@ -30,6 +30,7 @@ export class StoreCountLabel extends Component {
     };
 
     defaultUnit = 'record';
+    baseClassName = 'xh-store-count-label';
 
     constructor(props) {
         super(props);
@@ -46,6 +47,7 @@ export class StoreCountLabel extends Component {
 
         return box({
             ...this.getLayoutProps(),
+            className: this.getClassName(),
             item: `${countStr} ${unitLabel}`
         });
     }

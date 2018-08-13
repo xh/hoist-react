@@ -35,6 +35,7 @@ export class StoreFilterField extends Component {
     };
 
     @observable value = '';
+    baseClassName = 'xh-store-filter-field';
 
     constructor(props) {
         super(props);
@@ -53,7 +54,8 @@ export class StoreFilterField extends Component {
                 icon: Icon.x(),
                 minimal: true,
                 onClick: this.onClearClick
-            })
+            }),
+            className: this.getClassName()
         });
     }
 

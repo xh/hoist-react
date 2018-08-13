@@ -8,8 +8,7 @@ import {HoistModel, XH} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {LocalStore} from '@xh/hoist/data';
 import {computed} from '@xh/hoist/mobx';
-import {div} from '@xh/hoist/cmp/layout';
-import {Icon} from '@xh/hoist/icon';
+import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 
 /**
  * A Model for managing the state of a LeftRightChooser.
@@ -27,8 +26,10 @@ export class LeftRightChooserModel {
 
     _lastSelectedSide = null;
 
-    _leftGroupingEnabled = null;
-    _rightGroupingEnabled = null;
+    leftGroupingEnabled = null;
+    rightGroupingEnabled = null;
+    leftGroupingExpanded = null;
+    rightGroupingExpanded = null;
 
     /**
      * Filter for data rows to determine if they should be shown.
@@ -71,9 +72,11 @@ export class LeftRightChooserModel {
      * @param {string} ungroupedName - placeholder group value when an item has no group.
      * @param {string} leftTitle - title of the left-side list.
      * @param {boolean} leftGroupingEnabled - true to enable grouping on the the left-side list.
+     * @param {boolean} leftGroupingExpanded - true to override default one level group expansion on left grid
      * @param {Object[]} leftSortBy - one or more sorters to apply to the left-side store.
      * @param {string} rightTitle - title of the right-side list.
      * @param {boolean} rightGroupingEnabled - true to enable grouping on the the right-side list.
+     * @param {boolean} rightGroupingExpanded - true to override default one level group expansion on right grid
      * @param {Object[]} rightSortBy - one or more sorters to apply to the right-side store.
      */
     constructor({
@@ -81,33 +84,37 @@ export class LeftRightChooserModel {
         ungroupedName = 'Ungrouped',
         leftTitle = 'Available',
         leftGroupingEnabled = true,
+        leftGroupingExpanded = true,
         leftSortBy = [],
         rightTitle = 'Selected',
         rightGroupingEnabled = true,
+        rightGroupingExpanded = true,
         rightSortBy = []
     }) {
         this._ungroupedName = ungroupedName;
-        this._leftGroupingEnabled = leftGroupingEnabled;
-        this._rightGroupingEnabled = rightGroupingEnabled;
+        this.leftGroupingEnabled = leftGroupingEnabled;
+        this.rightGroupingEnabled = rightGroupingEnabled;
+        this.leftGroupingExpanded = leftGroupingExpanded;
+        this.rightGroupingExpanded = rightGroupingExpanded;
 
         const fields = ['text', 'value', 'description', 'group', 'side', 'locked', 'exclude'];
 
-        const textCol = {field: 'text', flex: true, elementRenderer: this.textColRenderer},
+        const leftTextCol = {field: 'text', flex: true,  headerName: leftTitle, renderer: this.getTextColRenderer('left')},
+            rightTextCol = {field: 'text', flex: true,  headerName: rightTitle, renderer: this.getTextColRenderer('right')},
             groupCol = {field: 'group', headerName: 'Group', hide: true};
-
 
         this.leftModel = new GridModel({
             store: new LocalStore({fields}),
             selModel: 'multiple',
             sortBy: leftSortBy,
-            columns: [{...textCol, headerName: leftTitle}, groupCol]
+            columns: [leftTextCol, groupCol]
         });
 
         this.rightModel = new GridModel({
             store: new LocalStore({fields}),
             selModel: 'multiple',
             sortBy: rightSortBy,
-            columns: [{...textCol, headerName: rightTitle}, groupCol]
+            columns: [rightTextCol, groupCol]
         });
 
         this.setData(data);
@@ -117,8 +124,8 @@ export class LeftRightChooserModel {
 
     setData(data) {
         const hasGrouping = data.some(it => it.group),
-            lhGroupBy = (this._leftGroupingEnabled && hasGrouping) ? 'group' : null,
-            rhGroupBy = (this._rightGroupingEnabled && hasGrouping) ? 'group' : null;
+            lhGroupBy = (this.leftGroupingEnabled && hasGrouping) ? 'group' : null,
+            rhGroupBy = (this.rightGroupingEnabled && hasGrouping) ? 'group' : null;
 
         this.hasDescription = data.some(it => it.description);
         this.leftModel.setGroupBy(lhGroupBy);
@@ -131,17 +138,16 @@ export class LeftRightChooserModel {
     //------------------------
     // Implementation
     //------------------------
-    textColRenderer(props) {
-        const {value, data} = props,
-            lockedText = Icon.lock({prefix: 'fal'});
+    getTextColRenderer(side) {
+        const groupingEnabled = side == 'left' ? this.leftGroupingEnabled : this.rightGroupingEnabled,
+            groupClass = groupingEnabled ? 'xh-lr-chooser__group-row' : '';
 
-        return div({
-            className: 'xh-lr-chooser__item-row',
-            items: [
-                value,
-                data.locked ? lockedText : null
-            ]
-        });
+        return (v, data, meta) => {
+            return `<div class='xh-lr-chooser__item-row ${groupClass}'>
+                        ${v}${data.locked ? convertIconToSvg(Icon.lock({prefix: 'fal'})) : ''}
+                   </div>`;
+        };
+
     }
 
     preprocessData(data) {

@@ -41,17 +41,16 @@ export class StoreContextMenu {
     }
 
     parseToken(token) {
-        const gridModel = this.gridModel,
-            {colChooserModel} = gridModel;
+        const gridModel = this.gridModel;
 
         switch (token) {
             case 'colChooser':
                 return new StoreContextMenuItem({
                     text: 'Columns...',
                     icon: Icon.grid(),
-                    hidden: !colChooserModel,
+                    hidden: !gridModel || !gridModel.colChooserModel,
                     action: () => {
-                        colChooserModel.open();
+                        gridModel.colChooserModel.open();
                     }
                 });
             case 'export':
