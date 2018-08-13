@@ -13,7 +13,6 @@ import {Icon} from '@xh/hoist/icon';
 
 /**
  * Convenience Button preconfigured for use as a trigger for an export/download of data.
- * Accepts props documented below as well as any supported by Blueprint's Button.
  *
  * Must be provided either an onClick handler *or* a model. If a model is provided, this button
  * will call export() on the model class.

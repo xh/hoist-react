@@ -14,7 +14,6 @@ import {Icon} from '@xh/hoist/icon';
 
 /**
  * Convenience wrapper for a ClipboardButton to be rendered as a Blueprint menu item.
- * Accepts props documented below as well as any supported by Blueprint's Button or ClipboardButton cmp.
  */
 @HoistComponent()
 export class ClipboardMenuItem extends Component {
