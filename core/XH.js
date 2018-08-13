@@ -28,6 +28,7 @@ import {
 import {AppContainerModel} from './appcontainer/AppContainerModel';
 import {RouterModel} from './RouterModel';
 import {ExceptionHandler} from './ExceptionHandler';
+import {GridStateModel} from '../desktop/cmp/grid';
 
 import {initServicesAsync} from './HoistService';
 
@@ -294,12 +295,15 @@ class XHClass {
         return this.acm.aboutDialogModel.show();
     }
 
-    /** Clear grid state and preferences */
-    async restoreDefaultsAsync(reload = true) {
+    /**
+     * Resets user customizations.
+     * Clears all user preferences, all grid state saved to local storage, and then reloads the app.
+     */
+    async restoreDefaultsAsync() {
         return XH.prefService.clearAllAsync().then(() => {
-            XH.localStorageService.clear();
+            GridStateModel.clearState();
         }).then(() => {
-            if (reload) XH.reloadApp();
+            XH.reloadApp();
         });
     }
 

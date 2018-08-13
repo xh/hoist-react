@@ -13,6 +13,7 @@ export class GridStateModel {
 
     // Version of grid state.  Increment *only* when we need to abandon all existing grid state in the wild.
     static gridStateVersion = 1;
+    static stateKeyPrefix = 'gridState';
 
     gridModel = null;
     xhStateId = null;
@@ -47,7 +48,8 @@ export class GridStateModel {
     }
 
     getStateKey() {
-        return `gridState.v${GridStateModel.gridStateVersion}.${this.xhStateId}`;
+        const {stateKeyPrefix, gridStateVersion} = GridStateModel;
+        return `${stateKeyPrefix}.v${gridStateVersion}.${this.xhStateId}`;
     }
 
     readState(stateKey) {
@@ -66,6 +68,14 @@ export class GridStateModel {
         return start(() => {
             this.loadState(this.defaultState);
             this.resetState(this.getStateKey());
+        });
+    }
+
+    static clearState() {
+        XH.localStorageService.keys().forEach(key => {
+            if (key.startsWith(GridStateModel.stateKeyPrefix)) {
+                XH.localStorageService.remove(key);
+            }
         });
     }
 

@@ -13,8 +13,8 @@ import {Icon} from '@xh/hoist/icon';
 
 /**
  * Convenience Button preconfigured for use as a trigger for resetting user
- * customizations. Clears all grid state and preferences, then reloads the app.
- * Accepts props documented below as well as any supported by Blueprint's Button.
+ * customizations. Clears all user preferences, all grid state saved to local
+ * storage, and then reloads the app.
  *
  * Can be provided an onClick handler, otherwise will call default framework handler.
  */
@@ -33,7 +33,7 @@ export class RestoreDefaultsButton extends Component {
     render() {
         const {icon, text, intent, onClick, ...rest} = this.props;
         return button({
-            icon: icon || Icon.refresh(),
+            icon: icon || Icon.reset(),
             text: text || 'Restore Defaults',
             intent: intent || 'danger',
             onClick: onClick || this.onRestoreClick,

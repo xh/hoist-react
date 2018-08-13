@@ -40,6 +40,10 @@ export class LocalStorageService {
         this.getInstance().clear();
     }
 
+    keys() {
+        return this.getInstance().keys();
+    }
+
     //------------------
     //  Implementation
     //------------------
