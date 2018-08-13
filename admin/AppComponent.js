@@ -12,7 +12,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {appBar} from '@xh/hoist/desktop/cmp/appbar';
-import {ContextMenuSupport, ContextMenuItem} from '@xh/hoist/desktop/cmp/contextmenu';
+import {ContextMenuItem, ContextMenuSupport} from '@xh/hoist/desktop/cmp/contextmenu';
 
 import './App.scss';
 
@@ -58,10 +58,7 @@ export class AppComponent extends Component {
                 })
             ],
             hideAdminButton: true,
-            hideFeedbackButton: true,
-            refreshButtonProps: {
-                onClick: this.onRefreshClick
-            }
+            hideFeedbackButton: true
         });
     }
 
@@ -71,9 +68,5 @@ export class AppComponent extends Component {
 
     onOpenAppClick = () => {
         window.open('/app');
-    };
-
-    onRefreshClick = () => {
-        XH.app.requestRefresh();
     };
 }

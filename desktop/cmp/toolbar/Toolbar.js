@@ -30,8 +30,8 @@ export class Toolbar extends Component {
         const {vertical, ...rest} = this.props;
 
         return (vertical ? vbox : hbox)({
-            className: this.getClassName(vertical ? 'xh-toolbar--vertical' : null),
-            ...rest
+            ...rest,
+            className: this.getClassName(vertical ? 'xh-toolbar--vertical' : null)
         });
     }
 

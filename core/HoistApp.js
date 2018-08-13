@@ -114,7 +114,15 @@ export function HoistApp(C) {
          */
         getRoutes() {
             return [];
-        }
+        },
+
+        /**
+         * App can implement this method to customize global App refresh behavior.
+         * This is called by the default refresh button in the AppBar component.
+         *
+         * @param {boolean} userInitiated whether the refresh was triggered by user action or triggered programmatically
+         */
+        requestRefresh(userInitiated) { }
     });
 
     return C;
