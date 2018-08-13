@@ -293,7 +293,18 @@ class XHClass {
     showAboutDialog() {
         return this.acm.aboutDialogModel.show();
     }
-    
+
+    /**
+     * Resets user customizations.
+     * Clears all user preferences and local grid state, then reloads the app.
+     */
+    async restoreDefaultsAsync() {
+        return XH.prefService.clearAllAsync().then(() => {
+            XH.localStorageService.removeIf(key => key.startsWith('gridState'));
+            XH.reloadApp();
+        });
+    }
+
     //----------------------------
     // Service Aliases
     //----------------------------

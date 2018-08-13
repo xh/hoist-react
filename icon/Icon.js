@@ -440,6 +440,7 @@ export const Icon = {
     portfolio(p)     {return fa(p, 'briefcase')},
     print(p)         {return fa(p, 'print')},
     refresh(p)       {return fa(p, 'sync')},
+    reset(p)         {return fa(p, 'undo')},
     rocket(p)        {return fa(p, 'rocket')},
     save(p)          {return fa(p, 'save')},
     search(p)        {return fa(p, 'search')},
