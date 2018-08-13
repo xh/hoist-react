@@ -297,12 +297,11 @@ class XHClass {
 
     /**
      * Resets user customizations.
-     * Clears all user preferences, all grid state saved to local storage, and then reloads the app.
+     * Clears all user preferences and local grid state, then reloads the app.
      */
     async restoreDefaultsAsync() {
         return XH.prefService.clearAllAsync().then(() => {
             GridStateModel.clearState();
-        }).then(() => {
             XH.reloadApp();
         });
     }
