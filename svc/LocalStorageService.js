@@ -36,6 +36,12 @@ export class LocalStorageService {
         this.getInstance().remove(key);
     }
 
+    removeIf(predicateFn) {
+        this.keys().forEach(key => {
+            if (predicateFn(key)) this.remove(key);
+        });
+    }
+
     clear() {
         this.getInstance().clear();
     }

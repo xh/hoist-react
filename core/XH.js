@@ -28,7 +28,6 @@ import {
 import {AppContainerModel} from './appcontainer/AppContainerModel';
 import {RouterModel} from './RouterModel';
 import {ExceptionHandler} from './ExceptionHandler';
-import {GridStateModel} from '../desktop/cmp/grid';
 
 import {initServicesAsync} from './HoistService';
 
@@ -301,7 +300,7 @@ class XHClass {
      */
     async restoreDefaultsAsync() {
         return XH.prefService.clearAllAsync().then(() => {
-            GridStateModel.clearState();
+            XH.localStorageService.removeIf(key => key.startsWith('gridState'));
         }).then(() => {
             XH.reloadApp();
         });
