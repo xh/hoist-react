@@ -4,18 +4,23 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistService, AppState} from '@xh/hoist/core';
+import {AppState, HoistService, XH} from '@xh/hoist/core';
 import {MINUTES} from '@xh/hoist/utils/DateTimeUtils';
-import {debounce} from 'lodash';
 import {Timer} from '@xh/hoist/utils/Timer';
+import {debounce} from 'lodash';
 
 /**
- * Manage the idling/suspension of this application after a certain period of user
- * inactivity.
+ * Manage the idling/suspension of this application after a certain period of user inactivity
+ * to cancel background tasks and prompt the user to reload the page when they wish to resume
+ * using the app. This approach is typically employed to reduce potential load on back-end
+ * system from unattended clients and/or as a "belt-and-suspenders" defence against memory
+ * leaks or other performance issues that can arise with long-running sessions.
  *
- * This service is goverened by the property App.disableIdleDetection, the configuration
- * 'xhIdleTimeoutMins', and the user-specific preference 'xh.disableIdleDetection' respectively.
- * Any of these can be used to disable app suspension.
+ * This service consults the HoistApp `idleDetectionDisabled` getter, the `xhIdleTimeoutMins`
+ * soft-config, and the `xh.disableIdleDetection` user preference to determine if and when it
+ * should suspend the app.
+ *
+ * Not currently supported / enabled for mobile clients.
  */
 @HoistService()
 export class IdleService {
@@ -35,9 +40,10 @@ export class IdleService {
         }
     }
 
-    //-------------------------------------
+
+    //------------------------
     // Implementation
-    //-------------------------------------
+    //------------------------
     createAppListeners() {
         this.ACTIVITY_EVENTS.forEach(e => addEventListener(e, this.startCountdown, true));
     }

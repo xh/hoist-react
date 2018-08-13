@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {startCase} from 'lodash';
+import {castArray, startCase} from 'lodash';
 import {ExportFormat} from './ExportFormat';
 import {withDefault, withDefaultTrue, withDefaultFalse, throwIf, warnIf} from '@xh/hoist/utils/JsUtils';
 
@@ -105,8 +105,8 @@ export class Column {
 
         const {align} = this;
         if (align === 'center' || align === 'right') {
-            ret.headerClass = ret.headerClass || [];
-            ret.cellClass = ret.cellClass || [];
+            ret.headerClass = castArray(ret.headerClass) || [];
+            ret.cellClass = castArray(ret.cellClass) || [];
             ret.headerClass.push('xh-column-header-align-'+align);
             ret.cellClass.push('xh-align-'+align);
         }
