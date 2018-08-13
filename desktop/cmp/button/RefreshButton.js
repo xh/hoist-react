@@ -29,28 +29,20 @@ export class RefreshButton extends Component {
         title: PT.string,
         /** Function to call when the button is clicked. */
         onClick: PT.func,
-        /**
-         * Model to call loadAsync() on when the button is clicked. Only used if onClick was not
-         * provided.
-         */
+        /** Model to refresh via loadAsync(), if onClick prop not provided. */
         model: PT.object
     };
 
     render() {
         warnIf(
-            this.props.model && this.props.onClick,
-            'Both model and onClick were provided to RefreshButton properties. The model property will be ignored.'
-        );
-
-        warnIf(
-            !this.props.model && !this.props.onClick,
-            'Neither onClick nor model were provided to RefreshButton. Clicking the RefreshButton will have no effect.'
+            (this.props.model && this.props.onClick) || (!this.props.model && !this.props.onClick),
+            'RefreshButton must be provided either a model or an onClick handler to call (but not both).'
         );
 
         const {
             icon = Icon.sync(),
             title = 'Refresh',
-            onClick = this.model ? this.onRefreshClick : undefined,
+            onClick = this.model ? this.refreshModel : undefined,
             ...rest
         } = this.props;
 
@@ -65,7 +57,7 @@ export class RefreshButton extends Component {
     //---------------------------
     // Implementation
     //---------------------------
-    onRefreshClick = () => {
+    refreshModel = () => {
         this.model.loadAsync();
     };
 
