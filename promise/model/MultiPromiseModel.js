@@ -8,6 +8,7 @@ import {observable, action, computed} from '@xh/hoist/mobx';
 
 /**
  * Tracks the resolution state of a stream of promise invocations.
+ * Has an observable message property that if set will be displayed in a linked loadMask
  */
 export class MultiPromiseModel {
 
