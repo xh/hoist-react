@@ -46,16 +46,19 @@ export class GridModel {
     stateModel = null;
     /** @member {ColChooserModel} */
     colChooserModel = null;
+    /** @member {function} */
     contextMenuFn = null;
-    exportFilename = null;
-    enableExport = null;
+    /** @member {boolean} */
+    enableExport = false;
+    /** @member {string} */
+    exportFilename = 'export';
 
     //------------------------
     // Observable API
     //------------------------
     /** @member {Column[]} */
     @observable.ref columns = [];
-    /** @member {GridSorter[]} */
+    /** @member {GridSorterDef[]} */
     @observable.ref sortBy = [];
     /** @member {?string} */
     @observable groupBy = null;
@@ -88,7 +91,8 @@ export class GridModel {
      * @param {(Object|string)} [c.stateModel] - config or string `gridId` for a GridStateModel.
      * @param {?string} [c.emptyText] - text/HTML to display if grid has no records.
      *      Defaults to null, in which case no empty text will be shown.
-     * @param {(GridSorter|GridSorter[])} [c.sortBy] - column(s) and direction for sorting.
+     * @param {(string|string[]|GridSorterDef|GridSorterDef[])} [c.sortBy] - colId(s) or sorter
+     *      config(s) with colId and sort direction.
      * @param {?string} [c.groupBy] - Column ID by which to do full-width row grouping.
      * @param {boolean} [c.enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
@@ -161,9 +165,7 @@ export class GridModel {
         }
     }
 
-    /**
-     * Select the first row in the grid.
-     */
+    /** Select the first row in the grid. */
     selectFirst() {
         const {store, selModel, sortBy} = this,
             colIds = sortBy.map(it => it.colId),
@@ -180,7 +182,6 @@ export class GridModel {
 
     /**
      * Shortcut to the currently selected records (observable).
-     *
      * @see StoreSelectionModel.records
      */
     get selection() {
@@ -189,8 +190,7 @@ export class GridModel {
 
     /**
      * Shortcut to a single selected record (observable).
-     * This will be null if multiple records are selected.
-     *
+     * Null if multiple records are selected.
      * @see StoreSelectionModel.singleRecord
      */
     get selectedRecord() {
@@ -230,7 +230,8 @@ export class GridModel {
 
     /**
      * This method is no-op if provided any sorters without a corresponding column.
-     * @param {(GridSorter|GridSorter[])} sorters - column(s) and direction for sorting.
+     * @param {(string|string[]|GridSorterDef|GridSorterDef[])} sorters - colId(s) or sorter
+     *      config(s) with colId and sort direction.
      */
     @action
     setSortBy(sorters) {
@@ -248,7 +249,6 @@ export class GridModel {
         this.sortBy = sorters;
     }
 
-
     /** Load the underlying store. */
     loadAsync(...args) {
         return this.store.loadAsync(...args);
@@ -259,11 +259,12 @@ export class GridModel {
         return this.store.loadData(...args);
     }
 
-    // TODO - review options for a "true" clone here, and behavior of setColumns() below.
+    /** @return {Column[]} */
     cloneColumns() {
         return [...this.columns];
     }
 
+    /** @param {Column[]} cols */
     @action
     setColumns(cols) {
         this.columns = [...cols];
@@ -358,7 +359,7 @@ export class GridModel {
 }
 
 /**
- * @typedef {Object} GridSorter - config for GridModel sorting.
+ * @typedef {Object} GridSorterDef - config for GridModel sorting.
  * @property {string} colId - Column ID on which to sort.
  * @property {string} [sort] - direction to sort - either ['asc', 'desc'] - default asc.
  */

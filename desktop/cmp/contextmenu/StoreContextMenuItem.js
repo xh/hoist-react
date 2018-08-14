@@ -21,10 +21,10 @@ export class StoreContextMenuItem {
      * @param {string} c.text - label to be displayed.
      * @param {Object} [c.icon] - icon to be displayed.
      * @param {Object[]} [c.items] - child menu items.
-     * @param {storeCtxMenuItemActionFn} [c.action] - called on store context menu item click.
+     * @param {ActionCb} [c.action] - called on store context menu item click.
      * @param {boolean} [c.disabled] - true to disable this item.
      * @param {boolean} [c.hidden] - true to hide this item.
-     * @param {storeCtxMenuItemPrepFn} [c.prepareFn] - called prior to context menu item show,
+     * @param {PrepareFnCb} [c.prepareFn] - called prior to context menu item show,
      *      available to modify the item based on current record / selection at time of show.
      * @param {(number|boolean)} [c.recordsRequired] - how many records must be 'active'
      *      (selected and / or clicked upon) for the menuitem to be enabled.
@@ -55,15 +55,15 @@ export class StoreContextMenuItem {
 }
 
 /**
- * @callback storeCtxMenuItemActionFn - called on store context menu item click.
+ * @callback ActionCb - called on store context menu item click.
  * @param {ContextMenuItem} item - the menu item itself.
  * @param {Object} [record] - row data object (entire row, if any).
  * @param {Object[]} [selection] - all currently selected records (if any).
  */
 
 /**
- * @callback storeCtxMenuItemPrepFn - called prior to store context menu item show, available to
- *      modify the item based on current record / selection at time of show.
+ * @callback PrepareFnCb - called prior to store context menu item show, available to modify the
+ *      item based on current record / selection at time of show.
  * @param {ContextMenuItem} item - the menu item itself.
  * @param {Object} [record] - row data object (entire row, if any).
  * @param {Object[]} [selection] - all currently selected records (if any).

@@ -27,15 +27,11 @@ export class LeftRightChooserModel {
      */
     rightModel = null;
 
-    /** True to enable the description panel. */
-    hasDescription = null;
-
-    _lastSelectedSide = null;
-
-    leftGroupingEnabled = null;
-    rightGroupingEnabled = null;
-    leftGroupingExpanded = null;
-    rightGroupingExpanded = null;
+    hasDescription = false;
+    leftGroupingEnabled = false;
+    rightGroupingEnabled = false;
+    leftGroupingExpanded = false;
+    rightGroupingExpanded = false;
 
     /**
      * Filter for data rows to determine if they should be shown.
@@ -66,18 +62,18 @@ export class LeftRightChooserModel {
 
     /**
      * @param {Object} c - LeftRightChooserModel configuration.
-     * @param {LeftRightChooserItem[]} c.data - source data for both lists, split by `side' property.
+     * @param {LeftRightChooserItemDef[]} c.data - source data for both lists, split by `side`.
      * @param {string} [c.ungroupedName] - placeholder group value when an item has no group.
      * @param {?string} [c.leftTitle] - title of the left-side list.
-     * @param {boolean} [c.leftGroupingEnabled] - true to enable grouping on the the left-side list.
-     * @param {boolean} [c.leftGroupingExpanded] - default true, false to show a grouped left-side
-     *      list with all groups initially collapsed.
-     * @param {(GridSorter|GridSorter[])} [c.leftSortBy] - sorter(s) to apply to the left-side store.
+     * @param {boolean} [c.leftGroupingEnabled] - true to enable grouping on the left-side list.
+     * @param {boolean} [c.leftGroupingExpanded] - false to show a grouped left-side list with all
+     *      groups initially collapsed.
+     * @param {(GridSorterDef|GridSorterDef[])} [c.leftSortBy] - sorter(s) for left-side store.
      * @param {?string} [c.rightTitle] - title of the right-side list.
-     * @param {boolean} [c.rightGroupingEnabled] - true to enable grouping on the the right-side list.
-     * @param {boolean} [c.rightGroupingExpanded] - default true, false to show a grouped right-side
-     *      list with all groups initially collapsed.
-     * @param {(GridSorter|GridSorter[])} [c.rightSortBy] - sorter(s) to apply to the right-side store.
+     * @param {boolean} [c.rightGroupingEnabled] - true to enable grouping on the right-side list.
+     * @param {boolean} [c.rightGroupingExpanded] - false to show a grouped right-side list with all
+     *      groups initially collapsed.
+     * @param {(GridSorterDef|GridSorterDef[])} [c.rightSortBy] - sorter(s) for right-side store.
      */
     constructor({
         data = [],
@@ -222,7 +218,7 @@ export class LeftRightChooserModel {
 }
 
 /**
- * @typedef {Object} LeftRightChooserItem - data record object for a LeftRightChooser value item.
+ * @typedef {Object} LeftRightChooserItemDef - data record object for a LeftRightChooser value item.
  * @property {string} text - primary label for the item.
  * @property {string} value - value that the item represents.
  * @property {string} [description] - user-friendly, longer description of the item.
