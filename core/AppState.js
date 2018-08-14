@@ -8,8 +8,8 @@
 
 /**
  * Enumeration of possible App States
- *
- * @see XH.appState.
+ * @enum {string}
+ * @see XHClass.appState
  */
 export const AppState = {
     PRE_AUTH:       'PRE_AUTH',

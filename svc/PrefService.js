@@ -84,8 +84,8 @@ export class PrefService {
      * See pushAsync() and pushPendingAsync()
      *
      * @param {string} key
-     * @param {*} value - the new value to save
-     * @fires PrefService#prefChange - if the preference value was actually modified
+     * @param {*} value - the new value to save.
+     * @fires PrefService#prefChange - if the preference value was actually modified.
      */
     set(key, value) {
         this.validateBeforeSet(key, value);

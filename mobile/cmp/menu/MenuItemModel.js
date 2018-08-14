@@ -18,12 +18,13 @@ export class MenuItemModel {
     prepareFn;
 
     /**
-     * @param {string} text - label to be displayed.
-     * @param {Object} [icon] - optional icon to be displayed.
-     * @param {function} [action] - Executed when the user clicks the menuitem.
-     * @param {boolean} [disabled] - true to disable this item.
-     * @param {boolean} [hidden] - true to hide this item.
-     * @param {function} [prepareFn] - function of the form (item) => {}
+     * @param {Object} c - MenuItemModel configuration.
+     * @param {string} c.text - label to be displayed.
+     * @param {Object} [c.icon] - optional icon to be displayed.
+     * @param {function} [c.action] - Executed when the user clicks the menuitem.
+     * @param {boolean} [c.disabled] - true to disable this item.
+     * @param {boolean} [c.hidden] - true to hide this item.
+     * @param {function} [c.prepareFn] - function of the form (item) => {}
      *      The prepareFn is a callback that is triggered before each time the menuitem is shown.
      *      It can be used to modify the menuitem based on the record / selection.
      */

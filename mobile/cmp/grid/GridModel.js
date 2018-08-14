@@ -22,11 +22,12 @@ export class GridModel {
     @observable hideHeader = null;
 
     /**
-     * @param {BaseStore} store - store containing the data for the grid.
-     * @param {Object} leftColumn - column specification to show in left side of grid
-     * @param {Object} rightColumn - column specification to show in right side of grid
-     * @param {function} [handler] - function to trigger on item tap. Receives record as argument.
-     * @param {boolean} [hideHeader] - true to hide the header row
+     * @param {Object} c - GridModel configuration.
+     * @param {BaseStore} c.store - store containing the data for the grid.
+     * @param {Object} c.leftColumn - column specification to show in left side of grid.
+     * @param {Object} c.rightColumn - column specification to show in right side of grid.
+     * @param {function} [c.handler] - function to trigger on item tap. Receives record as argument.
+     * @param {boolean} [c.hideHeader] - true to hide the header row.
      */
     constructor({
         store,

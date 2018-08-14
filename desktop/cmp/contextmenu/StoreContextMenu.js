@@ -10,7 +10,8 @@ import {StoreContextMenuItem} from './StoreContextMenuItem';
 import {Icon} from '@xh/hoist/icon';
 
 /**
- * Model for ContextMenu on stores.
+ * Model for ContextMenus interacting with data provided by Hoist data stores, typically via a Grid.
+ * @see GridModel.contextMenuFn
  */
 export class StoreContextMenu {
 
@@ -18,18 +19,22 @@ export class StoreContextMenu {
     gridModel = null;
 
     /**
-     * @param {Object[]} items - collection of StoreContextMenuItems, configs to create them, or Strings.
-     *      If a String, value can be '-' for a separator, a hoist token, or a token for a native AG Grid menu item.
+     * @param {Object} c - StoreContextMenu configuration.
+     * @param {Object[]} c.items - StoreContextMenuItems or configs / strings to create.
      *
-     *      Hoist tokens are:
-     *          'colChooser' - Provides a column chooser for a grid, requires a gridModel
-     *          'exportExcel' - Export the grid to excel, requires a gridModel
-     *          'exportCsv' - Export the grid to csv, requires a gridModel
+     *      If a String, value can be '-' for a separator, a Hoist token (below),
+     *      or a token supported by ag-Grid for its native menu items.
+     *      @see {@link https://www.ag-grid.com/javascript-grid-context-menu/#built-in-menu-items|ag-Grid Docs}
      *
-     *      Note: to get an AG Grid native 'export' menu, use token 'exportLocal'. This is to avoid conflicting with the Hoist
-     *      server-side export tokens.
+     *      Hoist tokens, all of which require a GridModel:
+     *          `colChooser` - display column chooser for a grid.
+     *          `export` - export grid data to excel via Hoist's server-side export capabilities.
+     *          `exportExcel` - same as above.
+     *          `exportCsv` - export grid data to CSV via Hoist's server-side export capabilities.
+     *          `exportLocal` - export grid data to Excel via ag-Grid's built-in client side export.
      *
-     * @param {Object} [gridModel] - an optional gridModel to bind to this contextMenu, used to control implementation of menu items
+     * @param {GridModel} [c.gridModel] - GridModel to bind to this contextMenu, used to enable
+     *      implementation of menu items / tokens above.
      */
     constructor({items, gridModel}) {
         this.gridModel = gridModel;

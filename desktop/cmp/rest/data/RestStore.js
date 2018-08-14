@@ -21,11 +21,12 @@ export class RestStore extends UrlStore {
     _lookupsLoaded = false;
 
     /**
-     * @param {string} url
-     * @param {string} [dataRoot] - Name of root node for records in returned data
-     * @param {boolean} [reloadLookupsOnLoad] - Whether lookups should be loaded each time
+     * @param {Object} c - RestStore configuration.
+     * @param {string} c.url - URL from which to load data.
+     * @param {?string} [c.dataRoot] - Key of root node for records in returned data object.
+     * @param {boolean} [c.reloadLookupsOnLoad] - Whether lookups should be loaded each time
      *      new data is loaded or updated by this client.
-     * @param {...*} [urlStoreArgs] - Additional arguments to pass to UrlStore.
+     * @param {...*} - Additional arguments to pass to UrlStore.
      */
     constructor({url, dataRoot = 'data', reloadLookupsOnLoad = false, ...urlStoreArgs}) {
         super({url, dataRoot, ...urlStoreArgs});

@@ -8,6 +8,12 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {LeftRightChooserModel} from '@xh/hoist/desktop/cmp/leftrightchooser';
 
+/**
+ * State management for the ColChooser component.
+ *
+ * It is not necessary to manually create instances of this class within an application.
+ * @private
+ */
 @HoistModel()
 export class ColChooserModel {
 
@@ -16,6 +22,9 @@ export class ColChooserModel {
 
     @observable isOpen = false;
 
+    /**
+     * @param {GridModel} gridModel - model for the grid to be managed.
+     */
     constructor(gridModel) {
         this.gridModel = gridModel;
         this.lrModel = new LeftRightChooserModel({

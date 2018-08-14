@@ -4,12 +4,22 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {defaults, castArray, find, isString, isPlainObject, orderBy, pull, last, findLast, uniqBy} from 'lodash';
-
+import {
+    castArray,
+    defaults,
+    find,
+    findLast,
+    isPlainObject,
+    isString,
+    last,
+    orderBy,
+    pull,
+    uniqBy
+} from 'lodash';
 import {Column} from '@xh/hoist/columns';
 import {throwIf, warnIf} from '@xh/hoist/utils/JsUtils';
 import {ColChooserModel} from './ColChooserModel';
@@ -19,23 +29,41 @@ import {ExportManager} from './ExportManager';
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
  * sorting/grouping/selection state, and context menu configuration.
+ *
+ * This is the primary application entry-point for specifying Grid component options and behavior.
  */
 @HoistModel()
 export class GridModel {
 
+    //------------------------
     // Immutable public properties
+    //------------------------
+    /** @member {BaseStore} */
     store = null;
+    /** @member {StoreSelectionModel} */
     selModel = null;
-    contextMenuFn = null;
-    colChooserModel = null;
+    /** @member {GridStateModel} */
     stateModel = null;
-    exportFilename = null;
-    enableExport = null;
+    /** @member {ColChooserModel} */
+    colChooserModel = null;
+    /** @member {function} */
+    contextMenuFn = null;
+    /** @member {boolean} */
+    enableExport = false;
+    /** @member {string} */
+    exportFilename = 'export';
 
-    @observable.ref agApi = null;
+    //------------------------
+    // Observable API
+    //------------------------
+    /** @member {Column[]} */
     @observable.ref columns = [];
+    /** @member {GridSorterDef[]} */
     @observable.ref sortBy = [];
+    /** @member {?string} */
     @observable groupBy = null;
+    /** @member {GridApi} */
+    @observable.ref agApi = null;
 
     static defaultContextMenuTokens = [
         'copy',
@@ -55,34 +83,36 @@ export class GridModel {
     };
 
     /**
-     * @param {BaseStore} store - store containing the data for the grid.
-     * @param {Object[]} columns - collection of Columns or configs to create them.
-     * @param {string} [emptyText] - empty text to display if grid has no records. Can be valid HTML.
+     * @param {Object} c - GridModel configuration.
+     * @param {BaseStore} c.store - store containing the data for the grid.
+     * @param {(HoistColumn[]|Object[])} c.columns - Columns, or configs to create them.
+     * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
+     *      config or string `mode` with which to create one.
+     * @param {(Object|string)} [c.stateModel] - config or string `gridId` for a GridStateModel.
+     * @param {?string} [c.emptyText] - text/HTML to display if grid has no records.
      *      Defaults to null, in which case no empty text will be shown.
-     * @param {Object[]} [sortBy] - one or more sorters to apply to store data.
-     * @param {string} [sortBy[].colId] - Column ID by which to sort.
-     * @param {string} [sortBy[].sort] - sort direction [asc|desc].
-     * @param {string} [groupBy] - Column ID by which to group.
-     * @param {boolean} [enableColChooser] - true to setup support for column chooser UI and
+     * @param {(string|string[]|GridSorterDef|GridSorterDef[])} [c.sortBy] - colId(s) or sorter
+     *      config(s) with colId and sort direction.
+     * @param {?string} [c.groupBy] - Column ID by which to do full-width row grouping.
+     * @param {boolean} [c.enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
-     * @param {boolean} [enableExport] - true to install default export context menu items.
-     * @param {function|string} [exportFilename] - Filename for exported file, or a closure to generate one.
-     * @param {(StoreSelectionModel|Object|String)} [selModel] - selection model to use,
-     *      config to create one, or 'mode' property for a selection model.
-     * @param {(String|Object)} [stateModel] - xhStateId or config for a GridStateModel.
-     * @param {function} [contextMenuFn] - closure returning a StoreContextMenu().
+     * @param {boolean} [c.enableExport] - true to install default export context menu items.
+     * @param {(function|string)} [c.exportFilename] - filename for exported file,
+     *      or a closure to generate one.
+     * @param {function} [c.contextMenuFn] - closure returning a StoreContextMenu.
+     *      @see StoreContextMenu
      */
     constructor({
         store,
         columns,
-        selModel,
+        selModel = 'single',
+        stateModel = null,
         emptyText = null,
         sortBy = [],
         groupBy = null,
         enableColChooser = false,
         enableExport = false,
         exportFilename = 'export',
-        stateModel = null,
         contextMenuFn = () => this.defaultContextMenu()
     }) {
         this.store = store;
@@ -106,21 +136,19 @@ export class GridModel {
     }
 
     /**
-     * Exports the grid using Hoist's server-side export.
+     * Export grid data using Hoist's server-side export.
      *
      * @param {Object} options
-     * @param {(string|function)} options.filename - name for exported file or closure to generate.
      * @param {string} options.type - type of export - one of ['excel', 'excelTable', 'csv'].
+     * @param {(string|function)} [options.filename] - name for exported file or closure to generate.
      */
     export(options = {}) {
-        const {type, filename = this.exportFilename} = options,
-            exportManager = new ExportManager();
-
-        exportManager.exportAsync(this, filename, type);
+        const {type, filename = this.exportFilename} = options;
+        new ExportManager().exportAsync(this, filename, type);
     }
 
     /**
-     * Exports the grid using agGrid's client-side export
+     * Export grid data using ag-Grid's built-in client-side export.
      *
      * @param {string} filename - name for exported file.
      * @param {string} type - type of export - one of ['excel', 'csv'].
@@ -137,9 +165,7 @@ export class GridModel {
         }
     }
 
-    /**
-     * Select the first row in the grid.
-     */
+    /** Select the first row in the grid. */
     selectFirst() {
         const {store, selModel, sortBy} = this,
             colIds = sortBy.map(it => it.colId),
@@ -156,7 +182,6 @@ export class GridModel {
 
     /**
      * Shortcut to the currently selected records (observable).
-     *
      * @see StoreSelectionModel.records
      */
     get selection() {
@@ -165,8 +190,7 @@ export class GridModel {
 
     /**
      * Shortcut to a single selected record (observable).
-     * This will be null if multiple records are selected.
-     *
+     * Null if multiple records are selected.
      * @see StoreSelectionModel.singleRecord
      */
     get selectedRecord() {
@@ -179,10 +203,8 @@ export class GridModel {
     }
 
     /**
-     * Set row grouping
-     *
      * This method is no-op if provided a field without a corresponding column.
-     * A falsey field argument will remove grouping entirely.
+     * @param {string} field - colId of field for row grouping, or falsey value to remove grouping.
      */
     @action
     setGroupBy(field) {
@@ -207,26 +229,25 @@ export class GridModel {
     }
 
     /**
-     * Set sort by column
-     *
-     * This method is no-op if provided any sorters without a corresponding column
+     * This method is no-op if provided any sorters without a corresponding column.
+     * @param {(string|string[]|GridSorterDef|GridSorterDef[])} sorters - colId(s) or sorter
+     *      config(s) with colId and sort direction.
      */
     @action
-    setSortBy(sortBy) {
+    setSortBy(sorters) {
         // Normalize string, and partially specified values
-        sortBy = castArray(sortBy);
-        sortBy = sortBy.map(it => {
+        sorters = castArray(sorters);
+        sorters = sorters.map(it => {
             if (isString(it)) it = {colId: it};
             it.sort = it.sort || 'asc';
             return it;
         });
 
-        const sortIsValid = sortBy.every(it => find(this.columns, {colId: it.colId}));
+        const sortIsValid = sorters.every(it => find(this.columns, {colId: it.colId}));
         if (!sortIsValid) return;
 
-        this.sortBy = sortBy;
+        this.sortBy = sorters;
     }
-
 
     /** Load the underlying store. */
     loadAsync(...args) {
@@ -238,11 +259,12 @@ export class GridModel {
         return this.store.loadData(...args);
     }
 
-    // TODO - review options for a "true" clone here, and behavior of setColumns() below.
+    /** @return {Column[]} */
     cloneColumns() {
         return [...this.columns];
     }
 
+    /** @param {Column[]} cols */
     @action
     setColumns(cols) {
         this.columns = [...cols];
@@ -256,7 +278,7 @@ export class GridModel {
 
     noteAgColumnStateChanged(agColumnState) {
         const {columns} = this;
-        // Gether cols in correct order, and apply updated widths.
+        // Gather cols in correct order, and apply updated widths.
         let newCols = agColumnState.map(agCol => {
             const col = find(columns, {colId: agCol.colId});
             if (!col.flex) col.width = agCol.width;
@@ -288,7 +310,6 @@ export class GridModel {
             or adding an 'emptyFlexCol' at the end of your columns array.`
         );
     }
-
 
     formatValuesForExport(params) {
         const value = params.value,
@@ -325,7 +346,7 @@ export class GridModel {
         if (isPlainObject(stateModel)) {
             ret = new GridStateModel(stateModel);
         } else if (isString(stateModel)) {
-            ret = new GridStateModel({xhStateId: stateModel});
+            ret = new GridStateModel({gridId: stateModel});
         }
         if (ret) ret.init(this);
 
@@ -336,3 +357,9 @@ export class GridModel {
         XH.safeDestroy(this.colChooserModel, this.stateModel);
     }
 }
+
+/**
+ * @typedef {Object} GridSorterDef - config for GridModel sorting.
+ * @property {string} colId - Column ID on which to sort.
+ * @property {string} [sort] - direction to sort - either ['asc', 'desc'] - default asc.
+ */

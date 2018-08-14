@@ -27,13 +27,14 @@ export class TabModel {
     loadState = new LastPromiseModel();
 
     /**
-     * @param {string} id - unique ID.
-     * @param {TabContainerModel} parent - owner TabContainerModel model.
-     * @param {function} pageFactory - element factory for page component.
-     * @param {Object} [pageProps] - props to passed to page upon creation
-     * @param {boolean} [reloadOnShow] - whether to load fresh data for this tab each time it is selected
-     * @param {String} label - text to be displayed in the Tabbar.
-     * @param {Icon} [icon] - icon to be displayed in the Tabbar.
+     * @param {Object} c - TabModel configuration.
+     * @param {string} c.id - unique ID within its container.
+     * @param {TabContainerModel} c.parent - owner TabContainerModel model.
+     * @param {function} c.pageFactory - element factory for page component.
+     * @param {Object} [c.pageProps] - props to passed to page upon creation
+     * @param {boolean} [c.reloadOnShow] - whether to load fresh data for this tab each time it is selected
+     * @param {String} c.label - text to be displayed in the Tabbar.
+     * @param {Icon} [c.icon] - icon to be displayed in the Tabbar.
      */
     constructor({
         id,

@@ -10,11 +10,18 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
+/**
+ * A convenience button to trigger the display of a ColChooser for user selection and discovery of
+ * available Grid columns. For use by applications when a button is desired in addition to the
+ * context menu item built into the Grid component directly.
+ *
+ * Requires the `GridModel.enableColChooser` config option to be true.
+ */
 @HoistComponent()
 export class ColChooserButton extends Component {
 
     static propTypes = {
-        /** Grid model of the grid for which this button should show a chooser. */
+        /** GridModel of the grid for which this button should show a chooser. */
         gridModel: PT.object
     };
 

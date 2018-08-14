@@ -19,7 +19,10 @@ import {TabModel} from '@xh/hoist/desktop/cmp/tab';
 @HoistModel()
 export class TabContainerModel {
 
-    /** TabModels included in this tab container. */
+    /**
+     * TabModels included in this tab container.
+     * @member {TabModel[]}
+     */
     tabs = [];
 
     /** Base route for this container. */
@@ -35,15 +38,21 @@ export class TabContainerModel {
     tabRenderMode = null;
 
     /**
-     * @param {Object[]} tabs - configurations for TabModels (or TabModel instances) to be displayed
+     * @param {Object} c - TabContainerModel configuration.
+     * @param {Object[]} c.tabs - configs for TabModels (or TabModel instances) to be displayed
      *      by this container.
-     * @param {string} [defaultTabId] - ID of Tab to be shown initially if routing does not specify
-     *      otherwise. If not set, will default to first tab in the provided collection.
-     * @param {string} [route] - base route name for this container. If set, this container will be
-     *      route-enabled, with the route for each tab being "[route]/[tab.id]".
-     * @param {string} [tabRenderMode] - how to render hidden tabs - [lazy|always|unmountOnHide].
+     * @param {?string} [c.defaultTabId] - ID of Tab to be shown initially if routing does not
+     *      specify otherwise. If not set, will default to first tab in the provided collection.
+     * @param {?string} [c.route] - base route name for this container. If set, this container will
+     *      be route-enabled, with the route for each tab being "[route]/[tab.id]".
+     * @param {?string} [c.tabRenderMode] - how to render hidden tabs - [lazy|always|unmountOnHide].
      */
-    constructor({tabs, defaultTabId = null, route = null, tabRenderMode = 'lazy'}) {
+    constructor({
+        tabs,
+        defaultTabId = null,
+        route = null,
+        tabRenderMode = 'lazy'
+    }) {
         this.tabRenderMode = tabRenderMode;
 
         // 1) Validate and wire tabs, instantiate if needed.
@@ -80,7 +89,7 @@ export class TabContainerModel {
      * will only be updated once the router state changes. Otherwise the active Tab will be updated
      * immediately.
      *
-     * @param {int} id - unique ID of Tab to activate.
+     * @param {string} id - unique ID of Tab to activate.
      */
     activateTab(id) {
         if (this.activeTabId === id) return;

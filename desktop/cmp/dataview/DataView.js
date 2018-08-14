@@ -10,6 +10,12 @@ import {XH, HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/desktop/cmp/grid';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 
+/**
+ * A DataView is a specialized version of the Grid component. It displays its data within a
+ * single column, using a configured component for rendering each item.
+ *
+ * @see DataViewModel
+ */
 @HoistComponent()
 @LayoutSupport
 export class DataView extends Component {

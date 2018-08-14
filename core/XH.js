@@ -202,10 +202,10 @@ class XHClass {
     /**
      * Show a modal message dialog.
      *
-     * @param {Object} [config] - options for message to be displayed
+     * @param {Object} config - message options.
      * @param {string} config.message - message text to be displayed.
      * @param {string} [config.title] - title of message box.
-     * @param {element} [config.icon] - icon to be displayed.
+     * @param {Element} [config.icon] - icon to be displayed.
      * @param {string} [config.confirmText] - Text for confirm button. If null, no button will be shown.
      * @param {string} [config.cancelText] - Text for cancel button. If null, no button will be shown.
      * @param {string} [config.confirmIntent] - Blueprint Intent for confirm button (desktop only).
@@ -221,7 +221,7 @@ class XHClass {
     /**
      * Show a modal 'alert' dialog with message and default 'OK' button.
      *
-     * @param {Object} config -  see XH.message() for available options.
+     * @param {Object} config - see XH.message() for available options.
      * @returns {Promise} - A Promise that will resolve to true when user acknowledges alert.
      */
     alert(config) {
@@ -244,24 +244,22 @@ class XHClass {
     /**
      * Handle an exception.
      *
-     * This method may be called by applications in order to provide logging, reporting, and display of
-     * exceptions.  It it typically called directly in catch() blocks.
+     * This method may be called by applications in order to provide logging, reporting,
+     * and display of exceptions.  It it typically called directly in catch() blocks.
      *
-     * This method is an alias for ExceptionHandler.handleException(). See that method for more information
-     * about available options.
+     * This method is an alias for ExceptionHandler.handleException(). See that method for more
+     * information about available options.
      *
-     * See also Promise.catchDefault().  That method will delegate its arguments to this method and provides a
-     * more convenient interface for Promise-based code.
+     * See also Promise.catchDefault(). That method will delegate its arguments to this method
+     * and provides a more convenient interface for Promise-based code.
      */
-    handleException(...args) {
-        return this.exceptionHandler.handleException(...args);
+    handleException(exception, options) {
+        return this.exceptionHandler.handleException(exception, options);
     }
 
     /**
      * Create a new exception.
-     *
-     * This method is an alias for the static method Exception.create().
-     * See that method for more information.
+     * @see Exception.create
      */
     exception(...args) {
         return Exception.create(...args);
@@ -308,15 +306,15 @@ class XHClass {
     //----------------------------
     // Service Aliases
     //----------------------------
-    track(...args)          {return this.trackService.track(...args)}
-    fetch(...args)          {return this.fetchService.fetch(...args)}
-    fetchJson(...args)      {return this.fetchService.fetchJson(...args)}
-    getUser(...args)        {return this.identityService.getUser(...args)}
-    getUsername(...args)    {return this.identityService.getUsername(...args)}
-    getConf(...args)        {return this.configService.get(...args)}
-    getPref(...args)        {return this.prefService.get(...args)}
-    setPref(...args)        {return this.prefService.set(...args)}
-    getEnv(...args)         {return this.environmentService.get(...args)}
+    track(opts)                 {return this.trackService.track(opts)}
+    fetch(opts)                 {return this.fetchService.fetch(opts)}
+    fetchJson(opts)             {return this.fetchService.fetchJson(opts)}
+    getUser()                   {return this.identityService.getUser()}
+    getUsername()               {return this.identityService.getUsername()}
+    getConf(key, defaultVal)    {return this.configService.get(key, defaultVal)}
+    getPref(key, defaultVal)    {return this.prefService.get(key, defaultVal)}
+    setPref(key, val)           {return this.prefService.set(key, val)}
+    getEnv(key)                 {return this.environmentService.get(key)}
 
 
     /**
@@ -454,4 +452,3 @@ class XHClass {
     }
 }
 export const XH = window.XH = new XHClass();
-
