@@ -19,9 +19,7 @@ import './Collapser.scss';
  */
 @HoistComponent()
 export class Collapser extends Component {
-
-    get contentFirst()  {return }
-
+    
     render() {
         const {vertical} = this.model;
 
