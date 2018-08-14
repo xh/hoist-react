@@ -116,16 +116,16 @@ export class PanelSizingModel {
     // Implementation (for related private classes)
     //---------------------------------------------
     get vertical()              {
-        return this.side === 'top' || this.side === 'bottom'
+        return this.side === 'top' || this.side === 'bottom';
     }
 
     // Does the Panel come before the resizing affordances?
     get contentFirst()          {
-        return this.side === 'top' || this.side === 'left'
+        return this.side === 'top' || this.side === 'left';
     }
     
     //---------------------------------------------
-    // Implementation (intrernal)
+    // Implementation (internal)
     //---------------------------------------------
     prefReaction() {
         return {
