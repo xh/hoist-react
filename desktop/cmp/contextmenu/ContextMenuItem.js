@@ -37,7 +37,7 @@ export class ContextMenuItem {
         action = null,
         items = null,
         disabled = false,
-        hidden = false,
+        hidden = false
     }) {
         this.text = text;
         this.icon = icon;
