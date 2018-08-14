@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {box, hbox} from '@xh/hoist/cmp/layout';
+import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
 
 import './PanelHeader.scss';
 
@@ -17,22 +17,45 @@ import './PanelHeader.scss';
 @HoistComponent()
 export class PanelHeader extends Component {
     render() {
-        const {title, icon, headerItems = []} = this.props;
+        let {title, icon, headerItems = [], sizingModel} = this.props,
+            {collapsed, vertical} = sizingModel || {};
 
         if (!title && !icon && !headerItems.length) return null;
 
-        return hbox({
-            className: 'xh-panel-header',
-            items: [
-                icon || null,
-                title ? box({
-                    className: 'xh-panel-header-title',
-                    flex: 1,
-                    item: title
-                }) : null,
-                ...headerItems
-            ]
-        });
+        if (!collapsed || vertical) {
+            return hbox({
+                className: 'xh-panel-header',
+                items: [
+                    icon || null,
+                    title ?
+                        box({
+                            className: 'xh-panel-header-title',
+                            flex: 1,
+                            item: title
+                        }) :
+                        null,
+                    ...(!collapsed ? headerItems : [])
+                ],
+                onDoubleClick: this.onDblClick
+            });
+        } else {
+            // For Compressed vertical layout, skip header items.
+            // TODO:  Add rotated Text box.
+            return vbox({
+                className: 'xh-panel-header',
+                flex: 1,
+                items: icon || null,
+                onDoubleClick: this.onDblClick
+            });
+        }
+    }
+
+    onDblClick = () => {
+        const {sizingModel} = this.props;
+        if (sizingModel && sizingModel.collapsible) {
+            sizingModel.toggleCollapsed();
+        }
     }
 }
+
 export const panelHeader = elemFactory(PanelHeader);

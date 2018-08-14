@@ -8,7 +8,6 @@ import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
 import {filler, hframe} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {resizable} from '@xh/hoist/desktop/cmp/resizable';
 import {grid} from '@xh/hoist/desktop/cmp/grid';
 import {loadMask} from '@xh/hoist/desktop/cmp/mask';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -31,26 +30,22 @@ export class LogViewer extends Component {
     }
 
     render() {
-        const model = this.model,
-            {files, loadModel} = model;
+        const {model} = this,
+            {filesGridModel, filesSizingModel, loadModel} = model;
 
         return hframe({
             className: 'xh-log-viewer',
             items: [
-                resizable({
-                    side: 'right',
-                    contentSize: 250,
-                    isOpen: true,
-                    item: panel({
-                        item: grid({model: files}),
-                        bbar: toolbar(
-                            filler(),
-                            storeFilterField({
-                                store: files.store,
-                                fields: ['filename']
-                            })
-                        )
-                    })
+                panel({
+                    item: grid({model: filesGridModel}),
+                    bbar: toolbar(
+                        filler(),
+                        storeFilterField({
+                            store: filesGridModel.store,
+                            fields: ['filename']
+                        })
+                    ),
+                    sizingModel: filesSizingModel
                 }),
                 panel({
                     tbar: logViewerToolbar({model}),
@@ -60,5 +55,4 @@ export class LogViewer extends Component {
             ]
         });
     }
-
 }

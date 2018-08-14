@@ -7,7 +7,7 @@
 import ReactDom from 'react-dom';
 import {XH} from '@xh/hoist/core';
 import {observer} from '@xh/hoist/mobx';
-import {defaultMethods, chainMethods, overrideMethods} from '@xh/hoist/utils/ClassUtils';
+import {defaultMethods, chainMethods} from '@xh/hoist/utils/ClassUtils';
 import classNames from 'classnames';
 
 import {ReactiveSupport} from './mixins/ReactiveSupport';
@@ -44,19 +44,6 @@ export function HoistComponent({isReactive = true} = {}) {
                 get() {return this.localModel ? this.localModel : this.props.model}
             },
 
-            /**
-             * Should this Component be rendered in collapsed mode?
-             */
-            isCollapsed: {
-                get() {return this.props.isCollapsed === true}
-            },
-
-            /**
-             * Alternate render method called on a HoistComponent when isCollapsed == true.
-             */
-            renderCollapsed() {
-                return null;
-            },
 
             /**
              * Is this component in the DOM and not within a hidden sub-tree (e.g. hidden tab).
@@ -112,15 +99,6 @@ export function HoistComponent({isReactive = true} = {}) {
 
             destroy() {
                 XH.safeDestroy(this.localModel);
-            }
-        });
-
-        overrideMethods(C, {
-            render: (sub) => function() {
-                if (this.isCollapsed) {
-                    return this.renderCollapsed();
-                }
-                return sub ? sub.apply(this) : null;
             }
         });
 

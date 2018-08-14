@@ -8,19 +8,27 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {castArray, omitBy} from 'lodash';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
-import {vbox} from '@xh/hoist/cmp/layout';
+import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 
+import {PanelSizingModel} from './PanelSizingModel';
 import {panelHeader} from './impl/PanelHeader';
+import {resizeContainer} from './impl/ResizeContainer';
+
 import './Panel.scss';
 
 /**
  * A Panel container builds on the lower-level layout components to offer a header element
  * w/standardized styling, title, and Icon as well as support for top and bottom toolbars.
+ *
+ * This component also includes support for resizing and collapsing its contents, if given a
+ * PanelSizingModel.
  */
 @HoistComponent()
 @LayoutSupport
 export class Panel extends Component {
+
+    wasDisplayed = false;
 
     static propTypes = {
         /** A title text added to the panel's header. */
@@ -36,13 +44,15 @@ export class Panel extends Component {
         /** True to render this panel with a mask, disabling any interaction. */
         masked: PT.bool,
         /** Text to display within this panel's mask. */
-        maskText: PT.string
+        maskText: PT.string,
+        /** Model governing Resizing and Collapsing of the panel.*/
+        sizingModel: PT.instanceOf(PanelSizingModel)
     };
 
     baseClassName = 'xh-panel';
 
     render() {
-        let {
+        const {
             tbar,
             bbar,
             title,
@@ -50,11 +60,12 @@ export class Panel extends Component {
             headerItems,
             masked,
             maskText,
-            isCollapsed,
+            sizingModel,
             children,
             ...rest
         } = this.getNonLayoutProps();
 
+        // 1) Pre-process layout
         // Block unwanted use of padding props, which will separate the panel's header
         // and bottom toolbar from its edges in a confusing way.
         const layoutProps = omitBy(this.getLayoutProps(), (v, k) => k.startsWith('padding'));
@@ -64,12 +75,32 @@ export class Panel extends Component {
             layoutProps.flex = 'auto';
         }
 
-        return vbox({
+        // 2) Prepare 'core' contents according to collapsed state
+        const {
+            resizable = false,
+            collapsible = false,
+            collapsed = false,
+            collapsedRenderMode = null
+        } = sizingModel || {};
+
+        let coreContents = null;
+        if (!collapsed || collapsedRenderMode == 'always' || (collapsedRenderMode == 'lazy' && this.wasDisplayed)) {
+            coreContents = vframe({
+                style: {display: collapsed ? 'none' : 'flex'},
+                items: [
+                    tbar || null,
+                    ...(castArray(children)),
+                    bbar || null
+                ]
+            });
+        }
+        if (!collapsed) this.wasDisplayed = true;
+
+        // 3) Prepare combined layout with header above core.  This is what layout props are trampolined to
+        const item = vbox({
             items: [
-                panelHeader({title, icon, headerItems}),
-                tbar || null,
-                ...(castArray(children)),
-                bbar || null,
+                panelHeader({title, icon, headerItems, sizingModel}),
+                coreContents,
                 mask({
                     isDisplayed: masked,
                     text: maskText
@@ -79,6 +110,11 @@ export class Panel extends Component {
             ...layoutProps,
             className: this.getClassName()
         });
+
+        // 4) Return, wrapped in resizable and its affordances if needed.
+        return resizable || collapsible ?
+            resizeContainer({item, model: sizingModel}) :
+            item;
     }
 }
 export const panel = elemFactory(Panel);

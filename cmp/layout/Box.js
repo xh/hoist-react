@@ -21,7 +21,7 @@ import {div} from './Tags';
 @LayoutSupport
 export class Box extends Component {
     render() {
-        let {isCollapsed, children, ...props} = this.getNonLayoutProps();
+        let {children, ...props} = this.getNonLayoutProps();
         props = merge(
             {style: {display: 'flex', overflow: 'hidden', position: 'relative'}},
             {style: this.getLayoutProps()},

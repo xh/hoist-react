@@ -10,6 +10,7 @@ import {action, observable} from '@xh/hoist/mobx';
 import {LastPromiseModel} from '@xh/hoist/promise';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {UrlStore} from '@xh/hoist/data';
+import {PanelSizingModel} from '@xh/hoist/desktop/cmp/panel';
 
 /**
  * @private
@@ -29,7 +30,12 @@ export class LogViewerModel {
 
     loadModel = new LastPromiseModel();
 
-    files = new GridModel({
+    filesSizingModel = new PanelSizingModel({
+        side: 'left',
+        defaultSize: 250
+    });
+
+    filesGridModel = new GridModel({
         enableExport: true,
         store: new UrlStore({
             url: 'logViewerAdmin/listFiles',
@@ -49,8 +55,7 @@ export class LogViewerModel {
     
     @action
     async loadAsync() {
-        const files = this.files,
-            {store, selModel} = files;
+        const {store, selModel} = this.filesGridModel;
         await store.loadAsync();
         if (selModel.isEmpty) {
             const latestAppLog = find(store.records, ['filename', `${XH.appCode}.log`]);
@@ -111,7 +116,7 @@ export class LogViewerModel {
 
     syncSelectionReaction() {
         return {
-            track: () => this.files.selectedRecord,
+            track: () => this.filesGridModel.selectedRecord,
             run: (rec) => {
                 this.file = rec ? rec.filename : null;
                 this.loadLines();
@@ -131,6 +136,6 @@ export class LogViewerModel {
     }
     
     destroy() {
-        XH.safeDestroy(this.loadModel, this.files);
+        XH.safeDestroy(this.loadModel, this.filesGridModel, this.filesSizingModel);
     }
 }

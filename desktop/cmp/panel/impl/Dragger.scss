@@ -17,19 +17,9 @@
         cursor: ew-resize;
     }
 
-    &.top {
-        top: 0;
-    }
-
-    &.bottom {
-        bottom: 0;
-    }
-
-    &.right {
-        right: 0;
-    }
-
-    &.left {
-        left: 0;
-    }
+    /** The reversal here is intentional.  Side here refers to 'side' of PanelSizingModel we are shown within.*/
+    &.top {bottom: 0;}
+    &.bottom {top: 0;}
+    &.right {left: 0;}
+    &.left {right: 0;}
 }
