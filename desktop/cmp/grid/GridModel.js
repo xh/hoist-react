@@ -13,6 +13,7 @@ import {
     defaults,
     find,
     findLast,
+    isEmpty,
     isPlainObject,
     isString,
     last,
@@ -85,7 +86,7 @@ export class GridModel {
     /**
      * @param {Object} c - GridModel configuration.
      * @param {BaseStore} c.store - store containing the data for the grid.
-     * @param {(HoistColumn[]|Object[])} c.columns - Columns, or configs to create them.
+     * @param {(Column[]|Object[])} c.columns - Columns, or configs to create them.
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
      * @param {(Object|string)} [c.stateModel] - config or string `gridId` for a GridStateModel.
@@ -116,13 +117,12 @@ export class GridModel {
         contextMenuFn = () => this.defaultContextMenu()
     }) {
         this.store = store;
-        this.columns = columns.map(c => c instanceof Column ? c : new Column(c));
         this.emptyText = emptyText;
         this.enableExport = enableExport;
         this.exportFilename = exportFilename;
         this.contextMenuFn = contextMenuFn;
 
-        this.validateColumns();
+        this.setColumns(columns);
 
         if (enableColChooser) {
             this.colChooserModel = new ColChooserModel(this);
@@ -264,10 +264,13 @@ export class GridModel {
         return [...this.columns];
     }
 
-    /** @param {Column[]} cols */
+    /** @param {(Column[]|Object[])} cols - Columns, or configs to create them. */
     @action
     setColumns(cols) {
-        this.columns = [...cols];
+        const columns = cols.map(c => c instanceof Column ? c : new Column(c));
+        this.validateColumns(columns);
+
+        this.columns = columns;
     }
 
     showColChooser() {
@@ -276,6 +279,7 @@ export class GridModel {
         }
     }
 
+    @action
     noteAgColumnStateChanged(agColumnState) {
         const {columns} = this;
         // Gather cols in correct order, and apply updated widths.
@@ -287,25 +291,24 @@ export class GridModel {
 
         // Force any emptyFlexCol that is last to stay last (avoid user dragging)!
         const emptyFlex = findLast(columns, {colId: 'emptyFlex'});
-        if (emptyFlex && last(columns) == emptyFlex  && last(newCols) != emptyFlex) {
+        if (emptyFlex && last(columns) == emptyFlex && last(newCols) != emptyFlex) {
             pull(newCols, emptyFlex).push(emptyFlex);
         }
 
-        this.setColumns(newCols);
+        this.columns = newCols;
     }
-
 
     //-----------------------
     // Implementation
     //-----------------------
-    validateColumns() {
-        const {columns} = this,
-            hasDupes = columns.length != uniqBy(columns, 'colId').length;
+    validateColumns(cols) {
+        if (isEmpty(cols)) return;
 
+        const hasDupes = cols.length != uniqBy(cols, 'colId').length;
         throwIf(hasDupes, 'All colIds in column collection must be unique.');
 
         warnIf(
-            !columns.some(c => c.flex),
+            !cols.some(c => c.flex),
             `No columns have flex set (flex=true). Consider making the last column a flex column, 
             or adding an 'emptyFlexCol' at the end of your columns array.`
         );
