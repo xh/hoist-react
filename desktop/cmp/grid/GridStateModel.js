@@ -13,7 +13,7 @@ import {start} from '@xh/hoist/promise';
  * and applying saved state to its parent GridModel upon that model's construction.
  *
  * GridModels can enable persistent grid state via their stateModel config, typically
- * provided as a simple string gridId to identify a given grid instance.
+ * provided as a simple string `gridId` to identify a given grid instance.
  *
  * It is not necessary to manually create instances of this class within an application.
  * @private
@@ -27,6 +27,7 @@ export class GridStateModel {
      * user workstations to ensure compatibility with a new serialization or approach.
      */
     static GRID_STATE_VERSION = 1;
+    static STATE_SAVE_DEBOUNCE_MS = 500;
 
     gridModel = null;
     gridId = null;
@@ -140,7 +141,8 @@ export class GridStateModel {
 
         if (!state.columns) return;
 
-        // Match columns in state to columns in code, apply stateful properties, and add to new columns in stateful order.
+        // Match columns in state to model columns via colId, apply stateful properties,
+        // then add to new columns in stateful order.
         state.columns.forEach(colState => {
             const col = find(cols, {colId: colState.colId});
             if (!col) return; // Do not attempt to include stale column state.
@@ -186,5 +188,5 @@ export class GridStateModel {
     //--------------------------
     saveStateChange = debounce(() => {
         this.saveState(this.getStateKey(), this.state);
-    }, 500);
+    }, GridStateModel.STATE_SAVE_DEBOUNCE_MS);
 }

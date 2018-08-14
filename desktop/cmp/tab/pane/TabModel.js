@@ -13,13 +13,15 @@ import {startCase} from 'lodash';
  * Model for a Tab within a TabContainer - manages the active and refresh state of its contents.
  *
  * This model is not typically created directly within applications. Instead, specify a
- * configuration for it via the 'tabs' property of the TabContainerModel constructor.
+ * configuration for it via the `TabContainerModel.tabs` constructor config.
  */
 @HoistModel()
 export class TabModel {
-    id = null;
-    title = null;
-    reloadOnShow = false;
+    id;
+    title;
+    reloadOnShow;
+
+    /** @member {TabContainerModel} */
     containerModel = null;
 
     @observable lastRefreshRequest = null;
@@ -27,11 +29,12 @@ export class TabModel {
     loadState = new LastPromiseModel();
 
     /**
-     * @param {string} id - unique ID, used by parent container for generating routes.
-     * @param {string} [title] - display title for the Tab in the container's TabSwitcher.
-     * @param {Object} content - content to be rendered by this Tab. Component class or a custom
+     * @param {Object} c - TabModel configuration.
+     * @param {string} c.id - unique ID, used by container for locating tabs and generating routes.
+     * @param {string} [c.title] - display title for the Tab in the container's TabSwitcher.
+     * @param {Object} c.content - content to be rendered by this Tab. Component class or a custom
      *      element factory of the form returned by elemFactory.
-     * @param {boolean} reloadOnShow - true to reload data for this tab each time it is activated.
+     * @param {boolean} [c.reloadOnShow] - true to reload data for this tab each time it is activated.
      */
     constructor({
         id,

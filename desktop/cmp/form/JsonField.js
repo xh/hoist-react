@@ -26,7 +26,7 @@ import 'codemirror/addon/lint/lint.js';
 import './JsonField.css';
 
 /**
- * A JSON Editor
+ * A field for editing and validating JSON, providing a mini-IDE style editor powered by CodeMirror.
  */
 @HoistComponent()
 export class JsonField extends HoistField {
@@ -43,7 +43,7 @@ export class JsonField extends HoistField {
         height: PT.number,
         /**
          * Configuration object with any properties supported by the CodeMirror api.
-         * @see https://codemirror.net/doc/manual.html#api_configuration for details.
+         * @see {@link https://codemirror.net/doc/manual.html#api_configuration|CodeMirror Docs}
          */
         editorProps: PT.object
     };

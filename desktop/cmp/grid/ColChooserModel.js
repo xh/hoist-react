@@ -22,6 +22,9 @@ export class ColChooserModel {
 
     @observable isOpen = false;
 
+    /**
+     * @param {GridModel} gridModel - model for the grid to be managed.
+     */
     constructor(gridModel) {
         this.gridModel = gridModel;
         this.lrModel = new LeftRightChooserModel({

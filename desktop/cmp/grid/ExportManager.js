@@ -14,8 +14,8 @@ import {orderBy, uniq, isString, isFunction} from 'lodash';
 import download from 'downloadjs';
 
 /**
- * Exports Grid data to either Excel or CSV via using Hoist's server-side export.
- * @see HoistColumn constructor API for options to control exported values and formats.
+ * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
+ * @see HoistColumn API for options to control exported values and formats.
  *
  * It is not necessary to manually create instances of this class within an application.
  * @private
@@ -23,7 +23,7 @@ import download from 'downloadjs';
 export class ExportManager {
 
     /**
-     * Export a GridModel to a file. Called via `GridModel.export()`.
+     * Export a GridModel to a file. Typically called via `GridModel.export()`.
      *
      * @param {GridModel} gridModel - GridModel to export.
      * @param {(string|function)} filename - name for exported file or closure to generate.
@@ -73,6 +73,7 @@ export class ExportManager {
         download(blob, filename);
         XH.toast({message: 'Export complete', intent: 'success'});
     }
+
 
     //-----------------------
     // Implementation

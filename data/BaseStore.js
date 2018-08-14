@@ -19,11 +19,15 @@ export class BaseStore {
 
     /**
      * Fields contained in each record.
-     * @type {HoistField[]}
+     * @member {HoistField[]}
      */
     fields = null;
 
-    /** Get a specific field, by name. */
+    /**
+     * Get a specific field, by name.
+     * @param {string} name - field name to locate.
+     * @return {HoistField}
+     */
     getField(name) {
         return this.fields.find(it => it.name === name);
     }

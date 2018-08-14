@@ -86,16 +86,17 @@ export class GridModel {
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
      * @param {(Object|string)} [c.stateModel] - config or string `gridId` for a GridStateModel.
-     * @param {string} [c.emptyText] - text/HTML to display if grid has no records.
+     * @param {?string} [c.emptyText] - text/HTML to display if grid has no records.
      *      Defaults to null, in which case no empty text will be shown.
      * @param {(GridSorter|GridSorter[])} [c.sortBy] - column(s) and direction for sorting.
-     * @param {string} [c.groupBy] - Column ID by which to group.
+     * @param {?string} [c.groupBy] - Column ID by which to do full-width row grouping.
      * @param {boolean} [c.enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
      * @param {boolean} [c.enableExport] - true to install default export context menu items.
      * @param {(function|string)} [c.exportFilename] - filename for exported file,
      *      or a closure to generate one.
-     * @param {function} [c.contextMenuFn] - closure returning a StoreContextMenu().
+     * @param {function} [c.contextMenuFn] - closure returning a StoreContextMenu.
+     *      @see StoreContextMenu
      */
     constructor({
         store,
@@ -131,7 +132,7 @@ export class GridModel {
     }
 
     /**
-     * Exports the grid using Hoist's server-side export.
+     * Export grid data using Hoist's server-side export.
      *
      * @param {Object} options
      * @param {string} options.type - type of export - one of ['excel', 'excelTable', 'csv'].
@@ -143,7 +144,7 @@ export class GridModel {
     }
 
     /**
-     * Exports the grid using agGrid's client-side export
+     * Export grid data using ag-Grid's built-in client-side export.
      *
      * @param {string} filename - name for exported file.
      * @param {string} type - type of export - one of ['excel', 'csv'].
@@ -344,7 +345,7 @@ export class GridModel {
         if (isPlainObject(stateModel)) {
             ret = new GridStateModel(stateModel);
         } else if (isString(stateModel)) {
-            ret = new GridStateModel({id: stateModel});
+            ret = new GridStateModel({gridId: stateModel});
         }
         if (ret) ret.init(this);
 
@@ -359,5 +360,5 @@ export class GridModel {
 /**
  * @typedef {Object} GridSorter - config for GridModel sorting.
  * @property {string} colId - Column ID on which to sort.
- * @property {string} [sort] - direction to sort - [asc|desc] - default asc.
+ * @property {string} [sort] - direction to sort - either ['asc', 'desc'] - default asc.
  */

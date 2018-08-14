@@ -18,11 +18,10 @@ export class ChartModel {
     @observable.ref series = [];
 
     /**
-     * @param opts
-     * @param {Object} opts.config - Highcharts configuration object for the managed chart.
-     *      This may includes all native highcharts options other than 'series',
-     *      which should be set on the separate 'series' property on this object.
-     * @param {Array} opts.series - Data series to be displayed.
+     * @param {Object} c - ChartModel configuration.
+     * @param {Object} c.config - Highcharts configuration object for the managed chart. May include
+     *      any Highcharts opts other than `series`, which should be set via dedicated config.
+     * @param {Object[]} c.series - Data series to be displayed.
      */
     constructor({config, series = []} = {}) {
         this.config = config;

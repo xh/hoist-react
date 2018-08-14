@@ -12,7 +12,7 @@ import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 
 /**
  * DataViewModel is a wrapper around GridModel, which shows sorted data in a single column,
- * using a defined component for rendering each item.
+ * using a configured component for rendering each item.
  *
  * This is the primary application entry-point for specifying DataView component options and behavior.
  */
@@ -41,7 +41,7 @@ export class DataViewModel {
      *      Will receive record via its props.
      * @param {BaseStore} c.store - store containing the data to be displayed.
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
-     *      config or string `mode` with which to create one.
+     *      config or string `mode` from which to create.
      * @param {string} [c.emptyText] - text/HTML to display if view has no records.
      * @param {function} [c.contextMenuFn] - closure returning a StoreContextMenu().
      */

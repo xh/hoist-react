@@ -10,18 +10,18 @@ import {XH} from '@xh/hoist/core';
 import {LocalStore} from './LocalStore';
 
 /**
- * A store with built-in support for loading data from a url.
+ * A store with built-in support for loading data from a URL.
  */
 export class UrlStore extends LocalStore {
 
-    url = '';
-    dataRoot = null;
+    url;
+    dataRoot;
 
     /**
      * @param {Object} c - UrlStore configuration.
      * @param {string} c.url - URL from which to load data.
-     * @param {string} [c.dataRoot] - Name of root node for records in returned data.
-     * @param {...*} [c.localStoreArgs] - Additional arguments to pass to LocalStore.
+     * @param {?string} [c.dataRoot] - Key of root node for records in returned data object.
+     * @param {...*} - Additional arguments to pass to LocalStore.
      */
     constructor({url, dataRoot = null, ...localStoreArgs}) {
         super(localStoreArgs);

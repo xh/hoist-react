@@ -9,7 +9,7 @@ import {MenuModel} from '@xh/hoist/mobile/cmp/menu';
 import {Icon} from '@xh/hoist/icon';
 
 /**
- * A standard application drop down menu, which installs a standard set of menu items for common
+ * An top-level application drop down menu, which installs a standard set of menu items for common
  * application actions. Application specific items can be displayed before these standard items.
  *
  * The standard items which are visible will be based on user roles and application configuration,
@@ -18,12 +18,13 @@ import {Icon} from '@xh/hoist/icon';
 export class AppMenuModel extends MenuModel {
 
     /**
-     * @param {Object[]} itemModels - See MenuModel.
-     * @param {number} [xPos] - See MenuModel.
-     * @param {number} [yPos] - See MenuModel.
-     * @param {bool} [hideFeedbackItem] - Set to true to hide the Feedback menu item.
-     * @param {bool} [hideThemeItem] - Set to true to hide the Theme Toggle menu item.
-     * @param {bool} [hideLogoutItem] - Set to true to hide the Logout menu item.
+     * @param {Object} c - AppMenuModel configuration.
+     * @param {Object[]} c.itemModels - See MenuModel.
+     * @param {number} [c.xPos] - See MenuModel.
+     * @param {number} [c.yPos] - See MenuModel.
+     * @param {boolean} [c.hideFeedbackItem] - true to hide the Feedback menu item.
+     * @param {boolean} [c.hideThemeItem] - true to hide the Theme Toggle menu item.
+     * @param {boolean} [c.hideLogoutItem] - true to hide the Logout menu item.
      *          Will be automatically hidden for applications with logout disabled
      */
     constructor({

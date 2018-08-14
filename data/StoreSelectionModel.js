@@ -46,9 +46,9 @@ export class StoreSelectionModel {
     }
 
     /**
-     * @param {Object} config
-     * @param {BaseStore} config.store - Store containing the data
-     * @param {string} [config.mode] - 'single' / 'multiple' / 'disabled'
+     * @param {Object} c - StoreSelectionModel configuration.
+     * @param {BaseStore} c.store - Store containing the data.
+     * @param {string} [c.mode] - one of ['single', 'multiple', 'disabled'].
      */
     constructor({store, mode = 'single'}) {
         this.store = store;
