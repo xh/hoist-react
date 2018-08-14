@@ -43,6 +43,7 @@ export class PanelHeader extends Component {
             // TODO:  Add rotated Text box.
             return vbox({
                 className: 'xh-panel-header',
+                flex: 1,
                 items: icon || null,
                 onDoubleClick: this.onDblClick
             });
