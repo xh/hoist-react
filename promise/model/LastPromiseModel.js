@@ -14,6 +14,7 @@ import {observable, action, computed} from '@xh/hoist/mobx';
 export class LastPromiseModel {
 
     @observable state = 'resolved';
+    @observable message = '';
     lastCall = null;
 
     /** Is the last Promise to be linked to this Model still pending? */
@@ -33,6 +34,10 @@ export class LastPromiseModel {
         });
     }
 
+    @action
+    setMessage(msg) {
+        this.message = msg;
+    }
 
     //------------------------
     // Implementation

@@ -12,6 +12,7 @@ import {observable, action, computed} from '@xh/hoist/mobx';
 export class MultiPromiseModel {
 
     @observable pendingCount = 0;
+    @observable message = '';
 
     /** Are any linked Promises still outstanding? */
     @computed
@@ -23,6 +24,11 @@ export class MultiPromiseModel {
     link(promise) {
         this.pendingCount++;
         promise.finally(() => this.onComplete());
+    }
+
+    @action
+    setMessage(msg) {
+        this.message = msg;
     }
 
     //-----------------------------
