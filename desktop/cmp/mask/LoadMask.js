@@ -25,7 +25,7 @@ export class LoadMask extends Component {
         model: PT.object,
         /** Dictates if this mask should be contained within its parent, if set to false will fill the viewport */
         inline: PT.bool,
-        /** Text to be displayed under the loading spinner image */
+        /** Text to be displayed under the loading spinner image, will be overridden if model has a message to show */
         text: PT.string
     };
 
