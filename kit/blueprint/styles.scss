@@ -39,7 +39,7 @@
       flex: 1;
 
       // Primary app icon
-      svg:first-child {
+      > svg:first-child {
         color: var(--xh-navbar-title-color);
       }
     }
