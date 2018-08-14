@@ -86,7 +86,7 @@ export class GridModel {
     /**
      * @param {Object} c - GridModel configuration.
      * @param {BaseStore} c.store - store containing the data for the grid.
-     * @param {(HoistColumn[]|Object[])} c.columns - Columns, or configs to create them.
+     * @param {(Column[]|Object[])} c.columns - Columns, or configs to create them.
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
      * @param {(Object|string)} [c.stateModel] - config or string `gridId` for a GridStateModel.
@@ -264,11 +264,13 @@ export class GridModel {
         return [...this.columns];
     }
 
-    /** @param {(HoistColumn[]|Object[])} cols - Columns, or configs to create them. */
+    /** @param {(Column[]|Object[])} cols - Columns, or configs to create them. */
     @action
     setColumns(cols) {
-        this.columns = cols.map(c => c instanceof Column ? c : new Column(c));
-        this.validateColumns();
+        const columns = cols.map(c => c instanceof Column ? c : new Column(c));
+        this.validateColumns(columns);
+
+        this.columns = columns;
     }
 
     showColChooser() {
@@ -299,15 +301,14 @@ export class GridModel {
     //-----------------------
     // Implementation
     //-----------------------
-    validateColumns() {
-        const {columns} = this;
-        if (isEmpty(columns)) return;
+    validateColumns(cols) {
+        if (isEmpty(cols)) return;
 
-        const hasDupes = columns.length != uniqBy(columns, 'colId').length;
+        const hasDupes = cols.length != uniqBy(cols, 'colId').length;
         throwIf(hasDupes, 'All colIds in column collection must be unique.');
 
         warnIf(
-            !columns.some(c => c.flex),
+            !cols.some(c => c.flex),
             `No columns have flex set (flex=true). Consider making the last column a flex column, 
             or adding an 'emptyFlexCol' at the end of your columns array.`
         );
