@@ -39,7 +39,7 @@ export class Collapser extends Component {
     }
 
     getChevron() {
-        const {vertical, collapsed, side, contentFirst} = this.model,
+        const {vertical, collapsed, contentFirst} = this.model,
             directions = vertical ? ['chevronUp', 'chevronDown'] : ['chevronLeft', 'chevronRight'],
             idx = (contentFirst != collapsed ? 0 : 1);
 

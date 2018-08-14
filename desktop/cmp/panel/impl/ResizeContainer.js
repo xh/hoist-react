@@ -23,7 +23,7 @@ export class ResizeContainer extends Component {
 
     render() {
         let {model} = this,
-            {collapsible, resizable, collapsed, vertical, side, contentFirst} = model,
+            {collapsible, resizable, collapsed, vertical, contentFirst} = model,
             items = [this.renderChild()];
         
         if (collapsible) {

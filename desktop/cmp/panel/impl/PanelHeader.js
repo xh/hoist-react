@@ -18,7 +18,7 @@ import './PanelHeader.scss';
 export class PanelHeader extends Component {
     render() {
         let {title, icon, headerItems = [], sizingModel} = this.props,
-            {collapsible, collapsed, vertical} = sizingModel || {};
+            {collapsed, vertical} = sizingModel || {};
 
         if (!title && !icon && !headerItems.length) return null;
 
