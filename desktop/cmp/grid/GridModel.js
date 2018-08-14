@@ -264,7 +264,7 @@ export class GridModel {
         return [...this.columns];
     }
 
-    /** {(HoistColumn[]|Object[])} cols - Columns, or configs to create them. */
+    /** @param {(HoistColumn[]|Object[])} cols - Columns, or configs to create them. */
     @action
     setColumns(cols) {
         this.columns = cols.map(c => c instanceof Column ? c : new Column(c));
