@@ -193,13 +193,13 @@ export class GridModel {
 
         cols.forEach(it => {
             if (it.rowGroup) {
-                it.rowGroup = false;
+                it.agOptions.rowGroup = false;
                 it.hide = false;
             }
         });
 
         if (field && groupCol) {
-            groupCol.rowGroup = true;
+            groupCol.agOptions.rowGroup = true;
             groupCol.hide = true;
         }
 

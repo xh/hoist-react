@@ -39,12 +39,14 @@ import {
     Switch,
     Tab,
     Tabs,
+    Tag,
+    TagInput,
     TextArea,
     Text
 } from '@blueprintjs/core';
 
 import {DateInput} from '@blueprintjs/datetime';
-import {Suggest, Select, Omnibar} from '@blueprintjs/select';
+import {MultiSelect, Omnibar, Select, Suggest} from '@blueprintjs/select';
 
 //---------------------
 // Re-exports
@@ -66,6 +68,7 @@ export {
     Menu,
     MenuItem,
     MenuDivider,
+    MultiSelect,
     Navbar,
     NavbarDivider,
     NavbarGroup,
@@ -82,6 +85,8 @@ export {
     Switch,
     Tab,
     Tabs,
+    Tag,
+    TagInput,
     TextArea,
     Text
 };
@@ -103,6 +108,7 @@ export const
     menu = elemFactory(Menu),
     menuDivider = elemFactory(MenuDivider),
     menuItem = elemFactory(MenuItem),
+    multiSelect = elemFactory(MultiSelect),
     navbar = elemFactory(Navbar),
     navbarHeading = elemFactory(NavbarHeading),
     navbarGroup = elemFactory(NavbarGroup),
@@ -119,5 +125,7 @@ export const
     switchControl = elemFactory(Switch),
     tabs = elemFactory(Tabs),
     tab = elemFactory(Tab),
+    tag = elemFactory(Tag),
+    tagInput = elemFactory(TagInput),
     text = elemFactory(Text),
     textArea = elemFactory(TextArea);

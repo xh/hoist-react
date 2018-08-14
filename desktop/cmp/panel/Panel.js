@@ -98,9 +98,6 @@ export class Panel extends Component {
 
         // 3) Prepare combined layout with header above core.  This is what layout props are trampolined to
         const item = vbox({
-            ...layoutProps,
-            className: this.getClassName(),
-            ...rest,
             items: [
                 panelHeader({title, icon, headerItems, sizingModel}),
                 coreContents,
@@ -108,7 +105,10 @@ export class Panel extends Component {
                     isDisplayed: masked,
                     text: maskText
                 })
-            ]
+            ],
+            ...rest,
+            ...layoutProps,
+            className: this.getClassName()
         });
 
         // 4) Return, wrapped in resizable and its affordances if needed.

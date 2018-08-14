@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {startCase} from 'lodash';
+import {castArray, startCase} from 'lodash';
 import {ExportFormat} from './ExportFormat';
 import {withDefault, withDefaultTrue, withDefaultFalse, throwIf, warnIf} from '@xh/hoist/utils/JsUtils';
 
@@ -82,7 +82,7 @@ export class Column {
         this.exportFormat = withDefault(exportFormat, ExportFormat.DEFAULT);
         this.excludeFromExport = withDefault(excludeFromExport, !field);
 
-        this.agOptions = agOptions;
+        this.agOptions = agOptions || {};
     }
 
 
@@ -105,8 +105,8 @@ export class Column {
 
         const {align} = this;
         if (align === 'center' || align === 'right') {
-            ret.headerClass = ret.headerClass || [];
-            ret.cellClass = ret.cellClass || [];
+            ret.headerClass = castArray(ret.headerClass) || [];
+            ret.cellClass = castArray(ret.cellClass) || [];
             ret.headerClass.push('xh-column-header-align-'+align);
             ret.cellClass.push('xh-align-'+align);
         }
@@ -121,7 +121,10 @@ export class Column {
 
         const {renderer, elementRenderer} = this;
         if (renderer) {
-            ret.cellRenderer = (params) => renderer(params.value, params.data);
+            ret.cellRenderer = (params) => {
+                const metaData = {colId: params.column.colId};
+                return renderer(params.value, params.data, metaData);
+            };
         } else if (elementRenderer) {
             ret.cellRendererFramework = class extends Component {
                 render() {return elementRenderer(this.props)}

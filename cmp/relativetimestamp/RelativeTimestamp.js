@@ -62,8 +62,8 @@ export class RelativeTimestamp extends Component {
 
     render() {
         return box({
-            className: this.getClassName(),
             ...this.getLayoutProps(),
+            className: this.getClassName(),
             item: this.relativeTimeString
         });
     }

@@ -5,11 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/desktop/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {textField, dayField} from '@xh/hoist/desktop/cmp/form';
+import {dayField, textField} from '@xh/hoist/desktop/cmp/form';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {button, exportButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {storeCountLabel} from '@xh/hoist/desktop/cmp/store';

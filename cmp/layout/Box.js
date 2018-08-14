@@ -28,7 +28,10 @@ export class Box extends Component {
             props
         );
 
-        return div({...props, items: castArray(children)});
+        return div({
+            ...props,
+            items: castArray(children)
+        });
     }
 }
 
@@ -38,8 +41,8 @@ export class VBox extends Component {
     baseClassName = 'xh-vbox';
     render() {
         return box({
-            flexDirection: 'column',
             ...this.props,
+            flexDirection: 'column',
             className: this.getClassName()
         });
     }
@@ -51,8 +54,8 @@ export class HBox extends Component {
     baseClassName = 'xh-hbox';
     render() {
         return box({
-            flexDirection: 'row',
             ...this.props,
+            flexDirection: 'row',
             className: this.getClassName()
         });
     }

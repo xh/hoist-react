@@ -62,8 +62,8 @@ export class TabContainer extends Component {
         }
 
         return container({
-            className: this.getClassName(),
             ...layoutProps,
+            className: this.getClassName(),
             items: [
                 switcherBefore ? tabSwitcher({model, orientation: switcherPosition}) : null,
                 ...tabs.map(tabModel => {
