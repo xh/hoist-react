@@ -17,14 +17,14 @@ export class FetchService {
      * the most common use-cases. The Fetch API will be called with CORS enabled, credentials
      * included, and redirects followed.
      *
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
+     * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API|Fetch API Docs}
      *
      * @param {Object} opts - options to pass through to fetch, with some additions.
-     *      @see https://developer.mozilla.org/en-US/docs/Web/API/Request for the available options
+     *      @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Request|Fetch Request docs}
      * @param {string} opts.url - target url to send the HTTP request to. Relative urls will be
-     *     appended to XH.baseUrl for the request
-     * @param {Object} [opts.params] - parameters to encode and send with the request body (for POSTs)
-     *      or append as a query string.
+     *     appended to XH.baseUrl for the request.
+     * @param {Object} [opts.params] - parameters to encode and send with the request body
+     *      (for POSTs) or append as a query string.
      * @param {string} [opts.method] - The HTTP Request method to use for the request. If not
      *     explicitly set in opts then the method will be set to POST if there are params,
      *     otherwise it will be set to GET.
@@ -32,8 +32,9 @@ export class FetchService {
      *     If not explicitly set in opts then the contentType will be set based on the method. POST
      *     requests will use 'application/x-www-form-urlencoded', otherwise 'text/plain' will be
      *     used.
-     * @param {boolean} [opts.acceptJson] - if true, sets Accept header to 'application/json'.  Defaults to false.
-     * @returns {Promise<Response>} @see https://developer.mozilla.org/en-US/docs/Web/API/Response
+     * @param {boolean} [opts.acceptJson] - true to set Accept header to 'application/json'.
+     * @returns {Promise<Response>} - Promise which resolves to a Fetch Response.
+     *      @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Response|Fetch Response docs}
      */
     async fetch(opts) {
         let {params, method, contentType, url} = opts;
@@ -119,8 +120,7 @@ export class FetchService {
      * @returns {Promise} the decoded JSON object, or null if the response had no content.
      */
     async fetchJson(opts) {
-        opts.acceptJson = true;
-        const ret = await this.fetch(opts);
+        const ret = await this.fetch({acceptJson: true, ...opts});
         return ret.status === 204 ? null : ret.json();
     }
 

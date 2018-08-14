@@ -20,8 +20,8 @@ export class TrackService {
      *      Required if options is an object.
      *      Can be passed as `message` for backwards compatibility.
      * @param {string} [options.category] - app-supplied category.
-     * @param {(Object|Array)} [options.data] - app-supplied data collection.
-     * @param {number} [options.elapsed] - time in milliseconds some activity took.
+     * @param {(Object|Object[])} [options.data] - app-supplied data collection.
+     * @param {number} [options.elapsed] - time in milliseconds the activity took.
      * @param {string} [options.severity] - importance flag, such as: OK|WARN|EMERGENCY
      *      (errors should be tracked by the ErrorTrackingService, not sent in this TrackService).
      */
