@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
+import {box, hbox, vbox, filler} from '@xh/hoist/cmp/layout';
 
 import './PanelHeader.scss';
 
@@ -18,7 +18,7 @@ import './PanelHeader.scss';
 export class PanelHeader extends Component {
     render() {
         let {title, icon, headerItems = [], sizingModel} = this.props,
-            {collapsed, vertical} = sizingModel || {};
+            {collapsed, vertical, side} = sizingModel || {};
 
         if (!title && !icon && !headerItems.length) return null;
 
@@ -40,11 +40,21 @@ export class PanelHeader extends Component {
             });
         } else {
             // For Compressed vertical layout, skip header items.
-            // TODO:  Add rotated Text box.
+            const isLeft = side === 'left';
             return vbox({
-                className: 'xh-panel-header',
+                className: `xh-panel-header xh-panel-header-${side}`,
                 flex: 1,
-                items: icon || null,
+                items: [
+                    isLeft ? filler() : null,
+                    icon || null,
+                    title ?
+                        box({
+                            className: 'xh-panel-header-title',
+                            item: title
+                        }) :
+                        null,
+                    !isLeft ? filler() : null
+                ],
                 onDoubleClick: this.onDblClick
             });
         }
