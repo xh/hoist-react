@@ -11,7 +11,7 @@ import {withDefault} from '@xh/hoist/utils/JsUtils';
 import {start} from '@xh/hoist/promise';
 
 /**
- * This class provides the underlying state for Components that can be resized or collapsed by the user.
+ * This class provides the underlying state for the resizing/collapse state of a Panel.
  */
 @HoistModel()
 export class PanelSizingModel {
@@ -26,9 +26,6 @@ export class PanelSizingModel {
     side;
     collapsedRenderMode;
     prefName;
-
-    get vertical()              {return this.side === 'top' || this.side === 'bottom'}
-    get contentFirst()          {return this.side === 'top' || this.side === 'left'}
 
     //---------------------
     // Observable State
@@ -46,8 +43,8 @@ export class PanelSizingModel {
      * @param {Object} config
      * @param {boolean} [config.resizable] - Can panel be resized?
      * @param {boolean} [config.collapsible] - Can panel be collapsed, showing only its header?
-     * @param {int} config.defaultSize - Default size of content (in pixels).
-     * @param {int} [config.defaultCollapsed] - Default collapsed state.
+     * @param {number} config.defaultSize - Default size of content (in pixels).
+     * @param {number} [config.defaultCollapsed] - Default collapsed state.
      * @param {string} [config.side] - Side of panel that it collapses/shrinks toward. This also corresponds
      *      to the position within a parent vbox or hbox in which the panel should be placed.
      * @param {string} [config.collapsedRenderMode] - How should collapsed content be rendered?
@@ -72,7 +69,7 @@ export class PanelSizingModel {
         this.collapsedRenderMode = collapsedRenderMode;
 
         if (prefName && !XH.prefService.hasKey(prefName)) {
-            console.warn(`Unknown preference for storing state of SizableComponent '${prefName}'`);
+            console.warn(`Unknown preference for storing state of Panel '${prefName}'`);
             prefName = null;
         }
         this.prefName = prefName;
@@ -115,9 +112,21 @@ export class PanelSizingModel {
         this.setCollapsed(!this.collapsed);
     }
 
-    //------------------
-    // Implementation
-    //------------------
+    //---------------------------------------------
+    // Implementation (for related private classes)
+    //---------------------------------------------
+    get vertical()              {
+        return this.side === 'top' || this.side === 'bottom'
+    }
+
+    // Does the Panel come before the resizing affordances?
+    get contentFirst()          {
+        return this.side === 'top' || this.side === 'left'
+    }
+    
+    //---------------------------------------------
+    // Implementation (intrernal)
+    //---------------------------------------------
     prefReaction() {
         return {
             track: () => [this.collapsed, this.size],
