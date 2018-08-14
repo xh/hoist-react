@@ -21,7 +21,8 @@ export class VisitsChartModel {
 
     sizingModel = new PanelSizingModel({
         defaultSize: 500,
-        prefName: 'visitsChart'
+        side: 'bottom',
+        prefName: 'xhAdminActivityChartSize'
     });
 
     chartModel = new ChartModel({

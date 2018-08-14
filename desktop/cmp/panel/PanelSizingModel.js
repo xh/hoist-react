@@ -7,8 +7,10 @@
 
 import {XH, HoistModel} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
-import {withDefault} from '@xh/hoist/utils/JsUtils';
+import {withDefault, throwIf} from '@xh/hoist/utils/JsUtils';
 import {start} from '@xh/hoist/promise';
+import {isNil} from 'lodash';
+
 
 /**
  * This class provides the underlying state for the resizing/collapse state of a Panel.
@@ -45,7 +47,7 @@ export class PanelSizingModel {
      * @param {boolean} [config.collapsible] - Can panel be collapsed, showing only its header?
      * @param {number} config.defaultSize - Default size of content (in pixels).
      * @param {number} [config.defaultCollapsed] - Default collapsed state.
-     * @param {string} [config.side] - Side of panel that it collapses/shrinks toward. This also corresponds
+     * @param {string} config.side - Side of panel that it collapses/shrinks toward. This also corresponds
      *      to the position within a parent vbox or hbox in which the panel should be placed.
      * @param {string} [config.collapsedRenderMode] - How should collapsed content be rendered?
      *      Valid values include 'lazy', 'always', and 'unmountOnHide'.
@@ -56,10 +58,12 @@ export class PanelSizingModel {
         resizable = true,
         defaultSize,
         defaultCollapsed = false,
-        side ='bottom',
+        side,
         collapsedRenderMode = 'lazy',
         prefName = null
     }) {
+        throwIf(isNil(defaultSize) || isNil(side), "Must specify 'defaultSize' and 'side' for PanelSizingModel");
+
         // Set immutables
         this.collapsible = collapsible;
         this.resizable = resizable;
