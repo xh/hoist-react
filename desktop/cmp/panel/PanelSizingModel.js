@@ -121,7 +121,7 @@ export class PanelSizingModel {
     prefReaction() {
         return {
             track: () => [this.collapsed, this.size],
-            run: (collapsed, size) => XH.setPref(this.prefName, {collapsed, size}),
+            run: ([collapsed, size]) => XH.setPref(this.prefName, {collapsed, size}),
             delay: 500   // prefs are already batched, keep tight.
         };
     }

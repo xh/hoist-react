@@ -21,7 +21,7 @@ export class VisitsChartModel {
 
     sizingModel = new PanelSizingModel({
         defaultSize: 500,
-        sizingPref: 'visitsChart'
+        prefName: 'visitsChart'
     });
 
     chartModel = new ChartModel({
