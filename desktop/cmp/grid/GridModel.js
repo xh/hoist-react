@@ -8,7 +8,19 @@ import {HoistModel, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {castArray, defaults, find, findLast, isPlainObject, isString, last, orderBy, pull, uniqBy} from 'lodash';
+import {
+    castArray,
+    defaults,
+    find,
+    findLast,
+    isEmpty,
+    isPlainObject,
+    isString,
+    last,
+    orderBy,
+    pull,
+    uniqBy
+} from 'lodash';
 import {Column} from '@xh/hoist/columns';
 import {throwIf, warnIf} from '@xh/hoist/utils/JsUtils';
 import {ColChooserModel} from './ColChooserModel';
@@ -277,21 +289,21 @@ export class GridModel {
 
         // Force any emptyFlexCol that is last to stay last (avoid user dragging)!
         const emptyFlex = findLast(columns, {colId: 'emptyFlex'});
-        if (emptyFlex && last(columns) == emptyFlex  && last(newCols) != emptyFlex) {
+        if (emptyFlex && last(columns) == emptyFlex && last(newCols) != emptyFlex) {
             pull(newCols, emptyFlex).push(emptyFlex);
         }
 
         this.columns = newCols;
     }
 
-
     //-----------------------
     // Implementation
     //-----------------------
     validateColumns() {
-        const {columns} = this,
-            hasDupes = columns.length != uniqBy(columns, 'colId').length;
+        const {columns} = this;
+        if (isEmpty(columns)) return;
 
+        const hasDupes = columns.length != uniqBy(columns, 'colId').length;
         throwIf(hasDupes, 'All colIds in column collection must be unique.');
 
         warnIf(
