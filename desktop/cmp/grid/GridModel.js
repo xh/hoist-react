@@ -8,18 +8,7 @@ import {HoistModel, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {
-    castArray,
-    defaults,
-    find,
-    findLast,
-    isPlainObject,
-    isString,
-    last,
-    orderBy,
-    pull,
-    uniqBy
-} from 'lodash';
+import {castArray, defaults, find, findLast, isPlainObject, isString, last, orderBy, pull, uniqBy} from 'lodash';
 import {Column} from '@xh/hoist/columns';
 import {throwIf, warnIf} from '@xh/hoist/utils/JsUtils';
 import {ColChooserModel} from './ColChooserModel';
@@ -116,13 +105,12 @@ export class GridModel {
         contextMenuFn = () => this.defaultContextMenu()
     }) {
         this.store = store;
-        this.columns = columns.map(c => c instanceof Column ? c : new Column(c));
         this.emptyText = emptyText;
         this.enableExport = enableExport;
         this.exportFilename = exportFilename;
         this.contextMenuFn = contextMenuFn;
 
-        this.validateColumns();
+        this.setColumns(columns);
 
         if (enableColChooser) {
             this.colChooserModel = new ColChooserModel(this);
@@ -264,10 +252,11 @@ export class GridModel {
         return [...this.columns];
     }
 
-    /** @param {Column[]} cols */
+    /** {(HoistColumn[]|Object[])} cols - Columns, or configs to create them. */
     @action
     setColumns(cols) {
-        this.columns = [...cols];
+        this.columns = cols.map(c => c instanceof Column ? c : new Column(c));
+        this.validateColumns();
     }
 
     showColChooser() {
@@ -276,6 +265,7 @@ export class GridModel {
         }
     }
 
+    @action
     noteAgColumnStateChanged(agColumnState) {
         const {columns} = this;
         // Gather cols in correct order, and apply updated widths.
@@ -291,7 +281,7 @@ export class GridModel {
             pull(newCols, emptyFlex).push(emptyFlex);
         }
 
-        this.setColumns(newCols);
+        this.columns = newCols;
     }
 
 
