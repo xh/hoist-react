@@ -21,4 +21,31 @@
   button.bp3-minimal {
     color: var(--xh-title-text-color) !important;
   }
+
+  // Rotate title when vbox
+  &.xh-vbox {
+    .xh-panel-header-title {
+      writing-mode: vertical-lr;
+      -ms-block-progression: lr;
+    }
+
+    &.xh-panel-header-left {
+      padding-top: var(--xh-pad-px);
+      flex-direction: column-reverse !important;
+
+      & > .svg-inline--fa {
+        margin: 10px 0 0;
+      }
+
+      .xh-panel-header-title {
+        transform: rotate(180deg);
+      }
+    }
+
+    &.xh-panel-header-right {
+      & > .svg-inline--fa {
+        margin: 0 0 10px;
+      }
+    }
+  }
 }
