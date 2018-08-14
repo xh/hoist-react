@@ -20,9 +20,10 @@ export class MenuModel {
     @observable.ref itemModels = false;
 
     /**
-     * @param {Object[]} itemModels - configurations for MenuItemModels (or MenuItemModel instances).
-     * @param {number} [xPos] - Screen X position to display the menu. Can also be set via openAt().
-     * @param {number} [yPos] - Screen Y position to display the menu. Can also be set via openAt().
+     * @param {Object} c - MenuModel configuration.
+     * @param {(MenuItemModel[]|Object[])} c.itemModels - MenuItemModel instances or configs.
+     * @param {number} [c.xPos] - Screen X position to display the menu. Can be set via openAt().
+     * @param {number} [c.yPos] - Screen Y position to display the menu. Can be set via openAt().
      */
     constructor({itemModels = [], xPos = 0, yPos = 0}) {
         this.itemModels = itemModels.map(i => isPlainObject(i) ? new MenuItemModel(i) : i);

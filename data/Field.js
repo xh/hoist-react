@@ -8,22 +8,24 @@
 import {startCase} from 'lodash';
 
 /**
- * Metadata for a column or 'field' in a Store record.
+ * Metadata for an individual data field within a Store record.
+ * @alias HoistField
  */
 export class Field {
 
-    name
-    type
-    label
-    defaultValue
+    name;
+    type;
+    label;
+    defaultValue;
 
     /**
-     * @param {string} name - unique key representing this field.
-     * @param {string} type - one of ['string', 'number', 'bool', 'json', 'date', 'day', 'auto']
+     * @param {Object} c - Field configuration.
+     * @param {string} c.name - unique key representing this field.
+     * @param {string} [c.type] - one of ['string', 'number', 'bool', 'json', 'date', 'day', 'auto']
      *      Default 'auto' indicates no conversion.
-     * @param {string} label - label for display
-     * @param {boolean} nullable - can this field contain null?
-     * @param {*} defaultValue - value to be used for records with a null, or non-existent value.
+     * @param {string} [c.label] - label for display, defaults to capitalized name.
+     * @param {boolean} [c.nullable] - true if field can contain null as a valid value.
+     * @param {*} [c.defaultValue] - value to be used for records with a null, or non-existent value.
      */
     constructor({
         name,

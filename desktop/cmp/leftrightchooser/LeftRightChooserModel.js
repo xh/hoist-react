@@ -15,21 +15,23 @@ import {convertIconToSvg, Icon} from '@xh/hoist/icon';
  */
 @HoistModel()
 export class LeftRightChooserModel {
-    /** Grid Model for the left-hand side */
+    /**
+     * Grid Model for the left-hand side.
+     * @type GridModel
+     */
     leftModel = null;
 
-    /** Grid Model for the right-hand side */
+    /**
+     * Grid Model for the right-hand side.
+     * @type GridModel
+     */
     rightModel = null;
 
-    /** Property to enable/disable the description panel */
-    hasDescription = null;
-
-    _lastSelectedSide = null;
-
-    leftGroupingEnabled = null;
-    rightGroupingEnabled = null;
-    leftGroupingExpanded = null;
-    rightGroupingExpanded = null;
+    hasDescription = false;
+    leftGroupingEnabled = false;
+    rightGroupingEnabled = false;
+    leftGroupingExpanded = false;
+    rightGroupingExpanded = false;
 
     /**
      * Filter for data rows to determine if they should be shown.
@@ -39,8 +41,7 @@ export class LeftRightChooserModel {
      * to include unfiltered records.
      *
      * @see LeftRightChooserFilter - a component to easily control this field.
-     *
-     * @param {function} fn
+     * @param {function} fn - predicate function for filtering.
      */
     setDisplayFilter(fn) {
         this.leftModel.store.setFilter(fn);
@@ -60,24 +61,19 @@ export class LeftRightChooserModel {
     }
 
     /**
-     * @param {Object[]} data - source for both lists, with each item containing the properties below.
-     * @param {string} data[].text - primary label for the item.
-     * @param {string} data[].value - value that the item represents.
-     * @param {string} data[].description - user-friendly, longer description of the item.
-     * @param {string} data[].group - grid group in which to show the item.
-     * @param {string} data[].side - initial side of the item.
-     * @param {boolean} data[].locked - true to prevent the user from moving the item between sides.
-     * @param {boolean} data[].exclude - true to exclude the item from the chooser entirely.
-     *
-     * @param {string} ungroupedName - placeholder group value when an item has no group.
-     * @param {string} leftTitle - title of the left-side list.
-     * @param {boolean} leftGroupingEnabled - true to enable grouping on the the left-side list.
-     * @param {boolean} leftGroupingExpanded - true to override default one level group expansion on left grid
-     * @param {Object[]} leftSortBy - one or more sorters to apply to the left-side store.
-     * @param {string} rightTitle - title of the right-side list.
-     * @param {boolean} rightGroupingEnabled - true to enable grouping on the the right-side list.
-     * @param {boolean} rightGroupingExpanded - true to override default one level group expansion on right grid
-     * @param {Object[]} rightSortBy - one or more sorters to apply to the right-side store.
+     * @param {Object} c - LeftRightChooserModel configuration.
+     * @param {LeftRightChooserItemDef[]} c.data - source data for both lists, split by `side`.
+     * @param {string} [c.ungroupedName] - placeholder group value when an item has no group.
+     * @param {?string} [c.leftTitle] - title of the left-side list.
+     * @param {boolean} [c.leftGroupingEnabled] - true to enable grouping on the left-side list.
+     * @param {boolean} [c.leftGroupingExpanded] - false to show a grouped left-side list with all
+     *      groups initially collapsed.
+     * @param {(GridSorterDef|GridSorterDef[])} [c.leftSortBy] - sorter(s) for left-side store.
+     * @param {?string} [c.rightTitle] - title of the right-side list.
+     * @param {boolean} [c.rightGroupingEnabled] - true to enable grouping on the right-side list.
+     * @param {boolean} [c.rightGroupingExpanded] - false to show a grouped right-side list with all
+     *      groups initially collapsed.
+     * @param {(GridSorterDef|GridSorterDef[])} [c.rightSortBy] - sorter(s) for right-side store.
      */
     constructor({
         data = [],
@@ -99,9 +95,23 @@ export class LeftRightChooserModel {
 
         const fields = ['text', 'value', 'description', 'group', 'side', 'locked', 'exclude'];
 
-        const leftTextCol = {field: 'text', flex: true,  headerName: leftTitle, renderer: this.getTextColRenderer('left')},
-            rightTextCol = {field: 'text', flex: true,  headerName: rightTitle, renderer: this.getTextColRenderer('right')},
-            groupCol = {field: 'group', headerName: 'Group', hide: true};
+        const leftTextCol = {
+                field: 'text',
+                flex: true,
+                headerName: leftTitle,
+                renderer: this.getTextColRenderer('left')
+            },
+            rightTextCol = {
+                field: 'text',
+                flex: true,
+                headerName: rightTitle,
+                renderer: this.getTextColRenderer('right')
+            },
+            groupCol = {
+                field: 'group',
+                headerName: 'Group',
+                hide: true
+            };
 
         this.leftModel = new GridModel({
             store: new LocalStore({fields}),
@@ -140,12 +150,15 @@ export class LeftRightChooserModel {
     //------------------------
     getTextColRenderer(side) {
         const groupingEnabled = side == 'left' ? this.leftGroupingEnabled : this.rightGroupingEnabled,
-            groupClass = groupingEnabled ? 'xh-lr-chooser__group-row' : '';
+            groupClass = groupingEnabled ? 'xh-lr-chooser__group-row' : '',
+            lockSvg = convertIconToSvg(Icon.lock({prefix: 'fal'}));
 
-        return (v, data, meta) => {
-            return `<div class='xh-lr-chooser__item-row ${groupClass}'>
-                        ${v}${data.locked ? convertIconToSvg(Icon.lock({prefix: 'fal'})) : ''}
-                   </div>`;
+        return (v, data) => {
+            return `
+                <div class='xh-lr-chooser__item-row ${groupClass}'>
+                    ${v} ${data.locked ? lockSvg : ''}
+                </div>
+            `;
         };
 
     }
@@ -203,3 +216,14 @@ export class LeftRightChooserModel {
         XH.safeDestroy(this.leftModel, this.rightModel);
     }
 }
+
+/**
+ * @typedef {Object} LeftRightChooserItemDef - data record object for a LeftRightChooser value item.
+ * @property {string} text - primary label for the item.
+ * @property {string} value - value that the item represents.
+ * @property {string} [description] - user-friendly, longer description of the item.
+ * @property {string} [group] - grid group in which to show the item.
+ * @property {string} [side] - initial side of the item - one of ['left', 'right'] - default left.
+ * @property {boolean} [locked] - true to prevent the user from moving the item between sides.
+ * @property {boolean} [exclude] - true to exclude the item from the chooser entirely.
+ */

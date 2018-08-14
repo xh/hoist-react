@@ -20,7 +20,10 @@ import {TabModel} from '../pane/TabModel';
 @HoistModel()
 export class TabContainerModel {
 
-    /** TabModels included in this tab container. */
+    /**
+     * TabModels included in this tab container.
+     * @member {TabModel[]}
+     */
     tabs = [];
 
     /** ID of the Tab to be active by default. */
@@ -39,8 +42,10 @@ export class TabContainerModel {
     }
 
     /**
-     * @param {Object[]} tabs - configurations for TabModels (or TabModel instances).
-     * @param {String} [defaultTabId] - ID of Tab to be shown initially. If not set, will default to first tab in the provided collection.
+     * @param {Object} c - TabContainerModel configuration.
+     * @param {Object[]} c.tabs - TabModels or configs to create.
+     * @param {string} [c.defaultTabId] - ID of Tab to be shown initially.
+     *      If not set, will default to first tab in the provided collection.
      */
     constructor({
         tabs,

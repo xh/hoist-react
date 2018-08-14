@@ -13,6 +13,19 @@ import {leftRightChooser, leftRightChooserFilter} from '@xh/hoist/desktop/cmp/le
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
+/**
+ * Hoist UI for user selection and discovery of available Grid columns, enabled via the
+ * GridModel.enableColChooser config option.
+ *
+ * This component displays both available and currently visible columns in two left/right
+ * grids, allowing users to toggle columns on and off within its associated grid.
+ *
+ * It derives its configuration primary from the Grid's Column definitions, supporting features such
+ * as custom column display names and descriptions, grouped display of the available column library,
+ * and a quick filter for long lists.
+ *
+ * It is not necessary to manually create instances of this component within an application.
+ */
 @HoistComponent()
 export class ColChooser extends Component {
 

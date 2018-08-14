@@ -7,7 +7,8 @@
 
 /**
  * Data-type specific cell formats used in server-side Excel exports.
- * Specify on a column definition via the `exportFormat` config.
+ * Specify for a Grid Column via the `Column.exportFormat` config.
+ * @enum {string}
  */
 export const ExportFormat = {
     DEFAULT:            'General',

@@ -16,15 +16,16 @@ import {agGridReact, navigateSelection} from './ag-grid';
 import {colChooser} from './ColChooser';
 
 /**
- * Grid Component
+ * The primary rich data grid component within the Hoist desktop toolkit.
+ * It is a highly managed wrapper around ag-Grid and is the main display component for GridModel.
  *
- * This is the main view component for a Hoist Grid.  It is a highly managed
- * wrapper around AG Grid, and is the main display component for GridModel.
+ * Applications should typically configure and interact with Grids via a GridModel, which provides
+ * support for specifying the Grid's data Store, Column definitions, sorting and grouping state,
+ * selection API, and more.
  *
- * Applications should typically create and manipulate a GridModel for most purposes,
- * including specifying columns and rows, sorting and grouping, and interacting with
- * the selection. Use this class to control the AG Grid UI options and specific
- * behavior of the grid.
+ * Use this Component's props to control the ag-Grid-specific UI options and handlers.
+ * @see {@link https://www.ag-grid.com/javascript-grid-reference-overview/|ag-Grid Docs}
+ * @see GridModel
  */
 @HoistComponent()
 @LayoutSupport
@@ -32,7 +33,8 @@ export class Grid extends Component {
 
     _scrollOnSelect = true;
 
-    // Trackable stamp incremented everytime the agGrid receives a new set of data.
+    // Observable stamp incremented every time the ag-Grid receives a new set of data.
+    // Used to ensure proper re-running / sequencing of data and selection reactions.
     @observable _dataVersion = 0;
 
     static propTypes = {
@@ -40,16 +42,16 @@ export class Grid extends Component {
         /**
          * Options for AG Grid's API.
          *
-         * This constitutes an 'escape hatch' for applications that need to get to the
-         * underlying AG Grid API.  It should be used with care and at the application
-         * developers risk.  Settings made here may interfere with the operation of this
-         * component and its use of the AG Grid API.
+         * This constitutes an 'escape hatch' for applications that need to get to the underlying
+         * ag-Grid API.  It should be used with care. Settings made here might be overwritten and/or
+         * interfere with the implementation of this component and its use of the ag-Grid API.
          */
         agOptions: PT.object,
 
         /**
          * Callback to call when a row is double clicked.  Function will receive an event
          * with a data node containing the row's data.
+         * @see {@link https://www.ag-grid.com/javascript-grid-events/#properties-and-hierarchy|ag-Grid Event Docs}
          */
         onRowDoubleClicked: PT.func
     };

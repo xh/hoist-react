@@ -11,7 +11,9 @@ import {ExportFormat} from './ExportFormat';
 import {withDefault, withDefaultTrue, withDefaultFalse, throwIf, warnIf} from '@xh/hoist/utils/JsUtils';
 
 /**
- * Definition of display and other meta-data for a grid column.
+ * Cross-platform definition and API for a standardized Grid column.
+ * Typically provided to GridModels as plain configuration objects.
+ * @alias HoistColumn
  */
 export class Column {
 
@@ -19,7 +21,49 @@ export class Column {
     static FLEX_COL_MIN_WIDTH = 30;
 
     /**
-     * Create a new column.
+     * @param {Object} c - Column configuration.
+     * @param {string} [c.field] - name of data store field to display within the column.
+     * @param {string} [c.colId] - unique identifier for the Column within its grid.
+     *      Defaults to field name - one of these two properties must be specified.
+     * @param {string} [c.headerName] - display text for grid header.
+     * @param {boolean} [c.hide] - true to suppress default display of the column.
+     * @param {string} [c.align] - horizontal alignment of cell contents.
+     * @param {number} [c.width] - default width in pixels.
+     * @param {number} [c.minWidth] - minimum width in pixels - grid will block user-driven as well
+     *      as auto-flex resizing below this value. (Note this is *not* a substitute for width.)
+     * @param {number} [c.maxWidth] - maximum width in pixels - grid will block user-driven as well
+     *      as auto-flex resizing above this value.
+     * @param {boolean} [c.flex] - true to auto-adjust column width based on space available
+     *      within the overall grid. Flex columns are not user-resizable as they will dynamically
+     *      adjust whenever the grid changes size to absorb available horizontal space.
+     * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
+     * @param {boolean} [c.movable] - false to prevent user from drag-and-drop re-ordering.
+     * @param {gridRenderer} [c.renderer] - function to produce a formatted string for each cell.
+     *      Supports HTML as output. Passed both field value and entire row data object.
+     * @param {function} [c.elementRenderer] - elementFactory function to return a React component
+     *      for rendering within each cell. For ag-Grid implementations, an ICellRendererParams
+     *      object is passed to the rendered component as props.
+     *      @see ICellRendererParams
+     * @param {string} [c.chooserName] - name to display within the column chooser component.
+     *      Defaults to headerName, but useful when a longer / un-abbreviated string is available.
+     * @param {string} [c.chooserGroup] - group name to display within the column chooser component.
+     *      Chooser will automatically group its "available columns" grid if any cols provide.
+     * @param {string} [c.chooserDescription] - additional descriptive text to display within the
+     *      column chooser. Appears when the column is selected within the chooser UI.
+     * @param {boolean} [c.excludeFromChooser] - true to hide the column from the column chooser
+     *      completely. Useful for hiding structural columns the user is not expected to adjust.
+     * @param {string} [c.exportName] - display name to use as a header within a file export.
+     *      Defaults to headerName.
+     * @param {(string|function)} [c.exportValue] - alternate field name to reference or function
+     *      to call when producing a value for a file export.
+     *      @see ExportManager
+     * @param {ExportFormat} [c.exportFormat] - structured format string for Excel-based exports.
+     *      @see ExportFormat
+     * @param {boolean} [c.excludeFromExport] - true to drop this column from a file export.
+     * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
+     *      desktop implementations. Note these options may be used / overwritten by the framework
+     *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
+     *      @see {@link https://www.ag-grid.com/javascript-grid-column-properties/|AG-Grid docs}
      */
     constructor({
         field,
@@ -33,7 +77,6 @@ export class Column {
         flex,
         resizable,
         movable,
-        format,
         renderer,
         elementRenderer,
         chooserName,
@@ -46,10 +89,9 @@ export class Column {
         excludeFromExport,
         agOptions
     }) {
-
         this.field = field;
         this.colId = withDefault(colId, field);
-        throwIf(!this.colId, 'Must specify colId or field in Column.');
+        throwIf(!this.colId, 'Must specify colId or field for a Column.');
 
         this.headerName = withDefault(headerName, startCase(this.colId));
         this.hide = withDefaultFalse(hide);
@@ -90,7 +132,6 @@ export class Column {
      * Produce a Column definition appropriate for AG Grid.
      */
     getAgSpec() {
-
         const ret = {
             field: this.field,
             colId: this.colId,
@@ -135,3 +176,12 @@ export class Column {
         return ret;
     }
 }
+
+/**
+ * @callback gridRenderer - normalized renderer function for a grid column cell.
+ * @param {*} value - cell data value (column + row).
+ * @param {Object} data - row data object (entire row).
+ * @param {Object} metadata - additional data available to the renderer,
+ *      currently contains the Column's string colId.
+ * @return {string} - the formatted value for display.
+ */

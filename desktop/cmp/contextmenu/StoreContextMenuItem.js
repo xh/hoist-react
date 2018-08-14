@@ -5,9 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-/**
- *  Basic Model Object for ContextMenu for Stores.
- */
 export class StoreContextMenuItem {
 
     text;
@@ -20,17 +17,16 @@ export class StoreContextMenuItem {
     recordsRequired;
 
     /**
-     * @param {string} text - label to be displayed.
-     * @param {Object} icon - optional icon to be displayed.
-     * @param {Object[]} items - child menu items.
-     * @param {function} action - function of the form (item, record, selection) => {}
-     *      Executed when the user clicks the menuitem.
-     * @param {boolean} disabled - true to disable this item.
-     * @param {boolean} hidden - true to hide this item.
-     * @param {function} prepareFn - function of the form (item, record, selection) => {}
-     *      The prepareFn is a callback that is triggered before each time the menuitem is shown.
-     *      It can be used to modify the menuitem based on the record / selection.
-     * @param {(number|boolean)} recordsRequired - how many records must be 'active'
+     * @param {Object} c - StoreContextMenuItem configuration.
+     * @param {string} c.text - label to be displayed.
+     * @param {Object} [c.icon] - icon to be displayed.
+     * @param {Object[]} [c.items] - child menu items.
+     * @param {ActionCb} [c.action] - called on store context menu item click.
+     * @param {boolean} [c.disabled] - true to disable this item.
+     * @param {boolean} [c.hidden] - true to hide this item.
+     * @param {PrepareFnCb} [c.prepareFn] - called prior to context menu item show,
+     *      available to modify the item based on current record / selection at time of show.
+     * @param {(number|boolean)} [c.recordsRequired] - how many records must be 'active'
      *      (selected and / or clicked upon) for the menuitem to be enabled.
      *      int: specifies exactly n number of records. Defaults to 1 for single record actions.
      *          Can specify 0 to only enable menuitem if no records are active.
@@ -57,3 +53,18 @@ export class StoreContextMenuItem {
         this.recordsRequired = recordsRequired;
     }
 }
+
+/**
+ * @callback ActionCb - called on store context menu item click.
+ * @param {ContextMenuItem} item - the menu item itself.
+ * @param {Object} [record] - row data object (entire row, if any).
+ * @param {Object[]} [selection] - all currently selected records (if any).
+ */
+
+/**
+ * @callback PrepareFnCb - called prior to store context menu item show, available to modify the
+ *      item based on current record / selection at time of show.
+ * @param {ContextMenuItem} item - the menu item itself.
+ * @param {Object} [record] - row data object (entire row, if any).
+ * @param {Object[]} [selection] - all currently selected records (if any).
+ */
