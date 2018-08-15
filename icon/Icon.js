@@ -91,6 +91,7 @@ import {
     faToolbox,
     faUndo,
     faUpload,
+    faUserCheck,
     faUserCircle,
     faUsers,
     faWrench
@@ -178,6 +179,7 @@ import {
     faToolbox as faToolboxLight,
     faUndo as faUndoLight,
     faUpload as faUploadLight,
+    faUserCheck as faUserCheckLight,
     faUserCircle as faUserCircleLight,
     faUsers as faUsersLight,
     faWrench as faWrenchLight
@@ -265,6 +267,7 @@ import {
     faToolbox as faToolboxSolid,
     faUndo as faUndoSolid,
     faUpload as faUploadSolid,
+    faUserCheck as faUserCheckSolid,
     faUserCircle as faUserCircleSolid,
     faUsers as faUsersSolid,
     faWrench as faWrenchSolid
@@ -354,6 +357,7 @@ library.add(
     faToolbox, faToolboxLight, faToolboxSolid,
     faUndo, faUndoLight, faUndoSolid,
     faUpload, faUploadLight, faUploadSolid,
+    faUserCheck, faUserCheckLight, faUserCheckSolid,
     faUserCircle, faUserCircleLight, faUserCircleSolid,
     faUsers, faUsersLight, faUsersSolid,
     faWrench, faWrenchLight, faWrenchSolid
@@ -372,6 +376,7 @@ export const Icon = {
     addressCard(p)   {return fa(p, 'address-card')},
     angleLeft(p)     {return fa(p, 'angle-left')},
     angleRight(p)    {return fa(p, 'angle-right')},
+    approve(p)       {return fa(p, 'user-check')},
     arrowToRight(p)  {return fa(p, 'arrow-to-right')},
     arrowUp(p)       {return fa(p, 'arrow-up')},
     arrowDown(p)     {return fa(p, 'arrow-down')},
