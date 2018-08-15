@@ -133,14 +133,7 @@ export class RestGridModel {
                     recordsRequired: true
                 },
                 '-',
-                'copy',
-                'copyWithHeaders',
-                '-',
-                'exportExcel',
-                'exportCsv',
-                '-',
-                'autoSizeAll',
-                'colChooser'
+                ...GridModel.defaultContextMenuTokens
             ],
             gridModel: this.gridModel
         });
