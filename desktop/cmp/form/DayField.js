@@ -76,7 +76,7 @@ export class DayField extends HoistField {
                 minimal: true,
                 usePortal: true,
                 position: popoverPosition || 'auto',
-                popoverWillClose: this.onPopoverWillClose
+                onClose: this.onPopoverWillClose
             },
             minDate,
             maxDate,
@@ -95,6 +95,11 @@ export class DayField extends HoistField {
 
     onChange = (date, isUserChange) => {
         if (!isUserChange) return;
+        const {minDate, maxDate} = this.props;
+
+        if (date < minDate) date = minDate;
+        if (date > maxDate) date = maxDate;
+
         this.noteValueChange(date);
 
         // Blueprint won't always close popover (e.g. choosing a date in previous month). Force it to.
