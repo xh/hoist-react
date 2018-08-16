@@ -5,6 +5,7 @@
   background-color: var(--xh-title-bg);
   height: var(--xh-title-height-px);
   flex: none;
+  user-select: none;
 
   .xh-panel-header-title {
     font-size: var(--xh-title-font-size-px);
