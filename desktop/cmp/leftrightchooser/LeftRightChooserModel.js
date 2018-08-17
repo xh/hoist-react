@@ -99,13 +99,13 @@ export class LeftRightChooserModel {
                 field: 'text',
                 flex: true,
                 headerName: leftTitle,
-                renderer: this.getTextColRenderer('left')
+                renderer: this.getTextColRenderer('left', data)
             },
             rightTextCol = {
                 field: 'text',
                 flex: true,
                 headerName: rightTitle,
-                renderer: this.getTextColRenderer('right')
+                renderer: this.getTextColRenderer('right', data)
             },
             groupCol = {
                 field: 'group',
@@ -148,9 +148,10 @@ export class LeftRightChooserModel {
     //------------------------
     // Implementation
     //------------------------
-    getTextColRenderer(side) {
-        const groupingEnabled = side == 'left' ? this.leftGroupingEnabled : this.rightGroupingEnabled,
-            groupClass = groupingEnabled ? 'xh-lr-chooser__group-row' : '',
+    getTextColRenderer(side, data) {
+        const hasGrouping = data.some(it => it.group),
+            groupingEnabled = side == 'left' ? this.leftGroupingEnabled : this.rightGroupingEnabled,
+            groupClass = groupingEnabled && hasGrouping ? 'xh-lr-chooser__group-row' : '',
             lockSvg = convertIconToSvg(Icon.lock({prefix: 'fal'}));
 
         return (v, data) => {
