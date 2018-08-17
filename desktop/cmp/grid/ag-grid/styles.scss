@@ -5,7 +5,7 @@
   height: auto !important;
 }
 
-.ag-theme-balham, .ag-theme-balham-dark {
+.xh-grid {
   font-family: var(--xh-grid-font-family);
   font-size: var(--xh-grid-font-size-px);
 
@@ -49,8 +49,6 @@
     &.ag-row-group {
       color: var(--xh-grid-group-text-color);
       background-color: var(--xh-grid-group-bg);
-      // TODO - determine why these group headers seem misaligned
-      padding-top: 2px;
     }
 
     .group-header-icon-expanded {
@@ -93,6 +91,14 @@
   }
 }
 
+// Grouped header padding appears slightly off w/standard row height
+.xh-grid-standard {
+  .ag-row.ag-row-group {
+    padding-top: 2px;
+  }
+}
+
+// Match loading overlay color to mask, suppress display of text in center.
 .ag-overlay .ag-overlay-loading-wrapper {
   background-color: var(--xh-mask-bg);
 

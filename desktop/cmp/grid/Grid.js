@@ -31,12 +31,6 @@ import {colChooser} from './ColChooser';
 @LayoutSupport
 export class Grid extends Component {
 
-    _scrollOnSelect = true;
-
-    // Observable stamp incremented every time the ag-Grid receives a new set of data.
-    // Used to ensure proper re-running / sequencing of data and selection reactions.
-    @observable _dataVersion = 0;
-
     static propTypes = {
 
         /**
@@ -56,7 +50,15 @@ export class Grid extends Component {
         onRowDoubleClicked: PT.func
     };
 
+    static ROW_HEIGHT = 28;
+    static COMPACT_ROW_HEIGHT = 22;
+
+    // Observable stamp incremented every time the ag-Grid receives a new set of data.
+    // Used to ensure proper re-running / sequencing of data and selection reactions.
+    @observable _dataVersion = 0;
+
     baseClassName = 'xh-grid';
+    _scrollOnSelect = true;
 
     constructor(props) {
         super(props);
@@ -66,7 +68,6 @@ export class Grid extends Component {
         this.addReaction(this.dataReaction());
         this.addReaction(this.compactReaction());
     }
-
 
     render() {
         const {colChooserModel, compact} = this.model,
@@ -97,6 +98,7 @@ export class Grid extends Component {
             })
         );
     }
+
 
     //------------------------
     // Implementation
@@ -129,7 +131,7 @@ export class Grid extends Component {
             },
             rowSelection: model.selModel.mode,
             rowDeselection: true,
-            getRowHeight: () => model.compact ? 22 : 28,
+            getRowHeight: () => model.compact ? Grid.COMPACT_ROW_HEIGHT : Grid.ROW_HEIGHT,
             overlayNoRowsTemplate: model.emptyText || '<span></span>',
             getContextMenuItems: this.getContextMenuItems,
             onRowDoubleClicked: props.onRowDoubleClicked,
