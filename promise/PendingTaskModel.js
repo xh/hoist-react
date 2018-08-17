@@ -23,7 +23,7 @@ export class PendingTaskModel {
     mode = null;
 
     @observable _pendingCount = 0;
-    @observable _lastPromise = null;
+    @observable _lastCall = null;
 
     /**
      * @param {string} [mode] - behavior with respect to multiple linked promises.
@@ -56,8 +56,8 @@ export class PendingTaskModel {
      */
     @action
     link(promise, message) {
-        this.pendingCount++;
-        this.lastCall = promise;
+        this._pendingCount++;
+        this._lastCall = promise;
         promise.finally(() => this.onComplete(promise));
         if (!isUndefined(message)) this.message = message;
     }
@@ -70,12 +70,12 @@ export class PendingTaskModel {
     }
 
     get lastPending() {
-        return this._lastPromise != null;
+        return this._lastCall != null;
     }
 
     @action
     onComplete(promise) {
-        if (this.pendingCount)          this.pendingCount--;
-        if (promise === this.lastCall)  this.lastPromise == null;
+        if (this._pendingCount)          this._pendingCount--;
+        if (promise === this._lastCall)  this._lastCall = null;
     }
 }
