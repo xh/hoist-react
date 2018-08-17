@@ -7,7 +7,7 @@
 import {XH, HoistModel} from '@xh/hoist/core';
 import {find} from 'lodash';
 import {action, observable} from '@xh/hoist/mobx';
-import {LastPromiseModel} from '@xh/hoist/promise';
+import {PendingTaskModel} from '@xh/hoist/promise';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {UrlStore} from '@xh/hoist/data';
 import {PanelSizingModel} from '@xh/hoist/desktop/cmp/panel';
@@ -28,7 +28,7 @@ export class LogViewerModel {
     @observable file = null;
     @observable.ref rows = [];
 
-    loadModel = new LastPromiseModel();
+    loadModel = new PendingTaskModel();
 
     filesSizingModel = new PanelSizingModel({
         side: 'left',

@@ -6,5 +6,4 @@
  */
 
 export * from './Promise';
-export * from './model/LastPromiseModel';
-export * from './model/MultiPromiseModel';
+export * from './PendingTaskModel';

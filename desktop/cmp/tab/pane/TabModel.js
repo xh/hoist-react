@@ -6,7 +6,7 @@
  */
 import {HoistModel, XH} from '@xh/hoist/core';
 import {action, computed, observable} from '@xh/hoist/mobx';
-import {LastPromiseModel} from '@xh/hoist/promise';
+import {PendingTaskModel} from '@xh/hoist/promise';
 import {startCase} from 'lodash';
 
 /**
@@ -26,7 +26,7 @@ export class TabModel {
 
     @observable lastRefreshRequest = null;
     @observable lastLoaded = null;
-    loadState = new LastPromiseModel();
+    loadState = new PendingTaskModel();
 
     /**
      * @param {Object} c - TabModel configuration.

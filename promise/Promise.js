@@ -205,15 +205,15 @@ Object.assign(Promise.prototype, {
 
 
     /**
-     * Link this promise to an instance of PromiseModel.
+     * Link this promise to an instance of a PendingTaskModel.
      *
-     * @param {(LastPromiseModel|MultiPromiseModel)} model
+     * @param {(PendingTaskModel)} model
+     * @param {?string} [message]
      */
-    linkTo(model) {
-        model.link(this);
+    linkTo(model, message) {
+        model.link(this, message);
         return this;
     },
-
 
     //--------------------------------
     // Implementation
