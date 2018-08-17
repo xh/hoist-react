@@ -31,7 +31,7 @@
     color: var(--xh-grid-header-text-color);
     background-color: var(--xh-grid-header-bg);
     font-family: var(--xh-grid-font-family);
-    font-size: var(--xh-grid-font-size);
+    font-size: var(--xh-grid-font-size-px);
   }
 
   .ag-row {
@@ -62,6 +62,10 @@
     }
   }
 
+  .ag-cell-value {
+    line-height: var(--xh-grid-line-height-px);
+  }
+
   .ag-cell-focus {
     border-color: var(--xh-grid-cell-focus-border-color) !important;
   }
@@ -78,6 +82,14 @@
 
   .ag-bl-overlay {
     display: none;
+  }
+}
+
+.xh-grid-compact {
+  font-size: var(--xh-grid-compact-font-size-px);
+
+  .ag-cell-value {
+    line-height: var(--xh-grid-compact-line-height-px);
   }
 }
 

@@ -64,11 +64,12 @@ export class Grid extends Component {
         this.addReaction(this.sortReaction());
         this.addReaction(this.columnsReaction());
         this.addReaction(this.dataReaction());
+        this.addReaction(this.compactReaction());
     }
 
 
     render() {
-        const {colChooserModel} = this.model,
+        const {colChooserModel, compact} = this.model,
             {agOptions} = this.props,
             layoutProps = this.getLayoutProps();
 
@@ -83,8 +84,12 @@ export class Grid extends Component {
         return fragment(
             box({
                 ...layoutProps,
-                className: this.getClassName('ag-grid-holder', XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham'),
-                item: agGridReact(merge(this.createDefaultAgOptions(), agOptions))
+                item: agGridReact(merge(this.createDefaultAgOptions(), agOptions)),
+                className: this.getClassName(
+                    'ag-grid-holder',
+                    XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
+                    compact ? 'xh-grid-compact' : 'xh-grid-standard'
+                )
             }),
             colChooser({
                 omit: !colChooserModel,
@@ -124,6 +129,7 @@ export class Grid extends Component {
             },
             rowSelection: model.selModel.mode,
             rowDeselection: true,
+            getRowHeight: () => model.compact ? 22 : 28,
             overlayNoRowsTemplate: model.emptyText || '<span></span>',
             getContextMenuItems: this.getContextMenuItems,
             onRowDoubleClicked: props.onRowDoubleClicked,
@@ -292,6 +298,15 @@ export class Grid extends Component {
                     api.setColumnDefs(this.getColumnDefs());
                     api.sizeColumnsToFit();
                 }
+            }
+        };
+    }
+
+    compactReaction() {
+        return {
+            track: () => [this.model.agApi, this.model.compact],
+            run: ([api]) => {
+                if (api) api.resetRowHeights();
             }
         };
     }

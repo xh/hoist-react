@@ -71,10 +71,18 @@ body {
   --xh-grid-font-family: var(--grid-font-family, var(--xh-font-family));
   --xh-grid-font-size: var(--grid-font-size, var(--xh-font-size));
   --xh-grid-font-size-px: calc(var(--xh-grid-font-size) * 1px);
+  --xh-grid-line-height: var(--grid-line-height, 26);
+  --xh-grid-line-height-px: calc(var(--xh-grid-line-height) * 1px);
   --xh-grid-group-bg: var(--grid-group-bg, var(--xh-blue-gray));
   --xh-grid-group-text-color: var(--grid-group-text-color, white);
   --xh-grid-header-bg: var(--grid-header-bg, var(--xh-blue-gray-light));
   --xh-grid-header-text-color: var(--grid-header-text-color, var(--xh-text-color));
+
+  // Compact Grid
+  --xh-grid-compact-font-size: var(--grid-compact-font-size, 11);
+  --xh-grid-compact-font-size-px: calc(var(--xh-grid-compact-font-size) * 1px);
+  --xh-grid-compact-line-height: var(--grid-compact-line-height, 20);
+  --xh-grid-compact-line-height-px: calc(var(--xh-grid-compact-line-height) * 1px);
 
   // Fonts
   --xh-font-family: var(--font-family, #{(-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif)});
