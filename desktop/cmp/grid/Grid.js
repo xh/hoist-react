@@ -174,7 +174,7 @@ export class Grid extends Component {
 
         // Adjust selection to target record -- and sync to grid immediately.
         if (rec && !(selectedIds.includes(recId))) {
-                selModel.select(rec);
+            selModel.select(rec);
         }
         if (!rec) selModel.clear();
         const {count} = selModel;
