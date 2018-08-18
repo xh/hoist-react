@@ -8,10 +8,12 @@ import {observable, action, computed} from '@xh/hoist/mobx';
 
 /**
  * Tracks the resolution state of a stream of promise invocations.
+ * Has an observable message property that if set will be displayed in a linked loadMask
  */
 export class MultiPromiseModel {
 
     @observable pendingCount = 0;
+    @observable message = '';
 
     /** Are any linked Promises still outstanding? */
     @computed
@@ -23,6 +25,11 @@ export class MultiPromiseModel {
     link(promise) {
         this.pendingCount++;
         promise.finally(() => this.onComplete());
+    }
+
+    @action
+    setMessage(msg) {
+        this.message = msg;
     }
 
     //-----------------------------

@@ -25,7 +25,7 @@ export class LoadMask extends Component {
         model: PT.object,
         /** Dictates if this mask should be contained within its parent, if set to false will fill the viewport */
         inline: PT.bool,
-        /** Text to be displayed under the loading spinner image */
+        /** Text to be displayed under the loading spinner image, will be overridden if model has a message to show */
         text: PT.string
     };
 
@@ -33,6 +33,8 @@ export class LoadMask extends Component {
     
     render() {
         let {isDisplayed, model, inline, text} = this.props,
+            modelMessage = model ? model.message : '',
+            displayText = modelMessage || text,
             isInline = inline !== false;
 
         if (!(isDisplayed || (model && model.isPending))) return null;
@@ -49,7 +51,7 @@ export class LoadMask extends Component {
                 items: [
                     spinner(),
                     vspacer(10),
-                    text ? box({className: 'xh-mask-text', item: text}) : null
+                    displayText ? box({className: 'xh-mask-text', item: displayText}) : null
                 ]
             })
         });

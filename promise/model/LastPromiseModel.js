@@ -9,11 +9,13 @@ import {observable, action, computed} from '@xh/hoist/mobx';
 /**
  * Tracks the resolution state of the last of a series of promise invocations.
  * Currently it only tracks the *last* invocation, but could be enhanced to maintain historical statistics.
+ * Has an observable message property that if set will be displayed in a linked loadMask
  * @see MultiPromiseModel
  */
 export class LastPromiseModel {
 
     @observable state = 'resolved';
+    @observable message = '';
     lastCall = null;
 
     /** Is the last Promise to be linked to this Model still pending? */
@@ -33,6 +35,10 @@ export class LastPromiseModel {
         });
     }
 
+    @action
+    setMessage(msg) {
+        this.message = msg;
+    }
 
     //------------------------
     // Implementation
