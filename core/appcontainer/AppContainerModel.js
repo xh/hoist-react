@@ -6,7 +6,7 @@
  */
 import {XH, HoistModel} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
-import {PendingTaskModel} from '@xh/hoist/promise';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 import {AboutDialogModel} from './AboutDialogModel';
 import {ExceptionDialogModel} from './ExceptionDialogModel';

@@ -7,7 +7,7 @@
 import {HoistModel, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {find, isPlainObject, uniqBy} from 'lodash';
-import {throwIf} from '@xh/hoist/utils/JsUtils';
+import {throwIf} from '@xh/hoist/utils/js';
 import {TabModel} from '@xh/hoist/desktop/cmp/tab';
 
 /**

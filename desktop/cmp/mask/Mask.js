@@ -4,44 +4,74 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
+
 import {PropTypes as PT} from 'prop-types';
+import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {box} from '@xh/hoist/cmp/layout';
-import {Classes, overlay} from '@xh/hoist/kit/blueprint';
+import {box, vbox, vspacer} from '@xh/hoist/cmp/layout';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {Classes, overlay, spinner} from '@xh/hoist/kit/blueprint';
+import {withDefault, withDefaultFalse, withDefaultTrue} from '@xh/hoist/utils/js';
+
 
 import './Mask.scss';
 
 /**
- * Mask for disabled or inactive components.
- * Note: Mask is built into Panel via its masked prop.
+ * Mask with optional spinner and text.
+ *
+ * The mask can be explicitly shown or reactively bound to a PendingTaskModel.
  */
 @HoistComponent()
 export class Mask extends Component {
 
     static propTypes = {
+        /** True to display mask. */
         isDisplayed: PT.bool,
-        text: PT.string
+        /** Optional text to be displayed. */
+        message: PT.string,
+        /** True to display a spinning image.  Default false. */
+        spinner: PT.bool,
+        /** If true (default) mask should be contained within its parent, if set to false it will fill the viewport. */
+        inline: PT.bool,
+        /** Click handler **/
+        onClick: PT.function,
+        /** Model to govern behavior of mask.  Use as an alternative to setting isDisplayed and message props. */
+        model: PT.instanceOf(PendingTaskModel)
     };
 
     baseClassName = 'xh-mask';
-
+    
     render() {
-        let {isDisplayed, text} = this.props;
+        const {props} = this,
+            {model} = props,
+            isDisplayed = withDefault(props.isDisplayed, model && model.isPending, false);
+
         if (!isDisplayed) return null;
+
+        const message = withDefault(props.message, model && model.message),
+            inline = withDefaultTrue(props.inline),
+            showSpinner = withDefaultFalse(props.spinner),
+            onClick = props.onClick;
 
         return overlay({
             className: this.getClassName(Classes.OVERLAY_SCROLL_CONTAINER),
             autoFocus: false,
             isOpen: true,
             canEscapeKeyClose: false,
-            usePortal: false,
-            enforceFocus: false,
-            item: box({
+            usePortal: !inline,
+            enforceFocus: !inline,
+            item: vbox({
                 className: 'xh-mask-body',
-                item: text ? box({className: 'xh-mask-text', item: text}) : null
+                onClick,
+                items: [
+                    showSpinner ? spinner() : null,
+                    showSpinner ? vspacer(10) : null,
+                    message ? box({className: 'xh-mask-text', item: message}) : null
+                ]
             })
         });
     }
 }
 export const mask = elemFactory(Mask);
+
+

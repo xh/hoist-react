@@ -7,7 +7,7 @@
 
 import {HoistModel} from '@xh/hoist/core';
 import {computed} from '@xh/hoist/mobx';
-import {isJSON} from '@xh/hoist/utils/JsUtils';
+import {isJSON} from '@xh/hoist/utils/js';
 
 @HoistModel()
 export class RestControlModel  {

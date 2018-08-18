@@ -22,7 +22,7 @@ import {
     uniqBy
 } from 'lodash';
 import {Column} from '@xh/hoist/columns';
-import {throwIf, warnIf} from '@xh/hoist/utils/JsUtils';
+import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {ColChooserModel} from './ColChooserModel';
 import {GridStateModel} from './GridStateModel';
 import {ExportManager} from './ExportManager';

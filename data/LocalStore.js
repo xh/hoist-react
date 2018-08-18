@@ -6,7 +6,7 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {PendingTaskModel} from '@xh/hoist/promise';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {observable, action} from '@xh/hoist/mobx';
 import {BaseStore} from './BaseStore';
 

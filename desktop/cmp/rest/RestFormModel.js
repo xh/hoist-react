@@ -8,7 +8,7 @@
 import {XH, HoistModel} from '@xh/hoist/core';
 import {start} from '@xh/hoist/promise';
 import {observable, computed, action} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/JsUtils';
+import {throwIf} from '@xh/hoist/utils/js';
 import {isEqual} from 'lodash';
 
 import {RestControlModel} from './RestControlModel';

@@ -4,6 +4,4 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
-export * from './LoadMask';
 export * from './Mask';

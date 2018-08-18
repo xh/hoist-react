@@ -7,7 +7,7 @@
 import {Exception} from '@xh/hoist/exception';
 import {XH} from './XH';
 import {stringifyErrorSafely} from '@xh/hoist/exception';
-import {stripTags} from '@xh/hoist/utils/HtmlUtils';
+import {stripTags} from '@xh/hoist/utils/js';
 
 /**
  * Provides Centralized Exception Handling for Hoist Application.

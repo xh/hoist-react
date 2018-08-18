@@ -4,37 +4,62 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
+
 import {PropTypes as PT} from 'prop-types';
+import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {div, box} from '@xh/hoist/cmp/layout';
+import {div, vbox, vspacer, box} from '@xh/hoist/cmp/layout';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {progressCircular} from '@xh/hoist/kit/onsen';
+import {withDefault, withDefaultFalse} from '@xh/hoist/utils/js';
 
 import './Mask.scss';
 
 /**
- * Mask for disabled or inactive components.
+ * Mask with optional spinner and text.
+ *
+ * The mask can be explicitly shown or reactively bound to a PendingTaskModel.
  */
 @HoistComponent()
 export class Mask extends Component {
 
     static propTypes = {
+        /** True to display the mask. */
         isDisplayed: PT.bool,
-        text: PT.string
+        /** Text to be displayed under the loading spinner image */
+        message: PT.string,
+        /** True (default) to display a spinning image. */
+        spinner: PT.bool,
+        /** Click handler **/
+        onClick: PT.function,
+        /** Model to govern behavior of mask.  Use as an alternative to setting props above. */
+        model: PT.instanceOf(PendingTaskModel)
     };
 
+    baseClassName = 'xh-mask'
+
     render() {
-        const {isDisplayed, text, onClick} = this.props;
+        const {props} = this,
+            {model} = props,
+            isDisplayed = withDefault(props.isDisplayed, model && model.isPending, false);
+
         if (!isDisplayed) return null;
 
+        const message = withDefault(props.message, model && model.message),
+            showSpinner = withDefaultFalse(props.spinner),
+            onClick = props.onClick;
         return div({
-            className: 'xh-mask',
-            onClick: onClick ? () => onClick() : null,
-            item: box({
+            className: this.getClassName(),
+            item: vbox({
                 className: 'xh-mask-body',
-                item: text ? box({className: 'xh-mask-text', item: text}) : null
+                onClick,
+                items: [
+                    showSpinner ? progressCircular({indeterminate: true}) : null,
+                    showSpinner ? vspacer(10) : null,
+                    message ? box({className: 'xh-mask-text', item: message}) : null
+                ]
             })
         });
     }
 }
-
 export const mask = elemFactory(Mask);

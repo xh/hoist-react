@@ -5,19 +5,30 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {PropTypes as PT} from 'prop-types';
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {fragment} from '@xh/hoist/cmp/layout';
 import {page as onsenPage} from '@xh/hoist/kit/onsen';
-import {loadMask} from '@xh/hoist/mobile/cmp/mask';
+import {mask} from '@xh/hoist/mobile/cmp/mask';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {castArray} from 'lodash';
+
 
 /**
  * Wrapper around Onsen's Page component.
- * If provided with a loadModel, provides built in support for a full-page mask that prevents scrolling.
  */
 @HoistComponent()
 export class Page extends Component {
+
+    static propTypes = {
+
+        // TODO:  This should should probably be the mask itself, mirroring the Panel API.
+
+        /** If provided, will be bound to a mask that can be used to prevent scrolling.  */
+        loadModel: PT.instanceOf(PendingTaskModel)
+    };
+
 
     render() {
         const {loadModel, className, children, ...rest} = this.props,
@@ -28,12 +39,11 @@ export class Page extends Component {
                 className: ['xh-page', className, noscrollCls].filter(Boolean).join(' '),
                 items: [
                     ...castArray(children),
-                    loadModel ? loadMask({model: loadModel}) : null
+                    loadModel ? mask({model: loadModel, spinner: true}) : null
                 ],
                 ...rest
-            }),
+            })
         );
     }
-
 }
 export const page = elemFactory(Page);

@@ -15,6 +15,7 @@ import {isUndefined} from 'lodash';
  * and then used as a model for masks or other UI elements that need
  * to track the progression of asynchronous tasks.
  */
+@HoistModel()
 export class PendingTaskModel {
 
     @observable message = null;

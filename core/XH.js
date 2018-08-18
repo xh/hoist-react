@@ -12,7 +12,7 @@ import {elem, HoistModel, AppState} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {observable, action} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
-import {throwIf} from '@xh/hoist/utils/JsUtils';
+import {throwIf} from '@xh/hoist/utils/js';
 
 import {
     ConfigService,

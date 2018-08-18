@@ -6,7 +6,7 @@
  */
 import {XH, HoistModel} from '@xh/hoist/core';
 import {action, computed, observable} from '@xh/hoist/mobx';
-import {PendingTaskModel} from '@xh/hoist/promise';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {max} from 'lodash';
 
 /**

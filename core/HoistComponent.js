@@ -7,7 +7,7 @@
 import ReactDom from 'react-dom';
 import {XH} from '@xh/hoist/core';
 import {observer} from '@xh/hoist/mobx';
-import {defaultMethods, chainMethods} from '@xh/hoist/utils/ClassUtils';
+import {defaultMethods, chainMethods} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 
 import {ReactiveSupport} from './mixins/ReactiveSupport';
