@@ -31,7 +31,7 @@ export class Mask extends Component {
         /** True (default) to display a spinning image. */
         spinner: PT.bool,
         /** Click handler **/
-        onClick: PT.function,
+        onClick: PT.func,
         /** Model to govern behavior of mask.  Use as an alternative to setting props above. */
         model: PT.instanceOf(PendingTaskModel)
     };

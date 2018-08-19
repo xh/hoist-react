@@ -41,7 +41,7 @@ export class Toast extends Component {
         });
     }
 
-    onDismissClick = () => {this.model.onDismiss()}
+    onDismissClick = () => this.model.dismiss()
 
 }
 export const toast = elemFactory(Toast);

@@ -43,7 +43,7 @@ export class Panel extends Component {
         /** A toolbar to be docked at the bottom of the panel. */
         bbar: PT.element,
         /** Mask to render on this panel.  Set to true for a default mask, with no spinner or text.*/
-        mask: PT.oneOfType(Mask, PT.bool),
+        mask: PT.oneOfType([PT.element, PT.bool]),
         /** Model governing Resizing and Collapsing of the panel.*/
         sizingModel: PT.instanceOf(PanelSizingModel)
     };
@@ -97,7 +97,7 @@ export class Panel extends Component {
         // 3) Mask is as provided, or a default simple mask.
         let maskElem = null;
         if (maskProp === true) {
-            maskElem = mask({inline: true});
+            maskElem = mask({inline: true, isDisplayed: true});
         } else if (isReactElement(maskProp)) {
             maskElem = maskProp;
         }
