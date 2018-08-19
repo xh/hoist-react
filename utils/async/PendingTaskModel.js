@@ -11,9 +11,10 @@ import {isUndefined} from 'lodash';
 /**
  * Tracks the resolution state of a stream of promise invocations.
  *
- * An instance of this class can easily be bound to promise chains,
- * and then used as a model for masks or other UI elements that need
- * to track the progression of asynchronous tasks.
+ * An instance of this class can easily be bound to promise chains
+ * and then used as a model for masks or other UI elements that track
+ * the progression of asynchronous tasks.
+ * @see Promise#linkTo
  */
 @HoistModel()
 export class PendingTaskModel {
@@ -27,10 +28,10 @@ export class PendingTaskModel {
     @observable _lastCall = null;
 
     /**
-     * @param {string} [mode] - behavior with respect to multiple linked promises.
+     * @param {Object} [c] - PendingTaskModel configuration.
+     * @param {string} [c.mode] - behavior with respect to multiple linked promises.
      *      'all' to track all linked promises, 'last' to track the last linked promise only.
-     * @param {?string} [message] - Optional string describing the nature of the pending
-     *      task. For end-user display.
+     * @param {?string} [c.message] - description of the pending task - for end-user display.
      */
     constructor({mode = 'last', message = null} = {}) {
         this.mode = mode;
@@ -41,7 +42,7 @@ export class PendingTaskModel {
      * Are the bound promise/promises still pending?
      *
      * This observable property is the main public entry point for this object.
-     * It's behavior depends on the 'type' property.
+     * Its behavior depends on the 'type' property.
      */
     get isPending() {
         return this.mode === 'all' ? this.anyPending : this.lastPending;
@@ -49,8 +50,7 @@ export class PendingTaskModel {
 
     /**
      * Link this model to a promise.
-     *
-     * Not typically called directly by applications.  Applications should call Promise.link() instead.
+     * Not typically called directly by applications - call Promise.link() instead.
      *
      * @param {Promise} promise
      * @param {?string} [message]
