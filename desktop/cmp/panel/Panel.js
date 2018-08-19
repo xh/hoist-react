@@ -9,7 +9,7 @@ import {PropTypes as PT} from 'prop-types';
 import {castArray, omitBy} from 'lodash';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
-import {Mask, mask} from '@xh/hoist/desktop/cmp/mask';
+import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {isReactElement} from '@xh/hoist/utils/react';
 
 import {PanelSizingModel} from './PanelSizingModel';
