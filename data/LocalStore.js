@@ -6,7 +6,7 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {LastPromiseModel} from '@xh/hoist/promise';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {observable, action} from '@xh/hoist/mobx';
 import {BaseStore} from './BaseStore';
 
@@ -20,7 +20,7 @@ export class LocalStore extends BaseStore {
     @observable.ref _allRecords = [];
     @observable.ref _records = [];
 
-    _loadModel = new LastPromiseModel();
+    _loadModel = new PendingTaskModel();
     _filter = null;
 
     processRawData = null;

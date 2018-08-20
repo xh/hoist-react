@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {castArray, startCase} from 'lodash';
 import {ExportFormat} from './ExportFormat';
-import {withDefault, withDefaultTrue, withDefaultFalse, throwIf, warnIf} from '@xh/hoist/utils/JsUtils';
+import {withDefault, withDefaultTrue, withDefaultFalse, throwIf, warnIf} from '@xh/hoist/utils/js';
 
 /**
  * Cross-platform definition and API for a standardized Grid column.

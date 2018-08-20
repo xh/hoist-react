@@ -7,7 +7,7 @@
 
 import {pull} from 'lodash';
 import {wait} from '@xh/hoist/promise';
-import {provideMethods, chainMethods} from '@xh/hoist/utils/ClassUtils';
+import {provideMethods, chainMethods} from '@xh/hoist/utils/js';
 
 /**
  * Provide support for adding and removing listeners and firing events on itself.

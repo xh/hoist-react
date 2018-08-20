@@ -10,7 +10,7 @@ import {PropTypes as PT} from 'prop-types';
 import {elemFactory} from '@xh/hoist/core';
 import {start} from '@xh/hoist/promise';
 import {menuDivider, menuItem, menu} from '@xh/hoist/kit/blueprint';
-import {isReactElement} from '@xh/hoist/utils/ReactUtils';
+import {isReactElement} from '@xh/hoist/utils/react';
 
 import {ContextMenuItem} from './ContextMenuItem';
 

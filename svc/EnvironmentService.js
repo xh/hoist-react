@@ -6,8 +6,8 @@
  */
 import React from 'react';
 import {XH, HoistService} from '@xh/hoist/core';
-import {Timer} from '@xh/hoist/utils/Timer';
-import {SECONDS} from '@xh/hoist/utils/DateTimeUtils';
+import {Timer} from '@xh/hoist/utils/async';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 import {version as hoistReactVersion} from '@xh/hoist/package.json';
 import {defaults} from 'lodash';
 

@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {provideMethods} from '@xh/hoist/utils/ClassUtils';
+import {provideMethods} from '@xh/hoist/utils/js';
 import {pick, isNumber, forOwn, omit} from 'lodash';
 
 /**

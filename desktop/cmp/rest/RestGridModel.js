@@ -9,7 +9,7 @@ import {action} from '@xh/hoist/mobx';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {Icon} from '@xh/hoist/icon';
-import {pluralize} from '@xh/hoist/utils/JsUtils';
+import {pluralize} from '@xh/hoist/utils/js';
 
 import {RestFormModel} from './RestFormModel';
 

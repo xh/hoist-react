@@ -6,7 +6,7 @@
  */
 import {XH, HoistModel} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
-import {MultiPromiseModel} from '@xh/hoist/promise';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 import {AboutDialogModel} from './AboutDialogModel';
 import {ExceptionDialogModel} from './ExceptionDialogModel';
@@ -39,7 +39,7 @@ export class AppContainerModel {
      * Tracks globally loading promises.
      * Link any async operations that should mask the entire application to this model.
      */
-    appLoadModel = new MultiPromiseModel();
+    appLoadModel = new PendingTaskModel({mode: 'all'});
 
     init() {
         this.models = [

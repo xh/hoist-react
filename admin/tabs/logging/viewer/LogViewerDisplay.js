@@ -7,12 +7,12 @@
 import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {Ref} from '@xh/hoist/utils/Ref';
+import {Ref} from '@xh/hoist/utils/react';
 import {frame, table, tbody, td, tr} from '@xh/hoist/cmp/layout';
 import {clipboardMenuItem} from '@xh/hoist/desktop/cmp/clipboard';
 import {ContextMenuSupport} from '@xh/hoist/desktop/cmp/contextmenu';
-import {SECONDS} from '@xh/hoist/utils/DateTimeUtils';
-import {Timer} from '@xh/hoist/utils/Timer';
+import {SECONDS} from '@xh/hoist/utils/datetime';
+import {Timer} from '@xh/hoist/utils/async';
 
 /**
  * @private

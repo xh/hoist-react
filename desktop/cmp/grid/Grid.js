@@ -58,7 +58,6 @@ export class Grid extends Component {
     @observable _dataVersion = 0;
 
     baseClassName = 'xh-grid';
-    _scrollOnSelect = true;
 
     constructor(props) {
         super(props);
@@ -175,12 +174,7 @@ export class Grid extends Component {
 
         // Adjust selection to target record -- and sync to grid immediately.
         if (rec && !(selectedIds.includes(recId))) {
-            try {
-                this._scrollOnSelect = false;
-                selModel.select(rec);
-            } finally {
-                this._scrollOnSelect = true;
-            }
+            selModel.select(rec);
         }
         if (!rec) selModel.clear();
         const {count} = selModel;
@@ -269,12 +263,7 @@ export class Grid extends Component {
                     api.deselectAll();
                     modelSelection.forEach(id => {
                         const node = api.getRowNode(id);
-                        if (node) {
-                            node.setSelected(true);
-                            if (this._scrollOnSelect) {
-                                api.ensureNodeVisible(node);
-                            }
-                        }
+                        if (node) node.setSelected(true);
                     });
                 }
             }

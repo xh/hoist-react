@@ -12,7 +12,7 @@ import {assign} from 'lodash';
 import {fmtDate} from '@xh/hoist/format';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {dateInput} from '@xh/hoist/kit/blueprint';
-import {Ref} from '@xh/hoist/utils/Ref';
+import {Ref} from '@xh/hoist/utils/react';
 
 import {HoistField} from './HoistField';
 

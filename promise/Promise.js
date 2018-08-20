@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
-import {throwIf} from '@xh/hoist/utils/JsUtils';
+import {throwIf} from '@xh/hoist/utils/js';
 import {action} from '@xh/hoist/mobx';
 import {isFunction, isNumber, castArray} from 'lodash';
 import RSVP from 'rsvp';
@@ -205,15 +205,15 @@ Object.assign(Promise.prototype, {
 
 
     /**
-     * Link this promise to an instance of PromiseModel.
+     * Link this promise to an instance of a PendingTaskModel.
      *
-     * @param {(LastPromiseModel|MultiPromiseModel)} model
+     * @param {PendingTaskModel} model
+     * @param {?string} [message]
      */
-    linkTo(model) {
-        model.link(this);
+    linkTo(model, message) {
+        model.link(this, message);
         return this;
     },
-
 
     //--------------------------------
     // Implementation

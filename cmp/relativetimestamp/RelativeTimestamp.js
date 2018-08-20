@@ -10,10 +10,10 @@ import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, LayoutSupport, elemFactory} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {box} from '@xh/hoist/cmp/layout';
-import {Timer} from '@xh/hoist/utils/Timer';
-import {SECONDS, MINUTES, HOURS, DAYS} from '@xh/hoist/utils/DateTimeUtils';
+import {Timer} from '@xh/hoist/utils/async';
+import {SECONDS, MINUTES, HOURS, DAYS} from '@xh/hoist/utils/datetime';
 import {flow} from 'lodash';
-import {pluralize} from '@xh/hoist/utils/JsUtils';
+import {pluralize} from '@xh/hoist/utils/js';
 
 const FORMAT_STRINGS = {
     seconds: '<1 minute',

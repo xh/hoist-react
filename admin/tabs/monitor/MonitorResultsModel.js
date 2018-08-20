@@ -6,10 +6,10 @@
  */
 
 import {XH, HoistModel} from '@xh/hoist/core';
-import {SECONDS} from '@xh/hoist/utils/DateTimeUtils';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 import {action, observable, computed} from '@xh/hoist/mobx';
 import {min} from 'lodash';
-import {Timer} from '@xh/hoist/utils/Timer';
+import {Timer} from '@xh/hoist/utils/async';
 
 @HoistModel()
 export class MonitorResultsModel {

@@ -5,6 +5,4 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-export function isReactElement(obj) {
-    return obj.$$typeof;
-}
+export * from './DateTimeUtils';

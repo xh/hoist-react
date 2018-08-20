@@ -9,7 +9,7 @@ import {Children, Component} from 'react';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {HoistComponent, elemFactory, AppState, XH} from '@xh/hoist/core';
 import {div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
-import {loadMask} from '@xh/hoist/mobile/cmp/mask';
+import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {menu} from '@xh/hoist/mobile/cmp/menu';
 
 import {aboutDialog} from './AboutDialog';
@@ -61,7 +61,7 @@ export class AppContainer extends Component {
         switch (XH.appState) {
             case S.PRE_AUTH:
             case S.INITIALIZING:
-                return viewport(loadMask({isDisplayed: true}));
+                return viewport(mask({isDisplayed: true, spinner: true}));
             case S.LOGIN_REQUIRED:
                 return loginPanel({model: model.loginPanelModel});
             case S.ACCESS_DENIED:
@@ -78,7 +78,7 @@ export class AppContainer extends Component {
                         versionBar({model}),
                         this.renderAppMenu()
                     ),
-                    loadMask({model: model.appLoadModel}),
+                    mask({model: model.appLoadModel, spinner: true}),
                     messageSource({model: model.messageSourceModel}),
                     toastSource({model: model.toastSourceModel}),
                     feedbackDialog({model: model.feedbackDialogModel}),
