@@ -34,6 +34,9 @@ export class LeftRightChooserModel {
     rightGroupingExpanded = false;
 
     _hasGrouping = null;
+    _ungroupedName = null;
+    _data = null;
+    _lastSelectedSide = null;
 
     /**
      * Filter for data rows to determine if they should be shown.
