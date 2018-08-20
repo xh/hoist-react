@@ -98,6 +98,7 @@ import {
     faUserCheck,
     faUserCircle,
     faUsers,
+    faWindow,
     faWrench
 } from '@fortawesome/pro-regular-svg-icons';
 
@@ -190,6 +191,7 @@ import {
     faUserCheck as faUserCheckLight,
     faUserCircle as faUserCircleLight,
     faUsers as faUsersLight,
+    faWindow as faWindowLight,
     faWrench as faWrenchLight
 } from '@fortawesome/pro-light-svg-icons';
 
@@ -282,6 +284,7 @@ import {
     faUserCheck as faUserCheckSolid,
     faUserCircle as faUserCircleSolid,
     faUsers as faUsersSolid,
+    faWindow as faWindowSolid,
     faWrench as faWrenchSolid
 } from '@fortawesome/pro-solid-svg-icons';
 
@@ -376,6 +379,7 @@ library.add(
     faUserCheck, faUserCheckLight, faUserCheckSolid,
     faUserCircle, faUserCircleLight, faUserCircleSolid,
     faUsers, faUsersLight, faUsersSolid,
+    faWindow, faWindowLight, faWindowSolid,
     faWrench, faWrenchLight, faWrenchSolid
 );
 
@@ -481,6 +485,7 @@ export const Icon = {
     user(p)             {return fa(p, 'user-circle')},
     users(p)            {return fa(p, 'users')},
     warning(p)          {return fa(p, 'exclamation-triangle')},
+    window(p)           {return fa(p, 'window')},
     wrench(p)           {return fa(p, 'wrench')},
     x(p)                {return fa(p, 'times')},
     xCircle(p)          {return fa(p, 'times-circle')}

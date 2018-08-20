@@ -52,7 +52,7 @@ export class DataView extends Component {
             agOptions: {
                 headerHeight: 0,
                 rowClass: rowCls,
-                rowHeight: itemHeight
+                getRowHeight: () => itemHeight
             }
         });
     }

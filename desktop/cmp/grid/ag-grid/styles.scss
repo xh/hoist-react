@@ -5,7 +5,7 @@
   height: auto !important;
 }
 
-.ag-theme-balham, .ag-theme-balham-dark {
+.xh-grid {
   font-family: var(--xh-grid-font-family);
   font-size: var(--xh-grid-font-size-px);
 
@@ -31,7 +31,7 @@
     color: var(--xh-grid-header-text-color);
     background-color: var(--xh-grid-header-bg);
     font-family: var(--xh-grid-font-family);
-    font-size: var(--xh-grid-font-size);
+    font-size: var(--xh-grid-font-size-px);
   }
 
   .ag-row {
@@ -49,8 +49,6 @@
     &.ag-row-group {
       color: var(--xh-grid-group-text-color);
       background-color: var(--xh-grid-group-bg);
-      // TODO - determine why these group headers seem misaligned
-      padding-top: 2px;
     }
 
     .group-header-icon-expanded {
@@ -60,6 +58,10 @@
     .group-header-icon-contracted {
       margin: var(--xh-pad-half-px) 8px 0 8px;
     }
+  }
+
+  .ag-cell-value {
+    line-height: var(--xh-grid-line-height-px);
   }
 
   .ag-cell-focus {
@@ -81,6 +83,22 @@
   }
 }
 
+.xh-grid-compact {
+  font-size: var(--xh-grid-compact-font-size-px);
+
+  .ag-cell-value {
+    line-height: var(--xh-grid-compact-line-height-px);
+  }
+}
+
+// Grouped header padding appears slightly off w/standard row height
+.xh-grid-standard {
+  .ag-row.ag-row-group {
+    padding-top: 2px;
+  }
+}
+
+// Match loading overlay color to mask, suppress display of text in center.
 .ag-overlay .ag-overlay-loading-wrapper {
   background-color: var(--xh-mask-bg);
 

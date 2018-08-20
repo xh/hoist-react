@@ -63,6 +63,8 @@ export class GridModel {
     @observable.ref sortBy = [];
     /** @member {?string} */
     @observable groupBy = null;
+    /** @member {boolean} */
+    @observable compact = false;
     /** @member {GridApi} */
     @observable.ref agApi = null;
 
@@ -95,6 +97,7 @@ export class GridModel {
      * @param {(string|string[]|GridSorterDef|GridSorterDef[])} [c.sortBy] - colId(s) or sorter
      *      config(s) with colId and sort direction.
      * @param {?string} [c.groupBy] - Column ID by which to do full-width row grouping.
+     * @param {boolean} [c.compact] - true to render the grid in compact mode.
      * @param {boolean} [c.enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
      * @param {boolean} [c.enableExport] - true to install default export context menu items.
@@ -111,6 +114,7 @@ export class GridModel {
         emptyText = null,
         sortBy = [],
         groupBy = null,
+        compact = false,
         enableColChooser = false,
         enableExport = false,
         exportFilename = 'export',
@@ -130,6 +134,7 @@ export class GridModel {
 
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
+        this.setCompact(compact);
 
         this.selModel = this.initSelModel(selModel, store);
         this.stateModel = this.initStateModel(stateModel);
@@ -247,6 +252,11 @@ export class GridModel {
         if (!sortIsValid) return;
 
         this.sortBy = sorters;
+    }
+
+    @action
+    setCompact(compact) {
+        this.compact = compact;
     }
 
     /** Load the underlying store. */
