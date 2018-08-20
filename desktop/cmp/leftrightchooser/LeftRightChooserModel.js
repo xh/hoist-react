@@ -33,6 +33,8 @@ export class LeftRightChooserModel {
     leftGroupingExpanded = false;
     rightGroupingExpanded = false;
 
+    _hasGrouping = null;
+
     /**
      * Filter for data rows to determine if they should be shown.
      * Useful for helping users find values of interest in a large pool of rows.
