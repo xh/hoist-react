@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {stripTags} from '@xh/hoist/utils/HtmlUtils';
+import {stripTags} from '@xh/hoist/utils/js';
 import {observable, action} from '@xh/hoist/mobx';
 
 /**

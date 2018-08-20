@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory, XH} from '@xh/hoist/core';
-import {loadMask} from '@xh/hoist/desktop/cmp/mask';
+import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {filler, vframe} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -44,7 +44,7 @@ export class RestForm extends Component {
         return [
             dialogBody(this.getForm()),
             toolbar(this.getButtons()),
-            loadMask({model: model.loadModel})
+            mask({model: model.loadModel, spinner: true})
         ];
     }
     

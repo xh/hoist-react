@@ -5,8 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {AppState, HoistService, XH} from '@xh/hoist/core';
-import {MINUTES} from '@xh/hoist/utils/DateTimeUtils';
-import {Timer} from '@xh/hoist/utils/Timer';
+import {MINUTES} from '@xh/hoist/utils/datetime';
+import {Timer} from '@xh/hoist/utils/async';
 import {debounce} from 'lodash';
 
 /**

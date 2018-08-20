@@ -6,8 +6,8 @@
  */
 import {cloneDeep, debounce, isNil, isEqual, isEmpty, pickBy, map} from 'lodash';
 import {XH, HoistService} from '@xh/hoist/core';
-import {SECONDS} from '@xh/hoist/utils/DateTimeUtils';
-import {throwIf} from '@xh/hoist/utils/JsUtils';
+import {SECONDS} from '@xh/hoist/utils/datetime';
+import {throwIf} from '@xh/hoist/utils/js';
 
 /**
  * Service to read and set user-specific preference values.

@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {Ref} from '@xh/hoist/utils/Ref';
+import {Ref} from '@xh/hoist/utils/react';
 
 /**
  * Wrapper for Pages to be shown inside of a TabContainer tab. Reloads the active tab whenever

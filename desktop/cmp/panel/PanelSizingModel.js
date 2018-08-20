@@ -7,7 +7,7 @@
 
 import {XH, HoistModel} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
-import {withDefault, throwIf} from '@xh/hoist/utils/JsUtils';
+import {withDefault, throwIf} from '@xh/hoist/utils/js';
 import {start} from '@xh/hoist/promise';
 import {isNil} from 'lodash';
 

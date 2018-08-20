@@ -9,7 +9,7 @@ import {HoistComponent} from '@xh/hoist/core';
 import {filler, hframe} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {grid} from '@xh/hoist/desktop/cmp/grid';
-import {loadMask} from '@xh/hoist/desktop/cmp/mask';
+import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {storeFilterField} from '@xh/hoist/desktop/cmp/store';
 
@@ -51,7 +51,7 @@ export class LogViewer extends Component {
                     tbar: logViewerToolbar({model}),
                     item: logViewerDisplay({model})
                 }),
-                loadMask({model: loadModel})
+                mask({model: loadModel, spinner: true})
             ]
         });
     }

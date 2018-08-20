@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elem, elemFactory, HoistComponent} from '@xh/hoist/core';
-import {Ref} from '@xh/hoist/utils/Ref';
+import {Ref} from '@xh/hoist/utils/react';
 import {frame} from '@xh/hoist/cmp/layout';
 import {TabModel} from './TabModel';
 
