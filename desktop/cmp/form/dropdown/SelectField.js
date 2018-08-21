@@ -24,7 +24,7 @@ export class SelectField extends BaseDropdownField {
         ...BaseDropdownField.propTypes,
 
         /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
-        options: PT.arrayOf(PT.oneOfType([PT.object, PT.string, PT.bool])).isRequired,
+        options: PT.arrayOf(PT.oneOfType([PT.object, PT.string, PT.bool])),
         /** Optional custom optionRenderer, a function that receives (option, optionProps) */
         itemRenderer: PT.func
     };
