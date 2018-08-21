@@ -38,15 +38,17 @@ export class ValidationModel {
 
         // Add reactions to validate individual fields on the model when they change
         forOwn(constraints, (fieldConstraint, field) => {
-            // It is important to use hasIn here instead of has because the validation mode will
-            // often be instantiated during construction of the mode passed in here, so has or
+            // It is important to use hasIn here instead of has because the validation model will
+            // often be instantiated during construction of the model passed in here, so has or
             // hasOwnProperty will fail most of the time. hasIn or the in operator will return true
             // since the fields exist on the prototype.
             if (!hasIn(model, field)) {
-                console.warn(`ValidationModel has constraint for field '${field}' which is not present in the model: `,
+                console.warn(
+                    `ValidationModel has constraint for field '${field}' which is not present in the model: `,
                     model,
                     'constraint: ',
-                    fieldConstraint);
+                    fieldConstraint
+                );
                 return;
             }
 
