@@ -25,14 +25,17 @@ export class Label extends HoistField {
 
     delegateProps = ['className'];
 
+    baseClassName = 'xh-field-label';
+
     render() {
         const {children, style, width} = this.props;
         return div({
-            className: 'bp3-label bp3-inline',
+            className: this.getClassName('bp3-label', 'bp3-inline'),
             style: {...style, whiteSpace: 'nowrap', width},
             items: children,
             ...this.getDelegateProps()
         });
     }
 }
+
 export const label = elemFactory(Label);

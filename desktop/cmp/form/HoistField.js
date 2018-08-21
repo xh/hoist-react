@@ -182,10 +182,17 @@ export class HoistField extends Component {
         return ret;
     }
 
+    /**
+     * Override of the default implementation provided by HoistComponent so we can add the xh-field
+     * and xh-field-invalid classes (when appropriate)
+     */
     getClassName(...extraClassNames) {
         return classNames(this.baseClassName, this.props.className, ...extraClassNames, 'xh-field', this.invalid ? 'xh-field-invalid' : null);
     }
 
+    /**
+     * @returns {boolean} whether the currently bound field's value is valid or not
+     */
     @computed
     get invalid() {
         const {validationModel, field} = this.props;

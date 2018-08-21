@@ -37,11 +37,13 @@ export class TextField extends HoistField {
 
     delegateProps = ['className', 'disabled', 'type', 'placeholder', 'modifier'];
 
+    baseClassName = 'xh-text-field';
+
     render() {
         const {style, width, spellCheck} = this.props;
 
         return input({
-            className: 'xh-field xh-text-field',
+            className: this.getClassName(),
             value: this.renderValue || '',
             onChange: this.onChange,
             onBlur: this.onBlur,

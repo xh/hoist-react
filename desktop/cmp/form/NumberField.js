@@ -50,11 +50,14 @@ export class NumberField extends HoistField {
 
     delegateProps = ['className', 'disabled', 'min', 'max', 'placeholder', 'leftIcon'];
 
+    baseClassName = 'xh-number-field';
+
     render() {
         const {width, style, enableShorthandUnits} = this.props,
             textAlign = this.props.textAlign || 'right';
 
         return numericInput({
+            className: this.getClassName(),
             value: this.renderValue,
             onValueChange: this.onValueChange,
             onKeyPress: this.onKeyPress,

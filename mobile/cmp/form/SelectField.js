@@ -33,11 +33,13 @@ export class SelectField extends HoistField {
 
     delegateProps = ['disabled', 'modifier'];
 
+    baseClassName = 'xh-select-field';
+
     render() {
         const {options, style, width} = this.props;
 
         return select({
-            className: 'xh-field xh-select-field',
+            className: this.getClassName(),
             value: this.renderValue || '',
             onChange: this.onChange,
             style: {...style, width},

@@ -10,6 +10,8 @@ import {PropTypes as PT} from 'prop-types';
 import {upperFirst, isFunction} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/JsUtils';
 import {observable, computed, action, runInAction} from '@xh/hoist/mobx';
+import {ValidationModel} from '@xh/hoist/core';
+import classNames from 'classnames';
 
 /**
  * A Standard Hoist Field.
@@ -56,7 +58,9 @@ export class HoistField extends Component {
         /** Style block */
         style: PT.object,
         /** css class name **/
-        className: PT.string
+        className: PT.string,
+        /** validation model to use for validating this field on change */
+        validationModel: PT.instanceOf(ValidationModel)
     };
 
     static defaultProps = {
@@ -169,6 +173,25 @@ export class HoistField extends Component {
         });
 
         return ret;
+    }
+
+    /**
+     * Override of the default implementation provided by HoistComponent so we can add the xh-field
+     * and xh-field-invalid classes (when appropriate)
+     */
+    getClassName(...extraClassNames) {
+        return classNames(this.baseClassName, this.props.className, ...extraClassNames, 'xh-field', this.invalid ? 'xh-field-invalid' : null);
+    }
+
+    /**
+     * @returns {boolean} whether the currently bound field's value is valid or not
+     */
+    @computed
+    get invalid() {
+        const {validationModel, field} = this.props;
+        if (!validationModel) return false;
+
+        return !validationModel.isFieldValid(field);
     }
 
 }

@@ -35,6 +35,8 @@ export class ComboField extends BaseComboField {
 
     delegateProps = ['className', 'disabled', 'placeholder', 'leftIcon', 'rightElement'];
 
+    baseClassName = 'xh-combo-field';
+
     constructor(props) {
         super(props);
         this.internalOptions = this.normalizeOptions(props.options);
@@ -49,6 +51,7 @@ export class ComboField extends BaseComboField {
             {renderValue, internalOptions} = this;
 
         return suggest({
+            className: this.getClassName(),
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: internalOptions,
             onItemSelect: this.onItemSelect,

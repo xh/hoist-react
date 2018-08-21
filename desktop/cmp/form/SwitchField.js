@@ -39,10 +39,13 @@ export class SwitchField extends HoistField {
 
     delegateProps = ['className', 'disabled'];
 
+    baseClassName = 'xh-switch-field';
+
     render() {
         const {large, text, style} = this.props;
 
         return switchControl({
+            className: this.getClassName(),
             checked: !!this.renderValue,
             onChange: this.onChange,
             large,

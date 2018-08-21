@@ -35,11 +35,13 @@ export class SearchField extends HoistField {
 
     delegateProps = ['className', 'disabled', 'placeholder', 'modifier'];
 
+    baseClassName = 'xh-search-field';
+
     render() {
         const {style, width, spellCheck} = this.props;
 
         return searchInput({
-            className: 'xh-field xh-search-field',
+            className: this.getClassName(),
             value: this.renderValue || '',
             onChange: this.onChange,
             onBlur: this.onBlur,
