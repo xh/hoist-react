@@ -11,7 +11,6 @@ const defaults = {align: 'right'};
 
 export const dateCol = {
     ...defaults,
-    headerName: 'Date',
     renderer: dateRenderer(),
     exportFormat: ExportFormat.DATE_FMT,
     width: 120
@@ -19,14 +18,12 @@ export const dateCol = {
 
 export const timeCol = {
     ...defaults,
-    headerName: 'Time',
     renderer: timeRenderer(),
     width: 90
 };
 
 export const dateTimeCol = {
     ...defaults,
-    headerName: 'Date',
     renderer: dateTimeRenderer(),
     exportFormat: ExportFormat.DATETIME_FMT,
     width: 160
@@ -34,7 +31,6 @@ export const dateTimeCol = {
 
 export const compactDateCol = {
     ...defaults,
-    headerName: 'Date',
     renderer: compactDateRenderer(),
     exportFormat: ExportFormat.DATE_FMT,
     width: 100
