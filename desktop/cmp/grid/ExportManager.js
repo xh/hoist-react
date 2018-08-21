@@ -56,7 +56,12 @@ export class ExportManager {
         // Show separate 'started' and 'complete' toasts for larger (i.e. slower) exports.
         // We use cell count as a heuristic for speed - this may need to be tweaked.
         if (rows.length * columns.length > 5000) {
-            XH.toast({message: 'Export started', intent: 'primary', icon: Icon.download()});
+            XH.toast({
+                title: 'Export Started',
+                message: 'Your export is being prepared and will download shortly...',
+                intent: 'primary',
+                icon: Icon.download()
+            });
         }
 
         const response = await XH.fetch({
@@ -71,7 +76,10 @@ export class ExportManager {
 
         const blob = response.status === 204 ? null : await response.blob();
         download(blob, filename);
-        XH.toast({message: 'Export complete', intent: 'success'});
+        XH.toast({
+            message: 'Export complete',
+            intent: 'success'
+        });
     }
 
 
