@@ -14,4 +14,5 @@ export * from './HoistApp';
 export * from './HoistComponent';
 export * from './HoistModel';
 export * from './HoistService';
+export * from './ValidationModel';
 export * from './XH';
