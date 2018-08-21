@@ -10,6 +10,7 @@ import {castArray, omitBy} from 'lodash';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
+import {isReactElement} from '@xh/hoist/utils/react';
 
 import {PanelSizingModel} from './PanelSizingModel';
 import {panelHeader} from './impl/PanelHeader';
@@ -41,10 +42,8 @@ export class Panel extends Component {
         tbar: PT.element,
         /** A toolbar to be docked at the bottom of the panel. */
         bbar: PT.element,
-        /** True to render this panel with a mask, disabling any interaction. */
-        masked: PT.bool,
-        /** Text to display within this panel's mask. */
-        maskText: PT.string,
+        /** Mask to render on this panel.  Set to true for a default mask, with no spinner or text.*/
+        mask: PT.oneOfType([PT.element, PT.bool]),
         /** Model governing Resizing and Collapsing of the panel.*/
         sizingModel: PT.instanceOf(PanelSizingModel)
     };
@@ -58,8 +57,7 @@ export class Panel extends Component {
             title,
             icon,
             headerItems,
-            masked,
-            maskText,
+            mask: maskProp,
             sizingModel,
             children,
             ...rest
@@ -96,22 +94,27 @@ export class Panel extends Component {
         }
         if (!collapsed) this.wasDisplayed = true;
 
-        // 3) Prepare combined layout with header above core.  This is what layout props are trampolined to
+        // 3) Mask is as provided, or a default simple mask.
+        let maskElem = null;
+        if (maskProp === true) {
+            maskElem = mask({inline: true, isDisplayed: true});
+        } else if (isReactElement(maskProp)) {
+            maskElem = maskProp;
+        }
+
+        // 4) Prepare combined layout with header above core.  This is what layout props are trampolined to
         const item = vbox({
             items: [
                 panelHeader({title, icon, headerItems, sizingModel}),
                 coreContents,
-                mask({
-                    isDisplayed: masked,
-                    text: maskText
-                })
+                maskElem
             ],
             ...rest,
             ...layoutProps,
             className: this.getClassName()
         });
 
-        // 4) Return, wrapped in resizable and its affordances if needed.
+        // 5) Return, wrapped in resizable and its affordances if needed.
         return resizable || collapsible ?
             resizeContainer({item, model: sizingModel}) :
             item;

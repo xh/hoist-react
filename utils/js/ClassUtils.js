@@ -6,7 +6,7 @@
  */
 
 import {forOwn, isPlainObject} from 'lodash';
-import {throwIf} from '@xh/hoist/utils/JsUtils';
+import {throwIf} from '@xh/hoist/utils/js';
 
 /**
  * Provide default methods on the prototype of a class.

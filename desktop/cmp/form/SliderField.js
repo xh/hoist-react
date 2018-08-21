@@ -9,7 +9,7 @@ import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {box} from '@xh/hoist/cmp/layout';
 import {slider, rangeSlider} from '@xh/hoist/kit/blueprint';
-import {throwIf} from '@xh/hoist/utils/JsUtils';
+import {throwIf} from '@xh/hoist/utils/js';
 import {isArray} from 'lodash';
 import {toJS} from 'mobx';
 import {HoistField} from './HoistField';

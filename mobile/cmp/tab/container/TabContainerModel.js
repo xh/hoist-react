@@ -8,7 +8,7 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {action, computed, observable} from '@xh/hoist/mobx';
 import {tab as onsenTab} from '@xh/hoist/kit/onsen';
 import {div} from '@xh/hoist/cmp/layout';
-import {throwIf} from '@xh/hoist/utils/JsUtils';
+import {throwIf} from '@xh/hoist/utils/js';
 import {isPlainObject, uniqBy} from 'lodash';
 
 import {tab} from '../pane/Tab';

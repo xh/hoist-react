@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {upperFirst, isFunction} from 'lodash';
-import {throwIf} from '@xh/hoist/utils/JsUtils';
+import {throwIf} from '@xh/hoist/utils/js';
 import {observable, computed, action, runInAction} from '@xh/hoist/mobx';
 import {ValidationModel} from '@xh/hoist/core';
 import classNames from 'classnames';

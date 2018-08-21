@@ -33,6 +33,11 @@ export class LeftRightChooserModel {
     leftGroupingExpanded = false;
     rightGroupingExpanded = false;
 
+    _hasGrouping = null;
+    _ungroupedName = null;
+    _data = null;
+    _lastSelectedSide = null;
+
     /**
      * Filter for data rows to determine if they should be shown.
      * Useful for helping users find values of interest in a large pool of rows.
@@ -142,6 +147,7 @@ export class LeftRightChooserModel {
         this.rightModel.setGroupBy(rhGroupBy);
 
         this._data = this.preprocessData(data);
+        this._hasGrouping = hasGrouping;
         this.refreshStores();
     }
 
@@ -150,10 +156,10 @@ export class LeftRightChooserModel {
     //------------------------
     getTextColRenderer(side) {
         const groupingEnabled = side == 'left' ? this.leftGroupingEnabled : this.rightGroupingEnabled,
-            groupClass = groupingEnabled ? 'xh-lr-chooser__group-row' : '',
             lockSvg = convertIconToSvg(Icon.lock({prefix: 'fal'}));
 
         return (v, data) => {
+            const groupClass = groupingEnabled && this._hasGrouping ? 'xh-lr-chooser__group-row' : '';
             return `
                 <div class='xh-lr-chooser__item-row ${groupClass}'>
                     ${v} ${data.locked ? lockSvg : ''}

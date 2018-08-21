@@ -6,7 +6,7 @@
  */
 import {XH} from '@xh/hoist/core';
 import {allSettled} from '@xh/hoist/promise';
-import {defaultMethods} from '@xh/hoist/utils/ClassUtils';
+import {defaultMethods} from '@xh/hoist/utils/js';
 
 import {EventSupport} from './mixins/EventSupport';
 import {ReactiveSupport} from './mixins/ReactiveSupport';

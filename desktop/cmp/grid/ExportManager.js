@@ -8,7 +8,7 @@
 import {XH} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {throwIf} from '@xh/hoist/utils/JsUtils';
+import {throwIf} from '@xh/hoist/utils/js';
 import {ExportFormat} from '@xh/hoist/columns';
 import {orderBy, uniq, isString, isFunction} from 'lodash';
 import download from 'downloadjs';

@@ -22,7 +22,7 @@ export class ComboField extends BaseComboField {
         ...BaseComboField.propTypes,
 
         /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
-        options: PT.arrayOf(PT.oneOfType([PT.object, PT.string])).isRequired,
+        options: PT.arrayOf(PT.oneOfType([PT.object, PT.string])),
         /** Optional custom optionRenderer, a function that receives (option, optionProps) */
         optionRenderer: PT.func,
         /** Whether to force values from given options. Set to true to disallow arbitrary input */

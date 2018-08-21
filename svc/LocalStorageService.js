@@ -6,7 +6,7 @@
  */
 
 import {XH, HoistService} from '@xh/hoist/core';
-import {throwIf} from '@xh/hoist/utils/JsUtils';
+import {throwIf} from '@xh/hoist/utils/js';
 import store from 'store2';
 
 @HoistService()

@@ -8,6 +8,7 @@
 import {PropTypes as PT} from 'prop-types';
 import {isObject, find} from 'lodash';
 import {menuItem} from '@xh/hoist/kit/blueprint';
+import {withDefault} from '@xh/hoist/utils/js';
 
 import {HoistField} from '../HoistField';
 
@@ -48,6 +49,7 @@ export class BaseDropdownField extends HoistField {
     // Common handling of options, rendering of selected option
     //-----------------------------------------------------------
     normalizeOptions(options) {
+        options = withDefault(options, []);
         return options.map(o => {
             const ret = isObject(o) ?
                 {label: o.label, value: o.value} :

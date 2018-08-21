@@ -5,4 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-export * from './Promise';
+export function isReactElement(obj) {
+    return obj && obj.$$typeof;
+}

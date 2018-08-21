@@ -8,7 +8,7 @@
 import React from 'react';
 import {action, observable} from '@xh/hoist/mobx';
 import {cloneDeep, isEqual, remove, trimEnd} from 'lodash';
-import {pluralize} from '@xh/hoist/utils/JsUtils';
+import {pluralize} from '@xh/hoist/utils/js';
 import {XH, HoistModel} from '@xh/hoist/core';
 import {LocalStore} from '@xh/hoist/data';
 import {p} from '@xh/hoist/cmp/layout';

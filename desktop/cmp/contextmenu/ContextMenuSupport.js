@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {defaultMethods} from '@xh/hoist/utils/ClassUtils';
+import {defaultMethods} from '@xh/hoist/utils/js';
 import {contextMenu} from './ContextMenu';
 import {ContextMenuTarget} from '@xh/hoist/kit/blueprint';
 

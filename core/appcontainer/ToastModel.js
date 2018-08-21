@@ -7,7 +7,7 @@
 import {observable, action} from '@xh/hoist/mobx';
 import {HoistModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {SECONDS} from '@xh/hoist/utils/DateTimeUtils';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 
 
 /**
