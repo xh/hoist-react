@@ -10,6 +10,7 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {textarea} from '@xh/hoist/cmp/layout';
 
 import {HoistField} from './HoistField';
+import './TextAreaField.scss';
 
 /**
  * A Text Area Field

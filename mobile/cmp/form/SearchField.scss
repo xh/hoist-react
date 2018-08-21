@@ -1,0 +1,8 @@
+
+.xh-search-field {
+  &.xh-field-invalid {
+    ons-search-input {
+      border: 1px solid var(--xh-form-field-invalid-border-color);
+    }
+  }
+}

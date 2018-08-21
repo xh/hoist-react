@@ -1,0 +1,6 @@
+
+.xh-select-field {
+  &.xh-field-invalid > select {
+    border: 1px solid var(--xh-form-field-invalid-border-color);
+  }
+}

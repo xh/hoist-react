@@ -12,6 +12,7 @@ import {option} from '@xh/hoist/cmp/layout';
 import {isObject} from 'lodash';
 
 import {HoistField} from './HoistField';
+import './SelectField.scss';
 
 /**
  * A Select Field

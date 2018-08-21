@@ -10,6 +10,7 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {searchInput} from '@xh/hoist/kit/onsen';
 
 import {HoistField} from './HoistField';
+import './SearchField.scss';
 
 /**
  * A Search Input Field

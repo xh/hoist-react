@@ -10,6 +10,7 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {input} from '@xh/hoist/kit/onsen';
 
 import {HoistField} from './HoistField';
+import './TextField.scss';
 
 /**
  * A Text Input Field
