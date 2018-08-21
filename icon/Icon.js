@@ -288,7 +288,7 @@ import {
     faWrench as faWrenchSolid
 } from '@fortawesome/pro-solid-svg-icons';
 
-
+// Register imported icons with the FA library to ensure they are available by name.
 library.add(
     faAddressCard, faAddressCardLight, faAddressCardSolid,
     faAddressCard, faAddressCardLight, faAddressCardSolid,
@@ -491,6 +491,14 @@ export const Icon = {
     xCircle(p)          {return fa(p, 'times-circle')}
 };
 
+export const fontAwesomeIcon = elemFactory(FontAwesomeIcon);
+
+/**
+ * Translate an enumerated Icon element into an SVG string for use directly in markup.
+ * @param {Element} iconElem
+ * @param {Object} [opts]
+ * @return {string}
+ */
 export const convertIconToSvg = function(iconElem, opts) {
     const iconDef = findIconDefinition({
         prefix: iconElem.props.icon[0],
@@ -499,11 +507,11 @@ export const convertIconToSvg = function(iconElem, opts) {
     return icon(iconDef, opts).html[0];
 };
 
+
 //-----------------------------
 // Implementation
 //-----------------------------
-const faIcon = elemFactory(FontAwesomeIcon);
 const fa = function(props, name) {
     const prefix = (props && props.prefix) ? props.prefix : 'far';  // default to regular variant
-    return faIcon({icon: [prefix, name], ...props});
+    return fontAwesomeIcon({icon: [prefix, name], ...props});
 };
