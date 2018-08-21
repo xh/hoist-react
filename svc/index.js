@@ -12,5 +12,6 @@ export * from './LocalStorageService';
 export * from './IdentityService';
 export * from './PrefService';
 export * from './TrackService';
+export * from './ValidationService';
 
 

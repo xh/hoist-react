@@ -12,7 +12,7 @@ import {span} from '@xh/hoist/cmp/layout';
 import {saveOriginal, createRenderer} from './FormatUtils';
 import {fmtSpan} from './FormatMisc';
 
-const DATE_FMT = 'YYYY-MM-DD',
+export const DATE_FMT = 'YYYY-MM-DD',
     DATETIME_FMT = 'YYYY-MM-DD h:mma',
     TIME_FMT = 'h:mma',
     MONTH_DAY_FMT = 'MMM D';
