@@ -29,7 +29,7 @@ export class QueryComboField extends BaseComboField {
          * or
          *      [val, val, ...]
          */
-        queryFn: PT.func.isRequired,
+        queryFn: PT.func,
         /** Delay (in ms) used to buffer calls to the queryFn (default 100) */
         queryBuffer: PT.number,
         /** Optional custom optionRenderer, a function that receives (option, optionProps) */
