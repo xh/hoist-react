@@ -15,10 +15,8 @@ import {BaseStore} from './BaseStore';
  */
 export class LocalStore extends BaseStore {
 
-    @observable.shallow _recordsMap = new Map();
-
-    @observable.ref _allRecords = [];
-    @observable.ref _records = [];
+    @observable.ref _allRecords;
+    @observable.ref _filteredRecords;
 
     _loadModel = new PendingTaskModel();
     _filter = null;
@@ -29,7 +27,7 @@ export class LocalStore extends BaseStore {
      * @param {Object} c - LocalStore configuration.
      * @param {function} [c.processRawData] - Function to run on data presented to loadData() before
      *      creating records.
-     * @param {function} [c.filter] - Filter function to be run on _allRecords to produce _records.
+     * @param {function} [c.filter] - Filter function to be run.
      * @param {...*} [c.baseStoreArgs] - Additional properties to pass to BaseStore.
      */
     constructor({processRawData = null, filter, ...baseStoreArgs}) {
@@ -50,21 +48,21 @@ export class LocalStore extends BaseStore {
      * Get the count of all records loaded into the store
      */
     get allCount() {
-        return this.allRecords.length;
+        return this._allRecords.count();
     }
 
     /**
      * Get the count of the filtered record in the store
      */
     get count() {
-        return this.records.length;
+        return this._filteredRecords.count();
     }
 
     //-----------------------------
     // Implementation of Store
     //-----------------------------
-    get records()       {return this._records}
-    get allRecords()    {return this._allRecords}
+    get records()       {return this._filteredRecords.list}
+    get allRecords()    {return this._allRecords.list}
     get loadModel()     {return this._loadModel}
     get filter()        {return this._filter}
     setFilter(filterFn) {
@@ -72,11 +70,9 @@ export class LocalStore extends BaseStore {
         this.rebuildArrays();
     }
 
-    getById(id, filteredOnly) {
-        const rec = this._recordsMap.get(id);
-        return (filteredOnly && rec && this._filter && !this.filter(rec)) ?
-            null :
-            rec;
+    getById(id, fromFiltered = false) {
+        const map = fromFilter ? this._filteredRecords.map : this._allRecords.map;
+        return map.get(id);
     }
 
     //-----------------------------------
@@ -84,43 +80,53 @@ export class LocalStore extends BaseStore {
     //-----------------------------------
     @action
     loadDataInternal(rawData) {
-        this._recordsMap = this.createRecordMap(rawData);
-        this.rebuildArrays();
-    }
-
-    @action
-    updateRecordInternal(rec) {
-        this._recordsMap.set(rec.id, rec);
-        this.rebuildArrays();
+        this.createRecords(rawData);
+        this.rebuildFilteredRecords();
     }
 
     @action
     deleteRecordInternal(rec) {
-        this._recordsMap.delete(rec.id);
-        this.rebuildArrays();
-    }
-
-    @action
-    rebuildArrays() {
-        const {_filter, _recordsMap} = this;
-        this._allRecords = Array.from(_recordsMap.values());
-        this._records = _filter ? this._allRecords.filter(_filter) : this._allRecords;
-    }
-
-    createRecordMap(rawData) {
-        const {processRawData} = this;
-        if (processRawData) {
-            rawData = processRawData(rawData);
+        this.removeRecord(rec);
+        const parent = rec.parent;
+        if (parent) {
+            parent = parent.removeChild(rec);
+            this._fullMap.set(parent.id, parent);
         }
-        rawData.forEach((rec, id) => {
-            if (!('id' in rec)) rec.id = id;
+        this.rebuildFilter();
+    }
+
+    //------------------------
+    // Private Implementation
+    //------------------------
+    createRecords(rawData) {
+        const recs = this.createRecordsRecursive(rawData);
+        return new RecordSet(recs);
+    }
+
+    createRecordsRecursive(rawData, idGenerator = {id: 0}) {
+        return rawData.map(raw => {
+            if (this.processRawData) this.processRawData(raw);
+            if (!('id' in raw)) raw.id = idGenerator.id++;
+            const children = raw.children ? this.createRecords(raw.children, idGenerator) : [];
+            const rec = new Record({raw, field: this.fields, children});
+            children.forEach(c => c.parent = rec);
+            return rec;
         });
-        const ret = new Map();
-        rawData.forEach(it => {
-            const rec = this.createRecord(it);
-            ret.set(rec.id, rec);
-        });
-        return ret;
+    }
+
+
+    rebuildFilteredRecords() {
+        const {filter} = this;
+        if (!filter) {
+            this._filteredRecords = this._allRecords;
+        } else {
+            const recs = [];
+            this.records.forEach(child => {
+                child = child.applyFilter(filter);
+                if (child) recs.push(child);
+            });
+            this._filteredRecords = new RecordSet(recs);
+        }
     }
 
     destroy() {

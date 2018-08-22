@@ -11,6 +11,9 @@ import {Field} from './Field';
 
 /**
  * A managed and observable set of Records.
+ *
+ * Records may contain children.
+ *
  * @see LocalStore
  * @see UrlStore
  * @abstract
@@ -65,7 +68,6 @@ export class BaseStore {
         });
     }
 
-
     /**
      * Is the store empty after filters have been applied?
      */
@@ -79,52 +81,19 @@ export class BaseStore {
     get allEmpty() {
         return this.allRecords.length == 0;
     }
+
+    /**
+     * Iterate over each record.
+     */
+    each(includeFilters = false){
+        const records         
+    }
+
     
     //--------------------
     // For Implementations
     //--------------------
     get defaultFieldClass() {
         return Field;
-    }
-
-    /**
-     * Create a record from rawData presented.
-     *
-     * Can apply basic validation and conversion (e.g. 'date' will convert from UTC time to
-     * a JS Date object). An exception will be thrown if the validation or conversion fails.
-     *
-     * @param {Object} raw - json object containing raw data and 'id' property
-     */
-    createRecord(raw) {
-        const ret = {id: raw.id, raw};
-
-        this.fields.forEach(field => {
-            const {type, name, defaultValue} = field;
-            let val = raw[name];
-            if (val === undefined || val === null) val = defaultValue;
-
-            if (val !== null) {
-                // TODO -- Add additional validation and conversion?
-                switch (type) {
-                    case 'auto':
-                    case 'string':
-                    case 'int':
-                    case 'number':
-                    case 'bool':
-                    case 'json':
-                    case 'day':
-                        break;
-                    case 'date':
-                        val = new Date(val);
-                        break;
-                    default:
-                        throw XH.exception(`Unknown field type '${type}'`);
-                }
-            }
-
-            ret[name] = val;
-        });
-
-        return ret;
     }
 }
