@@ -277,10 +277,25 @@ export class GridModel {
     /** @param {(Column[]|Object[])} cols - Columns, or configs to create them. */
     @action
     setColumns(cols) {
-        const columns = cols.map(c => c instanceof Column ? c : new Column(c));
+        const columns = this.buildColumnsFromConfigs(cols);
+
         this.validateColumns(columns);
 
         this.columns = columns;
+    }
+
+    buildColumnsFromConfigs(colConfigs) {
+        const cols = colConfigs.map(c => {
+            if (c.children) {
+                c.children = this.buildColumnsFromConfigs(c.children);
+                c.marryChildren = true;
+                return c;
+            }
+
+            return c instanceof Column ? c : new Column(c);
+        });
+
+        return cols;
     }
 
     showColChooser() {
@@ -291,10 +306,11 @@ export class GridModel {
 
     @action
     noteAgColumnStateChanged(agColumnState) {
+        console.log(agColumnState);
         const {columns} = this;
         // Gather cols in correct order, and apply updated widths.
         let newCols = agColumnState.map(agCol => {
-            const col = find(columns, {colId: agCol.colId});
+            const col = find(columns, {colId: agCol.colId}) ;
             if (!col.flex) col.width = agCol.width;
             return col;
         });
@@ -308,14 +324,18 @@ export class GridModel {
         this.columns = newCols;
     }
 
+    syncColumnWidths(columns, agColumnState) {
+
+    }
+
     //-----------------------
     // Implementation
     //-----------------------
     validateColumns(cols) {
         if (isEmpty(cols)) return;
 
-        const hasDupes = cols.length != uniqBy(cols, 'colId').length;
-        throwIf(hasDupes, 'All colIds in column collection must be unique.');
+        // const hasDupes = cols.length != uniqBy(cols, 'colId').length;
+        // throwIf(hasDupes, 'All colIds in column collection must be unique.');
 
         warnIf(
             !cols.some(c => c.flex),
