@@ -240,6 +240,8 @@ export class Grid extends Component {
                 if (api) {
                     runInAction(() => {
                         api.setRowData(records);
+                        api.sizeColumnsToFit();
+                        
                         this._dataVersion++;
                     });
                 }
