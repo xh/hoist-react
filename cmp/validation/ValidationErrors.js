@@ -23,18 +23,11 @@ export class ValidationErrors extends Component {
         const {model, fields} = this.props,
             {isValid} = model;
 
-        // Nothing to show if the model is valid
         if (isValid) {
             return null;
         }
 
-        let errors;
-        if (!fields) {
-            errors = model.allErrorMessages;
-        } else {
-            errors = model.getFieldErrors(fields);
-        }
-
+        const errors = model.listErrors(fields);
         return vbox({
             className: this.getClassName(),
             items: errors.map(msg => span({

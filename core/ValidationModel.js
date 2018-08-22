@@ -8,7 +8,26 @@
 import {HoistModel} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {validate} from 'validate.js/validate.js';
-import {has, hasIn, pick, omit, isEmpty, assign, forOwn, values, flatten, castArray} from 'lodash';
+import {
+    has,
+    hasIn,
+    pick,
+    omit,
+    isEmpty,
+    forOwn,
+    values,
+    flatten,
+    castArray,
+    keys,
+    defaults
+} from 'lodash';
+import {PendingTaskModel} from '../utils/async/PendingTaskModel';
+
+export const ValidationModelState = {
+    PENDING: 'PENDING',
+    VALID: 'VALID',
+    INVALID: 'INVALID'
+};
 
 /**
  * Monitors fields in a model and updates the validation state when they change
@@ -21,11 +40,21 @@ export class ValidationModel {
     /** The model we are validating */
     model;
 
-    /** Whether the current validation state is valid or not */
-    @observable isValid;
+    @observable.ref _errors = {};
 
-    /** The current validation errors */
-    @observable.ref errors;
+    asyncModel = new PendingTaskModel({mode: 'all'});
+
+    get state() {
+        if (this.asyncModel.isPending) {
+            return ValidationModelState.PENDING;
+        }
+
+        return isEmpty(this._errors) ? ValidationModelState.VALID : ValidationModelState.INVALID;
+    }
+
+    get isValid() {
+        return this.state === 'valid';
+    }
 
     /**
      * @param params
@@ -42,6 +71,8 @@ export class ValidationModel {
             // often be instantiated during construction of the model passed in here, so has or
             // hasOwnProperty will fail most of the time. hasIn or the in operator will return true
             // since the fields exist on the prototype.
+
+            // TODO: warnIf!
             if (!hasIn(model, field)) {
                 console.warn(
                     `ValidationModel has constraint for field '${field}' which is not present in the model: `,
@@ -54,90 +85,70 @@ export class ValidationModel {
 
             this.addReaction({
                 track: () => model[field],
-                run: () => this.validateFieldAsync(field)
+                run: () => this.validateAsync(field)
             });
         });
+
+        this.validateAsync();
     }
 
     /**
-     * Checks whether a field is valid in the current validation state.
+     * Check field validity
      *
-     * @param field The field to check
-     * @returns {boolean} True if the field is valid, false otherwise
+     * @param field - The field to check
+     * @returns {boolean}
      */
     isFieldValid(field) {
-        return !has(this.errors, field);
+        return !has(this._errors, field);
     }
 
     /**
-     * Returns all validation error messages in a flat list
-     * @returns {Array} array of error message strings
-     */
-    get allErrorMessages() {
-        return flatten(values(this.errors));
-    }
-
-    /**
-     * Returns all validation error messages for the specified fields
-     * @param fields {Array|String} the fields to get the error messages for
-     * @returns {Array} array of error message string
-     */
-    getFieldErrors(fields) {
-        const {errors} = this;
-        if (!errors) return [];
-
-        fields = castArray(fields);
-        return flatten(fields.map(field => errors[field] || []));
-    }
-
-    /**
-     * Validates all fields on the model which have constraints configured.
+     * Returns a flat list of validation error messages
      *
-     * @returns {Promise} A Promise that resolves to an object containing the current validation state
+     * @param {string[]|string} [fields] - optional fields to include
+     * @returns {string[]}
      */
-    async validateAsync() {
-        return validate.async(this.model, this.constraints)
-            .then(() => {
-                this.setResult({});
-                return {isValid: this.isValid, result: this.errors};
-            })
-            .catch((errors) => {
-                this.setResult({...errors});
-                return {isValid: this.isValid, result: this.errors};
-            });
-    }
-
-    /**
-     * Validates a single field on the model against the constraints.
-     * Results of this single-field-validation will be merged into the current validation state.
-     *
-     * @param field the field on the model to validate
-     * @returns {Promise} A Promise that resolves to an object containing the current validation state
-     */
-    async validateFieldAsync(field) {
-        if (!has(this.constraints, field)) {
-            throw new Error(`No constraint defined for field ${field}. Constraints: `,
-                this.constraints);
+    listErrors(fields) {
+        if (fields) {
+            fields = castArray(fields);
+            return flatten(fields.map(field => this._errors[field] || []));
         }
 
-        return validate.async(this.model, pick(this.constraints, field))
-            .then(() => {
-                this.setResult(omit(this.errors, field));
-                return {isValid: this.isValid, result: this.errors};
-            })
-            .catch((errors) => {
-                this.setResult(assign({}, this.errors, errors));
-                return {isValid: this.isValid, result: this.errors};
-            });
+        return flatten(values(this._errors));
     }
 
     //---------------------------------------------
     // Implementation (internal)
     //---------------------------------------------
 
+    async validateAsync(fields) {
+        const {constraints, asyncModel, model} = this;
+
+        if (!fields) {
+            fields = keys(constraints);
+        } else {
+            fields = castArray(fields);
+        }
+
+        return validate.async(model, pick(constraints, fields))
+            .then(() => {
+                this.setErrors(omit(this._errors, fields));
+            })
+            .catch((errors) => {
+
+                fields.forEach(field => {
+                    if (!has(errors, field)) {
+                        delete this._errors[field];
+                    }
+                });
+
+                this.setErrors(defaults(errors, this._errors));
+            })
+            .linkTo(asyncModel);
+    }
+
     @action
-    setResult(result) {
-        this.errors = result;
-        this.isValid = isEmpty(result);
+    setErrors(errors) {
+        this._errors = errors;
     }
 }
