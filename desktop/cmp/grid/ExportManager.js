@@ -57,7 +57,6 @@ export class ExportManager {
         // We use cell count as a heuristic for speed - this may need to be tweaked.
         if (rows.length * columns.length > 5000) {
             XH.toast({
-                title: 'Export Started',
                 message: 'Your export is being prepared and will download shortly...',
                 intent: 'primary',
                 icon: Icon.download()
