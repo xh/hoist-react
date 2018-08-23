@@ -241,7 +241,7 @@ export class Grid extends Component {
                     runInAction(() => {
                         api.setRowData(records);
                         api.sizeColumnsToFit();
-                        
+                        api.refreshCells({force:true});
                         this._dataVersion++;
                     });
                 }
