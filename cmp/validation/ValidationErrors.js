@@ -2,6 +2,7 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory, ValidationModel} from '@xh/hoist/core';
 import {span, vbox} from '@xh/hoist/cmp/layout';
+import {isEmpty} from 'lodash';
 
 import './ValidationErrors.scss';
 
@@ -28,6 +29,10 @@ export class ValidationErrors extends Component {
         }
 
         const errors = model.listErrors(fields);
+        if (isEmpty(errors)) {
+            return null;
+        }
+
         return vbox({
             className: this.getClassName(),
             items: errors.map(msg => span({
