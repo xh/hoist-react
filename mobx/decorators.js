@@ -19,7 +19,7 @@ import {capitalize} from 'lodash';
 export function settable(target, property, descriptor) {
     const name = 'set' + capitalize(property),
         fn = action.bound(target, name, {
-            value: function (v) {this[property] = v;}
+            value: function(v) {this[property] = v}
         });
 
     Object.defineProperty(target, name, fn);
