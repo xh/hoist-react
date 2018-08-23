@@ -54,12 +54,15 @@ export class DayField extends HoistField {
 
     delegateProps = ['className', 'disabled', 'rightElement'];
 
+    baseClassName = 'xh-day-field';
+
     render() {
         let {minDate, maxDate, width, popoverPosition, style, dayPickerProps, leftIcon} = this.props;
 
         dayPickerProps = assign({fixedWeeks: true}, dayPickerProps);
 
         return dateInput({
+            className: this.getClassName(),
             ref: this.child.ref,
             value: this.renderValue,
             onChange: this.onChange,

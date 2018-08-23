@@ -36,10 +36,13 @@ export class CheckField extends HoistField {
 
     delegateProps = ['className', 'disabled'];
 
+    baseClassName = 'xh-check-field';
+
     render() {
         const {text, style} = this.props;
 
         return checkbox({
+            className: this.getClassName(),
             checked: !!this.renderValue,
             onChange: this.onChange,
             style: {...style, marginBottom: '0px', marginRight: '0px'},

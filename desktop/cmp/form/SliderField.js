@@ -48,6 +48,8 @@ export class SliderField extends HoistField {
 
     delegateProps = ['className', 'disabled'];
 
+    baseClassName = 'xh-slider-field';
+
     constructor(props) {
         super(props);
         throwIf(!props.commitOnChange, 'A commitOnChange value of false not implemented on SliderField.');
@@ -64,6 +66,7 @@ export class SliderField extends HoistField {
 
         return box({
             ...layoutProps,
+            className: this.getClassName(),
             item: input({
                 value: this.renderValue,
                 onChange: this.onValueChange,

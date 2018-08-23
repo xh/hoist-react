@@ -22,7 +22,8 @@ import {
     IdleService,
     LocalStorageService,
     PrefService,
-    TrackService
+    TrackService,
+    ValidationService
 } from '@xh/hoist/svc';
 
 import {AppContainerModel} from './appcontainer/AppContainerModel';
@@ -81,6 +82,7 @@ class XHClass {
     localStorageService = new LocalStorageService();
     prefService = new PrefService();
     trackService = new TrackService();
+    validationService = new ValidationService();
 
     //-------------------------------
     // Models
@@ -409,7 +411,8 @@ class XHClass {
     async initServicesAsync() {
         await initServicesAsync(
             this.fetchService,
-            this.localStorageService
+            this.localStorageService,
+            this.validationService
         );
         await initServicesAsync(
             this.identityService

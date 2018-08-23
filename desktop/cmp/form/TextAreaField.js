@@ -10,6 +10,7 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/kit/blueprint';
 
 import {HoistField} from './HoistField';
+import './TextAreaField.scss';
 
 /**
  * A Text Area Field
@@ -35,10 +36,13 @@ export class TextAreaField extends HoistField {
     
     delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus'];
 
+    baseClassName = 'xh-textarea-field';
+
     render() {
         const {style, width, spellCheck} = this.props;
 
         return textArea({
+            className: this.getClassName(),
             value: this.renderValue || '',
             onChange: this.onChange,
             onKeyPress: this.onKeyPress,

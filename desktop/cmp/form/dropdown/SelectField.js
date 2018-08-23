@@ -11,6 +11,7 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 
 import {BaseDropdownField} from './BaseDropdownField';
+import './SelectField.scss';
 
 /**
  * A Select Field
@@ -31,6 +32,8 @@ export class SelectField extends BaseDropdownField {
 
     delegateProps = ['className', 'disabled'];
 
+    baseClassName = 'xh-select-field';
+
     constructor(props) {
         super(props);
         this.internalOptions = this.normalizeOptions(props.options);
@@ -45,6 +48,7 @@ export class SelectField extends BaseDropdownField {
             {renderValue, internalOptions} = this;
 
         return select({
+            className: this.getClassName(),
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: internalOptions,
             onItemSelect: this.onItemSelect,

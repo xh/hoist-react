@@ -1,0 +1,12 @@
+.CodeMirror pre.CodeMirror-line {
+  box-shadow: inset 0 0 0 0px rgba(16, 22, 26, 0.4);
+  -webkit-box-shadow: inset 0 0 0 0px rgba(16, 22, 26, 0.4);
+}
+
+.xh-field {
+  &.xh-field-invalid {
+    div.CodeMirror {
+      border: 1px solid var(--xh-form-field-invalid-border-color);
+    }
+  }
+}

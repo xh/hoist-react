@@ -1,0 +1,8 @@
+
+.xh-text-field {
+  &.xh-field-invalid {
+    ons-input {
+      border: 1px solid var(--xh-form-field-invalid-border-color);
+    }
+  }
+}

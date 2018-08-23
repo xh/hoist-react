@@ -1,11 +1,11 @@
 import ReactDOM from 'react-dom';
-import {XH} from '@xh/hoist/core';
+import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {PropTypes as PT} from 'prop-types';
 import {defaultsDeep} from 'lodash';
+import {div} from '@xh/hoist/cmp/layout';
 import {textArea} from '@xh/hoist/kit/blueprint';
 
 import {HoistField} from './HoistField';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
 
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/addon/fold/foldgutter.css';
@@ -23,7 +23,7 @@ import 'codemirror/addon/fold/brace-fold.js';
 import 'codemirror/addon/scroll/simplescrollbars.js';
 import 'codemirror/addon/lint/lint.js';
 
-import './JsonField.css';
+import './JsonField.scss';
 
 /**
  * A field for editing and validating JSON, providing a mini-IDE style editor powered by CodeMirror.
@@ -62,11 +62,16 @@ export class JsonField extends HoistField {
     editor = null;
     taCmp = null;
 
+    baseClassName = 'xh-json-field';
+
     render() {
-        return textArea({
-            value: this.renderValue || '',
-            onChange: this.onChange,
-            ref: this.manageJsonEditor
+        return div({
+            className: this.getClassName(),
+            item: textArea({
+                value: this.renderValue || '',
+                onChange: this.onChange,
+                ref: this.manageJsonEditor
+            })
         });
     }
 
