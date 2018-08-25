@@ -10,7 +10,7 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {label} from '@xh/hoist/desktop/cmp/form';
 import {checkbox} from '@xh/hoist/kit/blueprint';
 
-import {HoistField} from './HoistField';
+import {HoistField} from '@xh/hoist/cmp/form';
 
 /**
  * CheckBox Field.

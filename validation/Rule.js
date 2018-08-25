@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {flatten, without, castArray} from 'lodash';
+import {flatten, without, castArray, isNil} from 'lodash';
 
 /**
  * Immutable object representing a validation rule.
@@ -21,12 +21,12 @@ export class Rule {
     when;
 
     /**
-     *  @param {(CheckCb[] | CheckCb)} cfg.constraints - functions to perform validation.
+     *  @param {(CheckCb[] | CheckCb)} cfg.checks - functions to perform validation.
      *  @param {WhenCb} [cfg.when] - optional function to determine when this rule is active.
      *      If not specified rule is considered to be always active.
      */
     constructor({checks, when}) {
-        this.checks = checks;
+        this.checks = castArray(checks);
         this.when = when;
     }
 
@@ -37,7 +37,7 @@ export class Rule {
         const {checks, when} = this;
         let ret = null;
         if (!when || when(validator, validator.model)) {
-            const promises = checks.map(it => this.evalCheckAsync(it, validator);
+            const promises = checks.map(it => this.evalCheckAsync(it, validator));
             ret = await Promise.all(promises);
             ret = flatten(without(ret, isNil));
             ret = ret.length ? ret : null;
@@ -49,7 +49,7 @@ export class Rule {
     // Implementation
     //------------------------------
     async evalCheckAsync(check, validator) {
-       return await check(validator, validator.model);
+        return await check(validator, validator.model);
     }
 }
 

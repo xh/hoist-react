@@ -11,7 +11,7 @@ import {select} from '@xh/hoist/kit/onsen';
 import {option} from '@xh/hoist/cmp/layout';
 import {isObject} from 'lodash';
 
-import {HoistField} from './HoistField';
+import {HoistField} from '@xh/hoist/cmp/form';
 import './SelectField.scss';
 
 /**

@@ -16,21 +16,21 @@ import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
 @HoistModel()
 export class Validator {
 
-    /** @member {string} name of observable field within model targeted by this validator. */
+    /** @member {string} observable field within model targeted by this validator. */
     field;
     /** @member {Object} model targeted by this validator. */
     model;
     /** @member {Rules[]} list of rules to apply to this field.  */
     rules;
     /** @member {String[]} list of errors, or null if the field is valid. */
-    @observable.ref errors
+    @observable.ref errors;
 
     _taskModel = new PendingTaskModel();
     _runId = 0;
 
     /** Is the field currently valid? */
     get isValid() {
-        return errors == null;
+        return this.errors == null;
     }
 
     /**
@@ -67,20 +67,14 @@ export class Validator {
     //-------------------------------
     // Helpers for Rule evaluation.
     //-------------------------------
-    /**
-     * Current value of field targeted by this validator.
-     */
+    /** Current value of field. */
     get value() {
         return this.model[this.field];
     }
 
-    /** Display name of field targeted by this validator. */
-    get displayName() {
-        const {field, model} = this,
-            {displayNames} = model,
-            displayName = displayNames && displayNames[field];
-
-        return displayName || field;
+    /** Display name of field. */
+    get fieldName() {
+        return this.model[this.field + 'FieldName'] || this.field;
     }
 
     //--------------------------
@@ -88,7 +82,7 @@ export class Validator {
     // -------------------------
     async evaluateAsync(rules) {
         const promises = rules.map(it => it.evaluateAsync(this));
-        let  ret = await Promises.all(promises);
+        let  ret = await Promise.all(promises);
         ret = flatten(without(ret, null));
         return ret.length ? ret : null;
     }

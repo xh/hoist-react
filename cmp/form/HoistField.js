@@ -10,7 +10,6 @@ import {PropTypes as PT} from 'prop-types';
 import {upperFirst, isFunction} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
 import {observable, computed, action, runInAction} from '@xh/hoist/mobx';
-import {ValidationModel} from '@xh/hoist/core';
 import classNames from 'classnames';
 
 import './HoistField.scss';
@@ -41,6 +40,10 @@ import './HoistField.scss';
  * control, so that changes to its value do not cause the parent of this
  * control to re-render.
  *
+ * Hoist Fields also provide support for validation display when in bound mode.  If the underlying
+ * model contains a Validator for the field shown by the control, it will be used to provide styling
+ * and validation hints.
+ *
  * Hoist Fields generally support the properties documented below.
  */
 export class HoistField extends Component {
@@ -64,9 +67,7 @@ export class HoistField extends Component {
         /** Style block */
         style: PT.object,
         /** css class name **/
-        className: PT.string,
-        /** validation model to use for validating this field on change */
-        validationModel: PT.instanceOf(ValidationModel)
+        className: PT.string
     };
 
     static defaultProps = {
@@ -79,17 +80,26 @@ export class HoistField extends Component {
 
     /**
      * List of properties that if passed to this control should be trampolined to the underlying
-     * blueprint control.
+     * control.
      *
      * Implementations of HoistField should use this.getDelegateProps() to get a basket of
      * these props for passing along.
      */
     delegateProps = [];
 
+
+    /**
+     * Validator associated with this field.
+     */
+    getValidator() {
+        const {model, field} = this.props,
+            vm = model && model.validationModel;
+        return vm && vm.getValidator(field);
+    }
+
     //-----------------------------------------------------------
     // Handling of internal vs. External value, committing
     //-----------------------------------------------------------
-
     /** Return the value to be rendered internally by control. **/
     @computed
     get renderValue() {
@@ -182,23 +192,12 @@ export class HoistField extends Component {
         return ret;
     }
 
-    /**
-     * Override of the default implementation provided by HoistComponent so we can add the xh-field
-     * and xh-field-invalid classes (when appropriate)
-     */
+    // Override of the default implementation provided by HoistComponent so we can add
+    // the xh-field and xh-field-invalid classes
     getClassName(...extraClassNames) {
-        return classNames(this.baseClassName, this.props.className, ...extraClassNames, 'xh-field', this.invalid ? 'xh-field-invalid' : null);
+        const validator = this.getValidator(),
+            validityClass = validator && !validator.isValid ? 'xh-field-invalid' : null;
+
+        return classNames(this.baseClassName, this.props.className, ...extraClassNames, 'xh-field', validityClass);
     }
-
-    /**
-     * @returns {boolean} whether the currently bound field's value is valid or not
-     */
-    @computed
-    get invalid() {
-        const {validationModel, field} = this.props;
-        if (!validationModel) return false;
-
-        return !validationModel.isFieldValid(field);
-    }
-
 }

@@ -2,7 +2,7 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory, ValidationModel} from '@xh/hoist/core';
 import {span, vbox} from '@xh/hoist/cmp/layout';
-import {isEmpty} from 'lodash';
+import {isEmpty, castArray, flatten} from 'lodash';
 
 import './ValidationErrors.scss';
 
@@ -21,17 +21,9 @@ export class ValidationErrors extends Component {
     baseClassName = 'xh-validation-errors';
 
     render() {
-        const {model, fields} = this.props,
-            {isValid} = model;
+        const errors = this.getErrors();
 
-        if (isValid) {
-            return null;
-        }
-
-        const errors = model.listErrors(fields);
-        if (isEmpty(errors)) {
-            return null;
-        }
+        if (isEmpty(errors)) return null;
 
         return vbox({
             className: this.getClassName(),
@@ -40,6 +32,22 @@ export class ValidationErrors extends Component {
                 item: msg
             }))
         });
+    }
+
+    //------------------------------
+    // Implementation
+    //------------------------------
+    getErrors() {
+        let {model, fields} = this.props,
+            {isValid, validators} = model;
+
+        if (isValid) return null;
+        if (fields) {
+            fields = castArray(fields);
+            validators = validators.filter(v => fields.includes(v.field));
+        }
+
+        return flatten(validators.map(v => v.errors));
     }
 }
 

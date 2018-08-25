@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {action, observable} from 'mobx';
+import {action} from 'mobx';
 import {capitalize} from 'lodash';
 
 /**
@@ -25,16 +25,4 @@ export function settable(target, property, descriptor) {
     Object.defineProperty(target, name, fn);
 
     return descriptor && {...descriptor, configurable: true};
-}
-
-/**
- * Decorator to mark a property as both @observable and @settable.
- *
- * Especially useful for marking properties that are intended to be bound to HoistField.
- *
- * If either specific variants of observable or a custom setter are needed, use the @observable and
- * @settable decorators directly instead.
- */
-export function bindable(target, property, descriptor) {
-    return settable(target, property, observable(target, property, descriptor));
 }

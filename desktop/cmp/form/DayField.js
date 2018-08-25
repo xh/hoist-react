@@ -14,7 +14,7 @@ import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {dateInput} from '@xh/hoist/kit/blueprint';
 import {Ref} from '@xh/hoist/utils/react';
 
-import {HoistField} from './HoistField';
+import {HoistField} from '@xh/hoist/cmp/form';
 
 /**
  * A Calendar Control for choosing a Day.
