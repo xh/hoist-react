@@ -1,10 +1,10 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {ValidationModel} from '@xh/hoist/validation';
 import {span, vbox} from '@xh/hoist/cmp/layout';
 import {isEmpty, castArray, flatten} from 'lodash';
 
+import {ValidationModel} from './ValidationModel';
 import './ValidationErrors.scss';
 
 /**

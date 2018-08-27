@@ -326,10 +326,12 @@ class XHClass {
      * @param {...Object} args - Objects to be destroyed.
      */
     safeDestroy(...args) {
-        args = flatten(args);
-        args.forEach(it => {
-            if (it && it.destroy) it.destroy();
-        });
+        if (args) {
+            args = flatten(args);
+            args.forEach(it => {
+                if (it && it.destroy) it.destroy();
+            });
+        }
     }
 
     //---------------------------------

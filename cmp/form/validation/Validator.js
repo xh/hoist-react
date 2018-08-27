@@ -9,7 +9,9 @@ import {HoistModel} from '@xh/hoist/core';
 import {observable} from '@xh/hoist/mobx';
 import {flatten, without} from 'lodash';
 import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
+import {action} from '@xh/hoist/mobx';
 
+import {ValidationState} from './ValidationState';
 /**
  * Monitors a specific field in a model maintaining its current validation state.
  */
@@ -22,23 +24,28 @@ export class Validator {
     model;
     /** @member {Rules[]} list of rules to apply to this field.  */
     @observable.ref rules=[];
-    /** @member {String[]} list of errors, or null if the field is valid. */
-    @observable.ref errors;
+    /** @member {String[]} list of errors.  Null if the validity state not computed. */
+    @observable.ref errors = null;
 
     @observable _running = false;
     _taskModel = new PendingTaskModel();
     _runId = 0;
 
-    /** Is the field currently valid? */
-    get isValid() {
-        return this.errors == null;
+    /** Validation state of the control.*/
+    get state() {
+        const VS = ValidationState;
+        const {errors, _running} = this;
+
+        if (!_running || errors == null) return VS.Unknown;
+
+        return errors.length ? VS.NotValid : VS.Valid;
     }
 
     /**
      * Is the validation of the field currently pending?
      *
-     * Return true if this valiator is awaiting completion.  If true, the current
-     * state is out of date and should be considered provisional.
+     * Return true if this validator is awaiting completion of a re-evaluation.
+     * If true, the current state is out of date and should be considered provisional.
      */
     get isPending() {
         return this._taskModel.isPending;
@@ -62,6 +69,7 @@ export class Validator {
     /**
      * Start the validator.
      */
+    @action
     start() {
         this._running = true;
     }
@@ -69,9 +77,10 @@ export class Validator {
     /**
      * Reset the validator, stopping its evaluation and clearing any validation results.
      */
+    @action
     reset() {
         this._running = false;
-        this._errors = [];
+        this._errors = null;
     }
 
     /**
@@ -97,15 +106,15 @@ export class Validator {
 
     /** Display name of field. */
     get fieldName() {
-        return this.model[this.field + 'FieldName'] || this.field;
+        return this.model.getFieldName(this.field) || this.field;
     }
 
     //--------------------------
     // Implementation
     // -------------------------
     reactor() {
-        if (this.isRunning) return;
-
+        if (!this.isRunning) return;
+        
         const runId = ++this._runId;
         this.evaluateAsync(this.rules)
             .thenAction(errors => {
@@ -117,8 +126,6 @@ export class Validator {
 
     async evaluateAsync(rules) {
         const promises = rules.map(it => it.evaluateAsync(this));
-        let  ret = await Promise.all(promises);
-        ret = flatten(without(ret, null));
-        return ret.length ? ret : null;
+        return flatten(await Promise.all(promises));
     }
 }

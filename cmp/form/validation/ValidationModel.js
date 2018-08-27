@@ -11,6 +11,7 @@ import {values} from 'lodash';
 
 import {Rule} from './Rule';
 import {Validator} from './Validator';
+import {ValidationState} from './ValidationState';
 
 /**
  * Monitors model and provides observable validation state, according to a set
@@ -37,15 +38,19 @@ export class ValidationModel {
      * @param {string} field
      */
     getValidator(field) {
-        return this.validators[field];
+        return this._validators[field];
     }
 
     /**
-     * Are all validating fields currently valid? .
+     * Return ValidationState of this model.
      */
     @computed
-    get isValid() {
-        return this.validators.every(it => it.isValid);
+    get state() {
+        const VS = ValidationState,
+            states = validators.map(v => v.state);
+        if (states.contains(VS.NotValid)) return VS.NotValid;
+        if (states.contains(VS.Unknown)) return VS.Unknown;
+        return VS.Valid;
     }
 
     /**

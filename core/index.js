@@ -6,7 +6,6 @@
  */
 
 export * from './elem';
-export * from './field';
 export * from './mixins/ReactiveSupport';
 export * from './mixins/EventSupport';
 export * from './mixins/LayoutSupport';

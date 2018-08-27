@@ -40,9 +40,9 @@ import './HoistField.scss';
  * control, so that changes to its value do not cause the parent of this
  * control to re-render.
  *
- * Hoist Fields also provide support for validation display when in bound mode.  If the underlying
- * model contains a Validator for the field shown by the control, it will be used to provide styling
- * and validation hints.
+ * Hoist Fields also provide support for built-in when bound to a model with FormSupport.
+ * If the underlying model contains a Validator for the field shown by the control, it will
+ * be used to provide styling and validation hints.
  *
  * Hoist Fields generally support the properties documented below.
  */
@@ -145,18 +145,25 @@ export class HoistField extends Component {
         let externalValue = this.externalValue,
             newValue = this.toExternal(this.internalValue);
 
-        if (newValue === externalValue) return;
+        // 0) Commit value
+        if (newValue !== externalValue) {
+            if (model && field) {
+                const setterName = `set${upperFirst(field)}`;
+                throwIf(!isFunction(model[setterName]), `Required function '${setterName}()' not found on bound model`);
+                model[setterName](newValue);
+                newValue = this.externalValue;    // Round trip this, in case model decides to intervene.
+            }
 
-        if (model && field) {
-            const setterName = `set${upperFirst(field)}`;
-            throwIf(!isFunction(model[setterName]), `Required function '${setterName}()' not found on bound model`);
-            model[setterName](newValue);
-            newValue = this.externalValue;    // Round trip this, in case model decides to intervene.
+            if (onCommit) onCommit(newValue);
+            
+            this.setInternalValue(this.toInternal(newValue));
         }
 
-        if (onCommit) onCommit(newValue);
-
-        this.setInternalValue(this.toInternal(newValue));
+        // 1) Start Validation if needed.
+        const validator = this.getValidator();
+        if (validator) {
+            validator.start();
+        }
     }
 
     onBlur = () => {
@@ -196,7 +203,7 @@ export class HoistField extends Component {
     // the xh-field and xh-field-invalid classes
     getClassName(...extraClassNames) {
         const validator = this.getValidator(),
-            validityClass = validator && !validator.isValid ? 'xh-field-invalid' : null;
+            validityClass = validator && validator.state == 'NotValid' ? 'xh-field-invalid' : null;
 
         return classNames(this.baseClassName, this.props.className, ...extraClassNames, 'xh-field', validityClass);
     }

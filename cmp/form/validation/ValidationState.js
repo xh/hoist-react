@@ -5,9 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-export * from './ValidationSupport';
-export * from './ValidationModel';
-export * from './Validator';
-export * from './Rule';
-export * from './constraints';
 
+export const ValidationState = {
+    Unknown: 'Unknown',
+    NotValid: 'NotValid',
+    Valid: 'Valid'
+};
