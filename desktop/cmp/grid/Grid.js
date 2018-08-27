@@ -147,7 +147,6 @@ export class Grid extends Component {
     //------------------------
     getColumnDefs() {
         const {columns, sortBy} = this.model;
-        const columnsClone = cloneDeep(columns);
         const cols = columns.map(c => {
             if (c.children) {
                 c.children = this.getColumnDefsFromChildren(c.children);
@@ -355,8 +354,8 @@ export class Grid extends Component {
     }
 
     onDragStopped = (ev) => {
-        console.log(ev.columnApi);
-        this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
+        this.model.noteAgColumnStateChanged(ev.columnApi.getAllGridColumns()); // has parent information
+        // + Returns all the grid columns, same as getAllColumns(), except...it has the order of the columns that are presented in the grid
     }
 
     onGridSizeChanged = (ev) => {
