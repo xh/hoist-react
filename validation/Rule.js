@@ -17,16 +17,16 @@ import {flatten, without, castArray, isNil} from 'lodash';
  */
 export class Rule {
 
-    checks;
+    check;
     when;
 
     /**
-     *  @param {(CheckCb[] | CheckCb)} cfg.checks - functions to perform validation.
+     *  @param {(ConstraintsCb[] | ConstraintCb)} cfg.check - function(s) to perform validation.
      *  @param {WhenCb} [cfg.when] - optional function to determine when this rule is active.
      *      If not specified rule is considered to be always active.
      */
-    constructor({checks, when}) {
-        this.checks = castArray(checks);
+    constructor({check, when}) {
+        this.check = castArray(check);
         this.when = when;
     }
 
@@ -34,10 +34,10 @@ export class Rule {
      * Compute current set of errors for this rule, or null if rule fully passes.
      */
     async evaluateAsync(validator) {
-        const {checks, when} = this;
+        const {check, when} = this;
         let ret = null;
         if (!when || when(validator, validator.model)) {
-            const promises = checks.map(it => this.evalCheckAsync(it, validator));
+            const promises = check.map(it => this.evalConstraintAsync(it, validator));
             ret = await Promise.all(promises);
             ret = flatten(without(ret, isNil));
             ret = ret.length ? ret : null;
@@ -48,14 +48,14 @@ export class Rule {
     //------------------------------
     // Implementation
     //------------------------------
-    async evalCheckAsync(check, validator) {
-        return await check(validator, validator.model);
+    async evalConstraintAsync(constraint, validator) {
+        return await constraint(validator, validator.model);
     }
 }
 
 
 /**
- * @callback CheckCb
+ * @callback ConstraintCb
  * @param {Validator} validator
  * @param {Object} model
  * @returns {(string|string[] } - String or array of strings describing errors.  null or undefined if rule passes successfully.

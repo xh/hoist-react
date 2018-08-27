@@ -9,8 +9,7 @@ import {PropTypes as PT} from 'prop-types';
 import {isObject, find} from 'lodash';
 import {menuItem} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
-
-import {HoistField} from '../HoistField';
+import {HoistField} from '@xh/hoist/cmp/form';
 
 /**
  * BaseDropdownField

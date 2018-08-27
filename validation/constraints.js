@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {formatDate} from '@xh/hoist/format';
+import {fmtDate} from '@xh/hoist/format';
 import {isNil} from 'lodash';
 
 /**
@@ -27,7 +27,7 @@ export const notBlank = ({value, fieldName}) => {
 /**
  * Validate length of a string.
  */
-export function isLength({min, max}) {
+export function lengthIs({min, max}) {
     return ({value, fieldName}) => {
         if (isNil(value)) return null;
 
@@ -39,7 +39,7 @@ export function isLength({min, max}) {
 /**
  * Validate a number.
  */
-export function isNumber({min, max}) {
+export function numberIs({min, max}) {
     return ({value, fieldName}) => {
         if (isNil(value)) return null;
 
@@ -51,11 +51,11 @@ export function isNumber({min, max}) {
 /**
  * Validate a date.
  */
-export function isDate({min, max, fmt = 'YYYY-MM-DD'}) {
+export function dateIs({min, max, fmt = 'YYYY-MM-DD'}) {
     return ({value, fieldName}) => {
         if (isNil(value)) return null;
 
-        if (min != null && value < min) return `${fieldName} must not be before ${formatDate(min, {fmt})}.`;
-        if (max != null && value > max) return `${fieldName} must not be after ${formatDate(max, {fmt})}.`;
+        if (min != null && value < min) return `${fieldName} must not be before ${fmtDate(min, {fmt})}.`;
+        if (max != null && value > max) return `${fieldName} must not be after ${fmtDate(max, {fmt})}.`;
     };
 }

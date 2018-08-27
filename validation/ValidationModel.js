@@ -7,7 +7,7 @@
 
 import {XH, HoistModel} from '@xh/hoist/core';
 import {computed} from '@xh/hoist/mobx';
-import {forOwn, values, groupBy} from 'lodash';
+import {values} from 'lodash';
 
 import {Rule} from './Rule';
 import {Validator} from './Validator';
@@ -19,7 +19,7 @@ import {Validator} from './Validator';
 @HoistModel()
 export class ValidationModel {
 
-    _validators;
+    _validators = {};
     model;
 
     /**
@@ -57,29 +57,29 @@ export class ValidationModel {
     }
 
     /**
-     *
-     * @param {Object[]} rules - collection of configs for Rules
      * @param {Object} model - HoistModel to validate
      */
-    constructor({rules, model}) {
+    constructor(model) {
         this.model = model;
-        this.parseRules(rules);
     }
 
-    //------------------
-    // Implementation
-    //------------------
-    parseRules(rules) {
-        const {model} = this,
-            byField = groupBy(rules, 'field');
-        forOwn(byField, (rules, field) => {
-            if (!model[field]) {
-                console.warn(`Validation rule incorrect.  ${field} is not found in model.`);
-                return;
-            }
-            rules = rules.map(config => new Rule(config));
-            this._validators[field] = (new Validator({field, model, rules}));
-        });
+    /**
+     * Add validation rules for a field in this model.
+     *
+     * @param {String} field
+     * @param {...(Rule|Object)} configs - configurations for Rules.
+     */
+    addRules(field, ...rules) {
+        const {model, _validators} = this;
+
+        rules = rules.map(r => r instanceof Rule ? r : new Rule(r));
+
+        let validator = _validators[field];
+        if (!validator) {
+            _validators[field] = new Validator({field, model, rules});
+        } else {
+            validator.addRules(rules);
+        }
     }
 
     destroy() {
