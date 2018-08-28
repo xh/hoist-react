@@ -19,8 +19,8 @@ import {
     isString,
     last,
     orderBy,
+    sortBy,
     pull,
-    remove,
     uniqBy
 } from 'lodash';
 import {Column} from '@xh/hoist/columns';
@@ -279,27 +279,11 @@ export class GridModel {
     /** @param {(Column[]|Object[])} cols - Columns, or configs to create them. */
     @action
     setColumns(cols) {
-        const columns = this.buildColumnsFromConfigs(cols);
+        const columns = this.buildColumns(cols);
 
         this.validateColumns(columns);
 
         this.columns = columns;
-    }
-
-    buildColumnsFromConfigs(colConfigs) {
-        const cols = colConfigs.map(c => {
-            if (c.children) {
-                throwIf(!(c.groupId || c.headerName), 'Must specify groupId or headerName for a group column.');
-                c.groupId = c.groupId || c.headerName;
-                c.children = this.buildColumnsFromConfigs(c.children);
-                c.marryChildren = true; // enforce 'sealed' column groups
-                return c;
-            }
-
-            return c instanceof Column ? c : new Column(c);
-        });
-
-        return cols;
     }
 
     showColChooser() {
@@ -310,21 +294,23 @@ export class GridModel {
 
     @action
     noteAgColumnStateChanged(agColState) {
-        const {columns} = this,
-            newCols = [];
+        let {columns} = this,
+            newCols = cloneDeep(columns);
 
-        agColState.forEach(agCol => {
-            let colAndPath;
-            for (let i = 0; !colAndPath && i < columns.length; i++) {
-                colAndPath = this.searchChildren(columns[i], agCol);
-            }
-            this.addLeaf(agCol, colAndPath.column, colAndPath.path, newCols);
+        // 1) Update any width changes, and mark (potentially changed) sort order
+        agColState.forEach((agCol, index) => {
+            let col = this.findColumn(newCols, agCol.colId);
+            if (!col.flex) col.width = agCol.width;
+            col._sortOrder = index;
         });
 
+        // 2) Install implied group sort orders and sort
+        newCols.forEach(it => this.markGroupSortOrder(it));
+        newCols = this.sortColumns(newCols);
 
-        // Force any emptyFlexCol that is last to stay last (avoid user dragging)!
-        const emptyFlex = findLast(columns, {colId: 'emptyFlex'});
-        if (emptyFlex && last(columns) == emptyFlex && last(newCols) != emptyFlex) {
+        // 3) Force any emptyFlexCol that is last to stay last (avoid user dragging)!
+        const emptyFlex = findLast(newCols, {colId: 'emptyFlex'});
+        if (emptyFlex && last(columns).colId == 'emptyFlex' && last(newCols) != emptyFlex) {
             pull(newCols, emptyFlex).push(emptyFlex);
         }
 
@@ -334,71 +320,48 @@ export class GridModel {
     //-----------------------
     // Implementation
     //-----------------------
-    searchChildren(column, agCol, path = []) {
-        if (column.colId == agCol.colId) {
-            return {column, path};
-        }
-
-        if (column.children) {
-            var result = null;
-            for (var i = 0; result == null && i < column.children.length; i++) {
-                const currPath = cloneDeep(path);
-                currPath.push(column.groupId);
-                result = this.searchChildren(column.children[i], agCol, currPath);
+    buildColumns(colsOrConfigs) {
+        return colsOrConfigs.map(c => {
+            if (c.children) {
+                c.groupId = c.groupId || c.headerName;
+                throwIf(!c.groupId, 'Must specify groupId or headerName for a group column.');
+                c.children = this.buildColumns(c.children);
+                c.marryChildren = true; // enforce 'sealed' column groups
+                return c;
             }
-            return result;
+
+            return c instanceof Column ? c : new Column(c);
+        });
+    }
+
+    findColumn(cols, id) {
+        for (let col of cols) {
+            if (col.children) {
+                const ret = this.findColumn(col.children, id);
+                if (ret) return ret;
+            } else {
+                if (col.colId == id) return col;
+            }
         }
         return null;
     }
 
-    addLeaf(agCol, col, path, newCols) {
-        const {columns} = this;
 
-        // An empty path means an upgrouped grid or a top level column
-        if (isEmpty(path)) {
-            if (!col.flex) col.width = agCol.width;
-            newCols.push(col);
-            return;
+    markGroupSortOrder(col) {
+        if (col.groupId) {
+            col.children.forEach(child => this.markGroupSortOrder(child));
+            col._sortOrder = col.children[0]._sortOrder;
         }
-
-        const topLevelAncestorNode = find(newCols, {groupId: path[0]});
-
-        // means we're adding a leaf to a group we already pushed
-        if (topLevelAncestorNode) {
-            this.placeInNode(agCol, col, path, topLevelAncestorNode);
-        }
-
-        // we've moved to the next top level group in new cols
-        if (!topLevelAncestorNode) {
-            const existingTopLevelNode = find(columns, {groupId: path[0]}),
-                clonedNode = cloneDeep(existingTopLevelNode);
-
-            this.removeLeaves(clonedNode);
-
-            this.placeInNode(agCol, col, path, clonedNode);
-
-            newCols.push(clonedNode);
-        }
-
     }
 
-    removeLeaves(node) {
-        remove(node.children, function(it) {
-            return !it.children;
+    sortColumns(columns) {
+        columns.forEach(col => {
+            if (col.children) {
+                col.children = this.sortColumns(col.children);
+            }
         });
-        node.children.forEach(it => this.removeLeaves(it));
-    }
 
-
-    placeInNode(agCol, col, path, node) {
-
-        // First item in path is the passed node
-        for (var i = 1; i < path.length; i++) {
-            node = find(node.children, {groupId: path[i]});
-        }
-
-        if (!col.flex) col.width = agCol.width;
-        node.children.push(col);
+        return sortBy(columns, [it => it._sortOrder]);
     }
 
     validateColumns(cols) {
