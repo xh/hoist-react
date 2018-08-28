@@ -291,7 +291,6 @@ export class GridModel {
             if (c.children) {
                 throwIf(!(c.groupId || c.headerName), 'Must specify groupId or headerName for a group column.');
                 c.groupId = c.groupId || c.headerName;
-                throwIf(!isNaN(c.groupId), 'Group columns must be provided a groupId that is not a number.'); // Ungrouped columns in a grid that contains grouped columns will have ancestors with numeric ids
                 c.children = this.buildColumnsFromConfigs(c.children);
                 c.marryChildren = true; // enforce 'sealed' column groups
                 return c;
@@ -309,6 +308,48 @@ export class GridModel {
         }
     }
 
+    @action
+    noteAgColumnStateChanged(agColState) {
+        const {columns} = this,
+            newCols = [];
+
+        agColState.forEach(agCol => {
+            let colAndPath;
+            for (let i = 0; !colAndPath && i < columns.length; i++) {
+                colAndPath = this.searchChildren(columns[i], agCol);
+            }
+            this.addLeaf(agCol, colAndPath.column, colAndPath.path, newCols);
+        });
+
+
+        // Force any emptyFlexCol that is last to stay last (avoid user dragging)!
+        const emptyFlex = findLast(columns, {colId: 'emptyFlex'});
+        if (emptyFlex && last(columns) == emptyFlex && last(newCols) != emptyFlex) {
+            pull(newCols, emptyFlex).push(emptyFlex);
+        }
+
+        this.columns = newCols;
+    }
+
+    //-----------------------
+    // Implementation
+    //-----------------------
+    searchChildren(column, agCol, path = []) {
+        if (column.colId == agCol.colId) {
+            return {column, path};
+        }
+
+        if (column.children) {
+            var result = null;
+            for (var i = 0; result == null && i < column.children.length; i++) {
+                const currPath = cloneDeep(path);
+                currPath.push(column.groupId);
+                result = this.searchChildren(column.children[i], agCol, currPath);
+            }
+            return result;
+        }
+        return null;
+    }
 
     addLeaf(agCol, col, path, newCols) {
         const {columns} = this;
@@ -341,6 +382,14 @@ export class GridModel {
 
     }
 
+    removeLeaves(node) {
+        remove(node.children, function(it) {
+            return !it.children;
+        });
+        node.children.forEach(it => this.removeLeaves(it));
+    }
+
+
     placeInNode(agCol, col, path, node) {
 
         // First item in path is the passed node
@@ -352,56 +401,6 @@ export class GridModel {
         node.children.push(col);
     }
 
-    removeLeaves(node) {
-        remove(node.children, function(it) {
-            return !it.children;
-        });
-        node.children.forEach(it => this.removeLeaves(it));
-    }
-
-    @action
-    noteAgColumnStateChanged(agColState) {
-        const {columns} = this,
-            newCols = [];
-
-        agColState.forEach(agCol => {
-            let colAndPath;
-            for (let i = 0; !colAndPath && i < columns.length; i++) {
-                colAndPath = this.searchChildren(columns[i], agCol);
-            }
-            this.addLeaf(agCol, colAndPath.column, colAndPath.path, newCols);
-        });
-
-
-        // Force any emptyFlexCol that is last to stay last (avoid user dragging)!
-        const emptyFlex = findLast(columns, {colId: 'emptyFlex'});
-        if (emptyFlex && last(columns) == emptyFlex && last(newCols) != emptyFlex) {
-            pull(newCols, emptyFlex).push(emptyFlex);
-        }
-
-        this.columns = newCols;
-    }
-
-    searchChildren(column, agCol, path = []) {
-        if (column.colId == agCol.colId) {
-            return {column, path};
-        }
-
-        if (column.children) {
-            var result = null;
-            for (var i = 0; result == null && i < column.children.length; i++) {
-                const currPath = cloneDeep(path);
-                currPath.push(column.groupId);
-                result = this.searchChildren(column.children[i], agCol, currPath);
-            }
-            return result;
-        }
-        return null;
-    }
-
-    //-----------------------
-    // Implementation
-    //-----------------------
     validateColumns(cols) {
         if (isEmpty(cols)) return;
 
