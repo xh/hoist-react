@@ -195,3 +195,13 @@
 .bp3-select-popover .bp3-popover-content {
   padding: 0 !important;
 }
+
+// Controls ship with default bottom and (inline) right margins. We expose variables
+// to customize and default those to 0 to avoid adding margins by default.
+.bp3-control {
+  margin-bottom: var(--xh-form-field-margin-bottom);
+
+  &.bp3-inline {
+    margin-right: var(--xh-form-field-margin-right);
+  }
+}
