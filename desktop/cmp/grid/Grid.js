@@ -271,7 +271,19 @@ export class Grid extends Component {
             run: ([api, records]) => {
                 if (api) {
                     runInAction(() => {
+                        // Load updated data into the grid.
                         api.setRowData(records);
+
+                        // Size columns to account for scrollbar show/hide due to row count change.
+                        api.sizeColumnsToFit();
+
+                        // Force grid to fully re-render cells. We are *not* relying on its default
+                        // cell-level change detection as this does not account for our current
+                        // renderer API (where renderers can reference other properties on the data
+                        // object). See https://github.com/exhi/hoist-react/issues/550.
+                        api.refreshCells({force: true});
+
+                        // Increment version counter to trigger selectionReaction w/latest data.
                         this._dataVersion++;
                     });
                 }
@@ -283,14 +295,14 @@ export class Grid extends Component {
         const {model} = this;
         return {
             track: () => [model.agApi, model.selection, this._dataVersion],
-            run: ([api, ...rest]) => {
+            run: ([api]) => {
                 if (!api) return;
 
                 const modelSelection = model.selModel.ids,
                     gridSelection = api.getSelectedRows().map(it => it.id),
                     diff = xor(modelSelection, gridSelection);
 
-                // If ag-grid's selection differs from the selection model, set it to match
+                // If ag-grid's selection differs from the selection model, set it to match.
                 if (diff.length > 0) {
                     api.deselectAll();
                     modelSelection.forEach(id => {

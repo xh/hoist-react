@@ -60,5 +60,13 @@
     }
   }
 
+  // Form field margins (if set) are not desired within Toolbars.
+  .bp3-control {
+    margin-bottom: 0;
+
+    &.bp3-inline {
+      margin-right: 0;
+    }
+  }
 
 }
