@@ -37,6 +37,7 @@ export class TextField extends HoistField {
         leftIcon: PT.element,
         /** Element to display on the right side of the field */
         rightElement: PT.element,
+        /** Function to handle keystroke on text field */
         onKeyPress: PT.func
     };
 
@@ -60,7 +61,7 @@ export class TextField extends HoistField {
     onChange = (ev) => {
         this.noteValueChange(ev.target.value);
     }
-    
+
     onKeyPress = (ev) => {
         if (ev.key === 'Enter') {
             this.doCommit();
