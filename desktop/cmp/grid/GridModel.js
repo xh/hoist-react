@@ -291,7 +291,7 @@ export class GridModel {
             if (c.children) {
                 throwIf(!(c.groupId || c.headerName), 'Must specify groupId or headerName for a group column.');
                 c.groupId = c.groupId || c.headerName;
-                throwIf(!isNaN(c.groupId), 'Group columns must be provided a groupId that is not a number.');
+                throwIf(!isNaN(c.groupId), 'Group columns must be provided a groupId that is not a number.'); // Ungrouped columns in a grid that contains grouped columns will have ancestors with numeric ids
                 c.children = this.buildColumnsFromConfigs(c.children);
                 c.marryChildren = true; // enforce 'sealed' column groups
                 return c;
@@ -309,115 +309,81 @@ export class GridModel {
         }
     }
 
-    // dothething(agCol, colPath, currentLevel, pathIdx, oldColsAtCurrentLvl) {
-    //
-    //     // node belongs at this level
-    //     if (isEmpty(colPath) || !isNan(colPath[pathIdx])) {
-    //         const col = find(oldColsAtCurrentLvl, {colId: agCol.colId});
-    //         if (!col.flex) col.width = agCol.actualWidth;
-    //         currentLevel.push(col);
-    //     }
-    //
-    //     // look for existing col at this level
-    //     const groupCol = find(currentLevel, {groupId: colPath[pathIdx]});
-    //
-    //     if (!groupCol) {
-    //         // we have yet to add the node
-    //         const theFoundGroup = find(oldColsAtCurrentLvl, {groupId: colPath[pathIdx]});
-    //         this.dothething(agCol, colPath, theFoundGroup.children, );
-    //         currentLevel.push(theFoundGroup)
-    //     } else {
-    //         // we have this anecestor node and need to go a deeper to push this col
-    //         pathIdx++
-    //
-    //     }
-    //
-    //
-    //     return currentLevel
-    // }
 
-    addLeaf(agCol, path, newCols) {
+    addLeaf(agCol, col, path, newCols) {
         const {columns} = this;
 
-        // An empty path means an upgrouped grid and a column with a top level auto-gen ancestor is a leaf
-        if (isEmpty(path) || this.isDummyParent(path[0])) {
-            const col = find(columns, {colId: agCol.colId});
-            if (!col.flex) col.width = agCol.actualWidth;
+        // An empty path means an upgrouped grid or a top level column
+        if (isEmpty(path)) {
+            if (!col.flex) col.width = agCol.width;
             newCols.push(col);
             return;
         }
 
-        const topLevelNode = find(newCols, {groupId: path[0]});
+        const topLevelAncestorNode = find(newCols, {groupId: path[0]});
 
         // means we're adding a leaf to a group we already pushed
-        // if (topLevelNode) {
-        //     let level = topLevelNode;
-        //     for (let i = 1; this.isDummyParent(path[i]); i++) {
-        //         level = find(level.children, {groupId: path[i]});
-        //     }
-        // }
+        if (topLevelAncestorNode) {
+            console.log('found top level');
+            // let level = topLevelNode;
+            // for (let i = 1; this.isDummyParent(path[i]); i++) {
+            //     level = find(level.children, {groupId: path[i]});
+            // }
+            this.placeInNode(agCol, col, path, topLevelAncestorNode);
+            console.log('newCols', newCols);
+
+        }
 
         // we've moved to the next top level group in new cols
-        if (!topLevelNode) {
-            const prevTopLevelNode = find(columns, {groupId: path[0]}),
-                clonedNode = cloneDeep(prevTopLevelNode);
+        if (!topLevelAncestorNode) {
+            console.log(path)
+            const existingTopLevelNode = find(columns, {groupId: path[0]}),
+                clonedNode = cloneDeep(existingTopLevelNode);
 
             this.removeLeaves(clonedNode);
-            this.findColAndPlaceInNode(agCol, prevTopLevelNode);
+
+            console.log('about to place node', agCol, col, path, clonedNode)
+            this.placeInNode(agCol, col, path, clonedNode);
 
             newCols.push(clonedNode);
+            console.log('newCols', newCols);
         }
 
     }
 
-    findColAndPlaceInNode(agCol, path, node) {
-        const {columns} = this;
+    placeInNode(agCol, col, path, node) {
 
-        var col = find(columns, {groupId: path[0]});
-        for (let i = 1; i < path.length; i++) {
-            if (this.isDummyParent(path[i])) {
-                break;
-            }
-            col = find(col.children, {groupId: path[i]}); // will we always have children?
+        // First item in path is the passed node
+        for (var i = 1; i < path.length; i++) {
+            node = find(node.children, {groupId: path[i]});
         }
 
-
-        if (!col.flex) col.width = agCol.actualWidth;
-
-
-
+        console.log(node, 'level')
+        if (!col.flex) col.width = agCol.width;
+        node.children.push(col);
     }
 
     removeLeaves(node) {
         remove(node.children, function(it) {
             return !it.children;
         });
-        node.children.forEach(it => this.kickChildrenOut(it));
-    }
-
-    isDummyParent(id) {
-        return !isNaN(id);
+        node.children.forEach(it => this.removeLeaves(it));
     }
 
     @action
-    noteAgColumnStateChanged(agGridColumns) {
-        const {columns} = this;
-        const newCols = [];
+    noteAgColumnStateChanged(agColState) {
+        const {columns} = this,
+            newCols = [];
 
-        agGridColumns.forEach(agCol => {
-            const colPath = this.getTreePath(agCol, []);
+        console.log(columns);
 
-            this.addLeaf(agCol, colPath, newCols);
-
+        agColState.forEach(agCol => {
+            let colAndPath;
+            for (let i = 0; !colAndPath && i < columns.length; i++) {
+                colAndPath = this.searchChildren(columns[i], agCol);
+            }
+            this.addLeaf(agCol, colAndPath.column, colAndPath.path, newCols);
         })
-
-        // // Gather cols in correct order, and apply updated widths.
-        // let newCols = agGridColumns.map(agCol => {
-        //     const col = find(columns, {colId: agCol.colId}) ;
-        //     if (!col.flex) col.width = agCol.actualWidth;
-        //     return col;
-        // });
-        //
 
 
         // Force any emptyFlexCol that is last to stay last (avoid user dragging)!
@@ -429,38 +395,22 @@ export class GridModel {
         this.columns = newCols;
     }
 
-    getTreePath(col, arr) {
-        // Ungrouped columns in a grid that contains grouped columns will have ancestors with numeric Ids
-        const parentGroup = col.parent;
-
-        if (parentGroup) {
-            arr.unshift(parentGroup.groupId);
-            return this.getTreePath(parentGroup, arr);
-        } else {
-            return arr;
+    searchChildren(column, agCol, path = []) {
+        if (column.colId == agCol.colId) {
+            return {column, path};
         }
+
+        if (column.children) {
+            var result = null;
+            for (var i = 0; result == null && i < column.children.length; i++) {
+                const currPath = cloneDeep(path);
+                currPath.push(column.groupId);
+                result = this.searchChildren(column.children[i], agCol, currPath);
+            }
+            return result;
+        }
+        return null;
     }
-
-    // findColumn(col, columns) {
-    //
-    //     columns.forEach(it => {
-    //         if (it.colId = col.colId) return it;
-    //         if
-    //     })
-    //
-    // }
-
-        // if not found check for column in a nested in a group
-
-        // when you find that group, it means that that entire group is next
-        // i.e. it may have been moved but only the entire group can move at a time
-
-        // therefore you want to build the remaining cols that were designated in that group right now.
-        // in the order that they are specified in the agColumn state (don't forgot to recurse)
-        // this grouped column is next in the overall newCol list
-        // the found columns should be removed from the agColumnsState or otherwise dealt with such that they don't end up in the grid twice
-
-    // }
 
     //-----------------------
     // Implementation

@@ -366,8 +366,7 @@ export class Grid extends Component {
     }
 
     onDragStopped = (ev) => {
-        this.model.noteAgColumnStateChanged(ev.columnApi.getAllGridColumns()); // has parent information
-        // + Returns all the grid columns, same as getAllColumns(), except...it has the order of the columns that are presented in the grid
+        this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
     }
 
     onGridSizeChanged = (ev) => {
