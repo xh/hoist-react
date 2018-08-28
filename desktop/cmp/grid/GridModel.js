@@ -384,8 +384,8 @@ export class GridModel {
             pull(newCols, emptyFlex).push(emptyFlex);
         }
 
-        console.log(newCols)
-        this.setColumns(newCols);
+        console.log(newCols) // the found and adjust cols used to be COLUMN instances I believe, no they are configs?
+        this.columns = newCols;
     }
 
     searchChildren(column, agCol, path = []) {
@@ -410,6 +410,9 @@ export class GridModel {
     //-----------------------
     validateColumns(cols) {
         if (isEmpty(cols)) return;
+
+        // TODO:
+        // Need to traverse columns for leaves to do this now......
 
         // const hasDupes = cols.length != uniqBy(cols, 'colId').length;
         // throwIf(hasDupes, 'All colIds in column collection must be unique.');
