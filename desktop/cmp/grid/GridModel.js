@@ -10,6 +10,7 @@ import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {
     castArray,
+    cloneDeep,
     defaults,
     find,
     findLast,
@@ -18,6 +19,7 @@ import {
     isString,
     last,
     orderBy,
+    sortBy,
     pull,
     uniqBy
 } from 'lodash';
@@ -277,7 +279,8 @@ export class GridModel {
     /** @param {(Column[]|Object[])} cols - Columns, or configs to create them. */
     @action
     setColumns(cols) {
-        const columns = cols.map(c => c instanceof Column ? c : new Column(c));
+        const columns = this.buildColumns(cols);
+
         this.validateColumns(columns);
 
         this.columns = columns;
@@ -290,18 +293,24 @@ export class GridModel {
     }
 
     @action
-    noteAgColumnStateChanged(agColumnState) {
-        const {columns} = this;
-        // Gather cols in correct order, and apply updated widths.
-        let newCols = agColumnState.map(agCol => {
-            const col = find(columns, {colId: agCol.colId});
+    noteAgColumnStateChanged(agColState) {
+        let {columns} = this,
+            newCols = cloneDeep(columns);
+
+        // 1) Update any width changes, and mark (potentially changed) sort order
+        agColState.forEach((agCol, index) => {
+            let col = this.findColumn(newCols, agCol.colId);
             if (!col.flex) col.width = agCol.width;
-            return col;
+            col._sortOrder = index;
         });
 
-        // Force any emptyFlexCol that is last to stay last (avoid user dragging)!
-        const emptyFlex = findLast(columns, {colId: 'emptyFlex'});
-        if (emptyFlex && last(columns) == emptyFlex && last(newCols) != emptyFlex) {
+        // 2) Install implied group sort orders and sort
+        newCols.forEach(it => this.markGroupSortOrder(it));
+        newCols = this.sortColumns(newCols);
+
+        // 3) Force any emptyFlexCol that is last to stay last (avoid user dragging)!
+        const emptyFlex = findLast(newCols, {colId: 'emptyFlex'});
+        if (emptyFlex && last(columns).colId == 'emptyFlex' && last(newCols) != emptyFlex) {
             pull(newCols, emptyFlex).push(emptyFlex);
         }
 
@@ -311,11 +320,57 @@ export class GridModel {
     //-----------------------
     // Implementation
     //-----------------------
+    buildColumns(colsOrConfigs) {
+        return colsOrConfigs.map(c => {
+            if (c.children) {
+                c.groupId = c.groupId || c.headerName;
+                throwIf(!c.groupId, 'Must specify groupId or headerName for a group column.');
+                c.children = this.buildColumns(c.children);
+                c.marryChildren = true; // enforce 'sealed' column groups
+                return c;
+            }
+
+            return c instanceof Column ? c : new Column(c);
+        });
+    }
+
+    findColumn(cols, id) {
+        for (let col of cols) {
+            if (col.children) {
+                const ret = this.findColumn(col.children, id);
+                if (ret) return ret;
+            } else {
+                if (col.colId == id) return col;
+            }
+        }
+        return null;
+    }
+
+
+    markGroupSortOrder(col) {
+        if (col.groupId) {
+            col.children.forEach(child => this.markGroupSortOrder(child));
+            col._sortOrder = col.children[0]._sortOrder;
+        }
+    }
+
+    sortColumns(columns) {
+        columns.forEach(col => {
+            if (col.children) {
+                col.children = this.sortColumns(col.children);
+            }
+        });
+
+        return sortBy(columns, [it => it._sortOrder]);
+    }
+
     validateColumns(cols) {
         if (isEmpty(cols)) return;
 
-        const hasDupes = cols.length != uniqBy(cols, 'colId').length;
-        throwIf(hasDupes, 'All colIds in column collection must be unique.');
+        // TODO: Need to traverse columns for leaves to do this now......
+
+        // const hasDupes = cols.length != uniqBy(cols, 'colId').length;
+        // throwIf(hasDupes, 'All colIds in column collection must be unique.');
 
         warnIf(
             !cols.some(c => c.flex),
