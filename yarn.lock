@@ -78,9 +78,9 @@
     lodash "^4.2.0"
     to-fast-properties "^2.0.0"
 
-"@blueprintjs/core@^3.1.0":
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.3.0.tgz#6fc5c7d811d1c0693c0c3d7a472549e171c455db"
+"@blueprintjs/core@^3.0.0", "@blueprintjs/core@~3.4.0":
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.4.0.tgz#cf5a61fb8288d8a58b892c7005d999c944d30521"
   dependencies:
     "@blueprintjs/icons" "^3.0.0"
     "@types/dom4" "^2.0.0"
@@ -93,9 +93,9 @@
     resize-observer-polyfill "^1.5.0"
     tslib "^1.9.0"
 
-"@blueprintjs/core@~3.4.0":
-  version "3.4.0"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.4.0.tgz#cf5a61fb8288d8a58b892c7005d999c944d30521"
+"@blueprintjs/core@^3.1.0":
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.3.0.tgz#6fc5c7d811d1c0693c0c3d7a472549e171c455db"
   dependencies:
     "@blueprintjs/icons" "^3.0.0"
     "@types/dom4" "^2.0.0"
@@ -131,11 +131,11 @@
     classnames "^2.2"
     tslib "^1.9.0"
 
-"@blueprintjs/select@~3.1.0":
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/select/-/select-3.1.0.tgz#5ec50aa31cc852ff90fd1d3666c00b6c32c408ba"
+"@blueprintjs/select@~3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/select/-/select-3.0.0.tgz#736051be2b65d93a62927e403d13cd16beb3b73f"
   dependencies:
-    "@blueprintjs/core" "^3.1.0"
+    "@blueprintjs/core" "^3.0.0"
     classnames "^2.2"
     tslib "^1.9.0"
 
