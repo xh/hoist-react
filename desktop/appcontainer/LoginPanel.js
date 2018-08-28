@@ -53,7 +53,8 @@ export class LoginPanel extends Component {
                             field: 'password',
                             placeholder: 'Password...',
                             type: 'password',
-                            commitOnChange: true
+                            commitOnChange: false,
+                            onKeyPress: this.onSubmit
                         }),
                         text({
                             omit: !model.warning,

@@ -36,7 +36,8 @@ export class TextField extends HoistField {
         /** Icon to display on the left side of the field */
         leftIcon: PT.element,
         /** Element to display on the right side of the field */
-        rightElement: PT.element
+        rightElement: PT.element,
+        onKeyPress: PT.func
     };
 
     delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus', 'leftIcon', 'rightElement'];
@@ -64,6 +65,8 @@ export class TextField extends HoistField {
         if (ev.key === 'Enter') {
             this.doCommit();
         }
+        const {onKeyPress} = this.props;
+        if (onKeyPress) onKeyPress(ev);
     }
 
 }
