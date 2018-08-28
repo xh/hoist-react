@@ -146,8 +146,9 @@ export class Grid extends Component {
     // Support for defaults
     //------------------------
     getColumnDefs() {
-        const {columns, sortBy} = this.model;
-        const cols = columns.map(c => {
+        const {columns, sortBy} = this.model,
+            clonedColumns = cloneDeep(columns);
+        const cols = clonedColumns.map(c => {
             if (c.children) {
                 c.children = this.getColumnDefsFromChildren(c.children);
                 return c;
