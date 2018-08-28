@@ -329,13 +329,11 @@ export class GridModel {
 
         // we've moved to the next top level group in new cols
         if (!topLevelAncestorNode) {
-            console.log(path)
             const existingTopLevelNode = find(columns, {groupId: path[0]}),
                 clonedNode = cloneDeep(existingTopLevelNode);
 
             this.removeLeaves(clonedNode);
 
-            console.log('about to place node', agCol, col, path, clonedNode);
             this.placeInNode(agCol, col, path, clonedNode);
 
             newCols.push(clonedNode);
@@ -350,7 +348,6 @@ export class GridModel {
             node = find(node.children, {groupId: path[i]});
         }
 
-        console.log(node, 'level')
         if (!col.flex) col.width = agCol.width;
         node.children.push(col);
     }
@@ -367,15 +364,13 @@ export class GridModel {
         const {columns} = this,
             newCols = [];
 
-        console.log('columns', columns);
-
         agColState.forEach(agCol => {
             let colAndPath;
             for (let i = 0; !colAndPath && i < columns.length; i++) {
                 colAndPath = this.searchChildren(columns[i], agCol);
             }
             this.addLeaf(agCol, colAndPath.column, colAndPath.path, newCols);
-        })
+        });
 
 
         // Force any emptyFlexCol that is last to stay last (avoid user dragging)!
@@ -384,7 +379,6 @@ export class GridModel {
             pull(newCols, emptyFlex).push(emptyFlex);
         }
 
-        console.log(newCols) // the found and adjust cols used to be COLUMN instances I believe, no they are configs?
         this.columns = newCols;
     }
 
@@ -411,8 +405,7 @@ export class GridModel {
     validateColumns(cols) {
         if (isEmpty(cols)) return;
 
-        // TODO:
-        // Need to traverse columns for leaves to do this now......
+        // TODO: Need to traverse columns for leaves to do this now......
 
         // const hasDupes = cols.length != uniqBy(cols, 'colId').length;
         // throwIf(hasDupes, 'All colIds in column collection must be unique.');
