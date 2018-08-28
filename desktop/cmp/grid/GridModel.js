@@ -324,14 +324,7 @@ export class GridModel {
 
         // means we're adding a leaf to a group we already pushed
         if (topLevelAncestorNode) {
-            console.log('found top level');
-            // let level = topLevelNode;
-            // for (let i = 1; this.isDummyParent(path[i]); i++) {
-            //     level = find(level.children, {groupId: path[i]});
-            // }
             this.placeInNode(agCol, col, path, topLevelAncestorNode);
-            console.log('newCols', newCols);
-
         }
 
         // we've moved to the next top level group in new cols
@@ -342,11 +335,10 @@ export class GridModel {
 
             this.removeLeaves(clonedNode);
 
-            console.log('about to place node', agCol, col, path, clonedNode)
+            console.log('about to place node', agCol, col, path, clonedNode);
             this.placeInNode(agCol, col, path, clonedNode);
 
             newCols.push(clonedNode);
-            console.log('newCols', newCols);
         }
 
     }
@@ -375,7 +367,7 @@ export class GridModel {
         const {columns} = this,
             newCols = [];
 
-        console.log(columns);
+        console.log('columns', columns);
 
         agColState.forEach(agCol => {
             let colAndPath;
@@ -392,7 +384,8 @@ export class GridModel {
             pull(newCols, emptyFlex).push(emptyFlex);
         }
 
-        this.columns = newCols;
+        console.log(newCols)
+        this.setColumns(newCols);
     }
 
     searchChildren(column, agCol, path = []) {
