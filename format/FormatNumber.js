@@ -321,7 +321,7 @@ function processTipFn(tipFn, originalValue) {
         const formatter = numberRenderer(originalValue, {ledger: true, forceLedgerAlign: false, precision: 12, zeroPad: false});
         return formatter(originalValue);
     } else if (isFunction(tipFn)) {
-        return tipFn(originalValue)
+        return tipFn(originalValue);
     } else {
         return null;
     }
