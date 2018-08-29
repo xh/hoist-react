@@ -131,7 +131,7 @@ export class GridStateModel {
         });
 
         return cols.map(col => {
-            return {colId: col.colId, hide: col.hide, width: col.width}
+            return {colId: col.colId, hide: col.hide, width: col.width};
         });
     }
 
