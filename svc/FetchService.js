@@ -67,25 +67,23 @@ export class FetchService {
             delete fetchOpts.acceptJson;
         }
 
-        delete fetchOpts.contentType;
-        delete fetchOpts.url;
 
         // 3) Preprocess and apply params
         if (params) {
-            const paramsStrings = [];
-            Object.entries(params).forEach(v => {
-                const key = v[0],
-                    vals = castArray(v[1]);
-                vals.forEach(val => paramsStrings.push(`${key}=${encodeURIComponent(val)}`));
-            });
-            const paramsString = paramsStrings.join('&');
-
             if (method === 'POST') {
-                fetchOpts.body = paramsString;
+                if (fetchOpts.contentType == 'application/json') {
+                    fetchOpts.body = JSON.stringify(params);
+                } else {
+                    // default to an 'application/x-www-form-urlencoded' POST body
+                    fetchOpts.body = this.objectToQueryString(params);
+                }
             } else {
-                url += '?' + paramsString;
+                url += '?' + this.objectToQueryString(params);
             }
         }
+
+        delete fetchOpts.contentType;
+        delete fetchOpts.url;
 
         let ret;
         try {
@@ -134,5 +132,29 @@ export class FetchService {
         } catch (ignore) {
             return null;
         }
+    }
+
+    /**
+     * Does not handle nested objects
+     *  {
+     *      reportDef: {
+     *          date: '2018-08-29',
+     *          user: 'jDoe'
+     *      }
+     *  }
+     *
+     *  But it does handle arrays:
+     *   {
+     *      reportColumns: ['name', 'age', 'weight']
+     *   }
+     */
+    objectToQueryString(obj) {
+        const paramsStrings = [];
+        Object.entries(obj).forEach(v => {
+            const key = v[0],
+                vals = castArray(v[1]);
+            vals.forEach(val => paramsStrings.push(`${key}=${encodeURIComponent(val)}`));
+        });
+        return paramsStrings.join('&');
     }
 }
