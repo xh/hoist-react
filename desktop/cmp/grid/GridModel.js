@@ -346,7 +346,6 @@ export class GridModel {
         return null;
     }
 
-
     markGroupSortOrder(col) {
         if (col.groupId) {
             col.children.forEach(child => this.markGroupSortOrder(child));
