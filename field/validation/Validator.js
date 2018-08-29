@@ -7,7 +7,7 @@
 
 import {HoistModel} from '@xh/hoist/core';
 import {observable} from '@xh/hoist/mobx';
-import {flatten, without} from 'lodash';
+import {flatten} from 'lodash';
 import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
 import {action} from '@xh/hoist/mobx';
 
@@ -31,7 +31,7 @@ export class Validator {
     _taskModel = new PendingTaskModel();
     _runId = 0;
 
-    /** Validation state of the control.*/
+    /** Validation state of the field.*/
     get state() {
         const VS = ValidationState;
         const {errors, _running} = this;
@@ -39,6 +39,16 @@ export class Validator {
         if (!_running || errors == null) return VS.Unknown;
 
         return errors.length ? VS.NotValid : VS.Valid;
+    }
+
+    /** Is the state of this field ValidationState.Valid **/
+    get isValid() {
+        return this.state == ValidationState.Valid;
+    }
+
+    /** Is the state of this field ValidationState.NotValid **/
+    get isNotValid() {
+        return this.state == ValidationState.NotValid;
     }
 
     /**

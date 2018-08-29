@@ -47,9 +47,9 @@ export class ValidationModel {
     @computed
     get state() {
         const VS = ValidationState,
-            states = validators.map(v => v.state);
-        if (states.contains(VS.NotValid)) return VS.NotValid;
-        if (states.contains(VS.Unknown)) return VS.Unknown;
+            states = this.validators.map(v => v.state);
+        if (states.includes(VS.NotValid))   return VS.NotValid;
+        if (states.includes(VS.Unknown))    return VS.Unknown;
         return VS.Valid;
     }
 
@@ -59,6 +59,16 @@ export class ValidationModel {
     @computed
     get isPending() {
         return this.validators.some(it => it.isPending);
+    }
+
+    /** Is the state of this model ValidationState.Valid **/
+    get isValid() {
+        return this.state == ValidationState.Valid;
+    }
+
+    /** Is the state of this model ValidationState.NotValid **/
+    get isNotValid() {
+        return this.state == ValidationState.NotValid;
     }
 
     /**
@@ -87,6 +97,20 @@ export class ValidationModel {
         }
     }
 
+    /**
+     * Reset all validators.
+     */
+    reset() {
+        this.validators.forEach(v => v.reset());
+    }
+
+    /**
+     * Start all validators
+     */
+    start() {
+        this.validators.forEach(v => v.start());
+    }
+    
     destroy() {
         XH.destroy(this.validators);
     }

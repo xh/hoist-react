@@ -3,8 +3,6 @@ import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {span, vbox} from '@xh/hoist/cmp/layout';
 import {isEmpty, castArray, flatten} from 'lodash';
-
-import {ValidationModel} from './ValidationModel';
 import './ValidationErrors.scss';
 
 /**
@@ -13,8 +11,8 @@ import './ValidationErrors.scss';
 @HoistComponent()
 export class ValidationErrors extends Component {
     static propTypes = {
-        /** The validation model containing the validation errors. */
-        model: PT.instanceOf(ValidationModel).isRequired,
+        /** The model to show validation errors for. */
+        model: PT.object,
         /** The field or fields to show the errors for. Omitting this prop will show errors for all fields. */
         fields: PT.oneOfType([PT.arrayOf(PT.string), PT.string])
     };
@@ -39,17 +37,18 @@ export class ValidationErrors extends Component {
     // Implementation
     //------------------------------
     getErrors() {
-        let {model, fields} = this.props,
-            {isValid, validators} = model;
+        let {validationModel} = this.model,
+            validators = validationModel && validationModel.validators;
 
-        if (isValid) return null;
-        if (fields) {
+        if (!validators) return null;
+
+        let fields = this.props;
+        if (fields && validationModel) {
             fields = castArray(fields);
             validators = validators.filter(v => fields.includes(v.field));
         }
 
-        return flatten(validators.map(v => v.errors));
+        return flatten(validators.map(v => v.errors || []));
     }
 }
-
 export const validationErrors = elemFactory(ValidationErrors);

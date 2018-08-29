@@ -6,7 +6,7 @@
  */
 
 import {action} from 'mobx';
-import {capitalize} from 'lodash';
+import {upperFirst} from 'lodash';
 
 /**
  * Decorator to add a simple mobx action of the form 'setPropName()' to a class.
@@ -17,7 +17,7 @@ import {capitalize} from 'lodash';
  * Modelled after approach in https://github.com/farwayer/mobx-decorators.
  */
 export function settable(target, property, descriptor) {
-    const name = 'set' + capitalize(property),
+    const name = 'set' + upperFirst(property),
         fn = action.bound(target, name, {
             value: function(v) {this[property] = v}
         });

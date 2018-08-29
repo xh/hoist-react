@@ -3,11 +3,11 @@ import {startCase, partition, isFunction, isEmpty, isString} from 'lodash';
 
 /**
  * Mark a class property as an observable form field.  For use in a HoistModel
- * decorated with @FormSupport.
+ * decorated with @FieldSupport.
  *
  * This decorator will mark the property as @settable, @observable and provides a
  * field name to the object for use in labelling.  It also provides support for
- * specifying validation rule.
+ * specifying validation rules.
  *
  * If the first argument to this function is a String, it will be interpreted as the field name.
  * (If not specified, the field name will default to the start case of the property itself.)

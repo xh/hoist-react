@@ -5,17 +5,18 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {XH} from '@xh/hoist/core';
 import {ValidationModel} from './validation/ValidationModel';
 import {defaultMethods, chainMethods} from '@xh/hoist/utils/js';
 import {forOwn} from 'lodash';
 
 /**
- * Mixin to add form support to a Hoist Model.
+ * Mixin to add field support to a Hoist Model.
  *
  * Includes support for field display names, and validation.
  * This class should be used in conjunction with the @field decorator.
  */
-export function FormSupport(C) {
+export function FieldSupport(C) {
 
     C.hasFormSupport = true;
 

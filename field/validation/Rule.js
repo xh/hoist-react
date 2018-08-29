@@ -38,7 +38,6 @@ export class Rule {
         let ret = null;
         if (!when || when(validator, validator.model)) {
             const promises = check.map(it => this.evalConstraintAsync(it, validator));
-            console.log(ret);
             ret = await Promise.all(promises);
             ret = flatten(ret);
             remove(ret, (v) => isNil(v));
