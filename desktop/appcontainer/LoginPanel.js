@@ -46,15 +46,16 @@ export class LoginPanel extends Component {
                             field: 'username',
                             placeholder: 'Username...',
                             autoFocus: true,
-                            commitOnChange: true
+                            commitOnChange: true,
+                            handleKeyPress: this.handleKeyPress
                         }),
                         textField({
                             model,
                             field: 'password',
                             placeholder: 'Password...',
                             type: 'password',
-                            commitOnChange: false,
-                            onKeyPress: this.onSubmit
+                            commitOnChange: true,
+                            handleKeyPress: this.handleKeyPress
                         }),
                         text({
                             omit: !model.warning,
@@ -84,6 +85,12 @@ export class LoginPanel extends Component {
 
     onSubmit = () => {
         this.model.submit();
+    };
+
+    handleKeyPress = (key) => {
+        if (key === 'Enter') {
+            this.onSubmit()
+        }
     }
 }
 export const loginPanel = elemFactory(LoginPanel);

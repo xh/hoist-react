@@ -24,7 +24,6 @@ export class TextField extends HoistField {
 
         /** Value of the control */
         value: PT.string,
-
         /** Whether field should receive focus on render */
         autoFocus: PT.bool,
         /** Type of input desired */
@@ -37,8 +36,8 @@ export class TextField extends HoistField {
         leftIcon: PT.element,
         /** Element to display on the right side of the field */
         rightElement: PT.element,
-        /** Function to handle keystroke on text field */
-        onKeyPress: PT.func
+        /** Function which receives event key and fires model action */
+        handleKeyPress: PT.func
     };
 
     delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus', 'leftIcon', 'rightElement'];
@@ -60,15 +59,17 @@ export class TextField extends HoistField {
 
     onChange = (ev) => {
         this.noteValueChange(ev.target.value);
-    }
+    };
 
     onKeyPress = (ev) => {
         if (ev.key === 'Enter') {
-            this.doCommit();
+            this.doCommit()
         }
-        const {onKeyPress} = this.props;
-        if (onKeyPress) onKeyPress(ev);
-    }
 
+        const {handleKeyPress} = this.props
+        if (handleKeyPress) {
+            handleKeyPress(ev.key)
+        }
+    }
 }
 export const textField = elemFactory(TextField);
