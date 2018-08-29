@@ -115,23 +115,33 @@ export class GridStateModel {
         const {gridModel} = this;
         return {
             track: () => gridModel.columns,
-            run: () => {
-                this.state.columns = this.getColumnState();
+            run: (columns) => {
+                console.log(columns);
+                this.state.columns = this.getColumnState(columns);
                 this.saveStateChange();
             }
         };
     }
 
-    getColumnState() {
-        const {columns} = this.gridModel;
+    getColumnState(columns = [], colState = []) {
 
-        return columns.map(it => {
-            return {
-                colId: it.colId,
-                hide: it.hide,
-                width: it.width
-            };
-        });
+        for (let col of columns) {
+            if (col.colId) {
+                colState.push({
+                    colId: col.colId,
+                    hide: col.hide,
+                    width: col.width
+                });
+            }
+            if (col.groupId) {
+                colState.push({
+                    groupId: col.groupId,
+                    children: this.getColumnState(col.children)
+                });
+            }
+        }
+
+        return colState;
     }
 
     updateGridColumns() {
