@@ -21,7 +21,7 @@ import {
     orderBy,
     sortBy,
     pull,
-    uniqBy
+    uniq
 } from 'lodash';
 import {Column} from '@xh/hoist/columns';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
@@ -367,16 +367,32 @@ export class GridModel {
     validateColumns(cols) {
         if (isEmpty(cols)) return;
 
-        // TODO: Need to traverse columns for leaves to do this now......
+        const groupIds = [],
+            colIds = [];
 
-        // const hasDupes = cols.length != uniqBy(cols, 'colId').length;
-        // throwIf(hasDupes, 'All colIds in column collection must be unique.');
+        this.collectIds(cols, groupIds, colIds);
+
+        const colsHaveDupes = colIds.length != uniq(colIds).length;
+        throwIf(colsHaveDupes, 'All colIds in column collection must be unique.');
+
+        const groupColsHaveDupes = groupIds.length != uniq(groupIds).length;
+        throwIf(groupColsHaveDupes, 'All groupIds in column collection must be unique.');
 
         warnIf(
             !cols.some(c => c.flex),
             `No columns have flex set (flex=true). Consider making the last column a flex column, 
             or adding an 'emptyFlexCol' at the end of your columns array.`
         );
+    }
+
+    collectIds(cols, groupIds, colIds) {
+        cols.forEach(col => {
+            if (col.colId) colIds.push(col.colId);
+            if (col.groupId) {
+                groupIds.push(col.groupId);
+                this.collectIds(col.children, groupIds, colIds);
+            }
+        });
     }
 
     formatValuesForExport(params) {
