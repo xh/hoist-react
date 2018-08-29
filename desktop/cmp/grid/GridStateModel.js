@@ -115,39 +115,40 @@ export class GridStateModel {
         const {gridModel} = this;
         return {
             track: () => gridModel.columns,
-            run: (columns) => {
-                console.log(columns);
-                this.state.columns = this.getColumnState(columns);
+            run: () => {
+                this.state.columns = this.getColumnState();
                 this.saveStateChange();
             }
         };
     }
 
-    getColumnState(columns = [], colState = []) {
+    getColumnState() {
+        const {columns} = this.gridModel,
+            cols = [];
 
-        for (let col of columns) {
-            if (col.colId) {
-                colState.push({
-                    colId: col.colId,
-                    hide: col.hide,
-                    width: col.width
-                });
-            }
-            if (col.groupId) {
-                colState.push({
-                    groupId: col.groupId,
-                    children: this.getColumnState(col.children)
-                });
-            }
+        columns.forEach(col => {
+            this.gatherLeaves(col, cols);
+        });
+
+        return cols.map(col => {
+            return {colId: col.colId, hide: col.hide, width: col.width}
+        });
+    }
+
+    gatherLeaves(col, cols) {
+        if (col.groupId) {
+            col.children.forEach(child => this.gatherLeaves(child, cols));
         }
-
-        return colState;
+        if (col.colId) cols.push(col);
     }
 
     updateGridColumns() {
         const {gridModel, state} = this,
-            cols = gridModel.cloneColumns(),
+            gridCols = gridModel.cloneColumns(),
+            cols = [],
             foundColumns = [];
+
+        gridCols.forEach(it => this.gatherLeaves(it, cols));
 
         if (!state.columns) return;
 
@@ -171,7 +172,7 @@ export class GridStateModel {
             }
         });
 
-        gridModel.setColumns(newColumns);
+        gridModel.noteAgColumnStateChanged(newColumns);
     }
 
     //--------------------------
