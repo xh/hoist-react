@@ -5,7 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-
 export const ValidationState = {
     Unknown: 'Unknown',
     NotValid: 'NotValid',

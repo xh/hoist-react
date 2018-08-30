@@ -18,7 +18,7 @@ import {forOwn} from 'lodash';
  */
 export function FieldSupport(C) {
 
-    C.hasFormSupport = true;
+    C.hasFieldSupport = true;
 
     defaultMethods(C, {
 

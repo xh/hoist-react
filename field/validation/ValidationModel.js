@@ -112,6 +112,6 @@ export class ValidationModel {
     }
     
     destroy() {
-        XH.destroy(this.validators);
+        XH.safeDestroy(this.validators);
     }
 }
