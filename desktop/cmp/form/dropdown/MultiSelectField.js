@@ -10,12 +10,15 @@ import {castArray, clone, isEmpty, remove, startsWith} from 'lodash';
 import {action} from '@xh/hoist/mobx';
 import {Classes, menuItem, multiSelect} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
 
 import {BaseDropdownField} from './BaseDropdownField';
 
 /**
  * A Multi Select Field
+ *
+ * It is important to control the maxWidth of this component. As tags are selected they are added to the field
+ * causing it to expand. Tags will wrap once the component reaches its width or max-width or the explicitly set
+ * width of its container. Use the className prop to define this style in CSS.
  *
  * @see HoistField for properties additional to those documented below.
  */
@@ -28,7 +31,9 @@ export class MultiSelectField extends BaseDropdownField {
         /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
         options: PT.arrayOf(PT.oneOfType([PT.object, PT.string, PT.bool])),
         /** Optional custom optionRenderer, a function that receives (option, optionProps) */
-        itemRenderer: PT.func
+        itemRenderer: PT.func,
+        /** Optional custom tagRenderer, a function that receives each member of the externalValue array */
+        tagRenderer: PT.func
     };
 
     delegateProps = ['className', 'disabled'];
@@ -43,7 +48,7 @@ export class MultiSelectField extends BaseDropdownField {
     }
 
     render() {
-        let {style, width, placeholder, disabled} = this.props,
+        let {placeholder, disabled, className} = this.props,
             {internalOptions} = this;
 
         return multiSelect({
@@ -54,25 +59,22 @@ export class MultiSelectField extends BaseDropdownField {
             itemPredicate: (q, item) => {
                 return startsWith(item.label.toLowerCase(), q.toLowerCase());
             },
-            tagRenderer: this.tagRenderer,
-            tagInputProps: {tagProps: {minimal: true}, placeholder, onRemove: this.handleTagRemove},
+            tagRenderer: this.getTagRenderer(),
+            tagInputProps: {
+                tagProps: {minimal: true},
+                className,
+                placeholder,
+                onRemove: this.handleTagRemove
+            },
             selectedItems: this.externalValue || [],
-            filterable: false,
             onBlur: this.onBlur,
             onFocus: this.onFocus,
-            inputProps: {placeholder: 'Hello'},
             disabled
         });
     }
 
-    // this could be a prop al defaultOptionRenderer
-    tagRenderer(item) {
-        return item;
-    }
-
-    // this gets p
     handleTagRemove = (tag, idx) => {
-        // the tag string is determined by the tagRender, so might not match the value representation
+        // the tag string is determined by the tagRenderer, so it may not match the value representation
         const val = this.externalValue[idx];
         this.onItemSelect({value: val});
     }
@@ -87,6 +89,24 @@ export class MultiSelectField extends BaseDropdownField {
 
     getOptionRenderer() {
         return this.props.optionRenderer || this.defaultOptionRenderer;
+    }
+
+    defaultOptionRenderer = (option, optionProps) => {
+        return menuItem({
+            key: option.value,
+            text: option.label,
+            icon: (this.externalValue && this.externalValue.includes(option.value)) ? 'tick' : 'blank',
+            onClick: optionProps.handleClick,
+            active: optionProps.modifiers.active
+        });
+    }
+
+    getTagRenderer() {
+        return this.props.tagRenderer || this.defaultTagRenderer;
+    }
+
+    defaultTagRenderer(item) {
+        return item;
     }
 
     defaultOptionRenderer = (option, optionProps) => {
