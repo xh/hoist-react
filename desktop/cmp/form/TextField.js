@@ -63,12 +63,12 @@ export class TextField extends HoistField {
 
     onKeyPress = (ev) => {
         if (ev.key === 'Enter') {
-            this.doCommit()
+            this.doCommit();
         }
 
-        const {handleKeyPress} = this.props
+        const {handleKeyPress} = this.props;
         if (handleKeyPress) {
-            handleKeyPress(ev.key)
+            handleKeyPress(ev.key);
         }
     }
 }

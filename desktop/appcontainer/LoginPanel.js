@@ -89,7 +89,7 @@ export class LoginPanel extends Component {
 
     handleKeyPress = (key) => {
         if (key === 'Enter') {
-            this.onSubmit()
+            this.onSubmit();
         }
     }
 }
