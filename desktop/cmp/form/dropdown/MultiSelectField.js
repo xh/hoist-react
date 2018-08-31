@@ -16,7 +16,7 @@ import {BaseDropdownField} from './BaseDropdownField';
 /**
  * A Multi Select Field
  *
- * It is important to control the maxWidth of this component. As tags are selected they are added to the field
+ * It is important to control the width of this component. As tags are selected they are added to the field
  * causing it to expand. Tags will wrap once the component reaches its width or max-width or the explicitly set
  * width of its container. Use the className prop to define this style in CSS.
  *
