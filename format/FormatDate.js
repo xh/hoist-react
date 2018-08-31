@@ -23,29 +23,28 @@ const INVALID_DATE = moment(null).format();
  * Render dates and times with specified format
  *
  * @param {*} v - a date value to format, can be any value MomentJs can parse.
- *      @see https://momentjs.com/docs/#/parsing/ for more info
- *
+ *      @see {@link https://momentjs.com/docs/#/parsing/|MomentJS Docs}
  * @param {(Object|string)} [opts] - a MomentJs format string or an options object.
  * @param {string} [opts.fmt] - a MomentJs format string.
- * @param {function} [opts.tipFn] - use to place formatted date in span with title property set to returned string.
- *      Function will be passed the originalValue param
- * @param {boolean} [opts.asElement] - return a react element rather than a html string
- * @param {*} [opts.originalValue] - used to retain an unaltered reference to the original value to be formatted.
+ * @param {function} [opts.tooltip] - function to generate a tooltip string,
+ *      passed the original value to be formatted.
+ * @param {boolean} [opts.asElement] - return a React element rather than an HTML string.
+ * @param {*} [opts.originalValue] - holds the unaltered original value to be formatted.
  *      Not typically used by applications.
  */
 export function fmtDate(v, opts = {}) {
     if (isString(v)) return v;
     if (isString(opts)) opts = {fmt: opts};
 
-    defaults(opts, {fmt: DATE_FMT, tipFn: null});
+    defaults(opts, {fmt: DATE_FMT, tooltip: null});
     saveOriginal(v, opts);
 
     let ret = moment(v).format(opts.fmt);
 
     if (ret == INVALID_DATE) {
         ret = '';
-    } else if (opts.tipFn) {
-        ret = fmtSpan(ret, {className: 'xh-title-tip', title: opts.tipFn(opts.originalValue), asElement: opts.asElement});
+    } else if (opts.tooltip) {
+        ret = fmtSpan(ret, {className: 'xh-title-tip', title: opts.tooltip(opts.originalValue), asElement: opts.asElement});
     }
 
     return opts.asElement ? span(ret) : ret;
@@ -72,16 +71,19 @@ export function fmtTime(v, opts = {}) {
  * Render dates formatted based on distance in time from current day
  *
  * @param {*} v - a date value to format, can be any value MomentJs can parse.
- *      @see https://momentjs.com/docs/#/parsing/ for more info.
- *
- * @param {Object} [opts] - an options object, may include:
- * @param {string} [opts.sameDayFmt] - a MomentJs format string for dates matching current day, defaults to 'hh:mma'.
- * @param {string} [opts.nearFmt] - format for dates within the number of months determined by the distantThreshold, defaults to 'MMM D'.
- * @param {string} [opts.distantFmt] - format for dates outside of the number of months specified by the distantThreshold, defaults to 'YYYY-MM-DD'.
- * @param {int} [opts.distantThreshold] - used to determined the number of months away from the current month to be considered 'recent' or 'near'
- * @param {function} [opts.tipFn] - use to place formatted date in span with title property set to string returned by this function
- * @param {boolean} [opts.asElement] - return a react element rather than a html string
- * @param {*} [opts.originalValue] - used to retain an unaltered reference to the original value to be formatted
+ *      @see {@link https://momentjs.com/docs/#/parsing/|MomentJS Docs}
+ * @param {Object} [opts]
+ * @param {string} [opts.sameDayFmt] - format for dates matching current day, defaults to 'hh:mma'.
+ * @param {string} [opts.nearFmt] - format for dates within the number of months specified by the
+ *      distantThreshold, defaults to 'MMM D'.
+ * @param {string} [opts.distantFmt] - format for dates > number of months specified by the
+ *      distantThreshold, defaults to 'YYYY-MM-DD'.
+ * @param {number} [opts.distantThreshold] - number of months away from the current month
+ *      to be considered 'recent' or 'near'.
+ * @param {function} [opts.tooltip] - function to generate a tooltip string,
+ *      passed the original value to be formatted.
+ * @param {boolean} [opts.asElement] - return a React element rather than an HTML string
+ * @param {*} [opts.originalValue] - holds the unaltered original value to be formatted.
  *      Not typically used by applications.
  *
  * Note: Moments are mutable. Calling any of the manipulation methods will change the original moment.
@@ -91,7 +93,7 @@ export function fmtCompactDate(v, {
     nearFmt = MONTH_DAY_FMT,
     distantFmt = DATE_FMT,
     distantThreshold = 6,
-    tipFn = null,
+    tooltip = null,
     asElement = false,
     originalValue = v
 } = {}) {
@@ -100,7 +102,7 @@ export function fmtCompactDate(v, {
         valueDay = fmtDate(v),
         recentPast = now.clone().subtract(distantThreshold, 'months').endOf('month'),
         nearFuture = now.clone().add(distantThreshold, 'months').date(1),
-        dateOpts = {tipFn, originalValue, asElement};
+        dateOpts = {tooltip, originalValue, asElement};
 
     if (today === valueDay) {
         dateOpts.fmt = sameDayFmt;
