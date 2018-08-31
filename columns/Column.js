@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {castArray, startCase} from 'lodash';
+import {castArray, startCase, isFunction} from 'lodash';
 import {ExportFormat} from './ExportFormat';
 import {withDefault, withDefaultTrue, withDefaultFalse, throwIf, warnIf} from '@xh/hoist/utils/js';
 
@@ -59,6 +59,8 @@ export class Column {
      *      @see ExportManager
      * @param {ExportFormat} [c.exportFormat] - structured format string for Excel-based exports.
      *      @see ExportFormat
+     * @param {function} [c.toolTip] - tool tip function, based on AG Grid Toop Tip.
+     *      (v, data, meta) => { ... return  a string }
      * @param {boolean} [c.excludeFromExport] - true to drop this column from a file export.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
@@ -87,6 +89,7 @@ export class Column {
         exportValue,
         exportFormat,
         excludeFromExport,
+        toolTip,
         agOptions
     }) {
         this.field = field;
@@ -124,6 +127,7 @@ export class Column {
         this.exportFormat = withDefault(exportFormat, ExportFormat.DEFAULT);
         this.excludeFromExport = withDefault(excludeFromExport, !field);
 
+        this.toolTip = toolTip;
         this.agOptions = agOptions || {};
     }
 
@@ -141,6 +145,7 @@ export class Column {
             maxWidth: this.maxWidth,
             suppressResize: !this.resizable,
             suppressMovable: !this.movable,
+            tooltip: isFunction(this.toolTip) ? (...args) => this.toolTip(args[0].value, args[0].data, {colId: this.colId}) : null,
             ...this.agOptions
         };
 

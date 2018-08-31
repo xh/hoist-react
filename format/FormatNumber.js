@@ -42,7 +42,7 @@ const UP_TICK = '▴',
  * @param {string} [opts.labelCls] - if provided, label will be place in a span with this set as its class.
  * @param {(boolean|Object)} [opts.colorSpec] - show in colored <span>, based on sign of value.
  *      If truthy will default to red/green/grey. Also accepts an object of the form {pos: color, neg: color, neutral: color}.
- * @param {function} [opts.tipFn] - use to place formatted number in span with title property set to returned string.
+ * @param {function} [opts.toolTip] - use to place formatted number in span with title property set to returned string.
  *      Will be passed the originalValue param.
  * @param {boolean} [opts.asElement] - return a react element rather than a html string
  * @param {number} [opts.originalValue] - used to retain an unaltered reference to the original value to be formatted.
@@ -66,7 +66,7 @@ export function fmtNumber(v, {
     label = null,
     labelCls = 'xh-units-label',
     colorSpec = null,
-    tipFn = null,
+    toolTip = null,
     asElement = false,
     originalValue = v
 } = {}) {
@@ -81,7 +81,7 @@ export function fmtNumber(v, {
         str = '+' + str;
     }
 
-    const opts = {str, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tipFn, originalValue};
+    const opts = {str, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, toolTip, originalValue};
     return asElement ? fmtNumberElement(v, opts) : fmtNumberString(v, opts);
 }
 
@@ -187,12 +187,12 @@ export function fmtPercent(v, opts = {}) {
 // Implementation
 //---------------
 function fmtNumberElement(v, opts = {}) {
-    const {str, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tipFn, originalValue} = opts;
+    const {str, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, toolTip, originalValue} = opts;
 
     // CSS classes
     const cls = [];
     if (colorSpec) cls.push(valueColor(v, colorSpec));
-    if (tipFn) cls.push('xh-title-tip');
+    if (toolTip) cls.push('xh-title-tip');
 
     // Compile child items
     const asElement = true,
@@ -220,13 +220,13 @@ function fmtNumberElement(v, opts = {}) {
 
     return span({
         className: cls.join(' '),
-        title: processTipFn(tipFn, originalValue),
+        title: processToolTip(toolTip, originalValue),
         items: items
     });
 }
 
 function fmtNumberString(v, opts = {}) {
-    const {ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tipFn, originalValue} = opts;
+    const {ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, toolTip, originalValue} = opts;
     let str = opts.str;
 
     if (withSignGlyph) {
@@ -253,8 +253,8 @@ function fmtNumberString(v, opts = {}) {
         str = fmtSpan(str, {className: valueColor(v, colorSpec)});
     }
 
-    if (tipFn) {
-        str = fmtSpan(str, {className: 'xh-title-tip', title: processTipFn(tipFn, originalValue)});
+    if (toolTip) {
+        str = fmtSpan(str, {className: 'xh-title-tip', title: processToolTip(toolTip, originalValue)});
     }
 
     return str;
@@ -316,11 +316,11 @@ function isInvalidInput(v) {
     return v == null || v === '';
 }
 
-function processTipFn(tipFn, originalValue) {
-    if (tipFn === true) {
+function processToolTip(toolTip, originalValue) {
+    if (toolTip === true) {
         return fmtNumber(originalValue, {ledger: true, forceLedgerAlign: false, precision: MAX_NUMERIC_PRECISION, zeroPad: false});
-    } else if (isFunction(tipFn)) {
-        return tipFn(originalValue);
+    } else if (isFunction(toolTip)) {
+        return toolTip(originalValue);
     } else {
         return null;
     }
