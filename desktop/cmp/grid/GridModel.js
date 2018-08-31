@@ -292,13 +292,30 @@ export class GridModel {
         }
     }
 
-    @action
+    /** @param {(Object[])} agColState - configs representing the order, width and visibility of columns identified by colId
+     *       In the case of a grid with grouped columns, the columns here represent only the leaves or bottom level cols */
     noteAgColumnStateChanged(agColState) {
+        this.applyColumnChanges(agColState);
+    }
+
+
+    /**
+     * This method will update the current column definition with respect to sort order, width and visibility of columns
+     * Used by both Hoist's grid state plugin (GridStateModel) and in response to state changes as detected by ag-grid
+     *
+     * note: Sort order is driven by the individual columns in the state param. This means that if a column has been
+     * redefined to a new column group that entire group may be moved by this state param
+     *
+     * @param {(Object[])} colState - configs representing the order, width and visibility of columns identified by colId
+     *       In the case of a grid with grouped columns, the columns here represent only the leaves or bottom level cols
+     */
+    @action
+    applyColumnChanges(colState) {
         let {columns} = this,
             newCols = cloneDeep(columns);
 
         // 1) Update any width changes, and mark (potentially changed) sort order
-        agColState.forEach((agCol, index) => {
+        colState.forEach((agCol, index) => {
             let col = this.findColumn(newCols, agCol.colId);
             if (!col.flex) col.width = agCol.width;
             col._sortOrder = index;

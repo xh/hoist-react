@@ -135,6 +135,7 @@ export class GridStateModel {
         });
     }
 
+    // Grouped columns are a tree structure but we store their state as a flat array of configs representing the leaves
     gatherLeaves(col, cols) {
         if (col.groupId) {
             col.children.forEach(child => this.gatherLeaves(child, cols));
@@ -172,7 +173,7 @@ export class GridStateModel {
             }
         });
 
-        gridModel.noteAgColumnStateChanged(newColumns);
+        gridModel.applyColumnChanges(newColumns);
     }
 
     //--------------------------
