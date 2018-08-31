@@ -42,8 +42,7 @@ const UP_TICK = '▴',
  * @param {string} [opts.labelCls] - if provided, label will be place in a span with this set as its class.
  * @param {(boolean|Object)} [opts.colorSpec] - show in colored <span>, based on sign of value.
  *      If truthy will default to red/green/grey. Also accepts an object of the form {pos: color, neg: color, neutral: color}.
- * @param {function} [opts.toolTip] - use to place formatted number in span with title property set to returned string.
- *      Will be passed the originalValue param.
+ * @param {formatTooltip} [opts.tooltip] - tool tip function, based on ag-Grid tooltip callback.
  * @param {boolean} [opts.asElement] - return a react element rather than a html string
  * @param {number} [opts.originalValue] - used to retain an unaltered reference to the original value to be formatted.
  *      Not typically used by applications.
@@ -66,7 +65,7 @@ export function fmtNumber(v, {
     label = null,
     labelCls = 'xh-units-label',
     colorSpec = null,
-    toolTip = null,
+    tooltip = null,
     asElement = false,
     originalValue = v
 } = {}) {
@@ -81,7 +80,7 @@ export function fmtNumber(v, {
         str = '+' + str;
     }
 
-    const opts = {str, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, toolTip, originalValue};
+    const opts = {str, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip, originalValue};
     return asElement ? fmtNumberElement(v, opts) : fmtNumberString(v, opts);
 }
 
@@ -187,15 +186,12 @@ export function fmtPercent(v, opts = {}) {
 // Implementation
 //---------------
 function fmtNumberElement(v, opts = {}) {
-    const {/* eslint-disable no-unused-vars */
-        str, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, toolTip, originalValue
-        /* eslint-enable no-unused-vars */
-    } = opts;
+    const {str, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip} = opts;
 
     // CSS classes
     const cls = [];
     if (colorSpec) cls.push(valueColor(v, colorSpec));
-    if (toolTip) cls.push('xh-title-tip');
+    if (tooltip) cls.push('xh-title-tip');
 
     // Compile child items
     const asElement = true,
@@ -223,17 +219,13 @@ function fmtNumberElement(v, opts = {}) {
 
     return span({
         className: cls.join(' '),
-        title: processToolTip(toolTip, opts),
+        title: processToolTip(tooltip, opts),
         items: items
     });
 }
 
 function fmtNumberString(v, opts = {}) {
-    const {
-        /* eslint-disable no-unused-vars */
-        ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, toolTip, originalValue
-        /* eslint-enable no-unused-vars */
-    } = opts;
+    const {ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip} = opts;
     let str = opts.str;
 
     if (withSignGlyph) {
@@ -260,8 +252,8 @@ function fmtNumberString(v, opts = {}) {
         str = fmtSpan(str, {className: valueColor(v, colorSpec)});
     }
 
-    if (toolTip) {
-        str = fmtSpan(str, {className: 'xh-title-tip', title: processToolTip(toolTip, opts)});
+    if (tooltip) {
+        str = fmtSpan(str, {className: 'xh-title-tip', title: processToolTip(tooltip, opts)});
     }
 
     return str;
@@ -323,11 +315,16 @@ function isInvalidInput(v) {
     return v == null || v === '';
 }
 
-function processToolTip(toolTip, opts) {
-    if (toolTip === true) {
-        return fmtNumber(opts.originalValue, {ledger: opts.ledger, forceLedgerAlign: false, precision: MAX_NUMERIC_PRECISION, zeroPad: false});
-    } else if (isFunction(toolTip)) {
-        return toolTip(opts.originalValue);
+function processToolTip(tooltip, opts) {
+    if (tooltip === true) {
+        return fmtNumber(opts.originalValue, {
+            ledger: opts.ledger,
+            forceLedgerAlign: false,
+            precision: MAX_NUMERIC_PRECISION,
+            zeroPad: false
+        });
+    } else if (isFunction(tooltip)) {
+        return tooltip(opts.originalValue);
     } else {
         return null;
     }
@@ -340,3 +337,11 @@ export const numberRenderer = createRenderer(fmtNumber),
     quantityRenderer = createRenderer(fmtQuantity),
     priceRenderer = createRenderer(fmtPrice),
     percentRenderer = createRenderer(fmtPercent);
+
+/**
+ * @callback formatTooltip - normalized renderer function to produce tooltip.
+ *      Takes either a boolean, in which case the a default format is used as the tooltip,
+ *      or a function, as defined below.
+ * @param {*} value - cell data value (column + row).
+ * @return {string} - the formatted value for display.
+ */

@@ -27,7 +27,7 @@ const INVALID_DATE = moment(null).format();
  *
  * @param {(Object|string)} [opts] - a MomentJs format string or an options object.
  * @param {string} [opts.fmt] - a MomentJs format string.
- * @param {function} [opts.toolTip] - use to place formatted date in span with title property set to returned string.
+ * @param {function} [opts.tooltip] - use to place formatted date in span with title property set to returned string.
  *      Function will be passed the originalValue param
  * @param {boolean} [opts.asElement] - return a react element rather than a html string
  * @param {*} [opts.originalValue] - used to retain an unaltered reference to the original value to be formatted.
@@ -37,15 +37,15 @@ export function fmtDate(v, opts = {}) {
     if (isString(v)) return v;
     if (isString(opts)) opts = {fmt: opts};
 
-    defaults(opts, {fmt: DATE_FMT, toolTip: null});
+    defaults(opts, {fmt: DATE_FMT, tooltip: null});
     saveOriginal(v, opts);
 
     let ret = moment(v).format(opts.fmt);
 
     if (ret == INVALID_DATE) {
         ret = '';
-    } else if (opts.toolTip) {
-        ret = fmtSpan(ret, {className: 'xh-title-tip', title: opts.toolTip(opts.originalValue), asElement: opts.asElement});
+    } else if (opts.tooltip) {
+        ret = fmtSpan(ret, {className: 'xh-title-tip', title: opts.tooltip(opts.originalValue), asElement: opts.asElement});
     }
 
     return opts.asElement ? span(ret) : ret;
@@ -79,7 +79,7 @@ export function fmtTime(v, opts = {}) {
  * @param {string} [opts.nearFmt] - format for dates within the number of months determined by the distantThreshold, defaults to 'MMM D'.
  * @param {string} [opts.distantFmt] - format for dates outside of the number of months specified by the distantThreshold, defaults to 'YYYY-MM-DD'.
  * @param {int} [opts.distantThreshold] - used to determined the number of months away from the current month to be considered 'recent' or 'near'
- * @param {function} [opts.toolTip] - use to place formatted date in span with title property set to string returned by this function
+ * @param {function} [opts.tooltip] - use to place formatted date in span with title property set to string returned by this function
  * @param {boolean} [opts.asElement] - return a react element rather than a html string
  * @param {*} [opts.originalValue] - used to retain an unaltered reference to the original value to be formatted
  *      Not typically used by applications.
@@ -91,7 +91,7 @@ export function fmtCompactDate(v, {
     nearFmt = MONTH_DAY_FMT,
     distantFmt = DATE_FMT,
     distantThreshold = 6,
-    toolTip = null,
+    tooltip = null,
     asElement = false,
     originalValue = v
 } = {}) {
@@ -100,7 +100,7 @@ export function fmtCompactDate(v, {
         valueDay = fmtDate(v),
         recentPast = now.clone().subtract(distantThreshold, 'months').endOf('month'),
         nearFuture = now.clone().add(distantThreshold, 'months').date(1),
-        dateOpts = {toolTip, originalValue, asElement};
+        dateOpts = {tooltip, originalValue, asElement};
 
     if (today === valueDay) {
         dateOpts.fmt = sameDayFmt;
