@@ -12,8 +12,8 @@ import {flatten, remove, castArray, isNil} from 'lodash';
  *
  * This object not typically created directly by applications.
  *
- * Applications will typically specify a collection of configurations for
- * this object when creating a ValidationModel.
+ * Applications will typically specify rule configurations to the field
+ * via the field decorator or FieldModel.addRule();
  */
 export class Rule {
 
@@ -33,11 +33,11 @@ export class Rule {
     /**
      * Compute current set of errors (if any) for this rule
      */
-    async evaluateAsync(validator) {
+    async evaluateAsync(field) {
         const {check, when} = this;
         let ret = null;
-        if (!when || when(validator, validator.model)) {
-            const promises = check.map(it => this.evalConstraintAsync(it, validator));
+        if (!when || when(field, field.model)) {
+            const promises = check.map(it => this.evalConstraintAsync(it, field));
             ret = await Promise.all(promises);
             ret = flatten(ret);
             remove(ret, (v) => isNil(v));
@@ -49,22 +49,22 @@ export class Rule {
     //------------------------------
     // Implementation
     //------------------------------
-    async evalConstraintAsync(constraint, validator) {
-        return await constraint(validator, validator.model);
+    async evalConstraintAsync(constraint, field) {
+        return await constraint(field, field.model);
     }
 }
 
 
 /**
  * @callback ConstraintCb
- * @param {Validator} validator
+ * @param {FieldModel} fieldModel
  * @param {Object} model
- * @returns {(string|string[] } - String or array of strings describing errors.  null or undefined if rule passes successfully.
+ * @returns {(string|string[]} - String or array of strings describing errors.  null or undefined if rule passes successfully.
  */
 
 /**
  * @callback WhenCb
- * @param {Validator} validator
+ * @param {FieldModel} fieldModel
  * @param {Object} model
  * @returns {boolean} - true if this rule is currently active.
  */

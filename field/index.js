@@ -5,12 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-export * from './field';
+export * from './Field';
 export * from './FieldSupport';
+export * from './impl/FieldsModel';
 
 export * from './validation/ValidationState';
-export * from './validation/ValidationModel';
-export * from './validation/Validator';
 export * from './validation/Rule';
 export * from './validation/constraints';
 

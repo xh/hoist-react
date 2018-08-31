@@ -89,12 +89,11 @@ export class HoistField extends Component {
 
 
     /**
-     * Validator associated with this field.
+     * Field (if any) associated with this control.
      */
-    getValidator() {
-        const {model, field} = this.props,
-            vm = model && model.validationModel;
-        return vm && vm.getValidator(field);
+    getField() {
+        const {model, field} = this;
+        return model && field && model.getField && model.getField(field);
     }
 
     //-----------------------------------------------------------
@@ -158,16 +157,15 @@ export class HoistField extends Component {
             
             this.setInternalValue(this.toInternal(newValue));
         }
-
-        // 1) Start Validation if needed.
-        const validator = this.getValidator();
-        if (validator) {
-            validator.start();
-        }
     }
 
     onBlur = () => {
         this.doCommit();
+
+        // Trigger validation.  Useful if user just visited field without making change.
+        const field = this.getField();
+        if (field) field.validateAsync();
+        
         runInAction(() => this.hasFocus = false);
     }
 
@@ -202,8 +200,8 @@ export class HoistField extends Component {
     // Override of the default implementation provided by HoistComponent so we can add
     // the xh-field and xh-field-invalid classes
     getClassName(...extraClassNames) {
-        const validator = this.getValidator(),
-            validityClass = validator && validator.state == 'NotValid' ? 'xh-field-invalid' : null;
+        const field = this.getField(),
+            validityClass = field && field.isNotValid ? 'xh-field-invalid' : null;
 
         return classNames(this.baseClassName, this.props.className, ...extraClassNames, 'xh-field', validityClass);
     }

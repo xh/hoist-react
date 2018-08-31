@@ -6,9 +6,14 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {ValidationModel} from './validation/ValidationModel';
 import {defaultMethods, chainMethods} from '@xh/hoist/utils/js';
-import {forOwn} from 'lodash';
+import {startCase, partition, isFunction, isEmpty, isString, forOwn} from 'lodash';
+
+import {Field} from './Field';
+import {FieldsModel} from './impl/FieldsModel';
+import {bindable} from '@xh/hoist/mobx';
+import {ValidationState} from './validation/ValidationState';
+
 
 /**
  * Mixin to add field support to a Hoist Model.
@@ -22,55 +27,135 @@ export function FieldSupport(C) {
 
     defaultMethods(C, {
 
-        /**
-         * Get the user visible name for a field.  For use in validation messages and form labelling.
-         * @param {string} field
-         */
-        getFieldName(field) {
-            const names = this.xhFieldNames;
-            return names ? names[field] : null;
+        //-----------------------------
+        // Get Field Models, lifecycle
+        //-----------------------------
+        get fields() {
+            return this.fieldsModel.fields;
         },
 
-        /**
-         * Get the Validator (if any) associated with a field in this model.
-         *
-         * @param {string} field
-         */
-        getValidator(field) {
-            return this.validationModel.getValidator(field);
+        getField(name) {
+            return this.fieldsModel.getField(name);
         },
 
-        /**
-         * Create the validation model to be used for this object.
-         */
-        createValidationModel() {
-            const ret = new ValidationModel(this);
-            if (this.xhFieldRules) {
-                forOwn(this.xhFieldRules, (rules, field) => {
-                    ret.addRules(field, ...rules);
+        initFields(values = {}) {
+            this.fieldsModel.initFields(values);
+        },
+
+        resetFields() {
+            this.fieldsModel.resetFields();
+        },
+
+        //--------------------------
+        // Validation
+        //---------------------------
+        validationState: {
+            get() {return this.fieldsModel.validationState}
+        },
+
+        isValidationPending: {
+            get() {return this.fieldsModel.isValidationPending}
+        },
+
+        isValid: {
+            get() {return this.validationState == ValidationState.Valid}
+        },
+
+        isNotValid: {
+            get() {return this.validationState == ValidationState.NotValid}
+        },
+
+        validateAsync() {
+            return this.fieldsModel.validateAsync();
+        },
+
+        //----------------------------
+        // Dirty State
+        //----------------------------
+        isDirty: {
+            get() {return this.fieldsModel.isDirty}
+        },
+
+
+        //--------------------------------------------
+        // Implementation
+        //--------------------------------------------
+        fieldsModel: {
+            get() {
+                if (!this._fieldsModel) {
+                    this._fieldsModel = this.createFieldsModel();
+                }
+                return this._fieldsModel;
+            }
+        },
+
+        createFieldsModel() {
+            const fields = {};
+            if (this.xhFieldConfigs) {
+                forOwn(this.xhFieldConfigs, ({displayName, rules}, name) => {
+                    fields[name] = new Field({
+                        name,
+                        displayName,
+                        rules,
+                        model: this
+                    });
                 });
             }
-            return ret;
-        },
-
-        /**
-         * ValidationModel associated with this object.
-         */
-        validationModel: {
-            get: function() {
-                if (!this._validationModel) {
-                    this._validationModel = this.createValidationModel();
-                }
-                return this._validationModel;
-            }
+            return new FieldsModel(fields);
         }
     });
 
     chainMethods(C, {
         destroy() {
-            XH.safeDestroy(this._validationModel);
+            XH.safeDestroy(this._fieldsModel);
         }
     });
 
     return C;
 }
+
+
+/**
+ * Mark a class property as an observable form field.  For use in a HoistModel
+ * decorated with @FieldSupport.
+ *
+ * This decorator will mark the property as @bindable and provides support for
+ * validation, labelling, and dirty state management.
+ *
+ * If the first argument to this function is a String, it will be interpreted as the field name.
+ * (If not specified, the field name will default to the start case of the property itself.)
+ *
+ * All other arguments will be considered to be specifications for validation for this field.
+ * Arguments may be specified as configurations for a {@link Rule}, or as individual functions
+ * (constraints).  In the latter case the constraints will be gathered into a single rule to be
+ * added to this field.
+ */
+export function field(...params) {
+    return (target, property, descriptor) => {
+
+        // 0) Prepare static property on class itself to host field configs.
+        if (!target.xhFieldConfigs) {
+            Object.defineProperty(target, 'xhFieldConfigs', {value: {}});
+        }
+
+        const config = target.xhFieldConfigs[property] = {};
+
+        // 1) Parse and install field name.
+        const firstParamIsName = !isEmpty(params) && isString(params[0]);
+        config.displayName = firstParamIsName ? params.shift() : startCase(property);
+
+        // 2) Parse and install additional params as Rules.
+        if (!isEmpty(params)) {
+            const [constraints, rules] = partition(params, r => isFunction(r));
+            if (!isEmpty(constraints)) {
+                rules.push({check: constraints});
+            }
+            config.rules = rules;
+        } else {
+            config.rules = [];
+        }
+
+        return bindable(target, property, descriptor);
+    };
+}
+
