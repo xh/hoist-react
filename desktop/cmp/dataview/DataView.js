@@ -7,8 +7,7 @@
 
 import {Component} from 'react';
 import {XH, HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
-import {grid} from '@xh/hoist/desktop/cmp/grid';
-import {GridModel} from '@xh/hoist/desktop/cmp/grid';
+import {grid, GridModel} from '@xh/hoist/desktop/cmp/grid';
 
 /**
  * A DataView is a specialized version of the Grid component. It displays its data within a
@@ -34,7 +33,7 @@ export class DataView extends Component {
                 {
                     colId: 'data',
                     flex: true,
-                    elementRenderer: (record) => itemFactory({record: record.data}),
+                    elementRenderer: (params) => itemFactory({record: params.data, store}),
                     agOptions: {
                         valueGetter: (params) => params.data
                     }
