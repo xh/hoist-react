@@ -6,6 +6,7 @@
  */
 
 import {flatten, remove, castArray, isNil} from 'lodash';
+import {required} from './constraints';
 
 /**
  * Immutable object representing a validation rule.
@@ -46,9 +47,21 @@ export class Rule {
         return ret;
     }
 
+    /**
+     * Is this rule active and indicating that a value is required?
+     */
+    requiresValue(field) {
+        return this.isActive(field) && this.check.includes(required);
+    }
+
     //------------------------------
     // Implementation
     //------------------------------
+    isActive(field) {
+        const {when} = this;
+        return !when || when(field, field.model);
+    }
+
     async evalConstraintAsync(constraint, field) {
         return await constraint(field, field.model);
     }

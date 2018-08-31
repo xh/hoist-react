@@ -9,7 +9,7 @@ import {HoistModel} from '@xh/hoist/core';
 import {observable, when} from '@xh/hoist/mobx';
 import {flatten} from 'lodash';
 import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
-import {action, runInAction} from '@xh/hoist/mobx';
+import {action, computed, runInAction} from '@xh/hoist/mobx';
 
 import {ValidationState} from './validation/ValidationState';
 import {Rule} from './validation/Rule';
@@ -76,6 +76,15 @@ export class Field {
         return this._validationTask.isPending;
     }
 
+    /**
+     * Is a non-nullish (null or undefined) value for this field required?
+     * This getter will return true if there is an active rule with the 'required' constraint.
+     */
+    @computed
+    get isRequired() {
+        return this.rules.some(r => r.requiresValue(this));
+    }
+    
     /**
      * Return a resolved validation state of the field, starting validation if neccessary.
      *
