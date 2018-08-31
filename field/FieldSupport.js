@@ -18,7 +18,7 @@ import {ValidationState} from './validation/ValidationState';
 /**
  * Mixin to add field support to a Hoist Model.
  *
- * Includes support for field display names, and validation.
+ * Includes support for field display names, validation, and dirty state.
  * This class should be used in conjunction with the @field decorator.
  */
 export function FieldSupport(C) {
@@ -28,20 +28,39 @@ export function FieldSupport(C) {
     defaultMethods(C, {
 
         //-----------------------------
-        // Get Field Models, lifecycle
+        // Accessors and lifecycle
         //-----------------------------
+        /** @member {Field[]} -  all fields in this model. */
         fields:  {
             get() {return this.fieldsModel.fields}
         },
 
+        /**
+         * Lookup a field in this model by name.
+         * @param {string} name
+         * @returns {Field}
+         */
         getField(name) {
             return this.fieldsModel.getField(name);
         },
 
+        /**
+         * Initialize fields to initial values.
+         *
+         * These values will be used as the baseline
+         * for dirty state, and the baseline to which form
+         * is restored to on reset()
+         *
+         * @param {Object} values - map of values by field name.
+         *      For any field not present in map, initialValue will be set to null.
+         */
         initFields(values = {}) {
             this.fieldsModel.initFields(values);
         },
 
+        /**
+         * Reset fields to initial values and reset validation.
+         */
         resetFields() {
             this.fieldsModel.resetFields();
         },
@@ -49,29 +68,45 @@ export function FieldSupport(C) {
         //--------------------------
         // Validation
         //---------------------------
+        /**
+         * @member {ValidationState} - the current validation state.
+         */
         validationState: {
             get() {return this.fieldsModel.validationState}
         },
 
+        /**
+         * True if any of the fields contained in this model are in the process
+         * of recomputing their validation state?
+         */
         isValidationPending: {
             get() {return this.fieldsModel.isValidationPending}
         },
 
+        /** True if all fields are valid. */
         isValid: {
             get() {return this.validationState == ValidationState.Valid}
         },
 
+        /** True if any fields are not valid. */
         isNotValid: {
             get() {return this.validationState == ValidationState.NotValid}
         },
 
-        validateAsync() {
+        /**
+         * Trigger an immediate validation of all fields.
+         * @returns {Promise<ValidationState>}
+         */
+        async validateAsync() {
             return this.fieldsModel.validateAsync();
         },
 
         //----------------------------
         // Dirty State
         //----------------------------
+        /**
+         * True if any fields have been changed since last reset/initialization.
+         */
         isDirty: {
             get() {return this.fieldsModel.isDirty}
         },

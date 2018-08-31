@@ -37,15 +37,69 @@ export class Field {
     @observable _validationRunning = false;
     _validationTask = new PendingTaskModel();
     _validationRunId = 0;
+
+    //-----------------------------
+    // Accessors and lifecycle
+    //-----------------------------
     
     /** Current value of field. */
     get value() {
         return this.model[this.name];
     }
 
+    /**
+     * Initialize this field.
+     */
+    @action
+    init(initialValue = null) {
+        this.initialValue = initialValue;
+        this.reset();
+    }
+
+    /**
+     * Reset the field to its initial value, and
+     * reset validation state.
+     */
+    @action
+    reset() {
+        this.model[this.name] = this.initialValue;
+        this._validationRunning = false;
+        this.errors = null;
+    }
+
+    /**
+     * @param {Object} cfg
+     * @param {string} cfg.name
+     * @param {Object} cfg.model
+     * @param {string} cfg.displayName
+     * @param {(Object|Object[])} [cfg.rules] - Rule(s) or configuration for rules
+     */
+    constructor({name, model, displayName, rules=[]}) {
+        this.name = name;
+        this.model = model;
+        this.displayName = displayName;
+        this.addRules(...rules);
+        this.addAutorun(() => {
+            if (this._validationRunning) this.computeValidation();
+        });
+        this.addAutorun(() => {
+            if (this.isDirty) this.startValidating();
+        });
+    }
+
+
     //------------------------------------
     // Validation
     //------------------------------------
+
+    /**
+     * Start reactive validation of this field.
+     */
+    @action
+    startValidating() {
+        this._validationRunning = true;
+    }
+
     /** Validation state of the field. */
     get validationState() {
         const VS = ValidationState;
@@ -115,56 +169,12 @@ export class Field {
     //------------------------------
     // Dirty State
     //------------------------------
-    /**
-     * Does the field have changes from its initial state?
-     */
+
+    /** Does the field have changes from its initial state? */
     get isDirty() {
         return this.value !== this.initialValue;
     }
 
-    /**
-     * Set the initial value of the field and reset.
-     */
-    @action
-    init(initialValue=null) {
-        this.initialValue = initialValue;
-        this.reset();
-    }
-
-    /**
-     * Reset the field, stopping its evaluation and clearing any validation results.
-     */
-    @action
-    reset() {
-        this.model[this.name] = this.initialValue;
-        this._validationRunning = false;
-        this.errors = null;
-    }
-
-    @action
-    startValidating() {
-        this._validationRunning = true;
-    }
-    
-    /**
-     * @param {Object} cfg
-     * @param {string} cfg.name
-     * @param {Object} cfg.model
-     * @param {string} cfg.displayName
-     * @param {(Object|Object[])} [cfg.rules] - Rule(s) or configuration for rules
-     */
-    constructor({name, model, displayName, rules=[]}) {
-        this.name = name;
-        this.model = model;
-        this.displayName = displayName;
-        this.addRules(...rules);
-        this.addAutorun(() => {
-            if (this._validationRunning) this.computeValidation();
-        });
-        this.addAutorun(() => {
-            if (this.isDirty) this.startValidating();
-        });
-    }
 
     //--------------------------
     // Implementation
