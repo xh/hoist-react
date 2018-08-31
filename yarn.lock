@@ -78,7 +78,22 @@
     lodash "^4.2.0"
     to-fast-properties "^2.0.0"
 
-"@blueprintjs/core@^3.1.0", "@blueprintjs/core@~3.3.0":
+"@blueprintjs/core@^3.0.0", "@blueprintjs/core@~3.4.0":
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.4.0.tgz#cf5a61fb8288d8a58b892c7005d999c944d30521"
+  dependencies:
+    "@blueprintjs/icons" "^3.0.0"
+    "@types/dom4" "^2.0.0"
+    classnames "^2.2"
+    dom4 "^2.0.1"
+    normalize.css "^8.0.0"
+    popper.js "^1.14.1"
+    react-popper "^1.0.0"
+    react-transition-group "^2.2.1"
+    resize-observer-polyfill "^1.5.0"
+    tslib "^1.9.0"
+
+"@blueprintjs/core@^3.1.0":
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.3.0.tgz#6fc5c7d811d1c0693c0c3d7a472549e171c455db"
   dependencies:
@@ -102,52 +117,59 @@
     react-day-picker "^7.0.7"
     tslib "^1.9.0"
 
-"@blueprintjs/icons@^3.0.0", "@blueprintjs/icons@~3.0.0":
+"@blueprintjs/icons@^3.0.0":
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/@blueprintjs/icons/-/icons-3.0.0.tgz#2eed041dd52c9feed2758ca526f4505911813a31"
   dependencies:
     classnames "^2.2"
     tslib "^1.9.0"
 
-"@blueprintjs/select@~3.1.0":
+"@blueprintjs/icons@~3.1.0":
   version "3.1.0"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/select/-/select-3.1.0.tgz#5ec50aa31cc852ff90fd1d3666c00b6c32c408ba"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/icons/-/icons-3.1.0.tgz#7bf137bd30eb74a4d35d4e03e736898ef9ab6025"
   dependencies:
-    "@blueprintjs/core" "^3.1.0"
     classnames "^2.2"
     tslib "^1.9.0"
 
-"@fortawesome/fontawesome-common-types@^0.2.2":
-  version "0.2.2"
-  resolved "https://npm.fontawesome.com/@fortawesome/fontawesome-common-types/-/fontawesome-common-types-0.2.2.tgz#7fd64eacf7f64e4d7619d21b0b2f2467f5a70611"
-
-"@fortawesome/fontawesome-pro@~5.2.0":
-  version "5.2.0"
-  resolved "https://npm.fontawesome.com/@fortawesome/fontawesome-pro/-/fontawesome-pro-5.2.0.tgz#e202f9ac8ee8543670233c218dfc6e058a7a89c5"
-
-"@fortawesome/fontawesome-svg-core@~1.2.2":
-  version "1.2.2"
-  resolved "https://npm.fontawesome.com/@fortawesome/fontawesome-svg-core/-/fontawesome-svg-core-1.2.2.tgz#b431e7efb3e3a1887e596daa6ed0d241d2d1aea5"
+"@blueprintjs/select@~3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/select/-/select-3.0.0.tgz#736051be2b65d93a62927e403d13cd16beb3b73f"
   dependencies:
-    "@fortawesome/fontawesome-common-types" "^0.2.2"
+    "@blueprintjs/core" "^3.0.0"
+    classnames "^2.2"
+    tslib "^1.9.0"
 
-"@fortawesome/pro-light-svg-icons@~5.2.0":
-  version "5.2.0"
-  resolved "https://npm.fontawesome.com/@fortawesome/pro-light-svg-icons/-/pro-light-svg-icons-5.2.0.tgz#03eee61be292249939c424452982b2ec34496b00"
-  dependencies:
-    "@fortawesome/fontawesome-common-types" "^0.2.2"
+"@fortawesome/fontawesome-common-types@^0.2.3":
+  version "0.2.3"
+  resolved "https://npm.fontawesome.com/@fortawesome/fontawesome-common-types/-/fontawesome-common-types-0.2.3.tgz#bcdffc26f2289ada8f6beb7808b45b05439b6718"
 
-"@fortawesome/pro-regular-svg-icons@~5.2.0":
-  version "5.2.0"
-  resolved "https://npm.fontawesome.com/@fortawesome/pro-regular-svg-icons/-/pro-regular-svg-icons-5.2.0.tgz#829129b77976294133961fef73a6d3566827d347"
-  dependencies:
-    "@fortawesome/fontawesome-common-types" "^0.2.2"
+"@fortawesome/fontawesome-pro@~5.3.0":
+  version "5.3.0"
+  resolved "https://npm.fontawesome.com/@fortawesome/fontawesome-pro/-/fontawesome-pro-5.3.0.tgz#ca848c655df9a98fcbbafb036576b084ee2a358d"
 
-"@fortawesome/pro-solid-svg-icons@~5.2.0":
-  version "5.2.0"
-  resolved "https://npm.fontawesome.com/@fortawesome/pro-solid-svg-icons/-/pro-solid-svg-icons-5.2.0.tgz#8ccca8eda13b0242e9d3c6a0698699ab86881a70"
+"@fortawesome/fontawesome-svg-core@~1.2.3":
+  version "1.2.3"
+  resolved "https://npm.fontawesome.com/@fortawesome/fontawesome-svg-core/-/fontawesome-svg-core-1.2.3.tgz#e393f63e5e15da1f5af4601616a2cd58d1701a9e"
   dependencies:
-    "@fortawesome/fontawesome-common-types" "^0.2.2"
+    "@fortawesome/fontawesome-common-types" "^0.2.3"
+
+"@fortawesome/pro-light-svg-icons@~5.3.0":
+  version "5.3.0"
+  resolved "https://npm.fontawesome.com/@fortawesome/pro-light-svg-icons/-/pro-light-svg-icons-5.3.0.tgz#08e1764993fc714c23c7fec9a8a32923acc71fc3"
+  dependencies:
+    "@fortawesome/fontawesome-common-types" "^0.2.3"
+
+"@fortawesome/pro-regular-svg-icons@~5.3.0":
+  version "5.3.0"
+  resolved "https://npm.fontawesome.com/@fortawesome/pro-regular-svg-icons/-/pro-regular-svg-icons-5.3.0.tgz#8aad182701c0317e96895ff2ab4ba3a713c66868"
+  dependencies:
+    "@fortawesome/fontawesome-common-types" "^0.2.3"
+
+"@fortawesome/pro-solid-svg-icons@~5.3.0":
+  version "5.3.0"
+  resolved "https://npm.fontawesome.com/@fortawesome/pro-solid-svg-icons/-/pro-solid-svg-icons-5.3.0.tgz#ab718487d70597a192d35c41fab109aebb7c0781"
+  dependencies:
+    "@fortawesome/fontawesome-common-types" "^0.2.3"
 
 "@fortawesome/react-fontawesome@~0.1.0":
   version "0.1.2"
@@ -1715,9 +1737,9 @@ code-point-at@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/code-point-at/-/code-point-at-1.1.0.tgz#0d070b4d043a5bea33a2f1a40e2edb3d9a4ccf77"
 
-codemirror@~5.39.2:
-  version "5.39.2"
-  resolved "https://registry.yarnpkg.com/codemirror/-/codemirror-5.39.2.tgz#778aa13b55ebf280745c309cb1b148e3fc06f698"
+codemirror@~5.40.0:
+  version "5.40.0"
+  resolved "https://registry.yarnpkg.com/codemirror/-/codemirror-5.40.0.tgz#2f5ed47366e514f41349ba0fe34daaa39be4e257"
 
 collection-visit@^1.0.0:
   version "1.0.0"
@@ -4769,9 +4791,9 @@ mobx-react@~5.2.3:
     hoist-non-react-statics "^2.5.0"
     react-lifecycles-compat "^3.0.2"
 
-mobx@~5.0.4:
-  version "5.0.4"
-  resolved "https://registry.yarnpkg.com/mobx/-/mobx-5.0.4.tgz#3f0faa74d4214b012d957f6a559e2e3e1aae421e"
+mobx@~5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/mobx/-/mobx-5.1.0.tgz#ae772ca8eb0c1dd93341ffce375f44a80050014d"
 
 moment@~2.22.1:
   version "2.22.2"

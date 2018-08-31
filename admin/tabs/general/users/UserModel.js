@@ -22,6 +22,7 @@ export class UserModel {
             url: 'userAdmin',
             fields: ['username', 'email', 'displayName', 'active', 'roles']
         }),
+        sortBy: 'username',
         columns: [
             {field: 'username', ...usernameCol},
             {field: 'email', width: 175},

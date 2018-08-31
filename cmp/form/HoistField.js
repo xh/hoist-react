@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {upperFirst, isFunction} from 'lodash';
+import {isFunction, omit, pick, upperFirst} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
 import {observable, computed, action, runInAction} from '@xh/hoist/mobx';
 import classNames from 'classnames';
@@ -40,8 +40,8 @@ import './HoistField.scss';
  * control, so that changes to its value do not cause the parent of this
  * control to re-render.
  *
- * Hoist Fields also provide support for built-in when bound to a model with FormSupport.
- * If the underlying model contains a Validator for the field shown by the control, it will
+ * Hoist Fields also provide support for built-in when bound to a model with FieldSupport.
+ * If the underlying model contains a Field for the field linked to by the control, it will
  * be used to provide styling and validation hints.
  *
  * Hoist Fields generally support the properties documented below.
@@ -80,10 +80,13 @@ export class HoistField extends Component {
 
     /**
      * List of properties that if passed to this control should be trampolined to the underlying
-     * control.
+     * control. Implementations of HoistField should use this.getDelegateProps() to get a
+     * basket of these props for passing along.
      *
-     * Implementations of HoistField should use this.getDelegateProps() to get a basket of
-     * these props for passing along.
+     * If this configuration is left empty, getDelegateProps() will instead return all props passed
+     * to the component, but filtered to remove those known to be added by the HoistField API.
+     *
+     * (Overall role of the delegateProps concept for HoistField components is still under review.)
      */
     delegateProps = [];
 
@@ -144,19 +147,18 @@ export class HoistField extends Component {
         let externalValue = this.externalValue,
             newValue = this.toExternal(this.internalValue);
 
-        // 0) Commit value
-        if (newValue !== externalValue) {
-            if (model && field) {
-                const setterName = `set${upperFirst(field)}`;
-                throwIf(!isFunction(model[setterName]), `Required function '${setterName}()' not found on bound model`);
-                model[setterName](newValue);
-                newValue = this.externalValue;    // Round trip this, in case model decides to intervene.
-            }
+        if (newValue === externalValue) return;
 
-            if (onCommit) onCommit(newValue);
-            
-            this.setInternalValue(this.toInternal(newValue));
+        if (model && field) {
+            const setterName = `set${upperFirst(field)}`;
+            throwIf(!isFunction(model[setterName]), `Required function '${setterName}()' not found on bound model`);
+            model[setterName](newValue);
+            newValue = this.externalValue;    // Round trip this, in case model decides to intervene.
         }
+
+        if (onCommit) onCommit(newValue);
+
+        this.setInternalValue(this.toInternal(newValue));
     }
 
     onBlur = () => {
@@ -165,7 +167,7 @@ export class HoistField extends Component {
         // Trigger validation.  Useful if user just visited field without making change.
         const field = this.getField();
         if (field) field.startValidating();
-        
+
         runInAction(() => this.hasFocus = false);
     }
 
@@ -187,14 +189,21 @@ export class HoistField extends Component {
     //-----------------------------
     getDelegateProps() {
         const props = this.props,
-            ret = {},
-            delegates = this.delegateProps || [];
+            delegates = this.delegateProps;
 
-        delegates.forEach(it => {
-            if (it in props) ret[it] = props[it];
-        });
-
-        return ret;
+        // See above comment on delegateProps field.
+        if (delegates.length) {
+            return pick(props, delegates);
+        } else {
+            return omit(props, [
+                'value',
+                'onChange',
+                'onCommit',
+                'commitOnChange',
+                'model',
+                'field'
+            ]);
+        }
     }
 
     // Override of the default implementation provided by HoistComponent so we can add

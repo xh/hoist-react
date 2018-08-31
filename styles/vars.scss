@@ -107,6 +107,9 @@ body {
   --xh-form-field-box-shadow: var(--form-field-box-shadow, #{inset 0 0 0 1px var(--xh-form-field-box-shadow-color-top), inset 0 1px 1px var(--xh-form-field-box-shadow-color-bottom)});
   --xh-form-field-invalid-border-color: var(--form-field-invalid-border-color, var(--xh-intent-danger));
   --xh-form-field-invalid-message-text-color: var(--form-field-invalid-message-text-color, var(--xh-intent-danger));
+  --xh-form-field-margin-bottom: var(--form-field-margin-bottom, 0);
+  --xh-form-field-margin-right: var(--form-field-margin-right, 0);
+
 
   // Mask
   --xh-mask-bg: var(--mask-bg, #{mc-trans('blue-grey', '300', 0.3)});

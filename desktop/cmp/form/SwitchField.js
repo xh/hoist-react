@@ -7,51 +7,34 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {label} from '@xh/hoist/desktop/cmp/form';
 import {switchControl} from '@xh/hoist/kit/blueprint';
 
 import {HoistField} from '@xh/hoist/cmp/form';
 
 /**
  * Switch Field. 
- 
- * Note that that component does not handle null values, for nullable fields use a SelectField.
+ * Note that that component does not handle null values. For nullable fields, use a SelectField.
  */
 @HoistComponent()
 export class SwitchField extends HoistField {
 
     static propTypes = {
         ...HoistField.propTypes,
-
-        /** Value of the control */
-        value: PT.bool,
-
-        /** Name for labeling field */
-        text: PT.string,
-
-        /** Use large styles */
-        large: PT.bool
+        value: PT.bool
     };
 
     static defaultProps = {
-        commitOnChange: true
+        commitOnChange: true,
+        inline: true
     };
-
-    delegateProps = ['className', 'disabled'];
 
     baseClassName = 'xh-switch-field';
 
     render() {
-        const {large, text, style} = this.props;
-
         return switchControl({
             className: this.getClassName(),
             checked: !!this.renderValue,
             onChange: this.onChange,
-            large,
-            style: {...style, marginBottom: '0px', marginRight: '0px'},
-            label: label(text || ''),
-            inline: true,
             onBlur: this.onBlur,
             onFocus: this.onFocus,
             ...this.getDelegateProps()
@@ -61,5 +44,6 @@ export class SwitchField extends HoistField {
     onChange = (e) => {
         this.noteValueChange(e.target.checked);
     }
+
 }
 export const switchField = elemFactory(SwitchField);
