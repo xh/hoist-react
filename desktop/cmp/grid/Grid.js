@@ -6,7 +6,7 @@
  */
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {find, isBoolean, isEqual, isNil, isNumber, isString, merge, xor} from 'lodash';
+import {find, isBoolean, isEqual, isNil, isNumber, isString, merge, xor, cloneDeep} from 'lodash';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
@@ -146,9 +146,17 @@ export class Grid extends Component {
     // Support for defaults
     //------------------------
     getColumnDefs() {
-        const {columns, sortBy} = this.model;
-        const cols = columns.map(c => c.getAgSpec());
-        
+        const {columns, sortBy} = this.model,
+            clonedColumns = cloneDeep(columns);
+        const cols = clonedColumns.map(c => {
+            if (c.children) {
+                c.children = this.getColumnDefsFromChildren(c.children);
+                return c;
+            }
+
+            return c.getAgSpec();
+        });
+
         let now = Date.now();
         sortBy.forEach(it => {
             const col = find(cols, {colId: it.colId});
@@ -157,6 +165,31 @@ export class Grid extends Component {
                 col.sortedAt = now++;
             }
         });
+
+        return cols;
+    }
+
+    getColumnDefsFromChildren(columns) {
+        const {sortBy} = this.model;
+
+        const cols = columns.map(c => {
+            if (c.children) {
+                c.children = this.getColumnDefsFromChildren(c.children);
+                return c;
+            }
+
+            return c.getAgSpec();
+        });
+
+        let now = Date.now();
+        sortBy.forEach(it => {
+            const col = find(cols, {colId: it.colId});
+            if (col) {
+                col.sort = it.sort;
+                col.sortedAt = now++;
+            }
+        });
+
         return cols;
     }
 
