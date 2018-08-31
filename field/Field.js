@@ -9,7 +9,7 @@ import {HoistModel} from '@xh/hoist/core';
 import {observable, when} from '@xh/hoist/mobx';
 import {flatten} from 'lodash';
 import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
-import {action, computed, runInAction} from '@xh/hoist/mobx';
+import {action, computed} from '@xh/hoist/mobx';
 
 import {ValidationState} from './validation/ValidationState';
 import {Rule} from './validation/Rule';
@@ -162,7 +162,7 @@ export class Field {
             if (this._validationRunning) this.computeValidation();
         });
         this.addAutorun(() => {
-            if (this.isDirty) this.startValidating()
+            if (this.isDirty) this.startValidating();
         });
     }
 
@@ -182,8 +182,5 @@ export class Field {
         const promises = rules.map(it => it.evaluateAsync(this));
         return flatten(await Promise.all(promises));
     }
-
-
-
 }
 

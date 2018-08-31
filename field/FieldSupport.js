@@ -31,7 +31,7 @@ export function FieldSupport(C) {
         // Get Field Models, lifecycle
         //-----------------------------
         fields:  {
-            get() {return this.fieldsModel.fields;}
+            get() {return this.fieldsModel.fields}
         },
 
         getField(name) {
