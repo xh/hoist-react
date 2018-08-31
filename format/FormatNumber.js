@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {defaults, isFinite, isString} from 'lodash';
+import {defaults, isFinite, isString, isFunction} from 'lodash';
 import numeral from 'numeral';
 
 import {Exception} from '@xh/hoist/exception';
@@ -220,7 +220,7 @@ function fmtNumberElement(v, opts = {}) {
 
     return span({
         className: cls.join(' '),
-        title: tipFn ? tipFn(originalValue) : null,
+        title: processTipFn(tipFn, originalValue),
         items: items
     });
 }
@@ -254,7 +254,7 @@ function fmtNumberString(v, opts = {}) {
     }
 
     if (tipFn) {
-        str = fmtSpan(str, {className: 'xh-title-tip', title: tipFn(originalValue)});
+        str = fmtSpan(str, {className: 'xh-title-tip', title: processTipFn(tipFn, originalValue)});
     }
 
     return str;
@@ -314,6 +314,16 @@ function buildFormatPattern(v, precision, zeroPad) {
 
 function isInvalidInput(v) {
     return v == null || v === '';
+}
+
+function processTipFn(tipFn, originalValue) {
+    if (tipFn === true) {
+        return fmtNumber(originalValue, {ledger: true, forceLedgerAlign: false, precision: MAX_NUMERIC_PRECISION, zeroPad: false});
+    } else if (isFunction(tipFn)) {
+        return tipFn(originalValue);
+    } else {
+        return null;
+    }
 }
 
 export const numberRenderer = createRenderer(fmtNumber),
