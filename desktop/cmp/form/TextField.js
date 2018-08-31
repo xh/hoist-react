@@ -36,8 +36,8 @@ export class TextField extends HoistField {
         leftIcon: PT.element,
         /** Element to display on the right side of the field */
         rightElement: PT.element,
-        /** Function which receives event key and fires model action */
-        handleKeyPress: PT.func
+        /** Function which receives Blueprint keypress event */
+        onKeyPress: PT.func
     };
 
     delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus', 'leftIcon', 'rightElement'];
@@ -65,11 +65,7 @@ export class TextField extends HoistField {
         if (ev.key === 'Enter') {
             this.doCommit();
         }
-
-        const {handleKeyPress} = this.props;
-        if (handleKeyPress) {
-            handleKeyPress(ev.key);
-        }
+        if (this.props.onKeyPress) this.props.onKeyPress(ev);
     }
 }
 export const textField = elemFactory(TextField);

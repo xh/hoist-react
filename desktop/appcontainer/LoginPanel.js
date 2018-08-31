@@ -47,7 +47,7 @@ export class LoginPanel extends Component {
                             placeholder: 'Username...',
                             autoFocus: true,
                             commitOnChange: true,
-                            handleKeyPress: this.handleKeyPress
+                            onKeyPress: this.onKeyPress
                         }),
                         textField({
                             model,
@@ -55,7 +55,7 @@ export class LoginPanel extends Component {
                             placeholder: 'Password...',
                             type: 'password',
                             commitOnChange: true,
-                            handleKeyPress: this.handleKeyPress
+                            onKeyPress: this.onKeyPress
                         }),
                         text({
                             omit: !model.warning,
@@ -87,8 +87,8 @@ export class LoginPanel extends Component {
         this.model.submit();
     };
 
-    handleKeyPress = (key) => {
-        if (key === 'Enter') {
+    onKeyPress = (ev) => {
+        if (ev.key === 'Enter') {
             this.onSubmit();
         }
     }
