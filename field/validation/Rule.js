@@ -35,9 +35,9 @@ export class Rule {
      * Compute current set of errors (if any) for this rule
      */
     async evaluateAsync(field) {
-        const {check, when} = this;
-        let ret = null;
-        if (!when || when(field, field.model)) {
+        const {check} = this;
+        let ret = [];
+        if (this.isActive(field)) {
             const promises = check.map(it => this.evalConstraintAsync(it, field));
             ret = await Promise.all(promises);
             ret = flatten(ret);

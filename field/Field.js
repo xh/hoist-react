@@ -89,7 +89,7 @@ export class Field {
      * Return a resolved validation state of the field, starting validation if neccessary.
      *
      * Validation on the field will automatically be triggered by an actual change to
-     * the field, but can also be triggered manually by this methid.  For example,
+     * the field, but can also be triggered manually by this method.  For example,
      * HoistField will trigger this on blur to ensure that fields associated with
      * "visited" inputs are validated, even if they are never changed.
      *
@@ -97,8 +97,8 @@ export class Field {
      */
     @action
     async validateAsync() {
-        this._validationRunning = true;
-        await when(() =>  this.validationState != ValidationState.Unknown);
+        this.startValidating();
+        await when(() =>  this.validationState != ValidationState.Unknown && !this.validationPending);
         return this.validationState;
     }
 
@@ -128,7 +128,6 @@ export class Field {
     @action
     init(initialValue=null) {
         this.initialValue = initialValue;
-        this.model[this.field] = initialValue;
         this.reset();
     }
 
@@ -140,6 +139,11 @@ export class Field {
         this.model[this.name] = this.initialValue;
         this._validationRunning = false;
         this.errors = null;
+    }
+
+    @action
+    startValidating() {
+        this._validationRunning = true;
     }
     
     /**
@@ -154,17 +158,18 @@ export class Field {
         this.model = model;
         this.displayName = displayName;
         this.addRules(...rules);
-        this.addAutorun(() => this.validator());
+        this.addAutorun(() => {
+            if (this._validationRunning) this.computeValidation();
+        });
+        this.addAutorun(() => {
+            if (this.isDirty) this.startValidating()
+        });
     }
 
     //--------------------------
     // Implementation
     //-------------------------
-    validator() {
-        if (!this._validationRunning && !this.isDirty) return;
-
-        runInAction(() => this._validationRunning = true);
-        
+    computeValidation() {
         const runId = ++this._validationRunId;
         this.evaluateAsync(this.rules)
             .thenAction(errors => {
@@ -177,4 +182,8 @@ export class Field {
         const promises = rules.map(it => it.evaluateAsync(this));
         return flatten(await Promise.all(promises));
     }
+
+
+
 }
+

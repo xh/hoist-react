@@ -164,7 +164,7 @@ export class HoistField extends Component {
 
         // Trigger validation.  Useful if user just visited field without making change.
         const field = this.getField();
-        if (field) field.validateAsync();
+        if (field) field.startValidating();
         
         runInAction(() => this.hasFocus = false);
     }

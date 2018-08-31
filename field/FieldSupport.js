@@ -30,8 +30,8 @@ export function FieldSupport(C) {
         //-----------------------------
         // Get Field Models, lifecycle
         //-----------------------------
-        get fields() {
-            return this.fieldsModel.fields;
+        fields:  {
+            get() {return this.fieldsModel.fields;}
         },
 
         getField(name) {
