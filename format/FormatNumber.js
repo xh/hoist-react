@@ -187,7 +187,10 @@ export function fmtPercent(v, opts = {}) {
 // Implementation
 //---------------
 function fmtNumberElement(v, opts = {}) {
-    const {str, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, toolTip, originalValue} = opts;
+    const {/* eslint-disable no-unused-vars */
+        str, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, toolTip, originalValue
+        /* eslint-enable no-unused-vars */
+    } = opts;
 
     // CSS classes
     const cls = [];
@@ -220,13 +223,17 @@ function fmtNumberElement(v, opts = {}) {
 
     return span({
         className: cls.join(' '),
-        title: processToolTip(toolTip, originalValue),
+        title: processToolTip(toolTip, opts),
         items: items
     });
 }
 
 function fmtNumberString(v, opts = {}) {
-    const {ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, toolTip, originalValue} = opts;
+    const {
+        /* eslint-disable no-unused-vars */
+        ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, toolTip, originalValue
+        /* eslint-enable no-unused-vars */
+    } = opts;
     let str = opts.str;
 
     if (withSignGlyph) {
@@ -254,7 +261,7 @@ function fmtNumberString(v, opts = {}) {
     }
 
     if (toolTip) {
-        str = fmtSpan(str, {className: 'xh-title-tip', title: processToolTip(toolTip, originalValue)});
+        str = fmtSpan(str, {className: 'xh-title-tip', title: processToolTip(toolTip, opts)});
     }
 
     return str;
@@ -316,11 +323,11 @@ function isInvalidInput(v) {
     return v == null || v === '';
 }
 
-function processToolTip(toolTip, originalValue) {
+function processToolTip(toolTip, opts) {
     if (toolTip === true) {
-        return fmtNumber(originalValue, {ledger: true, forceLedgerAlign: false, precision: MAX_NUMERIC_PRECISION, zeroPad: false});
+        return fmtNumber(opts.originalValue, {ledger: opts.ledger, forceLedgerAlign: false, precision: MAX_NUMERIC_PRECISION, zeroPad: false});
     } else if (isFunction(toolTip)) {
-        return toolTip(originalValue);
+        return toolTip(opts.originalValue);
     } else {
         return null;
     }
