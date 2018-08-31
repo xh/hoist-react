@@ -124,11 +124,7 @@ export class GridStateModel {
 
     getColumnState() {
         const {columns} = this.gridModel,
-            cols = [];
-
-        columns.forEach(col => {
-            this.gatherLeaves(col, cols);
-        });
+            cols = this.gatherLeaves(columns);
 
         return cols.map(col => {
             return {colId: col.colId, hide: col.hide, width: col.width};
@@ -136,11 +132,12 @@ export class GridStateModel {
     }
 
     // Grouped columns are a tree structure but we store their state as a flat array of configs representing the leaves
-    gatherLeaves(col, cols) {
-        if (col.groupId) {
-            col.children.forEach(child => this.gatherLeaves(child, cols));
-        }
-        if (col.colId) cols.push(col);
+    gatherLeaves(columns, leaves = []) {
+        columns.forEach(col => {
+            if (col.groupId) this.gatherLeaves(col.children, leaves);
+            if (col.colId) leaves.push(col);
+        });
+        return leaves;
     }
 
     updateGridColumns() {
