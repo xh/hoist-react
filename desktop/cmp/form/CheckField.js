@@ -34,7 +34,7 @@ export class CheckField extends HoistField {
             onChange: this.onChange,
             onBlur: this.onBlur,
             onFocus: this.onFocus,
-            ...this.props
+            ...this.getDelegateProps()
         });
     }
 

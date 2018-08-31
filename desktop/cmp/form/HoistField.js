@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {upperFirst, isFunction} from 'lodash';
+import {isFunction, omit, pick, upperFirst} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
 import {observable, computed, action, runInAction} from '@xh/hoist/mobx';
 
@@ -73,10 +73,13 @@ export class HoistField extends Component {
 
     /**
      * List of properties that if passed to this control should be trampolined to the underlying
-     * blueprint control.
+     * BluePrint control. Implementations of HoistField should use this.getDelegateProps() to get
+     * a basket of these props for passing along.
      *
-     * Implementations of HoistField should use this.getDelegateProps() to get a basket of
-     * these props for passing along.
+     * If this configuration is left empty, getDelegateProps() will instead return all props passed
+     * to the component, but filtered to remove those known to be added by the HoistField API.
+     *
+     * (Overall role of the delegateProps concept for HoistField components is still under review.)
      */
     delegateProps = [];
 
@@ -166,14 +169,21 @@ export class HoistField extends Component {
     //-----------------------------
     getDelegateProps() {
         const props = this.props,
-            ret = {},
-            delegates = this.delegateProps || [];
+            delegates = this.delegateProps;
 
-        delegates.forEach(it => {
-            if (it in props) ret[it] = props[it];
-        });
-
-        return ret;
+        // See above comment on delegateProps field.
+        if (delegates.length) {
+            return pick(props, delegates);
+        } else {
+            return omit(props, [
+                'value',
+                'onChange',
+                'onCommit',
+                'commitOnChange',
+                'model',
+                'field'
+            ]);
+        }
     }
 
 }
