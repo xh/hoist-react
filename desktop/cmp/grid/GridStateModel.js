@@ -143,10 +143,8 @@ export class GridStateModel {
     updateGridColumns() {
         const {gridModel, state} = this,
             gridCols = gridModel.cloneColumns(),
-            cols = [],
+            cols = this.gatherLeaves(gridCols),
             foundColumns = [];
-
-        gridCols.forEach(it => this.gatherLeaves(it, cols));
 
         if (!state.columns) return;
 
