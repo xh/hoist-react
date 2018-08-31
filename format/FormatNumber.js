@@ -42,7 +42,8 @@ const UP_TICK = '▴',
  * @param {string} [opts.labelCls] - if provided, label will be place in a span with this set as its class.
  * @param {(boolean|Object)} [opts.colorSpec] - show in colored <span>, based on sign of value.
  *      If truthy will default to red/green/grey. Also accepts an object of the form {pos: color, neg: color, neutral: color}.
- * @param {formatTooltip} [opts.tooltip] - tool tip function, based on ag-Grid tooltip callback.
+ * @param {(boolean|fmtNumber~tooltipFn)} [c.tooltip] - 'true' uses a default format,
+ *      or tool tip function displays based on AG Grid tooltip callback.
  * @param {boolean} [opts.asElement] - return a react element rather than a html string
  * @param {number} [opts.originalValue] - used to retain an unaltered reference to the original value to be formatted.
  *      Not typically used by applications.
@@ -339,9 +340,7 @@ export const numberRenderer = createRenderer(fmtNumber),
     percentRenderer = createRenderer(fmtPercent);
 
 /**
- * @callback formatTooltip - normalized renderer function to produce tooltip.
- *      Takes either a boolean, in which case the a default format is used as the tooltip,
- *      or a function, as defined below.
+ * @callback fmtNumber~tooltipFn - normalized renderer function to produce tooltip.
  * @param {*} value - cell data value (column + row).
  * @return {string} - the formatted value for display.
  */

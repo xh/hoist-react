@@ -38,7 +38,7 @@ export class Column {
      *      adjust whenever the grid changes size to absorb available horizontal space.
      * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
      * @param {boolean} [c.movable] - false to prevent user from drag-and-drop re-ordering.
-     * @param {gridRenderer} [c.renderer] - function to produce a formatted string for each cell.
+     * @param {Column~rendererFn} [c.renderer] - function to produce a formatted string for each cell.
      *      Supports HTML as output. Passed both field value and entire row data object.
      * @param {function} [c.elementRenderer] - elementFactory function to return a React component
      *      for rendering within each cell. For ag-Grid implementations, an ICellRendererParams
@@ -59,7 +59,8 @@ export class Column {
      *      @see ExportManager
      * @param {ExportFormat} [c.exportFormat] - structured format string for Excel-based exports.
      *      @see ExportFormat
-     * @param {gridTooltip} [c.tooltip] - tool tip function, based on AG Grid tooltip callback.
+     * @param {(boolean|Column~tooltipFn)} [c.tooltip] - 'true' displays the raw value, or
+     *      tool tip function, which is based on AG Grid tooltip callback.
      * @param {boolean} [c.excludeFromExport] - true to drop this column from a file export.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
@@ -188,7 +189,7 @@ export class Column {
 }
 
 /**
- * @callback gridRenderer - normalized renderer function for a grid column cell.
+ * @callback Column~rendererFn - normalized renderer function for a grid column cell.
  * @param {*} value - cell data value (column + row).
  * @param {Object} data - row data object (entire row).
  * @param {Object} metadata - additional data available to the renderer,
@@ -197,9 +198,7 @@ export class Column {
  */
 
 /**
- * @callback gridTooltip - normalized renderer function to produce a grid column tooltip.
- *      Takes either a boolean, in which case the raw value is used as the tooltip,
- *      or a function, as defined below.
+ * @callback Column~tooltipFn - normalized renderer function to produce a grid column tooltip.
  * @param {*} value - cell data value (column + row).
  * @param {Object} data - row data object (entire row).
  * @param {Object} metadata - additional data available to the renderer,
