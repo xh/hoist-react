@@ -298,7 +298,6 @@ export class GridModel {
         this.applyColumnChanges(agColState);
     }
 
-
     /**
      * This method will update the current column definition with respect to sort order, width and visibility of columns
      * Used by both Hoist's grid state plugin (GridStateModel) and in response to state changes as detected by ag-grid
