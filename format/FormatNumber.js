@@ -318,8 +318,7 @@ function isInvalidInput(v) {
 
 function processTipFn(tipFn, originalValue) {
     if (tipFn === true) {
-        const formatter = numberRenderer(originalValue, {ledger: true, forceLedgerAlign: false, precision: 12, zeroPad: false});
-        return formatter(originalValue);
+        return fmtNumber(originalValue, {ledger: true, forceLedgerAlign: false, precision: MAX_NUMERIC_PRECISION, zeroPad: false});
     } else if (isFunction(tipFn)) {
         return tipFn(originalValue);
     } else {
