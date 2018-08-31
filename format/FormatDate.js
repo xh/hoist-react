@@ -23,14 +23,13 @@ const INVALID_DATE = moment(null).format();
  * Render dates and times with specified format
  *
  * @param {*} v - a date value to format, can be any value MomentJs can parse.
- *      @see https://momentjs.com/docs/#/parsing/ for more info
- *
+ *      @see {@link https://momentjs.com/docs/#/parsing/|MomentJS Docs}
  * @param {(Object|string)} [opts] - a MomentJs format string or an options object.
  * @param {string} [opts.fmt] - a MomentJs format string.
- * @param {function} [opts.tooltip] - use to place formatted date in span with title property set to returned string.
- *      Function will be passed the originalValue param
- * @param {boolean} [opts.asElement] - return a react element rather than a html string
- * @param {*} [opts.originalValue] - used to retain an unaltered reference to the original value to be formatted.
+ * @param {function} [opts.tooltip] - function to generate a tooltip string,
+ *      passed the original value to be formatted.
+ * @param {boolean} [opts.asElement] - return a React element rather than an HTML string.
+ * @param {*} [opts.originalValue] - holds the unaltered original value to be formatted.
  *      Not typically used by applications.
  */
 export function fmtDate(v, opts = {}) {
@@ -72,16 +71,19 @@ export function fmtTime(v, opts = {}) {
  * Render dates formatted based on distance in time from current day
  *
  * @param {*} v - a date value to format, can be any value MomentJs can parse.
- *      @see https://momentjs.com/docs/#/parsing/ for more info.
- *
- * @param {Object} [opts] - an options object, may include:
- * @param {string} [opts.sameDayFmt] - a MomentJs format string for dates matching current day, defaults to 'hh:mma'.
- * @param {string} [opts.nearFmt] - format for dates within the number of months determined by the distantThreshold, defaults to 'MMM D'.
- * @param {string} [opts.distantFmt] - format for dates outside of the number of months specified by the distantThreshold, defaults to 'YYYY-MM-DD'.
- * @param {int} [opts.distantThreshold] - used to determined the number of months away from the current month to be considered 'recent' or 'near'
- * @param {function} [opts.tooltip] - use to place formatted date in span with title property set to string returned by this function
- * @param {boolean} [opts.asElement] - return a react element rather than a html string
- * @param {*} [opts.originalValue] - used to retain an unaltered reference to the original value to be formatted
+ *      @see {@link https://momentjs.com/docs/#/parsing/|MomentJS Docs}
+ * @param {Object} [opts]
+ * @param {string} [opts.sameDayFmt] - format for dates matching current day, defaults to 'hh:mma'.
+ * @param {string} [opts.nearFmt] - format for dates within the number of months specified by the
+ *      distantThreshold, defaults to 'MMM D'.
+ * @param {string} [opts.distantFmt] - format for dates > number of months specified by the
+ *      distantThreshold, defaults to 'YYYY-MM-DD'.
+ * @param {number} [opts.distantThreshold] - number of months away from the current month
+ *      to be considered 'recent' or 'near'.
+ * @param {function} [opts.tooltip] - function to generate a tooltip string,
+ *      passed the original value to be formatted.
+ * @param {boolean} [opts.asElement] - return a React element rather than an HTML string
+ * @param {*} [opts.originalValue] - holds the unaltered original value to be formatted.
  *      Not typically used by applications.
  *
  * Note: Moments are mutable. Calling any of the manipulation methods will change the original moment.

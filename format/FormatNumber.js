@@ -28,24 +28,24 @@ const UP_TICK = '▴',
  * Standard number formatting for Hoist
  *
  * @param {number} v - value to format.
- * @param {Object} [opts] - formatting options, may include:
- * @param {string} [opts.nullDisplay] - desired display for null values.
+ * @param {Object} [opts]
+ * @param {string} [opts.nullDisplay] - display string for null values.
  * @param {string} [opts.formatPattern] - a valid numeralJS format string.
- *      @see http://numeraljs.com/#format for more info
  * @param {(number|'auto')} [opts.precision] - desired number of decimal places.
- * @param {boolean} [opts.zeroPad] - set to false to remove trailing zeros regardless of precision.
- * @param {boolean} [opts.ledger] - set to true to use ledger format.
- * @param {boolean} [opts.forceLedgerAlign] - used to add placeholder after positive ledgers to align with negative ledgers in columns.
- * @param {boolean} [opts.withPlusSign] - set to true to include a '+' in positive number strings.
- * @param {boolean} [opts.withSignGlyph] - set to true to prepend with an up / down arrow.
+ * @param {boolean} [opts.zeroPad] - true to pad with trailing zeros out to given precision.
+ * @param {boolean} [opts.ledger] - true to use ledger format.
+ * @param {boolean} [opts.forceLedgerAlign] - true to add placeholder after positive ledgers to
+ *      align vertically with negative ledgers in columns.
+ * @param {boolean} [opts.withPlusSign] - true to prepend positive numbers with a '+'.
+ * @param {boolean} [opts.withSignGlyph] - true to prepend an up / down arrow.
  * @param {string} [opts.label] - label to append to value.
- * @param {string} [opts.labelCls] - if provided, label will be place in a span with this set as its class.
+ * @param {string} [opts.labelCls] - CSS class of label <span>,
  * @param {(boolean|Object)} [opts.colorSpec] - show in colored <span>, based on sign of value.
- *      If truthy will default to red/green/grey. Also accepts an object of the form {pos: color, neg: color, neutral: color}.
- * @param {(boolean|fmtNumber~tooltipFn)} [c.tooltip] - 'true' uses a default format,
- *      or tool tip function displays based on AG Grid tooltip callback.
- * @param {boolean} [opts.asElement] - return a react element rather than a html string
- * @param {number} [opts.originalValue] - used to retain an unaltered reference to the original value to be formatted.
+ *      True for red/green/grey defaults, or object of the form {pos: color, neg: color, neutral: color}.
+ * @param {(boolean|fmtNumber~tooltipFn)} [opts.tooltip] - true to enable default tooltip with
+ *      minimally formatted original value, or a function to generate a custom tooltip string.
+ * @param {boolean} [opts.asElement] - return a React element rather than a HTML string
+ * @param {number} [opts.originalValue] - holds the unaltered original value to be formatted.
  *      Not typically used by applications.
  *
  * This method delegates to numeralJS, @see http://numeraljs.com for more details.
@@ -53,7 +53,6 @@ const UP_TICK = '▴',
  * Hierarchy of params is by specificity: formatPattern => precision.
  * If no options are given, a heuristic based auto-rounding will occur.
  */
-
 export function fmtNumber(v, {
     nullDisplay = '',
     formatPattern = null,
@@ -340,7 +339,7 @@ export const numberRenderer = createRenderer(fmtNumber),
     percentRenderer = createRenderer(fmtPercent);
 
 /**
- * @callback fmtNumber~tooltipFn - normalized renderer function to produce tooltip.
- * @param {*} value - cell data value (column + row).
+ * @callback fmtNumber~tooltipFn - renderer for a custom tooltip.
+ * @param {number} originalValue - number to be formatted.
  * @return {string} - the formatted value for display.
  */
