@@ -121,11 +121,11 @@ export class Grid extends Component {
             icons: {
                 groupExpanded: convertIconToSvg(
                     Icon.chevronDown(),
-                    {classes: ['group-header-icon-expanded']}
+                    {classes: ['group-header-icon-expanded', 'fa-fw']}
                 ),
                 groupContracted: convertIconToSvg(
                     Icon.chevronRight(),
-                    {classes: ['group-header-icon-contracted']}
+                    {classes: ['group-header-icon-contracted', 'fa-fw']}
                 )
             },
             rowSelection: model.selModel.mode,
