@@ -10,6 +10,7 @@ import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {
     castArray,
+    cloneDeep,
     defaults,
     find,
     findLast,
@@ -18,8 +19,9 @@ import {
     isString,
     last,
     orderBy,
+    sortBy,
     pull,
-    uniqBy
+    uniq
 } from 'lodash';
 import {Column} from '@xh/hoist/columns';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
@@ -277,7 +279,8 @@ export class GridModel {
     /** @param {(Column[]|Object[])} cols - Columns, or configs to create them. */
     @action
     setColumns(cols) {
-        const columns = cols.map(c => c instanceof Column ? c : new Column(c));
+        const columns = this.buildColumns(cols);
+
         this.validateColumns(columns);
 
         this.columns = columns;
@@ -289,19 +292,39 @@ export class GridModel {
         }
     }
 
+    noteAgColumnStateChanged(agColState) {
+        this.applyColumnChanges(agColState);
+    }
+
+    /**
+     * This method will update the current column definition with respect to sort order, width and visibility of columns.
+     * Used by both Hoist's grid state plugin (GridStateModel) and in response to state changes as detected by ag-grid.
+     *
+     * note: Sort order is driven by the individual columns in the state param. This means that if a column has been
+     * redefined to a new column group that entire group may be moved by this state param.
+     *
+     * @param {Object[]} colState - configs representing the order, width and visibility of columns.
+     *       In the case of a grid with grouped columns, the columns here represent only the leaves or bottom level columns.
+     */
     @action
-    noteAgColumnStateChanged(agColumnState) {
-        const {columns} = this;
-        // Gather cols in correct order, and apply updated widths.
-        let newCols = agColumnState.map(agCol => {
-            const col = find(columns, {colId: agCol.colId});
+    applyColumnChanges(colState) {
+        let {columns} = this,
+            newCols = cloneDeep(columns);
+
+        // 1) Update any width changes, and mark (potentially changed) sort order
+        colState.forEach((agCol, index) => {
+            let col = this.findColumn(newCols, agCol.colId);
             if (!col.flex) col.width = agCol.width;
-            return col;
+            col._sortOrder = index;
         });
 
-        // Force any emptyFlexCol that is last to stay last (avoid user dragging)!
-        const emptyFlex = findLast(columns, {colId: 'emptyFlex'});
-        if (emptyFlex && last(columns) == emptyFlex && last(newCols) != emptyFlex) {
+        // 2) Install implied group sort orders and sort
+        newCols.forEach(it => this.markGroupSortOrder(it));
+        newCols = this.sortColumns(newCols);
+
+        // 3) Force any emptyFlexCol that is last to stay last (avoid user dragging)!
+        const emptyFlex = findLast(newCols, {colId: 'emptyFlex'});
+        if (emptyFlex && last(columns).colId == 'emptyFlex' && last(newCols) != emptyFlex) {
             pull(newCols, emptyFlex).push(emptyFlex);
         }
 
@@ -311,17 +334,77 @@ export class GridModel {
     //-----------------------
     // Implementation
     //-----------------------
+    buildColumns(colsOrConfigs) {
+        return colsOrConfigs.map(c => {
+            if (c.children) {
+                c.groupId = c.groupId || c.headerName;
+                throwIf(!c.groupId, 'Must specify groupId or headerName for a group column.');
+                c.children = this.buildColumns(c.children);
+                c.marryChildren = true; // enforce 'sealed' column groups
+                return c;
+            }
+
+            return c instanceof Column ? c : new Column(c);
+        });
+    }
+
+    findColumn(cols, id) {
+        for (let col of cols) {
+            if (col.children) {
+                const ret = this.findColumn(col.children, id);
+                if (ret) return ret;
+            } else {
+                if (col.colId == id) return col;
+            }
+        }
+        return null;
+    }
+
+    markGroupSortOrder(col) {
+        if (col.groupId) {
+            col.children.forEach(child => this.markGroupSortOrder(child));
+            col._sortOrder = col.children[0]._sortOrder;
+        }
+    }
+
+    sortColumns(columns) {
+        columns.forEach(col => {
+            if (col.children) {
+                col.children = this.sortColumns(col.children);
+            }
+        });
+
+        return sortBy(columns, [it => it._sortOrder]);
+    }
+
     validateColumns(cols) {
         if (isEmpty(cols)) return;
 
-        const hasDupes = cols.length != uniqBy(cols, 'colId').length;
-        throwIf(hasDupes, 'All colIds in column collection must be unique.');
+
+        const {groupIds, colIds} = this.collectIds(cols);
+
+        const colsHaveDupes = colIds.length != uniq(colIds).length;
+        throwIf(colsHaveDupes, 'All colIds in column collection must be unique.');
+
+        const groupColsHaveDupes = groupIds.length != uniq(groupIds).length;
+        throwIf(groupColsHaveDupes, 'All groupIds in column collection must be unique.');
 
         warnIf(
             !cols.some(c => c.flex),
             `No columns have flex set (flex=true). Consider making the last column a flex column, 
             or adding an 'emptyFlexCol' at the end of your columns array.`
         );
+    }
+
+    collectIds(cols, groupIds = [], colIds =[]) {
+        cols.forEach(col => {
+            if (col.colId) colIds.push(col.colId);
+            if (col.groupId) {
+                groupIds.push(col.groupId);
+                this.collectIds(col.children, groupIds, colIds);
+            }
+        });
+        return {groupIds, colIds};
     }
 
     formatValuesForExport(params) {

@@ -38,7 +38,7 @@ export class DataViewModel {
     /**
      * @param {Object} c - DataViewModel configuration.
      * @param {function} c.itemFactory - elemFactory for the component used to render each item.
-     *      Will receive record via its props.
+     *      Will receive record and store via its props.
      * @param {BaseStore} c.store - store containing the data to be displayed.
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` from which to create.
