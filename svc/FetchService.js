@@ -6,7 +6,7 @@
  */
 import {XH, HoistService} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
-import {castArray} from 'lodash';
+import {stringify} from 'qs';
 
 @HoistService()
 export class FetchService {
@@ -33,6 +33,10 @@ export class FetchService {
      *     requests will use 'application/x-www-form-urlencoded', otherwise 'text/plain' will be
      *     used.
      * @param {boolean} [opts.acceptJson] - true to set Accept header to 'application/json'.
+     * @param {Object} [opts.qsOpts] - Object of options to pass to the param converter, qs.
+     *      The default qsOpts are: {arrayFormat: 'repeat', allowDots: true}.
+     *      These may be overriden by passing in a qsOpts object.
+     *      @see {@link https://www.npmjs.com/package/qs}
      * @returns {Promise<Response>} - Promise which resolves to a Fetch Response.
      *      @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Response|Fetch Response docs}
      */
@@ -70,15 +74,18 @@ export class FetchService {
 
         // 3) Preprocess and apply params
         if (params) {
+            let qsOpts = {arrayFormat: 'repeat', allowDots: true};
+            qsOpts = Object.assign(qsOpts, opts.qsOpts);
+
             if (method === 'POST') {
                 if (fetchOpts.contentType == 'application/json') {
                     fetchOpts.body = JSON.stringify(params);
                 } else {
                     // default to an 'application/x-www-form-urlencoded' POST body
-                    fetchOpts.body = this.objectToQueryString(params);
+                    fetchOpts.body = stringify(params, qsOpts);
                 }
             } else {
-                url += '?' + this.objectToQueryString(params);
+                url += '?' + stringify(params, qsOpts);
             }
         }
 
@@ -154,29 +161,5 @@ export class FetchService {
         } catch (ignore) {
             return null;
         }
-    }
-
-    /**
-     * Does not handle nested objects
-     *  {
-     *      reportDef: {
-     *          date: '2018-08-29',
-     *          user: 'jDoe'
-     *      }
-     *  }
-     *
-     *  But it does handle arrays:
-     *   {
-     *      reportColumns: ['name', 'age', 'weight']
-     *   }
-     */
-    objectToQueryString(obj) {
-        const paramsStrings = [];
-        Object.entries(obj).forEach(v => {
-            const key = v[0],
-                vals = castArray(v[1]);
-            vals.forEach(val => paramsStrings.push(`${key}=${encodeURIComponent(val)}`));
-        });
-        return paramsStrings.join('&');
     }
 }
