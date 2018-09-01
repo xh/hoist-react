@@ -122,6 +122,28 @@ export class FetchService {
         return ret.status === 204 ? null : ret.json();
     }
 
+
+    /**
+     * Send a POST HTTP request to a URL with a JSON body, and decode the response as JSON.
+     *
+     * @param {Object} opts - options to pass through to fetch, with some additions.
+     *      @see https://developer.mozilla.org/en-US/docs/Web/API/Request for the available options
+     * @param {string} opts.url - target url to send the HTTP request to. Relative urls will be
+     *     appended to XH.baseUrl for the request
+     * @param {Object} [opts.params] - parameters to encode and send with the request body (for POSTs)
+     *      or append as a query string.
+     * @returns {Promise} the decoded JSON object, or null if the response had no content.
+     */
+    async postJson(opts) {
+        const ret = await this.fetch({
+            method: 'POST',
+            acceptJson: true,
+            contentType: 'application/json',
+            ...opts
+        });
+        return ret.status === 204 ? null : ret.json();
+    }
+
     //-----------------------
     // Implementation
     //-----------------------
