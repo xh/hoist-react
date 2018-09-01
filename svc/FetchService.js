@@ -23,8 +23,9 @@ export class FetchService {
      *      @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Request|Fetch Request docs}
      * @param {string} opts.url - target url to send the HTTP request to. Relative urls will be
      *     appended to XH.baseUrl for the request.
+     * @param {Object} [opts.body] - the data obj to send in the request body (for POSTs/PUTs sending JSON).
      * @param {Object} [opts.params] - parameters to encode and send with the request body
-     *      (for POSTs) or append as a query string.
+     *      (for POSTs/PUTs sending form-url-encoded) or to append as a query string.
      * @param {string} [opts.method] - The HTTP Request method to use for the request. If not
      *     explicitly set in opts then the method will be set to POST if there are params,
      *     otherwise it will be set to GET.
@@ -77,13 +78,9 @@ export class FetchService {
             let qsOpts = {arrayFormat: 'repeat', allowDots: true};
             qsOpts = Object.assign(qsOpts, opts.qsOpts);
 
-            if (method === 'POST') {
-                if (fetchOpts.contentType == 'application/json') {
-                    fetchOpts.body = JSON.stringify(params);
-                } else {
-                    // default to an 'application/x-www-form-urlencoded' POST body
-                    fetchOpts.body = stringify(params, qsOpts);
-                }
+            if (['POST', 'PUT'].includes(method) && fetchOpts.contentType != 'application/json') {
+                // fall back to an 'application/x-www-form-urlencoded' POST/PUT body if not sending json
+                fetchOpts.body = stringify(params, qsOpts);
             } else {
                 url += '?' + stringify(params, qsOpts);
             }
@@ -122,6 +119,10 @@ export class FetchService {
      *     If not explicitly set in opts then the contentType will be set based on the method. POST
      *     requests will use 'application/x-www-form-urlencoded', otherwise 'text/plain' will be
      *     used.
+     * @param {Object} [opts.qsOpts] - Object of options to pass to the param converter, qs.
+     *     The default qsOpts are: {arrayFormat: 'repeat', allowDots: true}.
+     *     These may be overriden by passing in a qsOpts object.
+     *     @see {@link https://www.npmjs.com/package/qs}
      * @returns {Promise} the decoded JSON object, or null if the response had no content.
      */
     async fetchJson(opts) {
@@ -137,13 +138,44 @@ export class FetchService {
      *      @see https://developer.mozilla.org/en-US/docs/Web/API/Request for the available options
      * @param {string} opts.url - target url to send the HTTP request to. Relative urls will be
      *     appended to XH.baseUrl for the request
-     * @param {Object} [opts.params] - parameters to encode and send with the request body (for POSTs)
-     *      or append as a query string.
+     * @param {Object} [opts.body] - the data obj to send in the request body.
+     * @param {Object} [opts.params] - parameters to encode and send as a query string.
+     * @param {Object} [opts.qsOpts] - Object of options to pass to the param converter, qs.
+     *     The default qsOpts are: {arrayFormat: 'repeat', allowDots: true}.
+     *     These may be overriden by passing in a qsOpts object.
+     *     @see {@link https://www.npmjs.com/package/qs}
      * @returns {Promise} the decoded JSON object, or null if the response had no content.
      */
     async postJson(opts) {
+        opts.body = JSON.stringify(opts.body);
         const ret = await this.fetch({
             method: 'POST',
+            acceptJson: true,
+            contentType: 'application/json',
+            ...opts
+        });
+        return ret.status === 204 ? null : ret.json();
+    }
+
+    /**
+     * Send a PUT HTTP request to a URL with a JSON body, and decode the response as JSON.
+     *
+     * @param {Object} opts - options to pass through to fetch, with some additions.
+     *      @see https://developer.mozilla.org/en-US/docs/Web/API/Request for the available options
+     * @param {string} opts.url - target url to send the HTTP request to. Relative urls will be
+     *     appended to XH.baseUrl for the request
+     * @param {Object} [opts.body] - the data obj to send in the request body.
+     * @param {Object} [opts.params] - parameters to encode and send as a query string.
+     * @param {Object} [opts.qsOpts] - Object of options to pass to the param converter, qs.
+     *     The default qsOpts are: {arrayFormat: 'repeat', allowDots: true}.
+     *     These may be overriden by passing in a qsOpts object.
+     *     @see {@link https://www.npmjs.com/package/qs}
+     * @returns {Promise} the decoded JSON object, or null if the response had no content.
+     */
+    async putJson(opts) {
+        opts.body = JSON.stringify(opts.body);
+        const ret = await this.fetch({
+            method: 'PUT',
             acceptJson: true,
             contentType: 'application/json',
             ...opts

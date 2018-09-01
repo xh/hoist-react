@@ -309,6 +309,8 @@ class XHClass {
     track(opts)                 {return this.trackService.track(opts)}
     fetch(opts)                 {return this.fetchService.fetch(opts)}
     fetchJson(opts)             {return this.fetchService.fetchJson(opts)}
+    postJson(opts)              {return this.fetchService.postJson(opts)}
+    putJson(opts)               {return this.fetchService.putJson(opts)}
     getUser()                   {return this.identityService.getUser()}
     getUsername()               {return this.identityService.getUsername()}
     getConf(key, defaultVal)    {return this.configService.get(key, defaultVal)}
