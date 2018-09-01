@@ -78,11 +78,13 @@ export class FetchService {
             let qsOpts = {arrayFormat: 'repeat', allowDots: true};
             qsOpts = Object.assign(qsOpts, opts.qsOpts);
 
+            const paramsString = stringify(params, qsOpts);
+
             if (['POST', 'PUT'].includes(method) && fetchOpts.contentType != 'application/json') {
                 // fall back to an 'application/x-www-form-urlencoded' POST/PUT body if not sending json
-                fetchOpts.body = stringify(params, qsOpts);
+                fetchOpts.body = paramsString;
             } else {
-                url += '?' + stringify(params, qsOpts);
+                url += '?' + paramsString;
             }
         }
 
