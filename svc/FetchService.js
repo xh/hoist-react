@@ -132,10 +132,8 @@ export class FetchService {
 
         // 3) Preprocess and apply params
         if (params) {
-            let qsOpts = {arrayFormat: 'repeat', allowDots: true};
-            qsOpts = Object.assign(qsOpts, opts.qsOpts);
-
-            const paramsString = stringify(params, qsOpts);
+            const qsOpts = {arrayFormat: 'repeat', allowDots: true, ...opts.qsOpts},
+                paramsString = stringify(params, qsOpts);
 
             if (['POST', 'PUT'].includes(method) && fetchOpts.contentType != 'application/json') {
                 // fall back to an 'application/x-www-form-urlencoded' POST/PUT body if not sending json
@@ -166,10 +164,10 @@ export class FetchService {
     // Implementation
     //-----------------------
     async sendJson(opts) {
-        opts = Object.assign(opts, {
+        opts = {...opts, ...{
             body: JSON.stringify(opts.body),
             contentType: 'application/json'
-        });
+        }};
         return this.fetchJson(opts);
     }
 
