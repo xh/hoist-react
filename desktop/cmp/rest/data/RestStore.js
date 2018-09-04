@@ -69,7 +69,7 @@ export class RestStore extends UrlStore {
     async saveRecordInternalAsync(rec, isAdd) {
         let {url} = this;
         if (!isAdd) url += '/' + rec.id;
-        return XH[isAdd ? 'postJson' : 'putJson']({
+        return XH.fetchService[isAdd ? 'postJson' : 'putJson']({
             url,
             body: {data: rec}
         }).then(response => {
