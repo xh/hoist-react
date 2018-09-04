@@ -56,7 +56,6 @@ export class TextField extends HoistField {
             onFocus: this.onFocus,
             style: {...style, width},
             spellCheck: !!spellCheck,
-            autoComplete: Date.now().toString(),
             ...this.getDelegateProps()
         });
     }
