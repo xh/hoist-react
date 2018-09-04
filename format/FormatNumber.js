@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {defaults, isFinite, isString} from 'lodash';
+import {defaults, isFinite, isString, pick} from 'lodash';
 import numeral from 'numeral';
 
 import {Exception} from '@xh/hoist/exception';
@@ -17,7 +17,8 @@ import {fmtSpan} from './FormatMisc';
 const THOUSAND = 1000,
     MILLION  = 1000000,
     BILLION  = 1000000000,
-    MAX_NUMERIC_PRECISION = 12;
+    MAX_NUMERIC_PRECISION = 12,
+    MAP_LABEL = {'none': 0, 'thousands': 1, 'millions': 2, 'billions': 3};
 
 const UP_TICK = '▴',
     DOWN_TICK = '▾',
@@ -58,7 +59,7 @@ export function fmtNumber(v, {
     nullDisplay = '',
     formatPattern = null,
     precision = 'auto',
-    zeroPad = (precision != 'auto'),
+    zeroPad = null,
     ledger = false,
     forceLedgerAlign = true,
     withPlusSign = false,
@@ -83,6 +84,57 @@ export function fmtNumber(v, {
 
     const opts = {str, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tipFn, originalValue};
     return asElement ? fmtNumberElement(v, opts) : fmtNumberString(v, opts);
+}
+
+/**
+ * Dynamically render number in thousands, millions, or billions.
+ *
+ * @param {number} v - value to format.
+ * @param {Object} [opts] - @see {@link fmtNumber} method, wit one additional value:
+ * @param {(number)} [opts.decimalTolerance] - when scaling numbers greater than 999,
+ *  maximum number of decimal places tolerated before lowering scale (e.g. millions -> thousands).
+ */
+
+export function fmtCompact(v, opts = {})  {
+    if (isInvalidInput(v)) return fmtNumber(v, opts);
+
+    saveOriginal(v, opts);
+
+    if (!opts.decimalTolerance) opts.decimalTolerance = MAX_NUMERIC_PRECISION;
+    if (!opts.label) opts.label = null;
+    const cOptions = _.pick(opts, ['label', 'precision', 'decimalTolerance']);
+
+    const scaled = scaleAndLabel(v, cOptions); // return object with scaled value and label
+    v = scaled.v;
+    opts = {...opts, label: scaled.label};
+
+    return fmtNumber(v, opts);
+}
+
+function scaleAndLabel (v, opts = {}) {
+    let k;
+    if (opts.label) {
+        k = MAP_LABEL[opts.label] // If passed label param then set immediately
+    } else {
+        const pOfTen = (v).toPrecision(2).split("e"); // get power of ten
+        k = pOfTen.length === 1 ? 0 : Math.floor(Math.min(pOfTen[1].slice(1), 11) / 3); // ceiling at billions
+    }
+
+    const scaled = {};
+    [scaled.v, k] = setDecimals(v,k,opts);
+    scaled.label = ['', 'k', 'm', 'b'][k]; // get label from power
+    return scaled
+}
+
+function setDecimals (v, k, opts = {}) {
+    const num = k < 1 ? v : (v / Math.pow(10, k * 3) ); // divide by power
+    const numStr = num.toString().split('.');
+    if (opts.label || numStr.length === 1 || numStr[1].length <= opts.decimalTolerance) {
+        return [num, k];
+    } else {
+        const shifts = Math.min(Math.floor(numStr[1].length / opts.decimalTolerance), k);
+        return [num * Math.pow(1000, shifts), k - shifts]
+    }
 }
 
 /**
@@ -303,6 +355,8 @@ function buildFormatPattern(v, precision, zeroPad) {
         }
     }
 
+
+
     if (!zeroPad) {
         const arr = pattern.split('.');
         if (arr[1]) arr[1] = `[${arr[1]}]`;
@@ -316,7 +370,10 @@ function isInvalidInput(v) {
     return v == null || v === '';
 }
 
+
+
 export const numberRenderer = createRenderer(fmtNumber),
+    compactRenderer = createRenderer(fmtCompact),
     thousandsRenderer = createRenderer(fmtThousands),
     millionsRenderer = createRenderer(fmtMillions),
     billionsRenderer = createRenderer(fmtBillions),
