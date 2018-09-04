@@ -9,7 +9,7 @@ import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 
-import {HoistField} from './HoistField';
+import {HoistField} from '@xh/hoist/cmp/form/HoistField';
 
 /**
  * A simple label for a form.
@@ -25,10 +25,12 @@ export class Label extends HoistField {
 
     delegateProps = ['className'];
 
+    baseClassName = 'xh-field-label';
+
     render() {
         const {children, style, width} = this.props;
         return div({
-            className: 'xh-field-label',
+            className: this.getClassName(),
             style: {...style, whiteSpace: 'nowrap', width},
             items: children,
             ...this.getDelegateProps()

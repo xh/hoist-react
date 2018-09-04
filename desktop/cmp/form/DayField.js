@@ -14,7 +14,7 @@ import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {dateInput} from '@xh/hoist/kit/blueprint';
 import {Ref} from '@xh/hoist/utils/react';
 
-import {HoistField} from './HoistField';
+import {HoistField} from '@xh/hoist/cmp/form';
 
 /**
  * A Calendar Control for choosing a Day.
@@ -54,12 +54,15 @@ export class DayField extends HoistField {
 
     delegateProps = ['className', 'disabled', 'rightElement'];
 
+    baseClassName = 'xh-day-field';
+
     render() {
         let {minDate, maxDate, width, popoverPosition, style, dayPickerProps, leftIcon} = this.props;
 
         dayPickerProps = assign({fixedWeeks: true}, dayPickerProps);
 
         return dateInput({
+            className: this.getClassName(),
             ref: this.child.ref,
             value: this.renderValue,
             onChange: this.onChange,

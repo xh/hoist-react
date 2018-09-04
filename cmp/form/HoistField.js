@@ -10,6 +10,9 @@ import {PropTypes as PT} from 'prop-types';
 import {isFunction, omit, pick, upperFirst} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
 import {observable, computed, action, runInAction} from '@xh/hoist/mobx';
+import classNames from 'classnames';
+
+import './HoistField.scss';
 
 /**
  *
@@ -19,8 +22,7 @@ import {observable, computed, action, runInAction} from '@xh/hoist/mobx';
  * In bound mode, they will read their value from the  'model' and 'field' props.
  * If not bound, they will get their value in the standard way using the value in props.
  *
- * Hoist Fields will call a common onChange() callback with the latest value, as
- * it is updated.
+ * Hoist Fields will call a common onChange() callback with the latest value, as it is updated.
  *
  * Hoist Fields also introduce the notion of "Committing" a field to the model, when
  * the user has completed a discrete act of data entry. If the 'commitOnChange' property is true,
@@ -28,16 +30,17 @@ import {observable, computed, action, runInAction} from '@xh/hoist/mobx';
  * hits 'enter' or 'blurs' the field, or takes another commit action defined by the control.
  * At this time, any specified 'onCommit' handler will be fired.
  *
- * The 'commitOnChange' property defaults to false, except for selected controls, such as CheckField
- * where a true value is more intuitive.  Furthermore, a commitOnChange value of false is not currently
- * implemented on DropdownFields and ComboBoxes. See BaseDropdownField for more information.
+ * The 'commitOnChange' property defaults to false, except for selected controls such as CheckField
+ * where a true value is more intuitive. Also note that `commitOnChange: false` is not currently
+ * supported on DropdownFields and ComboBoxes - see BaseDropdownField for more information.
  *
- * Note that operating in bound mode may allow for more efficient rendering
- * in a mobx context, in that the bound value is only read *within* this
- * control, so that changes to its value do not cause the parent of this
- * control to re-render.
+ * Note that operating in bound mode may allow for more efficient rendering in a MobX context,
+ * in that the bound value is only read *within* this control, so that changes to its value do not
+ * cause the parent of this control to re-render.
  *
- * Hoist Fields generally support the properties documented below.
+ * HoistFields support built-in validation when bound to a model enhanced by `@FieldSupport`.
+ * When a HoistField control is linked to a property on the underlying model decorated by `@field`,
+ * the model Field will be used to provide validation info and styling to the input component.
  */
 export class HoistField extends Component {
 
@@ -73,8 +76,8 @@ export class HoistField extends Component {
 
     /**
      * List of properties that if passed to this control should be trampolined to the underlying
-     * BluePrint control. Implementations of HoistField should use this.getDelegateProps() to get
-     * a basket of these props for passing along.
+     * control. Implementations of HoistField should use this.getDelegateProps() to get a
+     * basket of these props for passing along.
      *
      * If this configuration is left empty, getDelegateProps() will instead return all props passed
      * to the component, but filtered to remove those known to be added by the HoistField API.
@@ -83,10 +86,18 @@ export class HoistField extends Component {
      */
     delegateProps = [];
 
+
+    /**
+     * Field (if any) associated with this control.
+     */
+    getField() {
+        const {model, field} = this.props;
+        return model && field && model.getField && model.getField(field);
+    }
+
     //-----------------------------------------------------------
     // Handling of internal vs. External value, committing
     //-----------------------------------------------------------
-
     /** Return the value to be rendered internally by control. **/
     @computed
     get renderValue() {
@@ -148,6 +159,11 @@ export class HoistField extends Component {
 
     onBlur = () => {
         this.doCommit();
+
+        // Trigger validation.  Useful if user just visited field without making change.
+        const field = this.getField();
+        if (field) field.startValidating();
+
         runInAction(() => this.hasFocus = false);
     }
 
@@ -186,4 +202,12 @@ export class HoistField extends Component {
         }
     }
 
+    // Override of the default implementation provided by HoistComponent so we can add
+    // the xh-field and xh-field-invalid classes
+    getClassName(...extraClassNames) {
+        const field = this.getField(),
+            validityClass = field && field.isNotValid ? 'xh-field-invalid' : null;
+
+        return classNames('xh-field', validityClass, this.baseClassName, this.props.className, ...extraClassNames);
+    }
 }

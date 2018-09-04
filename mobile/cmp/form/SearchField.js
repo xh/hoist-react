@@ -9,7 +9,8 @@ import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {searchInput} from '@xh/hoist/kit/onsen';
 
-import {HoistField} from './HoistField';
+import {HoistField} from '@xh/hoist/cmp/form';
+import './SearchField.scss';
 
 /**
  * A Search Input Field
@@ -35,11 +36,13 @@ export class SearchField extends HoistField {
 
     delegateProps = ['className', 'disabled', 'placeholder', 'modifier'];
 
+    baseClassName = 'xh-search-field';
+
     render() {
         const {style, width, spellCheck} = this.props;
 
         return searchInput({
-            className: 'xh-field xh-search-field',
+            className: this.getClassName(),
             value: this.renderValue || '',
             onChange: this.onChange,
             onBlur: this.onBlur,

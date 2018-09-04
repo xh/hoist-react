@@ -105,6 +105,11 @@ body {
   --xh-form-field-box-shadow-color-top: var(--form-field-box-shadow-color-top, #{mc-trans('blue-grey', '100', 0.15)});
   --xh-form-field-box-shadow-color-bottom: var(--form-field-box-shadow-color-bottom, #{mc-trans('blue-grey', '100', 0.2)});
   --xh-form-field-box-shadow: var(--form-field-box-shadow, #{inset 0 0 0 1px var(--xh-form-field-box-shadow-color-top), inset 0 1px 1px var(--xh-form-field-box-shadow-color-bottom)});
+  --xh-form-field-invalid-border-color: var(--form-field-invalid-border-color, var(--xh-intent-danger));
+  --xh-form-field-invalid-border-width: var(--form-field-invalid-border-width, 1);
+  --xh-form-field-invalid-border-width-px: calc(var(--xh-form-field-invalid-border-width) * 1px);
+  --xh-form-field-invalid-border: #{(var(--xh-form-field-invalid-border-width-px) solid var(--xh-form-field-invalid-border-color))};
+  --xh-form-field-invalid-message-text-color: var(--form-field-invalid-message-text-color, var(--xh-intent-danger));
   --xh-form-field-margin-bottom: var(--form-field-margin-bottom, 0);
   --xh-form-field-margin-right: var(--form-field-margin-right, 0);
 

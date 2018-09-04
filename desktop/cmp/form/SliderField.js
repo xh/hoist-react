@@ -12,7 +12,7 @@ import {slider, rangeSlider} from '@xh/hoist/kit/blueprint';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isArray} from 'lodash';
 import {toJS} from 'mobx';
-import {HoistField} from './HoistField';
+import {HoistField} from '@xh/hoist/cmp/form';
 
 /**
  * A Slider Field.
@@ -48,6 +48,8 @@ export class SliderField extends HoistField {
 
     delegateProps = ['className', 'disabled'];
 
+    baseClassName = 'xh-slider-field';
+
     constructor(props) {
         super(props);
         throwIf(!props.commitOnChange, 'A commitOnChange value of false not implemented on SliderField.');
@@ -64,6 +66,7 @@ export class SliderField extends HoistField {
 
         return box({
             ...layoutProps,
+            className: this.getClassName(),
             item: input({
                 value: this.renderValue,
                 onChange: this.onValueChange,

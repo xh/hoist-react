@@ -9,7 +9,8 @@ import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {input} from '@xh/hoist/kit/onsen';
 
-import {HoistField} from './HoistField';
+import {HoistField} from '@xh/hoist/cmp/form';
+import './TextField.scss';
 
 /**
  * A Text Input Field
@@ -37,11 +38,13 @@ export class TextField extends HoistField {
 
     delegateProps = ['className', 'disabled', 'type', 'placeholder', 'modifier'];
 
+    baseClassName = 'xh-text-field';
+
     render() {
         const {style, width, spellCheck} = this.props;
 
         return input({
-            className: 'xh-field xh-text-field',
+            className: this.getClassName(),
             value: this.renderValue || '',
             onChange: this.onChange,
             onBlur: this.onBlur,
