@@ -1,8 +1,8 @@
 import ReactDOM from 'react-dom';
-import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {XH, elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {PropTypes as PT} from 'prop-types';
 import {defaultsDeep} from 'lodash';
-import {div} from '@xh/hoist/cmp/layout';
+import {box} from '@xh/hoist/cmp/layout';
 import {textArea} from '@xh/hoist/kit/blueprint';
 
 import {HoistField} from '@xh/hoist/cmp/form';
@@ -29,6 +29,7 @@ import './JsonField.scss';
  * A field for editing and validating JSON, providing a mini-IDE style editor powered by CodeMirror.
  */
 @HoistComponent()
+@LayoutSupport
 export class JsonField extends HoistField {
 
     static propTypes = {
@@ -65,7 +66,12 @@ export class JsonField extends HoistField {
     baseClassName = 'xh-json-field';
 
     render() {
-        return div({
+        return box({
+            // TODO - understanding sizing spec / requirements for component vs. generated CodeMirror
+            // https://github.com/exhi/hoist-react/issues/327
+            flex: 1,
+            flexDirection: 'column',
+            ...this.getLayoutProps(),
             className: this.getClassName(),
             item: textArea({
                 value: this.renderValue || '',
