@@ -37,7 +37,9 @@ export class TextField extends HoistField {
         /** Element to display on the right side of the field */
         rightElement: PT.element,
         /** Function which receives Blueprint keypress event */
-        onKeyPress: PT.func
+        onKeyPress: PT.func,
+        /** Whether text in field is selected when field receives focus */
+        selectOnFocus: PT.bool
     };
 
     delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus', 'leftIcon', 'rightElement'];
@@ -50,7 +52,7 @@ export class TextField extends HoistField {
             onChange: this.onChange,
             onKeyPress: this.onKeyPress,
             onBlur: this.onBlur,
-            onFocus: this.onFocus,
+            onFocus: this.onTextFieldFocus,
             style: {...style, width},
             spellCheck: !!spellCheck,
             ...this.getDelegateProps()
@@ -66,6 +68,13 @@ export class TextField extends HoistField {
             this.doCommit();
         }
         if (this.props.onKeyPress) this.props.onKeyPress(ev);
+    }
+
+    onTextFieldFocus = (ev) => {
+        if (this.props.selectOnFocus === true) {
+            ev.target.select();
+        }
+        this.onFocus();
     }
 }
 export const textField = elemFactory(TextField);

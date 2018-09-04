@@ -30,7 +30,9 @@ export class TextAreaField extends HoistField {
         /** Text to display when control is empty */
         placeholder: PT.string,
         /** Whether to allow browser spell check, defaults to true */
-        spellCheck: PT.bool
+        spellCheck: PT.bool,
+        /** Whether text in field is selected when field receives focus */
+        selectOnFocus: PT.bool
     };
     
     delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus'];
@@ -43,7 +45,7 @@ export class TextAreaField extends HoistField {
             onChange: this.onChange,
             onKeyPress: this.onKeyPress,
             onBlur: this.onBlur,
-            onFocus: this.onFocus,
+            onFocus: this.onTextAreaFieldFocus,
             style: {...style, width},
             spellCheck: spellCheck !== false,
             ...this.getDelegateProps()
@@ -56,6 +58,13 @@ export class TextAreaField extends HoistField {
 
     onKeyPress = (ev) => {
         if (ev.key === 'Enter' && !ev.shiftKey) this.doCommit();
+    }
+
+    onTextAreaFieldFocus = (ev) => {
+        if (this.props.selectOnFocus === true) {
+            ev.target.select();
+        }
+        this.onFocus();
     }
 }
 export const textAreaField = elemFactory(TextAreaField);
