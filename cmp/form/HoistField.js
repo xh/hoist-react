@@ -22,8 +22,7 @@ import './HoistField.scss';
  * In bound mode, they will read their value from the  'model' and 'field' props.
  * If not bound, they will get their value in the standard way using the value in props.
  *
- * Hoist Fields will call a common onChange() callback with the latest value, as
- * it is updated.
+ * Hoist Fields will call a common onChange() callback with the latest value, as it is updated.
  *
  * Hoist Fields also introduce the notion of "Committing" a field to the model, when
  * the user has completed a discrete act of data entry. If the 'commitOnChange' property is true,
@@ -31,20 +30,17 @@ import './HoistField.scss';
  * hits 'enter' or 'blurs' the field, or takes another commit action defined by the control.
  * At this time, any specified 'onCommit' handler will be fired.
  *
- * The 'commitOnChange' property defaults to false, except for selected controls, such as CheckField
- * where a true value is more intuitive.  Furthermore, a commitOnChange value of false is not currently
- * implemented on DropdownFields and ComboBoxes. See BaseDropdownField for more information.
+ * The 'commitOnChange' property defaults to false, except for selected controls such as CheckField
+ * where a true value is more intuitive. Also note that `commitOnChange: false` is not currently
+ * supported on DropdownFields and ComboBoxes - see BaseDropdownField for more information.
  *
- * Note that operating in bound mode may allow for more efficient rendering
- * in a mobx context, in that the bound value is only read *within* this
- * control, so that changes to its value do not cause the parent of this
- * control to re-render.
+ * Note that operating in bound mode may allow for more efficient rendering in a MobX context,
+ * in that the bound value is only read *within* this control, so that changes to its value do not
+ * cause the parent of this control to re-render.
  *
- * Hoist Fields also provide support for built-in when bound to a model with FieldSupport.
- * If the underlying model contains a Field for the field linked to by the control, it will
- * be used to provide styling and validation hints.
- *
- * Hoist Fields generally support the properties documented below.
+ * HoistFields support built-in validation when bound to a model enhanced by `@FieldSupport`.
+ * When a HoistField control is linked to a property on the underlying model decorated by `@field`,
+ * the model Field will be used to provide validation info and styling to the input component.
  */
 export class HoistField extends Component {
 
@@ -212,6 +208,6 @@ export class HoistField extends Component {
         const field = this.getField(),
             validityClass = field && field.isNotValid ? 'xh-field-invalid' : null;
 
-        return classNames(this.baseClassName, this.props.className, ...extraClassNames, 'xh-field', validityClass);
+        return classNames('xh-field', validityClass, this.baseClassName, this.props.className, ...extraClassNames);
     }
 }
