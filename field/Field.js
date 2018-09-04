@@ -102,12 +102,12 @@ export class Field {
         return errors.length ? VS.NotValid : VS.Valid;
     }
 
-    /** Is the validation state of this field `ValidationState.Valid`? **/
+    /** True if this field is confirmed to be Valid. **/
     get isValid() {
         return this.validationState == ValidationState.Valid;
     }
 
-    /** Is the validation state of this field `ValidationState.NotValid`? **/
+    /** True if this field is confirmed to be NotValid. **/
     get isNotValid() {
         return this.validationState == ValidationState.NotValid;
     }

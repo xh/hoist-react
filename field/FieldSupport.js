@@ -20,7 +20,10 @@ import {ValidationState} from './validation/ValidationState';
  * Mixin to add field support to a Hoist Model.
  *
  * Includes support for field display names, validation, and dirty state when used
- * in conjunction with the property-level `@field` decorator (below).
+ * in conjunction with the property-level `@field` decorator (below). Note that the use
+ * of this mixin requires a call to `initFields()` within the Model's constructor.
+ *
+ * @mixin
  */
 export function FieldSupport(C) {
 
@@ -29,8 +32,22 @@ export function FieldSupport(C) {
     defaultMethods(C, {
 
         //-----------------------------
-        // Accessors and lifecycle
+        // Lifecycle + Accessors
         //-----------------------------
+        /**
+         * Initialize this mixin.  Will set all fields to their initial values to be used as the
+         * baseline for dirty state and to support `resetFields()`.
+         *
+         * This method must be called once, before accessing the public APIs in this mixin.
+         *
+         * @param {Object} values - map of values by field name.
+         *      For any field not present in map, initialValue will be set to null.
+         */
+        initFields(values = {}) {
+            this.ensureFieldsModelCreated();
+            this.fieldsModel.initFields(values);
+        },
+
         /** @member {Field[]} -  all fields in this model. */
         fields: {
             get() {return this.fieldsModel.fields}
@@ -43,20 +60,6 @@ export function FieldSupport(C) {
          */
         getField(name) {
             return this.fieldsModel.getField(name);
-        },
-
-        /**
-         * Initialize this mixin.  Will set all fields to their initial values to be used as the
-         * baseline for dirty state and to support `resetFields()`.
-         *
-         * This method must be called once, before accessing the public API's in this mixin.
-         *
-         * @param {Object} values - map of values by field name.
-         *      For any field not present in map, initialValue will be set to null.
-         */
-        initFields(values = {}) {
-            this.ensureFieldsModelCreated();
-            this.fieldsModel.initFields(values);
         },
 
         /**
@@ -194,4 +197,3 @@ export function field(...params) {
         return bindable(target, property, descriptor);
     };
 }
-
