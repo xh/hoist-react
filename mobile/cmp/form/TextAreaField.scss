@@ -1,6 +1,6 @@
 
 .xh-textarea-field {
   &.xh-field-invalid {
-    border: 1px solid var(--xh-form-field-invalid-border-color);
+    border: var(--xh-form-field-invalid-border);
   }
 }
