@@ -92,7 +92,7 @@ export class HoistField extends Component {
      */
     getField() {
         const {model, field} = this.props;
-        return model && field && model.getField && model.getField(field);
+        return model && field && model.hasFieldSupport && model.getField(field);
     }
 
     //-----------------------------------------------------------

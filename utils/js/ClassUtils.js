@@ -8,6 +8,23 @@
 import {forOwn, isPlainObject} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
 
+
+/**
+ * Decorate a class and its instances with a boolean flag set to true.
+ *
+ * Useful for providing an identifying flag for marking objects.  Frequently used
+ * in mixins to add 'isXXX' or 'hasXXXX' identifiers.
+ *
+ * For an example, see HoistComponent and the 'isHoistComponent' property.
+ *
+ * @param {String} flag
+ */
+export function markClass(C, flag) {
+    C[flag] = true;
+    C.prototype[flag] = true;
+}
+
+
 /**
  * Provide default methods on the prototype of a class.
  *

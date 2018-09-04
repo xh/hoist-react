@@ -6,6 +6,8 @@
  */
 import {EventSupport} from './mixins/EventSupport';
 import {ReactiveSupport} from './mixins/ReactiveSupport';
+import {markClass} from '@xh/hoist/utils/js';
+
 
 /**
  * Core decorator for State Models in Hoist.
@@ -16,7 +18,7 @@ import {ReactiveSupport} from './mixins/ReactiveSupport';
 export function HoistModel() {
 
     return (C) => {
-        C.isHoistModel = true;
+        markClass(C, 'isHoistModel');
 
         C = EventSupport(C);
         C = ReactiveSupport(C);

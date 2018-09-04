@@ -7,7 +7,7 @@
 
 import {isFunction} from 'lodash';
 import {autorun, reaction} from '@xh/hoist/mobx';
-import {provideMethods, chainMethods} from '@xh/hoist/utils/js';
+import {provideMethods, chainMethods, markClass} from '@xh/hoist/utils/js';
 
 /**
  * Mixin to add MobX reactivity to Components, Models, and Services.
@@ -20,7 +20,7 @@ import {provideMethods, chainMethods} from '@xh/hoist/utils/js';
  */
 export function ReactiveSupport(C) {
 
-    C.hasReactiveSupport = true;
+    markClass(C, 'hasReactiveSupport');
 
     provideMethods(C, {
 
