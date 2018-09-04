@@ -150,7 +150,7 @@ export class Field {
 
     /**
      * Add Validation Rules
-     * @param {...Rule} rules
+     * @param {...(Rule|Object)} rules - Rules or configurations to create.
      */
     @action
     addRules(...rules) {

@@ -16,7 +16,7 @@ export const required = ({value, displayName}) => {
 };
 
 /**
- * Validate that a string in not blank
+ * Validate that a string is not blank.
  */
 export const notBlank = ({value, displayName}) => {
     if (isNil(value)) return null;

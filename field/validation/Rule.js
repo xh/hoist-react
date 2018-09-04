@@ -22,8 +22,9 @@ export class Rule {
     when;
 
     /**
-     *  @param {(ConstraintsCb[] | ConstraintCb)} cfg.check - function(s) to perform validation.
-     *  @param {WhenCb} [cfg.when] - optional function to determine when this rule is active.
+     * @param c - Rule configuration.
+     * @param {(ConstraintCb|ConstraintCb[])} c.check - function(s) to perform validation.
+     * @param {WhenCb} [c.when] - function to determine when this rule is active.
      *      If not specified rule is considered to be always active.
      */
     constructor({check, when}) {
@@ -48,7 +49,7 @@ export class Rule {
     }
 
     /**
-     * Is this rule active and indicating that a value is required?
+     * True if this rule is active and indicates that a value is required.
      */
     requiresValue(field) {
         return this.isActive(field) && this.check.includes(required);
@@ -70,14 +71,15 @@ export class Rule {
 
 /**
  * @callback ConstraintCb
- * @param {FieldModel} fieldModel
+ * @param {FieldsModel} fieldModel
  * @param {Object} model
- * @returns {(string|string[]} - String or array of strings describing errors.  null or undefined if rule passes successfully.
+ * @returns {(string|string[])} - String or array of strings describing errors,
+ *      or null or undefined if rule passes successfully.
  */
 
 /**
  * @callback WhenCb
- * @param {FieldModel} fieldModel
+ * @param {FieldsModel} fieldModel
  * @param {Object} model
  * @returns {boolean} - true if this rule is currently active.
  */
