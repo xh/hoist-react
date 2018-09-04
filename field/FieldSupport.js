@@ -12,6 +12,7 @@ import {startCase, partition, isFunction, isEmpty, isString, forOwn} from 'lodas
 import {Field} from './Field';
 import {FieldsModel} from './impl/FieldsModel';
 import {bindable} from '@xh/hoist/mobx';
+import {throwIf} from '@xh/hoist/utils/js';
 import {ValidationState} from './validation/ValidationState';
 
 
@@ -45,13 +46,16 @@ export function FieldSupport(C) {
         },
 
         /**
-         * Initialize fields to initial values, used as the baseline for dirty state
-         * and to support `resetFields()`.
+         * Initialize this mixin.  Will set all fields to their initial values to be used as the
+         * baseline for dirty state and to support `resetFields()`.
+         *
+         * This method must be called once, before accessing the public API's in this mixin.
          *
          * @param {Object} values - map of values by field name.
          *      For any field not present in map, initialValue will be set to null.
          */
         initFields(values = {}) {
+            this.ensureFieldsModelCreated();
             this.fieldsModel.initFields(values);
         },
 
@@ -105,21 +109,23 @@ export function FieldSupport(C) {
         isDirty: {
             get() {return this.fieldsModel.isDirty}
         },
-
-
+        
         //------------------------
         // Implementation
         //------------------------
         fieldsModel: {
             get() {
-                if (!this._fieldsModel) {
-                    this._fieldsModel = this.createFieldsModel();
-                }
+                throwIf(!this._fieldsModel,
+                    `Attempted to access fields before calling initFields().  Call initFields() in the
+                    constructor of your model class. `
+                );
                 return this._fieldsModel;
             }
         },
 
-        createFieldsModel() {
+        ensureFieldsModelCreated() {
+            if (this._fieldsModel) return;
+
             const fields = {};
             if (this._xhFieldConfigs) {
                 forOwn(this._xhFieldConfigs, ({displayName, rules}, name) => {
@@ -131,7 +137,7 @@ export function FieldSupport(C) {
                     });
                 });
             }
-            return new FieldsModel(fields);
+            this._fieldsModel = new FieldsModel(fields);
         }
     });
 
