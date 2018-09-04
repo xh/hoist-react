@@ -18,8 +18,8 @@ import {ValidationState} from './validation/ValidationState';
 /**
  * Mixin to add field support to a Hoist Model.
  *
- * Includes support for field display names, validation, and dirty state.
- * This class should be used in conjunction with the @field decorator.
+ * Includes support for field display names, validation, and dirty state when used
+ * in conjunction with the property-level `@field` decorator (below).
  */
 export function FieldSupport(C) {
 
@@ -31,7 +31,7 @@ export function FieldSupport(C) {
         // Accessors and lifecycle
         //-----------------------------
         /** @member {Field[]} -  all fields in this model. */
-        fields:  {
+        fields: {
             get() {return this.fieldsModel.fields}
         },
 
@@ -45,11 +45,8 @@ export function FieldSupport(C) {
         },
 
         /**
-         * Initialize fields to initial values.
-         *
-         * These values will be used as the baseline
-         * for dirty state, and the baseline to which form
-         * is restored to on reset()
+         * Initialize fields to initial values, used as the baseline for dirty state
+         * and to support `resetFields()`.
          *
          * @param {Object} values - map of values by field name.
          *      For any field not present in map, initialValue will be set to null.
@@ -68,16 +65,14 @@ export function FieldSupport(C) {
         //--------------------------
         // Validation
         //---------------------------
-        /**
-         * @member {ValidationState} - the current validation state.
-         */
+        /** @member {ValidationState} - the current validation state. */
         validationState: {
             get() {return this.fieldsModel.validationState}
         },
 
         /**
          * True if any of the fields contained in this model are in the process
-         * of recomputing their validation state?
+         * of recomputing their validation state.
          */
         isValidationPending: {
             get() {return this.fieldsModel.isValidationPending}
@@ -112,9 +107,9 @@ export function FieldSupport(C) {
         },
 
 
-        //--------------------------------------------
+        //------------------------
         // Implementation
-        //--------------------------------------------
+        //------------------------
         fieldsModel: {
             get() {
                 if (!this._fieldsModel) {
@@ -126,8 +121,8 @@ export function FieldSupport(C) {
 
         createFieldsModel() {
             const fields = {};
-            if (this.xhFieldConfigs) {
-                forOwn(this.xhFieldConfigs, ({displayName, rules}, name) => {
+            if (this._xhFieldConfigs) {
+                forOwn(this._xhFieldConfigs, ({displayName, rules}, name) => {
                     fields[name] = new Field({
                         name,
                         displayName,
@@ -151,29 +146,29 @@ export function FieldSupport(C) {
 
 
 /**
- * Mark a class property as an observable form field.  For use in a HoistModel
- * decorated with @FieldSupport.
+ * Decorator to mark a class property as an observable form field.
+ * For use on a HoistModel decorated with `@FieldSupport`.
  *
- * This decorator will mark the property as @bindable and provides support for
- * validation, labelling, and dirty state management.
+ * This decorator will mark the property as `@bindable` and add support for validation, labelling,
+ * and dirty state management.
  *
- * If the first argument to this function is a String, it will be interpreted as the field name.
- * (If not specified, the field name will default to the start case of the property itself.)
+ * If the first arg to this function is a String, it will be interpreted as the field displayName.
+ * If not specified, the start case of the property itself will be used for a display name.
  *
  * All other arguments will be considered to be specifications for validation for this field.
- * Arguments may be specified as configurations for a {@link Rule}, or as individual functions
- * (constraints).  In the latter case the constraints will be gathered into a single rule to be
+ * Arguments may be specified as configurations for a {@link Rule} or as individual functions
+ * (constraints). In the latter case the constraints will be gathered into a single rule to be
  * added to this field.
  */
 export function field(...params) {
     return (target, property, descriptor) => {
 
         // 0) Prepare static property on class itself to host field configs.
-        if (!target.xhFieldConfigs) {
-            Object.defineProperty(target, 'xhFieldConfigs', {value: {}});
+        if (!target._xhFieldConfigs) {
+            Object.defineProperty(target, '_xhFieldConfigs', {value: {}});
         }
 
-        const config = target.xhFieldConfigs[property] = {};
+        const config = target._xhFieldConfigs[property] = {};
 
         // 1) Parse and install field name.
         const firstParamIsName = !isEmpty(params) && isString(params[0]);

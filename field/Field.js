@@ -14,9 +14,8 @@ import {action, computed} from '@xh/hoist/mobx';
 import {ValidationState} from './validation/ValidationState';
 import {Rule} from './validation/Rule';
 
-
 /**
- * Maintains current state relating to a property marked with @field decorator.
+ * Maintains state relating to a property marked with `@field` decorator.
  */
 @HoistModel()
 export class Field {
@@ -29,7 +28,7 @@ export class Field {
     displayName;
     /** @member {*} initial value of this field. */
     initialValue;
-    /** @member {Rules[]} list of validation rules to apply to this field.  */
+    /** @member {Rule[]} list of validation rules to apply to this field. */
     @observable.ref rules = [];
     /** @member {String[]} list of validation errors.  Null if the validity state not computed. */
     @observable.ref errors = null;
@@ -47,19 +46,14 @@ export class Field {
         return this.model[this.name];
     }
 
-    /**
-     * Initialize this field.
-     */
+    /** Initialize this field. */
     @action
     init(initialValue = null) {
         this.initialValue = initialValue;
         this.reset();
     }
 
-    /**
-     * Reset the field to its initial value, and
-     * reset validation state.
-     */
+    /** Reset the field to its initial value and reset validation state. */
     @action
     reset() {
         this.model[this.name] = this.initialValue;
@@ -92,9 +86,7 @@ export class Field {
     // Validation
     //------------------------------------
 
-    /**
-     * Start reactive validation of this field.
-     */
+    /** Start reactive validation of this field. */
     @action
     startValidating() {
         this._validationRunning = true;
@@ -110,12 +102,12 @@ export class Field {
         return errors.length ? VS.NotValid : VS.Valid;
     }
 
-    /** Is the validation state of this field ValidationState.Valid **/
+    /** Is the validation state of this field `ValidationState.Valid`? **/
     get isValid() {
         return this.validationState == ValidationState.Valid;
     }
 
-    /** Is the validation state of this field ValidationState.NotValid **/
+    /** Is the validation state of this field `ValidationState.NotValid`? **/
     get isNotValid() {
         return this.validationState == ValidationState.NotValid;
     }
@@ -140,7 +132,7 @@ export class Field {
     }
     
     /**
-     * Return a resolved validation state of the field, starting validation if neccessary.
+     * Return a resolved validation state of the field, starting validation if necessary.
      *
      * Validation on the field will automatically be triggered by an actual change to
      * the field, but can also be triggered manually by this method.  For example,
@@ -193,4 +185,3 @@ export class Field {
         return flatten(await Promise.all(promises));
     }
 }
-
