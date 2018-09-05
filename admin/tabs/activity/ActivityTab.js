@@ -12,7 +12,7 @@ import {TrackingPanel} from './tracking/TrackingPanel';
 import {ClientErrorPanel} from './clienterrors/ClientErrorPanel';
 import {FeedbackPanel} from './feedback/FeedbackPanel';
 
-@HoistComponent()
+@HoistComponent
 export class ActivityTab extends Component {
 
     localModel = new TabContainerModel({

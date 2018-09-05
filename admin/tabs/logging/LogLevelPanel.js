@@ -9,7 +9,7 @@ import {HoistComponent} from '@xh/hoist/core';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 import {emptyFlexCol} from '@xh/hoist/columns';
 
-@HoistComponent()
+@HoistComponent
 export class LogLevelPanel extends Component {
 
     localModel = new RestGridModel({

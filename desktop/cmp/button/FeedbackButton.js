@@ -16,7 +16,7 @@ import {Icon} from '@xh/hoist/icon';
  *
  * Can be provided an onClick handler, otherwise will call default framework handler.
  */
-@HoistComponent()
+@HoistComponent
 export class FeedbackButton extends Component {
 
     static propTypes = {

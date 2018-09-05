@@ -9,13 +9,13 @@ import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {switchControl} from '@xh/hoist/kit/blueprint';
 
-import {HoistField} from './HoistField';
+import {HoistField} from '@xh/hoist/cmp/form';
 
 /**
  * Switch Field. 
  * Note that that component does not handle null values. For nullable fields, use a SelectField.
  */
-@HoistComponent()
+@HoistComponent
 export class SwitchField extends HoistField {
 
     static propTypes = {
@@ -28,8 +28,11 @@ export class SwitchField extends HoistField {
         inline: true
     };
 
+    baseClassName = 'xh-switch-field';
+
     render() {
         return switchControl({
+            className: this.getClassName(),
             checked: !!this.renderValue,
             onChange: this.onChange,
             onBlur: this.onBlur,

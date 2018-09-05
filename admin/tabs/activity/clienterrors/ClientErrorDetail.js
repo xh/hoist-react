@@ -14,7 +14,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {fmtDateTime} from '@xh/hoist/format';
 
-@HoistComponent()
+@HoistComponent
 export class ClientErrorDetail extends Component {
 
     render() {

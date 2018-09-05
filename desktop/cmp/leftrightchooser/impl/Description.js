@@ -12,7 +12,7 @@ import {callout} from '@xh/hoist/kit/blueprint';
  * Description panel for the LeftRightChooser.
  * @private
  */
-@HoistComponent()
+@HoistComponent
 export class Description extends Component {
 
     render() {

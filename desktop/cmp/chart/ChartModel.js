@@ -11,7 +11,7 @@ import {observable, action} from '@xh/hoist/mobx';
 /**
  * Model to hold and maintain the configuration and data series for a Highcharts chart.
  */
-@HoistModel()
+@HoistModel
 export class ChartModel {
 
     @observable.ref config = {};

@@ -21,7 +21,7 @@ import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
 /**
  * @private
  */
-@HoistModel()
+@HoistModel
 export class ConfigDifferModel  {
 
     detailModel = new ConfigDifferDetailModel({parent: this});

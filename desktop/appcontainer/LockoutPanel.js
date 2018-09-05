@@ -18,7 +18,7 @@ import {impersonationBar} from './ImpersonationBar';
  *
  * @private
  */
-@HoistComponent()
+@HoistComponent
 export class LockoutPanel extends Component {
 
     render() {

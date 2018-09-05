@@ -13,7 +13,7 @@ import {isEqual} from 'lodash';
 
 import {RestControlModel} from './RestControlModel';
 
-@HoistModel()
+@HoistModel
 export class RestFormModel {
 
     parent = null;

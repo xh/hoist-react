@@ -15,7 +15,7 @@ import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 import {ServiceModel} from './ServiceModel';
 
-@HoistComponent()
+@HoistComponent
 export class ServicePanel extends Component {
 
     localModel = new ServiceModel();

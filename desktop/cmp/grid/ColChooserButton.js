@@ -17,7 +17,7 @@ import {Icon} from '@xh/hoist/icon';
  *
  * Requires the `GridModel.enableColChooser` config option to be true.
  */
-@HoistComponent()
+@HoistComponent
 export class ColChooserButton extends Component {
 
     static propTypes = {

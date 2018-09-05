@@ -10,7 +10,7 @@ import {uniqueId, snakeCase} from 'lodash';
 /**
  * Model for a navigator page
  */
-@HoistModel()
+@HoistModel
 export class NavigatorPageModel {
     key = null;
     pageFactory = null;

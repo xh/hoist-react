@@ -13,7 +13,7 @@ import './Dragger.scss';
 /** This is an implementation class private to Hoist
  * @private
  */
-@HoistComponent()
+@HoistComponent
 export class Dragger extends Component {
 
     resizeState = null;

@@ -20,7 +20,7 @@ import './ImpersonationBar.scss';
  *
  * @private
  */
-@HoistComponent()
+@HoistComponent
 export class ImpersonationBar extends Component {
 
     render() {

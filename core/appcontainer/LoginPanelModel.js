@@ -12,7 +12,7 @@ import {observable, computed, action} from '@xh/hoist/mobx';
  *
  *  @private
  */
-@HoistModel()
+@HoistModel
 export class LoginPanelModel {
 
     @observable username = '';
@@ -35,8 +35,10 @@ export class LoginPanelModel {
     }
 
     submit() {
+        if (!this.isValid) return;
+
         const {username, password} = this;
-        return XH.fetchJson({
+        XH.fetchJson({
             url: 'auth/login',
             params: {username, password}
         }).thenAction(r => {

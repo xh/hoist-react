@@ -17,7 +17,7 @@ import {Icon} from '@xh/hoist/icon';
  * Must be provided either an onClick handler *or* a model. If a model is provided, this button
  * will call export() on the model class.
  */
-@HoistComponent()
+@HoistComponent
 export class ExportButton extends Component {
 
     static propTypes = {

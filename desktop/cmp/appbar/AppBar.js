@@ -23,7 +23,7 @@ import './AppBar.scss';
  * The standard buttons which are visible will be based on user roles and application configuration,
  * or they can each be explicitly hidden.
  */
-@HoistComponent()
+@HoistComponent
 export class AppBar extends Component {
     static propTypes = {
         /** Icon to display before the title. */

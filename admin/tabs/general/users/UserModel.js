@@ -11,7 +11,7 @@ import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {boolCheckCol} from '@xh/hoist/columns';
 import {usernameCol} from '@xh/hoist/admin/columns';
 
-@HoistModel()
+@HoistModel
 export class UserModel {
 
     gridModel = new GridModel({

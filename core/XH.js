@@ -44,7 +44,7 @@ import '../styles/XH.scss';
  *
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
  */
-@HoistModel()
+@HoistModel
 class XHClass {
 
     //------------------------------------------------------------------
@@ -324,10 +324,12 @@ class XHClass {
      * @param {...Object} args - Objects to be destroyed.
      */
     safeDestroy(...args) {
-        args = flatten(args);
-        args.forEach(it => {
-            if (it && it.destroy) it.destroy();
-        });
+        if (args) {
+            args = flatten(args);
+            args.forEach(it => {
+                if (it && it.destroy) it.destroy();
+            });
+        }
     }
 
     //---------------------------------

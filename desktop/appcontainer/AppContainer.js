@@ -32,7 +32,7 @@ import {ToastSource} from './ToastSource';
  * impersonation bar header, version bar footer, an app-wide load mask, a base context menu,
  * popup message support, and exception rendering.
  */
-@HoistComponent()
+@HoistComponent
 export class AppContainer extends Component {
 
     @observable.ref caughtException = null;

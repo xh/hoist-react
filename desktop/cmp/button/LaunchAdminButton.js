@@ -14,7 +14,7 @@ import {button} from '@xh/hoist/kit/blueprint';
  * Convenience Button to open the admin client.
  * Visible only to users with the hoistAdmin application role.
  */
-@HoistComponent()
+@HoistComponent
 export class LaunchAdminButton extends Component {
 
     static propTypes = {

@@ -18,7 +18,7 @@ import './Toast.scss';
  *
  * @private
  */
-@HoistComponent()
+@HoistComponent
 export class Toast extends Component {
 
     render() {

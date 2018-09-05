@@ -33,7 +33,7 @@ import {messageSource} from './MessageSource';
  *
  * @see HoistApp.containerClass
  */
-@HoistComponent()
+@HoistComponent
 export class AppContainer extends Component {
 
     @observable.ref caughtException = null;

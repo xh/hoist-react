@@ -11,7 +11,7 @@ import {tabContainer, TabContainerModel} from '@xh/hoist/desktop/cmp/tab';
 import {LogLevelPanel} from './LogLevelPanel';
 import {LogViewer} from './viewer/LogViewer';
 
-@HoistComponent()
+@HoistComponent
 export class LoggingTab extends Component {
 
     localModel = new TabContainerModel({

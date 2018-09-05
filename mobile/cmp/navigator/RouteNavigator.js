@@ -16,7 +16,7 @@ import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
 import {navigator as onsenNavigator} from '@xh/hoist/kit/onsen';
 import {keys} from 'lodash';
 
-@HoistComponent()
+@HoistComponent
 export class RouteNavigator extends Component {
 
     _depth = -1;

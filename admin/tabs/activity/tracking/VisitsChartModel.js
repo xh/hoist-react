@@ -12,7 +12,7 @@ import {ChartModel} from '@xh/hoist/desktop/cmp/chart';
 import {fmtDate} from '@xh/hoist/format';
 import {PanelSizingModel} from '@xh/hoist/desktop/cmp/panel';
 
-@HoistModel()
+@HoistModel
 export class VisitsChartModel {
 
     @observable startDate = moment().subtract(3, 'months').toDate();

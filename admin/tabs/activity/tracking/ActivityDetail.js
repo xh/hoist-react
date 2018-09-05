@@ -13,7 +13,7 @@ import {jsonField} from '@xh/hoist/desktop/cmp/form';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {fmtDateTime} from '@xh/hoist/format';
 
-@HoistComponent()
+@HoistComponent
 export class ActivityDetail extends Component {
 
     render() {

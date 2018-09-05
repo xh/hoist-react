@@ -21,7 +21,7 @@ import {dismissButton} from './ExceptionDialog';
  *
  * @private
  */
-@HoistComponent()
+@HoistComponent
 export class ExceptionDialogDetails extends Component {
 
     render() {

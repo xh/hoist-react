@@ -15,7 +15,7 @@ import ClipboardJS from 'clipboard';
 /**
  * Button to copy text to the clipboard - via the clipboard.js library (https://clipboardjs.com).
  */
-@HoistComponent()
+@HoistComponent
 export class ClipboardButton extends Component {
 
     static propTypes = {

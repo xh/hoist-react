@@ -17,7 +17,7 @@ import {Timer} from '@xh/hoist/utils/async';
 /**
  * @private
  */
-@HoistComponent()
+@HoistComponent
 @ContextMenuSupport
 export class LogViewerDisplay extends Component {
 

@@ -17,7 +17,7 @@ import {TabModel} from '../pane/TabModel';
 /**
  * Model for a TabContainer, representing its tabs and the currently selected tab.
  */
-@HoistModel()
+@HoistModel
 export class TabContainerModel {
 
     /**

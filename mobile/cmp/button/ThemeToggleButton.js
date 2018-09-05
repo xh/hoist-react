@@ -13,7 +13,7 @@ import {toolbarButton} from '@xh/hoist/kit/onsen';
 /**
  * Convenience Button preconfigured for use as a trigger for light/dark theme toggling.
  */
-@HoistComponent()
+@HoistComponent
 export class ThemeToggleButton extends Component {
 
     render() {
