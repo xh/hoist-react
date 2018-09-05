@@ -10,6 +10,7 @@ import {castArray, clone, isEmpty, remove, startsWith} from 'lodash';
 import {action} from '@xh/hoist/mobx';
 import {Classes, menuItem, multiSelect} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
 
 import {BaseDropdownField} from './BaseDropdownField';
 
@@ -32,7 +33,8 @@ export class MultiSelectField extends BaseDropdownField {
         options: PT.arrayOf(PT.oneOfType([PT.object, PT.string, PT.bool])),
         /** Optional custom optionRenderer, a function that receives (option, optionProps) */
         itemRenderer: PT.func,
-        /** Optional custom tagRenderer, a function that receives each member of the externalValue array */
+        /** Optional custom tagRenderer, a function that receives the value property of each selected option.
+         * Should return a ReactNode or string */
         tagRenderer: PT.func
     };
 
@@ -55,6 +57,7 @@ export class MultiSelectField extends BaseDropdownField {
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: internalOptions,
             onItemSelect: this.onItemSelect,
+            resetOnSelect: true,
             itemRenderer: this.getOptionRenderer(),
             itemPredicate: (q, item) => {
                 return startsWith(item.label.toLowerCase(), q.toLowerCase());
@@ -74,9 +77,9 @@ export class MultiSelectField extends BaseDropdownField {
     }
 
     handleTagRemove = (tag, idx) => {
-        // the tag string is determined by the tagRenderer, so it may not match the value representation
-        const val = this.externalValue[idx];
-        this.onItemSelect({value: val});
+        // the tag parameter is determined by the tagRenderer, so it may not match the value representation
+        const value = this.externalValue[idx];
+        this.onItemSelect({value});
     }
 
     @action
@@ -87,25 +90,11 @@ export class MultiSelectField extends BaseDropdownField {
         this.internalValue = isEmpty(externalVal) ? null : externalVal;
     }
 
-    getOptionRenderer() {
-        return this.props.optionRenderer || this.defaultOptionRenderer;
-    }
-
-    defaultOptionRenderer = (option, optionProps) => {
-        return menuItem({
-            key: option.value,
-            text: option.label,
-            icon: (this.externalValue && this.externalValue.includes(option.value)) ? 'tick' : 'blank',
-            onClick: optionProps.handleClick,
-            active: optionProps.modifiers.active
-        });
-    }
-
     getTagRenderer() {
         return this.props.tagRenderer || this.defaultTagRenderer;
     }
 
-    defaultTagRenderer(item) {
+    defaultTagRenderer = (item) => {
         return item;
     }
 
@@ -113,7 +102,7 @@ export class MultiSelectField extends BaseDropdownField {
         return menuItem({
             key: option.value,
             text: option.label,
-            icon: (this.externalValue && this.externalValue.includes(option.value)) ? 'tick' : 'blank',
+            labelElement: (this.externalValue && this.externalValue.includes(option.value)) ? Icon.check() : '',
             onClick: optionProps.handleClick,
             active: optionProps.modifiers.active
         });
