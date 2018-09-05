@@ -28,7 +28,7 @@ import './JsonField.scss';
 /**
  * A field for editing and validating JSON, providing a mini-IDE style editor powered by CodeMirror.
  */
-@HoistComponent()
+@HoistComponent
 @LayoutSupport
 export class JsonField extends HoistField {
 

@@ -14,7 +14,7 @@ import {fmtDate} from '@xh/hoist/format';
 import {boolCheckCol, compactDateCol} from '@xh/hoist/columns';
 import {usernameCol} from '@xh/hoist/admin/columns';
 
-@HoistModel()
+@HoistModel
 export class ClientErrorModel {
 
     @observable startDate = moment().subtract(7, 'days').toDate();

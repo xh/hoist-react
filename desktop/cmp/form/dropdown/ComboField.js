@@ -15,7 +15,7 @@ import {BaseComboField} from './BaseComboField';
 /**
  * ComboBox Field - A field with type ahead suggest and menu select
  */
-@HoistComponent()
+@HoistComponent
 export class ComboField extends BaseComboField {
 
     static propTypes = {

@@ -20,7 +20,7 @@ import {ValidationState} from '../validation/ValidationState';
  *
  * @private
  */
-@HoistModel()
+@HoistModel
 export class FieldsModel {
 
     _fields;

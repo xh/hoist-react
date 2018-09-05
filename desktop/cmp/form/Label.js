@@ -14,7 +14,7 @@ import {HoistField} from '@xh/hoist/cmp/form';
 /**
  * A simple label for a form.
  */
-@HoistComponent()
+@HoistComponent
 export class Label extends HoistField {
 
     static propTypes = {

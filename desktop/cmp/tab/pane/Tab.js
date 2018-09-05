@@ -25,7 +25,7 @@ import {TabModel} from './TabModel';
  * Contained components that load data/state from the server should implement loadAsync(),
  * but generally leave the calling of that method to this component.
  */
-@HoistComponent()
+@HoistComponent
 export class Tab extends Component {
 
     static propTypes = {

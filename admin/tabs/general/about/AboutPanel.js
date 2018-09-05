@@ -11,7 +11,7 @@ import {div, h1, h2, table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
 
 import './AboutPanel.scss';
 
-@HoistComponent()
+@HoistComponent
 export class AboutPanel extends Component {
 
     render() {

@@ -21,7 +21,7 @@ import {Icon} from '@xh/hoist/icon';
  *
  * @private
  */
-@HoistComponent()
+@HoistComponent
 @HotkeysTarget
 export class ImpersonationBar extends Component {
 

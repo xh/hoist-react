@@ -18,7 +18,7 @@ import {castArray} from 'lodash';
 /**
  * Wrapper around Onsen's Page component.
  */
-@HoistComponent()
+@HoistComponent
 export class Page extends Component {
 
     static propTypes = {

@@ -21,7 +21,7 @@ import {HoistField} from '@xh/hoist/cmp/form';
  *
  * @see HoistField for properties additional to those documented below.
  */
-@HoistComponent()
+@HoistComponent
 export class DayField extends HoistField {
 
     static propTypes = {

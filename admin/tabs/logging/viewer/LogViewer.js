@@ -21,7 +21,7 @@ import './LogViewer.scss';
 /**
  * @private
  */
-@HoistComponent()
+@HoistComponent
 export class LogViewer extends Component {
     localModel = new LogViewerModel();
 

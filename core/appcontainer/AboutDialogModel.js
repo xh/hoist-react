@@ -12,7 +12,7 @@ import {table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
  * Support for About Dialog.
  *  @private
  */
-@HoistModel()
+@HoistModel
 export class AboutDialogModel {
 
     @observable isOpen = false;

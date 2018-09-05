@@ -15,7 +15,7 @@ import {BaseComboField} from './BaseComboField';
 /**
  * ComboBox Field which populates its options dynamically based on the current value.
  */
-@HoistComponent()
+@HoistComponent
 export class QueryComboField extends BaseComboField {
     @observable.ref options = [];
 

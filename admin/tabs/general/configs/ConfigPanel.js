@@ -15,7 +15,7 @@ import {Icon} from '@xh/hoist/icon';
 import {configDiffer} from './differ/ConfigDiffer';
 import {ConfigDifferModel} from './differ/ConfigDifferModel';
 
-@HoistComponent()
+@HoistComponent
 export class ConfigPanel extends Component {
 
     gridModel = new RestGridModel({

@@ -13,7 +13,7 @@ import {observable, action} from '@xh/hoist/mobx';
  *
  *  @private
  */
-@HoistModel()
+@HoistModel
 export class ThemeModel {
 
     @observable darkTheme = false;

@@ -15,7 +15,7 @@ import {HoistField} from '@xh/hoist/cmp/form';
  * CheckBox Field.
  * Note that this field does not handle null values. For nullable fields, use a SelectField.
  */
-@HoistComponent()
+@HoistComponent
 export class CheckField extends HoistField {
 
     static propTypes = {

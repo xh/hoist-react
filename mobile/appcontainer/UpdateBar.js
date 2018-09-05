@@ -14,7 +14,7 @@ import './UpdateBar.scss';
 /**
  * @private
  */
-@HoistComponent()
+@HoistComponent
 export class UpdateBar extends Component {
 
     render() {

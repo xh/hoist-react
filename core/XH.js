@@ -44,7 +44,7 @@ import '../styles/XH.scss';
  *
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
  */
-@HoistModel()
+@HoistModel
 class XHClass {
 
     //------------------------------------------------------------------

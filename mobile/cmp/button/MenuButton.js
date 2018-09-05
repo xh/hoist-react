@@ -17,7 +17,7 @@ import {toolbarButton} from '@xh/hoist/kit/onsen';
  * Must be provided either an onClick handler *or* a MenuModel. If a MenuModel is provided, this button
  * will display the menu.
  */
-@HoistComponent()
+@HoistComponent
 export class MenuButton extends Component {
 
     static propTypes = {

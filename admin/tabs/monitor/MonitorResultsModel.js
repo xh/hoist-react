@@ -11,7 +11,7 @@ import {action, observable, computed} from '@xh/hoist/mobx';
 import {min} from 'lodash';
 import {Timer} from '@xh/hoist/utils/async';
 
-@HoistModel()
+@HoistModel
 export class MonitorResultsModel {
     @observable.ref results = [];
     @observable lastRun = null;

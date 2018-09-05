@@ -15,7 +15,7 @@ import {Ref} from '@xh/hoist/utils/react';
  * Contained Pages that load data/state from the server should implement loadAsync(), but
  * generally leave the calling of that method to this component
  */
-@HoistComponent()
+@HoistComponent
 export class Tab extends Component {
 
     child = new Ref();

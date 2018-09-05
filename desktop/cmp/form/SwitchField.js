@@ -15,7 +15,7 @@ import {HoistField} from '@xh/hoist/cmp/form';
  * Switch Field. 
  * Note that that component does not handle null values. For nullable fields, use a SelectField.
  */
-@HoistComponent()
+@HoistComponent
 export class SwitchField extends HoistField {
 
     static propTypes = {

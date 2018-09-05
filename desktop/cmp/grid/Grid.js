@@ -27,7 +27,7 @@ import {colChooser} from './ColChooser';
  * @see {@link https://www.ag-grid.com/javascript-grid-reference-overview/|ag-Grid Docs}
  * @see GridModel
  */
-@HoistComponent()
+@HoistComponent
 @LayoutSupport
 export class Grid extends Component {
 

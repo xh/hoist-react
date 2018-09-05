@@ -16,7 +16,7 @@ import {collapser} from './Collapser';
  *
  * @private
  */
-@HoistComponent()
+@HoistComponent
 export class ResizeContainer extends Component {
     
     baseClassName = 'xh-resizable';

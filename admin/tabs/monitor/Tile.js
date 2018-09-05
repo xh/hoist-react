@@ -17,7 +17,7 @@ import './Tile.scss';
 /**
  * @private
  */
-@HoistComponent()
+@HoistComponent
 export class Tile extends Component {
     render() {
         const {checksInStatus, lastStatusChanged, metric, metricUnit, message, name, status} = this.props.check,

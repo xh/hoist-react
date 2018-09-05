@@ -19,7 +19,7 @@ import './SelectField.scss';
  *
  * @see HoistField for properties additional to those documented below.
  */
-@HoistComponent()
+@HoistComponent
 export class SelectField extends HoistField {
 
     static propTypes = {

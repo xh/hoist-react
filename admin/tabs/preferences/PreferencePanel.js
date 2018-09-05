@@ -9,7 +9,7 @@ import {HoistComponent} from '@xh/hoist/core';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 import {boolCheckCol} from '@xh/hoist/columns';
 
-@HoistComponent()
+@HoistComponent
 export class PreferencePanel extends Component {
 
     localModel = new RestGridModel({

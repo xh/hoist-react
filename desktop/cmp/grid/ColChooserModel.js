@@ -14,7 +14,7 @@ import {LeftRightChooserModel} from '@xh/hoist/desktop/cmp/leftrightchooser';
  * It is not necessary to manually create instances of this class within an application.
  * @private
  */
-@HoistModel()
+@HoistModel
 export class ColChooserModel {
 
     gridModel = null;
