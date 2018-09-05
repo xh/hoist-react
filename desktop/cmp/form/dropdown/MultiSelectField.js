@@ -67,7 +67,7 @@ export class MultiSelectField extends BaseDropdownField {
                 tagProps: {minimal: true},
                 className,
                 placeholder,
-                onRemove: this.handleTagRemove
+                onRemove: this.onRemoveTag
             },
             selectedItems: this.externalValue || [],
             onBlur: this.onBlur,
@@ -76,7 +76,7 @@ export class MultiSelectField extends BaseDropdownField {
         });
     }
 
-    handleTagRemove = (tag, idx) => {
+    onRemoveTag = (tag, idx) => {
         // the tag parameter is determined by the tagRenderer, so it may not match the value representation
         const value = this.externalValue[idx];
         this.onItemSelect({value});
