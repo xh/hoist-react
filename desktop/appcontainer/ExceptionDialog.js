@@ -106,5 +106,5 @@ class DismissButton extends Component {
         const e = this.model.exception;
         return e && e.httpStatus === 401;
     }
-)
+}
 export const dismissButton = elemFactory(DismissButton);
