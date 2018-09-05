@@ -10,7 +10,7 @@ import {throwIf} from '@xh/hoist/utils/js';
 
 
 /**
- * Decorate a class and its instances with a boolean flag set to true.
+ * Mark a class and its instances with a boolean property set to true.
  *
  * Useful for providing an identifying flag for marking objects.  Frequently used
  * in mixins to add 'isXXX' or 'hasXXXX' identifiers.
@@ -20,8 +20,9 @@ import {throwIf} from '@xh/hoist/utils/js';
  * @param {String} flag
  */
 export function markClass(C, flag) {
-    C[flag] = true;
-    C.prototype[flag] = true;
+    const def = {value: true, writable: false};
+    Object.defineProperty(C, flag, def);
+    Object.defineProperty(C.prototype, flag, def);
 }
 
 
