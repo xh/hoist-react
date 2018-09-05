@@ -6,10 +6,7 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
-import {observable, action} from '@xh/hoist/mobx';
-import {without} from 'lodash';
-import {BaseStore} from './BaseStore';
+import {clone} from 'lodash';
 
 /**
  * Core data for Store.
@@ -21,12 +18,8 @@ export class Record {
 
     /** @member {string} - unique id. */
     id
-    /** @member {Object} - raw data for this record. */
-    raw
-    /** @member {Object} - collection of field/value pairs for this object. */
-    data
-    /** @member {Object} - parent record. */
-    parent
+    /** @member {Fields[]} - fields for this record. */
+    fields
     /** @member {Record[]} - Children of this record. */
     children
 
@@ -35,13 +28,11 @@ export class Record {
      * Will apply basic validation and conversion (e.g. 'date' will convert from UTC time to
      * a JS Date object). An exception will be thrown if the validation or conversion fails.
      */
-    constructor({raw, fields, parent = null, children = []}) {
+    constructor({raw, fields, children = []}) {
         this.id = raw.id;
-        this.raw = raw;
         this.children = children;
-        this.parent = parent;
+        this.fields = fields;
 
-        const data = {};
         fields.forEach(field => {
             const {type, name, defaultValue} = field;
             let val = raw[name];
@@ -64,10 +55,8 @@ export class Record {
                         throw XH.exception(`Unknown field type '${type}'`);
                 }
             }
-            data[name] = val;
+            this[name] = val;
         });
-
-        this.data = data;
     }
 
     /**
@@ -82,10 +71,10 @@ export class Record {
         // apply to any children;
         let passingChildren =[];
         if (children) {
-            children.each(child => {
+            children.forEach(child => {
                 child = child.applyFilter(filter);
                 if (child) passingChildren.push(child);
-            }
+            });
         }
 
         // ... then potentially apply to self.
@@ -103,25 +92,9 @@ export class Record {
     }
 
     /**
-     * Return a version of this record with a child removed.
-     * @return {Record}
-     */
-    removeChild(child) {
-        const ret = this.clone();
-        ret.children = without(this.children, child);
-        return ret;
-    }
-
-    /**
      * Copy this record.
      */
     clone() {
-        const ret = new Record();
-        ret.id = this.id;
-        ret.raw = this.raw;
-        ret.data = this.data;
-        ret.parent = this.parent;
-        ret.children = this.children;
-        return ret;
+        return clone(this);
     }
 }

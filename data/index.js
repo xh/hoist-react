@@ -6,6 +6,7 @@
  */
 
 export * from './Field';
+export * from './Record';
 export * from './BaseStore';
 export * from './LocalStore';
 export * from './UrlStore';

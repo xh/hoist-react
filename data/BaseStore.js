@@ -5,15 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {isString} from 'lodash';
-import {XH} from '@xh/hoist/core';
 
 import {Field} from './Field';
 
 /**
  * A managed and observable set of Records.
- *
- * Records may contain children.
- *
  * @see LocalStore
  * @see UrlStore
  * @abstract
@@ -48,6 +44,19 @@ export class BaseStore {
     get filter() {}
     setFilter(filterFn) {}
 
+
+    /** Get the count of all records loaded into the store. */
+    get allCount() {}
+
+    /** Get the count of the filtered record in the store. */
+    get count() {}
+
+    /** Is the store empty after filters have been applied? */
+    get empty() {return this.count === 0}
+
+    /** Is this store empty before filters have been applied? */
+    get allEmpty() {return this.allCount === 0}
+
     /**
      * Get a record by ID. Return null if no record found.
      *
@@ -68,28 +77,6 @@ export class BaseStore {
         });
     }
 
-    /**
-     * Is the store empty after filters have been applied?
-     */
-    get empty() {
-        return this.records.length == 0;
-    }
-
-    /**
-     * Is this store empty before filters have been applied?
-     */
-    get allEmpty() {
-        return this.allRecords.length == 0;
-    }
-
-    /**
-     * Iterate over each record.
-     */
-    each(includeFilters = false){
-        const records         
-    }
-
-    
     //--------------------
     // For Implementations
     //--------------------

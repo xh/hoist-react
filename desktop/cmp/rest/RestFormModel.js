@@ -76,6 +76,7 @@ export class RestFormModel {
 
     @action
     deleteRecord() {
+        console.log(this.record);
         this.store
             .deleteRecordAsync(this.record)
             .then(() => this.close())

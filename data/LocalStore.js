@@ -8,6 +8,10 @@
 import {XH} from '@xh/hoist/core';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {observable, action} from '@xh/hoist/mobx';
+import {findIndex, clone} from 'lodash';
+
+import {RecordSet} from './impl/RecordSet';
+import {Record} from './Record';
 import {BaseStore} from './BaseStore';
 
 /**
@@ -15,22 +19,23 @@ import {BaseStore} from './BaseStore';
  */
 export class LocalStore extends BaseStore {
 
-    @observable.ref _allRecords;
-    @observable.ref _filteredRecords;
+    processRawData = null;
 
+    @observable.ref _all = new RecordSet([]);
+    @observable.ref _filtered = this._all;
+
+    _rawRecords = [];
     _loadModel = new PendingTaskModel();
     _filter = null;
 
-    processRawData = null;
-
     /**
      * @param {Object} c - LocalStore configuration.
-     * @param {function} [c.processRawData] - Function to run on data presented to loadData() before
-     *      creating records.
+     * @param {function} [c.processRawData] - Function to run on data
+     *      presented to loadData() before creating records.
      * @param {function} [c.filter] - Filter function to be run.
      * @param {...*} [c.baseStoreArgs] - Additional properties to pass to BaseStore.
      */
-    constructor({processRawData = null, filter, ...baseStoreArgs}) {
+    constructor({processRawData = null, filter = null, ...baseStoreArgs}) {
         super(baseStoreArgs);
         this.setFilter(filter);
         this.processRawData = processRawData;
@@ -38,95 +43,80 @@ export class LocalStore extends BaseStore {
 
     /**
      * Replace existing records with new records.
-     * @param {Object[]} rawData - raw records to be loaded into the store.
+     *
+     * @param {Object[]} rawRecords - raw records to be loaded into the store.
      */
-    loadData(rawData) {
-        this.loadDataInternal(rawData);
+    @action
+    loadData(rawRecords) {
+        this._rawRecords = clone(rawRecords);
+        this._all = new RecordSet(this.createRecords(this._rawRecords));
+        this.rebuildFiltered();
     }
 
-    /**
-     * Get the count of all records loaded into the store
-     */
-    get allCount() {
-        return this._allRecords.count();
-    }
-
-    /**
-     * Get the count of the filtered record in the store
-     */
-    get count() {
-        return this._filteredRecords.count();
-    }
 
     //-----------------------------
     // Implementation of Store
     //-----------------------------
-    get records()       {return this._filteredRecords.list}
-    get allRecords()    {return this._allRecords.list}
+    get records()       {return this._filtered.list}
+    get allRecords()    {return this._all.list}
     get loadModel()     {return this._loadModel}
     get filter()        {return this._filter}
     setFilter(filterFn) {
         this._filter = filterFn;
-        this.rebuildArrays();
+        this.rebuildFiltered();
+    }
+
+    get allCount() {
+        return this._all.count;
+    }
+
+    get count() {
+        return this._filtered.count;
     }
 
     getById(id, fromFiltered = false) {
-        const map = fromFilter ? this._filteredRecords.map : this._allRecords.map;
-        return map.get(id);
+        const rs = fromFiltered ? this._filtered : this._all;
+        return rs.map.get(id);
     }
 
     //-----------------------------------
     // Protected methods for subclasses
     //-----------------------------------
     @action
-    loadDataInternal(rawData) {
-        this.createRecords(rawData);
-        this.rebuildFilteredRecords();
+    deleteRecordInternal(rec) {
+        this._all = this._all.removeRecord(rec);
+        this.rebuildFiltered();
     }
 
     @action
-    deleteRecordInternal(rec) {
-        this.removeRecord(rec);
-        const parent = rec.parent;
-        if (parent) {
-            parent = parent.removeChild(rec);
-            this._fullMap.set(parent.id, parent);
-        }
-        this.rebuildFilter();
+    updateRecordInternal(oldRec, newRec) {
+        this._all = this._all.updateRecord(oldRec, newRec);
+        this.rebuildFiltered();
+    }
+
+    @action
+    addRecordInternal(rec) {
+        this._all = this._all.addRecord(rec);
+        this.rebuildFiltered();
     }
 
     //------------------------
     // Private Implementation
     //------------------------
-    createRecords(rawData) {
-        const recs = this.createRecordsRecursive(rawData);
-        return new RecordSet(recs);
-    }
-
-    createRecordsRecursive(rawData, idGenerator = {id: 0}) {
+    createRecords(rawData, idGenerator = {id: 0}) {
         return rawData.map(raw => {
             if (this.processRawData) this.processRawData(raw);
             if (!('id' in raw)) raw.id = idGenerator.id++;
             const children = raw.children ? this.createRecords(raw.children, idGenerator) : [];
-            const rec = new Record({raw, field: this.fields, children});
+            const rec = new Record({raw, fields: this.fields, children});
             children.forEach(c => c.parent = rec);
             return rec;
         });
     }
 
-
-    rebuildFilteredRecords() {
-        const {filter} = this;
-        if (!filter) {
-            this._filteredRecords = this._allRecords;
-        } else {
-            const recs = [];
-            this.records.forEach(child => {
-                child = child.applyFilter(filter);
-                if (child) recs.push(child);
-            });
-            this._filteredRecords = new RecordSet(recs);
-        }
+    @action
+    rebuildFiltered() {
+        this._filtered = this._all.applyFilter(this.filter);
     }
 
     destroy() {
