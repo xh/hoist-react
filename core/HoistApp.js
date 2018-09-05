@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {defaultMethods} from '@xh/hoist/utils/js';
+import {defaultMethods, markClass} from '@xh/hoist/utils/js';
 import {HoistModel} from './HoistModel';
 
 /**
@@ -20,7 +20,7 @@ import {HoistModel} from './HoistModel';
  * application bootstrap file.
  */
 export function HoistApp(C) {
-    C.isHoistApp = true;
+    markClass(C, 'isHoistApp');
 
     C = HoistModel()(C);
 

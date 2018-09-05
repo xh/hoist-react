@@ -6,7 +6,7 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {defaultMethods, chainMethods} from '@xh/hoist/utils/js';
+import {defaultMethods, chainMethods, markClass} from '@xh/hoist/utils/js';
 import {startCase, partition, isFunction, isEmpty, isString, forOwn} from 'lodash';
 
 import {Field} from './Field';
@@ -27,8 +27,8 @@ import {ValidationState} from './validation/ValidationState';
  */
 export function FieldSupport(C) {
 
-    C.hasFieldSupport = true;
-
+    markClass(C, 'hasFieldSupport');
+    
     defaultMethods(C, {
 
         //-----------------------------

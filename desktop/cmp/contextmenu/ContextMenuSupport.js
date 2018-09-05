@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {defaultMethods} from '@xh/hoist/utils/js';
+import {defaultMethods, markClass} from '@xh/hoist/utils/js';
 import {contextMenu} from './ContextMenu';
 import {ContextMenuTarget} from '@xh/hoist/kit/blueprint';
 
@@ -17,7 +17,8 @@ import {ContextMenuTarget} from '@xh/hoist/kit/blueprint';
  * See the BlueprintJS docs for more information about the implementation of this mixin.
  */
 export function ContextMenuSupport(C) {
-    C.hasContextMenuSupport = true;
+
+    markClass(C, 'hasContextMenuSupport');
 
     defaultMethods(C, {
 

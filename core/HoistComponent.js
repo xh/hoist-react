@@ -7,7 +7,7 @@
 import ReactDom from 'react-dom';
 import {XH} from '@xh/hoist/core';
 import {observer} from '@xh/hoist/mobx';
-import {defaultMethods, chainMethods} from '@xh/hoist/utils/js';
+import {defaultMethods, chainMethods, markClass} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 
 import {ReactiveSupport} from './mixins/ReactiveSupport';
@@ -28,7 +28,7 @@ import {elemFactory} from './elem';
 export function HoistComponent({isReactive = true} = {}) {
 
     return (C) => {
-        C.isHoistComponent = true;
+        markClass(C, 'isHoistComponent');
 
         if (isReactive) {
             C = ReactiveSupport(C);
