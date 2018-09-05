@@ -34,7 +34,7 @@ export class MultiSelectField extends BaseDropdownField {
         /** Optional custom optionRenderer, a function that receives (option, optionProps) */
         itemRenderer: PT.func,
         /** Optional custom tagRenderer, a function that receives the value property of each selected option.
-         * Should return a ReactNode or string */
+         *  Should return a ReactNode or string */
         tagRenderer: PT.func
     };
 
