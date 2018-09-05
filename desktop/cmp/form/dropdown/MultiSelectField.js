@@ -22,7 +22,7 @@ import {BaseDropdownField} from './BaseDropdownField';
  *
  * @see HoistField for properties additional to those documented below.
  */
-@HoistComponent()
+@HoistComponent
 export class MultiSelectField extends BaseDropdownField {
 
     static propTypes = {
