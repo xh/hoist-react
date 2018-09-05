@@ -14,7 +14,7 @@ import {Position, Toaster} from '@xh/hoist/kit/blueprint';
  *
  *  @private
  */
-@HoistModel()
+@HoistModel
 export class ToastSource {
 
     _toasters = {};

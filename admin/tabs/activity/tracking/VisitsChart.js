@@ -14,7 +14,7 @@ import {refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {chart} from '@xh/hoist/desktop/cmp/chart';
 import {Icon} from '@xh/hoist/icon';
 
-@HoistComponent()
+@HoistComponent
 export class VisitsChart extends Component {
     
     render() {

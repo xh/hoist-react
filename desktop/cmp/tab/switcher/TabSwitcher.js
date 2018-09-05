@@ -20,7 +20,7 @@ import {omit} from 'lodash';
  *
  * @see TabContainer
  */
-@HoistComponent()
+@HoistComponent
 export class TabSwitcher extends Component {
     static propTypes = {
         /** TabContainerModel to be controlled. */

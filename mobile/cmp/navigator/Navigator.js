@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {navigator as onsenNavigator} from '@xh/hoist/kit/onsen';
 
-@HoistComponent()
+@HoistComponent
 export class Navigator extends Component {
 
     render() {

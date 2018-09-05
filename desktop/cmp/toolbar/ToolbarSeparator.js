@@ -14,7 +14,7 @@ import './Toolbar.scss';
 /**
  * Convenience component to insert a pre-styled separator | between Toolbar items.
  */
-@HoistComponent()
+@HoistComponent
 export class ToolbarSeparator extends Component {
 
     baseClassName = 'xh-toolbar__separator';

@@ -20,7 +20,7 @@ import {DarkTheme} from './theme/Dark';
  * as well as configuration and theme defaults. The chart's core configuration should be sourced
  * from a ChartModel prop passed to this component.
  */
-@HoistComponent()
+@HoistComponent
 @LayoutSupport
 export class Chart extends Component {
 

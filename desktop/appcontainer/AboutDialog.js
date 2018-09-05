@@ -22,7 +22,7 @@ import './AboutDialog.scss';
  *
  * @private
  */
-@HoistComponent()
+@HoistComponent
 export class AboutDialog extends Component {
 
     render() {

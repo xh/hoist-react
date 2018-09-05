@@ -20,7 +20,7 @@ import {navigatorBackButton, menuButton, refreshButton} from '@xh/hoist/mobile/c
  * The standard buttons which are visible will be based on user roles and application configuration,
  * or they can each be explicitly hidden.
  */
-@HoistComponent()
+@HoistComponent
 export class AppBar extends Component {
 
     static propTypes = {

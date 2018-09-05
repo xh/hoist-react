@@ -15,7 +15,7 @@ import {MonitorResultsModel} from './MonitorResultsModel';
 import './MonitorResultsPanel.scss';
 
 
-@HoistComponent()
+@HoistComponent
 export class MonitorResultsPanel extends Component {
     localModel = new MonitorResultsModel({view: this});
 

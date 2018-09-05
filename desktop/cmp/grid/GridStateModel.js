@@ -18,7 +18,7 @@ import {start} from '@xh/hoist/promise';
  * It is not necessary to manually create instances of this class within an application.
  * @private
  */
-@HoistModel()
+@HoistModel
 export class GridStateModel {
 
     /**
@@ -123,20 +123,27 @@ export class GridStateModel {
     }
 
     getColumnState() {
-        const {columns} = this.gridModel;
+        const {columns} = this.gridModel,
+            cols = this.gatherLeaves(columns);
 
-        return columns.map(it => {
-            return {
-                colId: it.colId,
-                hide: it.hide,
-                width: it.width
-            };
+        return cols.map(col => {
+            return {colId: col.colId, hide: col.hide, width: col.width};
         });
+    }
+
+    // Grouped columns are a tree structure but we store their state as a flat array of configs representing the leaves
+    gatherLeaves(columns, leaves = []) {
+        columns.forEach(col => {
+            if (col.groupId) this.gatherLeaves(col.children, leaves);
+            if (col.colId) leaves.push(col);
+        });
+        return leaves;
     }
 
     updateGridColumns() {
         const {gridModel, state} = this,
-            cols = gridModel.cloneColumns(),
+            gridCols = gridModel.cloneColumns(),
+            cols = this.gatherLeaves(gridCols),
             foundColumns = [];
 
         if (!state.columns) return;
@@ -161,7 +168,7 @@ export class GridStateModel {
             }
         });
 
-        gridModel.setColumns(newColumns);
+        gridModel.applyColumnChanges(newColumns);
     }
 
     //--------------------------

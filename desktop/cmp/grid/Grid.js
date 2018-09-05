@@ -6,7 +6,7 @@
  */
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {find, isBoolean, isEqual, isNil, isNumber, isString, merge, xor} from 'lodash';
+import {find, isBoolean, isEqual, isNil, isNumber, isString, merge, xor, cloneDeep} from 'lodash';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
@@ -27,7 +27,7 @@ import {colChooser} from './ColChooser';
  * @see {@link https://www.ag-grid.com/javascript-grid-reference-overview/|ag-Grid Docs}
  * @see GridModel
  */
-@HoistComponent()
+@HoistComponent
 @LayoutSupport
 export class Grid extends Component {
 
@@ -121,11 +121,11 @@ export class Grid extends Component {
             icons: {
                 groupExpanded: convertIconToSvg(
                     Icon.chevronDown(),
-                    {classes: ['group-header-icon-expanded']}
+                    {classes: ['group-header-icon-expanded', 'fa-fw']}
                 ),
                 groupContracted: convertIconToSvg(
                     Icon.chevronRight(),
-                    {classes: ['group-header-icon-contracted']}
+                    {classes: ['group-header-icon-contracted', 'fa-fw']}
                 )
             },
             rowSelection: model.selModel.mode,
@@ -146,9 +146,17 @@ export class Grid extends Component {
     // Support for defaults
     //------------------------
     getColumnDefs() {
-        const {columns, sortBy} = this.model;
-        const cols = columns.map(c => c.getAgSpec());
-        
+        const {columns, sortBy} = this.model,
+            clonedColumns = cloneDeep(columns);
+        const cols = clonedColumns.map(c => {
+            if (c.children) {
+                c.children = this.getColumnDefsFromChildren(c.children);
+                return c;
+            }
+
+            return c.getAgSpec();
+        });
+
         let now = Date.now();
         sortBy.forEach(it => {
             const col = find(cols, {colId: it.colId});
@@ -157,6 +165,31 @@ export class Grid extends Component {
                 col.sortedAt = now++;
             }
         });
+
+        return cols;
+    }
+
+    getColumnDefsFromChildren(columns) {
+        const {sortBy} = this.model;
+
+        const cols = columns.map(c => {
+            if (c.children) {
+                c.children = this.getColumnDefsFromChildren(c.children);
+                return c;
+            }
+
+            return c.getAgSpec();
+        });
+
+        let now = Date.now();
+        sortBy.forEach(it => {
+            const col = find(cols, {colId: it.colId});
+            if (col) {
+                col.sort = it.sort;
+                col.sortedAt = now++;
+            }
+        });
+
         return cols;
     }
 
@@ -239,7 +272,19 @@ export class Grid extends Component {
             run: ([api, records]) => {
                 if (api) {
                     runInAction(() => {
+                        // Load updated data into the grid.
                         api.setRowData(records);
+
+                        // Size columns to account for scrollbar show/hide due to row count change.
+                        api.sizeColumnsToFit();
+
+                        // Force grid to fully re-render cells. We are *not* relying on its default
+                        // cell-level change detection as this does not account for our current
+                        // renderer API (where renderers can reference other properties on the data
+                        // object). See https://github.com/exhi/hoist-react/issues/550.
+                        api.refreshCells({force: true});
+
+                        // Increment version counter to trigger selectionReaction w/latest data.
                         this._dataVersion++;
                     });
                 }
@@ -251,14 +296,14 @@ export class Grid extends Component {
         const {model} = this;
         return {
             track: () => [model.agApi, model.selection, this._dataVersion],
-            run: ([api, ...rest]) => {
+            run: ([api]) => {
                 if (!api) return;
 
                 const modelSelection = model.selModel.ids,
                     gridSelection = api.getSelectedRows().map(it => it.id),
                     diff = xor(modelSelection, gridSelection);
 
-                // If ag-grid's selection differs from the selection model, set it to match
+                // If ag-grid's selection differs from the selection model, set it to match.
                 if (diff.length > 0) {
                     api.deselectAll();
                     modelSelection.forEach(id => {

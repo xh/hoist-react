@@ -18,7 +18,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
  *
  * @private
  */
-@HoistComponent()
+@HoistComponent
 export class FeedbackDialog extends Component {
 
     render() {

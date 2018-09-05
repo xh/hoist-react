@@ -10,7 +10,7 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {toolbarButton} from '@xh/hoist/kit/onsen';
 
-@HoistComponent()
+@HoistComponent
 export class NavigatorBackButton extends Component {
 
     render() {

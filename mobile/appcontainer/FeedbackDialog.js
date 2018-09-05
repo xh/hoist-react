@@ -17,7 +17,7 @@ import './FeedbackDialog.scss';
  *
  * @private
  */
-@HoistComponent()
+@HoistComponent
 export class FeedbackDialog extends Component {
 
     render() {

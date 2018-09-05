@@ -20,7 +20,7 @@ import {ThemeModel} from './ThemeModel';
 /**
  *  Root object for Framework GUI State.
  */
-@HoistModel()
+@HoistModel
 export class AppContainerModel {
 
     //------------

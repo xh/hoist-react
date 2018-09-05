@@ -14,7 +14,7 @@ import './Dialog.scss';
 /**
  * A wrapper around Onsen's dialog, with support for standard layout + styling, titles and buttons
  */
-@HoistComponent()
+@HoistComponent
 export class Dialog extends Component {
 
     render() {

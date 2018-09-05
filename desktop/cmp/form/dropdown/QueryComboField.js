@@ -15,7 +15,7 @@ import {BaseComboField} from './BaseComboField';
 /**
  * ComboBox Field which populates its options dynamically based on the current value.
  */
-@HoistComponent()
+@HoistComponent
 export class QueryComboField extends BaseComboField {
     @observable.ref options = [];
 
@@ -44,6 +44,8 @@ export class QueryComboField extends BaseComboField {
 
     delegateProps = ['className', 'style', 'placeholder', 'disabled', 'leftIcon', 'rightElement'];
 
+    baseClassName = 'xh-query-combo-field';
+
     constructor(props) {
         super(props);
         this.addAutorun({
@@ -57,6 +59,7 @@ export class QueryComboField extends BaseComboField {
             {renderValue} = this;
 
         return suggest({
+            className: this.getClassName(),
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: this.options,
             onItemSelect: this.onItemSelect,

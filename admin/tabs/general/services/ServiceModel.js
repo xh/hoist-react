@@ -8,7 +8,7 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 
-@HoistModel()
+@HoistModel
 export class ServiceModel {
 
     gridModel = new GridModel({

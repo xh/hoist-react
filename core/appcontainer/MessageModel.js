@@ -12,7 +12,7 @@ import {HoistModel} from '@xh/hoist/core';
  *
  * @private
  */
-@HoistModel()
+@HoistModel
 export class MessageModel {
 
     // Immutable properties

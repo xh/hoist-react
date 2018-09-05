@@ -11,7 +11,7 @@ import {UrlStore} from '@xh/hoist/data';
 import {emptyFlexCol, numberCol} from '@xh/hoist/columns';
 
 
-@HoistModel()
+@HoistModel
 export class EhCacheModel {
 
     gridModel = new GridModel({

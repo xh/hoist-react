@@ -26,7 +26,7 @@ import {Icon} from '@xh/hoist/icon';
  *
  * It is not necessary to manually create instances of this component within an application.
  */
-@HoistComponent()
+@HoistComponent
 export class ColChooser extends Component {
 
     render() {

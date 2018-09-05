@@ -7,7 +7,7 @@
 import {XH, HoistService} from '@xh/hoist/core';
 import {stripTags} from '@xh/hoist/utils/js';
 
-@HoistService()
+@HoistService
 export class TrackService {
 
     /**

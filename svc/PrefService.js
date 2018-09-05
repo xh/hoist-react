@@ -27,7 +27,7 @@ import {throwIf} from '@xh/hoist/utils/js';
  * user values to local storage instead. This should be used for prefs that are more natural to
  * associate with a particular machine or browser (e.g. sizing or layout related options).
  */
-@HoistService()
+@HoistService
 export class PrefService {
 
     _data = {};

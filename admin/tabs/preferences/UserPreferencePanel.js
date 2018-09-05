@@ -9,7 +9,7 @@ import {HoistComponent} from '@xh/hoist/core';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 import {usernameCol} from '@xh/hoist/admin/columns';
 
-@HoistComponent()
+@HoistComponent
 export class UserPreferencePanel extends Component {
 
     localModel = new RestGridModel({

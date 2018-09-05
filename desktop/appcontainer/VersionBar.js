@@ -14,7 +14,7 @@ import './VersionBar.scss';
 /**
  * @private
  */
-@HoistComponent()
+@HoistComponent
 export class VersionBar extends Component {
 
     render() {

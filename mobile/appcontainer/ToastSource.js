@@ -18,7 +18,7 @@ import {toast} from './Toast';
  *
  *  @private
  */
-@HoistComponent()
+@HoistComponent
 export class ToastSource extends Component {
 
     render() {

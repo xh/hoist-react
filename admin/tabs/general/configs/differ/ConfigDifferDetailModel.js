@@ -11,7 +11,7 @@ import {action, observable} from '@xh/hoist/mobx';
 /**
  * @private
  */
-@HoistModel()
+@HoistModel
 export class ConfigDifferDetailModel  {
 
     parent = null;

@@ -16,7 +16,7 @@ import {TabModel} from '@xh/hoist/desktop/cmp/tab';
  * This object provides support for routing based navigation, managed mounting/unmounting of
  * inactive tabs, and lazy refreshing of its active Tab.
  */
-@HoistModel()
+@HoistModel
 export class TabContainerModel {
 
     /**

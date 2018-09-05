@@ -23,7 +23,7 @@ import {cloneDeep} from 'lodash';
  * Note that this service does *not* currently attempt to reload or update configs once the client
  * application has loaded. A refresh of the application is required to load new entries.
  */
-@HoistService()
+@HoistService
 export class ConfigService {
 
     _data = {};

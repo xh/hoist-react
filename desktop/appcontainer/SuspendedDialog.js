@@ -19,7 +19,7 @@ import {message} from './Message';
  *
  * @private
  */
-@HoistComponent()
+@HoistComponent
 export class SuspendedDialog extends Component {
 
     localModel = new MessageModel({

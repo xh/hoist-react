@@ -9,14 +9,14 @@ import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {fmtNumber} from '@xh/hoist/format';
-import {HoistField} from './HoistField';
+import {HoistField} from '@xh/hoist/cmp/form';
 
 /**
  * A Number Input Field
  *
  * @see HoistField for properties additional to those documented below.
  */
-@HoistComponent()
+@HoistComponent
 export class NumberField extends HoistField {
 
     static propTypes = {
@@ -43,23 +43,28 @@ export class NumberField extends HoistField {
         /** Alignment of numbers in field, default to 'right' */
         textAlign: PT.oneOf(['left', 'right']),
         /** Icon to display on the left side of the field */
-        leftIcon: PT.element
+        leftIcon: PT.element,
+        /** Whether text in field is selected when field receives focus */
+        selectOnFocus: PT.bool
     };
 
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/gi;
 
     delegateProps = ['className', 'disabled', 'min', 'max', 'placeholder', 'leftIcon'];
 
+    baseClassName = 'xh-number-field';
+
     render() {
         const {width, style, enableShorthandUnits} = this.props,
             textAlign = this.props.textAlign || 'right';
 
         return numericInput({
+            className: this.getClassName(),
             value: this.renderValue,
             onValueChange: this.onValueChange,
             onKeyPress: this.onKeyPress,
             onBlur: this.onBlur,
-            onFocus: this.onFocus,
+            onFocus: this.onNumberFieldFocus,
             style: {textAlign, width, ...style},
             buttonPosition: 'none',
             allowNumericCharactersOnly: !enableShorthandUnits,
@@ -114,5 +119,11 @@ export class NumberField extends HoistField {
         return parseFloat(value);
     }
 
+    onNumberFieldFocus = (ev) => {
+        if (this.props.selectOnFocus === true) {
+            ev.target.select();
+        }
+        this.onFocus();
+    }
 }
 export const numberField = elemFactory(NumberField);

@@ -11,7 +11,7 @@ import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {boolCheckCol} from '@xh/hoist/columns';
 import {usernameCol} from '@xh/hoist/admin/columns';
 
-@HoistModel()
+@HoistModel
 export class UserModel {
 
     gridModel = new GridModel({
@@ -22,6 +22,7 @@ export class UserModel {
             url: 'userAdmin',
             fields: ['username', 'email', 'displayName', 'active', 'roles']
         }),
+        sortBy: 'username',
         columns: [
             {field: 'username', ...usernameCol},
             {field: 'email', width: 175},
