@@ -11,7 +11,7 @@ import {tabContainer, TabContainerModel} from '@xh/hoist/desktop/cmp/tab';
 import {MonitorResultsPanel} from './MonitorResultsPanel';
 import {MonitorEditorPanel} from './MonitorEditorPanel';
 
-@HoistComponent()
+@HoistComponent
 export class MonitorTab extends Component {
 
     localModel = new TabContainerModel({

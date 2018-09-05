@@ -16,7 +16,7 @@ import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
  *
  * This is the primary application entry-point for specifying DataView component options and behavior.
  */
-@HoistModel()
+@HoistModel
 export class DataViewModel {
 
     // Immutable public properties

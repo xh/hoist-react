@@ -20,7 +20,7 @@ import './LeftRightChooser.scss';
  * A nested panel is also available to display a more in-depth description for any selected item.
  * @see LeftRightChooserModel
  */
-@HoistComponent()
+@HoistComponent
 @LayoutSupport
 export class LeftRightChooser extends Component {
 

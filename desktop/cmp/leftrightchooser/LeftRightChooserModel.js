@@ -13,7 +13,7 @@ import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 /**
  * A Model for managing the state of a LeftRightChooser.
  */
-@HoistModel()
+@HoistModel
 export class LeftRightChooserModel {
     /**
      * Grid Model for the left-hand side.

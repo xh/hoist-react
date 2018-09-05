@@ -14,7 +14,7 @@ import {exportButton} from '@xh/hoist/desktop/cmp/button';
 import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 
-@HoistComponent()
+@HoistComponent
 export class RestGridToolbar extends Component {
 
     render() {

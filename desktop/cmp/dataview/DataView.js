@@ -15,7 +15,7 @@ import {grid, GridModel} from '@xh/hoist/desktop/cmp/grid';
  *
  * @see DataViewModel
  */
-@HoistComponent()
+@HoistComponent
 @LayoutSupport
 export class DataView extends Component {
 

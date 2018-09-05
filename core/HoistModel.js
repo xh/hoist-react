@@ -15,14 +15,11 @@ import {markClass} from '@xh/hoist/utils/js';
  * All State models in Hoist applications should typically be decorated with this function.
  * Adds support for managed events and mobx reactivity.
  */
-export function HoistModel() {
+export function HoistModel(C) {
+    markClass(C, 'isHoistModel');
 
-    return (C) => {
-        markClass(C, 'isHoistModel');
+    C = EventSupport(C);
+    C = ReactiveSupport(C);
 
-        C = EventSupport(C);
-        C = ReactiveSupport(C);
-        
-        return C;
-    };
+    return C;
 }

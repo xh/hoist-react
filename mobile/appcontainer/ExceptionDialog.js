@@ -21,7 +21,7 @@ import {exceptionDialogDetails} from './ExceptionDialogDetails';
  *
  * @private
  */
-@HoistComponent()
+@HoistComponent
 export class ExceptionDialog extends Component {
 
     render() {

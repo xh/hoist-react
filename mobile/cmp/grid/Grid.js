@@ -13,7 +13,7 @@ import {hframe, frame, div} from '@xh/hoist/cmp/layout';
 /**
  * Grid Component
  */
-@HoistComponent()
+@HoistComponent
 export class Grid extends Component {
 
     render() {

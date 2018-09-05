@@ -17,7 +17,7 @@ import './Collapser.scss';
 /**
  * @private
  */
-@HoistComponent()
+@HoistComponent
 export class Collapser extends Component {
     
     render() {

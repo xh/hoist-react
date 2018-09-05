@@ -13,7 +13,7 @@ import {ActivityGridModel} from './ActivityGridModel';
 import {visitsChart} from './VisitsChart';
 import {VisitsChartModel} from './VisitsChartModel';
 
-@HoistComponent()
+@HoistComponent
 export class TrackingPanel extends Component {
 
     activityGridModel = new ActivityGridModel();

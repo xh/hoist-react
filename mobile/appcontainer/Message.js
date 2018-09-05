@@ -14,7 +14,7 @@ import {button} from '@xh/hoist/mobile/cmp/button';
  *
  * @private
  */
-@HoistComponent()
+@HoistComponent
 class Message extends Component {
 
     render() {

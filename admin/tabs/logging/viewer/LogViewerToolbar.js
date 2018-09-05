@@ -15,7 +15,7 @@ import {Icon} from '@xh/hoist/icon';
 /**
  * @private
  */
-@HoistComponent()
+@HoistComponent
 export class LogViewerToolbar extends Component {
     
     render() {

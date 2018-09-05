@@ -19,7 +19,7 @@ import {HoistField} from '@xh/hoist/cmp/form';
  *
  * Value can be either a single number (for a simple slider) or an array of 2 numbers (for a range)
  */
-@HoistComponent()
+@HoistComponent
 @LayoutSupport
 export class SliderField extends HoistField {
 

@@ -14,7 +14,7 @@ import {message} from './Message';
  *
  *  @private
  */
-@HoistComponent()
+@HoistComponent
 export class MessageSource extends Component {
     render() {
         const models = this.model.msgModels,

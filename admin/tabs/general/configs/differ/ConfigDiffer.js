@@ -19,7 +19,7 @@ import {configDifferDetail} from './ConfigDifferDetail';
 /**
  * @private
  */
-@HoistComponent()
+@HoistComponent
 export class ConfigDiffer extends Component {
 
     render() {

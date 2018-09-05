@@ -10,7 +10,7 @@ import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 import {compactDateCol} from '@xh/hoist/columns';
 import {usernameCol} from '@xh/hoist/admin/columns';
 
-@HoistComponent()
+@HoistComponent
 export class FeedbackPanel extends Component {
 
     localModel = new RestGridModel({

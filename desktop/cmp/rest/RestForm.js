@@ -17,7 +17,7 @@ import {Icon} from '@xh/hoist/icon';
 import {restControl} from './RestControl';
 import './RestForm.scss';
 
-@HoistComponent()
+@HoistComponent
 export class RestForm extends Component {
 
     baseClassName = 'xh-rest-form';

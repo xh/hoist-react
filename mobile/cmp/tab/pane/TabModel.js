@@ -12,7 +12,7 @@ import {max} from 'lodash';
 /**
  * Model for a Tab within a TabContainer, representing its content's active and load state.
  */
-@HoistModel()
+@HoistModel
 export class TabModel {
     id = null;
     pageFactory = null;

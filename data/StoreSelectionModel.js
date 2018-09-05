@@ -12,7 +12,7 @@ import {castArray, intersection, union} from 'lodash';
 /**
  * Model for managing store selections.
  */
-@HoistModel()
+@HoistModel
 export class StoreSelectionModel {
 
     store = null;

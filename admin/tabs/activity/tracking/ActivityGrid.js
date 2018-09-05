@@ -17,7 +17,7 @@ import {Icon} from '@xh/hoist/icon';
 
 import {activityDetail} from './ActivityDetail';
 
-@HoistComponent()
+@HoistComponent
 export class ActivityGrid extends Component {
 
     render() {

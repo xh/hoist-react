@@ -16,7 +16,7 @@ import {MessageModel} from './MessageModel';
  *
  *  @private
  */
-@HoistModel()
+@HoistModel
 export class MessageSourceModel {
 
     @observable.ref msgModels = [];

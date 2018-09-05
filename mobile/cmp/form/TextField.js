@@ -17,7 +17,7 @@ import './TextField.scss';
  *
  * @see HoistField for properties additional to those documented below.
  */
-@HoistComponent()
+@HoistComponent
 export class TextField extends HoistField {
 
     static propTypes = {

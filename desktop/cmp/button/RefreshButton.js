@@ -18,7 +18,7 @@ import {warnIf} from '@xh/hoist/utils/js';
  * Must be provided either an onClick handler *or* a model. If a model is provided and an onClick
  * handler is not provided, this button will call loadAsync() on the model class.
  */
-@HoistComponent()
+@HoistComponent
 export class RefreshButton extends Component {
 
     static propTypes = {

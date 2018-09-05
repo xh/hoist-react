@@ -17,7 +17,7 @@ import {Rule} from './validation/Rule';
 /**
  * Maintains state relating to a property marked with `@field` decorator.
  */
-@HoistModel()
+@HoistModel
 export class Field {
 
     /** @member {string} name of property within model containing this field. */

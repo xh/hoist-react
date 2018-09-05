@@ -13,7 +13,7 @@ import {XH, HoistService} from '@xh/hoist/core';
  * Also provides support for recognizing impersonation and distinguishing between the apparent and
  * actual underlying user.
  */
-@HoistService()
+@HoistService
 export class IdentityService {
 
     _authUser = null;

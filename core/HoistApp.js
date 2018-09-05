@@ -22,7 +22,7 @@ import {HoistModel} from './HoistModel';
 export function HoistApp(C) {
     markClass(C, 'isHoistApp');
 
-    C = HoistModel()(C);
+    C = HoistModel(C);
 
     defaultMethods(C, {
 

@@ -21,7 +21,7 @@ import {stringify} from 'qs';
  * the main entry point 'fetch'.  These methods delegate to fetch, after setting appropriate additional
  * defaults.
  */
-@HoistService()
+@HoistService
 export class FetchService {
 
     /**
