@@ -86,6 +86,6 @@ export class AppContainerModel {
     }
 
     destroy() {
-        XH.destroy(this.models);
+        XH.safeDestroy(this.models);
     }
 }
