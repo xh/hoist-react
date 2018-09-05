@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-import {XH, HoistComponent, elemFactory, hoistComponentFactory} from '@xh/hoist/core';
+import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
 import {filler, fragment} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -77,33 +77,34 @@ export const exceptionDialog = elemFactory(ExceptionDialog);
 
 /**
  * A Dismiss button that either forces reload, or allows close.
+ * @private
  */
-export const dismissButton = hoistComponentFactory(
-    class extends Component {
-        render() {
-            return this.model.options.requireReload ?
-                button({
-                    icon: Icon.refresh(),
-                    text: this.sessionExpired() ? 'Login' : 'Reload App',
-                    onClick: this.onReloadClick
-                }) :
-                button({
-                    text: 'Close',
-                    onClick: this.onCloseClick
-                });
-        }
-
-        onCloseClick = () => {
-            this.model.close();
-        }
-
-        onReloadClick = () => {
-            XH.reloadApp();
-        }
-
-        sessionExpired() {
-            const e = this.model.exception;
-            return e && e.httpStatus === 401;
-        }
+@HoistComponent
+class DismissButton extends Component {
+    render() {
+        return this.model.options.requireReload ?
+            button({
+                icon: Icon.refresh(),
+                text: this.sessionExpired() ? 'Login' : 'Reload App',
+                onClick: this.onReloadClick
+            }) :
+            button({
+                text: 'Close',
+                onClick: this.onCloseClick
+            });
     }
-);
+
+    onCloseClick = () => {
+        this.model.close();
+    }
+
+    onReloadClick = () => {
+        XH.reloadApp();
+    }
+
+    sessionExpired() {
+        const e = this.model.exception;
+        return e && e.httpStatus === 401;
+    }
+)
+export const dismissButton = elemFactory(DismissButton);
