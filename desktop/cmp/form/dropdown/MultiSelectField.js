@@ -13,6 +13,8 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 
 import {BaseDropdownField} from './BaseDropdownField';
+import './MultiSelectField.scss';
+
 
 /**
  * A Multi Select Field
@@ -40,6 +42,8 @@ export class MultiSelectField extends BaseDropdownField {
 
     delegateProps = ['className', 'disabled'];
 
+    baseClassName = 'xh-multi-select-field';
+
     constructor(props) {
         super(props);
         this.internalOptions = this.normalizeOptions(props.options);
@@ -50,7 +54,7 @@ export class MultiSelectField extends BaseDropdownField {
     }
 
     render() {
-        let {placeholder, disabled, className} = this.props,
+        let {placeholder, disabled} = this.props,
             {internalOptions} = this;
 
         return multiSelect({
@@ -65,7 +69,7 @@ export class MultiSelectField extends BaseDropdownField {
             tagRenderer: this.getTagRenderer(),
             tagInputProps: {
                 tagProps: {minimal: true},
-                className,
+                className: this.getClassName(),
                 placeholder,
                 onRemove: this.onRemoveTag
             },
