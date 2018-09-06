@@ -7,6 +7,7 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {isObject, find} from 'lodash';
+import {observable, action} from '@xh/hoist/mobx';
 import {menuItem} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import {HoistField} from '@xh/hoist/cmp/form';
@@ -30,6 +31,8 @@ export class BaseDropdownField extends HoistField {
         commitOnChange: false
     };
 
+    // blueprint-ready collection of available options, normalized to {label, value} form.
+    @observable.ref internalOptions = [];
 
     //---------------------------------------------------------------------------
     // Handling of null values.  Blueprint doesn't allow null for the value of a
@@ -47,9 +50,10 @@ export class BaseDropdownField extends HoistField {
     //-----------------------------------------------------------
     // Common handling of options, rendering of selected option
     //-----------------------------------------------------------
+    @action
     normalizeOptions(options) {
         options = withDefault(options, []);
-        return options.map(o => {
+        this.internalOptions = options.map(o => {
             const ret = isObject(o) ?
                 {label: o.label, value: o.value} :
                 {label: o != null ? o.toString() : '-null-', value: o};
