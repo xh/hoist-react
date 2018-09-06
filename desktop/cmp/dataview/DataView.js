@@ -43,7 +43,7 @@ export class DataView extends Component {
     }
 
     render() {
-        const {rowCls, itemHeight, onRowDoubleClicked} = this.props;
+        const {rowCls, itemHeight} = this.props;
         return grid({
             ...this.getLayoutProps(),
             className: this.getClassName(),
@@ -52,8 +52,7 @@ export class DataView extends Component {
                 headerHeight: 0,
                 rowClass: rowCls,
                 getRowHeight: () => itemHeight
-            },
-            onRowDoubleClicked: onRowDoubleClicked
+            }
         });
     }
 
