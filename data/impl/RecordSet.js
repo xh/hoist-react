@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {XH} from '@xh/hoist/core';
 import {without, isEmpty, findIndex, clone} from 'lodash';
 
 /**
@@ -79,7 +80,7 @@ export class RecordSet {
         const newList = clone(this.list),
             index = findIndex(newList, {id: oldRecord.id});
 
-        if (index < 0) throw XH.exception(`Cannot find Record to update: id = ${oldRecord.id}`)
+        if (index < 0) throw XH.exception(`Cannot find Record to update: id = ${oldRecord.id}`);
 
         newRecord.children = oldRecord.children;
         newList[index] = newRecord;

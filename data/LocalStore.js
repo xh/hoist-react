@@ -103,13 +103,12 @@ export class LocalStore extends BaseStore {
     //------------------------
     // Private Implementation
     //------------------------
-    createRecords(rawData, idGenerator = {id: 0}) {
+    createRecords(rawData, parent = null, idGenerator = {id: 0}) {
         return rawData.map(raw => {
             if (this.processRawData) this.processRawData(raw);
             if (!('id' in raw)) raw.id = idGenerator.id++;
-            const children = raw.children ? this.createRecords(raw.children, idGenerator) : [];
-            const rec = new Record({raw, fields: this.fields, children});
-            children.forEach(c => c.parent = rec);
+            const rec = new Record({raw, parent, fields: this.fields});
+            rec.children = raw.children ? this.createRecords(raw.children, parent.rec, idGenerator) : [];
             return rec;
         });
     }

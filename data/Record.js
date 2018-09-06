@@ -22,16 +22,20 @@ export class Record {
     fields
     /** @member {Record[]} - Children of this record. */
     children
-
+    /** @member {Record} - Parent of this record. */
+    parent
 
     /**
      * Will apply basic validation and conversion (e.g. 'date' will convert from UTC time to
      * a JS Date object). An exception will be thrown if the validation or conversion fails.
      */
-    constructor({raw, fields, children = []}) {
+    constructor({raw, parent, fields, children = []}) {
         this.id = raw.id;
+        this.parent = parent;
         this.children = children;
         this.fields = fields;
+
+        this.xhTreePath = parent ? [...parent.xhTreePath, this.id] : [this.id];
 
         fields.forEach(field => {
             const {type, name, defaultValue} = field;
@@ -82,19 +86,12 @@ export class Record {
             if (passingChildren.length == children.length) {
                 return this;
             } else {
-                const ret = this.clone();
+                const ret = clone(this);
                 ret.children = passingChildren;
                 return ret;
             }
         }
 
         return null;
-    }
-
-    /**
-     * Copy this record.
-     */
-    clone() {
-        return clone(this);
     }
 }

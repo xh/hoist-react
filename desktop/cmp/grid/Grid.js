@@ -138,7 +138,9 @@ export class Grid extends Component {
             onSelectionChanged: this.onSelectionChanged,
             onSortChanged: this.onSortChanged,
             onGridSizeChanged: this.onGridSizeChanged,
-            onDragStopped: this.onDragStopped
+            onDragStopped: this.onDragStopped,
+            treeData: true,
+            getDataPath: this.getDataPath
         };
     }
 
@@ -350,6 +352,10 @@ export class Grid extends Component {
     //------------------------
     // Event Handlers on AG Grid.
     //------------------------
+    getDataPath = (data) => {
+        return data.xhTreePath;
+    }
+
     onGridReady = (ev) => {
         this.model.setAgApi(ev.api);
     }
