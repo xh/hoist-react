@@ -331,6 +331,15 @@ export class GridModel {
         this.columns = newCols;
     }
 
+    /**
+     * Grouped columns are a tree structure, this method returns a flat array representing the leaves
+     */
+
+    getColumnArray() {
+        const columns = this.cloneColumns();
+        return this.gatherLeaves(columns);
+    }
+
     //-----------------------
     // Implementation
     //-----------------------
@@ -358,6 +367,15 @@ export class GridModel {
             }
         }
         return null;
+    }
+
+    gatherLeaves(columns, leaves = []) {
+        columns.forEach(col => {
+            if (col.groupId) this.gatherLeaves(col.children, leaves);
+            if (col.colId) leaves.push(col);
+        });
+
+        return leaves;
     }
 
     markGroupSortOrder(col) {

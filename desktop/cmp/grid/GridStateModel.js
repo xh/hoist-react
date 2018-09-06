@@ -123,27 +123,17 @@ export class GridStateModel {
     }
 
     getColumnState() {
-        const {columns} = this.gridModel,
-            cols = this.gatherLeaves(columns);
+        const cols = this.gridModel.getColumnArray();
 
+        // Grouped columns are a tree structure but we store their state as a flat array of configs representing the leaves
         return cols.map(col => {
             return {colId: col.colId, hide: col.hide, width: col.width};
         });
     }
 
-    // Grouped columns are a tree structure but we store their state as a flat array of configs representing the leaves
-    gatherLeaves(columns, leaves = []) {
-        columns.forEach(col => {
-            if (col.groupId) this.gatherLeaves(col.children, leaves);
-            if (col.colId) leaves.push(col);
-        });
-        return leaves;
-    }
-
     updateGridColumns() {
         const {gridModel, state} = this,
-            gridCols = gridModel.cloneColumns(),
-            cols = this.gatherLeaves(gridCols),
+            cols = gridModel.getColumnArray(),
             foundColumns = [];
 
         if (!state.columns) return;
