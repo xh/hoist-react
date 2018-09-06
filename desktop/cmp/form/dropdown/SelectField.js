@@ -36,11 +36,11 @@ export class SelectField extends BaseDropdownField {
 
     constructor(props) {
         super(props);
-        this.internalOptions = this.normalizeOptions(props.options);
+        this.setInternalOptions(this.normalizeOptions(props.options));
     }
 
     componentDidMount() {
-        this.addAutorun(() => this.internalOptions = this.normalizeOptions(this.props.options));
+        this.addAutorun(() => this.setInternalOptions(this.normalizeOptions(this.props.options)));
     }
 
     render() {

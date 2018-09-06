@@ -7,6 +7,7 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {isObject, find} from 'lodash';
+import {observable, action} from '@xh/hoist/mobx';
 import {menuItem} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import {HoistField} from '@xh/hoist/cmp/form';
@@ -30,6 +31,8 @@ export class BaseDropdownField extends HoistField {
         commitOnChange: false
     };
 
+    // Internal collection of available options, normalized to {label, value} form.
+    @observable internalOptions;
 
     //---------------------------------------------------------------------------
     // Handling of null values.  Blueprint doesn't allow null for the value of a
@@ -57,6 +60,11 @@ export class BaseDropdownField extends HoistField {
             ret.value = this.toInternal(ret.value);
             return ret;
         });
+    }
+
+    @action
+    setInternalOptions(options) {
+        this.internalOptions = options;
     }
 
     getOptionRenderer() {
