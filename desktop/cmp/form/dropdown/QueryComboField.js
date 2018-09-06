@@ -7,7 +7,6 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {observable} from '@xh/hoist/mobx';
 import {Classes, suggest} from '@xh/hoist/kit/blueprint';
 
 import {BaseComboField} from './BaseComboField';
@@ -17,8 +16,7 @@ import {BaseComboField} from './BaseComboField';
  */
 @HoistComponent
 export class QueryComboField extends BaseComboField {
-    @observable.ref options = [];
-
+    
     static propTypes = {
         ...BaseComboField.propTypes,
 
@@ -56,17 +54,17 @@ export class QueryComboField extends BaseComboField {
 
     render() {
         const {style, width, disabled} = this.props,
-            {renderValue} = this;
+            {renderValue, internalOptions} = this;
 
         return suggest({
             className: this.getClassName(),
             popoverProps: {popoverClassName: Classes.MINIMAL},
-            $items: this.options,
+            $items: internalOptions,
             onItemSelect: this.onItemSelect,
             itemRenderer: this.getOptionRenderer(),
             inputValueRenderer: s => s,
             inputProps: {
-                value: this.getDisplayValue(renderValue, this.options, ''),
+                value: this.getDisplayValue(renderValue, internalOptions, ''),
                 onChange: this.onChange,
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,
@@ -83,8 +81,8 @@ export class QueryComboField extends BaseComboField {
             {queryFn} = this.props;
 
         if (queryFn) {
-            queryFn(value).thenAction(options => {
-                this.options = this.normalizeOptions(options);
+            queryFn(value).then(options => {
+                this.normalizeOptions(options);
             });
         }
     }

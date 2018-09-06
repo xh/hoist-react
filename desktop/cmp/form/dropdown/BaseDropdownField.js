@@ -31,8 +31,8 @@ export class BaseDropdownField extends HoistField {
         commitOnChange: false
     };
 
-    // Internal collection of available options, normalized to {label, value} form.
-    @observable internalOptions;
+    // blueprint-ready collection of available options, normalized to {label, value} form.
+    @observable.ref internalOptions = [];
 
     //---------------------------------------------------------------------------
     // Handling of null values.  Blueprint doesn't allow null for the value of a
@@ -50,9 +50,10 @@ export class BaseDropdownField extends HoistField {
     //-----------------------------------------------------------
     // Common handling of options, rendering of selected option
     //-----------------------------------------------------------
+    @action
     normalizeOptions(options) {
         options = withDefault(options, []);
-        return options.map(o => {
+        this.internalOptions = options.map(o => {
             const ret = isObject(o) ?
                 {label: o.label, value: o.value} :
                 {label: o != null ? o.toString() : '-null-', value: o};
@@ -60,11 +61,6 @@ export class BaseDropdownField extends HoistField {
             ret.value = this.toInternal(ret.value);
             return ret;
         });
-    }
-
-    @action
-    setInternalOptions(options) {
-        this.internalOptions = options;
     }
 
     getOptionRenderer() {

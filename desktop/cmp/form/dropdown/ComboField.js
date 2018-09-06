@@ -39,13 +39,9 @@ export class ComboField extends BaseComboField {
 
     constructor(props) {
         super(props);
-        this.setInternalOptions(this.normalizeOptions(props.options));
+        this.addAutorun(() => this.normalizeOptions(this.props.options));
     }
-
-    componentDidMount() {
-        this.addAutorun(() => this.setInternalOptions(this.normalizeOptions(this.props.options)));
-    }
-
+    
     render() {
         const {style, width, disabled} = this.props,
             {renderValue, internalOptions} = this;
