@@ -150,7 +150,7 @@ export class Column {
 
         if (this.tooltip) {
             ret.tooltip = isFunction(this.tooltip) ?
-                ({value}, valueFormatted, data) => this.tooltip(value, data, {colId: this.colId}) :
+                ({value, data}) => this.tooltip(value, data, {colId: this.colId}) :
                 ({value}) => value;
         }
 
