@@ -52,7 +52,7 @@ export class Column {
      *      column chooser. Appears when the column is selected within the chooser UI.
      * @param {boolean} [c.excludeFromChooser] - true to hide the column from the column chooser
      *      completely. Useful for hiding structural columns the user is not expected to adjust.
-     * @param {boolean} [c.hideable] - false to show column in columns chooser but always locked
+     * @param {boolean} [c.hideable] - false to show column in column chooser but always locked
      *      in displayed collection of columns.
      * @param {string} [c.exportName] - display name to use as a header within a file export.
      *      Defaults to headerName.
