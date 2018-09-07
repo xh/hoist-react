@@ -5,8 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {isNil, uniqBy} from 'lodash';
 import {XH} from '@xh/hoist/core';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {warnIf} from '@xh/hoist/utils/js';
 import {observable, action} from '@xh/hoist/mobx';
 import {findIndex, clone} from 'lodash';
 
@@ -24,7 +26,6 @@ export class LocalStore extends BaseStore {
     @observable.ref _all = new RecordSet([]);
     @observable.ref _filtered = this._all;
 
-    _rawRecords = [];
     _loadModel = new PendingTaskModel();
     _filter = null;
 
@@ -48,8 +49,7 @@ export class LocalStore extends BaseStore {
      */
     @action
     loadData(rawRecords) {
-        this._rawRecords = clone(rawRecords);
-        this._all = new RecordSet(this.createRecords(this._rawRecords));
+        this._all = new RecordSet(this.createRecords(rawRecords));
         this.rebuildFiltered();
     }
 
@@ -103,12 +103,15 @@ export class LocalStore extends BaseStore {
     //------------------------
     // Private Implementation
     //------------------------
-    createRecords(rawData, parent = null, idGenerator = {id: 0}) {
+    createRecords(rawData, parent = null) {
         return rawData.map(raw => {
             if (this.processRawData) this.processRawData(raw);
-            if (!('id' in raw)) raw.id = idGenerator.id++;
+
+            // All records must have a unique, non-null ID - install a generated one if required.
+            if (isNil(rec.id)) rec.id = XH.genId();
+
             const rec = new Record({raw, parent, fields: this.fields});
-            rec.children = raw.children ? this.createRecords(raw.children, rec, idGenerator) : [];
+            rec.children = raw.children ? this.createRecords(raw.children, rec) : [];
             return rec;
         });
     }

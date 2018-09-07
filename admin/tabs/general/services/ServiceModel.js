@@ -56,6 +56,6 @@ export class ServiceModel {
     }
 
     destroy() {
-        XH.destroy(this.gridModel);
+        XH.safeDestroy(this.gridModel);
     }
 }

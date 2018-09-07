@@ -11,7 +11,6 @@ import {defaultMethods, chainMethods, markClass} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 
 import {ReactiveSupport} from './mixins/ReactiveSupport';
-import {elemFactory} from './elem';
 
 /**
  * Core decorator for Components in Hoist.
@@ -99,11 +98,4 @@ export function HoistComponent(C) {
     C = observer(C);
     
     return C;
-}
-
-/**
- * Create an elementFactory for a HoistComponent.
- */
-export function hoistComponentFactory(C) {
-    return elemFactory(HoistComponent(C));
 }
