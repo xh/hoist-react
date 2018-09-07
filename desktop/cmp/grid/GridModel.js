@@ -45,6 +45,8 @@ export class GridModel {
     store = null;
     /** @member {StoreSelectionModel} */
     selModel = null;
+    /** @member {boolean} */
+    treeMode = false;
     /** @member {GridStateModel} */
     stateModel = null;
     /** @member {ColChooserModel} */
@@ -55,6 +57,7 @@ export class GridModel {
     enableExport = false;
     /** @member {string} */
     exportFilename = 'export';
+
 
     //------------------------
     // Observable API
@@ -91,6 +94,7 @@ export class GridModel {
      * @param {Object} c - GridModel configuration.
      * @param {BaseStore} c.store - store containing the data for the grid.
      * @param {(Column[]|Object[])} c.columns - Columns, or configs to create them.
+     * @param {(boolean)} [c.treeMode] - true if grid is a tree grid (default false).
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
      * @param {(Object|string)} [c.stateModel] - config or string `gridId` for a GridStateModel.
@@ -111,6 +115,7 @@ export class GridModel {
     constructor({
         store,
         columns,
+        treeMode = false,
         selModel = 'single',
         stateModel = null,
         emptyText = null,
@@ -123,6 +128,7 @@ export class GridModel {
         contextMenuFn = () => this.defaultContextMenu()
     }) {
         this.store = store;
+        this.treeMode = treeMode;
         this.emptyText = emptyText;
         this.enableExport = enableExport;
         this.exportFilename = exportFilename;

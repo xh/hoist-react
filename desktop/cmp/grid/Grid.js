@@ -105,7 +105,7 @@ export class Grid extends Component {
     createDefaultAgOptions() {
         const {model, props} = this;
 
-        return {
+        let ret = {
             toolPanelSuppressSideButtons: true,
             enableSorting: true,
             enableColResize: true,
@@ -138,12 +138,20 @@ export class Grid extends Component {
             onGridSizeChanged: this.onGridSizeChanged,
             onDragStopped: this.onDragStopped,
 
-            // Grouping/Tree Related.
-            groupDefaultExpanded: -1,
-            //groupUseEntireRow: true,
-            treeData: true,
-            getDataPath: this.getDataPath
+            groupDefaultExpanded: 1,
+            groupUseEntireRow: true,
         };
+
+        if (model.treeMode) {
+            ret = {
+                ...ret,
+                groupDefaultExpanded: 0,
+                groupSuppressAutoColumn: true,
+                treeData: true,
+                getDataPath: this.getDataPath
+            };
+        }
+        return ret;
     }
 
     //------------------------
@@ -157,7 +165,6 @@ export class Grid extends Component {
                 c.children = this.getColumnDefsFromChildren(c.children);
                 return c;
             }
-
             return c.getAgSpec();
         });
 

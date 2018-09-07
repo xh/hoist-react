@@ -71,7 +71,7 @@ export class Record {
      */
     applyFilter(filter) {
         const {children} = this;
-
+        
         // apply to any children;
         let passingChildren =[];
         if (children) {

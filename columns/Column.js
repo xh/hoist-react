@@ -26,6 +26,8 @@ export class Column {
      * @param {string} [c.colId] - unique identifier for the Column within its grid.
      *      Defaults to field name - one of these two properties must be specified.
      * @param {string} [c.headerName] - display text for grid header.
+     * @param {boolean} [c.isTreeColumn] - true if this column should show the tree affordances for a
+     *      Tree Grid. See GridModel.treeMode.
      * @param {boolean} [c.hide] - true to suppress default display of the column.
      * @param {string} [c.align] - horizontal alignment of cell contents.
      * @param {number} [c.width] - default width in pixels.
@@ -70,6 +72,7 @@ export class Column {
     constructor({
         field,
         colId,
+        isTreeColumn,
         headerName,
         hide,
         align,
@@ -99,6 +102,7 @@ export class Column {
         this.headerName = withDefault(headerName, startCase(this.colId));
         this.hide = withDefaultFalse(hide);
         this.align = align;
+        this.isTreeColumn = withDefaultFalse(isTreeColumn);
 
         warnIf(
             flex && width,
@@ -120,7 +124,7 @@ export class Column {
         this.chooserName = chooserName || this.headerName || this.colId;
         this.chooserGroup = chooserGroup;
         this.chooserDescription = chooserDescription;
-        this.excludeFromChooser = withDefaultFalse(excludeFromChooser, false);
+        this.excludeFromChooser = withDefault(excludeFromChooser, this.isTreeColumn);
 
         this.exportName = exportName || this.headerName || this.colId;
         this.exportValue = exportValue;
@@ -145,8 +149,19 @@ export class Column {
             maxWidth: this.maxWidth,
             suppressResize: !this.resizable,
             suppressMovable: !this.movable,
-            ...this.agOptions
         };
+
+        if (this.isTreeColumn) {
+            ret.showRowGroup = true;
+            ret.cellRenderer = 'agGroupCellRenderer';
+            ret.cellRendererParams = {
+                suppressCount: true,
+                suppressDoubleClickExpand: true,
+                padding: 10,
+                innerRenderer: (v) => v.data[this.field]
+            };
+        }
+
 
         if (this.tooltip) {
             ret.tooltip = isFunction(this.tooltip) ?

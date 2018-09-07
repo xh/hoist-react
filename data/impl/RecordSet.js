@@ -19,7 +19,7 @@ import {throwIf} from '@xh/hoist/utils/js/';
 export class RecordSet {
 
     roots;        // List of records at root, in order as presented to store
-    list;         // List of *all* records, in "infix" order
+    list;         // List of all records, in "infix" order
     map;          // map of all records, by id
 
     /**
@@ -39,13 +39,13 @@ export class RecordSet {
         );
     }
 
-    /** Number of records contained in this record set */
+    /** Number of records contained in this recordset */
     get count() {
         return this.list.length;
     }
 
     /**
-     * Return a filtered version of this RecordSet.
+     * Return a filtered version of this recordset.
      *
      * @param {function} filter. If null, this method will return
      *      the recordset itself.
