@@ -7,6 +7,7 @@
 
 import {XH} from '@xh/hoist/core';
 import {without, isEmpty, findIndex, clone} from 'lodash';
+import {throwIf} from '@xh/hoist/utils/js/';
 
 /**
  * Internal Recordset for Store.
@@ -31,6 +32,11 @@ export class RecordSet {
         const {list, map} = this.gatherAllRecords(rootRecords);
         this.list = list;
         this.map = map;
+
+        throwIf(
+            list.length > map.length,
+            'Store records cannot contain non-unique IDs.'
+        );
     }
 
     /** Number of records contained in this record set */

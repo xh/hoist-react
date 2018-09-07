@@ -108,7 +108,7 @@ export class LocalStore extends BaseStore {
             if (this.processRawData) this.processRawData(raw);
 
             // All records must have a unique, non-null ID - install a generated one if required.
-            if (isNil(rec.id)) rec.id = XH.genId();
+            if (isNil(raw.id)) raw.id = XH.genId();
 
             const rec = new Record({raw, parent, fields: this.fields});
             rec.children = raw.children ? this.createRecords(raw.children, rec) : [];
