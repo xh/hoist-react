@@ -45,5 +45,13 @@ export class SwitchField extends HoistField {
         this.noteValueChange(e.target.checked);
     }
 
+    onBlur = () => {
+        this.noteBlurred();
+    }
+
+    onFocus = () => {
+        this.noteFocused();
+    }
+
 }
 export const switchField = elemFactory(SwitchField);

@@ -68,5 +68,14 @@ export class ComboField extends BaseComboField {
             disabled
         });
     }
+
+    onBlur = () => {
+        this.noteBlurred();
+    }
+
+    onFocus = () => {
+        this.noteFocused();
+    }
+
 }
 export const comboField = elemFactory(ComboField);

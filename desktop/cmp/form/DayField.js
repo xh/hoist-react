@@ -116,5 +116,14 @@ export class DayField extends HoistField {
     onPopoverWillClose = (ev) => {
         this.doCommit();
     }
+
+    onBlur = () => {
+        this.noteBlurred();
+    }
+
+    onFocus = () => {
+        this.noteFocused();
+    }
+
 }
 export const dayField = elemFactory(DayField);

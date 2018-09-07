@@ -55,7 +55,7 @@ export class TextField extends HoistField {
             onChange: this.onChange,
             onKeyPress: this.onKeyPress,
             onBlur: this.onBlur,
-            onFocus: this.onTextFieldFocus,
+            onFocus: this.onFocus,
             style: {...style, width},
             spellCheck: !!spellCheck,
             ...this.getDelegateProps()
@@ -73,11 +73,16 @@ export class TextField extends HoistField {
         if (this.props.onKeyPress) this.props.onKeyPress(ev);
     }
 
-    onTextFieldFocus = (ev) => {
-        if (this.props.selectOnFocus === true) {
+    onFocus = (ev) => {
+        if (this.props.selectOnFocus) {
             ev.target.select();
         }
-        this.onFocus();
+        this.noteFocused();
     }
+
+    onBlur = () => {
+        this.noteBlurred();
+    }
+
 }
 export const textField = elemFactory(TextField);

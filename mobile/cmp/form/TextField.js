@@ -58,7 +58,14 @@ export class TextField extends HoistField {
     onChange = (ev) => {
         this.noteValueChange(ev.target.value);
     }
+    
+    onBlur = () => {
+        this.noteBlurred();
+    }
 
+    onFocus = () => {
+        this.noteFocused();
+    }
 }
 
 export const textField = elemFactory(TextField);

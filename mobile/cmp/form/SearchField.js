@@ -57,6 +57,14 @@ export class SearchField extends HoistField {
         this.noteValueChange(ev.target.value);
     }
 
+
+    onBlur = () => {
+        this.noteBlurred();
+    }
+
+    onFocus = () => {
+        this.noteFocused();
+    }
 }
 
 export const searchField = elemFactory(SearchField);
