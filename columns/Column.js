@@ -123,7 +123,7 @@ export class Column {
         this.chooserName = chooserName || this.headerName || this.colId;
         this.chooserGroup = chooserGroup;
         this.chooserDescription = chooserDescription;
-        this.excludeFromChooser = withDefaultFalse(excludeFromChooser, false);
+        this.excludeFromChooser = withDefaultFalse(excludeFromChooser);
         this.hideable = withDefaultTrue(hideable);
 
         this.exportName = exportName || this.headerName || this.colId;
@@ -144,7 +144,7 @@ export class Column {
             field: this.field,
             colId: this.colId,
             headerName: this.headerName,
-            hide: this.hide && this.hideable,
+            hide: this.hide,
             minWidth: this.minWidth,
             maxWidth: this.maxWidth,
             suppressResize: !this.resizable,
