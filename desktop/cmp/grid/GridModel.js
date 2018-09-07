@@ -331,6 +331,10 @@ export class GridModel {
         this.columns = newCols;
     }
 
+    getLeafColumns() {
+        return this.gatherLeaves(this.columns);
+    }
+
     //-----------------------
     // Implementation
     //-----------------------
@@ -358,6 +362,15 @@ export class GridModel {
             }
         }
         return null;
+    }
+
+    gatherLeaves(columns, leaves = []) {
+        columns.forEach(col => {
+            if (col.groupId) this.gatherLeaves(col.children, leaves);
+            if (col.colId) leaves.push(col);
+        });
+
+        return leaves;
     }
 
     markGroupSortOrder(col) {
