@@ -65,7 +65,7 @@ export class TextAreaField extends HoistField {
     }
 
     onFocus = (ev) => {
-        if (this.props.selectOnFocus === true) {
+        if (this.props.selectOnFocus) {
             ev.target.select();
         }
         this.noteFocused();
