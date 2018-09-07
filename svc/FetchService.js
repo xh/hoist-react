@@ -123,6 +123,18 @@ export class FetchService {
     }
 
     /**
+     * Send a GET HTTP request to a URL, and decode the response as JSON.
+     *
+     * This method delegates to @see {fetch} and accepts the same options.
+     *
+     * @returns {Promise} the decoded JSON object, or null if the response had no content.
+     */
+    async getJson(opts) {
+        opts.method = 'GET';
+        return this.fetchJson(opts);
+    }
+
+    /**
      * Send a POST HTTP request to a URL with a JSON body, and decode the response as JSON.
      *
      * This method delegates to @see {fetch} and accepts the same options.
