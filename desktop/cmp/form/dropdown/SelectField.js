@@ -61,5 +61,14 @@ export class SelectField extends BaseDropdownField {
             disabled
         });
     }
+
+    onBlur = () => {
+        this.noteBlurred();
+    }
+
+    onFocus = () => {
+        this.noteFocused();
+    }
+
 }
 export const selectField = elemFactory(SelectField);

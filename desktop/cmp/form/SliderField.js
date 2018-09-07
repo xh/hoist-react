@@ -88,5 +88,13 @@ export class SliderField extends HoistField {
         this.noteValueChange(val);
     }
 
+    onBlur = () => {
+        this.noteBlurred();
+    }
+
+    onFocus = () => {
+        this.noteFocused();
+    }
+
 }
 export const sliderField = elemFactory(SliderField);

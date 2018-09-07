@@ -64,7 +64,7 @@ export class NumberField extends HoistField {
             onValueChange: this.onValueChange,
             onKeyPress: this.onKeyPress,
             onBlur: this.onBlur,
-            onFocus: this.onNumberFieldFocus,
+            onFocus: this.onFocus,
             style: {textAlign, width, ...style},
             buttonPosition: 'none',
             allowNumericCharactersOnly: !enableShorthandUnits,
@@ -119,11 +119,16 @@ export class NumberField extends HoistField {
         return parseFloat(value);
     }
 
-    onNumberFieldFocus = (ev) => {
+    onFocus = (ev) => {
         if (this.props.selectOnFocus === true) {
             ev.target.select();
         }
-        this.onFocus();
+        this.noteFocused();
     }
+
+    onBlur = () => {
+        this.noteBlurred();
+    }
+
 }
 export const numberField = elemFactory(NumberField);

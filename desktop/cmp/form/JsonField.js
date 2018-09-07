@@ -136,6 +136,13 @@ export class JsonField extends HoistField {
         };
     }
 
+    onBlur = () => {
+        this.noteBlurred();
+    }
+
+    onFocus = () => {
+        this.noteFocused();
+    }
 
     onKeyUp = (instance, ev) => {
         if (ev.key === 'Enter' && !ev.shiftKey) this.doCommit();

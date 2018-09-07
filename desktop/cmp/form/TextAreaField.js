@@ -49,7 +49,7 @@ export class TextAreaField extends HoistField {
             onChange: this.onChange,
             onKeyPress: this.onKeyPress,
             onBlur: this.onBlur,
-            onFocus: this.onTextAreaFieldFocus,
+            onFocus: this.onFocus,
             style: {...style, width},
             spellCheck: spellCheck !== false,
             ...this.getDelegateProps()
@@ -64,11 +64,16 @@ export class TextAreaField extends HoistField {
         if (ev.key === 'Enter' && !ev.shiftKey) this.doCommit();
     }
 
-    onTextAreaFieldFocus = (ev) => {
+    onFocus = (ev) => {
         if (this.props.selectOnFocus === true) {
             ev.target.select();
         }
-        this.onFocus();
+        this.noteFocused();
     }
+
+    onBlur = () => {
+        this.noteBlurred();
+    }
+
 }
 export const textAreaField = elemFactory(TextAreaField);
