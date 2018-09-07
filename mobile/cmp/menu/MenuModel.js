@@ -10,7 +10,7 @@ import {isPlainObject} from 'lodash';
 
 import {MenuItemModel} from './MenuItemModel';
 
-@HoistModel()
+@HoistModel
 /** Model for a floating drop down, managing its open/close state and items. */
 export class MenuModel {
 

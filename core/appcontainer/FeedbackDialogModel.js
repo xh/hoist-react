@@ -12,7 +12,7 @@ import {observable, action} from '@xh/hoist/mobx';
  * Manages built-in collection of user feedback.
  *  @private
  */
-@HoistModel()
+@HoistModel
 export class FeedbackDialogModel {
 
     @observable isOpen = false;

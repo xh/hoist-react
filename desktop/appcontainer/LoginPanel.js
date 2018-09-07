@@ -23,7 +23,7 @@ import './LoginPanel.scss';
  *
  * @private
  */
-@HoistComponent()
+@HoistComponent
 export class LoginPanel extends Component {
 
     render() {

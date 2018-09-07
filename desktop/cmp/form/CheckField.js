@@ -9,13 +9,13 @@ import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {checkbox} from '@xh/hoist/kit/blueprint';
 
-import {HoistField} from './HoistField';
+import {HoistField} from '@xh/hoist/cmp/form';
 
 /**
  * CheckBox Field.
  * Note that this field does not handle null values. For nullable fields, use a SelectField.
  */
-@HoistComponent()
+@HoistComponent
 export class CheckField extends HoistField {
 
     static propTypes = {
@@ -28,8 +28,11 @@ export class CheckField extends HoistField {
         inline: true
     }
 
+    baseClassName = 'xh-check-field';
+
     render() {
         return checkbox({
+            className: this.getClassName(),
             checked: !!this.renderValue,
             onChange: this.onChange,
             onBlur: this.onBlur,

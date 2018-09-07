@@ -12,7 +12,7 @@ import {tile} from './Tile';
 /**
  * @private
  */
-@HoistComponent()
+@HoistComponent
 export class MonitorResultsDisplay extends Component {
     render() {
         const {results} = this.model;

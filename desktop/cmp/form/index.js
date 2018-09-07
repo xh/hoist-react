@@ -17,3 +17,4 @@ export * from './TextField';
 export * from './dropdown/ComboField';
 export * from './dropdown/QueryComboField';
 export * from './dropdown/SelectField';
+export * from './dropdown/MultiSelectField';

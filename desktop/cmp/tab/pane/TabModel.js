@@ -15,7 +15,7 @@ import {startCase} from 'lodash';
  * This model is not typically created directly within applications. Instead, specify a
  * configuration for it via the `TabContainerModel.tabs` constructor config.
  */
-@HoistModel()
+@HoistModel
 export class TabModel {
     id;
     title;

@@ -9,14 +9,14 @@ import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {fmtNumber} from '@xh/hoist/format';
-import {HoistField} from './HoistField';
+import {HoistField} from '@xh/hoist/cmp/form';
 
 /**
  * A Number Input Field
  *
  * @see HoistField for properties additional to those documented below.
  */
-@HoistComponent()
+@HoistComponent
 export class NumberField extends HoistField {
 
     static propTypes = {
@@ -52,11 +52,14 @@ export class NumberField extends HoistField {
 
     delegateProps = ['className', 'disabled', 'min', 'max', 'placeholder', 'leftIcon'];
 
+    baseClassName = 'xh-number-field';
+
     render() {
         const {width, style, enableShorthandUnits} = this.props,
             textAlign = this.props.textAlign || 'right';
 
         return numericInput({
+            className: this.getClassName(),
             value: this.renderValue,
             onValueChange: this.onValueChange,
             onKeyPress: this.onKeyPress,

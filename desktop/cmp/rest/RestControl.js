@@ -12,7 +12,7 @@ import {fmtDateTime} from '@xh/hoist/format';
 import {hbox} from '@xh/hoist/cmp/layout';
 import {label, checkField, comboField, jsonField, numberField, selectField, textAreaField, textField}  from '@xh/hoist/desktop/cmp/form';
 
-@HoistComponent()
+@HoistComponent
 export class RestControl extends Component {
 
     render() {

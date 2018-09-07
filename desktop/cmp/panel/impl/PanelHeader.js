@@ -14,7 +14,7 @@ import './PanelHeader.scss';
  * A standardized header for a Panel component
  * @private
  */
-@HoistComponent()
+@HoistComponent
 export class PanelHeader extends Component {
     render() {
         let {title, icon, headerItems = [], sizingModel} = this.props,

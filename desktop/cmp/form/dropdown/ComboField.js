@@ -15,7 +15,7 @@ import {BaseComboField} from './BaseComboField';
 /**
  * ComboBox Field - A field with type ahead suggest and menu select
  */
-@HoistComponent()
+@HoistComponent
 export class ComboField extends BaseComboField {
 
     static propTypes = {
@@ -35,20 +35,19 @@ export class ComboField extends BaseComboField {
 
     delegateProps = ['className', 'disabled', 'placeholder', 'leftIcon', 'rightElement'];
 
+    baseClassName = 'xh-combo-field';
+
     constructor(props) {
         super(props);
-        this.internalOptions = this.normalizeOptions(props.options);
+        this.addAutorun(() => this.normalizeOptions(this.props.options));
     }
-
-    componentDidMount() {
-        this.addAutorun(() => this.internalOptions = this.normalizeOptions(this.props.options));
-    }
-
+    
     render() {
         const {style, width, disabled} = this.props,
             {renderValue, internalOptions} = this;
 
         return suggest({
+            className: this.getClassName(),
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: internalOptions,
             onItemSelect: this.onItemSelect,

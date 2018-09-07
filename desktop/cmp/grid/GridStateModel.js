@@ -18,7 +18,7 @@ import {start} from '@xh/hoist/promise';
  * It is not necessary to manually create instances of this class within an application.
  * @private
  */
-@HoistModel()
+@HoistModel
 export class GridStateModel {
 
     /**

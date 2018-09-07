@@ -17,7 +17,7 @@ import {textField} from '@xh/hoist/desktop/cmp/form';
  * A Component that can bind to a LeftRightChooser and filter both lists
  * based on simple text matching in selected fields.
  */
-@HoistComponent()
+@HoistComponent
 export class LeftRightChooserFilter extends Component {
 
     static propTypes = {

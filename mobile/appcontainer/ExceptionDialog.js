@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {XH, HoistComponent, elemFactory, hoistComponentFactory} from '@xh/hoist/core';
+import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
 import {fragment} from '@xh/hoist/cmp/layout';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {button} from '@xh/hoist/mobile/cmp/button';
@@ -21,7 +21,7 @@ import {exceptionDialogDetails} from './ExceptionDialogDetails';
  *
  * @private
  */
-@HoistComponent()
+@HoistComponent
 export class ExceptionDialog extends Component {
 
     render() {
@@ -65,34 +65,36 @@ export const exceptionDialog = elemFactory(ExceptionDialog);
 
 /**
  * A Dismiss button that either forces reload, or allows close.
+ * @private
  */
-export const dismissButton = hoistComponentFactory(
-    class extends Component {
-        render() {
-            return this.model.options.requireReload ?
-                button({
-                    icon: Icon.refresh(),
-                    text: this.sessionExpired() ? 'Login' : 'Reload App',
-                    onClick: this.onReloadClick
-                }) :
-                button({
-                    text: 'Close',
-                    modifier: 'outline',
-                    onClick: this.onCloseClick
-                });
-        }
-
-        onCloseClick = () => {
-            this.model.close();
-        }
-
-        onReloadClick = () => {
-            XH.reloadApp();
-        }
-
-        sessionExpired() {
-            const e = this.model.exception;
-            return e && e.httpStatus === 401;
-        }
+@HoistComponent
+class DismissButton extends Component {
+    render() {
+        return this.model.options.requireReload ?
+            button({
+                icon: Icon.refresh(),
+                text: this.sessionExpired() ? 'Login' : 'Reload App',
+                onClick: this.onReloadClick
+            }) :
+            button({
+                text: 'Close',
+                modifier: 'outline',
+                onClick: this.onCloseClick
+            });
     }
-);
+
+    onCloseClick = () => {
+        this.model.close();
+    }
+
+    onReloadClick = () => {
+        XH.reloadApp();
+    }
+
+    sessionExpired() {
+        const e = this.model.exception;
+        return e && e.httpStatus === 401;
+    }
+}
+export const dismissButton = elemFactory(DismissButton);
+

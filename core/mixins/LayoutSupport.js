@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {provideMethods} from '@xh/hoist/utils/js';
+import {provideMethods, markClass} from '@xh/hoist/utils/js';
 import {pick, isNumber, forOwn, omit} from 'lodash';
 
 /**
@@ -28,7 +28,7 @@ import {pick, isNumber, forOwn, omit} from 'lodash';
  */
 export function LayoutSupport(C) {
 
-    C.hasLayoutSupport = true;
+    markClass(C, 'hasLayoutSupport');
 
     // Instance methods
     provideMethods(C, {

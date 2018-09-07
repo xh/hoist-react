@@ -9,7 +9,7 @@ import {HoistModel} from '@xh/hoist/core';
 import {computed} from '@xh/hoist/mobx';
 import {isJSON} from '@xh/hoist/utils/js';
 
-@HoistModel()
+@HoistModel
 export class RestControlModel  {
 
     field;

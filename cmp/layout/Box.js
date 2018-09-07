@@ -17,7 +17,7 @@ import {div} from './Tags';
  *
  * VBox and HBox variants support internal vertical (column) and horizontal (row) flex layouts.
  */
-@HoistComponent()
+@HoistComponent
 @LayoutSupport
 export class Box extends Component {
     render() {
@@ -35,7 +35,7 @@ export class Box extends Component {
     }
 }
 
-@HoistComponent()
+@HoistComponent
 @LayoutSupport
 export class VBox extends Component {
     baseClassName = 'xh-vbox';
@@ -48,7 +48,7 @@ export class VBox extends Component {
     }
 }
 
-@HoistComponent()
+@HoistComponent
 @LayoutSupport
 export class HBox extends Component {
     baseClassName = 'xh-hbox';

@@ -22,7 +22,7 @@ import {debounce} from 'lodash';
  *
  * Not currently supported / enabled for mobile clients.
  */
-@HoistService()
+@HoistService
 export class IdleService {
 
     ACTIVITY_EVENTS = ['keydown', 'mousemove', 'mousedown', 'scroll'];

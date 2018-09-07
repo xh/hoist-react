@@ -15,7 +15,7 @@ import {isNil} from 'lodash';
 /**
  * This class provides the underlying state for the resizing/collapse state of a Panel.
  */
-@HoistModel()
+@HoistModel
 export class PanelSizingModel {
 
     //-----------------------

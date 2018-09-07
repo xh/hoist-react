@@ -18,7 +18,7 @@ import {BaseStore} from '@xh/hoist/data';
  * A component to display the number of records in a given store.
  * Will auto-update with changes to the count, including store filtering.
  */
-@HoistComponent()
+@HoistComponent
 @LayoutSupport
 export class StoreCountLabel extends Component {
 

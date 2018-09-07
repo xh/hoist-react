@@ -29,7 +29,7 @@ import '../Tabs.scss';
  *
  * @see TabContainerModel
  */
-@HoistComponent()
+@HoistComponent
 @LayoutSupport
 export class TabContainer extends Component {
 

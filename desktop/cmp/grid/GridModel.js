@@ -35,7 +35,7 @@ import {ExportManager} from './ExportManager';
  *
  * This is the primary application entry-point for specifying Grid component options and behavior.
  */
-@HoistModel()
+@HoistModel
 export class GridModel {
 
     //------------------------

@@ -16,7 +16,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
  *
  * @private
  */
-@HoistComponent()
+@HoistComponent
 export class Message extends Component {
 
     render() {

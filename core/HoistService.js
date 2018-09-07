@@ -6,7 +6,7 @@
  */
 import {XH} from '@xh/hoist/core';
 import {allSettled} from '@xh/hoist/promise';
-import {defaultMethods} from '@xh/hoist/utils/js';
+import {defaultMethods, markClass} from '@xh/hoist/utils/js';
 
 import {EventSupport} from './mixins/EventSupport';
 import {ReactiveSupport} from './mixins/ReactiveSupport';
@@ -18,25 +18,23 @@ import {ReactiveSupport} from './mixins/ReactiveSupport';
  * All services Hoist applications should typically be decorated with this function.
  * Adds support for managed events, mobx reactivity, and lifecycle initialization.
  */
-export function HoistService() {
+export function HoistService(C) {
 
-    return (C) => {
-        C.isHoistService = true;
+    markClass(C, 'isHoistService');
 
-        C = EventSupport(C);
-        C = ReactiveSupport(C);
+    C = EventSupport(C);
+    C = ReactiveSupport(C);
 
-        defaultMethods(C, {
-            /**
-             * Called by framework or application to initialize before application startup.
-             * Throwing an exception from this method will typically block startup.
-             * Service writers should take care to stifle and manage all non-fatal exceptions.
-             */
-            async initAsync() {}
-        });
+    defaultMethods(C, {
+        /**
+         * Called by framework or application to initialize before application startup.
+         * Throwing an exception from this method will typically block startup.
+         * Service writers should take care to stifle and manage all non-fatal exceptions.
+         */
+        async initAsync() {}
+    });
 
-        return C;
-    };
+    return C;
 }
 
 

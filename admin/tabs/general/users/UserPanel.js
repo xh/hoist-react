@@ -15,7 +15,7 @@ import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
 
 import {UserModel} from './UserModel';
 
-@HoistComponent()
+@HoistComponent
 export class UserPanel extends Component {
 
     localModel = new UserModel();

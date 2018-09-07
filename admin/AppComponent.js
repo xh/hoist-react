@@ -16,7 +16,7 @@ import {ContextMenuItem, ContextMenuSupport} from '@xh/hoist/desktop/cmp/context
 
 import './App.scss';
 
-@HoistComponent()
+@HoistComponent
 @ContextMenuSupport
 export class AppComponent extends Component {
     render() {

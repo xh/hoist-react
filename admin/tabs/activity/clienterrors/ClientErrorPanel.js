@@ -18,7 +18,7 @@ import {Icon} from '@xh/hoist/icon';
 import {ClientErrorModel} from './ClientErrorModel';
 import {clientErrorDetail} from './ClientErrorDetail';
 
-@HoistComponent()
+@HoistComponent
 export class ClientErrorPanel extends Component {
 
     localModel = new ClientErrorModel();

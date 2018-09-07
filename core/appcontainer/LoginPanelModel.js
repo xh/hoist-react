@@ -12,7 +12,7 @@ import {observable, computed, action} from '@xh/hoist/mobx';
  *
  *  @private
  */
-@HoistModel()
+@HoistModel
 export class LoginPanelModel {
 
     @observable username = '';

@@ -19,7 +19,7 @@ import {BaseStore} from '@xh/hoist/data';
  * A Component that can bind to any store and filter it
  * based on simple text matching in specified fields.
  */
-@HoistComponent()
+@HoistComponent
 export class StoreFilterField extends Component {
 
     static propTypes = {

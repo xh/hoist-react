@@ -13,7 +13,7 @@ import {fmtDate, numberRenderer} from '@xh/hoist/format';
 import {dateTimeCol} from '@xh/hoist/columns';
 import {usernameCol} from '@xh/hoist/admin/columns';
 
-@HoistModel()
+@HoistModel
 export class ActivityGridModel {
 
     @observable startDate = moment().toDate();

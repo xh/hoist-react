@@ -15,7 +15,7 @@ import {PanelSizingModel} from '@xh/hoist/desktop/cmp/panel';
 /**
  * @private
  */
-@HoistModel()
+@HoistModel
 export class LogViewerModel {
 
     // Form State/Display options
