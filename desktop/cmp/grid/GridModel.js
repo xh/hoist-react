@@ -331,13 +331,8 @@ export class GridModel {
         this.columns = newCols;
     }
 
-    /**
-     * Grouped columns are a tree structure, this method returns a flat array representing the leaves
-     */
-
     getLeafColumns() {
-        const columns = this.cloneColumns();
-        return this.gatherLeaves(columns);
+        return this.gatherLeaves(this.columns);
     }
 
     //-----------------------
