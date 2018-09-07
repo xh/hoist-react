@@ -5,8 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {isNil, uniqBy} from 'lodash';
 import {XH} from '@xh/hoist/core';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {warnIf} from '@xh/hoist/utils/js';
 import {observable, action} from '@xh/hoist/mobx';
 import {BaseStore} from './BaseStore';
 
@@ -112,14 +114,23 @@ export class LocalStore extends BaseStore {
         if (processRawData) {
             rawData = processRawData(rawData);
         }
-        rawData.forEach((rec, id) => {
-            if (!('id' in rec)) rec.id = id;
+
+        // All records must have a unique, non-null ID - install a generated one if required.
+        rawData.forEach(rec => {
+            if (isNil(rec.id)) rec.id = XH.genId();
         });
+
+        warnIf(
+            uniqBy(rawData, 'id').length != rawData.length,
+            'Store records contain non-unique IDs - dupes are dropped from grids, generally problematic.'
+        );
+
         const ret = new Map();
         rawData.forEach(it => {
             const rec = this.createRecord(it);
             ret.set(rec.id, rec);
         });
+
         return ret;
     }
 

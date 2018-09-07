@@ -71,7 +71,7 @@ class XHClass {
     isDevelopmentMode = xhIsDevelopmentMode;
 
     //---------------------------
-    // Services
+    // Services + aliased methods
     //---------------------------
     configService = new ConfigService();
     environmentService = new EnvironmentService();
@@ -81,6 +81,16 @@ class XHClass {
     localStorageService = new LocalStorageService();
     prefService = new PrefService();
     trackService = new TrackService();
+
+    track(opts)                 {return this.trackService.track(opts)}
+    fetch(opts)                 {return this.fetchService.fetch(opts)}
+    fetchJson(opts)             {return this.fetchService.fetchJson(opts)}
+    getUser()                   {return this.identityService.getUser()}
+    getUsername()               {return this.identityService.getUsername()}
+    getConf(key, defaultVal)    {return this.configService.get(key, defaultVal)}
+    getPref(key, defaultVal)    {return this.prefService.get(key, defaultVal)}
+    setPref(key, val)           {return this.prefService.set(key, val)}
+    getEnv(key)                 {return this.environmentService.get(key)}
 
     //-------------------------------
     // Models
@@ -127,10 +137,9 @@ class XHClass {
 
     /**
      * Transition the application state.
+     * Used by framework. Not intended for application use.
      *
      * @param {AppState} appState - state to transition to.
-     *
-     * Used by framework.  Not intended for application use.
      */
     @action
     setAppState(appState) {
@@ -187,11 +196,7 @@ class XHClass {
         return this.routerModel.currentState;
     }
 
-    /**
-     * Route the app.
-     *
-     * Shortcut to this.router.navigate.
-     */
+    /** Route the app - shortcut to this.router.navigate. */
     navigate(...args) {
         return this.router.navigate(...args);
     }
@@ -238,6 +243,20 @@ class XHClass {
         return this.acm.messageSourceModel.confirm(config);
     }
 
+    /**
+     * Show a non-modal "toast" notification that appears and then automatically dismisses.
+     *
+     * @param {Object} config - options for toast instance.
+     * @param {string} config.message - the message to show in the toast.
+     * @param {element} [config.icon] - icon to be displayed
+     * @param {number} [config.timeout] - time in milliseconds to display the toast.
+     * @param {string} [config.intent] - The Blueprint intent (desktop only)
+     * @param {Object} [config.position] - Position in viewport to display toast. See Blueprint Position enum (desktop only).
+     */
+    toast(config) {
+        return this.acm.toastSourceModel.show(config);
+    }
+
     //--------------------------
     // Exception Support
     //--------------------------
@@ -268,20 +287,6 @@ class XHClass {
     //---------------------------
     // Miscellaneous
     //---------------------------
-    /**
-     * Show a Toast.
-     *
-     * @param {Object} config - options for toast instance.
-     * @param {string} config.message - the message to show in the toast.
-     * @param {element} [config.icon] - icon to be displayed
-     * @param {number} [config.timeout] - time in milliseconds to display the toast.
-     * @param {string} [config.intent] - The Blueprint intent (desktop only)
-     * @param {Object} [config.position] - Position in viewport to display toast. See Blueprint Position enum (desktop only).
-     */
-    toast(config) {
-        return this.acm.toastSourceModel.show(config);
-    }
-
     /** Show a dialog to elicit feedback text from users. */
     showFeedbackDialog() {
         return this.acm.feedbackDialogModel.show();
@@ -303,20 +308,6 @@ class XHClass {
         });
     }
 
-    //----------------------------
-    // Service Aliases
-    //----------------------------
-    track(opts)                 {return this.trackService.track(opts)}
-    fetch(opts)                 {return this.fetchService.fetch(opts)}
-    fetchJson(opts)             {return this.fetchService.fetchJson(opts)}
-    getUser()                   {return this.identityService.getUser()}
-    getUsername()               {return this.identityService.getUsername()}
-    getConf(key, defaultVal)    {return this.configService.get(key, defaultVal)}
-    getPref(key, defaultVal)    {return this.prefService.get(key, defaultVal)}
-    setPref(key, val)           {return this.prefService.set(key, val)}
-    getEnv(key)                 {return this.environmentService.get(key)}
-
-
     /**
      * Helper method to destroy resources safely (e.g. child HoistModels). Will quietly skip args
      * that are null / undefined or that do not implement destroy().
@@ -332,14 +323,26 @@ class XHClass {
         }
     }
 
+    _idSeed = 1;
+
+    /**
+     * Generate an ID string, unique within this run of the client application and suitable
+     * for local-to-client uses such as auto-generated store record identifiers.
+     *
+     * Deliberately *not* intended to be globally unique, suitable for reuse, or to appear as such.
+     * @returns {string}
+     */
+    genId() {
+        return `xh-id-${this._idSeed++}`;
+    }
+
     //---------------------------------
     // Framework Methods
     //---------------------------------
     /**
      * Called when application mounted in order to trigger initial authentication and
      * initialization of framework and application.
-     *
-     * Not for application use.
+     * Used by framework. Not intended for application use.
      */
     async initAsync() {
         const S = AppState;
@@ -368,8 +371,7 @@ class XHClass {
 
     /**
      * Complete initialization. Called after user identity has been confirmed.
-     *
-     * Not for application use.
+     * Used by framework. Not intended for application use.
      */
     @action
     async completeInitAsync() {
