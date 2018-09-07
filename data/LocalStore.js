@@ -108,7 +108,7 @@ export class LocalStore extends BaseStore {
             if (this.processRawData) this.processRawData(raw);
             if (!('id' in raw)) raw.id = idGenerator.id++;
             const rec = new Record({raw, parent, fields: this.fields});
-            rec.children = raw.children ? this.createRecords(raw.children, parent.rec, idGenerator) : [];
+            rec.children = raw.children ? this.createRecords(raw.children, rec, idGenerator) : [];
             return rec;
         });
     }

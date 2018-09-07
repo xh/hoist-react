@@ -44,7 +44,6 @@ export class BaseStore {
     get filter() {}
     setFilter(filterFn) {}
 
-
     /** Get the count of all records loaded into the store. */
     get allCount() {}
 

@@ -113,8 +113,6 @@ export class Grid extends Component {
             getRowNodeId: (data) => data.id,
             allowContextMenuWithControlKey: true,
             defaultColDef: {suppressMenu: true},
-            groupDefaultExpanded: 1,
-            groupUseEntireRow: true,
             popupParent: document.querySelector('body'),
             navigateToNextCell: this.onNavigateToNextCell,
             defaultGroupSortComparator: this.sortByGroup,
@@ -139,6 +137,10 @@ export class Grid extends Component {
             onSortChanged: this.onSortChanged,
             onGridSizeChanged: this.onGridSizeChanged,
             onDragStopped: this.onDragStopped,
+
+            // Grouping/Tree Related.
+            groupDefaultExpanded: -1,
+            //groupUseEntireRow: true,
             treeData: true,
             getDataPath: this.getDataPath
         };

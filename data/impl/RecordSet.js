@@ -17,20 +17,25 @@ import {without, isEmpty, findIndex, clone} from 'lodash';
  */
 export class RecordSet {
 
-    map;   // Map of all records, by id
-    list;  // Ordered list of records at root
+    roots;        // List of records at root, in order as presented to store
+    list;         // List of *all* records, in "infix" order
+    map;          // map of all records, by id
 
     /**
-     * @param {Record[]} ordered list of records to be included.
+     * @param {Record[]} rootRecords -  ordered list of root records to be included.
      */
-    constructor(records) {
-        this.list = records;
-        this.map = this.mapRecords(records);
+    constructor(rootRecords) {
+        this.roots = rootRecords;
+
+        // TODO: Make list, map lazy and/or remove altogether.
+        const {list, map} = this.gatherAllRecords(rootRecords);
+        this.list = list;
+        this.map = map;
     }
 
     /** Number of records contained in this record set */
     get count() {
-        return this.map.size;
+        return this.list.length;
     }
 
     /**
@@ -43,8 +48,8 @@ export class RecordSet {
      */
     applyFilter(filter) {
         if (!filter) return this;
-        const newRecords = this.list.map(r => r.applyFilter(filter));
-        return new RecordSet(without(newRecords, null));
+        const newRoots = this.roots.map(r => r.applyFilter(filter));
+        return new RecordSet(without(newRoots, null));
     }
 
     /**
@@ -66,7 +71,7 @@ export class RecordSet {
      * @param {Record} record
      */
     addRecord(record) {
-        return new RecordSet([...this.list, record]);
+        return new RecordSet([...this.roots, record]);
     }
 
     /**
@@ -77,27 +82,28 @@ export class RecordSet {
      * @param {Record} record
      */
     updateRecord(oldRecord, newRecord) {
-        const newList = clone(this.list),
-            index = findIndex(newList, {id: oldRecord.id});
+        const newRoots = clone(this.roots),
+            index = findIndex(newRoots, {id: oldRecord.id});
 
         if (index < 0) throw XH.exception(`Cannot find Record to update: id = ${oldRecord.id}`);
 
         newRecord.children = oldRecord.children;
-        newList[index] = newRecord;
+        newRoots[index] = newRecord;
 
-        return new RecordSet(newList);
+        return new RecordSet(newRoots);
     }
 
     //------------------
     // Implementation
     // ------------------
-    mapRecords(records, map = new Map()) {
+    gatherAllRecords(records, list = [], map = new Map()) {
         records.forEach(r => {
+            list.push(r);
             map.set(r.id, r);
-            if (isEmpty(r.children)) {
-                this.mapRecords(r.children, map);
+            if (!isEmpty(r.children)) {
+                this.gatherAllRecords(r.children, list, map);
             }
         });
-        return map;
+        return {list, map};
     }
 }
