@@ -67,6 +67,6 @@ export class AppComponent extends Component {
     };
 
     onOpenAppClick = () => {
-        window.open('/app');
+        window.open('/');
     };
 }
