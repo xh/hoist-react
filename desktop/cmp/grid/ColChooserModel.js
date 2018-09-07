@@ -50,7 +50,7 @@ export class ColChooserModel {
         const {gridModel, lrModel} = this,
             {leftValues, rightValues} = lrModel;
 
-        const cols = gridModel.getColumnArray();
+        const cols = gridModel.getLeafColumns();
         cols.forEach(it => {
             if (leftValues.includes(it.field)) {
                 it.hide = true;
@@ -69,7 +69,7 @@ export class ColChooserModel {
     syncChooserData() {
         const {gridModel, lrModel} = this;
 
-        const data = gridModel.getColumnArray().map(it => {
+        const data = gridModel.getLeafColumns().map(it => {
             return {
                 value: it.field,
                 text: it.chooserName,

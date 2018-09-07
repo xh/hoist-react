@@ -37,7 +37,7 @@ export class ExportManager {
         if (isFunction(filename)) filename = filename(gridModel);
 
         const {store, sortBy} = gridModel,
-            columns = gridModel.getColumnArray(),
+            columns = gridModel.getLeafColumns(),
             sortColIds = sortBy.map(it => it.colId),
             sorts = sortBy.map(it => it.sort),
             records = orderBy(store.records, sortColIds, sorts),

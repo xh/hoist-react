@@ -123,9 +123,8 @@ export class GridStateModel {
     }
 
     getColumnState() {
-        const cols = this.gridModel.getColumnArray();
+        const cols = this.gridModel.getLeafColumns();
 
-        // Grouped columns are a tree structure but we store their state as a flat array of configs representing the leaves
         return cols.map(col => {
             return {colId: col.colId, hide: col.hide, width: col.width};
         });
@@ -133,7 +132,7 @@ export class GridStateModel {
 
     updateGridColumns() {
         const {gridModel, state} = this,
-            cols = gridModel.getColumnArray(),
+            cols = gridModel.getLeafColumns(),
             foundColumns = [];
 
         if (!state.columns) return;
