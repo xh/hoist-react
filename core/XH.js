@@ -6,7 +6,7 @@
  */
 
 import ReactDOM from 'react-dom';
-import {flatten} from 'lodash';
+import {flatten, uniqueId} from 'lodash';
 
 import {elem, HoistModel, AppState} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
@@ -323,8 +323,6 @@ class XHClass {
         }
     }
 
-    _idSeed = 1;
-
     /**
      * Generate an ID string, unique within this run of the client application and suitable
      * for local-to-client uses such as auto-generated store record identifiers.
@@ -333,7 +331,7 @@ class XHClass {
      * @returns {string}
      */
     genId() {
-        return `xh-id-${this._idSeed++}`;
+        return uniqueId(`xh-id-`);
     }
 
     //---------------------------------
