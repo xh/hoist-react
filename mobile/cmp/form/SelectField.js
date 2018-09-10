@@ -43,6 +43,8 @@ export class SelectField extends HoistField {
             className: this.getClassName(),
             value: this.renderValue || '',
             onChange: this.onChange,
+            onBlur: this.onBlur,
+            onFocus: this.onFocus,
             style: {...style, width},
             items: options.map(it => this.renderOption(it)),
             ...this.getDelegateProps()
@@ -63,6 +65,15 @@ export class SelectField extends HoistField {
     onChange = (ev) => {
         this.noteValueChange(ev.target.value);
         this.doCommit();
+    }
+
+
+    onBlur = () => {
+        this.noteBlurred();
+    }
+
+    onFocus = () => {
+        this.noteFocused();
     }
 
 }

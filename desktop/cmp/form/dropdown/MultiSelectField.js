@@ -76,6 +76,14 @@ export class MultiSelectField extends BaseDropdownField {
         });
     }
 
+    onBlur = () => {
+        this.noteBlurred();
+    }
+
+    onFocus = () => {
+        this.noteFocused();
+    }
+
     onRemoveTag = (tag, idx) => {
         // the tag parameter is determined by the tagRenderer, so it may not match the value representation
         const value = this.externalValue[idx];

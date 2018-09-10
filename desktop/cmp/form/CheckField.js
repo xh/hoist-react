@@ -45,5 +45,13 @@ export class CheckField extends HoistField {
         this.noteValueChange(e.target.checked);
     }
 
+    onBlur = () => {
+        this.noteBlurred();
+    }
+
+    onFocus = () => {
+        this.noteFocused();
+    }
+
 }
 export const checkField = elemFactory(CheckField);

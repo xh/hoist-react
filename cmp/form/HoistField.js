@@ -157,7 +157,7 @@ export class HoistField extends Component {
         this.setInternalValue(this.toInternal(newValue));
     }
 
-    onBlur = () => {
+    noteBlurred() {
         this.doCommit();
 
         // Trigger validation.  Useful if user just visited field without making change.
@@ -167,7 +167,7 @@ export class HoistField extends Component {
         runInAction(() => this.hasFocus = false);
     }
 
-    onFocus = () => {
+    noteFocused() {
         this.setInternalValue(this.toInternal(this.externalValue));
         runInAction(() => this.hasFocus = true);
     }

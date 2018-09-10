@@ -76,6 +76,14 @@ export class QueryComboField extends BaseComboField {
         });
     }
 
+    onBlur = () => {
+        this.noteBlurred();
+    }
+
+    onFocus = () => {
+        this.noteFocused();
+    }
+
     syncOptions() {
         const value = this.internalValue,
             {queryFn} = this.props;
