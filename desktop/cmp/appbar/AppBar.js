@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
 import {navbar, navbarGroup} from '@xh/hoist/kit/blueprint';
-import {feedbackButton, launchAdminButton, logoutButton, refreshButton, themeToggleButton} from '@xh/hoist/desktop/cmp/button';
+import {optionsButton, feedbackButton, launchAdminButton, logoutButton, refreshButton, themeToggleButton} from '@xh/hoist/desktop/cmp/button';
 import {span} from '@xh/hoist/cmp/layout';
 import {appBarSeparator} from '@xh/hoist/desktop/cmp/appbar';
 import {isEmpty} from 'lodash';
@@ -42,6 +42,8 @@ export class AppBar extends Component {
          * without the HOIST_ADMIN role.
          */
         hideAdminButton: PT.bool,
+        /** Set to true to hide the Options button. */
+        hideOptionsButton: PT.bool,
         /** Set to true to hide the Feedback button. */
         hideFeedbackButton: PT.bool,
         /** Set to true to hide the Theme Toggle button. */
@@ -64,6 +66,7 @@ export class AppBar extends Component {
             leftItems,
             rightItems,
             hideAdminButton,
+            hideOptionsButton,
             hideFeedbackButton,
             hideThemeButton,
             hideLogoutButton,
@@ -86,6 +89,7 @@ export class AppBar extends Component {
                     align: 'right',
                     items: [
                         ...rightItems || [],
+                        optionsButton({omit: hideOptionsButton}),
                         feedbackButton({omit: hideFeedbackButton}),
                         themeToggleButton({omit: hideThemeButton}),
                         launchAdminButton({omit: hideAdminButton}),

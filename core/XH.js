@@ -287,6 +287,11 @@ class XHClass {
     //---------------------------
     // Miscellaneous
     //---------------------------
+    /** Show a dialog to for users to set app options. */
+    showOptionsDialog() {
+        return this.acm.optionsDialogModel.show();
+    }
+
     /** Show a dialog to elicit feedback text from users. */
     showFeedbackDialog() {
         return this.acm.feedbackDialogModel.show();

@@ -14,6 +14,7 @@ import {menu} from '@xh/hoist/mobile/cmp/menu';
 
 import {aboutDialog} from './AboutDialog';
 import {feedbackDialog} from './FeedbackDialog';
+import {optionsDialog} from './OptionsDialog';
 import {exceptionDialog} from './ExceptionDialog';
 import {impersonationBar} from './ImpersonationBar';
 import {loginPanel} from './LoginPanel';
@@ -82,6 +83,7 @@ export class AppContainer extends Component {
                     messageSource({model: model.messageSourceModel}),
                     toastSource({model: model.toastSourceModel}),
                     feedbackDialog({model: model.feedbackDialogModel}),
+                    optionsDialog({model: model.optionsDialogModel}),
                     aboutDialog({model: model.aboutDialogModel})
                 );
             default:

@@ -10,6 +10,7 @@ import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 import {AboutDialogModel} from './AboutDialogModel';
 import {ExceptionDialogModel} from './ExceptionDialogModel';
+import {OptionsDialogModel} from './OptionsDialogModel';
 import {FeedbackDialogModel} from './FeedbackDialogModel';
 import {LoginPanelModel} from './LoginPanelModel';
 import {ImpersonationBarModel} from './ImpersonationBarModel';
@@ -28,6 +29,7 @@ export class AppContainerModel {
     //------------
     aboutDialogModel = new AboutDialogModel();
     exceptionDialogModel = new ExceptionDialogModel();
+    optionsDialogModel = new OptionsDialogModel();
     feedbackDialogModel = new FeedbackDialogModel();
     impersonationBarModel = new ImpersonationBarModel();
     loginPanelModel = new LoginPanelModel();
@@ -45,6 +47,7 @@ export class AppContainerModel {
         this.models = [
             this.aboutDialogModel,
             this.exceptionDialogModel,
+            this.optionsDialogModel,
             this.feedbackDialogModel,
             this.impersonationBarModel,
             this.loginPanelModel,

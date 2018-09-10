@@ -12,7 +12,7 @@ import {toolbarButton} from '@xh/hoist/kit/onsen';
 import {Icon} from '@xh/hoist/icon';
 
 /**
- * Convenience Button preconfigured for use as a trigger for the XH feedback dialog.
+ * Convenience Button preconfigured for use as a trigger for opening the XH options dialog.
  *
  * Can be provided an onClick handler, otherwise will use default action provided by framework.
  */
@@ -25,10 +25,11 @@ export class FeedbackButton extends Component {
     };
 
     render() {
+        if (!XH.acm.optionsDialogModel.hasOptions) return null;
         const {icon, onClick, ...rest} = this.props;
         return toolbarButton({
-            item: icon || Icon.comment(),
-            onClick: onClick || this.onFeedbackClick,
+            item: icon || Icon.gear(),
+            onClick: onClick || this.onOptionsClick,
             ...rest
         });
     }
@@ -36,8 +37,8 @@ export class FeedbackButton extends Component {
     //---------------------------
     // Implementation
     //---------------------------
-    onFeedbackClick = () => {
-        XH.showFeedbackDialog();
+    onOptionsClick = () => {
+        XH.showOptionsDialog();
     }
 
 }

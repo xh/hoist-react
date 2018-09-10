@@ -8,6 +8,7 @@ export * from './Button';
 export * from './ThemeToggleButton';
 export * from './LaunchAdminButton';
 export * from './LogoutButton';
+export * from './OptionsButton';
 export * from './RefreshButton';
 export * from './ExportButton';
 export * from './FeedbackButton';
