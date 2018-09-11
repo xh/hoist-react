@@ -52,6 +52,8 @@ export class Column {
      *      column chooser. Appears when the column is selected within the chooser UI.
      * @param {boolean} [c.excludeFromChooser] - true to hide the column from the column chooser
      *      completely. Useful for hiding structural columns the user is not expected to adjust.
+     * @param {boolean} [c.hideable] - false to always show column. Will appear in column chooser
+     *       but always locked in the displayed collection of columns.
      * @param {string} [c.exportName] - display name to use as a header within a file export.
      *      Defaults to headerName.
      * @param {(string|function)} [c.exportValue] - alternate field name to reference or function
@@ -85,6 +87,7 @@ export class Column {
         chooserGroup,
         chooserDescription,
         excludeFromChooser,
+        hideable,
         exportName,
         exportValue,
         exportFormat,
@@ -120,7 +123,8 @@ export class Column {
         this.chooserName = chooserName || this.headerName || this.colId;
         this.chooserGroup = chooserGroup;
         this.chooserDescription = chooserDescription;
-        this.excludeFromChooser = withDefaultFalse(excludeFromChooser, false);
+        this.excludeFromChooser = withDefaultFalse(excludeFromChooser);
+        this.hideable = withDefaultTrue(hideable);
 
         this.exportName = exportName || this.headerName || this.colId;
         this.exportValue = exportValue;
