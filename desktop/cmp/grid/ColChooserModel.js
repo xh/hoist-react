@@ -76,7 +76,7 @@ export class ColChooserModel {
                 description: it.chooserDescription,
                 group: it.chooserGroup,
                 exclude: it.excludeFromChooser,
-                locked: it.locked || !it.hideable,  // TODO - review AG-grid API around "locking" concepts
+                locked: !it.hideable,
                 side: it.hide && it.hideable ? 'left' : 'right'
             };
         });
