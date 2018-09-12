@@ -10,19 +10,19 @@ import {Classes, select} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 
-import {BaseDropdownField} from './BaseDropdownField';
-import './SelectField.scss';
+import {BaseDropdownInput} from './BaseDropdownInput';
+import './SelectInput.scss';
 
 /**
- * A Select Field
+ * A Select Input
  *
- * @see HoistField for properties additional to those documented below.
+ * @see HoistInput for properties additional to those documented below.
  */
 @HoistComponent
-export class SelectField extends BaseDropdownField {
+export class SelectInput extends BaseDropdownInput {
 
     static propTypes = {
-        ...BaseDropdownField.propTypes,
+        ...BaseDropdownInput.propTypes,
 
         /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
         options: PT.arrayOf(PT.oneOfType([PT.object, PT.string, PT.bool])),
@@ -71,4 +71,4 @@ export class SelectField extends BaseDropdownField {
     }
 
 }
-export const selectField = elemFactory(SelectField);
+export const selectInput = elemFactory(SelectInput);

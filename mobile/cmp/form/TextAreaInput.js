@@ -7,50 +7,46 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {input} from '@xh/hoist/kit/onsen';
+import {textarea} from '@xh/hoist/cmp/layout';
 
-import {HoistField} from '@xh/hoist/cmp/form';
-import './TextField.scss';
+import {HoistInput} from '@xh/hoist/cmp/form';
+import './TextAreaInput.scss';
 
 /**
- * A Text Input Field
+ * A Text Area Input
  *
- * @see HoistField for properties additional to those documented below.
+ * @see HoistInput for properties additional to those documented below.
  */
 @HoistComponent
-export class TextField extends HoistField {
+export class TextAreaInput extends HoistInput {
 
     static propTypes = {
-        ...HoistField.propTypes,
+        ...HoistInput.propTypes,
 
         /** Value of the control */
         value: PT.string,
 
-        /** Type of input desired */
-        type: PT.oneOf(['text', 'number', 'password']),
         /** Text to display when control is empty */
         placeholder: PT.string,
-        /** Whether to allow browser spell check, defaults to false */
-        spellCheck: PT.bool,
-        /** Onsen modifier string */
-        modifier: PT.string
+        /** Whether to allow browser spell check, defaults to true */
+        spellCheck: PT.bool
     };
 
-    delegateProps = ['className', 'disabled', 'type', 'placeholder', 'modifier'];
+    delegateProps = ['className', 'disabled', 'type', 'placeholder'];
 
-    baseClassName = 'xh-text-field';
+    baseClassName = 'xh-textarea-field';
 
     render() {
         const {style, width, spellCheck} = this.props;
 
-        return input({
+        return textarea({
             className: this.getClassName(),
             value: this.renderValue || '',
             onChange: this.onChange,
             onBlur: this.onBlur,
             onFocus: this.onFocus,
             style: {...style, width},
-            spellCheck: !!spellCheck,
+            spellCheck: spellCheck !== false,
             ...this.getDelegateProps()
         });
     }
@@ -58,7 +54,8 @@ export class TextField extends HoistField {
     onChange = (ev) => {
         this.noteValueChange(ev.target.value);
     }
-    
+
+
     onBlur = () => {
         this.noteBlurred();
     }
@@ -66,6 +63,6 @@ export class TextField extends HoistField {
     onFocus = () => {
         this.noteFocused();
     }
-}
 
-export const textField = elemFactory(TextField);
+}
+export const textAreaInput = elemFactory(TextAreaInput);

@@ -7,21 +7,21 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {searchInput} from '@xh/hoist/kit/onsen';
+import {searchInput as onsenSearchInput} from '@xh/hoist/kit/onsen';
 
-import {HoistField} from '@xh/hoist/cmp/form';
-import './SearchField.scss';
+import {HoistInput} from '@xh/hoist/cmp/form';
+import './SearchInput.scss';
 
 /**
- * A Search Input Field
+ * A Search Input
  *
- * @see HoistField for properties additional to those documented below.
+ * @see HoistInput for properties additional to those documented below.
  */
 @HoistComponent
-export class SearchField extends HoistField {
+export class SearchInput extends HoistInput {
 
     static propTypes = {
-        ...HoistField.propTypes,
+        ...HoistInput.propTypes,
 
         /** Value of the control */
         value: PT.string,
@@ -41,7 +41,7 @@ export class SearchField extends HoistField {
     render() {
         const {style, width, spellCheck} = this.props;
 
-        return searchInput({
+        return onsenSearchInput({
             className: this.getClassName(),
             value: this.renderValue || '',
             onChange: this.onChange,
@@ -67,4 +67,4 @@ export class SearchField extends HoistField {
     }
 }
 
-export const searchField = elemFactory(SearchField);
+export const searchInput = elemFactory(SearchInput);

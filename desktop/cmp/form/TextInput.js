@@ -6,44 +6,50 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {textArea} from '@xh/hoist/kit/blueprint';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {inputGroup} from '@xh/hoist/kit/blueprint';
 
-import {HoistField} from '@xh/hoist/cmp/form';
-import './TextAreaField.scss';
+import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
- * A Text Area Field
+ * A Text Input
  *
- * @see HoistField for properties additional to those documented below.
+ * @see HoistInput for properties additional to those documented below.
  */
 @HoistComponent
-export class TextAreaField extends HoistField {
+export class TextInput extends HoistInput {
 
     static propTypes = {
-        ...HoistField.propTypes,
+        ...HoistInput.propTypes,
 
         /** Value of the control */
         value: PT.string,
-
         /** Whether field should receive focus on render */
         autoFocus: PT.bool,
+        /** Type of input desired */
+        type: PT.oneOf(['text', 'password']),
         /** Text to display when control is empty */
         placeholder: PT.string,
-        /** Whether to allow browser spell check, defaults to true */
+        /** Whether to allow browser spell check, defaults to false */
         spellCheck: PT.bool,
+        /** Icon to display on the left side of the field */
+        leftIcon: PT.element,
+        /** Element to display on the right side of the field */
+        rightElement: PT.element,
+        /** Function which receives Blueprint keypress event */
+        onKeyPress: PT.func,
         /** Whether text in field is selected when field receives focus */
         selectOnFocus: PT.bool
     };
-    
-    delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus'];
 
-    baseClassName = 'xh-textarea-field';
+    delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus', 'leftIcon', 'rightElement'];
+
+    baseClassName = 'xh-text-field';
 
     render() {
         const {style, width, spellCheck} = this.props;
 
-        return textArea({
+        return inputGroup({
             className: this.getClassName(),
             value: this.renderValue || '',
             onChange: this.onChange,
@@ -51,17 +57,20 @@ export class TextAreaField extends HoistField {
             onBlur: this.onBlur,
             onFocus: this.onFocus,
             style: {...style, width},
-            spellCheck: spellCheck !== false,
+            spellCheck: !!spellCheck,
             ...this.getDelegateProps()
         });
     }
 
     onChange = (ev) => {
         this.noteValueChange(ev.target.value);
-    }
+    };
 
     onKeyPress = (ev) => {
-        if (ev.key === 'Enter' && !ev.shiftKey) this.doCommit();
+        if (ev.key === 'Enter') {
+            this.doCommit();
+        }
+        if (this.props.onKeyPress) this.props.onKeyPress(ev);
     }
 
     onFocus = (ev) => {
@@ -76,4 +85,4 @@ export class TextAreaField extends HoistField {
     }
 
 }
-export const textAreaField = elemFactory(TextAreaField);
+export const textInput = elemFactory(TextInput);

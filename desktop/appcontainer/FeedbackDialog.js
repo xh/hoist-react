@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
-import {textAreaField} from '@xh/hoist/desktop/cmp/form';
+import {textAreaInput} from '@xh/hoist/desktop/cmp/form';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 
@@ -32,7 +32,7 @@ export class FeedbackDialog extends Component {
             onClose: this.onCloseClick,
             canOutsideClickClose: false,
             items: [
-                textAreaField({
+                textAreaInput({
                     placeholder: 'Please enter your comments...',
                     style: {height: 250, marginBottom: 2},
                     model,

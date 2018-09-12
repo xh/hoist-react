@@ -8,15 +8,15 @@
 import {observable, computed, action, runInAction} from '@xh/hoist/mobx';
 import {debounce} from 'lodash';
 
-import {BaseDropdownField} from './BaseDropdownField';
+import {BaseDropdownInput} from './BaseDropdownInput';
 
 /**
- * Abstract superclass supporting ComboField and QueryComboField.
+ * Abstract superclass supporting ComboInput and QueryComboInput.
  *
  * This includes debouncing commits due to the multiple ways committing
- * can be triggered from these fields (blur/enter/item select).
+ * can be triggered from these inputs (blur/enter/item select).
  */
-export class BaseComboField extends BaseDropdownField {
+export class BaseComboInput extends BaseDropdownInput {
 
     @observable pendingCommit;
 

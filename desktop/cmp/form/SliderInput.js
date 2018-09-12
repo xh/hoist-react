@@ -12,19 +12,19 @@ import {slider, rangeSlider} from '@xh/hoist/kit/blueprint';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isArray} from 'lodash';
 import {toJS} from 'mobx';
-import {HoistField} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
- * A Slider Field.
+ * A Slider Input.
  *
  * Value can be either a single number (for a simple slider) or an array of 2 numbers (for a range)
  */
 @HoistComponent
 @LayoutSupport
-export class SliderField extends HoistField {
+export class SliderInput extends HoistInput {
 
     static propTypes = {
-        ...HoistField.propTypes,
+        ...HoistInput.propTypes,
 
         /** minimum value */
         min: PT.number,
@@ -52,7 +52,7 @@ export class SliderField extends HoistField {
 
     constructor(props) {
         super(props);
-        throwIf(!props.commitOnChange, 'A commitOnChange value of false not implemented on SliderField.');
+        throwIf(!props.commitOnChange, 'A commitOnChange value of false not implemented on SliderInput.');
     }
 
     render() {
@@ -97,4 +97,4 @@ export class SliderField extends HoistField {
     }
 
 }
-export const sliderField = elemFactory(SliderField);
+export const sliderInput = elemFactory(SliderInput);

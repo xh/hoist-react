@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {checkField, label, numberField, textField} from '@xh/hoist/desktop/cmp/form';
+import {label, numberInput, textInput, checkInput} from '@xh/hoist/desktop/cmp/form';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {filler} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
@@ -23,7 +23,7 @@ export class LogViewerToolbar extends Component {
         return toolbar({
             items: [
                 label('Start Line:'),
-                numberField({
+                numberInput({
                     model,
                     field: 'startLine',
                     min: 0,
@@ -32,21 +32,21 @@ export class LogViewerToolbar extends Component {
                     onCommit: this.onCommit
                 }),
                 label('Max Lines:'),
-                numberField({
+                numberInput({
                     model,
                     field: 'maxLines',
                     min: 1,
                     width: 80,
                     onCommit: this.onCommit
                 }),
-                textField({
+                textInput({
                     model,
                     field: 'pattern',
                     placeholder: 'Search...',
                     width: 150,
                     onCommit: this.onCommit
                 }),
-                checkField({
+                checkInput({
                     model,
                     field: 'tail',
                     text: 'Tail'

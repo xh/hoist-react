@@ -10,16 +10,16 @@ import {startsWith} from 'lodash';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Classes, suggest} from '@xh/hoist/kit/blueprint';
 
-import {BaseComboField} from './BaseComboField';
+import {BaseComboInput} from './BaseComboInput';
 
 /**
- * ComboBox Field - A field with type ahead suggest and menu select
+ * ComboInput - An input with type ahead suggest and menu select
  */
 @HoistComponent
-export class ComboField extends BaseComboField {
+export class ComboInput extends BaseComboInput {
 
     static propTypes = {
-        ...BaseComboField.propTypes,
+        ...BaseComboInput.propTypes,
 
         /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
         options: PT.arrayOf(PT.oneOfType([PT.object, PT.string])),
@@ -78,4 +78,4 @@ export class ComboField extends BaseComboField {
     }
 
 }
-export const comboField = elemFactory(ComboField);
+export const comboInput = elemFactory(ComboInput);

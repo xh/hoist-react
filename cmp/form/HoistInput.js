@@ -12,37 +12,37 @@ import {throwIf} from '@xh/hoist/utils/js';
 import {observable, computed, action, runInAction} from '@xh/hoist/mobx';
 import classNames from 'classnames';
 
-import './HoistField.scss';
+import './HoistInput.scss';
 
 /**
  *
- * A Standard Hoist Field.
+ * A Standard Hoist Input.
  *
- * Hoist Fields can *either* operate in bound mode or in standard controlled mode.
+ * Hoist Inputs can *either* operate in bound mode or in standard controlled mode.
  * In bound mode, they will read their value from the  'model' and 'field' props.
  * If not bound, they will get their value in the standard way using the value in props.
  *
- * Hoist Fields will call a common onChange() callback with the latest value, as it is updated.
+ * Hoist Inputs will call a common onChange() callback with the latest value, as it is updated.
  *
- * Hoist Fields also introduce the notion of "Committing" a field to the model, when
+ * Hoist Inputs also introduce the notion of "Committing" a field to the model, when
  * the user has completed a discrete act of data entry. If the 'commitOnChange' property is true,
  * this will happen concurrently with valueChange.  Otherwise, this will happen only when the user
  * hits 'enter' or 'blurs' the field, or takes another commit action defined by the control.
  * At this time, any specified 'onCommit' handler will be fired.
  *
- * The 'commitOnChange' property defaults to false, except for selected controls such as CheckField
+ * The 'commitOnChange' property defaults to false, except for selected controls such as CheckInput
  * where a true value is more intuitive. Also note that `commitOnChange: false` is not currently
- * supported on DropdownFields and ComboBoxes - see BaseDropdownField for more information.
+ * supported on DropdownInputs and ComboBoxes - see BaseDropdownInput for more information.
  *
  * Note that operating in bound mode may allow for more efficient rendering in a MobX context,
  * in that the bound value is only read *within* this control, so that changes to its value do not
  * cause the parent of this control to re-render.
  *
- * HoistFields support built-in validation when bound to a model enhanced by `@FieldSupport`.
- * When a HoistField control is linked to a property on the underlying model decorated by `@field`,
+ * HoistInputs support built-in validation when bound to a model enhanced by `@FieldSupport`.
+ * When a HoistInput control is linked to a property on the underlying model decorated by `@field`,
  * the model Field will be used to provide validation info and styling to the input component.
  */
-export class HoistField extends Component {
+export class HoistInput extends Component {
 
     static propTypes = {
 
@@ -76,13 +76,13 @@ export class HoistField extends Component {
 
     /**
      * List of properties that if passed to this control should be trampolined to the underlying
-     * control. Implementations of HoistField should use this.getDelegateProps() to get a
+     * control. Implementations of HoistInput should use this.getDelegateProps() to get a
      * basket of these props for passing along.
      *
      * If this configuration is left empty, getDelegateProps() will instead return all props passed
-     * to the component, but filtered to remove those known to be added by the HoistField API.
+     * to the component, but filtered to remove those known to be added by the HoistInput API.
      *
-     * (Overall role of the delegateProps concept for HoistField components is still under review.)
+     * (Overall role of the delegateProps concept for HoistInput components is still under review.)
      */
     delegateProps = [];
 

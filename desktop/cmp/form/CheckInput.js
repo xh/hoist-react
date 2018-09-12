@@ -9,17 +9,17 @@ import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {checkbox} from '@xh/hoist/kit/blueprint';
 
-import {HoistField} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
- * CheckBox Field.
- * Note that this field does not handle null values. For nullable fields, use a SelectField.
+ * CheckBox Input.
+ * Note that this field does not handle null values. For nullable fields, use a SelectInput.
  */
 @HoistComponent
-export class CheckField extends HoistField {
+export class CheckInput extends HoistInput {
 
     static propTypes = {
-        ...HoistField.propTypes,
+        ...HoistInput.propTypes,
         value: PT.bool
     };
 
@@ -54,4 +54,4 @@ export class CheckField extends HoistField {
     }
 
 }
-export const checkField = elemFactory(CheckField);
+export const checkInput = elemFactory(CheckInput);

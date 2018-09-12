@@ -11,7 +11,7 @@ import {debounce, escapeRegExp} from 'lodash';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {textField} from '@xh/hoist/desktop/cmp/form';
+import {textInput} from '@xh/hoist/desktop/cmp/form';
 import {Icon} from '@xh/hoist/icon';
 import {BaseStore} from '@xh/hoist/data';
 
@@ -45,7 +45,7 @@ export class StoreFilterField extends Component {
     }
 
     render() {
-        return textField({
+        return textInput({
             placeholder: 'Quick filter...',
             value: this.value,
             onChange: this.onValueChange,
