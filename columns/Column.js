@@ -39,11 +39,14 @@ export class Column {
      * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
      * @param {boolean} [c.movable] - false to prevent user from drag-and-drop re-ordering.
      * @param {Column~rendererFn} [c.renderer] - function to produce a formatted string for each cell.
-     *      Supports HTML as output. Passed both field value and entire row data object.
+     *      Supports HTML as output. Passed the field value as the first parameter, and an object
+     *      containing the record, column, and renderer params (destructured) as the second parameter.
      * @param {function} [c.elementRenderer] - elementFactory function to return a React component
-     *      for rendering within each cell. For ag-Grid implementations, an ICellRendererParams
-     *      object is passed to the rendered component as props.
-     *      @see ICellRendererParams
+     *      for rendering within each cell. Is passed the value, record, column, and renderer params
+     *      (destructured) in it's props. For ag-grid implementations, the ICellRendererParams are
+     *      also passed as agParams. @see ICellRendererParams
+     * @param {object} [c.rendererParams] - additional parameters to pass to the renderer function
+     *      or to be included in elementRenderer props.
      * @param {string} [c.chooserName] - name to display within the column chooser component.
      *      Defaults to headerName, but useful when a longer / un-abbreviated string is available.
      * @param {string} [c.chooserGroup] - group name to display within the column chooser component.
@@ -83,6 +86,7 @@ export class Column {
         movable,
         renderer,
         elementRenderer,
+        rendererParams,
         chooserName,
         chooserGroup,
         chooserDescription,
@@ -119,6 +123,7 @@ export class Column {
 
         this.renderer = renderer;
         this.elementRenderer = elementRenderer;
+        this.rendererParams = rendererParams;
 
         this.chooserName = chooserName || this.headerName || this.colId;
         this.chooserGroup = chooserGroup;
@@ -175,15 +180,28 @@ export class Column {
             ret.width = this.width;
         }
 
-        const {renderer, elementRenderer} = this;
+        const {renderer, elementRenderer, rendererParams} = this;
         if (renderer) {
             ret.cellRenderer = (params) => {
-                const metaData = {colId: params.column.colId};
-                return renderer(params.value, params.data, metaData);
+                return renderer(params.value, {record: params.data, column: this, ...rendererParams});
             };
         } else if (elementRenderer) {
+            const props = {
+                column: this,
+                ...rendererParams
+            };
+
             ret.cellRendererFramework = class extends Component {
-                render() {return elementRenderer(this.props)}
+                render() {
+                    const rendererProps = {
+                        value: this.props.value,
+                        record: this.props.data,
+                        agParams: this.props,
+                        ...props
+                    };
+
+                    return elementRenderer(rendererProps);
+                }
                 refresh() {return false}
             };
         }
