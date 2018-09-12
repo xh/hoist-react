@@ -7,6 +7,7 @@
 
 export * from './CheckInput';
 export * from './DayInput';
+export * from './FormField';
 export * from './JsonInput';
 export * from './Label';
 export * from './NumberInput';
