@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {debounce, escapeRegExp} from 'lodash';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {observable, action, runInAction} from '@xh/hoist/mobx';
+import {observable, action} from '@xh/hoist/mobx';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {textField} from '@xh/hoist/desktop/cmp/form';
 import {Icon} from '@xh/hoist/icon';
@@ -17,30 +17,35 @@ import {BaseStore} from '@xh/hoist/data';
 import {withDefault} from '@xh/hoist/utils/js';
 
 /**
- * A Component that can bind to any store and filter it
- * based on simple text matching in specified fields.
+ * A text input Component that generates a filter function based on simple word-boundary matching of
+ * its value to those of configured fields on a candidate object. If any field values match, the
+ * object itself is considered a match.
+ *
+ * Designed to easily filter records within a store - either directly (most common, with a store
+ * passed as a prop) or indirectly via a callback (in cases where custom logic is required, such as
+ * layering on additional filters).
  */
 @HoistComponent
 export class StoreFilterField extends Component {
 
     static propTypes = {
-        /** Names of fields in store's records to filter by */
-        fields: PT.arrayOf(PT.string).isRequired,
-        /** Callback to return updated filter. */
-        onFilterChange: PT.func,
-        /** Initial empty text */
+        /** Initial empty text. */
         placeholder: PT.string,
-        /**
-         * Store to filter (optional).  If specified this control will bind directly to
-         * this this store and filter its contents.
-         */
+        /** Names of field(s) within store record objects on which to match and filter. */
+        fields: PT.arrayOf(PT.string).isRequired,
+        /** Store to which this control should bind and filter directly. */
         store: PT.instanceOf(BaseStore),
         /**
-         * Delay (in ms) used to buffer filtering of the store after the value changes from user
-         * input (default is 200ms). Set to 0 to filter immediately after user input.  Only used
-         * when 'store' is specified.
+         * Delay (in ms) to buffer filtering of the store after the value changes from user input.
+         * Default 200ms. Set to 0 to filter immediately on each keystroke. Applicable only when
+         * `store` is specified.
          */
-        filterBuffer: PT.number
+        filterBuffer: PT.number,
+        /**
+         * Callback to receive an updated filter function. Can be used in place of the `store` prop
+         * when direct filtering of a bound store by this component is not desired.
+         */
+        onFilterChange: PT.func
     };
 
     @observable value = '';
