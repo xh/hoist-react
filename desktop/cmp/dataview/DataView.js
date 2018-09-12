@@ -23,7 +23,7 @@ export class DataView extends Component {
 
     constructor(props) {
         super(props);
-        const {store, selModel, contextMenuFn, itemFactory, emptyText} = props.model;
+        const {store, selModel, contextMenuFn, itemFactory, itemData = {}, emptyText} = props.model;
         this._gridModel = new GridModel({
             store,
             selModel,
@@ -33,7 +33,7 @@ export class DataView extends Component {
                 {
                     colId: 'data',
                     flex: true,
-                    elementRenderer: (params) => itemFactory({record: params.data, store}),
+                    elementRenderer: (params) => itemFactory({record: params.data, store, ...itemData}),
                     agOptions: {
                         valueGetter: (params) => params.data
                     }
