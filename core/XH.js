@@ -331,7 +331,7 @@ class XHClass {
      * @returns {string}
      */
     genId() {
-        return uniqueId(`xh-id-`);
+        return uniqueId('xh-id-');
     }
 
     //---------------------------------
