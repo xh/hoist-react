@@ -21,6 +21,7 @@ export class DataViewModel {
 
     // Immutable public properties
     itemFactory = null;
+    itemData = null;
     store = null;
     selModel = null;
     contextMenuFn = null;
@@ -38,7 +39,8 @@ export class DataViewModel {
     /**
      * @param {Object} c - DataViewModel configuration.
      * @param {function} c.itemFactory - elemFactory for the component used to render each item.
-     *      Will receive record and store via its props.
+     *      Will receive record, store, and itemData (destructured) via its props.
+     * @param {Object} [itemData] - additional data to pass to the item component as props.
      * @param {BaseStore} c.store - store containing the data to be displayed.
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` from which to create.
@@ -47,12 +49,14 @@ export class DataViewModel {
      */
     constructor({
         itemFactory,
+        itemData,
         store,
         selModel,
         emptyText,
         contextMenuFn = DataViewModel.defaultContextMenu
     }) {
         this.itemFactory = itemFactory;
+        this.itemData = itemData;
         this.store = store;
         this.selModel = this.parseSelModel(selModel, store);
         this.emptyText = emptyText;
