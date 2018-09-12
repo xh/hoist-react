@@ -17,7 +17,7 @@ import {button} from '@xh/hoist/kit/blueprint';
  * An onClick handler can be provided to implement additional operations on logout,
  * but should ensure it calls `XH.identityService.logoutAsync()`.
  */
-@HoistComponent()
+@HoistComponent
 export class LogoutButton extends Component {
 
     static propTypes = {

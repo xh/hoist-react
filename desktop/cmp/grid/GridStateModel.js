@@ -18,7 +18,7 @@ import {start} from '@xh/hoist/promise';
  * It is not necessary to manually create instances of this class within an application.
  * @private
  */
-@HoistModel()
+@HoistModel
 export class GridStateModel {
 
     /**
@@ -123,20 +123,16 @@ export class GridStateModel {
     }
 
     getColumnState() {
-        const {columns} = this.gridModel;
+        const cols = this.gridModel.getLeafColumns();
 
-        return columns.map(it => {
-            return {
-                colId: it.colId,
-                hide: it.hide,
-                width: it.width
-            };
+        return cols.map(col => {
+            return {colId: col.colId, hide: col.hide, width: col.width};
         });
     }
 
     updateGridColumns() {
         const {gridModel, state} = this,
-            cols = gridModel.cloneColumns(),
+            cols = gridModel.getLeafColumns(),
             foundColumns = [];
 
         if (!state.columns) return;
@@ -161,7 +157,7 @@ export class GridStateModel {
             }
         });
 
-        gridModel.setColumns(newColumns);
+        gridModel.applyColumnChanges(newColumns);
     }
 
     //--------------------------

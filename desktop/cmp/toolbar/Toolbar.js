@@ -15,7 +15,7 @@ import './Toolbar.scss';
  * A toolbar with built-in styling and padding.
  * Child items provided as raw configs will be created as buttons by default.
  */
-@HoistComponent()
+@HoistComponent
 export class Toolbar extends Component {
     static propTypes = {
         /** Custom classes that will be applied to this component */

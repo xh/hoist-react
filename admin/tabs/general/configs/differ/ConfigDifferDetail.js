@@ -19,7 +19,7 @@ import './Differ.scss';
 /**
  * @private
  */
-@HoistComponent()
+@HoistComponent
 export class ConfigDifferDetail extends Component {
 
     render() {

@@ -23,7 +23,7 @@ import './LoginPanel.scss';
  *
  * @private
  */
-@HoistComponent()
+@HoistComponent
 export class LoginPanel extends Component {
 
     render() {
@@ -46,14 +46,16 @@ export class LoginPanel extends Component {
                             field: 'username',
                             placeholder: 'Username...',
                             autoFocus: true,
-                            commitOnChange: true
+                            commitOnChange: true,
+                            onKeyPress: this.onKeyPress
                         }),
                         textField({
                             model,
                             field: 'password',
                             placeholder: 'Password...',
                             type: 'password',
-                            commitOnChange: true
+                            commitOnChange: true,
+                            onKeyPress: this.onKeyPress
                         }),
                         text({
                             omit: !model.warning,
@@ -83,6 +85,12 @@ export class LoginPanel extends Component {
 
     onSubmit = () => {
         this.model.submit();
+    };
+
+    onKeyPress = (ev) => {
+        if (ev.key === 'Enter') {
+            this.onSubmit();
+        }
     }
 }
 export const loginPanel = elemFactory(LoginPanel);

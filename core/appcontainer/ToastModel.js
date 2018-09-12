@@ -15,7 +15,7 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
  *
  * @private
  */
-@HoistModel()
+@HoistModel
 export class ToastModel {
 
     // Immutable public properties

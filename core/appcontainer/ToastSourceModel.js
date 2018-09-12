@@ -13,7 +13,7 @@ import {ToastModel} from './ToastModel';
  *
  *  @private
  */
-@HoistModel()
+@HoistModel
 export class ToastSourceModel {
 
     @observable.ref toastModels = [];

@@ -11,7 +11,7 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
 import {version as hoistReactVersion} from '@xh/hoist/package.json';
 import {defaults} from 'lodash';
 
-@HoistService()
+@HoistService
 export class EnvironmentService {
 
     _data = {};

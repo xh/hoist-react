@@ -14,7 +14,7 @@ import {button as bpButton} from '@xh/hoist/kit/blueprint';
  * Wrapper around Blueprint's Button component.
  * Hoist's most basic button accepts any props supported by Blueprint's Button.
  */
-@HoistComponent()
+@HoistComponent
 export class Button extends Component {
 
     static propTypes = {

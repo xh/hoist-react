@@ -14,7 +14,7 @@ import {ServicePanel} from './services/ServicePanel';
 import {EhCachePanel} from './ehcache/EhCachePanel';
 import {UserPanel} from './users/UserPanel';
 
-@HoistComponent()
+@HoistComponent
 export class GeneralTab extends Component {
 
     localModel = new TabContainerModel({

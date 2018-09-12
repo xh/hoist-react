@@ -44,7 +44,7 @@ const defaultOptions = {
  * Displays the approximate amount of time between a given timestamp and the present moment
  * in a friendly, human readable form. Automatically updates on a regular interval to stay current.
  */
-@HoistComponent()
+@HoistComponent
 @LayoutSupport
 export class RelativeTimestamp extends Component {
 

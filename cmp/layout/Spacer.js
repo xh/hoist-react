@@ -13,7 +13,7 @@ import {box} from './Box';
  * A component for inserting a fixed-sized spacer along the main axis of its parent container.
  * Convenience ElemFactories hspacer() and vspacer() each take a pixel size directly.
  */
-@HoistComponent()
+@HoistComponent
 @LayoutSupport
 export class Spacer extends Component {
     baseClassName = 'xh-spacer';
@@ -29,7 +29,7 @@ export class Spacer extends Component {
 /**
  * A component that stretches to soak up space along the main axis of its parent container.
  */
-@HoistComponent()
+@HoistComponent
 @LayoutSupport
 export class Filler extends Component {
     baseClassName = 'xh-filler';

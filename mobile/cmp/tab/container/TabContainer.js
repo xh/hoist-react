@@ -13,7 +13,7 @@ import {tabbar} from '@xh/hoist/kit/onsen';
  * Display for a TabContainer.
  * @see TabContainerModel
  */
-@HoistComponent()
+@HoistComponent
 export class TabContainer extends Component {
 
     render() {

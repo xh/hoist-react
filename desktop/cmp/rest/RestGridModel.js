@@ -16,7 +16,7 @@ import {RestFormModel} from './RestFormModel';
 /**
  * Core Model for a RestGrid.
  */
-@HoistModel()
+@HoistModel
 export class RestGridModel {
 
     //----------------

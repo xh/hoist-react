@@ -25,7 +25,7 @@ import './Panel.scss';
  * This component also includes support for resizing and collapsing its contents, if given a
  * PanelSizingModel.
  */
-@HoistComponent()
+@HoistComponent
 @LayoutSupport
 export class Panel extends Component {
 

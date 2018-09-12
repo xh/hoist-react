@@ -9,14 +9,14 @@ import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {inputGroup} from '@xh/hoist/kit/blueprint';
 
-import {HoistField} from './HoistField';
+import {HoistField} from '@xh/hoist/cmp/form';
 
 /**
  * A Text Input Field
  *
  * @see HoistField for properties additional to those documented below.
  */
-@HoistComponent()
+@HoistComponent
 export class TextField extends HoistField {
 
     static propTypes = {
@@ -24,7 +24,6 @@ export class TextField extends HoistField {
 
         /** Value of the control */
         value: PT.string,
-
         /** Whether field should receive focus on render */
         autoFocus: PT.bool,
         /** Type of input desired */
@@ -36,15 +35,22 @@ export class TextField extends HoistField {
         /** Icon to display on the left side of the field */
         leftIcon: PT.element,
         /** Element to display on the right side of the field */
-        rightElement: PT.element
+        rightElement: PT.element,
+        /** Function which receives Blueprint keypress event */
+        onKeyPress: PT.func,
+        /** Whether text in field is selected when field receives focus */
+        selectOnFocus: PT.bool
     };
 
     delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus', 'leftIcon', 'rightElement'];
+
+    baseClassName = 'xh-text-field';
 
     render() {
         const {style, width, spellCheck} = this.props;
 
         return inputGroup({
+            className: this.getClassName(),
             value: this.renderValue || '',
             onChange: this.onChange,
             onKeyPress: this.onKeyPress,
@@ -58,12 +64,24 @@ export class TextField extends HoistField {
 
     onChange = (ev) => {
         this.noteValueChange(ev.target.value);
-    }
-    
+    };
+
     onKeyPress = (ev) => {
         if (ev.key === 'Enter') {
             this.doCommit();
         }
+        if (this.props.onKeyPress) this.props.onKeyPress(ev);
+    }
+
+    onFocus = (ev) => {
+        if (this.props.selectOnFocus) {
+            ev.target.select();
+        }
+        this.noteFocused();
+    }
+
+    onBlur = () => {
+        this.noteBlurred();
     }
 
 }

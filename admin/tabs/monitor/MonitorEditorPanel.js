@@ -9,7 +9,7 @@ import {HoistComponent} from '@xh/hoist/core';
 import {boolCheckCol, numberCol} from '@xh/hoist/columns';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 
-@HoistComponent()
+@HoistComponent
 export class MonitorEditorPanel extends Component {
 
     localModel = new RestGridModel({

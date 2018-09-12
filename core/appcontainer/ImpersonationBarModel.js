@@ -14,7 +14,7 @@ import {throwIf} from '@xh/hoist/utils/js';
  *
  *  @private
  */
-@HoistModel()
+@HoistModel
 export class ImpersonationBarModel {
 
     @observable showRequested = false;

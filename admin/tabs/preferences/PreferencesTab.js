@@ -12,7 +12,7 @@ import {PreferencePanel} from './PreferencePanel';
 import {UserPreferencePanel} from './UserPreferencePanel';
 
 
-@HoistComponent()
+@HoistComponent
 export class PreferencesTab extends Component {
 
     localModel = new TabContainerModel({

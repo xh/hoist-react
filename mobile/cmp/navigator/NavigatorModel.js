@@ -13,7 +13,7 @@ import {NavigatorPageModel} from './NavigatorPageModel';
 /**
  * Model for handling navigation between Onsen pages
  */
-@HoistModel()
+@HoistModel
 export class NavigatorModel {
     initPageModel = null;
     @observable title;

@@ -20,7 +20,7 @@ import {ThemeModel} from './ThemeModel';
 /**
  *  Root object for Framework GUI State.
  */
-@HoistModel()
+@HoistModel
 export class AppContainerModel {
 
     //------------
@@ -86,6 +86,6 @@ export class AppContainerModel {
     }
 
     destroy() {
-        XH.destroy(this.models);
+        XH.safeDestroy(this.models);
     }
 }

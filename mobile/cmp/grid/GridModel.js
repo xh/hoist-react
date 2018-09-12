@@ -11,7 +11,7 @@ import {observable} from '@xh/hoist/mobx';
 /**
  * Core Model for a Grid, specifying the grid's data store and column definitions
  */
-@HoistModel()
+@HoistModel
 export class GridModel {
 
     // Immutable public properties

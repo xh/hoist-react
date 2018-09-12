@@ -21,7 +21,7 @@ import './Mask.scss';
  *
  * The mask can be explicitly shown or reactively bound to a PendingTaskModel.
  */
-@HoistComponent()
+@HoistComponent
 export class Mask extends Component {
 
     static propTypes = {

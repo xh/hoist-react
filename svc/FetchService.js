@@ -6,25 +6,34 @@
  */
 import {XH, HoistService} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
-import {castArray} from 'lodash';
+import {stringify} from 'qs';
 
-@HoistService()
+/**
+ * Service to send an HTTP request to a URL.
+ *
+ * Wrapper around the standard Fetch API with some enhancements to streamline the process for
+ * the most common use-cases. The Fetch API will be called with CORS enabled, credentials
+ * included, and redirects followed.
+ *
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API|Fetch API Docs}
+ *
+ * Note that the convenience methods 'fetchJson', 'postJson', 'putJson' all accept the same options as
+ * the main entry point 'fetch'.  These methods delegate to fetch, after setting appropriate additional
+ * defaults.
+ */
+@HoistService
 export class FetchService {
+
     /**
-     * Send an HTTP request to a URL.
+     * Send a request via the underlying fetch API.
      *
-     * Wrapper around the standard Fetch API with some enhancements to streamline the process for
-     * the most common use-cases. The Fetch API will be called with CORS enabled, credentials
-     * included, and redirects followed.
-     *
-     * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API|Fetch API Docs}
-     *
-     * @param {Object} opts - options to pass through to fetch, with some additions.
-     *      @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Request|Fetch Request docs}
+     * @param {Object} opts - standard options to pass through to fetch, with some additions.
+     *     @see https://developer.mozilla.org/en-US/docs/Web/API/Request for the available options
      * @param {string} opts.url - target url to send the HTTP request to. Relative urls will be
      *     appended to XH.baseUrl for the request.
+     * @param {Object} [opts.body] - the data obj to send in the request body (for POSTs/PUTs sending JSON).
      * @param {Object} [opts.params] - parameters to encode and send with the request body
-     *      (for POSTs) or append as a query string.
+     *      (for POSTs/PUTs sending form-url-encoded) or to append as a query string.
      * @param {string} [opts.method] - The HTTP Request method to use for the request. If not
      *     explicitly set in opts then the method will be set to POST if there are params,
      *     otherwise it will be set to GET.
@@ -33,8 +42,11 @@ export class FetchService {
      *     requests will use 'application/x-www-form-urlencoded', otherwise 'text/plain' will be
      *     used.
      * @param {boolean} [opts.acceptJson] - true to set Accept header to 'application/json'.
+     * @param {Object} [opts.qsOpts] - Object of options to pass to the param converter library, qs.
+     *      The default qsOpts are: {arrayFormat: 'repeat', allowDots: true}.
+     *      @see {@link https://www.npmjs.com/package/qs}
+     *
      * @returns {Promise<Response>} - Promise which resolves to a Fetch Response.
-     *      @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Response|Fetch Response docs}
      */
     async fetch(opts) {
         let {params, method, contentType, url} = opts;
@@ -67,25 +79,22 @@ export class FetchService {
             delete fetchOpts.acceptJson;
         }
 
-        delete fetchOpts.contentType;
-        delete fetchOpts.url;
 
         // 3) Preprocess and apply params
         if (params) {
-            const paramsStrings = [];
-            Object.entries(params).forEach(v => {
-                const key = v[0],
-                    vals = castArray(v[1]);
-                vals.forEach(val => paramsStrings.push(`${key}=${encodeURIComponent(val)}`));
-            });
-            const paramsString = paramsStrings.join('&');
+            const qsOpts = {arrayFormat: 'repeat', allowDots: true, ...opts.qsOpts},
+                paramsString = stringify(params, qsOpts);
 
-            if (method === 'POST') {
+            if (['POST', 'PUT'].includes(method) && fetchOpts.contentType != 'application/json') {
+                // fall back to an 'application/x-www-form-urlencoded' POST/PUT body if not sending json
                 fetchOpts.body = paramsString;
             } else {
                 url += '?' + paramsString;
             }
         }
+
+        delete fetchOpts.contentType;
+        delete fetchOpts.url;
 
         let ret;
         try {
@@ -104,19 +113,8 @@ export class FetchService {
     /**
      * Send an HTTP request to a URL, and decode the response as JSON.
      *
-     * @param {Object} opts - options to pass through to fetch, with some additions.
-     *      @see https://developer.mozilla.org/en-US/docs/Web/API/Request for the available options
-     * @param {string} opts.url - target url to send the HTTP request to. Relative urls will be
-     *     appended to XH.baseUrl for the request
-     * @param {Object} [opts.params] - parameters to encode and send with the request body (for POSTs)
-     *      or append as a query string.
-     * @param {string} [opts.method] - The HTTP Request method to use for the request. If not
-     *     explicitly set in opts then the method will be set to POST if there are params,
-     *     otherwise it will be set to GET.
-     * @param {string} [opts.contentType] - value to use in the Content-Type header in the request.
-     *     If not explicitly set in opts then the contentType will be set based on the method. POST
-     *     requests will use 'application/x-www-form-urlencoded', otherwise 'text/plain' will be
-     *     used.
+     * This method delegates to @see {fetch} and accepts the same options.
+     *
      * @returns {Promise} the decoded JSON object, or null if the response had no content.
      */
     async fetchJson(opts) {
@@ -124,9 +122,53 @@ export class FetchService {
         return ret.status === 204 ? null : ret.json();
     }
 
+    /**
+     * Send a GET HTTP request to a URL, and decode the response as JSON.
+     *
+     * This method delegates to @see {fetch} and accepts the same options.
+     *
+     * @returns {Promise} the decoded JSON object, or null if the response had no content.
+     */
+    async getJson(opts) {
+        opts.method = 'GET';
+        return this.fetchJson(opts);
+    }
+
+    /**
+     * Send a POST HTTP request to a URL with a JSON body, and decode the response as JSON.
+     *
+     * This method delegates to @see {fetch} and accepts the same options.
+     *
+     * @returns {Promise} the decoded JSON object, or null if the response had no content.
+     */
+    async postJson(opts) {
+        opts.method = 'POST';
+        return this.sendJson(opts);
+    }
+
+    /**
+     * Send a PUT HTTP request to a URL with a JSON body, and decode the response as JSON.
+     *
+     * This method delegates to @see {fetch} and accepts the same options.
+     *
+     * @returns {Promise} the decoded JSON object, or null if the response had no content.
+     */
+    async putJson(opts) {
+        opts.method = 'PUT';
+        return this.sendJson(opts);
+    }
+
     //-----------------------
     // Implementation
     //-----------------------
+    async sendJson(opts) {
+        opts = {
+            ...opts,
+            body: JSON.stringify(opts.body),
+            contentType: 'application/json'
+        };
+        return this.fetchJson(opts);
+    }
 
     async safeResponseTextAsync(response) {
         try {

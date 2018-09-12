@@ -15,7 +15,7 @@ import {box} from './Box';
  *
  * VFrame and HFrame variants support internal vertical (column) and horizontal (row) flex layouts.
  */
-@HoistComponent()
+@HoistComponent
 @LayoutSupport
 export class Frame extends Component {
     render() {
@@ -26,7 +26,7 @@ export class Frame extends Component {
     }
 }
 
-@HoistComponent()
+@HoistComponent
 @LayoutSupport
 export class VFrame extends Component {
     baseClassName = 'xh-vframe';
@@ -40,7 +40,7 @@ export class VFrame extends Component {
     }
 }
 
-@HoistComponent()
+@HoistComponent
 @LayoutSupport
 export class HFrame extends Component {
     baseClassName = 'xh-hframe';

@@ -9,14 +9,15 @@ import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {textarea} from '@xh/hoist/cmp/layout';
 
-import {HoistField} from './HoistField';
+import {HoistField} from '@xh/hoist/cmp/form';
+import './TextAreaField.scss';
 
 /**
  * A Text Area Field
  *
  * @see HoistField for properties additional to those documented below.
  */
-@HoistComponent()
+@HoistComponent
 export class TextAreaField extends HoistField {
 
     static propTypes = {
@@ -33,11 +34,13 @@ export class TextAreaField extends HoistField {
 
     delegateProps = ['className', 'disabled', 'type', 'placeholder'];
 
+    baseClassName = 'xh-textarea-field';
+
     render() {
         const {style, width, spellCheck} = this.props;
 
         return textarea({
-            className: 'xh-field xh-textarea-field',
+            className: this.getClassName(),
             value: this.renderValue || '',
             onChange: this.onChange,
             onBlur: this.onBlur,
@@ -50,6 +53,15 @@ export class TextAreaField extends HoistField {
 
     onChange = (ev) => {
         this.noteValueChange(ev.target.value);
+    }
+
+
+    onBlur = () => {
+        this.noteBlurred();
+    }
+
+    onFocus = () => {
+        this.noteFocused();
     }
 
 }

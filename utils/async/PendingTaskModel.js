@@ -16,7 +16,7 @@ import {isUndefined} from 'lodash';
  * the progression of asynchronous tasks.
  * @see Promise#linkTo
  */
-@HoistModel()
+@HoistModel
 export class PendingTaskModel {
 
     @observable message = null;

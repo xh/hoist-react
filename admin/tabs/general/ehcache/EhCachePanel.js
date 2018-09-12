@@ -16,7 +16,7 @@ import {Icon} from '@xh/hoist/icon';
 
 import {EhCacheModel} from './EhCacheModel';
 
-@HoistComponent()
+@HoistComponent
 export class EhCachePanel extends Component {
 
     localModel = new EhCacheModel();

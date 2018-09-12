@@ -14,7 +14,7 @@ import {fragment} from '@xh/hoist/cmp/layout';
 import {restGridToolbar} from './RestGridToolbar';
 import {restForm} from './RestForm';
 
-@HoistComponent()
+@HoistComponent
 @LayoutSupport
 export class RestGrid extends Component {
 

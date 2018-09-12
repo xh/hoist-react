@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {defaults, isFinite, isString, pick} from 'lodash';
+import {defaults, isFinite, isString, isFunction, pick} from 'lodash';
 import numeral from 'numeral';
 
 import {Exception} from '@xh/hoist/exception';
@@ -29,24 +29,24 @@ const UP_TICK = '▴',
  * Standard number formatting for Hoist
  *
  * @param {number} v - value to format.
- * @param {Object} [opts] - formatting options, may include:
- * @param {string} [opts.nullDisplay] - desired display for null values.
+ * @param {Object} [opts]
+ * @param {string} [opts.nullDisplay] - display string for null values.
  * @param {string} [opts.formatPattern] - a valid numeralJS format string.
- *      @see http://numeraljs.com/#format for more info
  * @param {(number|'auto')} [opts.precision] - desired number of decimal places.
- * @param {boolean} [opts.zeroPad] - set to false to remove trailing zeros regardless of precision.
- * @param {boolean} [opts.ledger] - set to true to use ledger format.
- * @param {boolean} [opts.forceLedgerAlign] - used to add placeholder after positive ledgers to align with negative ledgers in columns.
- * @param {boolean} [opts.withPlusSign] - set to true to include a '+' in positive number strings.
- * @param {boolean} [opts.withSignGlyph] - set to true to prepend with an up / down arrow.
+ * @param {boolean} [opts.zeroPad] - true to pad with trailing zeros out to given precision.
+ * @param {boolean} [opts.ledger] - true to use ledger format.
+ * @param {boolean} [opts.forceLedgerAlign] - true to add placeholder after positive ledgers to
+ *      align vertically with negative ledgers in columns.
+ * @param {boolean} [opts.withPlusSign] - true to prepend positive numbers with a '+'.
+ * @param {boolean} [opts.withSignGlyph] - true to prepend an up / down arrow.
  * @param {string} [opts.label] - label to append to value.
- * @param {string} [opts.labelCls] - if provided, label will be place in a span with this set as its class.
+ * @param {string} [opts.labelCls] - CSS class of label <span>,
  * @param {(boolean|Object)} [opts.colorSpec] - show in colored <span>, based on sign of value.
- *      If truthy will default to red/green/grey. Also accepts an object of the form {pos: color, neg: color, neutral: color}.
- * @param {function} [opts.tipFn] - use to place formatted number in span with title property set to returned string.
- *      Will be passed the originalValue param.
- * @param {boolean} [opts.asElement] - return a react element rather than a html string
- * @param {number} [opts.originalValue] - used to retain an unaltered reference to the original value to be formatted.
+ *      True for red/green/grey defaults, or object of the form {pos: color, neg: color, neutral: color}.
+ * @param {(boolean|fmtNumber~tooltipFn)} [opts.tooltip] - true to enable default tooltip with
+ *      minimally formatted original value, or a function to generate a custom tooltip string.
+ * @param {boolean} [opts.asElement] - return a React element rather than a HTML string
+ * @param {number} [opts.originalValue] - holds the unaltered original value to be formatted.
  *      Not typically used by applications.
  *
  * This method delegates to numeralJS, @see http://numeraljs.com for more details.
@@ -54,7 +54,6 @@ const UP_TICK = '▴',
  * Hierarchy of params is by specificity: formatPattern => precision.
  * If no options are given, a heuristic based auto-rounding will occur.
  */
-
 export function fmtNumber(v, {
     nullDisplay = '',
     formatPattern = null,
@@ -67,7 +66,7 @@ export function fmtNumber(v, {
     label = null,
     labelCls = 'xh-units-label',
     colorSpec = null,
-    tipFn = null,
+    tooltip = null,
     asElement = false,
     originalValue = v
 } = {}) {
@@ -82,7 +81,7 @@ export function fmtNumber(v, {
         str = '+' + str;
     }
 
-    const opts = {str, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tipFn, originalValue};
+    const opts = {str, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip, originalValue};
     return asElement ? fmtNumberElement(v, opts) : fmtNumberString(v, opts);
 }
 
@@ -273,12 +272,12 @@ export function fmtPercent(v, opts = {}) {
 // Implementation
 //---------------
 function fmtNumberElement(v, opts = {}) {
-    const {str, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tipFn, originalValue} = opts;
+    const {str, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip} = opts;
 
     // CSS classes
     const cls = [];
     if (colorSpec) cls.push(valueColor(v, colorSpec));
-    if (tipFn) cls.push('xh-title-tip');
+    if (tooltip) cls.push('xh-title-tip');
 
     // Compile child items
     const asElement = true,
@@ -306,13 +305,13 @@ function fmtNumberElement(v, opts = {}) {
 
     return span({
         className: cls.join(' '),
-        title: tipFn ? tipFn(originalValue) : null,
+        title: processToolTip(tooltip, opts),
         items: items
     });
 }
 
 function fmtNumberString(v, opts = {}) {
-    const {ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tipFn, originalValue} = opts;
+    const {ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip} = opts;
     let str = opts.str;
 
     if (withSignGlyph) {
@@ -339,8 +338,8 @@ function fmtNumberString(v, opts = {}) {
         str = fmtSpan(str, {className: valueColor(v, colorSpec)});
     }
 
-    if (tipFn) {
-        str = fmtSpan(str, {className: 'xh-title-tip', title: tipFn(originalValue)});
+    if (tooltip) {
+        str = fmtSpan(str, {className: 'xh-title-tip', title: processToolTip(tooltip, opts)});
     }
 
     return str;
@@ -404,6 +403,21 @@ function isInvalidInput(v) {
     return v == null || v === '';
 }
 
+function processToolTip(tooltip, opts) {
+    if (tooltip === true) {
+        return fmtNumber(opts.originalValue, {
+            ledger: opts.ledger,
+            forceLedgerAlign: false,
+            precision: MAX_NUMERIC_PRECISION,
+            zeroPad: false
+        });
+    } else if (isFunction(tooltip)) {
+        return tooltip(opts.originalValue);
+    } else {
+        return null;
+    }
+}
+
 
 
 export const numberRenderer = createRenderer(fmtNumber),
@@ -414,3 +428,9 @@ export const numberRenderer = createRenderer(fmtNumber),
     quantityRenderer = createRenderer(fmtQuantity),
     priceRenderer = createRenderer(fmtPrice),
     percentRenderer = createRenderer(fmtPercent);
+
+/**
+ * @callback fmtNumber~tooltipFn - renderer for a custom tooltip.
+ * @param {number} originalValue - number to be formatted.
+ * @return {string} - the formatted value for display.
+ */

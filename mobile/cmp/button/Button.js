@@ -17,7 +17,7 @@ import {hspacer} from '@xh/hoist/cmp/layout';
  *
  * Must be provided an onClick handler.
  */
-@HoistComponent()
+@HoistComponent
 export class Button extends Component {
 
     static propTypes = {
