@@ -11,7 +11,7 @@ import {assign} from 'lodash';
 
 import {fmtDate} from '@xh/hoist/format';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {dateInput} from '@xh/hoist/kit/blueprint';
+import {dateInput as bpDateInput} from '@xh/hoist/kit/blueprint';
 import {Ref} from '@xh/hoist/utils/react';
 
 import {HoistInput} from '@xh/hoist/cmp/form';
@@ -22,7 +22,7 @@ import {HoistInput} from '@xh/hoist/cmp/form';
  * @see HoistInput for properties additional to those documented below.
  */
 @HoistComponent
-export class DayInput extends HoistInput {
+export class DateInput extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
@@ -61,7 +61,7 @@ export class DayInput extends HoistInput {
 
         dayPickerProps = assign({fixedWeeks: true}, dayPickerProps);
 
-        return dateInput({
+        return bpDateInput({
             className: this.getClassName(),
             ref: this.child.ref,
             value: this.renderValue,
@@ -126,4 +126,5 @@ export class DayInput extends HoistInput {
     }
 
 }
-export const dayInput = elemFactory(DayInput);
+
+export const dateInput = elemFactory(DateInput);

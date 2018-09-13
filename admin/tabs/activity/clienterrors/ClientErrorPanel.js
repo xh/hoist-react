@@ -9,7 +9,7 @@ import {HoistComponent} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {grid} from '@xh/hoist/desktop/cmp/grid';
-import {textInput, dayInput} from '@xh/hoist/desktop/cmp/form';
+import {textInput, dateInput} from '@xh/hoist/desktop/cmp/form';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {button, exportButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {storeCountLabel} from '@xh/hoist/desktop/cmp/store';
@@ -40,9 +40,9 @@ export class ClientErrorPanel extends Component {
     renderToolbar() {
         const model = this.model;
         return toolbar(
-            this.dayInput({field: 'startDate'}),
+            this.dateInput({field: 'startDate'}),
             Icon.angleRight(),
-            this.dayInput({field: 'endDate'}),
+            this.dateInput({field: 'endDate'}),
             button({
                 icon: Icon.caretLeft(),
                 onClick: this.onDateGoBackClick
@@ -73,8 +73,8 @@ export class ClientErrorPanel extends Component {
     //-----------------------------
     // Implementation
     //-----------------------------
-    dayInput(args) {
-        return dayInput({
+    dateInput(args) {
+        return dateInput({
             model: this.model,
             onCommit: this.onCommit,
             commitOnChange: true,

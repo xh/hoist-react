@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {dayInput, textInput} from '@xh/hoist/desktop/cmp/form';
+import {dateInput, textInput} from '@xh/hoist/desktop/cmp/form';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {refreshButton} from '@xh/hoist/desktop/cmp/button';
@@ -34,9 +34,9 @@ export class VisitsChart extends Component {
     renderToolbar() {
         const model = this.model;
         return toolbar(
-            this.dayInput({field: 'startDate'}),
+            this.dateInput({field: 'startDate'}),
             Icon.angleRight(),
-            this.dayInput({field: 'endDate'}),
+            this.dateInput({field: 'endDate'}),
             textInput({
                 model,
                 field: 'username',
@@ -48,8 +48,8 @@ export class VisitsChart extends Component {
         );
     }
 
-    dayInput(args) {
-        return dayInput({
+    dateInput(args) {
+        return dateInput({
             model: this.model,
             onCommit: this.onCommit,
             popoverPosition: 'top-left',
