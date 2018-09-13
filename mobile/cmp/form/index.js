@@ -6,7 +6,7 @@
  */
 
 export * from './Label';
-export * from './SearchField';
-export * from './TextField';
-export * from './TextAreaField';
-export * from './SelectField';
+export * from './SearchInput';
+export * from './TextInput';
+export * from './TextArea';
+export * from './Select';

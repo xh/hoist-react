@@ -11,21 +11,21 @@ import {assign} from 'lodash';
 
 import {fmtDate} from '@xh/hoist/format';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {dateInput} from '@xh/hoist/kit/blueprint';
+import {dateInput as bpDateInput} from '@xh/hoist/kit/blueprint';
 import {Ref} from '@xh/hoist/utils/react';
 
-import {HoistField} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
  * A Calendar Control for choosing a Day.
  *
- * @see HoistField for properties additional to those documented below.
+ * @see HoistInput for properties additional to those documented below.
  */
 @HoistComponent
-export class DayField extends HoistField {
+export class DateInput extends HoistInput {
 
     static propTypes = {
-        ...HoistField.propTypes,
+        ...HoistInput.propTypes,
 
         /** Value of the control */
         value: PT.string,
@@ -61,7 +61,7 @@ export class DayField extends HoistField {
 
         dayPickerProps = assign({fixedWeeks: true}, dayPickerProps);
 
-        return dateInput({
+        return bpDateInput({
             className: this.getClassName(),
             ref: this.child.ref,
             value: this.renderValue,
@@ -126,4 +126,5 @@ export class DayField extends HoistField {
     }
 
 }
-export const dayField = elemFactory(DayField);
+
+export const dateInput = elemFactory(DateInput);

@@ -9,7 +9,7 @@ import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {filler, fragment} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/desktop/cmp/grid';
-import {comboField, label} from '@xh/hoist/desktop/cmp/form';
+import {comboBox, label} from '@xh/hoist/desktop/cmp/form';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -47,7 +47,7 @@ export class ConfigDiffer extends Component {
                 label('Compare w/Remote'),
                 filler(),
                 label('Compare with:'),
-                comboField({
+                comboBox({
                     model,
                     commitOnChange: true,
                     placeholder: 'https://remote-host/',
