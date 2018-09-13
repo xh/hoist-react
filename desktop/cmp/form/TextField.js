@@ -10,6 +10,7 @@ import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {inputGroup} from '@xh/hoist/kit/blueprint';
 
 import {HoistField} from '@xh/hoist/cmp/form';
+import {withDefault} from '@xh/hoist/utils/js';
 
 /**
  * A Text Input Field
@@ -26,7 +27,14 @@ export class TextField extends HoistField {
         value: PT.string,
         /** Whether field should receive focus on render */
         autoFocus: PT.bool,
-        /** Type of input desired */
+        /**
+         *  autocomplete attribute to set on underlying html <input> element.
+         *
+         *  Defaults to non-valid value 'nope', in order to most effectively defeat browser autoComplete
+         *  See https://developer.mozilla.org/en-US/docs/Web/Security/Securing_your_site/Turning_off_form_autocompletion
+         */
+        autoComplete: PT.oneOf(['on', 'off', 'new-password', 'nope']),
+         /** Type of input desired */
         type: PT.oneOf(['text', 'password']),
         /** Text to display when control is empty */
         placeholder: PT.string,
@@ -47,11 +55,12 @@ export class TextField extends HoistField {
     baseClassName = 'xh-text-field';
 
     render() {
-        const {style, width, spellCheck} = this.props;
+        const {style, width, spellCheck, autoComplete} = this.props;
 
         return inputGroup({
             className: this.getClassName(),
             value: this.renderValue || '',
+            autoComplete: withDefault(autoComplete, 'nope'),
             onChange: this.onChange,
             onKeyPress: this.onKeyPress,
             onBlur: this.onBlur,
