@@ -210,9 +210,9 @@
     eslint "~4.19.1"
     eslint-plugin-react "~7.7.0"
 
-"@xh/hoist-dev-utils@~2.2.1":
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-2.2.1.tgz#40bfed1be1fa0fd9d36fc30c6c0730836277348c"
+"@xh/hoist-dev-utils@~2.2.2":
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-2.2.2.tgz#5d864288f4609d9c363a4be85636b950bc55d952"
   dependencies:
     "@xh/eslint-config" "~0.2.1"
     autoprefixer "~8.5.0"

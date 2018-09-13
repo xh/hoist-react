@@ -9,19 +9,19 @@ import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {inputGroup} from '@xh/hoist/kit/blueprint';
 
-import {HoistField} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/form';
 import {withDefault} from '@xh/hoist/utils/js';
 
 /**
- * A Text Input Field
+ * A Text Input
  *
- * @see HoistField for properties additional to those documented below.
+ * @see HoistInput for properties additional to those documented below.
  */
 @HoistComponent
-export class TextField extends HoistField {
+export class TextInput extends HoistInput {
 
     static propTypes = {
-        ...HoistField.propTypes,
+        ...HoistInput.propTypes,
 
         /** Value of the control */
         value: PT.string,
@@ -94,4 +94,4 @@ export class TextField extends HoistField {
     }
 
 }
-export const textField = elemFactory(TextField);
+export const textInput = elemFactory(TextInput);
