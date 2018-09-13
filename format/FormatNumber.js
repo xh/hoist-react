@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {defaults, isFinite, isString, isFunction, pick} from 'lodash';
+import {defaults, isFinite, isString, isFunction} from 'lodash';
 import numeral from 'numeral';
 
 import {Exception} from '@xh/hoist/exception';
@@ -78,7 +78,7 @@ export function fmtNumber(v, {
 
     if (asCompact) {
         const compactOpts = {decimalTolerance, units, precision};
-        [v, label, zeroPad] = fmtCompact(v, compactOpts)
+        [v, label, zeroPad] = fmtCompact(v, compactOpts);
     }
 
     formatPattern = formatPattern || buildFormatPattern(v, precision, zeroPad);
@@ -312,7 +312,6 @@ function buildFormatPattern(v, precision, zeroPad) {
     }
 
 
-
     if (!zeroPad) {
         const arr = pattern.split('.');
         if (arr[1]) arr[1] = `[${arr[1]}]`;
@@ -372,13 +371,13 @@ function catchCompactOptions(opts) {
     if (!opts.decimalTolerance) opts.decimalTolerance = MAX_NUMERIC_PRECISION;
     if (opts.precision < opts.decimalTolerance) {
         opts.decimalTolerance = opts.precision;
-        console.warn(`Decimal tolerance should be less than or equal to precision. Reset to ${opts.decimalTolerance}`)
+        console.warn(`Decimal tolerance should be less than or equal to precision. Reset to ${opts.decimalTolerance}`);
     }
     if (opts.zeroPad) {
         opts.zeroPad = null;
-        console.warn('fmtNumber does not support zero padding in auto mode')
+        console.warn('fmtNumber does not support zero padding in auto mode');
     }
-    return opts
+    return opts;
 }
 
 
@@ -389,12 +388,12 @@ function catchCompactOptions(opts) {
  * @param {Object} [opts] - @see {@link fmtCompact} method.
  */
 
-function scaleAndLabel (v, opts = {}) {
+function scaleAndLabel(v, opts = {}) {
     let k;
     if (opts.units) {
-        k = MAP_LABEL[opts.units]
+        k = MAP_LABEL[opts.units];
     } else {
-        const pOfTen = (v).toPrecision(2).split("e");
+        const pOfTen = (v).toPrecision(2).split('e');
         k = pOfTen.length === 1 ? 0 : Math.floor(Math.min(Number(pOfTen[1].slice(1)), 11) / 3);
     }
 
@@ -413,8 +412,8 @@ function scaleAndLabel (v, opts = {}) {
  * @param {Object} [opts] - @see {@link fmtNumber} method.
  */
 
-function setUnits(v,k,opts = {}) {
-    let num = k < 1 ? v : (v / Math.pow(10, k * 3) );
+function setUnits(v, k, opts = {}) {
+    let num = k < 1 ? v : (v / Math.pow(10, k * 3));
     num = catchSciNotation(num);
     const numStr = num.toString().split('.');
     if (opts.units || numStr.length === 1 || numStr[1].length <= opts.decimalTolerance) {

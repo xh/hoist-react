@@ -33,7 +33,8 @@ export class TextAreaField extends HoistField {
         /** Whether to allow browser spell check, defaults to true */
         spellCheck: PT.bool,
         /** Whether text in field is selected when field receives focus */
-        selectOnFocus: PT.bool
+        selectOnFocus: PT.bool,
+        rows: PT.number
     };
     
     delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus'];
@@ -41,9 +42,10 @@ export class TextAreaField extends HoistField {
     baseClassName = 'xh-textarea-field';
 
     render() {
-        const {style, width, spellCheck} = this.props;
+        const {style, width, spellCheck, rows} = this.props;
 
         return textArea({
+            rows: rows,
             className: this.getClassName(),
             value: this.renderValue || '',
             onChange: this.onChange,
