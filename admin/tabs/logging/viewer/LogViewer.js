@@ -51,7 +51,7 @@ export class LogViewer extends Component {
                     tbar: logViewerToolbar({model}),
                     item: logViewerDisplay({model})
                 }),
-                mask({model: loadModel, spinner: true})
+                mask: loadModel
             ]
         });
     }
