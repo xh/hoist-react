@@ -7,12 +7,12 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {select} from '@xh/hoist/kit/onsen';
+import {select as onsenSelect} from '@xh/hoist/kit/onsen';
 import {option} from '@xh/hoist/cmp/layout';
 import {isObject} from 'lodash';
 
 import {HoistInput} from '@xh/hoist/cmp/form';
-import './SelectBox.scss';
+import './Select.scss';
 
 /**
  * A Select Input
@@ -20,7 +20,7 @@ import './SelectBox.scss';
  * @see HoistInput for properties additional to those documented below.
  */
 @HoistComponent
-export class SelectBox extends HoistInput {
+export class Select extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
@@ -39,7 +39,7 @@ export class SelectBox extends HoistInput {
     render() {
         const {options, style, width} = this.props;
 
-        return select({
+        return onsenSelect({
             className: this.getClassName(),
             value: this.renderValue || '',
             onChange: this.onChange,
@@ -78,4 +78,4 @@ export class SelectBox extends HoistInput {
 
 }
 
-export const selectBox = elemFactory(SelectBox);
+export const select = elemFactory(Select);

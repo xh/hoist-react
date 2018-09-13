@@ -13,7 +13,7 @@ import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
  * CheckBox.
- * Note that this field does not handle null values. For nullable fields, use a SelectBox.
+ * Note that this field does not handle null values. For nullable fields, use a Select.
  */
 @HoistComponent
 export class CheckBox extends HoistInput {

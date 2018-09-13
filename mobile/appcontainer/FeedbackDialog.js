@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {button} from '@xh/hoist/mobile/cmp/button';
-import {textAreaInput} from '@xh/hoist/mobile/cmp/form';
+import {textArea} from '@xh/hoist/mobile/cmp/form';
 
 import './FeedbackDialog.scss';
 
@@ -29,7 +29,7 @@ export class FeedbackDialog extends Component {
             className: 'xh-feedback-dialog',
             isOpen: true,
             onCancel: this.onCancelClick,
-            content: textAreaInput({
+            content: textArea({
                 placeholder: 'Please enter your comments...',
                 model,
                 field: 'message'

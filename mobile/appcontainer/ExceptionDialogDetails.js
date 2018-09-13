@@ -9,7 +9,7 @@ import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
 import {fragment, pre, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {button} from '@xh/hoist/mobile/cmp/button';
-import {textAreaInput} from '@xh/hoist/mobile/cmp/form';
+import {textArea} from '@xh/hoist/mobile/cmp/form';
 import {Icon} from '@xh/hoist/icon';
 import {stringifyErrorSafely} from '@xh/hoist/exception';
 
@@ -51,7 +51,7 @@ export class ExceptionDialogDetails extends Component {
             content: fragment(
                 header,
                 pre(this.errorStr),
-                textAreaInput({
+                textArea({
                     placeholder: 'Add message here...',
                     model: model,
                     field: 'userMessage'

@@ -7,10 +7,10 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {textArea} from '@xh/hoist/kit/blueprint';
+import {textArea as bpTextarea} from '@xh/hoist/kit/blueprint';
 
 import {HoistInput} from '@xh/hoist/cmp/form';
-import './TextAreaInput.scss';
+import './TextArea.scss';
 
 /**
  * A Text Area Input
@@ -18,7 +18,7 @@ import './TextAreaInput.scss';
  * @see HoistInput for properties additional to those documented below.
  */
 @HoistComponent
-export class TextAreaInput extends HoistInput {
+export class TextArea extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
@@ -43,7 +43,7 @@ export class TextAreaInput extends HoistInput {
     render() {
         const {style, width, spellCheck} = this.props;
 
-        return textArea({
+        return bpTextarea({
             className: this.getClassName(),
             value: this.renderValue || '',
             onChange: this.onChange,
@@ -76,4 +76,4 @@ export class TextAreaInput extends HoistInput {
     }
 
 }
-export const textAreaInput = elemFactory(TextAreaInput);
+export const textArea = elemFactory(TextArea);

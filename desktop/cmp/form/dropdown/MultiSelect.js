@@ -8,12 +8,12 @@
 import {PropTypes as PT} from 'prop-types';
 import {castArray, clone, isEmpty, remove, startsWith} from 'lodash';
 import {action} from '@xh/hoist/mobx';
-import {Classes, menuItem, multiSelect} from '@xh/hoist/kit/blueprint';
+import {Classes, menuItem, multiSelect as bpMultiSelect} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 
 import {BaseDropdownInput} from './BaseDropdownInput';
-import './MultiSelectBox.scss';
+import './MultiSelect.scss';
 
 
 /**
@@ -26,7 +26,7 @@ import './MultiSelectBox.scss';
  * @see HoistInput for properties additional to those documented below.
  */
 @HoistComponent
-export class MultiSelectBox extends BaseDropdownInput {
+export class MultiSelect extends BaseDropdownInput {
 
     static propTypes = {
         ...BaseDropdownInput.propTypes,
@@ -53,7 +53,7 @@ export class MultiSelectBox extends BaseDropdownInput {
         let {placeholder, disabled} = this.props,
             {internalOptions} = this;
 
-        return multiSelect({
+        return bpMultiSelect({
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: internalOptions,
             onItemSelect: this.onItemSelect,
@@ -117,4 +117,4 @@ export class MultiSelectBox extends BaseDropdownInput {
     }
 
 }
-export const multiSelectBox = elemFactory(MultiSelectBox);
+export const multiSelect = elemFactory(MultiSelect);

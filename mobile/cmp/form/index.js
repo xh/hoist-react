@@ -8,5 +8,5 @@
 export * from './Label';
 export * from './SearchInput';
 export * from './TextInput';
-export * from './TextAreaInput';
-export * from './SelectBox';
+export * from './TextArea';
+export * from './Select';

@@ -6,12 +6,12 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
-import {Classes, select} from '@xh/hoist/kit/blueprint';
+import {Classes, select as bpSelect} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 
 import {BaseDropdownInput} from './BaseDropdownInput';
-import './SelectBox.scss';
+import './Select.scss';
 
 /**
  * A Select Input
@@ -19,7 +19,7 @@ import './SelectBox.scss';
  * @see HoistInput for properties additional to those documented below.
  */
 @HoistComponent
-export class SelectBox extends BaseDropdownInput {
+export class Select extends BaseDropdownInput {
 
     static propTypes = {
         ...BaseDropdownInput.propTypes,
@@ -43,7 +43,7 @@ export class SelectBox extends BaseDropdownInput {
         let {style, width, placeholder, disabled} = this.props,
             {renderValue, internalOptions} = this;
 
-        return select({
+        return bpSelect({
             className: this.getClassName(),
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: internalOptions,
@@ -71,4 +71,4 @@ export class SelectBox extends BaseDropdownInput {
     }
 
 }
-export const selectBox = elemFactory(SelectBox);
+export const select = elemFactory(Select);
