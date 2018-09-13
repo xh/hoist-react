@@ -8,14 +8,21 @@ import React, {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {PropTypes as PT} from 'prop-types';
 import {HoistInput} from '@xh/hoist/cmp/form';
-import {formGroup} from '@xh/hoist/kit/blueprint';
-import {div, span, hbox, hspacer} from '@xh/hoist/cmp/layout';
+import {formGroup, spinner} from '@xh/hoist/kit/blueprint';
+import {fragment, div, span} from '@xh/hoist/cmp/layout';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isArray} from 'lodash';
 
+import './FormField.scss';
+
 /**
- * Wrapper around Blueprint's FormGroup component, which integrates
- * FieldSupport and Field validation. Accepts any props supported by Blueprint's FormGroup.
+ * Standardised wrapper around HoistInputs.
+ *
+ * Should receive a single HoistInput as a child element. If the HoistInput is bound
+ * to a model enhanced by `@FieldSupport`, FormField will automatically display a label,
+ * a required asterisk and validation state.
+ *
+ * Accepts any props supported by Blueprint's FormGroup.
  */
 @HoistComponent
 export class FormField extends Component {
@@ -29,34 +36,37 @@ export class FormField extends Component {
         label: PT.string
     };
 
+    baseClassName = 'xh-form-field';
+
     render() {
         const {model, field, ...rest} = this.props,
             item = this.prepareChild(),
             hasFieldSupport = model && field && model.hasFieldSupport,
             fieldModel = hasFieldSupport ? model.getField(field) : null,
-            notValid = fieldModel && fieldModel.isNotValid,
             isRequired = fieldModel && fieldModel.isRequired,
             isPending = fieldModel && fieldModel.isValidationPending,
+            notValid = fieldModel && fieldModel.isNotValid,
+            errors = fieldModel ? fieldModel.errors : [],
             labelStr = this.props.label || (fieldModel ? fieldModel.displayName : null),
             label = isRequired ? div(labelStr, span(' *')) : div(labelStr);
 
         return formGroup({
             label,
             item,
-            helperText: hbox({
-                height: 15,
-                items: [
-                    span({
-                        style: {color: 'red'},
-                        item: notValid ? fieldModel.errors[0] : ''
-                    }),
-                    hspacer(5),
-                    span({
-                        omit: !isPending,
-                        item: 'Checking ...'
-                    })
-                ]
-            }),
+            className: this.getClassName(notValid ? 'xh-form-field-invalid' : ''),
+            helperText: fragment(
+                div({
+                    omit: !isPending,
+                    className: 'xh-form-field-pending',
+                    item: spinner({size: 15})
+                }),
+                div({
+                    omit: !notValid,
+                    className: 'xh-form-field-error-msg',
+                    item: notValid ? errors[0] : null,
+                    title: notValid ? errors.join('. ') : null
+                })
+            ),
             ...rest
         });
     }
