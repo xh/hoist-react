@@ -132,7 +132,7 @@ export class Column {
         this.excludeFromExport = withDefault(excludeFromExport, !field);
 
         this.tooltip = tooltip;
-        this.agOptions = agOptions ? clone(agOptions) || {};
+        this.agOptions = agOptions ? clone(agOptions) : {};
     }
 
 
