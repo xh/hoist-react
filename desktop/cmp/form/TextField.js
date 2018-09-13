@@ -34,7 +34,7 @@ export class TextField extends HoistField {
          *  See https://developer.mozilla.org/en-US/docs/Web/Security/Securing_your_site/Turning_off_form_autocompletion
          */
         autoComplete: PT.oneOf(['on', 'off', 'new-password', 'nope']),
-         /** Type of input desired */
+        /** Type of input desired */
         type: PT.oneOf(['text', 'password']),
         /** Text to display when control is empty */
         placeholder: PT.string,
