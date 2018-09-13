@@ -129,6 +129,7 @@ export class HoistField extends Component {
     noteValueChange(val) {
         const {commitOnChange, onChange} = this.props;
 
+        console.log('setting internal val', val)
         this.setInternalValue(val);
         if (onChange) onChange(this.toExternal(val));
         if (commitOnChange) this.doCommit();

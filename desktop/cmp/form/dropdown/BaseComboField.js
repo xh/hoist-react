@@ -74,8 +74,9 @@ export class BaseComboField extends BaseDropdownField {
         this.pendingCommit = val;
     }
 
-    onChange = (ev) => {
-        this.noteValueChange(ev.target.value);
+    onChange = (string) => {
+        console.log('onchange', string);
+        this.noteValueChange(string);
     }
 
 }

@@ -51,9 +51,9 @@ export class BaseDropdownField extends HoistField {
     // Common handling of options, rendering of selected option
     //-----------------------------------------------------------
     @action
-    normalizeOptions(options) {
+    normalizeOptions(options, additionalOption) {
         options = withDefault(options, []);
-        this.internalOptions = options.map(o => {
+        options = options.map(o => {
             const ret = isObject(o) ?
                 {label: o.label, value: o.value} :
                 {label: o != null ? o.toString() : '-null-', value: o};
@@ -61,6 +61,12 @@ export class BaseDropdownField extends HoistField {
             ret.value = this.toInternal(ret.value);
             return ret;
         });
+
+        if (additionalOption && !find(options, (it) => it.value == additionalOption || it.label == additionalOption)) {
+            options.unshift({value: additionalOption, label: additionalOption});
+        }
+
+        this.internalOptions = options;
     }
 
     getOptionRenderer() {
@@ -84,6 +90,7 @@ export class BaseDropdownField extends HoistField {
     }
 
     onItemSelect = (val) => {
+        console.log('onItemSelect', val);
         this.noteValueChange(val.value);
         if (!this.props.commitOnChange) this.doCommit();
     }

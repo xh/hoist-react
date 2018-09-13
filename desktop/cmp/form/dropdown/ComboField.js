@@ -6,6 +6,8 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
+import {find} from 'lodash';
+import {observable, action} from '@xh/hoist/mobx';
 import {startsWith} from 'lodash';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Classes, suggest} from '@xh/hoist/kit/blueprint';
@@ -37,6 +39,8 @@ export class ComboField extends BaseComboField {
 
     baseClassName = 'xh-combo-field';
 
+    @observable.ref activeItem = null;
+
     constructor(props) {
         super(props);
         this.addAutorun(() => this.normalizeOptions(this.props.options));
@@ -45,6 +49,13 @@ export class ComboField extends BaseComboField {
     render() {
         const {style, width, disabled} = this.props,
             {renderValue, internalOptions} = this;
+
+        const displayValue = this.getDisplayValue(renderValue, internalOptions, '');
+
+        // controlled active item is set through this components handler, or based on previously selected value
+        // fallback to selecting first item to allow better user experience when adding options (!requireSelection)
+        // TODO: Allow a null selection if query is no good and requireSelect == true
+        const activeItem = this.activeItem || find(internalOptions, {value: this.externalValue}) || internalOptions[0];
 
         return suggest({
             className: this.getClassName(),
@@ -55,10 +66,12 @@ export class ComboField extends BaseComboField {
                 return startsWith(item.label.toLowerCase(), q.toLowerCase());
             },
             itemRenderer: this.getOptionRenderer(),
-            inputValueRenderer: s => s,
+            activeItem,
+            onActiveItemChange: this.setActiveItem,
+            inputValueRenderer: selectedItem => displayValue,
+            query: displayValue,
+            onQueryChange: this.onChange,
             inputProps: {
-                value: this.getDisplayValue(renderValue, internalOptions, ''),
-                onChange: this.onChange,
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,
                 onFocus: this.onFocus,
@@ -67,6 +80,16 @@ export class ComboField extends BaseComboField {
             },
             disabled
         });
+    }
+
+    @action
+    setActiveItem = (item) => {
+        this.activeItem = item;
+    }
+
+    onChange = (string) => {
+        if (!this.props.requireSelection) this.normalizeOptions(this.props.options, string);
+        this.noteValueChange(string);
     }
 
     onBlur = () => {
