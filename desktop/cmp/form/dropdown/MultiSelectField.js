@@ -67,6 +67,7 @@ export class MultiSelectField extends BaseDropdownField {
                 tagProps: {minimal: true},
                 className: this.getClassName(),
                 placeholder,
+                inputProps: {placeholder: ''},
                 onRemove: this.onRemoveTag
             },
             selectedItems: this.externalValue || [],
