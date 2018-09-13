@@ -67,7 +67,7 @@ export class FormField extends Component {
                     omit: !notValid,
                     className: 'xh-form-field-error-msg',
                     item: notValid ? errors[0] : null,
-                    title: notValid ? errors.join('. ') : null
+                    title: notValid ? errors.join(' | ') : null
                 })
             ),
             ...rest
