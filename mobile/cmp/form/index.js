@@ -9,4 +9,4 @@ export * from './Label';
 export * from './SearchInput';
 export * from './TextInput';
 export * from './TextAreaInput';
-export * from './SelectInput';
+export * from './SelectBox';

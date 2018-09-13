@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
-import {selectInput} from '@xh/hoist/mobile/cmp/form';
+import {selectBox} from '@xh/hoist/mobile/cmp/form';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
@@ -35,7 +35,7 @@ export class ImpersonationBar extends Component {
             className: 'xh-impersonation-bar',
             items: [
                 Icon.user({size: 'lg'}),
-                selectInput({
+                selectBox({
                     value: username,
                     options: options,
                     commitOnChange: true,

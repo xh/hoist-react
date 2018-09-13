@@ -15,7 +15,7 @@ import {HoistInput} from '@xh/hoist/cmp/form';
 /**
  * BaseDropdownInput
  *
- * Abstract class supporting BaseComboInput and SelectInput.
+ * Abstract class supporting BaseComboBox and SelectBox.
  */
 export class BaseDropdownInput extends HoistInput {
 

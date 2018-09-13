@@ -11,12 +11,12 @@ import {debounce} from 'lodash';
 import {BaseDropdownInput} from './BaseDropdownInput';
 
 /**
- * Abstract superclass supporting ComboInput and QueryComboInput.
+ * Abstract superclass supporting ComboBox and QueryComboBox.
  *
  * This includes debouncing commits due to the multiple ways committing
  * can be triggered from these inputs (blur/enter/item select).
  */
-export class BaseComboInput extends BaseDropdownInput {
+export class BaseComboBox extends BaseDropdownInput {
 
     @observable pendingCommit;
 

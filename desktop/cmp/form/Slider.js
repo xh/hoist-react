@@ -8,7 +8,7 @@
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {box} from '@xh/hoist/cmp/layout';
-import {slider, rangeSlider} from '@xh/hoist/kit/blueprint';
+import {slider as bpSlider, rangeSlider as bpRangeSlider} from '@xh/hoist/kit/blueprint';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isArray} from 'lodash';
 import {toJS} from 'mobx';
@@ -21,7 +21,7 @@ import {HoistInput} from '@xh/hoist/cmp/form';
  */
 @HoistComponent
 @LayoutSupport
-export class SliderInput extends HoistInput {
+export class Slider extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
@@ -52,12 +52,12 @@ export class SliderInput extends HoistInput {
 
     constructor(props) {
         super(props);
-        throwIf(!props.commitOnChange, 'A commitOnChange value of false not implemented on SliderInput.');
+        throwIf(!props.commitOnChange, 'A commitOnChange value of false not implemented on Slider.');
     }
 
     render() {
         const {labelStepSize, labelRenderer, min, max, stepSize, showTrackFill, vertical} = this.props,
-            input = isArray(toJS(this.renderValue)) ? rangeSlider : slider;
+            input = isArray(toJS(this.renderValue)) ? bpRangeSlider : bpSlider;
 
         // Set default left / right padding
         const layoutProps = this.getLayoutProps();
@@ -97,4 +97,4 @@ export class SliderInput extends HoistInput {
     }
 
 }
-export const sliderInput = elemFactory(SliderInput);
+export const slider = elemFactory(Slider);

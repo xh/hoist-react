@@ -13,7 +13,7 @@ import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
  * Switch Input.
- * Note that that component does not handle null values. For nullable fields, use a SelectInput.
+ * Note that that component does not handle null values. For nullable fields, use a SelectBox.
  */
 @HoistComponent
 export class SwitchInput extends HoistInput {

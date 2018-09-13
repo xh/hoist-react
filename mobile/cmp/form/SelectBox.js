@@ -12,7 +12,7 @@ import {option} from '@xh/hoist/cmp/layout';
 import {isObject} from 'lodash';
 
 import {HoistInput} from '@xh/hoist/cmp/form';
-import './SelectInput.scss';
+import './SelectBox.scss';
 
 /**
  * A Select Input
@@ -20,7 +20,7 @@ import './SelectInput.scss';
  * @see HoistInput for properties additional to those documented below.
  */
 @HoistComponent
-export class SelectInput extends HoistInput {
+export class SelectBox extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
@@ -78,4 +78,4 @@ export class SelectInput extends HoistInput {
 
 }
 
-export const selectInput = elemFactory(SelectInput);
+export const selectBox = elemFactory(SelectBox);

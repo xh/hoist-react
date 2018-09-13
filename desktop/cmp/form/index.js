@@ -5,17 +5,17 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-export * from './CheckInput';
+export * from './CheckBox';
 export * from './DayInput';
 export * from './FormField';
 export * from './JsonInput';
 export * from './Label';
 export * from './NumberInput';
-export * from './SliderInput';
+export * from './Slider';
 export * from './SwitchInput';
 export * from './TextAreaInput';
 export * from './TextInput';
-export * from './dropdown/ComboInput';
-export * from './dropdown/QueryComboInput';
-export * from './dropdown/SelectInput';
-export * from './dropdown/MultiSelectInput';
+export * from './dropdown/ComboBox';
+export * from './dropdown/QueryComboBox';
+export * from './dropdown/SelectBox';
+export * from './dropdown/MultiSelectBox';

@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {label, numberInput, textInput, checkInput} from '@xh/hoist/desktop/cmp/form';
+import {label, numberInput, textInput, checkBox} from '@xh/hoist/desktop/cmp/form';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {filler} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
@@ -46,7 +46,7 @@ export class LogViewerToolbar extends Component {
                     width: 150,
                     onCommit: this.onCommit
                 }),
-                checkInput({
+                checkBox({
                     model,
                     field: 'tail',
                     text: 'Tail'

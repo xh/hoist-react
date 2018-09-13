@@ -10,7 +10,7 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {controlGroup} from '@xh/hoist/kit/blueprint';
 import {fmtDateTime} from '@xh/hoist/format';
 import {hbox} from '@xh/hoist/cmp/layout';
-import {label, checkInput, comboInput, jsonInput, numberInput, selectInput, textAreaInput, textInput}  from '@xh/hoist/desktop/cmp/form';
+import {label, checkBox, comboBox, jsonInput, numberInput, selectBox, textAreaInput, textInput}  from '@xh/hoist/desktop/cmp/form';
 
 @HoistComponent
 export class RestControl extends Component {
@@ -85,7 +85,7 @@ export class RestControl extends Component {
 
         const options = [...lookup];
 
-        return comboInput({
+        return comboBox({
             model,
             field: 'value',
             options,
@@ -111,7 +111,7 @@ export class RestControl extends Component {
 
         if (!field.required && !field.lookupStrict) options.unshift(null);
 
-        return selectInput({
+        return selectBox({
             model,
             field: 'value',
             options,
@@ -121,7 +121,7 @@ export class RestControl extends Component {
 
     renderCheckField() {
         const model = this.model;
-        return checkInput({
+        return checkBox({
             model,
             field: 'value',
             disabled: !model.isEditable

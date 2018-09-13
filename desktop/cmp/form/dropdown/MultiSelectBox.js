@@ -13,7 +13,7 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 
 import {BaseDropdownInput} from './BaseDropdownInput';
-import './MultiSelectInput.scss';
+import './MultiSelectBox.scss';
 
 
 /**
@@ -26,7 +26,7 @@ import './MultiSelectInput.scss';
  * @see HoistInput for properties additional to those documented below.
  */
 @HoistComponent
-export class MultiSelectInput extends BaseDropdownInput {
+export class MultiSelectBox extends BaseDropdownInput {
 
     static propTypes = {
         ...BaseDropdownInput.propTypes,
@@ -117,4 +117,4 @@ export class MultiSelectInput extends BaseDropdownInput {
     }
 
 }
-export const multiSelectInput = elemFactory(MultiSelectInput);
+export const multiSelectBox = elemFactory(MultiSelectBox);

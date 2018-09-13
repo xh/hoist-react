@@ -11,7 +11,7 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 
 import {BaseDropdownInput} from './BaseDropdownInput';
-import './SelectInput.scss';
+import './SelectBox.scss';
 
 /**
  * A Select Input
@@ -19,7 +19,7 @@ import './SelectInput.scss';
  * @see HoistInput for properties additional to those documented below.
  */
 @HoistComponent
-export class SelectInput extends BaseDropdownInput {
+export class SelectBox extends BaseDropdownInput {
 
     static propTypes = {
         ...BaseDropdownInput.propTypes,
@@ -71,4 +71,4 @@ export class SelectInput extends BaseDropdownInput {
     }
 
 }
-export const selectInput = elemFactory(SelectInput);
+export const selectBox = elemFactory(SelectBox);

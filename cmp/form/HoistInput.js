@@ -30,7 +30,7 @@ import './HoistInput.scss';
  * hits 'enter' or 'blurs' the field, or takes another commit action defined by the control.
  * At this time, any specified 'onCommit' handler will be fired.
  *
- * The 'commitOnChange' property defaults to false, except for selected controls such as CheckInput
+ * The 'commitOnChange' property defaults to false, except for selected controls such as CheckBox
  * where a true value is more intuitive. Also note that `commitOnChange: false` is not currently
  * supported on DropdownInputs and ComboBoxes - see BaseDropdownInput for more information.
  *
