@@ -10,9 +10,12 @@ import {UrlStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {boolCheckCol} from '@xh/hoist/columns';
 import {usernameCol} from '@xh/hoist/admin/columns';
+import {bindable, action} from '@xh/hoist/mobx/index';
 
 @HoistModel
 export class UserModel {
+
+    @bindable displayInactive = false;
 
     gridModel = new GridModel({
         stateModel: 'xhUserGrid',
@@ -32,7 +35,17 @@ export class UserModel {
         ]
     });
 
+    constructor() {
+        this.addReaction({
+            track: () => [this.displayInactive],
+            run: () => this.loadAsync()
+        });
+    }
+
+    @action
     async loadAsync() {
-        return this.gridModel.loadAsync();
+        const gridModel = this.gridModel;
+        gridModel.store.setFilter((rec) => rec.active || this.displayInactive);
+        return gridModel.loadAsync();
     }
 }
