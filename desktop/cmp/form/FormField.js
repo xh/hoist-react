@@ -18,9 +18,12 @@ import './FormField.scss';
 /**
  * Standardised wrapper around HoistInputs.
  *
- * Should receive a single HoistInput as a child element. If the HoistInput is bound
- * to a model enhanced by `@FieldSupport`, FormField will automatically display a label,
- * a required asterisk and validation state.
+ * Should receive a single HoistInput as a child element. FormField is typically bound
+ * to a model enhanced with `@FieldSupport` via its `model` and `field` props. This allows
+ * FormField to automatically display a label, a required asterisk and validation state.
+ *
+ * When FormField is used in bound mode, the child HoistInput should *not* declare its own
+ * `model` and `field` props, as these are managed by the FormField.
  *
  * Accepts any props supported by Blueprint's FormGroup.
  */
@@ -32,14 +35,14 @@ export class FormField extends Component {
         model: PT.object,
         /** name of property in model to bind to */
         field: PT.string,
-        /** optional label for form field */
+        /** label for form field. Defaults to Field displayName if used with @FieldSupport */
         label: PT.string
     };
 
     baseClassName = 'xh-form-field';
 
     render() {
-        const {model, field, ...rest} = this.props,
+        const {model, field, label, ...rest} = this.props,
             item = this.prepareChild(),
             hasFieldSupport = model && field && model.hasFieldSupport,
             fieldModel = hasFieldSupport ? model.getField(field) : null,
@@ -47,12 +50,12 @@ export class FormField extends Component {
             isPending = fieldModel && fieldModel.isValidationPending,
             notValid = fieldModel && fieldModel.isNotValid,
             errors = fieldModel ? fieldModel.errors : [],
-            labelStr = this.props.label || (fieldModel ? fieldModel.displayName : null),
-            label = isRequired ? div(labelStr, span(' *')) : div(labelStr);
+            labelStr = label || (fieldModel ? fieldModel.displayName : null),
+            labelEl = isRequired ? div(labelStr, span(' *')) : div(labelStr);
 
         return formGroup({
-            label,
             item,
+            label: labelEl,
             className: this.getClassName(notValid ? 'xh-form-field-invalid' : ''),
             helperText: fragment(
                 div({
