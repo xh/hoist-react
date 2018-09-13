@@ -55,6 +55,9 @@ const UP_TICK = '▴',
  * If no options are given, a heuristic based auto-rounding will occur.
  */
 export function fmtNumber(v, {
+    asCompact = false,
+    units = null,
+    decimalTolerance = null,
     nullDisplay = '',
     formatPattern = null,
     precision = 'auto',
@@ -73,6 +76,11 @@ export function fmtNumber(v, {
 
     if (isInvalidInput(v)) return nullDisplay;
 
+    if (asCompact) {
+        const compactOpts = {decimalTolerance, units, precision};
+        [v, label, zeroPad] = fmtCompact(v, compactOpts)
+    }
+
     formatPattern = formatPattern || buildFormatPattern(v, precision, zeroPad);
     let str = numeral(v).format(formatPattern);
 
@@ -83,91 +91,6 @@ export function fmtNumber(v, {
 
     const opts = {str, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip, originalValue};
     return asElement ? fmtNumberElement(v, opts) : fmtNumberString(v, opts);
-}
-
-/**
- * Dynamically render number in thousands, millions, or billions.
- *
- * @param {number} v - value to format.
- * @param {Object} [opts] - @see {@link fmtNumber} method, wit one additional value:
- * @param {(number)} [opts.decimalTolerance] - when scaling numbers greater than 999,
- *  maximum number of decimal places tolerated before shifting scale (e.g. millions -> thousands).
- */
-
-export function fmtCompact(v, opts = {})  {
-    if (isInvalidInput(v)) return fmtNumber(v, opts);
-
-    saveOriginal(v, opts);
-    opts = catchDecimalTolerance(opts)
-
-    if (!opts.decimalTolerance) opts.decimalTolerance = MAX_NUMERIC_PRECISION;
-    if (!opts.label) opts.label = null;
-    const cOptions = _.pick(opts, ['label', 'precision', 'decimalTolerance']);
-
-
-
-    const scaled = scaleAndLabel(v, cOptions);
-    v = catchSciNotation(scaled.v);
-    opts = {...opts, label: scaled.label};
-
-    return fmtNumber(v, opts);
-}
-
-function catchDecimalTolerance(opts) {
-    if (opts.precision < opts.decimalTolerance) {
-        opts.decimalTolerance = opts.precision
-        console.warn(`Decimal tolerance should be less than or equal to precision. Reset to ${opts.decimalTolerance}`)
-    }
-    return opts
-}
-
-
-/**
- * Scale and label number according to its size (default) or by a fixed size if a label param is passed
- *
- * @param {number} v - value to format.
- * @param {Object} [opts] - @see {@link fmtCompact} method.
- */
-
-function scaleAndLabel (v, opts = {}) {
-    let k;
-    if (opts.label) {
-        k = MAP_LABEL[opts.label]
-    } else {
-        const pOfTen = (v).toPrecision(2).split("e");
-        k = pOfTen.length === 1 ? 0 : Math.floor(Math.min(Number(pOfTen[1].slice(1)), 11) / 3);
-}
-
-    const scaled = {};
-    [scaled.v, k] = setDecimals(v,k,opts);
-    scaled.label = ['', 'k', 'm', 'b'][k];
-    return scaled
-}
-
-/**
- * Render number in millions.
- *
- * @param {number} v - value to format.
- * @param {Object} [opts] - @see {@link fmtNumber} method.
- */
-
-function setDecimals (v, k, opts = {}) {
-    const num = k < 1 ? v : (v / Math.pow(10, k * 3) );
-    const numStr = num.toString().split('.');
-    if (opts.label || numStr.length === 1 || numStr[1].length <= opts.decimalTolerance) {
-        return [num, k];
-    } else {
-        const shifts = Math.min(Math.floor(numStr[1].length / opts.decimalTolerance), k);
-        return [num * Math.pow(1000, shifts), k - shifts];
-    }
-}
-
-function catchSciNotation(v) {
-    if (v > 1e-6) {
-        return v
-    } else {
-        return 0
-    }
 }
 
 /**
@@ -418,10 +341,100 @@ function processToolTip(tooltip, opts) {
     }
 }
 
+//---------------
+// fmtCompact and helpers
+//---------------
+
+
+/**
+ * Dynamically render number in thousands, millions, or billions.
+ *
+ * @param {number} v - value to format.
+ * @param {Object} [opts] - @see {@link fmtNumber} method, wit one additional value:
+ * @param {(number)} [opts.decimalTolerance] - when scaling numbers greater than 999,
+ *  maximum number of decimal places tolerated before shifting scale (e.g. millions -> thousands).
+ */
+
+function fmtCompact(v, opts = {})  {
+    saveOriginal(v, opts);
+    opts = catchCompactOptions(opts);
+    const scaled = scaleAndLabel(v, opts);
+    return [scaled.v, scaled.label, opts.zeroPad];
+}
+
+/**
+ * Modify invalid options and warn the user.
+ *
+ * @param {Object} [opts] - @see {@link fmtCompact} method.
+ */
+
+function catchCompactOptions(opts) {
+    if (!opts.decimalTolerance) opts.decimalTolerance = MAX_NUMERIC_PRECISION;
+    if (opts.precision < opts.decimalTolerance) {
+        opts.decimalTolerance = opts.precision;
+        console.warn(`Decimal tolerance should be less than or equal to precision. Reset to ${opts.decimalTolerance}`)
+    }
+    if (opts.zeroPad) {
+        opts.zeroPad = null;
+        console.warn('fmtNumber does not support zero padding in auto mode')
+    }
+    return opts
+}
+
+
+/**
+ * Scale and label number according to its size (default) or by a fixed size if a label param is passed
+ *
+ * @param {number} v - value to format.
+ * @param {Object} [opts] - @see {@link fmtCompact} method.
+ */
+
+function scaleAndLabel (v, opts = {}) {
+    let k;
+    if (opts.units) {
+        k = MAP_LABEL[opts.units]
+    } else {
+        const pOfTen = (v).toPrecision(2).split("e");
+        k = pOfTen.length === 1 ? 0 : Math.floor(Math.min(Number(pOfTen[1].slice(1)), 11) / 3);
+    }
+
+    const scaled = {};
+    [scaled.v, k] = setUnits(v, k, opts);
+    scaled.label = ['', 'k', 'm', 'b'][k];
+    return scaled;
+}
+
+/**
+ * If a units parameter was passed, translate the number by that value.
+ * If no units parameter was passed, set units according to decimalTolerance.
+ *
+ * @param {number} v - value to format.
+ * @param {number} k - units (passed from scaleAndLabel).
+ * @param {Object} [opts] - @see {@link fmtNumber} method.
+ */
+
+function setUnits(v,k,opts = {}) {
+    let num = k < 1 ? v : (v / Math.pow(10, k * 3) );
+    num = catchSciNotation(num);
+    const numStr = num.toString().split('.');
+    if (opts.units || numStr.length === 1 || numStr[1].length <= opts.decimalTolerance) {
+        return [num, k];
+    } else {
+        const shifts = Math.min(Math.floor(numStr[1].length / opts.decimalTolerance), k);
+        return [num * Math.pow(1000, shifts), k - shifts];
+    }
+}
+
+function catchSciNotation(v) {
+    if (v > 1e-6) {
+        return v;
+    } else {
+        return 0;
+    }
+}
 
 
 export const numberRenderer = createRenderer(fmtNumber),
-    compactRenderer = createRenderer(fmtCompact),
     thousandsRenderer = createRenderer(fmtThousands),
     millionsRenderer = createRenderer(fmtMillions),
     billionsRenderer = createRenderer(fmtBillions),
