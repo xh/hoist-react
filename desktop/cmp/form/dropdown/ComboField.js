@@ -51,11 +51,7 @@ export class ComboField extends BaseComboField {
             {renderValue, internalOptions} = this;
 
         const displayValue = this.getDisplayValue(renderValue, internalOptions, '');
-
-        // controlled active item is set through this components handler, or based on previously selected value
-        // fallback to selecting first item to allow better user experience when adding options (!requireSelection)
-        // TODO: Allow a null selection if query is no good and requireSelect == true
-        const activeItem = this.activeItem || find(internalOptions, {value: this.externalValue}) || internalOptions[0];
+        const activeItem = this.getActiveItem();
 
         return suggest({
             className: this.getClassName(),
@@ -85,6 +81,24 @@ export class ComboField extends BaseComboField {
     @action
     setActiveItem = (item) => {
         this.activeItem = item;
+    }
+
+    getActiveItem() {
+        const {internalOptions} = this;
+        // controlled active item is set through this components handler, or based on previously selected value
+        // fallback to selecting first item to allow better user experience when adding options (!requireSelection)
+        return this.activeItem || find(internalOptions, {value: this.externalValue}) || internalOptions[0];
+    }
+
+    onItemSelect = (val) => {
+        // allow a null selection if query is no good and requireSelect == true
+        if (this.props.requireSelection && !startsWith(val.label.toLowerCase(), this.internalValue.toLowerCase())) {
+            this.noteValueChange(null);
+            this.doDebouncedCommit();
+            return;
+        }
+        this.noteValueChange(val.value);
+        this.doDebouncedCommit();
     }
 
     onChange = (string) => {
