@@ -51,9 +51,9 @@ export class BaseDropdownInput extends HoistInput {
     // Common handling of options, rendering of selected option
     //-----------------------------------------------------------
     @action
-    normalizeOptions(options) {
+    normalizeOptions(options, additionalOption) {
         options = withDefault(options, []);
-        this.internalOptions = options.map(o => {
+        options = options.map(o => {
             const ret = isObject(o) ?
                 {label: o.label, value: o.value} :
                 {label: o != null ? o.toString() : '-null-', value: o};
@@ -61,6 +61,12 @@ export class BaseDropdownInput extends HoistInput {
             ret.value = this.toInternal(ret.value);
             return ret;
         });
+
+        if (additionalOption && !find(options, (it) => it.value == additionalOption || it.label == additionalOption)) {
+            options.unshift({value: additionalOption, label: additionalOption});
+        }
+
+        this.internalOptions = options;
     }
 
     getOptionRenderer() {
