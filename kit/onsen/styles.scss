@@ -31,18 +31,18 @@
   }
 }
 
-.xh-field-label {
+.xh-input-label {
   font-size: 10px;
   text-transform: uppercase;
   color: var(--xh-text-color-muted);
 }
 
-.xh-field {
+.xh-input {
   &, input, textarea, select {
     font-size: 14px;
   }
 
-  &.xh-text-field {
+  &.xh-text-input {
     margin: 4px;
 
     .text-input, .text-input__label {
@@ -50,16 +50,16 @@
     }
   }
 
-  &.xh-search-field {
+  &.xh-search-input {
     margin: 4px;
   }
 
-  &.xh-select-field select {
+  &.xh-select select {
     padding: 0 var(--xh-pad-px);
     background-position: calc(100% - 10px) center;
   }
 
-  &.xh-textarea-field {
+  &.xh-textarea {
     padding: var(--xh-pad-px);
     background-color: var(--xh-bg);
     color: var(--xh-text-color);

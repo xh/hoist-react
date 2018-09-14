@@ -1,5 +1,5 @@
-.xh-search-field {
-  &.xh-field-invalid {
+.xh-search-input {
+  &.xh-input-invalid {
     ons-search-input {
       border: var(--xh-form-field-invalid-border);
     }

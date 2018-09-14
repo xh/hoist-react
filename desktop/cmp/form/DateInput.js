@@ -54,7 +54,7 @@ export class DateInput extends HoistInput {
 
     delegateProps = ['className', 'disabled', 'rightElement'];
 
-    baseClassName = 'xh-day-field';
+    baseClassName = 'xh-date-input';
 
     render() {
         let {minDate, maxDate, width, popoverPosition, style, dayPickerProps, leftIcon} = this.props;

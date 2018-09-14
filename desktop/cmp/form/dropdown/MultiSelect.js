@@ -42,7 +42,7 @@ export class MultiSelect extends BaseDropdownInput {
 
     delegateProps = ['className', 'disabled'];
 
-    baseClassName = 'xh-multi-select-field';
+    baseClassName = 'xh-multi-select';
 
     constructor(props) {
         super(props);

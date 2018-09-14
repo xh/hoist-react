@@ -52,7 +52,7 @@ export class NumberInput extends HoistInput {
 
     delegateProps = ['className', 'disabled', 'min', 'max', 'placeholder', 'leftIcon'];
 
-    baseClassName = 'xh-number-field';
+    baseClassName = 'xh-number-input';
 
     render() {
         const {width, style, enableShorthandUnits} = this.props,

@@ -38,7 +38,7 @@ export class TextInput extends HoistInput {
 
     delegateProps = ['className', 'disabled', 'type', 'placeholder', 'modifier'];
 
-    baseClassName = 'xh-text-field';
+    baseClassName = 'xh-text-input';
 
     render() {
         const {style, width, spellCheck} = this.props;

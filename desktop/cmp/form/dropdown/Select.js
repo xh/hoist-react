@@ -32,7 +32,7 @@ export class Select extends BaseDropdownInput {
 
     delegateProps = ['className', 'disabled'];
 
-    baseClassName = 'xh-select-field';
+    baseClassName = 'xh-select';
 
     constructor(props) {
         super(props);

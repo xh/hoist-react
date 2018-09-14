@@ -48,7 +48,7 @@ export class Slider extends HoistInput {
 
     delegateProps = ['className', 'disabled'];
 
-    baseClassName = 'xh-slider-field';
+    baseClassName = 'xh-slider';
 
     constructor(props) {
         super(props);

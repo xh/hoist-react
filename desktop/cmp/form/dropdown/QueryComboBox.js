@@ -42,7 +42,7 @@ export class QueryComboBox extends BaseComboBox {
 
     delegateProps = ['className', 'style', 'placeholder', 'disabled', 'leftIcon', 'rightElement'];
 
-    baseClassName = 'xh-query-combo-field';
+    baseClassName = 'xh-query-combo-box';
 
     constructor(props) {
         super(props);

@@ -36,7 +36,7 @@ export class SearchInput extends HoistInput {
 
     delegateProps = ['className', 'disabled', 'placeholder', 'modifier'];
 
-    baseClassName = 'xh-search-field';
+    baseClassName = 'xh-search-input';
 
     render() {
         const {style, width, spellCheck} = this.props;

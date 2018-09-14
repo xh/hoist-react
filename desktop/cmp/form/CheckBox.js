@@ -28,7 +28,7 @@ export class CheckBox extends HoistInput {
         inline: true
     }
 
-    baseClassName = 'xh-check-field';
+    baseClassName = 'xh-check-box';
 
     render() {
         return checkbox({

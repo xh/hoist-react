@@ -35,7 +35,7 @@ export class ComboBox extends BaseComboBox {
 
     delegateProps = ['className', 'disabled', 'placeholder', 'leftIcon', 'rightElement'];
 
-    baseClassName = 'xh-combo-field';
+    baseClassName = 'xh-combo-box';
 
     constructor(props) {
         super(props);

@@ -28,7 +28,7 @@ export class SwitchInput extends HoistInput {
         inline: true
     };
 
-    baseClassName = 'xh-switch-field';
+    baseClassName = 'xh-switch-input';
 
     render() {
         return switchControl({

@@ -1,5 +1,5 @@
-.xh-text-field {
-  &.xh-field-invalid {
+.xh-text-input {
+  &.xh-input-invalid {
     ons-input {
       border: var(--xh-form-field-invalid-border);
     }

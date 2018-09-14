@@ -34,7 +34,7 @@ export class Select extends HoistInput {
 
     delegateProps = ['disabled', 'modifier'];
 
-    baseClassName = 'xh-select-field';
+    baseClassName = 'xh-select';
 
     render() {
         const {options, style, width} = this.props;

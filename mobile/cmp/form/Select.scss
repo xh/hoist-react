@@ -1,5 +1,5 @@
-.xh-select-field {
-  &.xh-field-invalid > select {
+.xh-select {
+  &.xh-input-invalid > select {
     border: var(--xh-form-field-invalid-border);
   }
 }

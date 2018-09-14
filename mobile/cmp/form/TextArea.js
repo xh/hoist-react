@@ -34,7 +34,7 @@ export class TextArea extends HoistInput {
 
     delegateProps = ['className', 'disabled', 'type', 'placeholder'];
 
-    baseClassName = 'xh-textarea-field';
+    baseClassName = 'xh-textarea';
 
     render() {
         const {style, width, spellCheck} = this.props;
