@@ -6,6 +6,7 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
+import {observable, action} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Classes, suggest} from '@xh/hoist/kit/blueprint';
 
@@ -44,6 +45,8 @@ export class QueryComboBox extends BaseComboBox {
 
     baseClassName = 'xh-query-combo-field';
 
+    @observable.ref activeItem = null;
+
     constructor(props) {
         super(props);
         this.addAutorun({
@@ -54,7 +57,9 @@ export class QueryComboBox extends BaseComboBox {
 
     render() {
         const {style, width, disabled} = this.props,
-            {renderValue, internalOptions} = this;
+            {renderValue, internalOptions} = this,
+            displayValue = this.getDisplayValue(renderValue, internalOptions, ''),
+            activeItem = this.getActiveItem();
 
         return suggest({
             className: this.getClassName(),
@@ -62,10 +67,13 @@ export class QueryComboBox extends BaseComboBox {
             $items: internalOptions,
             onItemSelect: this.onItemSelect,
             itemRenderer: this.getOptionRenderer(),
-            inputValueRenderer: s => s,
+            activeItem,
+            onActiveItemChange: this.setActiveItem,
+            inputValueRenderer: s => displayValue,
+            query: displayValue,
+            onQueryChange: this.onChange,
             inputProps: {
                 value: this.getDisplayValue(renderValue, internalOptions, ''),
-                onChange: this.onChange,
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,
                 onFocus: this.onFocus,
@@ -75,6 +83,18 @@ export class QueryComboBox extends BaseComboBox {
             },
             disabled
         });
+    }
+
+    @action
+    setActiveItem = (item) => {
+        this.activeItem = item;
+    }
+
+    getActiveItem() {
+        const {internalOptions} = this;
+        // controlled active item will be set through this component's handler, or based on the previously selected value
+        // fallbacks to first option to allow better user experience
+        return this.activeItem || find(internalOptions, {value: this.externalValue}) || internalOptions[0];
     }
 
     onBlur = () => {
