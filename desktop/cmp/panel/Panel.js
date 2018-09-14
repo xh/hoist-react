@@ -52,7 +52,13 @@ export class Panel extends Component {
          */
         mask: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool]),
         /** Model governing Resizing and Collapsing of the panel.*/
-        sizingModel: PT.instanceOf(PanelSizingModel)
+        sizingModel: PT.instanceOf(PanelSizingModel),
+        /**
+         * Props to pass along to the inner vFrame that directly contains the Panel's children.
+         * Can be used to e.g. enable scrolling or inner padding while still maintaining proper
+         * layout of the Panel's other UI elements such as header and toolbars.
+         */
+        contentFrameProps: PT.object
     };
 
     baseClassName = 'xh-panel';
@@ -66,6 +72,7 @@ export class Panel extends Component {
             headerItems,
             mask: maskProp,
             sizingModel,
+            contentFrameProps,
             children,
             ...rest
         } = this.getNonLayoutProps();
@@ -94,7 +101,10 @@ export class Panel extends Component {
                 style: {display: collapsed ? 'none' : 'flex'},
                 items: [
                     tbar || null,
-                    ...(castArray(children)),
+                    vframe({
+                        items: castArray(children),
+                        ...contentFrameProps
+                    }),
                     bbar || null
                 ]
             });
