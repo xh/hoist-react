@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {defaults, isFinite, isString, isFunction} from 'lodash';
+import {defaults, isFinite, isString, isFunction, isNumber} from 'lodash';
 import numeral from 'numeral';
 
 import {Exception} from '@xh/hoist/exception';
@@ -18,7 +18,7 @@ const THOUSAND = 1000,
     MILLION  = 1000000,
     BILLION  = 1000000000,
     MAX_NUMERIC_PRECISION = 12,
-    MAP_LABEL = {'none': 0, 'thousands': 1, 'millions': 2, 'billions': 3, 'auto': 'auto'};
+    MAP_UNITS = {'none': 0, 'thousands': 1, 'millions': 2, 'billions': 3};
 
 const UP_TICK = '▴',
     DOWN_TICK = '▾',
@@ -30,6 +30,10 @@ const UP_TICK = '▴',
  *
  * @param {number} v - value to format.
  * @param {Object} [opts]
+ * @param {number} [opts.units] - triggers compact mode when passed. Valid options are
+ *      ['none', 'auto', 'thousands', 'millions', 'billions']
+ * @param {number} [opts.decimalTolerance] - when scaling numbers greater than 999,
+ *      maximum number of decimal places tolerated before shifting units (e.g. millions -> thousands).
  * @param {string} [opts.nullDisplay] - display string for null values.
  * @param {string} [opts.formatPattern] - a valid numeralJS format string.
  * @param {(number|'auto')} [opts.precision] - desired number of decimal places.
@@ -60,7 +64,7 @@ export function fmtNumber(v, {
     nullDisplay = '',
     formatPattern = null,
     precision = 'auto',
-    zeroPad = null,
+    zeroPad = (precision !== 'auto'),
     ledger = false,
     forceLedgerAlign = true,
     withPlusSign = false,
@@ -76,7 +80,7 @@ export function fmtNumber(v, {
     if (isInvalidInput(v)) return nullDisplay;
 
     if (units) {
-        [v, label, zeroPad] = fmtCompact(v, {decimalTolerance, units, precision});
+        [v, label, zeroPad] = fmtCompact(v, {decimalTolerance, units, precision, zeroPad});
     }
 
     formatPattern = formatPattern || buildFormatPattern(v, precision, zeroPad);
@@ -347,9 +351,7 @@ function processToolTip(tooltip, opts) {
  * Dynamically render number in thousands, millions, or billions.
  *
  * @param {number} v - value to format.
- * @param {Object} [opts] - @see {@link fmtNumber} method, wit one additional value:
- * @param {(number)} [opts.decimalTolerance] - when scaling numbers greater than 999,
- *  maximum number of decimal places tolerated before shifting scale (e.g. millions -> thousands).
+ * @param {Object} [opts] - @see {@link fmtNumber} method.
  */
 
 function fmtCompact(v, opts = {})  {
@@ -369,11 +371,19 @@ function catchCompactOptions(opts) {
     if (!opts.decimalTolerance) opts.decimalTolerance = MAX_NUMERIC_PRECISION;
     if (opts.precision < opts.decimalTolerance) {
         opts.decimalTolerance = opts.precision;
-        console.warn(`Decimal tolerance should be less than or equal to precision. Reset to ${opts.decimalTolerance}`);
+        console.warn(`fmtNumber: Decimal tolerance must be less than or equal to precision. Reset to ${opts.decimalTolerance}`);
     }
-    if (opts.zeroPad && units !== 'none') {
+    if (opts.zeroPad && opts.units !== 'none') {
         opts.zeroPad = null;
-        console.warn('fmtNumber does not support zero padding in auto mode');
+        console.warn("fmtNumber: Units must be set to 'none' in order to allow zero padding");
+    }
+    if (!isNumber(MAP_UNITS[opts.units])) {
+        if (opts.units === 'auto') {
+            opts.units = null;
+        } else {
+            console.warn(`fmtNumber: Invalid input '${opts.units}' for units parameter. Reset to 'none'`);
+            opts.units = 'none';
+        }
     }
     return opts;
 }
@@ -389,7 +399,7 @@ function catchCompactOptions(opts) {
 function scaleAndLabel(v, opts = {}) {
     let k;
     if (opts.units) {
-        k = MAP_LABEL[opts.units];
+        k = MAP_UNITS[opts.units];
     } else {
         const pOfTen = (v).toPrecision(2).split('e');
         k = pOfTen.length === 1 ? 0 : Math.floor(Math.min(Number(pOfTen[1].slice(1)), 11) / 3);
