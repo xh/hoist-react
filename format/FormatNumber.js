@@ -18,7 +18,7 @@ const THOUSAND = 1000,
     MILLION  = 1000000,
     BILLION  = 1000000000,
     MAX_NUMERIC_PRECISION = 12,
-    MAP_LABEL = {'none': 0, 'thousands': 1, 'millions': 2, 'billions': 3};
+    MAP_LABEL = {'none': 0, 'thousands': 1, 'millions': 2, 'billions': 3, 'auto': 'auto'};
 
 const UP_TICK = '▴',
     DOWN_TICK = '▾',
@@ -55,7 +55,6 @@ const UP_TICK = '▴',
  * If no options are given, a heuristic based auto-rounding will occur.
  */
 export function fmtNumber(v, {
-    asCompact = false,
     units = null,
     decimalTolerance = null,
     nullDisplay = '',
@@ -76,9 +75,8 @@ export function fmtNumber(v, {
 
     if (isInvalidInput(v)) return nullDisplay;
 
-    if (asCompact) {
-        const compactOpts = {decimalTolerance, units, precision};
-        [v, label, zeroPad] = fmtCompact(v, compactOpts);
+    if (units) {
+        [v, label, zeroPad] = fmtCompact(v, {decimalTolerance, units, precision});
     }
 
     formatPattern = formatPattern || buildFormatPattern(v, precision, zeroPad);
@@ -373,7 +371,7 @@ function catchCompactOptions(opts) {
         opts.decimalTolerance = opts.precision;
         console.warn(`Decimal tolerance should be less than or equal to precision. Reset to ${opts.decimalTolerance}`);
     }
-    if (opts.zeroPad) {
+    if (opts.zeroPad && units !== 'none') {
         opts.zeroPad = null;
         console.warn('fmtNumber does not support zero padding in auto mode');
     }
