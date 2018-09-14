@@ -34,7 +34,7 @@ export class BaseComboBox extends BaseDropdownInput {
             this.toInternal(this.externalValue);
     }
 
-    onBlur = () => {
+    noteBlurred = () => {
         // Combos that allow custom entries (!requireSelection) will commit those on blur.
         // Note this could be confusing in the case where the user has entered enough text to cause
         // the pop-up suggestion list to narrow down to a single item. It would be reasonable to
@@ -75,7 +75,6 @@ export class BaseComboBox extends BaseDropdownInput {
     }
 
     onChange = (string) => {
-        console.log('onchange', string);
         this.noteValueChange(string);
     }
 

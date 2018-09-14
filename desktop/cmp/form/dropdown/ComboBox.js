@@ -94,7 +94,7 @@ export class ComboBox extends BaseComboBox {
     onItemSelect = (val) => {
         // allow a null selection if query is no good and requireSelect == true
         if (this.props.requireSelection && !startsWith(val.label.toLowerCase(), this.internalValue.toLowerCase())) {
-            this.noteValueChange(null);
+            this.noteValueChange(this.externalValue);
             this.doDebouncedCommit();
             return;
         }

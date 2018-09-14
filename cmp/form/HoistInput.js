@@ -129,7 +129,6 @@ export class HoistInput extends Component {
     noteValueChange(val) {
         const {commitOnChange, onChange} = this.props;
 
-        console.log('setting internal val', val)
         this.setInternalValue(val);
         if (onChange) onChange(this.toExternal(val));
         if (commitOnChange) this.doCommit();
@@ -143,6 +142,8 @@ export class HoistInput extends Component {
         const {onCommit, model, field} = this.props;
         let externalValue = this.externalValue,
             newValue = this.toExternal(this.internalValue);
+
+        if (newValue == 'asd') debugger;
 
         if (newValue === externalValue) return;
 
