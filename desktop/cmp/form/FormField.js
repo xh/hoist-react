@@ -6,7 +6,7 @@
  */
 import React, {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {flatten, isArray, isUndefined} from 'lodash';
+import {isArray, isUndefined} from 'lodash';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {formGroup, spinner, tooltip} from '@xh/hoist/kit/blueprint';
 import {HoistInput} from '@xh/hoist/cmp/form';
