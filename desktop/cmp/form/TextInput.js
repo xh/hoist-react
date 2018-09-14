@@ -30,7 +30,9 @@ export class TextInput extends HoistInput {
         /**
          *  autocomplete attribute to set on underlying html <input> element.
          *
-         *  Defaults to non-valid value 'nope', in order to most effectively defeat browser autoComplete
+         *  Defaults to non-valid value 'nope' for fields of type text and 'new-password' for fields of type 'password'
+         *  in order to most effectively defeat browser autocompletion. Set to 'on' to enable autocompletion.
+         *
          *  See https://developer.mozilla.org/en-US/docs/Web/Security/Securing_your_site/Turning_off_form_autocompletion
          */
         autoComplete: PT.oneOf(['on', 'off', 'new-password', 'nope']),
@@ -55,12 +57,12 @@ export class TextInput extends HoistInput {
     baseClassName = 'xh-text-field';
 
     render() {
-        const {style, width, spellCheck, autoComplete} = this.props;
+        const {style, width, spellCheck, autoComplete, type} = this.props;
 
         return inputGroup({
             className: this.getClassName(),
             value: this.renderValue || '',
-            autoComplete: withDefault(autoComplete, 'nope'),
+            autoComplete: withDefault(autoComplete, type == 'password' ? 'new-password' : 'nope'),
             onChange: this.onChange,
             onKeyPress: this.onKeyPress,
             onBlur: this.onBlur,
