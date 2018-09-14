@@ -11,7 +11,7 @@ import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {refreshButton} from '@xh/hoist/desktop/cmp/button';
-import {switchInput} from '@xh/hoist/desktop/cmp/form/index';
+import {checkBox} from '@xh/hoist/desktop/cmp/form/index';
 import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
 
 import {UserModel} from './UserModel';
@@ -35,10 +35,10 @@ export class UserPanel extends Component {
             {store} = model.gridModel;
         return toolbar(
             refreshButton({model}),
-            switchInput({
+            checkBox({
                 model,
-                field: 'displayInactive',
-                label: 'Display Inactive',
+                field: 'includeInactive',
+                label: 'Include Inactive',
                 alignIndicator: 'right'
             }),
             filler(),
