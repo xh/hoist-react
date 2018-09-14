@@ -51,7 +51,7 @@ export class FormField extends Component {
             notValid = fieldModel && fieldModel.isNotValid,
             errors = fieldModel ? fieldModel.errors : [],
             labelStr = label || (fieldModel ? fieldModel.displayName : null),
-            labelEl = isRequired ? div(labelStr, span(' *')) : div(labelStr);
+            labelEl = isRequired ? span(labelStr, span(' *')) : span(labelStr);
 
         return formGroup({
             item,
