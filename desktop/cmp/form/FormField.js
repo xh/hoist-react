@@ -54,12 +54,16 @@ export class FormField extends Component {
             notValid = fieldModel && fieldModel.isNotValid,
             errors = fieldModel ? fieldModel.errors : [],
             labelStr = isUndefined(label) ? (fieldModel ? fieldModel.displayName : null) : label,
-            requiredStr = isRequired ? span(' *') : null;
+            requiredStr = isRequired ? span(' *') : null,
+            classes = [];
+
+        if (isRequired) classes.push('xh-form-field-required');
+        if (notValid) classes.push('xh-form-field-invalid');
 
         return formGroup({
             item,
             label: labelStr ? span(labelStr, requiredStr) : null,
-            className: this.getClassName(notValid ? 'xh-form-field-invalid' : ''),
+            className: this.getClassName(classes),
             helperText: fragment(
                 div({
                     omit: !isPending,
