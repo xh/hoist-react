@@ -11,7 +11,7 @@ import {HoistInput} from '@xh/hoist/cmp/form';
 import {formGroup, spinner} from '@xh/hoist/kit/blueprint';
 import {fragment, div, span} from '@xh/hoist/cmp/layout';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isArray} from 'lodash';
+import {isUndefined, isArray} from 'lodash';
 
 import './FormField.scss';
 
@@ -35,7 +35,11 @@ export class FormField extends Component {
         model: PT.object,
         /** name of property in model to bind to */
         field: PT.string,
-        /** label for form field. Defaults to Field displayName if used with @FieldSupport */
+        /**
+         * Label for form field.
+         * Defaults to Field displayName if used with @FieldSupport.
+         * Set to null to hide label.
+         */
         label: PT.string
     };
 
@@ -50,12 +54,12 @@ export class FormField extends Component {
             isPending = fieldModel && fieldModel.isValidationPending,
             notValid = fieldModel && fieldModel.isNotValid,
             errors = fieldModel ? fieldModel.errors : [],
-            labelStr = label || (fieldModel ? fieldModel.displayName : null),
-            labelEl = isRequired ? span(labelStr, span(' *')) : span(labelStr);
+            labelStr = isUndefined(label) ? (fieldModel ? fieldModel.displayName : null) : label,
+            requiredStr = isRequired ? span(' *') : null;
 
         return formGroup({
             item,
-            label: labelEl,
+            label: labelStr ? span(labelStr, requiredStr) : null,
             className: this.getClassName(notValid ? 'xh-form-field-invalid' : ''),
             helperText: fragment(
                 div({
