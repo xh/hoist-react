@@ -71,7 +71,11 @@ export class FormField extends Component {
                     className: 'xh-form-field-error-msg',
                     items: notValid ? tooltip({
                         item: errors[0],
-                        content: flatten(errors.map(it => [it, <br/>]))
+                        content: (
+                            <ul className="xh-form-field-error-tooltip">
+                                {errors.map((it, idx) => <li key={idx}>{it}</li>)}
+                            </ul>
+                        )
                     }) : null
                 })
             ),
