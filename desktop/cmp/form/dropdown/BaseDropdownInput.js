@@ -90,7 +90,6 @@ export class BaseDropdownInput extends HoistInput {
     }
 
     onItemSelect = (val) => {
-        console.log('onItemSelect', val);
         this.noteValueChange(val.value);
         if (!this.props.commitOnChange) this.doCommit();
     }

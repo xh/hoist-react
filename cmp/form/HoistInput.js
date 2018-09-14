@@ -143,8 +143,6 @@ export class HoistInput extends Component {
         let externalValue = this.externalValue,
             newValue = this.toExternal(this.internalValue);
 
-        if (newValue == 'asd') debugger;
-
         if (newValue === externalValue) return;
 
         if (model && field) {

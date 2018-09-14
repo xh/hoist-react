@@ -48,10 +48,9 @@ export class ComboBox extends BaseComboBox {
     
     render() {
         const {style, width, disabled} = this.props,
-            {renderValue, internalOptions} = this;
-
-        const displayValue = this.getDisplayValue(renderValue, internalOptions, '');
-        const activeItem = this.getActiveItem();
+            {renderValue, internalOptions} = this,
+            displayValue = this.getDisplayValue(renderValue, internalOptions, ''),
+            activeItem = this.getActiveItem();
 
         return suggest({
             className: this.getClassName(),
@@ -86,19 +85,17 @@ export class ComboBox extends BaseComboBox {
 
     getActiveItem() {
         const {internalOptions} = this;
-        // controlled active item is set through this components handler, or based on previously selected value
-        // fallback to selecting first item to allow better user experience when adding options (!requireSelection)
+        // controlled active item will be set through this component's handler, or based on the previously selected value
+        // fallbacks to first option to allow better user experience when adding options (!requireSelection)
         return this.activeItem || find(internalOptions, {value: this.externalValue}) || internalOptions[0];
     }
 
     onItemSelect = (val) => {
-        // allow a null selection if query is no good and requireSelect == true
-        if (this.props.requireSelection && !startsWith(val.label.toLowerCase(), this.internalValue.toLowerCase())) {
-            this.noteValueChange(this.externalValue);
-            this.doDebouncedCommit();
-            return;
-        }
-        this.noteValueChange(val.value);
+        // If this control requires selection and given invalid input, reset to previous value
+        const invalidInput = this.props.requireSelection && !startsWith(val.label.toLowerCase(), this.internalValue.toLowerCase()),
+            newValue = invalidInput ? this.externalValue : val.value;
+
+        this.noteValueChange(newValue);
         this.doDebouncedCommit();
     }
 
