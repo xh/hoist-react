@@ -10,7 +10,6 @@ import {grid} from '@xh/hoist/desktop/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {checkBox} from '@xh/hoist/desktop/cmp/form/index';
 import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
 
