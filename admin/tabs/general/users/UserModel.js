@@ -15,7 +15,7 @@ import {bindable, action} from '@xh/hoist/mobx/index';
 @HoistModel
 export class UserModel {
 
-    @bindable includeInactive = true;
+    @bindable activeOnly = true;
 
     gridModel = new GridModel({
         stateModel: 'xhUserGrid',
@@ -36,7 +36,7 @@ export class UserModel {
 
     constructor() {
         this.addReaction({
-            track: () => [this.includeInactive],
+            track: () => [this.activeOnly],
             run: () => this.loadAsync()
         });
     }
@@ -45,7 +45,7 @@ export class UserModel {
     async loadAsync() {
         return XH.fetchJson({
             url: 'userAdmin',
-            params: {activeOnly: !this.includeInactive}
+            params: {activeOnly: this.activeOnly}
         }).then(data => {
             this.gridModel.loadData(data);
         }).catchDefault();
