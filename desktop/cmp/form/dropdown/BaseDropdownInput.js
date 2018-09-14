@@ -10,17 +10,17 @@ import {isObject, find} from 'lodash';
 import {observable, action} from '@xh/hoist/mobx';
 import {menuItem} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
-import {HoistField} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
- * BaseDropdownField
+ * BaseDropdownInput
  *
- * Abstract class supporting BaseComboField and SelectField.
+ * Abstract class supporting BaseComboBox and Select.
  */
-export class BaseDropdownField extends HoistField {
+export class BaseDropdownInput extends HoistInput {
 
     static propTypes = {
-        ...HoistField.propTypes,
+        ...HoistInput.propTypes,
 
         /** Text to display when control is empty */
         placeholder: PT.string

@@ -136,7 +136,7 @@ export class Field {
      *
      * Validation on the field will automatically be triggered by an actual change to
      * the field, but can also be triggered manually by this method.  For example,
-     * HoistField will trigger this on blur to ensure that fields associated with
+     * HoistInput will trigger this on blur to ensure that fields associated with
      * "visited" inputs are validated, even if they are never changed.
      *
      * @returns {Promise<String>} - the validation state of the object.

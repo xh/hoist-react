@@ -11,6 +11,7 @@ import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {isReactElement} from '@xh/hoist/utils/react';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 import {PanelSizingModel} from './PanelSizingModel';
 import {panelHeader} from './impl/PanelHeader';
@@ -42,8 +43,14 @@ export class Panel extends Component {
         tbar: PT.element,
         /** A toolbar to be docked at the bottom of the panel. */
         bbar: PT.element,
-        /** Mask to render on this panel.  Set to true for a default mask, with no spinner or text.*/
-        mask: PT.oneOfType([PT.element, PT.bool]),
+        /**
+         * Mask to render on this panel.
+         *
+         * Set to a React element specifying a Mask instance,
+         * or set to a PendingTaskModel to create a default loading mask with spinner bound to that model,
+         * or set to true for a simple default mask.
+         */
+        mask: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool]),
         /** Model governing Resizing and Collapsing of the panel.*/
         sizingModel: PT.instanceOf(PanelSizingModel)
     };
@@ -97,7 +104,9 @@ export class Panel extends Component {
         // 3) Mask is as provided, or a default simple mask.
         let maskElem = null;
         if (maskProp === true) {
-            maskElem = mask({inline: true, isDisplayed: true});
+            maskElem = mask({isDisplayed: true});
+        } else if (maskProp instanceof PendingTaskModel) {
+            maskElem = mask({model: maskProp, spinner: true});
         } else if (isReactElement(maskProp)) {
             maskElem = maskProp;
         }

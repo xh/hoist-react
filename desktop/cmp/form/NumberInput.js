@@ -9,18 +9,18 @@ import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {fmtNumber} from '@xh/hoist/format';
-import {HoistField} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
- * A Number Input Field
+ * A Number Input
  *
- * @see HoistField for properties additional to those documented below.
+ * @see HoistInput for properties additional to those documented below.
  */
 @HoistComponent
-export class NumberField extends HoistField {
+export class NumberInput extends HoistInput {
 
     static propTypes = {
-        ...HoistField.propTypes,
+        ...HoistInput.propTypes,
 
         /** Value of the control */
         value: PT.number,
@@ -98,8 +98,7 @@ export class NumberField extends HoistField {
     parseValue(value) {
         value = value.replace(/,/g, '');
 
-        if (NumberField.shorthandValidator.test(value)) {
-
+        if (NumberInput.shorthandValidator.test(value)) {
             const num = +value.substring(0, value.length - 1),
                 lastChar = value.charAt(value.length - 1).toLowerCase();
 
@@ -113,7 +112,6 @@ export class NumberField extends HoistField {
                 default:
                     return NaN;
             }
-
         }
 
         return parseFloat(value);
@@ -131,4 +129,4 @@ export class NumberField extends HoistField {
     }
 
 }
-export const numberField = elemFactory(NumberField);
+export const numberInput = elemFactory(NumberInput);

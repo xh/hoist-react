@@ -8,6 +8,7 @@
 import React, {Component} from 'react';
 import {XH, HoistComponent} from '@xh/hoist/core';
 import {div, h1, h2, table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
+import {fmtDateTime} from '@xh/hoist/format';
 
 import './AboutPanel.scss';
 
@@ -29,6 +30,14 @@ export class AboutPanel extends Component {
         const svc = XH.environmentService,
             row = (label, data) => tr(th(label), td(data));
 
+        // Snapshot versions are tagged with a timestamp - show that in local time here
+        // to aid in identifying when/if a snapshot has been updated.
+        let hrVersion = svc.get('hoistReactVersion');
+        if (hrVersion.includes('SNAPSHOT.')) {
+            const snapDate = new Date(parseInt(hrVersion.split('SNAPSHOT.')[1]));
+            hrVersion += ` ${fmtDateTime(snapDate)}`;
+        }
+
         return [
             table({
                 item: tbody(
@@ -43,7 +52,7 @@ export class AboutPanel extends Component {
             table({
                 item: tbody(
                     row('Hoist Core', svc.get('hoistCoreVersion')),
-                    row('Hoist React', svc.get('hoistReactVersion')),
+                    row('Hoist React', hrVersion),
                     row('React', svc.get('reactVersion')),
                     row('Grails', svc.get('grailsVersion')),
                     row('Java', svc.get('javaVersion'))

@@ -8,28 +8,28 @@
 import {PropTypes as PT} from 'prop-types';
 import {castArray, clone, isEmpty, remove, startsWith} from 'lodash';
 import {action} from '@xh/hoist/mobx';
-import {Classes, menuItem, multiSelect} from '@xh/hoist/kit/blueprint';
+import {Classes, menuItem, multiSelect as bpMultiSelect} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 
-import {BaseDropdownField} from './BaseDropdownField';
-import './MultiSelectField.scss';
+import {BaseDropdownInput} from './BaseDropdownInput';
+import './MultiSelect.scss';
 
 
 /**
- * A Multi Select Field
+ * A Multi Select Input
  *
  * It is important to control the width of this component. As tags are selected they are added to the field
  * causing it to expand. Tags will wrap once the component reaches its width or max-width or the explicitly set
  * width of its container. Use the className prop to define this style in CSS.
  *
- * @see HoistField for properties additional to those documented below.
+ * @see HoistInput for properties additional to those documented below.
  */
 @HoistComponent
-export class MultiSelectField extends BaseDropdownField {
+export class MultiSelect extends BaseDropdownInput {
 
     static propTypes = {
-        ...BaseDropdownField.propTypes,
+        ...BaseDropdownInput.propTypes,
 
         /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
         options: PT.arrayOf(PT.oneOfType([PT.object, PT.string, PT.bool])),
@@ -53,7 +53,7 @@ export class MultiSelectField extends BaseDropdownField {
         let {placeholder, disabled} = this.props,
             {internalOptions} = this;
 
-        return multiSelect({
+        return bpMultiSelect({
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: internalOptions,
             onItemSelect: this.onItemSelect,
@@ -67,6 +67,10 @@ export class MultiSelectField extends BaseDropdownField {
                 tagProps: {minimal: true},
                 className: this.getClassName(),
                 placeholder,
+                inputProps: {
+                    placeholder: '',
+                    autoComplete: 'nope'
+                },
                 onRemove: this.onRemoveTag
             },
             selectedItems: this.externalValue || [],
@@ -117,4 +121,4 @@ export class MultiSelectField extends BaseDropdownField {
     }
 
 }
-export const multiSelectField = elemFactory(MultiSelectField);
+export const multiSelect = elemFactory(MultiSelect);

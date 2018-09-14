@@ -9,16 +9,16 @@ import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Classes, suggest} from '@xh/hoist/kit/blueprint';
 
-import {BaseComboField} from './BaseComboField';
+import {BaseComboBox} from './BaseComboBox';
 
 /**
- * ComboBox Field which populates its options dynamically based on the current value.
+ * ComboBox which populates its options dynamically based on the current value.
  */
 @HoistComponent
-export class QueryComboField extends BaseComboField {
+export class QueryComboBox extends BaseComboBox {
     
     static propTypes = {
-        ...BaseComboField.propTypes,
+        ...BaseComboBox.propTypes,
 
         /**
          * Function to be run when value of control changes to repopulate the available items.
@@ -69,6 +69,7 @@ export class QueryComboField extends BaseComboField {
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,
                 onFocus: this.onFocus,
+                autoComplete: 'nope',
                 style: {...style, width},
                 ...this.getDelegateProps()
             },
@@ -95,4 +96,4 @@ export class QueryComboField extends BaseComboField {
         }
     }
 }
-export const queryComboField = elemFactory(QueryComboField);
+export const queryComboBox = elemFactory(QueryComboBox);

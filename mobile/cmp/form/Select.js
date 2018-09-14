@@ -7,23 +7,23 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {select} from '@xh/hoist/kit/onsen';
+import {select as onsenSelect} from '@xh/hoist/kit/onsen';
 import {option} from '@xh/hoist/cmp/layout';
 import {isObject} from 'lodash';
 
-import {HoistField} from '@xh/hoist/cmp/form';
-import './SelectField.scss';
+import {HoistInput} from '@xh/hoist/cmp/form';
+import './Select.scss';
 
 /**
- * A Select Field
+ * A Select Input
  *
- * @see HoistField for properties additional to those documented below.
+ * @see HoistInput for properties additional to those documented below.
  */
 @HoistComponent
-export class SelectField extends HoistField {
+export class Select extends HoistInput {
 
     static propTypes = {
-        ...HoistField.propTypes,
+        ...HoistInput.propTypes,
 
         /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
         options: PT.arrayOf(PT.oneOfType([PT.object, PT.string])).isRequired,
@@ -39,7 +39,7 @@ export class SelectField extends HoistField {
     render() {
         const {options, style, width} = this.props;
 
-        return select({
+        return onsenSelect({
             className: this.getClassName(),
             value: this.renderValue || '',
             onChange: this.onChange,
@@ -78,4 +78,4 @@ export class SelectField extends HoistField {
 
 }
 
-export const selectField = elemFactory(SelectField);
+export const select = elemFactory(Select);
