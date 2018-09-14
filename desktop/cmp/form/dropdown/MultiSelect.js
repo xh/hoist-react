@@ -67,7 +67,10 @@ export class MultiSelect extends BaseDropdownInput {
                 tagProps: {minimal: true},
                 className: this.getClassName(),
                 placeholder,
-                inputProps: {placeholder: ''},
+                inputProps: {
+                    placeholder: '',
+                    autoComplete: 'nope'
+                },
                 onRemove: this.onRemoveTag
             },
             selectedItems: this.externalValue || [],

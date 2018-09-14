@@ -62,6 +62,7 @@ export class ComboBox extends BaseComboBox {
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,
                 onFocus: this.onFocus,
+                autoComplete: 'nope',
                 style: {...style, width},
                 ...this.getDelegateProps()
             },

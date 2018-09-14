@@ -73,6 +73,7 @@ export class DateInput extends HoistInput {
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,
                 onFocus: this.onFocus,
+                autoComplete: 'nope',
                 leftIcon
             },
             popoverProps: {
