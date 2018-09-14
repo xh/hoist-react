@@ -42,6 +42,7 @@ import {
     TagInput,
     TextArea,
     Text,
+    Tooltip,
     Tree
 } from '@blueprintjs/core';
 
@@ -89,6 +90,7 @@ export {
     TagInput,
     TextArea,
     Text,
+    Tooltip,
     Tree
 };
 
@@ -130,4 +132,5 @@ export const
     tagInput = elemFactory(TagInput),
     text = elemFactory(Text),
     textArea = elemFactory(TextArea),
+    tooltip = elemFactory(Tooltip),
     tree = elemFactory(Tree);

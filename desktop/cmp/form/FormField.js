@@ -5,22 +5,22 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import React, {Component} from 'react';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {PropTypes as PT} from 'prop-types';
+import {flatten, isArray, isUndefined} from 'lodash';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {formGroup, spinner, tooltip} from '@xh/hoist/kit/blueprint';
 import {HoistInput} from '@xh/hoist/cmp/form';
-import {formGroup, spinner} from '@xh/hoist/kit/blueprint';
-import {fragment, div, span} from '@xh/hoist/cmp/layout';
+import {div, fragment, span} from '@xh/hoist/cmp/layout';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isUndefined, isArray} from 'lodash';
 
 import './FormField.scss';
 
 /**
- * Standardised wrapper around HoistInputs.
+ * Standardised wrapper around a HoistInput Component.
  *
  * Should receive a single HoistInput as a child element. FormField is typically bound
  * to a model enhanced with `@FieldSupport` via its `model` and `field` props. This allows
- * FormField to automatically display a label, a required asterisk and validation state.
+ * FormField to automatically display a label, a required asterisk, and any validation messages.
  *
  * When FormField is used in bound mode, the child HoistInput should *not* declare its own
  * `model` and `field` props, as these are managed by the FormField.
@@ -31,14 +31,13 @@ import './FormField.scss';
 export class FormField extends Component {
 
     static propTypes = {
-        /** model to bind to */
+        /** Bound Model. */
         model: PT.object,
-        /** name of property in model to bind to */
+        /** Name of bound property on Model. */
         field: PT.string,
         /**
          * Label for form field.
-         * Defaults to Field displayName if used with @FieldSupport.
-         * Set to null to hide label.
+         * Defaults to Field displayName if used with @FieldSupport. Set to null to hide label.
          */
         label: PT.string
     };
@@ -70,13 +69,16 @@ export class FormField extends Component {
                 div({
                     omit: !notValid,
                     className: 'xh-form-field-error-msg',
-                    item: notValid ? errors[0] : null,
-                    title: notValid ? errors.join(' | ') : null
+                    items: notValid ? tooltip({
+                        item: errors[0],
+                        content: flatten(errors.map(it => [it, <br/>]))
+                    }) : null
                 })
             ),
             ...rest
         });
     }
+
 
     //--------------------
     // Implementation
