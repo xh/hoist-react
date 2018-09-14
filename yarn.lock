@@ -93,9 +93,24 @@
     resize-observer-polyfill "^1.5.0"
     tslib "^1.9.0"
 
-"@blueprintjs/core@^3.6.0", "@blueprintjs/core@~3.6.0":
+"@blueprintjs/core@^3.6.0":
   version "3.6.0"
   resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.6.0.tgz#a03da3a3de9986250b3b7da926aa659308d56b22"
+  dependencies:
+    "@blueprintjs/icons" "^3.0.0"
+    "@types/dom4" "^2.0.0"
+    classnames "^2.2"
+    dom4 "^2.0.1"
+    normalize.css "^8.0.0"
+    popper.js "^1.14.1"
+    react-popper "^1.0.0"
+    react-transition-group "^2.2.1"
+    resize-observer-polyfill "^1.5.0"
+    tslib "^1.9.0"
+
+"@blueprintjs/core@~3.6.1":
+  version "3.6.1"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.6.1.tgz#d168423b1c38964e50c2cc8aef4cba8076bfe01a"
   dependencies:
     "@blueprintjs/icons" "^3.0.0"
     "@types/dom4" "^2.0.0"
@@ -203,9 +218,9 @@
     eslint "~4.19.1"
     eslint-plugin-react "~7.7.0"
 
-"@xh/hoist-dev-utils@~2.2.2":
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-2.2.2.tgz#5d864288f4609d9c363a4be85636b950bc55d952"
+"@xh/hoist-dev-utils@~2.2.3":
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-2.2.3.tgz#41972a104e3a4cb93ee61427c06b01cab9ad79ab"
   dependencies:
     "@xh/eslint-config" "~0.2.1"
     autoprefixer "~8.5.0"
