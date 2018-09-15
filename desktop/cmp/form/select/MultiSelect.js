@@ -6,13 +6,12 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
-import {castArray, clone, isEmpty, remove, startsWith} from 'lodash';
-import {action} from '@xh/hoist/mobx';
+import {pull, clone, isEmpty, startsWith} from 'lodash';
 import {Classes, menuItem, multiSelect as bpMultiSelect} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 
-import {BaseDropdownInput} from './BaseDropdownInput';
+import {BaseSelect} from './BaseSelect';
 import './MultiSelect.scss';
 
 
@@ -26,16 +25,14 @@ import './MultiSelect.scss';
  * @see HoistInput for properties additional to those documented below.
  */
 @HoistComponent
-export class MultiSelect extends BaseDropdownInput {
+export class MultiSelect extends BaseSelect {
 
     static propTypes = {
-        ...BaseDropdownInput.propTypes,
+        ...BaseSelect.propTypes,
 
         /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
         options: PT.arrayOf(PT.oneOfType([PT.object, PT.string, PT.bool])),
-        /** Optional custom optionRenderer, a function that receives (option, optionProps) */
-        itemRenderer: PT.func,
-        /** Optional custom tagRenderer, a function that receives the value property of each selected option.
+        /** Custom tagRenderer, a function that receives the value property of each selected option.
          *  Should return a ReactNode or string */
         tagRenderer: PT.func
     };
@@ -43,26 +40,21 @@ export class MultiSelect extends BaseDropdownInput {
     delegateProps = ['className', 'disabled'];
 
     baseClassName = 'xh-multi-select-field';
-
-    constructor(props) {
-        super(props);
-        this.addAutorun(() => this.normalizeOptions(this.props.options));
-    }
-
+    
     render() {
-        let {placeholder, disabled} = this.props,
+        let {placeholder, disabled, tagRenderer} = this.props,
             {internalOptions} = this;
 
         return bpMultiSelect({
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: internalOptions,
+            openOnKeyDown: true,
             onItemSelect: this.onItemSelect,
-            resetOnSelect: true,
-            itemRenderer: this.getOptionRenderer(),
+            itemRenderer: this.itemRenderer,
             itemPredicate: (q, item) => {
                 return startsWith(item.label.toLowerCase(), q.toLowerCase());
             },
-            tagRenderer: this.getTagRenderer(),
+            tagRenderer: tagRenderer || (i => i),
             tagInputProps: {
                 tagProps: {minimal: true},
                 className: this.getClassName(),
@@ -73,52 +65,45 @@ export class MultiSelect extends BaseDropdownInput {
                 },
                 onRemove: this.onRemoveTag
             },
-            selectedItems: this.externalValue || [],
-            onBlur: this.onBlur,
-            onFocus: this.onFocus,
+            noResults: 'No results found',
+            selectedItems: this.renderValue || [],
+            onBlur: () => this.noteBlurred(),
+            onFocus: () => this.noteFocused(),
             disabled
         });
     }
 
-    onBlur = () => {
-        this.noteBlurred();
-    }
-
-    onFocus = () => {
-        this.noteFocused();
-    }
-
     onRemoveTag = (tag, idx) => {
-        // the tag parameter is determined by the tagRenderer, so it may not match the value representation
-        const value = this.externalValue[idx];
-        this.onItemSelect({value});
-    }
+        let newVals = isEmpty(this.internalValue) ? [] : clone(this.internalValue);
+        newVals = newVals.filter((v, index) => index != idx);
+        this.noteValueChange(newVals);
+    };
 
-    @action
-    setInternalValue(val) {
-        const externalVal = this.externalValue ? castArray(clone(this.externalValue)) : [];
-        externalVal.includes(val) ? remove(externalVal, (it) => it == val) : externalVal.push(val);
+    onItemSelect = (item) => {
+        const {value} = item,
+            newVals = isEmpty(this.internalValue) ? [] : clone(this.internalValue);
+        if (newVals.includes(value)) {
+            pull(newVals, value);
+        } else {
+            newVals.push(value);
+        }
+        this.noteValueChange(newVals);
+    };
 
-        this.internalValue = isEmpty(externalVal) ? null : externalVal;
-    }
-
-    getTagRenderer() {
-        return this.props.tagRenderer || this.defaultTagRenderer;
-    }
-
-    defaultTagRenderer = (item) => {
-        return item;
-    }
-
-    defaultOptionRenderer = (option, optionProps) => {
+    itemRenderer = (option, optionProps) => {
         return menuItem({
             key: option.value,
             text: option.label,
-            labelElement: (this.externalValue && this.externalValue.includes(option.value)) ? Icon.check() : '',
+            labelElement: (this.renderValue && this.renderValue.includes(option.value)) ? Icon.check() : '',
             onClick: optionProps.handleClick,
             active: optionProps.modifiers.active
         });
-    }
+    };
 
+    noteValueChange(val) {
+        if (isEmpty(val)) val = null;
+        super.noteValueChange(val);
+        if (!this.props.commitOnChange) this.doCommit();
+    }
 }
 export const multiSelect = elemFactory(MultiSelect);

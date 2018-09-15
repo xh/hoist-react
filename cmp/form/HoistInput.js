@@ -73,7 +73,6 @@ export class HoistInput extends Component {
     @observable hasFocus;
     @observable internalValue;
 
-
     /**
      * List of properties that if passed to this control should be trampolined to the underlying
      * control. Implementations of HoistInput should use this.getDelegateProps() to get a
@@ -86,7 +85,6 @@ export class HoistInput extends Component {
      */
     delegateProps = [];
 
-
     /**
      * Field (if any) associated with this control.
      */
@@ -96,7 +94,7 @@ export class HoistInput extends Component {
     }
 
     //-----------------------------------------------------------
-    // Handling of internal vs. External value, committing
+    // Handling of internal vs. external value, committing
     //-----------------------------------------------------------
     /** Return the value to be rendered internally by control. **/
     @computed

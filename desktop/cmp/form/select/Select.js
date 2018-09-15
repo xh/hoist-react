@@ -9,8 +9,10 @@ import {PropTypes as PT} from 'prop-types';
 import {Classes, select as bpSelect} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-
-import {BaseDropdownInput} from './BaseDropdownInput';
+import {menuItem} from '@xh/hoist/kit/blueprint';
+import {BaseSelect} from './BaseSelect';
+import {find} from 'lodash';
+import {observable, settable} from '@xh/hoist/mobx';
 import './Select.scss';
 
 /**
@@ -19,36 +21,40 @@ import './Select.scss';
  * @see HoistInput for properties additional to those documented below.
  */
 @HoistComponent
-export class Select extends BaseDropdownInput {
+export class Select extends BaseSelect {
 
     static propTypes = {
-        ...BaseDropdownInput.propTypes,
+        ...BaseSelect.propTypes,
 
         /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
-        options: PT.arrayOf(PT.oneOfType([PT.object, PT.string, PT.bool])),
-        /** Optional custom optionRenderer, a function that receives (option, optionProps) */
-        itemRenderer: PT.func
+        options: PT.arrayOf(PT.oneOfType([PT.object, PT.string, PT.bool]))
     };
 
     delegateProps = ['className', 'disabled'];
 
     baseClassName = 'xh-select-field';
 
+    @settable @observable.ref activeItem
+
     constructor(props) {
         super(props);
-        this.addAutorun(() => this.normalizeOptions(this.props.options));
+        this.addAutorun(() => {
+            this.setActiveItem(find(this.internalOptions, ((it) => it.value == this.renderValue)) || null);
+        });
     }
     
     render() {
         let {style, width, placeholder, disabled} = this.props,
             {renderValue, internalOptions} = this;
-
+        
         return bpSelect({
             className: this.getClassName(),
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: internalOptions,
+            activeItem: this.activeItem,
+            onActiveItemChange: (it) => this.setActiveItem(it),
             onItemSelect: this.onItemSelect,
-            itemRenderer: this.getOptionRenderer(),
+            itemRenderer: this.itemRenderer,
             filterable: false,
             item: button({
                 rightIcon: 'caret-down',
@@ -56,19 +62,35 @@ export class Select extends BaseDropdownInput {
                 style: {...style, width},
                 ...this.getDelegateProps()
             }),
-            onBlur: this.onBlur,
-            onFocus: this.onFocus,
+            onBlur: () => this.noteBlurred(),
+            onFocus: () => this.noteFocused(),
             disabled
         });
     }
 
-    onBlur = () => {
-        this.noteBlurred();
+    itemRenderer = (option, optionProps) => {
+        return menuItem({
+            key: option.value,
+            text: option.label,
+            onClick: optionProps.handleClick,
+            active: optionProps.modifiers.active
+        });
     }
 
-    onFocus = () => {
-        this.noteFocused();
+    onItemSelect = (val) => {
+        this.noteValueChange(val.value);
     }
 
+    getDisplayValue(value, items, placeholder) {
+        const match = find(items, {value});
+
+        if (match) return match.label;
+        return (value == null) ? placeholder : value.toString();
+    }
+
+    noteValueChange(val) {
+        super.noteValueChange(val);
+        if (!this.props.commitOnChange) this.doCommit();
+    }
 }
 export const select = elemFactory(Select);
