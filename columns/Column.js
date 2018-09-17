@@ -93,7 +93,8 @@ export class Column {
         exportFormat,
         excludeFromExport,
         tooltip,
-        agOptions
+        agOptions,
+        wrapText
     }) {
         this.field = field;
         this.colId = withDefault(colId, field);
@@ -133,6 +134,8 @@ export class Column {
 
         this.tooltip = tooltip;
         this.agOptions = agOptions ? clone(agOptions) : {};
+
+        this.wrapText = wrapText;
     }
 
 
