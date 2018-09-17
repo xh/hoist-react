@@ -42,7 +42,7 @@ export class DateInput extends HoistInput {
         minDate: PT.instanceOf(Date),
         maxDate: PT.instanceOf(Date),
 
-        /** String to be passed to momentJS to format user inputted dates, defaults to YYYY-MM-DD HH:mm:ss
+        /** String to be passed to momentJS to parse user inputted dates, defaults to YYYY-MM-DD HH:mm:ss
          * @see https://momentjs.com/docs/#/parsing/string-format */
         formatString: PT.string,
 
