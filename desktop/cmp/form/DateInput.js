@@ -120,9 +120,6 @@ export class DateInput extends HoistInput {
 
     parseDate = (dateString) => {
         const fmtString = this.props.formatString || 'YYYY-MM-DD HH:mm:ss';
-
-        console.log(fmtString);
-
         return moment(dateString, fmtString).toDate();
     }
 
