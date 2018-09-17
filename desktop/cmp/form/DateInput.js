@@ -42,8 +42,17 @@ export class DateInput extends HoistInput {
         minDate: PT.instanceOf(Date),
         maxDate: PT.instanceOf(Date),
 
+        /** The precision of time selection that accompanies the calendar.
+         * The simplest way to enable time selection is to provide a value for this prop */
+        timePrecision: PT.oneOf(['millisecond', 'second', 'minute']),
+
+        /** Props passed to the TimePicker @see https://blueprintjs.com/docs/#datetime/timepicker.props
+         * Passing any defined value will enable the TimePicker */
+        timePickerProps: PT.object,
+
         /** Props passed to ReactDayPicker component. @see http://react-day-picker.js.org/ */
         dayPickerProps: PT.object,
+
         /** Icon to display on the left side of the field */
         leftIcon: PT.element,
         /** Element to display on the right side of the field */
@@ -57,7 +66,17 @@ export class DateInput extends HoistInput {
     baseClassName = 'xh-date-input';
 
     render() {
-        let {minDate, maxDate, width, popoverPosition, style, dayPickerProps, leftIcon} = this.props;
+        let {
+            minDate,
+            maxDate,
+            width,
+            popoverPosition,
+            style,
+            dayPickerProps,
+            leftIcon,
+            timePrecision,
+            timePickerProps
+        } = this.props;
 
         dayPickerProps = assign({fixedWeeks: true}, dayPickerProps);
 
@@ -84,6 +103,8 @@ export class DateInput extends HoistInput {
             },
             minDate,
             maxDate,
+            timePickerProps,
+            timePrecision,
             dayPickerProps,
             ...this.getDelegateProps()
         });
@@ -94,7 +115,7 @@ export class DateInput extends HoistInput {
     }
 
     parseDate(dateString) {
-        return moment(dateString, 'YYYY-MM-DD', true).toDate();
+        return moment(dateString, 'YYYY-MM-DD HH:mm:ss').toDate();
     }
 
     onChange = (date, isUserChange) => {
