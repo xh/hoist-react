@@ -42,6 +42,10 @@ export class DateInput extends HoistInput {
         minDate: PT.instanceOf(Date),
         maxDate: PT.instanceOf(Date),
 
+        /** String to be passed to momentJS to format user inputted dates, defaults to YYYY-MM-DD HH:mm:ss
+         * @see https://momentjs.com/docs/#/parsing/string-format */
+        formatString: PT.string,
+
         /** The precision of time selection that accompanies the calendar.
          * The simplest way to enable time selection is to provide a value for this prop */
         timePrecision: PT.oneOf(['millisecond', 'second', 'minute']),
@@ -110,12 +114,16 @@ export class DateInput extends HoistInput {
         });
     }
 
-    formatDate(date) {
-        return fmtDate(date);
+    formatDate = (date) => {
+        return fmtDate(date, {fmt: this.props.formatString});
     }
 
-    parseDate(dateString) {
-        return moment(dateString, 'YYYY-MM-DD HH:mm:ss').toDate();
+    parseDate = (dateString) => {
+        const fmtString = this.props.formatString || 'YYYY-MM-DD HH:mm:ss';
+
+        console.log(fmtString);
+
+        return moment(dateString, fmtString).toDate();
     }
 
     onChange = (date, isUserChange) => {
