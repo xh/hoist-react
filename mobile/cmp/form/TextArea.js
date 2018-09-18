@@ -29,7 +29,11 @@ export class TextArea extends HoistInput {
         /** Text to display when control is empty */
         placeholder: PT.string,
         /** Whether to allow browser spell check, defaults to true */
-        spellCheck: PT.bool
+        spellCheck: PT.bool,
+        /** Function which receives keypress event */
+        onKeyPress: PT.func,
+        /** Whether text in field is selected when field receives focus */
+        selectOnFocus: PT.bool
     };
 
     delegateProps = ['className', 'disabled', 'type', 'placeholder'];
@@ -43,6 +47,7 @@ export class TextArea extends HoistInput {
             className: this.getClassName(),
             value: this.renderValue || '',
             onChange: this.onChange,
+            onKeyPress: this.onKeyPress,
             onBlur: this.onBlur,
             onFocus: this.onFocus,
             style: {...style, width},
@@ -55,12 +60,18 @@ export class TextArea extends HoistInput {
         this.noteValueChange(ev.target.value);
     }
 
+    onKeyPress = (ev) => {
+        if (this.props.onKeyPress) this.props.onKeyPress(ev);
+    }
 
     onBlur = () => {
         this.noteBlurred();
     }
 
-    onFocus = () => {
+    onFocus = (ev) => {
+        if (this.props.selectOnFocus && ev.target && ev.target.select) {
+            ev.target.select();
+        }
         this.noteFocused();
     }
 
