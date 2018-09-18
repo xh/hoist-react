@@ -6,6 +6,7 @@
  */
 
 export * from './Label';
+export * from './NumberInput';
 export * from './SearchInput';
 export * from './TextInput';
 export * from './TextArea';
