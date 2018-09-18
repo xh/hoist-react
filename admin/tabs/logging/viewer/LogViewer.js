@@ -49,9 +49,9 @@ export class LogViewer extends Component {
                 }),
                 panel({
                     tbar: logViewerToolbar({model}),
-                    item: logViewerDisplay({model})
-                }),
-                mask: loadModel
+                    item: logViewerDisplay({model}),
+                    mask: loadModel
+                })
             ]
         });
     }
