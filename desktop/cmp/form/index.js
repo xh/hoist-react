@@ -11,6 +11,7 @@ export * from './FormField';
 export * from './JsonInput';
 export * from './Label';
 export * from './NumberInput';
+export * from './RadioInput';
 export * from './Slider';
 export * from './SwitchInput';
 export * from './TextArea';
