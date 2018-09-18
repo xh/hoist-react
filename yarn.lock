@@ -93,9 +93,24 @@
     resize-observer-polyfill "^1.5.0"
     tslib "^1.9.0"
 
-"@blueprintjs/core@^3.6.0", "@blueprintjs/core@~3.6.0":
+"@blueprintjs/core@^3.6.0":
   version "3.6.0"
   resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.6.0.tgz#a03da3a3de9986250b3b7da926aa659308d56b22"
+  dependencies:
+    "@blueprintjs/icons" "^3.0.0"
+    "@types/dom4" "^2.0.0"
+    classnames "^2.2"
+    dom4 "^2.0.1"
+    normalize.css "^8.0.0"
+    popper.js "^1.14.1"
+    react-popper "^1.0.0"
+    react-transition-group "^2.2.1"
+    resize-observer-polyfill "^1.5.0"
+    tslib "^1.9.0"
+
+"@blueprintjs/core@~3.6.1":
+  version "3.6.1"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.6.1.tgz#d168423b1c38964e50c2cc8aef4cba8076bfe01a"
   dependencies:
     "@blueprintjs/icons" "^3.0.0"
     "@types/dom4" "^2.0.0"
@@ -203,9 +218,9 @@
     eslint "~4.19.1"
     eslint-plugin-react "~7.7.0"
 
-"@xh/hoist-dev-utils@~2.2.2":
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-2.2.2.tgz#5d864288f4609d9c363a4be85636b950bc55d952"
+"@xh/hoist-dev-utils@~2.2.3":
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-2.2.3.tgz#41972a104e3a4cb93ee61427c06b01cab9ad79ab"
   dependencies:
     "@xh/eslint-config" "~0.2.1"
     autoprefixer "~8.5.0"
@@ -6003,14 +6018,14 @@ react-dom-factories@~1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/react-dom-factories/-/react-dom-factories-1.0.2.tgz#eb7705c4db36fb501b3aa38ff759616aa0ff96e0"
 
-react-dom@~16.4.2:
-  version "16.4.2"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.4.2.tgz#4afed569689f2c561d2b8da0b819669c38a0bda4"
+react-dom@~16.5.1:
+  version "16.5.1"
+  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.5.1.tgz#29d0c5a01ed3b6b4c14309aa91af6ec4eb4f292c"
   dependencies:
-    fbjs "^0.8.16"
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
-    prop-types "^15.6.0"
+    prop-types "^15.6.2"
+    schedule "^0.4.0"
 
 react-lifecycles-compat@^3.0.2, react-lifecycles-compat@^3.0.4:
   version "3.0.4"
@@ -6042,14 +6057,14 @@ react-transition-group@^2.2.1, react-transition-group@~2.4.0:
     prop-types "^15.6.2"
     react-lifecycles-compat "^3.0.4"
 
-react@~16.4.2:
-  version "16.4.2"
-  resolved "https://registry.yarnpkg.com/react/-/react-16.4.2.tgz#2cd90154e3a9d9dd8da2991149fdca3c260e129f"
+react@~16.5.1:
+  version "16.5.1"
+  resolved "https://registry.yarnpkg.com/react/-/react-16.5.1.tgz#8cb8e9f8cdcb4bde41c9a138bfbf907e66132372"
   dependencies:
-    fbjs "^0.8.16"
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
-    prop-types "^15.6.0"
+    prop-types "^15.6.2"
+    schedule "^0.4.0"
 
 read-chunk@^1.0.1:
   version "1.0.1"
@@ -6497,6 +6512,12 @@ saucelabs@^1.5.0:
 sax@>=0.6.0, sax@^1.2.4, sax@~1.2.1:
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/sax/-/sax-1.2.4.tgz#2816234e2378bddc4e5354fab5caa895df7100d9"
+
+schedule@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/schedule/-/schedule-0.4.0.tgz#fa20cfd0bfbf91c47d02272fd7096780d3170bbb"
+  dependencies:
+    object-assign "^4.1.1"
 
 schema-utils@^0.3.0:
   version "0.3.0"

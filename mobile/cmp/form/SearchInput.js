@@ -31,7 +31,11 @@ export class SearchInput extends HoistInput {
         /** Whether to allow browser spell check, defaults to false */
         spellCheck: PT.bool,
         /** Onsen modifier string */
-        modifier: PT.string
+        modifier: PT.string,
+        /** Function which receives keypress event */
+        onKeyPress: PT.func,
+        /** Whether text in field is selected when field receives focus */
+        selectOnFocus: PT.bool
     };
 
     delegateProps = ['className', 'disabled', 'placeholder', 'modifier'];
@@ -45,6 +49,7 @@ export class SearchInput extends HoistInput {
             className: this.getClassName(),
             value: this.renderValue || '',
             onChange: this.onChange,
+            onKeyPress: this.onKeyPress,
             onBlur: this.onBlur,
             onFocus: this.onFocus,
             style: {...style, width},
@@ -57,12 +62,19 @@ export class SearchInput extends HoistInput {
         this.noteValueChange(ev.target.value);
     }
 
+    onKeyPress = (ev) => {
+        if (ev.key === 'Enter') this.doCommit();
+        if (this.props.onKeyPress) this.props.onKeyPress(ev);
+    }
 
     onBlur = () => {
         this.noteBlurred();
     }
 
-    onFocus = () => {
+    onFocus = (ev) => {
+        if (this.props.selectOnFocus && ev.target && ev.target.select) {
+            ev.target.select();
+        }
         this.noteFocused();
     }
 }

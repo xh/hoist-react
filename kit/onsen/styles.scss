@@ -42,12 +42,18 @@
     font-size: 14px;
   }
 
-  &.xh-text-input {
+  &.xh-text-input,
+  &.xh-number-input {
     margin: 4px;
 
-    .text-input, .text-input__label {
+    .text-input,
+    .text-input__label {
       padding: 0 var(--xh-pad-px);
     }
+  }
+
+  &.xh-number-input .text-input {
+    text-align: right;
   }
 
   &.xh-search-input {
