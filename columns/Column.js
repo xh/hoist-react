@@ -61,6 +61,8 @@ export class Column {
      *      @see ExportManager
      * @param {ExportFormat} [c.exportFormat] - structured format string for Excel-based exports.
      *      @see ExportFormat
+     * @param {int} [c.exportWidth] - width in characters for Excel-based exports. Applies to
+     *      ExportFormat.LONG_TEXT only.
      * @param {(boolean|Column~tooltipFn)} [c.tooltip] - 'true' displays the raw value, or
      *      tool tip function, which is based on AG Grid tooltip callback.
      * @param {boolean} [c.excludeFromExport] - true to drop this column from a file export.
@@ -91,10 +93,10 @@ export class Column {
         exportName,
         exportValue,
         exportFormat,
+        exportWidth,
         excludeFromExport,
         tooltip,
-        agOptions,
-        wrapText
+        agOptions
     }) {
         this.field = field;
         this.colId = withDefault(colId, field);
@@ -130,12 +132,11 @@ export class Column {
         this.exportName = exportName || this.headerName || this.colId;
         this.exportValue = exportValue;
         this.exportFormat = withDefault(exportFormat, ExportFormat.DEFAULT);
+        this.exportWidth = this.exportFormat === 'Text' ? withDefault(exportWidth, 100) : null;
         this.excludeFromExport = withDefault(excludeFromExport, !field);
 
         this.tooltip = tooltip;
         this.agOptions = agOptions ? clone(agOptions) : {};
-
-        this.wrapText = wrapText;
     }
 
 

@@ -67,8 +67,6 @@ export class GridModel {
     @observable groupBy = null;
     /** @member {boolean} */
     @observable compact = false;
-    /** @member {boolean} */
-    @observable wrapText = false;
     /** @member {GridApi} */
     @observable.ref agApi = null;
 
@@ -119,7 +117,6 @@ export class GridModel {
         sortBy = [],
         groupBy = null,
         compact = false,
-        wrapText = false,
         enableColChooser = false,
         enableExport = false,
         exportFilename = 'export',
@@ -140,15 +137,10 @@ export class GridModel {
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
         this.setCompact(compact);
-        this.applyWrapText(wrapText);
 
         this.selModel = this.initSelModel(selModel, store);
         this.stateModel = this.initStateModel(stateModel);
 
-        this.addReaction({
-            track: () => [this.wrapText],
-            run: () => this.applyWrapText()
-        });
     }
 
     /**
@@ -270,11 +262,6 @@ export class GridModel {
         this.compact = compact;
     }
 
-    @action
-    setWrapText(wrapText) {
-        this.wrapText = wrapText;
-    }
-
     /** Load the underlying store. */
     loadAsync(...args) {
         return this.store.loadAsync(...args);
@@ -343,11 +330,6 @@ export class GridModel {
         }
 
         this.columns = newCols;
-    }
-
-    @action
-    applyWrapText() {
-        this.columns.forEach(col => col.wrapText = this.wrapText)
     }
 
     getLeafColumns() {
