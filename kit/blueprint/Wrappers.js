@@ -6,7 +6,6 @@
  */
 
 import {elemFactory} from '@xh/hoist/core';
-
 //--------------------
 // Blueprint Imports
 //--------------------
@@ -42,7 +41,9 @@ import {
     Tag,
     TagInput,
     TextArea,
-    Text
+    Text,
+    Tooltip,
+    Tree
 } from '@blueprintjs/core';
 
 import {DateInput} from '@blueprintjs/datetime';
@@ -88,7 +89,9 @@ export {
     Tag,
     TagInput,
     TextArea,
-    Text
+    Text,
+    Tooltip,
+    Tree
 };
 
 export const
@@ -128,4 +131,6 @@ export const
     tag = elemFactory(Tag),
     tagInput = elemFactory(TagInput),
     text = elemFactory(Text),
-    textArea = elemFactory(TextArea);
+    textArea = elemFactory(TextArea),
+    tooltip = elemFactory(Tooltip),
+    tree = elemFactory(Tree);

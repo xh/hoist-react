@@ -7,49 +7,48 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {textArea} from '@xh/hoist/kit/blueprint';
+import {textarea as textareaTag} from '@xh/hoist/cmp/layout';
 
-import {HoistField} from '@xh/hoist/cmp/form';
-import './TextAreaField.scss';
+import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
- * A Text Area Field
+ * A Text Area Input
  *
- * @see HoistField for properties additional to those documented below.
+ * @see HoistInput for properties additional to those documented below.
  */
 @HoistComponent
-export class TextAreaField extends HoistField {
+export class TextArea extends HoistInput {
 
     static propTypes = {
-        ...HoistField.propTypes,
+        ...HoistInput.propTypes,
 
         /** Value of the control */
         value: PT.string,
 
-        /** Whether field should receive focus on render */
-        autoFocus: PT.bool,
         /** Text to display when control is empty */
         placeholder: PT.string,
         /** Whether to allow browser spell check, defaults to true */
         spellCheck: PT.bool,
+        /** Function which receives keypress event */
+        onKeyPress: PT.func,
         /** Whether text in field is selected when field receives focus */
         selectOnFocus: PT.bool
     };
-    
-    delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus'];
 
-    baseClassName = 'xh-textarea-field';
+    delegateProps = ['className', 'disabled', 'type', 'placeholder'];
+
+    baseClassName = 'xh-textarea';
 
     render() {
         const {style, width, spellCheck} = this.props;
 
-        return textArea({
+        return textareaTag({
             className: this.getClassName(),
             value: this.renderValue || '',
             onChange: this.onChange,
             onKeyPress: this.onKeyPress,
             onBlur: this.onBlur,
-            onFocus: this.onTextAreaFieldFocus,
+            onFocus: this.onFocus,
             style: {...style, width},
             spellCheck: spellCheck !== false,
             ...this.getDelegateProps()
@@ -61,14 +60,19 @@ export class TextAreaField extends HoistField {
     }
 
     onKeyPress = (ev) => {
-        if (ev.key === 'Enter' && !ev.shiftKey) this.doCommit();
+        if (this.props.onKeyPress) this.props.onKeyPress(ev);
     }
 
-    onTextAreaFieldFocus = (ev) => {
-        if (this.props.selectOnFocus === true) {
+    onBlur = () => {
+        this.noteBlurred();
+    }
+
+    onFocus = (ev) => {
+        if (this.props.selectOnFocus && ev.target && ev.target.select) {
             ev.target.select();
         }
-        this.onFocus();
+        this.noteFocused();
     }
+
 }
-export const textAreaField = elemFactory(TextAreaField);
+export const textArea = elemFactory(TextArea);

@@ -6,24 +6,25 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {numericInput} from '@xh/hoist/kit/blueprint';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {input} from '@xh/hoist/kit/onsen';
 import {fmtNumber} from '@xh/hoist/format';
-import {HoistField} from '@xh/hoist/cmp/form';
+
+import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
- * A Number Input Field
+ * A Number Input
  *
- * @see HoistField for properties additional to those documented below.
+ * @see HoistInput for properties additional to those documented below.
  */
 @HoistComponent
-export class NumberField extends HoistField {
+export class NumberInput extends HoistInput {
 
     static propTypes = {
-        ...HoistField.propTypes,
+        ...HoistInput.propTypes,
 
         /** Value of the control */
-        value: PT.number,
+        value: PT.string,
 
         /** Text to display when control is empty */
         placeholder: PT.string,
@@ -36,48 +37,50 @@ export class NumberField extends HoistField {
         /** Allow/automatically fill in trailing zeros in accord with precision, defaults to false */
         zeroPad: PT.bool,
         /** Set to true for advanced input evaluation, defaults to false.
-            Inputs suffixed with k, m, or b will be calculated as thousands, millions, or billions respectively */
+         Inputs suffixed with k, m, or b will be calculated as thousands, millions, or billions respectively */
         enableShorthandUnits: PT.bool,
         /** Whether to display large values with commas */
         displayWithCommas: PT.bool,
-        /** Alignment of numbers in field, default to 'right' */
-        textAlign: PT.oneOf(['left', 'right']),
-        /** Icon to display on the left side of the field */
-        leftIcon: PT.element,
+        /** Onsen modifier string */
+        modifier: PT.string,
+        /** Function which receives keypress event */
+        onKeyPress: PT.func,
         /** Whether text in field is selected when field receives focus */
         selectOnFocus: PT.bool
     };
 
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/gi;
 
-    delegateProps = ['className', 'disabled', 'min', 'max', 'placeholder', 'leftIcon'];
+    delegateProps = ['className', 'disabled', 'min', 'max', 'placeholder', 'modifier'];
 
-    baseClassName = 'xh-number-field';
+    baseClassName = 'xh-number-input';
 
     render() {
-        const {width, style, enableShorthandUnits} = this.props,
-            textAlign = this.props.textAlign || 'right';
+        const {width, style, enableShorthandUnits} = this.props;
 
-        return numericInput({
+        return input({
             className: this.getClassName(),
-            value: this.renderValue,
-            onValueChange: this.onValueChange,
+            value: this.renderValue || '',
+            onChange: this.onChange,
             onKeyPress: this.onKeyPress,
             onBlur: this.onBlur,
-            onFocus: this.onNumberFieldFocus,
-            style: {textAlign, width, ...style},
-            buttonPosition: 'none',
-            allowNumericCharactersOnly: !enableShorthandUnits,
+            onFocus: this.onFocus,
+            style: {width, ...style},
+            spellCheck: false,
+            type: enableShorthandUnits ? 'text' : 'number',
             ...this.getDelegateProps()
         });
     }
 
-    onValueChange = (val, valAsString) => {
-        this.noteValueChange(valAsString);
+    onChange = (ev) => {
+        let v = ev.target.value;
+        if (v) v = v.toString();
+        this.noteValueChange(v);
     }
 
     onKeyPress = (ev) => {
         if (ev.key === 'Enter') this.doCommit();
+        if (this.props.onKeyPress) this.props.onKeyPress(ev);
     }
 
     toExternal(value) {
@@ -98,8 +101,7 @@ export class NumberField extends HoistField {
     parseValue(value) {
         value = value.replace(/,/g, '');
 
-        if (NumberField.shorthandValidator.test(value)) {
-
+        if (NumberInput.shorthandValidator.test(value)) {
             const num = +value.substring(0, value.length - 1),
                 lastChar = value.charAt(value.length - 1).toLowerCase();
 
@@ -113,17 +115,21 @@ export class NumberField extends HoistField {
                 default:
                     return NaN;
             }
-
         }
 
         return parseFloat(value);
     }
 
-    onNumberFieldFocus = (ev) => {
-        if (this.props.selectOnFocus === true) {
+    onBlur = () => {
+        this.noteBlurred();
+    }
+
+    onFocus = (ev) => {
+        if (this.props.selectOnFocus && ev.target && ev.target.select) {
             ev.target.select();
         }
-        this.onFocus();
+        this.noteFocused();
     }
 }
-export const numberField = elemFactory(NumberField);
+
+export const numberInput = elemFactory(NumberInput);

@@ -9,17 +9,17 @@ import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {switchControl} from '@xh/hoist/kit/blueprint';
 
-import {HoistField} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
- * Switch Field. 
- * Note that that component does not handle null values. For nullable fields, use a SelectField.
+ * Switch Input.
+ * Note that that component does not handle null values. For nullable fields, use a Select.
  */
 @HoistComponent
-export class SwitchField extends HoistField {
+export class SwitchInput extends HoistInput {
 
     static propTypes = {
-        ...HoistField.propTypes,
+        ...HoistInput.propTypes,
         value: PT.bool
     };
 
@@ -28,7 +28,7 @@ export class SwitchField extends HoistField {
         inline: true
     };
 
-    baseClassName = 'xh-switch-field';
+    baseClassName = 'xh-switch-input';
 
     render() {
         return switchControl({
@@ -45,5 +45,13 @@ export class SwitchField extends HoistField {
         this.noteValueChange(e.target.checked);
     }
 
+    onBlur = () => {
+        this.noteBlurred();
+    }
+
+    onFocus = () => {
+        this.noteFocused();
+    }
+
 }
-export const switchField = elemFactory(SwitchField);
+export const switchInput = elemFactory(SwitchInput);

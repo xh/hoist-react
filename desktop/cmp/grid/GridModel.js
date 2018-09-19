@@ -94,6 +94,8 @@ export class GridModel {
      * @param {Object} c - GridModel configuration.
      * @param {BaseStore} c.store - store containing the data for the grid.
      * @param {(Column[]|Object[])} c.columns - Columns, or configs to create them.
+     *          A 'column' can also be a config for a column group. Column groups must specify a children property
+     *          that is a array of Columns or configs to create them. Column groups also require a headerName or GroupId.
      * @param {(boolean)} [c.treeMode] - true if grid is a tree grid (default false).
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
@@ -337,6 +339,10 @@ export class GridModel {
         this.columns = newCols;
     }
 
+    getLeafColumns() {
+        return this.gatherLeaves(this.columns);
+    }
+
     //-----------------------
     // Implementation
     //-----------------------
@@ -364,6 +370,15 @@ export class GridModel {
             }
         }
         return null;
+    }
+
+    gatherLeaves(columns, leaves = []) {
+        columns.forEach(col => {
+            if (col.groupId) this.gatherLeaves(col.children, leaves);
+            if (col.colId) leaves.push(col);
+        });
+
+        return leaves;
     }
 
     markGroupSortOrder(col) {

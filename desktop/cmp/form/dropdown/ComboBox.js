@@ -10,16 +10,16 @@ import {startsWith} from 'lodash';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Classes, suggest} from '@xh/hoist/kit/blueprint';
 
-import {BaseComboField} from './BaseComboField';
+import {BaseComboBox} from './BaseComboBox';
 
 /**
- * ComboBox Field - A field with type ahead suggest and menu select
+ * ComboBox - An input with type ahead suggest and menu select
  */
 @HoistComponent
-export class ComboField extends BaseComboField {
+export class ComboBox extends BaseComboBox {
 
     static propTypes = {
-        ...BaseComboField.propTypes,
+        ...BaseComboBox.propTypes,
 
         /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
         options: PT.arrayOf(PT.oneOfType([PT.object, PT.string])),
@@ -35,7 +35,7 @@ export class ComboField extends BaseComboField {
 
     delegateProps = ['className', 'disabled', 'placeholder', 'leftIcon', 'rightElement'];
 
-    baseClassName = 'xh-combo-field';
+    baseClassName = 'xh-combo-box';
 
     constructor(props) {
         super(props);
@@ -62,11 +62,21 @@ export class ComboField extends BaseComboField {
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,
                 onFocus: this.onFocus,
+                autoComplete: 'nope',
                 style: {...style, width},
                 ...this.getDelegateProps()
             },
             disabled
         });
     }
+
+    onBlur = () => {
+        this.noteBlurred();
+    }
+
+    onFocus = () => {
+        this.noteFocused();
+    }
+
 }
-export const comboField = elemFactory(ComboField);
+export const comboBox = elemFactory(ComboBox);

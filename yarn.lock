@@ -78,7 +78,7 @@
     lodash "^4.2.0"
     to-fast-properties "^2.0.0"
 
-"@blueprintjs/core@^3.0.0", "@blueprintjs/core@~3.4.0":
+"@blueprintjs/core@^3.0.0":
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.4.0.tgz#cf5a61fb8288d8a58b892c7005d999c944d30521"
   dependencies:
@@ -93,9 +93,9 @@
     resize-observer-polyfill "^1.5.0"
     tslib "^1.9.0"
 
-"@blueprintjs/core@^3.1.0":
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.3.0.tgz#6fc5c7d811d1c0693c0c3d7a472549e171c455db"
+"@blueprintjs/core@^3.6.0":
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.6.0.tgz#a03da3a3de9986250b3b7da926aa659308d56b22"
   dependencies:
     "@blueprintjs/icons" "^3.0.0"
     "@types/dom4" "^2.0.0"
@@ -108,25 +108,33 @@
     resize-observer-polyfill "^1.5.0"
     tslib "^1.9.0"
 
-"@blueprintjs/datetime@~3.1.0":
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/datetime/-/datetime-3.1.0.tgz#579c05e25475e2aa86491036c4faeba6c5444838"
+"@blueprintjs/core@~3.6.1":
+  version "3.6.1"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.6.1.tgz#d168423b1c38964e50c2cc8aef4cba8076bfe01a"
   dependencies:
-    "@blueprintjs/core" "^3.1.0"
+    "@blueprintjs/icons" "^3.0.0"
+    "@types/dom4" "^2.0.0"
     classnames "^2.2"
-    react-day-picker "^7.0.7"
+    dom4 "^2.0.1"
+    normalize.css "^8.0.0"
+    popper.js "^1.14.1"
+    react-popper "^1.0.0"
+    react-transition-group "^2.2.1"
+    resize-observer-polyfill "^1.5.0"
+    tslib "^1.9.0"
+
+"@blueprintjs/datetime@~3.2.0":
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/datetime/-/datetime-3.2.0.tgz#8d0c8d5e3ed43b2c1d8415d6b76c44fea9c3b288"
+  dependencies:
+    "@blueprintjs/core" "^3.6.0"
+    classnames "^2.2"
+    react-day-picker "^7.1.10"
     tslib "^1.9.0"
 
 "@blueprintjs/icons@^3.0.0":
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/@blueprintjs/icons/-/icons-3.0.0.tgz#2eed041dd52c9feed2758ca526f4505911813a31"
-  dependencies:
-    classnames "^2.2"
-    tslib "^1.9.0"
-
-"@blueprintjs/icons@~3.1.0":
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/icons/-/icons-3.1.0.tgz#7bf137bd30eb74a4d35d4e03e736898ef9ab6025"
   dependencies:
     classnames "^2.2"
     tslib "^1.9.0"
@@ -139,41 +147,41 @@
     classnames "^2.2"
     tslib "^1.9.0"
 
-"@fortawesome/fontawesome-common-types@^0.2.3":
-  version "0.2.3"
-  resolved "https://npm.fontawesome.com/@fortawesome/fontawesome-common-types/-/fontawesome-common-types-0.2.3.tgz#bcdffc26f2289ada8f6beb7808b45b05439b6718"
+"@fortawesome/fontawesome-common-types@^0.2.4":
+  version "0.2.4"
+  resolved "https://npm.fontawesome.com/@fortawesome/fontawesome-common-types/-/fontawesome-common-types-0.2.4.tgz#7c560ff732c6c7c7c179ae25227ce5449e6f6d65"
 
-"@fortawesome/fontawesome-pro@~5.3.0":
-  version "5.3.0"
-  resolved "https://npm.fontawesome.com/@fortawesome/fontawesome-pro/-/fontawesome-pro-5.3.0.tgz#ca848c655df9a98fcbbafb036576b084ee2a358d"
+"@fortawesome/fontawesome-pro@~5.3.1":
+  version "5.3.1"
+  resolved "https://npm.fontawesome.com/@fortawesome/fontawesome-pro/-/fontawesome-pro-5.3.1.tgz#abe48cc682bce7571958ca021d4b0ff7ce02c52c"
 
-"@fortawesome/fontawesome-svg-core@~1.2.3":
-  version "1.2.3"
-  resolved "https://npm.fontawesome.com/@fortawesome/fontawesome-svg-core/-/fontawesome-svg-core-1.2.3.tgz#e393f63e5e15da1f5af4601616a2cd58d1701a9e"
+"@fortawesome/fontawesome-svg-core@~1.2.4":
+  version "1.2.4"
+  resolved "https://npm.fontawesome.com/@fortawesome/fontawesome-svg-core/-/fontawesome-svg-core-1.2.4.tgz#2e40c65e66c7ad5aabc179a2d7c5827b1599905c"
   dependencies:
-    "@fortawesome/fontawesome-common-types" "^0.2.3"
+    "@fortawesome/fontawesome-common-types" "^0.2.4"
 
-"@fortawesome/pro-light-svg-icons@~5.3.0":
-  version "5.3.0"
-  resolved "https://npm.fontawesome.com/@fortawesome/pro-light-svg-icons/-/pro-light-svg-icons-5.3.0.tgz#08e1764993fc714c23c7fec9a8a32923acc71fc3"
+"@fortawesome/pro-light-svg-icons@~5.3.1":
+  version "5.3.1"
+  resolved "https://npm.fontawesome.com/@fortawesome/pro-light-svg-icons/-/pro-light-svg-icons-5.3.1.tgz#186c9819d49987d248f2eede994ae9e7bc4354d3"
   dependencies:
-    "@fortawesome/fontawesome-common-types" "^0.2.3"
+    "@fortawesome/fontawesome-common-types" "^0.2.4"
 
-"@fortawesome/pro-regular-svg-icons@~5.3.0":
-  version "5.3.0"
-  resolved "https://npm.fontawesome.com/@fortawesome/pro-regular-svg-icons/-/pro-regular-svg-icons-5.3.0.tgz#8aad182701c0317e96895ff2ab4ba3a713c66868"
+"@fortawesome/pro-regular-svg-icons@~5.3.1":
+  version "5.3.1"
+  resolved "https://npm.fontawesome.com/@fortawesome/pro-regular-svg-icons/-/pro-regular-svg-icons-5.3.1.tgz#79e835ae8b73a5d99782b503a1e3b3caa8f1fabc"
   dependencies:
-    "@fortawesome/fontawesome-common-types" "^0.2.3"
+    "@fortawesome/fontawesome-common-types" "^0.2.4"
 
-"@fortawesome/pro-solid-svg-icons@~5.3.0":
-  version "5.3.0"
-  resolved "https://npm.fontawesome.com/@fortawesome/pro-solid-svg-icons/-/pro-solid-svg-icons-5.3.0.tgz#ab718487d70597a192d35c41fab109aebb7c0781"
+"@fortawesome/pro-solid-svg-icons@~5.3.1":
+  version "5.3.1"
+  resolved "https://npm.fontawesome.com/@fortawesome/pro-solid-svg-icons/-/pro-solid-svg-icons-5.3.1.tgz#b09c2cce921e8a2295ab8ac73499975b124eb953"
   dependencies:
-    "@fortawesome/fontawesome-common-types" "^0.2.3"
+    "@fortawesome/fontawesome-common-types" "^0.2.4"
 
-"@fortawesome/react-fontawesome@~0.1.0":
-  version "0.1.2"
-  resolved "https://npm.fontawesome.com/@fortawesome/react-fontawesome/-/react-fontawesome-0.1.2.tgz#baad4a6508867567aea20c1551bf62ff090d8121"
+"@fortawesome/react-fontawesome@~0.1.3":
+  version "0.1.3"
+  resolved "https://npm.fontawesome.com/@fortawesome/react-fontawesome/-/react-fontawesome-0.1.3.tgz#266b4047892c3d10498af1075d89252f74015b11"
   dependencies:
     humps "^2.0.1"
     prop-types "^15.5.10"
@@ -210,9 +218,9 @@
     eslint "~4.19.1"
     eslint-plugin-react "~7.7.0"
 
-"@xh/hoist-dev-utils@~2.2.1":
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-2.2.1.tgz#40bfed1be1fa0fd9d36fc30c6c0730836277348c"
+"@xh/hoist-dev-utils@~2.2.3":
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-2.2.3.tgz#41972a104e3a4cb93ee61427c06b01cab9ad79ab"
   dependencies:
     "@xh/eslint-config" "~0.2.1"
     autoprefixer "~8.5.0"
@@ -3519,9 +3527,9 @@ he@1.1.x:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/he/-/he-1.1.1.tgz#93410fd21b009735151f8868c2f271f3427e23fd"
 
-highcharts@~6.1.0:
-  version "6.1.1"
-  resolved "https://registry.yarnpkg.com/highcharts/-/highcharts-6.1.1.tgz#49dc34f5e963744ecd7eb87603b6cdaf8304c13a"
+highcharts@~6.1.3:
+  version "6.1.3"
+  resolved "https://registry.yarnpkg.com/highcharts/-/highcharts-6.1.3.tgz#913d6def3ff029086eb339972830db8029e0c98a"
 
 hmac-drbg@^1.0.0:
   version "1.0.1"
@@ -4784,16 +4792,16 @@ mkdirp@0.5.1, mkdirp@0.5.x, "mkdirp@>=0.5 0", mkdirp@^0.5.0, mkdirp@^0.5.1, mkdi
   dependencies:
     minimist "0.0.8"
 
-mobx-react@~5.2.3:
-  version "5.2.5"
-  resolved "https://registry.yarnpkg.com/mobx-react/-/mobx-react-5.2.5.tgz#fc44ac17e1798f6b590f064b831d8a1d89850ef0"
+mobx-react@~5.2.8:
+  version "5.2.8"
+  resolved "https://registry.yarnpkg.com/mobx-react/-/mobx-react-5.2.8.tgz#059c7f29254d7cd36e103d79113103b40348d3bf"
   dependencies:
     hoist-non-react-statics "^2.5.0"
     react-lifecycles-compat "^3.0.2"
 
-mobx@~5.1.0:
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/mobx/-/mobx-5.1.0.tgz#ae772ca8eb0c1dd93341ffce375f44a80050014d"
+mobx@~5.1.1:
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/mobx/-/mobx-5.1.1.tgz#b8579ea7e7fbb07b79d56a71c3191287afc45f93"
 
 moment@~2.22.1:
   version "2.22.2"
@@ -6000,24 +6008,24 @@ rc@^1.2.7:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
-react-day-picker@^7.0.7:
-  version "7.1.10"
-  resolved "https://registry.yarnpkg.com/react-day-picker/-/react-day-picker-7.1.10.tgz#c763b1acb141ce960e25654b7033c2207f0fc1c3"
+react-day-picker@^7.1.10:
+  version "7.2.4"
+  resolved "https://registry.yarnpkg.com/react-day-picker/-/react-day-picker-7.2.4.tgz#3c3bea7aa1910bef7bad17f25ff15cd26a7d1848"
   dependencies:
-    prop-types "^15.6.1"
+    prop-types "^15.6.2"
 
 react-dom-factories@~1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/react-dom-factories/-/react-dom-factories-1.0.2.tgz#eb7705c4db36fb501b3aa38ff759616aa0ff96e0"
 
-react-dom@~16.4.2:
-  version "16.4.2"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.4.2.tgz#4afed569689f2c561d2b8da0b819669c38a0bda4"
+react-dom@~16.5.1:
+  version "16.5.1"
+  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.5.1.tgz#29d0c5a01ed3b6b4c14309aa91af6ec4eb4f292c"
   dependencies:
-    fbjs "^0.8.16"
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
-    prop-types "^15.6.0"
+    prop-types "^15.6.2"
+    schedule "^0.4.0"
 
 react-lifecycles-compat@^3.0.2, react-lifecycles-compat@^3.0.4:
   version "3.0.4"
@@ -6049,14 +6057,14 @@ react-transition-group@^2.2.1, react-transition-group@~2.4.0:
     prop-types "^15.6.2"
     react-lifecycles-compat "^3.0.4"
 
-react@~16.4.2:
-  version "16.4.2"
-  resolved "https://registry.yarnpkg.com/react/-/react-16.4.2.tgz#2cd90154e3a9d9dd8da2991149fdca3c260e129f"
+react@~16.5.1:
+  version "16.5.1"
+  resolved "https://registry.yarnpkg.com/react/-/react-16.5.1.tgz#8cb8e9f8cdcb4bde41c9a138bfbf907e66132372"
   dependencies:
-    fbjs "^0.8.16"
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
-    prop-types "^15.6.0"
+    prop-types "^15.6.2"
+    schedule "^0.4.0"
 
 read-chunk@^1.0.1:
   version "1.0.1"
@@ -6428,9 +6436,9 @@ router5@~6.4.2:
     router5-transition-path "^5.3.1"
     symbol-observable "1.2.0"
 
-rsvp@~4.8.2:
-  version "4.8.3"
-  resolved "https://registry.yarnpkg.com/rsvp/-/rsvp-4.8.3.tgz#25d4b9fdd0f95e216eb5884d9b3767d3fbfbe2cd"
+rsvp@~4.8.4:
+  version "4.8.4"
+  resolved "https://registry.yarnpkg.com/rsvp/-/rsvp-4.8.4.tgz#b50e6b34583f3dd89329a2f23a8a2be072845911"
 
 run-async@^2.2.0:
   version "2.3.0"
@@ -6504,6 +6512,12 @@ saucelabs@^1.5.0:
 sax@>=0.6.0, sax@^1.2.4, sax@~1.2.1:
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/sax/-/sax-1.2.4.tgz#2816234e2378bddc4e5354fab5caa895df7100d9"
+
+schedule@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/schedule/-/schedule-0.4.0.tgz#fa20cfd0bfbf91c47d02272fd7096780d3170bbb"
+  dependencies:
+    object-assign "^4.1.1"
 
 schema-utils@^0.3.0:
   version "0.3.0"

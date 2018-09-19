@@ -9,23 +9,33 @@ import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {inputGroup} from '@xh/hoist/kit/blueprint';
 
-import {HoistField} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/form';
+import {withDefault} from '@xh/hoist/utils/js';
 
 /**
- * A Text Input Field
+ * A Text Input
  *
- * @see HoistField for properties additional to those documented below.
+ * @see HoistInput for properties additional to those documented below.
  */
 @HoistComponent
-export class TextField extends HoistField {
+export class TextInput extends HoistInput {
 
     static propTypes = {
-        ...HoistField.propTypes,
+        ...HoistInput.propTypes,
 
         /** Value of the control */
         value: PT.string,
         /** Whether field should receive focus on render */
         autoFocus: PT.bool,
+        /**
+         *  autocomplete attribute to set on underlying html <input> element.
+         *
+         *  Defaults to non-valid value 'nope' for fields of type text and 'new-password' for fields of type 'password'
+         *  in order to most effectively defeat browser autocompletion. Set to 'on' to enable autocompletion.
+         *
+         *  See https://developer.mozilla.org/en-US/docs/Web/Security/Securing_your_site/Turning_off_form_autocompletion
+         */
+        autoComplete: PT.oneOf(['on', 'off', 'new-password', 'nope']),
         /** Type of input desired */
         type: PT.oneOf(['text', 'password']),
         /** Text to display when control is empty */
@@ -44,18 +54,19 @@ export class TextField extends HoistField {
 
     delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus', 'leftIcon', 'rightElement'];
 
-    baseClassName = 'xh-text-field';
+    baseClassName = 'xh-text-input';
 
     render() {
-        const {style, width, spellCheck} = this.props;
+        const {style, width, spellCheck, autoComplete, type} = this.props;
 
         return inputGroup({
             className: this.getClassName(),
             value: this.renderValue || '',
+            autoComplete: withDefault(autoComplete, type == 'password' ? 'new-password' : 'nope'),
             onChange: this.onChange,
             onKeyPress: this.onKeyPress,
             onBlur: this.onBlur,
-            onFocus: this.onTextFieldFocus,
+            onFocus: this.onFocus,
             style: {...style, width},
             spellCheck: !!spellCheck,
             ...this.getDelegateProps()
@@ -73,11 +84,16 @@ export class TextField extends HoistField {
         if (this.props.onKeyPress) this.props.onKeyPress(ev);
     }
 
-    onTextFieldFocus = (ev) => {
-        if (this.props.selectOnFocus === true) {
+    onFocus = (ev) => {
+        if (this.props.selectOnFocus) {
             ev.target.select();
         }
-        this.onFocus();
+        this.noteFocused();
     }
+
+    onBlur = () => {
+        this.noteBlurred();
+    }
+
 }
-export const textField = elemFactory(TextField);
+export const textInput = elemFactory(TextInput);

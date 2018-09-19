@@ -8,23 +8,23 @@
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {box} from '@xh/hoist/cmp/layout';
-import {slider, rangeSlider} from '@xh/hoist/kit/blueprint';
+import {slider as bpSlider, rangeSlider as bpRangeSlider} from '@xh/hoist/kit/blueprint';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isArray} from 'lodash';
 import {toJS} from 'mobx';
-import {HoistField} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
- * A Slider Field.
+ * A Slider Input.
  *
  * Value can be either a single number (for a simple slider) or an array of 2 numbers (for a range)
  */
 @HoistComponent
 @LayoutSupport
-export class SliderField extends HoistField {
+export class Slider extends HoistInput {
 
     static propTypes = {
-        ...HoistField.propTypes,
+        ...HoistInput.propTypes,
 
         /** minimum value */
         min: PT.number,
@@ -48,16 +48,16 @@ export class SliderField extends HoistField {
 
     delegateProps = ['className', 'disabled'];
 
-    baseClassName = 'xh-slider-field';
+    baseClassName = 'xh-slider';
 
     constructor(props) {
         super(props);
-        throwIf(!props.commitOnChange, 'A commitOnChange value of false not implemented on SliderField.');
+        throwIf(!props.commitOnChange, 'A commitOnChange value of false not implemented on Slider.');
     }
 
     render() {
         const {labelStepSize, labelRenderer, min, max, stepSize, showTrackFill, vertical} = this.props,
-            input = isArray(toJS(this.renderValue)) ? rangeSlider : slider;
+            input = isArray(toJS(this.renderValue)) ? bpRangeSlider : bpSlider;
 
         // Set default left / right padding
         const layoutProps = this.getLayoutProps();
@@ -88,5 +88,13 @@ export class SliderField extends HoistField {
         this.noteValueChange(val);
     }
 
+    onBlur = () => {
+        this.noteBlurred();
+    }
+
+    onFocus = () => {
+        this.noteFocused();
+    }
+
 }
-export const sliderField = elemFactory(SliderField);
+export const slider = elemFactory(Slider);

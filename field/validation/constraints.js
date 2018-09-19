@@ -39,10 +39,11 @@ export function lengthIs({min, max}) {
 /**
  * Validate a number.
  */
-export function numberIs({min, max}) {
+export function numberIs({min, max, notZero}) {
     return ({value, displayName}) => {
         if (isNil(value)) return null;
 
+        if (notZero && value === 0) return `${displayName} must not be zero.`;
         if (min != null && value < min) return `${displayName} must be greater than or equal to ${min}.`;
         if (max != null && value > max) return `${displayName} must be less than or equal to ${max}.`;
     };

@@ -9,7 +9,7 @@ import {dialog} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {filler, table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
-import {jsonField} from '@xh/hoist/desktop/cmp/form';
+import {jsonInput} from '@xh/hoist/desktop/cmp/form';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {fmtDateTime} from '@xh/hoist/format';
 
@@ -48,7 +48,7 @@ export class ActivityDetail extends Component {
                     )
                 ]
             }),
-            jsonField({
+            jsonInput({
                 omit: !rec.data,
                 value: rec.data,
                 disabled: true,

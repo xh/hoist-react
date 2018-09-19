@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {castArray, startCase, isFunction} from 'lodash';
+import {castArray, startCase, isFunction, clone} from 'lodash';
 import {ExportFormat} from './ExportFormat';
 import {withDefault, withDefaultTrue, withDefaultFalse, throwIf, warnIf} from '@xh/hoist/utils/js';
 
@@ -54,6 +54,8 @@ export class Column {
      *      column chooser. Appears when the column is selected within the chooser UI.
      * @param {boolean} [c.excludeFromChooser] - true to hide the column from the column chooser
      *      completely. Useful for hiding structural columns the user is not expected to adjust.
+     * @param {boolean} [c.hideable] - false to always show column. Will appear in column chooser
+     *       but always locked in the displayed collection of columns.
      * @param {string} [c.exportName] - display name to use as a header within a file export.
      *      Defaults to headerName.
      * @param {(string|function)} [c.exportValue] - alternate field name to reference or function
@@ -88,6 +90,7 @@ export class Column {
         chooserGroup,
         chooserDescription,
         excludeFromChooser,
+        hideable,
         exportName,
         exportValue,
         exportFormat,
@@ -125,6 +128,7 @@ export class Column {
         this.chooserGroup = chooserGroup;
         this.chooserDescription = chooserDescription;
         this.excludeFromChooser = withDefault(excludeFromChooser, this.isTreeColumn);
+        this.hideable = withDefaultTrue(hideable);
 
         this.exportName = exportName || this.headerName || this.colId;
         this.exportValue = exportValue;
@@ -132,7 +136,7 @@ export class Column {
         this.excludeFromExport = withDefault(excludeFromExport, !field);
 
         this.tooltip = tooltip;
-        this.agOptions = agOptions || {};
+        this.agOptions = agOptions ? clone(agOptions) : {};
     }
 
 
@@ -149,6 +153,7 @@ export class Column {
             maxWidth: this.maxWidth,
             suppressResize: !this.resizable,
             suppressMovable: !this.movable,
+            ...this.agOptions
         };
 
         if (this.isTreeColumn) {
