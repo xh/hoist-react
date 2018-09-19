@@ -9,6 +9,7 @@
   background-color: var(--xh-navbar-bg);
   height: var(--xh-navbar-height-px);
   border-bottom: 1px solid var(--xh-navbar-border-color);
+  padding: 0 var(--xh-pad-px);
 
   // Curiously, Admin Log Viewer would cause navbar to shrink without min-height
   min-height: var(--xh-navbar-height-px);
@@ -50,11 +51,11 @@
 
     &.bp3-align-right {
       > *:not(.bp3-navbar-divider) {
-        margin-left: var(--xh-pad-half-px);
+        margin-left: var(--xh-pad-px);
       }
       .bp3-navbar-divider {
-        margin-left: var(--xh-pad-px);
-        margin-right: var(--xh-pad-half-px);
+        //margin-left: var(--xh-pad-px);
+        margin-right: 0;
       }
     }
   }
