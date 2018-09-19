@@ -90,10 +90,10 @@ export class ExportManager {
         return this.getExportableColumns(columns)
             .map(column => {
                 const {field, exportFormat, wrapText} = column;
-
                 let type = null;
                 if (exportFormat === ExportFormat.DATE_FMT) type = 'date';
                 if (exportFormat === ExportFormat.DATETIME_FMT) type = 'datetime';
+                if (exportFormat === ExportFormat.LONG_TEXT) type = 'longText';
 
                 return {field, type, wrapText, format: exportFormat};
             });

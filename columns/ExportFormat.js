@@ -13,6 +13,8 @@
 export const ExportFormat = {
     DEFAULT:            'General',
 
+    LONG_TEXT:          'Text',
+
     // Numbers
     NUM:                '0',
     NUM_1DP:            '0.0',
