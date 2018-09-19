@@ -10,10 +10,12 @@ import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, LayoutSupport, elemFactory} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {box} from '@xh/hoist/cmp/layout';
+import {span} from '@xh/hoist/cmp/layout';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS, MINUTES, HOURS, DAYS} from '@xh/hoist/utils/datetime';
+import {fmtDateTime} from "@xh/hoist/format";
 import {flow} from 'lodash';
-import {pluralize} from '@xh/hoist/utils/js';
+import {pluralize, withDefault} from '@xh/hoist/utils/js';
 
 const FORMAT_STRINGS = {
     seconds: '<1 minute',
@@ -59,12 +61,16 @@ export class RelativeTimestamp extends Component {
 
     @observable relativeTimeString;
     timer = null;
-
     render() {
+        const {prefix, timestamp} = this.props;
         return box({
             ...this.getLayoutProps(),
             className: this.getClassName(),
-            item: this.relativeTimeString
+            item: span({
+                className: 'xh-title-tip',
+                item: this.relativeTimeString,
+                title: getDateTooltip(this.props.timestamp)
+            })
         });
     }
 
@@ -119,9 +125,16 @@ export const getRelativeTimestamp = (timestamp, options) => {
         getElapsedTime,
         normalizeAndValidate,
         getMillisAndUnit,
+        getPrefix,
         getSuffix,
         getResult
     )(opts);
+
+
+};
+
+export const getDateTooltip = (timestamp) => {
+    return fmtDateTime(timestamp)
 };
 
 //----------------------------
@@ -195,8 +208,15 @@ const getSuffix = opts => {
     return opts;
 };
 
+const getPrefix = opts => {
+    const {isInvalid, prefixText} = opts;
+    if (isInvalid) return opts;
+    opts.prefix = prefixText ? `${prefixText} ` : '';
+    return opts
+};
+
 const getResult = opts => {
-    const {isInvalid, elapsedTime, millis, unit, useNowString, suffix} = opts;
+    const {isInvalid, elapsedTime, millis, unit, useNowString, prefix, suffix} = opts;
     if (isInvalid) return '[???]';
 
     // if elapsedTime was normalized to 0 (smaller than nowEpsilon)
@@ -204,5 +224,5 @@ const getResult = opts => {
     // default FORMAT for seconds.
     if (!elapsedTime && useNowString) return suffix;
 
-    return `${FORMAT_STRINGS[unit].replace('%d', millis)} ${suffix}`;
+    return `${prefix}${FORMAT_STRINGS[unit].replace('%d', millis)} ${suffix}`;
 };
