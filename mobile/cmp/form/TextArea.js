@@ -10,7 +10,6 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {textarea as textareaTag} from '@xh/hoist/cmp/layout';
 
 import {HoistInput} from '@xh/hoist/cmp/form';
-import './TextArea.scss';
 
 /**
  * A Text Area Input

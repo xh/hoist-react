@@ -38,14 +38,23 @@
 }
 
 .xh-input {
-  &, input, textarea, select {
+  input, textarea, select {
     font-size: 14px;
+    border: none !important;
+  }
+
+  &:not(.xh-input-label) {
+    font-size: 14px;
+    border: var(--xh-border-solid);
+    border-radius: var(--xh-border-radius-px);
+  }
+
+  &.xh-input-invalid {
+    border: var(--xh-form-field-invalid-border);
   }
 
   &.xh-text-input,
   &.xh-number-input {
-    margin: 4px;
-
     .text-input,
     .text-input__label {
       padding: 0 var(--xh-pad-px);
@@ -54,10 +63,6 @@
 
   &.xh-number-input .text-input {
     text-align: right;
-  }
-
-  &.xh-search-input {
-    margin: 4px;
   }
 
   &.xh-select select {
@@ -69,8 +74,12 @@
     padding: var(--xh-pad-px);
     background-color: var(--xh-bg);
     color: var(--xh-text-color);
-    border: none;
+    outline: none;
     resize: none;
+  }
+
+  &.xh-input-label {
+    font-size: var(--xh-font-size-small-px);
   }
 }
 

@@ -36,7 +36,7 @@ export class LeftRightChooserFilter extends Component {
             placeholder: 'Quick filter...',
             value: this.value,
             onChange: this.onValueChange,
-            leftIcon: Icon.filter(),
+            leftIcon: Icon.filter({style: {opacity: 0.5}}),
             rightElement: button({
                 icon: Icon.x(),
                 minimal: true,

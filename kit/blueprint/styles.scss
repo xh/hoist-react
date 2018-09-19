@@ -27,6 +27,10 @@
   .bp3-navbar-group {
     height: var(--xh-navbar-height-px);
 
+    .bp3-navbar-divider {
+      margin: 0 var(--xh-pad-px);
+    }
+
     // Replace default float behaviour in favour of flexbox
     float: none;
 
@@ -45,11 +49,12 @@
     }
 
     &.bp3-align-right {
-      > * {
+      > *:not(.bp3-navbar-divider) {
         margin-left: var(--xh-pad-half-px);
       }
       .bp3-navbar-divider {
-        margin-right: 0;
+        margin-left: var(--xh-pad-px);
+        margin-right: var(--xh-pad-half-px);
       }
     }
   }
