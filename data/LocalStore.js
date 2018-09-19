@@ -5,12 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {isNil, uniqBy} from 'lodash';
 import {XH} from '@xh/hoist/core';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
-import {warnIf} from '@xh/hoist/utils/js';
 import {observable, action} from '@xh/hoist/mobx';
-import {findIndex, clone} from 'lodash';
+import {isNil} from 'lodash';
 
 import {RecordSet} from './impl/RecordSet';
 import {Record} from './Record';

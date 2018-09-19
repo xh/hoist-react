@@ -139,7 +139,7 @@ export class Grid extends Component {
             onDragStopped: this.onDragStopped,
 
             groupDefaultExpanded: 1,
-            groupUseEntireRow: true,
+            groupUseEntireRow: true
         };
 
         if (model.treeMode) {
