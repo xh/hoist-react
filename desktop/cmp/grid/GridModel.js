@@ -92,7 +92,7 @@ export class GridModel {
      * @param {BaseStore} c.store - store containing the data for the grid.
      * @param {(Column[]|Object[])} c.columns - Columns, or configs to create them.
      *          A 'column' can also be a config for a column group. Column groups must specify a children property
-     *          that is a array of Columns, configs to create them, as well as a headerName or GroupId.
+     *          that is a array of Columns or configs to create them. Column groups also require a headerName or GroupId.
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
      * @param {(Object|string)} [c.stateModel] - config or string `gridId` for a GridStateModel.
