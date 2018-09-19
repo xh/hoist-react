@@ -14,6 +14,10 @@
   // Curiously, Admin Log Viewer would cause navbar to shrink without min-height
   min-height: var(--xh-navbar-height-px);
 
+  .bp3-navbar-divider {
+    border-left-color: var(--xh-tbar-separator-color);
+  }
+
   > * {
     white-space: nowrap;
     flex-shrink: 0;
@@ -54,7 +58,6 @@
         margin-left: var(--xh-pad-px);
       }
       .bp3-navbar-divider {
-        //margin-left: var(--xh-pad-px);
         margin-right: 0;
       }
     }
