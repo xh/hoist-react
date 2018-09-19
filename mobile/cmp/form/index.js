@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+export * from './FormField';
 export * from './Label';
 export * from './NumberInput';
 export * from './SearchInput';

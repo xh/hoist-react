@@ -11,7 +11,6 @@ import {input} from '@xh/hoist/kit/onsen';
 import {fmtNumber} from '@xh/hoist/format';
 
 import {HoistInput} from '@xh/hoist/cmp/form';
-import './NumberInput.scss';
 
 /**
  * A Number Input
