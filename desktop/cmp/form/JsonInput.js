@@ -4,6 +4,7 @@ import {PropTypes as PT} from 'prop-types';
 import {defaultsDeep} from 'lodash';
 import {box} from '@xh/hoist/cmp/layout';
 import {textArea} from '@xh/hoist/kit/blueprint';
+import {withDefault} from '@xh/hoist/utils/js';
 
 import {HoistInput} from '@xh/hoist/cmp/form';
 
@@ -34,10 +35,10 @@ export class JsonInput extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
-
-        /** Value of the control */
         value: PT.string,
-        
+
+        /** commit on every key stroke, defaults false */
+        commitOnChange: PT.bool,
         /** width of field, in pixels */
         width: PT.number,
         /** height of field, in pixels */
@@ -49,8 +50,12 @@ export class JsonInput extends HoistInput {
         editorProps: PT.object
     };
 
-    constructor() {
-        super();
+    get commitOnChange() {
+        withDefault(this.props.commitOnChange, false);
+    }
+    
+    constructor(props) {
+        super(props);
         this.addReaction({
             track: () => XH.darkTheme,
             run: () => {
@@ -71,6 +76,8 @@ export class JsonInput extends HoistInput {
             // https://github.com/exhi/hoist-react/issues/327
             flex: 1,
             flexDirection: 'column',
+            onFocus:  this.onFocus,
+            onBlur: this.onBlur,
             ...this.getLayoutProps(),
             className: this.getClassName(),
             item: textArea({
@@ -102,8 +109,6 @@ export class JsonInput extends HoistInput {
             editor = codemirror.fromTextArea(taDom, editorSpec);
 
         editor.on('change', this.handleEditorChange);
-        editor.on('focus',  this.onFocus);
-        editor.on('blur',  this.onBlur);
         editor.on('keyup',  this.onKeyUp);
 
         if (width != null || height != null) {
@@ -136,32 +141,24 @@ export class JsonInput extends HoistInput {
         };
     }
 
-    onBlur = () => {
-        this.noteBlurred();
-    }
-
-    onFocus = () => {
-        this.noteFocused();
-    }
-
     onKeyUp = (instance, ev) => {
         if (ev.key === 'Enter' && !ev.shiftKey) this.doCommit();
-    }
+    };
 
     onChange = (ev) => {
         this.noteValueChange(ev.target.value);
-    }
+    };
 
     handleEditorChange = (editor) => {
         this.noteValueChange(editor.getValue());
-    }
+    };
     
     onFormatKey = () => {
         const editor = this.editor,
             val = this.tryPrettyPrint(editor.getValue());
 
         editor.setValue(val);
-    }
+    };
 
     tryPrettyPrint(str) {
         try {
@@ -171,12 +168,11 @@ export class JsonInput extends HoistInput {
         }
     }
 
-    // CodeMirror docs: If you dynamically create and destroy editors made with `fromTextArea`
-    // ...you should make sure to call `toTextArea` to remove the editor
     destroy() {
+        // CodeMirror docs: If you dynamically create and destroy editors made with `fromTextArea`
+        // ...you should make sure to call `toTextArea` to remove the editor
         if (this.editor) this.editor.toTextArea();
     }
-
 }
 export const jsonInput = elemFactory(JsonInput);
 

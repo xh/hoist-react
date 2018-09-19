@@ -7,10 +7,11 @@
 
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {isFunction, omit, pick, upperFirst} from 'lodash';
+import {isFunction, upperFirst} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
-import {observable, computed, action, runInAction} from '@xh/hoist/mobx';
+import {observable, computed, action} from '@xh/hoist/mobx';
 import classNames from 'classnames';
+import {wait} from '@xh/hoist/promise';
 
 import './HoistInput.scss';
 
@@ -24,15 +25,14 @@ import './HoistInput.scss';
  *
  * Hoist Inputs will call a common onChange() callback with the latest value, as it is updated.
  *
- * Hoist Inputs also introduce the notion of "Committing" a field to the model, when
- * the user has completed a discrete act of data entry. If the 'commitOnChange' property is true,
- * this will happen concurrently with valueChange.  Otherwise, this will happen only when the user
- * hits 'enter' or 'blurs' the field, or takes another commit action defined by the control.
- * At this time, any specified 'onCommit' handler will be fired.
+ * Hoist Inputs also introduce the notion of "Committing" a field to the model, when the user has completed
+ * a discrete act of data entry. at this time,  Any specified 'onCommit' handler will be fired, and the bound model
+ * will be updated with the new value.
  *
- * The 'commitOnChange' property defaults to false, except for selected controls such as CheckBox
- * where a true value is more intuitive. Also note that `commitOnChange: false` is not currently
- * supported on DropdownInputs and ComboBoxes - see BaseDropdownInput for more information.
+ * For many fields (e.g. checkbox, select, switchInput, slider) commit occurs concurrenty with the change event.
+ * However, several text-based fields support a "commitOnChange" property that allows control of this behavior.
+ * When this property is set to false, (the default) the commit action will happen only when the user hits 'enter',
+ * 'blurs' the field, or takes another committ action defined by the control.
  *
  * Note that operating in bound mode may allow for more efficient rendering in a MobX context,
  * in that the bound value is only read *within* this control, so that changes to its value do not
@@ -45,15 +45,12 @@ import './HoistInput.scss';
 export class HoistInput extends Component {
 
     static propTypes = {
-
         /** value of the control */
         value: PT.any,
         /** handler to fire when value changes, gets passed the new value */
         onChange: PT.func,
-        /** handler to fire when value is committed, gets passed the new value */
+        /** handler to fire when value is committed to backing model, gets passed the new value */
         onCommit: PT.func,
-        /** config to commit changes on change instead of blur */
-        commitOnChange: PT.bool,
         /** model to bind to */
         model: PT.object,
         /** name of property in model to bind to */
@@ -63,27 +60,13 @@ export class HoistInput extends Component {
         /** Style block */
         style: PT.object,
         /** css class name **/
-        className: PT.string
-    };
-
-    static defaultProps = {
-        commitOnChange: false
+        className: PT.string,
+        /** Tab Ordering **/
+        tabIndex: PT.number
     };
 
     @observable hasFocus;
     @observable internalValue;
-
-    /**
-     * List of properties that if passed to this control should be trampolined to the underlying
-     * control. Implementations of HoistInput should use this.getDelegateProps() to get a
-     * basket of these props for passing along.
-     *
-     * If this configuration is left empty, getDelegateProps() will instead return all props passed
-     * to the component, but filtered to remove those known to be added by the HoistInput API.
-     *
-     * (Overall role of the delegateProps concept for HoistInput components is still under review.)
-     */
-    delegateProps = [];
 
     /**
      * Field (if any) associated with this control.
@@ -96,6 +79,13 @@ export class HoistInput extends Component {
     //-----------------------------------------------------------
     // Handling of internal vs. external value, committing
     //-----------------------------------------------------------
+    /**
+     * Commit immediately when value is changed?
+     */
+    get commitOnChange() {
+        return true;
+    }
+
     /** Return the value to be rendered internally by control. **/
     @computed
     get renderValue() {
@@ -125,11 +115,11 @@ export class HoistInput extends Component {
 
     /** Set normalized internal value, and fire associated value changed **/
     noteValueChange(val) {
-        const {commitOnChange, onChange} = this.props;
+        const {onChange} = this.props;
 
         this.setInternalValue(val);
         if (onChange) onChange(this.toExternal(val));
-        if (commitOnChange) this.doCommit();
+        if (this.commitOnChange) this.doCommit();
     }
 
     /**
@@ -155,21 +145,6 @@ export class HoistInput extends Component {
         this.setInternalValue(this.toInternal(newValue));
     }
 
-    noteBlurred() {
-        this.doCommit();
-
-        // Trigger validation.  Useful if user just visited field without making change.
-        const field = this.getField();
-        if (field) field.startValidating();
-
-        runInAction(() => this.hasFocus = false);
-    }
-
-    noteFocused() {
-        this.setInternalValue(this.toInternal(this.externalValue));
-        runInAction(() => this.hasFocus = true);
-    }
-
     toExternal(internal) {
         return internal;
     }
@@ -178,28 +153,45 @@ export class HoistInput extends Component {
         return external;
     }
 
+    //---------------------------------------------------------------
+    // Handling of Focus/Blurring
+    // Bound handlers provided should be applied by all instances.
+    //--------------------------------------------------------------
+    @action
+    noteBlurred() {
+        if (!this.hasFocus) return;
+        console.log('blurred' + this.constructor.name);
+
+        this.doCommit();
+
+        // Trigger validation.  Useful if user just visited field without making change.
+        const field = this.getField();
+        if (field) field.startValidating();
+
+        this.hasFocus = false;
+    }
+
+    @action
+    noteFocused() {
+        if (this.hasFocus) return;
+        console.log('focused' + this.constructor.name);
+
+        this.setInternalValue(this.toInternal(this.externalValue));
+        this.hasFocus = true;
+    }
+
+    onBlur = () => {
+        wait(200).then(() => {
+            if (!this.containsElement(document.activeElement)) {
+                this.noteBlurred();
+            }
+        });
+    }
+    onFocus = () => this.noteFocused();
+
     //-----------------------------
     // Additional Utilities
     //-----------------------------
-    getDelegateProps() {
-        const props = this.props,
-            delegates = this.delegateProps;
-
-        // See above comment on delegateProps field.
-        if (delegates.length) {
-            return pick(props, delegates);
-        } else {
-            return omit(props, [
-                'value',
-                'onChange',
-                'onCommit',
-                'commitOnChange',
-                'model',
-                'field'
-            ]);
-        }
-    }
-
     // Override of the default implementation provided by HoistComponent so we can add
     // the xh-field and xh-field-invalid classes
     getClassName(...extraClassNames) {

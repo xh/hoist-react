@@ -8,7 +8,7 @@
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {inputGroup} from '@xh/hoist/kit/blueprint';
-
+import {div} from '@xh/hoist/cmp/layout';
 import {HoistInput} from '@xh/hoist/cmp/form';
 import {withDefault} from '@xh/hoist/utils/js';
 
@@ -22,9 +22,10 @@ export class TextInput extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
-
-        /** Value of the control */
         value: PT.string,
+
+        /** commit on every key stroke, defaults false */
+        commitOnChange: PT.bool,
         /** Whether field should receive focus on render */
         autoFocus: PT.bool,
         /**
@@ -51,26 +52,39 @@ export class TextInput extends HoistInput {
         /** Whether text in field is selected when field receives focus */
         selectOnFocus: PT.bool
     };
-
-    delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus', 'leftIcon', 'rightElement'];
-
+    
     baseClassName = 'xh-text-field';
 
+    get commitOnChange() {
+        withDefault(this.props.commitOnChange, false);
+    }
+    
     render() {
-        const {style, width, spellCheck, autoComplete, type} = this.props;
+        const {props} = this,
+            spellCheck = withDefault(props.spellCheck, true),
+            autoComplete = withDefault(props.autoComplete, props.type == 'password' ? 'new-password' : 'nope');
 
-        return inputGroup({
-            className: this.getClassName(),
-            value: this.renderValue || '',
-            autoComplete: withDefault(autoComplete, type == 'password' ? 'new-password' : 'nope'),
-            onChange: this.onChange,
-            onKeyPress: this.onKeyPress,
+        return div({
             onBlur: this.onBlur,
             onFocus: this.onFocus,
-            style: {...style, width},
-            spellCheck: !!spellCheck,
-            ...this.getDelegateProps()
+            item: inputGroup({
+                className: this.getClassName(),
+                value: this.renderValue || '',
+                autoComplete,
+                onChange: this.onChange,
+                onKeyPress: this.onKeyPress,
+                style: {...props.style, width: props.width},
+                spellCheck,
+                disabled: props.disabled,
+                type: props.type,
+                placeholder: props.placeholder,
+                autoFocus: props.autoFocus,
+                leftIcon: props.leftIcon,
+                tabIndex: props.tabIndex,
+                rightElement: props.rightElement
+            })
         });
+
     }
 
     onChange = (ev) => {
@@ -85,15 +99,10 @@ export class TextInput extends HoistInput {
     }
 
     onFocus = (ev) => {
-        if (this.props.selectOnFocus) {
-            ev.target.select();
-        }
+        //if (this.props.selectOnFocus) {
+        //    ev.target.select();
+        //}
         this.noteFocused();
     }
-
-    onBlur = () => {
-        this.noteBlurred();
-    }
-
 }
 export const textInput = elemFactory(TextInput);

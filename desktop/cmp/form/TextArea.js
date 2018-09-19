@@ -8,8 +8,9 @@
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {textArea as bpTextarea} from '@xh/hoist/kit/blueprint';
-
+import {withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/form';
+
 import './TextArea.scss';
 
 /**
@@ -22,10 +23,10 @@ export class TextArea extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
-
-        /** Value of the control */
         value: PT.string,
 
+        /** commit on every key stroke, defaults false */
+        commitOnChange: PT.bool,
         /** Whether field should receive focus on render */
         autoFocus: PT.bool,
         /** Text to display when control is empty */
@@ -40,40 +41,44 @@ export class TextArea extends HoistInput {
 
     baseClassName = 'xh-textarea-field';
 
+    get commitOnChange() {
+        withDefault(this.props.commitOnChange, false);
+    }
+    
     render() {
-        const {style, width, spellCheck} = this.props;
+        const {props} = this,
+            spellCheck = withDefault(props.spellCheck, true);
 
         return bpTextarea({
             className: this.getClassName(),
             value: this.renderValue || '',
             onChange: this.onChange,
             onKeyPress: this.onKeyPress,
-            onBlur: this.onBlur,
             onFocus: this.onFocus,
-            style: {...style, width},
-            spellCheck: spellCheck !== false,
-            ...this.getDelegateProps()
+            onBlur: this.onBlur,
+            tabIndex: props.tabIndex,
+            style: {...props.style, width: props.width},
+            spellCheck,
+            disabled: props.disabled,
+            type: props.type,
+            placeholder: props.placeholder,
+            autoFocus: props.autoFocus
         });
     }
 
     onChange = (ev) => {
         this.noteValueChange(ev.target.value);
-    }
+    };
 
     onKeyPress = (ev) => {
         if (ev.key === 'Enter' && !ev.shiftKey) this.doCommit();
-    }
+    };
 
     onFocus = (ev) => {
         if (this.props.selectOnFocus) {
             ev.target.select();
         }
         this.noteFocused();
-    }
-
-    onBlur = () => {
-        this.noteBlurred();
-    }
-
+    };
 }
 export const textArea = elemFactory(TextArea);

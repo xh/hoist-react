@@ -8,11 +8,12 @@
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {checkbox} from '@xh/hoist/kit/blueprint';
-
+import {withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
  * CheckBox.
+ *
  * Note that this field does not handle null values. For nullable fields, use a Select.
  */
 @HoistComponent
@@ -20,38 +21,32 @@ export class CheckBox extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
-        value: PT.bool
-    };
+        value: PT.bool,
 
-    static defaultProps = {
-        commitOnChange: true,
-        inline: true
-    }
+        inline: PT.bool
+    };
 
     baseClassName = 'xh-check-field';
 
     render() {
+        const {props} = this,
+            inline = withDefault(props.inline, true);
+
         return checkbox({
             className: this.getClassName(),
             checked: !!this.renderValue,
             onChange: this.onChange,
             onBlur: this.onBlur,
             onFocus: this.onFocus,
-            ...this.getDelegateProps()
+            tabIndex: props.tabIndex,
+            inline,
+            style: props.style,
+            disabled: props.disabled
         });
     }
 
     onChange = (e) => {
         this.noteValueChange(e.target.checked);
     }
-
-    onBlur = () => {
-        this.noteBlurred();
-    }
-
-    onFocus = () => {
-        this.noteFocused();
-    }
-
 }
 export const checkBox = elemFactory(CheckBox);

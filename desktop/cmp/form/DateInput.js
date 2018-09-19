@@ -13,7 +13,7 @@ import {fmtDate} from '@xh/hoist/format';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {dateInput as bpDateInput} from '@xh/hoist/kit/blueprint';
 import {Ref} from '@xh/hoist/utils/react';
-
+import {withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
@@ -26,10 +26,10 @@ export class DateInput extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
-
-        /** Value of the control */
         value: PT.string,
 
+        /** commit on every key stroke, defaults false */
+        commitOnChange: PT.bool,
         /** Position for calendar popover. @see http://blueprintjs.com/docs/ */
         popoverPosition: PT.oneOf([
             'top-left', 'top', 'top-right',
@@ -38,10 +38,10 @@ export class DateInput extends HoistInput {
             'left-bottom', 'left', 'left-top',
             'auto'
         ]),
-
+        /** Minimum (inclusive) valid date. */
         minDate: PT.instanceOf(Date),
+        /** Maximum (inclusive) valid date. */
         maxDate: PT.instanceOf(Date),
-
         /** Props passed to ReactDayPicker component. @see http://react-day-picker.js.org/ */
         dayPickerProps: PT.object,
         /** Icon to display on the left side of the field */
@@ -52,14 +52,16 @@ export class DateInput extends HoistInput {
 
     child = new Ref();
 
-    delegateProps = ['className', 'disabled', 'rightElement'];
-
     baseClassName = 'xh-day-field';
 
-    render() {
-        let {minDate, maxDate, width, popoverPosition, style, dayPickerProps, leftIcon} = this.props;
+    get commitOnChange() {
+        withDefault(this.props.commitOnChange, false);
+    }
 
-        dayPickerProps = assign({fixedWeeks: true}, dayPickerProps);
+    render() {
+        const {props} = this,
+            dayPickerProps = assign({fixedWeeks: true}, props.dayPickerProps),
+            popoverPosition = withDefault(props.popoverPosition, 'auto');
 
         return bpDateInput({
             className: this.getClassName(),
@@ -68,24 +70,27 @@ export class DateInput extends HoistInput {
             onChange: this.onChange,
             formatDate: this.formatDate,
             parseDate: this.parseDate,
+            tabIndex: props.tabIndex,
             inputProps: {
-                style: {...style, width},
+                style: {...props.style, width: props.width},
                 onKeyPress: this.onKeyPress,
-                onBlur: this.onBlur,
                 onFocus: this.onFocus,
+                onBlur: this.onBlur,
+                tabIndex: props.tabIndex,
                 autoComplete: 'nope',
-                leftIcon
+                leftIcon: props.leftIcon
             },
             popoverProps: {
                 minimal: true,
                 usePortal: true,
-                position: popoverPosition || 'auto',
+                position: popoverPosition,
                 onClose: this.onPopoverWillClose
             },
-            minDate,
-            maxDate,
             dayPickerProps,
-            ...this.getDelegateProps()
+            minDate: props.minDate,
+            maxDate: props.maxDate,
+            disabled: props.disabled,
+            rightElement: props.rightElement
         });
     }
 
@@ -97,6 +102,11 @@ export class DateInput extends HoistInput {
         return moment(dateString, 'YYYY-MM-DD', true).toDate();
     }
 
+    noteBlurred() {
+        this.forcePopoverClose();
+        super.noteBlurred();
+    }
+
     onChange = (date, isUserChange) => {
         if (!isUserChange) return;
         const {minDate, maxDate} = this.props;
@@ -105,27 +115,19 @@ export class DateInput extends HoistInput {
         if (date > maxDate) date = maxDate;
 
         this.noteValueChange(date);
-
-        // Blueprint won't always close popover (e.g. choosing a date in previous month). Force it to.
-        this.child.value.setState({isOpen: false});
-    }
+        this.forcePopoverClose();
+    };
 
     onKeyPress = (ev) => {
         if (ev.key == 'Enter') this.doCommit();
-    }
+    };
 
     onPopoverWillClose = (ev) => {
         this.doCommit();
-    }
+    };
 
-    onBlur = () => {
-        this.noteBlurred();
+    forcePopoverClose() {
+        this.child.value.setState({isOpen: false});
     }
-
-    onFocus = () => {
-        this.noteFocused();
-    }
-
 }
-
 export const dateInput = elemFactory(DateInput);

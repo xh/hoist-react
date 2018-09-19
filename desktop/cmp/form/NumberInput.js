@@ -10,6 +10,8 @@ import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {fmtNumber} from '@xh/hoist/format';
 import {HoistInput} from '@xh/hoist/cmp/form';
+import {withDefault} from '@xh/hoist/utils/js';
+
 
 /**
  * A Number Input
@@ -21,10 +23,10 @@ export class NumberInput extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
-
-        /** Value of the control */
         value: PT.number,
 
+        /** commit on every key stroke, defaults false */
+        commitOnChange: PT.bool,
         /** Text to display when control is empty */
         placeholder: PT.string,
         /** minimum value */
@@ -50,13 +52,15 @@ export class NumberInput extends HoistInput {
 
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/gi;
 
-    delegateProps = ['className', 'disabled', 'min', 'max', 'placeholder', 'leftIcon'];
-
     baseClassName = 'xh-number-field';
 
+    get commitOnChange() {
+        withDefault(this.props.commitOnChange, false);
+    }
+    
     render() {
-        const {width, style, enableShorthandUnits} = this.props,
-            textAlign = this.props.textAlign || 'right';
+        const {props} = this,
+            textAlign = withDefault(props.textAlign, 'right');
 
         return numericInput({
             className: this.getClassName(),
@@ -65,10 +69,19 @@ export class NumberInput extends HoistInput {
             onKeyPress: this.onKeyPress,
             onBlur: this.onBlur,
             onFocus: this.onFocus,
-            style: {textAlign, width, ...style},
+            tabIndex: props.tabIndex,
+            style: {
+                ...props.style,
+                textAlign,
+                width: props.width
+            },
             buttonPosition: 'none',
-            allowNumericCharactersOnly: !enableShorthandUnits,
-            ...this.getDelegateProps()
+            allowNumericCharactersOnly: !props.enableShorthandUnits,
+            disabled: props.disabled,
+            min: props.min,
+            max: props.max,
+            placeholder: props.placeholder,
+            leftIcon: props.leftIcon
         });
     }
 
@@ -123,10 +136,5 @@ export class NumberInput extends HoistInput {
         }
         this.noteFocused();
     }
-
-    onBlur = () => {
-        this.noteBlurred();
-    }
-
 }
 export const numberInput = elemFactory(NumberInput);

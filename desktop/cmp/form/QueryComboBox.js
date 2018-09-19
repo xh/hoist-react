@@ -6,20 +6,23 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
-import {observable, action} from '@xh/hoist/mobx';
+import {observable, settable, action} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Classes, suggest} from '@xh/hoist/kit/blueprint';
+import {withDefault} from '@xh/hoist/utils/js';
+import {HoistInput} from '@xh/hoist/cmp/form';
+import {menuItem} from '@xh/hoist/kit/blueprint';
+import {isObject, find} from 'lodash';
 
-import {BaseComboBox} from './BaseComboBox';
 
 /**
  * ComboBox which populates its options dynamically based on the current value.
  */
 @HoistComponent
-export class QueryComboBox extends BaseComboBox {
+export class QueryComboBox extends HoistInput {
     
     static propTypes = {
-        ...BaseComboBox.propTypes,
+        ...HoistInput.propTypes,
 
         /**
          * Function to be run when value of control changes to repopulate the available items.
@@ -45,7 +48,9 @@ export class QueryComboBox extends BaseComboBox {
 
     baseClassName = 'xh-query-combo-field';
 
-    @observable.ref activeItem = null;
+    @settable @observable.ref activeItem = null;
+    @observable.ref internalOptions = [];
+
 
     constructor(props) {
         super(props);
@@ -53,58 +58,45 @@ export class QueryComboBox extends BaseComboBox {
             run: this.syncOptions,
             delay: props.queryBuffer || 100
         });
+        this.addAutorun(() => {
+            this.setActiveItem(find(this.internalOptions, {value: this.renderValue}) || null);
+        });
     }
 
     render() {
-        const {style, width, disabled} = this.props,
-            {renderValue, internalOptions} = this,
+        const {renderValue, internalOptions, props} = this,
             displayValue = this.getDisplayValue(renderValue, internalOptions, ''),
-            activeItem = this.getActiveItem();
+            placeholder = withDefault(props.placeholder, 'Select');
 
         return suggest({
             className: this.getClassName(),
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: internalOptions,
             onItemSelect: this.onItemSelect,
-            itemRenderer: this.getOptionRenderer(),
-            activeItem,
-            onActiveItemChange: this.setActiveItem,
-            inputValueRenderer: s => displayValue,
+            itemRenderer: this.itemRenderer,
+            activeItem: this.activeItem,
+            onActiveItemChange: (it) => this.setActiveItem(it),
+            inputValueRenderer: () => displayValue,
             query: displayValue,
             onQueryChange: this.onQueryChange,
             inputProps: {
                 value: this.getDisplayValue(renderValue, internalOptions, ''),
                 onKeyPress: this.onKeyPress,
-                onBlur: this.onBlur,
                 onFocus: this.onFocus,
+                onBlur: this.onBlur,
                 autoComplete: 'nope',
-                style: {...style, width},
-                ...this.getDelegateProps()
+                style: {...props.style, width: props.width},
+                leftIcon: props.leftIcon,
+                rightElement: props.rightElement,
+                placeholder
             },
-            disabled
+            disabled: props.disabled
         });
     }
 
-    @action
-    setActiveItem = (item) => {
-        this.activeItem = item;
-    }
-
-    getActiveItem() {
-        const {internalOptions} = this;
-        // controlled active item will be set through this component's handler, or based on the previously selected value
-        // fallbacks to first option to allow better user experience
-        return this.activeItem || find(internalOptions, {value: this.externalValue}) || internalOptions[0];
-    }
-
-    onBlur = () => {
-        this.noteBlurred();
-    }
-
-    onFocus = () => {
-        this.noteFocused();
-    }
-
+    //-----------------------------------------------------------
+    // Common handling of options, rendering of selected option
+    //-----------------------------------------------------------
     syncOptions() {
         const value = this.internalValue,
             {queryFn} = this.props;
@@ -114,6 +106,40 @@ export class QueryComboBox extends BaseComboBox {
                 this.normalizeOptions(options);
             });
         }
+    }
+
+    @action
+    normalizeOptions(options) {
+        options = withDefault(options, []);
+        options = options.map(o => {
+            const ret = isObject(o) ?
+                {label: o.label, value: o.value} :
+                {label: o != null ? o.toString() : '-null-', value: o};
+
+            ret.value = this.toInternal(ret.value);
+            return ret;
+        });
+
+        this.internalOptions = options;
+    }
+
+    getDisplayValue(value, items, placeholder) {
+        const match = find(items, {value});
+
+        if (match) return match.label;
+        return value == null ? placeholder : value.toString();
+    }
+
+    //--------------------
+    // Handlers
+    //--------------------
+    itemRenderer = (option, optionProps) => {
+        return menuItem({
+            key: option.value,
+            text: option.label,
+            onClick: optionProps.handleClick,
+            active: optionProps.modifiers.active
+        });
     }
 }
 export const queryComboBox = elemFactory(QueryComboBox);

@@ -9,7 +9,6 @@ import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {box} from '@xh/hoist/cmp/layout';
 import {slider as bpSlider, rangeSlider as bpRangeSlider} from '@xh/hoist/kit/blueprint';
-import {throwIf} from '@xh/hoist/utils/js';
 import {isArray} from 'lodash';
 import {toJS} from 'mobx';
 import {HoistInput} from '@xh/hoist/cmp/form';
@@ -25,6 +24,7 @@ export class Slider extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
+        value: PT.number,
 
         /** minimum value */
         min: PT.number,
@@ -42,22 +42,11 @@ export class Slider extends HoistInput {
         showTrackFill: PT.bool
     };
 
-    static defaultProps = {
-        commitOnChange: true
-    };
-
-    delegateProps = ['className', 'disabled'];
-
     baseClassName = 'xh-slider-field';
 
-    constructor(props) {
-        super(props);
-        throwIf(!props.commitOnChange, 'A commitOnChange value of false not implemented on Slider.');
-    }
-
     render() {
-        const {labelStepSize, labelRenderer, min, max, stepSize, showTrackFill, vertical} = this.props,
-            input = isArray(toJS(this.renderValue)) ? bpRangeSlider : bpSlider;
+        const {props} = this,
+            sliderType = isArray(toJS(this.renderValue)) ? bpRangeSlider : bpSlider;
 
         // Set default left / right padding
         const layoutProps = this.getLayoutProps();
@@ -67,34 +56,26 @@ export class Slider extends HoistInput {
         return box({
             ...layoutProps,
             className: this.getClassName(),
-            item: input({
+            onFocus: this.onFocus,
+            onBlur: this.onBlur,
+            item: sliderType({
                 value: this.renderValue,
                 onChange: this.onValueChange,
-                onBlur: this.onBlur,
-                onFocus: this.onFocus,
-                labelStepSize,
-                labelRenderer,
-                min,
-                max,
-                stepSize,
-                showTrackFill,
-                vertical,
-                ...this.getDelegateProps()
+                labelStepSize: props.labelStepSize,
+                labelRenderer: props.labelRenderer,
+                min: props.min,
+                max: props.max,
+                tabIndex: props.tabIndex,
+                stepSize: props.stepSize,
+                showTrackFill: props.showTrackFill,
+                vertical: props.vertical,
+                disabled: props.disabled
             })
         });
     }
 
     onValueChange = (val) => {
         this.noteValueChange(val);
-    }
-
-    onBlur = () => {
-        this.noteBlurred();
-    }
-
-    onFocus = () => {
-        this.noteFocused();
-    }
-
+    };
 }
 export const slider = elemFactory(Slider);
