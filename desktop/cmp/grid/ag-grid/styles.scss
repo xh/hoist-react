@@ -5,6 +5,10 @@
   height: auto !important;
 }
 
+.ag-menu {
+  z-index: 9999 !important; // always show context menus above other content, e.g. dialog
+}
+
 .xh-grid {
   font-family: var(--xh-grid-font-family);
   font-size: var(--xh-grid-font-size-px);
