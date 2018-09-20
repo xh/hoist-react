@@ -174,6 +174,11 @@
   font-size: var(--xh-font-size);
 }
 
+// Expose CSS var for box-shadow tweaking
+.bp3-input:not(:focus) {
+  box-shadow: var(--xh-form-field-box-shadow);
+}
+
 /* Apply blueprint styling to non-blueprint icons within input groups */
 .bp3-input-group svg:not(.bp3-icon) {
   position: absolute;
