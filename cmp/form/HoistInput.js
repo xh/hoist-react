@@ -193,11 +193,11 @@ export class HoistInput extends Component {
     // Additional Utilities
     //-----------------------------
     // Override of the default implementation provided by HoistComponent so we can add
-    // the xh-field and xh-field-invalid classes
+    // the xh-input and xh-input-invalid classes
     getClassName(...extraClassNames) {
         const field = this.getField(),
-            validityClass = field && field.isNotValid ? 'xh-field-invalid' : null;
+            validityClass = field && field.isNotValid ? 'xh-input-invalid' : null;
 
-        return classNames('xh-field', validityClass, this.baseClassName, this.props.className, ...extraClassNames);
+        return classNames('xh-input', validityClass, this.baseClassName, this.props.className, ...extraClassNames);
     }
 }

@@ -12,7 +12,6 @@ import {option} from '@xh/hoist/cmp/layout';
 import {isObject} from 'lodash';
 
 import {HoistInput} from '@xh/hoist/cmp/form';
-import './Select.scss';
 
 /**
  * A Select Input
@@ -34,7 +33,7 @@ export class Select extends HoistInput {
 
     delegateProps = ['disabled', 'modifier'];
 
-    baseClassName = 'xh-select-field';
+    baseClassName = 'xh-select';
 
     render() {
         const {options, style, width} = this.props;

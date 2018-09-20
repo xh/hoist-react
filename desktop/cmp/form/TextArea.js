@@ -39,7 +39,7 @@ export class TextArea extends HoistInput {
     
     delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus'];
 
-    baseClassName = 'xh-textarea-field';
+    baseClassName = 'xh-textarea';
 
     get commitOnChange() {
         withDefault(this.props.commitOnChange, false);

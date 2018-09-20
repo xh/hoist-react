@@ -52,13 +52,13 @@ export class TextInput extends HoistInput {
         /** Whether text in field is selected when field receives focus */
         selectOnFocus: PT.bool
     };
-    
-    baseClassName = 'xh-text-field';
+
+    baseClassName = 'xh-text-input';
 
     get commitOnChange() {
         withDefault(this.props.commitOnChange, false);
     }
-    
+
     render() {
         const {props} = this,
             spellCheck = withDefault(props.spellCheck, true),
@@ -99,9 +99,9 @@ export class TextInput extends HoistInput {
     }
 
     onFocus = (ev) => {
-        //if (this.props.selectOnFocus) {
-        //    ev.target.select();
-        //}
+        if (this.props.selectOnFocus) {
+            ev.target.select();
+        }
         this.noteFocused();
     }
 }

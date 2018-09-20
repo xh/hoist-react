@@ -6,12 +6,11 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {numericInput} from '@xh/hoist/kit/blueprint';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {input} from '@xh/hoist/kit/onsen';
 import {fmtNumber} from '@xh/hoist/format';
-import {HoistInput} from '@xh/hoist/cmp/form';
-import {withDefault} from '@xh/hoist/utils/js';
 
+import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
  * A Number Input
@@ -23,10 +22,10 @@ export class NumberInput extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
-        value: PT.number,
 
-        /** commit on every key stroke, defaults false */
-        commitOnChange: PT.bool,
+        /** Value of the control */
+        value: PT.string,
+
         /** Text to display when control is empty */
         placeholder: PT.string,
         /** minimum value */
@@ -38,59 +37,50 @@ export class NumberInput extends HoistInput {
         /** Allow/automatically fill in trailing zeros in accord with precision, defaults to false */
         zeroPad: PT.bool,
         /** Set to true for advanced input evaluation, defaults to false.
-            Inputs suffixed with k, m, or b will be calculated as thousands, millions, or billions respectively */
+         Inputs suffixed with k, m, or b will be calculated as thousands, millions, or billions respectively */
         enableShorthandUnits: PT.bool,
         /** Whether to display large values with commas */
         displayWithCommas: PT.bool,
-        /** Alignment of numbers in field, default to 'right' */
-        textAlign: PT.oneOf(['left', 'right']),
-        /** Icon to display on the left side of the field */
-        leftIcon: PT.element,
+        /** Onsen modifier string */
+        modifier: PT.string,
+        /** Function which receives keypress event */
+        onKeyPress: PT.func,
         /** Whether text in field is selected when field receives focus */
         selectOnFocus: PT.bool
     };
 
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/gi;
 
+    delegateProps = ['className', 'disabled', 'min', 'max', 'placeholder', 'modifier'];
+
     baseClassName = 'xh-number-input';
 
-    get commitOnChange() {
-        withDefault(this.props.commitOnChange, false);
-    }
-
     render() {
-        const {props} = this,
-            textAlign = withDefault(props.textAlign, 'right');
+        const {width, style, enableShorthandUnits} = this.props;
 
-        return numericInput({
+        return input({
             className: this.getClassName(),
-            value: this.renderValue,
-            onValueChange: this.onValueChange,
+            value: this.renderValue || '',
+            onChange: this.onChange,
             onKeyPress: this.onKeyPress,
             onBlur: this.onBlur,
             onFocus: this.onFocus,
-            tabIndex: props.tabIndex,
-            style: {
-                ...props.style,
-                textAlign,
-                width: props.width
-            },
-            buttonPosition: 'none',
-            allowNumericCharactersOnly: !props.enableShorthandUnits,
-            disabled: props.disabled,
-            min: props.min,
-            max: props.max,
-            placeholder: props.placeholder,
-            leftIcon: props.leftIcon
+            style: {width, ...style},
+            spellCheck: false,
+            type: enableShorthandUnits ? 'text' : 'number',
+            ...this.getDelegateProps()
         });
     }
 
-    onValueChange = (val, valAsString) => {
-        this.noteValueChange(valAsString);
+    onChange = (ev) => {
+        let v = ev.target.value;
+        if (v) v = v.toString();
+        this.noteValueChange(v);
     }
 
     onKeyPress = (ev) => {
         if (ev.key === 'Enter') this.doCommit();
+        if (this.props.onKeyPress) this.props.onKeyPress(ev);
     }
 
     toExternal(value) {
@@ -130,11 +120,16 @@ export class NumberInput extends HoistInput {
         return parseFloat(value);
     }
 
+    onBlur = () => {
+        this.noteBlurred();
+    }
+
     onFocus = (ev) => {
-        if (this.props.selectOnFocus) {
+        if (this.props.selectOnFocus && ev.target && ev.target.select) {
             ev.target.select();
         }
         this.noteFocused();
     }
 }
+
 export const numberInput = elemFactory(NumberInput);

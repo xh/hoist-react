@@ -30,13 +30,13 @@ export class Mask extends Component {
         message: PT.string,
         /** True (default) to display a spinning image. */
         spinner: PT.bool,
-        /** Click handler **/
-        onClick: PT.func,
         /** Model to govern behavior of mask.  Use as an alternative to setting props above. */
-        model: PT.instanceOf(PendingTaskModel)
+        model: PT.instanceOf(PendingTaskModel),
+        /** Click handler **/
+        onClick: PT.func
     };
 
-    baseClassName = 'xh-mask'
+    baseClassName = 'xh-mask';
 
     render() {
         const {props} = this,
@@ -48,11 +48,12 @@ export class Mask extends Component {
         const message = withDefault(props.message, model && model.message),
             showSpinner = withDefaultFalse(props.spinner),
             onClick = props.onClick;
+
         return div({
+            onClick,
             className: this.getClassName(),
             item: vbox({
                 className: 'xh-mask-body',
-                onClick,
                 items: [
                     showSpinner ? progressCircular({indeterminate: true}) : null,
                     showSpinner ? vspacer(10) : null,

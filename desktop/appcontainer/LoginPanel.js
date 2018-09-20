@@ -47,7 +47,8 @@ export class LoginPanel extends Component {
                             placeholder: 'Username...',
                             autoFocus: true,
                             commitOnChange: true,
-                            onKeyPress: this.onKeyPress
+                            onKeyPress: this.onKeyPress,
+                            autoComplete: 'on'
                         }),
                         textInput({
                             model,
@@ -55,7 +56,8 @@ export class LoginPanel extends Component {
                             placeholder: 'Password...',
                             type: 'password',
                             commitOnChange: true,
-                            onKeyPress: this.onKeyPress
+                            onKeyPress: this.onKeyPress,
+                            autoComplete: 'on'
                         }),
                         text({
                             omit: !model.warning,

@@ -172,6 +172,7 @@ body {
   // Toolbars
   --xh-tbar-bg: var(--tbar-bg, var(--xh-bg-alt));
   --xh-tbar-border-color: var(--tbar-border-color, #{mc('grey', '400')});
+  --xh-tbar-separator-color: var(--tbar-separator-color, #{mc('grey', '400')});
   --xh-tbar-text-color: var(--tbar-text-color, var(--xh-text-color));
 
   // Text
@@ -247,6 +248,7 @@ body.xh-dark {
   // Toolbars
   --xh-tbar-bg: var(--tbar-bg, #{mc('blue-grey', '900')});
   --xh-tbar-border-color: var(--tbar-border-color, #{mc('blue-grey', '800')});
+  --xh-tbar-separator-color: var(--tbar-separator-color, #{mc('blue-grey', '600')});
 
   // Text
   --xh-text-color: var(--text-color, white);

@@ -1,6 +1,6 @@
 {
   "name": "@xh/hoist",
-  "version": "12.1.2",
+  "version": "13.0.1",
   "description": "Hoist add-on for building and deploying React Applications.",
   "repository": "github:exhi/hoist-react",
   "homepage": "https://github.com/exhi/hoist-react",
@@ -12,7 +12,7 @@
     "lint": "yarn run eslint lint ."
   },
   "dependencies": {
-    "@blueprintjs/core": "~3.6.0",
+    "@blueprintjs/core": "~3.6.1",
     "@blueprintjs/datetime": "~3.2.0",
     "@blueprintjs/select": "~3.1.0",
     "@fortawesome/fontawesome-pro": "~5.3.1",
@@ -45,14 +45,14 @@
     "store2": "~2.7.0"
   },
   "peerDependencies": {
-    "react": "~16.4.2",
-    "react-dom": "~16.4.2",
+    "react": "~16.5.1",
+    "react-dom": "~16.5.1",
     "react-dom-factories": "~1.0.2"
   },
   "devDependencies": {
-    "@xh/hoist-dev-utils": "~2.2.2",
-    "react": "~16.4.2",
-    "react-dom": "~16.4.2",
+    "@xh/hoist-dev-utils": "~2.2.3",
+    "react": "~16.5.1",
+    "react-dom": "~16.5.1",
     "react-dom-factories": "~1.0.2"
   }
 }

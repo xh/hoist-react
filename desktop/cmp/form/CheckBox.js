@@ -26,7 +26,7 @@ export class CheckBox extends HoistInput {
         inline: PT.bool
     };
 
-    baseClassName = 'xh-check-field';
+    baseClassName = 'xh-check-box';
 
     render() {
         const {props} = this,

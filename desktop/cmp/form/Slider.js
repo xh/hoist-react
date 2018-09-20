@@ -42,7 +42,7 @@ export class Slider extends HoistInput {
         showTrackFill: PT.bool
     };
 
-    baseClassName = 'xh-slider-field';
+    baseClassName = 'xh-slider';
 
     render() {
         const {props} = this,

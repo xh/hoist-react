@@ -68,7 +68,7 @@ export class JsonInput extends HoistInput {
     editor = null;
     taCmp = null;
 
-    baseClassName = 'xh-json-field';
+    baseClassName = 'xh-json-input';
 
     render() {
         return box({

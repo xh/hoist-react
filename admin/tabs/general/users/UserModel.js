@@ -5,21 +5,23 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel} from '@xh/hoist/core';
-import {UrlStore} from '@xh/hoist/data';
+import {HoistModel, XH} from '@xh/hoist/core';
+import {LocalStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {boolCheckCol} from '@xh/hoist/columns';
 import {usernameCol} from '@xh/hoist/admin/columns';
+import {bindable, action} from '@xh/hoist/mobx/index';
 
 @HoistModel
 export class UserModel {
+
+    @bindable activeOnly = true;
 
     gridModel = new GridModel({
         stateModel: 'xhUserGrid',
         enableColChooser: true,
         enableExport: true,
-        store: new UrlStore({
-            url: 'userAdmin',
+        store: new LocalStore({
             fields: ['username', 'email', 'displayName', 'active', 'roles']
         }),
         sortBy: 'username',
@@ -32,7 +34,22 @@ export class UserModel {
         ]
     });
 
+    constructor() {
+        this.addReaction({
+            track: () => [this.activeOnly],
+            run: () => this.loadAsync()
+        });
+    }
+
+    @action
     async loadAsync() {
-        return this.gridModel.loadAsync();
+        return XH.fetchJson({
+            url: 'userAdmin',
+            params: {activeOnly: this.activeOnly}
+        }).then(data => {
+            this.gridModel.loadData(data);
+        }).catchDefault();
     }
 }
+
+

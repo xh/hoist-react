@@ -25,7 +25,7 @@ export class Label extends HoistInput {
 
     delegateProps = ['className'];
 
-    baseClassName = 'xh-field-label';
+    baseClassName = 'xh-input-label';
 
     render() {
         const {children, style, width} = this.props;

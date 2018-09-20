@@ -52,7 +52,7 @@ export class DateInput extends HoistInput {
 
     child = new Ref();
 
-    baseClassName = 'xh-day-field';
+    baseClassName = 'xh-date-input';
 
     get commitOnChange() {
         withDefault(this.props.commitOnChange, false);

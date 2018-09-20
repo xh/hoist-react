@@ -6,11 +6,8 @@
  */
 import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
-import {label, numberInput, textInput, checkBox} from '@xh/hoist/desktop/cmp/form';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {filler} from '@xh/hoist/cmp/layout';
-import {Icon} from '@xh/hoist/icon';
+import {label, numberInput, textInput, switchInput} from '@xh/hoist/desktop/cmp/form';
+import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 
 /**
  * @private
@@ -22,23 +19,26 @@ export class LogViewerToolbar extends Component {
         const {model} = this;
         return toolbar({
             items: [
-                label('Start Line:'),
+                label('Start line:'),
                 numberInput({
                     model,
                     field: 'startLine',
                     min: 0,
                     width: 80,
                     disabled: model.tail,
+                    displayWithCommas: true,
                     onCommit: this.onCommit
                 }),
-                label('Max Lines:'),
+                label('Max lines:'),
                 numberInput({
                     model,
                     field: 'maxLines',
                     min: 1,
                     width: 80,
+                    displayWithCommas: true,
                     onCommit: this.onCommit
                 }),
+                toolbarSep(),
                 textInput({
                     model,
                     field: 'pattern',
@@ -46,22 +46,14 @@ export class LogViewerToolbar extends Component {
                     width: 150,
                     onCommit: this.onCommit
                 }),
-                checkBox({
+                toolbarSep(),
+                switchInput({
                     model,
                     field: 'tail',
-                    text: 'Tail'
-                }),
-                filler(),
-                button({icon: Icon.refresh(), onClick: this.onSubmitClick})
+                    label: 'Tail mode'
+                })
             ]
         });
-    }
-
-    //-----------------------------
-    // Implementation
-    //-----------------------------
-    onSubmitClick = () => {
-        this.model.loadLines();
     }
 
     onCommit = () => {

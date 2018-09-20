@@ -24,7 +24,7 @@ export class SwitchInput extends HoistInput {
         inline: PT.bool
     };
 
-    baseClassName = 'xh-switch-field';
+    baseClassName = 'xh-switch-input';
 
     render() {
         const {props} = this,

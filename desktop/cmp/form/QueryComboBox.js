@@ -46,7 +46,7 @@ export class QueryComboBox extends HoistInput {
 
     delegateProps = ['className', 'style', 'placeholder', 'disabled', 'leftIcon', 'rightElement'];
 
-    baseClassName = 'xh-query-combo-field';
+    baseClassName = 'xh-query-combo-box';
 
     @settable @observable.ref activeItem = null;
     @observable.ref internalOptions = [];

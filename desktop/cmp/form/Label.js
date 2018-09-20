@@ -23,7 +23,7 @@ export class Label extends HoistInput {
         children: PT.node
     };
 
-    baseClassName = 'xh-field-label';
+    baseClassName = 'xh-input-label';
 
     render() {
         const {props} = this;
