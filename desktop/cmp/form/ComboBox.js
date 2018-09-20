@@ -20,10 +20,12 @@ import {withDefault} from '@xh/hoist/utils/js';
  */
 @HoistComponent
 export class ComboBox extends HoistInput {
-
+    
     static propTypes = {
         ...HoistInput.propTypes,
 
+        /** true to commit on every key stroke, defaults false */
+        commitOnChange: PT.bool,
         /** Text to display when control is empty */
         placeholder: PT.string,
         /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
@@ -40,37 +42,42 @@ export class ComboBox extends HoistInput {
 
     baseClassName = 'xh-combo-box';
 
+    @settable @observable query = '';
     @settable @observable.ref activeItem = null;
     @observable.ref internalOptions = [];
 
     constructor(props) {
         super(props);
         this.addAutorun(() => this.normalizeOptions(this.props.options));
-        this.addAutorun(() => {
-            this.setActiveItem(find(this.internalOptions, {value: this.renderValue}) || null);
-        });
     }
-    
+
+    get commitOnChange() {
+        withDefault(this.props.commitOnChange, false);
+    }
+
     render() {
         const {props, renderValue, internalOptions} = this,
-            displayValue = this.getDisplayValue(renderValue, internalOptions, ''),
-            placeholder = withDefault(props.placeholder, 'Select');
+            placeholder = withDefault(props.placeholder, 'Select'),
+            displayValue = this.getDisplayValue(renderValue, internalOptions, placeholder);
 
+        console.log(displayValue);
         return suggest({
             className: this.getClassName(),
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: internalOptions,
             onItemSelect: this.onItemSelect,
             itemPredicate: (q, item) => {
-                return startsWith(item.label.toLowerCase(), q.toLowerCase());
+                return !q || startsWith(item.label.toLowerCase(), q.toLowerCase());
             },
             itemRenderer: this.itemRenderer,
             activeItem: this.activeItem,
+            openOnKeyDown: true,
             onActiveItemChange: (it) => this.setActiveItem(it),
-            inputValueRenderer: () => displayValue,
-            query: displayValue,
-            onQueryChange: this.onQueryChange,
+            inputValueRenderer: (s) => displayValue,
+            query: this.query,
+            onQueryChange: this.onChange,
             inputProps: {
+                value: displayValue,
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,
                 onFocus: this.onFocus,
@@ -106,7 +113,7 @@ export class ComboBox extends HoistInput {
         const match = find(items, {value});
 
         if (match) return match.label;
-        return value == null ? placeholder : value.toString();
+        return value == null ? '' : value.toString();
     }
 
 
@@ -126,15 +133,22 @@ export class ComboBox extends HoistInput {
         this.noteValueChange(v.value);
     }
 
-    onQueryChange = (q) => {
-        console.log(q);
-    }
-
-    onKeyPress = (ev) => {
-        if (ev.key === 'Enter' && !this.props.requireSelection) {
-            this.noteValueChange();
+    onChange = (val) => {
+        this.setQuery(val);
+        if (!this.props.requireSelection || this.isExactValue(val)) {
+            console.log('accepting vale' + val)
+            this.noteValueChange(val);
         }
     }
 
+    onKeyPress = (ev) => {
+        if (ev.key === 'Enter') {
+            this.doCommit();
+        }
+    }
+
+    isExactValue(value) {
+        return !!find(this.internalOptions, {value});
+    }
 }
 export const comboBox = elemFactory(ComboBox);

@@ -84,7 +84,6 @@ export class TextInput extends HoistInput {
                 rightElement: props.rightElement
             })
         });
-
     }
 
     onChange = (ev) => {
@@ -92,9 +91,7 @@ export class TextInput extends HoistInput {
     };
 
     onKeyPress = (ev) => {
-        if (ev.key === 'Enter') {
-            this.doCommit();
-        }
+        if (ev.key === 'Enter') this.doCommit();
         if (this.props.onKeyPress) this.props.onKeyPress(ev);
     }
 

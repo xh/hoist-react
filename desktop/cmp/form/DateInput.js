@@ -28,7 +28,7 @@ export class DateInput extends HoistInput {
         ...HoistInput.propTypes,
         value: PT.string,
 
-        /** commit on every key stroke, defaults false */
+        /** true to commit on every key stroke, defaults false */
         commitOnChange: PT.bool,
         /** Position for calendar popover. @see http://blueprintjs.com/docs/ */
         popoverPosition: PT.oneOf([

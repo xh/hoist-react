@@ -61,7 +61,7 @@ export class HoistInput extends Component {
         style: PT.object,
         /** css class name **/
         className: PT.string,
-        /** Tab Ordering **/
+        /** tab order of this control.  Set to -1 to skip.  If not set, browser will choose a layout related ordering. **/
         tabIndex: PT.number
     };
 
@@ -81,6 +81,8 @@ export class HoistInput extends Component {
     //-----------------------------------------------------------
     /**
      * Commit immediately when value is changed?
+     *
+     * Note that certain text controls provide a prop to override this value.
      */
     get commitOnChange() {
         return true;
@@ -160,11 +162,9 @@ export class HoistInput extends Component {
     @action
     noteBlurred() {
         if (!this.hasFocus) return;
-        console.log('blurred' + this.constructor.name);
-
+        
         this.doCommit();
-
-        // Trigger validation.  Useful if user just visited field without making change.
+        
         const field = this.getField();
         if (field) field.startValidating();
 
@@ -174,13 +174,14 @@ export class HoistInput extends Component {
     @action
     noteFocused() {
         if (this.hasFocus) return;
-        console.log('focused' + this.constructor.name);
-
+        
         this.setInternalValue(this.toInternal(this.externalValue));
         this.hasFocus = true;
     }
 
     onBlur = () => {
+        // Focus very frequently will be jumping internally from element to element *within* a control.
+        // This delay prevents extraneous 'flapping' of focus state at this level.
         wait(200).then(() => {
             if (!this.containsElement(document.activeElement)) {
                 this.noteBlurred();

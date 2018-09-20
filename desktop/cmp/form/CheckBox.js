@@ -23,7 +23,7 @@ export class CheckBox extends HoistInput {
         ...HoistInput.propTypes,
         value: PT.bool,
 
-        inline: PT.bool
+        inline: PT.bool // TODO: Is this needed?
     };
 
     baseClassName = 'xh-check-box';
@@ -39,9 +39,9 @@ export class CheckBox extends HoistInput {
             onBlur: this.onBlur,
             onFocus: this.onFocus,
             tabIndex: props.tabIndex,
-            inline,
             style: props.style,
-            disabled: props.disabled
+            disabled: props.disabled,
+            inline
         });
     }
 

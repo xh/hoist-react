@@ -37,7 +37,7 @@ export class JsonInput extends HoistInput {
         ...HoistInput.propTypes,
         value: PT.string,
 
-        /** commit on every key stroke, defaults false */
+        /** true to commit on every key stroke, defaults false */
         commitOnChange: PT.bool,
         /** width of field, in pixels */
         width: PT.number,

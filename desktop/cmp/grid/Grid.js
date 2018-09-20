@@ -296,7 +296,7 @@ export class Grid extends Component {
         const {model} = this;
         return {
             track: () => [model.agApi, model.selection, this._dataVersion],
-            run: ([api]) => {              For the
+            run: ([api]) => {             
                 if (!api) return;
 
                 const modelSelection = model.selModel.ids,
