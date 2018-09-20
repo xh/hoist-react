@@ -59,29 +59,35 @@ export class RelativeTimestamp extends Component {
 
     baseClassName = 'xh-relative-timestamp';
 
-    @observable relativeTimeString;
+    @observable stampFormat = {};
     timer = null;
     render() {
-        const {prefix, timestamp} = this.props;
+        const {textItem, prefix, prefixMargin} = this.stampFormat;
         return box({
             ...this.getLayoutProps(),
             className: this.getClassName(),
-            item: span({
-                className: 'xh-title-tip',
-                item: this.relativeTimeString,
-                title: getDateTooltip(this.props.timestamp)
-            })
+            items: [
+                span({
+                    item: prefix,
+                    style: {marginRight: prefixMargin}
+                }),
+                span({
+                    className: 'xh-title-tip',
+                    item: textItem,
+                    title: fmtDateTime(this.props.timestamp),
+                })
+            ]
         });
     }
 
     refreshLabel = () => {
-        this.updateRelativeTimeString(this.props);
+        this.updateRelativeTimeStamp(this.props);
     }
 
     @action
-    updateRelativeTimeString(props) {
+    updateRelativeTimeStamp(props) {
         const {timestamp, options} = props;
-        this.relativeTimeString = getRelativeTimestamp(timestamp, options);
+        this.stampFormat = getRelativeTimestamp(timestamp, options);
     }
 
     componentDidMount() {
@@ -96,7 +102,7 @@ export class RelativeTimestamp extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.updateRelativeTimeString(nextProps);
+        this.updateRelativeTimeStamp(nextProps);
     }
 }
 
@@ -108,6 +114,8 @@ export const relativeTimestamp = elemFactory(RelativeTimestamp);
  * @param {(Date|int)} timestamp - Date object or milliseconds that will be used as reference for this component
  * @param {Object} [options]
  * @param {boolean} [options.allowFuture] - Allow dates greater than Date.now()
+ * @param {string} [options.prefix] - Label preceding timestamp
+ * @param {int} [options.prefixMargin] - Right margin in pixels for the prefix label
  * @param {string} [options.futureSuffix] - Appended to future timestamps
  * @param {string} [options.pastSuffix] - Appended to past timestamps
  * @param {int} [options.nowEpsilon] - Interval (in seconds) that will serve as threshold for the nowString.
@@ -131,10 +139,6 @@ export const getRelativeTimestamp = (timestamp, options) => {
     )(opts);
 
 
-};
-
-export const getDateTooltip = (timestamp) => {
-    return fmtDateTime(timestamp)
 };
 
 //----------------------------
@@ -208,21 +212,24 @@ const getSuffix = opts => {
     return opts;
 };
 
-const getPrefix = opts => {
-    const {isInvalid, prefixText} = opts;
+const getPrefix  = opts => {
+    const {isInvalid, prefix, prefixMargin} = opts;
     if (isInvalid) return opts;
-    opts.prefix = prefixText ? `${prefixText} ` : '';
+    opts.prefix = withDefault(prefix, null);
+    if (opts.prefix) {
+        opts.prefixMargin = withDefault(prefixMargin, 10)
+    }
     return opts
-};
+}
 
 const getResult = opts => {
-    const {isInvalid, elapsedTime, millis, unit, useNowString, prefix, suffix} = opts;
+    const {isInvalid, elapsedTime, millis, unit, useNowString, prefix, prefixMargin, suffix} = opts;
     if (isInvalid) return '[???]';
 
     // if elapsedTime was normalized to 0 (smaller than nowEpsilon)
     // then return the nowString if it's present, otherwise return the
     // default FORMAT for seconds.
     if (!elapsedTime && useNowString) return suffix;
-
-    return `${prefix}${FORMAT_STRINGS[unit].replace('%d', millis)} ${suffix}`;
+    
+    return {prefix, prefixMargin, textItem: `${FORMAT_STRINGS[unit].replace('%d', millis)} ${suffix}`};
 };
