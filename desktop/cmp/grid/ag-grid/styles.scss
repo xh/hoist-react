@@ -66,6 +66,7 @@
 
   .ag-cell-focus {
     border-color: var(--xh-grid-cell-focus-border-color) !important;
+    outline: 0 !important;
   }
 
   .ag-group-expanded, .ag-group-contracted {
