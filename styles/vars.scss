@@ -64,6 +64,7 @@ body {
 
   // Grid
   --xh-grid-bg: var(--grid-bg, var(--xh-bg));
+  --xh-grid-bg-hover: var(--grid-bg-highlight, #{mc-trans('blue', '200', 0.8)});
   --xh-grid-bg-highlight: var(--grid-bg-highlight, var(--xh-bg-highlight));
   --xh-grid-bg-odd: var(--grid-bg-odd, #{mc('grey', '100')});
   --xh-grid-border-color: var(--grid-border-color, var(--xh-border-color));

@@ -60,6 +60,10 @@
     }
   }
 
+  &.xh-grid-show-hover .ag-row.ag-row-hover:not(.ag-row-selected) {
+    background-color: var(--xh-grid-bg-hover);
+  }
+
   .ag-cell-value {
     line-height: var(--xh-grid-line-height-px);
   }
