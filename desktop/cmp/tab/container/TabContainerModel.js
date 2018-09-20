@@ -95,6 +95,7 @@ export class TabContainerModel {
         if (this.activeTabId === id) return;
 
         const {route} = this;
+
         if (route) {
             XH.navigate(route + '.' + id);
         } else {
@@ -102,13 +103,13 @@ export class TabContainerModel {
         }
         const trackingConfigs = XH.getConf('xhTrackingConfig', {});
         if (trackingConfigs.trackTabs) XH.track({
-                msg: `${id} activated`,
-                data: {
-                    tabID: id,
-                    appName: XH.appName
-                },
-                category: 'Tab'
-            });
+            msg: `${id} activated`,
+            data: {
+                tabID: id,
+                appName: XH.appName
+            },
+            category: 'Tab'
+        });
     }
 
     /**
