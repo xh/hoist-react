@@ -35,10 +35,12 @@ export class Select extends HoistInput {
         /** Text to display when control is empty */
         placeholder: PT.string,
         /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
-        options: PT.arrayOf(PT.oneOfType([PT.object, PT.string, PT.bool]))
+        options: PT.arrayOf(PT.oneOfType([PT.object, PT.string, PT.bool])),
+        /** Icon to show on button. */
+        icon: PT.element
     };
 
-    baseClassName = 'xh-select-field';
+    baseClassName = 'xh-select';
 
     child = new Ref();
     @settable @observable.ref activeItem
@@ -71,6 +73,7 @@ export class Select extends HoistInput {
                 style: {...props.style, width: props.width},
                 disabled: props.disabled,
                 tabIndex: props.tabIndex,
+                icon: props.icon,
                 onBlur: this.onBlur,
                 onFocus: this.onFocus
             }),

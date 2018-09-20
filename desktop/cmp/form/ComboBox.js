@@ -38,7 +38,7 @@ export class ComboBox extends HoistInput {
         rightElement: PT.element
     };
 
-    baseClassName = 'xh-combo-field';
+    baseClassName = 'xh-combo-box';
 
     @settable @observable.ref activeItem = null;
     @observable.ref internalOptions = [];

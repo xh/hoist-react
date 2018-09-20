@@ -45,7 +45,7 @@ export class MultiSelect extends HoistInput {
         tagRenderer: PT.func
     };
     
-    baseClassName = 'xh-multi-select-field';
+    baseClassName = 'xh-multi-select';
 
     @observable.ref internalOptions = [];
     @settable @observable query = '';
