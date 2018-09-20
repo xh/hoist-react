@@ -12,6 +12,7 @@ import {grid} from '@xh/hoist/desktop/cmp/grid';
 import {textInput, dateInput} from '@xh/hoist/desktop/cmp/form';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {button, exportButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
+import {buttonGroup} from '@xh/hoist/kit/blueprint';
 import {storeCountLabel} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 
@@ -43,20 +44,22 @@ export class ClientErrorPanel extends Component {
             this.dateInput({field: 'startDate'}),
             Icon.angleRight(),
             this.dateInput({field: 'endDate'}),
-            button({
-                icon: Icon.caretLeft(),
-                onClick: this.onDateGoBackClick
-            }),
-            button({
-                icon: Icon.caretRight(),
-                onClick: this.onDateGoForwardClick,
-                className: 'xh-no-pad'
-            }),
-            button({
-                icon: Icon.arrowToRight(),
-                onClick: this.onGoToCurrentDateClick,
-                className: 'xh-no-pad'
-            }),
+            buttonGroup(
+                button({
+                    icon: Icon.caretLeft(),
+                    onClick: this.onDateGoBackClick
+                }),
+                button({
+                    icon: Icon.caretRight(),
+                    onClick: this.onDateGoForwardClick,
+                    className: 'xh-no-pad'
+                }),
+                button({
+                    icon: Icon.arrowToRight(),
+                    onClick: this.onGoToCurrentDateClick,
+                    className: 'xh-no-pad'
+                })
+            ),
             toolbarSep(),
             this.textInput({field: 'username', placeholder: 'User...'}),
             this.textInput({field: 'error', placeholder: 'Error...'}),

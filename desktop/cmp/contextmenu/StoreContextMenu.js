@@ -52,7 +52,7 @@ export class StoreContextMenu {
             case 'colChooser':
                 return new StoreContextMenuItem({
                     text: 'Columns...',
-                    icon: Icon.grid(),
+                    icon: Icon.gridPanel(),
                     hidden: !gridModel || !gridModel.colChooserModel,
                     action: () => {
                         gridModel.colChooserModel.open();
