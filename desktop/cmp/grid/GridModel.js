@@ -223,7 +223,7 @@ export class GridModel {
         if (field && !groupCol) return;
 
         cols.forEach(it => {
-            if (it.rowGroup) {
+            if (it.agOptions && it.agOptions.rowGroup) {
                 it.agOptions.rowGroup = false;
                 it.hide = false;
             }
