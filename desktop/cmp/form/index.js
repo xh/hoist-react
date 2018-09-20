@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+export * from './ButtonGroupInput';
 export * from './CheckBox';
 export * from './DateInput';
 export * from './FormField';

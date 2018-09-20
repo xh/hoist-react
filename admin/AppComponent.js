@@ -11,7 +11,7 @@ import {tabContainer, tabSwitcher} from '@xh/hoist/desktop/cmp/tab';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-import {appBar} from '@xh/hoist/desktop/cmp/appbar';
+import {appBar, appBarSeparator} from '@xh/hoist/desktop/cmp/appbar';
 import {ContextMenuItem, ContextMenuSupport} from '@xh/hoist/desktop/cmp/contextmenu';
 
 import './App.scss';
@@ -55,7 +55,8 @@ export class AppComponent extends Component {
                     icon: Icon.openExternal(),
                     title: 'Open app...',
                     onClick: this.onOpenAppClick
-                })
+                }),
+                appBarSeparator()
             ],
             hideAdminButton: true,
             hideFeedbackButton: true
