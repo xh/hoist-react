@@ -13,6 +13,8 @@ import {radio, radioGroup} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 
 import {HoistInput} from '@xh/hoist/cmp/form';
+import './RadioInput.scss';
+
 
 @HoistComponent
 export class RadioInput extends HoistInput {
@@ -32,22 +34,10 @@ export class RadioInput extends HoistInput {
 
     static defaultProps = {
         commitOnChange: true
-    }
+    };
 
     // blueprint-ready collection of available options, normalized to {label, value} form.
     @observable.ref internalOptions = [];
-
-    //---------------------------------------------------------------------------
-    // Handling of null values.  Blueprint doesn't allow null for the value of a
-    // radio control, but we can use a sentinel value to represent it.
-    //----------------------------------------------------------------------------
-    toExternal(internal) {
-        return internal === NULL_VALUE ? null : internal;
-    }
-
-    toInternal(external) {
-        return external ===  null ? NULL_VALUE : external;
-    }
 
     constructor(props) {
         super(props);
@@ -70,9 +60,34 @@ export class RadioInput extends HoistInput {
         });
     }
 
+    //---------------------------------------------------------------------------
+    // Handling of null values.  Blueprint doesn't allow null for the value of a
+    // radio control, but we can use a sentinel value to represent it.
+    //----------------------------------------------------------------------------
+    toExternal(internal) {
+        return internal === NULL_VALUE ? null : internal;
+    }
+
+    toInternal(external) {
+        return external ===  null ? NULL_VALUE : external;
+    }
+
     render() {
         const {label, inline, align} = this.props,
             {internalOptions} = this;
+
+        // When an option is rendered by BP's RadioGroup component it doesn't pass the alignIndicator to the Radio it creates
+        // We therefore pass radio components as children rather than an array of configs as options prop
+        // https://github.com/palantir/blueprint/blob/4f55b625352830ad8d46ea0f1f72d2ae752584ee/packages/core/src/components/forms/radioGroup.tsx#L71
+        const items = internalOptions.map(opt => {
+            return radio({
+                className: 'xh-radio-input',
+                label: opt.label,
+                value: opt.value,
+                disabled: opt.disabled,
+                alignIndicator: align
+            });
+        });
 
         return radioGroup({
             className: this.getClassName(),
@@ -80,17 +95,7 @@ export class RadioInput extends HoistInput {
             label,
             inline,
             selectedValue: this.toInternal(this.externalValue),
-            // We need to pass radio components as children rather than setting an array of configs on an options prop
-            // When the options are rendered by BP's RadioGroup component it doesn't pass the alignIndicator to the Radios it creates
-            // https://github.com/palantir/blueprint/blob/4f55b625352830ad8d46ea0f1f72d2ae752584ee/packages/core/src/components/forms/radioGroup.tsx#L71
-            items: internalOptions.map(opt => {
-                return radio({
-                    label: opt.label,
-                    value: opt.value,
-                    disabled: opt.disabled,
-                    alignIndicator: align
-                });
-            })
+            items
         });
     }
 
