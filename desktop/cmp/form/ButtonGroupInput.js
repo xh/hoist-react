@@ -14,11 +14,11 @@ import {throwIf} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
- * ButtonGroupInput.
+ * A segmented group of buttons, one of which is depressed to indicate the input's current value.
  *
  * Should receive a list of Buttons as a children. Each Button requires a 'value' prop.
  * The Buttons are automatically configured to set this value on click,
- * and appear pressed if the ButtonGroupInput's value matches..
+ * and appear pressed if the ButtonGroupInput's value matches.
  */
 @HoistComponent
 export class ButtonGroupInput extends HoistInput {
