@@ -136,6 +136,7 @@ export class Grid extends Component {
             rowSelection: model.selModel.mode,
             rowDeselection: true,
             getRowHeight: () => model.compact ? Grid.COMPACT_ROW_HEIGHT : Grid.ROW_HEIGHT,
+            getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             overlayNoRowsTemplate: model.emptyText || '<span></span>',
             getContextMenuItems: this.getContextMenuItems,
             onRowDoubleClicked: props.onRowDoubleClicked,
