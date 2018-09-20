@@ -51,7 +51,7 @@ export class Grid extends Component {
     };
 
     static ROW_HEIGHT = 28;
-    static COMPACT_ROW_HEIGHT = 22;
+    static COMPACT_ROW_HEIGHT = 24;
 
     // Observable stamp incremented every time the ag-Grid receives a new set of data.
     // Used to ensure proper re-running / sequencing of data and selection reactions.
