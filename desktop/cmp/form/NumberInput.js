@@ -6,6 +6,7 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
+import {computed} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {fmtNumber} from '@xh/hoist/format';
@@ -54,6 +55,15 @@ export class NumberInput extends HoistInput {
 
     baseClassName = 'xh-number-input';
 
+    rawUserInput = null;
+
+    @computed
+    get renderValue() {
+        return this.hasFocus ?
+            this.rawUserInput :
+            this.toInternal(this.externalValue);
+    }
+
     render() {
         const {width, style, enableShorthandUnits} = this.props,
             textAlign = this.props.textAlign || 'right';
@@ -73,6 +83,7 @@ export class NumberInput extends HoistInput {
     }
 
     onValueChange = (val, valAsString) => {
+        this.rawUserInput = valAsString;
         this.noteValueChange(valAsString);
     }
 
