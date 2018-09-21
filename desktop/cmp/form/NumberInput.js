@@ -10,6 +10,7 @@ import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {fmtNumber} from '@xh/hoist/format';
 import {HoistInput} from '@xh/hoist/cmp/form';
+import {wait} from '@xh/hoist/promise';
 
 /**
  * A Number Input
@@ -117,10 +118,13 @@ export class NumberInput extends HoistInput {
     }
 
     onFocus = (ev) => {
-        if (this.props.selectOnFocus) {
-            ev.target.select();
-        }
         this.noteFocused();
+
+        // Deferred to allow any value conversion to complete and flush into input.
+        if (this.props.selectOnFocus) {
+            const target = ev.target;
+            wait(1).then(() => target.select());
+        }
     }
 
     onBlur = () => {
