@@ -13,9 +13,9 @@ import {box} from '@xh/hoist/cmp/layout';
 import {span} from '@xh/hoist/cmp/layout';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS, MINUTES, HOURS, DAYS} from '@xh/hoist/utils/datetime';
-import {fmtDateTime} from "@xh/hoist/format";
+import {fmtDateTime} from '@xh/hoist/format';
 import {flow} from 'lodash';
-import {pluralize, withDefault} from '@xh/hoist/utils/js';
+import {pluralize} from '@xh/hoist/utils/js';
 
 const FORMAT_STRINGS = {
     seconds: '<1 minute',
@@ -59,35 +59,32 @@ export class RelativeTimestamp extends Component {
 
     baseClassName = 'xh-relative-timestamp';
 
-    @observable stampFormat = {};
+    @observable relativeTimeString;
     timer = null;
+
     render() {
-        const {textItem, prefix, prefixMargin} = this.stampFormat;
+        const {relativeTimeString, props} = this;
         return box({
             ...this.getLayoutProps(),
             className: this.getClassName(),
-            items: [
-                span({
-                    item: prefix,
-                    style: {marginRight: prefixMargin}
-                }),
+            item: [
                 span({
                     className: 'xh-title-tip',
-                    item: textItem,
-                    title: fmtDateTime(this.props.timestamp),
+                    item: relativeTimeString,
+                    title: fmtDateTime(props.timestamp)
                 })
             ]
         });
     }
 
     refreshLabel = () => {
-        this.updateRelativeTimeStamp(this.props);
+        this.updateRelativeTimeString(this.props);
     }
 
     @action
-    updateRelativeTimeStamp(props) {
+    updateRelativeTimeString(props) {
         const {timestamp, options} = props;
-        this.stampFormat = getRelativeTimestamp(timestamp, options);
+        this.relativeTimeString = getRelativeTimestamp(timestamp, options);
     }
 
     componentDidMount() {
@@ -102,7 +99,7 @@ export class RelativeTimestamp extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.updateRelativeTimeStamp(nextProps);
+        this.updateRelativeTimeString(nextProps);
     }
 }
 
@@ -115,7 +112,6 @@ export const relativeTimestamp = elemFactory(RelativeTimestamp);
  * @param {Object} [options]
  * @param {boolean} [options.allowFuture] - Allow dates greater than Date.now()
  * @param {string} [options.prefix] - Label preceding timestamp
- * @param {int} [options.prefixMargin] - Right margin in pixels for the prefix label
  * @param {string} [options.futureSuffix] - Appended to future timestamps
  * @param {string} [options.pastSuffix] - Appended to past timestamps
  * @param {int} [options.nowEpsilon] - Interval (in seconds) that will serve as threshold for the nowString.
@@ -137,8 +133,6 @@ export const getRelativeTimestamp = (timestamp, options) => {
         getSuffix,
         getResult
     )(opts);
-
-
 };
 
 //----------------------------
@@ -213,17 +207,14 @@ const getSuffix = opts => {
 };
 
 const getPrefix  = opts => {
-    const {isInvalid, prefix, prefixMargin} = opts;
+    const {isInvalid, prefix} = opts;
     if (isInvalid) return opts;
-    opts.prefix = withDefault(prefix, null);
-    if (opts.prefix) {
-        opts.prefixMargin = withDefault(prefixMargin, 10)
-    }
-    return opts
-}
+    opts.prefix =  prefix ? prefix + ' ' : '';
+    return opts;
+};
 
 const getResult = opts => {
-    const {isInvalid, elapsedTime, millis, unit, useNowString, prefix, prefixMargin, suffix} = opts;
+    const {isInvalid, elapsedTime, millis, unit, useNowString, prefix, suffix} = opts;
     if (isInvalid) return '[???]';
 
     // if elapsedTime was normalized to 0 (smaller than nowEpsilon)
@@ -231,5 +222,5 @@ const getResult = opts => {
     // default FORMAT for seconds.
     if (!elapsedTime && useNowString) return suffix;
     
-    return {prefix, prefixMargin, textItem: `${FORMAT_STRINGS[unit].replace('%d', millis)} ${suffix}`};
+    return `${prefix}${FORMAT_STRINGS[unit].replace('%d', millis)} ${suffix}`;
 };
