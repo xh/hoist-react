@@ -26,10 +26,8 @@ export class RadioInput extends HoistInput {
         options: PT.arrayOf(PT.oneOfType([PT.object, PT.string])),
         /** True to display each radio button inline with each other */
         inline: PT.bool,
-        /** Optional label for entire control, labels for individual button provided by options prop */
-        label: PT.string,
         /** Alignment of the indicator with respect to it's label.*/
-        align: PT.oneOf(['left', 'right'])
+        alignIndicator: PT.oneOf(['left', 'right'])
     };
 
     static defaultProps = {
@@ -73,28 +71,24 @@ export class RadioInput extends HoistInput {
     }
 
     render() {
-        const {label, inline, align} = this.props,
+        const {inline, alignIndicator} = this.props,
             {internalOptions} = this;
 
-        // When an option is rendered by BP's RadioGroup component it doesn't pass the alignIndicator to the Radio it creates
-        // We therefore pass radio components as children rather than an array of configs as options prop
-        // https://github.com/palantir/blueprint/blob/4f55b625352830ad8d46ea0f1f72d2ae752584ee/packages/core/src/components/forms/radioGroup.tsx#L71
         const items = internalOptions.map(opt => {
             return radio({
                 className: 'xh-radio-input',
                 label: opt.label,
                 value: opt.value,
                 disabled: opt.disabled,
-                alignIndicator: align
+                alignIndicator
             });
         });
 
         return radioGroup({
             className: this.getClassName(),
             onChange: this.onChange,
-            label,
             inline,
-            selectedValue: this.toInternal(this.externalValue),
+            selectedValue: this.renderValue,
             items
         });
     }
