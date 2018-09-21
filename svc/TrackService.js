@@ -48,7 +48,6 @@ export class TrackService {
                     .join(' | ');
 
             console.log(consoleMsg);
-
             XH.fetchJson({
                 url: 'hoistImpl/track',
                 params: params
