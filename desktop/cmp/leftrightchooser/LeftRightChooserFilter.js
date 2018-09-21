@@ -60,7 +60,7 @@ export class LeftRightChooserFilter extends Component {
         let searchTerm = escapeRegExp(this.value);
 
         if (!anyMatch) {
-            searchTerm = `(^|\\\\W)${searchTerm}`;
+            searchTerm = `(^|\\W)${searchTerm}`;
         }
 
         const filter = (raw) => {

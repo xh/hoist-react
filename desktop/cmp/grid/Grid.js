@@ -32,7 +32,6 @@ import {colChooser} from './ColChooser';
 export class Grid extends Component {
 
     static propTypes = {
-
         /**
          * Options for AG Grid's API.
          *
@@ -47,7 +46,12 @@ export class Grid extends Component {
          * with a data node containing the row's data.
          * @see {@link https://www.ag-grid.com/javascript-grid-events/#properties-and-hierarchy|ag-Grid Event Docs}
          */
-        onRowDoubleClicked: PT.func
+        onRowDoubleClicked: PT.func,
+
+        /**
+         * Show a colored row background on hover. Defaults to false.
+         */
+        showHover: PT.bool
     };
 
     static ROW_HEIGHT = 28;
@@ -70,7 +74,7 @@ export class Grid extends Component {
 
     render() {
         const {colChooserModel, compact} = this.model,
-            {agOptions} = this.props,
+            {agOptions, showHover} = this.props,
             layoutProps = this.getLayoutProps();
 
         // Default flex = 'auto' if no dimensions / flex specified.
@@ -88,7 +92,8 @@ export class Grid extends Component {
                 className: this.getClassName(
                     'ag-grid-holder',
                     XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
-                    compact ? 'xh-grid-compact' : 'xh-grid-standard'
+                    compact ? 'xh-grid-compact' : 'xh-grid-standard',
+                    showHover ? 'xh-grid-show-hover' : ''
                 )
             }),
             colChooser({
@@ -131,6 +136,7 @@ export class Grid extends Component {
             rowSelection: model.selModel.mode,
             rowDeselection: true,
             getRowHeight: () => model.compact ? Grid.COMPACT_ROW_HEIGHT : Grid.ROW_HEIGHT,
+            getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             overlayNoRowsTemplate: model.emptyText || '<span></span>',
             getContextMenuItems: this.getContextMenuItems,
             onRowDoubleClicked: props.onRowDoubleClicked,

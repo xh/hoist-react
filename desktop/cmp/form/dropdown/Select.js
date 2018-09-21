@@ -30,7 +30,7 @@ export class Select extends BaseDropdownInput {
         itemRenderer: PT.func
     };
 
-    delegateProps = ['className', 'disabled', 'icon'];
+    delegateProps = ['className', 'disabled', 'icon', 'autoFocus'];
 
     baseClassName = 'xh-select';
 
