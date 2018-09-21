@@ -15,7 +15,11 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/form';
 import './RadioInput.scss';
 
-
+/**
+ * An input for managing Radio Buttons
+ *
+ * @see HoistInput for properties additional to those documented below.
+ */
 @HoistComponent
 export class RadioInput extends HoistInput {
 
