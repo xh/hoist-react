@@ -50,6 +50,8 @@ export class GridModel {
     /** @member {ColChooserModel} */
     colChooserModel = null;
     /** @member {function} */
+    rowClassFn = null;
+    /** @member {function} */
     contextMenuFn = null;
     /** @member {boolean} */
     enableExport = false;
@@ -107,6 +109,8 @@ export class GridModel {
      * @param {boolean} [c.enableExport] - true to install default export context menu items.
      * @param {(function|string)} [c.exportFilename] - filename for exported file,
      *      or a closure to generate one.
+     * @param {function} [c.rowClassFn] - closure to generate css class names for a row.
+     *      Should return a string or array of strings. Receives record data as param.
      * @param {function} [c.contextMenuFn] - closure returning a StoreContextMenu.
      *      @see StoreContextMenu
      */
@@ -122,6 +126,7 @@ export class GridModel {
         enableColChooser = false,
         enableExport = false,
         exportFilename = 'export',
+        rowClassFn = null,
         contextMenuFn = () => this.defaultContextMenu()
     }) {
         this.store = store;
@@ -129,6 +134,7 @@ export class GridModel {
         this.enableExport = enableExport;
         this.exportFilename = exportFilename;
         this.contextMenuFn = contextMenuFn;
+        this.rowClassFn = rowClassFn;
 
         this.setColumns(columns);
 
@@ -223,7 +229,7 @@ export class GridModel {
         if (field && !groupCol) return;
 
         cols.forEach(it => {
-            if (it.rowGroup) {
+            if (it.agOptions && it.agOptions.rowGroup) {
                 it.agOptions.rowGroup = false;
                 it.hide = false;
             }

@@ -59,12 +59,13 @@ export class NumberInput extends HoistInput {
     }
 
     render() {
-        const {props} = this,
-            textAlign = withDefault(props.textAlign, 'right');
+        const {props, hasFocus, renderValue} = this,
+            textAlign = withDefault(props.textAlign, 'right'),
+            displayValue = hasFocus ? renderValue : this.formatValue(renderValue);
 
         return numericInput({
             className: this.getClassName(),
-            value: this.renderValue,
+            value: displayValue,
             onValueChange: this.onValueChange,
             onKeyPress: this.onKeyPress,
             onBlur: this.onBlur,
@@ -86,19 +87,16 @@ export class NumberInput extends HoistInput {
     }
 
     onValueChange = (val, valAsString) => {
-        this.noteValueChange(valAsString);
+        let value = this.parseValue(valAsString);
+        value = isNaN(value) ? null : value;
+        this.noteValueChange(value);
     }
 
     onKeyPress = (ev) => {
         if (ev.key === 'Enter') this.doCommit();
     }
 
-    toExternal(value) {
-        value = this.parseValue(value);
-        return isNaN(value) ? null : value;
-    }
-
-    toInternal(value) {
+    formatValue(value) {
         if (value == null) return '';
         const props = this.props,
             precision = props.precision != null ? props.precision : 4,
