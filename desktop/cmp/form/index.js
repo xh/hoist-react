@@ -16,6 +16,5 @@ export * from './SwitchInput';
 export * from './TextArea';
 export * from './TextInput';
 export * from './ComboBox';
-export * from './QueryComboBox';
 export * from './Select';
 export * from './MultiSelect';

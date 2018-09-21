@@ -61,39 +61,39 @@ export class MultiSelect extends HoistInput {
             tagRenderer = withDefault(props.tagRenderer, val => val);
 
         return div({
-                onFocus: this.onFocus,
-                onBlur: this.onBlur,
-                item: bpMultiSelect({
-                    popoverProps: {popoverClassName: Classes.MINIMAL},
-                    $items: this.internalOptions,
-                    query: this.query,
-                    openOnKeyDown: true,
-                    onQueryChange: (q) => this.setQuery(q),
-                    onItemSelect: this.onItemSelect,
-                    itemRenderer: this.itemRenderer,
-                    itemPredicate: (q, item) => {
-                        q = q.toLowerCase();
-                        return startsWith(item.label.toLowerCase(), q) || startsWith(item.value.toLowerCase(), q);
+            onFocus: this.onFocus,
+            onBlur: this.onBlur,
+            item: bpMultiSelect({
+                popoverProps: {popoverClassName: Classes.MINIMAL},
+                $items: this.internalOptions,
+                query: this.query,
+                openOnKeyDown: true,
+                onQueryChange: (q) => this.setQuery(q),
+                onItemSelect: this.onItemSelect,
+                itemRenderer: this.itemRenderer,
+                itemPredicate: (q, item) => {
+                    q = q.toLowerCase();
+                    return startsWith(item.label.toLowerCase(), q) || startsWith(item.value.toLowerCase(), q);
+                },
+                tagRenderer: tagRenderer,
+                tagInputProps: {
+                    tagProps: {minimal: true},
+                    className: this.getClassName(),
+                    placeholder,
+                    onFocus: this.onFocus,
+                    onBlur: this.onBlur,
+                    tabIndex: props.tabIndex,
+                    inputProps: {
+                        placeholder: '',
+                        autoComplete: 'nope'
                     },
-                    tagRenderer: tagRenderer,
-                    tagInputProps: {
-                        tagProps: {minimal: true},
-                        className: this.getClassName(),
-                        placeholder,
-                        onFocus: this.onFocus,
-                        onBlur: this.onBlur,
-                        tabIndex: props.tabIndex,
-                        inputProps: {
-                            placeholder: '',
-                            autoComplete: 'nope',
-                        },
-                        onRemove: this.onRemoveTag
-                    },
-                    noResults: 'No results found',
-                    selectedItems: this.renderValue || [],
-                    disabled: props.disabled
-                })
-            });
+                    onRemove: this.onRemoveTag
+                },
+                noResults: 'No results found',
+                selectedItems: this.renderValue || [],
+                disabled: props.disabled
+            })
+        });
     }
 
     //-----------------------

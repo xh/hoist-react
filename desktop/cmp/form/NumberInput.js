@@ -55,7 +55,7 @@ export class NumberInput extends HoistInput {
     baseClassName = 'xh-number-input';
 
     get commitOnChange() {
-        withDefault(this.props.commitOnChange, false);
+        return withDefault(this.props.commitOnChange, false);
     }
 
     render() {

@@ -7,7 +7,6 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {find, isObject} from 'lodash';
-import {div} from '@xh/hoist/cmp/layout';
 import {Classes, select as bpSelect} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -16,8 +15,6 @@ import {observable, action, settable} from '@xh/hoist/mobx';
 import {HoistInput} from '@xh/hoist/cmp/form';
 import {withDefault} from '@xh/hoist/utils/js';
 import {Ref} from '@xh/hoist/utils/react';
-import {wait} from '@xh/hoist/promise';
-
 
 import './Select.scss';
 
@@ -60,7 +57,7 @@ export class Select extends HoistInput {
 
         return bpSelect({
             className: this.getClassName(),
-            popoverProps: {popoverClassName: Classes.MINIMAL, popoverRef: this.child.ref, autoFocus:false},
+            popoverProps: {popoverClassName: Classes.MINIMAL, popoverRef: this.child.ref},
             $items: internalOptions,
             activeItem: this.activeItem,
             onActiveItemChange: (it) => this.setActiveItem(it),
@@ -106,13 +103,12 @@ export class Select extends HoistInput {
 
     noteBlurred() {
         super.noteBlurred();
-        //this.forcePopoverClose();
+        // this.forcePopoverClose();
     }
 
     forcePopoverClose() {
         const elem = this.child.value;
         if (elem) {
-            console.log('whacked');
             elem.style.display = 'none';
         }
     }

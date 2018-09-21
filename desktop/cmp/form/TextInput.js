@@ -56,7 +56,7 @@ export class TextInput extends HoistInput {
     baseClassName = 'xh-text-input';
 
     get commitOnChange() {
-        withDefault(this.props.commitOnChange, false);
+        return withDefault(this.props.commitOnChange, false);
     }
 
     render() {

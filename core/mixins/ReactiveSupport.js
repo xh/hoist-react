@@ -5,9 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {isFunction} from 'lodash';
+import {isFunction, isNil} from 'lodash';
 import {autorun, reaction} from '@xh/hoist/mobx';
-import {provideMethods, chainMethods, markClass} from '@xh/hoist/utils/js';
+import {provideMethods, chainMethods, markClass, throwIf} from '@xh/hoist/utils/js';
 
 /**
  * Mixin to add MobX reactivity to Components, Models, and Services.
@@ -48,6 +48,7 @@ export function ReactiveSupport(C) {
             } else {
                 ({run, ...options} = conf);
             }
+            this.validateMobxOptions(options);
             run = run.bind(this);
             this.addMobxDisposer(autorun(run, options));
         },
@@ -75,6 +76,7 @@ export function ReactiveSupport(C) {
          */
         addReaction(conf) {
             let {track, run, ...options} = conf;
+            this.validateMobxOptions(options);
             run = run.bind(this);
             this.addMobxDisposer(reaction(track, run, options));
         },
@@ -86,6 +88,13 @@ export function ReactiveSupport(C) {
         addMobxDisposer(disposer) {
             this._disposers = this._disposers || [];
             this._disposers.push(disposer);
+        },
+
+        validateMobxOptions(options) {
+            throwIf(
+                !isNil(options.runImmediately),
+                '"runImmediately" is not a reaction option.  Did you mean "fireImmediately"?'
+            );
         }
     });
 

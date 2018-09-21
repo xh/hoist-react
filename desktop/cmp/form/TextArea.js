@@ -42,7 +42,7 @@ export class TextArea extends HoistInput {
     baseClassName = 'xh-textarea';
 
     get commitOnChange() {
-        withDefault(this.props.commitOnChange, false);
+        return withDefault(this.props.commitOnChange, false);
     }
     
     render() {

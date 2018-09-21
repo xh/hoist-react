@@ -13,7 +13,8 @@ import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Classes, suggest} from '@xh/hoist/kit/blueprint';
 import {menuItem} from '@xh/hoist/kit/blueprint';
 import {HoistInput} from '@xh/hoist/cmp/form';
-import {withDefault} from '@xh/hoist/utils/js';
+import {withDefault, throwIf} from '@xh/hoist/utils/js';
+import {wait} from '@xh/hoist/promise';
 
 /**
  * ComboBox - An input with type ahead suggest and menu select
@@ -37,54 +38,65 @@ export class ComboBox extends HoistInput {
         /** Icon to display on the left side of the field */
         leftIcon: PT.element,
         /** Element to display on the right side of the field */
-        rightElement: PT.element
+        rightElement: PT.element,
+
+        /**
+         * Function to be run when value of control changes to repopulate the available items.
+         * Should return a promise resolving to a collection of form:
+         *      [{value: string, label: string}, ...]
+         * or
+         *      [val, val, ...]
+         */
+        queryFn: PT.func,
+        /** Delay (in ms) used to buffer calls to the queryFn (default 100) */
+        queryBuffer: PT.number
     };
 
     baseClassName = 'xh-combo-box';
 
-    @settable @observable query = '';
-    @settable @observable.ref activeItem = null;
+    @settable @observable.ref selectedItem = null;
     @observable.ref internalOptions = [];
 
     constructor(props) {
         super(props);
-        this.addAutorun(() => this.normalizeOptions(this.props.options));
+        this.addReaction(this.queryOptionsReaction());
+        this.addReaction(this.normalizeOptionsReaction());
+        this.addReaction(this.selectedItemReaction());
+        throwIf(
+            props.queryFn && props.selectionRequired,
+            'ComboBox with queryFn not yet implemented with selectionRequired.'
+        );
     }
 
     get commitOnChange() {
-        withDefault(this.props.commitOnChange, false);
+        return withDefault(this.props.commitOnChange, false);
     }
 
     render() {
-        const {props, renderValue, internalOptions} = this,
-            placeholder = withDefault(props.placeholder, 'Select'),
-            displayValue = this.getDisplayValue(renderValue, internalOptions, placeholder);
+        const {props, internalOptions} = this,
+            placeholder = withDefault(props.placeholder, 'Select');
 
-        console.log(displayValue);
         return suggest({
             className: this.getClassName(),
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: internalOptions,
             onItemSelect: this.onItemSelect,
+            selectedItem: this.selectedItem,
             itemPredicate: (q, item) => {
                 return !q || startsWith(item.label.toLowerCase(), q.toLowerCase());
             },
             itemRenderer: this.itemRenderer,
-            activeItem: this.activeItem,
             openOnKeyDown: true,
-            onActiveItemChange: (it) => this.setActiveItem(it),
-            inputValueRenderer: (s) => displayValue,
-            query: this.query,
-            onQueryChange: this.onChange,
+            inputValueRenderer: (item) => item.label,
+            onQueryChange: this.onQueryChange,
             inputProps: {
-                value: displayValue,
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,
                 onFocus: this.onFocus,
                 autoComplete: 'nope',
                 style: {...props.style, width: props.width},
-                placeholder: placeholder,
                 leftIcon: props.leftIcon,
+                placeholder: placeholder,
                 rightElement: props.rightElement
             },
             disabled: props.disabled
@@ -109,13 +121,6 @@ export class ComboBox extends HoistInput {
         this.internalOptions = options;
     }
 
-    getDisplayValue(value, items, placeholder) {
-        const match = find(items, {value});
-
-        if (match) return match.label;
-        return value == null ? '' : value.toString();
-    }
-
 
     //--------------------------------
     // Event handlers, callbacks
@@ -129,26 +134,58 @@ export class ComboBox extends HoistInput {
         });
     }
 
-    onItemSelect = (v) => {
-        this.noteValueChange(v.value);
+    onItemSelect = (item) => {
+        this.noteValueChange(item.value);
     }
 
-    onChange = (val) => {
-        this.setQuery(val);
-        if (!this.props.requireSelection || this.isExactValue(val)) {
-            console.log('accepting vale' + val)
+    onQueryChange = (val) => {
+        if (!this.props.requireSelection) {
             this.noteValueChange(val);
         }
     }
 
     onKeyPress = (ev) => {
         if (ev.key === 'Enter') {
-            this.doCommit();
+            wait(1).then(() => this.doCommit());
         }
     }
 
-    isExactValue(value) {
-        return !!find(this.internalOptions, {value});
+    //------------------------
+    // Reactions
+    //------------------------
+    normalizeOptionsReaction() {
+        return {
+            track: () => this.props.options,
+            run: this.normalizeOptions,
+            fireImmediately: true
+        };
+    }
+
+    queryOptionsReaction() {
+        return {
+            track: () => [this.props.queryFn, this.internalValue],
+            run: ([queryFn, value]) => {
+                if (queryFn) {
+                    queryFn(value).then(options => this.normalizeOptions(options));
+                }
+            },
+            delay: this.props.queryBuffer || 100,
+            fireImmediately: true
+        };
+    }
+
+    selectedItemReaction() {
+        return {
+            track: () => [this.internalOptions, this.renderValue],
+            run: ([options, value]) => {
+                let match = find(options, {value}) || null;
+                if (!match && value != null) {
+                    match = {value, label: value};
+                }
+                this.setSelectedItem(match);
+            },
+            fireImmediately: true
+        };
     }
 }
 export const comboBox = elemFactory(ComboBox);
