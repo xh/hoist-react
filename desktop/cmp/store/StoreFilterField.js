@@ -95,9 +95,10 @@ export class StoreFilterField extends Component {
 
         let filter = null;
         if (searchTerm && fields.length) {
+            const regex = new RegExp(`(^|\\W)${searchTerm}`, 'ig');
             filter = (rec) => fields.some(f => {
                 const fieldVal = rec[f];
-                return fieldVal && new RegExp('(^|\\W)' + searchTerm, 'ig').test(fieldVal);
+                return fieldVal && regex.test(fieldVal);
             });
         }
         this.filter = filter;
