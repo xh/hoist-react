@@ -64,7 +64,7 @@
     }
   }
 
-  &.xh-grid-show-hover .ag-row.ag-row-hover:not(.ag-row-selected) {
+  &.xh-grid-show-hover .ag-row.ag-row-hover:not(.ag-row-group):not(.ag-row-selected) {
     background-color: var(--xh-grid-bg-hover);
   }
 
