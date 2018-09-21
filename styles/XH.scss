@@ -34,6 +34,10 @@ body.xh-app {
     outline: var(--xh-focus-outline);
     outline-offset: var(--xh-focus-outline-offset-px);
   }
+
+  .xh-title-tip {
+    cursor: pointer;
+  }
 }
 
 .xh-black           {color: var(--xh-black);}
