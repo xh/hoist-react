@@ -42,6 +42,29 @@ export class RadioInput extends HoistInput {
         this.addAutorun(() => this.normalizeOptions(this.props.options));
     }
 
+    render() {
+        const {inline, alignIndicator} = this.props,
+            {internalOptions} = this;
+
+        const items = internalOptions.map(opt => {
+            return radio({
+                className: 'xh-radio-input',
+                label: opt.label,
+                value: opt.value,
+                disabled: opt.disabled,
+                alignIndicator
+            });
+        });
+
+        return radioGroup({
+            className: this.getClassName(),
+            onChange: this.onChange,
+            inline,
+            selectedValue: this.renderValue,
+            items
+        });
+    }
+
     //-----------------------------------------------------------
     // Common handling of options, rendering of selected option
     //-----------------------------------------------------------
@@ -68,29 +91,6 @@ export class RadioInput extends HoistInput {
 
     toInternal(external) {
         return external ===  null ? NULL_VALUE : external;
-    }
-
-    render() {
-        const {inline, alignIndicator} = this.props,
-            {internalOptions} = this;
-
-        const items = internalOptions.map(opt => {
-            return radio({
-                className: 'xh-radio-input',
-                label: opt.label,
-                value: opt.value,
-                disabled: opt.disabled,
-                alignIndicator
-            });
-        });
-
-        return radioGroup({
-            className: this.getClassName(),
-            onChange: this.onChange,
-            inline,
-            selectedValue: this.renderValue,
-            items
-        });
     }
 
     onChange = (e) => {
