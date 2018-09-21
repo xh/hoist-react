@@ -67,13 +67,11 @@ export class RelativeTimestamp extends Component {
         return box({
             ...this.getLayoutProps(),
             className: this.getClassName(),
-            item: [
-                span({
-                    className: 'xh-title-tip',
-                    item: relativeTimeString,
-                    title: fmtDateTime(props.timestamp)
-                })
-            ]
+            item: span({
+                className: 'xh-title-tip',
+                item: relativeTimeString,
+                title: fmtDateTime(props.timestamp)
+            })
         });
     }
 
