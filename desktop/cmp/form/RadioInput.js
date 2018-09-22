@@ -78,23 +78,9 @@ export class RadioInput extends HoistInput {
             return ret;
         });
     }
-
-
-    //---------------------------------------------------------------------------
-    // Handling of null values.  Blueprint doesn't allow null for the value of a
-    // radio control, but we can use a sentinel value to represent it.
-    //----------------------------------------------------------------------------
-    toExternal(internal) {
-        return internal === NULL_VALUE ? null : internal;
-    }
-
-    toInternal(external) {
-        return external ===  null ? NULL_VALUE : external;
-    }
-
+    
     onChange = (e) => {
         this.noteValueChange(e.target.value);
     }
 }
 export const radioInput = elemFactory(RadioInput);
-const NULL_VALUE = 'xhNullValue';
