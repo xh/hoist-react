@@ -34,11 +34,6 @@ export class RadioInput extends HoistInput {
         alignIndicator: PT.oneOf(['left', 'right'])
     };
 
-    static defaultProps = {
-        commitOnChange: true
-    };
-
-    // blueprint-ready collection of available options, normalized to {label, value} form.
     @observable.ref internalOptions = [];
 
     constructor(props) {
@@ -47,8 +42,7 @@ export class RadioInput extends HoistInput {
     }
 
     render() {
-        const {inline, alignIndicator} = this.props,
-            {internalOptions} = this;
+        const {props, internalOptions} = this;
 
         const items = internalOptions.map(opt => {
             return radio({
@@ -56,22 +50,22 @@ export class RadioInput extends HoistInput {
                 label: opt.label,
                 value: opt.value,
                 disabled: opt.disabled,
-                alignIndicator
+                alignIndicator: props.alignIndicator
             });
         });
 
         return radioGroup({
             className: this.getClassName(),
             onChange: this.onChange,
-            inline,
+            inline: props.inline,
             selectedValue: this.renderValue,
             items
         });
     }
 
-    //-----------------------------------------------------------
-    // Common handling of options, rendering of selected option
-    //-----------------------------------------------------------
+    //-----------------------------
+    // Common handling of options
+    //-----------------------------
     @action
     normalizeOptions(options) {
         options = withDefault(options, []);
@@ -84,6 +78,7 @@ export class RadioInput extends HoistInput {
             return ret;
         });
     }
+
 
     //---------------------------------------------------------------------------
     // Handling of null values.  Blueprint doesn't allow null for the value of a
@@ -100,8 +95,6 @@ export class RadioInput extends HoistInput {
     onChange = (e) => {
         this.noteValueChange(e.target.value);
     }
-
 }
-
 export const radioInput = elemFactory(RadioInput);
 const NULL_VALUE = 'xhNullValue';

@@ -71,6 +71,7 @@ export class Select extends HoistInput {
                 disabled: props.disabled,
                 tabIndex: props.tabIndex,
                 icon: props.icon,
+                autoFocus: props.autoFocus,
                 onBlur: this.onBlur,
                 onFocus: this.onFocus
             }),
@@ -103,14 +104,15 @@ export class Select extends HoistInput {
 
     noteBlurred() {
         super.noteBlurred();
-        // this.forcePopoverClose();
+        this.forcePopoverClose();
     }
 
     forcePopoverClose() {
-        const elem = this.child.value;
-        if (elem) {
-            elem.style.display = 'none';
-        }
+        // TODO: Can we do this?
+        // const elem = this.child.value;
+        // if (elem) {
+        //    elem.style.display = 'none';
+        // }
     }
 
     //----------------------------------

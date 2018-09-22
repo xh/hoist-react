@@ -23,14 +23,6 @@ import {HoistInput} from '@xh/hoist/cmp/form';
 @HoistComponent
 export class ButtonGroupInput extends HoistInput {
 
-    static propTypes = {
-        ...HoistInput.propTypes
-    };
-
-    static defaultProps = {
-        commitOnChange: true
-    };
-
     baseClassName = 'xh-button-group-input';
 
     render() {
