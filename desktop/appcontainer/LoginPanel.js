@@ -10,7 +10,7 @@ import {text} from '@xh/hoist/kit/blueprint';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {vspacer, box, filler, viewport} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {textField} from '@xh/hoist/desktop/cmp/form';
+import {textInput} from '@xh/hoist/desktop/cmp/form';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -41,21 +41,23 @@ export class LoginPanel extends Component {
                     title: `Welcome to ${XH.appName}`,
                     items: [
                         vspacer(10),
-                        textField({
+                        textInput({
                             model,
                             field: 'username',
                             placeholder: 'Username...',
                             autoFocus: true,
                             commitOnChange: true,
-                            onKeyPress: this.onKeyPress
+                            onKeyPress: this.onKeyPress,
+                            autoComplete: 'on'
                         }),
-                        textField({
+                        textInput({
                             model,
                             field: 'password',
                             placeholder: 'Password...',
                             type: 'password',
                             commitOnChange: true,
-                            onKeyPress: this.onKeyPress
+                            onKeyPress: this.onKeyPress,
+                            autoComplete: 'on'
                         }),
                         text({
                             omit: !model.warning,

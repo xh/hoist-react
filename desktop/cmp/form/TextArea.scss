@@ -1,6 +1,5 @@
-
-.xh-textarea-field {
-  &.xh-field-invalid {
+.xh-textarea {
+  &.xh-input-invalid {
     border: var(--xh-form-field-invalid-border);
   }
 }

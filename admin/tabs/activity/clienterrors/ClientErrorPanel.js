@@ -9,9 +9,10 @@ import {HoistComponent} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {grid} from '@xh/hoist/desktop/cmp/grid';
-import {textField, dayField} from '@xh/hoist/desktop/cmp/form';
+import {textInput, dateInput} from '@xh/hoist/desktop/cmp/form';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {button, exportButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
+import {buttonGroup} from '@xh/hoist/kit/blueprint';
 import {storeCountLabel} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 
@@ -40,26 +41,28 @@ export class ClientErrorPanel extends Component {
     renderToolbar() {
         const model = this.model;
         return toolbar(
-            this.dayField({field: 'startDate'}),
+            this.dateInput({field: 'startDate'}),
             Icon.angleRight(),
-            this.dayField({field: 'endDate'}),
-            button({
-                icon: Icon.caretLeft(),
-                onClick: this.onDateGoBackClick
-            }),
-            button({
-                icon: Icon.caretRight(),
-                onClick: this.onDateGoForwardClick,
-                className: 'xh-no-pad'
-            }),
-            button({
-                icon: Icon.arrowToRight(),
-                onClick: this.onGoToCurrentDateClick,
-                className: 'xh-no-pad'
-            }),
+            this.dateInput({field: 'endDate'}),
+            buttonGroup(
+                button({
+                    icon: Icon.caretLeft(),
+                    onClick: this.onDateGoBackClick
+                }),
+                button({
+                    icon: Icon.caretRight(),
+                    onClick: this.onDateGoForwardClick,
+                    className: 'xh-no-pad'
+                }),
+                button({
+                    icon: Icon.arrowToRight(),
+                    onClick: this.onGoToCurrentDateClick,
+                    className: 'xh-no-pad'
+                })
+            ),
             toolbarSep(),
-            this.textField({field: 'username', placeholder: 'User...'}),
-            this.textField({field: 'error', placeholder: 'Error...'}),
+            this.textInput({field: 'username', placeholder: 'User...'}),
+            this.textInput({field: 'error', placeholder: 'Error...'}),
             refreshButton({model}),
             filler(),
             storeCountLabel({
@@ -73,8 +76,8 @@ export class ClientErrorPanel extends Component {
     //-----------------------------
     // Implementation
     //-----------------------------
-    dayField(args) {
-        return dayField({
+    dateInput(args) {
+        return dateInput({
             model: this.model,
             onCommit: this.onCommit,
             commitOnChange: true,
@@ -84,8 +87,8 @@ export class ClientErrorPanel extends Component {
         });
     }
 
-    textField(args) {
-        return textField({
+    textInput(args) {
+        return textInput({
             model: this.model,
             onCommit: this.onCommit,
             width: 150,

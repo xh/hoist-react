@@ -7,21 +7,21 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {textArea} from '@xh/hoist/kit/blueprint';
+import {textArea as bpTextarea} from '@xh/hoist/kit/blueprint';
 
-import {HoistField} from '@xh/hoist/cmp/form';
-import './TextAreaField.scss';
+import {HoistInput} from '@xh/hoist/cmp/form';
+import './TextArea.scss';
 
 /**
- * A Text Area Field
+ * A Text Area Input
  *
- * @see HoistField for properties additional to those documented below.
+ * @see HoistInput for properties additional to those documented below.
  */
 @HoistComponent
-export class TextAreaField extends HoistField {
+export class TextArea extends HoistInput {
 
     static propTypes = {
-        ...HoistField.propTypes,
+        ...HoistInput.propTypes,
 
         /** Value of the control */
         value: PT.string,
@@ -38,12 +38,12 @@ export class TextAreaField extends HoistField {
     
     delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus'];
 
-    baseClassName = 'xh-textarea-field';
+    baseClassName = 'xh-textarea';
 
     render() {
         const {style, width, spellCheck} = this.props;
 
-        return textArea({
+        return bpTextarea({
             className: this.getClassName(),
             value: this.renderValue || '',
             onChange: this.onChange,
@@ -76,4 +76,4 @@ export class TextAreaField extends HoistField {
     }
 
 }
-export const textAreaField = elemFactory(TextAreaField);
+export const textArea = elemFactory(TextArea);

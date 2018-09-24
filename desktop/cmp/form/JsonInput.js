@@ -5,7 +5,7 @@ import {defaultsDeep} from 'lodash';
 import {box} from '@xh/hoist/cmp/layout';
 import {textArea} from '@xh/hoist/kit/blueprint';
 
-import {HoistField} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/form';
 
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/addon/fold/foldgutter.css';
@@ -23,17 +23,17 @@ import 'codemirror/addon/fold/brace-fold.js';
 import 'codemirror/addon/scroll/simplescrollbars.js';
 import 'codemirror/addon/lint/lint.js';
 
-import './JsonField.scss';
+import './JsonInput.scss';
 
 /**
- * A field for editing and validating JSON, providing a mini-IDE style editor powered by CodeMirror.
+ * An input for editing and validating JSON, providing a mini-IDE style editor powered by CodeMirror.
  */
 @HoistComponent
 @LayoutSupport
-export class JsonField extends HoistField {
+export class JsonInput extends HoistInput {
 
     static propTypes = {
-        ...HoistField.propTypes,
+        ...HoistInput.propTypes,
 
         /** Value of the control */
         value: PT.string,
@@ -63,7 +63,7 @@ export class JsonField extends HoistField {
     editor = null;
     taCmp = null;
 
-    baseClassName = 'xh-json-field';
+    baseClassName = 'xh-json-input';
 
     render() {
         return box({
@@ -178,7 +178,7 @@ export class JsonField extends HoistField {
     }
 
 }
-export const jsonField = elemFactory(JsonField);
+export const jsonInput = elemFactory(JsonInput);
 
 
 //------------------------------------------------------------------------------------------------------

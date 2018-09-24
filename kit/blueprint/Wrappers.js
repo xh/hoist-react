@@ -6,13 +6,13 @@
  */
 
 import {elemFactory} from '@xh/hoist/core';
-
 //--------------------
 // Blueprint Imports
 //--------------------
 import {
     Alert,
     Button,
+    ButtonGroup,
     Callout,
     Checkbox,
     ControlGroup,
@@ -42,7 +42,9 @@ import {
     Tag,
     TagInput,
     TextArea,
-    Text
+    Text,
+    Tooltip,
+    Tree
 } from '@blueprintjs/core';
 
 import {DateInput} from '@blueprintjs/datetime';
@@ -54,6 +56,7 @@ import {MultiSelect, Omnibar, Select, Suggest} from '@blueprintjs/select';
 export {
     Alert,
     Button,
+    ButtonGroup,
     Callout,
     Checkbox,
     ControlGroup,
@@ -88,12 +91,15 @@ export {
     Tag,
     TagInput,
     TextArea,
-    Text
+    Text,
+    Tooltip,
+    Tree
 };
 
 export const
     alert = elemFactory(Alert),
     button = elemFactory(Button),
+    buttonGroup = elemFactory(ButtonGroup),
     callout = elemFactory(Callout),
     controlGroup = elemFactory(ControlGroup),
     checkbox = elemFactory(Checkbox),
@@ -128,4 +134,6 @@ export const
     tag = elemFactory(Tag),
     tagInput = elemFactory(TagInput),
     text = elemFactory(Text),
-    textArea = elemFactory(TextArea);
+    textArea = elemFactory(TextArea),
+    tooltip = elemFactory(Tooltip),
+    tree = elemFactory(Tree);

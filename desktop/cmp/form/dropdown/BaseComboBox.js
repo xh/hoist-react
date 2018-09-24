@@ -8,15 +8,15 @@
 import {observable, computed, action, runInAction} from '@xh/hoist/mobx';
 import {debounce} from 'lodash';
 
-import {BaseDropdownField} from './BaseDropdownField';
+import {BaseDropdownInput} from './BaseDropdownInput';
 
 /**
- * Abstract superclass supporting ComboField and QueryComboField.
+ * Abstract superclass supporting ComboBox and QueryComboBox.
  *
  * This includes debouncing commits due to the multiple ways committing
- * can be triggered from these fields (blur/enter/item select).
+ * can be triggered from these inputs (blur/enter/item select).
  */
-export class BaseComboField extends BaseDropdownField {
+export class BaseComboBox extends BaseDropdownInput {
 
     @observable pendingCommit;
 
@@ -34,7 +34,7 @@ export class BaseComboField extends BaseDropdownField {
             this.toInternal(this.externalValue);
     }
 
-    onBlur = () => {
+    noteBlurred() {
         // Combos that allow custom entries (!requireSelection) will commit those on blur.
         // Note this could be confusing in the case where the user has entered enough text to cause
         // the pop-up suggestion list to narrow down to a single item. It would be reasonable to

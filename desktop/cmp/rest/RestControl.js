@@ -10,7 +10,7 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {controlGroup} from '@xh/hoist/kit/blueprint';
 import {fmtDateTime} from '@xh/hoist/format';
 import {hbox} from '@xh/hoist/cmp/layout';
-import {label, checkField, comboField, jsonField, numberField, selectField, textAreaField, textField}  from '@xh/hoist/desktop/cmp/form';
+import {label, checkBox, comboBox, jsonInput, numberInput, select, textArea, textInput}  from '@xh/hoist/desktop/cmp/form';
 
 @HoistComponent
 export class RestControl extends Component {
@@ -85,7 +85,7 @@ export class RestControl extends Component {
 
         const options = [...lookup];
 
-        return comboField({
+        return comboBox({
             model,
             field: 'value',
             options,
@@ -111,7 +111,7 @@ export class RestControl extends Component {
 
         if (!field.required && !field.lookupStrict) options.unshift(null);
 
-        return selectField({
+        return select({
             model,
             field: 'value',
             options,
@@ -121,7 +121,7 @@ export class RestControl extends Component {
 
     renderCheckField() {
         const model = this.model;
-        return checkField({
+        return checkBox({
             model,
             field: 'value',
             disabled: !model.isEditable
@@ -130,7 +130,7 @@ export class RestControl extends Component {
 
     renderNumberField() {
         const model = this.model;
-        return numberField({
+        return numberInput({
             model,
             field: 'value',
             className: 'bp3-fill',
@@ -141,7 +141,7 @@ export class RestControl extends Component {
 
     renderTextArea() {
         const model = this.model;
-        return textAreaField({
+        return textArea({
             model,
             field: 'value',
             autoFocus: this.props.autoFocus,
@@ -156,7 +156,7 @@ export class RestControl extends Component {
     renderTextField() {
         const model = this.model,
             type = model.type === 'pwd' ? 'password' : 'text';
-        return textField({
+        return textInput({
             model,
             type,
             field: 'value',
@@ -170,7 +170,7 @@ export class RestControl extends Component {
 
     renderJsonField() {
         const model = this.model;
-        return jsonField({
+        return jsonInput({
             model,
             field: 'value',
             className: 'bp3-fill',

@@ -7,21 +7,20 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {searchInput} from '@xh/hoist/kit/onsen';
+import {searchInput as onsenSearchInput} from '@xh/hoist/kit/onsen';
 
-import {HoistField} from '@xh/hoist/cmp/form';
-import './SearchField.scss';
+import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
- * A Search Input Field
+ * A Search Input
  *
- * @see HoistField for properties additional to those documented below.
+ * @see HoistInput for properties additional to those documented below.
  */
 @HoistComponent
-export class SearchField extends HoistField {
+export class SearchInput extends HoistInput {
 
     static propTypes = {
-        ...HoistField.propTypes,
+        ...HoistInput.propTypes,
 
         /** Value of the control */
         value: PT.string,
@@ -31,20 +30,25 @@ export class SearchField extends HoistField {
         /** Whether to allow browser spell check, defaults to false */
         spellCheck: PT.bool,
         /** Onsen modifier string */
-        modifier: PT.string
+        modifier: PT.string,
+        /** Function which receives keypress event */
+        onKeyPress: PT.func,
+        /** Whether text in field is selected when field receives focus */
+        selectOnFocus: PT.bool
     };
 
     delegateProps = ['className', 'disabled', 'placeholder', 'modifier'];
 
-    baseClassName = 'xh-search-field';
+    baseClassName = 'xh-search-input';
 
     render() {
         const {style, width, spellCheck} = this.props;
 
-        return searchInput({
+        return onsenSearchInput({
             className: this.getClassName(),
             value: this.renderValue || '',
             onChange: this.onChange,
+            onKeyPress: this.onKeyPress,
             onBlur: this.onBlur,
             onFocus: this.onFocus,
             style: {...style, width},
@@ -57,14 +61,21 @@ export class SearchField extends HoistField {
         this.noteValueChange(ev.target.value);
     }
 
+    onKeyPress = (ev) => {
+        if (ev.key === 'Enter') this.doCommit();
+        if (this.props.onKeyPress) this.props.onKeyPress(ev);
+    }
 
     onBlur = () => {
         this.noteBlurred();
     }
 
-    onFocus = () => {
+    onFocus = (ev) => {
+        if (this.props.selectOnFocus && ev.target && ev.target.select) {
+            ev.target.select();
+        }
         this.noteFocused();
     }
 }
 
-export const searchField = elemFactory(SearchField);
+export const searchInput = elemFactory(SearchInput);

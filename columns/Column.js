@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {castArray, startCase, isFunction} from 'lodash';
+import {castArray, startCase, isFunction, clone} from 'lodash';
 import {ExportFormat} from './ExportFormat';
 import {withDefault, withDefaultTrue, withDefaultFalse, throwIf, warnIf} from '@xh/hoist/utils/js';
 
@@ -137,7 +137,7 @@ export class Column {
         this.excludeFromExport = withDefault(excludeFromExport, !field);
 
         this.tooltip = tooltip;
-        this.agOptions = agOptions || {};
+        this.agOptions = agOptions ? clone(agOptions) : {};
     }
 
 

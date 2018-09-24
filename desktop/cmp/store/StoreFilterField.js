@@ -9,47 +9,68 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {debounce, escapeRegExp} from 'lodash';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {observable, runInAction} from '@xh/hoist/mobx';
+import {observable, action} from '@xh/hoist/mobx';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {textField} from '@xh/hoist/desktop/cmp/form';
+import {textInput} from '@xh/hoist/desktop/cmp/form';
 import {Icon} from '@xh/hoist/icon';
 import {BaseStore} from '@xh/hoist/data';
+import {withDefault} from '@xh/hoist/utils/js';
 
 /**
- * A Component that can bind to any store and filter it
- * based on simple text matching in specified fields.
+ * A text input Component that generates a filter function based on simple word-boundary matching of
+ * its value to those of configured fields on a candidate object. If any field values match, the
+ * object itself is considered a match.
+ *
+ * Designed to easily filter records within a store - either directly (most common, with a store
+ * passed as a prop) or indirectly via a callback (in cases where custom logic is required, such as
+ * layering on additional filters).
  */
 @HoistComponent
 export class StoreFilterField extends Component {
 
     static propTypes = {
-        /** Store to filter */
-        store: PT.instanceOf(BaseStore).isRequired,
-        /** Names of fields in store's records to filter by */
+        /** Initial empty text. */
+        placeholder: PT.string,
+        /** Names of field(s) within store record objects on which to match and filter. */
         fields: PT.arrayOf(PT.string).isRequired,
+        /** Store to which this control should bind and filter directly. */
+        store: PT.instanceOf(BaseStore),
         /**
-         * Delay (in ms) used to buffer filtering of the store after the value changes from user
-         * input (default is 200ms). Set to 0 to filter immediately after user input.
+         * Delay (in ms) to buffer filtering of the store after the value changes from user input.
+         * Default 200ms. Set to 0 to filter immediately on each keystroke. Applicable only when
+         * `store` is specified.
          */
-        filterBuffer: PT.number
+        filterBuffer: PT.number,
+        /**
+         * Callback to receive an updated filter function. Can be used in place of the `store` prop
+         * when direct filtering of a bound store by this component is not desired.
+         */
+        onFilterChange: PT.func
     };
 
     @observable value = '';
+    filter = null;
+    applyFilterFn = null;
     baseClassName = 'xh-store-filter-field';
 
     constructor(props) {
         super(props);
 
-        const {filterBuffer = 200} = this.props;
-        this._debouncedFilter = debounce(this.runFilter, filterBuffer);
+        if (props.store) {
+            const filterBuffer = withDefault(props.filterBuffer, 200);
+            this.applyFilterFn = debounce(
+                () => this.applyStoreFilter(),
+                filterBuffer
+            );
+        }
     }
 
     render() {
-        return textField({
-            placeholder: 'Quick filter...',
+        return textInput({
+            placeholder: withDefault(this.props.placeholder, 'Quick filter'),
             value: this.value,
             onChange: this.onValueChange,
-            leftIcon: Icon.filter(),
+            leftIcon: Icon.filter({style: {opacity: 0.5}}),
             rightElement: button({
                 icon: Icon.x(),
                 minimal: true,
@@ -62,21 +83,14 @@ export class StoreFilterField extends Component {
     //------------------------
     // Implementation
     //------------------------
-    onValueChange = (v) => {
-        runInAction(() => this.value = v);
-        this._debouncedFilter();
-    }
+    @action
+    setValue(v, applyFilterImmediately = false) {
+        const {fields, onFilterChange} = this.props,
+            {applyFilterFn} = this;
 
-    onClearClick = () => {
-        runInAction(() => this.value = '');
+        this.value = v;
 
-        // Cancel pending filter and run it immediately
-        this._debouncedFilter.cancel();
-        this.runFilter();
-    }
-
-    runFilter() {
-        const {store, fields} = this.props;
+        // 0) Regenerate filter
         let searchTerm = escapeRegExp(this.value);
 
         let filter = null;
@@ -86,9 +100,32 @@ export class StoreFilterField extends Component {
                 return fieldVal && new RegExp('(^|\\W)' + searchTerm, 'ig').test(fieldVal);
             });
         }
-        
-        store.setFilter(filter);
+        this.filter = filter;
+
+        // 1) Notify listeners and/or reapply
+        if (onFilterChange) onFilterChange(filter);
+        if (applyFilterFn) {
+            if (applyFilterImmediately) {
+                applyFilterFn.cancel();
+                this.applyStoreFilter();
+            } else {
+                applyFilterFn();
+            }
+        }
     }
+
+    applyStoreFilter() {
+        this.props.store.setFilter(this.filter);
+    }
+
+    onValueChange = (v) => {
+        this.setValue(v);
+    };
+
+    onClearClick = () => {
+        this.setValue('', true);
+    }
+
 }
 
 export const storeFilterField = elemFactory(StoreFilterField);

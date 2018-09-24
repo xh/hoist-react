@@ -10,7 +10,7 @@ import {HotkeysTarget, hotkeys, hotkey} from '@xh/hoist/kit/blueprint';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {filler, span} from '@xh/hoist/cmp/layout';
-import {comboField} from '@xh/hoist/desktop/cmp/form';
+import {comboBox} from '@xh/hoist/desktop/cmp/form';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -50,7 +50,7 @@ export class ImpersonationBar extends Component {
                 Icon.user(),
                 span(`${isImpersonating ? 'Impersonating' : ''} ${XH.getUsername()}`),
                 filler(),
-                comboField({
+                comboBox({
                     model: this,
                     field: 'pendingTarget',
                     options: targets,

@@ -6,30 +6,23 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
+import {startsWith} from 'lodash';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Classes, suggest} from '@xh/hoist/kit/blueprint';
 
-import {BaseComboField} from './BaseComboField';
+import {BaseComboBox} from './BaseComboBox';
 
 /**
- * ComboBox Field which populates its options dynamically based on the current value.
+ * ComboBox - An input with type ahead suggest and menu select
  */
 @HoistComponent
-export class QueryComboField extends BaseComboField {
-    
-    static propTypes = {
-        ...BaseComboField.propTypes,
+export class ComboBox extends BaseComboBox {
 
-        /**
-         * Function to be run when value of control changes to repopulate the available items.
-         * Should return a promise resolving to a collection of form:
-         *      [{value: string, label: string}, ...]
-         * or
-         *      [val, val, ...]
-         */
-        queryFn: PT.func,
-        /** Delay (in ms) used to buffer calls to the queryFn (default 100) */
-        queryBuffer: PT.number,
+    static propTypes = {
+        ...BaseComboBox.propTypes,
+
+        /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
+        options: PT.arrayOf(PT.oneOfType([PT.object, PT.string])),
         /** Optional custom optionRenderer, a function that receives (option, optionProps) */
         optionRenderer: PT.func,
         /** Whether to force values from given options. Set to true to disallow arbitrary input */
@@ -40,18 +33,15 @@ export class QueryComboField extends BaseComboField {
         rightElement: PT.element
     };
 
-    delegateProps = ['className', 'style', 'placeholder', 'disabled', 'leftIcon', 'rightElement'];
+    delegateProps = ['className', 'disabled', 'placeholder', 'leftIcon', 'rightElement'];
 
-    baseClassName = 'xh-query-combo-field';
+    baseClassName = 'xh-combo-box';
 
     constructor(props) {
         super(props);
-        this.addAutorun({
-            run: this.syncOptions,
-            delay: props.queryBuffer || 100
-        });
+        this.addAutorun(() => this.normalizeOptions(this.props.options));
     }
-
+    
     render() {
         const {style, width, disabled} = this.props,
             {renderValue, internalOptions} = this;
@@ -61,6 +51,9 @@ export class QueryComboField extends BaseComboField {
             popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: internalOptions,
             onItemSelect: this.onItemSelect,
+            itemPredicate: (q, item) => {
+                return startsWith(item.label.toLowerCase(), q.toLowerCase());
+            },
             itemRenderer: this.getOptionRenderer(),
             inputValueRenderer: s => s,
             inputProps: {
@@ -69,6 +62,7 @@ export class QueryComboField extends BaseComboField {
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,
                 onFocus: this.onFocus,
+                autoComplete: 'nope',
                 style: {...style, width},
                 ...this.getDelegateProps()
             },
@@ -84,15 +78,5 @@ export class QueryComboField extends BaseComboField {
         this.noteFocused();
     }
 
-    syncOptions() {
-        const value = this.internalValue,
-            {queryFn} = this.props;
-
-        if (queryFn) {
-            queryFn(value).then(options => {
-                this.normalizeOptions(options);
-            });
-        }
-    }
 }
-export const queryComboField = elemFactory(QueryComboField);
+export const comboBox = elemFactory(ComboBox);

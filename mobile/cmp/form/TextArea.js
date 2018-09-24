@@ -7,50 +7,50 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {input} from '@xh/hoist/kit/onsen';
+import {textarea as textareaTag} from '@xh/hoist/cmp/layout';
 
-import {HoistField} from '@xh/hoist/cmp/form';
-import './TextField.scss';
+import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
- * A Text Input Field
+ * A Text Area Input
  *
- * @see HoistField for properties additional to those documented below.
+ * @see HoistInput for properties additional to those documented below.
  */
 @HoistComponent
-export class TextField extends HoistField {
+export class TextArea extends HoistInput {
 
     static propTypes = {
-        ...HoistField.propTypes,
+        ...HoistInput.propTypes,
 
         /** Value of the control */
         value: PT.string,
 
-        /** Type of input desired */
-        type: PT.oneOf(['text', 'number', 'password']),
         /** Text to display when control is empty */
         placeholder: PT.string,
-        /** Whether to allow browser spell check, defaults to false */
+        /** Whether to allow browser spell check, defaults to true */
         spellCheck: PT.bool,
-        /** Onsen modifier string */
-        modifier: PT.string
+        /** Function which receives keypress event */
+        onKeyPress: PT.func,
+        /** Whether text in field is selected when field receives focus */
+        selectOnFocus: PT.bool
     };
 
-    delegateProps = ['className', 'disabled', 'type', 'placeholder', 'modifier'];
+    delegateProps = ['className', 'disabled', 'type', 'placeholder'];
 
-    baseClassName = 'xh-text-field';
+    baseClassName = 'xh-textarea';
 
     render() {
         const {style, width, spellCheck} = this.props;
 
-        return input({
+        return textareaTag({
             className: this.getClassName(),
             value: this.renderValue || '',
             onChange: this.onChange,
+            onKeyPress: this.onKeyPress,
             onBlur: this.onBlur,
             onFocus: this.onFocus,
             style: {...style, width},
-            spellCheck: !!spellCheck,
+            spellCheck: spellCheck !== false,
             ...this.getDelegateProps()
         });
     }
@@ -58,14 +58,21 @@ export class TextField extends HoistField {
     onChange = (ev) => {
         this.noteValueChange(ev.target.value);
     }
-    
+
+    onKeyPress = (ev) => {
+        if (this.props.onKeyPress) this.props.onKeyPress(ev);
+    }
+
     onBlur = () => {
         this.noteBlurred();
     }
 
-    onFocus = () => {
+    onFocus = (ev) => {
+        if (this.props.selectOnFocus && ev.target && ev.target.select) {
+            ev.target.select();
+        }
         this.noteFocused();
     }
-}
 
-export const textField = elemFactory(TextField);
+}
+export const textArea = elemFactory(TextArea);

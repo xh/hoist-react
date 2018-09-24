@@ -30,7 +30,7 @@ export function settable(target, property, descriptor) {
 /**
  * Decorator to mark a property as both @observable and @settable.
  *
- * Especially useful for marking properties that are intended to be bound to HoistField.
+ * Especially useful for marking properties that are intended to be bound to HoistInput.
  *
  * If either specific variants of observable or a custom setter are needed, use the @observable and
  * @settable decorators directly instead.

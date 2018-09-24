@@ -1,0 +1,5 @@
+.xh-select {
+  &.xh-input-invalid > span.bp3-popover-target > div > button {
+    border: var(--xh-form-field-invalid-border);
+  }
+}
