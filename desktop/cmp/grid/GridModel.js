@@ -34,6 +34,11 @@ import {ExportManager} from './ExportManager';
  * sorting/grouping/selection state, and context menu configuration.
  *
  * This is the primary application entry-point for specifying Grid component options and behavior.
+ *
+ * This model supports Tree, as well as flat data representations.  To show a Tree, bind this model
+ * to a store with hierachical records, set the 'treeMode' property to true, and include a a single column
+ * with the property 'isTreeColumn' true.  This column will display tree affordances and parent child nesting,
+ * in addition to its own data.
  */
 @HoistModel
 export class GridModel {
