@@ -185,26 +185,30 @@
   box-shadow: var(--xh-form-field-box-shadow);
 }
 
+/* OPTION 1 */
+
 .bp3-dark .bp3-control.bp3-switch input ~ .bp3-control-indicator {
   -webkit-box-shadow: var(--xh-form-field-box-shadow) !important;
   box-shadow: var(--xh-form-field-box-shadow) !important;
 }
-
+//
 .bp3-dark .bp3-control.bp3-switch:hover input ~ .bp3-control-indicator {
   background-color:#202b33;
 }
 
-//.bp3-dark .bp3-control.bp3-switch input ~ .bp3-control-indicator {
-//  background-color: #30404d;
-//}
-//
-//.bp3-dark .bp3-control.bp3-switch:hover input ~ .bp3-control-indicator {
-//  background-color:#394b59;
-//}
-//
-//.bp3-dark .bp3-control.bp3-switch .bp3-control-indicator::before{
-//  background-color: #202b33;
-//}
+/* - OPTION 2
+.bp3-dark .bp3-control.bp3-switch input ~ .bp3-control-indicator {
+  background-color: #30404d;
+}
+
+.bp3-dark .bp3-control.bp3-switch:hover input ~ .bp3-control-indicator {
+  background-color:#394b59;
+}
+
+.bp3-dark .bp3-control.bp3-switch .bp3-control-indicator::before{
+  background-color: #202b33;
+}
+*/
 
 /* Apply blueprint styling to non-blueprint icons within input groups */
 .bp3-input-group svg:not(.bp3-icon) {
