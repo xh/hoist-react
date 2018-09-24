@@ -15,13 +15,6 @@
     }
   }
 
-  &__separator {
-    color: var(--xh-text-color-muted);
-    &:before {
-      content: '|';
-    }
-  }
-
   &:not(&--vertical) {
     // Selected via not-last to account for panels, which dock a header above the tbar.
     &:not(:last-child) {
@@ -30,6 +23,11 @@
 
     &:last-child {
       border-top: 1px solid var(--xh-tbar-border-color);
+    }
+
+    .xh-toolbar__separator {
+      border-left: 1px solid var(--xh-tbar-separator-color);
+      height: 20px;  // matches BluePrint navBarSeparator
     }
   }
 
@@ -42,13 +40,8 @@
     }
 
     .xh-toolbar__separator {
-      margin-top: 0;
-      + * {
-        margin-top: 0;
-      }
-      &:before {
-        content: '─';
-      }
+      border-bottom: 1px solid var(--xh-tbar-separator-color);
+      width: 20px;
     }
 
     &:first-child {

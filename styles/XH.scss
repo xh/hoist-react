@@ -7,10 +7,6 @@ body.xh-app {
   font-family: var(--xh-font-family);
   font-size: var(--xh-font-size-px);
 
-  :focus {
-    outline: 0;
-  }
-
   // Important for using the body as the `popupParent` for our ag-grids
   height: 100vh;
   margin: 0;
@@ -34,10 +30,13 @@ body.xh-app {
     color: var(--xh-text-color-headings);
   }
 
-  .bp3-input:not(:focus) {
-    -webkit-box-shadow: var(--xh-form-field-box-shadow);
-    -moz-box-shadow: var(--xh-form-field-box-shadow);
-    box-shadow: var(--xh-form-field-box-shadow);
+  :focus:not(.bp3-input) {
+    outline: var(--xh-focus-outline);
+    outline-offset: var(--xh-focus-outline-offset-px);
+  }
+
+  .xh-title-tip {
+    cursor: pointer;
   }
 }
 

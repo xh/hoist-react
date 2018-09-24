@@ -54,6 +54,14 @@ body {
   --xh-border-radius: var(--border-radius, 4);
   --xh-border-radius-px: calc(var(--xh-border-radius) * 1px);
 
+  // Focus indicator outline for interactive components - apps can use `--focus-outline: 0;` if
+  // they wish to disable completely. Note this is not applied to BP form inputs, which draw their
+  // own internal focus indicator.
+  --xh-focus-outline-width-px: var(--focus-outline-width-px, 2px);
+  --xh-focus-outline-offset-px: var(--focus-outline-offset-px, 2px);
+  --xh-focus-outline-color: var(--focus-outline-color, rgba(19, 124, 189, 0.6));
+  --xh-focus-outline: var(--focus-outline, #{(var(--xh-focus-outline-width-px) auto var(--xh-focus-outline-color))});
+
   // Buttons
   --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
   --xh-button-font-size: var(--button-font-size, var(--xh-font-size));
@@ -64,6 +72,7 @@ body {
 
   // Grid
   --xh-grid-bg: var(--grid-bg, var(--xh-bg));
+  --xh-grid-bg-hover: var(--grid-bg-highlight, #{mc-trans('blue', '200', 0.8)});
   --xh-grid-bg-highlight: var(--grid-bg-highlight, var(--xh-bg-highlight));
   --xh-grid-bg-odd: var(--grid-bg-odd, #{mc('grey', '100')});
   --xh-grid-border-color: var(--grid-border-color, var(--xh-border-color));
@@ -79,9 +88,9 @@ body {
   --xh-grid-header-text-color: var(--grid-header-text-color, var(--xh-text-color));
 
   // Compact Grid
-  --xh-grid-compact-font-size: var(--grid-compact-font-size, 11);
+  --xh-grid-compact-font-size: var(--grid-compact-font-size, 12);
   --xh-grid-compact-font-size-px: calc(var(--xh-grid-compact-font-size) * 1px);
-  --xh-grid-compact-line-height: var(--grid-compact-line-height, 20);
+  --xh-grid-compact-line-height: var(--grid-compact-line-height, 22);
   --xh-grid-compact-line-height-px: calc(var(--xh-grid-compact-line-height) * 1px);
 
   // Fonts
@@ -172,6 +181,7 @@ body {
   // Toolbars
   --xh-tbar-bg: var(--tbar-bg, var(--xh-bg-alt));
   --xh-tbar-border-color: var(--tbar-border-color, #{mc('grey', '400')});
+  --xh-tbar-separator-color: var(--tbar-separator-color, #{mc('grey', '400')});
   --xh-tbar-text-color: var(--tbar-text-color, var(--xh-text-color));
 
   // Text
@@ -247,6 +257,7 @@ body.xh-dark {
   // Toolbars
   --xh-tbar-bg: var(--tbar-bg, #{mc('blue-grey', '900')});
   --xh-tbar-border-color: var(--tbar-border-color, #{mc('blue-grey', '800')});
+  --xh-tbar-separator-color: var(--tbar-separator-color, #{mc('blue-grey', '600')});
 
   // Text
   --xh-text-color: var(--text-color, white);
