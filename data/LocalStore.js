@@ -21,6 +21,7 @@ export class LocalStore extends BaseStore {
 
     processRawData = null;
 
+    @observable _dataLastUpdated;
     @observable.ref _all = new RecordSet([]);
     @observable.ref _filtered = this._all;
 
@@ -38,6 +39,7 @@ export class LocalStore extends BaseStore {
         super(baseStoreArgs);
         this.setFilter(filter);
         this.processRawData = processRawData;
+        this._dataLastUpdated = Date.now();
     }
 
     /**
@@ -49,8 +51,20 @@ export class LocalStore extends BaseStore {
     loadData(rawRecords) {
         this._all = new RecordSet(this.createRecords(rawRecords));
         this.rebuildFiltered();
+        this._dataLastUpdated = Date.now();
     }
 
+    /**
+     * Call when data contained in the records contained by this store have been exogenously updated.
+     *
+     * This method is used to signal that data properties within records have been changed.  If the structure of the
+     * data has changed (e.g. deletion, additions, re-parenting of children) loadData() should be called instead.
+     */
+    @action
+    noteDataUpdated() {
+        this.rebuildFiltered();
+        this._dataLastUpdated = Date.now();
+    }
 
     //-----------------------------
     // Implementation of Store
@@ -75,6 +89,16 @@ export class LocalStore extends BaseStore {
     getById(id, fromFiltered = false) {
         const rs = fromFiltered ? this._filtered : this._all;
         return rs.map.get(id);
+    }
+
+    /**
+     * Last time the underlying data in store was changed either via loadData(), or as
+     * marked by noteDataUpdated;
+     *
+     * @return long
+     */
+    get dataLastUpdated() {
+        return this._dataLastUpdated;
     }
 
     //-----------------------------------

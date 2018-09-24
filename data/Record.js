@@ -11,8 +11,7 @@ import {clone} from 'lodash';
 /**
  * Core data for Store.
  *
- * This object is intended to be created and managed internally by Store implementations.  It should be
- * considered immutable.
+ * This object is intended to be created and managed internally by Store implementations.
  */
 export class Record {
 

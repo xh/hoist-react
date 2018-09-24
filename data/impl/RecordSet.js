@@ -24,13 +24,13 @@ export class RecordSet {
 
     /**
      * @param {Record[]} rootRecords -  ordered list of root records to be included.
+     * This array will be used and modified by this object and should not be re-used.
      */
     constructor(rootRecords) {
         this.roots = rootRecords;
 
-        // TODO: Make list, map lazy and/or remove altogether.
         const {list, map} = this.gatherAllRecords(rootRecords);
-        this.list = list;
+        this.list = (list.size == map.size ? rootRecords : list);  // Avoid holding two copies of same list.
         this.map = map;
 
         throwIf(
@@ -99,6 +99,7 @@ export class RecordSet {
         return new RecordSet(newRoots);
     }
 
+    
     //------------------
     // Implementation
     // ------------------

@@ -279,7 +279,7 @@ export class Grid extends Component {
     dataReaction() {
         const {model} = this;
         return {
-            track: () => [model.agApi, model.store.records],
+            track: () => [model.agApi, model.store.records, model.store.dataLastUpdated],
             run: ([api, records]) => {
                 if (api) {
                     runInAction(() => {
