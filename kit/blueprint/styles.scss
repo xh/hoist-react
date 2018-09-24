@@ -179,6 +179,12 @@
   box-shadow: var(--xh-form-field-box-shadow);
 }
 
+// Override Blueprint textarea dark theme
+.bp3-dark textarea.bp3-input {
+  -webkit-box-shadow: var(--xh-form-field-box-shadow);
+  box-shadow: var(--xh-form-field-box-shadow);
+}
+
 /* Apply blueprint styling to non-blueprint icons within input groups */
 .bp3-input-group svg:not(.bp3-icon) {
   position: absolute;
