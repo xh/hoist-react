@@ -152,8 +152,7 @@ export class Column {
             minWidth: this.minWidth,
             maxWidth: this.maxWidth,
             suppressResize: !this.resizable,
-            suppressMovable: !this.movable,
-            ...this.agOptions
+            suppressMovable: !this.movable
         };
 
         if (this.isTreeColumn) {
@@ -203,8 +202,9 @@ export class Column {
                 refresh() {return false}
             };
         }
-        
-        return ret;
+
+        // Finally, apply explicit app requests.  The customer is always right....
+        return {...ret, ...this.agOptions};
     }
 }
 
