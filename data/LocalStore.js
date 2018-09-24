@@ -21,7 +21,7 @@ export class LocalStore extends BaseStore {
 
     processRawData = null;
 
-    @observable _dataLastUpdated;
+    @observable.ref _dataLastUpdated;
     @observable.ref _all = new RecordSet([]);
     @observable.ref _filtered = this._all;
 
@@ -39,7 +39,7 @@ export class LocalStore extends BaseStore {
         super(baseStoreArgs);
         this.setFilter(filter);
         this.processRawData = processRawData;
-        this._dataLastUpdated = Date.now();
+        this._dataLastUpdated = new Date();
     }
 
     /**
@@ -51,7 +51,7 @@ export class LocalStore extends BaseStore {
     loadData(rawRecords) {
         this._all = new RecordSet(this.createRecords(rawRecords));
         this.rebuildFiltered();
-        this._dataLastUpdated = Date.now();
+        this._dataLastUpdated = new Date();
     }
 
     /**
@@ -63,7 +63,15 @@ export class LocalStore extends BaseStore {
     @action
     noteDataUpdated() {
         this.rebuildFiltered();
-        this._dataLastUpdated = Date.now();
+        this._dataLastUpdated = new Date();
+    }
+    
+    /**
+     * Last time the underlying data in store was changed either via loadData(), or as
+     * marked by noteDataUpdated().
+     */
+    get dataLastUpdated() {
+        return this._dataLastUpdated;
     }
 
     //-----------------------------
@@ -89,16 +97,6 @@ export class LocalStore extends BaseStore {
     getById(id, fromFiltered = false) {
         const rs = fromFiltered ? this._filtered : this._all;
         return rs.map.get(id);
-    }
-
-    /**
-     * Last time the underlying data in store was changed either via loadData(), or as
-     * marked by noteDataUpdated;
-     *
-     * @return long
-     */
-    get dataLastUpdated() {
-        return this._dataLastUpdated;
     }
 
     //-----------------------------------
