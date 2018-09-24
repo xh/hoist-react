@@ -8,6 +8,7 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
+import {actionsCol} from '@xh/hoist/desktop/columns';
 import {Icon} from '@xh/hoist/icon';
 import {pluralize} from '@xh/hoist/utils/js';
 
@@ -34,20 +35,40 @@ export class RestGridModel {
         del: 'Are you sure you want to delete the selected record?'
     };
 
+    actionLocation;
+
+    editAction = {
+        text: 'Edit',
+        icon: Icon.edit(),
+        actionFn: (item, record) => this.editRecord(record),
+        recordsRequired: 1
+    };
+
+    deleteAction = {
+        text: 'Delete',
+        icon: Icon.delete(),
+        actionFn: (item, record) => this.confirmDeleteRecord(record),
+        recordsRequired: true
+    };
+
     unit = null;
     filterFields = null;
 
     gridModel = null;
     formModel = null;
 
-    get store()             {return this.gridModel.store}
-    get selModel()          {return this.gridModel.selModel}
-    get selection()         {return this.gridModel.selection}
-    get selectedRecord()    {return this.gridModel.selectedRecord}
+    get store() {return this.gridModel.store}
+
+    get selModel() {return this.gridModel.selModel}
+
+    get selection() {return this.gridModel.selection}
+
+    get selectedRecord() {return this.gridModel.selectedRecord}
 
     /**
      * @param {Object} [actionEnabled] - map of action (e.g. 'add'/'edit'/'delete') to boolean  See default prop
      * @param {Object} [actionWarning] - map of action (e.g. 'add'/'edit'/'delete') to string.  See default prop.
+     * @param {Object} [actionLocation] - where actions should be rendered. Can be either 'toolbar' or 'column'. Defaults to 'toolbar'.
      * @param {string} [unit] - name that describes records in this grid.
      * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
      * @param {function} [enhanceToolbar] - a function used to mutate RestGridToolbar items
@@ -57,18 +78,54 @@ export class RestGridModel {
     constructor({
         actionEnabled,
         actionWarning,
+        actionLocation = 'toolbar',
         unit = 'record',
         filterFields,
         enhanceToolbar,
         editors = [],
+        columns,
         ...rest
     }) {
         this.actionEnabled = Object.assign(this.actionEnabled, actionEnabled);
         this.actionWarning = Object.assign(this.actionWarning, actionWarning);
+        this.actionLocation = actionLocation;
         this.unit = unit;
         this.filterFields = filterFields;
         this.enhanceToolbar = enhanceToolbar;
-        this.gridModel = new GridModel({contextMenuFn: this.contextMenuFn, exportFilename: pluralize(unit), ...rest});
+
+        const cols = [];
+        if (actionLocation === 'column' && (this.actionEnabled.edit || this.actionEnabled.del)) {
+            cols.push({
+                ...actionsCol,
+                width: this.actionEnabled.edit && this.actionEnabled.del ? 80 : 50,
+                rendererParams: {
+                    actions: [
+                        {
+                            ...this.editAction,
+                            intent: 'primary',
+                            text: null,
+                            hidden: !this.actionEnabled.edit
+                        },
+                        {
+                            ...this.deleteAction,
+                            intent: 'danger',
+                            text: null,
+                            hidden: !this.actionEnabled.del
+                        }
+                    ]
+                }
+            });
+        }
+
+        cols.push(...columns);
+
+        this.gridModel = new GridModel({
+            contextMenuFn: this.contextMenuFn,
+            exportFilename: pluralize(unit),
+            columns: cols,
+            ...rest
+        });
+
         this.formModel = new RestFormModel({parent: this, editors});
     }
 
@@ -81,7 +138,7 @@ export class RestGridModel {
     loadData(...args) {
         return this.store.loadData(...args);
     }
-    
+
     //-----------------
     // Actions
     //------------------
@@ -118,26 +175,20 @@ export class RestGridModel {
                 {
                     text: 'Add',
                     icon: Icon.add(),
-                    action: () => this.addRecord()
+                    actionFn: () => this.addRecord()
                 },
                 {
-                    text: 'Edit',
-                    icon: Icon.edit(),
-                    action: (item, record) => this.editRecord(record),
-                    recordsRequired: 1
+                    ...this.editAction
                 },
                 {
-                    text: 'Delete',
-                    icon: Icon.delete(),
-                    action: (item, record) => this.confirmDeleteRecord(record),
-                    recordsRequired: true
+                    ...this.deleteAction
                 },
                 '-',
                 ...GridModel.defaultContextMenuTokens
             ],
             gridModel: this.gridModel
         });
-    }
+    };
 
     confirmDeleteSelection() {
         const record = this.selectedRecord;

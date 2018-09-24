@@ -79,7 +79,7 @@ export class ConfigDifferModel  {
             items: [
                 {
                     text: 'Apply Remote',
-                    action: (item, recordClickedOn, selModel) => this.confirmApplyRemote(selModel.records),
+                    actionFn: (item, recordClickedOn, selModel) => this.confirmApplyRemote(selModel.records),
                     recordsRequired: true
                 }
             ]

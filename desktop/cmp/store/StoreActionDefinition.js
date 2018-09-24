@@ -5,11 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-export class StoreContextMenuItem {
+export class StoreActionDefinition {
 
     text;
     icon;
-    action;
+    intent;
+    tooltip;
+    actionFn;
     items;
     disabled;
     hidden;
@@ -17,26 +19,30 @@ export class StoreContextMenuItem {
     recordsRequired;
 
     /**
-     * @param {Object} c - StoreContextMenuItem configuration.
-     * @param {string} c.text - label to be displayed.
+     * @param {Object} c - StoreActionDefinition configuration.
+     * @param {string|null} [c.text] - label to be displayed.
      * @param {Object} [c.icon] - icon to be displayed.
-     * @param {Object[]} [c.items] - child menu items.
-     * @param {ActionCb} [c.action] - called on store context menu item click.
+     * @param {string|null} [c.intent] - intent to be used for rendering the action.
+     * @param {string|null} [c.tooltip] - tooltip to display when hovering over the action.
+     * @param {Object[]} [c.items] - child actions.
+     * @param {ActionCb} [c.actionFn] - called on store action activation.
      * @param {boolean} [c.disabled] - true to disable this item.
      * @param {boolean} [c.hidden] - true to hide this item.
-     * @param {PrepareFnCb} [c.prepareFn] - called prior to context menu item show,
+     * @param {PrepareFnCb} [c.prepareFn] - called prior to showing the action in the ui,
      *      available to modify the item based on current record / selection at time of show.
      * @param {(number|boolean)} [c.recordsRequired] - how many records must be 'active'
-     *      (selected and / or clicked upon) for the menuitem to be enabled.
+     *      (selected and / or clicked upon) for the action to be enabled.
      *      int: specifies exactly n number of records. Defaults to 1 for single record actions.
-     *          Can specify 0 to only enable menuitem if no records are active.
+     *          Can specify 0 to only enable action if no records are active.
      *      true: specifies that number of records > 0. Allows for arbitrary number of records.
      *      false: specifies any number of records (0 - infinity, inclusive). Always active.
      */
     constructor({
-        text,
+        text = null,
         icon = null,
-        action = null,
+        intent = null,
+        tooltip = null,
+        actionFn = null,
         items = null,
         disabled = false,
         hidden = false,
@@ -45,7 +51,9 @@ export class StoreContextMenuItem {
     }) {
         this.text = text;
         this.icon = icon;
-        this.action = action;
+        this.intent = intent;
+        this.tooltip = tooltip;
+        this.actionFn = actionFn;
         this.items = items;
         this.disabled = disabled;
         this.hidden = hidden;

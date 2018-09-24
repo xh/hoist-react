@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {actionBar} from '@xh/hoist/desktop/cmp/actionbar';
+import {storeActionBar} from '@xh/hoist/desktop/cmp/store';
 
 export const actionsCol = {
     colId: 'actions',
@@ -14,5 +14,5 @@ export const actionsCol = {
     chooserDescription: 'Row Actions',
     align: 'center',
     excludeFromExport: true,
-    elementRenderer: actionBar
+    elementRenderer: storeActionBar
 };

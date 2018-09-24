@@ -6,11 +6,10 @@
  */
 import {Component} from 'react';
 import {castArray, isEmpty} from 'lodash';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
-import {exportButton} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroup} from '@xh/hoist/kit/blueprint';
 import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
@@ -26,7 +25,7 @@ export class RestGridToolbar extends Component {
 
     renderToolbarItems() {
         const {model} = this,
-            {store, unit, actionEnabled, selectedRecord} = model,
+            {store, unit, actionEnabled, actionLocation, selectedRecord} = model,
             extraItemsFn = this.props.extraToolbarItems,
             extraItems = extraItemsFn ? castArray(extraItemsFn()) : [];
 
@@ -45,7 +44,7 @@ export class RestGridToolbar extends Component {
                     intent: 'primary',
                     onClick: this.onEditClick,
                     disabled: !selectedRecord,
-                    omit: !actionEnabled.edit
+                    omit: actionLocation !== 'toolbar' || !actionEnabled.edit
                 }),
                 button({
                     text: 'Delete',
@@ -53,7 +52,7 @@ export class RestGridToolbar extends Component {
                     intent: 'danger',
                     onClick: this.onDeleteClick,
                     disabled: !selectedRecord,
-                    omit: !actionEnabled.del
+                    omit: actionLocation !== 'toolbar' || !actionEnabled.del
                 })
             ),
             toolbarSep({omit: isEmpty(extraItems)}),

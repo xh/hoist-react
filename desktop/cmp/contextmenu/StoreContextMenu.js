@@ -6,7 +6,7 @@
  */
 
 import {isString} from 'lodash';
-import {StoreContextMenuItem} from './StoreContextMenuItem';
+import {StoreActionDefinition} from '@xh/hoist/desktop/cmp/store/StoreActionDefinition';
 import {Icon} from '@xh/hoist/icon';
 
 /**
@@ -40,8 +40,8 @@ export class StoreContextMenu {
         this.gridModel = gridModel;
         this.items = items.map(it => {
             if (isString(it)) return this.parseToken(it);
-            if (it instanceof StoreContextMenuItem) return it;
-            return new StoreContextMenuItem(it);
+            if (it instanceof StoreActionDefinition) return it;
+            return new StoreActionDefinition(it);
         });
     }
 
@@ -50,32 +50,32 @@ export class StoreContextMenu {
 
         switch (token) {
             case 'colChooser':
-                return new StoreContextMenuItem({
+                return new StoreActionDefinition({
                     text: 'Columns...',
                     icon: Icon.gridPanel(),
                     hidden: !gridModel || !gridModel.colChooserModel,
-                    action: () => {
+                    actionFn: () => {
                         gridModel.colChooserModel.open();
                     }
                 });
             case 'export':
             case 'exportExcel':
-                return new StoreContextMenuItem({
+                return new StoreActionDefinition({
                     text: 'Export to Excel',
                     icon: Icon.download(),
                     hidden: !gridModel || !gridModel.enableExport,
                     disabled: !gridModel || !gridModel.store.count,
-                    action: () => {
+                    actionFn: () => {
                         gridModel.export({type: 'excelTable'});
                     }
                 });
             case 'exportCsv':
-                return new StoreContextMenuItem({
+                return new StoreActionDefinition({
                     text: 'Export to CSV',
                     icon: Icon.download(),
                     hidden: !gridModel || !gridModel.enableExport,
                     disabled: !gridModel || !gridModel.store.count,
-                    action: () => {
+                    actionFn: () => {
                         gridModel.export({type: 'csv'});
                     }
                 });

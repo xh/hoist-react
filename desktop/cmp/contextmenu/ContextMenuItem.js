@@ -11,13 +11,13 @@ import {assign} from 'lodash';
 
 /**
  *  Basic Model for an item displayed within a generic ContextMenu.
- *  @see StoreContextMenuItem for a more specific (and common) implementation tied to data views.
+ *  @see StoreActionDefinition for a more specific (and common) implementation tied to data views.
  */
 export class ContextMenuItem {
 
     text;
     icon;
-    action;
+    actionFn;
     items;
     disabled;
     hidden;
@@ -26,7 +26,7 @@ export class ContextMenuItem {
      * @param {Object} c - ContextMenuItem configuration.
      * @param {string} c.text - label to be displayed.
      * @param {Object} [c.icon] - icon to be displayed.
-     * @param {function} [c.action] - Executed when the user clicks the menuitem.
+     * @param {function} [c.actionFn] - Executed when the user clicks the menuitem.
      * @param {Object[]} [c.items] - child menu items.
      * @param {boolean} [c.disabled] - true to disable this item.
      * @param {boolean} [c.hidden] - true to hide this item.
@@ -34,14 +34,14 @@ export class ContextMenuItem {
     constructor({
         text,
         icon = null,
-        action = null,
+        actionFn = null,
         items = null,
         disabled = false,
         hidden = false
     }) {
         this.text = text;
         this.icon = icon;
-        this.action = action;
+        this.actionFn = actionFn;
         this.items = items;
         this.disabled = disabled;
         this.hidden = hidden;
@@ -54,7 +54,7 @@ export class ContextMenuItem {
         return assign({
             text: 'Reload App',
             icon: Icon.refresh(),
-            action: () => XH.reloadApp()
+            actionFn: () => XH.reloadApp()
         }, defs);
     }
 
@@ -62,7 +62,7 @@ export class ContextMenuItem {
         return assign({
             text: 'About',
             icon: Icon.info(),
-            action: () => XH.showAboutDialog()
+            actionFn: () => XH.showAboutDialog()
         }, defs);
     }
 
@@ -71,7 +71,7 @@ export class ContextMenuItem {
             text: 'Logout',
             icon: Icon.logout(),
             hidden: !XH.app.enableLogout,
-            action: () => XH.identityService.logoutAsync()
+            actionFn: () => XH.identityService.logoutAsync()
         }, defs);
     }
 }

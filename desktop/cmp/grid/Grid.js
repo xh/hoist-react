@@ -246,8 +246,9 @@ export class Grid extends Component {
             return {
                 name: it.text,
                 icon,
+                tooltip: it.tooltip,
                 disabled: (it.disabled || requiredRecordsNotMet),
-                action: () => it.action(it, rec, selModel)
+                action: () => it.actionFn(it, rec, selModel)
             };
         });
     }
