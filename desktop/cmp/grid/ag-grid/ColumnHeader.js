@@ -27,20 +27,15 @@ export class ColumnHeader extends Component {
     //------------------------
     // Immutable public properties
     //------------------------
-    /** @member {GridModel} */
     gridModel;
-    /** @member {string} */
+    column;
     colId;
 
     menuButton = new Ref();
 
+    // Get any active sortBy for this column, or null
     @computed
-    get colDef() {
-        return this.gridModel.findColumn(this.gridModel.columns, this.colId);
-    }
-
-    @computed
-    get currentSort() {
+    get activeGridSorter() {
         return this.gridModel.sortBy.find(it => {
             return it.colId === this.colId;
         });
@@ -50,6 +45,7 @@ export class ColumnHeader extends Component {
         super(props);
         const {gridModel, column} = this.props;
         this.gridModel = gridModel;
+        this.column = column;
         this.colId = column.colId;
     }
 
@@ -68,16 +64,16 @@ export class ColumnHeader extends Component {
     }
 
     renderSortIcon() {
-        const {props, currentSort} = this,
+        const {props, activeGridSorter} = this,
             {enableSorting} = props;
 
-        if (!enableSorting || !currentSort) return null;
+        if (!enableSorting || !activeGridSorter) return null;
 
-        if (currentSort.abs) {
+        if (activeGridSorter.abs) {
             return Icon.arrowToBottom();
-        } else if (currentSort.sort === 'asc') {
+        } else if (activeGridSorter.sort === 'asc') {
             return Icon.arrowUp({size: 'sm'});
-        } else if (currentSort.sort === 'desc') {
+        } else if (activeGridSorter.sort === 'desc') {
             return Icon.arrowDown({size: 'sm'});
         }
         return null;
@@ -103,12 +99,12 @@ export class ColumnHeader extends Component {
     onClick = (e) => {
         if (!this.props.enableSorting) return;
 
-        const {gridModel, colId, currentSort} = this,
+        const {gridModel, activeGridSorter, colId} = this,
             nextSortBy = this.getNextSortBy();
 
         // Add to existing sorters if holding shift, else replace
         let sortBy = e.shiftKey ? clone(gridModel.sortBy) : [];
-        if (currentSort) {
+        if (activeGridSorter) {
             sortBy = sortBy.filter(it => it.colId !== colId);
         }
         if (nextSortBy) {
@@ -119,14 +115,14 @@ export class ColumnHeader extends Component {
     }
 
     getNextSortBy() {
-        const {colId, colDef, currentSort} = this,
-            {sort, abs = false} = currentSort || {};
+        const {colId, column, activeGridSorter} = this,
+            {sort, abs = false} = activeGridSorter || {};
 
-        if (!currentSort) {
+        if (!activeGridSorter) {
             return {colId, sort: 'asc', abs: false};
         } else if (sort === 'asc') {
             return {colId, sort: 'desc', abs: false};
-        } else if (sort === 'desc' && colDef.absSort && !abs) {
+        } else if (sort === 'desc' && column.absSort && !abs) {
             return {colId, sort: 'desc', abs: true};
         } else {
             return null;

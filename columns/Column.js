@@ -157,12 +157,9 @@ export class Column {
             minWidth: this.minWidth,
             maxWidth: this.maxWidth,
             suppressResize: !this.resizable,
-            suppressMovable: !this.movable
+            suppressMovable: !this.movable,
+            headerComponentParams: {gridModel, column: this}
         };
-
-        if (gridModel) {
-            ret.headerComponentParams = {gridModel};
-        }
 
         if (this.isTreeColumn) {
             ret.showRowGroup = true;

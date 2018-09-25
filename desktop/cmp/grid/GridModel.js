@@ -27,7 +27,7 @@ import {Column} from '@xh/hoist/columns';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {ColChooserModel} from './ColChooserModel';
 import {GridStateModel} from './GridStateModel';
-import {GridSorterDef} from './GridSorterDef';
+import {GridSorter} from './GridSorter';
 import {ExportManager} from './ExportManager';
 
 /**
@@ -72,7 +72,7 @@ export class GridModel {
     //------------------------
     /** @member {Column[]} */
     @observable.ref columns = [];
-    /** @member {GridSorterDef[]} */
+    /** @member {GridSorter[]} */
     @observable.ref sortBy = [];
     /** @member {?string} */
     @observable groupBy = null;
@@ -267,7 +267,7 @@ export class GridModel {
         sorters = sorters.map(it => {
             if (isString(it)) it = {colId: it};
             it.sort = it.sort || 'asc';
-            return isPlainObject(it) ? new GridSorterDef(it) : it;
+            return isPlainObject(it) ? new GridSorter(it) : it;
         });
 
         const sortIsValid = sorters.every(it => this.findColumn(this.columns, it.colId));

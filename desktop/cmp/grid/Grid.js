@@ -350,7 +350,7 @@ export class Grid extends Component {
             track: () => [this.model.agApi, this.model.columns, this.model.sortBy],
             run: ([api]) => {
                 if (api) {
-                    // ag-grid loses expand state when columnds re-defined.
+                    // ag-grid loses expand state when columns re-defined.
                     const expandState = this.readExpandState(api);
                     api.setColumnDefs(this.getColumnDefs());
                     this.writeExpandState(api, expandState);

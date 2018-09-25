@@ -7,17 +7,14 @@
 
 import {Utils} from 'ag-grid';
 
-/**
- * Basic Model for a grid sorter definition.
- */
-export class GridSorterDef {
+export class GridSorter {
 
     colId;
     sort;
     abs;
 
     /**
-     * @param {Object} c - GridSorterDef configuration.
+     * @param {Object} c - GridSorter configuration.
      * @param {string} c.colId - colId for the column.
      * @param {string} c.sort - direction of sort. Either 'asc' or 'desc'.
      * @param {boolean} [c.abs] - true to sort this column by absolute value.
