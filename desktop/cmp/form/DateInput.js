@@ -13,11 +13,12 @@ import {fmtDate} from '@xh/hoist/format';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {dateInput as bpDateInput} from '@xh/hoist/kit/blueprint';
 import {Ref} from '@xh/hoist/utils/react';
+import {withDefault} from '@xh/hoist/utils/js';
 
 import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
- * A Calendar Control for choosing a Day.
+ * A Calendar Control for choosing a Date.
  *
  * @see HoistInput for properties additional to those documented below.
  */
@@ -42,16 +43,23 @@ export class DateInput extends HoistInput {
         minDate: PT.instanceOf(Date),
         maxDate: PT.instanceOf(Date),
 
-        /** String to be passed to momentJS to parse user inputted dates, defaults to YYYY-MM-DD HH:mm:ss
-         * @see https://momentjs.com/docs/#/parsing/string-format */
+        /**
+         * MomentJS format of date for display and parsing.
+         *
+         * Defaults to YYYY-MM-DD HH:mm:ss, or a prefix of it, with presence of time components dependent on
+         * the timePrecision prop.
+         */
         formatString: PT.string,
 
-        /** The precision of time selection that accompanies the calendar.
-         * The simplest way to enable time selection is to provide a value for this prop */
-        timePrecision: PT.oneOf(['millisecond', 'second', 'minute']),
+        /**
+         * The precision of time selection that accompanies the calendar.
+         * If undefined, control will not show time.
+         */
+        timePrecision: PT.oneOf(['second', 'minute']),
 
-        /** Props passed to the TimePicker @see https://blueprintjs.com/docs/#datetime/timepicker.props
-         * Passing any defined value will enable the TimePicker */
+        /**
+         * Props passed to the TimePicker.  @see https://blueprintjs.com
+         */
         timePickerProps: PT.object,
 
         /** Props passed to ReactDayPicker component. @see http://react-day-picker.js.org/ */
@@ -83,6 +91,7 @@ export class DateInput extends HoistInput {
         } = this.props;
 
         dayPickerProps = assign({fixedWeeks: true}, dayPickerProps);
+        timePickerProps = timePrecision ? timePickerProps: null;
 
         return bpDateInput({
             className: this.getClassName(),
@@ -107,20 +116,31 @@ export class DateInput extends HoistInput {
             },
             minDate,
             maxDate,
-            timePickerProps,
             timePrecision,
+            timePickerProps,
             dayPickerProps,
             ...this.getDelegateProps()
         });
     }
 
+    getFormat() {
+        const {formatString, timePrecision} = this.props;
+        if (formatString) return formatString;
+        let ret = 'YYYY-MM-DD';
+        if (timePrecision == 'minute') {
+            ret += ' HH:mm';
+        } else if (timePrecision == 'second') {
+            ret += ' HH:mm:ss';
+        }
+        return ret;
+    }
+
     formatDate = (date) => {
-        return fmtDate(date, {fmt: this.props.formatString});
+        return fmtDate(date, {fmt: this.getFormat()});
     }
 
     parseDate = (dateString) => {
-        const fmtString = this.props.formatString || 'YYYY-MM-DD HH:mm:ss';
-        return moment(dateString, fmtString).toDate();
+        return moment(dateString, this.getFormat()).toDate();
     }
 
     onChange = (date, isUserChange) => {
