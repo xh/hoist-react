@@ -107,13 +107,22 @@
   }
 }
 
-// Match loading overlay color to mask, suppress display of text in center.
-.ag-overlay .ag-overlay-loading-wrapper {
-  background-color: var(--xh-mask-bg);
+.ag-overlay {
 
-  .ag-overlay-loading-center {
-    display: none;
+  // Match loading overlay color to mask, suppress display of text in center.
+  .ag-overlay-loading-wrapper {
+    background-color: var(--xh-mask-bg);
+
+    .ag-overlay-loading-center {
+      display: none;
+    }
   }
+
+  // Reduce default contrast of emptyText.
+  .ag-overlay-no-rows-wrapper {
+    color: var(--xh-grid-empty-text-color);
+  }
+
 }
 
 .xh-column-header-align-right .ag-header-cell-label {
