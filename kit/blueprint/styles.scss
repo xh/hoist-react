@@ -175,7 +175,7 @@
 }
 
 // Expose CSS var for box-shadow tweaking
-.bp3-input:not(:focus) {
+.bp3-input:not(.bp3-active):not(:focus) {
   box-shadow: var(--xh-form-field-box-shadow);
 }
 
