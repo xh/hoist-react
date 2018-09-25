@@ -5,11 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {isNil, uniqBy} from 'lodash';
 import {XH} from '@xh/hoist/core';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
-import {warnIf} from '@xh/hoist/utils/js';
 import {observable, action} from '@xh/hoist/mobx';
+import {isNil} from 'lodash';
+
+import {RecordSet} from './impl/RecordSet';
+import {Record} from './Record';
 import {BaseStore} from './BaseStore';
 
 /**
@@ -17,121 +19,126 @@ import {BaseStore} from './BaseStore';
  */
 export class LocalStore extends BaseStore {
 
-    @observable.shallow _recordsMap = new Map();
+    processRawData = null;
 
-    @observable.ref _allRecords = [];
-    @observable.ref _records = [];
+    @observable.ref _dataLastUpdated;
+    @observable.ref _all = new RecordSet([]);
+    @observable.ref _filtered = this._all;
 
     _loadModel = new PendingTaskModel();
     _filter = null;
 
-    processRawData = null;
-
     /**
      * @param {Object} c - LocalStore configuration.
-     * @param {function} [c.processRawData] - Function to run on data presented to loadData() before
-     *      creating records.
-     * @param {function} [c.filter] - Filter function to be run on _allRecords to produce _records.
+     * @param {function} [c.processRawData] - Function to run on data
+     *      presented to loadData() before creating records.
+     * @param {function} [c.filter] - Filter function to be run.
      * @param {...*} [c.baseStoreArgs] - Additional properties to pass to BaseStore.
      */
-    constructor({processRawData = null, filter, ...baseStoreArgs}) {
+    constructor({processRawData = null, filter = null, ...baseStoreArgs}) {
         super(baseStoreArgs);
         this.setFilter(filter);
         this.processRawData = processRawData;
+        this._dataLastUpdated = new Date();
     }
 
     /**
      * Replace existing records with new records.
-     * @param {Object[]} rawData - raw records to be loaded into the store.
+     *
+     * @param {Object[]} rawRecords - raw records to be loaded into the store.
      */
-    loadData(rawData) {
-        this.loadDataInternal(rawData);
+    @action
+    loadData(rawRecords) {
+        this._all = new RecordSet(this.createRecords(rawRecords));
+        this.rebuildFiltered();
+        this._dataLastUpdated = new Date();
     }
 
     /**
-     * Get the count of all records loaded into the store
+     * Call when data contained in the records contained by this store have been exogenously updated.
+     *
+     * This method is used to signal that data properties within records have been changed.  If the structure of the
+     * data has changed (e.g. deletion, additions, re-parenting of children) loadData() should be called instead.
      */
-    get allCount() {
-        return this.allRecords.length;
+    @action
+    noteDataUpdated() {
+        this.rebuildFiltered();
+        this._dataLastUpdated = new Date();
     }
-
+    
     /**
-     * Get the count of the filtered record in the store
+     * Last time the underlying data in store was changed either via loadData(), or as
+     * marked by noteDataUpdated().
      */
-    get count() {
-        return this.records.length;
+    get dataLastUpdated() {
+        return this._dataLastUpdated;
     }
 
     //-----------------------------
     // Implementation of Store
     //-----------------------------
-    get records()       {return this._records}
-    get allRecords()    {return this._allRecords}
+    get records()       {return this._filtered.list}
+    get allRecords()    {return this._all.list}
     get loadModel()     {return this._loadModel}
     get filter()        {return this._filter}
     setFilter(filterFn) {
         this._filter = filterFn;
-        this.rebuildArrays();
+        this.rebuildFiltered();
     }
 
-    getById(id, filteredOnly) {
-        const rec = this._recordsMap.get(id);
-        return (filteredOnly && rec && this._filter && !this.filter(rec)) ?
-            null :
-            rec;
+    get allCount() {
+        return this._all.count;
+    }
+
+    get count() {
+        return this._filtered.count;
+    }
+
+    getById(id, fromFiltered = false) {
+        const rs = fromFiltered ? this._filtered : this._all;
+        return rs.map.get(id);
     }
 
     //-----------------------------------
     // Protected methods for subclasses
     //-----------------------------------
     @action
-    loadDataInternal(rawData) {
-        this._recordsMap = this.createRecordMap(rawData);
-        this.rebuildArrays();
-    }
-
-    @action
-    updateRecordInternal(rec) {
-        this._recordsMap.set(rec.id, rec);
-        this.rebuildArrays();
-    }
-
-    @action
     deleteRecordInternal(rec) {
-        this._recordsMap.delete(rec.id);
-        this.rebuildArrays();
+        this._all = this._all.removeRecord(rec);
+        this.rebuildFiltered();
     }
 
     @action
-    rebuildArrays() {
-        const {_filter, _recordsMap} = this;
-        this._allRecords = Array.from(_recordsMap.values());
-        this._records = _filter ? this._allRecords.filter(_filter) : this._allRecords;
+    updateRecordInternal(oldRec, newRec) {
+        this._all = this._all.updateRecord(oldRec, newRec);
+        this.rebuildFiltered();
     }
 
-    createRecordMap(rawData) {
-        const {processRawData} = this;
-        if (processRawData) {
-            rawData = processRawData(rawData);
-        }
+    @action
+    addRecordInternal(rec) {
+        this._all = this._all.addRecord(rec);
+        this.rebuildFiltered();
+    }
 
-        // All records must have a unique, non-null ID - install a generated one if required.
-        rawData.forEach(rec => {
-            if (isNil(rec.id)) rec.id = XH.genId();
+    //------------------------
+    // Private Implementation
+    //------------------------
+    createRecords(rawData, parent = null) {
+        return rawData.map(raw => {
+            if (this.processRawData) this.processRawData(raw);
+
+            // All records must have a unique, non-null ID - install a generated one if required.
+            if (isNil(raw.id)) raw.id = XH.genId();
+
+            const rec = new Record({raw, parent, fields: this.fields});
+            rec.children = raw.children ? this.createRecords(raw.children, rec) : [];
+            return rec;
         });
+    }
 
-        warnIf(
-            uniqBy(rawData, 'id').length != rawData.length,
-            'Store records contain non-unique IDs - dupes are dropped from grids, generally problematic.'
-        );
-
-        const ret = new Map();
-        rawData.forEach(it => {
-            const rec = this.createRecord(it);
-            ret.set(rec.id, rec);
-        });
-
-        return ret;
+    @action
+    rebuildFiltered() {
+        this._filtered = this._all.applyFilter(this.filter);
     }
 
     destroy() {

@@ -20,6 +20,7 @@ export function navigateSelection(params, api) {
         nextIndex = nextCellDef ? nextCellDef.rowIndex : null,
         prevNode = prevIndex != null ? api.getDisplayedRowAtIndex(prevIndex) : null,
         nextNode = nextIndex != null ? api.getDisplayedRowAtIndex(nextIndex) : null,
+        prevNodeIsParent = prevNode && prevNode.allChildrenCount,
         KEY_UP = 38, KEY_DOWN = 40, KEY_LEFT = 37, KEY_RIGHT = 39;
 
     switch (params.key) {
@@ -40,7 +41,10 @@ export function navigateSelection(params, api) {
             }
             return nextCellDef;
         case KEY_LEFT:
+            if (prevNodeIsParent && prevNode.expanded) prevNode.setExpanded(false);
+            return nextCellDef;
         case KEY_RIGHT:
+            if (prevNodeIsParent && !prevNode.expanded) prevNode.setExpanded(true);
             return nextCellDef;
         default:
     }
