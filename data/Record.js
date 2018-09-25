@@ -30,6 +30,7 @@ export class Record {
      */
     constructor({raw, parent, fields, children = []}) {
         this.id = raw.id;
+        this.raw = raw;
         this.parent = parent;
         this.children = children;
         this.fields = fields;
