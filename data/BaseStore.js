@@ -5,7 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {isString} from 'lodash';
-import {XH} from '@xh/hoist/core';
 
 import {Field} from './Field';
 
@@ -45,6 +44,18 @@ export class BaseStore {
     get filter() {}
     setFilter(filterFn) {}
 
+    /** Get the count of all records loaded into the store. */
+    get allCount() {}
+
+    /** Get the count of the filtered record in the store. */
+    get count() {}
+
+    /** Is the store empty after filters have been applied? */
+    get empty() {return this.count === 0}
+
+    /** Is this store empty before filters have been applied? */
+    get allEmpty() {return this.allCount === 0}
+
     /**
      * Get a record by ID. Return null if no record found.
      *
@@ -65,66 +76,10 @@ export class BaseStore {
         });
     }
 
-
-    /**
-     * Is the store empty after filters have been applied?
-     */
-    get empty() {
-        return this.records.length == 0;
-    }
-
-    /**
-     * Is this store empty before filters have been applied?
-     */
-    get allEmpty() {
-        return this.allRecords.length == 0;
-    }
-    
     //--------------------
     // For Implementations
     //--------------------
     get defaultFieldClass() {
         return Field;
-    }
-
-    /**
-     * Create a record from rawData presented.
-     *
-     * Can apply basic validation and conversion (e.g. 'date' will convert from UTC time to
-     * a JS Date object). An exception will be thrown if the validation or conversion fails.
-     *
-     * @param {Object} raw - json object containing raw data and 'id' property
-     */
-    createRecord(raw) {
-        const ret = {id: raw.id, raw};
-
-        this.fields.forEach(field => {
-            const {type, name, defaultValue} = field;
-            let val = raw[name];
-            if (val === undefined || val === null) val = defaultValue;
-
-            if (val !== null) {
-                // TODO -- Add additional validation and conversion?
-                switch (type) {
-                    case 'auto':
-                    case 'string':
-                    case 'int':
-                    case 'number':
-                    case 'bool':
-                    case 'json':
-                    case 'day':
-                        break;
-                    case 'date':
-                        val = new Date(val);
-                        break;
-                    default:
-                        throw XH.exception(`Unknown field type '${type}'`);
-                }
-            }
-
-            ret[name] = val;
-        });
-
-        return ret;
     }
 }

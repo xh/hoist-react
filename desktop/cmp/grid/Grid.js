@@ -32,7 +32,6 @@ import {colChooser} from './ColChooser';
 export class Grid extends Component {
 
     static propTypes = {
-
         /**
          * Options for AG Grid's API.
          *
@@ -47,7 +46,12 @@ export class Grid extends Component {
          * with a data node containing the row's data.
          * @see {@link https://www.ag-grid.com/javascript-grid-events/#properties-and-hierarchy|ag-Grid Event Docs}
          */
-        onRowDoubleClicked: PT.func
+        onRowDoubleClicked: PT.func,
+
+        /**
+         * Show a colored row background on hover. Defaults to false.
+         */
+        showHover: PT.bool
     };
 
     static ROW_HEIGHT = 28;
@@ -70,7 +74,7 @@ export class Grid extends Component {
 
     render() {
         const {colChooserModel, compact} = this.model,
-            {agOptions} = this.props,
+            {agOptions, showHover} = this.props,
             layoutProps = this.getLayoutProps();
 
         // Default flex = 'auto' if no dimensions / flex specified.
@@ -88,7 +92,8 @@ export class Grid extends Component {
                 className: this.getClassName(
                     'ag-grid-holder',
                     XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
-                    compact ? 'xh-grid-compact' : 'xh-grid-standard'
+                    compact ? 'xh-grid-compact' : 'xh-grid-standard',
+                    showHover ? 'xh-grid-show-hover' : ''
                 )
             }),
             colChooser({
@@ -105,7 +110,7 @@ export class Grid extends Component {
     createDefaultAgOptions() {
         const {model, props} = this;
 
-        return {
+        let ret = {
             toolPanelSuppressSideButtons: true,
             enableSorting: true,
             enableColResize: true,
@@ -113,8 +118,6 @@ export class Grid extends Component {
             getRowNodeId: (data) => data.id,
             allowContextMenuWithControlKey: true,
             defaultColDef: {suppressMenu: true},
-            groupDefaultExpanded: 1,
-            groupUseEntireRow: true,
             popupParent: document.querySelector('body'),
             navigateToNextCell: this.onNavigateToNextCell,
             defaultGroupSortComparator: this.sortByGroup,
@@ -131,6 +134,7 @@ export class Grid extends Component {
             rowSelection: model.selModel.mode,
             rowDeselection: true,
             getRowHeight: () => model.compact ? Grid.COMPACT_ROW_HEIGHT : Grid.ROW_HEIGHT,
+            getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             overlayNoRowsTemplate: model.emptyText || '<span></span>',
             getContextMenuItems: this.getContextMenuItems,
             onRowDoubleClicked: props.onRowDoubleClicked,
@@ -138,8 +142,22 @@ export class Grid extends Component {
             onSelectionChanged: this.onSelectionChanged,
             onSortChanged: this.onSortChanged,
             onGridSizeChanged: this.onGridSizeChanged,
-            onDragStopped: this.onDragStopped
+            onDragStopped: this.onDragStopped,
+
+            groupDefaultExpanded: 1,
+            groupUseEntireRow: true
         };
+
+        if (model.treeMode) {
+            ret = {
+                ...ret,
+                groupDefaultExpanded: 0,
+                groupSuppressAutoColumn: true,
+                treeData: true,
+                getDataPath: this.getDataPath
+            };
+        }
+        return ret;
     }
 
     //------------------------
@@ -153,7 +171,6 @@ export class Grid extends Component {
                 c.children = this.getColumnDefsFromChildren(c.children);
                 return c;
             }
-
             return c.getAgSpec();
         });
 
@@ -269,7 +286,7 @@ export class Grid extends Component {
     dataReaction() {
         const {model} = this;
         return {
-            track: () => [model.agApi, model.store.records],
+            track: () => [model.agApi, model.store.records, model.store.dataLastUpdated],
             run: ([api, records]) => {
                 if (api) {
                     runInAction(() => {
@@ -332,7 +349,10 @@ export class Grid extends Component {
             track: () => [this.model.agApi, this.model.columns],
             run: ([api, columns]) => {
                 if (api) {
+                    // ag-grid loses expand state when columnds re-defined.
+                    const expandState = this.readExpandState(api);
                     api.setColumnDefs(this.getColumnDefs());
+                    this.writeExpandState(api, expandState);
                     api.sizeColumnsToFit();
                 }
             }
@@ -351,6 +371,10 @@ export class Grid extends Component {
     //------------------------
     // Event Handlers on AG Grid.
     //------------------------
+    getDataPath = (data) => {
+        return data.xhTreePath;
+    }
+
     onGridReady = (ev) => {
         this.model.setAgApi(ev.api);
     }
@@ -374,6 +398,27 @@ export class Grid extends Component {
     onGridSizeChanged = (ev) => {
         if (this.isDisplayed) {
             ev.api.sizeColumnsToFit();
+        }
+    }
+
+    readExpandState(api) {
+        const ret = [];
+        api.forEachNode(node => ret.push(node.expanded));
+        return ret;
+    }
+
+    writeExpandState(api, expandState) {
+        let wasChanged = false,
+            i = 0;
+        api.forEachNode(node => {
+            const state = expandState[i++];
+            if (node.expanded !== state) {
+                node.expanded = state;
+                wasChanged = true;
+            }
+        });
+        if (wasChanged) {
+            api.onGroupExpandedOrCollapsed();
         }
     }
 }

@@ -34,6 +34,11 @@ import {ExportManager} from './ExportManager';
  * sorting/grouping/selection state, and context menu configuration.
  *
  * This is the primary application entry-point for specifying Grid component options and behavior.
+ *
+ * This model supports Tree, as well as flat data representations.  To show a Tree, bind this model
+ * to a store with hierachical records, set the 'treeMode' property to true, and include a a single column
+ * with the property 'isTreeColumn' true.  This column will display tree affordances and parent child nesting,
+ * in addition to its own data.
  */
 @HoistModel
 export class GridModel {
@@ -45,16 +50,21 @@ export class GridModel {
     store = null;
     /** @member {StoreSelectionModel} */
     selModel = null;
+    /** @member {boolean} */
+    treeMode = false;
     /** @member {GridStateModel} */
     stateModel = null;
     /** @member {ColChooserModel} */
     colChooserModel = null;
+    /** @member {function} */
+    rowClassFn = null;
     /** @member {function} */
     contextMenuFn = null;
     /** @member {boolean} */
     enableExport = false;
     /** @member {string} */
     exportFilename = 'export';
+
 
     //------------------------
     // Observable API
@@ -93,6 +103,7 @@ export class GridModel {
      * @param {(Column[]|Object[])} c.columns - Columns, or configs to create them.
      *          A 'column' can also be a config for a column group. Column groups must specify a children property
      *          that is a array of Columns or configs to create them. Column groups also require a headerName or GroupId.
+     * @param {(boolean)} [c.treeMode] - true if grid is a tree grid (default false).
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
      * @param {(Object|string)} [c.stateModel] - config or string `gridId` for a GridStateModel.
@@ -107,12 +118,15 @@ export class GridModel {
      * @param {boolean} [c.enableExport] - true to install default export context menu items.
      * @param {(function|string)} [c.exportFilename] - filename for exported file,
      *      or a closure to generate one.
+     * @param {function} [c.rowClassFn] - closure to generate css class names for a row.
+     *      Should return a string or array of strings. Receives record data as param.
      * @param {function} [c.contextMenuFn] - closure returning a StoreContextMenu.
      *      @see StoreContextMenu
      */
     constructor({
         store,
         columns,
+        treeMode = false,
         selModel = 'single',
         stateModel = null,
         emptyText = null,
@@ -122,13 +136,16 @@ export class GridModel {
         enableColChooser = false,
         enableExport = false,
         exportFilename = 'export',
+        rowClassFn = null,
         contextMenuFn = () => this.defaultContextMenu()
     }) {
         this.store = store;
+        this.treeMode = treeMode;
         this.emptyText = emptyText;
         this.enableExport = enableExport;
         this.exportFilename = exportFilename;
         this.contextMenuFn = contextMenuFn;
+        this.rowClassFn = rowClassFn;
 
         this.setColumns(columns);
 

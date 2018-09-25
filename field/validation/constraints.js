@@ -6,22 +6,13 @@
  */
 
 import {fmtDate} from '@xh/hoist/format';
-import {isNil} from 'lodash';
+import {isNil, isString} from 'lodash';
 
 /**
- * Validate the presence of a field.
+ * Validate the presence of a field. String values must also not be empty, or all spaces.
  */
 export const required = ({value, displayName}) => {
-    if (isNil(value)) return `${displayName} is required.`;
-};
-
-/**
- * Validate that a string is not blank.
- */
-export const notBlank = ({value, displayName}) => {
-    if (isNil(value)) return null;
-
-    if (value.trim().length == 0) return `${displayName} must not be blank.`;
+    if (isNil(value) || (isString(value) && value.trim().length == 0)) return `${displayName} is required.`;
 };
 
 /**
