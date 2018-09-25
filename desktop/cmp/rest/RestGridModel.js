@@ -8,7 +8,7 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {actionsCol} from '@xh/hoist/desktop/columns';
+import {actionCol} from '@xh/hoist/desktop/columns';
 import {Icon} from '@xh/hoist/icon';
 import {pluralize} from '@xh/hoist/utils/js';
 
@@ -40,6 +40,7 @@ export class RestGridModel {
     editAction = {
         text: 'Edit',
         icon: Icon.edit(),
+        intent: 'primary',
         actionFn: (item, record) => this.editRecord(record),
         recordsRequired: 1
     };
@@ -47,6 +48,7 @@ export class RestGridModel {
     deleteAction = {
         text: 'Delete',
         icon: Icon.delete(),
+        intent: 'danger',
         actionFn: (item, record) => this.confirmDeleteRecord(record),
         recordsRequired: true
     };
@@ -68,7 +70,7 @@ export class RestGridModel {
     /**
      * @param {Object} [actionEnabled] - map of action (e.g. 'add'/'edit'/'delete') to boolean  See default prop
      * @param {Object} [actionWarning] - map of action (e.g. 'add'/'edit'/'delete') to string.  See default prop.
-     * @param {Object} [actionLocation] - where actions should be rendered. Can be either 'toolbar' or 'column'. Defaults to 'toolbar'.
+     * @param {Object} [actionColEnabled] - whether an action column with edit and delete buttons should be added to the grid.
      * @param {string} [unit] - name that describes records in this grid.
      * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
      * @param {function} [enhanceToolbar] - a function used to mutate RestGridToolbar items
@@ -78,7 +80,7 @@ export class RestGridModel {
     constructor({
         actionEnabled,
         actionWarning,
-        actionLocation = 'toolbar',
+        actionColEnabled,
         unit = 'record',
         filterFields,
         enhanceToolbar,
@@ -88,32 +90,20 @@ export class RestGridModel {
     }) {
         this.actionEnabled = Object.assign(this.actionEnabled, actionEnabled);
         this.actionWarning = Object.assign(this.actionWarning, actionWarning);
-        this.actionLocation = actionLocation;
+        this.actionColEnabled = actionColEnabled;
         this.unit = unit;
         this.filterFields = filterFields;
         this.enhanceToolbar = enhanceToolbar;
 
         const cols = [];
-        if (actionLocation === 'column' && (this.actionEnabled.edit || this.actionEnabled.del)) {
+        if (actionColEnabled && (this.actionEnabled.edit || this.actionEnabled.del)) {
             cols.push({
-                ...actionsCol,
-                width: this.actionEnabled.edit && this.actionEnabled.del ? 80 : 50,
-                rendererParams: {
-                    actions: [
-                        {
-                            ...this.editAction,
-                            intent: 'primary',
-                            text: null,
-                            hidden: !this.actionEnabled.edit
-                        },
-                        {
-                            ...this.deleteAction,
-                            intent: 'danger',
-                            text: null,
-                            hidden: !this.actionEnabled.del
-                        }
-                    ]
-                }
+                ...actionCol,
+                width: this.actionEnabled.edit && this.actionEnabled.del ? 78 : 50,
+                actions: [
+                    this.actionEnabled.edit ? this.editAction : null,
+                    this.actionEnabled.del ? this.deleteAction : null
+                ]
             });
         }
 

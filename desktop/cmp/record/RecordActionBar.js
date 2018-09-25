@@ -28,7 +28,7 @@ export class RecordActionBar extends Component {
     constructor(props) {
         super(props);
 
-        this.actions = props.actions.map(it => new RecordAction(it));
+        this.actions = props.actions.filter(it => it !== null).map(it => new RecordAction(it));
     }
 
     render() {

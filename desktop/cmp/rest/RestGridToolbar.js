@@ -25,7 +25,7 @@ export class RestGridToolbar extends Component {
 
     renderToolbarItems() {
         const {model} = this,
-            {store, unit, actionEnabled, actionLocation, selectedRecord} = model,
+            {store, unit, actionEnabled, selectedRecord} = model,
             extraItemsFn = this.props.extraToolbarItems,
             extraItems = extraItemsFn ? castArray(extraItemsFn()) : [];
 
@@ -44,7 +44,7 @@ export class RestGridToolbar extends Component {
                     intent: 'primary',
                     onClick: this.onEditClick,
                     disabled: !selectedRecord,
-                    omit: actionLocation !== 'toolbar' || !actionEnabled.edit
+                    omit: !actionEnabled.edit
                 }),
                 button({
                     text: 'Delete',
@@ -52,7 +52,7 @@ export class RestGridToolbar extends Component {
                     intent: 'danger',
                     onClick: this.onDeleteClick,
                     disabled: !selectedRecord,
-                    omit: actionLocation !== 'toolbar' || !actionEnabled.del
+                    omit: !actionEnabled.del
                 })
             ),
             toolbarSep({omit: isEmpty(extraItems)}),

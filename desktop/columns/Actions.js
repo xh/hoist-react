@@ -7,12 +7,13 @@
 
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 
-export const actionsCol = {
+export const actionCol = {
     colId: 'actions',
     headerName: '',
-    chooserName: 'Actions',
-    chooserDescription: 'Row Actions',
     align: 'center',
+    width: 52,
+    chooserName: 'Actions',
+    chooserDescription: 'Record Actions',
     excludeFromExport: true,
     elementRenderer: ({column, ...rest}) => recordActionBar({actions: column.actions, actionsShowOnHover: column.actionsShowOnHover, ...rest})
 };
