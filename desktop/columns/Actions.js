@@ -14,5 +14,5 @@ export const actionsCol = {
     chooserDescription: 'Row Actions',
     align: 'center',
     excludeFromExport: true,
-    elementRenderer: storeActionBar
+    elementRenderer: ({column, ...rest}) => storeActionBar({actions: column.actions, actionsShowOnHover: column.actionsShowOnHover, ...rest})
 };

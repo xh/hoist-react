@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-export class StoreActionDefinition {
+export class RecordAction {
 
     text;
     icon;
@@ -19,7 +19,7 @@ export class StoreActionDefinition {
     recordsRequired;
 
     /**
-     * @param {Object} c - StoreActionDefinition configuration.
+     * @param {Object} c - RecordAction configuration.
      * @param {string|null} [c.text] - label to be displayed.
      * @param {Object} [c.icon] - icon to be displayed.
      * @param {string|null} [c.intent] - intent to be used for rendering the action.

@@ -6,7 +6,7 @@
  */
 
 import {isString} from 'lodash';
-import {StoreActionDefinition} from '@xh/hoist/desktop/cmp/store/StoreActionDefinition';
+import {RecordAction} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 
 /**
@@ -40,8 +40,8 @@ export class StoreContextMenu {
         this.gridModel = gridModel;
         this.items = items.map(it => {
             if (isString(it)) return this.parseToken(it);
-            if (it instanceof StoreActionDefinition) return it;
-            return new StoreActionDefinition(it);
+            if (it instanceof RecordAction) return it;
+            return new RecordAction(it);
         });
     }
 
@@ -50,7 +50,7 @@ export class StoreContextMenu {
 
         switch (token) {
             case 'colChooser':
-                return new StoreActionDefinition({
+                return new RecordAction({
                     text: 'Columns...',
                     icon: Icon.gridPanel(),
                     hidden: !gridModel || !gridModel.colChooserModel,
@@ -60,7 +60,7 @@ export class StoreContextMenu {
                 });
             case 'export':
             case 'exportExcel':
-                return new StoreActionDefinition({
+                return new RecordAction({
                     text: 'Export to Excel',
                     icon: Icon.download(),
                     hidden: !gridModel || !gridModel.enableExport,
@@ -70,7 +70,7 @@ export class StoreContextMenu {
                     }
                 });
             case 'exportCsv':
-                return new StoreActionDefinition({
+                return new RecordAction({
                     text: 'Export to CSV',
                     icon: Icon.download(),
                     hidden: !gridModel || !gridModel.enableExport,

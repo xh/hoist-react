@@ -1,4 +1,4 @@
 export * from './StoreCountLabel';
 export * from './StoreFilterField';
-export * from './StoreActionBar';
-export * from './StoreActionDefinition';
+export * from './RecordActionBar';
+export * from './RecordAction';

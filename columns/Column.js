@@ -71,6 +71,8 @@ export class Column {
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
      *      @see {@link https://www.ag-grid.com/javascript-grid-column-properties/|AG-Grid docs}
+     * @param {...*} [rest] - additional properties to store on the column, made available to column
+     *      renderers and other callbacks
      */
     constructor({
         field,
@@ -86,7 +88,6 @@ export class Column {
         movable,
         renderer,
         elementRenderer,
-        rendererParams,
         chooserName,
         chooserGroup,
         chooserDescription,
@@ -97,8 +98,11 @@ export class Column {
         exportFormat,
         excludeFromExport,
         tooltip,
-        agOptions
+        agOptions,
+        ...rest
     }) {
+        Object.assign(this, rest);
+
         this.field = field;
         this.colId = withDefault(colId, field);
         throwIf(!this.colId, 'Must specify colId or field for a Column.');
@@ -123,7 +127,6 @@ export class Column {
 
         this.renderer = renderer;
         this.elementRenderer = elementRenderer;
-        this.rendererParams = rendererParams;
 
         this.chooserName = chooserName || this.headerName || this.colId;
         this.chooserGroup = chooserGroup;
@@ -180,27 +183,20 @@ export class Column {
             ret.width = this.width;
         }
 
-        const {renderer, elementRenderer, rendererParams} = this;
+        const {renderer, elementRenderer} = this;
         if (renderer) {
-            ret.cellRenderer = (params) => {
-                return renderer(params.value, {record: params.data, column: this, ...rendererParams});
+            ret.cellRenderer = (agParams) => {
+                return renderer(agParams.value, {record: agParams.data, column: this, agParams});
             };
         } else if (elementRenderer) {
-            const props = {
-                column: this,
-                ...rendererParams
-            };
-
+            // eslint-disable-next-line consistent-this
+            const column = this;
             ret.cellRendererFramework = class extends Component {
                 render() {
-                    const rendererProps = {
-                        value: this.props.value,
-                        record: this.props.data,
-                        agParams: this.props,
-                        ...props
-                    };
+                    const agParams = this.props,
+                        {value, data: record} = agParams;
 
-                    return elementRenderer(rendererProps);
+                    return elementRenderer({value, record, agParams, column});
                 }
                 refresh() {return false}
             };

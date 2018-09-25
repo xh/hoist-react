@@ -10,15 +10,17 @@ import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {hbox} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {StoreActionDefinition} from './StoreActionDefinition';
+import {RecordAction} from './RecordAction';
+
+import './RecordActionBar.scss';
 
 @HoistComponent
-export class StoreActionBar extends Component {
-    baseClassName = 'xh-store-action-bar';
+export class RecordActionBar extends Component {
+    baseClassName = 'xh-record-action-bar';
 
     static propTypes = {
-        /** StoreActionDefinition or configs to create. */
-        actions: PT.arrayOf(PT.oneOfType([PT.object, PT.instanceOf(StoreActionDefinition)])).isRequired
+        /** RecordAction or configs to create. */
+        actions: PT.arrayOf(PT.oneOfType([PT.object, PT.instanceOf(RecordAction)])).isRequired
     };
 
     actions = [];
@@ -26,16 +28,15 @@ export class StoreActionBar extends Component {
     constructor(props) {
         super(props);
 
-        this.actions = props.actions.map(it => {
-            if (it instanceof StoreActionDefinition) return it;
-            return new StoreActionDefinition(it);
-        });
+        this.actions = props.actions.map(it => new RecordAction(it));
     }
 
     render() {
-        const {actions} = this;
+        const {actionsShowOnHover = true} = this.props,
+            {actions} = this;
+
         return hbox({
-            className: this.getClassName(),
+            className: this.getClassName(actionsShowOnHover ? 'xh-show-on-hover' : null),
             items: actions.map(action => this.renderAction(action))
         });
     }
@@ -47,13 +48,12 @@ export class StoreActionBar extends Component {
 
         if (action.hidden) return null;
 
-        const {icon, text, intent, disabled, tooltip, actionFn} = action;
+        const {icon, intent, disabled, tooltip, actionFn} = action;
         return button({
-            className: 'xh-store-action-button',
+            className: 'xh-record-action-button',
             small: true,
             minimal: true,
             icon,
-            text,
             intent,
             title: tooltip,
             disabled,
@@ -62,4 +62,4 @@ export class StoreActionBar extends Component {
     }
 }
 
-export const storeActionBar = elemFactory(StoreActionBar);
+export const storeActionBar = elemFactory(RecordActionBar);

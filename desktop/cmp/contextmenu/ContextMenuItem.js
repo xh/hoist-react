@@ -11,7 +11,7 @@ import {assign} from 'lodash';
 
 /**
  *  Basic Model for an item displayed within a generic ContextMenu.
- *  @see StoreActionDefinition for a more specific (and common) implementation tied to data views.
+ *  @see RecordAction for a more specific (and common) implementation tied to data views.
  */
 export class ContextMenuItem {
 
