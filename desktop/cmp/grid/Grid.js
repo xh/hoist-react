@@ -12,7 +12,7 @@ import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import './ag-grid';
-import {agGridReact, navigateSelection} from './ag-grid';
+import {agGridReact, navigateSelection, ColumnHeader} from './ag-grid';
 import {colChooser} from './ColChooser';
 
 /**
@@ -131,6 +131,7 @@ export class Grid extends Component {
                     {classes: ['group-header-icon-contracted', 'fa-fw']}
                 )
             },
+            frameworkComponents: {agColumnHeader: ColumnHeader},
             rowSelection: model.selModel.mode,
             rowDeselection: true,
             getRowHeight: () => model.compact ? Grid.COMPACT_ROW_HEIGHT : Grid.ROW_HEIGHT,
@@ -140,7 +141,6 @@ export class Grid extends Component {
             onRowDoubleClicked: props.onRowDoubleClicked,
             onGridReady: this.onGridReady,
             onSelectionChanged: this.onSelectionChanged,
-            onSortChanged: this.onSortChanged,
             onGridSizeChanged: this.onGridSizeChanged,
             onDragStopped: this.onDragStopped,
 
@@ -166,12 +166,13 @@ export class Grid extends Component {
     getColumnDefs() {
         const {columns, sortBy} = this.model,
             clonedColumns = cloneDeep(columns);
+
         const cols = clonedColumns.map(c => {
             if (c.children) {
                 c.children = this.getColumnDefsFromChildren(c.children);
                 return c;
             }
-            return c.getAgSpec();
+            return c.getAgSpec(this.model);
         });
 
         let now = Date.now();
@@ -180,6 +181,7 @@ export class Grid extends Component {
             if (col) {
                 col.sort = it.sort;
                 col.sortedAt = now++;
+                col.comparator = (v1, v2) => it.comparator(v1, v2);
             }
         });
 
@@ -194,8 +196,7 @@ export class Grid extends Component {
                 c.children = this.getColumnDefsFromChildren(c.children);
                 return c;
             }
-
-            return c.getAgSpec();
+            return c.getAgSpec(this.model);
         });
 
         let now = Date.now();
@@ -204,6 +205,7 @@ export class Grid extends Component {
             if (col) {
                 col.sort = it.sort;
                 col.sortedAt = now++;
+                col.comparator = (v1, v2) => it.comparator(v1, v2);
             }
         });
 
@@ -345,8 +347,8 @@ export class Grid extends Component {
 
     columnsReaction() {
         return {
-            track: () => [this.model.agApi, this.model.columns],
-            run: ([api, columns]) => {
+            track: () => [this.model.agApi, this.model.columns, this.model.sortBy],
+            run: ([api]) => {
                 if (api) {
                     // ag-grid loses expand state when columnds re-defined.
                     const expandState = this.readExpandState(api);
@@ -384,10 +386,6 @@ export class Grid extends Component {
 
     onSelectionChanged = (ev) => {
         this.model.selModel.select(ev.api.getSelectedRows());
-    }
-
-    onSortChanged = (ev) => {
-        this.model.setSortBy(ev.api.getSortModel());
     }
 
     onDragStopped = (ev) => {
