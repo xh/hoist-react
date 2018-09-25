@@ -6,7 +6,7 @@
  */
 
 import {isString} from 'lodash';
-import {RecordAction} from '@xh/hoist/desktop/cmp/store';
+import {RecordAction} from '@xh/hoist/cmp/record';
 import {Icon} from '@xh/hoist/icon';
 
 /**

@@ -10,7 +10,7 @@ import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {hbox} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {RecordAction} from './RecordAction';
+import {RecordAction} from '@xh/hoist/cmp/record';
 
 import './RecordActionBar.scss';
 
@@ -62,4 +62,4 @@ export class RecordActionBar extends Component {
     }
 }
 
-export const storeActionBar = elemFactory(RecordActionBar);
+export const recordActionBar = elemFactory(RecordActionBar);
