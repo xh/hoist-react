@@ -5,13 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import React, {Component} from 'react';
-import {PropTypes as PT} from 'prop-types';
-import {isArray, isUndefined} from 'lodash';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {formGroup, spinner, tooltip} from '@xh/hoist/kit/blueprint';
+import {PropTypes as PT} from 'prop-types';
+import {div, span} from '@xh/hoist/cmp/layout';
 import {HoistInput} from '@xh/hoist/cmp/form';
-import {div, fragment, span} from '@xh/hoist/cmp/layout';
+import {label as labelCmp} from '@xh/hoist/mobile/cmp/form';
 import {throwIf} from '@xh/hoist/utils/js';
+import {isArray, isUndefined} from 'lodash';
 
 import './FormField.scss';
 
@@ -24,8 +24,6 @@ import './FormField.scss';
  *
  * When FormField is used in bound mode, the child HoistInput should *not* declare its own
  * `model` and `field` props, as these are managed by the FormField.
- *
- * Accepts any props supported by Blueprint's FormGroup.
  */
 @HoistComponent
 export class FormField extends Component {
@@ -60,45 +58,37 @@ export class FormField extends Component {
         if (isRequired) classes.push('xh-form-field-required');
         if (notValid) classes.push('xh-form-field-invalid');
 
-        return formGroup({
-            item,
-            label: labelStr ? span(labelStr, requiredStr) : null,
+        return div({
             className: this.getClassName(classes),
-            helperText: fragment(
+            items: [
+                labelStr ? labelCmp(labelStr, requiredStr) : null,
+                item,
                 div({
                     omit: !isPending,
-                    className: 'xh-form-field-pending',
-                    item: spinner({size: 15})
+                    className: 'xh-form-field-pending-msg',
+                    item: 'Validating...'
                 }),
                 div({
                     omit: !notValid,
                     className: 'xh-form-field-error-msg',
-                    items: notValid ? tooltip({
-                        item: errors[0],
-                        content: (
-                            <ul className="xh-form-field-error-tooltip">
-                                {errors.map((it, idx) => <li key={idx}>{it}</li>)}
-                            </ul>
-                        )
-                    }) : null
+                    items: notValid ? errors[0] : null
                 })
-            ),
+            ],
             ...rest
         });
     }
-
 
     //--------------------
     // Implementation
     //--------------------
     prepareChild() {
-        const {model, field, disabled} = this.props,
+        const {model, field} = this.props,
             item = this.props.children;
 
-        throwIf(!item || isArray(item) || !(item.type.prototype instanceof HoistInput), 'FormField child must be a single component that extends HoistInput.');
+        throwIf(isArray(item) || !(item.type.prototype instanceof HoistInput), 'FormField child must be a single component that extends HoistInput.');
         throwIf(item.props.field || item.props.model, 'HoistInputs should not declare "field" or "model" when used with FormField');
 
-        return React.cloneElement(item, {model, field, disabled});
+        return React.cloneElement(item, {model, field});
     }
 
 }

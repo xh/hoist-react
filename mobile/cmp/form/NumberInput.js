@@ -6,11 +6,11 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {numericInput} from '@xh/hoist/kit/blueprint';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {input} from '@xh/hoist/kit/onsen';
 import {fmtNumber} from '@xh/hoist/format';
+
 import {HoistInput} from '@xh/hoist/cmp/form';
-import {wait} from '@xh/hoist/promise';
 
 /**
  * A Number Input
@@ -24,7 +24,7 @@ export class NumberInput extends HoistInput {
         ...HoistInput.propTypes,
 
         /** Value of the control */
-        value: PT.number,
+        value: PT.string,
 
         /** Text to display when control is empty */
         placeholder: PT.string,
@@ -37,55 +37,58 @@ export class NumberInput extends HoistInput {
         /** Allow/automatically fill in trailing zeros in accord with precision, defaults to false */
         zeroPad: PT.bool,
         /** Set to true for advanced input evaluation, defaults to false.
-            Inputs suffixed with k, m, or b will be calculated as thousands, millions, or billions respectively */
+         Inputs suffixed with k, m, or b will be calculated as thousands, millions, or billions respectively */
         enableShorthandUnits: PT.bool,
         /** Whether to display large values with commas */
         displayWithCommas: PT.bool,
-        /** Alignment of numbers in field, default to 'right' */
-        textAlign: PT.oneOf(['left', 'right']),
-        /** Icon to display on the left side of the field */
-        leftIcon: PT.element,
+        /** Onsen modifier string */
+        modifier: PT.string,
+        /** Function which receives keypress event */
+        onKeyPress: PT.func,
         /** Whether text in field is selected when field receives focus */
         selectOnFocus: PT.bool
     };
 
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/gi;
 
-    delegateProps = ['className', 'disabled', 'min', 'max', 'placeholder', 'leftIcon'];
+    delegateProps = ['className', 'disabled', 'min', 'max', 'placeholder', 'modifier'];
 
     baseClassName = 'xh-number-input';
 
     render() {
-        const {props, hasFocus, renderValue} = this,
-            {width, style, enableShorthandUnits} = props,
-            textAlign = props.textAlign || 'right',
-            displayValue = hasFocus ? renderValue : this.formatValue(renderValue);
+        const {width, style, enableShorthandUnits} = this.props;
 
-        return numericInput({
+        return input({
             className: this.getClassName(),
-            value: displayValue,
-            onValueChange: this.onValueChange,
+            value: this.renderValue || '',
+            onChange: this.onChange,
             onKeyPress: this.onKeyPress,
             onBlur: this.onBlur,
             onFocus: this.onFocus,
-            style: {textAlign, width, ...style},
-            buttonPosition: 'none',
-            allowNumericCharactersOnly: !enableShorthandUnits,
+            style: {width, ...style},
+            spellCheck: false,
+            type: enableShorthandUnits ? 'text' : 'number',
             ...this.getDelegateProps()
         });
     }
 
-    onValueChange = (val, valAsString) => {
-        let value = this.parseValue(valAsString);
-        value = isNaN(value) ? null : value;
-        this.noteValueChange(value);
+    onChange = (ev) => {
+        let v = ev.target.value;
+        if (v) v = v.toString();
+        this.noteValueChange(v);
     }
 
     onKeyPress = (ev) => {
         if (ev.key === 'Enter') this.doCommit();
+        if (this.props.onKeyPress) this.props.onKeyPress(ev);
     }
 
-    formatValue(value) {
+    toExternal(value) {
+        value = this.parseValue(value);
+        return isNaN(value) ? null : value;
+    }
+
+    toInternal(value) {
         if (value == null) return '';
         const props = this.props,
             precision = props.precision != null ? props.precision : 4,
@@ -117,19 +120,16 @@ export class NumberInput extends HoistInput {
         return parseFloat(value);
     }
 
-    onFocus = (ev) => {
-        this.noteFocused();
-
-        // Deferred to allow any value conversion to complete and flush into input.
-        if (this.props.selectOnFocus) {
-            const target = ev.target;
-            wait(1).then(() => target.select());
-        }
-    }
-
     onBlur = () => {
         this.noteBlurred();
     }
 
+    onFocus = (ev) => {
+        if (this.props.selectOnFocus && ev.target && ev.target.select) {
+            ev.target.select();
+        }
+        this.noteFocused();
+    }
 }
+
 export const numberInput = elemFactory(NumberInput);

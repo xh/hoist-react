@@ -10,6 +10,9 @@ import '@blueprintjs/datetime/lib/css/blueprint-datetime.css';
 import '@blueprintjs/select/lib/css/blueprint-select.css';
 import './styles.scss';
 
+import {FocusStyleManager} from '@blueprintjs/core';
+FocusStyleManager.onlyShowFocusOnTabs();
+
 export {
     ContextMenu,
     ContextMenuTarget,

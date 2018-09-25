@@ -38,20 +38,31 @@
 }
 
 .xh-input {
-  &, input, textarea, select {
+  input, textarea, select {
     font-size: 14px;
+    border: none !important;
   }
 
-  &.xh-text-input {
-    margin: 4px;
+  &:not(.xh-input-label) {
+    font-size: 14px;
+    border: var(--xh-border-solid);
+    border-radius: var(--xh-border-radius-px);
+  }
 
-    .text-input, .text-input__label {
+  &.xh-input-invalid {
+    border: var(--xh-form-field-invalid-border);
+  }
+
+  &.xh-text-input,
+  &.xh-number-input {
+    .text-input,
+    .text-input__label {
       padding: 0 var(--xh-pad-px);
     }
   }
 
-  &.xh-search-input {
-    margin: 4px;
+  &.xh-number-input .text-input {
+    text-align: right;
   }
 
   &.xh-select select {
@@ -63,8 +74,12 @@
     padding: var(--xh-pad-px);
     background-color: var(--xh-bg);
     color: var(--xh-text-color);
-    border: none;
+    outline: none;
     resize: none;
+  }
+
+  &.xh-input-label {
+    font-size: var(--xh-font-size-small-px);
   }
 }
 

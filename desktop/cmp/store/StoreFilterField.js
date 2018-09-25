@@ -70,7 +70,7 @@ export class StoreFilterField extends Component {
             placeholder: withDefault(this.props.placeholder, 'Quick filter'),
             value: this.value,
             onChange: this.onValueChange,
-            leftIcon: Icon.filter(),
+            leftIcon: Icon.filter({style: {opacity: 0.5}}),
             rightElement: button({
                 icon: Icon.x(),
                 minimal: true,
@@ -95,9 +95,10 @@ export class StoreFilterField extends Component {
 
         let filter = null;
         if (searchTerm && fields.length) {
+            const regex = new RegExp(`(^|\\W)${searchTerm}`, 'ig');
             filter = (rec) => fields.some(f => {
                 const fieldVal = rec[f];
-                return fieldVal && new RegExp('(^|\\W)' + searchTerm, 'ig').test(fieldVal);
+                return fieldVal && regex.test(fieldVal);
             });
         }
         this.filter = filter;
