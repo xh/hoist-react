@@ -56,12 +56,25 @@
     }
 
     .group-header-icon-expanded {
-      margin: var(--xh-pad-half-px) var(--xh-pad-half-px) 0 var(--xh-pad-half-px);
+      margin: var(--xh-pad-half-px) var(--xh-pad-half-px) 0 0;
     }
 
     .group-header-icon-contracted {
-      margin: var(--xh-pad-half-px) var(--xh-pad-half-px) 0 var(--xh-pad-half-px);
+      margin: var(--xh-pad-half-px) var(--xh-pad-half-px) 0 0;
     }
+  }
+
+  // Generate indentations for tree grids.
+  // Based upon https://github.com/ag-grid/ag-grid/blob/master/packages/ag-grid-community/src/styles/ag-grid.scss#L1018
+  $xh-tree-indent: 10px !default;
+  @for $i from 1 to 50 {
+    .ag-ltr .ag-row-group-indent-#{$i} {
+      padding-left: $i * $xh-tree-indent;
+    }
+  }
+
+  .ag-ltr .ag-row-group-leaf-indent {
+    margin-left: 20px;
   }
 
   &.xh-grid-show-hover .ag-row.ag-row-hover:not(.ag-row-group):not(.ag-row-selected) {
@@ -108,7 +121,6 @@
 }
 
 .ag-overlay {
-
   // Match loading overlay color to mask, suppress display of text in center.
   .ag-overlay-loading-wrapper {
     background-color: var(--xh-mask-bg);
@@ -122,7 +134,6 @@
   .ag-overlay-no-rows-wrapper {
     color: var(--xh-grid-empty-text-color);
   }
-
 }
 
 .xh-column-header-align-right .ag-header-cell-label {

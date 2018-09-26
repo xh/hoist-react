@@ -161,7 +161,6 @@ export class Column {
             ret.cellRendererParams = {
                 suppressCount: true,
                 suppressDoubleClickExpand: true,
-                padding: 10,
                 innerRenderer: (v) => v.data[this.field]
             };
         }
