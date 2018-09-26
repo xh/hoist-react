@@ -136,7 +136,7 @@ export class Column {
         this.exportName = exportName || this.headerName || this.colId;
         this.exportValue = exportValue;
         this.exportFormat = withDefault(exportFormat, ExportFormat.DEFAULT);
-        this.exportWidth = this.exportFormat === 'Text' ? withDefault(exportWidth, 100) : null;
+        this.exportWidth = exportWidth || null;
         this.excludeFromExport = withDefault(excludeFromExport, !field);
 
         this.tooltip = tooltip;
