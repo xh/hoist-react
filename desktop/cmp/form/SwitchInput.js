@@ -21,6 +21,9 @@ export class SwitchInput extends HoistInput {
         ...HoistInput.propTypes,
         value: PT.bool,
 
+        /** Label text.  Applications may omit if this input is renderered within a labelled FormField. */
+        label: PT.string,
+        /** True if the control should appear as an inline element (defaults to true). */
         inline: PT.bool
     };
 
@@ -37,9 +40,10 @@ export class SwitchInput extends HoistInput {
             onBlur: this.onBlur,
             onFocus: this.onFocus,
             tabIndex: props.tabIndex,
-            inline,
             style: props.style,
-            disabled: props.disabled
+            disabled: props.disabled,
+            label: props.label,
+            inline
         });
     }
 

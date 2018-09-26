@@ -30,9 +30,9 @@ import './HoistInput.scss';
  * will be updated with the new value.
  *
  * For many fields (e.g. checkbox, select, switchInput, slider) commit occurs concurrenty with the change event.
- * However, several text-based fields support a "commitOnChange" property that allows control of this behavior.
- * When this property is set to false, (the default) the commit action will happen only when the user hits 'enter',
- * 'blurs' the field, or takes another committ action defined by the control.
+ * However, several text-based fields support a "commitOnChange" prop that allows control of this behavior.
+ * When this prop is set to false, (the default) the commit action will happen only when the user hits 'enter',
+ * 'blurs' the field, or takes another commit action defined by the control.
  *
  * Note that operating in bound mode may allow for more efficient rendering in a MobX context,
  * in that the bound value is only read *within* this control, so that changes to its value do not

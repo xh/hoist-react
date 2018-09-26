@@ -23,7 +23,10 @@ export class CheckBox extends HoistInput {
         ...HoistInput.propTypes,
         value: PT.bool,
 
-        inline: PT.bool // TODO: Is this needed?
+        /** Label text.  Applications may omit if this input is renderered within a labelled FormField. */
+        label: PT.string,
+        /** True if the control should appear as an inline element (defaults to true). */
+        inline: PT.bool
     };
 
     baseClassName = 'xh-check-box';
@@ -41,6 +44,7 @@ export class CheckBox extends HoistInput {
             tabIndex: props.tabIndex,
             style: props.style,
             disabled: props.disabled,
+            label: props.label,
             inline
         });
     }
