@@ -20,7 +20,7 @@ export class StoreContextMenu {
 
     /**
      * @param {Object} c - StoreContextMenu configuration.
-     * @param {Object[]} c.items - StoreContextMenuItems or configs / strings to create.
+     * @param {Object[]} c.items - RecordActions to clone or configs / strings to create.
      *
      *      If a String, value can be '-' for a separator, a Hoist token (below),
      *      or a token supported by ag-Grid for its native menu items.
@@ -40,7 +40,6 @@ export class StoreContextMenu {
         this.gridModel = gridModel;
         this.items = items.map(it => {
             if (isString(it)) return this.parseToken(it);
-            if (it instanceof RecordAction) return it;
             return new RecordAction(it);
         });
     }

@@ -41,14 +41,7 @@ export class Column {
      * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
      * @param {boolean} [c.movable] - false to prevent user from drag-and-drop re-ordering.
      * @param {Column~rendererFn} [c.renderer] - function to produce a formatted string for each cell.
-     *      Supports HTML as output. Passed the field value as the first parameter, and an object
-     *      containing the record, column, and renderer params (destructured) as the second parameter.
-     * @param {function} [c.elementRenderer] - elementFactory function to return a React component
-     *      for rendering within each cell. Is passed the value, record, column, and renderer params
-     *      (destructured) in it's props. For ag-grid implementations, the ICellRendererParams are
-     *      also passed as agParams. @see ICellRendererParams
-     * @param {object} [c.rendererParams] - additional parameters to pass to the renderer function
-     *      or to be included in elementRenderer props.
+     * @param {Column~elementRendererFn} [c.elementRenderer] - function which returns a React component.
      * @param {string} [c.chooserName] - name to display within the column chooser component.
      *      Defaults to headerName, but useful when a longer / un-abbreviated string is available.
      * @param {string} [c.chooserGroup] - group name to display within the column chooser component.
@@ -73,8 +66,7 @@ export class Column {
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
      *      @see {@link https://www.ag-grid.com/javascript-grid-column-properties/|AG-Grid docs}
-     * @param {...*} [rest] - additional properties to store on the column, made available to column
-     *      renderers and other callbacks
+     * @param {...*} [rest] - additional properties to store on the column
      */
     constructor({
         field,
@@ -147,7 +139,6 @@ export class Column {
         this.agOptions = agOptions ? clone(agOptions) : {};
     }
 
-
     /**
      * Produce a Column definition appropriate for AG Grid.
      */
@@ -211,7 +202,7 @@ export class Column {
                     const agParams = this.props,
                         {value, data: record} = agParams;
 
-                    return elementRenderer({value, record, agParams, column});
+                    return elementRenderer(value, {record, agParams, column});
                 }
                 refresh() {return false}
             };
@@ -223,12 +214,24 @@ export class Column {
 }
 
 /**
+ * @typedef {Object} CellRendererMetadata
+ * @property {Record} record - the row record
+ * @property {column} column - the column for the cell being rendered
+ * @property {ICellRendererParams} [agParams] - the ag-grid cell renderer params
+ */
+
+/**
  * @callback Column~rendererFn - normalized renderer function for a grid column cell.
  * @param {*} value - cell data value (column + row).
- * @param {Object} data - row data object (entire row).
- * @param {Object} metadata - additional data available to the renderer,
- *      currently contains the Column's string colId.
+ * @param {CellRendererMetadata} metadata - additional data about the column and row
  * @return {string} - the formatted value for display.
+ */
+
+/**
+ * @callback Column~elementRendererFn - renderer function for a grid column cell which returns a React component
+ * @param {*} value - cell data value (column + row).
+ * @param {CellRendererMetadata} metadata - additional data about the column and row
+ * @return {Component} - the React component to render
  */
 
 /**

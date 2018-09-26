@@ -20,16 +20,16 @@ export class RecordAction {
 
     /**
      * @param {Object} c - RecordAction configuration.
-     * @param {string|null} [c.text] - label to be displayed.
+     * @param {string} [c.text] - label to be displayed.
      * @param {Object} [c.icon] - icon to be displayed.
-     * @param {string|null} [c.intent] - intent to be used for rendering the action.
-     * @param {string|null} [c.tooltip] - tooltip to display when hovering over the action.
+     * @param {string} [c.intent] - intent to be used for rendering the action.
+     * @param {string} [c.tooltip] - tooltip to display when hovering over the action.
      * @param {Object[]} [c.items] - child actions.
      * @param {ActionCb} [c.actionFn] - called on store action activation.
      * @param {boolean} [c.disabled] - true to disable this item.
      * @param {boolean} [c.hidden] - true to hide this item.
-     * @param {PrepareFnCb} [c.prepareFn] - called prior to showing the action in the ui,
-     *      available to modify the item based on current record / selection at time of show.
+     * @param {PrepareFnCb} [c.prepareFn] - called prior to showing the action in the ui,show.
+     *      available to modify the item based on current record / selection at time of
      * @param {(number|boolean)} [c.recordsRequired] - how many records must be 'active'
      *      (selected and / or clicked upon) for the action to be enabled.
      *      int: specifies exactly n number of records. Defaults to 1 for single record actions.
@@ -38,10 +38,10 @@ export class RecordAction {
      *      false: specifies any number of records (0 - infinity, inclusive). Always active.
      */
     constructor({
-        text = null,
+        text,
         icon = null,
-        intent = null,
-        tooltip = null,
+        intent,
+        tooltip,
         actionFn = null,
         items = null,
         disabled = false,

@@ -35,8 +35,6 @@ export class RestGridModel {
         del: 'Are you sure you want to delete the selected record?'
     };
 
-    actionLocation;
-
     editAction = {
         text: 'Edit',
         icon: Icon.edit(),
@@ -167,12 +165,8 @@ export class RestGridModel {
                     icon: Icon.add(),
                     actionFn: () => this.addRecord()
                 },
-                {
-                    ...this.editAction
-                },
-                {
-                    ...this.deleteAction
-                },
+                this.editAction,
+                this.deleteAction,
                 '-',
                 ...GridModel.defaultContextMenuTokens
             ],

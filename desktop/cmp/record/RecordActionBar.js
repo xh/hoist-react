@@ -14,13 +14,24 @@ import {RecordAction} from '@xh/hoist/cmp/record';
 
 import './RecordActionBar.scss';
 
+/**
+ * Component which lays out minimal icon buttons in a row.
+ *
+ * A list of RecordActions must be provided which define the appearance and the action which should
+ * be triggered on button click.
+ *
+ * By default the action buttons will only be visible when hovering over the component (or the row
+ * when used in a grid).
+ */
 @HoistComponent
 export class RecordActionBar extends Component {
     baseClassName = 'xh-record-action-bar';
 
     static propTypes = {
-        /** RecordAction or configs to create. */
-        actions: PT.arrayOf(PT.oneOfType([PT.object, PT.instanceOf(RecordAction)])).isRequired
+        /** RecordActions to clone or configs to create. */
+        actions: PT.arrayOf(PT.oneOfType([PT.object, PT.instanceOf(RecordAction)])).isRequired,
+        /** Set to false to always show action buttons */
+        showOnHover: PT.bool
     };
 
     actions = [];
@@ -32,11 +43,11 @@ export class RecordActionBar extends Component {
     }
 
     render() {
-        const {actionsShowOnHover = true} = this.props,
+        const {showOnHover = true} = this.props,
             {actions} = this;
 
         return hbox({
-            className: this.getClassName(actionsShowOnHover ? 'xh-show-on-hover' : null),
+            className: this.getClassName(showOnHover ? 'xh-show-on-hover' : null),
             items: actions.map(action => this.renderAction(action))
         });
     }
