@@ -9,7 +9,8 @@ import {PropTypes as PT} from 'prop-types';
 import {tagInput as bpTagInput} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {HoistInput} from '@xh/hoist/cmp/form';
-import './TagInput.scss'
+import {isEmpty, castArray, clone, uniq} from 'lodash';
+import './TagInput.scss';
 
 /**
  * A Tag Input Component
@@ -23,24 +24,23 @@ export class TagInput extends HoistInput {
     static propTypes = {
         ...HoistInput.propTypes,
 
-        /** Optional custom optionRenderer, a function that receives (option, optionProps) */
-        itemRenderer: PT.func,
-        /** Optional custom tagRenderer, a function that receives the value property of each selected option.
-         *  Should return a ReactNode or string */
-        tagRenderer: PT.func,
+        /** Text to display when control is empty */
         placeholder: PT.string,
+        /** Whether to update the control's value with a duplicate string */
         allowDuplicates: PT.bool,
+        /** Whether onChange will be invoked when the control loses focus */
         addOnBlur: PT.bool,
-        rightElement: PT.element
-    };
-
-    static defaultProps = {
-        commitOnChange: true,
-        allowDuplicates: false
+        /** Element to display on the right side of the input */
+        rightElement: PT.element,
+        /** Separator pattern used to split input text into multiple values. */
+        separator: PT.string
     };
 
     baseClassName = 'xh-tag-input';
-    delegateProps = ['placeholder', 'disabled', 'addOnBlur','rightElement'];
+    delegateProps = ['placeholder', 'disabled', 'addOnBlur', 'rightElement', 'fill', 'separator'];
+    static defaultProps = {
+        allowDuplicates: true
+    };
 
     constructor(props) {
         super(props);
@@ -51,26 +51,28 @@ export class TagInput extends HoistInput {
             tagProps: {minimal: true},
             className: this.getClassName(),
             onChange: this.onChange,
-            onRemove: this.onRemoveTag,
             values: this.renderValue || [],
             ...this.getDelegateProps()
         });
     }
 
     onChange = (values) => {
-        this.onTagsChange(values)
+        if (!this.props.allowDuplicates) values = uniq(values);
+        this.onTagsChange(values);
     }
 
+    /** Saving this code in case separate add/remove handlers are needed
     onRemoveTag = (tag, idx) => {
         const externalVal = castArray(clone(this.externalValue));
         externalVal.splice(idx,1);
         this.onTagsChange(externalVal)
     }
+    */
 
     onTagsChange = (values) => {
         const newValues = isEmpty(values) ? null : values;
         this.noteValueChange(newValues);
-        if(!this.props.commitOnChange) this.doCommit();
+        if (!this.props.commitOnChange) this.doCommit();
     }
 
 
