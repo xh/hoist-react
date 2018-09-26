@@ -18,7 +18,6 @@ import {
     isPlainObject,
     isString,
     last,
-    orderBy,
     sortBy,
     pull,
     uniq
@@ -196,12 +195,8 @@ export class GridModel {
 
     /** Select the first row in the grid. */
     selectFirst() {
-        const {store, selModel, sortBy} = this,
-            colIds = sortBy.map(it => it.colId),
-            sorts = sortBy.map(it => it.sort),
-            recs = orderBy(store.records, colIds, sorts);
-
-        if (recs.length) selModel.select(recs[0]);
+        const first = this.agApi.getDisplayedRowAtIndex(0);
+        if (first) this.selModel.select(first);
     }
 
     /** Does the grid have any records to show? */
