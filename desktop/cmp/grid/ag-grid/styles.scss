@@ -57,6 +57,17 @@
       &.xh-grid-header-multisort .xh-grid-header-sort-icon svg {
         opacity: 0.5;
       }
+
+      .xh-grid-header-menu-icon {
+        display: none;
+        cursor: pointer;
+      }
+
+      &:hover, &.xh-grid-header-filtered {
+        .xh-grid-header-menu-icon {
+          display: block;
+        }
+      }
     }
   }
 
