@@ -45,11 +45,17 @@
 
       span {
         flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       svg {
         margin-left: var(--xh-pad-half-px);
         color: var(--xh-grid-header-icon-color);
+      }
+
+      &.xh-grid-header-multisort .xh-grid-header-sort-icon svg {
+        opacity: 0.5;
       }
     }
   }

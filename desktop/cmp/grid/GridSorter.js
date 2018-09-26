@@ -6,6 +6,7 @@
  */
 
 import {Utils} from 'ag-grid';
+import {isNumber} from 'lodash';
 
 export class GridSorter {
 
@@ -21,7 +22,7 @@ export class GridSorter {
      */
     constructor({
         colId,
-        sort,
+        sort = 'asc',
         abs = false
     }) {
         this.colId = colId;
@@ -31,10 +32,10 @@ export class GridSorter {
 
     comparator(v1, v2) {
         if (this.abs) {
-            return Math.abs(v1) - Math.abs(v2);
-        } else {
-            return Utils.defaultComparator(v1, v2);
+            v1 = isNumber(v1) ? Math.abs(v1) : v1;
+            v2 = isNumber(v2) ? Math.abs(v2) : v2;
         }
+        return Utils.defaultComparator(v1, v2);
     }
 
 }

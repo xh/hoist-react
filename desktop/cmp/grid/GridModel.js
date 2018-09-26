@@ -268,12 +268,14 @@ export class GridModel {
         sorters = castArray(sorters);
         sorters = sorters.map(it => {
             if (isString(it)) it = {colId: it};
-            it.sort = it.sort || 'asc';
             return isPlainObject(it) ? new GridSorter(it) : it;
         });
 
-        const sortIsValid = sorters.every(it => this.findColumn(this.columns, it.colId));
-        if (!sortIsValid) return;
+        const invalidSorters = sorters.filter(it => !this.findColumn(this.columns, it.colId));
+        if (invalidSorters.length) {
+            console.warn('GridSorter colId not found in grid columns', invalidSorters);
+            return;
+        }
 
         this.sortBy = sorters;
     }

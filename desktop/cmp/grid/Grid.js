@@ -6,7 +6,7 @@
  */
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {find, isBoolean, isEqual, isNil, isNumber, isString, merge, xor, cloneDeep} from 'lodash';
+import {find, isBoolean, isNil, isNumber, isString, merge, xor, cloneDeep} from 'lodash';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
@@ -338,9 +338,7 @@ export class Grid extends Component {
         return {
             track: () => [this.model.agApi, this.model.sortBy],
             run: ([api, sortBy]) => {
-                if (api && !isEqual(api.getSortModel(), sortBy)) {
-                    api.setSortModel(sortBy);
-                }
+                if (api) api.setSortModel(sortBy);
             }
         };
     }
