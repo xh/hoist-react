@@ -35,7 +35,7 @@ export class ColChooser extends Component {
         if (!isOpen) return null;
 
         return dialog({
-            icon: Icon.grid(),
+            icon: Icon.gridPanel(),
             title: 'Choose Columns',
             className: 'xh-grid-column-chooser',
             isOpen: true,
