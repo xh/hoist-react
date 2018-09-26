@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {find, isEqual, merge, cloneDeep} from 'lodash';
-import {observable, runInAction} from '@xh/hoist/mobx';
+import {runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
 import './ag-grid';
