@@ -7,7 +7,7 @@
 
 import {PropTypes as PT} from 'prop-types';
 import moment from 'moment';
-import {assign} from 'lodash';
+import {assign, clone} from 'lodash';
 
 import {fmtDate} from '@xh/hoist/format';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
@@ -91,7 +91,7 @@ export class DateInput extends HoistInput {
         } = this.props;
 
         dayPickerProps = assign({fixedWeeks: true}, dayPickerProps);
-        timePickerProps = timePrecision ? timePickerProps: null;
+        timePickerProps = timePrecision ? timePickerProps: undefined;
 
         return bpDateInput({
             className: this.getClassName(),
@@ -150,11 +150,14 @@ export class DateInput extends HoistInput {
         if (date < minDate) date = minDate;
         if (date > maxDate) date = maxDate;
 
+
+        date = this.applyPrecision(date);
         this.noteValueChange(date);
 
         // Blueprint won't always close popover (e.g. choosing a date in previous month). Force it to.
         this.child.value.setState({isOpen: false});
     }
+    
 
     onKeyPress = (ev) => {
         if (ev.key == 'Enter') this.doCommit();
@@ -172,6 +175,18 @@ export class DateInput extends HoistInput {
         this.noteFocused();
     }
 
+    applyPrecision(date)  {
+        let {timePrecision} = this.props;
+        date = clone(date);
+        if (timePrecision == 'second') {
+            date.setMilliseconds(0);
+        } else if (timePrecision == 'minute') {
+            date.setSeconds(0, 0);
+        } else {
+            date.setHours(0, 0, 0, 0);
+        }
+        return date;
+    }
 }
 
 export const dateInput = elemFactory(DateInput);
