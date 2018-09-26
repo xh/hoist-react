@@ -81,7 +81,7 @@ export class DateInput extends HoistInput {
     render() {
         const {props} = this,
             dayPickerProps = assign({fixedWeeks: true}, props.dayPickerProps),
-            timePickerProps = timePrecision ? timePickerProps: undefined,
+            timePickerProps = props.timePrecision ? timePickerProps: undefined,
             popoverPosition = withDefault(props.popoverPosition, 'auto');
 
         return bpDateInput({
@@ -109,7 +109,7 @@ export class DateInput extends HoistInput {
             },
             dayPickerProps,
             timePickerProps,
-            timePrecision: props.timePrecision
+            timePrecision: props.timePrecision,
             minDate: props.minDate,
             maxDate: props.maxDate,
             disabled: props.disabled,
@@ -165,6 +165,19 @@ export class DateInput extends HoistInput {
 
     forcePopoverClose() {
         this.child.value.setState({isOpen: false});
+    }
+    
+    applyPrecision(date)  {
+        let {timePrecision} = this.props;
+        date = clone(date);
+        if (timePrecision == 'second') {
+            date.setMilliseconds(0);
+        } else if (timePrecision == 'minute') {
+            date.setSeconds(0, 0);
+        } else {
+            date.setHours(0, 0, 0, 0);
+        }
+        return date;
     }
 }
 export const dateInput = elemFactory(DateInput);

@@ -22,7 +22,7 @@ export class NumberInput extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
-        value: PT.string,
+        value: PT.number,
 
         /** Text to display when control is empty */
         placeholder: PT.string,
