@@ -348,10 +348,14 @@ export class Grid extends Component {
             track: () => [this.model.agApi, this.model.columns, this.model.sortBy],
             run: ([api]) => {
                 if (api) {
-                    // ag-grid loses expand state when columns re-defined.
-                    const expandState = this.readExpandState(api);
+                    // ag-grid loses expand state and column filter state
+                    // when columns are re-defined.
+                    const expandState = this.readExpandState(api),
+                        filterState = this.readFilterState(api);
+
                     api.setColumnDefs(this.getColumnDefs());
                     this.writeExpandState(api, expandState);
+                    this.writeFilterState(api, filterState);
                     api.sizeColumnsToFit();
                 }
             }
@@ -416,5 +420,14 @@ export class Grid extends Component {
             api.onGroupExpandedOrCollapsed();
         }
     }
+
+    readFilterState(api) {
+        return api.getFilterModel();
+    }
+
+    writeFilterState(api, filterState) {
+        api.setFilterModel(filterState);
+    }
+
 }
 export const grid = elemFactory(Grid);
