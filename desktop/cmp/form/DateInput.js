@@ -7,7 +7,7 @@
 
 import {PropTypes as PT} from 'prop-types';
 import moment from 'moment';
-import {assign} from 'lodash';
+import {assign, clone} from 'lodash';
 
 import {fmtDate} from '@xh/hoist/format';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
@@ -17,7 +17,7 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
- * A Calendar Control for choosing a Day.
+ * A Calendar Control for choosing a Date.
  *
  * @see HoistInput for properties additional to those documented below.
  */
@@ -42,6 +42,26 @@ export class DateInput extends HoistInput {
         minDate: PT.instanceOf(Date),
         /** Maximum (inclusive) valid date. */
         maxDate: PT.instanceOf(Date),
+
+        /**
+         * MomentJS format of date for display and parsing.
+         *
+         * Defaults to YYYY-MM-DD HH:mm:ss, or a prefix of it, with presence of time components dependent on
+         * the timePrecision prop.
+         */
+        formatString: PT.string,
+
+        /**
+         * The precision of time selection that accompanies the calendar.
+         * If undefined, control will not show time.
+         */
+        timePrecision: PT.oneOf(['second', 'minute']),
+
+        /**
+         * Props passed to the TimePicker.  @see https://blueprintjs.com
+         */
+        timePickerProps: PT.object,
+
         /** Props passed to ReactDayPicker component. @see http://react-day-picker.js.org/ */
         dayPickerProps: PT.object,
         /** Icon to display on the left side of the field */
@@ -61,6 +81,7 @@ export class DateInput extends HoistInput {
     render() {
         const {props} = this,
             dayPickerProps = assign({fixedWeeks: true}, props.dayPickerProps),
+            timePickerProps = timePrecision ? timePickerProps: undefined,
             popoverPosition = withDefault(props.popoverPosition, 'auto');
 
         return bpDateInput({
@@ -87,6 +108,8 @@ export class DateInput extends HoistInput {
                 onClose: this.onPopoverWillClose
             },
             dayPickerProps,
+            timePickerProps,
+            timePrecision: props.timePrecision
             minDate: props.minDate,
             maxDate: props.maxDate,
             disabled: props.disabled,
@@ -94,12 +117,24 @@ export class DateInput extends HoistInput {
         });
     }
 
-    formatDate(date) {
-        return fmtDate(date);
+    getFormat() {
+        const {formatString, timePrecision} = this.props;
+        if (formatString) return formatString;
+        let ret = 'YYYY-MM-DD';
+        if (timePrecision == 'minute') {
+            ret += ' HH:mm';
+        } else if (timePrecision == 'second') {
+            ret += ' HH:mm:ss';
+        }
+        return ret;
     }
 
-    parseDate(dateString) {
-        return moment(dateString, 'YYYY-MM-DD', true).toDate();
+    formatDate = (date) => {
+        return fmtDate(date, {fmt: this.getFormat()});
+    }
+
+    parseDate = (dateString) => {
+        return moment(dateString, this.getFormat()).toDate();
     }
 
     noteBlurred() {
@@ -114,6 +149,8 @@ export class DateInput extends HoistInput {
         if (date < minDate) date = minDate;
         if (date > maxDate) date = maxDate;
 
+
+        date = this.applyPrecision(date);
         this.noteValueChange(date);
         this.forcePopoverClose();
     };

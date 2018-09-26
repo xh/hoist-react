@@ -7,7 +7,7 @@
 
 import {XH} from '@xh/hoist/core';
 
-import {UrlStore} from '@xh/hoist/data';
+import {UrlStore, Record} from '@xh/hoist/data';
 
 import {RestField} from './RestField';
 
@@ -73,8 +73,12 @@ export class RestStore extends UrlStore {
             url,
             body: {data: rec}
         }).then(response => {
-            const recs = this.createRecordMap([response.data]);
-            this.updateRecordInternal(recs.values().next().value);
+            const newRec = new Record({fields: this.fields, raw: response.data});
+            if (isAdd) {
+                this.addRecordInternal(newRec);
+            } else {
+                this.updateRecordInternal(rec, newRec);
+            }
         }).then(() => {
             return this.ensureLookupsLoadedAsync();
         }).linkTo(

@@ -77,6 +77,7 @@ body {
   --xh-grid-bg-odd: var(--grid-bg-odd, #{mc('grey', '100')});
   --xh-grid-border-color: var(--grid-border-color, var(--xh-border-color));
   --xh-grid-cell-focus-border-color: var(--grid-cell-focus-border-color, transparent);
+  --xh-grid-empty-text-color: var(--grid-empty-text-color, var(--xh-text-color-muted));
   --xh-grid-font-family: var(--grid-font-family, var(--xh-font-family));
   --xh-grid-font-size: var(--grid-font-size, var(--xh-font-size));
   --xh-grid-font-size-px: calc(var(--xh-grid-font-size) * 1px);
