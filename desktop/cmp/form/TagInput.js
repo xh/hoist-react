@@ -6,11 +6,10 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
-import {action} from '@xh/hoist/mobx';
-import {Classes, menuItem, tagInput as bpTagInput} from '@xh/hoist/kit/blueprint';
+import {tagInput as bpTagInput} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {HoistInput} from '@xh/hoist/cmp/form';
-import {Icon} from '@xh/hoist/icon';
+import './TagInput.scss'
 
 /**
  * A Tag Input Component
@@ -29,76 +28,51 @@ export class TagInput extends HoistInput {
         /** Optional custom tagRenderer, a function that receives the value property of each selected option.
          *  Should return a ReactNode or string */
         tagRenderer: PT.func,
-        placeholder: PT.string
+        placeholder: PT.string,
+        allowDuplicates: PT.bool,
+        addOnBlur: PT.bool,
+        rightElement: PT.element
     };
 
-    delegateProps = ['className', 'disabled'];
+    static defaultProps = {
+        commitOnChange: true,
+        allowDuplicates: false
+    };
 
     baseClassName = 'xh-tag-input';
+    delegateProps = ['placeholder', 'disabled', 'addOnBlur','rightElement'];
 
     constructor(props) {
         super(props);
     }
 
     render() {
-        let {placeholder, disabled} = this.props,
-            {internalOptions} = this;
-
         return bpTagInput({
-            onBlur: this.onBlur,
-            onFocus: this.onFocus,
             tagProps: {minimal: true},
             className: this.getClassName(),
-            placeholder,
-            inputProps: {
-                placeholder: '',
-                autoComplete: 'nope'
-            },
+            onChange: this.onChange,
             onRemove: this.onRemoveTag,
-            $values: this.externalValue,
-            disabled
+            values: this.renderValue || [],
+            ...this.getDelegateProps()
         });
     }
 
-    onBlur = () => {
-        this.noteBlurred();
-    }
-
-    onFocus = () => {
-        this.noteFocused();
+    onChange = (values) => {
+        this.onTagsChange(values)
     }
 
     onRemoveTag = (tag, idx) => {
-        // the tag parameter is determined by the tagRenderer, so it may not match the value representation
-        const value = this.externalValue[idx];
-        this.onItemSelect({value});
+        const externalVal = castArray(clone(this.externalValue));
+        externalVal.splice(idx,1);
+        this.onTagsChange(externalVal)
     }
 
-    @action
-    setInternalValue(val) {
-        const externalVal = this.externalValue ? castArray(clone(this.externalValue)) : [];
-        externalVal.includes(val) ? remove(externalVal, (it) => it == val) : externalVal.push(val);
-
-        this.internalValue = isEmpty(externalVal) ? null : externalVal;
+    onTagsChange = (values) => {
+        const newValues = isEmpty(values) ? null : values;
+        this.noteValueChange(newValues);
+        if(!this.props.commitOnChange) this.doCommit();
     }
 
-    getTagRenderer() {
-        return this.props.tagRenderer || this.defaultTagRenderer;
-    }
-
-    defaultTagRenderer = (item) => {
-        return item;
-    }
-
-    defaultOptionRenderer = (option, optionProps) => {
-        return menuItem({
-            key: option.value,
-            text: option.label,
-            labelElement: (this.externalValue && this.externalValue.includes(option.value)) ? Icon.check() : '',
-            onClick: optionProps.handleClick,
-            active: optionProps.modifiers.active
-        });
-    }
 
 }
-export const tagInput = elemFactory(tagInput);
+export const tagInput = elemFactory(TagInput);

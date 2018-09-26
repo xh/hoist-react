@@ -21,3 +21,4 @@ export * from './dropdown/ComboBox';
 export * from './dropdown/QueryComboBox';
 export * from './dropdown/Select';
 export * from './dropdown/MultiSelect';
+export * from './TagInput'
