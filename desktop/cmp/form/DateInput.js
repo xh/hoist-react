@@ -7,7 +7,7 @@
 
 import {PropTypes as PT} from 'prop-types';
 import moment from 'moment';
-import {assign} from 'lodash';
+import {assign, clone} from 'lodash';
 
 import {fmtDate} from '@xh/hoist/format';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
@@ -17,7 +17,7 @@ import {Ref} from '@xh/hoist/utils/react';
 import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
- * A Calendar Control for choosing a Day.
+ * A Calendar Control for choosing a Date.
  *
  * @see HoistInput for properties additional to those documented below.
  */
@@ -42,8 +42,28 @@ export class DateInput extends HoistInput {
         minDate: PT.instanceOf(Date),
         maxDate: PT.instanceOf(Date),
 
+        /**
+         * MomentJS format of date for display and parsing.
+         *
+         * Defaults to YYYY-MM-DD HH:mm:ss, or a prefix of it, with presence of time components dependent on
+         * the timePrecision prop.
+         */
+        formatString: PT.string,
+
+        /**
+         * The precision of time selection that accompanies the calendar.
+         * If undefined, control will not show time.
+         */
+        timePrecision: PT.oneOf(['second', 'minute']),
+
+        /**
+         * Props passed to the TimePicker.  @see https://blueprintjs.com
+         */
+        timePickerProps: PT.object,
+
         /** Props passed to ReactDayPicker component. @see http://react-day-picker.js.org/ */
         dayPickerProps: PT.object,
+
         /** Icon to display on the left side of the field */
         leftIcon: PT.element,
         /** Element to display on the right side of the field */
@@ -57,9 +77,20 @@ export class DateInput extends HoistInput {
     baseClassName = 'xh-date-input';
 
     render() {
-        let {minDate, maxDate, width, popoverPosition, style, dayPickerProps, leftIcon} = this.props;
+        let {
+            minDate,
+            maxDate,
+            width,
+            popoverPosition,
+            style,
+            dayPickerProps,
+            leftIcon,
+            timePrecision,
+            timePickerProps
+        } = this.props;
 
         dayPickerProps = assign({fixedWeeks: true}, dayPickerProps);
+        timePickerProps = timePrecision ? timePickerProps: undefined;
 
         return bpDateInput({
             className: this.getClassName(),
@@ -84,17 +115,31 @@ export class DateInput extends HoistInput {
             },
             minDate,
             maxDate,
+            timePrecision,
+            timePickerProps,
             dayPickerProps,
             ...this.getDelegateProps()
         });
     }
 
-    formatDate(date) {
-        return fmtDate(date);
+    getFormat() {
+        const {formatString, timePrecision} = this.props;
+        if (formatString) return formatString;
+        let ret = 'YYYY-MM-DD';
+        if (timePrecision == 'minute') {
+            ret += ' HH:mm';
+        } else if (timePrecision == 'second') {
+            ret += ' HH:mm:ss';
+        }
+        return ret;
     }
 
-    parseDate(dateString) {
-        return moment(dateString, 'YYYY-MM-DD', true).toDate();
+    formatDate = (date) => {
+        return fmtDate(date, {fmt: this.getFormat()});
+    }
+
+    parseDate = (dateString) => {
+        return moment(dateString, this.getFormat()).toDate();
     }
 
     onChange = (date, isUserChange) => {
@@ -104,11 +149,14 @@ export class DateInput extends HoistInput {
         if (date < minDate) date = minDate;
         if (date > maxDate) date = maxDate;
 
+
+        date = this.applyPrecision(date);
         this.noteValueChange(date);
 
         // Blueprint won't always close popover (e.g. choosing a date in previous month). Force it to.
         this.child.value.setState({isOpen: false});
     }
+    
 
     onKeyPress = (ev) => {
         if (ev.key == 'Enter') this.doCommit();
@@ -126,6 +174,18 @@ export class DateInput extends HoistInput {
         this.noteFocused();
     }
 
+    applyPrecision(date)  {
+        let {timePrecision} = this.props;
+        date = clone(date);
+        if (timePrecision == 'second') {
+            date.setMilliseconds(0);
+        } else if (timePrecision == 'minute') {
+            date.setSeconds(0, 0);
+        } else {
+            date.setHours(0, 0, 0, 0);
+        }
+        return date;
+    }
 }
 
 export const dateInput = elemFactory(DateInput);
