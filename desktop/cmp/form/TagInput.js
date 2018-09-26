@@ -75,6 +75,5 @@ export class TagInput extends HoistInput {
         if (!this.props.commitOnChange) this.doCommit();
     }
 
-
 }
 export const tagInput = elemFactory(TagInput);
