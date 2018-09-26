@@ -15,9 +15,9 @@ export class GridSorter {
 
     /**
      * @param {Object} c - GridSorter configuration.
-     * @param {string} c.colId - colId for the column.
+     * @param {string} c.colId - Column ID on which to sort.
      * @param {string} c.sort - direction of sort. Either 'asc' or 'desc'.
-     * @param {boolean} [c.abs] - true to sort this column by absolute value.
+     * @param {boolean} [c.abs] - true to sort by absolute value.
      */
     constructor({
         colId,

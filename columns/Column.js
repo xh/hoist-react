@@ -38,7 +38,8 @@ export class Column {
      * @param {boolean} [c.flex] - true to auto-adjust column width based on space available
      *      within the overall grid. Flex columns are not user-resizable as they will dynamically
      *      adjust whenever the grid changes size to absorb available horizontal space.
-     * @param {boolean} [c.absSort] - true to sort this column by absolute value.
+     * @param {boolean} [c.absSort] - true to enable absolute value sorting for this column,
+     *      with column header clicks progressing from ASC > DESC > DESC (abs value).
      * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
      * @param {boolean} [c.movable] - false to prevent user from drag-and-drop re-ordering.
      * @param {Column~rendererFn} [c.renderer] - function to produce a formatted string for each cell.

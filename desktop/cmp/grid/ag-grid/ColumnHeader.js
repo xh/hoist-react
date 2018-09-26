@@ -14,10 +14,10 @@ import {computed} from '@xh/hoist/mobx';
 import {clone} from 'lodash';
 
 /**
- * A custom ag-grid header component.
+ * A custom ag-Grid header component.
  *
- * ColumnHeader offers support for absolute sorting, by rendering custom sort icons
- * and using the Column.absSort to determine the next sortBy.
+ * Relays sorting events directly to the controlling GridModel. Supports absolute value sorting
+ * by checking `Column.absSort` to determine next sortBy and by rendering custom sort icons.
  *
  * @private
  */
