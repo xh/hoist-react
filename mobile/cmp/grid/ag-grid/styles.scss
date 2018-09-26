@@ -1,0 +1,105 @@
+.ag-grid-holder > div {
+  // Ag-grid installs an outer div around itself.
+  // This should use height: auto rather than height: 100%, to allow the layoutConfig to work.
+  width: 100%;
+  height: auto !important;
+}
+
+.xh-grid {
+  font-family: var(--xh-grid-font-family);
+  font-size: var(--xh-grid-font-size-px);
+
+  .ag-root {
+    border: none;
+    background-color: var(--xh-grid-bg);
+  }
+
+  .ag-header {
+    color: var(--xh-grid-header-text-color);
+    background-color: var(--xh-grid-header-bg);
+    font-family: var(--xh-grid-font-family);
+    font-size: var(--xh-grid-font-size-px);
+  }
+
+  .ag-row {
+    background-color: var(--xh-grid-bg);
+    border-bottom-color: var(--xh-grid-border-color);
+
+    &.ag-row-odd {
+      background-color: var(--xh-grid-bg-odd);
+    }
+
+    &.ag-row-selected {
+      background-color: var(--xh-grid-bg-highlight);
+    }
+
+    &.ag-row-group {
+      color: var(--xh-grid-group-text-color);
+      background-color: var(--xh-grid-group-bg);
+    }
+  }
+
+  .ag-cell-value {
+    line-height: var(--xh-grid-line-height-px);
+  }
+
+  .ag-cell-focus {
+    border-color: var(--xh-grid-cell-focus-border-color) !important;
+    outline: 0 !important;
+  }
+
+  .ag-tool-panel {
+    border: none;
+  }
+
+  .ag-bl-overlay {
+    display: none;
+  }
+
+  .ag-cell-last-left-pinned {
+    border-right: 1px solid var(--xh-grid-border-color) !important;
+  }
+}
+
+.xh-grid-compact {
+  font-size: var(--xh-grid-compact-font-size-px);
+
+  .ag-cell-value {
+    line-height: var(--xh-grid-compact-line-height-px);
+  }
+}
+
+// Grouped header padding appears slightly off w/standard row height
+.xh-grid-standard {
+  .ag-row.ag-row-group {
+    padding-top: 2px;
+  }
+}
+
+.ag-overlay {
+  // Match loading overlay color to mask, suppress display of text in center.
+  .ag-overlay-loading-wrapper {
+    background-color: var(--xh-mask-bg);
+
+    .ag-overlay-loading-center {
+      display: none;
+    }
+  }
+
+  // Reduce default contrast of emptyText.
+  .ag-overlay-no-rows-wrapper {
+    color: var(--xh-grid-empty-text-color);
+  }
+}
+
+.xh-column-header-align-right .ag-header-cell-label {
+  width: auto;
+  float: none;
+  justify-content: flex-end;
+}
+
+.xh-column-header-align-center .ag-header-cell-label {
+  width: auto;
+  float: none;
+  justify-content: center;
+}

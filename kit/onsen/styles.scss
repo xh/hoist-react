@@ -1,25 +1,6 @@
 //--------------------
 // XH Components
 //--------------------
-.list.xh-grid {
-  .list-header {
-    padding-right: 20px;
-    position: absolute;
-    width: 100%;
-    z-index: 1;
-    background-image: none;
-    border-bottom: var(--xh-border-solid);
-  }
-
-  &:not(.xh-grid-header-hidden) ons-list-item:first-of-type {
-    margin-top: 26px;
-  }
-
-  .list-item {
-    transition: none;
-  }
-}
-
 .xh-menu {
   position: fixed !important;
   z-index: 21;
@@ -110,6 +91,12 @@
 }
 
 .xh-page {
+  .page__content {
+    display: flex;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
   .xh-page-no-scroll .page__content {
     overflow: hidden;
   }
