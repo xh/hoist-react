@@ -255,7 +255,8 @@ export class GridModel {
     }
 
     /**
-     * This method is no-op if provided any sorters without a corresponding column.
+     * This method is no-op if provided any sorters without a corresponding column or which are not
+     *      sortable.
      * @param {(string|string[]|GridSorterDef|GridSorterDef[])} sorters - colId(s) or sorter
      *      config(s) with colId and sort direction.
      */
@@ -269,7 +270,7 @@ export class GridModel {
             return it;
         });
 
-        const sortIsValid = sorters.every(it => find(this.columns, {colId: it.colId}));
+        const sortIsValid = sorters.every(it => find(this.columns, {colId: it.colId, sortable: true}));
         if (!sortIsValid) return;
 
         this.sortBy = sorters;

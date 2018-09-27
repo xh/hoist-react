@@ -40,6 +40,7 @@ export class Column {
      *      adjust whenever the grid changes size to absorb available horizontal space.
      * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
      * @param {boolean} [c.movable] - false to prevent user from drag-and-drop re-ordering.
+     * @param {boolean} [c.sortable] - false to prevent user from sorting on this column.
      * @param {Column~rendererFn} [c.renderer] - function to produce a formatted string for each cell.
      * @param {Column~elementRendererFn} [c.elementRenderer] - function which returns a React component.
      * @param {string} [c.chooserName] - name to display within the column chooser component.
@@ -81,6 +82,7 @@ export class Column {
         flex,
         resizable,
         movable,
+        sortable,
         renderer,
         elementRenderer,
         chooserName,
@@ -120,6 +122,7 @@ export class Column {
 
         this.resizable = withDefaultTrue(resizable);
         this.movable = withDefaultTrue(movable);
+        this.sortable = withDefaultTrue(sortable);
 
         this.renderer = renderer;
         this.elementRenderer = elementRenderer;
@@ -151,7 +154,8 @@ export class Column {
             minWidth: this.minWidth,
             maxWidth: this.maxWidth,
             suppressResize: !this.resizable,
-            suppressMovable: !this.movable
+            suppressMovable: !this.movable,
+            suppressSorting: !this.sortable
         };
 
         if (this.isTreeColumn) {

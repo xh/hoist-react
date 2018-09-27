@@ -9,9 +9,11 @@ import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 
 export const actionCol = {
     colId: 'actions',
-    headerName: '',
+    headerName: null,
     align: 'center',
     width: 52,
+    sortable: false,
+    resizable: false,
     chooserName: 'Actions',
     chooserDescription: 'Record Actions',
     excludeFromExport: true,

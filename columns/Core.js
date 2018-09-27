@@ -15,11 +15,9 @@ export const emptyFlexCol =  {
     minWidth: 0,
     movable: false,
     resizable: false,
+    sortable: false,
     excludeFromChooser: true,
-    excludeFromExport: true,
-    agOptions: {
-        suppressSorting: true
-    }
+    excludeFromExport: true
 };
 
 export const boolCheckCol = {
