@@ -263,7 +263,7 @@ export class Grid extends Component {
                 icon,
                 tooltip: it.tooltip,
                 disabled: it.disabled || !requiredRecordsMet,
-                action: () => it.actionFn({action: it, record, selection: selModel, context: actionContext})
+                action: () => it.executeAsync({record, selModel, context: actionContext})
             };
         });
     }

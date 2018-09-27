@@ -25,7 +25,7 @@ export class RecordActionButton extends Component {
 
         if (action.prepareFn) action.prepareFn({action, record, selModel, context});
 
-        const {text, icon, intent, disabled, tooltip, hidden, actionFn} = action;
+        const {text, icon, intent, disabled, tooltip, hidden} = action;
 
         if (hidden) return null;
 
@@ -52,7 +52,7 @@ export class RecordActionButton extends Component {
             intent,
             title: tooltip,
             disabled: disabled || !requiredRecordsMet,
-            onClick: () => actionFn({action, record: rec, selModel, context}),
+            onClick: () => action.executeAsync({record: rec, selModel, context}),
             ...rest
         });
     }

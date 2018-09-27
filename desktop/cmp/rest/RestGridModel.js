@@ -33,8 +33,13 @@ export const restGridDeleteAction = {
     text: 'Delete',
     icon: Icon.delete(),
     intent: 'danger',
-    actionFn: ({record, context}) => context.confirmDeleteRecord(record),
-    recordsRequired: true
+    actionFn: ({record, context}) => context.deleteRecord(record),
+    recordsRequired: true,
+    confirm: {
+        message: 'Are you sure you want to delete the selected record?',
+        title: 'Warning',
+        icon: Icon.warning({size: 'lg'})
+    }
 };
 
 /**
