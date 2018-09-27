@@ -122,6 +122,7 @@ export class GridModel {
      *      Should return a string or array of strings. Receives record data as param.
      * @param {function} [c.contextMenuFn] - closure returning a StoreContextMenu.
      *      @see StoreContextMenu
+     * @param {Object} [c.actionContext] - additional data to be passed through to actions
      */
     constructor({
         store,
@@ -137,7 +138,8 @@ export class GridModel {
         enableExport = false,
         exportFilename = 'export',
         rowClassFn = null,
-        contextMenuFn = () => this.defaultContextMenu()
+        contextMenuFn = () => this.defaultContextMenu(),
+        actionContext = null
     }) {
         this.store = store;
         this.treeMode = treeMode;
@@ -146,6 +148,7 @@ export class GridModel {
         this.exportFilename = exportFilename;
         this.contextMenuFn = contextMenuFn;
         this.rowClassFn = rowClassFn;
+        this.actionContext = actionContext;
 
         this.setColumns(columns);
 
@@ -368,7 +371,9 @@ export class GridModel {
                 return c;
             }
 
-            return c instanceof Column ? c : new Column(c);
+            // Copy the column and add an accessor for the action context. This needs to be a function
+            // so that it is preserved through deep clones of the column list
+            return new Column({...c, getContext: () => this.actionContext});
         });
     }
 

@@ -8,11 +8,34 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {actionCol} from '@xh/hoist/desktop/columns';
 import {Icon} from '@xh/hoist/icon';
 import {pluralize} from '@xh/hoist/utils/js';
 
 import {RestFormModel} from './RestFormModel';
+import {withDefault} from '../../../utils/js/LangUtils';
+
+export const restGridAddAction = {
+    text: 'Add',
+    icon: Icon.add(),
+    intent: 'success',
+    actionFn: ({context}) => context.addRecord()
+};
+
+export const restGridEditAction = {
+    text: 'Edit',
+    icon: Icon.edit(),
+    intent: 'primary',
+    actionFn: ({record, context}) => context.editRecord(record),
+    recordsRequired: 1
+};
+
+export const restGridDeleteAction = {
+    text: 'Delete',
+    icon: Icon.delete(),
+    intent: 'danger',
+    actionFn: ({record, context}) => context.confirmDeleteRecord(record),
+    recordsRequired: true
+};
 
 /**
  * Core Model for a RestGrid.
@@ -23,6 +46,8 @@ export class RestGridModel {
     //----------------
     // Properties
     //----------------
+    toolbarActions;
+
     actionEnabled = {
         add: true,
         edit: true,
@@ -33,22 +58,6 @@ export class RestGridModel {
         add: null,
         edit: null,
         del: 'Are you sure you want to delete the selected record?'
-    };
-
-    editAction = {
-        text: 'Edit',
-        icon: Icon.edit(),
-        intent: 'primary',
-        actionFn: (item, record) => this.editRecord(record),
-        recordsRequired: 1
-    };
-
-    deleteAction = {
-        text: 'Delete',
-        icon: Icon.delete(),
-        intent: 'danger',
-        actionFn: (item, record) => this.confirmDeleteRecord(record),
-        recordsRequired: true
     };
 
     unit = null;
@@ -68,7 +77,7 @@ export class RestGridModel {
     /**
      * @param {Object} [actionEnabled] - map of action (e.g. 'add'/'edit'/'delete') to boolean  See default prop
      * @param {Object} [actionWarning] - map of action (e.g. 'add'/'edit'/'delete') to string.  See default prop.
-     * @param {Object} [actionColEnabled] - whether an action column with edit and delete buttons should be added to the grid.
+     * @param {Object[]|RecordAction[]} [toolbarActions] - actions to display in the toolbar. Defaults to add, edit, delete.
      * @param {string} [unit] - name that describes records in this grid.
      * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
      * @param {function} [enhanceToolbar] - a function used to mutate RestGridToolbar items
@@ -78,39 +87,24 @@ export class RestGridModel {
     constructor({
         actionEnabled,
         actionWarning,
-        actionColEnabled,
+        toolbarActions,
         unit = 'record',
         filterFields,
         enhanceToolbar,
         editors = [],
-        columns,
         ...rest
     }) {
-        this.actionEnabled = Object.assign(this.actionEnabled, actionEnabled);
+        this.actionEnabled = Object.assign(this.actionEnabled, actionWarning);
         this.actionWarning = Object.assign(this.actionWarning, actionWarning);
-        this.actionColEnabled = actionColEnabled;
+        this.toolbarActions = withDefault(toolbarActions, [restGridAddAction, restGridEditAction, restGridDeleteAction]);
         this.unit = unit;
         this.filterFields = filterFields;
         this.enhanceToolbar = enhanceToolbar;
 
-        const cols = [];
-        if (actionColEnabled && (this.actionEnabled.edit || this.actionEnabled.del)) {
-            cols.push({
-                ...actionCol,
-                width: this.actionEnabled.edit && this.actionEnabled.del ? 78 : 50,
-                actions: [
-                    this.actionEnabled.edit ? this.editAction : null,
-                    this.actionEnabled.del ? this.deleteAction : null
-                ]
-            });
-        }
-
-        cols.push(...columns);
-
         this.gridModel = new GridModel({
             contextMenuFn: this.contextMenuFn,
             exportFilename: pluralize(unit),
-            columns: cols,
+            actionContext: this,
             ...rest
         });
 
@@ -165,8 +159,8 @@ export class RestGridModel {
                     icon: Icon.add(),
                     actionFn: () => this.addRecord()
                 },
-                this.editAction,
-                this.deleteAction,
+                restGridEditAction,
+                restGridDeleteAction,
                 '-',
                 ...GridModel.defaultContextMenuTokens
             ],

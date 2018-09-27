@@ -6,7 +6,7 @@
  */
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {find, isBoolean, isEqual, isNil, isNumber, isString, merge, xor, cloneDeep} from 'lodash';
+import {find, isEqual, isNil, isString, merge, xor, cloneDeep} from 'lodash';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
@@ -214,25 +214,25 @@ export class Grid extends Component {
         // TODO: Display this as Blueprint Context menu e.g:
         // ContextMenu.show(contextMenu({menuItems}), {left:0, top:0}, () => {});
 
-        const {store, selModel, contextMenuFn} = this.model;
+        const {store, selModel, contextMenuFn, actionContext} = this.model;
         if (!contextMenuFn) return null;
 
         const menu = contextMenuFn(params, this.model),
             recId = params.node ? params.node.id : null,
-            rec = isNil(recId) ? null : store.getById(recId, true),
+            record = isNil(recId) ? null : store.getById(recId, true),
             selectedIds = selModel.ids;
 
         // Adjust selection to target record -- and sync to grid immediately.
-        if (rec && !(selectedIds.includes(recId))) {
-            selModel.select(rec);
+        if (record && !(selectedIds.includes(recId))) {
+            selModel.select(record);
         }
-        if (!rec) selModel.clear();
+        if (!record) selModel.clear();
         const {count} = selModel;
 
         // Prepare each item
         const items = menu.items;
         items.forEach(it => {
-            if (it.prepareFn) it.prepareFn(it, rec, selModel);
+            if (it.prepareFn) it.prepareFn({action: it, record, selModel, context: actionContext});
         });
 
         return items.filter(it => {
@@ -251,9 +251,7 @@ export class Grid extends Component {
             if (it === '-') return 'separator';
             if (isString(it)) return it;
 
-            const required = it.recordsRequired,
-                requiredRecordsNotMet = (isBoolean(required) && required && count === 0) ||
-                    (isNumber(required) && count !== required);
+            const requiredRecordsMet = it.meetsRecordRequirement(count);
 
             let icon = it.icon;
             if (isValidElement(icon)) {
@@ -264,8 +262,8 @@ export class Grid extends Component {
                 name: it.text,
                 icon,
                 tooltip: it.tooltip,
-                disabled: (it.disabled || requiredRecordsNotMet),
-                action: () => it.actionFn(it, rec, selModel)
+                disabled: it.disabled || !requiredRecordsMet,
+                action: () => it.actionFn({action: it, record, selection: selModel, context: actionContext})
             };
         });
     }

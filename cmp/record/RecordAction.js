@@ -5,6 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {isBoolean, isNumber, isNil} from 'lodash';
+
 export class RecordAction {
 
     text;
@@ -60,13 +62,22 @@ export class RecordAction {
         this.prepareFn = prepareFn;
         this.recordsRequired = recordsRequired;
     }
+
+    meetsRecordRequirement(count) {
+        const required = this.recordsRequired;
+        return isNil(required) ||
+            (isBoolean(required) && (!required || required && count > 0)) ||
+            (isNumber(required) && count === required);
+    }
 }
 
 /**
  * @callback ActionCb - called on store context menu item click.
- * @param {ContextMenuItem} item - the menu item itself.
- * @param {Object} [record] - row data object (entire row, if any).
- * @param {Object[]} [selection] - all currently selected records (if any).
+ * @param {Object} p
+ * @param {ContextMenuItem} p.item - the menu item itself.
+ * @param {Object} [p.record] - row data object (entire row, if any).
+ * @param {Object[]} [p.selection] - all currently selected records (if any).
+ * @param {*} [p.context] - additional data provided by the context where this action presides
  */
 
 /**

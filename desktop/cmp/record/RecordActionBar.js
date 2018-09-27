@@ -9,10 +9,12 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {hbox} from '@xh/hoist/cmp/layout';
-import {button} from '@xh/hoist/desktop/cmp/button';
 import {RecordAction} from '@xh/hoist/cmp/record';
+import {vbox} from '../../../cmp/layout/Box';
+import {recordActionButton} from './RecordActionButton';
 
 import './RecordActionBar.scss';
+import {StoreSelectionModel} from '../../../data/StoreSelectionModel';
 
 /**
  * Component which lays out minimal icon buttons in a row.
@@ -31,44 +33,29 @@ export class RecordActionBar extends Component {
         /** RecordActions to clone or configs to create. */
         actions: PT.arrayOf(PT.oneOfType([PT.object, PT.instanceOf(RecordAction)])).isRequired,
         /** Set to false to always show action buttons */
-        showOnHover: PT.bool
+        showOnHover: PT.bool,
+        record: PT.object,
+        selModel: PT.instanceOf(StoreSelectionModel),
+        /** Data to pass through to action callbacks */
+        context: PT.object,
+        /**  */
+        minimal: PT.bool,
+        small: PT.bool,
+        vertical: PT.bool
     };
 
-    actions = [];
-
-    constructor(props) {
-        super(props);
-
-        this.actions = props.actions.filter(it => it !== null).map(it => new RecordAction(it));
-    }
-
     render() {
-        const {showOnHover = true} = this.props,
-            {actions} = this;
+        const {actions, record, selModel, context, minimal, small, vertical, showOnHover = true} = this.props;
+        if (!actions) return null;
 
-        return hbox({
-            className: this.getClassName(showOnHover ? 'xh-show-on-hover' : null),
-            items: actions.map(action => this.renderAction(action))
-        });
-    }
-
-    renderAction(action) {
-        const {record} = this.props;
-
-        if (action.prepareFn) action.prepareFn(action, record);
-
-        if (action.hidden) return null;
-
-        const {icon, intent, disabled, tooltip, actionFn} = action;
-        return button({
-            className: 'xh-record-action-button',
-            small: true,
-            minimal: true,
-            icon,
-            intent,
-            title: tooltip,
-            disabled,
-            onClick: () => actionFn(action, record)
+        return (vertical ? vbox : hbox)({
+            className: this.getClassName(
+                showOnHover ? 'xh-show-on-hover' : null,
+                vertical ? 'xh-record-action-bar--vertical' : null,
+                minimal ? 'xh-record-action-bar--minimal' : null,
+                small ? 'xh-record-action-bar--small' : null
+            ),
+            items: actions.map(action => recordActionButton({action, record, selModel, context, minimal, small}))
         });
     }
 }

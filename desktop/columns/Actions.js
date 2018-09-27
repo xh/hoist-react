@@ -17,5 +17,12 @@ export const actionCol = {
     chooserName: 'Actions',
     chooserDescription: 'Record Actions',
     excludeFromExport: true,
-    elementRenderer: (value, {column, ...rest}) => recordActionBar({actions: column.actions, showOnHover: column.actionsShowOnHover, ...rest})
+    elementRenderer: (value, {column, ...rest}) => recordActionBar({
+        actions: column.actions,
+        context: column.getContext(),
+        minimal: true,
+        small: true,
+        showOnHover: column.actionsShowOnHover,
+        ...rest
+    })
 };
