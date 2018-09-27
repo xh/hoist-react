@@ -13,6 +13,7 @@
 export const ExportFormat = {
     DEFAULT:            'General',
 
+    // Custom ExportFormat that enables text wrapping when used with ExportWidth.
     LONG_TEXT:          'Text',
 
     // Numbers

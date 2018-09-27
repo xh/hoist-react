@@ -63,8 +63,8 @@ export class Column {
      *      @see ExportManager
      * @param {ExportFormat} [c.exportFormat] - structured format string for Excel-based exports.
      *      @see ExportFormat
-     * @param {int} [c.exportWidth] - width in characters for Excel-based exports. Applies to
-     *      ExportFormat.LONG_TEXT only.
+     * @param {int} [c.exportWidth] - width in characters for Excel-based exports. Typically used
+     *      with ExportFormat.LONG_TEXT to enable text wrapping.
      * @param {(boolean|Column~tooltipFn)} [c.tooltip] - 'true' displays the raw value, or
      *      tool tip function, which is based on AG Grid tooltip callback.
      * @param {boolean} [c.excludeFromExport] - true to drop this column from a file export.

@@ -159,7 +159,6 @@ export class GridModel {
 
         this.selModel = this.initSelModel(selModel, store);
         this.stateModel = this.initStateModel(stateModel);
-
     }
 
     /**
