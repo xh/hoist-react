@@ -579,5 +579,5 @@ export const convertIconToSvg = function(iconElem, opts) {
 //-----------------------------
 const fa = function(props, name) {
     const prefix = (props && props.prefix) ? props.prefix : 'far';  // default to regular variant
-    return fontAwesomeIcon({icon: [prefix, name], ...props});
+    return fontAwesomeIcon({icon: [prefix, name], className: 'fa-fw', ...props});
 };
