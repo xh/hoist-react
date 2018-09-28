@@ -327,6 +327,7 @@ import {
     faWindow as faWindowSolid,
     faWrench as faWrenchSolid
 } from '@fortawesome/pro-solid-svg-icons';
+import {withDefault} from "@xh/hoist/utils/js";
 
 // Register imported icons with the FA library to ensure they are available by name.
 library.add(
@@ -577,8 +578,8 @@ export const convertIconToSvg = function(iconElem, opts) {
 //-----------------------------
 // Implementation
 //-----------------------------
-const fa = function(props, name) {
-    const prefix = (props && props.prefix) ? props.prefix : 'far';  // default to regular variant
-    const iconClassNames = (props && props.className) ? classNames('fa-fw', ...props.className) : 'fa-fw';
+const fa = function(props = {}, name) {
+    const prefix = withDefault(props.prefix, 'far');
+    const iconClassNames = classNames('fa-fw', props.className);
     return fontAwesomeIcon({icon: [prefix, name], className: iconClassNames, ...props});
 };
