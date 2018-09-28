@@ -5,10 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-$action-col-pad-px: var(--xh-pad-half-px);
+$action-col-pad: 5;
+$action-col-pad-px: $action-col-pad + 0px;
 
 :export {
-  actionColPadPx: $action-col-pad-px;
+  actionColPad: $action-col-pad;
 }
 
 .xh-action-col-cell {

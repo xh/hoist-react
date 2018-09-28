@@ -7,7 +7,7 @@
 
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 
-import {actionColPadPx} from './Actions.scss';
+import {actionColPad} from './Actions.scss';
 
 export const actionCol = {
     colId: 'actions',
@@ -37,7 +37,7 @@ export const actionCol = {
  *      Default small minimal buttons with an icon will be 24px
  * @returns {number} - the width in pixels
  */
-export function calcActionColWidth(count, cellPadding = actionColPadPx, buttonWidth = 24) {
-    // add 2px to cellPadding to account for 1px transparent border (on each side) in default theme
-    return count * buttonWidth + (cellPadding + 2) * 2;
+export function calcActionColWidth(count, cellPadding = Number(actionColPad), buttonWidth = 24) {
+    // add 1 to cellPadding to account for 1px transparent border in default theme
+    return (count * buttonWidth) + ((cellPadding + 1) * 2);
 }
