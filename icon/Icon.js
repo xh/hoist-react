@@ -4,11 +4,12 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {elemFactory} from '@xh/hoist/core';
 
+import classNames from 'classnames';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {library, findIconDefinition, icon} from '@fortawesome/fontawesome-svg-core';
-import classNames from 'classnames';
+import {elemFactory} from '@xh/hoist/core';
+import {withDefault} from '@xh/hoist/utils/js';
 
 import {
     faAddressCard,
@@ -327,7 +328,6 @@ import {
     faWindow as faWindowSolid,
     faWrench as faWrenchSolid
 } from '@fortawesome/pro-solid-svg-icons';
-import {withDefault} from "@xh/hoist/utils/js";
 
 // Register imported icons with the FA library to ensure they are available by name.
 library.add(
@@ -579,7 +579,8 @@ export const convertIconToSvg = function(iconElem, opts) {
 // Implementation
 //-----------------------------
 const fa = function(props = {}, name) {
-    const prefix = withDefault(props.prefix, 'far');
-    const iconClassNames = classNames('fa-fw', props.className);
+    const prefix = withDefault(props.prefix, 'far'),
+        iconClassNames = classNames('fa-fw', props.className);  // apply fa-fw for consistent icon widths in buttons, etc
+
     return fontAwesomeIcon({icon: [prefix, name], className: iconClassNames, ...props});
 };
