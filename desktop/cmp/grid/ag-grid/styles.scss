@@ -59,14 +59,7 @@
       }
 
       .xh-grid-header-menu-icon {
-        display: none;
         cursor: pointer;
-      }
-
-      &:hover, &.xh-grid-header-filtered {
-        .xh-grid-header-menu-icon {
-          display: block;
-        }
       }
     }
   }

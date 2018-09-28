@@ -117,7 +117,7 @@ export class Grid extends Component {
             deltaRowDataMode: true,
             getRowNodeId: (data) => data.id,
             allowContextMenuWithControlKey: true,
-            defaultColDef: {suppressMenu: true},
+            defaultColDef: {suppressMenu: true, menuTabs: ['filterMenuTab']},
             popupParent: document.querySelector('body'),
             navigateToNextCell: this.onNavigateToNextCell,
             defaultGroupSortComparator: this.sortByGroup,
