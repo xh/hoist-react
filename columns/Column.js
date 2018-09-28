@@ -172,13 +172,11 @@ export class Column {
             };
         }
 
-
         if (this.tooltip) {
             ret.tooltip = isFunction(this.tooltip) ?
-                ({value, data}) => this.tooltip(value, data, {colId: this.colId}) :
+                (agParams) => this.tooltip(agParams.value, {record: agParams.data, column: this, agParams}) :
                 ({value}) => value;
         }
-
 
         const {align} = this;
         if (align === 'center' || align === 'right') {
@@ -244,8 +242,13 @@ export class Column {
 /**
  * @callback Column~tooltipFn - normalized renderer function to produce a grid column tooltip.
  * @param {*} value - cell data value (column + row).
- * @param {Record} data - row-level data Record.
- * @param {Object} metadata - additional data available to the renderer,
- *      currently contains the Column's string colId.
+ * @param {TooltipMetadata} metadata - additional data about the column and row.
  * @return {string} - the formatted value for display.
+ */
+
+/**
+ * @typedef {Object} TooltipMetadata
+ * @property {Record} record - row-level data Record.
+ * @property {Column} column - column for the cell being rendered.
+ * @property {TooltipParams} [agParams] - the ag-grid tooltip params.
  */
