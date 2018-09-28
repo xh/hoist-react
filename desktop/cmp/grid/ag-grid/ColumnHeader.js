@@ -142,14 +142,12 @@ export class ColumnHeader extends Component {
         const {colId, column, activeGridSorter} = this,
             {sort, abs = false} = activeGridSorter || {};
 
-        if (!activeGridSorter) {
-            return {colId, sort: 'asc', abs: false};
-        } else if (sort === 'asc') {
+        if (sort === 'asc') {
             return {colId, sort: 'desc', abs: false};
         } else if (sort === 'desc' && column.absSort && !abs) {
             return {colId, sort: 'desc', abs: true};
         } else {
-            return null;
+            return {colId, sort: 'asc', abs: false};
         }
     }
 
