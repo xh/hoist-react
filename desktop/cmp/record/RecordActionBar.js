@@ -11,6 +11,7 @@ import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {hbox} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Record, RecordAction} from '@xh/hoist/data';
+import {withDefault} from '@xh/hoist/utils/js';
 
 import './RecordActionBar.scss';
 
@@ -47,10 +48,11 @@ export class RecordActionBar extends Component {
     }
 
     render() {
-        const {props, actions} = this;
+        const {props, actions} = this,
+            showOnHover = withDefault(props.showOnHover, true);
 
         return hbox({
-            className: this.getClassName(props.showOnHover ? 'xh-show-on-hover' : null),
+            className: this.getClassName(showOnHover ? 'xh-show-on-hover' : null),
             items: actions.map(action => this.renderAction(action))
         });
     }

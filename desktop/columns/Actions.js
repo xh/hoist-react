@@ -6,7 +6,6 @@
  */
 
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
-import {withDefaultTrue} from '@xh/hoist/utils/js';
 
 export const actionCol = {
     colId: 'actions',
@@ -20,7 +19,7 @@ export const actionCol = {
     elementRenderer: (value, {record, column, ...rest}) => {
         return recordActionBar({
             actions: column.actions,
-            showOnHover: withDefaultTrue(column.actionsShowOnHover),
+            showOnHover: column.actionsShowOnHover,
             record,
             ...rest
         });
