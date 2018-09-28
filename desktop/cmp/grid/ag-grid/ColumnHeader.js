@@ -144,7 +144,7 @@ export class ColumnHeader extends Component {
 
         if (sort === 'asc') {
             return {colId, sort: 'desc', abs: false};
-        } else if (sort === 'desc' && column.absSort && !abs) {
+        } else if (column.absSort && !abs && (!activeGridSorter || sort === 'desc')) {
             return {colId, sort: 'desc', abs: true};
         } else {
             return {colId, sort: 'asc', abs: false};
