@@ -6,13 +6,27 @@
  */
 
 import {Utils} from 'ag-grid';
-import {isNumber} from 'lodash';
+import {isString, isNumber} from 'lodash';
 
 export class GridSorter {
 
     colId;
     sort;
     abs;
+
+    /**
+     * Create a new GridSorter. Accepts a GridSorter configuration or a pipe delimited string
+     * generated using GridSorter.toString().
+     *
+     * @param {Object|String} [cfg] - GridSorter configuration or string representation.
+     */
+    static parse(cfg) {
+        if (isString(cfg)) {
+            const [colId, sort, abs] = cfg.split('|');
+            cfg = {colId, sort, abs: !!abs};
+        }
+        return new GridSorter(cfg);
+    }
 
     /**
      * @param {Object} c - GridSorter configuration.
@@ -28,6 +42,18 @@ export class GridSorter {
         this.colId = colId;
         this.sort = sort;
         this.abs = abs;
+    }
+
+    /**
+     * Generate a delimited string representation suitable for consumption by parse().
+     * @returns {string}
+     */
+    toString() {
+        return [
+            this.colId,
+            this.sort,
+            this.abs ? 'abs' : null
+        ].filter(Boolean).join('|');
     }
 
     comparator(v1, v2) {

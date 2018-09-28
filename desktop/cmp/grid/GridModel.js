@@ -254,16 +254,15 @@ export class GridModel {
 
     /**
      * This method is no-op if provided any sorters without a corresponding column.
-     * @param {(string|string[]|Object|Object[])} sorters - colId(s) or sorter config(s) with
-     *      colId and sort direction.
+     * @param {(string|string[]|Object|Object[])} sorters - colId(s), GridSorter config(s)
+     *      or GridSorter strings.
      */
     @action
     setSortBy(sorters) {
-        // Normalize string, and partially specified values
         sorters = castArray(sorters);
         sorters = sorters.map(it => {
-            if (isString(it)) it = {colId: it};
-            return isPlainObject(it) ? new GridSorter(it) : it;
+            if (it instanceof GridSorter) return it;
+            return GridSorter.parse(it);
         });
 
         const invalidSorters = sorters.filter(it => !this.findColumn(this.columns, it.colId));
