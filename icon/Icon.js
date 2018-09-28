@@ -8,6 +8,7 @@ import {elemFactory} from '@xh/hoist/core';
 
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {library, findIconDefinition, icon} from '@fortawesome/fontawesome-svg-core';
+import classNames from 'classnames';
 
 import {
     faAddressCard,
@@ -573,11 +574,11 @@ export const convertIconToSvg = function(iconElem, opts) {
     return icon(iconDef, opts).html[0];
 };
 
-
 //-----------------------------
 // Implementation
 //-----------------------------
 const fa = function(props, name) {
     const prefix = (props && props.prefix) ? props.prefix : 'far';  // default to regular variant
-    return fontAwesomeIcon({icon: [prefix, name], className: 'fa-fw', ...props});
+    const iconClassNames = (props && props.className) ? classNames('fa-fw', ...props.className) : 'fa-fw';
+    return fontAwesomeIcon({icon: [prefix, name], className: iconClassNames, ...props});
 };
