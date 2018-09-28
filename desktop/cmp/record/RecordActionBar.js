@@ -20,9 +20,9 @@ import './RecordActionBar.scss';
  * as a row of minimal buttons. Primarily intended for use within a grid column elementRenderer to
  * display a set of row-level actions.
  *
- * To minimize UI clutter and avoid competing for the user's attention, the rendered buttons will
- * only be visible when hovering over the component (or row when used in a grid), unless the
- * `showOnHover` prop has been set to false.
+ * To minimize UI clutter and avoid competing for the user's attention, set `showOnHoverOnly` to
+ * true and the rendered buttons will only be visible when hovering over the component (or row when
+ * used in a grid)
  */
 @HoistComponent
 export class RecordActionBar extends Component {
@@ -34,8 +34,8 @@ export class RecordActionBar extends Component {
         actions: PT.arrayOf(PT.oneOfType([PT.object, PT.instanceOf(RecordAction)])).isRequired,
         /** The data Record to associate with the actions. */
         record: PT.instanceOf(Record),
-        /** Set to false to always show action buttons. */
-        showOnHover: PT.bool
+        /** Set to true to only show the action buttons when hovering over the action bar (or row when used in a grid). */
+        showOnHoverOnly: PT.bool
     };
 
     actions = [];
@@ -49,10 +49,10 @@ export class RecordActionBar extends Component {
 
     render() {
         const {props, actions} = this,
-            showOnHover = withDefault(props.showOnHover, true);
+            showOnHoverOnly = withDefault(props.showOnHoverOnly, false);
 
         return hbox({
-            className: this.getClassName(showOnHover ? 'xh-show-on-hover' : null),
+            className: this.getClassName(showOnHoverOnly ? 'xh-show-on-hover' : null),
             items: actions.map(action => this.renderAction(action))
         });
     }

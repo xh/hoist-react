@@ -6,6 +6,7 @@
  */
 
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
+import {withDefault} from '@xh/hoist/utils/js';
 
 import {actionColPad} from './Actions.scss';
 
@@ -22,7 +23,7 @@ export const actionCol = {
     elementRenderer: (value, {record, column, ...rest}) => {
         return recordActionBar({
             actions: column.actions,
-            showOnHover: column.actionsShowOnHover,
+            showOnHoverOnly: withDefault(column.actionsShowOnHoverOnly, false),
             record,
             ...rest
         });
