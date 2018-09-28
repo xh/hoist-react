@@ -7,9 +7,12 @@
 
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 
+import {actionColPadPx} from './Actions.scss';
+
 export const actionCol = {
     colId: 'actions',
     headerName: null,
+    cellClass: 'xh-action-col-cell',
     align: 'center',
     sortable: false,
     resizable: false,
@@ -30,11 +33,11 @@ export const actionCol = {
  * Calculates the width for an action column
  * @param {number} count - number of actions
  * @param {number} [cellPadding] - left and right padding (in pixels) for grid cells.
- *      Default theme is 11px padding + 1px transparent border on each side
  * @param {number} [buttonWidth] - width (in pixels) of the action buttons.
  *      Default small minimal buttons with an icon will be 24px
  * @returns {number} - the width in pixels
  */
-export function calcActionColWidth(count, cellPadding = 12, buttonWidth = 24) {
-    return count * buttonWidth + cellPadding * 2;
+export function calcActionColWidth(count, cellPadding = actionColPadPx, buttonWidth = 24) {
+    // add 2px to cellPadding to account for 1px transparent border (on each side) in default theme
+    return count * buttonWidth + (cellPadding + 2) * 2;
 }
