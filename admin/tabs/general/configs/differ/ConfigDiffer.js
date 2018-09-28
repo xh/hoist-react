@@ -4,12 +4,12 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
+import React, {Component} from 'react';
 import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {filler, fragment} from '@xh/hoist/cmp/layout';
+import {box, filler, fragment} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/desktop/cmp/grid';
-import {comboBox, label} from '@xh/hoist/desktop/cmp/form';
+import {comboBox} from '@xh/hoist/desktop/cmp/form';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -44,20 +44,21 @@ export class ConfigDiffer extends Component {
         const model = this.model;
         return panel({
             tbar: toolbar(
-                label('Compare w/Remote'),
+                box(<b>Configuration Comparison</b>),
                 filler(),
-                label('Compare with:'),
+                box('Compare with:'),
                 comboBox({
                     model,
                     commitOnChange: true,
                     placeholder: 'https://remote-host/',
                     field: 'remoteHost',
-                    width: 200,
+                    width: 250,
                     options: XH.getConf('xhAppInstances').filter(it => it != window.location.origin)
                 }),
                 button({
                     text: 'Load Diff',
                     intent: 'primary',
+                    disabled: !model.remoteHost,
                     onClick: this.onLoadDiffClick
                 })
             ),

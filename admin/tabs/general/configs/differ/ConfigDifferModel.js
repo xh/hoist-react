@@ -10,11 +10,12 @@ import {action, observable} from '@xh/hoist/mobx';
 import {cloneDeep, isEqual, remove, trimEnd} from 'lodash';
 import {pluralize} from '@xh/hoist/utils/js';
 import {XH, HoistModel} from '@xh/hoist/core';
-import {LocalStore} from '@xh/hoist/data';
+import {LocalStore, RecordAction} from '@xh/hoist/data';
 import {p} from '@xh/hoist/cmp/layout';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {Icon} from '@xh/hoist/icon';
+import {actionCol} from '@xh/hoist/desktop/columns';
 
 import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
 
@@ -28,6 +29,13 @@ export class ConfigDifferModel  {
 
     @observable isOpen = false;
     @observable remoteHost = null;
+
+    applyRemoteAction = new RecordAction({
+        text: 'Apply Remote',
+        icon: Icon.cloudDownload(),
+        actionFn: (action, rec, selection) => this.confirmApplyRemote(selection),
+        recordsRequired: true
+    });
 
     constructor(configGrid) {
         this.configGrid = configGrid;
@@ -48,7 +56,7 @@ export class ConfigDifferModel  {
                 {
                     field: 'type',
                     width: 80,
-                    renderer: this.configValueTypeFormatter
+                    renderer: this.configValueTypeRenderer
                 },
                 {
                     field: 'localValue',
@@ -68,6 +76,11 @@ export class ConfigDifferModel  {
                 {
                     field: 'status',
                     width: 120
+                },
+                {
+                    ...actionCol,
+                    width: 60,
+                    actions: [this.applyRemoteAction]
                 }
             ],
             contextMenuFn: this.contextMenuFn
@@ -76,13 +89,7 @@ export class ConfigDifferModel  {
 
     contextMenuFn = () => {
         return new StoreContextMenu({
-            items: [
-                {
-                    text: 'Apply Remote',
-                    actionFn: (item, recordClickedOn, selModel) => this.confirmApplyRemote(selModel.records),
-                    recordsRequired: true
-                }
-            ]
+            items: [this.applyRemoteAction]
         });
     }
 
@@ -187,7 +194,7 @@ export class ConfigDifferModel  {
         );
 
         XH.confirm({
-            title: 'Warning',
+            title: 'Please Confirm',
             icon: Icon.warning({size: 'lg'}),
             message,
             onConfirm: () => this.doApplyRemote(filteredRecords)
@@ -234,9 +241,9 @@ export class ConfigDifferModel  {
         return v.valueType === 'pwd' ? '*****' : v.value;
     }
 
-    configValueTypeFormatter(v, data) {
-        const local = data.localValue,
-            remote = data.remoteValue;
+    configValueTypeRenderer(v, {record}) {
+        const local = record.localValue,
+            remote = record.remoteValue;
 
         if (local && remote) {
             return local.valueType == remote.valueType ? local.valueType : '??';
