@@ -6,7 +6,7 @@
  */
 
 import {isString} from 'lodash';
-import {RecordAction} from '@xh/hoist/cmp/record';
+import {RecordAction} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 
 /**
@@ -15,7 +15,9 @@ import {Icon} from '@xh/hoist/icon';
  */
 export class StoreContextMenu {
 
+    /** @member {RecordAction[]} */
     items = [];
+    /** @member {GridModel} */
     gridModel = null;
 
     /**
@@ -39,8 +41,7 @@ export class StoreContextMenu {
     constructor({items, gridModel}) {
         this.gridModel = gridModel;
         this.items = items.map(it => {
-            if (isString(it)) return this.parseToken(it);
-            return new RecordAction(it);
+            return isString(it) ? this.parseToken(it) : new RecordAction(it);
         });
     }
 

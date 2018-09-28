@@ -5,6 +5,19 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+/**
+ * A RecordAction encapsulates a shared set of configuration for items within components such as
+ * StoreContextMenu and RecordActionBar (aka grid context menus and action columns).
+ *
+ * Components passed these actions will render them with an appropriate UI (e.g. menu item, button)
+ * and call their `actionFn` when clicked, passing it a data object sourced from the selected row(s)
+ * or node(s) on the underlying grid or data view.
+ *
+ * The `prepareFn` callback provides a way for actions to customize their enabled state, visibility,
+ * text, or other characteristics prior to being shown, based on the same relevant data object(s).
+ * @see RecordActionBar
+ * @see StoreContextMenu
+ */
 export class RecordAction {
 
     text;
@@ -28,8 +41,7 @@ export class RecordAction {
      * @param {ActionCb} [c.actionFn] - called on store action activation.
      * @param {boolean} [c.disabled] - true to disable this item.
      * @param {boolean} [c.hidden] - true to hide this item.
-     * @param {PrepareFnCb} [c.prepareFn] - called prior to showing the action in the ui,show.
-     *      available to modify the item based on current record / selection at time of
+     * @param {PrepareFnCb} [c.prepareFn] - called prior to showing the action in the UI.
      * @param {(number|boolean)} [c.recordsRequired] - how many records must be 'active'
      *      (selected and / or clicked upon) for the action to be enabled.
      *      int: specifies exactly n number of records. Defaults to 1 for single record actions.
@@ -63,16 +75,15 @@ export class RecordAction {
 }
 
 /**
- * @callback ActionCb - called on store context menu item click.
- * @param {ContextMenuItem} item - the menu item itself.
- * @param {Object} [record] - row data object (entire row, if any).
- * @param {Object[]} [selection] - all currently selected records (if any).
+ * @callback ActionCb - called when the action's UI element is clicked or otherwise triggered.
+ * @param {RecordAction} action - the action itself.
+ * @param {Record} [record] - row-level Record.
+ * @param {Record[]} [selection] - all currently selected Records.
  */
 
 /**
- * @callback PrepareFnCb - called prior to store context menu item show, available to modify the
- *      item based on current record / selection at time of show.
- * @param {ContextMenuItem} item - the menu item itself.
- * @param {Object} [record] - row data object (entire row, if any).
- * @param {Object[]} [selection] - all currently selected records (if any).
+ * @callback PrepareFnCb - called prior to rendering the action's UI element.
+ * @param {RecordAction} action - the action itself.
+ * @param {Record} [record] - row-level Record.
+ * @param {Record[]} [selection] - all currently selected Records.
  */

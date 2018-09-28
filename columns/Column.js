@@ -221,30 +221,30 @@ export class Column {
 }
 
 /**
- * @typedef {Object} CellRendererMetadata
- * @property {Record} record - the row record
- * @property {column} column - the column for the cell being rendered
- * @property {ICellRendererParams} [agParams] - the ag-grid cell renderer params
- */
-
-/**
- * @callback Column~rendererFn - normalized renderer function for a grid column cell.
+ * @callback Column~rendererFn - normalized renderer function for a grid cell.
  * @param {*} value - cell data value (column + row).
- * @param {CellRendererMetadata} metadata - additional data about the column and row
+ * @param {CellRendererMetadata} metadata - additional data about the column and row.
  * @return {string} - the formatted value for display.
  */
 
 /**
- * @callback Column~elementRendererFn - renderer function for a grid column cell which returns a React component
+ * @callback Column~elementRendererFn - renderer function for a grid cell which returns a React component
  * @param {*} value - cell data value (column + row).
- * @param {CellRendererMetadata} metadata - additional data about the column and row
- * @return {Component} - the React component to render
+ * @param {CellRendererMetadata} metadata - additional data about the column and row.
+ * @return {Element} - the React element to render.
+ */
+
+/**
+ * @typedef {Object} CellRendererMetadata
+ * @property {Record} record - row-level data Record.
+ * @property {Column} column - column for the cell being rendered.
+ * @property {ICellRendererParams} [agParams] - the ag-grid cell renderer params.
  */
 
 /**
  * @callback Column~tooltipFn - normalized renderer function to produce a grid column tooltip.
  * @param {*} value - cell data value (column + row).
- * @param {Object} data - row data object (entire row).
+ * @param {Record} data - row-level data Record.
  * @param {Object} metadata - additional data available to the renderer,
  *      currently contains the Column's string colId.
  * @return {string} - the formatted value for display.

@@ -6,16 +6,23 @@
  */
 
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
+import {withDefaultTrue} from '@xh/hoist/utils/js';
 
 export const actionCol = {
     colId: 'actions',
     headerName: null,
     align: 'center',
-    width: 52,
     sortable: false,
     resizable: false,
     chooserName: 'Actions',
     chooserDescription: 'Record Actions',
     excludeFromExport: true,
-    elementRenderer: (value, {column, ...rest}) => recordActionBar({actions: column.actions, showOnHover: column.actionsShowOnHover, ...rest})
+    elementRenderer: (value, {record, column, ...rest}) => {
+        return recordActionBar({
+            actions: column.actions,
+            showOnHover: withDefaultTrue(column.actionsShowOnHover),
+            record,
+            ...rest
+        });
+    }
 };
