@@ -4,10 +4,12 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {elemFactory} from '@xh/hoist/core';
 
+import classNames from 'classnames';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {library, findIconDefinition, icon} from '@fortawesome/fontawesome-svg-core';
+import {elemFactory} from '@xh/hoist/core';
+import {withDefault} from '@xh/hoist/utils/js';
 
 import {
     faAddressCard,
@@ -573,11 +575,12 @@ export const convertIconToSvg = function(iconElem, opts) {
     return icon(iconDef, opts).html[0];
 };
 
-
 //-----------------------------
 // Implementation
 //-----------------------------
-const fa = function(props, name) {
-    const prefix = (props && props.prefix) ? props.prefix : 'far';  // default to regular variant
-    return fontAwesomeIcon({icon: [prefix, name], ...props});
+const fa = function(props = {}, name) {
+    const prefix = withDefault(props.prefix, 'far'),
+        iconClassNames = classNames('fa-fw', props.className);  // apply fa-fw for consistent icon widths in buttons, etc
+
+    return fontAwesomeIcon({icon: [prefix, name], className: iconClassNames, ...props});
 };
