@@ -18,7 +18,9 @@ export const emptyFlexCol =  {
     excludeFromChooser: true,
     excludeFromExport: true,
     agOptions: {
-        suppressSorting: true
+        suppressSorting: true,
+        suppressMenu: true,
+        suppressFilter: true
     }
 };
 
