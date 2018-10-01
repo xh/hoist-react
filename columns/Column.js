@@ -63,6 +63,8 @@ export class Column {
      *      @see ExportManager
      * @param {ExportFormat} [c.exportFormat] - structured format string for Excel-based exports.
      *      @see ExportFormat
+     * @param {int} [c.exportWidth] - width in characters for Excel-based exports. Typically used
+     *      with ExportFormat.LONG_TEXT to enable text wrapping.
      * @param {(boolean|Column~tooltipFn)} [c.tooltip] - 'true' displays the raw value, or
      *      tool tip function, which is based on AG Grid tooltip callback.
      * @param {boolean} [c.excludeFromExport] - true to drop this column from a file export.
@@ -94,6 +96,7 @@ export class Column {
         exportName,
         exportValue,
         exportFormat,
+        exportWidth,
         excludeFromExport,
         tooltip,
         agOptions
@@ -133,6 +136,7 @@ export class Column {
         this.exportName = exportName || this.headerName || this.colId;
         this.exportValue = exportValue;
         this.exportFormat = withDefault(exportFormat, ExportFormat.DEFAULT);
+        this.exportWidth = exportWidth || null;
         this.excludeFromExport = withDefault(excludeFromExport, !field);
 
         this.tooltip = tooltip;
@@ -161,7 +165,6 @@ export class Column {
             ret.cellRendererParams = {
                 suppressCount: true,
                 suppressDoubleClickExpand: true,
-                padding: 10,
                 innerRenderer: (v) => v.data[this.field]
             };
         }
