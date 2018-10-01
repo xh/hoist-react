@@ -232,15 +232,15 @@ export class GridModel {
     }
 
     /**
-     * This method is no-op if provided a field without a corresponding column.
-     * @param {string} field - colId of field for row grouping, or falsey value to remove grouping.
+     * This method is no-op if provided a colId without a corresponding column.
+     * @param {string} colId - id of the column to use for row grouping, or falsey value to remove grouping.
      */
     @action
-    setGroupBy(field) {
+    setGroupBy(colId) {
         const cols = this.columns,
-            groupCol = find(cols, {field});
+            groupCol = find(cols, {colId});
 
-        if (field && !groupCol) return;
+        if (colId && !groupCol) return;
 
         cols.forEach(it => {
             if (it.agOptions && it.agOptions.rowGroup) {
@@ -249,7 +249,7 @@ export class GridModel {
             }
         });
 
-        if (field && groupCol) {
+        if (colId && groupCol) {
             groupCol.agOptions.rowGroup = true;
             groupCol.hide = true;
         }

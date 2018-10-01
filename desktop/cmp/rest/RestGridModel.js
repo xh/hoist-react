@@ -71,13 +71,10 @@ export class RestGridModel {
     gridModel = null;
     formModel = null;
 
-    get store() {return this.gridModel.store}
-
-    get selModel() {return this.gridModel.selModel}
-
-    get selection() {return this.gridModel.selection}
-
-    get selectedRecord() {return this.gridModel.selectedRecord}
+    get store()             {return this.gridModel.store}
+    get selModel()          {return this.gridModel.selModel}
+    get selection()         {return this.gridModel.selection}
+    get selectedRecord()    {return this.gridModel.selectedRecord}
 
     /**
      * @param {Object} [actionEnabled] - map of action (e.g. 'add'/'edit'/'delete') to boolean  See default prop
@@ -105,6 +102,7 @@ export class RestGridModel {
         this.unit = unit;
         this.filterFields = filterFields;
         this.enhanceToolbar = enhanceToolbar;
+        this.gridModel = new GridModel({contextMenuFn: this.contextMenuFn, exportFilename: pluralize(unit), ...rest});
 
         this.gridModel = new GridModel({
             contextMenuFn: this.contextMenuFn,
@@ -171,7 +169,7 @@ export class RestGridModel {
             ],
             gridModel: this.gridModel
         });
-    };
+    }
 
     confirmDeleteSelection() {
         const record = this.selectedRecord;

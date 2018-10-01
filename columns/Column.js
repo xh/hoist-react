@@ -26,6 +26,8 @@ export class Column {
      * @param {string} [c.colId] - unique identifier for the Column within its grid.
      *      Defaults to field name - one of these two properties must be specified.
      * @param {string} [c.headerName] - display text for grid header.
+     * @param {(string|string[])} [c.headerClass] - additional css classes to add to the column header.
+     * @param {(string|string[])} [c.cellClass] - additional css classes to add to each cell in the column.
      * @param {boolean} [c.isTreeColumn] - true if this column should show the tree affordances for a
      *      Tree Grid. See GridModel.treeMode.
      * @param {boolean} [c.hide] - true to suppress default display of the column.
@@ -60,6 +62,8 @@ export class Column {
      *      @see ExportManager
      * @param {ExportFormat} [c.exportFormat] - structured format string for Excel-based exports.
      *      @see ExportFormat
+     * @param {int} [c.exportWidth] - width in characters for Excel-based exports. Typically used
+     *      with ExportFormat.LONG_TEXT to enable text wrapping.
      * @param {(boolean|Column~tooltipFn)} [c.tooltip] - 'true' displays the raw value, or
      *      tool tip function, which is based on AG Grid tooltip callback.
      * @param {boolean} [c.excludeFromExport] - true to drop this column from a file export.
@@ -74,6 +78,8 @@ export class Column {
         colId,
         isTreeColumn,
         headerName,
+        headerClass,
+        cellClass,
         hide,
         align,
         width,
@@ -93,6 +99,7 @@ export class Column {
         exportName,
         exportValue,
         exportFormat,
+        exportWidth,
         excludeFromExport,
         tooltip,
         agOptions,
@@ -105,6 +112,8 @@ export class Column {
         throwIf(!this.colId, 'Must specify colId or field for a Column.');
 
         this.headerName = withDefault(headerName, startCase(this.colId));
+        this.headerClass = castArray(headerClass);
+        this.cellClass = castArray(cellClass);
         this.hide = withDefaultFalse(hide);
         this.align = align;
         this.isTreeColumn = withDefaultFalse(isTreeColumn);
@@ -136,6 +145,7 @@ export class Column {
         this.exportName = exportName || this.headerName || this.colId;
         this.exportValue = exportValue;
         this.exportFormat = withDefault(exportFormat, ExportFormat.DEFAULT);
+        this.exportWidth = exportWidth || null;
         this.excludeFromExport = withDefault(excludeFromExport, !field);
 
         this.tooltip = tooltip;
@@ -150,6 +160,8 @@ export class Column {
             field: this.field,
             colId: this.colId,
             headerName: this.headerName,
+            headerClass: this.headerClass,
+            cellClass: this.cellClass,
             hide: this.hide,
             minWidth: this.minWidth,
             maxWidth: this.maxWidth,
@@ -164,18 +176,15 @@ export class Column {
             ret.cellRendererParams = {
                 suppressCount: true,
                 suppressDoubleClickExpand: true,
-                padding: 10,
                 innerRenderer: (v) => v.data[this.field]
             };
         }
 
-
         if (this.tooltip) {
             ret.tooltip = isFunction(this.tooltip) ?
-                ({value, data}) => this.tooltip(value, data, {colId: this.colId}) :
+                (agParams) => this.tooltip(agParams.value, {record: agParams.data, column: this, agParams}) :
                 ({value}) => value;
         }
-
 
         const {align} = this;
         if (align === 'center' || align === 'right') {
@@ -218,31 +227,36 @@ export class Column {
 }
 
 /**
- * @typedef {Object} CellRendererMetadata
- * @property {Record} record - the row record
- * @property {column} column - the column for the cell being rendered
- * @property {ICellRendererParams} [agParams] - the ag-grid cell renderer params
- */
-
-/**
- * @callback Column~rendererFn - normalized renderer function for a grid column cell.
+ * @callback Column~rendererFn - normalized renderer function for a grid cell.
  * @param {*} value - cell data value (column + row).
- * @param {CellRendererMetadata} metadata - additional data about the column and row
+ * @param {CellRendererMetadata} metadata - additional data about the column and row.
  * @return {string} - the formatted value for display.
  */
 
 /**
- * @callback Column~elementRendererFn - renderer function for a grid column cell which returns a React component
+ * @callback Column~elementRendererFn - renderer function for a grid cell which returns a React component
  * @param {*} value - cell data value (column + row).
- * @param {CellRendererMetadata} metadata - additional data about the column and row
- * @return {Component} - the React component to render
+ * @param {CellRendererMetadata} metadata - additional data about the column and row.
+ * @return {Element} - the React element to render.
+ */
+
+/**
+ * @typedef {Object} CellRendererMetadata
+ * @property {Record} record - row-level data Record.
+ * @property {Column} column - column for the cell being rendered.
+ * @property {ICellRendererParams} [agParams] - the ag-grid cell renderer params.
  */
 
 /**
  * @callback Column~tooltipFn - normalized renderer function to produce a grid column tooltip.
  * @param {*} value - cell data value (column + row).
- * @param {Object} data - row data object (entire row).
- * @param {Object} metadata - additional data available to the renderer,
- *      currently contains the Column's string colId.
+ * @param {TooltipMetadata} metadata - additional data about the column and row.
  * @return {string} - the formatted value for display.
+ */
+
+/**
+ * @typedef {Object} TooltipMetadata
+ * @property {Record} record - row-level data Record.
+ * @property {Column} column - column for the cell being rendered.
+ * @property {TooltipParams} [agParams] - the ag-grid tooltip params.
  */

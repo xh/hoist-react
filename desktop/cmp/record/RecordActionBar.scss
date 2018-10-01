@@ -2,7 +2,7 @@
 .ag-row.ag-row-hover {
   .xh-record-action-bar.xh-show-on-hover {
     .xh-record-action-button {
-      display: unset;
+      visibility: visible;
     }
   }
 }
@@ -11,12 +11,12 @@
   &.xh-show-on-hover {
     &:hover {
       .xh-record-action-button {
-        display: unset;
+        visibility: visible;
       }
     }
 
     .xh-record-action-button {
-      display: none;
+      visibility: hidden;
     }
   }
 }

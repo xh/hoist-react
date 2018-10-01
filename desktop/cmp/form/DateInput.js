@@ -144,13 +144,14 @@ export class DateInput extends HoistInput {
 
     onChange = (date, isUserChange) => {
         if (!isUserChange) return;
-        const {minDate, maxDate} = this.props;
 
-        if (date < minDate) date = minDate;
-        if (date > maxDate) date = maxDate;
+        if (date) {
+            const {minDate, maxDate} = this.props;
+            if (date < minDate) date = minDate;
+            if (date > maxDate) date = maxDate;
+            date = this.applyPrecision(date);
+        }
 
-
-        date = this.applyPrecision(date);
         this.noteValueChange(date);
 
         // Blueprint won't always close popover (e.g. choosing a date in previous month). Force it to.

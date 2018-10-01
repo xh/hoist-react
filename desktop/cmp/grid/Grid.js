@@ -211,10 +211,7 @@ export class Grid extends Component {
     }
 
     getContextMenuItems = (params) => {
-        // TODO: Display this as Blueprint Context menu e.g:
-        // ContextMenu.show(contextMenu({menuItems}), {left:0, top:0}, () => {});
-
-        const {store, selModel, contextMenuFn, actionContext} = this.model;
+        const {store, selModel, contextMenuFn} = this.model;
         if (!contextMenuFn) return null;
 
         const menu = contextMenuFn(params, this.model),
@@ -226,13 +223,15 @@ export class Grid extends Component {
         if (record && !(selectedIds.includes(recId))) {
             selModel.select(record);
         }
-        if (!record) selModel.clear();
-        const {count} = selModel;
+        if (!rec) selModel.clear();
+
+        const count = selModel.count,
+            selectedRecs = selModel.records;
 
         // Prepare each item
         const items = menu.items;
         items.forEach(it => {
-            if (it.prepareFn) it.prepareFn({action: it, record, selModel, context: actionContext});
+            if (it.prepareFn) it.prepareFn({action: it, record, selection: selectedRecs, context: actionContext};
         });
 
         return items.filter(it => {
@@ -263,7 +262,7 @@ export class Grid extends Component {
                 icon,
                 tooltip: it.tooltip,
                 disabled: it.disabled || !requiredRecordsMet,
-                action: () => it.executeAsync({record, selModel, context: actionContext})
+                action: () => it.executeAsync({record, selection: selectedRecs, context: actionContext})
             };
         });
     }
