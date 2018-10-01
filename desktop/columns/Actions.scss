@@ -4,7 +4,16 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-export * from './ContextMenuSupport';
-export * from './ContextMenu';
-export * from './ContextMenuItem';
-export * from './StoreContextMenu';
+
+$action-col-pad: 5;
+$action-col-pad-px: $action-col-pad + 0px;
+
+:export {
+  actionColPad: $action-col-pad;
+}
+
+.xh-action-col-cell {
+  &.ag-cell {
+    padding: 0 $action-col-pad-px;
+  }
+}

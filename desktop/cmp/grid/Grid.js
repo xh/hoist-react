@@ -213,9 +213,6 @@ export class Grid extends Component {
     }
 
     getContextMenuItems = (params) => {
-        // TODO: Display this as Blueprint Context menu e.g:
-        // ContextMenu.show(contextMenu({menuItems}), {left:0, top:0}, () => {});
-
         const {store, selModel, contextMenuFn} = this.model;
         if (!contextMenuFn) return null;
 
@@ -229,12 +226,14 @@ export class Grid extends Component {
             selModel.select(rec);
         }
         if (!rec) selModel.clear();
-        const {count} = selModel;
+
+        const count = selModel.count,
+            selectedRecs = selModel.records;
 
         // Prepare each item
         const items = menu.items;
         items.forEach(it => {
-            if (it.prepareFn) it.prepareFn(it, rec, selModel);
+            if (it.prepareFn) it.prepareFn(it, rec, selectedRecs);
         });
 
         return items.filter(it => {
@@ -265,8 +264,9 @@ export class Grid extends Component {
             return {
                 name: it.text,
                 icon,
+                tooltip: it.tooltip,
                 disabled: (it.disabled || requiredRecordsNotMet),
-                action: () => it.action(it, rec, selModel)
+                action: () => it.actionFn(it, rec, selectedRecs)
             };
         });
     }

@@ -81,7 +81,7 @@ export class RestGridModel {
     loadData(...args) {
         return this.store.loadData(...args);
     }
-    
+
     //-----------------
     // Actions
     //------------------
@@ -118,18 +118,18 @@ export class RestGridModel {
                 {
                     text: 'Add',
                     icon: Icon.add(),
-                    action: () => this.addRecord()
+                    actionFn: () => this.addRecord()
                 },
                 {
                     text: 'Edit',
                     icon: Icon.edit(),
-                    action: (item, record) => this.editRecord(record),
+                    actionFn: (item, record) => this.editRecord(record),
                     recordsRequired: 1
                 },
                 {
                     text: 'Delete',
                     icon: Icon.delete(),
-                    action: (item, record) => this.confirmDeleteRecord(record),
+                    actionFn: (item, record) => this.confirmDeleteRecord(record),
                     recordsRequired: true
                 },
                 '-',
