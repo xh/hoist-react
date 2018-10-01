@@ -6,13 +6,13 @@
  */
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {find, isBoolean, isEqual, isNil, isNumber, isString, merge, xor, cloneDeep} from 'lodash';
+import {find, isBoolean, isNil, isNumber, isString, merge, xor, cloneDeep} from 'lodash';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import './ag-grid';
-import {agGridReact, navigateSelection} from './ag-grid';
+import {agGridReact, navigateSelection, ColumnHeader} from './ag-grid';
 import {colChooser} from './ColChooser';
 
 /**
@@ -117,7 +117,7 @@ export class Grid extends Component {
             deltaRowDataMode: true,
             getRowNodeId: (data) => data.id,
             allowContextMenuWithControlKey: true,
-            defaultColDef: {suppressMenu: true},
+            defaultColDef: {suppressMenu: true, menuTabs: ['filterMenuTab']},
             popupParent: document.querySelector('body'),
             navigateToNextCell: this.onNavigateToNextCell,
             defaultGroupSortComparator: this.sortByGroup,
@@ -131,6 +131,7 @@ export class Grid extends Component {
                     {classes: ['group-header-icon-contracted', 'fa-fw']}
                 )
             },
+            frameworkComponents: {agColumnHeader: ColumnHeader},
             rowSelection: model.selModel.mode,
             rowDeselection: true,
             getRowHeight: () => model.compact ? Grid.COMPACT_ROW_HEIGHT : Grid.ROW_HEIGHT,
@@ -140,7 +141,6 @@ export class Grid extends Component {
             onRowDoubleClicked: props.onRowDoubleClicked,
             onGridReady: this.onGridReady,
             onSelectionChanged: this.onSelectionChanged,
-            onSortChanged: this.onSortChanged,
             onGridSizeChanged: this.onGridSizeChanged,
             onDragStopped: this.onDragStopped,
 
@@ -166,12 +166,13 @@ export class Grid extends Component {
     getColumnDefs() {
         const {columns, sortBy} = this.model,
             clonedColumns = cloneDeep(columns);
+
         const cols = clonedColumns.map(c => {
             if (c.children) {
                 c.children = this.getColumnDefsFromChildren(c.children);
                 return c;
             }
-            return c.getAgSpec();
+            return c.getAgSpec(this.model);
         });
 
         let now = Date.now();
@@ -180,6 +181,7 @@ export class Grid extends Component {
             if (col) {
                 col.sort = it.sort;
                 col.sortedAt = now++;
+                col.comparator = (v1, v2) => it.comparator(v1, v2);
             }
         });
 
@@ -194,8 +196,7 @@ export class Grid extends Component {
                 c.children = this.getColumnDefsFromChildren(c.children);
                 return c;
             }
-
-            return c.getAgSpec();
+            return c.getAgSpec(this.model);
         });
 
         let now = Date.now();
@@ -204,6 +205,7 @@ export class Grid extends Component {
             if (col) {
                 col.sort = it.sort;
                 col.sortedAt = now++;
+                col.comparator = (v1, v2) => it.comparator(v1, v2);
             }
         });
 
@@ -336,22 +338,24 @@ export class Grid extends Component {
         return {
             track: () => [this.model.agApi, this.model.sortBy],
             run: ([api, sortBy]) => {
-                if (api && !isEqual(api.getSortModel(), sortBy)) {
-                    api.setSortModel(sortBy);
-                }
+                if (api) api.setSortModel(sortBy);
             }
         };
     }
 
     columnsReaction() {
         return {
-            track: () => [this.model.agApi, this.model.columns],
-            run: ([api, columns]) => {
+            track: () => [this.model.agApi, this.model.columns, this.model.sortBy],
+            run: ([api]) => {
                 if (api) {
-                    // ag-grid loses expand state when columnds re-defined.
-                    const expandState = this.readExpandState(api);
+                    // ag-grid loses expand state and column filter state
+                    // when columns are re-defined.
+                    const expandState = this.readExpandState(api),
+                        filterState = this.readFilterState(api);
+
                     api.setColumnDefs(this.getColumnDefs());
                     this.writeExpandState(api, expandState);
+                    this.writeFilterState(api, filterState);
                     api.sizeColumnsToFit();
                 }
             }
@@ -386,10 +390,6 @@ export class Grid extends Component {
         this.model.selModel.select(ev.api.getSelectedRows());
     }
 
-    onSortChanged = (ev) => {
-        this.model.setSortBy(ev.api.getSortModel());
-    }
-
     onDragStopped = (ev) => {
         this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
     }
@@ -420,5 +420,14 @@ export class Grid extends Component {
             api.onGroupExpandedOrCollapsed();
         }
     }
+
+    readFilterState(api) {
+        return api.getFilterModel();
+    }
+
+    writeFilterState(api, filterState) {
+        api.setFilterModel(filterState);
+    }
+
 }
 export const grid = elemFactory(Grid);

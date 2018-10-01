@@ -40,6 +40,8 @@ export class Column {
      * @param {boolean} [c.flex] - true to auto-adjust column width based on space available
      *      within the overall grid. Flex columns are not user-resizable as they will dynamically
      *      adjust whenever the grid changes size to absorb available horizontal space.
+     * @param {boolean} [c.absSort] - true to enable absolute value sorting for this column,
+     *      with column header clicks progressing from ASC > DESC > DESC (abs value).
      * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
      * @param {boolean} [c.movable] - false to prevent user from drag-and-drop re-ordering.
      * @param {boolean} [c.sortable] - false to prevent user from sorting on this column.
@@ -86,6 +88,7 @@ export class Column {
         minWidth,
         maxWidth,
         flex,
+        absSort,
         resizable,
         movable,
         sortable,
@@ -129,6 +132,8 @@ export class Column {
         this.minWidth = withDefault(minWidth, this.flex ? Column.FLEX_COL_MIN_WIDTH : null);
         this.maxWidth = maxWidth;
 
+        this.absSort = withDefaultFalse(absSort);
+
         this.resizable = withDefaultTrue(resizable);
         this.movable = withDefaultTrue(movable);
         this.sortable = withDefaultTrue(sortable);
@@ -155,7 +160,7 @@ export class Column {
     /**
      * Produce a Column definition appropriate for AG Grid.
      */
-    getAgSpec() {
+    getAgSpec(gridModel) {
         const ret = {
             field: this.field,
             colId: this.colId,
@@ -163,11 +168,13 @@ export class Column {
             headerClass: this.headerClass,
             cellClass: this.cellClass,
             hide: this.hide,
+            absSort: this.absSort,
             minWidth: this.minWidth,
             maxWidth: this.maxWidth,
             suppressResize: !this.resizable,
             suppressMovable: !this.movable,
-            suppressSorting: !this.sortable
+            suppressSorting: !this.sortable,
+            headerComponentParams: {gridModel, column: this}
         };
 
         if (this.isTreeColumn) {

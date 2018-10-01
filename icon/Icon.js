@@ -4,10 +4,12 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {elemFactory} from '@xh/hoist/core';
 
+import classNames from 'classnames';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {library, findIconDefinition, icon} from '@fortawesome/fontawesome-svg-core';
+import {elemFactory} from '@xh/hoist/core';
+import {withDefault} from '@xh/hoist/utils/js';
 
 import {
     faAddressCard,
@@ -15,8 +17,10 @@ import {
     faAngleLeft,
     faAngleRight,
     faArrowDown,
+    faArrowToBottom,
     faArrowToLeft,
     faArrowToRight,
+    faArrowToTop,
     faArrowUp,
     faArrowsH,
     faArrowsV,
@@ -123,8 +127,10 @@ import {
     faAngleLeft as faAngleLeftLight,
     faAngleRight as faAngleRightLight,
     faArrowDown as faArrowDownLight,
+    faArrowToBottom as faArrowToBottomLight,
     faArrowToLeft as faArrowToLeftLight,
     faArrowToRight as faArrowToRightLight,
+    faArrowToTop as faArrowToTopLight,
     faArrowUp as faArrowUpLight,
     faArrowsH as faArrowsHLight,
     faArrowsV as faArrowsVLight,
@@ -231,8 +237,10 @@ import {
     faAngleLeft as faAngleLeftSolid,
     faAngleRight as faAngleRightSolid,
     faArrowDown as faArrowDownSolid,
+    faArrowToBottom as faArrowToBottomSolid,
     faArrowToLeft as faArrowToLeftSolid,
     faArrowToRight as faArrowToRightSolid,
+    faArrowToTop as faArrowToTopSolid,
     faArrowUp as faArrowUpSolid,
     faArrowsH as faArrowsHSolid,
     faArrowsV as faArrowsVSolid,
@@ -341,8 +349,10 @@ library.add(
     faAngleLeft, faAngleLeftLight, faAngleLeftSolid,
     faAngleRight, faAngleRightLight, faAngleRightSolid,
     faArrowDown, faArrowDownLight, faArrowDownSolid,
+    faArrowToBottom, faArrowToBottomLight, faArrowToBottomSolid,
     faArrowToLeft, faArrowToLeftLight, faArrowToLeftSolid,
     faArrowToRight, faArrowToRightLight, faArrowToRightSolid,
+    faArrowToTop, faArrowToTopLight, faArrowToTopSolid,
     faArrowUp, faArrowUpLight, faArrowUpSolid,
     faArrowsH, faArrowsHLight, faArrowsHSolid,
     faArrowsV, faArrowsVLight, faArrowsVSolid,
@@ -457,8 +467,10 @@ export const Icon = {
     angleLeft(p)        {return fa(p, 'angle-left')},
     angleRight(p)       {return fa(p, 'angle-right')},
     approve(p)          {return fa(p, 'user-check')},
+    arrowToBottom(p)    {return fa(p, 'arrow-to-bottom')},
     arrowToLeft(p)      {return fa(p, 'arrow-to-left')},
     arrowToRight(p)     {return fa(p, 'arrow-to-right')},
+    arrowToTop(p)       {return fa(p, 'arrow-to-top')},
     arrowUp(p)          {return fa(p, 'arrow-up')},
     arrowDown(p)        {return fa(p, 'arrow-down')},
     arrowsLeftRight(p)  {return fa(p, 'arrows-h')},
@@ -583,11 +595,12 @@ export const convertIconToSvg = function(iconElem, opts) {
     return icon(iconDef, opts).html[0];
 };
 
-
 //-----------------------------
 // Implementation
 //-----------------------------
-const fa = function(props, name) {
-    const prefix = (props && props.prefix) ? props.prefix : 'far';  // default to regular variant
-    return fontAwesomeIcon({icon: [prefix, name], ...props});
+const fa = function(props = {}, name) {
+    const prefix = withDefault(props.prefix, 'far'),
+        iconClassNames = classNames('fa-fw', props.className);  // apply fa-fw for consistent icon widths in buttons, etc
+
+    return fontAwesomeIcon({icon: [prefix, name], className: iconClassNames, ...props});
 };

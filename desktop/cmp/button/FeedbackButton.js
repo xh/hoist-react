@@ -26,10 +26,10 @@ export class FeedbackButton extends Component {
     };
 
     render() {
-        const {icon, onClick, ...rest} = this.props;
+        const {icon, title, onClick, ...rest} = this.props;
         return button({
             icon: icon || Icon.comment(),
-            title: this.title || 'Feedback',
+            title: title || 'Feedback',
             onClick: onClick || this.onFeedbackClick,
             ...rest
         });
