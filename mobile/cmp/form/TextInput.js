@@ -10,7 +10,6 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {input} from '@xh/hoist/kit/onsen';
 
 import {HoistInput} from '@xh/hoist/cmp/form';
-import './TextInput.scss';
 
 /**
  * A Text Input

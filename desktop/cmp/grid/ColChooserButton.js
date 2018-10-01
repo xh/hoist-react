@@ -27,7 +27,7 @@ export class ColChooserButton extends Component {
 
     render() {
         return button({
-            icon: Icon.grid(),
+            icon: Icon.gridPanel(),
             title: 'Choose grid columns...',
             onClick: this.showChooser
         });

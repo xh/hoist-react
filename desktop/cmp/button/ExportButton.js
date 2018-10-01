@@ -29,10 +29,10 @@ export class ExportButton extends Component {
     };
 
     render() {
-        const {icon, onClick, exportType, ...rest} = this.props;
+        const {icon, title, onClick, model, exportType, ...rest} = this.props;
         return button({
             icon: icon || Icon.download(),
-            title: this.title || 'Export',
+            title: title || 'Export',
             onClick: onClick || this.onExportClick,
             ...rest
         });

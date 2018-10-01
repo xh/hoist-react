@@ -6,7 +6,7 @@
  */
 
 import {isString} from 'lodash';
-import {StoreContextMenuItem} from './StoreContextMenuItem';
+import {RecordAction} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 
 /**
@@ -15,12 +15,14 @@ import {Icon} from '@xh/hoist/icon';
  */
 export class StoreContextMenu {
 
+    /** @member {RecordAction[]} */
     items = [];
+    /** @member {GridModel} */
     gridModel = null;
 
     /**
      * @param {Object} c - StoreContextMenu configuration.
-     * @param {Object[]} c.items - StoreContextMenuItems or configs / strings to create.
+     * @param {Object[]} c.items - RecordActions to clone or configs / strings to create.
      *
      *      If a String, value can be '-' for a separator, a Hoist token (below),
      *      or a token supported by ag-Grid for its native menu items.
@@ -39,9 +41,7 @@ export class StoreContextMenu {
     constructor({items, gridModel}) {
         this.gridModel = gridModel;
         this.items = items.map(it => {
-            if (isString(it)) return this.parseToken(it);
-            if (it instanceof StoreContextMenuItem) return it;
-            return new StoreContextMenuItem(it);
+            return isString(it) ? this.parseToken(it) : new RecordAction(it);
         });
     }
 
@@ -50,32 +50,32 @@ export class StoreContextMenu {
 
         switch (token) {
             case 'colChooser':
-                return new StoreContextMenuItem({
+                return new RecordAction({
                     text: 'Columns...',
-                    icon: Icon.grid(),
+                    icon: Icon.gridPanel(),
                     hidden: !gridModel || !gridModel.colChooserModel,
-                    action: () => {
+                    actionFn: () => {
                         gridModel.colChooserModel.open();
                     }
                 });
             case 'export':
             case 'exportExcel':
-                return new StoreContextMenuItem({
+                return new RecordAction({
                     text: 'Export to Excel',
                     icon: Icon.download(),
                     hidden: !gridModel || !gridModel.enableExport,
                     disabled: !gridModel || !gridModel.store.count,
-                    action: () => {
+                    actionFn: () => {
                         gridModel.export({type: 'excelTable'});
                     }
                 });
             case 'exportCsv':
-                return new StoreContextMenuItem({
+                return new RecordAction({
                     text: 'Export to CSV',
                     icon: Icon.download(),
                     hidden: !gridModel || !gridModel.enableExport,
                     disabled: !gridModel || !gridModel.store.count,
-                    action: () => {
+                    actionFn: () => {
                         gridModel.export({type: 'csv'});
                     }
                 });

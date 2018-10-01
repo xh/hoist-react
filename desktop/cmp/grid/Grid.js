@@ -6,13 +6,13 @@
  */
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {find, isBoolean, isEqual, isNil, isNumber, isString, merge, xor, cloneDeep} from 'lodash';
+import {find, isBoolean, isNil, isNumber, isString, merge, xor, cloneDeep} from 'lodash';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import './ag-grid';
-import {agGridReact, navigateSelection} from './ag-grid';
+import {agGridReact, navigateSelection, ColumnHeader} from './ag-grid';
 import {colChooser} from './ColChooser';
 
 /**
@@ -32,7 +32,6 @@ import {colChooser} from './ColChooser';
 export class Grid extends Component {
 
     static propTypes = {
-
         /**
          * Options for AG Grid's API.
          *
@@ -47,11 +46,16 @@ export class Grid extends Component {
          * with a data node containing the row's data.
          * @see {@link https://www.ag-grid.com/javascript-grid-events/#properties-and-hierarchy|ag-Grid Event Docs}
          */
-        onRowDoubleClicked: PT.func
+        onRowDoubleClicked: PT.func,
+
+        /**
+         * Show a colored row background on hover. Defaults to false.
+         */
+        showHover: PT.bool
     };
 
     static ROW_HEIGHT = 28;
-    static COMPACT_ROW_HEIGHT = 22;
+    static COMPACT_ROW_HEIGHT = 24;
 
     // Observable stamp incremented every time the ag-Grid receives a new set of data.
     // Used to ensure proper re-running / sequencing of data and selection reactions.
@@ -70,7 +74,7 @@ export class Grid extends Component {
 
     render() {
         const {colChooserModel, compact} = this.model,
-            {agOptions} = this.props,
+            {agOptions, showHover} = this.props,
             layoutProps = this.getLayoutProps();
 
         // Default flex = 'auto' if no dimensions / flex specified.
@@ -88,7 +92,8 @@ export class Grid extends Component {
                 className: this.getClassName(
                     'ag-grid-holder',
                     XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
-                    compact ? 'xh-grid-compact' : 'xh-grid-standard'
+                    compact ? 'xh-grid-compact' : 'xh-grid-standard',
+                    showHover ? 'xh-grid-show-hover' : ''
                 )
             }),
             colChooser({
@@ -105,16 +110,14 @@ export class Grid extends Component {
     createDefaultAgOptions() {
         const {model, props} = this;
 
-        return {
+        let ret = {
             toolPanelSuppressSideButtons: true,
             enableSorting: true,
             enableColResize: true,
             deltaRowDataMode: true,
             getRowNodeId: (data) => data.id,
             allowContextMenuWithControlKey: true,
-            defaultColDef: {suppressMenu: true},
-            groupDefaultExpanded: 1,
-            groupUseEntireRow: true,
+            defaultColDef: {suppressMenu: true, menuTabs: ['filterMenuTab']},
             popupParent: document.querySelector('body'),
             navigateToNextCell: this.onNavigateToNextCell,
             defaultGroupSortComparator: this.sortByGroup,
@@ -128,18 +131,33 @@ export class Grid extends Component {
                     {classes: ['group-header-icon-contracted', 'fa-fw']}
                 )
             },
+            frameworkComponents: {agColumnHeader: ColumnHeader},
             rowSelection: model.selModel.mode,
             rowDeselection: true,
             getRowHeight: () => model.compact ? Grid.COMPACT_ROW_HEIGHT : Grid.ROW_HEIGHT,
+            getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             overlayNoRowsTemplate: model.emptyText || '<span></span>',
             getContextMenuItems: this.getContextMenuItems,
             onRowDoubleClicked: props.onRowDoubleClicked,
             onGridReady: this.onGridReady,
             onSelectionChanged: this.onSelectionChanged,
-            onSortChanged: this.onSortChanged,
             onGridSizeChanged: this.onGridSizeChanged,
-            onDragStopped: this.onDragStopped
+            onDragStopped: this.onDragStopped,
+
+            groupDefaultExpanded: 1,
+            groupUseEntireRow: true
         };
+
+        if (model.treeMode) {
+            ret = {
+                ...ret,
+                groupDefaultExpanded: 0,
+                groupSuppressAutoColumn: true,
+                treeData: true,
+                getDataPath: this.getDataPath
+            };
+        }
+        return ret;
     }
 
     //------------------------
@@ -148,13 +166,13 @@ export class Grid extends Component {
     getColumnDefs() {
         const {columns, sortBy} = this.model,
             clonedColumns = cloneDeep(columns);
+
         const cols = clonedColumns.map(c => {
             if (c.children) {
                 c.children = this.getColumnDefsFromChildren(c.children);
                 return c;
             }
-
-            return c.getAgSpec();
+            return c.getAgSpec(this.model);
         });
 
         let now = Date.now();
@@ -163,6 +181,7 @@ export class Grid extends Component {
             if (col) {
                 col.sort = it.sort;
                 col.sortedAt = now++;
+                col.comparator = (v1, v2) => it.comparator(v1, v2);
             }
         });
 
@@ -177,8 +196,7 @@ export class Grid extends Component {
                 c.children = this.getColumnDefsFromChildren(c.children);
                 return c;
             }
-
-            return c.getAgSpec();
+            return c.getAgSpec(this.model);
         });
 
         let now = Date.now();
@@ -187,6 +205,7 @@ export class Grid extends Component {
             if (col) {
                 col.sort = it.sort;
                 col.sortedAt = now++;
+                col.comparator = (v1, v2) => it.comparator(v1, v2);
             }
         });
 
@@ -194,9 +213,6 @@ export class Grid extends Component {
     }
 
     getContextMenuItems = (params) => {
-        // TODO: Display this as Blueprint Context menu e.g:
-        // ContextMenu.show(contextMenu({menuItems}), {left:0, top:0}, () => {});
-
         const {store, selModel, contextMenuFn} = this.model;
         if (!contextMenuFn) return null;
 
@@ -210,12 +226,14 @@ export class Grid extends Component {
             selModel.select(rec);
         }
         if (!rec) selModel.clear();
-        const {count} = selModel;
+
+        const count = selModel.count,
+            selectedRecs = selModel.records;
 
         // Prepare each item
         const items = menu.items;
         items.forEach(it => {
-            if (it.prepareFn) it.prepareFn(it, rec, selModel);
+            if (it.prepareFn) it.prepareFn(it, rec, selectedRecs);
         });
 
         return items.filter(it => {
@@ -246,8 +264,9 @@ export class Grid extends Component {
             return {
                 name: it.text,
                 icon,
+                tooltip: it.tooltip,
                 disabled: (it.disabled || requiredRecordsNotMet),
-                action: () => it.action(it, rec, selModel)
+                action: () => it.actionFn(it, rec, selectedRecs)
             };
         });
     }
@@ -268,7 +287,7 @@ export class Grid extends Component {
     dataReaction() {
         const {model} = this;
         return {
-            track: () => [model.agApi, model.store.records],
+            track: () => [model.agApi, model.store.records, model.store.dataLastUpdated],
             run: ([api, records]) => {
                 if (api) {
                     runInAction(() => {
@@ -319,19 +338,24 @@ export class Grid extends Component {
         return {
             track: () => [this.model.agApi, this.model.sortBy],
             run: ([api, sortBy]) => {
-                if (api && !isEqual(api.getSortModel(), sortBy)) {
-                    api.setSortModel(sortBy);
-                }
+                if (api) api.setSortModel(sortBy);
             }
         };
     }
 
     columnsReaction() {
         return {
-            track: () => [this.model.agApi, this.model.columns],
-            run: ([api, columns]) => {
+            track: () => [this.model.agApi, this.model.columns, this.model.sortBy],
+            run: ([api]) => {
                 if (api) {
+                    // ag-grid loses expand state and column filter state
+                    // when columns are re-defined.
+                    const expandState = this.readExpandState(api),
+                        filterState = this.readFilterState(api);
+
                     api.setColumnDefs(this.getColumnDefs());
+                    this.writeExpandState(api, expandState);
+                    this.writeFilterState(api, filterState);
                     api.sizeColumnsToFit();
                 }
             }
@@ -350,6 +374,10 @@ export class Grid extends Component {
     //------------------------
     // Event Handlers on AG Grid.
     //------------------------
+    getDataPath = (data) => {
+        return data.xhTreePath;
+    }
+
     onGridReady = (ev) => {
         this.model.setAgApi(ev.api);
     }
@@ -362,10 +390,6 @@ export class Grid extends Component {
         this.model.selModel.select(ev.api.getSelectedRows());
     }
 
-    onSortChanged = (ev) => {
-        this.model.setSortBy(ev.api.getSortModel());
-    }
-
     onDragStopped = (ev) => {
         this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
     }
@@ -375,5 +399,35 @@ export class Grid extends Component {
             ev.api.sizeColumnsToFit();
         }
     }
+
+    readExpandState(api) {
+        const ret = [];
+        api.forEachNode(node => ret.push(node.expanded));
+        return ret;
+    }
+
+    writeExpandState(api, expandState) {
+        let wasChanged = false,
+            i = 0;
+        api.forEachNode(node => {
+            const state = expandState[i++];
+            if (node.expanded !== state) {
+                node.expanded = state;
+                wasChanged = true;
+            }
+        });
+        if (wasChanged) {
+            api.onGroupExpandedOrCollapsed();
+        }
+    }
+
+    readFilterState(api) {
+        return api.getFilterModel();
+    }
+
+    writeFilterState(api, filterState) {
+        api.setFilterModel(filterState);
+    }
+
 }
 export const grid = elemFactory(Grid);

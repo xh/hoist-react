@@ -38,7 +38,7 @@ export class UrlStore extends LocalStore {
             .fetchJson({url})
             .then(data => {
                 if (dataRoot) data = data[dataRoot];
-                return this.loadDataInternal(data);
+                return this.loadData(data);
             })
             .linkTo(this.loadModel);
     }

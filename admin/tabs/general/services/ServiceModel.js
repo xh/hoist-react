@@ -48,11 +48,8 @@ export class ServiceModel {
         return this.gridModel.loadAsync();
     }
 
-    processRawData(rows) {
-        rows.forEach(r => {
-            r.provider = r.name && r.name.indexOf('hoist') === 0 ? 'Hoist' : 'App';
-        });
-        return rows;
+    processRawData(r) {
+        r.provider = r.name && r.name.indexOf('hoist') === 0 ? 'Hoist' : 'App';
     }
 
     destroy() {
