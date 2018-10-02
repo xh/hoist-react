@@ -74,7 +74,7 @@ export class Grid extends Component {
 
     render() {
         const {colChooserModel, compact} = this.model,
-            {agOptions, showHover} = this.props,
+            {agOptions, showHover, onKeyDown} = this.props,
             layoutProps = this.getLayoutProps();
 
         // Default flex = 'auto' if no dimensions / flex specified.
@@ -94,7 +94,8 @@ export class Grid extends Component {
                     XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                     compact ? 'xh-grid-compact' : 'xh-grid-standard',
                     showHover ? 'xh-grid-show-hover' : ''
-                )
+                ),
+                onKeyDown: onKeyDown ? onKeyDown : null
             }),
             colChooser({
                 omit: !colChooserModel,
