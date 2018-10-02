@@ -112,7 +112,7 @@ export const relativeTimestamp = elemFactory(RelativeTimestamp);
  * @param {string} [options.prefix] - Label preceding timestamp
  * @param {string} [options.futureSuffix] - Appended to future timestamps
  * @param {string} [options.pastSuffix] - Appended to past timestamps
- * @param {int} [options.nowEpsilon] - Interval (in seconds) that will serve as threshold for the nowString.
+ * @param {number} [options.nowEpsilon] - Interval (in seconds) that will serve as threshold for the nowString.
  * @param {string} [options.nowString] - Returned as display property when timestamp is within the nowEpsilon interval.
  * @param {string} [options.emptyResult] - Returned when timestamp is undefined
  */
