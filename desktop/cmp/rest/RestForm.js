@@ -16,6 +16,7 @@ import {Icon} from '@xh/hoist/icon';
 
 import {restControl} from './RestControl';
 import './RestForm.scss';
+import {recordActionButton} from 'desktop/cmp/record/RecordActionButton';
 
 @HoistComponent
 export class RestForm extends Component {
@@ -57,15 +58,21 @@ export class RestForm extends Component {
     }
 
     getButtons() {
-        const {isValid, isWritable, isDirty, isAdd, actionEnabled} = this.model;
+        const {isValid, isWritable, isDirty, isAdd, formDeleteAction} = this.model;
 
         return [
+            recordActionButton({
+                action: formDeleteAction,
+                context: this.model.parent,
+
+                omit: !formDeleteAction
+            }),
             button({
                 text: 'Delete',
                 icon: Icon.delete(),
                 intent: 'danger',
                 onClick: this.onDeleteClick,
-                omit: !actionEnabled.del || isAdd
+                omit: !canDelete || isAdd
             }),
             filler(),
             button({

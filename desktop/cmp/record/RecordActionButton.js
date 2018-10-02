@@ -2,7 +2,7 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {RecordAction} from '../../../cmp/record/RecordAction';
+import {RecordAction} from '@xh/hoist/data';
 import {first} from 'lodash';
 
 @HoistComponent

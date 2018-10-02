@@ -35,31 +35,6 @@ export class RestGridToolbar extends Component {
                 context: model,
                 selModel
             }),
-            /*
-            button({
-                text: 'Add',
-                icon: Icon.add(),
-                intent: 'success',
-                onClick: this.onAddClick,
-                omit: !actionEnabled.add
-            }),
-            button({
-                text: 'Edit',
-                icon: Icon.edit(),
-                intent: 'primary',
-                onClick: this.onEditClick,
-                disabled: !selectedRecord,
-                omit: !actionEnabled.edit
-            }),
-            button({
-                text: 'Delete',
-                icon: Icon.delete(),
-                intent: 'danger',
-                onClick: this.onDeleteClick,
-                disabled: !selectedRecord,
-                omit: !actionEnabled.del
-            }),
-            */
             toolbarSep({omit: isEmpty(extraItems)}),
             ...extraItems,
             filler(),
@@ -67,21 +42,6 @@ export class RestGridToolbar extends Component {
             storeFilterField({store, fields: model.filterFields}),
             exportButton({model})
         ];
-    }
-
-    //-----------------------------
-    // Implementation
-    //-----------------------------
-    onAddClick = () => {
-        this.model.addRecord();
-    }
-
-    onEditClick = () => {
-        this.model.editSelection();
-    }
-
-    onDeleteClick = () => {
-        this.model.confirmDeleteSelection();
     }
 }
 

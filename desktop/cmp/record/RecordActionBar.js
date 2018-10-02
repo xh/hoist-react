@@ -9,11 +9,12 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {hbox, vbox} from '@xh/hoist/cmp/layout';
-import {RecordAction} from '@xh/hoist/cmp/record';
+import {Record, RecordAction} from '@xh/hoist/data';
 import {recordActionButton} from './RecordActionButton';
+import {StoreSelectionModel} from '../../../data/StoreSelectionModel';
+import {withDefault} from '@xh/hoist/utils/js';
 
 import './RecordActionBar.scss';
-import {StoreSelectionModel} from '../../../data/StoreSelectionModel';
 
 /**
  * Component that accepts data object and an array of one or more RecordActions, which it renders
@@ -40,7 +41,6 @@ export class RecordActionBar extends Component {
         selModel: PT.instanceOf(StoreSelectionModel),
         /** Data to pass through to action callbacks */
         context: PT.object,
-        /**  */
         minimal: PT.bool,
         small: PT.bool,
         vertical: PT.bool
@@ -57,13 +57,13 @@ export class RecordActionBar extends Component {
 
     render() {
         const {actions, record, selModel, context, minimal, small, vertical} = this.props,
-            showOnHoverOnly = withDefault(props.showOnHoverOnly, false);
+            showOnHoverOnly = withDefault(this.props.showOnHoverOnly, false);
 
         if (!actions) return null;
 
         return (vertical ? vbox : hbox)({
             className: this.getClassName(
-                showOnHover ? 'xh-show-on-hover' : null,
+                showOnHoverOnly ? 'xh-show-on-hover' : null,
                 vertical ? 'xh-record-action-bar--vertical' : null,
                 minimal ? 'xh-record-action-bar--minimal' : null,
                 small ? 'xh-record-action-bar--small' : null

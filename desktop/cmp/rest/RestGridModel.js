@@ -52,12 +52,8 @@ export class RestGridModel {
     // Properties
     //----------------
     toolbarActions;
-
-    actionEnabled = {
-        add: true,
-        edit: true,
-        del: true
-    };
+    contextMenuActions;
+    formDeleteAction;
 
     actionWarning = {
         add: null,
@@ -77,9 +73,9 @@ export class RestGridModel {
     get selectedRecord()    {return this.gridModel.selectedRecord}
 
     /**
-     * @param {Object} [actionEnabled] - map of action (e.g. 'add'/'edit'/'delete') to boolean  See default prop
      * @param {Object} [actionWarning] - map of action (e.g. 'add'/'edit'/'delete') to string.  See default prop.
      * @param {Object[]|RecordAction[]} [toolbarActions] - actions to display in the toolbar. Defaults to add, edit, delete.
+     * @param {Object[]|RecordAction[]} [contextMenuActions] - actions to display in the grid context menu. Defaults to add, edit, delete.
      * @param {string} [unit] - name that describes records in this grid.
      * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
      * @param {function} [enhanceToolbar] - a function used to mutate RestGridToolbar items
@@ -87,18 +83,18 @@ export class RestGridModel {
      * @param {*} ...rest, arguments for GridModel.
      */
     constructor({
-        actionEnabled,
         actionWarning,
         toolbarActions,
+        contextMenuActions,
         unit = 'record',
         filterFields,
         enhanceToolbar,
         editors = [],
         ...rest
     }) {
-        this.actionEnabled = Object.assign(this.actionEnabled, actionWarning);
         this.actionWarning = Object.assign(this.actionWarning, actionWarning);
         this.toolbarActions = withDefault(toolbarActions, [restGridAddAction, restGridEditAction, restGridDeleteAction]);
+        this.contextMenuActions = withDefault(toolbarActions, [restGridAddAction, restGridEditAction, restGridDeleteAction]);
         this.unit = unit;
         this.filterFields = filterFields;
         this.enhanceToolbar = enhanceToolbar;
@@ -127,6 +123,7 @@ export class RestGridModel {
     //-----------------
     // Actions
     //------------------
+
     @action
     addRecord() {
         this.formModel.openAdd();
@@ -157,37 +154,12 @@ export class RestGridModel {
     contextMenuFn = () => {
         return new StoreContextMenu({
             items: [
-                {
-                    text: 'Add',
-                    icon: Icon.add(),
-                    actionFn: () => this.addRecord()
-                },
-                restGridEditAction,
-                restGridDeleteAction,
+                ...this.contextMenuActions,
                 '-',
                 ...GridModel.defaultContextMenuTokens
             ],
             gridModel: this.gridModel
         });
-    }
-
-    confirmDeleteSelection() {
-        const record = this.selectedRecord;
-        if (record) this.confirmDeleteRecord(record);
-    }
-
-    confirmDeleteRecord(record) {
-        const warning = this.actionWarning.del;
-        if (warning) {
-            XH.confirm({
-                message: warning,
-                title: 'Warning',
-                icon: Icon.warning({size: 'lg'}),
-                onConfirm: () => this.deleteRecord(record)
-            });
-        } else {
-            this.deleteRecord(record);
-        }
     }
 
     export(...args) {

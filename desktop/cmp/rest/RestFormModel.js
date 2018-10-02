@@ -24,7 +24,6 @@ export class RestFormModel {
     originalRecord = null;
 
     get actionWarning() {return this.parent.actionWarning}
-    get actionEnabled() {return this.parent.actionEnabled}
     get store()         {return this.parent.store}
     get fields()        {return this.store.fields}
     get loadModel()     {return this.store.loadModel}
@@ -42,8 +41,8 @@ export class RestFormModel {
 
     @computed
     get isWritable() {
-        const {isAdd, actionEnabled} = this;
-        return (isAdd && actionEnabled.add) || (!isAdd && actionEnabled.edit);
+        const {isAdd, canAdd, canEdit} = this;
+        return (isAdd && canAdd) || (!isAdd && canEdit);
     }
 
     @computed
