@@ -7,17 +7,17 @@
 
 import {Component} from 'react';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-import {HoistComponent, elemFactory, XH} from '@xh/hoist/core';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {filler, vframe} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-import {recordActionButton} from '@xh/hoist/desktop/cmp/record';
+import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
+
 import {restControl} from './RestControl';
 
 import './RestForm.scss';
-import {recordActionBar} from '../record';
 
 @HoistComponent
 export class RestForm extends Component {
