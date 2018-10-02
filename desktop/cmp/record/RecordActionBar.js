@@ -18,7 +18,8 @@ import './RecordActionBar.scss';
 /**
  * Component that accepts data object and an array of one or more RecordActions, which it renders
  * as a row of minimal buttons. Primarily intended for use within a grid column elementRenderer to
- * display a set of row-level actions.
+ * display a set of row-level actions. See the `actionCol` colDef partial exported from
+ * `@xh/hoist/desktop/columns` for a ready-made configuration.
  *
  * To minimize UI clutter and avoid competing for the user's attention, set `showOnHoverOnly` to
  * true and the rendered buttons will only be visible when hovering over the component (or row when
