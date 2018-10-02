@@ -17,7 +17,11 @@ export const emptyFlexCol =  {
     resizable: false,
     sortable: false,
     excludeFromChooser: true,
-    excludeFromExport: true
+    excludeFromExport: true,
+    agOptions: {
+        suppressMenu: true,
+        suppressFilter: true
+    }
 };
 
 export const boolCheckCol = {
