@@ -12,9 +12,11 @@ import {isJSON} from '@xh/hoist/utils/js';
 @HoistModel
 export class RestControlModel  {
 
+    /** @member {RestFormModel} */
+    parent;
+
     field;
     editor;
-    parent;
 
     get record() {return this.parent.record}
 

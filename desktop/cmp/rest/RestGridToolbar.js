@@ -11,7 +11,7 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
-import {recordActionBar} from '../record/RecordActionBar';
+import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 
 @HoistComponent
 export class RestGridToolbar extends Component {

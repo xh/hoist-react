@@ -17,7 +17,9 @@ import {restFormDeleteAction} from './RestGridModel';
 @HoistModel
 export class RestFormModel {
 
+    /** @member {RestGridModel} */
     parent = null;
+
     controlModels = [];
     toolbarActions;
     actionContext;

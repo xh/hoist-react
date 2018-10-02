@@ -28,10 +28,13 @@ export class RecordActionButton extends Component {
             count = selModel.count;
             selection = selModel.records;
 
-            if (count === 1) {
-                record = selModel.singleRecord;
-            } else {
-                record = first(selModel.records);
+            // Try to get the record from the selModel if not explicitly provided to the button
+            if (!record) {
+                if (count === 1) {
+                    record = selModel.singleRecord;
+                } else {
+                    record = first(selModel.records);
+                }
             }
         } else {
             count = record ? 1 : 0;

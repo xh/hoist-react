@@ -6,8 +6,31 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
+import {
+    restGrid,
+    RestGridModel,
+    RestStore,
+    restGridAddAction,
+    restGridEditAction,
+    restGridDeleteAction
+} from '@xh/hoist/desktop/cmp/rest';
 import {boolCheckCol} from '@xh/hoist/columns';
+
+const prefEditAction = {
+    ...restGridEditAction,
+    confirm: {
+        ...restGridDeleteAction.confirm,
+        message: 'Are you sure you want to edit? Editing preferences can break running apps!'
+    }
+};
+
+const prefDeleteAction = {
+    ...restGridDeleteAction,
+    confirm: {
+        ...restGridDeleteAction.confirm,
+        message: 'Are you sure you want to delete? Deleting preferences can break running apps!'
+    }
+};
 
 @HoistComponent
 export class PreferencePanel extends Component {
@@ -67,10 +90,19 @@ export class PreferencePanel extends Component {
         groupBy: 'groupName',
         unit: 'preference',
         filterFields: ['name', 'groupName'],
-        actionWarning: {
-            edit: 'Are you sure you want to edit? Editing preferences can break running apps!',
-            del: 'Are you sure you want to delete? Deleting preferences can break running apps!'
-        },
+        toolbarActions: [
+            restGridAddAction,
+            prefEditAction,
+            prefDeleteAction
+        ],
+        contextMenuActions: [
+            restGridAddAction,
+            prefEditAction,
+            prefDeleteAction
+        ],
+        formToolbarActions: [
+            prefDeleteAction
+        ],
         columns: [
             {field: 'local', ...boolCheckCol, width: 70},
             {field: 'name', width: 200},
