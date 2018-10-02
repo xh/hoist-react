@@ -13,6 +13,7 @@ import {Record, RecordAction} from '@xh/hoist/data';
 import {recordActionButton} from './RecordActionButton';
 import {StoreSelectionModel} from '../../../data/StoreSelectionModel';
 import {withDefault} from '@xh/hoist/utils/js';
+import {buttonGroup} from '@xh/hoist/kit/blueprint';
 
 import './RecordActionBar.scss';
 
@@ -32,28 +33,25 @@ export class RecordActionBar extends Component {
 
     static propTypes = {
         /** RecordActions to clone or configs to create. */
-        actions: PT.arrayOf(PT.oneOfType([PT.object, PT.instanceOf(RecordAction)])).isRequired,
+        actions: PT.arrayOf(PT.oneOfType([PT.object, RecordAction])).isRequired,
         /** The data Record to associate with the actions. */
-        record: PT.instanceOf(Record),
+        record: PT.oneOfType([PT.object, Record]),
         /** Set to true to only show the action buttons when hovering over the action bar (or row when used in a grid). */
         showOnHoverOnly: PT.bool,
 
         selModel: PT.instanceOf(StoreSelectionModel),
+
         /** Data to pass through to action callbacks */
         context: PT.object,
+
+        group: PT.bool,
+
         minimal: PT.bool,
+
         small: PT.bool,
+
         vertical: PT.bool
     };
-
-    actions = [];
-
-    constructor(props) {
-        super(props);
-        this.actions = props.actions
-            .filter(Boolean)
-            .map(it => new RecordAction(it));
-    }
 
     render() {
         const {actions, record, selModel, context, minimal, small, vertical} = this.props,
@@ -61,15 +59,32 @@ export class RecordActionBar extends Component {
 
         if (!actions) return null;
 
-        return (vertical ? vbox : hbox)({
+        return buttonGroup({
+            vertical,
             className: this.getClassName(
                 showOnHoverOnly ? 'xh-show-on-hover' : null,
                 vertical ? 'xh-record-action-bar--vertical' : null,
                 minimal ? 'xh-record-action-bar--minimal' : null,
                 small ? 'xh-record-action-bar--small' : null
             ),
-            items: actions.map(action => recordActionButton({action, record, selModel, context, minimal, small}))
+            items: actions.filter(Boolean).map(action => recordActionButton({
+                action,
+                record,
+                selModel,
+                context,
+                minimal,
+                small
+            }))
         });
+    }
+
+    getContainerCmpFactory() {
+        const {group, vertical} = this.props;
+        if (group) {
+            return (props) => buttonGroup({vertical, ...props});
+        }
+
+        return vertical ? vbox : hbox;
     }
 }
 

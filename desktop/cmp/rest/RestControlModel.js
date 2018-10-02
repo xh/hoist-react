@@ -58,7 +58,7 @@ export class RestControlModel  {
     @computed
     get isEditable() {
         const {parent, field} = this;
-        return field.editable === true || (field.editable === 'onAdd' && parent.isAdd);
+        return parent.isWritable && (field.editable === true || (field.editable === 'onAdd' && parent.isAdd));
     }
 
     @computed

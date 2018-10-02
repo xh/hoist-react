@@ -14,6 +14,20 @@ import {Icon} from '@xh/hoist/icon';
 
 import {configDiffer} from './differ/ConfigDiffer';
 import {ConfigDifferModel} from './differ/ConfigDifferModel';
+import {
+    restGridAddAction,
+    restGridEditAction,
+    restGridDeleteAction
+} from '../../../../desktop/cmp/rest';
+
+const configDeleteAction = {
+    ...restGridDeleteAction,
+    confirm: {
+        message: 'Are you sure you want to delete? Deleting configs can break running apps!',
+        title: 'Warning',
+        icon: Icon.warning({size: 'lg'})
+    }
+};
 
 @HoistComponent
 export class ConfigPanel extends Component {
@@ -69,9 +83,19 @@ export class ConfigPanel extends Component {
                 }
             ]
         }),
-        actionWarning: {
-            del: 'Are you sure you want to delete? Deleting configs can break running apps!'
-        },
+        toolbarActions: [
+            restGridAddAction,
+            restGridEditAction,
+            configDeleteAction
+        ],
+        contextMenuActions: [
+            restGridAddAction,
+            restGridEditAction,
+            configDeleteAction
+        ],
+        formToolbarActions: [
+            configDeleteAction
+        ],
         unit: 'config',
         filterFields: ['name', 'value', 'groupName', 'note'],
 

@@ -11,7 +11,7 @@ export class RecordActionButton extends Component {
     action;
 
     static propTypes = {
-        action: PT.oneOfType([PT.object, PT.instanceOf(RecordAction)])
+        action: PT.oneOfType([PT.object, RecordAction])
     };
 
     constructor(props) {
@@ -21,26 +21,27 @@ export class RecordActionButton extends Component {
 
     render() {
         const {action} = this,
-            {record, selModel, context, minimal, ...rest} = this.props;
+            {selModel, context, minimal, ...rest} = this.props;
 
-        if (action.prepareFn) action.prepareFn({action, record, selModel, context});
-
-        const {text, icon, intent, disabled, tooltip, hidden} = action;
-
-        if (hidden) return null;
-
-        let count, rec = record;
+        let count, record = this.props.record, selection = [record];
         if (selModel) {
             count = selModel.count;
+            selection = selModel.records;
 
             if (count === 1) {
-                rec = selModel.singleRecord;
+                record = selModel.singleRecord;
             } else {
-                rec = first(selModel.records);
+                record = first(selModel.records);
             }
         } else {
             count = record ? 1 : 0;
         }
+
+        if (action.prepareFn) action.prepareFn({action, record, selection, context});
+
+        const {text, icon, intent, disabled, tooltip, hidden} = action;
+
+        if (hidden) return null;
 
         const requiredRecordsMet = action.meetsRecordRequirement(count);
 
@@ -52,7 +53,7 @@ export class RecordActionButton extends Component {
             intent,
             title: tooltip,
             disabled: disabled || !requiredRecordsMet,
-            onClick: () => action.executeAsync({record: rec, selModel, context}),
+            onClick: () => action.executeAsync({record, selModel, context}),
             ...rest
         });
     }

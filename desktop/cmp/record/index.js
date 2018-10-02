@@ -6,3 +6,4 @@
  */
 
 export * from './RecordActionBar';
+export * from './RecordActionButton';

@@ -10,7 +10,16 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {controlGroup} from '@xh/hoist/kit/blueprint';
 import {fmtDateTime} from '@xh/hoist/format';
 import {hbox} from '@xh/hoist/cmp/layout';
-import {label, checkBox, comboBox, jsonInput, numberInput, select, textArea, textInput}  from '@xh/hoist/desktop/cmp/form';
+import {
+    label,
+    checkBox,
+    comboBox,
+    jsonInput,
+    numberInput,
+    select,
+    textArea,
+    textInput
+} from '@xh/hoist/desktop/cmp/form';
 
 @HoistComponent
 export class RestControl extends Component {
@@ -74,7 +83,8 @@ export class RestControl extends Component {
         if (type === 'date') {
             value = value ? fmtDateTime(value) : '';
         }
-        return label(value);
+
+        return label(value ? value.toString() : null);
     }
 
     renderCombo() {

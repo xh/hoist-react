@@ -18,14 +18,21 @@ export const restGridAddAction = {
     text: 'Add',
     icon: Icon.add(),
     intent: 'success',
-    actionFn: ({context}) => context.addRecord()
+    actionFn: ({context}) => context.restGridModel.addRecord()
 };
 
 export const restGridEditAction = {
     text: 'Edit',
     icon: Icon.edit(),
     intent: 'primary',
-    actionFn: ({record, context}) => context.editRecord(record),
+    actionFn: ({record, context}) => context.restGridModel.editRecord(record),
+    recordsRequired: 1
+};
+
+export const restGridViewAction = {
+    text: 'View',
+    icon: Icon.search(),
+    actionFn: ({record, context}) => context.restGridModel.viewRecord(record),
     recordsRequired: 1
 };
 
@@ -33,13 +40,24 @@ export const restGridDeleteAction = {
     text: 'Delete',
     icon: Icon.delete(),
     intent: 'danger',
-    actionFn: ({record, context}) => context.deleteRecord(record),
+    prepareFn: ({action, record}) => {
+        // Hide this action if we are acting on a "new" record
+        action.hidden = record && record.id === null;
+    },
+    actionFn: ({record, context}) => context.restGridModel.deleteRecord(record),
     recordsRequired: true,
     confirm: {
         message: 'Are you sure you want to delete the selected record?',
         title: 'Warning',
         icon: Icon.warning({size: 'lg'})
     }
+};
+
+// TODO: Would like this to live in RestFormModel.js, but for some reason the restGridDeleteAction
+//       is undefined when this object is constructed?! Not understanding something about "static" const objects and imports
+export const restFormDeleteAction = {
+    ...restGridDeleteAction,
+    actionFn: ({record, context}) => context.restFormModel.deleteRecord(record)
 };
 
 /**
@@ -53,13 +71,7 @@ export class RestGridModel {
     //----------------
     toolbarActions;
     contextMenuActions;
-    formDeleteAction;
-
-    actionWarning = {
-        add: null,
-        edit: null,
-        del: 'Are you sure you want to delete the selected record?'
-    };
+    formToolbarActions;
 
     unit = null;
     filterFields = null;
@@ -73,9 +85,9 @@ export class RestGridModel {
     get selectedRecord()    {return this.gridModel.selectedRecord}
 
     /**
-     * @param {Object} [actionWarning] - map of action (e.g. 'add'/'edit'/'delete') to string.  See default prop.
      * @param {Object[]|RecordAction[]} [toolbarActions] - actions to display in the toolbar. Defaults to add, edit, delete.
      * @param {Object[]|RecordAction[]} [contextMenuActions] - actions to display in the grid context menu. Defaults to add, edit, delete.
+     * @param {Object[]|RecordAction[]} [formToolbarActions] - actions to display in the form toolbar. Defaults to delete.
      * @param {string} [unit] - name that describes records in this grid.
      * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
      * @param {function} [enhanceToolbar] - a function used to mutate RestGridToolbar items
@@ -83,31 +95,36 @@ export class RestGridModel {
      * @param {*} ...rest, arguments for GridModel.
      */
     constructor({
-        actionWarning,
         toolbarActions,
         contextMenuActions,
+        formToolbarActions,
+        actionContext,
         unit = 'record',
         filterFields,
         enhanceToolbar,
         editors = [],
         ...rest
     }) {
-        this.actionWarning = Object.assign(this.actionWarning, actionWarning);
         this.toolbarActions = withDefault(toolbarActions, [restGridAddAction, restGridEditAction, restGridDeleteAction]);
-        this.contextMenuActions = withDefault(toolbarActions, [restGridAddAction, restGridEditAction, restGridDeleteAction]);
+        this.contextMenuActions = withDefault(contextMenuActions, [restGridAddAction, restGridEditAction, restGridDeleteAction]);
+        this.actionContext = Object.assign({restGridModel: this}, actionContext);
         this.unit = unit;
         this.filterFields = filterFields;
         this.enhanceToolbar = enhanceToolbar;
-        this.gridModel = new GridModel({contextMenuFn: this.contextMenuFn, exportFilename: pluralize(unit), ...rest});
 
         this.gridModel = new GridModel({
             contextMenuFn: this.contextMenuFn,
             exportFilename: pluralize(unit),
-            actionContext: this,
+            actionContext: this.actionContext,
             ...rest
         });
 
-        this.formModel = new RestFormModel({parent: this, editors});
+        this.formModel = new RestFormModel({
+            parent: this,
+            editors,
+            toolbarActions: formToolbarActions,
+            actionContext: this.actionContext
+        });
     }
 
     /** Load the underlying store. */
@@ -149,6 +166,11 @@ export class RestGridModel {
     @action
     editRecord(record) {
         this.formModel.openEdit(record);
+    }
+
+    @action
+    viewRecord(record) {
+        this.formModel.openView(record);
     }
 
     contextMenuFn = () => {
