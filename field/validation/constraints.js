@@ -7,6 +7,7 @@
 
 import {fmtDate} from '@xh/hoist/format';
 import {isNil, isString} from 'lodash';
+import moment from 'moment';
 
 /**
  * Validate the presence of a field. String values must also not be empty, or all spaces.
@@ -45,6 +46,9 @@ export function numberIs({min, max, notZero}) {
  */
 export function dateIs({min, max, fmt = 'YYYY-MM-DD'}) {
     return ({value, displayName}) => {
+        min = min === 'now' ? moment() : min;
+        max = max === 'now' ? moment() : max;
+
         if (isNil(value)) return null;
 
         if (min != null && value < min) return `${displayName} must not be before ${fmtDate(min, {fmt})}.`;
