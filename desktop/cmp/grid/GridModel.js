@@ -86,7 +86,7 @@ export class GridModel {
         'copy',
         'copyWithHeaders',
         '-',
-        'expandCollapse',
+        'expandCollapseAll',
         '-',
         'exportExcel',
         'exportCsv',

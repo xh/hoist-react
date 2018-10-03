@@ -30,7 +30,7 @@ export class StoreContextMenu {
      *
      *      Hoist tokens, all of which require a GridModel:
      *          `colChooser` - display column chooser for a grid.
-     *          `expandCollapse` - options to expand/collapse all parent rows on grouped/tree grid.
+     *          `expandCollapseAll` - expand/collapse all parent rows on grouped or tree grid.
      *          `export` - export grid data to excel via Hoist's server-side export capabilities.
      *          `exportExcel` - same as above.
      *          `exportCsv` - export grid data to CSV via Hoist's server-side export capabilities.
@@ -80,7 +80,7 @@ export class StoreContextMenu {
                         gridModel.export({type: 'csv'});
                     }
                 });
-            case 'expandCollapse':
+            case 'expandCollapseAll':
                 return [
                     new RecordAction({
                         text: 'Expand All',
