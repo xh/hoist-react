@@ -49,6 +49,16 @@ export class Grid extends Component {
         onRowDoubleClicked: PT.func,
 
         /**
+         * Callback to call when a key down event is detected on the box that contains the grid.
+         * The function will receive an event with the standard 'target'.
+         * This helps make up for the fact that it is not possible to customize key event handlers beyond
+         * what is permitted by the AG-Grid API.
+         * @see {@link https://www.ag-grid.com/javascript-grid-keyboard-navigation/#custom-navigation|ag-Grid Event Docs}
+         * @see {@link https://github.com/ag-grid/ag-grid/issues/180|ag-Grid Event Docs}
+         */
+        onKeyDown: PT.func,
+
+        /**
          * Show a colored row background on hover. Defaults to false.
          */
         showHover: PT.bool
@@ -74,7 +84,7 @@ export class Grid extends Component {
 
     render() {
         const {colChooserModel, compact} = this.model,
-            {agOptions, showHover} = this.props,
+            {agOptions, showHover, onKeyDown} = this.props,
             layoutProps = this.getLayoutProps();
 
         // Default flex = 'auto' if no dimensions / flex specified.
@@ -94,7 +104,8 @@ export class Grid extends Component {
                     XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                     compact ? 'xh-grid-compact' : 'xh-grid-standard',
                     showHover ? 'xh-grid-show-hover' : ''
-                )
+                ),
+                onKeyDown: onKeyDown ? onKeyDown : null
             }),
             colChooser({
                 omit: !colChooserModel,
