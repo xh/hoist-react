@@ -33,7 +33,7 @@ export class Grid extends Component {
 
     static propTypes = {
         /**
-         * Options for AG Grid's API.
+         * Options for ag-Grid's API.
          *
          * This constitutes an 'escape hatch' for applications that need to get to the underlying
          * ag-Grid API.  It should be used with care. Settings made here might be overwritten and/or
@@ -44,17 +44,15 @@ export class Grid extends Component {
         /**
          * Callback to call when a row is double clicked.  Function will receive an event
          * with a data node containing the row's data.
-         * @see {@link https://www.ag-grid.com/javascript-grid-events/#properties-and-hierarchy|ag-Grid Event Docs}
          */
         onRowDoubleClicked: PT.func,
 
         /**
-         * Callback to call when a key down event is detected on the box that contains the grid.
-         * The function will receive an event with the standard 'target'.
-         * This helps make up for the fact that it is not possible to customize key event handlers beyond
-         * what is permitted by the AG-Grid API.
-         * @see {@link https://www.ag-grid.com/javascript-grid-keyboard-navigation/#custom-navigation|ag-Grid Event Docs}
-         * @see {@link https://github.com/ag-grid/ag-grid/issues/180|ag-Grid Event Docs}
+         * Callback to call when a key down event is detected on this component.
+         * Function will receive an event with the standard 'target' element.
+         *
+         * Note that the ag-Grid API provides limited ability to customize keyboard handling.
+         * This handler is designed to allow application to workaround this.
          */
         onKeyDown: PT.func,
 
@@ -105,7 +103,7 @@ export class Grid extends Component {
                     compact ? 'xh-grid-compact' : 'xh-grid-standard',
                     showHover ? 'xh-grid-show-hover' : ''
                 ),
-                onKeyDown: onKeyDown ? onKeyDown : null
+                onKeyDown
             }),
             colChooser({
                 omit: !colChooserModel,
