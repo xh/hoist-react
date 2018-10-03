@@ -197,8 +197,11 @@ export class GridModel {
 
     /** Select the first row in the grid. */
     selectFirst() {
-        const first = this.agApi.getDisplayedRowAtIndex(0);
-        if (first) this.selModel.select(first);
+        const {agApi, selModel} = this;
+        if (agApi) {
+            const first = agApi.getDisplayedRowAtIndex(0);
+            if (first) selModel.select(first);
+        }
     }
 
     /** Does the grid have any records to show? */
@@ -257,12 +260,19 @@ export class GridModel {
 
     /** Expand all parent rows in grouped or tree grid. (Note, this is recursive for trees!) */
     expandAll() {
-        this.agApi.expandAll();
+        const {agApi} = this;
+        if (agApi) {
+            agApi.expandAll();
+
+        }
     }
 
     /** Collapse all parent rows in grouped or tree grid. */
     collapseAll() {
-        this.agApi.collapseAll();
+        const {agApi} = this;
+        if (agApi) {
+            agApi.collapseAll();
+        }
     }
 
     /**
