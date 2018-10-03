@@ -86,6 +86,8 @@ export class GridModel {
         'copy',
         'copyWithHeaders',
         '-',
+        'expandCollapseAll',
+        '-',
         'exportExcel',
         'exportCsv',
         '-',
@@ -249,7 +251,18 @@ export class GridModel {
             groupCol.hide = true;
         }
 
+        this.groupBy = colId;
         this.columns = [...cols];
+    }
+
+    /** Expand all parent rows in grouped or tree grid. (Note, this is recursive for trees!) */
+    expandAll() {
+        this.agApi.expandAll();
+    }
+
+    /** Collapse all parent rows in grouped or tree grid. */
+    collapseAll() {
+        this.agApi.collapseAll();
     }
 
     /**
@@ -315,14 +328,17 @@ export class GridModel {
     }
 
     /**
-     * This method will update the current column definition with respect to sort order, width and visibility of columns.
-     * Used by both Hoist's grid state plugin (GridStateModel) and in response to state changes as detected by ag-grid.
+     * This method will update the current column definition with respect to sort order, width and
+     * visibility of columns. Used by both Hoist's grid state plugin (GridStateModel) and in
+     * response to state changes as detected by ag-grid.
      *
-     * note: Sort order is driven by the individual columns in the state param. This means that if a column has been
-     * redefined to a new column group that entire group may be moved by this state param.
+     * Note: Column ordering is determined by the individual (leaf-level) columns in state.
+     * This means that if a column has been redefined to a new column group, that entire group may
+     * be moved to a new index.
      *
      * @param {Object[]} colState - configs representing the order, width and visibility of columns.
-     *       In the case of a grid with grouped columns, the columns here represent only the leaves or bottom level columns.
+     *       In the case of a grid with grouped columns, the columns here represent only the leaves
+     *       or bottom level columns.
      */
     @action
     applyColumnChanges(colState) {

@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {isString} from 'lodash';
+import {isString, flatten} from 'lodash';
 import {RecordAction} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 
@@ -30,6 +30,7 @@ export class StoreContextMenu {
      *
      *      Hoist tokens, all of which require a GridModel:
      *          `colChooser` - display column chooser for a grid.
+     *          `expandCollapseAll` - expand/collapse all parent rows on grouped or tree grid.
      *          `export` - export grid data to excel via Hoist's server-side export capabilities.
      *          `exportExcel` - same as above.
      *          `exportCsv` - export grid data to CSV via Hoist's server-side export capabilities.
@@ -40,9 +41,9 @@ export class StoreContextMenu {
      */
     constructor({items, gridModel}) {
         this.gridModel = gridModel;
-        this.items = items.map(it => {
+        this.items = flatten(items.map(it => {
             return isString(it) ? this.parseToken(it) : new RecordAction(it);
-        });
+        }));
     }
 
     parseToken(token) {
@@ -79,6 +80,21 @@ export class StoreContextMenu {
                         gridModel.export({type: 'csv'});
                     }
                 });
+            case 'expandCollapseAll':
+                return [
+                    new RecordAction({
+                        text: 'Expand All',
+                        icon: Icon.chevronDown(),
+                        hidden: !gridModel || !(gridModel.treeMode || gridModel.groupBy),
+                        actionFn: () => gridModel.expandAll()
+                    }),
+                    new RecordAction({
+                        text: 'Collapse All',
+                        icon: Icon.chevronRight(),
+                        hidden: !gridModel || !(gridModel.treeMode || gridModel.groupBy),
+                        actionFn: () => gridModel.collapseAll()
+                    })
+                ];
             case 'exportLocal':
                 return 'export';
             default:
