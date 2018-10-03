@@ -20,7 +20,8 @@ import {
     last,
     sortBy,
     pull,
-    uniq
+    uniq,
+    filter
 } from 'lodash';
 import {Column} from '@xh/hoist/columns';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
@@ -115,7 +116,7 @@ export class GridModel {
      *      Defaults to null, in which case no empty text will be shown.
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
      *      colId and sort direction.
-     * @param {?string} [c.groupBy] - Column ID by which to do full-width row grouping.
+     * @param {string|string[]} [c.groupBy] - Column id or ids by which to do full-width row grouping.
      * @param {boolean} [c.compact] - true to render the grid in compact mode.
      * @param {boolean} [c.enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
@@ -233,14 +234,15 @@ export class GridModel {
 
     /**
      * This method is no-op if provided a colId without a corresponding column.
-     * @param {string} colId - id of the column to use for row grouping, or falsey value to remove grouping.
+     * @param {string|string[]} colIds - one or more ids of columns to use for row grouping.  Specify falsey
+     *  value to remove grouping.
      */
     @action
-    setGroupBy(colId) {
-        const cols = this.columns,
-            groupCol = find(cols, {colId});
+    setGroupBy(colIds) {
+        colIds = castArray(colIds);
 
-        if (colId && !groupCol) return;
+        const cols = this.columns,
+            groupCols = filter(cols, it => colIds.includes(it.colId));
 
         cols.forEach(it => {
             if (it.agOptions && it.agOptions.rowGroup) {
@@ -249,12 +251,12 @@ export class GridModel {
             }
         });
 
-        if (colId && groupCol) {
-            groupCol.agOptions.rowGroup = true;
-            groupCol.hide = true;
-        }
+        groupCols.forEach(col => {
+            col.agOptions.rowGroup = true;
+            col.hide = true;
+        });
 
-        this.groupBy = colId;
+        this.groupBy = colIds;
         this.columns = [...cols];
     }
 
