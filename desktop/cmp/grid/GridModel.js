@@ -12,7 +12,6 @@ import {
     castArray,
     cloneDeep,
     defaults,
-    find,
     findLast,
     isEmpty,
     isPlainObject,
