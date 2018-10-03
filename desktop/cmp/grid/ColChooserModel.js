@@ -52,9 +52,9 @@ export class ColChooserModel {
 
         const cols = gridModel.getLeafColumns();
         cols.forEach(it => {
-            if (leftValues.includes(it.field)) {
+            if (leftValues.includes(it.colId)) {
                 it.hide = true;
-            } else if (rightValues.includes(it.field)) {
+            } else if (rightValues.includes(it.colId)) {
                 it.hide = false;
             }
         });
@@ -71,7 +71,7 @@ export class ColChooserModel {
 
         const data = gridModel.getLeafColumns().map(it => {
             return {
-                value: it.field,
+                value: it.colId,
                 text: it.chooserName,
                 description: it.chooserDescription,
                 group: it.chooserGroup,

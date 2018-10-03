@@ -1,13 +1,12 @@
 {
   "name": "@xh/hoist",
-  "version": "13.0.1",
+  "version": "14.0.0",
   "description": "Hoist add-on for building and deploying React Applications.",
   "repository": "github:exhi/hoist-react",
   "homepage": "https://github.com/exhi/hoist-react",
   "bugs": "https://github.com/exhi/hoist-react/issues",
   "author": "Extremely Heavy Industries, Inc.",
   "license": "UNLICENSED",
-  "module": "index.js",
   "scripts": {
     "lint": "yarn run eslint lint ."
   },

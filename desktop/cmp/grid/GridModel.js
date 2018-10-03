@@ -18,7 +18,6 @@ import {
     isPlainObject,
     isString,
     last,
-    orderBy,
     sortBy,
     pull,
     uniq
@@ -27,6 +26,7 @@ import {Column} from '@xh/hoist/columns';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {ColChooserModel} from './ColChooserModel';
 import {GridStateModel} from './GridStateModel';
+import {GridSorter} from './GridSorter';
 import {ExportManager} from './ExportManager';
 
 /**
@@ -35,10 +35,12 @@ import {ExportManager} from './ExportManager';
  *
  * This is the primary application entry-point for specifying Grid component options and behavior.
  *
- * This model supports Tree, as well as flat data representations.  To show a Tree, bind this model
- * to a store with hierachical records, set the 'treeMode' property to true, and include a a single column
- * with the property 'isTreeColumn' true.  This column will display tree affordances and parent child nesting,
- * in addition to its own data.
+ * This model also supports nested tree data. To show a tree:
+ *   1) Bind this model to a store with hierarchical records.
+ *   2) Set `treeMode: true` on this model.
+ *   3) Include a a single column with `isTreeColumn: true`. This column will provide expand /
+ *      collapse controls and indent child columns in addition to displaying its own data.
+ *
  */
 @HoistModel
 export class GridModel {
@@ -71,7 +73,7 @@ export class GridModel {
     //------------------------
     /** @member {Column[]} */
     @observable.ref columns = [];
-    /** @member {GridSorterDef[]} */
+    /** @member {GridSorter[]} */
     @observable.ref sortBy = [];
     /** @member {?string} */
     @observable groupBy = null;
@@ -83,6 +85,8 @@ export class GridModel {
     static defaultContextMenuTokens = [
         'copy',
         'copyWithHeaders',
+        '-',
+        'expandCollapseAll',
         '-',
         'exportExcel',
         'exportCsv',
@@ -100,17 +104,17 @@ export class GridModel {
     /**
      * @param {Object} c - GridModel configuration.
      * @param {BaseStore} c.store - store containing the data for the grid.
-     * @param {(Column[]|Object[])} c.columns - Columns, or configs to create them.
-     *          A 'column' can also be a config for a column group. Column groups must specify a children property
-     *          that is a array of Columns or configs to create them. Column groups also require a headerName or GroupId.
+     * @param {(Column[]|Object[])} c.columns - Columns, configs to create them, or configs for
+     *      column groups. Column group configs must provide `headerName` and/or `groupId`
+     *      properties and a `children` array of Columns or Column configs.
      * @param {(boolean)} [c.treeMode] - true if grid is a tree grid (default false).
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
      * @param {(Object|string)} [c.stateModel] - config or string `gridId` for a GridStateModel.
      * @param {?string} [c.emptyText] - text/HTML to display if grid has no records.
      *      Defaults to null, in which case no empty text will be shown.
-     * @param {(string|string[]|GridSorterDef|GridSorterDef[])} [c.sortBy] - colId(s) or sorter
-     *      config(s) with colId and sort direction.
+     * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
+     *      colId and sort direction.
      * @param {?string} [c.groupBy] - Column ID by which to do full-width row grouping.
      * @param {boolean} [c.compact] - true to render the grid in compact mode.
      * @param {boolean} [c.enableColChooser] - true to setup support for column chooser UI and
@@ -193,12 +197,11 @@ export class GridModel {
 
     /** Select the first row in the grid. */
     selectFirst() {
-        const {store, selModel, sortBy} = this,
-            colIds = sortBy.map(it => it.colId),
-            sorts = sortBy.map(it => it.sort),
-            recs = orderBy(store.records, colIds, sorts);
-
-        if (recs.length) selModel.select(recs[0]);
+        const {agApi, selModel} = this;
+        if (agApi) {
+            const first = agApi.getDisplayedRowAtIndex(0);
+            if (first) selModel.select(first);
+        }
     }
 
     /** Does the grid have any records to show? */
@@ -229,15 +232,15 @@ export class GridModel {
     }
 
     /**
-     * This method is no-op if provided a field without a corresponding column.
-     * @param {string} field - colId of field for row grouping, or falsey value to remove grouping.
+     * This method is no-op if provided a colId without a corresponding column.
+     * @param {string} colId - id of the column to use for row grouping, or falsey value to remove grouping.
      */
     @action
-    setGroupBy(field) {
+    setGroupBy(colId) {
         const cols = this.columns,
-            groupCol = find(cols, {field});
+            groupCol = find(cols, {colId});
 
-        if (field && !groupCol) return;
+        if (colId && !groupCol) return;
 
         cols.forEach(it => {
             if (it.agOptions && it.agOptions.rowGroup) {
@@ -246,31 +249,50 @@ export class GridModel {
             }
         });
 
-        if (field && groupCol) {
+        if (colId && groupCol) {
             groupCol.agOptions.rowGroup = true;
             groupCol.hide = true;
         }
 
+        this.groupBy = colId;
         this.columns = [...cols];
+    }
+
+    /** Expand all parent rows in grouped or tree grid. (Note, this is recursive for trees!) */
+    expandAll() {
+        const {agApi} = this;
+        if (agApi) {
+            agApi.expandAll();
+
+        }
+    }
+
+    /** Collapse all parent rows in grouped or tree grid. */
+    collapseAll() {
+        const {agApi} = this;
+        if (agApi) {
+            agApi.collapseAll();
+        }
     }
 
     /**
      * This method is no-op if provided any sorters without a corresponding column.
-     * @param {(string|string[]|GridSorterDef|GridSorterDef[])} sorters - colId(s) or sorter
-     *      config(s) with colId and sort direction.
+     * @param {(string|string[]|Object|Object[])} sorters - colId(s), GridSorter config(s)
+     *      or GridSorter strings.
      */
     @action
     setSortBy(sorters) {
-        // Normalize string, and partially specified values
         sorters = castArray(sorters);
         sorters = sorters.map(it => {
-            if (isString(it)) it = {colId: it};
-            it.sort = it.sort || 'asc';
-            return it;
+            if (it instanceof GridSorter) return it;
+            return GridSorter.parse(it);
         });
 
-        const sortIsValid = sorters.every(it => find(this.columns, {colId: it.colId}));
-        if (!sortIsValid) return;
+        const invalidSorters = sorters.filter(it => !this.findColumn(this.columns, it.colId));
+        if (invalidSorters.length) {
+            console.warn('GridSorter colId not found in grid columns', invalidSorters);
+            return;
+        }
 
         this.sortBy = sorters;
     }
@@ -316,14 +338,17 @@ export class GridModel {
     }
 
     /**
-     * This method will update the current column definition with respect to sort order, width and visibility of columns.
-     * Used by both Hoist's grid state plugin (GridStateModel) and in response to state changes as detected by ag-grid.
+     * This method will update the current column definition with respect to sort order, width and
+     * visibility of columns. Used by both Hoist's grid state plugin (GridStateModel) and in
+     * response to state changes as detected by ag-grid.
      *
-     * note: Sort order is driven by the individual columns in the state param. This means that if a column has been
-     * redefined to a new column group that entire group may be moved by this state param.
+     * Note: Column ordering is determined by the individual (leaf-level) columns in state.
+     * This means that if a column has been redefined to a new column group, that entire group may
+     * be moved to a new index.
      *
      * @param {Object[]} colState - configs representing the order, width and visibility of columns.
-     *       In the case of a grid with grouped columns, the columns here represent only the leaves or bottom level columns.
+     *       In the case of a grid with grouped columns, the columns here represent only the leaves
+     *       or bottom level columns.
      */
     @action
     applyColumnChanges(colState) {
@@ -485,9 +510,3 @@ export class GridModel {
         XH.safeDestroy(this.colChooserModel, this.stateModel);
     }
 }
-
-/**
- * @typedef {Object} GridSorterDef - config for GridModel sorting.
- * @property {string} colId - Column ID on which to sort.
- * @property {string} [sort] - direction to sort - either ['asc', 'desc'] - default asc.
- */

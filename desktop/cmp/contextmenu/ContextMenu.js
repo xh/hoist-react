@@ -73,7 +73,7 @@ export class ContextMenu extends Component {
             return menuItem({
                 text: item.text,
                 icon: item.icon,
-                onClick: item.action ? () => start(item.action) : null,    // do async to allow menu to close
+                onClick: item.actionFn ? () => start(item.actionFn) : null,    // do async to allow menu to close
                 disabled: item.disabled,
                 items
             });

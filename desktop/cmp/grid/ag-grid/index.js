@@ -19,5 +19,6 @@ import './styles.scss';
 // Set via webpack.DefinePlugin at build time - see @xh/hoist-dev-utils/configureWebpack
 LicenseManager.setLicenseKey(xhAgGridLicenseKey);
 
+export * from './ColumnHeader';
 export * from './NavigateSelection';
 export const agGridReact = elemFactory(AgGridReact);

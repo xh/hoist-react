@@ -26,6 +26,8 @@ export class Column {
      * @param {string} [c.colId] - unique identifier for the Column within its grid.
      *      Defaults to field name - one of these two properties must be specified.
      * @param {string} [c.headerName] - display text for grid header.
+     * @param {(string|string[])} [c.headerClass] - additional css classes to add to the column header.
+     * @param {(string|string[])} [c.cellClass] - additional css classes to add to each cell in the column.
      * @param {boolean} [c.isTreeColumn] - true if this column should show the tree affordances for a
      *      Tree Grid. See GridModel.treeMode.
      * @param {boolean} [c.hide] - true to suppress default display of the column.
@@ -38,14 +40,15 @@ export class Column {
      * @param {boolean} [c.flex] - true to auto-adjust column width based on space available
      *      within the overall grid. Flex columns are not user-resizable as they will dynamically
      *      adjust whenever the grid changes size to absorb available horizontal space.
+     * @param {boolean} [c.absSort] - true to enable absolute value sorting for this column,
+     *      with column header clicks progressing from ASC > DESC > DESC (abs value).
      * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
      * @param {boolean} [c.movable] - false to prevent user from drag-and-drop re-ordering.
+     * @param {boolean} [c.sortable] - false to prevent user from sorting on this column.
+     * @param {(boolean|string)} [c.pinned] - set to true/'left' or 'right' to pin (aka "lock") the
+     *      column to the side of the grid, ensuring it's visible while horizontally scrolling.
      * @param {Column~rendererFn} [c.renderer] - function to produce a formatted string for each cell.
-     *      Supports HTML as output. Passed both field value and entire row data object.
-     * @param {function} [c.elementRenderer] - elementFactory function to return a React component
-     *      for rendering within each cell. For ag-Grid implementations, an ICellRendererParams
-     *      object is passed to the rendered component as props.
-     *      @see ICellRendererParams
+     * @param {Column~elementRendererFn} [c.elementRenderer] - function which returns a React component.
      * @param {string} [c.chooserName] - name to display within the column chooser component.
      *      Defaults to headerName, but useful when a longer / un-abbreviated string is available.
      * @param {string} [c.chooserGroup] - group name to display within the column chooser component.
@@ -63,7 +66,7 @@ export class Column {
      *      @see ExportManager
      * @param {ExportFormat} [c.exportFormat] - structured format string for Excel-based exports.
      *      @see ExportFormat
-     * @param {int} [c.exportWidth] - width in characters for Excel-based exports. Typically used
+     * @param {number} [c.exportWidth] - width in characters for Excel-based exports. Typically used
      *      with ExportFormat.LONG_TEXT to enable text wrapping.
      * @param {(boolean|Column~tooltipFn)} [c.tooltip] - 'true' displays the raw value, or
      *      tool tip function, which is based on AG Grid tooltip callback.
@@ -72,20 +75,26 @@ export class Column {
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
      *      @see {@link https://www.ag-grid.com/javascript-grid-column-properties/|AG-Grid docs}
+     * @param {...*} [rest] - additional properties to store on the column
      */
     constructor({
         field,
         colId,
         isTreeColumn,
         headerName,
+        headerClass,
+        cellClass,
         hide,
         align,
         width,
         minWidth,
         maxWidth,
         flex,
+        absSort,
         resizable,
         movable,
+        sortable,
+        pinned,
         renderer,
         elementRenderer,
         chooserName,
@@ -99,13 +108,18 @@ export class Column {
         exportWidth,
         excludeFromExport,
         tooltip,
-        agOptions
+        agOptions,
+        ...rest
     }) {
+        Object.assign(this, rest);
+
         this.field = field;
         this.colId = withDefault(colId, field);
         throwIf(!this.colId, 'Must specify colId or field for a Column.');
 
         this.headerName = withDefault(headerName, startCase(this.colId));
+        this.headerClass = castArray(headerClass);
+        this.cellClass = castArray(cellClass);
         this.hide = withDefaultFalse(hide);
         this.align = align;
         this.isTreeColumn = withDefaultFalse(isTreeColumn);
@@ -121,8 +135,14 @@ export class Column {
         this.minWidth = withDefault(minWidth, this.flex ? Column.FLEX_COL_MIN_WIDTH : null);
         this.maxWidth = maxWidth;
 
+        this.absSort = withDefaultFalse(absSort);
+
         this.resizable = withDefaultTrue(resizable);
         this.movable = withDefaultTrue(movable);
+        this.sortable = withDefaultTrue(sortable);
+
+        // Pinned supports convenience true -> 'left'. OK to leave undefined if not given.
+        this.pinned = (pinned === true) ? 'left' : pinned;
 
         this.renderer = renderer;
         this.elementRenderer = elementRenderer;
@@ -143,20 +163,25 @@ export class Column {
         this.agOptions = agOptions ? clone(agOptions) : {};
     }
 
-
     /**
      * Produce a Column definition appropriate for AG Grid.
      */
-    getAgSpec() {
+    getAgSpec(gridModel) {
         const ret = {
             field: this.field,
             colId: this.colId,
             headerName: this.headerName,
+            headerClass: this.headerClass,
+            cellClass: this.cellClass,
             hide: this.hide,
+            absSort: this.absSort,
             minWidth: this.minWidth,
             maxWidth: this.maxWidth,
             suppressResize: !this.resizable,
-            suppressMovable: !this.movable
+            suppressMovable: !this.movable,
+            suppressSorting: !this.sortable,
+            pinned: this.pinned,
+            headerComponentParams: {gridModel, column: this}
         };
 
         if (this.isTreeColumn) {
@@ -169,13 +194,11 @@ export class Column {
             };
         }
 
-
         if (this.tooltip) {
             ret.tooltip = isFunction(this.tooltip) ?
-                ({value, data}) => this.tooltip(value, data, {colId: this.colId}) :
+                (agParams) => this.tooltip(agParams.value, {record: agParams.data, column: this, agParams}) :
                 ({value}) => value;
         }
-
 
         const {align} = this;
         if (align === 'center' || align === 'right') {
@@ -195,13 +218,19 @@ export class Column {
 
         const {renderer, elementRenderer} = this;
         if (renderer) {
-            ret.cellRenderer = (params) => {
-                const metaData = {colId: params.column.colId};
-                return renderer(params.value, params.data, metaData);
+            ret.cellRenderer = (agParams) => {
+                return renderer(agParams.value, {record: agParams.data, column: this, agParams});
             };
         } else if (elementRenderer) {
+            // eslint-disable-next-line consistent-this
+            const column = this;
             ret.cellRendererFramework = class extends Component {
-                render() {return elementRenderer(this.props)}
+                render() {
+                    const agParams = this.props,
+                        {value, data: record} = agParams;
+
+                    return elementRenderer(value, {record, agParams, column});
+                }
                 refresh() {return false}
             };
         }
@@ -212,19 +241,36 @@ export class Column {
 }
 
 /**
- * @callback Column~rendererFn - normalized renderer function for a grid column cell.
+ * @callback Column~rendererFn - normalized renderer function for a grid cell.
  * @param {*} value - cell data value (column + row).
- * @param {Object} data - row data object (entire row).
- * @param {Object} metadata - additional data available to the renderer,
- *      currently contains the Column's string colId.
+ * @param {CellRendererMetadata} metadata - additional data about the column and row.
  * @return {string} - the formatted value for display.
+ */
+
+/**
+ * @callback Column~elementRendererFn - renderer function for a grid cell which returns a React component
+ * @param {*} value - cell data value (column + row).
+ * @param {CellRendererMetadata} metadata - additional data about the column and row.
+ * @return {Element} - the React element to render.
+ */
+
+/**
+ * @typedef {Object} CellRendererMetadata
+ * @property {Record} record - row-level data Record.
+ * @property {Column} column - column for the cell being rendered.
+ * @property {ICellRendererParams} [agParams] - the ag-grid cell renderer params.
  */
 
 /**
  * @callback Column~tooltipFn - normalized renderer function to produce a grid column tooltip.
  * @param {*} value - cell data value (column + row).
- * @param {Object} data - row data object (entire row).
- * @param {Object} metadata - additional data available to the renderer,
- *      currently contains the Column's string colId.
+ * @param {TooltipMetadata} metadata - additional data about the column and row.
  * @return {string} - the formatted value for display.
+ */
+
+/**
+ * @typedef {Object} TooltipMetadata
+ * @property {Record} record - row-level data Record.
+ * @property {Column} column - column for the cell being rendered.
+ * @property {TooltipParams} [agParams] - the ag-grid tooltip params.
  */
