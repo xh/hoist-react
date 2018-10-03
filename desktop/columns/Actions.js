@@ -44,7 +44,7 @@ export const actionCol = {
         return recordActionBar({
             actions: column.actions,
             showOnHoverOnly: withDefault(column.actionsShowOnHoverOnly, false),
-            context: column.getContext(),
+            actionMetadata: column.getActionMetadata(),
             minimal: true,
             small: true,
             record,

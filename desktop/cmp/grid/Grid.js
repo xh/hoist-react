@@ -213,7 +213,7 @@ export class Grid extends Component {
     }
 
     getContextMenuItems = (params) => {
-        const {store, selModel, contextMenuFn} = this.model;
+        const {store, selModel, contextMenuFn, actionMetadata: metadata} = this.model;
         if (!contextMenuFn) return null;
 
         const menu = contextMenuFn(params, this.model),
@@ -229,12 +229,12 @@ export class Grid extends Component {
         if (!record) selModel.clear();
 
         const count = selModel.count,
-            selectedRecs = selModel.records;
+            selection = selModel.records;
 
         // Prepare each item
         const items = menu.items;
         items.forEach(it => {
-            if (it.prepareFn) it.prepareFn({action: it, record, selection: selectedRecs, context: this.model.actionContext});
+            if (it.prepareFn) it.prepareFn({action: it, record, selection, metadata});
         });
 
         return items.filter(it => {
@@ -265,7 +265,7 @@ export class Grid extends Component {
                 icon,
                 tooltip: it.tooltip,
                 disabled: it.disabled || !requiredRecordsMet,
-                action: () => it.executeAsync({record, selection: selectedRecs, context: this.model.actionContext})
+                action: () => it.executeAsync({record, selection, metadata})
             };
         });
     }

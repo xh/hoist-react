@@ -42,7 +42,7 @@ export class RecordActionBar extends Component {
         selModel: PT.instanceOf(StoreSelectionModel),
 
         /** Data to pass through to action callbacks */
-        context: PT.object,
+        actionMetadata: PT.object,
 
         group: PT.bool,
 
@@ -54,7 +54,7 @@ export class RecordActionBar extends Component {
     };
 
     render() {
-        const {actions, record, selModel, context, minimal, small, vertical} = this.props,
+        const {actions, record, selModel, actionMetadata, minimal, small, vertical} = this.props,
             showOnHoverOnly = withDefault(this.props.showOnHoverOnly, false);
 
         if (!actions) return null;
@@ -71,7 +71,7 @@ export class RecordActionBar extends Component {
                 action,
                 record,
                 selModel,
-                context,
+                actionMetadata,
                 minimal,
                 small
             }))

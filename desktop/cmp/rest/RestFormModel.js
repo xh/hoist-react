@@ -22,7 +22,7 @@ export class RestFormModel {
 
     controlModels = [];
     toolbarActions;
-    actionContext;
+    actionMetadata;
 
     // If not null, form will be open and display it
     @observable record = null;
@@ -50,7 +50,7 @@ export class RestFormModel {
         return !isEqual(this.record, this.originalRecord);
     }
 
-    constructor({parent, editors, toolbarActions, actionContext}) {
+    constructor({parent, editors, toolbarActions, actionMetadata}) {
         this.parent = parent;
         this.controlModels = editors.map((editor) => {
             const field = this.store.getField(editor.field);
@@ -60,7 +60,7 @@ export class RestFormModel {
         });
 
         this.toolbarActions = withDefault(toolbarActions, [restFormDeleteAction]);
-        this.actionContext = Object.assign({restFormModel: this}, actionContext);
+        this.actionMetadata = Object.assign({restFormModel: this}, actionMetadata);
     }
 
     //-----------------

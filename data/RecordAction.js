@@ -95,7 +95,7 @@ export class RecordAction {
             (isNumber(required) && count === required);
     }
 
-    async executeAsync({record, selModel, context}) {
+    async executeAsync({record, selModel, metadata}) {
         const {confirm} = this;
         let promise;
         if (confirm) {
@@ -124,7 +124,7 @@ export class RecordAction {
         const confirmed = await promise;
         if (!confirmed) return;
 
-        this.actionFn({action: this, record, selModel, context});
+        this.actionFn({action: this, record, selModel, metadata});
     }
 }
 
@@ -134,7 +134,7 @@ export class RecordAction {
  * @param {RecordAction} p.action - the action itself.
  * @param {Object} [p.record] - row data object (entire row, if any).
  * @param {Object[]} [p.selection] - all currently selected records (if any).
- * @param {*} [p.context] - additional data provided by the context where this action presides
+ * @param {*} [p.metadata] - additional data provided by the context where this action presides
  */
 
 /**

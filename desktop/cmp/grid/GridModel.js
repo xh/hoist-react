@@ -22,12 +22,12 @@ import {
     pull,
     uniq
 } from 'lodash';
-import {Column} from '@xh/hoist/columns';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {ColChooserModel} from './ColChooserModel';
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './GridSorter';
 import {ExportManager} from './ExportManager';
+import {Column} from '@xh/hoist/columns';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -66,7 +66,6 @@ export class GridModel {
     enableExport = false;
     /** @member {string} */
     exportFilename = 'export';
-
 
     //------------------------
     // Observable API
@@ -124,7 +123,7 @@ export class GridModel {
      *      Should return a string or array of strings. Receives record data as param.
      * @param {function} [c.contextMenuFn] - closure returning a StoreContextMenu.
      *      @see StoreContextMenu
-     * @param {Object} [c.actionContext] - additional data to be passed through to actions
+     * @param {Object} [c.actionMetadata] - additional data to be passed through to actions
      */
     constructor({
         store,
@@ -141,7 +140,7 @@ export class GridModel {
         exportFilename = 'export',
         rowClassFn = null,
         contextMenuFn = () => this.defaultContextMenu(),
-        actionContext = null
+        actionMetadata = null
     }) {
         this.store = store;
         this.treeMode = treeMode;
@@ -150,7 +149,7 @@ export class GridModel {
         this.exportFilename = exportFilename;
         this.contextMenuFn = contextMenuFn;
         this.rowClassFn = rowClassFn;
-        this.actionContext = actionContext;
+        this.actionMetadata = actionMetadata;
 
         this.setColumns(columns);
 
@@ -369,9 +368,12 @@ export class GridModel {
                 return c;
             }
 
-            // Copy the column and add an accessor for the action context. This needs to be a function
-            // so that it is preserved through deep clones of the column list
-            return new Column({...c, getContext: () => this.actionContext});
+            if (!(c instanceof Column)) {
+                c = new Column(c);
+            }
+
+            c.getActionMetadata = () => this.actionMetadata;
+            return c;
         });
     }
 
@@ -416,7 +418,6 @@ export class GridModel {
     validateColumns(cols) {
         if (isEmpty(cols)) return;
 
-
         const {groupIds, colIds} = this.collectIds(cols);
 
         const colsHaveDupes = colIds.length != uniq(colIds).length;
@@ -432,7 +433,7 @@ export class GridModel {
         );
     }
 
-    collectIds(cols, groupIds = [], colIds =[]) {
+    collectIds(cols, groupIds = [], colIds = []) {
         cols.forEach(col => {
             if (col.colId) colIds.push(col.colId);
             if (col.groupId) {

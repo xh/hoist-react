@@ -18,21 +18,21 @@ export const restGridAddAction = {
     text: 'Add',
     icon: Icon.add(),
     intent: 'success',
-    actionFn: ({context}) => context.restGridModel.addRecord()
+    actionFn: ({metadata}) => metadata.restGridModel.addRecord()
 };
 
 export const restGridEditAction = {
     text: 'Edit',
     icon: Icon.edit(),
     intent: 'primary',
-    actionFn: ({record, context}) => context.restGridModel.editRecord(record),
+    actionFn: ({record, metadata}) => metadata.restGridModel.editRecord(record),
     recordsRequired: 1
 };
 
 export const restGridViewAction = {
     text: 'View',
     icon: Icon.search(),
-    actionFn: ({record, context}) => context.restGridModel.viewRecord(record),
+    actionFn: ({record, metadata}) => metadata.restGridModel.viewRecord(record),
     recordsRequired: 1
 };
 
@@ -44,7 +44,7 @@ export const restGridDeleteAction = {
         // Hide this action if we are acting on a "new" record
         action.hidden = record && record.id === null;
     },
-    actionFn: ({record, context}) => context.restGridModel.deleteRecord(record),
+    actionFn: ({record, metadata}) => metadata.restGridModel.deleteRecord(record),
     recordsRequired: true,
     confirm: {
         message: 'Are you sure you want to delete the selected record?',
@@ -57,7 +57,7 @@ export const restGridDeleteAction = {
 //       is undefined when this object is constructed?! Not understanding something about "static" const objects and imports
 export const restFormDeleteAction = {
     ...restGridDeleteAction,
-    actionFn: ({record, context}) => context.restFormModel.deleteRecord(record)
+    actionFn: ({record, metadata}) => metadata.restFormModel.deleteRecord(record)
 };
 
 /**
@@ -98,7 +98,7 @@ export class RestGridModel {
         toolbarActions,
         contextMenuActions,
         formToolbarActions,
-        actionContext,
+        actionMetadata,
         unit = 'record',
         filterFields,
         enhanceToolbar,
@@ -107,7 +107,7 @@ export class RestGridModel {
     }) {
         this.toolbarActions = withDefault(toolbarActions, [restGridAddAction, restGridEditAction, restGridDeleteAction]);
         this.contextMenuActions = withDefault(contextMenuActions, [restGridAddAction, restGridEditAction, restGridDeleteAction]);
-        this.actionContext = Object.assign({restGridModel: this}, actionContext);
+        this.actionMetadata = Object.assign({restGridModel: this}, actionMetadata);
         this.unit = unit;
         this.filterFields = filterFields;
         this.enhanceToolbar = enhanceToolbar;
@@ -115,7 +115,7 @@ export class RestGridModel {
         this.gridModel = new GridModel({
             contextMenuFn: this.contextMenuFn,
             exportFilename: pluralize(unit),
-            actionContext: this.actionContext,
+            actionMetadata: this.actionMetadata,
             ...rest
         });
 
@@ -123,7 +123,7 @@ export class RestGridModel {
             parent: this,
             editors,
             toolbarActions: formToolbarActions,
-            actionContext: this.actionContext
+            actionMetadata: this.actionMetadata
         });
     }
 
