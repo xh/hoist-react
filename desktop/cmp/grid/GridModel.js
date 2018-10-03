@@ -12,7 +12,6 @@ import {
     castArray,
     cloneDeep,
     defaults,
-    find,
     findLast,
     isEmpty,
     isPlainObject,
@@ -75,7 +74,7 @@ export class GridModel {
     @observable.ref columns = [];
     /** @member {GridSorter[]} */
     @observable.ref sortBy = [];
-    /** @member {?string} */
+    /** @member {string[]} */
     @observable groupBy = null;
     /** @member {boolean} */
     @observable compact = false;
@@ -115,7 +114,7 @@ export class GridModel {
      *      Defaults to null, in which case no empty text will be shown.
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
      *      colId and sort direction.
-     * @param {?string} [c.groupBy] - Column ID by which to do full-width row grouping.
+     * @param {(string|string[])} [c.groupBy] - Column ID(s) by which to do full-width row grouping.
      * @param {boolean} [c.compact] - true to render the grid in compact mode.
      * @param {boolean} [c.enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
@@ -232,29 +231,34 @@ export class GridModel {
     }
 
     /**
-     * This method is no-op if provided a colId without a corresponding column.
-     * @param {string} colId - id of the column to use for row grouping, or falsey value to remove grouping.
+     * Apply full-width row-level grouping to the grid for the given column ID(s).
+     * IDs that do not have a corresponding column present in the grid will be dropped and ignored.
+     * @param {(string|string[])} colIds - column ID(s) for row grouping, or falsey value to ungroup.
      */
     @action
-    setGroupBy(colId) {
+    setGroupBy(colIds) {
+        colIds = castArray(colIds);
+
         const cols = this.columns,
-            groupCol = find(cols, {colId});
+            groupCols = cols.filter(it => colIds.includes(it.colId)),
+            groupColIds = groupCols.map(it => it.colId);
 
-        if (colId && !groupCol) return;
-
-        cols.forEach(it => {
-            if (it.agOptions && it.agOptions.rowGroup) {
-                it.agOptions.rowGroup = false;
-                it.hide = false;
+        // Ungroup and re-show any currently grouped columns.
+        cols.forEach(col => {
+            if (col.agOptions.rowGroup) {
+                col.agOptions.rowGroup = false;
+                col.hide = false;
             }
         });
 
-        if (colId && groupCol) {
-            groupCol.agOptions.rowGroup = true;
-            groupCol.hide = true;
-        }
+        // Group and hide all newly requested columns.
+        groupCols.forEach(col => {
+            col.agOptions.rowGroup = true;
+            col.hide = true;
+        });
 
-        this.groupBy = colId;
+        // Set groupBy value based on verified column IDs and flush to grid.
+        this.groupBy = groupColIds;
         this.columns = [...cols];
     }
 
