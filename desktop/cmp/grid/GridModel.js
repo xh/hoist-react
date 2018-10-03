@@ -70,7 +70,7 @@ export class GridModel {
     //------------------------
     // Observable API
     //------------------------
-    /** @member {Column[]} */
+    /** @member {Object[]} - Column objects + column group configs w/nested children. */
     @observable.ref columns = [];
     /** @member {GridSorter[]} */
     @observable.ref sortBy = [];
@@ -103,7 +103,7 @@ export class GridModel {
     /**
      * @param {Object} c - GridModel configuration.
      * @param {BaseStore} c.store - store containing the data for the grid.
-     * @param {(Column[]|Object[])} c.columns - Columns, configs to create them, or configs for
+     * @param {Object[]} c.columns - Columns, configs to create them, or configs for
      *      column groups. Column group configs must provide `headerName` and/or `groupId`
      *      properties and a `children` array of Columns or Column configs.
      * @param {(boolean)} [c.treeMode] - true if grid is a tree grid (default false).
@@ -232,7 +232,7 @@ export class GridModel {
 
     /**
      * Apply full-width row-level grouping to the grid for the given column ID(s).
-     * IDs that do not have a corresponding column present in the grid will be dropped and ignored.
+     * IDs that do not have a corresponding leaf-level column will be dropped and ignored.
      * @param {(string|string[])} colIds - column ID(s) for row grouping, or falsey value to ungroup.
      */
     @action
@@ -240,11 +240,12 @@ export class GridModel {
         colIds = castArray(colIds);
 
         const cols = this.columns,
-            groupCols = cols.filter(it => colIds.includes(it.colId)),
+            leafCols = this.getLeafColumns(),
+            groupCols = leafCols.filter(it => colIds.includes(it.colId)),
             groupColIds = groupCols.map(it => it.colId);
 
         // Ungroup and re-show any currently grouped columns.
-        cols.forEach(col => {
+        leafCols.forEach(col => {
             if (col.agOptions.rowGroup) {
                 col.agOptions.rowGroup = false;
                 col.hide = false;
