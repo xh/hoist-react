@@ -30,8 +30,7 @@ export class StoreContextMenu {
      *
      *      Hoist tokens, all of which require a GridModel:
      *          `colChooser` - display column chooser for a grid.
-     *          `expandAll` - expand all nodes on a row-grouped or tree grid.
-     *          `collapseAll` - collapse all nodes on a row-grouped or tree grid.
+     *          `expandCollapse` - options to expand/collapse all parent rows on grouped/tree grid.
      *          `export` - export grid data to excel via Hoist's server-side export capabilities.
      *          `exportExcel` - same as above.
      *          `exportCsv` - export grid data to CSV via Hoist's server-side export capabilities.
