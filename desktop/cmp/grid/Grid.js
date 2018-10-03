@@ -143,6 +143,7 @@ export class Grid extends Component {
             onSelectionChanged: this.onSelectionChanged,
             onGridSizeChanged: this.onGridSizeChanged,
             onDragStopped: this.onDragStopped,
+            onColumnResized: this.onColumnResized,
 
             groupDefaultExpanded: 1,
             groupUseEntireRow: true
@@ -390,8 +391,16 @@ export class Grid extends Component {
         this.model.selModel.select(ev.api.getSelectedRows());
     }
 
+    // Catches column re-ordering AND resizing via user drag-and-drop interaction.
     onDragStopped = (ev) => {
         this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
+    }
+
+    // Catches column resizing on call to autoSize API.
+    onColumnResized = (ev) => {
+        if (this.isDisplayed && ev.finished && ev.source == 'autosizeColumns') {
+            this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
+        }
     }
 
     onGridSizeChanged = (ev) => {
