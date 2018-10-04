@@ -47,7 +47,7 @@ export class Panel extends Component {
          * Mask to render on this panel.
          *
          * Set to a React element specifying a Mask instance,
-         * or set to a PendingTaskModel to create a default loading mask with spinner bound to that model,
+         * or set to a PendingTaskModel for a default loading mask w/spinner bound to that model,
          * or set to true for a simple default mask.
          */
         mask: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool]),
