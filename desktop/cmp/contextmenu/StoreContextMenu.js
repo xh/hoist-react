@@ -42,7 +42,7 @@ export class StoreContextMenu {
     constructor({items, gridModel}) {
         this.gridModel = gridModel;
         this.items = flatten(items.map(it => {
-            if (it instanceof RecordAction) return it;
+            if (it instanceof RecordAction) return it.clone();
             if (isString(it)) return this.parseToken(it);
             return new RecordAction(it);
         }));
