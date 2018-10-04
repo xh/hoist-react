@@ -1,12 +1,7 @@
-# Hoist React Readme
+# Welcome to Hoist React
 
-<p align="center">
-    <img src="https://xh.io/wp-content/uploads/2018/04/hoist-web-350.png"><br>
-    by<br>
-    <img src="https://xh.io/wp-content/uploads/2015/01/web-logo-black-2x.png">
-</p>
-
-Hoist is a web application development toolkit developed by Extremely Heavy Industries.
+Hoist is a web application development toolkit developed by
+[Extremely Heavy Industries](https://xh.io/).
 
 Hoist is designed as a "full stack" UI development framework, meaning that it has both server and
 client components that work together to provide an integrated set of tools and utilities for quickly
