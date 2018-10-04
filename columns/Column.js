@@ -180,6 +180,7 @@ export class Column {
             suppressResize: !this.resizable,
             suppressMovable: !this.movable,
             suppressSorting: !this.sortable,
+            lockPinned: true, // Block user-driven pinning/unpinning - https://github.com/exhi/hoist-react/issues/687
             pinned: this.pinned,
             headerComponentParams: {gridModel, column: this}
         };
