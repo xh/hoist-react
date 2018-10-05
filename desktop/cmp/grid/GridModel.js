@@ -246,7 +246,7 @@ export class GridModel {
 
         // Ungroup and re-show any currently grouped columns.
         leafCols.forEach(col => {
-            if (col.agOptions.rowGroup) {
+            if (col.agOptions && col.agOptions.rowGroup) {
                 col.agOptions.rowGroup = false;
                 col.hide = false;
             }
