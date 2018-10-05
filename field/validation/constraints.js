@@ -13,16 +13,25 @@ import {isNil, isString} from 'lodash';
 
 
 /**
- * Validate the presence of a field. String values must also not be empty, or all spaces.
+ * Validate the presence of a field.
+ * @param value - value to be checked. String values must also not be empty, or all spaces.
+ * @param displayName - display field name to be used in return validation message
  */
 export const required = ({value, displayName}) => {
     if (isNil(value) || (isString(value) && value.trim().length == 0)) return `${displayName} is required.`;
 };
 
 /**
- * Validate length of a string. If 'null' is passed for either min or max, that specific check is skipped.
+ * Validate length of a string.
+ * @param {null | number} min - minimum length for the string to be checked. Null skips check
+ * @param {null | number} max - maximum length for the string to be checked. Null skips check
+ * @returns lengthIs~function
  */
 export function lengthIs({min, max}) {
+    /**
+     * @param value - value to be checked
+     * @param displayName - display field name to be used in return validation message
+     */
     return ({value, displayName}) => {
         if (isNil(value)) return null;
 
@@ -32,9 +41,17 @@ export function lengthIs({min, max}) {
 }
 
 /**
- * Validate a number. If 'null' is passed for either min or max, that specific check is skipped.
+ * Validate a number.
+ * @param {null | number} min - minimum value for the number to be checked. Null skips check
+ * @param {null | number} max - maximum value for the number to be checked. Null skips check
+ * @param {boolean} notZero - checks for whether '0' is allowed
+ * @returns numberIs~function
  */
 export function numberIs({min, max, notZero}) {
+    /**
+     * @param value - value to be checked
+     * @param displayName - display field name to be used in return validation message
+     */
     return ({value, displayName}) => {
         if (isNil(value)) return null;
 
@@ -45,13 +62,17 @@ export function numberIs({min, max, notZero}) {
 }
 
 /**
- * Validate a date. Accepted values for min and max are:
- *  null - If 'null' is passed for either min or max, that specific check is skipped.
- *  Date - or any object that can be directly compared to Date(), e.g. moment()
- *  'now' - is equated to current Date()
+ * Validate a date.
+ * @param {null | Date} min - minimum date allowed for the field. Null skips check
+ * @param {null | Date} max - maximum date allowed for the field. Null skips check
+ * @param {string} [fmt='YYYY-MM-DD'] - optional date format string used in validation message
+ * @returns dateIs~function
  */
-
 export function dateIs({min, max, fmt = 'YYYY-MM-DD'}) {
+    /**
+     * @param value - value to be checked
+     * @param displayName - display field name to be used in return validation message
+     */
     return ({value, displayName}) => {
         min = min === 'now' ? new Date() : min;
         max = max === 'now' ? new Date() : max;
