@@ -7,7 +7,10 @@
 
 import {fmtDate} from '@xh/hoist/format';
 import {isNil, isString} from 'lodash';
-import moment from 'moment';
+/**
+ * A set of validation functions to assist in form field validation
+ */
+
 
 /**
  * Validate the presence of a field. String values must also not be empty, or all spaces.
@@ -42,12 +45,16 @@ export function numberIs({min, max, notZero}) {
 }
 
 /**
- * Validate a date.
+ * Validate a date. Accepted values for min and max are:
+ *  null (no date validation performed)
+ *  Date object - or any object that can be directly compared to Date(), e.g. moment()
+ *  'now' (is equated to Date() and then compared with value)
  */
+
 export function dateIs({min, max, fmt = 'YYYY-MM-DD'}) {
     return ({value, displayName}) => {
-        min = min === 'now' ? moment() : min;
-        max = max === 'now' ? moment() : max;
+        min = min === 'now' ? new Date() : min;
+        max = max === 'now' ? new Date() : max;
 
         if (isNil(value)) return null;
 
