@@ -20,7 +20,7 @@ export const required = ({value, displayName}) => {
 };
 
 /**
- * Validate length of a string.
+ * Validate length of a string. If 'null' is passed for either min or max, that specific check is skipped.
  */
 export function lengthIs({min, max}) {
     return ({value, displayName}) => {
@@ -32,7 +32,7 @@ export function lengthIs({min, max}) {
 }
 
 /**
- * Validate a number.
+ * Validate a number. If 'null' is passed for either min or max, that specific check is skipped.
  */
 export function numberIs({min, max, notZero}) {
     return ({value, displayName}) => {
@@ -46,9 +46,9 @@ export function numberIs({min, max, notZero}) {
 
 /**
  * Validate a date. Accepted values for min and max are:
- *  null (no date validation performed)
- *  Date object - or any object that can be directly compared to Date(), e.g. moment()
- *  'now' (is equated to Date() and then compared with value)
+ *  null - If 'null' is passed for either min or max, that specific check is skipped.
+ *  Date - or any object that can be directly compared to Date(), e.g. moment()
+ *  'now' - is equated to current Date()
  */
 
 export function dateIs({min, max, fmt = 'YYYY-MM-DD'}) {
