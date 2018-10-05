@@ -87,7 +87,11 @@ export class Record {
                 return this;
             } else {
                 const ret = clone(this);
-                ret.children = passingChildren;
+                ret.children = passingChildren.map(child => {
+                    child = clone(child);
+                    child.parent = ret;
+                    return child;
+                });
                 return ret;
             }
         }

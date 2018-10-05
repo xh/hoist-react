@@ -11,10 +11,13 @@ import {isUndefined} from 'lodash';
 /**
  * Tracks the resolution state of a stream of promise invocations.
  *
- * An instance of this class can easily be bound to promise chains
- * and then used as a model for masks or other UI elements that track
- * the progression of asynchronous tasks.
+ * An instance of this class can easily be bound to promise chains and then used as a model for
+ * masks or other UI elements that track the progression of asynchronous tasks. It can be passed
+ * directly to a Panel component via its `mask` property, providing a common and convenient
+ * method for masking a section of a user interface while an operation is pending.
+ *
  * @see Promise#linkTo
+ * @see Panel.mask
  */
 @HoistModel
 export class PendingTaskModel {

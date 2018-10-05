@@ -15,10 +15,12 @@ export const emptyFlexCol =  {
     minWidth: 0,
     movable: false,
     resizable: false,
+    sortable: false,
     excludeFromChooser: true,
     excludeFromExport: true,
     agOptions: {
-        suppressSorting: true
+        suppressMenu: true,
+        suppressFilter: true
     }
 };
 

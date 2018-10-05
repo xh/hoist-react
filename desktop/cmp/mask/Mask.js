@@ -17,9 +17,10 @@ import {withDefault, withDefaultFalse, withDefaultTrue} from '@xh/hoist/utils/js
 import './Mask.scss';
 
 /**
- * Mask with optional spinner and text.
+ * Mask with optional spinner and text - can be explicitly shown or bound to a PendingTaskModel.
  *
- * The mask can be explicitly shown or reactively bound to a PendingTaskModel.
+ * Note that the Panel component's `mask` prop provides a common and convenient method for masking
+ * sections of the UI without needing to manually create or manage this component.
  */
 @HoistComponent
 export class Mask extends Component {

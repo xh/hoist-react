@@ -5,4 +5,4 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-// Should anything go here? Do we need an index.js?
+export * from './Actions';

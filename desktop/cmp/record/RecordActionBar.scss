@@ -1,0 +1,22 @@
+// For handling showing the actions in a grid on row hover
+.ag-row.ag-row-hover {
+  .xh-record-action-bar.xh-show-on-hover {
+    .xh-record-action-button {
+      visibility: visible;
+    }
+  }
+}
+
+.xh-record-action-bar {
+  &.xh-show-on-hover {
+    &:hover {
+      .xh-record-action-button {
+        visibility: visible;
+      }
+    }
+
+    .xh-record-action-button {
+      visibility: hidden;
+    }
+  }
+}

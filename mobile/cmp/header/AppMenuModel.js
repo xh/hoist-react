@@ -39,25 +39,25 @@ export class AppMenuModel extends MenuModel {
             {
                 icon: Icon.comment(),
                 text: 'Feedback',
-                action: () => XH.showFeedbackDialog(),
+                actionFn: () => XH.showFeedbackDialog(),
                 prepareFn: (item) => item.hidden = hideFeedbackItem
             },
             {
                 icon: XH.darkTheme ? Icon.sun() : Icon.moon(),
                 text: XH.darkTheme ? 'Light theme' : 'Dark theme',
-                action: () => XH.toggleTheme(),
+                actionFn: () => XH.toggleTheme(),
                 prepareFn: (item) => item.hidden = hideThemeItem
             },
             {
                 icon: Icon.user(),
                 text: 'Impersonate',
-                action: () => XH.acm.impersonationBarModel.show(),
+                actionFn: () => XH.acm.impersonationBarModel.show(),
                 prepareFn: (item) => item.hidden = !XH.acm.impersonationBarModel.canImpersonate
             },
             {
                 icon: Icon.logout(),
                 text: 'Logout',
-                action: () => XH.identityService.logoutAsync(),
+                actionFn: () => XH.identityService.logoutAsync(),
                 prepareFn: (item) => item.hidden = hideLogoutItem || !XH.app.enableLogout
             }
         ];

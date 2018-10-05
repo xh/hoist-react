@@ -168,7 +168,7 @@ export class GridStateModel {
         return {
             track: () => gridModel.sortBy,
             run: () => {
-                this.state.sortBy = gridModel.sortBy;
+                this.state.sortBy = gridModel.sortBy.map(it => it.toString());
                 this.saveStateChange();
             }
         };
