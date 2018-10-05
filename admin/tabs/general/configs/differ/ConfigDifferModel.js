@@ -10,7 +10,7 @@ import {action, observable} from '@xh/hoist/mobx';
 import {cloneDeep, isEqual, remove, trimEnd} from 'lodash';
 import {pluralize} from '@xh/hoist/utils/js';
 import {XH, HoistModel} from '@xh/hoist/core';
-import {LocalStore, RecordAction} from '@xh/hoist/data';
+import {LocalStore} from '@xh/hoist/data';
 import {p} from '@xh/hoist/cmp/layout';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
@@ -30,12 +30,12 @@ export class ConfigDifferModel  {
     @observable isOpen = false;
     @observable remoteHost = null;
 
-    applyRemoteAction = new RecordAction({
+    applyRemoteAction = {
         text: 'Apply Remote',
         icon: Icon.cloudDownload(),
         actionFn: (action, rec, selection) => this.confirmApplyRemote(selection),
         recordsRequired: true
-    });
+    };
 
     constructor(configGrid) {
         this.configGrid = configGrid;

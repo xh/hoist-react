@@ -12,7 +12,6 @@ import {
     castArray,
     cloneDeep,
     defaults,
-    find,
     findLast,
     isEmpty,
     isPlainObject,
@@ -71,11 +70,11 @@ export class GridModel {
     //------------------------
     // Observable API
     //------------------------
-    /** @member {Column[]} */
+    /** @member {Object[]} - Column objects + column group configs w/nested children. */
     @observable.ref columns = [];
     /** @member {GridSorter[]} */
     @observable.ref sortBy = [];
-    /** @member {?string} */
+    /** @member {string[]} */
     @observable groupBy = null;
     /** @member {boolean} */
     @observable compact = false;
@@ -85,6 +84,8 @@ export class GridModel {
     static defaultContextMenuTokens = [
         'copy',
         'copyWithHeaders',
+        '-',
+        'expandCollapseAll',
         '-',
         'exportExcel',
         'exportCsv',
@@ -102,7 +103,7 @@ export class GridModel {
     /**
      * @param {Object} c - GridModel configuration.
      * @param {BaseStore} c.store - store containing the data for the grid.
-     * @param {(Column[]|Object[])} c.columns - Columns, configs to create them, or configs for
+     * @param {Object[]} c.columns - Columns, configs to create them, or configs for
      *      column groups. Column group configs must provide `headerName` and/or `groupId`
      *      properties and a `children` array of Columns or Column configs.
      * @param {(boolean)} [c.treeMode] - true if grid is a tree grid (default false).
@@ -113,7 +114,7 @@ export class GridModel {
      *      Defaults to null, in which case no empty text will be shown.
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
      *      colId and sort direction.
-     * @param {?string} [c.groupBy] - Column ID by which to do full-width row grouping.
+     * @param {(string|string[])} [c.groupBy] - Column ID(s) by which to do full-width row grouping.
      * @param {boolean} [c.compact] - true to render the grid in compact mode.
      * @param {boolean} [c.enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
@@ -195,8 +196,11 @@ export class GridModel {
 
     /** Select the first row in the grid. */
     selectFirst() {
-        const first = this.agApi.getDisplayedRowAtIndex(0);
-        if (first) this.selModel.select(first);
+        const {agApi, selModel} = this;
+        if (agApi) {
+            const first = agApi.getDisplayedRowAtIndex(0);
+            if (first) selModel.select(first);
+        }
     }
 
     /** Does the grid have any records to show? */
@@ -227,29 +231,53 @@ export class GridModel {
     }
 
     /**
-     * This method is no-op if provided a colId without a corresponding column.
-     * @param {string} colId - id of the column to use for row grouping, or falsey value to remove grouping.
+     * Apply full-width row-level grouping to the grid for the given column ID(s).
+     * IDs that do not have a corresponding leaf-level column will be dropped and ignored.
+     * @param {(string|string[])} colIds - column ID(s) for row grouping, or falsey value to ungroup.
      */
     @action
-    setGroupBy(colId) {
+    setGroupBy(colIds) {
+        colIds = castArray(colIds);
+
         const cols = this.columns,
-            groupCol = find(cols, {colId});
+            leafCols = this.getLeafColumns(),
+            groupCols = leafCols.filter(it => colIds.includes(it.colId)),
+            groupColIds = groupCols.map(it => it.colId);
 
-        if (colId && !groupCol) return;
-
-        cols.forEach(it => {
-            if (it.agOptions && it.agOptions.rowGroup) {
-                it.agOptions.rowGroup = false;
-                it.hide = false;
+        // Ungroup and re-show any currently grouped columns.
+        leafCols.forEach(col => {
+            if (col.agOptions.rowGroup) {
+                col.agOptions.rowGroup = false;
+                col.hide = false;
             }
         });
 
-        if (colId && groupCol) {
-            groupCol.agOptions.rowGroup = true;
-            groupCol.hide = true;
-        }
+        // Group and hide all newly requested columns.
+        groupCols.forEach(col => {
+            col.agOptions.rowGroup = true;
+            col.hide = true;
+        });
 
+        // Set groupBy value based on verified column IDs and flush to grid.
+        this.groupBy = groupColIds;
         this.columns = [...cols];
+    }
+
+    /** Expand all parent rows in grouped or tree grid. (Note, this is recursive for trees!) */
+    expandAll() {
+        const {agApi} = this;
+        if (agApi) {
+            agApi.expandAll();
+
+        }
+    }
+
+    /** Collapse all parent rows in grouped or tree grid. */
+    collapseAll() {
+        const {agApi} = this;
+        if (agApi) {
+            agApi.collapseAll();
+        }
     }
 
     /**
@@ -315,14 +343,17 @@ export class GridModel {
     }
 
     /**
-     * This method will update the current column definition with respect to sort order, width and visibility of columns.
-     * Used by both Hoist's grid state plugin (GridStateModel) and in response to state changes as detected by ag-grid.
+     * This method will update the current column definition with respect to sort order, width and
+     * visibility of columns. Used by both Hoist's grid state plugin (GridStateModel) and in
+     * response to state changes as detected by ag-grid.
      *
-     * note: Sort order is driven by the individual columns in the state param. This means that if a column has been
-     * redefined to a new column group that entire group may be moved by this state param.
+     * Note: Column ordering is determined by the individual (leaf-level) columns in state.
+     * This means that if a column has been redefined to a new column group, that entire group may
+     * be moved to a new index.
      *
      * @param {Object[]} colState - configs representing the order, width and visibility of columns.
-     *       In the case of a grid with grouped columns, the columns here represent only the leaves or bottom level columns.
+     *       In the case of a grid with grouped columns, the columns here represent only the leaves
+     *       or bottom level columns.
      */
     @action
     applyColumnChanges(colState) {

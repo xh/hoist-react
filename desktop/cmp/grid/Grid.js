@@ -33,7 +33,7 @@ export class Grid extends Component {
 
     static propTypes = {
         /**
-         * Options for AG Grid's API.
+         * Options for ag-Grid's API.
          *
          * This constitutes an 'escape hatch' for applications that need to get to the underlying
          * ag-Grid API.  It should be used with care. Settings made here might be overwritten and/or
@@ -44,9 +44,17 @@ export class Grid extends Component {
         /**
          * Callback to call when a row is double clicked.  Function will receive an event
          * with a data node containing the row's data.
-         * @see {@link https://www.ag-grid.com/javascript-grid-events/#properties-and-hierarchy|ag-Grid Event Docs}
          */
         onRowDoubleClicked: PT.func,
+
+        /**
+         * Callback to call when a key down event is detected on this component.
+         * Function will receive an event with the standard 'target' element.
+         *
+         * Note that the ag-Grid API provides limited ability to customize keyboard handling.
+         * This handler is designed to allow application to workaround this.
+         */
+        onKeyDown: PT.func,
 
         /**
          * Show a colored row background on hover. Defaults to false.
@@ -74,7 +82,7 @@ export class Grid extends Component {
 
     render() {
         const {colChooserModel, compact} = this.model,
-            {agOptions, showHover} = this.props,
+            {agOptions, showHover, onKeyDown} = this.props,
             layoutProps = this.getLayoutProps();
 
         // Default flex = 'auto' if no dimensions / flex specified.
@@ -94,7 +102,8 @@ export class Grid extends Component {
                     XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                     compact ? 'xh-grid-compact' : 'xh-grid-standard',
                     showHover ? 'xh-grid-show-hover' : ''
-                )
+                ),
+                onKeyDown
             }),
             colChooser({
                 omit: !colChooserModel,
@@ -143,6 +152,7 @@ export class Grid extends Component {
             onSelectionChanged: this.onSelectionChanged,
             onGridSizeChanged: this.onGridSizeChanged,
             onDragStopped: this.onDragStopped,
+            onColumnResized: this.onColumnResized,
 
             groupDefaultExpanded: 1,
             groupUseEntireRow: true
@@ -390,8 +400,16 @@ export class Grid extends Component {
         this.model.selModel.select(ev.api.getSelectedRows());
     }
 
+    // Catches column re-ordering AND resizing via user drag-and-drop interaction.
     onDragStopped = (ev) => {
         this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
+    }
+
+    // Catches column resizing on call to autoSize API.
+    onColumnResized = (ev) => {
+        if (this.isDisplayed && ev.finished && ev.source == 'autosizeColumns') {
+            this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
+        }
     }
 
     onGridSizeChanged = (ev) => {

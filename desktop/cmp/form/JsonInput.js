@@ -49,13 +49,20 @@ export class JsonInput extends HoistInput {
         editorProps: PT.object
     };
 
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.addReaction({
             track: () => XH.darkTheme,
             run: () => {
                 const {editor} = this;
                 if (editor) editor.setOption('theme', XH.darkTheme ? 'dracula' : 'default');
+            }
+        });
+        this.addReaction({
+            track: () => this.renderValue,
+            run: (value) => {
+                const {editor} = this;
+                if (editor) editor.setValue(value);
             }
         });
     }

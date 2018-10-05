@@ -45,6 +45,8 @@ export class Column {
      * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
      * @param {boolean} [c.movable] - false to prevent user from drag-and-drop re-ordering.
      * @param {boolean} [c.sortable] - false to prevent user from sorting on this column.
+     * @param {(boolean|string)} [c.pinned] - set to true/'left' or 'right' to pin (aka "lock") the
+     *      column to the side of the grid, ensuring it's visible while horizontally scrolling.
      * @param {Column~rendererFn} [c.renderer] - function to produce a formatted string for each cell.
      * @param {Column~elementRendererFn} [c.elementRenderer] - function which returns a React component.
      * @param {string} [c.chooserName] - name to display within the column chooser component.
@@ -92,6 +94,7 @@ export class Column {
         resizable,
         movable,
         sortable,
+        pinned,
         renderer,
         elementRenderer,
         chooserName,
@@ -138,6 +141,9 @@ export class Column {
         this.movable = withDefaultTrue(movable);
         this.sortable = withDefaultTrue(sortable);
 
+        // Pinned supports convenience true -> 'left'. OK to leave undefined if not given.
+        this.pinned = (pinned === true) ? 'left' : pinned;
+
         this.renderer = renderer;
         this.elementRenderer = elementRenderer;
 
@@ -174,6 +180,8 @@ export class Column {
             suppressResize: !this.resizable,
             suppressMovable: !this.movable,
             suppressSorting: !this.sortable,
+            lockPinned: true, // Block user-driven pinning/unpinning - https://github.com/exhi/hoist-react/issues/687
+            pinned: this.pinned,
             headerComponentParams: {gridModel, column: this}
         };
 
