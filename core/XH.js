@@ -105,7 +105,7 @@ class XHClass {
 
     /** State of app -- see AppState for valid values. */
     @observable appState = AppState.PRE_AUTH;
-f
+
     /** Currently authenticated user. */
     @observable authUsername = null;
 
