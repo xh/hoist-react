@@ -53,7 +53,7 @@ export class JsonInput extends HoistInput {
     get commitOnChange() {
         withDefault(this.props.commitOnChange, false);
     }
-    
+
     constructor(props) {
         super(props);
         this.addReaction({
@@ -61,6 +61,13 @@ export class JsonInput extends HoistInput {
             run: () => {
                 const {editor} = this;
                 if (editor) editor.setOption('theme', XH.darkTheme ? 'dracula' : 'default');
+            }
+        });
+        this.addReaction({
+            track: () => this.renderValue,
+            run: (value) => {
+                const {editor} = this;
+                if (editor) editor.setValue(value);
             }
         });
     }

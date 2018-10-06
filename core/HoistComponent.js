@@ -19,7 +19,7 @@ import {ReactiveSupport} from './mixins/ReactiveSupport';
  * Exceptions include highly specific low-level components provided to other APIs which may be
  * negatively impacted by the overhead associated with this decorator.
  *
- * Adds support for managed events, mobx reactivity, model awareness, and other convenience getters.
+ * Adds support for MobX reactivity, model awareness, and other convenience methods below.
  */
 export function HoistComponent(C) {
 

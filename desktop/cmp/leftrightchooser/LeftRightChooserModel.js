@@ -73,12 +73,12 @@ export class LeftRightChooserModel {
      * @param {boolean} [c.leftGroupingEnabled] - true to enable grouping on the left-side list.
      * @param {boolean} [c.leftGroupingExpanded] - false to show a grouped left-side list with all
      *      groups initially collapsed.
-     * @param {(GridSorterDef|GridSorterDef[])} [c.leftSortBy] - sorter(s) for left-side store.
+     * @param {(string|string[]|Object|Object[])} [c.leftSortBy] - sorter(s) for left-side store.
      * @param {?string} [c.rightTitle] - title of the right-side list.
      * @param {boolean} [c.rightGroupingEnabled] - true to enable grouping on the right-side list.
      * @param {boolean} [c.rightGroupingExpanded] - false to show a grouped right-side list with all
      *      groups initially collapsed.
-     * @param {(GridSorterDef|GridSorterDef[])} [c.rightSortBy] - sorter(s) for right-side store.
+     * @param {(string|string[]|Object|Object[])} [c.rightSortBy] - sorter(s) for right-side store.
      */
     constructor({
         data = [],
