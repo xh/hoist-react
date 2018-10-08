@@ -10,7 +10,6 @@ import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {
     castArray,
-    cloneDeep,
     defaults,
     findLast,
     isEmpty,
@@ -19,9 +18,11 @@ import {
     last,
     sortBy,
     pull,
-    uniq
+    uniq,
+    isNil,
+    pick
 } from 'lodash';
-import {Column} from '@xh/hoist/columns';
+import {Column, ColumnGroup} from '@xh/hoist/columns';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {ColChooserModel} from './ColChooserModel';
 import {GridStateModel} from './GridStateModel';
@@ -66,11 +67,10 @@ export class GridModel {
     /** @member {string} */
     exportFilename = 'export';
 
-
     //------------------------
     // Observable API
     //------------------------
-    /** @member {Object[]} - Column objects + column group configs w/nested children. */
+    /** @member {Object[]} - {@link Column} and {@link ColumnGroup} objects */
     @observable.ref columns = [];
     /** @member {GridSorter[]} */
     @observable.ref sortBy = [];
@@ -103,9 +103,7 @@ export class GridModel {
     /**
      * @param {Object} c - GridModel configuration.
      * @param {BaseStore} c.store - store containing the data for the grid.
-     * @param {Object[]} c.columns - Columns, configs to create them, or configs for
-     *      column groups. Column group configs must provide `headerName` and/or `groupId`
-     *      properties and a `children` array of Columns or Column configs.
+     * @param {Object[]} c.columns - {@link Column} or {@link ColumnGroup} configs
      * @param {(boolean)} [c.treeMode] - true if grid is a tree grid (default false).
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
@@ -317,12 +315,12 @@ export class GridModel {
         return this.store.loadData(...args);
     }
 
-    /** @return {Column[]} */
+    /** @return {Object[]} - array of {@link Column} and {@link ColumnGroup} objects */
     cloneColumns() {
         return [...this.columns];
     }
 
-    /** @param {(Column[]|Object[])} cols - Columns, or configs to create them. */
+    /** @param {Object[]} cols - {@link Column} or {@link ColumnGroup} configs. */
     @action
     setColumns(cols) {
         const columns = this.buildColumns(cols);
@@ -339,31 +337,36 @@ export class GridModel {
     }
 
     noteAgColumnStateChanged(agColState) {
-        this.applyColumnChanges(agColState);
+        this.applyColumnChanges(agColState.map(it => pick(it, ['colId', 'width', 'hide'])));
     }
 
     /**
      * This method will update the current column definition with respect to sort order, width and
-     * visibility of columns. Used by both Hoist's grid state plugin (GridStateModel) and in
-     * response to state changes as detected by ag-grid.
+     * visibility of columns. Used by Hoist's grid state plugin (GridStateModel), column chooser and
+     * in response to state changes as detected by ag-grid.
      *
      * Note: Column ordering is determined by the individual (leaf-level) columns in state.
      * This means that if a column has been redefined to a new column group, that entire group may
      * be moved to a new index.
      *
-     * @param {Object[]} colState - configs representing the order, width and visibility of columns.
+     * @param {ColumnState[]} colState - configs representing the order, width and visibility of columns.
      *       In the case of a grid with grouped columns, the columns here represent only the leaves
      *       or bottom level columns.
      */
     @action
     applyColumnChanges(colState) {
         let {columns} = this,
-            newCols = cloneDeep(columns);
+            newCols = [...columns];
 
-        // 1) Update any width changes, and mark (potentially changed) sort order
+        // 1) Update any width or visibility changes, and mark (potentially changed) sort order
         colState.forEach((agCol, index) => {
-            let col = this.findColumn(newCols, agCol.colId);
-            if (!col.flex) col.width = agCol.width;
+            const col = this.findColumn(newCols, agCol.colId);
+            if (!col) return;
+
+            if (!col.flex && !isNil(agCol.width)) col.width = agCol.width;
+
+            if (!isNil(agCol.hide)) col.hide = agCol.hide;
+
             col._sortOrder = index;
         });
 
@@ -388,17 +391,7 @@ export class GridModel {
     // Implementation
     //-----------------------
     buildColumns(colsOrConfigs) {
-        return colsOrConfigs.map(c => {
-            if (c.children) {
-                c.groupId = c.groupId || c.headerName;
-                throwIf(!c.groupId, 'Must specify groupId or headerName for a group column.');
-                c.children = this.buildColumns(c.children);
-                c.marryChildren = true; // enforce 'sealed' column groups
-                return c;
-            }
-
-            return c instanceof Column ? c : new Column(c);
-        });
+        return colsOrConfigs.map(c => c.children ? new ColumnGroup(c) : new Column(c));
     }
 
     findColumn(cols, id) {
@@ -442,7 +435,6 @@ export class GridModel {
     validateColumns(cols) {
         if (isEmpty(cols)) return;
 
-
         const {groupIds, colIds} = this.collectIds(cols);
 
         const colsHaveDupes = colIds.length != uniq(colIds).length;
@@ -458,7 +450,7 @@ export class GridModel {
         );
     }
 
-    collectIds(cols, groupIds = [], colIds =[]) {
+    collectIds(cols, groupIds = [], colIds = []) {
         cols.forEach(col => {
             if (col.colId) colIds.push(col.colId);
             if (col.groupId) {
@@ -515,3 +507,10 @@ export class GridModel {
         XH.safeDestroy(this.colChooserModel, this.stateModel);
     }
 }
+
+/**
+ * @typedef {Object} ColumnState
+ * @property {string} colId - unique identifier of the column
+ * @property {number} [width] - new width to set for the column
+ * @property {boolean} [hide] - visibility of the column
+ */

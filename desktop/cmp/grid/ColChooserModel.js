@@ -48,20 +48,22 @@ export class ColChooserModel {
 
     commit() {
         const {gridModel, lrModel} = this,
-            {leftValues, rightValues} = lrModel;
+            {leftValues, rightValues} = lrModel,
+            cols = gridModel.getLeafColumns();
 
-        const cols = gridModel.getLeafColumns();
-        cols.forEach(it => {
-            if (leftValues.includes(it.colId)) {
-                it.hide = true;
-            } else if (rightValues.includes(it.colId)) {
-                it.hide = false;
+        const colState = cols.map(({colId}) => {
+            if (leftValues.includes(colId)) {
+                return {colId, hide: true};
+            } else if (rightValues.includes(colId)) {
+                return {colId, hide: false};
+            } else {
+                // No visibility change, but preserve sort order if this col happened to be excluded from the chooser
+                return {colId};
             }
         });
 
-        gridModel.applyColumnChanges(cols);
+        gridModel.applyColumnChanges(colState);
     }
-
 
     //------------------------
     // Implementation

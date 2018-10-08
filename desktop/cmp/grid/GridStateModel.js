@@ -131,33 +131,21 @@ export class GridStateModel {
     }
 
     updateGridColumns() {
-        const {gridModel, state} = this,
-            cols = gridModel.getLeafColumns(),
-            foundColumns = [];
-
+        const {gridModel, state} = this;
         if (!state.columns) return;
 
-        // Match columns in state to model columns via colId, apply stateful properties,
-        // then add to new columns in stateful order.
-        state.columns.forEach(colState => {
-            const col = find(cols, {colId: colState.colId});
-            if (!col) return; // Do not attempt to include stale column state.
-
-            col.hide = colState.hide;
-            col.width = colState.width;
-            foundColumns.push(col);
-        });
+        const cols = gridModel.getLeafColumns(),
+            colState = [...state.columns];
 
         // Any grid columns that were not found in state are newly added to the code.
         // Insert these columns in position based on the index at which they are defined.
-        const newColumns = [...foundColumns];
-        cols.forEach((col, idx) => {
-            if (!find(foundColumns, {colId: col.colId})) {
-                newColumns.splice(idx, 0, col);
+        cols.forEach(({colId, width, hide}, idx) => {
+            if (!find(colState, {colId})) {
+                colState.splice(idx, 0, {colId, width, hide});
             }
         });
 
-        gridModel.applyColumnChanges(newColumns);
+        gridModel.applyColumnChanges(colState);
     }
 
     //--------------------------

@@ -6,13 +6,13 @@
  */
 
 import {Component} from 'react';
-import {castArray, startCase, isFunction, clone} from 'lodash';
+import {castArray, startCase, isFunction, clone, find} from 'lodash';
 import {ExportFormat} from './ExportFormat';
 import {withDefault, withDefaultTrue, withDefaultFalse, throwIf, warnIf} from '@xh/hoist/utils/js';
 
 /**
  * Cross-platform definition and API for a standardized Grid column.
- * Typically provided to GridModels as plain configuration objects.
+ * Provided to GridModels as plain configuration objects.
  * @alias HoistColumn
  */
 export class Column {
@@ -126,7 +126,7 @@ export class Column {
 
         warnIf(
             flex && width,
-            `Column ${this.colId} should not be specified with both flex = true && width.  Width will be ignored.`,
+            `Column ${this.colId} should not be specified with both flex = true && width.  Width will be ignored.`
         );
         this.flex = withDefaultFalse(flex);
         this.width = this.flex ? null : width || Column.DEFAULT_WIDTH;
@@ -234,6 +234,13 @@ export class Column {
                 }
                 refresh() {return false}
             };
+        }
+
+        const sortCfg = find(gridModel.sortBy, {colId: ret.colId});
+        if (sortCfg) {
+            ret.sort = sortCfg.sort;
+            ret.sortedAt = gridModel.sortBy.indexOf(sortCfg);
+            ret.comparator = (v1, v2) => sortCfg.comparator(v1, v2);
         }
 
         // Finally, apply explicit app requests.  The customer is always right....
