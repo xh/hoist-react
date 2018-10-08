@@ -83,7 +83,7 @@ body {
   --xh-grid-font-size-px: calc(var(--xh-grid-font-size) * 1px);
   --xh-grid-line-height: var(--grid-line-height, 26);
   --xh-grid-line-height-px: calc(var(--xh-grid-line-height) * 1px);
-  --xh-grid-group-bg: var(--grid-group-bg, var(--xh-blue-gray));
+  --xh-grid-group-bg: var(--grid-group-bg, #{mc('blue-grey', '400')});
   --xh-grid-group-text-color: var(--grid-group-text-color, white);
   --xh-grid-header-bg: var(--grid-header-bg, var(--xh-blue-gray-light));
   --xh-grid-header-text-color: var(--grid-header-text-color, var(--xh-text-color));

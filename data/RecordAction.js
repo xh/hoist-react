@@ -72,6 +72,11 @@ export class RecordAction {
         this.prepareFn = prepareFn;
         this.recordsRequired = recordsRequired;
     }
+
+    /** Clone this object. **/
+    clone() {
+        return new RecordAction(this);
+    }
 }
 
 /**

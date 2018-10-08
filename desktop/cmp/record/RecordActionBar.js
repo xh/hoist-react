@@ -45,7 +45,7 @@ export class RecordActionBar extends Component {
         super(props);
         this.actions = props.actions
             .filter(Boolean)
-            .map(it => new RecordAction(it));
+            .map(it => it instanceof RecordAction ? it.clone() :  new RecordAction(it));
     }
 
     render() {

@@ -42,7 +42,9 @@ export class StoreContextMenu {
     constructor({items, gridModel}) {
         this.gridModel = gridModel;
         this.items = flatten(items.map(it => {
-            return isString(it) ? this.parseToken(it) : new RecordAction(it);
+            if (it instanceof RecordAction) return it.clone();
+            if (isString(it)) return this.parseToken(it);
+            return new RecordAction(it);
         }));
     }
 
@@ -78,13 +80,13 @@ export class StoreContextMenu {
                 return [
                     new RecordAction({
                         text: 'Expand All',
-                        icon: Icon.chevronDown(),
+                        icon: Icon.angleDown(),
                         hidden: !gridModel || (!gridModel.treeMode && isEmpty(gridModel.groupBy)),
                         actionFn: () => gridModel.expandAll()
                     }),
                     new RecordAction({
                         text: 'Collapse All',
-                        icon: Icon.chevronRight(),
+                        icon: Icon.angleRight(),
                         hidden: !gridModel || (!gridModel.treeMode && isEmpty(gridModel.groupBy)),
                         actionFn: () => gridModel.collapseAll()
                     })
