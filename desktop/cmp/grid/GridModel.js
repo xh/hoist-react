@@ -359,13 +359,13 @@ export class GridModel {
             newCols = [...columns];
 
         // 1) Update any width or visibility changes, and mark (potentially changed) sort order
-        colState.forEach((agCol, index) => {
-            const col = this.findColumn(newCols, agCol.colId);
+        colState.forEach((updatedColState, index) => {
+            const col = this.findColumn(newCols, updatedColState.colId);
             if (!col) return;
 
-            if (!col.flex && !isNil(agCol.width)) col.width = agCol.width;
+            if (!col.flex && !isNil(updatedColState.width)) col.width = updatedColState.width;
 
-            if (!isNil(agCol.hide)) col.hide = agCol.hide;
+            if (!isNil(updatedColState.hide)) col.hide = updatedColState.hide;
 
             col._sortOrder = index;
         });
