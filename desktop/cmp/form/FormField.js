@@ -110,7 +110,6 @@ export class FormField extends Component {
                     item: t,
                     wrapperTagName: 'div',
                     targetTagName: 'div',
-                    target: '',
                     width: '100%',
                     content: notValid ? (
                         <ul className="xh-form-field-error-tooltip">
