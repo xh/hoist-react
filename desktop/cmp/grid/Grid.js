@@ -132,11 +132,11 @@ export class Grid extends Component {
             defaultGroupSortComparator: this.sortByGroup,
             icons: {
                 groupExpanded: convertIconToSvg(
-                    Icon.chevronDown(),
+                    Icon.angleDown(),
                     {classes: ['group-header-icon-expanded', 'fa-fw']}
                 ),
                 groupContracted: convertIconToSvg(
-                    Icon.chevronRight(),
+                    Icon.angleRight(),
                     {classes: ['group-header-icon-contracted', 'fa-fw']}
                 )
             },
