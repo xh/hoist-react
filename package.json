@@ -23,7 +23,6 @@
     "ag-grid": "~18.1.2",
     "ag-grid-enterprise": "~18.1.1",
     "ag-grid-react": "~18.1.0",
-    "babel-runtime": "~6.26.0",
     "classnames": "~2.2.6",
     "clipboard": "~2.0.0",
     "codemirror": "~5.40.2",
