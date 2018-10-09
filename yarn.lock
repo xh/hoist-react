@@ -1056,19 +1056,19 @@
     "@webassemblyjs/wast-parser" "1.7.8"
     "@xtuc/long" "4.2.1"
 
-"@xh/eslint-config@~0.2.1":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@xh/eslint-config/-/eslint-config-0.2.2.tgz#980212b3b9505b38cc29ff87164050e25a23c70f"
-  integrity sha512-9pH0DoGZ9jF9qw1GnGdAaJWjkBXNJ8FlpWO6hhSGOsPBfT1gDC3nIJridHkkAm6PWh5l3nfjHJdpy/8fbesCTA==
+"@xh/eslint-config@~0.2.3":
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/@xh/eslint-config/-/eslint-config-0.2.3.tgz#bd5ae1fe0a57a1f0acc4b012f0aa27dbb7d8f95a"
+  integrity sha512-uOjXE/39o7I6Wi1RvZ8y45ryYjcF1WHFDiT5qOPpnt++m0chm5o0ApBYtVPZA33iXLM/Dsv2siXQT0feAdsQfg==
   dependencies:
     babel-eslint "~8.2.2"
     eslint "~4.19.1"
     eslint-plugin-react "~7.7.0"
 
-"@xh/hoist-dev-utils@~3.0.1":
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-3.0.1.tgz#97661326ebd6fd855530d3221b0fbffc82821349"
-  integrity sha512-x2jUkw96QSbZkkyss8cZ6J5TgtGduVCGtvohuLS8wUMQGSVK//eICCrYzkcrMdoBUZ+AtB1RFgoQ8Zw/3/NwqA==
+"@xh/hoist-dev-utils@~3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-3.0.2.tgz#7362d86dab7bbcd69c72b613e130f505eab077a9"
+  integrity sha512-DT0pYhtaEF2GzwWSLUtnzbQCjuP2vjvZTfpTByq7s7GwDlfuPROpuDKyAhonDGjsWGLXGc/GaRzfSyHcLib3Pw==
   dependencies:
     "@babel/core" "~7.1.2"
     "@babel/plugin-proposal-class-properties" "~7.1.0"
@@ -1078,7 +1078,7 @@
     "@babel/polyfill" "~7.0.0"
     "@babel/preset-env" "~7.1.0"
     "@babel/preset-react" "~7.0.0"
-    "@xh/eslint-config" "~0.2.1"
+    "@xh/eslint-config" "~0.2.3"
     autoprefixer "~9.1.5"
     babel-loader "~8.0.4"
     case-sensitive-paths-webpack-plugin "~2.1.2"

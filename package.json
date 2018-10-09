@@ -8,7 +8,7 @@
   "author": "Extremely Heavy Industries, Inc.",
   "license": "UNLICENSED",
   "scripts": {
-    "lint": "yarn run eslint lint ."
+    "lint": "yarn run eslint ."
   },
   "dependencies": {
     "@blueprintjs/core": "~3.7.0",
@@ -49,7 +49,7 @@
     "react-dom-factories": "~1.0.2"
   },
   "devDependencies": {
-    "@xh/hoist-dev-utils": "~3.0.1",
+    "@xh/hoist-dev-utils": "~3.0.2",
     "react": "~16.5.2",
     "react-dom": "~16.5.2",
     "react-dom-factories": "~1.0.2"
