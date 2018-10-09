@@ -494,7 +494,7 @@ process (as opposed to being checked in to the app's `webpack.config.js`) are:
   which then provides another way to cross-reference exactly what snapshot of the codebase was used
   to build any given running application.
 
-An example Teamcity command line runner - ⚠️ note this must run with `client-app` as its working
+An example Teamcity command line runner. ⚠️ Note this must run with `client-app` as its working
 directory:
 
 ```bash
@@ -524,10 +524,10 @@ they are very thin layers on top of the official Tomcat and nginx images on Dock
 #### 3.1) Build and Publish Tomcat Docker image
 
 The Grails server component is deployed within a Tomcat container. The app should have a minimal
-`/docker/tomcat/Dockerfile` such as:
+`/docker/tomcat/Dockerfile` (checked into source control) such as:
 
 ```dockerfile
-FROM xhio/sh-tomcat:latest
+FROM xhio/xh-tomcat:latest
 COPY setenv.sh bin/
 COPY *.war webapps/ROOT.war
 ```
@@ -549,7 +549,7 @@ That leaves the build with the job of generating a suitable tag for the containe
 Docker build, and then pushing to an appropriate (likely internal) Docker registry. The container
 tag should include the appCode + `-tomcat` to indicate that this is the Grails-side container.
 
-An example Teamcity command line runner ⚠️ note this must run with `docker/tomcat` as its working
+An example Teamcity command line runner. ⚠️ Note this must run with `docker/tomcat` as its working
 directory:
 
 ```bash
@@ -563,7 +563,7 @@ sudo docker build --pull -t "$containerTag" .
 
 # Note whether build was successful, push if so, return error if not.
 ret=$?
-if [$ret -eq 0 ]
+if [ $ret -eq 0 ]
 then
   sudo docker push "$containerTag"
   ret=$?
@@ -579,7 +579,7 @@ exit $ret
 #### 3.2) Build and Publish nginx Docker image
 
 The static JS resources are deployed within an nginx container. The app should have a minimal
-`/docker/nginx/Dockerfile/ ` such as:
+`/docker/nginx/Dockerfile/ ` (checked into source control) such as:
 
 ```dockerfile
 FROM xhio/xh-nginx:latest
@@ -778,5 +778,7 @@ sudo docker system prune -af
 
 🙏 Thanks for your patience as we continue to build out this documentation.
 
-:mailbox: :phone: :earth_americas: info@xh.io | https://xh.io/contact Copyright © 2018 Extremely
-Heavy Industries Inc.
+------------------------------------------
+📫☎️🌎 info@xh.io | https://xh.io/contact
+
+Copyright © 2018 Extremely Heavy Industries Inc.
