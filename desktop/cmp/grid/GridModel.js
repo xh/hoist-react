@@ -79,6 +79,8 @@ export class GridModel {
     @observable compact = false;
     /** @member {GridApi} */
     @observable.ref agApi = null;
+    /** @member {ColumnApi} */
+    @observable.ref agColumnApi = null;
 
     static defaultContextMenuTokens = [
         'copy',
@@ -225,6 +227,11 @@ export class GridModel {
     @action
     setAgApi(agApi) {
         this.agApi = agApi;
+    }
+
+    @action
+    setAgColumnApi(columnApi) {
+        this.agColumnApi = columnApi;
     }
 
     /**

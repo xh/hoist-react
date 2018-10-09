@@ -345,6 +345,7 @@ export class Grid extends Component {
 
     onGridReady = (ev) => {
         this.model.setAgApi(ev.api);
+        this.model.setAgColumnApi(ev.columnApi);
     }
 
     onNavigateToNextCell = (params) => {
