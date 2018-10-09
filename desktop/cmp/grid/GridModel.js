@@ -19,8 +19,7 @@ import {
     sortBy,
     pull,
     uniq,
-    isNil,
-    pick
+    isNil
 } from 'lodash';
 import {Column, ColumnGroup} from '@xh/hoist/columns';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
@@ -320,10 +319,13 @@ export class GridModel {
         return [...this.columns];
     }
 
-    /** @param {Object[]} cols - {@link Column} or {@link ColumnGroup} configs. */
+    /** @param {Object[]} colConfigs - {@link Column} or {@link ColumnGroup} configs. */
     @action
-    setColumns(cols) {
-        const columns = this.buildColumns(cols);
+    setColumns(colConfigs) {
+        throwIf(colConfigs.some(c => !isPlainObject(c)),
+            'setColumns only accepts plain objects for Column or ColumnGroup configs!');
+
+        const columns = colConfigs.map(c => c.children ? new ColumnGroup(c) : new Column(c));
 
         this.validateColumns(columns);
 
@@ -337,47 +339,62 @@ export class GridModel {
     }
 
     noteAgColumnStateChanged(agColState) {
-        this.applyColumnChanges(agColState.map(it => pick(it, ['colId', 'width', 'hide'])));
+        const colChanges = agColState.map(({colId, width, hide}) => {
+            const col = this.findColumn(this.columns, colId);
+            return {
+                colId,
+                hide,
+                width: col.flex ? undefined : width
+            };
+        });
+
+        this.applyColumnChanges(colChanges);
     }
 
     /**
-     * This method will update the current column definition with respect to sort order, width and
-     * visibility of columns. Used by Hoist's grid state plugin (GridStateModel), column chooser and
-     * in response to state changes as detected by ag-grid.
+     * This method will update the current column definition. Throws an exception if any of the
+     * columns provided in colChanges are not present in the current column list.
      *
      * Note: Column ordering is determined by the individual (leaf-level) columns in state.
      * This means that if a column has been redefined to a new column group, that entire group may
      * be moved to a new index.
      *
-     * @param {ColumnState[]} colState - configs representing the order, width and visibility of columns.
-     *       In the case of a grid with grouped columns, the columns here represent only the leaves
-     *       or bottom level columns.
+     * @param {ColumnState[]} colChanges - changes to apply to the columns. If all leaf columns are
+     *      represented in these changes then the sort order will be applied as well.
      */
     @action
-    applyColumnChanges(colState) {
+    applyColumnChanges(colChanges) {
         let {columns} = this,
             newCols = [...columns];
 
-        // 1) Update any width or visibility changes, and mark (potentially changed) sort order
-        colState.forEach((updatedColState, index) => {
-            const col = this.findColumn(newCols, updatedColState.colId);
-            if (!col) return;
+        throwIf(colChanges.some(({colId}) => !this.findColumn(columns, colId)), 'Invalid columns detected in column changes!');
 
-            if (!col.flex && !isNil(updatedColState.width)) col.width = updatedColState.width;
+        // 1) Update any width or visibility changes
+        colChanges.forEach(change => {
+            const col = this.findColumn(newCols, change.colId);
 
-            if (!isNil(updatedColState.hide)) col.hide = updatedColState.hide;
-
-            col._sortOrder = index;
+            if (!isNil(change.width)) col.width = change.width;
+            if (!isNil(change.hide)) col.hide = change.hide;
         });
 
-        // 2) Install implied group sort orders and sort
-        newCols.forEach(it => this.markGroupSortOrder(it));
-        newCols = this.sortColumns(newCols);
+        // 2) If the changes provided is a full list of leaf columns, synchronize the sort order
+        const leafCols = this.getLeafColumns();
+        if (colChanges.length === leafCols.length) {
+            // 2.a) Mark (potentially changed) sort order
+            colChanges.forEach((change, index) => {
+                const col = this.findColumn(newCols, change.colId);
+                col._sortOrder = index;
+            });
 
-        // 3) Force any emptyFlexCol that is last to stay last (avoid user dragging)!
-        const emptyFlex = findLast(newCols, {colId: 'emptyFlex'});
-        if (emptyFlex && last(columns).colId == 'emptyFlex' && last(newCols) != emptyFlex) {
-            pull(newCols, emptyFlex).push(emptyFlex);
+            // 2.b) Install implied group sort orders and sort
+            newCols.forEach(it => this.markGroupSortOrder(it));
+            newCols = this.sortColumns(newCols);
+
+            // 2.c) Force any emptyFlexCol that is last to stay last (avoid user dragging)!
+            const emptyFlex = findLast(newCols, {colId: 'emptyFlex'});
+            if (emptyFlex && last(columns).colId == 'emptyFlex' && last(newCols) != emptyFlex) {
+                pull(newCols, emptyFlex).push(emptyFlex);
+            }
         }
 
         this.columns = newCols;
@@ -385,13 +402,6 @@ export class GridModel {
 
     getLeafColumns() {
         return this.gatherLeaves(this.columns);
-    }
-
-    //-----------------------
-    // Implementation
-    //-----------------------
-    buildColumns(colsOrConfigs) {
-        return colsOrConfigs.map(c => c.children ? new ColumnGroup(c) : new Column(c));
     }
 
     findColumn(cols, id) {
@@ -406,6 +416,9 @@ export class GridModel {
         return null;
     }
 
+    //-----------------------
+    // Implementation
+    //-----------------------
     gatherLeaves(columns, leaves = []) {
         columns.forEach(col => {
             if (col.groupId) this.gatherLeaves(col.children, leaves);

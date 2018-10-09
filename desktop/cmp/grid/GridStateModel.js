@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {cloneDeep, debounce, find} from 'lodash';
+import {cloneDeep, debounce, find, remove} from 'lodash';
 import {start} from '@xh/hoist/promise';
 
 /**
@@ -125,8 +125,8 @@ export class GridStateModel {
     getColumnState() {
         const cols = this.gridModel.getLeafColumns();
 
-        return cols.map(col => {
-            return {colId: col.colId, hide: col.hide, width: col.width};
+        return cols.map(({colId, hide, width}) => {
+            return {colId, hide, width};
         });
     }
 
@@ -137,11 +137,14 @@ export class GridStateModel {
         const cols = gridModel.getLeafColumns(),
             colState = [...state.columns];
 
+        // Remove any stale column state entries
+        remove(colState, ({colId}) => !gridModel.findColumn(cols, colId));
+
         // Any grid columns that were not found in state are newly added to the code.
         // Insert these columns in position based on the index at which they are defined.
-        cols.forEach(({colId, width, hide}, idx) => {
+        cols.forEach(({colId}, idx) => {
             if (!find(colState, {colId})) {
-                colState.splice(idx, 0, {colId, width, hide});
+                colState.splice(idx, 0, {colId});
             }
         });
 

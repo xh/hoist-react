@@ -51,18 +51,16 @@ export class ColChooserModel {
             {leftValues, rightValues} = lrModel,
             cols = gridModel.getLeafColumns();
 
-        const colState = cols.map(({colId}) => {
+        const colChanges = [];
+        cols.forEach(({colId}) => {
             if (leftValues.includes(colId)) {
-                return {colId, hide: true};
+                colChanges.push({colId, hide: true});
             } else if (rightValues.includes(colId)) {
-                return {colId, hide: false};
-            } else {
-                // No visibility change, but preserve sort order if this col happened to be excluded from the chooser
-                return {colId};
+                colChanges.push({colId, hide: false});
             }
         });
 
-        gridModel.applyColumnChanges(colState);
+        gridModel.applyColumnChanges(colChanges);
     }
 
     //------------------------

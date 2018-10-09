@@ -56,9 +56,8 @@ export class ColumnGroup {
             headerName: this.headerName,
             headerClass: this.headerClass,
             children: this.children.map(it => it.getAgSpec(gridModel)),
-            ...this.agOptions,
-
-            marryChildren: true // enforce 'sealed' column groups
+            marryChildren: true, // enforce 'sealed' column groups
+            ...this.agOptions
         };
     }
 }
