@@ -140,7 +140,7 @@ export class GridModel {
         exportFilename = 'export',
         rowClassFn = null,
         contextMenuFn = () => this.defaultContextMenu(),
-        actionMetadata = null
+        ...rest
     }) {
         this.store = store;
         this.treeMode = treeMode;
@@ -149,7 +149,8 @@ export class GridModel {
         this.exportFilename = exportFilename;
         this.contextMenuFn = contextMenuFn;
         this.rowClassFn = rowClassFn;
-        this.actionMetadata = actionMetadata;
+
+        Object.assign(this, rest);
 
         this.setColumns(columns);
 

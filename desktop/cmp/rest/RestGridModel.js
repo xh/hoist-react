@@ -98,7 +98,6 @@ export class RestGridModel {
         toolbarActions,
         contextMenuActions,
         formToolbarActions,
-        actionMetadata,
         unit = 'record',
         filterFields,
         enhanceToolbar,
@@ -107,7 +106,7 @@ export class RestGridModel {
     }) {
         this.toolbarActions = withDefault(toolbarActions, [restGridAddAction, restGridEditAction, restGridDeleteAction]);
         this.contextMenuActions = withDefault(contextMenuActions, [restGridAddAction, restGridEditAction, restGridDeleteAction]);
-        this.actionMetadata = Object.assign({restGridModel: this}, actionMetadata);
+
         this.unit = unit;
         this.filterFields = filterFields;
         this.enhanceToolbar = enhanceToolbar;
@@ -115,7 +114,7 @@ export class RestGridModel {
         this.gridModel = new GridModel({
             contextMenuFn: this.contextMenuFn,
             exportFilename: pluralize(unit),
-            actionMetadata: this.actionMetadata,
+            restGridModel: this,
             ...rest
         });
 
