@@ -1065,10 +1065,10 @@
     eslint "~4.19.1"
     eslint-plugin-react "~7.7.0"
 
-"@xh/hoist-dev-utils@~3.0.2":
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-3.0.2.tgz#7362d86dab7bbcd69c72b613e130f505eab077a9"
-  integrity sha512-DT0pYhtaEF2GzwWSLUtnzbQCjuP2vjvZTfpTByq7s7GwDlfuPROpuDKyAhonDGjsWGLXGc/GaRzfSyHcLib3Pw==
+"@xh/hoist-dev-utils@~3.0.3":
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-3.0.3.tgz#407756b095a44f9c5a3af810e896000f32053e83"
+  integrity sha512-dWA4xi2DUejdNcQNx0dPAagFFw2DPiS0FK6qTa6XVvKMEDvNE5/GO6ZYN9/bpVlX3dKCPNexYReMxt4f5yevVg==
   dependencies:
     "@babel/core" "~7.1.2"
     "@babel/plugin-proposal-class-properties" "~7.1.0"
