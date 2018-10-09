@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {cloneDeep, debounce, find} from 'lodash';
+import {cloneDeep, debounce, find, remove} from 'lodash';
 import {start} from '@xh/hoist/promise';
 
 /**
@@ -125,39 +125,30 @@ export class GridStateModel {
     getColumnState() {
         const cols = this.gridModel.getLeafColumns();
 
-        return cols.map(col => {
-            return {colId: col.colId, hide: col.hide, width: col.width};
+        return cols.map(({colId, hide, width}) => {
+            return {colId, hide, width};
         });
     }
 
     updateGridColumns() {
-        const {gridModel, state} = this,
-            cols = gridModel.getLeafColumns(),
-            foundColumns = [];
-
+        const {gridModel, state} = this;
         if (!state.columns) return;
 
-        // Match columns in state to model columns via colId, apply stateful properties,
-        // then add to new columns in stateful order.
-        state.columns.forEach(colState => {
-            const col = find(cols, {colId: colState.colId});
-            if (!col) return; // Do not attempt to include stale column state.
+        const cols = gridModel.getLeafColumns(),
+            colState = [...state.columns];
 
-            col.hide = colState.hide;
-            col.width = colState.width;
-            foundColumns.push(col);
-        });
+        // Remove any stale column state entries
+        remove(colState, ({colId}) => !gridModel.findColumn(cols, colId));
 
         // Any grid columns that were not found in state are newly added to the code.
         // Insert these columns in position based on the index at which they are defined.
-        const newColumns = [...foundColumns];
-        cols.forEach((col, idx) => {
-            if (!find(foundColumns, {colId: col.colId})) {
-                newColumns.splice(idx, 0, col);
+        cols.forEach(({colId}, idx) => {
+            if (!find(colState, {colId})) {
+                colState.splice(idx, 0, {colId});
             }
         });
 
-        gridModel.applyColumnChanges(newColumns);
+        gridModel.applyColumnChanges(colState);
     }
 
     //--------------------------
