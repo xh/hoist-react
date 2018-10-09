@@ -321,11 +321,6 @@ export class GridModel {
         return this.store.loadData(...args);
     }
 
-    /** @return {Object[]} - array of {@link Column} and {@link ColumnGroup} objects */
-    cloneColumns() {
-        return [...this.columns];
-    }
-
     /** @param {Object[]} colConfigs - {@link Column} or {@link ColumnGroup} configs. */
     @action
     setColumns(colConfigs) {
