@@ -39,14 +39,20 @@ export class FormField extends Component {
          * Label for form field.
          * Defaults to Field displayName if used with @FieldSupport. Set to null to hide label.
          */
-        label: PT.string
+        label: PT.string,
+        /** Apply minimal styling - validation errors not displayed in helperText */
+        minimal: PT.bool
     };
 
     baseClassName = 'xh-form-field';
+    formChild = React.createElement(
+        'span',
+        null,
+        "TEST"
+    );
 
     render() {
-        const {model, field, label, ...rest} = this.props,
-            item = this.prepareChild(),
+        const {model, field, label, minimal, ...rest} = this.props,
             hasFieldSupport = model && field && model.hasFieldSupport,
             fieldModel = hasFieldSupport ? model.getField(field) : null,
             isRequired = fieldModel && fieldModel.isRequired,
@@ -55,16 +61,16 @@ export class FormField extends Component {
             errors = fieldModel ? fieldModel.errors : [],
             labelStr = isUndefined(label) ? (fieldModel ? fieldModel.displayName : null) : label,
             requiredStr = isRequired ? span(' *') : null,
+            item = this.prepareChild(notValid, errors),
             classes = [];
 
         if (isRequired) classes.push('xh-form-field-required');
         if (notValid) classes.push('xh-form-field-invalid');
-
         return formGroup({
             item,
             label: labelStr ? span(labelStr, requiredStr) : null,
             className: this.getClassName(classes),
-            helperText: fragment(
+            helperText: !minimal ? fragment(
                 div({
                     omit: !isPending,
                     className: 'xh-form-field-pending',
@@ -82,7 +88,7 @@ export class FormField extends Component {
                         )
                     }) : null
                 })
-            ),
+            ) : null,
             ...rest
         });
     }
@@ -91,14 +97,44 @@ export class FormField extends Component {
     //--------------------
     // Implementation
     //--------------------
-    prepareChild() {
-        const {model, field, disabled} = this.props,
-            item = this.props.children;
+    prepareChild(notValid, errors) {
+        const {model, field, disabled, minimal} = this.props;
+        const item = this.props.children;
 
         throwIf(!item || isArray(item) || !(item.type.prototype instanceof HoistInput), 'FormField child must be a single component that extends HoistInput.');
         throwIf(item.props.field || item.props.model, 'HoistInputs should not declare "field" or "model" when used with FormField');
 
-        return React.cloneElement(item, {model, field, disabled});
+        const t = React.cloneElement(item, {model, field, disabled});
+        if (minimal) {
+            return tooltip({
+                    item: t,
+                    wrapperTagName: 'div',
+                    targetTagName: 'div',
+                    target: '',
+                    width: '100%',
+                    content: notValid ? (
+                        <ul className="xh-form-field-error-tooltip">
+                            {errors.map((it, idx) => <li key={idx}>{it}</li>)}
+                        </ul>
+                    ) : div()
+            })
+        }
+
+        return React.cloneElement(item, {model, field, disabled})
+        // const b = notValid ? (
+        //     <ul className="xh-form-field-error-tooltip">
+        //         {errors.map((it, idx) => <li key={idx}>{it}</li>)}
+        //     </ul>
+        // ) : div();
+        // const a = React.cloneElement(item, {model, field, disabled, className: 'bp3-popover-target'}, [b]);
+        // return fragment(
+        //     div({
+        //             className: 'bp3-popover-wrapper',
+        //             item: a
+        //         })
+        // )
+
+
     }
 
 }
