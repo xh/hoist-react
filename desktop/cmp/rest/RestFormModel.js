@@ -9,10 +9,10 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {start} from '@xh/hoist/promise';
 import {observable, computed, action} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {Icon} from '@xh/hoist/icon/Icon';
 import {isEqual} from 'lodash';
 
 import {RestControlModel} from './RestControlModel';
-import {Icon} from '../../../icon/Icon';
 import {deleteAction} from './RestGridModel';
 
 @HoistModel

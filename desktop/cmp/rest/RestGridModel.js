@@ -8,17 +8,16 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {pluralize} from '@xh/hoist/utils/js';
-
-import {RestFormModel} from './RestFormModel';
-import {withDefault} from '../../../utils/js/LangUtils';
+import {pluralize, withDefault} from '@xh/hoist/utils/js';
 import {
     addAction as baseAddAction,
     editAction as baseEditAction,
     viewAction as baseViewAction,
     deleteAction as baseDeleteAction
-} from '../../../data';
-import {Icon} from '../../../icon/Icon';
+} from '@xh/hoist/data';
+import {Icon} from '@xh/hoist/icon/Icon';
+
+import {RestFormModel} from './RestFormModel';
 
 export const addAction = {
     ...baseAddAction,

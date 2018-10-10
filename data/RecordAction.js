@@ -5,8 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {isBoolean, isNumber, isNil} from 'lodash';
 import {Icon} from '@xh/hoist/icon';
+import {isBoolean, isNumber, isNil} from 'lodash';
 
 export const addAction = {
     text: 'Add',

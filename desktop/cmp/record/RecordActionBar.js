@@ -8,12 +8,11 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {Record, RecordAction} from '@xh/hoist/data';
-import {recordActionButton} from './RecordActionButton';
-import {StoreSelectionModel} from '../../../data/StoreSelectionModel';
+import {Record, RecordAction, StoreSelectionModel} from '@xh/hoist/data';
 import {withDefault} from '@xh/hoist/utils/js';
 import {buttonGroup} from '@xh/hoist/kit/blueprint';
 
+import {recordActionButton} from './RecordActionButton';
 import './RecordActionBar.scss';
 
 /**
