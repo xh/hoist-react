@@ -36,9 +36,11 @@ export const viewAction = {
 
 export const deleteAction = {
     ...baseDeleteAction,
-    prepareFn: ({action, record}) => {
-        // Hide this action if we are acting on a "new" record
-        action.hidden = record && record.id === null;
+    displayConfigFn: ({action, record, defaultConfig}) => {
+        return {
+            ...defaultConfig,
+            hidden: record && record.id === null // Hide this action if we are acting on a "new" record
+        };
     },
     actionFn: ({record, gridModel, restGridModel = gridModel.restGridModel}) => restGridModel.deleteRecord(record)
 };

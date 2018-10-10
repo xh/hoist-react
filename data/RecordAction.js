@@ -42,8 +42,8 @@ export const deleteAction = {
  * and call their `actionFn` when clicked, passing it a data object sourced from the selected row(s)
  * or node(s) on the underlying grid or data view.
  *
- * The `prepareFn` callback provides a way for actions to customize their enabled state, visibility,
- * text, or other characteristics prior to being shown, based on the same relevant data object(s).
+ * The `displayConfigFn` callback provides a means by which applications can customize any display
+ * properties of the action prior to each render.
  * @see RecordActionBar
  * @see StoreContextMenu
  */
@@ -57,7 +57,7 @@ export class RecordAction {
     items;
     disabled;
     hidden;
-    prepareFn;
+    displayConfigFn;
     recordsRequired;
 
     /**
@@ -70,7 +70,7 @@ export class RecordAction {
      * @param {ActionCb} [c.actionFn] - called on store action activation.
      * @param {boolean} [c.disabled] - true to disable this item.
      * @param {boolean} [c.hidden] - true to hide this item.
-     * @param {PrepareFnCb} [c.prepareFn] - called prior to showing the action in the UI.
+     * @param {DisplayConfigFn} [c.displayConfigFn] - called prior to showing the action in the UI.
      * @param {(number|boolean)} [c.recordsRequired] - how many records must be 'active'
      *      (selected and / or clicked upon) for the action to be enabled.
      *      int: specifies exactly n number of records. Defaults to 1 for single record actions.
@@ -87,7 +87,7 @@ export class RecordAction {
         items = null,
         disabled = false,
         hidden = false,
-        prepareFn = null,
+        displayConfigFn = null,
         recordsRequired = false
     }) {
         this.text = text;
@@ -98,8 +98,26 @@ export class RecordAction {
         this.items = items;
         this.disabled = disabled;
         this.hidden = hidden;
-        this.prepareFn = prepareFn;
+        this.displayConfigFn = displayConfigFn;
         this.recordsRequired = recordsRequired;
+    }
+
+    getDisplayConfig(params) {
+        const defaultConfig = {
+            icon: this.icon,
+            text: this.text,
+            intent: this.intent,
+            tooltip: this.tooltip,
+            items: this.items,
+            hidden: this.hidden,
+            disabled: this.disabled || !this.meetsRecordRequirement(params.selection.length)
+        };
+
+        if (this.displayConfigFn) {
+            return this.displayConfigFn({action: this, defaultConfig, ...params});
+        }
+
+        return defaultConfig;
     }
 
     meetsRecordRequirement(count) {
@@ -120,8 +138,11 @@ export class RecordAction {
  */
 
 /**
- * @callback PrepareFnCb - called prior to rendering the action's UI element.
- * @param {RecordAction} action - the action itself.
- * @param {Record} [record] - row-level Record.
- * @param {Record[]} [selection] - all currently selected Records.
+ * @callback DisplayConfigFn - called prior to rendering the action's UI element.
+ * @param {Object} p
+ * @param {RecordAction} p.action - the action itself.
+ * @param {Object} p.defaultConfig - default display config for the action
+ * @param {Object} [p.record] - row data object (entire row, if any).
+ * @param {Object[]} [p.selection] - all currently selected records (if any).
+ * @param {*} ...rest - additional data provided by the context where this action presides
  */

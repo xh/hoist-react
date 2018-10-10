@@ -23,30 +23,25 @@ export class RecordActionButton extends Component {
         const {action} = this,
             {selModel, minimal, actionMetadata, ...rest} = this.props;
 
-        let count, record = this.props.record, selection = [record];
+        let record = this.props.record, selection = [record];
         if (selModel) {
-            count = selModel.count;
             selection = selModel.records;
 
             // Try to get the record from the selModel if not explicitly provided to the button
             if (!record) {
-                if (count === 1) {
+                if (selection.length === 1) {
                     record = selModel.singleRecord;
                 } else {
                     record = first(selModel.records);
                 }
             }
-        } else {
-            count = record ? 1 : 0;
         }
 
-        if (action.prepareFn) action.prepareFn({action, record, selection, ...actionMetadata});
-
-        const {text, icon, intent, disabled, tooltip, hidden} = action;
+        const params = {action, record, selection, ...actionMetadata},
+            displayConfig = action.getDisplayConfig(params),
+            {text, icon, intent, disabled, tooltip: title, hidden} = displayConfig;
 
         if (hidden) return null;
-
-        const requiredRecordsMet = action.meetsRecordRequirement(count);
 
         return button({
             className: this.getClassName(),
@@ -54,8 +49,8 @@ export class RecordActionButton extends Component {
             text: minimal ? null : text,
             icon,
             intent,
-            title: tooltip,
-            disabled: disabled || !requiredRecordsMet,
+            title,
+            disabled,
             onClick: () => action.actionFn({record, selModel, ...actionMetadata}),
             ...rest
         });

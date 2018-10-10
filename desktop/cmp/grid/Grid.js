@@ -6,7 +6,7 @@
  */
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {isNil, isString, merge, xor} from 'lodash';
+import {isNil, isString, merge, xor, last, isEmpty, dropRightWhile} from 'lodash';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
@@ -112,7 +112,6 @@ export class Grid extends Component {
         );
     }
 
-
     //------------------------
     // Implementation
     //------------------------
@@ -193,47 +192,47 @@ export class Grid extends Component {
 
         if (!record) selModel.clear();
 
-        const count = selModel.count,
-            selection = selModel.records;
+        const selection = selModel.records,
+            items = [];
 
-        // Prepare each item
-        const items = menu.items;
-        items.forEach(it => {
-            if (it.prepareFn) it.prepareFn({action: it, record, selection, gridModel: this.model});
-        });
-
-        return items.filter(it => {
-            return !it.hidden;
-        }).filter((it, idx, arr) => {
-            if (it === '-') {
-                // Remove consecutive separators
-                const prev = idx > 0 ? arr[idx - 1] : null;
-                if (prev === '-') return false;
+        menu.items.forEach(item => {
+            if (item === '-') {
+                if (!isEmpty(items) && last(items) !== 'separator') items.push('separator');
+                return;
             }
-            return true;
-        }).filter((it, idx, arr) => {
-            // Remove starting / ending separators
-            return it !== '-' || (idx > 0 && idx < arr.length - 1);
-        }).map(it => {
-            if (it === '-') return 'separator';
-            if (isString(it)) return it;
 
-            const requiredRecordsMet = it.meetsRecordRequirement(count);
+            if (isString(item)) {
+                items.push(item);
+                return;
+            }
 
-            let icon = it.icon;
+            const action = item,
+                params = {
+                    action,
+                    record,
+                    selection,
+                    gridModel: this.model
+                };
+
+            const displayCfg = action.getDisplayConfig(params);
+            if (displayCfg.hidden) return;
+
+            let icon = displayCfg.icon;
             if (isValidElement(icon)) {
                 icon = convertIconToSvg(icon);
             }
 
-            return {
-                name: it.text,
+            items.push({
+                name: displayCfg.text,
                 icon,
-                tooltip: it.tooltip,
-                disabled: it.disabled || !requiredRecordsMet,
-                action: () => it.actionFn({record, selection, gridModel: this.model})
-            };
+                tooltip: displayCfg.tooltip,
+                disabled: displayCfg.disabled,
+                action: () => action.actionFn(params)
+            });
         });
-    }
+
+        return dropRightWhile(items, it => it === 'separator');
+    };
 
     sortByGroup(nodeA, nodeB) {
         if (nodeA.key < nodeB.key) {
@@ -340,38 +339,38 @@ export class Grid extends Component {
     //------------------------
     getDataPath = (data) => {
         return data.xhTreePath;
-    }
+    };
 
     onGridReady = (ev) => {
         this.model.setAgApi(ev.api);
         this.model.setAgColumnApi(ev.columnApi);
-    }
+    };
 
     onNavigateToNextCell = (params) => {
         return navigateSelection(params, this.model.agApi);
-    }
+    };
 
     onSelectionChanged = (ev) => {
         this.model.selModel.select(ev.api.getSelectedRows());
-    }
+    };
 
     // Catches column re-ordering AND resizing via user drag-and-drop interaction.
     onDragStopped = (ev) => {
         this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
-    }
+    };
 
     // Catches column resizing on call to autoSize API.
     onColumnResized = (ev) => {
         if (this.isDisplayed && ev.finished && ev.source == 'autosizeColumns') {
             this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
         }
-    }
+    };
 
     onGridSizeChanged = (ev) => {
         if (this.isDisplayed) {
             ev.api.sizeColumnsToFit();
         }
-    }
+    };
 
     readExpandState(api) {
         const ret = [];
@@ -403,4 +402,5 @@ export class Grid extends Component {
     }
 
 }
+
 export const grid = elemFactory(Grid);
