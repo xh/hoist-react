@@ -7,28 +7,13 @@
 import {Component} from 'react';
 import {XH, HoistComponent} from '@xh/hoist/core';
 import {fragment} from '@xh/hoist/cmp/layout';
-import {
-    restGrid,
-    RestGridModel,
-    RestStore,
-    deleteAction,
-    editAction,
-    addAction
-} from '@xh/hoist/desktop/cmp/rest';
+import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 import {boolCheckCol} from '@xh/hoist/columns';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
 import {configDiffer} from './differ/ConfigDiffer';
 import {ConfigDifferModel} from './differ/ConfigDifferModel';
-
-const configDeleteAction = {
-    ...deleteAction,
-    confirm: {
-        ...deleteAction.confirm,
-        message: 'Are you sure you want to delete? Deleting configs can break running apps!'
-    }
-};
 
 @HoistComponent
 export class ConfigPanel extends Component {
@@ -84,19 +69,9 @@ export class ConfigPanel extends Component {
                 }
             ]
         }),
-        toolbarActions: [
-            addAction,
-            editAction,
-            configDeleteAction
-        ],
-        contextMenuActions: [
-            addAction,
-            editAction,
-            configDeleteAction
-        ],
-        formToolbarActions: [
-            configDeleteAction
-        ],
+        actionWarning: {
+            del: 'Are you sure you want to delete? Deleting configs can break running apps!'
+        },
         unit: 'config',
         filterFields: ['name', 'value', 'groupName', 'note'],
 
@@ -152,11 +127,11 @@ export class ConfigPanel extends Component {
             text: 'Compare w/ Remote',
             onClick: this.onDifferBtnClick
         });
-    };
+    }
 
     onDifferBtnClick = () => {
         this.differModel.open();
-    };
+    }
 
     destroy() {
         XH.safeDestroy(this.gridModel, this.differModel);

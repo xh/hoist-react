@@ -18,20 +18,21 @@ import {
     viewAction as baseViewAction,
     deleteAction as baseDeleteAction
 } from '../../../data';
+import {Icon} from '../../../icon/Icon';
 
 export const addAction = {
     ...baseAddAction,
-    actionFn: ({gridModel, restGridModel = gridModel.restGridModel}) => restGridModel.addRecord()
+    actionFn: ({gridModel, restModel = gridModel.restModel}) => restModel.addRecord()
 };
 
 export const editAction = {
     ...baseEditAction,
-    actionFn: ({record, gridModel, restGridModel = gridModel.restGridModel}) => restGridModel.editRecord(record)
+    actionFn: ({record, gridModel, restModel = gridModel.restModel}) => restModel.editRecord(record)
 };
 
 export const viewAction = {
     ...baseViewAction,
-    actionFn: ({record, gridModel, restGridModel = gridModel.restGridModel}) => restGridModel.viewRecord(record)
+    actionFn: ({record, gridModel, restModel = gridModel.restModel}) => restModel.viewRecord(record)
 };
 
 export const deleteAction = {
@@ -42,7 +43,7 @@ export const deleteAction = {
             hidden: record && record.id === null // Hide this action if we are acting on a "new" record
         };
     },
-    actionFn: ({record, gridModel, restGridModel = gridModel.restGridModel}) => restGridModel.deleteRecord(record)
+    actionFn: ({record, gridModel, restModel = gridModel.restModel}) => restModel.confirmDeleteRecord(record)
 };
 
 /**
@@ -57,6 +58,12 @@ export class RestGridModel {
     toolbarActions;
     contextMenuActions;
     formToolbarActions;
+
+    actionWarning = {
+        add: null,
+        edit: null,
+        del: 'Are you sure you want to delete the selected record?'
+    };
 
     unit = null;
     filterFields = null;
@@ -76,6 +83,7 @@ export class RestGridModel {
      * @param {Object[]|RecordAction[]} [toolbarActions] - actions to display in the toolbar. Defaults to add, edit, delete.
      * @param {Object[]|RecordAction[]} [contextMenuActions] - actions to display in the grid context menu. Defaults to add, edit, delete.
      * @param {Object[]|RecordAction[]} [formToolbarActions] - actions to display in the form toolbar. Defaults to delete.
+     * @param {Object} [actionWarning] - map of action (e.g. 'add'/'edit'/'delete') to string.  See default prop.
      * @param {string} [unit] - name that describes records in this grid.
      * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
      * @param {function} [enhanceToolbar] - a function used to mutate RestGridToolbar items
@@ -86,6 +94,7 @@ export class RestGridModel {
         toolbarActions,
         contextMenuActions,
         formToolbarActions,
+        actionWarning,
         unit = 'record',
         filterFields,
         enhanceToolbar,
@@ -96,6 +105,8 @@ export class RestGridModel {
         this.contextMenuActions = withDefault(contextMenuActions,
             [addAction, editAction, deleteAction]);
 
+        this.actionWarning = Object.assign(this.actionWarning, actionWarning);
+
         this.unit = unit;
         this.filterFields = filterFields;
         this.enhanceToolbar = enhanceToolbar;
@@ -103,7 +114,7 @@ export class RestGridModel {
         this.gridModel = new GridModel({
             contextMenuFn: this.contextMenuFn,
             exportFilename: pluralize(unit),
-            restGridModel: this,
+            restModel: this,
             ...rest
         });
 
@@ -169,7 +180,26 @@ export class RestGridModel {
             ],
             gridModel: this.gridModel
         });
-    };
+    }
+
+    confirmDeleteSelection() {
+        const record = this.selectedRecord;
+        if (record) this.confirmDeleteRecord(record);
+    }
+
+    confirmDeleteRecord(record) {
+        const warning = this.actionWarning.del;
+        if (warning) {
+            XH.confirm({
+                message: warning,
+                title: 'Warning',
+                icon: Icon.warning({size: 'lg'}),
+                onConfirm: () => this.deleteRecord(record)
+            });
+        } else {
+            this.deleteRecord(record);
+        }
+    }
 
     export(...args) {
         this.gridModel.export(...args);

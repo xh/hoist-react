@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {HoistComponent, elemFactory, XH} from '@xh/hoist/core';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {filler, vframe} from '@xh/hoist/cmp/layout';
@@ -63,7 +63,7 @@ export class RestForm extends Component {
         return [
             recordActionBar({
                 actions: toolbarActions,
-                actionMetadata: {restFormModel: this.model},
+                actionMetadata: {restModel: this.model},
                 record
             }),
             filler(),
@@ -87,7 +87,20 @@ export class RestForm extends Component {
     }
 
     onSaveClick = () => {
-        this.model.saveRecord();
+        const model = this.model,
+            isAdd = model.isAdd,
+            warning = model.actionWarning[isAdd ? 'add' : 'edit'];
+
+        if (warning) {
+            XH.confirm({
+                message: warning,
+                title: 'Warning',
+                icon: Icon.warning({size: 'lg'}),
+                onConfirm: () => model.saveRecord()
+            });
+        } else {
+            model.saveRecord();
+        }
     }
 }
 export const restForm = elemFactory(RestForm);

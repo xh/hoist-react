@@ -12,12 +12,8 @@ import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {isEqual} from 'lodash';
 
 import {RestControlModel} from './RestControlModel';
-import {deleteAction as baseDeleteAction} from '../../../data';
-
-export const deleteAction = {
-    ...baseDeleteAction,
-    actionFn: ({record, restFormModel}) => restFormModel.deleteRecord(record)
-};
+import {Icon} from '../../../icon/Icon';
+import {deleteAction} from './RestGridModel';
 
 @HoistModel
 export class RestFormModel {
@@ -34,6 +30,7 @@ export class RestFormModel {
 
     isWritable;
 
+    get actionWarning() {return this.parent.actionWarning}
     get store()          {return this.parent.store}
     get fields()         {return this.store.fields}
     get loadModel()      {return this.store.loadModel}
@@ -77,6 +74,21 @@ export class RestFormModel {
         }).then(
             () => this.close()
         ).catchDefault();
+    }
+
+    confirmDeleteRecord() {
+        const warning = this.actionWarning.del;
+
+        if (warning) {
+            XH.confirm({
+                message: warning,
+                title: 'Warning',
+                icon: Icon.warning({size: 'lg'}),
+                onConfirm: () => this.deleteRecord()
+            });
+        } else {
+            this.deleteRecord();
+        }
     }
 
     @action

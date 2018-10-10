@@ -31,7 +31,7 @@ export class RestGridToolbar extends Component {
         return [
             recordActionBar({
                 actions: toolbarActions,
-                actionMetadata: {restGridModel: model},
+                actionMetadata: {restModel: model},
                 selModel
             }),
             toolbarSep({omit: isEmpty(extraItems)}),
