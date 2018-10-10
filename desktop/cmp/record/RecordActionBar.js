@@ -36,18 +36,15 @@ export class RecordActionBar extends Component {
         record: PT.oneOfType([PT.object, Record]),
         /** Set to true to only show the action buttons when hovering over the action bar (or row when used in a grid). */
         showOnHoverOnly: PT.bool,
-
+        /** Selection model to use for passing selected records along to actions */
         selModel: PT.instanceOf(StoreSelectionModel),
-
         /** Data to pass through to action callbacks */
         actionMetadata: PT.object,
-
-        group: PT.bool,
-
+        /** Set to true to use minimal buttons */
         minimal: PT.bool,
-
+        /** Set to true to use small buttons */
         small: PT.bool,
-
+        /** Set to true to stack the buttons vertically */
         vertical: PT.bool
     };
 
