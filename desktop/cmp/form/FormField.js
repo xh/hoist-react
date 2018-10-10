@@ -14,6 +14,7 @@ import {div, fragment, span} from '@xh/hoist/cmp/layout';
 import {throwIf} from '@xh/hoist/utils/js';
 
 import './FormField.scss';
+import {displayField} from './DisplayField';
 
 /**
  * Standardised wrapper around a HoistInput Component.
@@ -92,13 +93,17 @@ export class FormField extends Component {
     // Implementation
     //--------------------
     prepareChild() {
-        const {model, field, disabled} = this.props,
+        const {model, field, disabled, readOnly} = this.props,
             item = this.props.children;
 
         throwIf(!item || isArray(item) || !(item.type.prototype instanceof HoistInput), 'FormField child must be a single component that extends HoistInput.');
         throwIf(item.props.field || item.props.model, 'HoistInputs should not declare "field" or "model" when used with FormField');
 
-        return React.cloneElement(item, {model, field, disabled});
+        if (readOnly) {
+            return displayField({model, field});
+        } else {
+            return React.cloneElement(item, {model, field, disabled});
+        }
     }
 
 }

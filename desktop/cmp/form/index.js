@@ -8,6 +8,7 @@
 export * from './ButtonGroupInput';
 export * from './CheckBox';
 export * from './DateInput';
+export * from './DisplayField';
 export * from './FormField';
 export * from './JsonInput';
 export * from './Label';

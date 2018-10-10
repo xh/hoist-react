@@ -119,6 +119,11 @@ export class HoistInput extends Component {
         return value;
     }
 
+    @computed
+    get displayValue() {
+        return this.toInternal(this.externalValue);
+    }
+
     /** Set internal value **/
     @action
     setInternalValue(val) {
