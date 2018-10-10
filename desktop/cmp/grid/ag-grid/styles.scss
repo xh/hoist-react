@@ -25,6 +25,7 @@
       flex-direction: row;
       align-items: center;
       min-height: 32px;
+      cursor: pointer;
 
       span {
         flex: 1;
@@ -111,6 +112,11 @@
 
   .ag-bl-overlay {
     display: none;
+  }
+
+  // Todo: Mobile only
+  .ag-cell-last-left-pinned {
+    // border-right: 1px solid var(--xh-grid-border-color) !important;
   }
 }
 

@@ -6,4 +6,4 @@
  */
 
 export * from './Grid';
-export * from './GridModel';
+export * from '@xh/hoist/desktop/cmp/grid/GridModel';
