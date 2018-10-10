@@ -9,16 +9,15 @@ import {HoistModel} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {Column} from '@xh/hoist/columns';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
-import {
-    castArray,
-    find,
-    isEmpty,
-    isString,
-    uniq
-} from 'lodash';
+import {castArray, isEmpty, uniq} from 'lodash';
+
+// Todo: Move to cross platform cmp package
+import {GridSorter} from '@xh/hoist/desktop/cmp/grid/GridSorter';
 
 /**
- * Core Model for a Grid, specifying the grid's data store and column definitions
+ * Core Model for a Grid, specifying the grid's data store, column definitions and sorting state.
+ *
+ * This is the primary application entry-point for specifying Grid component options and behavior.
  */
 @HoistModel
 export class GridModel {
@@ -84,21 +83,23 @@ export class GridModel {
 
     /**
      * This method is no-op if provided any sorters without a corresponding column.
-     * @param {(string|string[]|GridSorterDef|GridSorterDef[])} sorters - colId(s) or sorter
-     *      config(s) with colId and sort direction.
+     * @param {(string|string[]|Object|Object[])} sorters - colId(s), GridSorter config(s)
+     *      or GridSorter strings.
      */
     @action
     setSortBy(sorters) {
         // Normalize string, and partially specified values
         sorters = castArray(sorters);
         sorters = sorters.map(it => {
-            if (isString(it)) it = {colId: it};
-            it.sort = it.sort || 'asc';
-            return it;
+            if (it instanceof GridSorter) return it;
+            return GridSorter.parse(it);
         });
 
-        const sortIsValid = sorters.every(it => find(this.columns, {colId: it.colId}));
-        if (!sortIsValid) return;
+        const invalidSorters = sorters.filter(it => !this.findColumn(this.columns, it.colId));
+        if (invalidSorters.length) {
+            console.warn('GridSorter colId not found in grid columns', invalidSorters);
+            return;
+        }
 
         this.sortBy = sorters;
     }
@@ -140,6 +141,13 @@ export class GridModel {
         });
     }
 
+    findColumn(cols, id) {
+        for (let col of cols) {
+            if (col.colId == id) return col;
+        }
+        return null;
+    }
+
     validateColumns(cols) {
         if (isEmpty(cols)) return;
 
@@ -156,9 +164,3 @@ export class GridModel {
     }
 
 }
-
-/**
- * @typedef {Object} GridSorterDef - config for GridModel sorting.
- * @property {string} colId - Column ID on which to sort.
- * @property {string} [sort] - direction to sort - either ['asc', 'desc'] - default asc.
- */

@@ -7,12 +7,15 @@
 
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {find, isEqual, merge, cloneDeep} from 'lodash';
+import {find, merge, cloneDeep} from 'lodash';
 import {runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
 import './ag-grid';
 import {agGridReact} from './ag-grid';
+
+// Todo: Move to cross platform cmp package
+import {ColumnHeader} from '@xh/hoist/desktop/cmp/grid/ag-grid/ColumnHeader';
 
 /**
  * The primary rich data grid component within the Hoist mobile toolkit.
@@ -100,6 +103,7 @@ export class Grid extends Component {
             getRowNodeId: (data) => data.id,
             allowContextMenuWithControlKey: false,
             defaultColDef: {suppressMenu: true},
+            frameworkComponents: {agColumnHeader: ColumnHeader},
             rowSelection: 'single',
             getRowHeight: () => model.compact ? Grid.COMPACT_ROW_HEIGHT : Grid.ROW_HEIGHT,
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
@@ -118,7 +122,7 @@ export class Grid extends Component {
     getColumnDefs() {
         const {columns, sortBy} = this.model,
             clonedColumns = cloneDeep(columns),
-            cols = clonedColumns.map(c => c.getAgSpec());
+            cols = clonedColumns.map(c => c.getAgSpec(this.model));
 
         let now = Date.now();
         sortBy.forEach(it => {
@@ -126,6 +130,7 @@ export class Grid extends Component {
             if (col) {
                 col.sort = it.sort;
                 col.sortedAt = now++;
+                col.comparator = (v1, v2) => it.comparator(v1, v2);
             }
         });
 
@@ -163,16 +168,14 @@ export class Grid extends Component {
         return {
             track: () => [this.model.agApi, this.model.sortBy],
             run: ([api, sortBy]) => {
-                if (api && !isEqual(api.getSortModel(), sortBy)) {
-                    api.setSortModel(sortBy);
-                }
+                if (api) api.setSortModel(sortBy);
             }
         };
     }
 
     columnsReaction() {
         return {
-            track: () => [this.model.agApi, this.model.columns],
+            track: () => [this.model.agApi, this.model.columns, this.model.sortBy],
             run: ([api]) => {
                 if (api) {
                     api.setColumnDefs(this.getColumnDefs());
@@ -196,7 +199,7 @@ export class Grid extends Component {
     //------------------------
     onGridReady = (ev) => {
         this.model.setAgApi(ev.api);
-    }
+    };
 
     onSelectionChanged = (ev) => {
         // We use selection to show a 'tapped' effect on the row
@@ -204,17 +207,13 @@ export class Grid extends Component {
         this._tapHighlightTimeout = setTimeout(() => {
             ev.api.deselectAll();
         }, 100);
-    }
-
-    onSortChanged = (ev) => {
-        this.model.setSortBy(ev.api.getSortModel());
-    }
+    };
 
     onGridSizeChanged = (ev) => {
         if (this.isDisplayed) {
             ev.api.sizeColumnsToFit();
         }
-    }
+    };
 
 }
 
