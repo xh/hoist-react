@@ -9,6 +9,7 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Record, RecordAction, StoreSelectionModel} from '@xh/hoist/data';
+import {omit} from 'lodash';
 import {withDefault} from '@xh/hoist/utils/js';
 import {buttonGroup} from '@xh/hoist/kit/blueprint';
 
@@ -26,12 +27,14 @@ import './RecordActionBar.scss';
  */
 @HoistComponent
 export class RecordActionBar extends Component {
-
     baseClassName = 'xh-record-action-bar';
 
+    /** @member {RecordAction[]} */
+    actions;
+
     static propTypes = {
-        /** RecordActions to clone or configs to create. */
-        actions: PT.arrayOf(PT.oneOfType([PT.object, RecordAction])).isRequired,
+        /** RecordAction configs. */
+        actions: PT.arrayOf(PT.object).isRequired,
         /** The data Record to associate with the actions. */
         record: PT.oneOfType([PT.object, Record]),
         /** Set to true to only show the action buttons when hovering over the action bar (or row when used in a grid). */
@@ -48,8 +51,14 @@ export class RecordActionBar extends Component {
         vertical: PT.bool
     };
 
+    constructor(props) {
+        super(props);
+        this.actions = props.actions.map(it => new RecordAction(it));
+    }
+
     render() {
-        const {actions, record, selModel, showOnHoverOnly, actionMetadata, minimal, small, vertical, ...rest} = this.props,
+        const {record, selModel, showOnHoverOnly, actionMetadata, minimal, small, vertical, ...rest} = this.props,
+            {actions} = this,
             showOnHover = withDefault(showOnHoverOnly, false);
 
         if (!actions) return null;
@@ -70,7 +79,7 @@ export class RecordActionBar extends Component {
                 minimal,
                 small
             })),
-            ...rest
+            ...omit(rest, 'actions')
         });
     }
 }

@@ -4,24 +4,31 @@ import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {RecordAction} from '@xh/hoist/data';
 import {first} from 'lodash';
+import {StoreSelectionModel, Record} from '../../../data';
 
+/**
+ * Button component used by RecordActionBar. Not intended for use by applications.
+ * @private
+ */
 @HoistComponent
 export class RecordActionButton extends Component {
     baseClassName = 'xh-record-action-button';
-    action;
 
     static propTypes = {
-        action: PT.oneOfType([PT.object, RecordAction])
+        /** The action */
+        action: PT.instanceOf(RecordAction).isRequired,
+        /** The data Record this action is acting on. */
+        record: PT.oneOfType([PT.object, Record]),
+        /** Selection model to use for determining selected records */
+        selModel: PT.instanceOf(StoreSelectionModel),
+        /** Data to pass through to action callbacks */
+        actionMetadata: PT.object,
+        /** Set to true to use minimal button style and hide action text */
+        minimal: PT.bool
     };
 
-    constructor(props) {
-        super(props);
-        this.action = new RecordAction(props.action);
-    }
-
     render() {
-        const {action} = this,
-            {selModel, minimal, actionMetadata, ...rest} = this.props;
+        const {action, selModel, minimal, actionMetadata, ...rest} = this.props;
 
         let record = this.props.record, selection = [record];
         if (selModel) {
