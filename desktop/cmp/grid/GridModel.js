@@ -331,10 +331,7 @@ export class GridModel {
         throwIf(colConfigs.some(c => !isPlainObject(c)),
             'setColumns only accepts plain objects for Column or ColumnGroup configs!');
 
-        const columns = colConfigs.map(c => {
-            c = {gridModel: this, ...c};
-            return c.children ? new ColumnGroup(c) : new Column(c);
-        });
+        const columns = colConfigs.map(c => this.buildColumn(c));
 
         this.validateColumns(columns);
 
@@ -376,7 +373,8 @@ export class GridModel {
         let {columns} = this,
             newCols = [...columns];
 
-        throwIf(colChanges.some(({colId}) => !this.findColumn(columns, colId)), 'Invalid columns detected in column changes!');
+        throwIf(colChanges.some(({colId}) => !this.findColumn(columns, colId)),
+            'Invalid columns detected in column changes!');
 
         // 1) Update any width or visibility changes
         colChanges.forEach(change => {
@@ -423,6 +421,15 @@ export class GridModel {
             }
         }
         return null;
+    }
+
+    /**
+     * @param {Object} c - {@link Column} or {@link ColumnGroup} config
+     * @returns {Column|ColumnGroup}
+     */
+    buildColumn(c) {
+        c = {gridModel: this, ...c};
+        return c.children ? new ColumnGroup(c) : new Column(c);
     }
 
     //-----------------------

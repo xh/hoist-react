@@ -5,9 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {withDefault, throwIf} from '../utils/js';
+import {withDefault, throwIf} from '@xh/hoist/utils/js';
 import {startCase, isEmpty, castArray, clone} from 'lodash';
-import {Column} from './Column';
 
 /**
  * Cross-platform definition and API for a standardized Grid column group.
@@ -21,6 +20,7 @@ export class ColumnGroup {
      * @param {string} [c.headerName] - display text for grid header.
      * @param {(string|string[])} [c.headerClass] - additional css classes to add to the column group header.
      * @param {Object[]} c.children - Column or ColumnGroup configurations for children of this group.
+     * @param {GridModel} [c.gridModel] - the model which owns this column.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
@@ -32,6 +32,7 @@ export class ColumnGroup {
         groupId,
         headerName,
         headerClass,
+        gridModel,
         agOptions,
         ...rest
     }) {
@@ -45,17 +46,17 @@ export class ColumnGroup {
         this.headerName = withDefault(headerName, startCase(this.groupId));
         this.headerClass = castArray(headerClass);
 
-        this.children = children.map(it => it.children ? new ColumnGroup(it) : new Column(it));
+        this.children = children.map(c => gridModel.buildColumn(c));
 
         this.agOptions = agOptions ? clone(agOptions) : {};
     }
 
-    getAgSpec(gridModel) {
+    getAgSpec() {
         return {
             groupId: this.groupId,
             headerName: this.headerName,
             headerClass: this.headerClass,
-            children: this.children.map(it => it.getAgSpec(gridModel)),
+            children: this.children.map(it => it.getAgSpec()),
             marryChildren: true, // enforce 'sealed' column groups
             ...this.agOptions
         };

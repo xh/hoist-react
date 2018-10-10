@@ -173,7 +173,7 @@ export class Grid extends Component {
     // Support for defaults
     //------------------------
     getColumnDefs() {
-        return this.model.columns.map(col => col.getAgSpec(this.model));
+        return this.model.columns.map(col => col.getAgSpec());
     }
 
     getContextMenuItems = (params) => {
