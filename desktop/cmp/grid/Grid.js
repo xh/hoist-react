@@ -120,7 +120,6 @@ export class Grid extends Component {
         const {model, props} = this;
 
         let ret = {
-            toolPanelSuppressSideButtons: true,
             enableSorting: true,
             enableColResize: true,
             deltaRowDataMode: true,
