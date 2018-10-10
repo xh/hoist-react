@@ -27,7 +27,6 @@ import {ColChooserModel} from './ColChooserModel';
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './GridSorter';
 import {ExportManager} from './ExportManager';
-import {Column} from '@xh/hoist/columns';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -332,7 +331,10 @@ export class GridModel {
         throwIf(colConfigs.some(c => !isPlainObject(c)),
             'setColumns only accepts plain objects for Column or ColumnGroup configs!');
 
-        const columns = colConfigs.map(c => c.children ? new ColumnGroup(c) : new Column(c));
+        const columns = colConfigs.map(c => {
+            c = {gridModel: this, ...c};
+            return c.children ? new ColumnGroup(c) : new Column(c);
+        });
 
         this.validateColumns(columns);
 

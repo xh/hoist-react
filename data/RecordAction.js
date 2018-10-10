@@ -5,9 +5,34 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
-import {resolve} from '@xh/hoist/promise';
-import {isBoolean, isNumber, isNil, isEmpty, isString, isObject} from 'lodash';
+import {isBoolean, isNumber, isNil} from 'lodash';
+import {Icon} from '@xh/hoist/icon';
+
+export const addAction = {
+    text: 'Add',
+    icon: Icon.add(),
+    intent: 'success'
+};
+
+export const editAction = {
+    text: 'Edit',
+    icon: Icon.edit(),
+    intent: 'primary',
+    recordsRequired: 1
+};
+
+export const viewAction = {
+    text: 'View',
+    icon: Icon.search(),
+    recordsRequired: 1
+};
+
+export const deleteAction = {
+    text: 'Delete',
+    icon: Icon.delete(),
+    intent: 'danger',
+    recordsRequired: true
+};
 
 /**
  * A RecordAction encapsulates a shared set of configuration for items within components such as
@@ -52,15 +77,6 @@ export class RecordAction {
      *          Can specify 0 to only enable action if no records are active.
      *      true: specifies that number of records > 0. Allows for arbitrary number of records.
      *      false: specifies any number of records (0 - infinity, inclusive). Always active.
-     * @param {(string|boolean)} [c.confirm] - whether the action needs to be confirmed before being
-     *      executed. Truthy values will determine the message displayed to the user. If provided the
-     *      action text will be used as the confirm button text and dialog title, otherwise "Confirm"
-     *      will be displayed.
-     *
-     *      string: specifies the exact message to display to the user
-     *      true: a generic message will be displayed to the user. If provided, the action text will
-     *            be used as the verb in the confirmation message.
-     *      false: action will be executed without confirmation
      */
     constructor({
         text,
@@ -72,8 +88,7 @@ export class RecordAction {
         disabled = false,
         hidden = false,
         prepareFn = null,
-        recordsRequired = false,
-        confirm = false
+        recordsRequired = false
     }) {
         this.text = text;
         this.icon = icon;
@@ -85,7 +100,6 @@ export class RecordAction {
         this.hidden = hidden;
         this.prepareFn = prepareFn;
         this.recordsRequired = recordsRequired;
-        this.confirm = confirm;
     }
 
     meetsRecordRequirement(count) {
@@ -93,43 +107,6 @@ export class RecordAction {
         return isNil(required) ||
             (isBoolean(required) && (!required || required && count > 0)) ||
             (isNumber(required) && count === required);
-    }
-
-    async executeAsync({record, selModel, metadata}) {
-        const {confirm} = this;
-        let promise;
-        if (confirm) {
-            const {text, intent} = this;
-            const cfg = {
-                title: !isEmpty(text) ? `${text}?` : 'Proceed?',
-                confirmText: !isEmpty(text) ? text : 'Proceed',
-                confirmIntent: intent
-            };
-
-            if (isObject(confirm)) {
-                Object.assign(cfg, confirm);
-            } else if (isString(confirm)) {
-                cfg.message = confirm;
-            } else if (!isEmpty(text)) {
-                cfg.message = `Are you sure you want to ${text.toLowerCase()} the record?`;
-            } else {
-                cfg.message = 'Are you sure you want to proceed?';
-            }
-
-            promise = XH.confirm(cfg);
-        } else {
-            promise = resolve(true);
-        }
-
-        const confirmed = await promise;
-        if (!confirmed) return;
-
-        this.actionFn({action: this, record, selModel, metadata});
-    }
-
-    /** Clone this object. **/
-    clone() {
-        return new RecordAction(this);
     }
 }
 
@@ -139,7 +116,7 @@ export class RecordAction {
  * @param {RecordAction} p.action - the action itself.
  * @param {Object} [p.record] - row data object (entire row, if any).
  * @param {Object[]} [p.selection] - all currently selected records (if any).
- * @param {*} [p.metadata] - additional data provided by the context where this action presides
+ * @param {*} ...rest - additional data provided by the context where this action presides
  */
 
 /**

@@ -58,12 +58,12 @@ export class RestForm extends Component {
     }
 
     getButtons() {
-        const {isValid, isWritable, isDirty, record, toolbarActions, actionMetadata} = this.model;
+        const {isValid, isWritable, isDirty, record, toolbarActions} = this.model;
 
         return [
             recordActionBar({
                 actions: toolbarActions,
-                actionMetadata,
+                actionMetadata: {restFormModel: this.model},
                 record
             }),
             filler(),

@@ -12,7 +12,12 @@ import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {isEqual} from 'lodash';
 
 import {RestControlModel} from './RestControlModel';
-import {restFormDeleteAction} from './RestGridModel';
+import {deleteAction as baseDeleteAction} from '../../../data';
+
+export const deleteAction = {
+    ...baseDeleteAction,
+    actionFn: ({record, restFormModel}) => restFormModel.deleteRecord(record)
+};
 
 @HoistModel
 export class RestFormModel {
@@ -22,7 +27,6 @@ export class RestFormModel {
 
     controlModels = [];
     toolbarActions;
-    actionMetadata;
 
     // If not null, form will be open and display it
     @observable record = null;
@@ -50,7 +54,7 @@ export class RestFormModel {
         return !isEqual(this.record, this.originalRecord);
     }
 
-    constructor({parent, editors, toolbarActions, actionMetadata}) {
+    constructor({parent, editors, toolbarActions}) {
         this.parent = parent;
         this.controlModels = editors.map((editor) => {
             const field = this.store.getField(editor.field);
@@ -59,8 +63,7 @@ export class RestFormModel {
             return new RestControlModel({editor, field, parent: this});
         });
 
-        this.toolbarActions = withDefault(toolbarActions, [restFormDeleteAction]);
-        this.actionMetadata = Object.assign({restFormModel: this}, actionMetadata);
+        this.toolbarActions = withDefault(toolbarActions, [deleteAction]);
     }
 
     //-----------------

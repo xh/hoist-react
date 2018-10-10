@@ -44,11 +44,10 @@ export const actionCol = {
         return recordActionBar({
             actions: column.actions,
             showOnHoverOnly: withDefault(column.actionsShowOnHoverOnly, false),
-            actionMetadata: column.getActionMetadata(),
+            actionMetadata: {gridModel: column.gridModel, column, ...rest},
             minimal: true,
             small: true,
-            record,
-            ...rest
+            record
         });
     }
 };

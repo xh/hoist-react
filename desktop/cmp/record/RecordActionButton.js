@@ -21,7 +21,7 @@ export class RecordActionButton extends Component {
 
     render() {
         const {action} = this,
-            {selModel, actionMetadata: metadata, minimal, ...rest} = this.props;
+            {selModel, minimal, actionMetadata, ...rest} = this.props;
 
         let count, record = this.props.record, selection = [record];
         if (selModel) {
@@ -40,7 +40,7 @@ export class RecordActionButton extends Component {
             count = record ? 1 : 0;
         }
 
-        if (action.prepareFn) action.prepareFn({action, record, selection, metadata});
+        if (action.prepareFn) action.prepareFn({action, record, selection, ...actionMetadata});
 
         const {text, icon, intent, disabled, tooltip, hidden} = action;
 
@@ -56,7 +56,7 @@ export class RecordActionButton extends Component {
             intent,
             title: tooltip,
             disabled: disabled || !requiredRecordsMet,
-            onClick: () => action.executeAsync({record, selModel, metadata}),
+            onClick: () => action.actionFn({record, selModel, ...actionMetadata}),
             ...rest
         });
     }

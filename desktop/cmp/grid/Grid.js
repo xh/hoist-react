@@ -6,7 +6,7 @@
  */
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {isBoolean, isNil, isNumber, isString, merge, xor} from 'lodash';
+import {isNil, isString, merge, xor} from 'lodash';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
@@ -178,7 +178,7 @@ export class Grid extends Component {
     }
 
     getContextMenuItems = (params) => {
-        const {store, selModel, contextMenuFn, actionMetadata: metadata} = this.model;
+        const {store, selModel, contextMenuFn} = this.model;
         if (!contextMenuFn) return null;
 
         const menu = contextMenuFn(params, this.model),
@@ -199,7 +199,7 @@ export class Grid extends Component {
         // Prepare each item
         const items = menu.items;
         items.forEach(it => {
-            if (it.prepareFn) it.prepareFn({action: it, record, selection, metadata});
+            if (it.prepareFn) it.prepareFn({action: it, record, selection, gridModel: this.model});
         });
 
         return items.filter(it => {
@@ -230,7 +230,7 @@ export class Grid extends Component {
                 icon,
                 tooltip: it.tooltip,
                 disabled: it.disabled || !requiredRecordsMet,
-                action: () => it.executeAsync({record, selection, metadata})
+                action: () => it.actionFn({record, selection, gridModel: this.model})
             };
         });
     }

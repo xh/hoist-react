@@ -10,24 +10,24 @@ import {
     restGrid,
     RestGridModel,
     RestStore,
-    restGridAddAction,
-    restGridEditAction,
-    restGridDeleteAction
+    addAction,
+    editAction,
+    deleteAction
 } from '@xh/hoist/desktop/cmp/rest';
 import {boolCheckCol} from '@xh/hoist/columns';
 
 const prefEditAction = {
-    ...restGridEditAction,
+    ...editAction,
     confirm: {
-        ...restGridDeleteAction.confirm,
+        ...deleteAction.confirm,
         message: 'Are you sure you want to edit? Editing preferences can break running apps!'
     }
 };
 
 const prefDeleteAction = {
-    ...restGridDeleteAction,
+    ...deleteAction,
     confirm: {
-        ...restGridDeleteAction.confirm,
+        ...deleteAction.confirm,
         message: 'Are you sure you want to delete? Deleting preferences can break running apps!'
     }
 };
@@ -91,12 +91,12 @@ export class PreferencePanel extends Component {
         unit: 'preference',
         filterFields: ['name', 'groupName'],
         toolbarActions: [
-            restGridAddAction,
+            addAction,
             prefEditAction,
             prefDeleteAction
         ],
         contextMenuActions: [
-            restGridAddAction,
+            addAction,
             prefEditAction,
             prefDeleteAction
         ],

@@ -11,9 +11,9 @@ import {
     restGrid,
     RestGridModel,
     RestStore,
-    restGridDeleteAction,
-    restGridEditAction,
-    restGridAddAction
+    deleteAction,
+    editAction,
+    addAction
 } from '@xh/hoist/desktop/cmp/rest';
 import {boolCheckCol} from '@xh/hoist/columns';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -23,9 +23,9 @@ import {configDiffer} from './differ/ConfigDiffer';
 import {ConfigDifferModel} from './differ/ConfigDifferModel';
 
 const configDeleteAction = {
-    ...restGridDeleteAction,
+    ...deleteAction,
     confirm: {
-        ...restGridDeleteAction.confirm,
+        ...deleteAction.confirm,
         message: 'Are you sure you want to delete? Deleting configs can break running apps!'
     }
 };
@@ -85,13 +85,13 @@ export class ConfigPanel extends Component {
             ]
         }),
         toolbarActions: [
-            restGridAddAction,
-            restGridEditAction,
+            addAction,
+            editAction,
             configDeleteAction
         ],
         contextMenuActions: [
-            restGridAddAction,
-            restGridEditAction,
+            addAction,
+            editAction,
             configDeleteAction
         ],
         formToolbarActions: [

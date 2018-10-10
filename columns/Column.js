@@ -71,6 +71,7 @@ export class Column {
      * @param {(boolean|Column~tooltipFn)} [c.tooltip] - 'true' displays the raw value, or
      *      tool tip function, which is based on AG Grid tooltip callback.
      * @param {boolean} [c.excludeFromExport] - true to drop this column from a file export.
+     * @param {GridModel} [c.gridModel] - the model which owns this column.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
@@ -108,6 +109,7 @@ export class Column {
         exportWidth,
         excludeFromExport,
         tooltip,
+        gridModel,
         agOptions,
         ...rest
     }) {
@@ -160,31 +162,33 @@ export class Column {
         this.excludeFromExport = withDefault(excludeFromExport, !field);
 
         this.tooltip = tooltip;
+        this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
     }
 
     /**
      * Produce a Column definition appropriate for AG Grid.
      */
-    getAgSpec(gridModel) {
-        const ret = {
-            field: this.field,
-            colId: this.colId,
-            headerName: this.headerName,
-            headerClass: this.headerClass,
-            cellClass: this.cellClass,
-            hide: this.hide,
-            absSort: this.absSort,
-            minWidth: this.minWidth,
-            maxWidth: this.maxWidth,
-            suppressResize: !this.resizable,
-            suppressMovable: !this.movable,
-            suppressSorting: !this.sortable,
-            lockPinned: true, // Block user-driven pinning/unpinning - https://github.com/exhi/hoist-react/issues/687
-            pinned: this.pinned,
-            lockVisible: !gridModel.colChooserModel,
-            headerComponentParams: {gridModel, column: this}
-        };
+    getAgSpec() {
+        const {gridModel} = this,
+            ret = {
+                field: this.field,
+                colId: this.colId,
+                headerName: this.headerName,
+                headerClass: this.headerClass,
+                cellClass: this.cellClass,
+                hide: this.hide,
+                absSort: this.absSort,
+                minWidth: this.minWidth,
+                maxWidth: this.maxWidth,
+                suppressResize: !this.resizable,
+                suppressMovable: !this.movable,
+                suppressSorting: !this.sortable,
+                lockPinned: true, // Block user-driven pinning/unpinning - https://github.com/exhi/hoist-react/issues/687
+                pinned: this.pinned,
+                lockVisible: !gridModel.colChooserModel,
+                headerComponentParams: {gridModel, column: this}
+            };
 
         if (this.isTreeColumn) {
             ret.showRowGroup = true;
@@ -198,7 +202,8 @@ export class Column {
 
         if (this.tooltip) {
             ret.tooltip = isFunction(this.tooltip) ?
-                (agParams) => this.tooltip(agParams.value, {record: agParams.data, column: this, agParams}) :
+                (agParams) => this.tooltip(agParams.value,
+                    {record: agParams.data, column: this, agParams}) :
                 ({value}) => value;
         }
 
@@ -206,8 +211,8 @@ export class Column {
         if (align === 'center' || align === 'right') {
             ret.headerClass = castArray(ret.headerClass) || [];
             ret.cellClass = castArray(ret.cellClass) || [];
-            ret.headerClass.push('xh-column-header-align-'+align);
-            ret.cellClass.push('xh-align-'+align);
+            ret.headerClass.push('xh-column-header-align-' + align);
+            ret.cellClass.push('xh-align-' + align);
         }
 
         if (this.flex) {
@@ -233,6 +238,7 @@ export class Column {
 
                     return elementRenderer(value, {record, agParams, column});
                 }
+
                 refresh() {return false}
             };
         }

@@ -8,56 +8,39 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {Icon} from '@xh/hoist/icon';
 import {pluralize} from '@xh/hoist/utils/js';
 
 import {RestFormModel} from './RestFormModel';
 import {withDefault} from '../../../utils/js/LangUtils';
+import {
+    addAction as baseAddAction,
+    editAction as baseEditAction,
+    viewAction as baseViewAction,
+    deleteAction as baseDeleteAction
+} from '../../../data';
 
-export const restGridAddAction = {
-    text: 'Add',
-    icon: Icon.add(),
-    intent: 'success',
-    actionFn: ({metadata}) => metadata.restGridModel.addRecord()
+export const addAction = {
+    ...baseAddAction,
+    actionFn: ({gridModel, restGridModel = gridModel.restGridModel}) => restGridModel.addRecord()
 };
 
-export const restGridEditAction = {
-    text: 'Edit',
-    icon: Icon.edit(),
-    intent: 'primary',
-    actionFn: ({record, metadata}) => metadata.restGridModel.editRecord(record),
-    recordsRequired: 1
+export const editAction = {
+    ...baseEditAction,
+    actionFn: ({record, gridModel, restGridModel = gridModel.restGridModel}) => restGridModel.editRecord(record)
 };
 
-export const restGridViewAction = {
-    text: 'View',
-    icon: Icon.search(),
-    actionFn: ({record, metadata}) => metadata.restGridModel.viewRecord(record),
-    recordsRequired: 1
+export const viewAction = {
+    ...baseViewAction,
+    actionFn: ({record, gridModel, restGridModel = gridModel.restGridModel}) => restGridModel.viewRecord(record)
 };
 
-export const restGridDeleteAction = {
-    text: 'Delete',
-    icon: Icon.delete(),
-    intent: 'danger',
+export const deleteAction = {
+    ...baseDeleteAction,
     prepareFn: ({action, record}) => {
         // Hide this action if we are acting on a "new" record
         action.hidden = record && record.id === null;
     },
-    actionFn: ({record, metadata}) => metadata.restGridModel.deleteRecord(record),
-    recordsRequired: true,
-    confirm: {
-        message: 'Are you sure you want to delete the selected record?',
-        title: 'Warning',
-        icon: Icon.warning({size: 'lg'})
-    }
-};
-
-// TODO: Would like this to live in RestFormModel.js, but for some reason the restGridDeleteAction
-//       is undefined when this object is constructed?! Not understanding something about "static" const objects and imports
-export const restFormDeleteAction = {
-    ...restGridDeleteAction,
-    actionFn: ({record, metadata}) => metadata.restFormModel.deleteRecord(record)
+    actionFn: ({record, gridModel, restGridModel = gridModel.restGridModel}) => restGridModel.deleteRecord(record)
 };
 
 /**
@@ -79,10 +62,13 @@ export class RestGridModel {
     gridModel = null;
     formModel = null;
 
-    get store()             {return this.gridModel.store}
-    get selModel()          {return this.gridModel.selModel}
-    get selection()         {return this.gridModel.selection}
-    get selectedRecord()    {return this.gridModel.selectedRecord}
+    get store() {return this.gridModel.store}
+
+    get selModel() {return this.gridModel.selModel}
+
+    get selection() {return this.gridModel.selection}
+
+    get selectedRecord() {return this.gridModel.selectedRecord}
 
     /**
      * @param {Object[]|RecordAction[]} [toolbarActions] - actions to display in the toolbar. Defaults to add, edit, delete.
@@ -92,7 +78,7 @@ export class RestGridModel {
      * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
      * @param {function} [enhanceToolbar] - a function used to mutate RestGridToolbar items
      * @param {Object[]} editors - array of editors
-     * @param {*} ...rest, arguments for GridModel.
+     * @param {*} ...rest - arguments for GridModel.
      */
     constructor({
         toolbarActions,
@@ -104,8 +90,9 @@ export class RestGridModel {
         editors = [],
         ...rest
     }) {
-        this.toolbarActions = withDefault(toolbarActions, [restGridAddAction, restGridEditAction, restGridDeleteAction]);
-        this.contextMenuActions = withDefault(contextMenuActions, [restGridAddAction, restGridEditAction, restGridDeleteAction]);
+        this.toolbarActions = withDefault(toolbarActions, [addAction, editAction, deleteAction]);
+        this.contextMenuActions = withDefault(contextMenuActions,
+            [addAction, editAction, deleteAction]);
 
         this.unit = unit;
         this.filterFields = filterFields;
@@ -121,8 +108,7 @@ export class RestGridModel {
         this.formModel = new RestFormModel({
             parent: this,
             editors,
-            toolbarActions: formToolbarActions,
-            actionMetadata: this.actionMetadata
+            toolbarActions: formToolbarActions
         });
     }
 
@@ -181,7 +167,7 @@ export class RestGridModel {
             ],
             gridModel: this.gridModel
         });
-    }
+    };
 
     export(...args) {
         this.gridModel.export(...args);

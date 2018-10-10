@@ -8,7 +8,6 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {hbox, vbox} from '@xh/hoist/cmp/layout';
 import {Record, RecordAction} from '@xh/hoist/data';
 import {recordActionButton} from './RecordActionButton';
 import {StoreSelectionModel} from '../../../data/StoreSelectionModel';
@@ -54,15 +53,15 @@ export class RecordActionBar extends Component {
     };
 
     render() {
-        const {actions, record, selModel, actionMetadata, minimal, small, vertical} = this.props,
-            showOnHoverOnly = withDefault(this.props.showOnHoverOnly, false);
+        const {actions, record, selModel, showOnHoverOnly, actionMetadata, minimal, small, vertical, ...rest} = this.props,
+            showOnHover = withDefault(showOnHoverOnly, false);
 
         if (!actions) return null;
 
         return buttonGroup({
             vertical,
             className: this.getClassName(
-                showOnHoverOnly ? 'xh-show-on-hover' : null,
+                showOnHover ? 'xh-show-on-hover' : null,
                 vertical ? 'xh-record-action-bar--vertical' : null,
                 minimal ? 'xh-record-action-bar--minimal' : null,
                 small ? 'xh-record-action-bar--small' : null
@@ -74,17 +73,9 @@ export class RecordActionBar extends Component {
                 actionMetadata,
                 minimal,
                 small
-            }))
+            })),
+            ...rest
         });
-    }
-
-    getContainerCmpFactory() {
-        const {group, vertical} = this.props;
-        if (group) {
-            return (props) => buttonGroup({vertical, ...props});
-        }
-
-        return vertical ? vbox : hbox;
     }
 }
 
