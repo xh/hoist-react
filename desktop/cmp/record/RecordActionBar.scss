@@ -19,4 +19,18 @@
       visibility: hidden;
     }
   }
+
+  &--small {
+    button {
+      max-width: 24px;
+      max-height: unset;
+    }
+
+    &.xh-record-action-bar--vertical {
+      button {
+        max-width: unset;
+        max-height: 24px;
+      }
+    }
+  }
 }
