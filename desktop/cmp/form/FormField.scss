@@ -19,8 +19,9 @@
     }
   }
 
-  &.xh-form-field-invalid .bp3-form-content {
+  &.xh-form-field-invalid .bp3-form-content  {
     padding: 0 0 calc(var(--xh-font-size-small-px) + var(--xh-pad-px));
+
 
     .bp3-form-helper-text {
       position: absolute;
@@ -39,6 +40,10 @@
         overflow: hidden;
       }
     }
+  }
+
+  &.xh-form-field-minimal .bp3-form-content {
+    padding: 0 !important;
   }
 }
 

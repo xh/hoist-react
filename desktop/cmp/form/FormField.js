@@ -11,7 +11,9 @@ import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {formGroup, spinner, tooltip} from '@xh/hoist/kit/blueprint';
 import {HoistInput} from '@xh/hoist/cmp/form';
 import {div, fragment, span} from '@xh/hoist/cmp/layout';
+import {Icon} from '@xh/hoist/icon';
 import {throwIf} from '@xh/hoist/utils/js';
+
 
 import './FormField.scss';
 
@@ -45,11 +47,7 @@ export class FormField extends Component {
     };
 
     baseClassName = 'xh-form-field';
-    formChild = React.createElement(
-        'span',
-        null,
-        "TEST"
-    );
+
 
     render() {
         const {model, field, label, minimal, ...rest} = this.props,
@@ -66,18 +64,19 @@ export class FormField extends Component {
 
         if (isRequired) classes.push('xh-form-field-required');
         if (notValid) classes.push('xh-form-field-invalid');
+        if (minimal) classes.push('xh-form-field-minimal');
         return formGroup({
             item,
             label: labelStr ? span(labelStr, requiredStr) : null,
             className: this.getClassName(classes),
             helperText: !minimal ? fragment(
                 div({
-                    omit: !isPending,
+                    omit: !isPending || minimal,
                     className: 'xh-form-field-pending',
                     item: spinner({size: 15})
                 }),
                 div({
-                    omit: !notValid,
+                    omit: !notValid || minimal,
                     className: 'xh-form-field-error-msg',
                     items: notValid ? tooltip({
                         item: errors[0],
@@ -104,35 +103,29 @@ export class FormField extends Component {
         throwIf(!item || isArray(item) || !(item.type.prototype instanceof HoistInput), 'FormField child must be a single component that extends HoistInput.');
         throwIf(item.props.field || item.props.model, 'HoistInputs should not declare "field" or "model" when used with FormField');
 
-        const t = React.cloneElement(item, {model, field, disabled});
-        if (minimal) {
+        if (minimal && notValid) {
+            const target = React.cloneElement(item, {
+                model,
+                field,
+                disabled,
+                leftIcon: Icon.warningCircle(),
+                className: 'xh-input xh-input-invalid xh-text-input'
+            });
+
             return tooltip({
-                    item: t,
-                    wrapperTagName: 'div',
-                    targetTagName: 'div',
-                    width: '100%',
-                    content: notValid ? (
-                        <ul className="xh-form-field-error-tooltip">
-                            {errors.map((it, idx) => <li key={idx}>{it}</li>)}
-                        </ul>
-                    ) : div()
+                target,
+                wrapperTagName: 'div',
+                targetTagName: 'div',
+                position: 'right',
+                width: '100%',
+                content: notValid ? (
+                    <ul className="xh-form-field-error-tooltip">
+                        {errors.map((it, idx) => <li key={idx}>{it}</li>)}
+                    </ul>
+                ) : div()
             })
         }
-
-        return React.cloneElement(item, {model, field, disabled})
-        // const b = notValid ? (
-        //     <ul className="xh-form-field-error-tooltip">
-        //         {errors.map((it, idx) => <li key={idx}>{it}</li>)}
-        //     </ul>
-        // ) : div();
-        // const a = React.cloneElement(item, {model, field, disabled, className: 'bp3-popover-target'}, [b]);
-        // return fragment(
-        //     div({
-        //             className: 'bp3-popover-wrapper',
-        //             item: a
-        //         })
-        // )
-
+        return React.cloneElement(item, {model, field, disabled});
 
     }
 
