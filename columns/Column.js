@@ -6,13 +6,13 @@
  */
 
 import {Component} from 'react';
-import {castArray, startCase, isFunction, clone} from 'lodash';
+import {castArray, startCase, isFunction, clone, find} from 'lodash';
 import {ExportFormat} from './ExportFormat';
 import {withDefault, withDefaultTrue, withDefaultFalse, throwIf, warnIf} from '@xh/hoist/utils/js';
 
 /**
  * Cross-platform definition and API for a standardized Grid column.
- * Typically provided to GridModels as plain configuration objects.
+ * Provided to GridModels as plain configuration objects.
  * @alias HoistColumn
  */
 export class Column {
@@ -45,6 +45,8 @@ export class Column {
      * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
      * @param {boolean} [c.movable] - false to prevent user from drag-and-drop re-ordering.
      * @param {boolean} [c.sortable] - false to prevent user from sorting on this column.
+     * @param {(boolean|string)} [c.pinned] - set to true/'left' or 'right' to pin (aka "lock") the
+     *      column to the side of the grid, ensuring it's visible while horizontally scrolling.
      * @param {Column~rendererFn} [c.renderer] - function to produce a formatted string for each cell.
      * @param {Column~elementRendererFn} [c.elementRenderer] - function which returns a React component.
      * @param {string} [c.chooserName] - name to display within the column chooser component.
@@ -92,6 +94,7 @@ export class Column {
         resizable,
         movable,
         sortable,
+        pinned,
         renderer,
         elementRenderer,
         chooserName,
@@ -123,7 +126,7 @@ export class Column {
 
         warnIf(
             flex && width,
-            `Column ${this.colId} should not be specified with both flex = true && width.  Width will be ignored.`,
+            `Column ${this.colId} should not be specified with both flex = true && width.  Width will be ignored.`
         );
         this.flex = withDefaultFalse(flex);
         this.width = this.flex ? null : width || Column.DEFAULT_WIDTH;
@@ -137,6 +140,9 @@ export class Column {
         this.resizable = withDefaultTrue(resizable);
         this.movable = withDefaultTrue(movable);
         this.sortable = withDefaultTrue(sortable);
+
+        // Pinned supports convenience true -> 'left'. OK to leave undefined if not given.
+        this.pinned = (pinned === true) ? 'left' : pinned;
 
         this.renderer = renderer;
         this.elementRenderer = elementRenderer;
@@ -174,6 +180,9 @@ export class Column {
             suppressResize: !this.resizable,
             suppressMovable: !this.movable,
             suppressSorting: !this.sortable,
+            lockPinned: true, // Block user-driven pinning/unpinning - https://github.com/exhi/hoist-react/issues/687
+            pinned: this.pinned,
+            lockVisible: !gridModel.colChooserModel,
             headerComponentParams: {gridModel, column: this}
         };
 
@@ -226,6 +235,13 @@ export class Column {
                 }
                 refresh() {return false}
             };
+        }
+
+        const sortCfg = find(gridModel.sortBy, {colId: ret.colId});
+        if (sortCfg) {
+            ret.sort = sortCfg.sort;
+            ret.sortedAt = gridModel.sortBy.indexOf(sortCfg);
+            ret.comparator = (v1, v2) => sortCfg.comparator(v1, v2);
         }
 
         // Finally, apply explicit app requests.  The customer is always right....

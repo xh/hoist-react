@@ -126,6 +126,11 @@ export class RecordAction {
 
         this.actionFn({action: this, record, selModel, metadata});
     }
+
+    /** Clone this object. **/
+    clone() {
+        return new RecordAction(this);
+    }
 }
 
 /**

@@ -142,8 +142,8 @@ export class ConfigPanel extends Component {
     //-------------------------
     // Implementation
     //-------------------------
-    maskIfPwd(value, data) {
-        return data.valueType === 'pwd' ? '*****' : value;
+    maskIfPwd(value, {record}) {
+        return record.valueType === 'pwd' ? '*****' : value;
     }
 
     extraToolbarItems = () => {

@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {isString} from 'lodash';
+import {isEmpty, isString, flatten} from 'lodash';
 import {RecordAction} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 
@@ -30,6 +30,7 @@ export class StoreContextMenu {
      *
      *      Hoist tokens, all of which require a GridModel:
      *          `colChooser` - display column chooser for a grid.
+     *          `expandCollapseAll` - expand/collapse all parent rows on grouped or tree grid.
      *          `export` - export grid data to excel via Hoist's server-side export capabilities.
      *          `exportExcel` - same as above.
      *          `exportCsv` - export grid data to CSV via Hoist's server-side export capabilities.
@@ -40,9 +41,11 @@ export class StoreContextMenu {
      */
     constructor({items, gridModel}) {
         this.gridModel = gridModel;
-        this.items = items.map(it => {
-            return isString(it) ? this.parseToken(it) : new RecordAction(it);
-        });
+        this.items = flatten(items.map(it => {
+            if (it instanceof RecordAction) return it.clone();
+            if (isString(it)) return this.parseToken(it);
+            return new RecordAction(it);
+        }));
     }
 
     parseToken(token) {
@@ -54,9 +57,7 @@ export class StoreContextMenu {
                     text: 'Columns...',
                     icon: Icon.gridPanel(),
                     hidden: !gridModel || !gridModel.colChooserModel,
-                    actionFn: () => {
-                        gridModel.colChooserModel.open();
-                    }
+                    actionFn: () => gridModel.colChooserModel.open()
                 });
             case 'export':
             case 'exportExcel':
@@ -65,9 +66,7 @@ export class StoreContextMenu {
                     icon: Icon.download(),
                     hidden: !gridModel || !gridModel.enableExport,
                     disabled: !gridModel || !gridModel.store.count,
-                    actionFn: () => {
-                        gridModel.export({type: 'excelTable'});
-                    }
+                    actionFn: () => gridModel.export({type: 'excelTable'})
                 });
             case 'exportCsv':
                 return new RecordAction({
@@ -75,10 +74,23 @@ export class StoreContextMenu {
                     icon: Icon.download(),
                     hidden: !gridModel || !gridModel.enableExport,
                     disabled: !gridModel || !gridModel.store.count,
-                    actionFn: () => {
-                        gridModel.export({type: 'csv'});
-                    }
+                    actionFn: () => gridModel.export({type: 'csv'})
                 });
+            case 'expandCollapseAll':
+                return [
+                    new RecordAction({
+                        text: 'Expand All',
+                        icon: Icon.angleDown(),
+                        hidden: !gridModel || (!gridModel.treeMode && isEmpty(gridModel.groupBy)),
+                        actionFn: () => gridModel.expandAll()
+                    }),
+                    new RecordAction({
+                        text: 'Collapse All',
+                        icon: Icon.angleRight(),
+                        hidden: !gridModel || (!gridModel.treeMode && isEmpty(gridModel.groupBy)),
+                        actionFn: () => gridModel.collapseAll()
+                    })
+                ];
             case 'exportLocal':
                 return 'export';
             default:
