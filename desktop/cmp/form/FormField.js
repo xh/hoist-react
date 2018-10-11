@@ -106,6 +106,7 @@ export class FormField extends Component {
 
         throwIf(!item || isArray(item) || !(item.type.prototype instanceof HoistInput), 'FormField child must be a single component that extends HoistInput.');
         throwIf(item.props.field || item.props.model, 'HoistInputs should not declare "field" or "model" when used with FormField');
+
         if (minimal && notValid) {
             const leftIcon = this.leftIcon(item);
             const target = React.cloneElement(item, {
@@ -118,7 +119,8 @@ export class FormField extends Component {
             return tooltip({
                 target,
                 wrapperTagName: 'div',
-                targetTagName: this.blockChildren.includes(target.type.name) ? 'div' : 'span',
+                targetTagName: !this.blockChildren.includes(target.type.name) || target.props.width
+                    ? 'span' : 'width',
                 position: 'right',
                 content: (
                     <ul className="xh-form-field-error-tooltip">
@@ -131,8 +133,8 @@ export class FormField extends Component {
     }
 
     leftIcon(item) {
-        const icon = item.props.leftIcon || (this.props.minimal === 'icon' ? Icon.warningCircle() : null);
-        return item.type.propTypes.leftIcon ? {leftIcon: icon} : {};
+        const leftIcon = item.props.leftIcon || (this.props.minimal === 'icon' ? Icon.warningCircle() : null);
+        return item.type.propTypes.leftIcon ? {leftIcon} : {};
     }
 
 }
