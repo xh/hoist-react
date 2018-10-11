@@ -14,7 +14,6 @@ import {div, fragment, span} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {throwIf} from '@xh/hoist/utils/js';
 
-
 import './FormField.scss';
 
 /**
@@ -43,11 +42,12 @@ export class FormField extends Component {
          */
         label: PT.string,
         /** Apply minimal styling - validation errors not displayed in helperText */
-        minimal: PT.bool
+        minimal: PT.oneOfType([PT.bool, PT.string])
     };
 
     baseClassName = 'xh-form-field';
 
+    blockChildren = ['TextInput', 'JsonInput'];
 
     render() {
         const {model, field, label, minimal, ...rest} = this.props,
@@ -67,7 +67,11 @@ export class FormField extends Component {
         if (minimal) classes.push('xh-form-field-minimal');
         return formGroup({
             item,
-            label: labelStr ? span(labelStr, requiredStr) : null,
+            width: 50,
+            label: span({
+                item: labelStr ? span(labelStr, requiredStr) : null,
+                className: minimal && notValid ? 'xh-form-field-error-label' : null
+            }),
             className: this.getClassName(classes),
             helperText: !minimal ? fragment(
                 div({
@@ -102,31 +106,33 @@ export class FormField extends Component {
 
         throwIf(!item || isArray(item) || !(item.type.prototype instanceof HoistInput), 'FormField child must be a single component that extends HoistInput.');
         throwIf(item.props.field || item.props.model, 'HoistInputs should not declare "field" or "model" when used with FormField');
-
         if (minimal && notValid) {
+            const leftIcon = this.leftIcon(item);
             const target = React.cloneElement(item, {
                 model,
                 field,
                 disabled,
-                leftIcon: Icon.warningCircle(),
-                className: 'xh-input xh-input-invalid xh-text-input'
+                ...leftIcon,
+                className: 'xh-input xh-input-invalid'
             });
-
             return tooltip({
                 target,
                 wrapperTagName: 'div',
-                targetTagName: 'div',
+                targetTagName: this.blockChildren.includes(target.type.name) ? 'div' : 'span',
                 position: 'right',
-                width: '100%',
-                content: notValid ? (
+                content: (
                     <ul className="xh-form-field-error-tooltip">
                         {errors.map((it, idx) => <li key={idx}>{it}</li>)}
                     </ul>
-                ) : div()
-            })
+                )
+            });
         }
         return React.cloneElement(item, {model, field, disabled});
+    }
 
+    leftIcon(item) {
+        const icon = item.props.leftIcon || (this.props.minimal === 'icon' ? Icon.warningCircle() : null);
+        return item.type.propTypes.leftIcon ? {leftIcon: icon} : {};
     }
 
 }

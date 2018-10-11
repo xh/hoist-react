@@ -19,6 +19,10 @@
     }
   }
 
+  .bp3-popover-target textarea.xh-input-invalid {
+    border: var(--xh-form-field-invalid-border) !important;
+  }
+
   &.xh-form-field-invalid .bp3-form-content  {
     padding: 0 0 calc(var(--xh-font-size-small-px) + var(--xh-pad-px));
 
@@ -44,6 +48,15 @@
 
   &.xh-form-field-minimal .bp3-form-content {
     padding: 0 !important;
+
+    .xh-input-invalid svg{
+      color: var(--xh-intent-danger);
+    }
+
+  }
+
+  .xh-form-field-error-label {
+    color: var(--xh-red);
   }
 }
 
