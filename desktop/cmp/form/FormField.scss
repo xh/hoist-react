@@ -19,9 +19,7 @@
     }
   }
 
-  .bp3-popover-target textarea.xh-input-invalid {
-    border: var(--xh-form-field-invalid-border) !important;
-  }
+
 
   &.xh-form-field-invalid .bp3-form-content  {
     padding: 0 0 calc(var(--xh-font-size-small-px) + var(--xh-pad-px));
@@ -42,6 +40,16 @@
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
+      }
+    }
+
+    .bp3-popover-target {
+      textarea.xh-input-invalid {
+        border: var(--xh-form-field-invalid-border) !important;
+      }
+
+      .bp3-control-indicator {
+        box-shadow: var(--xh-form-field-invalid-box-shadow) !important;
       }
     }
   }
