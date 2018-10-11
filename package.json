@@ -8,7 +8,7 @@
   "author": "Extremely Heavy Industries, Inc.",
   "license": "UNLICENSED",
   "scripts": {
-    "lint": "yarn run eslint lint ."
+    "lint": "yarn run eslint ."
   },
   "dependencies": {
     "@blueprintjs/core": "~3.7.0",
@@ -23,7 +23,6 @@
     "ag-grid": "~18.1.2",
     "ag-grid-enterprise": "~18.1.1",
     "ag-grid-react": "~18.1.0",
-    "babel-runtime": "~6.26.0",
     "classnames": "~2.2.6",
     "clipboard": "~2.0.0",
     "codemirror": "~5.40.2",
@@ -49,7 +48,7 @@
     "react-dom-factories": "~1.0.2"
   },
   "devDependencies": {
-    "@xh/hoist-dev-utils": "~3.0.1",
+    "@xh/hoist-dev-utils": "~3.0.3",
     "react": "~16.5.2",
     "react-dom": "~16.5.2",
     "react-dom-factories": "~1.0.2"
