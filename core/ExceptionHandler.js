@@ -83,7 +83,7 @@ export class ExceptionHandler {
             const error = exception ? stringifyErrorSafely(exception) : null;
 
             await XH.fetchJson({
-                url: 'hoistImpl/submitError',
+                url: 'xh/submitError',
                 params: {
                     error,
                     msg: userMessage ? stripTags(userMessage) : '',
