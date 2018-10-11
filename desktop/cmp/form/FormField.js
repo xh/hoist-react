@@ -42,7 +42,9 @@ export class FormField extends Component {
          */
         label: PT.string,
         /** Apply minimal styling - validation errors are only displayed with a tooltip */
-        minimal: PT.oneOfType([PT.bool, PT.string])
+        minimal: PT.bool,
+        /** Display warning glyph in the far left side of the input (TextField, NumberInput only) */
+        leftErrorIcon: PT.bool
     };
 
     baseClassName = 'xh-form-field';
@@ -104,31 +106,23 @@ export class FormField extends Component {
         throwIf(!item || isArray(item) || !(item.type.prototype instanceof HoistInput), 'FormField child must be a single component that extends HoistInput.');
         throwIf(item.props.field || item.props.model, 'HoistInputs should not declare "field" or "model" when used with FormField');
 
-        // Wrap field in a tooltip if in minimal mode
-        if (minimal && notValid) {
-            const leftIcon = this.leftIcon(item, minimal),
-                target = React.cloneElement(item, {
-                    model,
-                    field,
-                    disabled,
-                    ...leftIcon,
-                    className: 'xh-input xh-input-invalid'
-                });
+        const leftIcon = notValid ? this.leftIcon(item) : {};
+        const target = React.cloneElement(item, {model, field, disabled, ...leftIcon});
 
-            return tooltip({
-                target,
+        // Wrap child in a tooltip if in minimal mode
+        return minimal && notValid ?
+            tooltip({
+                targetClassName: 'xh-input xh-input-invalid',
                 wrapperTagName: 'div',
+                target,
                 targetTagName: !this.blockChildren.includes(target.type.name) || target.props.width ? 'span' : 'div',
                 position: 'right',
                 content: this.getErrorTooltipContent(errors)
-            });
-        }
-
-        return React.cloneElement(item, {model, field, disabled});
+            }) : target;
     }
 
-    leftIcon(item, minimal) {
-        const leftIcon = item.props.leftIcon || (minimal === 'icon' ? Icon.warningCircle() : null);
+    leftIcon(item) {
+        const leftIcon = item.props.leftIcon || (this.props.leftErrorIcon ? Icon.warningCircle() : null);
         return item.type.propTypes.leftIcon ? {leftIcon} : {};
     }
 
