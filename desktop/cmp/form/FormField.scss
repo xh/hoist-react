@@ -46,10 +46,27 @@
     .bp3-popover-target {
       textarea.xh-input-invalid {
         border: var(--xh-form-field-invalid-border) !important;
+        //box-shadow: var(--xh-form-field-invalid-box-shadow) !important;
+
       }
 
       .bp3-control-indicator {
         box-shadow: var(--xh-form-field-invalid-box-shadow) !important;
+      }
+
+      .bp3-button-group button.bp3-button {
+        box-shadow: var(--xh-form-field-invalid-box-shadow) !important;
+      }
+
+      span.bp3-slider-handle {
+        box-shadow: var(--xh-form-field-invalid-box-shadow) !important;
+      }
+
+      div.bp3-multi-select {
+        border: var(--xh-form-field-invalid-border) !important;
+        input {
+          border: none;
+        }
       }
     }
   }

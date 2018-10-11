@@ -59,28 +59,29 @@ export class FormField extends Component {
             errors = fieldModel ? fieldModel.errors : [],
             labelStr = isUndefined(label) ? (fieldModel ? fieldModel.displayName : null) : label,
             requiredStr = isRequired ? span(' *') : null,
-            item = this.prepareChild(notValid, errors),
+            isMinimal = minimal || model.minimal,
+            item = this.prepareChild(notValid, errors, isMinimal),
             classes = [];
 
         if (isRequired) classes.push('xh-form-field-required');
         if (notValid) classes.push('xh-form-field-invalid');
-        if (minimal) classes.push('xh-form-field-minimal');
+        if (isMinimal) classes.push('xh-form-field-minimal');
         return formGroup({
             item,
             width: 50,
             label: span({
                 item: labelStr ? span(labelStr, requiredStr) : null,
-                className: minimal && notValid ? 'xh-form-field-error-label' : null
+                className: isMinimal && notValid ? 'xh-form-field-error-label' : null
             }),
             className: this.getClassName(classes),
-            helperText: !minimal ? fragment(
+            helperText: !isMinimal ? fragment(
                 div({
-                    omit: !isPending || minimal,
+                    omit: !isPending || isMinimal,
                     className: 'xh-form-field-pending',
                     item: spinner({size: 15})
                 }),
                 div({
-                    omit: !notValid || minimal,
+                    omit: !notValid || isMinimal,
                     className: 'xh-form-field-error-msg',
                     items: notValid ? tooltip({
                         item: errors[0],
@@ -100,15 +101,15 @@ export class FormField extends Component {
     //--------------------
     // Implementation
     //--------------------
-    prepareChild(notValid, errors) {
-        const {model, field, disabled, minimal} = this.props;
+    prepareChild(notValid, errors, isMinimal) {
+        const {model, field, disabled} = this.props;
         const item = this.props.children;
 
         throwIf(!item || isArray(item) || !(item.type.prototype instanceof HoistInput), 'FormField child must be a single component that extends HoistInput.');
         throwIf(item.props.field || item.props.model, 'HoistInputs should not declare "field" or "model" when used with FormField');
 
-        if (minimal && notValid) {
-            const leftIcon = this.leftIcon(item);
+        if (isMinimal && notValid) {
+            const leftIcon = this.leftIcon(item, isMinimal);
             const target = React.cloneElement(item, {
                 model,
                 field,
@@ -119,7 +120,7 @@ export class FormField extends Component {
             return tooltip({
                 target,
                 wrapperTagName: 'div',
-                targetTagName: !this.blockChildren.includes(target.type.name) || (target.props.width)
+                targetTagName: !this.blockChildren.includes(target.type.name) || target.props.width
                     ? 'span' : 'div',
                 position: 'right',
                 content: (
@@ -132,8 +133,8 @@ export class FormField extends Component {
         return React.cloneElement(item, {model, field, disabled});
     }
 
-    leftIcon(item) {
-        const leftIcon = item.props.leftIcon || (this.props.minimal === 'icon' ? Icon.warningCircle() : null);
+    leftIcon(item, isMinimal) {
+        const leftIcon = item.props.leftIcon || (isMinimal === 'icon' ? Icon.warningCircle() : null);
         return item.type.propTypes.leftIcon ? {leftIcon} : {};
     }
 
