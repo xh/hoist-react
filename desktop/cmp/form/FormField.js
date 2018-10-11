@@ -41,7 +41,7 @@ export class FormField extends Component {
          * Defaults to Field displayName if used with @FieldSupport. Set to null to hide label.
          */
         label: PT.string,
-        /** Apply minimal styling - validation errors not displayed in helperText */
+        /** Apply minimal styling - validation errors are only displayed with a tooltip */
         minimal: PT.oneOfType([PT.bool, PT.string])
     };
 
@@ -59,37 +59,33 @@ export class FormField extends Component {
             errors = fieldModel ? fieldModel.errors : [],
             labelStr = isUndefined(label) ? (fieldModel ? fieldModel.displayName : null) : label,
             requiredStr = isRequired ? span(' *') : null,
-            isMinimal = minimal || model.minimal,
-            item = this.prepareChild(notValid, errors, isMinimal),
+            item = this.prepareChild(notValid, errors),
             classes = [];
 
         if (isRequired) classes.push('xh-form-field-required');
         if (notValid) classes.push('xh-form-field-invalid');
-        if (isMinimal) classes.push('xh-form-field-minimal');
+        if (minimal) classes.push('xh-form-field-minimal');
+
         return formGroup({
             item,
             width: 50,
             label: span({
                 item: labelStr ? span(labelStr, requiredStr) : null,
-                className: isMinimal && notValid ? 'xh-form-field-error-label' : null
+                className: minimal && notValid ? 'xh-form-field-error-label' : null
             }),
             className: this.getClassName(classes),
-            helperText: !isMinimal ? fragment(
+            helperText: !minimal ? fragment(
                 div({
-                    omit: !isPending || isMinimal,
+                    omit: !isPending || minimal,
                     className: 'xh-form-field-pending',
                     item: spinner({size: 15})
                 }),
                 div({
-                    omit: !notValid || isMinimal,
+                    omit: !notValid || minimal,
                     className: 'xh-form-field-error-msg',
                     items: notValid ? tooltip({
                         item: errors[0],
-                        content: (
-                            <ul className="xh-form-field-error-tooltip">
-                                {errors.map((it, idx) => <li key={idx}>{it}</li>)}
-                            </ul>
-                        )
+                        content: this.getErrorTooltipContent(errors)
                     }) : null
                 })
             ) : null,
@@ -101,40 +97,49 @@ export class FormField extends Component {
     //--------------------
     // Implementation
     //--------------------
-    prepareChild(notValid, errors, isMinimal) {
-        const {model, field, disabled} = this.props;
-        const item = this.props.children;
+    prepareChild(notValid, errors) {
+        const {model, field, minimal, disabled} = this.props,
+            item = this.props.children;
 
         throwIf(!item || isArray(item) || !(item.type.prototype instanceof HoistInput), 'FormField child must be a single component that extends HoistInput.');
         throwIf(item.props.field || item.props.model, 'HoistInputs should not declare "field" or "model" when used with FormField');
 
-        if (isMinimal && notValid) {
-            const leftIcon = this.leftIcon(item, isMinimal);
-            const target = React.cloneElement(item, {
-                model,
-                field,
-                disabled,
-                ...leftIcon,
-                className: 'xh-input xh-input-invalid'
-            });
+        // Wrap field in a tooltip if in minimal mode
+        if (minimal && notValid) {
+            const leftIcon = this.leftIcon(item, minimal),
+                target = React.cloneElement(item, {
+                    model,
+                    field,
+                    disabled,
+                    ...leftIcon,
+                    className: 'xh-input xh-input-invalid'
+                });
+
             return tooltip({
                 target,
                 wrapperTagName: 'div',
                 targetTagName: !this.blockChildren.includes(target.type.name) || target.props.width ? 'span' : 'div',
                 position: 'right',
-                content: (
-                    <ul className="xh-form-field-error-tooltip">
-                        {errors.map((it, idx) => <li key={idx}>{it}</li>)}
-                    </ul>
-                )
+                content: this.getErrorTooltipContent(errors)
             });
         }
+
         return React.cloneElement(item, {model, field, disabled});
     }
 
-    leftIcon(item, isMinimal) {
-        const leftIcon = item.props.leftIcon || (isMinimal === 'icon' ? Icon.warningCircle() : null);
+    leftIcon(item, minimal) {
+        const leftIcon = item.props.leftIcon || (minimal === 'icon' ? Icon.warningCircle() : null);
         return item.type.propTypes.leftIcon ? {leftIcon} : {};
+    }
+
+    getErrorTooltipContent(errors) {
+        if (!errors || !errors.length) return null;
+        if (errors.length == 1) return errors[0];
+        return (
+            <ul className="xh-form-field-error-tooltip">
+                {errors.map((it, idx) => <li key={idx}>{it}</li>)}
+            </ul>
+        );
     }
 
 }
