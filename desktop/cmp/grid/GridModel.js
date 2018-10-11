@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, computed} from '@xh/hoist/mobx';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {
@@ -222,6 +222,12 @@ export class GridModel {
      */
     get selectedRecord() {
         return this.selModel.singleRecord;
+    }
+
+    /** Do any columns use a MultiFieldRenderer */
+    @computed
+    get multiFieldRows() {
+        return this.columns.some(it => it.multiFieldRendererCfg);
     }
 
     @action

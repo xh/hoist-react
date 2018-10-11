@@ -64,6 +64,7 @@ export class Grid extends Component {
 
     static ROW_HEIGHT = 28;
     static COMPACT_ROW_HEIGHT = 24;
+    static MULTI_FIELD_ROW_HEIGHT = 38;
 
     // Observable stamp incremented every time the ag-Grid receives a new set of data.
     // Used to ensure proper re-running / sequencing of data and selection reactions.
@@ -81,9 +82,11 @@ export class Grid extends Component {
     }
 
     render() {
-        const {colChooserModel, compact} = this.model,
+        const {colChooserModel, multiFieldRows, compact} = this.model,
             {agOptions, showHover, onKeyDown} = this.props,
-            layoutProps = this.getLayoutProps();
+            layoutProps = this.getLayoutProps(),
+            rowHeightCls = multiFieldRows ? 'xh-grid-multi-field' : compact ? 'xh-grid-compact' : 'xh-grid-standard';
+
 
         // Default flex = 'auto' if no dimensions / flex specified.
         if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
@@ -100,7 +103,7 @@ export class Grid extends Component {
                 className: this.getClassName(
                     'ag-grid-holder',
                     XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
-                    compact ? 'xh-grid-compact' : 'xh-grid-standard',
+                    rowHeightCls,
                     showHover ? 'xh-grid-show-hover' : ''
                 ),
                 onKeyDown
@@ -142,7 +145,11 @@ export class Grid extends Component {
             frameworkComponents: {agColumnHeader: ColumnHeader},
             rowSelection: model.selModel.mode,
             rowDeselection: true,
-            getRowHeight: () => model.compact ? Grid.COMPACT_ROW_HEIGHT : Grid.ROW_HEIGHT,
+            getRowHeight: () => {
+                if (model.multiFieldRows) return Grid.MULTI_FIELD_ROW_HEIGHT;
+                if (model.compact) return Grid.COMPACT_ROW_HEIGHT;
+                return Grid.ROW_HEIGHT;
+            },
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             overlayNoRowsTemplate: model.emptyText || '<span></span>',
             getContextMenuItems: this.getContextMenuItems,

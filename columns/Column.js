@@ -222,22 +222,12 @@ export class Column {
             ret.width = this.width;
         }
 
-        const {multiFieldRendererCfg, renderer, elementRenderer} = this;
-        if (multiFieldRendererCfg) {
-            ret.cellRendererFramework = class extends Component {
-                render() {
-                    const agParams = this.props,
-                        {value, data: record} = agParams;
-
-                    return multiFieldRenderer({value, record, renderer, ...multiFieldRendererCfg});
-                }
-                refresh() {return false}
-            };
-        } else if (renderer) {
+        const {renderer, elementRenderer, multiFieldRendererCfg} = this;
+        if (renderer) {
             ret.cellRenderer = (agParams) => {
                 return renderer(agParams.value, {record: agParams.data, column: this, agParams});
             };
-        } else if (elementRenderer) {
+        } else if (elementRenderer || multiFieldRendererCfg) {
             // eslint-disable-next-line consistent-this
             const column = this;
             ret.cellRendererFramework = class extends Component {
@@ -245,7 +235,16 @@ export class Column {
                     const agParams = this.props,
                         {value, data: record} = agParams;
 
-                    return elementRenderer(value, {record, agParams, column});
+                    if (elementRenderer) {
+                        return elementRenderer(value, {record, agParams, column});
+                    } else if (multiFieldRendererCfg) {
+                        return multiFieldRenderer({
+                            value,
+                            record,
+                            column,
+                            ...multiFieldRendererCfg
+                        });
+                    }
                 }
                 refresh() {return false}
             };
