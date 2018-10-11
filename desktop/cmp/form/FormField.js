@@ -120,8 +120,7 @@ export class FormField extends Component {
             return tooltip({
                 target,
                 wrapperTagName: 'div',
-                targetTagName: !this.blockChildren.includes(target.type.name) || target.props.width
-                    ? 'span' : 'div',
+                targetTagName: !this.blockChildren.includes(target.type.name) || target.props.width ? 'span' : 'div',
                 position: 'right',
                 content: (
                     <ul className="xh-form-field-error-tooltip">
