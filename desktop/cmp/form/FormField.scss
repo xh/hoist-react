@@ -19,7 +19,7 @@
     }
   }
 
-  &.xh-form-field-invalid .bp3-form-content  {
+  &.xh-form-field-invalid .bp3-form-content {
     padding: 0 0 calc(var(--xh-font-size-small-px) + var(--xh-pad-px));
 
     .bp3-form-helper-text {
@@ -41,7 +41,6 @@
     }
 
     .bp3-popover-target {
-
       .bp3-control-indicator {
         box-shadow: var(--xh-form-field-invalid-box-shadow) !important;
       }
@@ -61,20 +60,18 @@
         }
       }
     }
+
+    .bp3-input-group > svg {
+      color: var(--xh-intent-danger);
+    }
+
+    textarea {
+      border: var(--xh-form-field-invalid-border) !important;
+    }
   }
 
   &.xh-form-field-minimal .bp3-form-content {
     padding: 0 !important;
-
-    .xh-input-invalid {
-      svg {
-      color: var(--xh-intent-danger);
-      }
-      textarea {
-        border: var(--xh-form-field-invalid-border) !important;
-      }
-    }
-
   }
 
   .xh-form-field-error-label {
