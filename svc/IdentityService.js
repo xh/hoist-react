@@ -20,12 +20,12 @@ export class IdentityService {
     _apparentUser = null;
     
     async initAsync() {
-        const data = await XH.fetchJson({url: 'hoistImpl/getIdentity'});
+        const data = await XH.fetchJson({url: 'xh/getIdentity'});
         if (data.user) {
-            this._apparentUser = this._authUser = this.enhanceUser(data.user);
+            this._apparentUser = this._authUser = this.enhanceUser(data.user, data.roles);
         } else {
-            this._apparentUser = this.enhanceUser(data.apparentUser);
-            this._authUser = this.enhanceUser(data.authUser);
+            this._apparentUser = this.enhanceUser(data.apparentUser, data.apparentUserRoles);
+            this._authUser = this.enhanceUser(data.authUser, data.authUserRoles);
         }
     }
 
@@ -73,7 +73,7 @@ export class IdentityService {
      */
     async logoutAsync() {
         return XH
-            .fetchJson({url: 'hoistImpl/logout'})
+            .fetchJson({url: 'xh/logout'})
             .then(() => XH.reloadApp())
             .catchDefault();
     }
@@ -89,8 +89,9 @@ export class IdentityService {
     //------------------------
     // Implementation
     //------------------------
-    enhanceUser(user) {
+    enhanceUser(user, roles) {
         if (!user) return null;
+        user.roles = roles;
         user.hasRole = (role) => user.roles.includes(role);
         user.isHoistAdmin = user.hasRole('HOIST_ADMIN');
         user.hasGate = (gate) => this.hasGate(gate, user);
