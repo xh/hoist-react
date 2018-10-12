@@ -8,41 +8,42 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {pluralize, withDefault} from '@xh/hoist/utils/js';
-import {
-    addAction as baseAddAction,
-    editAction as baseEditAction,
-    viewAction as baseViewAction,
-    deleteAction as baseDeleteAction
-} from '@xh/hoist/data';
+import {pluralize} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon/Icon';
 
-import {RestFormModel} from './RestFormModel';
+import {RestFormModel} from './impl/RestFormModel';
 
 export const addAction = {
-    ...baseAddAction,
-    actionFn: ({gridModel, restModel = gridModel.restModel}) => restModel.addRecord()
+    text: 'Add',
+    icon: Icon.add(),
+    intent: 'success',
+    actionFn: ({gridModel}) => gridModel.restGridModel.addRecord()
 };
 
 export const editAction = {
-    ...baseEditAction,
-    actionFn: ({record, gridModel, restModel = gridModel.restModel}) => restModel.editRecord(record)
+    text: 'Edit',
+    icon: Icon.edit(),
+    intent: 'primary',
+    recordsRequired: 1,
+    actionFn: ({record, gridModel}) => gridModel.restGridModel.editRecord(record)
 };
 
 export const viewAction = {
-    ...baseViewAction,
-    actionFn: ({record, gridModel, restModel = gridModel.restModel}) => restModel.viewRecord(record)
+    text: 'View',
+    icon: Icon.search(),
+    recordsRequired: 1,
+    actionFn: ({record, gridModel}) => gridModel.restGridModel.viewRecord(record)
 };
 
 export const deleteAction = {
-    ...baseDeleteAction,
-    displayConfigFn: ({action, record, defaultConfig}) => {
-        return {
-            ...defaultConfig,
-            hidden: record && record.id === null // Hide this action if we are acting on a "new" record
-        };
-    },
-    actionFn: ({record, gridModel, restModel = gridModel.restModel}) => restModel.confirmDeleteRecord(record)
+    text: 'Delete',
+    icon: Icon.delete(),
+    intent: 'danger',
+    recordsRequired: 1,
+    displayFn: ({record}) => ({
+        hidden: record && record.id === null // Hide this action if we are acting on a "new" record
+    }),
+    actionFn: ({record, gridModel}) => gridModel.restGridModel.confirmDeleteRecord(record)
 };
 
 /**
@@ -55,8 +56,8 @@ export class RestGridModel {
     // Properties
     //----------------
     toolbarActions;
-    contextMenuActions;
-    formToolbarActions;
+    menuActions;
+    formActions;
 
     actionWarning = {
         add: null,
@@ -80,8 +81,8 @@ export class RestGridModel {
 
     /**
      * @param {Object[]|RecordAction[]} [toolbarActions] - actions to display in the toolbar. Defaults to add, edit, delete.
-     * @param {Object[]|RecordAction[]} [contextMenuActions] - actions to display in the grid context menu. Defaults to add, edit, delete.
-     * @param {Object[]|RecordAction[]} [formToolbarActions] - actions to display in the form toolbar. Defaults to delete.
+     * @param {Object[]|RecordAction[]} [menuActions] - actions to display in the grid context menu. Defaults to add, edit, delete.
+     * @param {Object[]|RecordAction[]} [formActions] - actions to display in the form toolbar. Defaults to delete.
      * @param {Object} [actionWarning] - map of action (e.g. 'add'/'edit'/'delete') to string.  See default prop.
      * @param {string} [unit] - name that describes records in this grid.
      * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
@@ -90,9 +91,9 @@ export class RestGridModel {
      * @param {*} ...rest - arguments for GridModel.
      */
     constructor({
-        toolbarActions,
-        contextMenuActions,
-        formToolbarActions,
+        toolbarActions = [addAction, editAction, deleteAction],
+        menuActions = [addAction, editAction, deleteAction],
+        formActions = [deleteAction],
         actionWarning,
         unit = 'record',
         filterFields,
@@ -100,9 +101,9 @@ export class RestGridModel {
         editors = [],
         ...rest
     }) {
-        this.toolbarActions = withDefault(toolbarActions, [addAction, editAction, deleteAction]);
-        this.contextMenuActions = withDefault(contextMenuActions,
-            [addAction, editAction, deleteAction]);
+        this.toolbarActions = toolbarActions;
+        this.menuActions = menuActions;
+        this.formActions = formActions;
 
         this.actionWarning = Object.assign(this.actionWarning, actionWarning);
 
@@ -113,14 +114,14 @@ export class RestGridModel {
         this.gridModel = new GridModel({
             contextMenuFn: this.contextMenuFn,
             exportFilename: pluralize(unit),
-            restModel: this,
+            restGridModel: this,
             ...rest
         });
 
         this.formModel = new RestFormModel({
             parent: this,
             editors,
-            toolbarActions: formToolbarActions
+            actions: formActions
         });
     }
 
@@ -151,7 +152,9 @@ export class RestGridModel {
 
     @action
     deleteRecord(record) {
-        this.store.deleteRecordAsync(record).catchDefault();
+        this.store.deleteRecordAsync(record)
+            .then(() => this.formModel.close())
+            .catchDefault();
     }
 
     @action
@@ -173,13 +176,13 @@ export class RestGridModel {
     contextMenuFn = () => {
         return new StoreContextMenu({
             items: [
-                ...this.contextMenuActions,
+                ...this.menuActions,
                 '-',
                 ...GridModel.defaultContextMenuTokens
             ],
             gridModel: this.gridModel
         });
-    }
+    };
 
     confirmDeleteSelection() {
         const record = this.selectedRecord;

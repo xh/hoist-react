@@ -71,12 +71,12 @@ export class Column {
      * @param {(boolean|Column~tooltipFn)} [c.tooltip] - 'true' displays the raw value, or
      *      tool tip function, which is based on AG Grid tooltip callback.
      * @param {boolean} [c.excludeFromExport] - true to drop this column from a file export.
-     * @param {GridModel} [c.gridModel] - the model which owns this column.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
      *      @see {@link https://www.ag-grid.com/javascript-grid-column-properties/|AG-Grid docs}
      * @param {...*} [rest] - additional properties to store on the column
+     * @param {GridModel} gridModel - the model which owns this column.
      */
     constructor({
         field,
@@ -109,10 +109,9 @@ export class Column {
         exportWidth,
         excludeFromExport,
         tooltip,
-        gridModel,
         agOptions,
         ...rest
-    }) {
+    }, gridModel) {
         Object.assign(this, rest);
 
         this.field = field;
@@ -202,8 +201,7 @@ export class Column {
 
         if (this.tooltip) {
             ret.tooltip = isFunction(this.tooltip) ?
-                (agParams) => this.tooltip(agParams.value,
-                    {record: agParams.data, column: this, agParams}) :
+                (agParams) => this.tooltip(agParams.value, {record: agParams.data, column: this, agParams}) :
                 ({value}) => value;
         }
 

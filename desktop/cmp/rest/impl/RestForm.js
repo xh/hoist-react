@@ -53,18 +53,19 @@ export class RestForm extends Component {
     getForm() {
         const {isWritable} = this.model;
         return vframe(
-            this.model.controlModels.map((model, idx) => restControl({model, disabled: !isWritable, autoFocus: idx === 0}))
+            this.model.controlModels.map((model,
+                idx) => restControl({model, disabled: !isWritable, autoFocus: idx === 0}))
         );
     }
 
     getButtons() {
-        const {isValid, isWritable, isDirty, record, toolbarActions} = this.model;
+        const {isValid, isWritable, isDirty, record, actions, parent} = this.model;
 
         return [
             recordActionBar({
-                actions: toolbarActions,
-                actionMetadata: {restModel: this.model},
-                record
+                actions,
+                record,
+                gridModel: parent.gridModel
             }),
             filler(),
             button({
@@ -75,7 +76,7 @@ export class RestForm extends Component {
                 text: 'Save',
                 icon: Icon.check(),
                 intent: 'success',
-                disabled: !isValid  || !isDirty,
+                disabled: !isValid || !isDirty,
                 onClick: this.onSaveClick,
                 omit: !isWritable
             })
@@ -84,7 +85,7 @@ export class RestForm extends Component {
 
     onCloseClick = () => {
         this.model.close();
-    }
+    };
 
     onSaveClick = () => {
         const model = this.model,
@@ -101,6 +102,7 @@ export class RestForm extends Component {
         } else {
             model.saveRecord();
         }
-    }
+    };
 }
+
 export const restForm = elemFactory(RestForm);

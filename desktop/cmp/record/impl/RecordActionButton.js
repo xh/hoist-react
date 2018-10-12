@@ -2,12 +2,16 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {RecordAction} from '@xh/hoist/data';
-import {first} from 'lodash';
-import {StoreSelectionModel, Record} from '../../../data';
+import {RecordAction, Record, StoreSelectionModel} from '@xh/hoist/data';
+import {GridModel} from '@xh/hoist/desktop/cmp/grid';
+import {Column} from '@xh/hoist/columns';
+import {first, omit} from 'lodash';
 
 /**
- * Button component used by RecordActionBar. Not intended for use by applications.
+ * Button component used by RecordActionBar and in grid action columns.
+ *
+ * Not intended for use by applications.
+ *
  * @private
  */
 @HoistComponent
@@ -19,24 +23,26 @@ export class RecordActionButton extends Component {
         action: PT.instanceOf(RecordAction).isRequired,
         /** The data Record this action is acting on. */
         record: PT.oneOfType([PT.object, Record]),
-        /** Selection model to use for determining selected records */
+        /** The selection model used to determine the selected records */
         selModel: PT.instanceOf(StoreSelectionModel),
-        /** Data to pass through to action callbacks */
-        actionMetadata: PT.object,
+        /** The grid model which contains the records we may act on */
+        gridModel: PT.instanceOf(GridModel),
+        /** The column in a grid where this button is displayed */
+        column: PT.instanceOf(Column),
         /** Set to true to use minimal button style and hide action text */
         minimal: PT.bool
     };
 
     render() {
-        const {action, selModel, minimal, actionMetadata, ...rest} = this.props;
+        const {action, minimal, gridModel, selModel, column, ...rest} = this.props;
 
-        let record = this.props.record, selection = [record];
+        let {record} = this.props, selectedRecords = record ? [record] : null;
         if (selModel) {
-            selection = selModel.records;
+            selectedRecords = selModel.records;
 
             // Try to get the record from the selModel if not explicitly provided to the button
             if (!record) {
-                if (selection.length === 1) {
+                if (selectedRecords.length === 1) {
                     record = selModel.singleRecord;
                 } else {
                     record = first(selModel.records);
@@ -44,9 +50,9 @@ export class RecordActionButton extends Component {
             }
         }
 
-        const params = {action, record, selection, ...actionMetadata},
-            displayConfig = action.getDisplayConfig(params),
-            {text, icon, intent, disabled, tooltip: title, hidden} = displayConfig;
+        const params = {record, selectedRecords, gridModel, column},
+            displaySpec = action.getDisplaySpec(params),
+            {text, icon, intent, disabled, tooltip: title, hidden} = displaySpec;
 
         if (hidden) return null;
 
@@ -58,8 +64,8 @@ export class RecordActionButton extends Component {
             intent,
             title,
             disabled,
-            onClick: () => action.actionFn({record, selModel, ...actionMetadata}),
-            ...rest
+            onClick: () => action.call({record, selection: selectedRecords, gridModel, column}),
+            ...omit(rest, 'record')
         });
     }
 }

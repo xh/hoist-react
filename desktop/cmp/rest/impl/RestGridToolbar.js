@@ -24,16 +24,12 @@ export class RestGridToolbar extends Component {
 
     renderToolbarItems() {
         const {model} = this,
-            {store, unit, toolbarActions, selModel} = model,
+            {store, unit, toolbarActions: actions, gridModel} = model,
             extraItemsFn = this.props.extraToolbarItems,
             extraItems = extraItemsFn ? castArray(extraItemsFn()) : [];
 
         return [
-            recordActionBar({
-                actions: toolbarActions,
-                actionMetadata: {restModel: model},
-                selModel
-            }),
+            recordActionBar({actions, gridModel, selModel: gridModel.selModel}),
             toolbarSep({omit: isEmpty(extraItems)}),
             ...extraItems,
             filler(),

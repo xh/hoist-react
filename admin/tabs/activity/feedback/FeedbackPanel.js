@@ -50,6 +50,8 @@ export class FeedbackPanel extends Component {
             ]
         }),
         toolbarActions: [deleteAction],
+        menuActions: [deleteAction],
+        formActions: [deleteAction],
         unit: 'report',
         filterFields: ['username', 'msg'],
         columns: [

@@ -20,22 +20,21 @@ export class ColumnGroup {
      * @param {string} [c.headerName] - display text for grid header.
      * @param {(string|string[])} [c.headerClass] - additional css classes to add to the column group header.
      * @param {Object[]} c.children - Column or ColumnGroup configurations for children of this group.
-     * @param {GridModel} [c.gridModel] - the model which owns this column.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
      *      @see {@link https://www.ag-grid.com/javascript-grid-column-properties/|AG-Grid docs}
      * @param {...*} [rest] - additional properties to store on the column
+     * @param {GridModel} gridModel - the model which owns this column.
      */
     constructor({
         children,
         groupId,
         headerName,
         headerClass,
-        gridModel,
         agOptions,
         ...rest
-    }) {
+    }, gridModel) {
         throwIf(isEmpty(children), 'Must specify children for a ColumnGroup');
 
         Object.assign(this, rest);

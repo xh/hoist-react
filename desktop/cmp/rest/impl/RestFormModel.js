@@ -8,12 +8,10 @@
 import {XH, HoistModel} from '@xh/hoist/core';
 import {start} from '@xh/hoist/promise';
 import {observable, computed, action} from '@xh/hoist/mobx';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {Icon} from '@xh/hoist/icon/Icon';
+import {throwIf} from '@xh/hoist/utils/js';
 import {isEqual} from 'lodash';
 
 import {RestControlModel} from './RestControlModel';
-import {deleteAction} from './RestGridModel';
 
 @HoistModel
 export class RestFormModel {
@@ -22,7 +20,7 @@ export class RestFormModel {
     parent = null;
 
     controlModels = [];
-    toolbarActions;
+    actions;
 
     // If not null, form will be open and display it
     @observable record = null;
@@ -51,7 +49,7 @@ export class RestFormModel {
         return !isEqual(this.record, this.originalRecord);
     }
 
-    constructor({parent, editors, toolbarActions}) {
+    constructor({parent, editors, actions}) {
         this.parent = parent;
         this.controlModels = editors.map((editor) => {
             const field = this.store.getField(editor.field);
@@ -60,7 +58,7 @@ export class RestFormModel {
             return new RestControlModel({editor, field, parent: this});
         });
 
-        this.toolbarActions = withDefault(toolbarActions, [deleteAction]);
+        this.actions = actions;
     }
 
     //-----------------
@@ -74,29 +72,6 @@ export class RestFormModel {
         }).then(
             () => this.close()
         ).catchDefault();
-    }
-
-    confirmDeleteRecord() {
-        const warning = this.actionWarning.del;
-
-        if (warning) {
-            XH.confirm({
-                message: warning,
-                title: 'Warning',
-                icon: Icon.warning({size: 'lg'}),
-                onConfirm: () => this.deleteRecord()
-            });
-        } else {
-            this.deleteRecord();
-        }
-    }
-
-    @action
-    deleteRecord() {
-        this.store
-            .deleteRecordAsync(this.record)
-            .then(() => this.close())
-            .catchDefault();
     }
 
     @action

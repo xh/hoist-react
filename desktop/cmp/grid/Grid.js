@@ -6,7 +6,7 @@
  */
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {isNil, isString, merge, xor, last, isEmpty, dropRightWhile} from 'lodash';
+import {isNil, isString, merge, xor, dropRightWhile, dropWhile} from 'lodash';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
@@ -192,12 +192,10 @@ export class Grid extends Component {
 
         if (!record) selModel.clear();
 
-        const selection = selModel.records,
-            items = [];
-
+        let items = [];
         menu.items.forEach(item => {
             if (item === '-') {
-                if (!isEmpty(items) && last(items) !== 'separator') items.push('separator');
+                items.push('separator');
                 return;
             }
 
@@ -208,30 +206,31 @@ export class Grid extends Component {
 
             const action = item,
                 params = {
-                    action,
                     record,
-                    selection,
+                    selectedRecords: selModel.records,
                     gridModel: this.model
                 };
 
-            const displayCfg = action.getDisplayConfig(params);
-            if (displayCfg.hidden) return;
+            const displaySpec = action.getDisplaySpec(params);
+            if (displaySpec.hidden) return;
 
-            let icon = displayCfg.icon;
+            let icon = displaySpec.icon;
             if (isValidElement(icon)) {
                 icon = convertIconToSvg(icon);
             }
 
             items.push({
-                name: displayCfg.text,
+                name: displaySpec.text,
                 icon,
-                tooltip: displayCfg.tooltip,
-                disabled: displayCfg.disabled,
-                action: () => action.actionFn(params)
+                tooltip: displaySpec.tooltip,
+                disabled: displaySpec.disabled,
+                action: () => action.call(params)
             });
         });
 
-        return dropRightWhile(items, it => it === 'separator');
+        items = dropRightWhile(items, it => it === 'separator');
+        items = dropWhile(items, it => it === 'separator');
+        return items;
     };
 
     sortByGroup(nodeA, nodeB) {

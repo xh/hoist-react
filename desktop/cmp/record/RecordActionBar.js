@@ -9,12 +9,13 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Record, RecordAction, StoreSelectionModel} from '@xh/hoist/data';
-import {omit} from 'lodash';
-import {withDefault} from '@xh/hoist/utils/js';
 import {buttonGroup} from '@xh/hoist/kit/blueprint';
+import {GridModel} from '@xh/hoist/desktop/cmp/grid';
+import {throwIf} from '@xh/hoist/utils/js';
+import {Column} from '@xh/hoist/columns';
+import {isEmpty} from 'lodash';
 
-import {recordActionButton} from './RecordActionButton';
-import './RecordActionBar.scss';
+import {recordActionButton} from './impl/RecordActionButton';
 
 /**
  * Component that accepts data object and an array of one or more RecordActions, which it renders
@@ -29,57 +30,42 @@ import './RecordActionBar.scss';
 export class RecordActionBar extends Component {
     baseClassName = 'xh-record-action-bar';
 
-    /** @member {RecordAction[]} */
-    actions;
-
     static propTypes = {
         /** RecordAction configs. */
         actions: PT.arrayOf(PT.object).isRequired,
         /** The data Record to associate with the actions. */
         record: PT.oneOfType([PT.object, Record]),
-        /** Set to true to only show the action buttons when hovering over the action bar (or row when used in a grid). */
-        showOnHoverOnly: PT.bool,
-        /** Selection model to use for passing selected records along to actions */
+        /** The selection model used to determine the selected records */
         selModel: PT.instanceOf(StoreSelectionModel),
-        /** Data to pass through to action callbacks */
-        actionMetadata: PT.object,
-        /** Set to true to use minimal buttons */
-        minimal: PT.bool,
-        /** Set to true to use small buttons */
-        small: PT.bool,
+        /** The grid model which contains the records we may act on. Required if record is omitted. */
+        gridModel: PT.instanceOf(GridModel),
+        /** The column in a grid where this button is displayed */
+        column: PT.instanceOf(Column),
+        /** Props to pass to the button components */
+        buttonProps: PT.object,
         /** Set to true to stack the buttons vertically */
         vertical: PT.bool
     };
 
-    constructor(props) {
-        super(props);
-        this.actions = props.actions.map(it => new RecordAction(it));
-    }
-
     render() {
-        const {record, selModel, showOnHoverOnly, actionMetadata, minimal, small, vertical, ...rest} = this.props,
-            {actions} = this,
-            showOnHover = withDefault(showOnHoverOnly, false);
+        const {actions, record, selModel, gridModel, column, buttonProps, vertical, ...rest} = this.props;
 
-        if (!actions) return null;
+        throwIf(!record && !selModel, 'You must provide either the record or selModel to RecordActionBar!');
+
+        if (isEmpty(actions)) return null;
 
         return buttonGroup({
             vertical,
-            className: this.getClassName(
-                showOnHover ? 'xh-show-on-hover' : null,
-                vertical ? 'xh-record-action-bar--vertical' : null,
-                minimal ? 'xh-record-action-bar--minimal' : null,
-                small ? 'xh-record-action-bar--small' : null
-            ),
+            className: this.getClassName(),
             items: actions.filter(Boolean).map(action => recordActionButton({
-                action,
+                action: new RecordAction(action),
                 record,
                 selModel,
-                actionMetadata,
-                minimal,
-                small
+                gridModel,
+                column,
+                ...buttonProps
             })),
-            ...omit(rest, 'actions')
+            ...rest
         });
     }
 }

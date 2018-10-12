@@ -423,13 +423,8 @@ export class GridModel {
         return null;
     }
 
-    /**
-     * @param {Object} c - {@link Column} or {@link ColumnGroup} config
-     * @returns {Column|ColumnGroup}
-     */
     buildColumn(c) {
-        c = {gridModel: this, ...c};
-        return c.children ? new ColumnGroup(c) : new Column(c);
+        return c.children ? new ColumnGroup(c, this) : new Column(c, this);
     }
 
     //-----------------------

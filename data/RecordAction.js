@@ -5,34 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {Icon} from '@xh/hoist/icon';
-import {isBoolean, isNumber, isNil} from 'lodash';
-
-export const addAction = {
-    text: 'Add',
-    icon: Icon.add(),
-    intent: 'success'
-};
-
-export const editAction = {
-    text: 'Edit',
-    icon: Icon.edit(),
-    intent: 'primary',
-    recordsRequired: 1
-};
-
-export const viewAction = {
-    text: 'View',
-    icon: Icon.search(),
-    recordsRequired: 1
-};
-
-export const deleteAction = {
-    text: 'Delete',
-    icon: Icon.delete(),
-    intent: 'danger',
-    recordsRequired: true
-};
+import {isBoolean, isNumber, isNil, isEmpty} from 'lodash';
 
 /**
  * A RecordAction encapsulates a shared set of configuration for items within components such as
@@ -42,7 +15,7 @@ export const deleteAction = {
  * and call their `actionFn` when clicked, passing it a data object sourced from the selected row(s)
  * or node(s) on the underlying grid or data view.
  *
- * The `displayConfigFn` callback provides a means by which applications can customize any display
+ * The `displayFn` callback provides a means by which applications can customize any display
  * properties of the action prior to each render.
  * @see RecordActionBar
  * @see StoreContextMenu
@@ -57,7 +30,7 @@ export class RecordAction {
     items;
     disabled;
     hidden;
-    displayConfigFn;
+    displayFn;
     recordsRequired;
 
     /**
@@ -70,7 +43,7 @@ export class RecordAction {
      * @param {ActionCb} [c.actionFn] - called on store action activation.
      * @param {boolean} [c.disabled] - true to disable this item.
      * @param {boolean} [c.hidden] - true to hide this item.
-     * @param {DisplayConfigFn} [c.displayConfigFn] - called prior to showing the action in the UI.
+     * @param {DisplayFn} [c.displayFn] - called prior to showing the action in the UI.
      * @param {(number|boolean)} [c.recordsRequired] - how many records must be 'active'
      *      (selected and / or clicked upon) for the action to be enabled.
      *      int: specifies exactly n number of records. Defaults to 1 for single record actions.
@@ -87,7 +60,7 @@ export class RecordAction {
         items = null,
         disabled = false,
         hidden = false,
-        displayConfigFn = null,
+        displayFn = null,
         recordsRequired = false
     }) {
         this.text = text;
@@ -98,26 +71,62 @@ export class RecordAction {
         this.items = items;
         this.disabled = disabled;
         this.hidden = hidden;
-        this.displayConfigFn = displayConfigFn;
+        this.displayFn = displayFn;
         this.recordsRequired = recordsRequired;
     }
 
-    getDisplayConfig(params) {
-        const defaultConfig = {
-            icon: this.icon,
-            text: this.text,
-            intent: this.intent,
-            tooltip: this.tooltip,
-            items: this.items,
-            hidden: this.hidden,
-            disabled: this.disabled || !this.meetsRecordRequirement(params.selection.length)
-        };
+    /**
+     * Called by UI elements to get the display configuration for rendering the action. Not
+     * typically used by applications.
+     *
+     * @param p - action parameters
+     * @param {Object} [p.record] - row data object (entire row, if any).
+     * @param {Object[]} [p.selectedRecords] - all currently selected records (if any).
+     * @param {GridModel} [p.gridModel] - grid model where action occurred (if any).
+     * @param {Column} [p.column] - column where action occurred (if any).
+     * @param {*} [p.rest] - additional data provided by the context where this action presides
+     */
+    getDisplaySpec({record, selectedRecords, gridModel, column, ...rest}) {
+        const recordCount = record && isEmpty(selectedRecords) ? 1 : selectedRecords.length,
+            defaultDisplay = {
+                icon: this.icon,
+                text: this.text,
+                intent: this.intent,
+                tooltip: this.tooltip,
+                items: this.items,
+                hidden: this.hidden,
+                disabled: this.disabled || !this.meetsRecordRequirement(recordCount)
+            };
 
-        if (this.displayConfigFn) {
-            return this.displayConfigFn({action: this, defaultConfig, ...params});
+        if (this.displayFn) {
+            return {
+                ...defaultDisplay,
+                ...this.displayFn({
+                    action: this,
+                    record,
+                    selectedRecords,
+                    gridModel,
+                    column,
+                    ...rest
+                })
+            };
         }
 
-        return defaultConfig;
+        return defaultDisplay;
+    }
+
+    /**
+     * Called by UI elements to trigger the action. Not typically used by applications.
+     *
+     * @param p
+     * @param {Object} [p.record] - row data object (entire row, if any).
+     * @param {Object[]} [p.selectedRecords] - all currently selected records (if any).
+     * @param {GridModel} [p.gridModel] - grid model where action occurred (if any).
+     * @param {Column} [p.column] - column where action occurred (if any).
+     * @param {*} [p.rest] - additional data provided by the context where this action presides
+     */
+    call({record, selectedRecords, gridModel, column, ...rest}) {
+        this.actionFn({action: this, record, selectedRecords, gridModel, column, ...rest});
     }
 
     meetsRecordRequirement(count) {
@@ -133,12 +142,14 @@ export class RecordAction {
  * @param {Object} p
  * @param {RecordAction} p.action - the action itself.
  * @param {Object} [p.record] - row data object (entire row, if any).
- * @param {Object[]} [p.selection] - all currently selected records (if any).
+ * @param {Object[]} [p.selectedRecords] - all currently selected records (if any).
+ * @param {GridModel} [p.gridModel] - grid model where action occurred (if any).
+ * @param {Column} [p.column] - column where action occurred (if any).
  * @param {*} ...rest - additional data provided by the context where this action presides
  */
 
 /**
- * @callback DisplayConfigFn - called prior to rendering the action's UI element.
+ * @callback DisplayFn - called prior to rendering the action's UI element.
  * @param {Object} p
  * @param {RecordAction} p.action - the action itself.
  * @param {Object} p.defaultConfig - default display config for the action
