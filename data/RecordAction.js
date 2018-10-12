@@ -17,6 +17,7 @@ import {isBoolean, isNumber, isNil, isEmpty} from 'lodash';
  *
  * The `displayFn` callback provides a means by which applications can customize any display
  * properties of the action prior to each render.
+ *
  * @see RecordActionBar
  * @see StoreContextMenu
  */
@@ -84,7 +85,7 @@ export class RecordAction {
      * @param {Object[]} [p.selectedRecords] - all currently selected records (if any).
      * @param {GridModel} [p.gridModel] - grid model where action occurred (if any).
      * @param {Column} [p.column] - column where action occurred (if any).
-     * @param {*} [p.rest] - additional data provided by the context where this action presides
+     * @param {*} [p...rest] - additional data provided by the context where this action presides
      */
     getDisplaySpec({record, selectedRecords, gridModel, column, ...rest}) {
         const recordCount = record && isEmpty(selectedRecords) ? 1 : selectedRecords.length,
@@ -123,7 +124,7 @@ export class RecordAction {
      * @param {Object[]} [p.selectedRecords] - all currently selected records (if any).
      * @param {GridModel} [p.gridModel] - grid model where action occurred (if any).
      * @param {Column} [p.column] - column where action occurred (if any).
-     * @param {*} [p.rest] - additional data provided by the context where this action presides
+     * @param {*} [p...rest] - additional data provided by the context where this action presides
      */
     call({record, selectedRecords, gridModel, column, ...rest}) {
         this.actionFn({action: this, record, selectedRecords, gridModel, column, ...rest});
@@ -145,7 +146,7 @@ export class RecordAction {
  * @param {Object[]} [p.selectedRecords] - all currently selected records (if any).
  * @param {GridModel} [p.gridModel] - grid model where action occurred (if any).
  * @param {Column} [p.column] - column where action occurred (if any).
- * @param {*} ...rest - additional data provided by the context where this action presides
+ * @param {*} [p...rest] - additional data provided by the context where this action presides
  */
 
 /**
@@ -155,5 +156,5 @@ export class RecordAction {
  * @param {Object} p.defaultConfig - default display config for the action
  * @param {Object} [p.record] - row data object (entire row, if any).
  * @param {Object[]} [p.selection] - all currently selected records (if any).
- * @param {*} ...rest - additional data provided by the context where this action presides
+ * @param {*} [p...rest] - additional data provided by the context where this action presides
  */

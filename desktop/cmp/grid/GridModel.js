@@ -123,8 +123,8 @@ export class GridModel {
      * @param {function} [c.rowClassFn] - closure to generate css class names for a row.
      *      Should return a string or array of strings. Receives record data as param.
      * @param {function} [c.contextMenuFn] - closure returning a StoreContextMenu.
+     * @param {*} [c...rest] - additional data to store
      *      @see StoreContextMenu
-     * @param {Object} [c.actionMetadata] - additional data to be passed through to actions
      */
     constructor({
         store,
