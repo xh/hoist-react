@@ -6,7 +6,7 @@
  */
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {isNil, isString, merge, xor, dropRightWhile, dropWhile} from 'lodash';
+import {isNil, isString, merge, xor, dropRightWhile, dropWhile, isEmpty} from 'lodash';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
@@ -192,27 +192,35 @@ export class Grid extends Component {
 
         if (!record) selModel.clear();
 
+        return this.buildMenuItems(menu.items, record, selModel.records);
+    };
+
+    buildMenuItems(recordActions, record, selectedRecords) {
         let items = [];
-        menu.items.forEach(item => {
-            if (item === '-') {
+        recordActions.forEach(action => {
+            if (action === '-') {
                 items.push('separator');
                 return;
             }
 
-            if (isString(item)) {
-                items.push(item);
+            if (isString(action)) {
+                items.push(action);
                 return;
             }
 
-            const action = item,
-                params = {
-                    record,
-                    selectedRecords: selModel.records,
-                    gridModel: this.model
-                };
+            const params = {
+                record,
+                selectedRecords,
+                gridModel: this.model
+            };
 
             const displaySpec = action.getDisplaySpec(params);
             if (displaySpec.hidden) return;
+
+            let subMenu;
+            if (!isEmpty(displaySpec.items)) {
+                subMenu = this.buildMenuItems(displaySpec.items, record, selectedRecords);
+            }
 
             let icon = displaySpec.icon;
             if (isValidElement(icon)) {
@@ -222,6 +230,7 @@ export class Grid extends Component {
             items.push({
                 name: displaySpec.text,
                 icon,
+                subMenu,
                 tooltip: displaySpec.tooltip,
                 disabled: displaySpec.disabled,
                 action: () => action.call(params)
@@ -231,7 +240,7 @@ export class Grid extends Component {
         items = dropRightWhile(items, it => it === 'separator');
         items = dropWhile(items, it => it === 'separator');
         return items;
-    };
+    }
 
     sortByGroup(nodeA, nodeB) {
         if (nodeA.key < nodeB.key) {
