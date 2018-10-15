@@ -14,6 +14,8 @@ import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import '@xh/hoist/desktop/cmp/grid/ag-grid';
 import {agGridReact, ColumnHeader} from '@xh/hoist/desktop/cmp/grid/ag-grid';
 
+import './Grid.scss';
+
 /**
  * The primary rich data grid component within the Hoist mobile toolkit.
  * It is a highly managed wrapper around ag-Grid and is the main display component for GridModel.
@@ -103,6 +105,7 @@ export class Grid extends Component {
             defaultColDef: {suppressMenu: true, menuTabs: ['filterMenuTab']},
             popupParent: document.querySelector('body'),
             defaultGroupSortComparator: this.sortByGroup,
+            scrollbarWidth: 0,
             icons: {
                 groupExpanded: convertIconToSvg(
                     Icon.angleDown(),
