@@ -118,6 +118,7 @@ export class FormField extends Component {
             wrapperTagName: 'div',
             targetTagName: !this.blockChildren.includes(target.type.name) || target.props.width ? 'span' : 'div',
             position: 'right',
+            disabled: !notValid,
             content: this.getErrorTooltipContent(errors)
         });
     }
