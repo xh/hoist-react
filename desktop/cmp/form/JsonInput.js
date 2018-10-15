@@ -62,7 +62,9 @@ export class JsonInput extends HoistInput {
             track: () => this.renderValue,
             run: (value) => {
                 const {editor} = this;
-                if (editor) editor.setValue(value);
+                if (editor && editor.getValue() != value) {
+                    editor.setValue(value);
+                }
             }
         });
     }
