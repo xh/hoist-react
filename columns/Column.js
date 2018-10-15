@@ -6,13 +6,14 @@
  */
 
 import {Component} from 'react';
-import {castArray, startCase, isFunction, clone} from 'lodash';
+import {castArray, startCase, isFunction, clone, find} from 'lodash';
 import {ExportFormat} from './ExportFormat';
 import {withDefault, withDefaultTrue, withDefaultFalse, throwIf, warnIf} from '@xh/hoist/utils/js';
+import {multiFieldRenderer} from '@xh/hoist/desktop/cmp/grid';
 
 /**
  * Cross-platform definition and API for a standardized Grid column.
- * Typically provided to GridModels as plain configuration objects.
+ * Provided to GridModels as plain configuration objects.
  * @alias HoistColumn
  */
 export class Column {
@@ -49,6 +50,7 @@ export class Column {
      *      column to the side of the grid, ensuring it's visible while horizontally scrolling.
      * @param {Column~rendererFn} [c.renderer] - function to produce a formatted string for each cell.
      * @param {Column~elementRendererFn} [c.elementRenderer] - function which returns a React component.
+     * @param {Object} [c.multiFieldRendererCfg] - config for a MultiFieldRenderer.
      * @param {string} [c.chooserName] - name to display within the column chooser component.
      *      Defaults to headerName, but useful when a longer / un-abbreviated string is available.
      * @param {string} [c.chooserGroup] - group name to display within the column chooser component.
@@ -97,6 +99,7 @@ export class Column {
         pinned,
         renderer,
         elementRenderer,
+        multiFieldRendererCfg,
         chooserName,
         chooserGroup,
         chooserDescription,
@@ -126,7 +129,7 @@ export class Column {
 
         warnIf(
             flex && width,
-            `Column ${this.colId} should not be specified with both flex = true && width.  Width will be ignored.`,
+            `Column ${this.colId} should not be specified with both flex = true && width.  Width will be ignored.`
         );
         this.flex = withDefaultFalse(flex);
         this.width = this.flex ? null : width || Column.DEFAULT_WIDTH;
@@ -146,6 +149,7 @@ export class Column {
 
         this.renderer = renderer;
         this.elementRenderer = elementRenderer;
+        this.multiFieldRendererCfg = multiFieldRendererCfg;
 
         this.chooserName = chooserName || this.headerName || this.colId;
         this.chooserGroup = chooserGroup;
@@ -180,7 +184,9 @@ export class Column {
             suppressResize: !this.resizable,
             suppressMovable: !this.movable,
             suppressSorting: !this.sortable,
+            lockPinned: true, // Block user-driven pinning/unpinning - https://github.com/exhi/hoist-react/issues/687
             pinned: this.pinned,
+            lockVisible: !gridModel.colChooserModel,
             headerComponentParams: {gridModel, column: this}
         };
 
@@ -216,12 +222,12 @@ export class Column {
             ret.width = this.width;
         }
 
-        const {renderer, elementRenderer} = this;
+        const {renderer, elementRenderer, multiFieldRendererCfg} = this;
         if (renderer) {
             ret.cellRenderer = (agParams) => {
                 return renderer(agParams.value, {record: agParams.data, column: this, agParams});
             };
-        } else if (elementRenderer) {
+        } else if (elementRenderer || multiFieldRendererCfg) {
             // eslint-disable-next-line consistent-this
             const column = this;
             ret.cellRendererFramework = class extends Component {
@@ -229,10 +235,26 @@ export class Column {
                     const agParams = this.props,
                         {value, data: record} = agParams;
 
-                    return elementRenderer(value, {record, agParams, column});
+                    if (elementRenderer) {
+                        return elementRenderer(value, {record, agParams, column});
+                    } else if (multiFieldRendererCfg) {
+                        return multiFieldRenderer({
+                            value,
+                            record,
+                            column,
+                            ...multiFieldRendererCfg
+                        });
+                    }
                 }
                 refresh() {return false}
             };
+        }
+
+        const sortCfg = find(gridModel.sortBy, {colId: ret.colId});
+        if (sortCfg) {
+            ret.sort = sortCfg.sort;
+            ret.sortedAt = gridModel.sortBy.indexOf(sortCfg);
+            ret.comparator = (v1, v2) => sortCfg.comparator(v1, v2);
         }
 
         // Finally, apply explicit app requests.  The customer is always right....

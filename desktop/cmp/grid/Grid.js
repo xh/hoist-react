@@ -6,7 +6,7 @@
  */
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {find, isBoolean, isNil, isNumber, isString, merge, xor, cloneDeep} from 'lodash';
+import {isBoolean, isNil, isNumber, isString, merge, xor} from 'lodash';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
@@ -33,7 +33,7 @@ export class Grid extends Component {
 
     static propTypes = {
         /**
-         * Options for AG Grid's API.
+         * Options for ag-Grid's API.
          *
          * This constitutes an 'escape hatch' for applications that need to get to the underlying
          * ag-Grid API.  It should be used with care. Settings made here might be overwritten and/or
@@ -44,9 +44,17 @@ export class Grid extends Component {
         /**
          * Callback to call when a row is double clicked.  Function will receive an event
          * with a data node containing the row's data.
-         * @see {@link https://www.ag-grid.com/javascript-grid-events/#properties-and-hierarchy|ag-Grid Event Docs}
          */
         onRowDoubleClicked: PT.func,
+
+        /**
+         * Callback to call when a key down event is detected on this component.
+         * Function will receive an event with the standard 'target' element.
+         *
+         * Note that the ag-Grid API provides limited ability to customize keyboard handling.
+         * This handler is designed to allow application to workaround this.
+         */
+        onKeyDown: PT.func,
 
         /**
          * Show a colored row background on hover. Defaults to false.
@@ -56,6 +64,7 @@ export class Grid extends Component {
 
     static ROW_HEIGHT = 28;
     static COMPACT_ROW_HEIGHT = 24;
+    static MULTI_FIELD_ROW_HEIGHT = 38;
 
     // Observable stamp incremented every time the ag-Grid receives a new set of data.
     // Used to ensure proper re-running / sequencing of data and selection reactions.
@@ -73,9 +82,11 @@ export class Grid extends Component {
     }
 
     render() {
-        const {colChooserModel, compact} = this.model,
-            {agOptions, showHover} = this.props,
-            layoutProps = this.getLayoutProps();
+        const {colChooserModel, multiFieldRows, compact} = this.model,
+            {agOptions, showHover, onKeyDown} = this.props,
+            layoutProps = this.getLayoutProps(),
+            rowHeightCls = multiFieldRows ? 'xh-grid-multi-field' : compact ? 'xh-grid-compact' : 'xh-grid-standard';
+
 
         // Default flex = 'auto' if no dimensions / flex specified.
         if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
@@ -92,9 +103,10 @@ export class Grid extends Component {
                 className: this.getClassName(
                     'ag-grid-holder',
                     XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
-                    compact ? 'xh-grid-compact' : 'xh-grid-standard',
+                    rowHeightCls,
                     showHover ? 'xh-grid-show-hover' : ''
-                )
+                ),
+                onKeyDown
             }),
             colChooser({
                 omit: !colChooserModel,
@@ -111,7 +123,6 @@ export class Grid extends Component {
         const {model, props} = this;
 
         let ret = {
-            toolPanelSuppressSideButtons: true,
             enableSorting: true,
             enableColResize: true,
             deltaRowDataMode: true,
@@ -123,18 +134,22 @@ export class Grid extends Component {
             defaultGroupSortComparator: this.sortByGroup,
             icons: {
                 groupExpanded: convertIconToSvg(
-                    Icon.chevronDown(),
+                    Icon.angleDown(),
                     {classes: ['group-header-icon-expanded', 'fa-fw']}
                 ),
                 groupContracted: convertIconToSvg(
-                    Icon.chevronRight(),
+                    Icon.angleRight(),
                     {classes: ['group-header-icon-contracted', 'fa-fw']}
                 )
             },
             frameworkComponents: {agColumnHeader: ColumnHeader},
             rowSelection: model.selModel.mode,
             rowDeselection: true,
-            getRowHeight: () => model.compact ? Grid.COMPACT_ROW_HEIGHT : Grid.ROW_HEIGHT,
+            getRowHeight: () => {
+                if (model.multiFieldRows) return Grid.MULTI_FIELD_ROW_HEIGHT;
+                if (model.compact) return Grid.COMPACT_ROW_HEIGHT;
+                return Grid.ROW_HEIGHT;
+            },
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             overlayNoRowsTemplate: model.emptyText || '<span></span>',
             getContextMenuItems: this.getContextMenuItems,
@@ -165,52 +180,7 @@ export class Grid extends Component {
     // Support for defaults
     //------------------------
     getColumnDefs() {
-        const {columns, sortBy} = this.model,
-            clonedColumns = cloneDeep(columns);
-
-        const cols = clonedColumns.map(c => {
-            if (c.children) {
-                c.children = this.getColumnDefsFromChildren(c.children);
-                return c;
-            }
-            return c.getAgSpec(this.model);
-        });
-
-        let now = Date.now();
-        sortBy.forEach(it => {
-            const col = find(cols, {colId: it.colId});
-            if (col) {
-                col.sort = it.sort;
-                col.sortedAt = now++;
-                col.comparator = (v1, v2) => it.comparator(v1, v2);
-            }
-        });
-
-        return cols;
-    }
-
-    getColumnDefsFromChildren(columns) {
-        const {sortBy} = this.model;
-
-        const cols = columns.map(c => {
-            if (c.children) {
-                c.children = this.getColumnDefsFromChildren(c.children);
-                return c;
-            }
-            return c.getAgSpec(this.model);
-        });
-
-        let now = Date.now();
-        sortBy.forEach(it => {
-            const col = find(cols, {colId: it.colId});
-            if (col) {
-                col.sort = it.sort;
-                col.sortedAt = now++;
-                col.comparator = (v1, v2) => it.comparator(v1, v2);
-            }
-        });
-
-        return cols;
+        return this.model.columns.map(col => col.getAgSpec(this.model));
     }
 
     getContextMenuItems = (params) => {
@@ -381,6 +351,7 @@ export class Grid extends Component {
 
     onGridReady = (ev) => {
         this.model.setAgApi(ev.api);
+        this.model.setAgColumnApi(ev.columnApi);
     }
 
     onNavigateToNextCell = (params) => {

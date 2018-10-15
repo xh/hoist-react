@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {isString, flatten} from 'lodash';
+import {isEmpty, isString, flatten} from 'lodash';
 import {RecordAction} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 
@@ -42,7 +42,9 @@ export class StoreContextMenu {
     constructor({items, gridModel}) {
         this.gridModel = gridModel;
         this.items = flatten(items.map(it => {
-            return isString(it) ? this.parseToken(it) : new RecordAction(it);
+            if (it instanceof RecordAction) return it.clone();
+            if (isString(it)) return this.parseToken(it);
+            return new RecordAction(it);
         }));
     }
 
@@ -55,9 +57,7 @@ export class StoreContextMenu {
                     text: 'Columns...',
                     icon: Icon.gridPanel(),
                     hidden: !gridModel || !gridModel.colChooserModel,
-                    actionFn: () => {
-                        gridModel.colChooserModel.open();
-                    }
+                    actionFn: () => gridModel.colChooserModel.open()
                 });
             case 'export':
             case 'exportExcel':
@@ -66,9 +66,7 @@ export class StoreContextMenu {
                     icon: Icon.download(),
                     hidden: !gridModel || !gridModel.enableExport,
                     disabled: !gridModel || !gridModel.store.count,
-                    actionFn: () => {
-                        gridModel.export({type: 'excelTable'});
-                    }
+                    actionFn: () => gridModel.export({type: 'excelTable'})
                 });
             case 'exportCsv':
                 return new RecordAction({
@@ -76,22 +74,20 @@ export class StoreContextMenu {
                     icon: Icon.download(),
                     hidden: !gridModel || !gridModel.enableExport,
                     disabled: !gridModel || !gridModel.store.count,
-                    actionFn: () => {
-                        gridModel.export({type: 'csv'});
-                    }
+                    actionFn: () => gridModel.export({type: 'csv'})
                 });
             case 'expandCollapseAll':
                 return [
                     new RecordAction({
                         text: 'Expand All',
-                        icon: Icon.chevronDown(),
-                        hidden: !gridModel || !(gridModel.treeMode || gridModel.groupBy),
+                        icon: Icon.angleDown(),
+                        hidden: !gridModel || (!gridModel.treeMode && isEmpty(gridModel.groupBy)),
                         actionFn: () => gridModel.expandAll()
                     }),
                     new RecordAction({
                         text: 'Collapse All',
-                        icon: Icon.chevronRight(),
-                        hidden: !gridModel || !(gridModel.treeMode || gridModel.groupBy),
+                        icon: Icon.angleRight(),
+                        hidden: !gridModel || (!gridModel.treeMode && isEmpty(gridModel.groupBy)),
                         actionFn: () => gridModel.collapseAll()
                     })
                 ];

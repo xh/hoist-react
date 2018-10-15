@@ -83,11 +83,19 @@ body {
   --xh-grid-font-size-px: calc(var(--xh-grid-font-size) * 1px);
   --xh-grid-line-height: var(--grid-line-height, 26);
   --xh-grid-line-height-px: calc(var(--xh-grid-line-height) * 1px);
-  --xh-grid-group-bg: var(--grid-group-bg, var(--xh-blue-gray));
+  --xh-grid-group-bg: var(--grid-group-bg, #{mc('blue-grey', '400')});
   --xh-grid-group-text-color: var(--grid-group-text-color, white);
   --xh-grid-header-bg: var(--grid-header-bg, var(--xh-blue-gray-light));
   --xh-grid-header-text-color: var(--grid-header-text-color, var(--xh-text-color));
   --xh-grid-header-icon-color: var(--grid-header-icon-color, var(--xh-text-color-muted));
+
+  // Multi-field Row Grid
+  --xh-grid-multi-field-top-font-size: var(--grid-multi-field-top-font-size, 12);
+  --xh-grid-multi-field-top-font-size-px: calc(var(--xh-grid-multi-field-top-font-size) * 1px);
+  --xh-grid-multi-field-bottom-font-size: var(--grid-multi-field-bottom-font-size, 10);
+  --xh-grid-multi-field-bottom-font-size-px: calc(var(--xh-grid-multi-field-bottom-font-size) * 1px);
+  --xh-grid-multi-field-line-height: var(--grid-multi-field-line-height, 14);
+  --xh-grid-multi-field-line-height-px: calc(var(--xh-grid-multi-field-line-height) * 1px);
 
   // Compact Grid
   --xh-grid-compact-font-size: var(--grid-compact-font-size, 12);

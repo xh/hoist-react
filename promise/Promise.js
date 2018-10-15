@@ -205,7 +205,9 @@ Object.assign(Promise.prototype, {
 
 
     /**
-     * Link this promise to an instance of a PendingTaskModel.
+     * Link this promise to an instance of a PendingTaskModel. See that class for details on what
+     * PendingTaskModels provide and how they can be used to coordinate masking and progress
+     * messages on one or more async operations.
      *
      * @param {PendingTaskModel} model
      * @param {?string} [message]

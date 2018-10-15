@@ -5,14 +5,12 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, computed} from '@xh/hoist/mobx';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {
     castArray,
-    cloneDeep,
     defaults,
-    find,
     findLast,
     isEmpty,
     isPlainObject,
@@ -20,9 +18,10 @@ import {
     last,
     sortBy,
     pull,
-    uniq
+    uniq,
+    isNil
 } from 'lodash';
-import {Column} from '@xh/hoist/columns';
+import {Column, ColumnGroup} from '@xh/hoist/columns';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {ColChooserModel} from './ColChooserModel';
 import {GridStateModel} from './GridStateModel';
@@ -67,20 +66,21 @@ export class GridModel {
     /** @member {string} */
     exportFilename = 'export';
 
-
     //------------------------
     // Observable API
     //------------------------
-    /** @member {Column[]} */
+    /** @member {Object[]} - {@link Column} and {@link ColumnGroup} objects */
     @observable.ref columns = [];
     /** @member {GridSorter[]} */
     @observable.ref sortBy = [];
-    /** @member {?string} */
+    /** @member {string[]} */
     @observable groupBy = null;
     /** @member {boolean} */
     @observable compact = false;
     /** @member {GridApi} */
     @observable.ref agApi = null;
+    /** @member {ColumnApi} */
+    @observable.ref agColumnApi = null;
 
     static defaultContextMenuTokens = [
         'copy',
@@ -104,9 +104,7 @@ export class GridModel {
     /**
      * @param {Object} c - GridModel configuration.
      * @param {BaseStore} c.store - store containing the data for the grid.
-     * @param {(Column[]|Object[])} c.columns - Columns, configs to create them, or configs for
-     *      column groups. Column group configs must provide `headerName` and/or `groupId`
-     *      properties and a `children` array of Columns or Column configs.
+     * @param {Object[]} c.columns - {@link Column} or {@link ColumnGroup} configs
      * @param {(boolean)} [c.treeMode] - true if grid is a tree grid (default false).
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
@@ -115,7 +113,7 @@ export class GridModel {
      *      Defaults to null, in which case no empty text will be shown.
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
      *      colId and sort direction.
-     * @param {?string} [c.groupBy] - Column ID by which to do full-width row grouping.
+     * @param {(string|string[])} [c.groupBy] - Column ID(s) by which to do full-width row grouping.
      * @param {boolean} [c.compact] - true to render the grid in compact mode.
      * @param {boolean} [c.enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
@@ -226,35 +224,52 @@ export class GridModel {
         return this.selModel.singleRecord;
     }
 
+    /** Do any columns use a MultiFieldRenderer */
+    @computed
+    get multiFieldRows() {
+        return this.columns.some(it => it.multiFieldRendererCfg);
+    }
+
     @action
     setAgApi(agApi) {
         this.agApi = agApi;
     }
 
+    @action
+    setAgColumnApi(columnApi) {
+        this.agColumnApi = columnApi;
+    }
+
     /**
-     * This method is no-op if provided a colId without a corresponding column.
-     * @param {string} colId - id of the column to use for row grouping, or falsey value to remove grouping.
+     * Apply full-width row-level grouping to the grid for the given column ID(s).
+     * IDs that do not have a corresponding leaf-level column will be dropped and ignored.
+     * @param {(string|string[])} colIds - column ID(s) for row grouping, or falsey value to ungroup.
      */
     @action
-    setGroupBy(colId) {
+    setGroupBy(colIds) {
+        colIds = castArray(colIds);
+
         const cols = this.columns,
-            groupCol = find(cols, {colId});
+            leafCols = this.getLeafColumns(),
+            groupCols = leafCols.filter(it => colIds.includes(it.colId)),
+            groupColIds = groupCols.map(it => it.colId);
 
-        if (colId && !groupCol) return;
-
-        cols.forEach(it => {
-            if (it.agOptions && it.agOptions.rowGroup) {
-                it.agOptions.rowGroup = false;
-                it.hide = false;
+        // Ungroup and re-show any currently grouped columns.
+        leafCols.forEach(col => {
+            if (col.agOptions.rowGroup) {
+                col.agOptions.rowGroup = false;
+                col.hide = false;
             }
         });
 
-        if (colId && groupCol) {
-            groupCol.agOptions.rowGroup = true;
-            groupCol.hide = true;
-        }
+        // Group and hide all newly requested columns.
+        groupCols.forEach(col => {
+            col.agOptions.rowGroup = true;
+            col.hide = true;
+        });
 
-        this.groupBy = colId;
+        // Set groupBy value based on verified column IDs and flush to grid.
+        this.groupBy = groupColIds;
         this.columns = [...cols];
     }
 
@@ -312,15 +327,13 @@ export class GridModel {
         return this.store.loadData(...args);
     }
 
-    /** @return {Column[]} */
-    cloneColumns() {
-        return [...this.columns];
-    }
-
-    /** @param {(Column[]|Object[])} cols - Columns, or configs to create them. */
+    /** @param {Object[]} colConfigs - {@link Column} or {@link ColumnGroup} configs. */
     @action
-    setColumns(cols) {
-        const columns = this.buildColumns(cols);
+    setColumns(colConfigs) {
+        throwIf(colConfigs.some(c => !isPlainObject(c)),
+            'setColumns only accepts plain objects for Column or ColumnGroup configs!');
+
+        const columns = colConfigs.map(c => c.children ? new ColumnGroup(c) : new Column(c));
 
         this.validateColumns(columns);
 
@@ -334,42 +347,62 @@ export class GridModel {
     }
 
     noteAgColumnStateChanged(agColState) {
-        this.applyColumnChanges(agColState);
+        const colChanges = agColState.map(({colId, width, hide}) => {
+            const col = this.findColumn(this.columns, colId);
+            return {
+                colId,
+                hide,
+                width: col.flex ? undefined : width
+            };
+        });
+
+        this.applyColumnChanges(colChanges);
     }
 
     /**
-     * This method will update the current column definition with respect to sort order, width and
-     * visibility of columns. Used by both Hoist's grid state plugin (GridStateModel) and in
-     * response to state changes as detected by ag-grid.
+     * This method will update the current column definition. Throws an exception if any of the
+     * columns provided in colChanges are not present in the current column list.
      *
      * Note: Column ordering is determined by the individual (leaf-level) columns in state.
      * This means that if a column has been redefined to a new column group, that entire group may
      * be moved to a new index.
      *
-     * @param {Object[]} colState - configs representing the order, width and visibility of columns.
-     *       In the case of a grid with grouped columns, the columns here represent only the leaves
-     *       or bottom level columns.
+     * @param {ColumnState[]} colChanges - changes to apply to the columns. If all leaf columns are
+     *      represented in these changes then the sort order will be applied as well.
      */
     @action
-    applyColumnChanges(colState) {
+    applyColumnChanges(colChanges) {
         let {columns} = this,
-            newCols = cloneDeep(columns);
+            newCols = [...columns];
 
-        // 1) Update any width changes, and mark (potentially changed) sort order
-        colState.forEach((agCol, index) => {
-            let col = this.findColumn(newCols, agCol.colId);
-            if (!col.flex) col.width = agCol.width;
-            col._sortOrder = index;
+        throwIf(colChanges.some(({colId}) => !this.findColumn(columns, colId)), 'Invalid columns detected in column changes!');
+
+        // 1) Update any width or visibility changes
+        colChanges.forEach(change => {
+            const col = this.findColumn(newCols, change.colId);
+
+            if (!isNil(change.width)) col.width = change.width;
+            if (!isNil(change.hide)) col.hide = change.hide;
         });
 
-        // 2) Install implied group sort orders and sort
-        newCols.forEach(it => this.markGroupSortOrder(it));
-        newCols = this.sortColumns(newCols);
+        // 2) If the changes provided is a full list of leaf columns, synchronize the sort order
+        const leafCols = this.getLeafColumns();
+        if (colChanges.length === leafCols.length) {
+            // 2.a) Mark (potentially changed) sort order
+            colChanges.forEach((change, index) => {
+                const col = this.findColumn(newCols, change.colId);
+                col._sortOrder = index;
+            });
 
-        // 3) Force any emptyFlexCol that is last to stay last (avoid user dragging)!
-        const emptyFlex = findLast(newCols, {colId: 'emptyFlex'});
-        if (emptyFlex && last(columns).colId == 'emptyFlex' && last(newCols) != emptyFlex) {
-            pull(newCols, emptyFlex).push(emptyFlex);
+            // 2.b) Install implied group sort orders and sort
+            newCols.forEach(it => this.markGroupSortOrder(it));
+            newCols = this.sortColumns(newCols);
+
+            // 2.c) Force any emptyFlexCol that is last to stay last (avoid user dragging)!
+            const emptyFlex = findLast(newCols, {colId: 'emptyFlex'});
+            if (emptyFlex && last(columns).colId == 'emptyFlex' && last(newCols) != emptyFlex) {
+                pull(newCols, emptyFlex).push(emptyFlex);
+            }
         }
 
         this.columns = newCols;
@@ -377,23 +410,6 @@ export class GridModel {
 
     getLeafColumns() {
         return this.gatherLeaves(this.columns);
-    }
-
-    //-----------------------
-    // Implementation
-    //-----------------------
-    buildColumns(colsOrConfigs) {
-        return colsOrConfigs.map(c => {
-            if (c.children) {
-                c.groupId = c.groupId || c.headerName;
-                throwIf(!c.groupId, 'Must specify groupId or headerName for a group column.');
-                c.children = this.buildColumns(c.children);
-                c.marryChildren = true; // enforce 'sealed' column groups
-                return c;
-            }
-
-            return c instanceof Column ? c : new Column(c);
-        });
     }
 
     findColumn(cols, id) {
@@ -408,6 +424,9 @@ export class GridModel {
         return null;
     }
 
+    //-----------------------
+    // Implementation
+    //-----------------------
     gatherLeaves(columns, leaves = []) {
         columns.forEach(col => {
             if (col.groupId) this.gatherLeaves(col.children, leaves);
@@ -437,7 +456,6 @@ export class GridModel {
     validateColumns(cols) {
         if (isEmpty(cols)) return;
 
-
         const {groupIds, colIds} = this.collectIds(cols);
 
         const colsHaveDupes = colIds.length != uniq(colIds).length;
@@ -453,7 +471,7 @@ export class GridModel {
         );
     }
 
-    collectIds(cols, groupIds = [], colIds =[]) {
+    collectIds(cols, groupIds = [], colIds = []) {
         cols.forEach(col => {
             if (col.colId) colIds.push(col.colId);
             if (col.groupId) {
@@ -510,3 +528,10 @@ export class GridModel {
         XH.safeDestroy(this.colChooserModel, this.stateModel);
     }
 }
+
+/**
+ * @typedef {Object} ColumnState
+ * @property {string} colId - unique identifier of the column
+ * @property {number} [width] - new width to set for the column
+ * @property {boolean} [hide] - visibility of the column
+ */
