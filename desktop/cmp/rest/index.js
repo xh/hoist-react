@@ -8,4 +8,3 @@
 export * from './data/RestStore';
 export * from './RestGridModel';
 export * from './RestGrid';
-export * from './RestForm';

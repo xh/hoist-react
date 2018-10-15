@@ -123,6 +123,7 @@ export class GridModel {
      * @param {function} [c.rowClassFn] - closure to generate css class names for a row.
      *      Should return a string or array of strings. Receives record data as param.
      * @param {function} [c.contextMenuFn] - closure returning a StoreContextMenu.
+     * @param {*} [c...rest] - additional data to store
      *      @see StoreContextMenu
      */
     constructor({
@@ -139,7 +140,8 @@ export class GridModel {
         enableExport = false,
         exportFilename = 'export',
         rowClassFn = null,
-        contextMenuFn = () => this.defaultContextMenu()
+        contextMenuFn = () => this.defaultContextMenu(),
+        ...rest
     }) {
         this.store = store;
         this.treeMode = treeMode;
@@ -148,6 +150,8 @@ export class GridModel {
         this.exportFilename = exportFilename;
         this.contextMenuFn = contextMenuFn;
         this.rowClassFn = rowClassFn;
+
+        Object.assign(this, rest);
 
         this.setColumns(columns);
 
@@ -327,7 +331,7 @@ export class GridModel {
         throwIf(colConfigs.some(c => !isPlainObject(c)),
             'setColumns only accepts plain objects for Column or ColumnGroup configs!');
 
-        const columns = colConfigs.map(c => c.children ? new ColumnGroup(c) : new Column(c));
+        const columns = colConfigs.map(c => this.buildColumn(c));
 
         this.validateColumns(columns);
 
@@ -369,7 +373,8 @@ export class GridModel {
         let {columns} = this,
             newCols = [...columns];
 
-        throwIf(colChanges.some(({colId}) => !this.findColumn(columns, colId)), 'Invalid columns detected in column changes!');
+        throwIf(colChanges.some(({colId}) => !this.findColumn(columns, colId)),
+            'Invalid columns detected in column changes!');
 
         // 1) Update any width or visibility changes
         colChanges.forEach(change => {
@@ -416,6 +421,10 @@ export class GridModel {
             }
         }
         return null;
+    }
+
+    buildColumn(c) {
+        return c.children ? new ColumnGroup(c, this) : new Column(c, this);
     }
 
     //-----------------------

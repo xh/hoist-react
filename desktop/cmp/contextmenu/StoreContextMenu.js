@@ -5,9 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {isEmpty, isString, flatten} from 'lodash';
+import {isEmpty, isString, flatten, isPlainObject} from 'lodash';
 import {RecordAction} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
+import {throwIf} from '@xh/hoist/utils/js';
 
 /**
  * Model for ContextMenus interacting with data provided by Hoist data stores, typically via a Grid.
@@ -22,7 +23,7 @@ export class StoreContextMenu {
 
     /**
      * @param {Object} c - StoreContextMenu configuration.
-     * @param {Object[]} c.items - RecordActions to clone or configs / strings to create.
+     * @param {Object[]} c.items - RecordAction configs or token strings to create.
      *
      *      If a String, value can be '-' for a separator, a Hoist token (below),
      *      or a token supported by ag-Grid for its native menu items.
@@ -41,11 +42,19 @@ export class StoreContextMenu {
      */
     constructor({items, gridModel}) {
         this.gridModel = gridModel;
-        this.items = flatten(items.map(it => {
-            if (it instanceof RecordAction) return it.clone();
-            if (isString(it)) return this.parseToken(it);
-            return new RecordAction(it);
-        }));
+        this.items = flatten(items.map(it => this.buildRecordAction(it)));
+    }
+
+    buildRecordAction(item) {
+        if (isString(item)) return this.parseToken(item);
+
+        throwIf(!isPlainObject(item), 'Only strings and RecordAction config objects are supported as context menu items!');
+
+        const ret = new RecordAction(item);
+        if (!isEmpty(ret.items)) {
+            ret.items = ret.items.map(it => this.buildRecordAction(it));
+        }
+        return  ret;
     }
 
     parseToken(token) {
