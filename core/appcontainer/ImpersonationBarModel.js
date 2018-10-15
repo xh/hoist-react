@@ -69,14 +69,12 @@ export class ImpersonationBarModel {
     async impersonateAsync(username) {
         this.ensurePermission();
         return XH.fetchJson({
-            url: 'hoistImpl/impersonate',
+            url: 'xh/impersonate',
             params: {
                 username: username
             }
         }).then(() => {
             XH.reloadApp();
-        }).catchDefault({
-            message: 'Failed to impersonate'
         });
     }
 
@@ -85,7 +83,7 @@ export class ImpersonationBarModel {
      */
     async endImpersonateAsync() {
         return XH.fetchJson({
-            url: 'hoistImpl/endImpersonate'
+            url: 'xh/endImpersonate'
         }).then(() => {
             XH.reloadApp();
         }).catchDefault({
@@ -104,7 +102,7 @@ export class ImpersonationBarModel {
         if (this.targets.length) return;
 
         XH.fetchJson({
-            url: 'hoistImpl/impersonationTargets'
+            url: 'xh/impersonationTargets'
         }).then(targets => {
             this.setTargets(targets);
         }).catchDefault();

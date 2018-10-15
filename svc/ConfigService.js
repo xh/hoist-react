@@ -30,7 +30,7 @@ export class ConfigService {
 
     async initAsync() {
         this._data = await XH.fetchJson({
-            url: 'hoistImpl/getConfig',
+            url: 'xh/getConfig',
             params: {clientUsername: XH.getUsername()}
         });
     }

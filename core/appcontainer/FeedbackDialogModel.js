@@ -44,7 +44,7 @@ export class FeedbackDialogModel {
     async submitAsync() {
         if (!this.message) this.hide();
         return XH.fetchJson({
-            url: 'hoistImpl/submitFeedback',
+            url: 'xh/submitFeedback',
             params: {
                 msg: stripTags(this.message),
                 appVersion: XH.getEnv('appVersion'),

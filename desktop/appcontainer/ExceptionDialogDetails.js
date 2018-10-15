@@ -42,6 +42,10 @@ export class ExceptionDialogDetails extends Component {
             )
         );
 
+        // In the case of a pre-auth failure, the client will not know the user. If that's the case,
+        // don't display a message prompt and send button - we will not be able to submit.
+        const clientUserKnown = !!XH.getUsername();
+
         return dialog({
             title: 'Error Details',
             icon: Icon.search(),
@@ -68,7 +72,8 @@ export class ExceptionDialogDetails extends Component {
                             },
                             placeholder: 'Add message here...',
                             value: model.userMessage,
-                            onChange: this.onMessageChange
+                            onChange: this.onMessageChange,
+                            omit: !clientUserKnown
                         })]
                 }),
                 toolbar([
@@ -77,7 +82,8 @@ export class ExceptionDialogDetails extends Component {
                         icon: Icon.envelope(),
                         text: 'Send',
                         disabled: !model.userMessage,
-                        onClick: this.onSendClick
+                        onClick: this.onSendClick,
+                        omit: !clientUserKnown
                     }),
                     clipboardButton({
                         clipboardSpec: {text: () => this.errorStr},
