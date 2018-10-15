@@ -20,6 +20,7 @@ import {
     textArea,
     textInput
 } from '@xh/hoist/desktop/cmp/form';
+import {isNil} from 'lodash';
 
 @HoistComponent
 export class RestControl extends Component {
@@ -84,7 +85,7 @@ export class RestControl extends Component {
             value = value ? fmtDateTime(value) : '';
         }
 
-        return label(value ? value.toString() : null);
+        return label(!isNil(value) ? value.toString() : null);
     }
 
     renderCombo() {
