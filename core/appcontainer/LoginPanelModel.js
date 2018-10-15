@@ -39,7 +39,7 @@ export class LoginPanelModel {
 
         const {username, password} = this;
         XH.fetchJson({
-            url: 'auth/login',
+            url: 'xh/login',
             params: {username, password}
         }).thenAction(r => {
             this.warning = r.success ? '' : 'Login Incorrect';
