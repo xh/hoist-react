@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {isEmpty} from 'lodash';
 import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
-import {div, box, filler, vframe, viewport, vspacer} from '@xh/hoist/cmp/layout';
+import {div, box, filler, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {logoutButton} from '@xh/hoist/desktop/cmp/button';
 
 import './LockoutPanel.scss';
