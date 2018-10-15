@@ -129,6 +129,10 @@ export class ExceptionHandler {
         const ret = Object.assign({}, options),
             isAutoRefresh = exception.fetchOptions && exception.fetchOptions.isAutoRefresh;
 
+        if (exception.name == 'AbortError') {
+            ret.showAlert = ret.logOnServer = false;
+        }
+
         ret.showAsError = ret.showAsError != null ? ret.showAsError : true;
         ret.logOnServer = ret.logOnServer != null ? ret.logOnServer : ret.showAsError;
         ret.showAlert = ret.showAlert != null ? ret.showAlert : !isAutoRefresh;

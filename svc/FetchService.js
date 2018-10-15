@@ -45,11 +45,12 @@ export class FetchService {
      * @param {Object} [opts.qsOpts] - Object of options to pass to the param converter library, qs.
      *      The default qsOpts are: {arrayFormat: 'repeat', allowDots: true}.
      *      @see {@link https://www.npmjs.com/package/qs}
+     * @param {string} [opts.requestKey] - Key to the abort object to call when cancelling an in flight request.
      *
      * @returns {Promise<Response>} - Promise which resolves to a Fetch Response.
      */
     async fetch(opts) {
-        let {params, method, contentType, url} = opts;
+        let {params, method, contentType, url, requestKey} = opts;
 
         // 1) Compute / install defaults
         if (!method) {
@@ -93,6 +94,14 @@ export class FetchService {
             }
         }
 
+        // 4) Cancel prior request, adn add new AbortController if requestKey used
+        if (requestKey) {
+            this.abort(requestKey);
+            const ctlr = new AbortController();
+            fetchOpts.signal = ctlr.signal;
+            this.abortControllers[requestKey] = ctlr;
+        }
+
         delete fetchOpts.contentType;
         delete fetchOpts.url;
 
@@ -100,7 +109,12 @@ export class FetchService {
         try {
             ret = await fetch(url, fetchOpts);
         } catch (e) {
+            if (e.name == 'AbortError') throw Exception.fetchCancelled(opts, e);
             throw Exception.serverUnavailable(opts, e);
+        }
+
+        if (opts.requestKey) {
+            delete this.abortControllers[opts.requestKey];
         }
 
         if (!ret.ok) {
@@ -158,9 +172,19 @@ export class FetchService {
         return this.sendJson(opts);
     }
 
+    abort(key) {
+        const ctrl = this.abortControllers[key];
+        if (!ctrl) return;
+
+        delete this.abortControllers[key];
+        ctrl.abort();
+    }
+
     //-----------------------
     // Implementation
     //-----------------------
+    abortControllers = {};
+
     async sendJson(opts) {
         opts = {
             ...opts,
