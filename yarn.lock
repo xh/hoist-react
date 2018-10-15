@@ -770,23 +770,7 @@
     lodash "^4.17.10"
     to-fast-properties "^2.0.0"
 
-"@blueprintjs/core@^3.0.0":
-  version "3.4.0"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.4.0.tgz#cf5a61fb8288d8a58b892c7005d999c944d30521"
-  integrity sha512-xKHyTTk455L6RdZrtNQ3tSYMO132F7ZxZ0fLkM+Z6SmYh9q8Atvtn1YPiVMh5VAsoIvETIDpreARw++z26rIbQ==
-  dependencies:
-    "@blueprintjs/icons" "^3.0.0"
-    "@types/dom4" "^2.0.0"
-    classnames "^2.2"
-    dom4 "^2.0.1"
-    normalize.css "^8.0.0"
-    popper.js "^1.14.1"
-    react-popper "^1.0.0"
-    react-transition-group "^2.2.1"
-    resize-observer-polyfill "^1.5.0"
-    tslib "^1.9.0"
-
-"@blueprintjs/core@^3.7.0", "@blueprintjs/core@~3.7.0":
+"@blueprintjs/core@^3.6.0", "@blueprintjs/core@^3.7.0", "@blueprintjs/core@~3.7.0":
   version "3.7.0"
   resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.7.0.tgz#ac20038266163d457b76d1bdd9a74a321401e10e"
   integrity sha512-fr1jgAY/sPWJ7BorebuyLQKTTk7x+/1suayaxKVh1WMQ7aIi3Zb7HnJPEVFQyaT+9rVl97b7/2DiID3N8/UGMw==
@@ -812,14 +796,6 @@
     react-day-picker "^7.1.10"
     tslib "^1.9.0"
 
-"@blueprintjs/icons@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/icons/-/icons-3.0.0.tgz#2eed041dd52c9feed2758ca526f4505911813a31"
-  integrity sha512-U14jCwGG41W1CDNFiIroC2SJ3jCaGwxuJ43c9vcg7l7hmD/CEVcrN1+pqdIU+p4YIk41fN0IE2fLEOnL9XZStA==
-  dependencies:
-    classnames "^2.2"
-    tslib "^1.9.0"
-
 "@blueprintjs/icons@^3.2.0":
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/@blueprintjs/icons/-/icons-3.2.0.tgz#d21cceebfac9c1bceded047e493ee1e180b86f11"
@@ -828,12 +804,12 @@
     classnames "^2.2"
     tslib "^1.9.0"
 
-"@blueprintjs/select@~3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/select/-/select-3.0.0.tgz#736051be2b65d93a62927e403d13cd16beb3b73f"
-  integrity sha512-MG0Ph1rPx+dBm3QJW3b+VlgIaJD7z/MBvkflyLZKFwmK0eMFgWDTXYbpoKrQc2/dfdDiLzek7FdelloZDOJAUg==
+"@blueprintjs/select@~3.2.0":
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/select/-/select-3.2.0.tgz#743fdafd6b4d3140473f45cba452bd937338b419"
+  integrity sha512-kieg23ktzCXBUT7oVKBwlnPrjpwH8GgB722BL4nMV+c9cnt9gHuhk6eGORd3w8tK9gI85F/+brVkimbmQShVZg==
   dependencies:
-    "@blueprintjs/core" "^3.0.0"
+    "@blueprintjs/core" "^3.6.0"
     classnames "^2.2"
     tslib "^1.9.0"
 
