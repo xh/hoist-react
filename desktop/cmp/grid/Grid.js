@@ -6,7 +6,7 @@
  */
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {find, isBoolean, isNil, isNumber, isString, merge, xor, cloneDeep} from 'lodash';
+import {isBoolean, isNil, isNumber, isString, merge, xor} from 'lodash';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
@@ -174,52 +174,7 @@ export class Grid extends Component {
     // Support for defaults
     //------------------------
     getColumnDefs() {
-        const {columns, sortBy} = this.model,
-            clonedColumns = cloneDeep(columns);
-
-        const cols = clonedColumns.map(c => {
-            if (c.children) {
-                c.children = this.getColumnDefsFromChildren(c.children);
-                return c;
-            }
-            return c.getAgSpec(this.model);
-        });
-
-        let now = Date.now();
-        sortBy.forEach(it => {
-            const col = find(cols, {colId: it.colId});
-            if (col) {
-                col.sort = it.sort;
-                col.sortedAt = now++;
-                col.comparator = (v1, v2) => it.comparator(v1, v2);
-            }
-        });
-
-        return cols;
-    }
-
-    getColumnDefsFromChildren(columns) {
-        const {sortBy} = this.model;
-
-        const cols = columns.map(c => {
-            if (c.children) {
-                c.children = this.getColumnDefsFromChildren(c.children);
-                return c;
-            }
-            return c.getAgSpec(this.model);
-        });
-
-        let now = Date.now();
-        sortBy.forEach(it => {
-            const col = find(cols, {colId: it.colId});
-            if (col) {
-                col.sort = it.sort;
-                col.sortedAt = now++;
-                col.comparator = (v1, v2) => it.comparator(v1, v2);
-            }
-        });
-
-        return cols;
+        return this.model.columns.map(col => col.getAgSpec(this.model));
     }
 
     getContextMenuItems = (params) => {
@@ -390,6 +345,7 @@ export class Grid extends Component {
 
     onGridReady = (ev) => {
         this.model.setAgApi(ev.api);
+        this.model.setAgColumnApi(ev.columnApi);
     }
 
     onNavigateToNextCell = (params) => {

@@ -45,7 +45,7 @@ export class UserPanel extends Component {
             }),
             storeFilterField({
                 store,
-                fields: ['displayName', 'roles']
+                fields: ['username', 'email', 'displayName', 'roles']
             })
         );
     }
