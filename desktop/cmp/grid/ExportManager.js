@@ -65,7 +65,7 @@ export class ExportManager {
         }
 
         const response = await XH.fetch({
-            url: 'hoistImpl/export',
+            url: 'xh/export',
             params: {
                 filename: filename,
                 filetype: type,
