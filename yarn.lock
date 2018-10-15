@@ -5708,17 +5708,12 @@ number-is-nan@^1.0.0:
   resolved "https://registry.yarnpkg.com/number-is-nan/-/number-is-nan-1.0.1.tgz#097b602b53422a522c1afb8790318336941a011d"
   integrity sha1-CXtgK1NCKlIsGvuHkDGDNpQaAR0=
 
-numbro@^2.1.0:
+numbro@~2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/numbro/-/numbro-2.1.0.tgz#618ac6e4b2f32f2e623190ce4b05f4c8b09c3207"
   integrity sha1-YYrG5LLzLy5iMZDOSwX0yLCcMgc=
   dependencies:
     bignumber.js "^4.0.4"
-
-numeral@~2.0.6:
-  version "2.0.6"
-  resolved "https://registry.yarnpkg.com/numeral/-/numeral-2.0.6.tgz#4ad080936d443c2561aed9f2197efffe25f4e506"
-  integrity sha1-StCAk21EPCVhrtnyGX7//iX05QY=
 
 oauth-sign@~0.8.2:
   version "0.8.2"
