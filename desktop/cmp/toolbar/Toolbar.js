@@ -34,6 +34,5 @@ export class Toolbar extends Component {
             className: this.getClassName(vertical ? 'xh-toolbar--vertical' : null)
         });
     }
-
 }
 export const toolbar = elemFactory(Toolbar);
