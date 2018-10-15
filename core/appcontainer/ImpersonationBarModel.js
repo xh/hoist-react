@@ -75,8 +75,6 @@ export class ImpersonationBarModel {
             }
         }).then(() => {
             XH.reloadApp();
-        }).catchDefault({
-            message: 'Failed to impersonate'
         });
     }
 

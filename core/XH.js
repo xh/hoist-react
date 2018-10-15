@@ -408,7 +408,8 @@ class XHClass {
     async getAuthStatusFromServerAsync() {
         return await this.fetchService
             .fetchJson({url: 'xh/authStatus'})
-            .then(r => r.authenticated);
+            .then(r => r.authenticated)
+            .catch(ignored => false);  // 401s expected for non-SSO apps and must be caught here
     }
 
     async initServicesAsync() {
