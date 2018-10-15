@@ -18,13 +18,14 @@ import {isEmpty} from 'lodash';
 import {recordActionButton} from './impl/RecordActionButton';
 
 /**
- * Component that accepts data object and an array of one or more RecordActions, which it renders
- * as a row of minimal buttons. Primarily intended for use within a grid column elementRenderer to
- * display a set of row-level actions.
+ * Component that accepts an array of one or more RecordActions, which it renders as buttons in a
+ * ButtonGroup.
  *
- * To minimize UI clutter and avoid competing for the user's attention, set `showOnHoverOnly` to
- * true and the rendered buttons will only be visible when hovering over the component (or row when
- * used in a grid)
+ * The component must be provided either the `record` or the `selModel` to determine which record
+ * to pass to the RecordAction callbacks. If provided, the `gridModel` and `column` will also be
+ * passed to the RecordAction callbacks.
+ *
+ * @see RecordAction
  */
 @HoistComponent
 export class RecordActionBar extends Component {
