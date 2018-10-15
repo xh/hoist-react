@@ -6,6 +6,7 @@
  */
 
 import {Component} from 'react';
+import {isEmpty} from 'lodash';
 import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
 import {div, box, filler, vframe, viewport, vspacer} from '@xh/hoist/cmp/layout';
 import {logoutButton} from '@xh/hoist/desktop/cmp/button';
@@ -14,7 +15,7 @@ import './LockoutPanel.scss';
 import {impersonationBar} from './ImpersonationBar';
 
 /**
- * Panel for display to prevent user access to all content.
+ * Displayed in place of the UI when user does not have any access, as per App.checkAccess().
  *
  * @private
  */
@@ -36,16 +37,17 @@ export class LockoutPanel extends Component {
     }
 
     unauthorizedMessage() {
-        const user = XH.getUser();
+        const user = XH.getUser(),
+            roleMsg = isEmpty(user.roles) ?
+                'no roles assigned' :
+                `the roles [${user.roles.join(', ')}]`;
 
         return div(
             this.model.accessDeniedMessage,
-            vspacer(10),
-            `
-                You are logged in as ${user.username} 
-                and have the roles [${user.roles.join(', ') || '--'}].
-            `,
-            vspacer(20),
+            box({
+                margin: '10 0 20 0',
+                item: `You are logged in as ${user.username} and have ${roleMsg}.`
+            }),
             logoutButton({
                 text: 'Logout',
                 omit: !XH.app.enableLogout
