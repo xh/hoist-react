@@ -152,6 +152,7 @@ export class GridModel {
         this.emptyText = emptyText;
         this.enableExport = enableExport;
         this.exportFilename = exportFilename;
+        this.enableCellSelect = enableCellSelect;
         this.contextMenuFn = contextMenuFn;
         this.rowClassFn = rowClassFn;
 

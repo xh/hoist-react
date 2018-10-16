@@ -154,7 +154,7 @@ export class Grid extends Component {
             onColumnResized: this.onColumnResized,
             groupDefaultExpanded: 1,
             groupUseEntireRow: true,
-            enableRangeSelection: true,
+            enableRangeSelection: model.enableCellSelect,
             suppressMultiRangeSelection: true,
             onRangeSelectionChanged: this.onRangeSelectionChanged
         };
@@ -408,9 +408,6 @@ export class Grid extends Component {
         const ret = [];
         api.forEachNode(node => ret.push(node.expanded));
         return ret;
-    }
-
-    rangeSelectionChanged = (ev) => {
     }
 
     writeExpandState(api, expandState) {
