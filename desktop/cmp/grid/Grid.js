@@ -11,6 +11,7 @@ import {observable, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
+import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import './ag-grid';
 import {agGridReact, navigateSelection, ColumnHeader} from './ag-grid';
 import {colChooser} from './ColChooser';
@@ -217,9 +218,10 @@ export class Grid extends Component {
             const displaySpec = action.getDisplaySpec(params);
             if (displaySpec.hidden) return;
 
-            let subMenu;
+            let childItems;
             if (!isEmpty(displaySpec.items)) {
-                subMenu = this.buildMenuItems(displaySpec.items, record, selectedRecords);
+                const menu = new StoreContextMenu({items: displaySpec.items, gridModel: this.gridModel});
+                childItems = this.buildMenuItems(menu.items, record, selectedRecords);
             }
 
             let icon = displaySpec.icon;
@@ -230,7 +232,7 @@ export class Grid extends Component {
             items.push({
                 name: displaySpec.text,
                 icon,
-                subMenu,
+                subMenu: childItems,
                 tooltip: displaySpec.tooltip,
                 disabled: displaySpec.disabled,
                 action: () => action.call(params)
