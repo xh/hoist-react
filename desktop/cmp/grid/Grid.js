@@ -64,7 +64,7 @@ export class Grid extends Component {
 
     static ROW_HEIGHT = 28;
     static COMPACT_ROW_HEIGHT = 24;
-    static MULTI_FIELD_ROW_HEIGHT = 38;
+    static SUB_FIELD_ROW_HEIGHT = 38;
 
     // Observable stamp incremented every time the ag-Grid receives a new set of data.
     // Used to ensure proper re-running / sequencing of data and selection reactions.
@@ -82,10 +82,10 @@ export class Grid extends Component {
     }
 
     render() {
-        const {colChooserModel, multiFieldRows, compact} = this.model,
+        const {colChooserModel, hasSubFields, compact} = this.model,
             {agOptions, showHover, onKeyDown} = this.props,
             layoutProps = this.getLayoutProps(),
-            rowHeightCls = multiFieldRows ? 'xh-grid-multi-field' : compact ? 'xh-grid-compact' : 'xh-grid-standard';
+            rowHeightCls = hasSubFields ? 'xh-grid-subfields' : compact ? 'xh-grid-compact' : 'xh-grid-standard';
 
 
         // Default flex = 'auto' if no dimensions / flex specified.
@@ -146,7 +146,7 @@ export class Grid extends Component {
             rowSelection: model.selModel.mode,
             rowDeselection: true,
             getRowHeight: () => {
-                if (model.multiFieldRows) return Grid.MULTI_FIELD_ROW_HEIGHT;
+                if (model.hasSubFields) return Grid.SUB_FIELD_ROW_HEIGHT;
                 if (model.compact) return Grid.COMPACT_ROW_HEIGHT;
                 return Grid.ROW_HEIGHT;
             },

@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {castArray, startCase, isFunction, clone, find} from 'lodash';
 import {ExportFormat} from './ExportFormat';
 import {withDefault, withDefaultTrue, withDefaultFalse, throwIf, warnIf} from '@xh/hoist/utils/js';
-import {multiFieldRenderer} from '@xh/hoist/desktop/cmp/grid';
+import {subFieldRenderer} from '@xh/hoist/desktop/cmp/grid';
 
 /**
  * Cross-platform definition and API for a standardized Grid column.
@@ -29,6 +29,7 @@ export class Column {
      * @param {string} [c.headerName] - display text for grid header.
      * @param {(string|string[])} [c.headerClass] - additional css classes to add to the column header.
      * @param {(string|string[])} [c.cellClass] - additional css classes to add to each cell in the column.
+     * @param {string[]} [c.subFields] - which subfields to show in this columns.
      * @param {boolean} [c.isTreeColumn] - true if this column should show the tree affordances for a
      *      Tree Grid. See GridModel.treeMode.
      * @param {boolean} [c.hide] - true to suppress default display of the column.
@@ -50,7 +51,6 @@ export class Column {
      *      column to the side of the grid, ensuring it's visible while horizontally scrolling.
      * @param {Column~rendererFn} [c.renderer] - function to produce a formatted string for each cell.
      * @param {Column~elementRendererFn} [c.elementRenderer] - function which returns a React component.
-     * @param {Object} [c.multiFieldRendererCfg] - config for a MultiFieldRenderer.
      * @param {string} [c.chooserName] - name to display within the column chooser component.
      *      Defaults to headerName, but useful when a longer / un-abbreviated string is available.
      * @param {string} [c.chooserGroup] - group name to display within the column chooser component.
@@ -86,6 +86,7 @@ export class Column {
         headerName,
         headerClass,
         cellClass,
+        subFields,
         hide,
         align,
         width,
@@ -99,7 +100,6 @@ export class Column {
         pinned,
         renderer,
         elementRenderer,
-        multiFieldRendererCfg,
         chooserName,
         chooserGroup,
         chooserDescription,
@@ -123,6 +123,7 @@ export class Column {
         this.headerName = withDefault(headerName, startCase(this.colId));
         this.headerClass = castArray(headerClass);
         this.cellClass = castArray(cellClass);
+        this.subFields = castArray(subFields);
         this.hide = withDefaultFalse(hide);
         this.align = align;
         this.isTreeColumn = withDefaultFalse(isTreeColumn);
@@ -149,7 +150,6 @@ export class Column {
 
         this.renderer = renderer;
         this.elementRenderer = elementRenderer;
-        this.multiFieldRendererCfg = multiFieldRendererCfg;
 
         this.chooserName = chooserName || this.headerName || this.colId;
         this.chooserGroup = chooserGroup;
@@ -222,29 +222,30 @@ export class Column {
             ret.width = this.width;
         }
 
-        const {renderer, elementRenderer, multiFieldRendererCfg} = this;
-        if (renderer) {
+        const {subFields, renderer, elementRenderer} = this,
+            column = this; // eslint-disable-line consistent-this
+
+        if (subFields) {
+            ret.cellRendererFramework = class extends Component {
+                render() {
+                    const agParams = this.props,
+                        {value, data: record} = agParams,
+                        fields = gridModel.subFields.filter(it => subFields.includes(it.field));
+
+                    return subFieldRenderer({fields, value, record, renderer, column});
+                }
+                refresh() {return false}
+            };
+        } else if (renderer) {
             ret.cellRenderer = (agParams) => {
                 return renderer(agParams.value, {record: agParams.data, column: this, agParams});
             };
-        } else if (elementRenderer || multiFieldRendererCfg) {
-            // eslint-disable-next-line consistent-this
-            const column = this;
+        } else if (elementRenderer) {
             ret.cellRendererFramework = class extends Component {
                 render() {
                     const agParams = this.props,
                         {value, data: record} = agParams;
-
-                    if (elementRenderer) {
-                        return elementRenderer(value, {record, agParams, column});
-                    } else if (multiFieldRendererCfg) {
-                        return multiFieldRenderer({
-                            value,
-                            record,
-                            column,
-                            ...multiFieldRendererCfg
-                        });
-                    }
+                    return elementRenderer(value, {record, agParams, column});
                 }
                 refresh() {return false}
             };

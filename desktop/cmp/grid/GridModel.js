@@ -122,6 +122,7 @@ export class GridModel {
      *      or a closure to generate one.
      * @param {function} [c.rowClassFn] - closure to generate css class names for a row.
      *      Should return a string or array of strings. Receives record data as param.
+*      @param {SubField[]} c.subFields - collection of available subfields.
      * @param {function} [c.contextMenuFn] - closure returning a StoreContextMenu.
      *      @see StoreContextMenu
      */
@@ -139,6 +140,7 @@ export class GridModel {
         enableExport = false,
         exportFilename = 'export',
         rowClassFn = null,
+        subFields = [],
         contextMenuFn = () => this.defaultContextMenu()
     }) {
         this.store = store;
@@ -148,6 +150,7 @@ export class GridModel {
         this.exportFilename = exportFilename;
         this.contextMenuFn = contextMenuFn;
         this.rowClassFn = rowClassFn;
+        this.subFields = subFields;
 
         this.setColumns(columns);
 
@@ -224,10 +227,9 @@ export class GridModel {
         return this.selModel.singleRecord;
     }
 
-    /** Do any columns use a MultiFieldRenderer */
     @computed
-    get multiFieldRows() {
-        return this.columns.some(it => it.multiFieldRendererCfg);
+    get hasSubFields() {
+        return !!this.subFields.length;
     }
 
     @action
@@ -534,4 +536,11 @@ export class GridModel {
  * @property {string} colId - unique identifier of the column
  * @property {number} [width] - new width to set for the column
  * @property {boolean} [hide] - visibility of the column
+ */
+
+/**
+ * @typedef {Object} SubField
+ * @property {string} field - name of data store field to display.
+ * @property {string} [label] - display text for field
+ * @property {Column~rendererFn} [renderer] - function to produce a formatted string for field.
  */
