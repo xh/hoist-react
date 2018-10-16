@@ -112,16 +112,18 @@ export class FormField extends Component {
         const leftIcon = notValid ? this.leftIcon(item) : {},
             target = React.cloneElement(item, {model, field, disabled, ...leftIcon});
 
-        // Wrap child in a tooltip if in minimal mode
-        return minimal && notValid ?
-            tooltip({
-                targetClassName: 'xh-input xh-input-invalid',
-                wrapperTagName: 'div',
-                target,
-                targetTagName: !this.blockChildren.includes(target.type.name) || target.props.width ? 'span' : 'div',
-                position: 'right',
-                content: this.getErrorTooltipContent(errors)
-            }) : target;
+        if (!minimal) return target;
+
+        // Wrap target in a tooltip if in minimal mode
+        return tooltip({
+            target,
+            targetClassName: `xh-input ${notValid ? 'xh-input-invalid' : ''}`,
+            wrapperTagName: 'div',
+            targetTagName: !this.blockChildren.includes(target.type.name) || target.props.width ? 'span' : 'div',
+            position: 'right',
+            disabled: !notValid,
+            content: this.getErrorTooltipContent(errors)
+        });
     }
 
     leftIcon(item) {

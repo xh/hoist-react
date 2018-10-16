@@ -124,6 +124,7 @@ import {
     faUpload,
     faUserCheck,
     faUserCircle,
+    faUserClock,
     faUsers,
     faWindow,
     faWrench
@@ -242,6 +243,7 @@ import {
     faUpload as faUploadLight,
     faUserCheck as faUserCheckLight,
     faUserCircle as faUserCircleLight,
+    faUserClock as faUserClockLight,
     faUsers as faUsersLight,
     faWindow as faWindowLight,
     faWrench as faWrenchLight
@@ -360,6 +362,7 @@ import {
     faUpload as faUploadSolid,
     faUserCheck as faUserCheckSolid,
     faUserCircle as faUserCircleSolid,
+    faUserClock as faUserClockSolid,
     faUsers as faUsersSolid,
     faWindow as faWindowSolid,
     faWrench as faWrenchSolid
@@ -480,6 +483,7 @@ library.add(
     faUpload, faUploadLight, faUploadSolid,
     faUserCheck, faUserCheckLight, faUserCheckSolid,
     faUserCircle, faUserCircleLight, faUserCircleSolid,
+    faUserClock, faUserClockLight, faUserClockSolid,
     faUsers, faUsersLight, faUsersSolid,
     faWindow, faWindowLight, faWindowSolid,
     faWrench, faWrenchLight, faWrenchSolid
@@ -610,6 +614,7 @@ export const Icon = {
     upload(p)           {return fa(p, 'upload')},
     user(p)             {return fa(p, 'user-circle')},
     users(p)            {return fa(p, 'users')},
+    userClock(p)        {return fa(p, 'user-clock')},
     warning(p)          {return fa(p, 'exclamation-triangle')},
     warningCircle(p)    {return fa(p, 'exclamation-circle')},
     warningSquare(p)    {return fa(p, 'exclamation-square')},

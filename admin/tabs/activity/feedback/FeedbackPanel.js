@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
+import {restGrid, RestGridModel, RestStore, deleteAction} from '@xh/hoist/desktop/cmp/rest';
 import {compactDateCol} from '@xh/hoist/columns';
 import {usernameCol} from '@xh/hoist/admin/columns';
 
@@ -49,10 +49,9 @@ export class FeedbackPanel extends Component {
                 }
             ]
         }),
-        actionEnabled: {
-            add: false,
-            edit: false
-        },
+        toolbarActions: [deleteAction],
+        menuActions: [deleteAction],
+        formActions: [deleteAction],
         unit: 'report',
         filterFields: ['username', 'msg'],
         columns: [

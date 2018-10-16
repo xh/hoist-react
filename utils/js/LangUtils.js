@@ -65,11 +65,3 @@ export function warnIf(condition, message) {
 export function withDefault(...args) {
     return args.find(it => it !== undefined);
 }
-
-export function withDefaultTrue(v) {
-    return v !== undefined ? !!v : true;
-}
-
-export function withDefaultFalse(v) {
-    return v !== undefined ? !!v : false;
-}
