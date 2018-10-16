@@ -8,10 +8,43 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {Icon} from '@xh/hoist/icon';
 import {pluralize} from '@xh/hoist/utils/js';
+import {Icon} from '@xh/hoist/icon/Icon';
 
-import {RestFormModel} from './RestFormModel';
+import {RestFormModel} from './impl/RestFormModel';
+
+export const addAction = {
+    text: 'Add',
+    icon: Icon.add(),
+    intent: 'success',
+    actionFn: ({gridModel}) => gridModel.restGridModel.addRecord()
+};
+
+export const editAction = {
+    text: 'Edit',
+    icon: Icon.edit(),
+    intent: 'primary',
+    recordsRequired: 1,
+    actionFn: ({record, gridModel}) => gridModel.restGridModel.editRecord(record)
+};
+
+export const viewAction = {
+    text: 'View',
+    icon: Icon.search(),
+    recordsRequired: 1,
+    actionFn: ({record, gridModel}) => gridModel.restGridModel.viewRecord(record)
+};
+
+export const deleteAction = {
+    text: 'Delete',
+    icon: Icon.delete(),
+    intent: 'danger',
+    recordsRequired: 1,
+    displayFn: ({record}) => ({
+        hidden: record && record.id === null // Hide this action if we are acting on a "new" record
+    }),
+    actionFn: ({record, gridModel}) => gridModel.restGridModel.confirmDeleteRecord(record)
+};
 
 /**
  * Core Model for a RestGrid.
@@ -22,11 +55,9 @@ export class RestGridModel {
     //----------------
     // Properties
     //----------------
-    actionEnabled = {
-        add: true,
-        edit: true,
-        del: true
-    };
+    toolbarActions;
+    menuActions;
+    formActions;
 
     actionWarning = {
         add: null,
@@ -40,22 +71,29 @@ export class RestGridModel {
     gridModel = null;
     formModel = null;
 
-    get store()             {return this.gridModel.store}
-    get selModel()          {return this.gridModel.selModel}
-    get selection()         {return this.gridModel.selection}
-    get selectedRecord()    {return this.gridModel.selectedRecord}
+    get store() {return this.gridModel.store}
+
+    get selModel() {return this.gridModel.selModel}
+
+    get selection() {return this.gridModel.selection}
+
+    get selectedRecord() {return this.gridModel.selectedRecord}
 
     /**
-     * @param {Object} [actionEnabled] - map of action (e.g. 'add'/'edit'/'delete') to boolean  See default prop
+     * @param {Object[]|RecordAction[]} [toolbarActions] - actions to display in the toolbar. Defaults to add, edit, delete.
+     * @param {Object[]|RecordAction[]} [menuActions] - actions to display in the grid context menu. Defaults to add, edit, delete.
+     * @param {Object[]|RecordAction[]} [formActions] - actions to display in the form toolbar. Defaults to delete.
      * @param {Object} [actionWarning] - map of action (e.g. 'add'/'edit'/'delete') to string.  See default prop.
      * @param {string} [unit] - name that describes records in this grid.
      * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
      * @param {function} [enhanceToolbar] - a function used to mutate RestGridToolbar items
      * @param {Object[]} editors - array of editors
-     * @param {*} ...rest, arguments for GridModel.
+     * @param {*} ...rest - arguments for GridModel.
      */
     constructor({
-        actionEnabled,
+        toolbarActions = [addAction, editAction, deleteAction],
+        menuActions = [addAction, editAction, deleteAction],
+        formActions = [deleteAction],
         actionWarning,
         unit = 'record',
         filterFields,
@@ -63,13 +101,28 @@ export class RestGridModel {
         editors = [],
         ...rest
     }) {
-        this.actionEnabled = Object.assign(this.actionEnabled, actionEnabled);
+        this.toolbarActions = toolbarActions;
+        this.menuActions = menuActions;
+        this.formActions = formActions;
+
         this.actionWarning = Object.assign(this.actionWarning, actionWarning);
+
         this.unit = unit;
         this.filterFields = filterFields;
         this.enhanceToolbar = enhanceToolbar;
-        this.gridModel = new GridModel({contextMenuFn: this.contextMenuFn, exportFilename: pluralize(unit), ...rest});
-        this.formModel = new RestFormModel({parent: this, editors});
+
+        this.gridModel = new GridModel({
+            contextMenuFn: this.contextMenuFn,
+            exportFilename: pluralize(unit),
+            restGridModel: this,
+            ...rest
+        });
+
+        this.formModel = new RestFormModel({
+            parent: this,
+            editors,
+            actions: formActions
+        });
     }
 
     /** Load the underlying store. */
@@ -81,10 +134,11 @@ export class RestGridModel {
     loadData(...args) {
         return this.store.loadData(...args);
     }
-    
+
     //-----------------
     // Actions
     //------------------
+
     @action
     addRecord() {
         this.formModel.openAdd();
@@ -98,7 +152,9 @@ export class RestGridModel {
 
     @action
     deleteRecord(record) {
-        this.store.deleteRecordAsync(record).catchDefault();
+        this.store.deleteRecordAsync(record)
+            .then(() => this.formModel.close())
+            .catchDefault();
     }
 
     @action
@@ -112,32 +168,21 @@ export class RestGridModel {
         this.formModel.openEdit(record);
     }
 
+    @action
+    viewRecord(record) {
+        this.formModel.openView(record);
+    }
+
     contextMenuFn = () => {
         return new StoreContextMenu({
             items: [
-                {
-                    text: 'Add',
-                    icon: Icon.add(),
-                    action: () => this.addRecord()
-                },
-                {
-                    text: 'Edit',
-                    icon: Icon.edit(),
-                    action: (item, record) => this.editRecord(record),
-                    recordsRequired: 1
-                },
-                {
-                    text: 'Delete',
-                    icon: Icon.delete(),
-                    action: (item, record) => this.confirmDeleteRecord(record),
-                    recordsRequired: true
-                },
+                ...this.menuActions,
                 '-',
                 ...GridModel.defaultContextMenuTokens
             ],
             gridModel: this.gridModel
         });
-    }
+    };
 
     confirmDeleteSelection() {
         const record = this.selectedRecord;

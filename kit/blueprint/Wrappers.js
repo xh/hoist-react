@@ -6,14 +6,15 @@
  */
 
 import {elemFactory} from '@xh/hoist/core';
-
 //--------------------
 // Blueprint Imports
 //--------------------
 import {
     Alert,
     Button,
+    ButtonGroup,
     Callout,
+    Card,
     Checkbox,
     ControlGroup,
     Dialog,
@@ -33,6 +34,8 @@ import {
     NumericInput,
     Overlay,
     Popover,
+    Radio,
+    RadioGroup,
     RangeSlider,
     Slider,
     Spinner,
@@ -42,7 +45,9 @@ import {
     Tag,
     TagInput,
     TextArea,
-    Text
+    Text,
+    Tooltip,
+    Tree
 } from '@blueprintjs/core';
 
 import {DateInput} from '@blueprintjs/datetime';
@@ -54,7 +59,9 @@ import {MultiSelect, Omnibar, Select, Suggest} from '@blueprintjs/select';
 export {
     Alert,
     Button,
+    ButtonGroup,
     Callout,
+    Card,
     Checkbox,
     ControlGroup,
     DateInput,
@@ -77,6 +84,8 @@ export {
     Omnibar,
     Overlay,
     Popover,
+    Radio,
+    RadioGroup,
     RangeSlider,
     Select,
     Slider,
@@ -88,13 +97,17 @@ export {
     Tag,
     TagInput,
     TextArea,
-    Text
+    Text,
+    Tooltip,
+    Tree
 };
 
 export const
     alert = elemFactory(Alert),
     button = elemFactory(Button),
+    buttonGroup = elemFactory(ButtonGroup),
     callout = elemFactory(Callout),
+    card = elemFactory(Card),
     controlGroup = elemFactory(ControlGroup),
     checkbox = elemFactory(Checkbox),
     dateInput = elemFactory(DateInput),
@@ -117,6 +130,8 @@ export const
     omnibar = elemFactory(Omnibar),
     overlay = elemFactory(Overlay),
     popover = elemFactory(Popover),
+    radio = elemFactory(Radio),
+    radioGroup = elemFactory(RadioGroup),
     rangeSlider = elemFactory(RangeSlider),
     slider = elemFactory(Slider),
     select = elemFactory(Select),
@@ -128,4 +143,6 @@ export const
     tag = elemFactory(Tag),
     tagInput = elemFactory(TagInput),
     text = elemFactory(Text),
-    textArea = elemFactory(TextArea);
+    textArea = elemFactory(TextArea),
+    tooltip = elemFactory(Tooltip),
+    tree = elemFactory(Tree);

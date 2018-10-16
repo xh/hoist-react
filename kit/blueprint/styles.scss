@@ -9,9 +9,14 @@
   background-color: var(--xh-navbar-bg);
   height: var(--xh-navbar-height-px);
   border-bottom: 1px solid var(--xh-navbar-border-color);
+  padding: 0 var(--xh-pad-px);
 
   // Curiously, Admin Log Viewer would cause navbar to shrink without min-height
   min-height: var(--xh-navbar-height-px);
+
+  .bp3-navbar-divider {
+    border-left-color: var(--xh-tbar-separator-color);
+  }
 
   > * {
     white-space: nowrap;
@@ -26,6 +31,10 @@
 
   .bp3-navbar-group {
     height: var(--xh-navbar-height-px);
+
+    .bp3-navbar-divider {
+      margin: 0 var(--xh-pad-px);
+    }
 
     // Replace default float behaviour in favour of flexbox
     float: none;
@@ -45,8 +54,8 @@
     }
 
     &.bp3-align-right {
-      > * {
-        margin-left: var(--xh-pad-half-px);
+      > *:not(.bp3-navbar-divider) {
+        margin-left: var(--xh-pad-px);
       }
       .bp3-navbar-divider {
         margin-right: 0;
@@ -161,9 +170,28 @@
 //------------------------
 // Forms + Inputs
 //------------------------
-.bp3-input {
+.bp3-input, .bp3-input-ghost {
   font-size: var(--xh-font-size);
 }
+
+// Expose CSS var for box-shadow tweaking
+.bp3-input:not(.bp3-active):not(:focus) {
+  box-shadow: var(--xh-form-field-box-shadow);
+}
+
+// Override Blueprint textarea and switch input dark theme
+.bp3-dark textarea.bp3-input {
+  box-shadow: var(--xh-form-field-box-shadow);
+}
+
+.bp3-dark .bp3-control.bp3-switch input ~ .bp3-control-indicator {
+  box-shadow: var(--xh-form-field-box-shadow) !important;
+}
+//
+.bp3-dark .bp3-control.bp3-switch:hover input ~ .bp3-control-indicator {
+  background-color:#202b33;
+}
+
 
 /* Apply blueprint styling to non-blueprint icons within input groups */
 .bp3-input-group svg:not(.bp3-icon) {

@@ -1,0 +1,21 @@
+.xh-form-field {
+  display: flex;
+  flex-direction: column;
+
+  &.xh-form-field-invalid .xh-input-label {
+    color: var(--xh-red);
+  }
+
+  .xh-form-field-pending-msg {
+    font-size: var(--xh-font-size-small-px);
+    color: var(--xh-text-color-muted);
+  }
+
+  .xh-form-field-error-msg {
+    font-size: var(--xh-font-size-small-px);
+    color: var(--xh-red);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+}

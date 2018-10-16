@@ -48,20 +48,20 @@ export class ColChooserModel {
 
     commit() {
         const {gridModel, lrModel} = this,
-            {leftValues, rightValues} = lrModel;
+            {leftValues, rightValues} = lrModel,
+            cols = gridModel.getLeafColumns();
 
-        const cols = gridModel.getLeafColumns();
-        cols.forEach(it => {
-            if (leftValues.includes(it.field)) {
-                it.hide = true;
-            } else if (rightValues.includes(it.field)) {
-                it.hide = false;
+        const colChanges = [];
+        cols.forEach(({colId}) => {
+            if (leftValues.includes(colId)) {
+                colChanges.push({colId, hide: true});
+            } else if (rightValues.includes(colId)) {
+                colChanges.push({colId, hide: false});
             }
         });
 
-        gridModel.applyColumnChanges(cols);
+        gridModel.applyColumnChanges(colChanges);
     }
-
 
     //------------------------
     // Implementation
@@ -71,12 +71,12 @@ export class ColChooserModel {
 
         const data = gridModel.getLeafColumns().map(it => {
             return {
-                value: it.field,
+                value: it.colId,
                 text: it.chooserName,
                 description: it.chooserDescription,
                 group: it.chooserGroup,
                 exclude: it.excludeFromChooser,
-                locked: it.locked,  // TODO - review AG-grid API around "locking" concepts
+                locked: !it.hide && !it.hideable,
                 side: it.hide ? 'left' : 'right'
             };
         });

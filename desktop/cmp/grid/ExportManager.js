@@ -65,12 +65,12 @@ export class ExportManager {
         }
 
         const response = await XH.fetch({
-            url: 'hoistImpl/export',
+            url: 'xh/export',
             params: {
                 filename: filename,
                 filetype: type,
-                rows: JSON.stringify(rows),
-                meta: JSON.stringify(meta)
+                meta: JSON.stringify(meta),
+                rows: JSON.stringify(rows)
             }
         });
 
@@ -89,13 +89,13 @@ export class ExportManager {
     getColumnMetadata(columns) {
         return this.getExportableColumns(columns)
             .map(column => {
-                const {field, exportFormat} = column;
-
+                const {field, exportFormat, exportWidth: width} = column;
                 let type = null;
                 if (exportFormat === ExportFormat.DATE_FMT) type = 'date';
                 if (exportFormat === ExportFormat.DATETIME_FMT) type = 'datetime';
+                if (exportFormat === ExportFormat.LONG_TEXT) type = 'longText';
 
-                return {field, type, format: exportFormat};
+                return {field, type, format: exportFormat, width};
             });
     }
 

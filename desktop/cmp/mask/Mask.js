@@ -11,15 +11,16 @@ import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {box, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {Classes, overlay, spinner} from '@xh/hoist/kit/blueprint';
-import {withDefault, withDefaultFalse, withDefaultTrue} from '@xh/hoist/utils/js';
+import {withDefault} from '@xh/hoist/utils/js';
 
 
 import './Mask.scss';
 
 /**
- * Mask with optional spinner and text.
+ * Mask with optional spinner and text - can be explicitly shown or bound to a PendingTaskModel.
  *
- * The mask can be explicitly shown or reactively bound to a PendingTaskModel.
+ * Note that the Panel component's `mask` prop provides a common and convenient method for masking
+ * sections of the UI without needing to manually create or manage this component.
  */
 @HoistComponent
 export class Mask extends Component {
@@ -49,8 +50,8 @@ export class Mask extends Component {
         if (!isDisplayed) return null;
 
         const message = withDefault(props.message, model && model.message),
-            inline = withDefaultTrue(props.inline),
-            showSpinner = withDefaultFalse(props.spinner),
+            inline = withDefault(props.inline, true),
+            showSpinner = withDefault(props.spinner, false),
             onClick = props.onClick;
 
         return overlay({

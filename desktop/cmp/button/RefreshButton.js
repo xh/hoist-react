@@ -39,9 +39,10 @@ export class RefreshButton extends Component {
         );
 
         const {
-            icon = Icon.sync(),
+            icon = Icon.refresh(),
             title = 'Refresh',
             onClick = this.model ? this.refreshModel : undefined,
+            model,
             ...rest
         } = this.props;
 

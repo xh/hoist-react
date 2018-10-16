@@ -77,19 +77,24 @@ export class ExceptionHandler {
      * Note: App version is POSTed to reflect the version the client is running (vs the version on the server)
      */
     async logOnServerAsync({exception, userAlerted, userMessage}) {
-
         // Fail somewhat silently to avoid letting problems here mask/confuse the underlying problem.
         try {
-            const error = exception ? stringifyErrorSafely(exception) : null;
+            const error = exception ? stringifyErrorSafely(exception) : null,
+                username = XH.getUsername();
+
+            if (!username) {
+                console.warn('Error report cannot be submitted to server - user unknown');
+                return;
+            }
 
             await XH.fetchJson({
-                url: 'hoistImpl/submitError',
+                url: 'xh/submitError',
                 params: {
                     error,
                     msg: userMessage ? stripTags(userMessage) : '',
                     appVersion: XH.getEnv('appVersion'),
                     userAlerted,
-                    clientUsername: XH.getUsername()
+                    clientUsername: username
                 }
             });
         } catch (e) {

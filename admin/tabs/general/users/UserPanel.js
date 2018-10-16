@@ -10,8 +10,8 @@ import {grid} from '@xh/hoist/desktop/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
+import {switchInput} from '@xh/hoist/desktop/cmp/form';
 
 import {UserModel} from './UserModel';
 
@@ -33,7 +33,11 @@ export class UserPanel extends Component {
         const model = this.model,
             {store} = model.gridModel;
         return toolbar(
-            refreshButton({model}),
+            switchInput({
+                model,
+                field: 'activeOnly',
+                label: 'Active only'
+            }),
             filler(),
             storeCountLabel({
                 store,
@@ -41,7 +45,7 @@ export class UserPanel extends Component {
             }),
             storeFilterField({
                 store,
-                fields: ['displayName', 'roles']
+                fields: ['username', 'email', 'displayName', 'roles']
             })
         );
     }

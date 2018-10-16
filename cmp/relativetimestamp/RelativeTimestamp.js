@@ -10,8 +10,10 @@ import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, LayoutSupport, elemFactory} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {box} from '@xh/hoist/cmp/layout';
+import {span} from '@xh/hoist/cmp/layout';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS, MINUTES, HOURS, DAYS} from '@xh/hoist/utils/datetime';
+import {fmtDateTime} from '@xh/hoist/format';
 import {flow} from 'lodash';
 import {pluralize} from '@xh/hoist/utils/js';
 
@@ -61,10 +63,15 @@ export class RelativeTimestamp extends Component {
     timer = null;
 
     render() {
+        const {relativeTimeString, props} = this;
         return box({
             ...this.getLayoutProps(),
             className: this.getClassName(),
-            item: this.relativeTimeString
+            item: span({
+                className: 'xh-title-tip',
+                item: relativeTimeString,
+                title: fmtDateTime(props.timestamp)
+            })
         });
     }
 
@@ -102,9 +109,10 @@ export const relativeTimestamp = elemFactory(RelativeTimestamp);
  * @param {(Date|int)} timestamp - Date object or milliseconds that will be used as reference for this component
  * @param {Object} [options]
  * @param {boolean} [options.allowFuture] - Allow dates greater than Date.now()
+ * @param {string} [options.prefix] - Label preceding timestamp
  * @param {string} [options.futureSuffix] - Appended to future timestamps
  * @param {string} [options.pastSuffix] - Appended to past timestamps
- * @param {int} [options.nowEpsilon] - Interval (in seconds) that will serve as threshold for the nowString.
+ * @param {number} [options.nowEpsilon] - Interval (in seconds) that will serve as threshold for the nowString.
  * @param {string} [options.nowString] - Returned as display property when timestamp is within the nowEpsilon interval.
  * @param {string} [options.emptyResult] - Returned when timestamp is undefined
  */
@@ -119,6 +127,7 @@ export const getRelativeTimestamp = (timestamp, options) => {
         getElapsedTime,
         normalizeAndValidate,
         getMillisAndUnit,
+        getPrefix,
         getSuffix,
         getResult
     )(opts);
@@ -195,14 +204,21 @@ const getSuffix = opts => {
     return opts;
 };
 
+const getPrefix  = opts => {
+    const {isInvalid, prefix} = opts;
+    if (isInvalid) return opts;
+    opts.prefix =  prefix ? prefix + ' ' : '';
+    return opts;
+};
+
 const getResult = opts => {
-    const {isInvalid, elapsedTime, millis, unit, useNowString, suffix} = opts;
+    const {isInvalid, elapsedTime, millis, unit, useNowString, prefix, suffix} = opts;
     if (isInvalid) return '[???]';
 
     // if elapsedTime was normalized to 0 (smaller than nowEpsilon)
     // then return the nowString if it's present, otherwise return the
     // default FORMAT for seconds.
     if (!elapsedTime && useNowString) return suffix;
-
-    return `${FORMAT_STRINGS[unit].replace('%d', millis)} ${suffix}`;
+    
+    return `${prefix}${FORMAT_STRINGS[unit].replace('%d', millis)} ${suffix}`;
 };

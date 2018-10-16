@@ -23,7 +23,7 @@ export class DataView extends Component {
 
     constructor(props) {
         super(props);
-        const {store, selModel, contextMenuFn, itemFactory, emptyText} = props.model;
+        const {store, selModel, contextMenuFn, itemRenderer, emptyText} = props.model;
         this._gridModel = new GridModel({
             store,
             selModel,
@@ -33,7 +33,7 @@ export class DataView extends Component {
                 {
                     colId: 'data',
                     flex: true,
-                    elementRenderer: (params) => itemFactory({record: params.data, store}),
+                    elementRenderer: itemRenderer,
                     agOptions: {
                         valueGetter: (params) => params.data
                     }
@@ -43,7 +43,7 @@ export class DataView extends Component {
     }
 
     render() {
-        const {rowCls, itemHeight} = this.props;
+        const {rowCls, itemHeight, onRowDoubleClicked} = this.props;
         return grid({
             ...this.getLayoutProps(),
             className: this.getClassName(),
@@ -52,7 +52,8 @@ export class DataView extends Component {
                 headerHeight: 0,
                 rowClass: rowCls,
                 getRowHeight: () => itemHeight
-            }
+            },
+            onRowDoubleClicked: onRowDoubleClicked
         });
     }
 

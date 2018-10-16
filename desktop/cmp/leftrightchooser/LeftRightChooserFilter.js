@@ -11,7 +11,7 @@ import {observable, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {textField} from '@xh/hoist/desktop/cmp/form';
+import {textInput} from '@xh/hoist/desktop/cmp/form';
 
 /**
  * A Component that can bind to a LeftRightChooser and filter both lists
@@ -32,11 +32,11 @@ export class LeftRightChooserFilter extends Component {
     @observable value = '';
 
     render() {
-        return textField({
+        return textInput({
             placeholder: 'Quick filter...',
             value: this.value,
             onChange: this.onValueChange,
-            leftIcon: Icon.filter(),
+            leftIcon: Icon.filter({style: {opacity: 0.5}}),
             rightElement: button({
                 icon: Icon.x(),
                 minimal: true,
@@ -60,7 +60,7 @@ export class LeftRightChooserFilter extends Component {
         let searchTerm = escapeRegExp(this.value);
 
         if (!anyMatch) {
-            searchTerm = `(^|\\\\W)${searchTerm}`;
+            searchTerm = `(^|\\W)${searchTerm}`;
         }
 
         const filter = (raw) => {

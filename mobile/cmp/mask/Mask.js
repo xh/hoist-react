@@ -11,7 +11,7 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {div, vbox, vspacer, box} from '@xh/hoist/cmp/layout';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {progressCircular} from '@xh/hoist/kit/onsen';
-import {withDefault, withDefaultFalse} from '@xh/hoist/utils/js';
+import {withDefault} from '@xh/hoist/utils/js';
 
 import './Mask.scss';
 
@@ -30,13 +30,13 @@ export class Mask extends Component {
         message: PT.string,
         /** True (default) to display a spinning image. */
         spinner: PT.bool,
-        /** Click handler **/
-        onClick: PT.func,
         /** Model to govern behavior of mask.  Use as an alternative to setting props above. */
-        model: PT.instanceOf(PendingTaskModel)
+        model: PT.instanceOf(PendingTaskModel),
+        /** Click handler **/
+        onClick: PT.func
     };
 
-    baseClassName = 'xh-mask'
+    baseClassName = 'xh-mask';
 
     render() {
         const {props} = this,
@@ -46,13 +46,14 @@ export class Mask extends Component {
         if (!isDisplayed) return null;
 
         const message = withDefault(props.message, model && model.message),
-            showSpinner = withDefaultFalse(props.spinner),
+            showSpinner = withDefault(props.spinner, false),
             onClick = props.onClick;
+
         return div({
+            onClick,
             className: this.getClassName(),
             item: vbox({
                 className: 'xh-mask-body',
-                onClick,
                 items: [
                     showSpinner ? progressCircular({indeterminate: true}) : null,
                     showSpinner ? vspacer(10) : null,

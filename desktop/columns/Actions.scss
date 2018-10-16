@@ -1,0 +1,40 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2018 Extremely Heavy Industries Inc.
+ */
+
+$action-col-pad: 5;
+$action-col-pad-px: $action-col-pad + 0px;
+
+:export {
+  actionColPad: $action-col-pad;
+}
+
+.xh-action-col-cell {
+  &.ag-cell {
+    padding: 0 $action-col-pad-px;
+  }
+
+  .xh-show-on-hover {
+    .xh-record-action-button {
+      visibility: hidden;
+    }
+  }
+
+  button.xh-record-action-button {
+    // Keep the buttons in the action column a consistent size so we can calc the column width
+    max-width: 24px;
+  }
+}
+
+.ag-row.ag-row-hover {
+  .xh-action-col-cell {
+    .xh-show-on-hover {
+      .xh-record-action-button {
+        visibility: visible;
+      }
+    }
+  }
+}

@@ -10,7 +10,7 @@ import {HotkeysTarget, hotkeys, hotkey} from '@xh/hoist/kit/blueprint';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {filler, span} from '@xh/hoist/cmp/layout';
-import {comboField} from '@xh/hoist/desktop/cmp/form';
+import {comboBox} from '@xh/hoist/desktop/cmp/form';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -50,12 +50,13 @@ export class ImpersonationBar extends Component {
                 Icon.user(),
                 span(`${isImpersonating ? 'Impersonating' : ''} ${XH.getUsername()}`),
                 filler(),
-                comboField({
+                // Note we deliberately do not requireSelection, as some apps will be able to
+                // create unknown users on the fly.
+                comboBox({
                     model: this,
                     field: 'pendingTarget',
                     options: targets,
                     placeholder: 'Select User...',
-                    requireSelection: true,
                     onCommit: this.onCommit
                 }),
                 this.exitButton()
@@ -64,10 +65,9 @@ export class ImpersonationBar extends Component {
     }
 
     exitButton() {
-        const text = XH.identityService.isImpersonating ? 'Exit Impersonation' : 'Close';
+        const text = XH.identityService.isImpersonating ? 'Exit Impersonation' : 'Cancel';
         return button({
             text,
-            icon: Icon.close(),
             onClick: this.onExitClick
         });
     }
@@ -80,7 +80,14 @@ export class ImpersonationBar extends Component {
     }
 
     onCommit = () => {
-        this.model.impersonateAsync(this.pendingTarget);
+        if (this.pendingTarget) {
+            this.model.impersonateAsync(
+                this.pendingTarget
+            ).catch(e => {
+                this.setPendingTarget('');
+                XH.handleException(e, {logOnServer: false});  // likely to be an unknown user
+            });
+        }
     }
 
     onExitClick = () => {

@@ -35,13 +35,13 @@ export class ConfigDifferDetail extends Component {
                 bbar: toolbar(
                     filler(),
                     button({
-                        text: 'Close',
+                        text: 'Cancel',
                         onClick: this.onCloseClick
                     }),
                     button({
                         text: 'Accept Remote',
-                        icon: Icon.check(),
-                        intent: 'success',
+                        icon: Icon.cloudDownload(),
+                        intent: 'primary',
                         onClick: this.onAcceptRemoteClick
                     })
                 )
