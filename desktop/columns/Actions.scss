@@ -16,4 +16,25 @@ $action-col-pad-px: $action-col-pad + 0px;
   &.ag-cell {
     padding: 0 $action-col-pad-px;
   }
+
+  .xh-show-on-hover {
+    .xh-record-action-button {
+      visibility: hidden;
+    }
+  }
+
+  button.xh-record-action-button {
+    // Keep the buttons in the action column a consistent size so we can calc the column width
+    max-width: 24px;
+  }
+}
+
+.ag-row.ag-row-hover {
+  .xh-action-col-cell {
+    .xh-show-on-hover {
+      .xh-record-action-button {
+        visibility: visible;
+      }
+    }
+  }
 }

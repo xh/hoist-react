@@ -5,9 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {withDefault, throwIf} from '../utils/js';
+import {withDefault, throwIf} from '@xh/hoist/utils/js';
 import {startCase, isEmpty, castArray, clone} from 'lodash';
-import {Column} from './Column';
 
 /**
  * Cross-platform definition and API for a standardized Grid column group.
@@ -26,6 +25,7 @@ export class ColumnGroup {
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
      *      @see {@link https://www.ag-grid.com/javascript-grid-column-properties/|AG-Grid docs}
      * @param {...*} [rest] - additional properties to store on the column
+     * @param {GridModel} gridModel - the model which owns this column.
      */
     constructor({
         children,
@@ -34,7 +34,7 @@ export class ColumnGroup {
         headerClass,
         agOptions,
         ...rest
-    }) {
+    }, gridModel) {
         throwIf(isEmpty(children), 'Must specify children for a ColumnGroup');
 
         Object.assign(this, rest);
@@ -45,17 +45,17 @@ export class ColumnGroup {
         this.headerName = withDefault(headerName, startCase(this.groupId));
         this.headerClass = castArray(headerClass);
 
-        this.children = children.map(it => it.children ? new ColumnGroup(it) : new Column(it));
+        this.children = children.map(c => gridModel.buildColumn(c));
 
         this.agOptions = agOptions ? clone(agOptions) : {};
     }
 
-    getAgSpec(gridModel) {
+    getAgSpec() {
         return {
             groupId: this.groupId,
             headerName: this.headerName,
             headerClass: this.headerClass,
-            children: this.children.map(it => it.getAgSpec(gridModel)),
+            children: this.children.map(it => it.getAgSpec()),
             marryChildren: true, // enforce 'sealed' column groups
             ...this.agOptions
         };

@@ -72,6 +72,20 @@ export class Exception {
     }
 
     /**
+     * Create an Error for when fetch calls are aborted
+     * @param {Object} fetchOptions - original options the app passed to FetchService.fetch
+     * @param {Response} response - resolved value from native fetch
+     * @returns {Error}
+     */
+    static fetchAborted(fetchOptions, response) {
+        return this.createInternal({
+            name: 'Fetch Aborted',
+            message: `Fetch request aborted, url: "${fetchOptions.url}"`,
+            fetchOptions
+        });
+    }
+
+    /**
      * Create an Error for when the server called by fetch does not respond
      * @param {Object} fetchOptions - original options the app passed to FetchService.fetch
      * @param {Error} e - Error object created by native fetch

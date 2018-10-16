@@ -409,7 +409,12 @@ class XHClass {
         return await this.fetchService
             .fetchJson({url: 'xh/authStatus'})
             .then(r => r.authenticated)
-            .catch(ignored => false);  // 401s expected for non-SSO apps and must be caught here
+            .catch(e => {
+                // 401s normal / expected for non-SSO apps when user not yet logged in.
+                if (e.httpStatus == 401) return false;
+                // Other exceptions indicate e.g. connectivity issue, server down - raise to user.
+                throw e;
+            });
     }
 
     async initServicesAsync() {
