@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {castArray, startCase, isFunction, clone, find} from 'lodash';
 import {ExportFormat} from './ExportFormat';
-import {withDefault, withDefaultTrue, withDefaultFalse, throwIf, warnIf} from '@xh/hoist/utils/js';
+import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
 
 /**
  * Cross-platform definition and API for a standardized Grid column.
@@ -120,26 +120,26 @@ export class Column {
         this.headerName = withDefault(headerName, startCase(this.colId));
         this.headerClass = castArray(headerClass);
         this.cellClass = castArray(cellClass);
-        this.hide = withDefaultFalse(hide);
+        this.hide = withDefault(hide, false);
         this.align = align;
-        this.isTreeColumn = withDefaultFalse(isTreeColumn);
+        this.isTreeColumn = withDefault(isTreeColumn, false);
 
         warnIf(
             flex && width,
             `Column ${this.colId} should not be specified with both flex = true && width.  Width will be ignored.`
         );
-        this.flex = withDefaultFalse(flex);
+        this.flex = withDefault(flex, false);
         this.width = this.flex ? null : width || Column.DEFAULT_WIDTH;
 
         // Prevent flex col from becoming hidden inadvertently.  Can be avoided by setting minWidth to null or 0.
         this.minWidth = withDefault(minWidth, this.flex ? Column.FLEX_COL_MIN_WIDTH : null);
         this.maxWidth = maxWidth;
 
-        this.absSort = withDefaultFalse(absSort);
+        this.absSort = withDefault(absSort, false);
 
-        this.resizable = withDefaultTrue(resizable);
-        this.movable = withDefaultTrue(movable);
-        this.sortable = withDefaultTrue(sortable);
+        this.resizable = withDefault(resizable, true);
+        this.movable = withDefault(movable, true);
+        this.sortable = withDefault(sortable, true);
 
         // Pinned supports convenience true -> 'left'. OK to leave undefined if not given.
         this.pinned = (pinned === true) ? 'left' : pinned;
@@ -151,7 +151,7 @@ export class Column {
         this.chooserGroup = chooserGroup;
         this.chooserDescription = chooserDescription;
         this.excludeFromChooser = withDefault(excludeFromChooser, this.isTreeColumn);
-        this.hideable = withDefaultTrue(hideable);
+        this.hideable = withDefault(hideable, true);
 
         this.exportName = exportName || this.headerName || this.colId;
         this.exportValue = exportValue;
