@@ -71,10 +71,16 @@ export class Exception {
         return this.createInternal(defaults, {});
     }
 
-    static fetchCancelled(fetchOptions, response) {
+    /**
+     * Create an Error for when fetch calls are aborted
+     * @param {Object} fetchOptions - original options the app passed to FetchService.fetch
+     * @param {Response} response - resolved value from native fetch
+     * @returns {Error}
+     */
+    static fetchAborted(fetchOptions, response) {
         return this.createInternal({
-            name: response.name,
-            message: `Fetch request cancelled | requestKey: "${fetchOptions.requestKey}" | url: "${fetchOptions.url}"`,
+            name: 'Fetch Aborted',
+            message: `Fetch request aborted, url: "${fetchOptions.url}"`,
             fetchOptions
         });
     }
