@@ -83,7 +83,7 @@ body {
   --xh-grid-font-size-px: calc(var(--xh-grid-font-size) * 1px);
   --xh-grid-line-height: var(--grid-line-height, 26);
   --xh-grid-line-height-px: calc(var(--xh-grid-line-height) * 1px);
-  --xh-grid-group-bg: var(--grid-group-bg, var(--xh-blue-gray));
+  --xh-grid-group-bg: var(--grid-group-bg, #{mc('blue-grey', '400')});
   --xh-grid-group-text-color: var(--grid-group-text-color, white);
   --xh-grid-header-bg: var(--grid-header-bg, var(--xh-blue-gray-light));
   --xh-grid-header-text-color: var(--grid-header-text-color, var(--xh-text-color));
@@ -117,6 +117,7 @@ body {
   --xh-form-field-box-shadow-color-bottom: var(--form-field-box-shadow-color-bottom, #{mc-trans('blue-grey', '100', 0.2)});
   --xh-form-field-box-shadow: var(--form-field-box-shadow, #{inset 0 0 0 1px var(--xh-form-field-box-shadow-color-top), inset 0 1px 1px var(--xh-form-field-box-shadow-color-bottom)});
   --xh-form-field-invalid-border-color: var(--form-field-invalid-border-color, var(--xh-intent-danger));
+  --xh-form-field-invalid-box-shadow: var(--form-field-invalid-border-color, #{inset 0 0 0 1px var(--xh-form-field-invalid-border-color), inset 0 1px 1px var(--xh-form-field-invalid-border-color)});
   --xh-form-field-invalid-border-width: var(--form-field-invalid-border-width, 1);
   --xh-form-field-invalid-border-width-px: calc(var(--xh-form-field-invalid-border-width) * 1px);
   --xh-form-field-invalid-border: #{(var(--xh-form-field-invalid-border-width-px) solid var(--xh-form-field-invalid-border-color))};

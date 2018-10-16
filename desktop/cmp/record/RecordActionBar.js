@@ -8,73 +8,65 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {hbox} from '@xh/hoist/cmp/layout';
-import {button} from '@xh/hoist/desktop/cmp/button';
-import {Record, RecordAction} from '@xh/hoist/data';
-import {withDefault} from '@xh/hoist/utils/js';
+import {Record, RecordAction, StoreSelectionModel} from '@xh/hoist/data';
+import {buttonGroup} from '@xh/hoist/kit/blueprint';
+import {GridModel} from '@xh/hoist/desktop/cmp/grid';
+import {throwIf} from '@xh/hoist/utils/js';
+import {Column} from '@xh/hoist/columns';
+import {isEmpty} from 'lodash';
 
-import './RecordActionBar.scss';
+import {recordActionButton} from './impl/RecordActionButton';
 
 /**
- * Component that accepts data object and an array of one or more RecordActions, which it renders
- * as a row of minimal buttons. Primarily intended for use within a grid column elementRenderer to
- * display a set of row-level actions. See the `actionCol` colDef partial exported from
- * `@xh/hoist/desktop/columns` for a ready-made configuration.
+ * Component that accepts an array of one or more RecordActions, which it renders as buttons in a
+ * ButtonGroup.
  *
- * To minimize UI clutter and avoid competing for the user's attention, set `showOnHoverOnly` to
- * true and the rendered buttons will only be visible when hovering over the component (or row when
- * used in a grid)
+ * The component must be provided either the `record` or the `selModel` to determine which record
+ * to pass to the RecordAction callbacks. If provided, the `gridModel` and `column` will also be
+ * passed to the RecordAction callbacks.
+ *
+ * @see RecordAction
  */
 @HoistComponent
 export class RecordActionBar extends Component {
-
     baseClassName = 'xh-record-action-bar';
 
     static propTypes = {
-        /** RecordActions to clone or configs to create. */
-        actions: PT.arrayOf(PT.oneOfType([PT.object, PT.instanceOf(RecordAction)])).isRequired,
+        /** RecordAction configs. */
+        actions: PT.arrayOf(PT.object).isRequired,
         /** The data Record to associate with the actions. */
-        record: PT.instanceOf(Record),
-        /** Set to true to only show the action buttons when hovering over the action bar (or row when used in a grid). */
-        showOnHoverOnly: PT.bool
+        record: PT.oneOfType([PT.object, Record]),
+        /** The selection model used to determine the selected records */
+        selModel: PT.instanceOf(StoreSelectionModel),
+        /** The grid model which contains the records we may act on. Required if record is omitted. */
+        gridModel: PT.instanceOf(GridModel),
+        /** The column in a grid where this button is displayed */
+        column: PT.instanceOf(Column),
+        /** Props to pass to the button components */
+        buttonProps: PT.object,
+        /** Set to true to stack the buttons vertically */
+        vertical: PT.bool
     };
 
-    actions = [];
-
-    constructor(props) {
-        super(props);
-        this.actions = props.actions
-            .filter(Boolean)
-            .map(it => it instanceof RecordAction ? it.clone() :  new RecordAction(it));
-    }
-
     render() {
-        const {props, actions} = this,
-            showOnHoverOnly = withDefault(props.showOnHoverOnly, false);
+        const {actions, record, selModel, gridModel, column, buttonProps, vertical, ...rest} = this.props;
 
-        return hbox({
-            className: this.getClassName(showOnHoverOnly ? 'xh-show-on-hover' : null),
-            items: actions.map(action => this.renderAction(action))
-        });
-    }
+        throwIf(!record && !selModel, 'You must provide either the record or selModel to RecordActionBar!');
 
-    renderAction(action) {
-        const {record} = this.props;
+        if (isEmpty(actions)) return null;
 
-        if (action.prepareFn) action.prepareFn(action, record, [record]);
-
-        if (action.hidden) return null;
-
-        const {icon, intent, disabled, tooltip, actionFn} = action;
-        return button({
-            className: 'xh-record-action-button',
-            small: true,
-            minimal: true,
-            title: tooltip,
-            icon,
-            intent,
-            disabled,
-            onClick: () => actionFn(action, record, [record])
+        return buttonGroup({
+            vertical,
+            className: this.getClassName(),
+            items: actions.filter(Boolean).map(action => recordActionButton({
+                action: new RecordAction(action),
+                record,
+                selModel,
+                gridModel,
+                column,
+                ...buttonProps
+            })),
+            ...rest
         });
     }
 }

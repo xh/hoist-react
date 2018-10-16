@@ -16,18 +16,22 @@ import {RestControlModel} from './RestControlModel';
 @HoistModel
 export class RestFormModel {
 
+    /** @member {RestGridModel} */
     parent = null;
+
     controlModels = [];
+    actions;
 
     // If not null, form will be open and display it
     @observable record = null;
     originalRecord = null;
 
+    isWritable;
+
     get actionWarning() {return this.parent.actionWarning}
-    get actionEnabled() {return this.parent.actionEnabled}
-    get store()         {return this.parent.store}
-    get fields()        {return this.store.fields}
-    get loadModel()     {return this.store.loadModel}
+    get store()          {return this.parent.store}
+    get fields()         {return this.store.fields}
+    get loadModel()      {return this.store.loadModel}
 
     @computed
     get isAdd() {
@@ -41,17 +45,11 @@ export class RestFormModel {
     }
 
     @computed
-    get isWritable() {
-        const {isAdd, actionEnabled} = this;
-        return (isAdd && actionEnabled.add) || (!isAdd && actionEnabled.edit);
-    }
-
-    @computed
     get isDirty() {
         return !isEqual(this.record, this.originalRecord);
     }
 
-    constructor({parent, editors}) {
+    constructor({parent, editors, actions}) {
         this.parent = parent;
         this.controlModels = editors.map((editor) => {
             const field = this.store.getField(editor.field);
@@ -59,6 +57,8 @@ export class RestFormModel {
 
             return new RestControlModel({editor, field, parent: this});
         });
+
+        this.actions = actions;
     }
 
     //-----------------
@@ -75,14 +75,6 @@ export class RestFormModel {
     }
 
     @action
-    deleteRecord() {
-        this.store
-            .deleteRecordAsync(this.record)
-            .then(() => this.close())
-            .catchDefault();
-    }
-
-    @action
     close() {
         this.originalRecord = this.record = null;
     }
@@ -95,11 +87,19 @@ export class RestFormModel {
         });
 
         this.originalRecord = this.record = newRec;
+        this.isWritable = true;
     }
 
     @action
     openEdit(rec)  {
         this.originalRecord = this.record = Object.assign({}, rec);
+        this.isWritable = true;
+    }
+
+    @action
+    openView(rec) {
+        this.originalRecord = this.record = Object.assign({}, rec);
+        this.isWritable = false;
     }
 
     @action

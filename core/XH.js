@@ -350,16 +350,18 @@ class XHClass {
         try {
             this.setAppState(S.PRE_AUTH);
 
-            const authUser = await this.getAuthUserFromServerAsync();
+            // Check if user has already been authenticated (prior login, SSO)...
+            const userIsAuthenticated = await this.getAuthStatusFromServerAsync();
 
-            if (!authUser) {
+            // ...if not, throw in SSO mode (unexpected error case) or trigger a login prompt.
+            if (!userIsAuthenticated) {
                 throwIf(this.app.requireSSO, 'Failed to authenticate user via SSO.');
-
                 this.setAppState(S.LOGIN_REQUIRED);
                 return;
             }
 
-            await this.completeInitAsync(authUser.username);
+            // ...if so, continue with initialization.
+            await this.completeInitAsync();
 
         } catch (e) {
             this.setAppState(S.LOAD_FAILED);
@@ -368,7 +370,8 @@ class XHClass {
     }
 
     /**
-     * Complete initialization. Called after user identity has been confirmed.
+     * Complete initialization. Called after the client has confirmed that the user is generally
+     * authenticated and known to the server (regardless of application roles at this point).
      * Used by framework. Not intended for application use.
      */
     @action
@@ -402,10 +405,16 @@ class XHClass {
     //------------------------
     // Implementation
     //------------------------
-    async getAuthUserFromServerAsync() {
+    async getAuthStatusFromServerAsync() {
         return await this.fetchService
-            .fetchJson({url: 'auth/authUser'})
-            .then(r => r.authUser);
+            .fetchJson({url: 'xh/authStatus'})
+            .then(r => r.authenticated)
+            .catch(e => {
+                // 401s normal / expected for non-SSO apps when user not yet logged in.
+                if (e.httpStatus == 401) return false;
+                // Other exceptions indicate e.g. connectivity issue, server down - raise to user.
+                throw e;
+            });
     }
 
     async initServicesAsync() {
