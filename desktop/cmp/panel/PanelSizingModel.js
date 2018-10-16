@@ -11,7 +11,6 @@ import {withDefault, throwIf} from '@xh/hoist/utils/js';
 import {start} from '@xh/hoist/promise';
 import {isNil} from 'lodash';
 
-
 /**
  * This class provides the underlying state for the resizing/collapse state of a Panel.
  */
@@ -28,6 +27,9 @@ export class PanelSizingModel {
     side;
     collapsedRenderMode;
     prefName;
+    showResizeBar;
+    showResizeButton;
+    showHeaderCollapseButton;
 
     //---------------------
     // Observable State
@@ -60,7 +62,10 @@ export class PanelSizingModel {
         defaultCollapsed = false,
         side,
         collapsedRenderMode = 'lazy',
-        prefName = null
+        prefName = null,
+        showResizeBar = true,
+        showResizeButton = true,
+        showHeaderCollapseButton = true
     }) {
         throwIf(isNil(defaultSize) || isNil(side), "Must specify 'defaultSize' and 'side' for PanelSizingModel");
 
@@ -71,6 +76,9 @@ export class PanelSizingModel {
         this.defaultCollapsed = defaultCollapsed;
         this.side = side;
         this.collapsedRenderMode = collapsedRenderMode;
+        this.showResizeBar = showResizeBar;
+        this.showResizeButton = showResizeButton;
+        this.showHeaderCollapseButton = showHeaderCollapseButton;
 
         if (prefName && !XH.prefService.hasKey(prefName)) {
             console.warn(`Unknown preference for storing state of Panel '${prefName}'`);
