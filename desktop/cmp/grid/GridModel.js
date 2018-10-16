@@ -65,6 +65,8 @@ export class GridModel {
     enableExport = false;
     /** @member {string} */
     exportFilename = 'export';
+    /** @member {boolean} */
+    enableCellSelect = true;
 
     //------------------------
     // Observable API
@@ -138,9 +140,9 @@ export class GridModel {
         groupBy = null,
         compact = false,
         enableColChooser = false,
-        enableExport = false,
+        enableExport = true,
         exportFilename = 'export',
-        enableCellSelect = false,
+        enableCellSelect = true,
         rowClassFn = null,
         contextMenuFn = () => this.defaultContextMenu(),
         ...rest
@@ -211,7 +213,7 @@ export class GridModel {
     copyCell() {
         const {agApi} = this;
         if (agApi) {
-            agApi.copySelectedRangeToClipboard()
+            agApi.copySelectedRangeToClipboard();
         }
     }
 

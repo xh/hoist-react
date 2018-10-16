@@ -6,7 +6,7 @@
  */
 import {Component, isValidElement} from 'react';
 import {PropTypes as PT} from 'prop-types';
-import {isNil, isString, merge, xor, dropRightWhile, dropWhile, isEmpty} from 'lodash';
+import {isNil, isString, merge, xor, dropRightWhile, dropWhile, isEmpty, last} from 'lodash';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
@@ -155,7 +155,8 @@ export class Grid extends Component {
             groupDefaultExpanded: 1,
             groupUseEntireRow: true,
             enableRangeSelection: true,
-            suppressMultiRangeSelection: true
+            suppressMultiRangeSelection: true,
+            onRangeSelectionChanged: this.onRangeSelectionChanged
         };
 
         if (model.treeMode) {
@@ -363,6 +364,28 @@ export class Grid extends Component {
         this.model.selModel.select(ev.api.getSelectedRows());
     };
 
+    onRangeSelectionChanged = (ev) => {
+        const rangeSelections = ev.api.getRangeSelections();
+        if (!rangeSelections || rangeSelections.length === 0) return;
+
+        const lastRange = last(rangeSelections);
+        if (
+            lastRange.start.rowIndex === lastRange.end.rowIndex &&
+            lastRange.start.column.colId === lastRange.end.column.colId &&
+            rangeSelections.length === 1
+        ) return;
+
+        const rangeSelectParams = {
+            rowStart: lastRange.start.rowIndex,
+            rowEnd: lastRange.start.rowIndex,
+            columnStart: lastRange.start.column.colId,
+            columnEnd: lastRange.start.column.colId
+        };
+
+        ev.api.clearRangeSelection();
+        ev.api.addRangeSelection(rangeSelectParams);
+    };
+
     // Catches column re-ordering AND resizing via user drag-and-drop interaction.
     onDragStopped = (ev) => {
         this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
@@ -385,6 +408,9 @@ export class Grid extends Component {
         const ret = [];
         api.forEachNode(node => ret.push(node.expanded));
         return ret;
+    }
+
+    rangeSelectionChanged = (ev) => {
     }
 
     writeExpandState(api, expandState) {

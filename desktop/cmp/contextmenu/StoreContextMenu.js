@@ -59,7 +59,6 @@ export class StoreContextMenu {
 
     parseToken(token) {
         const gridModel = this.gridModel;
-
         switch (token) {
             case 'colChooser':
                 return new RecordAction({
@@ -89,8 +88,8 @@ export class StoreContextMenu {
                 return new RecordAction({
                     text: 'Copy Cell',
                     icon: Icon.copy(),
-                    hidden: !gridModel,
-                    disabled: !gridModel,
+                    hidden: !gridModel || !gridModel.enableCellSelect,
+                    disabled: !gridModel || !gridModel.store.count,
                     actionFn: () => gridModel.copyCell()
                 });
             case 'expandCollapseAll':
