@@ -85,6 +85,14 @@ export class StoreContextMenu {
                     disabled: !gridModel || !gridModel.store.count,
                     actionFn: () => gridModel.export({type: 'csv'})
                 });
+            case 'copyCell':
+                return new RecordAction({
+                    text: 'Copy Cell',
+                    icon: Icon.copy(),
+                    hidden: !gridModel,
+                    disabled: !gridModel,
+                    actionFn: () => gridModel.copyCell()
+                });
             case 'expandCollapseAll':
                 return [
                     new RecordAction({

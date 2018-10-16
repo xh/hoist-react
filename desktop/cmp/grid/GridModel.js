@@ -85,6 +85,7 @@ export class GridModel {
     static defaultContextMenuTokens = [
         'copy',
         'copyWithHeaders',
+        'copyCell',
         '-',
         'expandCollapseAll',
         '-',
@@ -139,6 +140,7 @@ export class GridModel {
         enableColChooser = false,
         enableExport = false,
         exportFilename = 'export',
+        enableCellSelect = false,
         rowClassFn = null,
         contextMenuFn = () => this.defaultContextMenu(),
         ...rest
@@ -203,6 +205,13 @@ export class GridModel {
         if (agApi) {
             const first = agApi.getDisplayedRowAtIndex(0);
             if (first) selModel.select(first);
+        }
+    }
+
+    copyCell() {
+        const {agApi} = this;
+        if (agApi) {
+            agApi.copySelectedRangeToClipboard()
         }
     }
 
