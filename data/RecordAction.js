@@ -127,6 +127,7 @@ export class RecordAction {
      * @param {*} [p...rest] - additional data provided by the context where this action presides
      */
     call({record, selectedRecords, gridModel, column, ...rest}) {
+        if (!this.actionFn) return;
         this.actionFn({action: this, record, selectedRecords, gridModel, column, ...rest});
     }
 
