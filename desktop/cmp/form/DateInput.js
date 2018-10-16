@@ -13,6 +13,7 @@ import {fmtDate} from '@xh/hoist/format';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {dateInput as bpDateInput} from '@xh/hoist/kit/blueprint';
 import {Ref} from '@xh/hoist/utils/react';
+import {computed} from '@xh/hoist/mobx';
 
 import {HoistInput} from '@xh/hoist/cmp/form';
 
@@ -75,6 +76,11 @@ export class DateInput extends HoistInput {
     delegateProps = ['className', 'disabled', 'rightElement'];
 
     baseClassName = 'xh-date-input';
+
+    @computed
+    get readOnlyValue() {
+        return this.formatDate(this.renderValue);
+    }
 
     render() {
         let {

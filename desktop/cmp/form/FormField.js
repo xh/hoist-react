@@ -15,7 +15,7 @@ import {Icon} from '@xh/hoist/icon';
 import {throwIf} from '@xh/hoist/utils/js';
 
 import './FormField.scss';
-import {displayField} from './DisplayField';
+import {readOnlyField} from './ReadOnlyField';
 
 /**
  * Standardised wrapper around a HoistInput Component.
@@ -45,7 +45,9 @@ export class FormField extends Component {
         /** Apply minimal styling - validation errors are only displayed with a tooltip */
         minimal: PT.bool,
         /** Display warning glyph in the far left side of the input (TextField, NumberInput only) */
-        leftErrorIcon: PT.bool
+        leftErrorIcon: PT.bool,
+        /** Render child as a ReadOnlyField */
+        readOnly: PT.bool
     };
 
     baseClassName = 'xh-form-field';
@@ -107,11 +109,10 @@ export class FormField extends Component {
         throwIf(!item || isArray(item) || !(item.type.prototype instanceof HoistInput), 'FormField child must be a single component that extends HoistInput.');
         throwIf(item.props.field || item.props.model, 'HoistInputs should not declare "field" or "model" when used with FormField');
 
-        if (readOnly) return displayField({model, field});
-
         const leftIcon = notValid ? this.leftIcon(item) : {},
             target = React.cloneElement(item, {model, field, disabled, ...leftIcon});
 
+        if (readOnly) return readOnlyField({item: target});
         if (!minimal) return target;
 
         // Wrap target in a tooltip if in minimal mode

@@ -119,8 +119,12 @@ export class HoistInput extends Component {
         return value;
     }
 
+    /**
+     * Return the value to be rendered in a ReadOnlyField.
+     * Can be overridden in subclasses.
+     */
     @computed
-    get displayValue() {
+    get readOnlyValue() {
         return this.toInternal(this.externalValue);
     }
 

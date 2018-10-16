@@ -7,7 +7,7 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {isObject, find} from 'lodash';
-import {observable, action} from '@xh/hoist/mobx';
+import {observable, computed, action} from '@xh/hoist/mobx';
 import {menuItem} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/form';
@@ -33,6 +33,11 @@ export class BaseDropdownInput extends HoistInput {
 
     // blueprint-ready collection of available options, normalized to {label, value} form.
     @observable.ref internalOptions = [];
+
+    @computed
+    get readOnlyValue() {
+        return this.getDisplayValue(this.renderValue, this.internalOptions, '');
+    }
 
     //---------------------------------------------------------------------------
     // Handling of null values.  Blueprint doesn't allow null for the value of a

@@ -8,6 +8,7 @@
 import React from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {buttonGroup} from '@xh/hoist/kit/blueprint';
+import {computed} from '@xh/hoist/mobx';
 import {castArray} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
 
@@ -32,6 +33,14 @@ export class ButtonGroupInput extends HoistInput {
     };
 
     baseClassName = 'xh-button-group-input';
+
+    @computed
+    get readOnlyValue() {
+        const btn = castArray(this.props.children).find(button => {
+            return this.renderValue === button.props.value;
+        });
+        return btn ? btn.props.text : null;
+    }
 
     render() {
         const children = castArray(this.props.children),

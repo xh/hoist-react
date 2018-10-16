@@ -8,6 +8,7 @@
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {switchControl} from '@xh/hoist/kit/blueprint';
+import {computed} from '@xh/hoist/mobx';
 
 import {HoistInput} from '@xh/hoist/cmp/form';
 
@@ -29,6 +30,11 @@ export class SwitchInput extends HoistInput {
     };
 
     baseClassName = 'xh-switch-input';
+
+    @computed
+    get readOnlyValue() {
+        return this.renderValue ? 'On' : 'Off';
+    }
 
     render() {
         return switchControl({

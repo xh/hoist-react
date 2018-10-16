@@ -8,6 +8,8 @@
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {checkbox} from '@xh/hoist/kit/blueprint';
+import {computed} from '@xh/hoist/mobx';
+import {Icon} from '@xh/hoist/icon';
 
 import {HoistInput} from '@xh/hoist/cmp/form';
 
@@ -29,6 +31,11 @@ export class CheckBox extends HoistInput {
     }
 
     baseClassName = 'xh-check-box';
+
+    @computed
+    get readOnlyValue() {
+        return this.renderValue ? Icon.check() : null;
+    }
 
     render() {
         return checkbox({

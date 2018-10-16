@@ -10,8 +10,8 @@ import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {box} from '@xh/hoist/cmp/layout';
 import {slider as bpSlider, rangeSlider as bpRangeSlider} from '@xh/hoist/kit/blueprint';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isArray} from 'lodash';
-import {toJS} from 'mobx';
+import {castArray, isArray, isFunction} from 'lodash';
+import {toJS, computed} from 'mobx';
 import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
@@ -49,6 +49,14 @@ export class Slider extends HoistInput {
     delegateProps = ['className', 'disabled'];
 
     baseClassName = 'xh-slider';
+
+    @computed
+    get readOnlyValue() {
+        const {labelRenderer} = this.props;
+        return castArray(toJS(this.renderValue)).map(it => {
+            return isFunction(labelRenderer) ? labelRenderer(it) : it;
+        }).join(' - ');
+    }
 
     constructor(props) {
         super(props);

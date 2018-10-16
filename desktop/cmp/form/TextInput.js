@@ -8,6 +8,7 @@
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {inputGroup} from '@xh/hoist/kit/blueprint';
+import {computed} from '@xh/hoist/mobx';
 
 import {HoistInput} from '@xh/hoist/cmp/form';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -55,6 +56,12 @@ export class TextInput extends HoistInput {
     delegateProps = ['className', 'disabled', 'type', 'placeholder', 'autoFocus', 'leftIcon', 'rightElement'];
 
     baseClassName = 'xh-text-input';
+
+    @computed
+    get readOnlyValue() {
+        const value = this.renderValue;
+        return value && this.props.type === 'password' ? value.replace(/./g, '•') : value;
+    }
 
     render() {
         const {style, width, spellCheck, autoComplete, type} = this.props;

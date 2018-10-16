@@ -7,6 +7,7 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {computed} from '@xh/hoist/mobx';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {fmtNumber} from '@xh/hoist/format';
 import {HoistInput} from '@xh/hoist/cmp/form';
@@ -54,6 +55,11 @@ export class NumberInput extends HoistInput {
     delegateProps = ['className', 'disabled', 'min', 'max', 'placeholder', 'leftIcon'];
 
     baseClassName = 'xh-number-input';
+
+    @computed
+    get readOnlyValue() {
+        return this.formatValue(this.renderValue);
+    }
 
     render() {
         const {props, hasFocus, renderValue} = this,

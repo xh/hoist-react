@@ -7,7 +7,7 @@
 
 import {PropTypes as PT} from 'prop-types';
 import {castArray, clone, isEmpty, remove, startsWith} from 'lodash';
-import {action} from '@xh/hoist/mobx';
+import {action, computed} from '@xh/hoist/mobx';
 import {Classes, menuItem, multiSelect as bpMultiSelect} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -43,6 +43,13 @@ export class MultiSelect extends BaseDropdownInput {
     delegateProps = ['className', 'disabled'];
 
     baseClassName = 'xh-multi-select';
+
+    @computed
+    get readOnlyValue() {
+        return this.renderValue.map(value => {
+            return this.getDisplayValue(value, this.internalOptions, '');
+        }).join(', ');
+    }
 
     constructor(props) {
         super(props);
