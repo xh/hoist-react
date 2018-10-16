@@ -88,16 +88,19 @@ export class RecordAction {
      * @param {*} [p...rest] - additional data provided by the context where this action presides
      */
     getDisplaySpec({record, selectedRecords, gridModel, column, ...rest}) {
-        const recordCount = record && isEmpty(selectedRecords) ? 1 : selectedRecords.length,
-            defaultDisplay = {
-                icon: this.icon,
-                text: this.text,
-                intent: this.intent,
-                tooltip: this.tooltip,
-                items: this.items,
-                hidden: this.hidden,
-                disabled: this.disabled || !this.meetsRecordRequirement(recordCount)
-            };
+        const recordCount = record && isEmpty(selectedRecords) ?
+            1 :
+            selectedRecords ? selectedRecords.length : 0;
+
+        const defaultDisplay = {
+            icon: this.icon,
+            text: this.text,
+            intent: this.intent,
+            tooltip: this.tooltip,
+            items: this.items,
+            hidden: this.hidden,
+            disabled: this.disabled || !this.meetsRecordRequirement(recordCount)
+        };
 
         if (this.displayFn) {
             return {
