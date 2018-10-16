@@ -11,7 +11,7 @@ import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {box, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {Classes, overlay, spinner} from '@xh/hoist/kit/blueprint';
-import {withDefault, withDefaultFalse, withDefaultTrue} from '@xh/hoist/utils/js';
+import {withDefault} from '@xh/hoist/utils/js';
 
 
 import './Mask.scss';
@@ -50,8 +50,8 @@ export class Mask extends Component {
         if (!isDisplayed) return null;
 
         const message = withDefault(props.message, model && model.message),
-            inline = withDefaultTrue(props.inline),
-            showSpinner = withDefaultFalse(props.spinner),
+            inline = withDefault(props.inline, true),
+            showSpinner = withDefault(props.spinner, false),
             onClick = props.onClick;
 
         return overlay({
