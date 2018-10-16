@@ -153,7 +153,6 @@ export class Grid extends Component {
             onGridSizeChanged: this.onGridSizeChanged,
             onDragStopped: this.onDragStopped,
             onColumnResized: this.onColumnResized,
-
             groupDefaultExpanded: 1,
             groupUseEntireRow: true
         };
