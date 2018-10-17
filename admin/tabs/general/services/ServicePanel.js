@@ -34,25 +34,19 @@ export class ServicePanel extends Component {
 
     renderToolbar() {
         const {model} = this,
-            {store, selModel} = model.gridModel;
+            {gridModel} = model;
         return toolbar(
             button({
                 icon: Icon.sync(),
                 text: 'Clear Caches',
                 onClick: this.onClearCachesClick,
-                disabled: selModel.isEmpty
+                disabled: gridModel.selModel.isEmpty
             }),
             toolbarSep(),
             refreshButton({model}),
             filler(),
-            storeCountLabel({
-                store,
-                unit: 'service'
-            }),
-            storeFilterField({
-                store,
-                fields: ['name']
-            })
+            storeCountLabel({gridModel, unit: 'service'}),
+            storeFilterField({gridModel})
         );
     }
 

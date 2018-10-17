@@ -39,10 +39,7 @@ export class LogViewer extends Component {
                     item: grid({model: filesGridModel}),
                     bbar: toolbar(
                         filler(),
-                        storeFilterField({
-                            store: filesGridModel.store,
-                            fields: ['filename']
-                        })
+                        storeFilterField({gridModel: filesGridModel})
                     ),
                     sizingModel: filesSizingModel
                 }),

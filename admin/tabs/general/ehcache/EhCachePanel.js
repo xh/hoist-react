@@ -29,8 +29,8 @@ export class EhCachePanel extends Component {
     }
 
     renderToolbar() {
-        const model = this.model,
-            {store} = model.gridModel;
+        const {model} = this,
+            {gridModel} = model;
         return toolbar(
             button({
                 icon: Icon.sync(),
@@ -40,14 +40,8 @@ export class EhCachePanel extends Component {
             toolbarSep(),
             refreshButton({model}),
             filler(),
-            storeCountLabel({
-                store,
-                unit: 'cache'
-            }),
-            storeFilterField({
-                store,
-                fields: ['name', 'status']
-            })
+            storeCountLabel({gridModel, unit: 'cache'}),
+            storeFilterField({gridModel})
         );
     }
 
