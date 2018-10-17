@@ -124,7 +124,7 @@ export class Column {
         this.headerName = withDefault(headerName, startCase(this.colId));
         this.headerClass = castArray(headerClass);
         this.cellClass = castArray(cellClass);
-        this.subFields = castArray(subFields);
+        this.subFields = subFields;
         this.hide = withDefault(hide, false);
         this.align = align;
         this.isTreeColumn = withDefault(isTreeColumn, false);
@@ -228,14 +228,14 @@ export class Column {
         const {subFields, renderer, elementRenderer} = this,
             column = this; // eslint-disable-line consistent-this
 
-        if (subFields) {
+        if (subFields && subFields.length) {
             ret.cellRendererFramework = class extends Component {
                 render() {
                     const agParams = this.props,
                         {value, data: record} = agParams,
                         fields = gridModel.subFields.filter(it => subFields.includes(it.field));
 
-                    return subFieldRenderer({fields, value, record, renderer, column});
+                    return subFieldRenderer({fields, value, record, renderer, elementRenderer, column});
                 }
                 refresh() {return false}
             };

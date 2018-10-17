@@ -30,18 +30,20 @@ export class SubFieldRenderer extends Component {
         /** Reference to the Column */
         column: PT.object.isRequired,
         /** Renderer for primary field. */
-        renderer: PT.func
+        renderer: PT.func,
+        /** Element tenderer for primary field (returns a React component) */
+        elementRenderer: PT.func
     };
 
     render() {
-        const {fields = [], value, record, column, renderer} = this.props;
+        const {fields = [], value, record, column, renderer, elementRenderer} = this.props;
 
         return vbox({
             className: 'xh-subfield-renderer',
             items: [
                 span({
                     className: 'xh-subfield-renderer-top',
-                    item: renderer ? renderer(value, {record, column}) : value
+                    item: this.renderValue(value, renderer, elementRenderer, record, column)
                 }),
                 hbox({
                     omit: !fields.length,
@@ -52,7 +54,7 @@ export class SubFieldRenderer extends Component {
         });
     }
 
-    renderBottomRowField({label, field, renderer}) {
+    renderBottomRowField({label, field, renderer, elementRenderer}) {
         const {record, column} = this.props,
             value = record[field];
 
@@ -60,9 +62,16 @@ export class SubFieldRenderer extends Component {
             className: 'xh-subfield-renderer-bottom-field',
             items: [
                 label ? span(`${label}:`) : null,
-                span(renderer ? renderer(value, {record, column}) : value)
+                span(this.renderValue(value, renderer, elementRenderer, record, column))
             ]
         });
+    }
+
+    renderValue(value, renderer, elementRenderer, record, column) {
+        let ret = value;
+        if (renderer) ret = renderer(value, {record, column});
+        if (elementRenderer) ret = elementRenderer(value, {record, column});
+        return ret;
     }
 
 }

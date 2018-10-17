@@ -552,4 +552,5 @@ export class GridModel {
  * @property {string} field - name of data store field to display.
  * @property {string} [label] - display text for field
  * @property {Column~rendererFn} [renderer] - function to produce a formatted string for field.
+ * @property {Column~elementRendererFn} [elementRenderer] - function which returns a React component.
  */
