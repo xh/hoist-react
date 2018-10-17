@@ -124,6 +124,7 @@ export class GridModel {
      *      Should return a string or array of strings. Receives record data as param.
 *      @param {SubField[]} c.subFields - collection of available subfields.
      * @param {function} [c.contextMenuFn] - closure returning a StoreContextMenu.
+     * @param {*} [c...rest] - additional data to store
      *      @see StoreContextMenu
      */
     constructor({
@@ -141,7 +142,8 @@ export class GridModel {
         exportFilename = 'export',
         rowClassFn = null,
         subFields = [],
-        contextMenuFn = () => this.defaultContextMenu()
+        contextMenuFn = () => this.defaultContextMenu(),
+        ...rest
     }) {
         this.store = store;
         this.treeMode = treeMode;
@@ -151,6 +153,8 @@ export class GridModel {
         this.contextMenuFn = contextMenuFn;
         this.rowClassFn = rowClassFn;
         this.subFields = subFields;
+
+        Object.assign(this, rest);
 
         this.setColumns(columns);
 
@@ -335,7 +339,7 @@ export class GridModel {
         throwIf(colConfigs.some(c => !isPlainObject(c)),
             'setColumns only accepts plain objects for Column or ColumnGroup configs!');
 
-        const columns = colConfigs.map(c => c.children ? new ColumnGroup(c) : new Column(c));
+        const columns = colConfigs.map(c => this.buildColumn(c));
 
         this.validateColumns(columns);
 
@@ -377,7 +381,8 @@ export class GridModel {
         let {columns} = this,
             newCols = [...columns];
 
-        throwIf(colChanges.some(({colId}) => !this.findColumn(columns, colId)), 'Invalid columns detected in column changes!');
+        throwIf(colChanges.some(({colId}) => !this.findColumn(columns, colId)),
+            'Invalid columns detected in column changes!');
 
         // 1) Update any width or visibility changes
         colChanges.forEach(change => {
@@ -424,6 +429,10 @@ export class GridModel {
             }
         }
         return null;
+    }
+
+    buildColumn(c) {
+        return c.children ? new ColumnGroup(c, this) : new Column(c, this);
     }
 
     //-----------------------

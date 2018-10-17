@@ -5,12 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component, isValidElement} from 'react';
-import {PropTypes as PT} from 'prop-types';
-import {isBoolean, isNil, isNumber, isString, merge, xor} from 'lodash';
+import PT from 'prop-types';
+import {isNil, isString, merge, xor, dropRightWhile, dropWhile, isEmpty} from 'lodash';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
+import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import './ag-grid';
 import {agGridReact, navigateSelection, ColumnHeader} from './ag-grid';
 import {colChooser} from './ColChooser';
@@ -41,11 +42,8 @@ export class Grid extends Component {
          */
         agOptions: PT.object,
 
-        /**
-         * Callback to call when a row is double clicked.  Function will receive an event
-         * with a data node containing the row's data.
-         */
-        onRowDoubleClicked: PT.func,
+        /** True to suppress display of the grid's header row. */
+        hideHeaders: PT.bool,
 
         /**
          * Callback to call when a key down event is detected on this component.
@@ -55,6 +53,12 @@ export class Grid extends Component {
          * This handler is designed to allow application to workaround this.
          */
         onKeyDown: PT.func,
+
+        /**
+         * Callback to call when a row is double clicked.  Function will receive an event
+         * with a data node containing the row's data.
+         */
+        onRowDoubleClicked: PT.func,
 
         /**
          * Show a colored row background on hover. Defaults to false.
@@ -115,7 +119,6 @@ export class Grid extends Component {
         );
     }
 
-
     //------------------------
     // Implementation
     //------------------------
@@ -132,6 +135,7 @@ export class Grid extends Component {
             popupParent: document.querySelector('body'),
             navigateToNextCell: this.onNavigateToNextCell,
             defaultGroupSortComparator: this.sortByGroup,
+            headerHeight: props.hideHeaders ? 0 : undefined,
             icons: {
                 groupExpanded: convertIconToSvg(
                     Icon.angleDown(),
@@ -159,7 +163,6 @@ export class Grid extends Component {
             onGridSizeChanged: this.onGridSizeChanged,
             onDragStopped: this.onDragStopped,
             onColumnResized: this.onColumnResized,
-
             groupDefaultExpanded: 1,
             groupUseEntireRow: true
         };
@@ -180,7 +183,7 @@ export class Grid extends Component {
     // Support for defaults
     //------------------------
     getColumnDefs() {
-        return this.model.columns.map(col => col.getAgSpec(this.model));
+        return this.model.columns.map(col => col.getAgSpec());
     }
 
     getContextMenuItems = (params) => {
@@ -189,57 +192,65 @@ export class Grid extends Component {
 
         const menu = contextMenuFn(params, this.model),
             recId = params.node ? params.node.id : null,
-            rec = isNil(recId) ? null : store.getById(recId, true),
+            record = isNil(recId) ? null : store.getById(recId, true),
             selectedIds = selModel.ids;
 
         // Adjust selection to target record -- and sync to grid immediately.
-        if (rec && !(selectedIds.includes(recId))) {
-            selModel.select(rec);
+        if (record && !(selectedIds.includes(recId))) {
+            selModel.select(record);
         }
-        if (!rec) selModel.clear();
 
-        const count = selModel.count,
-            selectedRecs = selModel.records;
+        if (!record) selModel.clear();
 
-        // Prepare each item
-        const items = menu.items;
-        items.forEach(it => {
-            if (it.prepareFn) it.prepareFn(it, rec, selectedRecs);
-        });
+        return this.buildMenuItems(menu.items, record, selModel.records);
+    };
 
-        return items.filter(it => {
-            return !it.hidden;
-        }).filter((it, idx, arr) => {
-            if (it === '-') {
-                // Remove consecutive separators
-                const prev = idx > 0 ? arr[idx - 1] : null;
-                if (prev === '-') return false;
+    buildMenuItems(recordActions, record, selectedRecords) {
+        let items = [];
+        recordActions.forEach(action => {
+            if (action === '-') {
+                items.push('separator');
+                return;
             }
-            return true;
-        }).filter((it, idx, arr) => {
-            // Remove starting / ending separators
-            return it !== '-' || (idx > 0 && idx < arr.length - 1);
-        }).map(it => {
-            if (it === '-') return 'separator';
-            if (isString(it)) return it;
 
-            const required = it.recordsRequired,
-                requiredRecordsNotMet = (isBoolean(required) && required && count === 0) ||
-                    (isNumber(required) && count !== required);
+            if (isString(action)) {
+                items.push(action);
+                return;
+            }
 
-            let icon = it.icon;
+            const params = {
+                record,
+                selectedRecords,
+                gridModel: this.model
+            };
+
+            const displaySpec = action.getDisplaySpec(params);
+            if (displaySpec.hidden) return;
+
+            let childItems;
+            if (!isEmpty(displaySpec.items)) {
+                const menu = new StoreContextMenu({items: displaySpec.items, gridModel: this.gridModel});
+                childItems = this.buildMenuItems(menu.items, record, selectedRecords);
+            }
+
+            let icon = displaySpec.icon;
             if (isValidElement(icon)) {
                 icon = convertIconToSvg(icon);
             }
 
-            return {
-                name: it.text,
+            items.push({
+                name: displaySpec.text,
                 icon,
-                tooltip: it.tooltip,
-                disabled: (it.disabled || requiredRecordsNotMet),
-                action: () => it.actionFn(it, rec, selectedRecs)
-            };
+                subMenu: childItems,
+                tooltip: displaySpec.tooltip,
+                disabled: displaySpec.disabled,
+                action: () => action.call(params)
+            });
         });
+
+        items = dropRightWhile(items, it => it === 'separator');
+        items = dropWhile(items, it => it === 'separator');
+        return items;
     }
 
     sortByGroup(nodeA, nodeB) {
@@ -347,38 +358,38 @@ export class Grid extends Component {
     //------------------------
     getDataPath = (data) => {
         return data.xhTreePath;
-    }
+    };
 
     onGridReady = (ev) => {
         this.model.setAgApi(ev.api);
         this.model.setAgColumnApi(ev.columnApi);
-    }
+    };
 
     onNavigateToNextCell = (params) => {
         return navigateSelection(params, this.model.agApi);
-    }
+    };
 
     onSelectionChanged = (ev) => {
         this.model.selModel.select(ev.api.getSelectedRows());
-    }
+    };
 
     // Catches column re-ordering AND resizing via user drag-and-drop interaction.
     onDragStopped = (ev) => {
         this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
-    }
+    };
 
     // Catches column resizing on call to autoSize API.
     onColumnResized = (ev) => {
         if (this.isDisplayed && ev.finished && ev.source == 'autosizeColumns') {
             this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
         }
-    }
+    };
 
     onGridSizeChanged = (ev) => {
         if (this.isDisplayed) {
             ev.api.sizeColumnsToFit();
         }
-    }
+    };
 
     readExpandState(api) {
         const ret = [];
@@ -410,4 +421,5 @@ export class Grid extends Component {
     }
 
 }
+
 export const grid = elemFactory(Grid);

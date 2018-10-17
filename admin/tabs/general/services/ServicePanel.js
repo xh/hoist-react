@@ -25,6 +25,7 @@ export class ServicePanel extends Component {
             tbar: this.renderToolbar(),
             item: grid({
                 model: this.model.gridModel,
+                hideHeaders: true,
                 agOptions: {
                     groupRowInnerRenderer: this.groupRowInnerRenderer
                 }
@@ -51,7 +52,7 @@ export class ServicePanel extends Component {
             }),
             storeFilterField({
                 store,
-                fields: ['name']
+                fields: ['provider', 'name', 'displayName']
             })
         );
     }
