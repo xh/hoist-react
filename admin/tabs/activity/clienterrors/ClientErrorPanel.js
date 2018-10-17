@@ -65,10 +65,7 @@ export class ClientErrorPanel extends Component {
             this.textInput({field: 'error', placeholder: 'Error...'}),
             refreshButton({model}),
             filler(),
-            storeCountLabel({
-                store: model.gridModel.store,
-                unit: 'client error'
-            }),
+            storeCountLabel({gridModel: model.gridModel, unit: 'client error'}),
             exportButton({model: model.gridModel})
         );
     }
