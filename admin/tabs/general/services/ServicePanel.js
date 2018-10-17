@@ -48,7 +48,7 @@ export class ServicePanel extends Component {
             filler(),
             storeCountLabel({gridModel, unit: 'service'}),
             storeFilterField({gridModel})
-      );
+        );
     }
 
     groupRowInnerRenderer(params) {
