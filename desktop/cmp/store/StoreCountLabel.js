@@ -12,7 +12,7 @@ import {box} from '@xh/hoist/cmp/layout';
 import {fmtNumber} from '@xh/hoist/format';
 import {singularize, pluralize} from '@xh/hoist/utils/js';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
-import {withDefault, throwIf} from '@xh/hoist/utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
 import {BaseStore} from '@xh/hoist/data';
 
 /**
