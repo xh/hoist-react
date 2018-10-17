@@ -28,7 +28,7 @@ export class StoreCountLabel extends Component {
         /** Store to count.  Specify this or 'gridModel' */
         store: PT.instanceOf(BaseStore),
 
-        /** GridModel with Store that this control should filter. Specify this or 'store' */
+        /** GridModel with Store that this control should count. Specify this or 'store' */
         gridModel: PT.instanceOf(GridModel),
 
         /** Name of entity that record in store represents */
