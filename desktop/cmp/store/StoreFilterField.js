@@ -23,11 +23,11 @@ import {withDefault, throwIf} from '@xh/hoist/utils/js';
  * object itself is considered a match.
  *
  * Designed to easily filter records within a store - either directly (most common, with a store
- * passed as a prop) or indirectly via a callback (in cases where custom logic is required, such as
+ * or gridModel passed as a prop) or indirectly via a callback (in cases where custom logic is required, such as
  * layering on additional filters).
  *
  * Fields to be searched can be narrowed by using either the 'includeFields' or 'excludeFields' props.
- * In addition, if control is bound to a GridModel, field to be searched will be further narrowed by
+ * In addition, if the component is bound to a GridModel, fields to be searched will be further narrowed by
  * fields associated with *visible* columns or fields used for grouping the grid.
  */
 @HoistComponent
