@@ -131,7 +131,7 @@ export class GridModel {
         store,
         columns,
         treeMode = false,
-        selModel = 'single',
+        selModel = null,
         stateModel = null,
         emptyText = null,
         sortBy = [],
@@ -166,6 +166,7 @@ export class GridModel {
         this.setSortBy(sortBy);
         this.setCompact(compact);
 
+        if (!selModel) selModel = XH.app.isMobile ? 'disabled' : 'single';
         this.selModel = this.initSelModel(selModel, store);
         this.stateModel = this.initStateModel(stateModel);
     }

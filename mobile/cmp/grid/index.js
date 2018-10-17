@@ -5,5 +5,5 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-export * from './Grid';
+export * from '@xh/hoist/desktop/cmp/grid/Grid';
 export * from '@xh/hoist/desktop/cmp/grid/GridModel';

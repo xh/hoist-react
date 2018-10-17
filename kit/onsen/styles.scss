@@ -102,6 +102,10 @@
   }
 }
 
+.xh-grid .ag-body-viewport::-webkit-scrollbar {
+  display: none;
+}
+
 //--------------------
 // Onsen Overrides
 //--------------------
