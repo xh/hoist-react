@@ -283,7 +283,7 @@ function valueColor(v, colorSpec) {
 function buildFormatConfig(v, precision, zeroPad) {
     const num = Math.abs(v);
 
-    const pattern = {thousandSeparated: true};
+    const config = {thousandSeparated: true};
     let mantissa = undefined;
 
     if (precision % 1 === 0) {
@@ -302,9 +302,9 @@ function buildFormatConfig(v, precision, zeroPad) {
             mantissa = 0;
         }
     }
-    pattern.mantissa = mantissa;
-    pattern.trimMantissa = !zeroPad && mantissa != 0;
-    return pattern;
+    config.mantissa = mantissa;
+    config.trimMantissa = !zeroPad && mantissa != 0;
+    return config;
 }
 
 function isInvalidInput(v) {
