@@ -5,16 +5,16 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {find, isObject} from 'lodash';
-import {observable, settable, action} from '@xh/hoist/mobx';
+import {observable, settable, action} from '@xh/hoist/mobx/index';
 import {startsWith} from 'lodash';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {Classes, suggest} from '@xh/hoist/kit/blueprint';
-import {menuItem} from '@xh/hoist/kit/blueprint';
-import {HoistInput} from '@xh/hoist/cmp/form';
-import {withDefault, throwIf} from '@xh/hoist/utils/js';
-import {wait} from '@xh/hoist/promise';
+import {elemFactory, HoistComponent} from '@xh/hoist/core/index';
+import {Classes, suggest} from '@xh/hoist/kit/blueprint/index';
+import {menuItem} from '@xh/hoist/kit/blueprint/index';
+import {HoistInput} from '@xh/hoist/cmp/form/index';
+import {withDefault, throwIf} from '@xh/hoist/utils/js/index';
+import {wait} from '@xh/hoist/promise/index';
 
 /**
  * ComboBox - An input with type ahead suggest and menu select
@@ -35,7 +35,7 @@ export class ComboBox extends HoistInput {
         optionRenderer: PT.func,
         /** Whether to force values from given options. Set to true to disallow arbitrary input */
         requireSelection: PT.bool,
-        /** Icon to display on the left side of the field */
+        /** Icon to display on the left side of the control */
         leftIcon: PT.element,
         /** Element to display on the right side of the field */
         rightElement: PT.element,

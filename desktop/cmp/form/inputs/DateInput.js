@@ -5,32 +5,53 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import moment from 'moment';
 import {assign, clone} from 'lodash';
 
-import {fmtDate} from '@xh/hoist/format';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {dateInput as bpDateInput} from '@xh/hoist/kit/blueprint';
-import {Ref} from '@xh/hoist/utils/react';
-import {withDefault} from '@xh/hoist/utils/js';
-import {HoistInput} from '@xh/hoist/cmp/form';
+import {fmtDate} from '@xh/hoist/format/index';
+import {elemFactory, HoistComponent} from '@xh/hoist/core/index';
+import {dateInput as bpDateInput} from '@xh/hoist/kit/blueprint/index';
+import {Ref} from '@xh/hoist/utils/react/index';
+import {withDefault} from '@xh/hoist/utils/js/index';
+import {HoistInput} from '@xh/hoist/cmp/form/index';
 
 /**
  * A Calendar Control for choosing a Date.
  *
- * @see HoistInput for properties additional to those documented below.
+ *
+ * TODO - fix popover closing when you attempt to interact with it over multiple clicks
+ *
  */
 @HoistComponent
 export class DateInput extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
-        value: PT.string,
+        value: PT.instanceOf(Date),
 
-        /** true to commit on every key stroke, defaults false */
+        /** True to commit on every change/keystroke, default false. */
         commitOnChange: PT.bool,
-        /** Position for calendar popover. @see http://blueprintjs.com/docs/ */
+
+        /** Props passed to ReactDayPicker component, as per DayPicker docs. */
+        dayPickerProps: PT.object,
+
+        /**
+         * MomentJS format string for date display and parsing. Defaults to `YYYY-MM-DD HH:mm:ss`,
+         * with default presence of time components determined by the timePrecision prop.
+         */
+        formatString: PT.string,
+
+        /** Icon to display on the left side of the control. */
+        leftIcon: PT.element,
+
+        /** Maximum (inclusive) valid date. */
+        maxDate: PT.instanceOf(Date),
+
+        /** Minimum (inclusive) valid date. */
+        minDate: PT.instanceOf(Date),
+
+        /** Position for calendar popover, as per Blueprint docs. */
         popoverPosition: PT.oneOf([
             'top-left', 'top', 'top-right',
             'right-top', 'right', 'right-bottom',
@@ -38,18 +59,15 @@ export class DateInput extends HoistInput {
             'left-bottom', 'left', 'left-top',
             'auto'
         ]),
-        /** Minimum (inclusive) valid date. */
-        minDate: PT.instanceOf(Date),
-        /** Maximum (inclusive) valid date. */
-        maxDate: PT.instanceOf(Date),
 
-        /**
-         * MomentJS format of date for display and parsing.
-         *
-         * Defaults to YYYY-MM-DD HH:mm:ss, or a prefix of it, with presence of time components dependent on
-         * the timePrecision prop.
-         */
-        formatString: PT.string,
+        /** Element to display on the right side of the field */
+        rightElement: PT.element,
+
+        /** Alignment of entry text within control, default 'left'. */
+        textAlign: PT.oneOf(['left', 'right']),
+
+        /** Props passed to the TimePicker, as per Blueprint docs. */
+        timePickerProps: PT.object,
 
         /**
          * The precision of time selection that accompanies the calendar.
@@ -57,17 +75,8 @@ export class DateInput extends HoistInput {
          */
         timePrecision: PT.oneOf(['second', 'minute']),
 
-        /**
-         * Props passed to the TimePicker.  @see https://blueprintjs.com
-         */
-        timePickerProps: PT.object,
-
-        /** Props passed to ReactDayPicker component. @see http://react-day-picker.js.org/ */
-        dayPickerProps: PT.object,
-        /** Icon to display on the left side of the field */
-        leftIcon: PT.element,
-        /** Element to display on the right side of the field */
-        rightElement: PT.element
+        /** Width of the control in pixels. */
+        width: PT.number
     };
 
     child = new Ref();
@@ -79,41 +88,48 @@ export class DateInput extends HoistInput {
     }
 
     render() {
-        const {props} = this,
-            dayPickerProps = assign({fixedWeeks: true}, props.dayPickerProps),
-            timePickerProps = props.timePrecision ? timePickerProps: undefined,
-            popoverPosition = withDefault(props.popoverPosition, 'auto');
+        const {props} = this;
 
         return bpDateInput({
-            className: this.getClassName(),
-            ref: this.child.ref,
             value: this.renderValue,
-            onChange: this.onChange,
+            ref: this.child.ref,
+
             formatDate: this.formatDate,
             parseDate: this.parseDate,
-            tabIndex: props.tabIndex,
+
+            dayPickerProps: assign({fixedWeeks: true}, props.dayPickerProps),
+            disabled: props.disabled,
             inputProps: {
-                style: {...props.style, width: props.width},
-                onKeyPress: this.onKeyPress,
-                onFocus: this.onFocus,
-                onBlur: this.onBlur,
-                tabIndex: props.tabIndex,
                 autoComplete: 'nope',
-                leftIcon: props.leftIcon
+                leftIcon: props.leftIcon,
+                tabIndex: props.tabIndex,
+
+                style: {
+                    ...props.style,
+                    textAlign: withDefault(props.textAlign, 'left'),
+                    width: props.width
+                },
+
+                onBlur: this.onBlur,
+                onFocus: this.onFocus,
+                onKeyPress: this.onKeyPress,
             },
+            maxDate: props.maxDate,
+            minDate: props.minDate,
             popoverProps: {
                 minimal: true,
                 usePortal: true,
-                position: popoverPosition,
+                position: withDefault(props.popoverPosition, 'auto'),
                 onClose: this.onPopoverWillClose
             },
-            dayPickerProps,
-            timePickerProps,
+            rightElement: props.rightElement,
+            tabIndex: props.tabIndex,
+            timePickerProps: props.timePrecision ? props.timePickerProps : undefined,
             timePrecision: props.timePrecision,
-            minDate: props.minDate,
-            maxDate: props.maxDate,
-            disabled: props.disabled,
-            rightElement: props.rightElement
+
+            className: this.getClassName(),
+
+            onChange: this.onChange
         });
     }
 
@@ -160,7 +176,7 @@ export class DateInput extends HoistInput {
         if (ev.key == 'Enter') this.doCommit();
     };
 
-    onPopoverWillClose = (ev) => {
+    onPopoverWillClose = () => {
         this.doCommit();
     };
 

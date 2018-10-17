@@ -5,33 +5,39 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {isObject} from 'lodash';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {observable, action} from '@xh/hoist/mobx';
-import {radio, radioGroup} from '@xh/hoist/kit/blueprint';
-import {withDefault} from '@xh/hoist/utils/js';
+import {HoistComponent, elemFactory} from '@xh/hoist/core/index';
+import {observable, action} from '@xh/hoist/mobx/index';
+import {radio, radioGroup} from '@xh/hoist/kit/blueprint/index';
+import {withDefault} from '@xh/hoist/utils/js/index';
 
-import {HoistInput} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/form/index';
 import './RadioInput.scss';
 
 /**
- * An input for managing Radio Buttons
- *
- * @see HoistInput for properties additional to those documented below.
+ * An input for managing Radio Buttons.
  */
 @HoistComponent
 export class RadioInput extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
-        /** Collection of form [{value: string, label: string}, ...] or [val, val, ...]
-         * Individual radio buttons can be disabled by adding a disabled: true property to an option*/
-        options: PT.arrayOf(PT.oneOfType([PT.object, PT.string])),
-        /** True to display each radio button inline with each other */
+
+        /** True to display each radio button inline with each other. */
         inline: PT.bool,
-        /** Alignment of the indicator with respect to it's label.*/
-        alignIndicator: PT.oneOf(['left', 'right'])
+
+        /** Alignment of each option's label relative its radio button, default right. */
+        labelAlign: PT.oneOf(['left', 'right']),
+
+        /**
+         * Array of available options, of the form:
+         *
+         *      [{value: string, label: string, disabled: bool}, ...]
+         *          - or -
+         *      [val, val, ...]
+         */
+        options: PT.arrayOf(PT.oneOfType([PT.object, PT.string]))
     };
 
     @observable.ref internalOptions = [];
@@ -42,24 +48,26 @@ export class RadioInput extends HoistInput {
     }
 
     render() {
-        const {props, internalOptions} = this;
+        const {props, internalOptions} = this,
+            labelAlign = withDefault(props.labelAlign, 'right');
 
         const items = internalOptions.map(opt => {
             return radio({
-                className: 'xh-radio-input',
+                alignIndicator: labelAlign == 'left' ? 'right' : 'left',
+                disabled: opt.disabled,
                 label: opt.label,
                 value: opt.value,
-                disabled: opt.disabled,
-                alignIndicator: props.alignIndicator
+                className: 'xh-radio-input'
             });
         });
 
         return radioGroup({
-            className: this.getClassName(),
-            onChange: this.onChange,
+            items,
+            disabled: props.disabled,
             inline: props.inline,
             selectedValue: this.renderValue,
-            items
+            className: this.getClassName(),
+            onChange: this.onChange
         });
     }
 

@@ -6,19 +6,18 @@
  */
 
 import React from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {buttonGroup} from '@xh/hoist/kit/blueprint';
 import {castArray} from 'lodash';
-import {throwIf} from '@xh/hoist/utils/js';
-
-import {HoistInput} from '@xh/hoist/cmp/form';
+import {HoistComponent, elemFactory} from '@xh/hoist/core/index';
+import {buttonGroup} from '@xh/hoist/kit/blueprint/index';
+import {throwIf} from '@xh/hoist/utils/js/index';
+import {HoistInput} from '@xh/hoist/cmp/form/index';
 
 /**
  * A segmented group of buttons, one of which is depressed to indicate the input's current value.
  *
  * Should receive a list of Buttons as a children. Each Button requires a 'value' prop.
- * The Buttons are automatically configured to set this value on click,
- * and appear pressed if the ButtonGroupInput's value matches.
+ * The buttons are automatically configured to set this value on click and appear pressed if the
+ * ButtonGroupInput's value matches.
  */
 @HoistComponent
 export class ButtonGroupInput extends HoistInput {
@@ -34,8 +33,8 @@ export class ButtonGroupInput extends HoistInput {
                 throwIf(!value, 'ButtonGroupInput child must declare a value');
 
                 return React.cloneElement(button, {
-                    onClick: () => this.noteValueChange(value),
-                    active: this.renderValue == value
+                    active: this.renderValue == value,
+                    onClick: () => this.noteValueChange(value)
                 });
             });
 

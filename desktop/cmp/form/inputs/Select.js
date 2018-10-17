@@ -5,16 +5,16 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {find, isObject} from 'lodash';
-import {Classes, select as bpSelect} from '@xh/hoist/kit/blueprint';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
-import {menuItem} from '@xh/hoist/kit/blueprint';
-import {observable, action, settable} from '@xh/hoist/mobx';
-import {HoistInput} from '@xh/hoist/cmp/form';
-import {withDefault} from '@xh/hoist/utils/js';
-import {Ref} from '@xh/hoist/utils/react';
+import {Classes, select as bpSelect} from '@xh/hoist/kit/blueprint/index';
+import {HoistComponent, elemFactory} from '@xh/hoist/core/index';
+import {button} from '@xh/hoist/desktop/cmp/button/index';
+import {menuItem} from '@xh/hoist/kit/blueprint/index';
+import {observable, action, settable} from '@xh/hoist/mobx/index';
+import {HoistInput} from '@xh/hoist/cmp/form/index';
+import {withDefault} from '@xh/hoist/utils/js/index';
+import {Ref} from '@xh/hoist/utils/react/index';
 
 import './Select.scss';
 

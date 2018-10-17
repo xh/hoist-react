@@ -16,52 +16,64 @@ import {wait} from '@xh/hoist/promise';
 import './HoistInput.scss';
 
 /**
- *
- * A Standard Hoist Input.
+ * Abstract superclass for Components used for data entry with common functionality around reading,
+ * writing, converting, and displaying their values.
  *
  * Hoist Inputs can *either* operate in bound mode or in standard controlled mode.
- * In bound mode, they will read their value from the  'model' and 'field' props.
- * If not bound, they will get their value in the standard way using the value in props.
+ *      + If provided with `model` and `field` props, they will will operate in bound mode,
+ *        reading their value from the model and writing back to it on commit (see below).
+ *      + Otherwise, they will get their value directly via the `value` prop.
  *
- * Hoist Inputs will call a common onChange() callback with the latest value, as it is updated.
+ * Note that providing a model as a value source may allow for more efficient (re)rendering in a
+ * MobX context. The bound value is only read *within* this control, so that changes to its value
+ * do not cause the parent of this control to re-render.
  *
- * Hoist Inputs also introduce the notion of "Committing" a field to the model, when the user has completed
- * a discrete act of data entry. at this time,  Any specified 'onCommit' handler will be fired, and the bound model
- * will be updated with the new value.
+ * Regardless of mode, Hoist Inputs will call an `onChange` callback prop with the latest value
+ * as it is updated.  They also introduce the notion of "committing" a field to the model when the
+ * user has completed a discrete act of data entry. This will vary by field but is commonly marked
+ * by the user blurring the field, selecting a record from a combo, or pressing the <enter> key.
+ * At this time, and specified `onCommit` callback prop will be called and the value will be flushed
+ * back to any bound model.
  *
- * For many fields (e.g. checkbox, select, switchInput, slider) commit occurs concurrenty with the change event.
- * However, several text-based fields support a "commitOnChange" prop that allows control of this behavior.
- * When this prop is set to false, (the default) the commit action will happen only when the user hits 'enter',
- * 'blurs' the field, or takes another commit action defined by the control.
- *
- * Note that operating in bound mode may allow for more efficient rendering in a MobX context,
- * in that the bound value is only read *within* this control, so that changes to its value do not
- * cause the parent of this control to re-render.
+ * For many fields (e.g. checkbox, select, switchInput, slider) commit always fires at the same time
+ * as the change event. Other fields such as textInput maintain the distinction described above,
+ * but expose a `commitOnChange` prop to force them to eagerly flush their values on every change.
  *
  * HoistInputs support built-in validation when bound to a model enhanced by `@FieldSupport`.
  * When a HoistInput control is linked to a property on the underlying model decorated by `@field`,
  * the model Field will be used to provide validation info and styling to the input component.
+ *
+ * For an even more managed display, consider wrapping HoistInputs in a FormField Component, which
+ * provide out-of-the-box support for labels and validation messages, both read from the Model.
  */
 export class HoistInput extends Component {
 
     static propTypes = {
-        /** value of the control */
+        /** Value of the control, if provided directly. */
         value: PT.any,
-        /** handler to fire when value changes, gets passed the new value */
+
+        /** Handler called when value changes - passed the new value. */
         onChange: PT.func,
-        /** handler to fire when value is committed to backing model, gets passed the new value */
+
+        /** Handler called when value is committed to backing model - passed the new value. */
         onCommit: PT.func,
-        /** model to bind to */
+
+        /** Bound HoistModel instance. */
         model: PT.object,
-        /** name of property in model to bind to */
+
+        /** Property name on bound Model from which to read/write data. */
         field: PT.string,
-        /** is control disabled */
+
+        /** True to disable user interaction. */
         disabled: PT.bool,
-        /** Style block */
+
+        /** Style block. */
         style: PT.object,
-        /** css class name **/
+
+        /** CSS class name. **/
         className: PT.string,
-        /** tab order of this control.  Set to -1 to skip.  If not set, browser will choose a layout related ordering. **/
+
+        /** Tab order for focus control, or -1 to skip. If unset, browser layout-based order. **/
         tabIndex: PT.number
     };
 
@@ -69,26 +81,25 @@ export class HoistInput extends Component {
     @observable internalValue;
 
     /**
-     * Field (if any) associated with this control.
+     * Model-based Field (if any) associated with this control.
      */
     getField() {
         const {model, field} = this.props;
         return model && field && model.hasFieldSupport && model.getField(field);
     }
 
-    //-----------------------------------------------------------
-    // Handling of internal vs. external value, committing
-    //-----------------------------------------------------------
+    //------------------------------
+    // Value conversion / committing
+    //------------------------------
     /**
-     * Commit immediately when value is changed?
-     *
-     * Note that certain text controls provide a prop to override this value.
+     * Should the input commit immediately when value is changed?
+     * Components can/do provide a prop to override this value.
      */
     get commitOnChange() {
         return true;
     }
 
-    /** Return the value to be rendered internally by control. **/
+    /** The value to be rendered internally by control. **/
     @computed
     get renderValue() {
         return this.hasFocus ?
@@ -97,8 +108,8 @@ export class HoistInput extends Component {
     }
 
     /**
-     * Return the external value associated with control.
-     * This is the last value committed to the model.
+     * The external value associated with control.
+     * For bound controls, this is the most recent value committed to the Model.
      */
     @computed
     get externalValue() {
@@ -109,13 +120,16 @@ export class HoistInput extends Component {
         return value;
     }
 
-    /** Set internal value **/
+    /** Set internal value. **/
     @action
     setInternalValue(val) {
         this.internalValue = val;
     }
 
-    /** Set normalized internal value, and fire associated value changed **/
+    /**
+     * Set normalized internal value and fire associated change events.
+     * This is the primary method for HoistInput implementations to call on value change.
+     */
     noteValueChange(val) {
         const {onChange} = this.props;
 
@@ -126,7 +140,7 @@ export class HoistInput extends Component {
 
     /**
      * Commit the internal value to the external value.
-     * Fire commit handlers, and synchronize state.
+     * Fire commit handlers and synchronize state.
      */
     doCommit() {
         const {onCommit, model, field} = this.props;
@@ -138,27 +152,34 @@ export class HoistInput extends Component {
         if (model && field) {
             const setterName = `set${upperFirst(field)}`;
             throwIf(!isFunction(model[setterName]), `Required function '${setterName}()' not found on bound model`);
+
             model[setterName](newValue);
-            newValue = this.externalValue;    // Round trip this, in case model decides to intervene.
+            newValue = this.externalValue; // Round trip this, in case model decides to intervene.
         }
 
         if (onCommit) onCommit(newValue);
-
         this.setInternalValue(this.toInternal(newValue));
     }
 
+    /** Hook to convert an internal representation of the value to an appropriate external one. */
     toExternal(internal) {
         return internal;
     }
 
+    /** Hook to convert an external representation of the value to an appropriate internal one. */
     toInternal(external) {
         return external;
     }
 
-    //---------------------------------------------------------------
-    // Handling of Focus/Blurring
-    // Bound handlers provided should be applied by all instances.
-    //--------------------------------------------------------------
+
+    //------------------------------
+    // Focus Management
+    //------------------------------
+
+    /**
+     * To be called when the Component has lost focus. Direct subclasses of HoistInput must call
+     * via a handler on an appropriate rendered element. A default handler implementation is below.
+     */
     @action
     noteBlurred() {
         if (!this.hasFocus) return;
@@ -171,14 +192,6 @@ export class HoistInput extends Component {
         this.hasFocus = false;
     }
 
-    @action
-    noteFocused() {
-        if (this.hasFocus) return;
-        
-        this.setInternalValue(this.toInternal(this.externalValue));
-        this.hasFocus = true;
-    }
-
     onBlur = () => {
         // Focus very frequently will be jumping internally from element to element *within* a control.
         // This delay prevents extraneous 'flapping' of focus state at this level.
@@ -188,17 +201,35 @@ export class HoistInput extends Component {
             }
         });
     }
+
+    /**
+     * To be called when the Component gains focus. Direct subclasses of HoistInput must call
+     * via a handler on an appropriate rendered element. A default handler implementation is below.
+     */
+    @action
+    noteFocused() {
+        if (this.hasFocus) return;
+        
+        this.setInternalValue(this.toInternal(this.externalValue));
+        this.hasFocus = true;
+    }
+
     onFocus = () => this.noteFocused();
+
 
     //-----------------------------
     // Additional Utilities
     //-----------------------------
-    // Override of the default implementation provided by HoistComponent so we can add
-    // the xh-input and xh-input-invalid classes
+    /**
+     * Override of HoistComponent so we can add the xh-input and xh-input-invalid classes.
+     * @param {...String} extraClassNames
+     * @returns {String}
+     */
     getClassName(...extraClassNames) {
         const field = this.getField(),
             validityClass = field && field.isNotValid ? 'xh-input-invalid' : null;
 
         return classNames('xh-input', validityClass, this.baseClassName, this.props.className, ...extraClassNames);
     }
+
 }
