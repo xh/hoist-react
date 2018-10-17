@@ -42,7 +42,7 @@ export class DateInput extends HoistInput {
          */
         formatString: PT.string,
 
-        /** Icon to display on the left side of the control. */
+        /** Icon to display inline on the left side of the input. */
         leftIcon: PT.element,
 
         /** Maximum (inclusive) valid date. */
@@ -63,7 +63,7 @@ export class DateInput extends HoistInput {
             'auto'
         ]),
 
-        /** Element to display on the right side of the field */
+        /** Element to display inline on the right side of the input */
         rightElement: PT.element,
 
         /** True to show a bar with Today + Clear buttons at bottom of date picker popover. */

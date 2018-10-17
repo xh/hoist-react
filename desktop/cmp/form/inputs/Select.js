@@ -40,13 +40,13 @@ export class Select extends HoistInput {
         icon: PT.element,
 
         /**
-         * Custom renderer for a list item entry. Should return a BP menuItem.
+         * Custom renderer for each option within the popup list. Should return a BP menuItem.
          *
-         * See defaultItemRenderer on this class for core requirements. Note that menuItem.text
-         * takes a React node and along with the multiline prop can be used for more detailed
-         * list option displays.
+         * See defaultOptionRenderer on this class for API / requirements. Note that menuItem.text
+         * takes a React node, and along with the multiline prop, can be used to render rich
+         * list option templates.
          */
-        itemRenderer: PT.func
+        optionRenderer: PT.func
     };
 
     baseClassName = 'xh-select';
@@ -90,7 +90,7 @@ export class Select extends HoistInput {
             activeItem: this.activeItem,
             disabled: props.disabled,
             filterable: false,
-            itemRenderer: withDefault(props.itemRenderer, this.defaultItemRenderer),
+            itemRenderer: withDefault(props.optionRenderer, this.defaultOptionRenderer),
             popoverProps: {
                 popoverClassName: Classes.MINIMAL
             },
@@ -108,7 +108,7 @@ export class Select extends HoistInput {
         options = withDefault(options, []);
         this.internalOptions = options.map(o => {
             const ret = isObject(o) ?
-                // Spread additional object props to internal opt to make available to itemRenderer.
+                // Spread additional object props to internal opt to make available to optionRenderer.
                 {label: o.label, value: o.value, ...o} :
                 {label: o != null ? o.toString() : '-null-', value: o};
 
@@ -150,7 +150,7 @@ export class Select extends HoistInput {
         }
     }
 
-    defaultItemRenderer = (option, optionProps) => {
+    defaultOptionRenderer = (option, optionProps) => {
         return menuItem({
             key: option.value,
             text: option.label,

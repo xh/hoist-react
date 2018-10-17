@@ -39,7 +39,7 @@ export class TextInput extends HoistInput {
         /** True to commit on every change/keystroke, default false. */
         commitOnChange: PT.bool,
 
-        /** Icon to display on the left side of the control. */
+        /** Icon to display inline on the left side of the input. */
         leftIcon: PT.element,
 
         /** Callback for normalized keypress event. */
@@ -48,7 +48,7 @@ export class TextInput extends HoistInput {
         /** Text to display when control is empty. */
         placeholder: PT.string,
 
-        /** Element to display on the right side of the field. */
+        /** Element to display inline on the right side of the input. */
         rightElement: PT.element,
 
         /** True to display with rounded caps. */

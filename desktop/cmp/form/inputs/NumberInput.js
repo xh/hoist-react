@@ -53,7 +53,7 @@ export class NumberInput extends HoistInput {
         /** True to take up the full width of container. */
         fill: PT.bool,
 
-        /** Icon to display on the left side of the control. */
+        /** Icon to display inline on the left side of the input. */
         leftIcon: PT.element,
 
         /** Minimum value */

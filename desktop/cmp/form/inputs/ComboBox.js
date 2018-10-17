@@ -16,7 +16,9 @@ import {withDefault, throwIf} from '@xh/hoist/utils/js';
 import {wait} from '@xh/hoist/promise';
 
 /**
- * ComboBox - An input with type ahead suggest and menu select
+ * Control to select from a list of options. Renders as a text input with a popup list, adds support
+ * for querying (implemented as an async promise function to enable both local and remote queries)
+ * as well as ad-hoc user entries.
  */
 @HoistComponent
 export class ComboBox extends HoistInput {
@@ -24,31 +26,41 @@ export class ComboBox extends HoistInput {
     static propTypes = {
         ...HoistInput.propTypes,
 
-        /** true to commit on every key stroke, defaults false */
+        /** True to commit on every change/keystroke, default false. */
         commitOnChange: PT.bool,
-        /** Text to display when control is empty */
-        placeholder: PT.string,
-        /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
-        options: PT.arrayOf(PT.oneOfType([PT.object, PT.string])),
-        /** Optional custom optionRenderer, a function that receives (option, optionProps) */
-        optionRenderer: PT.func,
-        /** Whether to force values from given options. Set to true to disallow arbitrary input */
-        requireSelection: PT.bool,
-        /** Icon to display on the left side of the control */
+
+        /** Icon to display inline on the left side of the input. */
         leftIcon: PT.element,
-        /** Element to display on the right side of the field */
-        rightElement: PT.element,
 
         /**
-         * Function to be run when value of control changes to repopulate the available items.
-         * Should return a promise resolving to a collection of form:
-         *      [{value: string, label: string}, ...]
-         * or
-         *      [val, val, ...]
+         * Custom renderer for each option within the popup list. Should return a BP menuItem.
+         *
+         * See defaultOptionRenderer on this class for API / requirements. Note that menuItem.text
+         * takes a React node, and along with the multiline prop, can be used to render rich
+         * list option templates.
          */
-        queryFn: PT.func,
+        optionRenderer: PT.func,
+
+        /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
+        options: PT.arrayOf(PT.oneOfType([PT.object, PT.string])),
+
+        /** Text to display when control is empty. */
+        placeholder: PT.string,
+
+        /** True to only accept values from given options; false allows arbitrary text input. */
+        requireSelection: PT.bool,
+
+        /** Element to display inline on the right side of the input. */
+        rightElement: PT.element,
+
         /** Delay (in ms) used to buffer calls to the queryFn (default 100) */
-        queryBuffer: PT.number
+        queryBuffer: PT.number,
+
+        /**
+         * Function called when the input value of the control changes to repopulate the available
+         * options. Should return a Promise resolving to a new list of options in the same format.
+         */
+        queryFn: PT.func
     };
 
     baseClassName = 'xh-combo-box';
@@ -84,7 +96,7 @@ export class ComboBox extends HoistInput {
             itemPredicate: (q, item) => {
                 return !q || startsWith(item.label.toLowerCase(), q.toLowerCase());
             },
-            itemRenderer: this.itemRenderer,
+            itemRenderer: withDefault(props.optionRenderer, this.defaultOptionRenderer),
             openOnKeyDown: true,
             inputValueRenderer: (item) => item.label,
             onQueryChange: this.onQueryChange,
@@ -110,7 +122,7 @@ export class ComboBox extends HoistInput {
         options = withDefault(options, []);
         options = options.map(o => {
             const ret = isObject(o) ?
-                {label: o.label, value: o.value} :
+                {label: o.label, value: o.value, ...o} :
                 {label: o != null ? o.toString() : '-null-', value: o};
 
             ret.value = this.toInternal(ret.value);
@@ -124,7 +136,7 @@ export class ComboBox extends HoistInput {
     //--------------------------------
     // Event handlers, callbacks
     //--------------------------------
-    itemRenderer = (option, optionProps) => {
+    defaultOptionRenderer = (option, optionProps) => {
         return menuItem({
             key: option.value,
             text: option.label,
