@@ -303,11 +303,7 @@ function buildFormatConfig(v, precision, zeroPad) {
         }
     }
     pattern.mantissa = mantissa;
-
-    if (!zeroPad) {
-        pattern.trimMantissa = true;
-    }
-
+    pattern.trimMantissa = !zeroPad && mantissa != 0;
     return pattern;
 }
 
