@@ -7,6 +7,7 @@
 import {XH, HoistModel} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/desktop/cmp/grid';
+import {lowerFirst} from 'lodash';
 
 @HoistModel
 export class ServiceModel {
@@ -16,13 +17,14 @@ export class ServiceModel {
         store: new UrlStore({
             url: 'serviceAdmin/listServices',
             processRawData: this.processRawData,
-            fields: ['provider', 'name']
+            fields: ['provider', 'name', 'displayName']
         }),
         selModel: 'multiple',
-        sortBy: 'name',
+        sortBy: 'displayName',
+        groupBy: 'provider',
         columns: [
             {field: 'provider', width: 100},
-            {field: 'name', minWidth: 300, flex: true}
+            {field: 'displayName', minWidth: 300, flex: true}
         ]
     });
 
@@ -49,7 +51,8 @@ export class ServiceModel {
     }
 
     processRawData(r) {
-        r.provider = r.name && r.name.indexOf('hoist') === 0 ? 'Hoist' : 'App';
+        r.provider = r.name && r.name.startsWith('hoistCore') ? 'Hoist' : 'App';
+        r.displayName = lowerFirst(r.name.replace('hoistCore', ''));
     }
 
     destroy() {
