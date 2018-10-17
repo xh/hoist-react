@@ -11,7 +11,7 @@ import {Classes, select as bpSelect} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {menuItem} from '@xh/hoist/kit/blueprint';
-import {observable, action, settable} from '@xh/hoist/mobx';
+import {observable, action} from '@xh/hoist/mobx';
 import {HoistInput} from '@xh/hoist/cmp/form';
 import {withDefault} from '@xh/hoist/utils/js';
 import {Ref} from '@xh/hoist/utils/react';
@@ -19,75 +19,99 @@ import {Ref} from '@xh/hoist/utils/react';
 import './Select.scss';
 
 /**
- * A Select Input
+ * Control to select from a list of preset options. Renders as a button that triggers a popup list.
  *
- * @see HoistInput for properties additional to those documented below.
+ * Best for lists of a limited size. See ComboBox if keyboard entry, querying, and/or user-supplied
+ * ad hoc values are required.
  */
 @HoistComponent
 export class Select extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
-        
-        /** Text to display when control is empty */
-        placeholder: PT.string,
+
         /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
         options: PT.arrayOf(PT.oneOfType([PT.object, PT.string, PT.bool])),
-        /** Icon to show on button. */
-        icon: PT.element
+
+        /** Button text when no value is set. */
+        placeholder: PT.string,
+
+        /** Button icon. */
+        icon: PT.element,
+
+        /**
+         * Custom renderer for a list item entry. Should return a BP menuItem.
+         *
+         * See defaultItemRenderer on this class for core requirements. Note that menuItem.text
+         * takes a React node and along with the multiline prop can be used for more detailed
+         * list option displays.
+         */
+        itemRenderer: PT.func
     };
 
     baseClassName = 'xh-select';
 
-    child = new Ref();
-    @settable @observable.ref activeItem
+    selectRef = new Ref();
+    popoverRef = new Ref();
+    @observable.ref activeItem
     @observable.ref internalOptions = [];
 
     constructor(props) {
         super(props);
         this.addAutorun(() => this.normalizeOptions(this.props.options));
         this.addAutorun(() => {
-            this.setActiveItem(find(this.internalOptions, {value: this.renderValue}) || null);
+            const match = find(this.internalOptions, {value: this.renderValue});
+            this.setActiveItem(match || null);
         });
     }
-    
+
     render() {
         const {props, renderValue, internalOptions} = this,
             placeholder = withDefault(props.placeholder, 'Select');
 
         return bpSelect({
-            className: this.getClassName(),
-            popoverProps: {popoverClassName: Classes.MINIMAL, popoverRef: this.child.ref},
             $items: internalOptions,
-            activeItem: this.activeItem,
-            onActiveItemChange: (it) => this.setActiveItem(it),
-            onItemSelect: this.onItemSelect,
-            itemRenderer: this.itemRenderer,
-            filterable: false,
             item: button({
-                rightIcon: 'caret-down',
-                text: this.getDisplayValue(renderValue, internalOptions, placeholder),
-                style: {...props.style, width: props.width},
-                disabled: props.disabled,
-                tabIndex: props.tabIndex,
-                icon: props.icon,
                 autoFocus: props.autoFocus,
+                disabled: props.disabled,
+                icon: props.icon,
+                rightIcon: 'caret-down',
+                tabIndex: props.tabIndex,
+                text: this.getDisplayValue(renderValue, internalOptions, placeholder),
+
+                style: {
+                    ...props.style,
+                    width: props.width
+                },
+
                 onBlur: this.onBlur,
                 onFocus: this.onFocus
             }),
-            disabled: props.disabled
+
+            activeItem: this.activeItem,
+            disabled: props.disabled,
+            filterable: false,
+            itemRenderer: withDefault(props.itemRenderer, this.defaultItemRenderer),
+            popoverProps: {
+                popoverClassName: Classes.MINIMAL,
+                popoverRef: this.popoverRef.ref
+            },
+            ref: this.selectRef.ref,
+
+            className: this.getClassName(),
+
+            onActiveItemChange: (it) => this.onSelectActiveItemChange(it),
+            onItemSelect: this.onItemSelect
         });
     }
 
-    //-------------------------------
-    // Helpers, overrides
-    //-------------------------------
     @action
     normalizeOptions(options) {
         options = withDefault(options, []);
         this.internalOptions = options.map(o => {
             const ret = isObject(o) ?
-                {label: o.label, value: o.value} :
+                // Spread additional object props to internal opt to make available to itemRenderer.
+                {label: o.label, value: o.value, ...o} :
                 {label: o != null ? o.toString() : '-null-', value: o};
 
             ret.value = this.toInternal(ret.value);
@@ -108,17 +132,27 @@ export class Select extends HoistInput {
     }
 
     forcePopoverClose() {
-        // TODO: Can we do this?
-        // const elem = this.child.value;
-        // if (elem) {
-        //    elem.style.display = 'none';
-        // }
+        const select = this.selectRef.value;
+        if (select) select.setState({isOpen: false});
     }
 
-    //----------------------------------
-    // Handlers, Callbacks
-    //-----------------------------------
-    itemRenderer = (option, optionProps) => {
+    @action
+    setActiveItem(v) {
+        this.activeItem = v;
+    }
+
+    // This handler will get called as the user navigates in the list, and we need to ensure we
+    // accept those changes so the list UI will updates. However it will also be called after
+    // the popover closes with the first item in the list, regardless of the component value.
+    // We want to skip this last call to let our autorun leave it at the desired selection.
+    onSelectActiveItemChange = (v) => {
+        const select = this.selectRef.value;
+        if (select && select.state.isOpen) {
+            this.setActiveItem(v);
+        }
+    }
+
+    defaultItemRenderer = (option, optionProps) => {
         return menuItem({
             key: option.value,
             text: option.label,
@@ -127,8 +161,8 @@ export class Select extends HoistInput {
         });
     };
 
-    onItemSelect = (val) => {
-        this.noteValueChange(val.value);
+    onItemSelect = (item) => {
+        this.noteValueChange(item.value);
     };
 }
 export const select = elemFactory(Select);
