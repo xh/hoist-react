@@ -498,6 +498,7 @@ library.add(
  * the FA npm package via a registry URL w/license token. See https://fontawesome.com/pro#license.
  */
 export const Icon = {
+    accessDenied(p)     {return fa(p, 'ban')},
     add(p)              {return fa(p, 'plus-circle')},
     addressCard(p)      {return fa(p, 'address-card')},
     angleDown(p)        {return fa(p, 'angle-down')},

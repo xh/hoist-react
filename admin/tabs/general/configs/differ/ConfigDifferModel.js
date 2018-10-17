@@ -49,7 +49,6 @@ export class ConfigDifferModel  {
                 name: 'differ',
                 filter: (it) => it.status !== 'Identical'
             }),
-            emptyText: 'Please enter remote host for comparison',
             selModel: 'multiple',
             columns: [
                 {field: 'name', width: 200},
@@ -106,7 +105,15 @@ export class ConfigDifferModel  {
             this.processResponse(resp);
         } catch (e) {
             this.processFailedLoad();
-            XH.handleException(e, {showAsError: false, logOnServer: false});
+            if (e.httpStatus == 401) {
+                XH.alert({
+                    title: 'Access Denied',
+                    icon: Icon.accessDenied(),
+                    message: 'Access denied when querying configs. Are you logged in to an account with admin rights on the remote instance?'
+                });
+            } else {
+                XH.handleException(e, {showAsError: false, logOnServer: false});
+            }
         }
     }
 

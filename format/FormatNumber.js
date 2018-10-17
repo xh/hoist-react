@@ -6,7 +6,7 @@
  */
 
 import {defaults, isFinite, isString, isFunction} from 'lodash';
-import numeral from 'numeral';
+import numbro from 'numbro';
 
 import {Exception} from '@xh/hoist/exception';
 import {span} from '@xh/hoist/cmp/layout';
@@ -30,7 +30,7 @@ const UP_TICK = '▴',
  * @param {number} v - value to format.
  * @param {Object} [opts]
  * @param {string} [opts.nullDisplay] - display string for null values.
- * @param {string} [opts.formatPattern] - a valid numeralJS format string.
+ * @param {Object} [opts.formatConfig] - a valid numbro format object.
  * @param {(number|'auto')} [opts.precision] - desired number of decimal places.
  * @param {boolean} [opts.zeroPad] - true to pad with trailing zeros out to given precision.
  * @param {boolean} [opts.ledger] - true to use ledger format.
@@ -48,14 +48,14 @@ const UP_TICK = '▴',
  * @param {number} [opts.originalValue] - holds the unaltered original value to be formatted.
  *      Not typically used by applications.
  *
- * This method delegates to numeralJS, @see http://numeraljs.com for more details.
+ * This method delegates to numbro, @see http://numbrojs.com for more details.
  *
  * Hierarchy of params is by specificity: formatPattern => precision.
  * If no options are given, a heuristic based auto-rounding will occur.
  */
 export function fmtNumber(v, {
     nullDisplay = '',
-    formatPattern = null,
+    formatConfig = null,
     precision = 'auto',
     zeroPad = (precision != 'auto'),
     ledger = false,
@@ -72,8 +72,8 @@ export function fmtNumber(v, {
 
     if (isInvalidInput(v)) return nullDisplay;
 
-    formatPattern = formatPattern || buildFormatPattern(v, precision, zeroPad);
-    let str = numeral(v).format(formatPattern);
+    formatConfig = formatConfig || buildFormatConfig(v, precision, zeroPad);
+    let str = numbro(v).format(formatConfig);
 
     if (ledger || withSignGlyph) str = str.replace('-', '');
     if (withPlusSign && v > 0) {
@@ -280,35 +280,31 @@ function valueColor(v, colorSpec) {
     return colorSpec.neutral;
 }
 
-function buildFormatPattern(v, precision, zeroPad) {
+function buildFormatConfig(v, precision, zeroPad) {
     const num = Math.abs(v);
 
-    let pattern = '';
+    const config = {thousandSeparated: true};
+    let mantissa = undefined;
 
     if (precision % 1 === 0) {
         precision = precision < MAX_NUMERIC_PRECISION ? precision : MAX_NUMERIC_PRECISION;
-        pattern = precision === 0 ? '0,0' : '0,0.' + '0'.repeat(precision);
+        mantissa = precision === 0 ? 0 : precision;
     } else {
         if (num === 0) {
-            pattern = '0.00';
+            mantissa = 2;
         } else if (num < .01) {
-            pattern = '0,0.000000';
+            mantissa = 6;
         } else if (num < 100) {
-            pattern = '0,0.0000';
+            mantissa = 4;
         } else if (num < 10000) {
-            pattern = '0,0.00';
+            mantissa = 2;
         } else {
-            pattern = '0,0';
+            mantissa = 0;
         }
     }
-
-    if (!zeroPad) {
-        const arr = pattern.split('.');
-        if (arr[1]) arr[1] = `[${arr[1]}]`;
-        pattern = arr.join('.');
-    }
-
-    return pattern;
+    config.mantissa = mantissa;
+    config.trimMantissa = !zeroPad && mantissa != 0;
+    return config;
 }
 
 function isInvalidInput(v) {

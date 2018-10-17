@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component, isValidElement} from 'react';
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {isNil, isString, merge, xor, dropRightWhile, dropWhile, isEmpty} from 'lodash';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
@@ -42,11 +42,8 @@ export class Grid extends Component {
          */
         agOptions: PT.object,
 
-        /**
-         * Callback to call when a row is double clicked.  Function will receive an event
-         * with a data node containing the row's data.
-         */
-        onRowDoubleClicked: PT.func,
+        /** True to suppress display of the grid's header row. */
+        hideHeaders: PT.bool,
 
         /**
          * Callback to call when a key down event is detected on this component.
@@ -56,6 +53,12 @@ export class Grid extends Component {
          * This handler is designed to allow application to workaround this.
          */
         onKeyDown: PT.func,
+
+        /**
+         * Callback to call when a row is double clicked.  Function will receive an event
+         * with a data node containing the row's data.
+         */
+        onRowDoubleClicked: PT.func,
 
         /**
          * Show a colored row background on hover. Defaults to false.
@@ -130,6 +133,7 @@ export class Grid extends Component {
             popupParent: document.querySelector('body'),
             navigateToNextCell: this.onNavigateToNextCell,
             defaultGroupSortComparator: this.sortByGroup,
+            headerHeight: props.hideHeaders ? 0 : undefined,
             icons: {
                 groupExpanded: convertIconToSvg(
                     Icon.angleDown(),

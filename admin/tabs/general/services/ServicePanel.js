@@ -25,6 +25,7 @@ export class ServicePanel extends Component {
             tbar: this.renderToolbar(),
             item: grid({
                 model: this.model.gridModel,
+                hideHeaders: true,
                 agOptions: {
                     groupRowInnerRenderer: this.groupRowInnerRenderer
                 }
@@ -47,7 +48,7 @@ export class ServicePanel extends Component {
             filler(),
             storeCountLabel({gridModel, unit: 'service'}),
             storeFilterField({gridModel})
-        );
+      );
     }
 
     groupRowInnerRenderer(params) {
