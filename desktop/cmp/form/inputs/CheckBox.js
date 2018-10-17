@@ -6,10 +6,10 @@
  */
 
 import PT from 'prop-types';
-import {HoistComponent, elemFactory} from '@xh/hoist/core/index';
-import {checkbox} from '@xh/hoist/kit/blueprint/index';
-import {withDefault} from '@xh/hoist/utils/js/index';
-import {HoistInput} from '@xh/hoist/cmp/form/index';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {checkbox} from '@xh/hoist/kit/blueprint';
+import {withDefault} from '@xh/hoist/utils/js';
+import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
  * Traditional CheckBox control for non-nullable boolean values.

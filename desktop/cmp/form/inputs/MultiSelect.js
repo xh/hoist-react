@@ -8,13 +8,13 @@
 import PT from 'prop-types';
 import {pull, clone, isEmpty, startsWith, isObject} from 'lodash';
 
-import {Classes, menuItem, multiSelect as bpMultiSelect} from '@xh/hoist/kit/blueprint/index';
-import {div} from '@xh/hoist/cmp/layout/index';
-import {HoistComponent, elemFactory} from '@xh/hoist/core/index';
-import {Icon} from '@xh/hoist/icon/index';
-import {HoistInput} from '@xh/hoist/cmp/form/index';
-import {withDefault} from '@xh/hoist/utils/js/index';
-import {observable, action, settable} from '@xh/hoist/mobx/index';
+import {Classes, menuItem, multiSelect as bpMultiSelect} from '@xh/hoist/kit/blueprint';
+import {div} from '@xh/hoist/cmp/layout';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
+import {HoistInput} from '@xh/hoist/cmp/form';
+import {withDefault} from '@xh/hoist/utils/js';
+import {observable, action, settable} from '@xh/hoist/mobx';
 
 
 import './MultiSelect.scss';

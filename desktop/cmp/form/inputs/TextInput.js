@@ -6,11 +6,11 @@
  */
 
 import PT from 'prop-types';
-import {elemFactory, HoistComponent} from '@xh/hoist/core/index';
-import {inputGroup} from '@xh/hoist/kit/blueprint/index';
-import {div} from '@xh/hoist/cmp/layout/index';
-import {HoistInput} from '@xh/hoist/cmp/form/index';
-import {withDefault} from '@xh/hoist/utils/js/index';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {inputGroup} from '@xh/hoist/kit/blueprint';
+import {div} from '@xh/hoist/cmp/layout';
+import {HoistInput} from '@xh/hoist/cmp/form';
+import {withDefault} from '@xh/hoist/utils/js';
 
 /**
  * A single-line text input with additional support for embedded icons/elements.

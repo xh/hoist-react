@@ -175,7 +175,6 @@ export class HoistInput extends Component {
     //------------------------------
     // Focus Management
     //------------------------------
-
     /**
      * To be called when the Component has lost focus. Direct subclasses of HoistInput must call
      * via a handler on an appropriate rendered element. A default handler implementation is below.

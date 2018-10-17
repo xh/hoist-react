@@ -6,12 +6,12 @@
  */
 
 import PT from 'prop-types';
-import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core/index';
-import {box} from '@xh/hoist/cmp/layout/index';
-import {slider as bpSlider, rangeSlider as bpRangeSlider} from '@xh/hoist/kit/blueprint/index';
+import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
+import {box} from '@xh/hoist/cmp/layout';
+import {slider as bpSlider, rangeSlider as bpRangeSlider} from '@xh/hoist/kit/blueprint';
 import {isArray} from 'lodash';
-import {toJS} from '@xh/hoist/mobx/index';
-import {HoistInput} from '@xh/hoist/cmp/form/index';
+import {toJS} from '@xh/hoist/mobx';
+import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
  * A slider input to edit either a single number or an array of two (for a range).

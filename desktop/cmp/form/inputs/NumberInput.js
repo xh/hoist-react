@@ -6,12 +6,12 @@
  */
 
 import PT from 'prop-types';
-import {elemFactory, HoistComponent} from '@xh/hoist/core/index';
-import {numericInput} from '@xh/hoist/kit/blueprint/index';
-import {fmtNumber} from '@xh/hoist/format/index';
-import {HoistInput} from '@xh/hoist/cmp/form/index';
-import {withDefault} from '@xh/hoist/utils/js/index';
-import {wait} from '@xh/hoist/promise/index';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {numericInput} from '@xh/hoist/kit/blueprint';
+import {fmtNumber} from '@xh/hoist/format';
+import {HoistInput} from '@xh/hoist/cmp/form';
+import {withDefault} from '@xh/hoist/utils/js';
+import {wait} from '@xh/hoist/promise';
 
 /**
  * Number input, with optional support for formatted of display value, shorthand units, and more.

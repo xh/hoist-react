@@ -5,23 +5,23 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {wait} from '@xh/hoist/promise';
 import PT from 'prop-types';
 import moment from 'moment';
 import {assign, clone} from 'lodash';
 
-import {fmtDate} from '@xh/hoist/format/index';
-import {elemFactory, HoistComponent} from '@xh/hoist/core/index';
-import {dateInput as bpDateInput} from '@xh/hoist/kit/blueprint/index';
-import {Ref} from '@xh/hoist/utils/react/index';
-import {withDefault} from '@xh/hoist/utils/js/index';
-import {HoistInput} from '@xh/hoist/cmp/form/index';
+import {fmtDate} from '@xh/hoist/format';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {dateInput as bpDateInput} from '@xh/hoist/kit/blueprint';
+import {Ref} from '@xh/hoist/utils/react';
+import {withDefault} from '@xh/hoist/utils/js';
+import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
  * A Calendar Control for choosing a Date.
  *
- *
- * TODO - fix popover closing when you attempt to interact with it over multiple clicks
- *
+ * By default this control emits dates with the time component cleared (set to midnight), but this
+ * can be customized via the timePrecision prop to support editing of a date and time together.
  */
 @HoistComponent
 export class DateInput extends HoistInput {
@@ -51,6 +51,9 @@ export class DateInput extends HoistInput {
         /** Minimum (inclusive) valid date. */
         minDate: PT.instanceOf(Date),
 
+        /** Text to display when control is empty. */
+        placeholder: PT.string,
+
         /** Position for calendar popover, as per Blueprint docs. */
         popoverPosition: PT.oneOf([
             'top-left', 'top', 'top-right',
@@ -62,6 +65,9 @@ export class DateInput extends HoistInput {
 
         /** Element to display on the right side of the field */
         rightElement: PT.element,
+
+        /** True to show a bar with Today + Clear buttons at bottom of date picker popover. */
+        showActionsBar: PT.bool,
 
         /** Alignment of entry text within control, default 'left'. */
         textAlign: PT.oneOf(['left', 'right']),
@@ -79,7 +85,8 @@ export class DateInput extends HoistInput {
         width: PT.number
     };
 
-    child = new Ref();
+    inputRef = new Ref();
+    popoverRef = new Ref();
 
     baseClassName = 'xh-date-input';
 
@@ -92,7 +99,7 @@ export class DateInput extends HoistInput {
 
         return bpDateInput({
             value: this.renderValue,
-            ref: this.child.ref,
+            ref: this.inputRef.ref,
 
             formatDate: this.formatDate,
             parseDate: this.parseDate,
@@ -112,17 +119,20 @@ export class DateInput extends HoistInput {
 
                 onBlur: this.onBlur,
                 onFocus: this.onFocus,
-                onKeyPress: this.onKeyPress,
+                onKeyPress: this.onKeyPress
             },
             maxDate: props.maxDate,
             minDate: props.minDate,
+            placeholder: props.placeholder,
             popoverProps: {
                 minimal: true,
                 usePortal: true,
+                popoverRef: this.popoverRef.ref,
                 position: withDefault(props.popoverPosition, 'auto'),
                 onClose: this.onPopoverWillClose
             },
             rightElement: props.rightElement,
+            showActionsBar: props.showActionsBar,
             tabIndex: props.tabIndex,
             timePickerProps: props.timePrecision ? props.timePickerProps : undefined,
             timePrecision: props.timePrecision,
@@ -130,6 +140,22 @@ export class DateInput extends HoistInput {
             className: this.getClassName(),
 
             onChange: this.onChange
+        });
+    }
+
+    // Custom blur handler to account for focus potentially living in either input or popover.
+    // We want to call noteBlurred when focus has left both. Extra long delay here working around
+    // some kind of transition that happens when you use popover buttons to navigate between months.
+    // Focus appears to flap to focus for a tick, then back to the popover.... For review....
+    onBlur = () => {
+        wait(800).then(() => {
+            const activeEl = document.activeElement,
+                popoverEl = this.popoverRef.value,
+                popoverHasFocus = popoverEl && popoverEl.contains(activeEl);
+
+            if (!popoverHasFocus && !this.containsElement(activeEl)) {
+                this.noteBlurred();
+            }
         });
     }
 
@@ -181,7 +207,7 @@ export class DateInput extends HoistInput {
     };
 
     forcePopoverClose() {
-        this.child.value.setState({isOpen: false});
+        this.inputRef.value.setState({isOpen: false});
     }
     
     applyPrecision(date)  {

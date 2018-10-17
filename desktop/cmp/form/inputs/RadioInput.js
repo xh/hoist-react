@@ -7,12 +7,12 @@
 
 import PT from 'prop-types';
 import {isObject} from 'lodash';
-import {HoistComponent, elemFactory} from '@xh/hoist/core/index';
-import {observable, action} from '@xh/hoist/mobx/index';
-import {radio, radioGroup} from '@xh/hoist/kit/blueprint/index';
-import {withDefault} from '@xh/hoist/utils/js/index';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {observable, action} from '@xh/hoist/mobx';
+import {radio, radioGroup} from '@xh/hoist/kit/blueprint';
+import {withDefault} from '@xh/hoist/utils/js';
 
-import {HoistInput} from '@xh/hoist/cmp/form/index';
+import {HoistInput} from '@xh/hoist/cmp/form';
 import './RadioInput.scss';
 
 /**

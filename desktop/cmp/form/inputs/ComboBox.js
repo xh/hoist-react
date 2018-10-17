@@ -6,15 +6,14 @@
  */
 
 import PT from 'prop-types';
-import {find, isObject} from 'lodash';
-import {observable, settable, action} from '@xh/hoist/mobx/index';
-import {startsWith} from 'lodash';
-import {elemFactory, HoistComponent} from '@xh/hoist/core/index';
-import {Classes, suggest} from '@xh/hoist/kit/blueprint/index';
-import {menuItem} from '@xh/hoist/kit/blueprint/index';
-import {HoistInput} from '@xh/hoist/cmp/form/index';
-import {withDefault, throwIf} from '@xh/hoist/utils/js/index';
-import {wait} from '@xh/hoist/promise/index';
+import {find, isObject, startsWith} from 'lodash';
+import {observable, settable, action} from '@xh/hoist/mobx';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {Classes, suggest} from '@xh/hoist/kit/blueprint';
+import {menuItem} from '@xh/hoist/kit/blueprint';
+import {HoistInput} from '@xh/hoist/cmp/form';
+import {withDefault, throwIf} from '@xh/hoist/utils/js';
+import {wait} from '@xh/hoist/promise';
 
 /**
  * ComboBox - An input with type ahead suggest and menu select

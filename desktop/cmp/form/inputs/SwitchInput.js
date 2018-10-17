@@ -6,10 +6,10 @@
  */
 
 import PT from 'prop-types';
-import {HoistComponent, elemFactory} from '@xh/hoist/core/index';
-import {switchControl} from '@xh/hoist/kit/blueprint/index';
-import {withDefault} from '@xh/hoist/utils/js/index';
-import {HoistInput} from '@xh/hoist/cmp/form/index';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {switchControl} from '@xh/hoist/kit/blueprint';
+import {withDefault} from '@xh/hoist/utils/js';
+import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
  * Switch (toggle) control for non-nullable boolean values.

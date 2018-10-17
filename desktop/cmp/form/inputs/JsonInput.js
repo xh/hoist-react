@@ -1,12 +1,12 @@
 import ReactDOM from 'react-dom';
-import {XH, elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core/index';
+import {XH, elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import PT from 'prop-types';
 import {defaultsDeep} from 'lodash';
-import {box} from '@xh/hoist/cmp/layout/index';
-import {textArea} from '@xh/hoist/kit/blueprint/index';
-import {withDefault} from '@xh/hoist/utils/js/index';
+import {box} from '@xh/hoist/cmp/layout';
+import {textArea} from '@xh/hoist/kit/blueprint';
+import {withDefault} from '@xh/hoist/utils/js';
 
-import {HoistInput} from '@xh/hoist/cmp/form/index';
+import {HoistInput} from '@xh/hoist/cmp/form';
 
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/addon/fold/foldgutter.css';

@@ -7,10 +7,10 @@
 
 import React from 'react';
 import {castArray} from 'lodash';
-import {HoistComponent, elemFactory} from '@xh/hoist/core/index';
-import {buttonGroup} from '@xh/hoist/kit/blueprint/index';
-import {throwIf} from '@xh/hoist/utils/js/index';
-import {HoistInput} from '@xh/hoist/cmp/form/index';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {buttonGroup} from '@xh/hoist/kit/blueprint';
+import {throwIf} from '@xh/hoist/utils/js';
+import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
  * A segmented group of buttons, one of which is depressed to indicate the input's current value.
