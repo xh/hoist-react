@@ -52,7 +52,6 @@ export class Select extends HoistInput {
     baseClassName = 'xh-select';
 
     selectRef = new Ref();
-    popoverRef = new Ref();
     @observable.ref activeItem
     @observable.ref internalOptions = [];
 
@@ -93,8 +92,7 @@ export class Select extends HoistInput {
             filterable: false,
             itemRenderer: withDefault(props.itemRenderer, this.defaultItemRenderer),
             popoverProps: {
-                popoverClassName: Classes.MINIMAL,
-                popoverRef: this.popoverRef.ref
+                popoverClassName: Classes.MINIMAL
             },
             ref: this.selectRef.ref,
 
