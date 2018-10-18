@@ -6,10 +6,11 @@
  */
 
 import {PropTypes as PT} from 'prop-types';
-import {castArray, clone, isEmpty, remove, startsWith} from 'lodash';
+import {castArray, clone, isEmpty, remove, take} from 'lodash';
 import {action} from '@xh/hoist/mobx';
 import {Classes, menuItem, multiSelect as bpMultiSelect} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {withDefault} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon';
 
 import {BaseDropdownInput} from './BaseDropdownInput';
@@ -50,7 +51,7 @@ export class MultiSelect extends BaseDropdownInput {
     }
 
     render() {
-        let {placeholder, disabled} = this.props,
+        let {placeholder, disabled, maxListOptions} = this.props,
             {internalOptions} = this;
 
         return bpMultiSelect({
@@ -59,8 +60,22 @@ export class MultiSelect extends BaseDropdownInput {
             onItemSelect: this.onItemSelect,
             resetOnSelect: true,
             itemRenderer: this.getOptionRenderer(),
-            itemPredicate: (q, item) => {
-                return startsWith(item.label.toLowerCase(), q.toLowerCase());
+            itemListPredicate: (q, items) => {
+                if (q) {
+                    q = q.toLowerCase();
+                    items = items.filter(opt => opt.label.toLowerCase().startsWith(q));
+                }
+
+                // Clamp at maxListOptions to avoid performance issues.
+                const max = withDefault(maxListOptions, 250);
+                if (items.length > max) {
+                    const diff = items.length - max;
+                    items = take(items, max);
+                    // This will push a null value on if actually selected by user - provisional.
+                    items.push({label: `(+${diff} more)`, value: null});
+                }
+
+                return items;
             },
             tagRenderer: this.getTagRenderer(),
             tagInputProps: {
