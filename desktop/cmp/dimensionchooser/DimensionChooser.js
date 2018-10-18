@@ -10,6 +10,8 @@ import {select} from '@xh/hoist/desktop/cmp/form';
 import {DimensionChooserModel} from './DimensionChooserModel'
 import {vbox, box} from '@xh/hoist/cmp/layout/index';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {Icon} from '@xh/hoist/icon';
+
 
 
 import './DimensionChooser.scss';
@@ -53,7 +55,6 @@ export class DimensionChooser extends Component {
         const {model, field, placeholder} = this.props,
             {options, selectedDims, fmtDim} = this.dimChooserModel,
             renderedDims = selectedDims.map(dim => this.renderButton(dim));
-        console.log(isEmpty(options))
         return vbox(
             box(selectedDims.map(fmtDim).join(' > ')),
             ...renderedDims,
@@ -61,8 +62,7 @@ export class DimensionChooser extends Component {
                 model,
                 field,
                 options,
-                placeholder,
-                renderText: 'Add dimension...',
+                renderText: isEmpty(selectedDims) ? placeholder : 'Add...',
                 onCommit: this.onCommit,
                 omit: isEmpty(options)
             })
@@ -72,6 +72,7 @@ export class DimensionChooser extends Component {
     renderButton(dim) {
         return button({
             text: this.dimChooserModel.fmtDim(dim),
+            icon: Icon.x(),
             onClick: () => this.onRemoveClick(dim)
         })
     }
