@@ -197,6 +197,8 @@ export class Column {
                 suppressDoubleClickExpand: true,
                 innerRenderer: (v) => v.data[this.field]
             };
+            ret.valueGetter = (v) => v.data[this.field];
+            ret.filterValueGetter = (v) => v.data[this.field];
         }
 
         if (this.tooltip) {
