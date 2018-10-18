@@ -22,7 +22,7 @@ import {
     isNil
 } from 'lodash';
 import {Column, ColumnGroup} from '@xh/hoist/columns';
-import {throwIf, warnIf} from '@xh/hoist/utils/js';
+import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {ColChooserModel} from './ColChooserModel';
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './GridSorter';
@@ -131,7 +131,7 @@ export class GridModel {
         store,
         columns,
         treeMode = false,
-        selModel = null,
+        selModel,
         stateModel = null,
         emptyText = null,
         sortBy = [],
@@ -166,7 +166,7 @@ export class GridModel {
         this.setSortBy(sortBy);
         this.setCompact(compact);
 
-        if (!selModel) selModel = XH.app.isMobile ? 'disabled' : 'single';
+        selModel = withDefault(selModel, XH.app.isMobile ? 'disabled' : 'single');
         this.selModel = this.initSelModel(selModel, store);
         this.stateModel = this.initStateModel(stateModel);
     }

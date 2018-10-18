@@ -118,10 +118,10 @@ export class Grid extends Component {
                 ),
                 onKeyDown: !mobile ? onKeyDown : null
             }),
-            !mobile ? colChooser({
-                omit: !colChooserModel,
+            colChooser({
+                omit: mobile || !colChooserModel,
                 model: colChooserModel
-            }) : null
+            })
         );
     }
 

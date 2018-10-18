@@ -174,6 +174,7 @@ export class Column {
      */
     getAgSpec() {
         const {gridModel} = this,
+            me = this,
             ret = {
                 field: this.field,
                 colId: this.colId,
@@ -225,9 +226,7 @@ export class Column {
             ret.width = this.width;
         }
 
-        const {subFields, renderer, elementRenderer} = this,
-            column = this; // eslint-disable-line consistent-this
-
+        const {subFields, renderer, elementRenderer} = this;
         if (subFields && subFields.length) {
             ret.cellRendererFramework = class extends Component {
                 render() {
@@ -235,7 +234,7 @@ export class Column {
                         {value, data: record} = agParams,
                         fields = gridModel.subFields.filter(it => subFields.includes(it.field));
 
-                    return subFieldRenderer({fields, value, record, renderer, elementRenderer, column});
+                    return subFieldRenderer({fields, value, record, renderer, elementRenderer, column: me});
                 }
                 refresh() {return false}
             };
@@ -248,7 +247,7 @@ export class Column {
                 render() {
                     const agParams = this.props,
                         {value, data: record} = agParams;
-                    return elementRenderer(value, {record, agParams, column});
+                    return elementRenderer(value, {record, agParams, column: me});
                 }
                 refresh() {return false}
             };

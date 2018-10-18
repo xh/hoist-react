@@ -25,7 +25,7 @@ export class SubFieldRenderer extends Component {
         fields: PT.arrayOf(PT.object),
         /** Primary value to render */
         value: PT.oneOfType([PT.string, PT.number, PT.bool]).isRequired,
-        /** The data Record to associate with the actions. */
+        /** The data Record to render. */
         record: PT.instanceOf(Record).isRequired,
         /** Reference to the Column */
         column: PT.object.isRequired,
