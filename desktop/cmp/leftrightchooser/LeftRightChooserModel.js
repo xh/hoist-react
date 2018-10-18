@@ -158,11 +158,11 @@ export class LeftRightChooserModel {
         const groupingEnabled = side == 'left' ? this.leftGroupingEnabled : this.rightGroupingEnabled,
             lockSvg = convertIconToSvg(Icon.lock({prefix: 'fal'}));
 
-        return (v, data) => {
+        return (v, {record}) => {
             const groupClass = groupingEnabled && this._hasGrouping ? 'xh-lr-chooser__group-row' : '';
             return `
                 <div class='xh-lr-chooser__item-row ${groupClass}'>
-                    ${v} ${data.locked ? lockSvg : ''}
+                    ${v} ${record.locked ? lockSvg : ''}
                 </div>
             `;
         };

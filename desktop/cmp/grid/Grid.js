@@ -5,12 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component, isValidElement} from 'react';
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {isNil, isString, merge, xor, dropRightWhile, dropWhile, isEmpty} from 'lodash';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
+import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import './ag-grid';
 import {agGridReact, navigateSelection, ColumnHeader} from './ag-grid';
 import {colChooser} from './ColChooser';
@@ -41,11 +42,8 @@ export class Grid extends Component {
          */
         agOptions: PT.object,
 
-        /**
-         * Callback to call when a row is double clicked.  Function will receive an event
-         * with a data node containing the row's data.
-         */
-        onRowDoubleClicked: PT.func,
+        /** True to suppress display of the grid's header row. */
+        hideHeaders: PT.bool,
 
         /**
          * Callback to call when a key down event is detected on this component.
@@ -55,6 +53,12 @@ export class Grid extends Component {
          * This handler is designed to allow application to workaround this.
          */
         onKeyDown: PT.func,
+
+        /**
+         * Callback to call when a row is double clicked.  Function will receive an event
+         * with a data node containing the row's data.
+         */
+        onRowDoubleClicked: PT.func,
 
         /**
          * Show a colored row background on hover. Defaults to false.
@@ -129,6 +133,7 @@ export class Grid extends Component {
             popupParent: document.querySelector('body'),
             navigateToNextCell: this.onNavigateToNextCell,
             defaultGroupSortComparator: this.sortByGroup,
+            headerHeight: props.hideHeaders ? 0 : undefined,
             icons: {
                 groupExpanded: convertIconToSvg(
                     Icon.angleDown(),
@@ -152,7 +157,6 @@ export class Grid extends Component {
             onGridSizeChanged: this.onGridSizeChanged,
             onDragStopped: this.onDragStopped,
             onColumnResized: this.onColumnResized,
-
             groupDefaultExpanded: 1,
             groupUseEntireRow: true
         };
@@ -217,9 +221,10 @@ export class Grid extends Component {
             const displaySpec = action.getDisplaySpec(params);
             if (displaySpec.hidden) return;
 
-            let subMenu;
+            let childItems;
             if (!isEmpty(displaySpec.items)) {
-                subMenu = this.buildMenuItems(displaySpec.items, record, selectedRecords);
+                const menu = new StoreContextMenu({items: displaySpec.items, gridModel: this.gridModel});
+                childItems = this.buildMenuItems(menu.items, record, selectedRecords);
             }
 
             let icon = displaySpec.icon;
@@ -230,7 +235,7 @@ export class Grid extends Component {
             items.push({
                 name: displaySpec.text,
                 icon,
-                subMenu,
+                subMenu: childItems,
                 tooltip: displaySpec.tooltip,
                 disabled: displaySpec.disabled,
                 action: () => action.call(params)

@@ -62,15 +62,27 @@ export function numberIs({min, max, notZero}) {
  * Validate a date.
  *
  * @param {Object} c
- * @param {(Date|string)} [c.min] - earliest value for the date to be checked.  Also supports string 'now'.
- * @param {(Date|string)} [c.max] - latest value for the date to be checked.  Also supports string 'now'.
+ * @param {(Date|string)} [c.min] - earliest value for the date to be checked.  Also supports string 'now' (with time component) and 'today' (with time = midnight).
+ * @param {(Date|string)} [c.max] - latest value for the date to be checked.  Also supports string 'now' (with time component) and 'today' (with time = midnight).
  * @param {string} [c.fmt] - custom date format to be used in validation message.
  * @returns ConstraintCb
  */
 export function dateIs({min, max, fmt = 'YYYY-MM-DD'}) {
     return ({value, displayName}) => {
-        min = min === 'now' ? new Date() : min;
-        max = max === 'now' ? new Date() : max;
+
+        if (min === 'now') {
+            min = new Date();
+        } else if (min === 'today') {
+            min = new Date();
+            min.setHours(0, 0, 0, 0);
+        }
+
+        if (max === 'now') {
+            max = new Date();
+        } else if (max === 'today') {
+            max = new Date();
+            max.setHours(0, 0, 0, 0);
+        }
 
         if (isNil(value)) return null;
 

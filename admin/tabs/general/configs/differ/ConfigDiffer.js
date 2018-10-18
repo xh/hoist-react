@@ -9,6 +9,7 @@ import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {box, filler, fragment} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/desktop/cmp/grid';
+import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {comboBox} from '@xh/hoist/desktop/cmp/form';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -41,7 +42,10 @@ export class ConfigDiffer extends Component {
     // Implementation
     //------------------------
     getContents() {
-        const model = this.model;
+        const model = this.model,
+            gridModel = model.gridModel,
+            store = gridModel.store;
+
         return panel({
             tbar: toolbar(
                 box(<b>Configuration Comparison</b>),
@@ -62,12 +66,18 @@ export class ConfigDiffer extends Component {
                     onClick: this.onLoadDiffClick
                 })
             ),
-            item: grid({
-                model: model.gridModel,
-                onRowDoubleClicked: this.onRowDoubleClicked,
-                agOptions: {
-                    popupParent: null
-                }
+            item: panel({
+                mask: mask({
+                    isDisplayed: !model.remoteHost || !store.count,
+                    message: store.allCount ? 'All configs match!' : 'Enter a remote host for comparison.'
+                }),
+                item: grid({
+                    model: gridModel,
+                    onRowDoubleClicked: this.onRowDoubleClicked,
+                    agOptions: {
+                        popupParent: null
+                    }
+                })
             }),
             bbar: toolbar(
                 filler(),
