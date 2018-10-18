@@ -27,7 +27,8 @@ export class Select extends BaseDropdownInput {
         /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
         options: PT.arrayOf(PT.oneOfType([PT.object, PT.string, PT.bool])),
         /** Optional custom optionRenderer, a function that receives (option, optionProps) */
-        itemRenderer: PT.func
+        itemRenderer: PT.func,
+        renderText: PT.string
     };
 
     delegateProps = ['className', 'disabled', 'icon', 'autoFocus'];
@@ -40,7 +41,7 @@ export class Select extends BaseDropdownInput {
     }
     
     render() {
-        let {style, width, placeholder, disabled} = this.props,
+        let {style, width, placeholder, disabled, renderText} = this.props,
             {renderValue, internalOptions} = this;
 
         return bpSelect({
@@ -52,7 +53,7 @@ export class Select extends BaseDropdownInput {
             filterable: false,
             item: button({
                 rightIcon: 'caret-down',
-                text: this.getDisplayValue(renderValue, internalOptions, placeholder),
+                text: renderText || this.getDisplayValue(renderValue, internalOptions, placeholder),
                 style: {...style, width},
                 ...this.getDelegateProps()
             }),
