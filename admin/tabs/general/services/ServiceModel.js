@@ -6,7 +6,7 @@
  */
 import {XH, HoistModel} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
-import {GridModel} from '@xh/hoist/desktop/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {lowerFirst} from 'lodash';
 
 @HoistModel

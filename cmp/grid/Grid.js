@@ -14,7 +14,7 @@ import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import './ag-grid';
 import {agGridReact, navigateSelection, ColumnHeader} from './ag-grid';
-import {colChooser} from './ColChooser';
+import {colChooser} from './impl/ColChooser';
 
 /**
  * The primary rich data grid component within the Hoist toolkit.

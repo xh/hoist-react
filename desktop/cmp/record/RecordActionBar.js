@@ -10,7 +10,7 @@ import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Record, RecordAction, StoreSelectionModel} from '@xh/hoist/data';
 import {buttonGroup} from '@xh/hoist/kit/blueprint';
-import {GridModel} from '@xh/hoist/desktop/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {throwIf} from '@xh/hoist/utils/js';
 import {Column} from '@xh/hoist/columns';
 import {isEmpty} from 'lodash';

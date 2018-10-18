@@ -250,7 +250,7 @@ Components can accept one or more models as props, reference properties of these
 render methods, and call methods on these Models in response to user actions or inputs. This can
 help to structure or encapsulate a Component's API, but also works with MobX to minimize extra
 render cycles and respond to state changes as efficiently as possible. The
-[`GridModel`](desktop/cmp/grid/GridModel.js) class is a notable example of managing a complex
+[`GridModel`](cmp/grid/GridModel.js) class is a notable example of managing a complex
 Component's configuration, state, and API surface via a Model. Hoist's `LeftRightChooser` Component
 is managed via its [dedicated Model class](desktop/cmp/leftrightchooser/LeftRightChooserModel.js),
 which includes nested GridModels.

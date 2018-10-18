@@ -8,7 +8,7 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {find} from 'lodash';
 import {action, observable} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
-import {GridModel} from '@xh/hoist/desktop/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {UrlStore} from '@xh/hoist/data';
 import {PanelSizingModel} from '@xh/hoist/desktop/cmp/panel';
 

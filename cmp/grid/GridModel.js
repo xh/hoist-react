@@ -23,10 +23,10 @@ import {
 } from 'lodash';
 import {Column, ColumnGroup} from '@xh/hoist/columns';
 import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
-import {ColChooserModel} from './ColChooserModel';
 import {GridStateModel} from './GridStateModel';
-import {GridSorter} from './GridSorter';
-import {ExportManager} from './ExportManager';
+import {ColChooserModel} from './impl/ColChooserModel';
+import {GridSorter} from './impl/GridSorter';
+import {ExportManager} from './impl/ExportManager';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
