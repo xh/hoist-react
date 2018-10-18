@@ -46,7 +46,10 @@ export class Select extends HoistInput {
          * takes a React node, and along with the multiline prop, can be used to render rich
          * list option templates.
          */
-        optionRenderer: PT.func
+        optionRenderer: PT.func,
+
+        /** Width of the control in pixels. */
+        width: PT.number
     };
 
     baseClassName = 'xh-select';
@@ -70,6 +73,7 @@ export class Select extends HoistInput {
 
         return bpSelect({
             $items: internalOptions,
+
             item: button({
                 autoFocus: props.autoFocus,
                 disabled: props.disabled,
@@ -91,9 +95,7 @@ export class Select extends HoistInput {
             disabled: props.disabled,
             filterable: false,
             itemRenderer: withDefault(props.optionRenderer, this.defaultOptionRenderer),
-            popoverProps: {
-                popoverClassName: Classes.MINIMAL
-            },
+            popoverProps: {popoverClassName: Classes.MINIMAL},
             ref: this.selectRef.ref,
 
             className: this.getClassName(),
@@ -108,7 +110,7 @@ export class Select extends HoistInput {
         options = withDefault(options, []);
         this.internalOptions = options.map(o => {
             const ret = isObject(o) ?
-                // Spread additional object props to internal opt to make available to optionRenderer.
+                // Spread additional object properties to opt to make available to optionRenderer.
                 {label: o.label, value: o.value, ...o} :
                 {label: o != null ? o.toString() : '-null-', value: o};
 
@@ -139,10 +141,12 @@ export class Select extends HoistInput {
         this.activeItem = v;
     }
 
-    // This handler will get called as the user navigates in the list, and we need to ensure we
-    // accept those changes so the list UI will updates. However it will also be called after
-    // the popover closes with the first item in the list, regardless of the component value.
-    // We want to skip this last call to let our autorun leave it at the desired selection.
+    // This handler is called as the user navigates *potential* opts in the list. We must accept
+    // those updates so the list UI will highlight the selected option.
+    //
+    // However it is called again after the popover closes with the first item in the list,
+    // regardless of the component value. We want to ignore that call to let our autorun leave
+    // the selected option as active so it is highlighted the next time the list opens.
     onSelectActiveItemChange = (v) => {
         const select = this.selectRef.value;
         if (select && select.state.isOpen) {

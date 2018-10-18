@@ -7,7 +7,7 @@
 
 import PT from 'prop-types';
 import {find, isObject, startsWith} from 'lodash';
-import {observable, settable, action} from '@xh/hoist/mobx';
+import {observable, bindable, settable, action} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Classes, suggest} from '@xh/hoist/kit/blueprint';
 import {menuItem} from '@xh/hoist/kit/blueprint';
@@ -16,7 +16,7 @@ import {withDefault, throwIf} from '@xh/hoist/utils/js';
 import {wait} from '@xh/hoist/promise';
 
 /**
- * Control to select from a list of options. Renders as a text input with a popup list, adds support
+ * Control to select from a list of options. Renders as a text input with a popup list, with support
  * for querying (implemented as an async promise function to enable both local and remote queries)
  * as well as ad-hoc user entries.
  */
@@ -28,6 +28,9 @@ export class ComboBox extends HoistInput {
 
         /** True to commit on every change/keystroke, default false. */
         commitOnChange: PT.bool,
+
+        /** Custom renderer text displayed within the input control, passed the selected item. */
+        inputValueRenderer: PT.func,
 
         /** Icon to display inline on the left side of the input. */
         leftIcon: PT.element,
@@ -47,7 +50,7 @@ export class ComboBox extends HoistInput {
         /** Text to display when control is empty. */
         placeholder: PT.string,
 
-        /** True to only accept values from given options; false allows arbitrary text input. */
+        /** True (default) accepts only values from options; false allows arbitrary text input. */
         requireSelection: PT.bool,
 
         /** Element to display inline on the right side of the input. */
@@ -60,11 +63,15 @@ export class ComboBox extends HoistInput {
          * Function called when the input value of the control changes to repopulate the available
          * options. Should return a Promise resolving to a new list of options in the same format.
          */
-        queryFn: PT.func
+        queryFn: PT.func,
+
+        /** Width of the control in pixels. */
+        width: PT.number
     };
 
     baseClassName = 'xh-combo-box';
 
+    @bindable internalQueryValue;
     @settable @observable.ref selectedItem = null;
     @observable.ref internalOptions = [];
 
@@ -73,55 +80,66 @@ export class ComboBox extends HoistInput {
         this.addReaction(this.queryOptionsReaction());
         this.addReaction(this.normalizeOptionsReaction());
         this.addReaction(this.selectedItemReaction());
-        throwIf(
-            props.queryFn && props.selectionRequired,
-            'ComboBox with queryFn not yet implemented with selectionRequired.'
-        );
+        // throwIf(
+        //     props.queryFn && this.requireSelection,
+        //     'ComboBox with queryFn not yet implemented with selectionRequired.'
+        // );
     }
 
     get commitOnChange() {
         return withDefault(this.props.commitOnChange, false);
     }
 
+    get requireSelection() {
+        return withDefault(this.props.requireSelection, true);
+    }
+
     render() {
-        const {props, internalOptions} = this,
-            placeholder = withDefault(props.placeholder, 'Select');
+        const {props, internalOptions} = this;
 
         return suggest({
-            className: this.getClassName(),
-            popoverProps: {popoverClassName: Classes.MINIMAL},
             $items: internalOptions,
-            onItemSelect: this.onItemSelect,
-            selectedItem: this.selectedItem,
+
+            inputProps: {
+                autoComplete: 'nope',
+                leftIcon: props.leftIcon,
+                placeholder: withDefault(props.placeholder, 'Select'),
+                rightElement: props.rightElement,
+
+                style: {
+                    ...props.style,
+                    width: props.width
+                },
+
+                onBlur: this.onBlur,
+                onFocus: this.onFocus,
+                onKeyPress: this.onKeyPress,
+            },
+
+            inputValueRenderer: withDefault(props.inputValueRenderer, this.defaultInputValueRenderer),
             itemPredicate: (q, item) => {
                 return !q || startsWith(item.label.toLowerCase(), q.toLowerCase());
             },
             itemRenderer: withDefault(props.optionRenderer, this.defaultOptionRenderer),
             openOnKeyDown: true,
-            inputValueRenderer: (item) => item.label,
-            onQueryChange: this.onQueryChange,
-            inputProps: {
-                onKeyPress: this.onKeyPress,
-                onBlur: this.onBlur,
-                onFocus: this.onFocus,
-                autoComplete: 'nope',
-                style: {...props.style, width: props.width},
-                leftIcon: props.leftIcon,
-                placeholder: placeholder,
-                rightElement: props.rightElement
-            },
-            disabled: props.disabled
+            popoverProps: {popoverClassName: Classes.MINIMAL},
+
+            disabled: props.disabled,
+            selectedItem: this.selectedItem,
+
+            className: this.getClassName(),
+
+            onItemSelect: this.onItemSelect,
+            onQueryChange: this.onQueryChange
         });
     }
 
-    //-----------------------------------------------------------
-    // Common handling of options, rendering of selected option
-    //-----------------------------------------------------------
     @action
     normalizeOptions(options) {
         options = withDefault(options, []);
         options = options.map(o => {
             const ret = isObject(o) ?
+                // Spread additional object properties to opt to make available to optionRenderer.
                 {label: o.label, value: o.value, ...o} :
                 {label: o != null ? o.toString() : '-null-', value: o};
 
@@ -132,10 +150,10 @@ export class ComboBox extends HoistInput {
         this.internalOptions = options;
     }
 
+    defaultInputValueRenderer = (option) => {
+        return option.label;
+    }
 
-    //--------------------------------
-    // Event handlers, callbacks
-    //--------------------------------
     defaultOptionRenderer = (option, optionProps) => {
         return menuItem({
             key: option.value,
@@ -150,8 +168,9 @@ export class ComboBox extends HoistInput {
     }
 
     onQueryChange = (val) => {
-        if (!this.props.requireSelection) {
-            this.noteValueChange(val);
+        this.setInternalQueryValue(val);
+        if (!this.requireSelection || !val) {
+            this.noteValueChange(val || null);
         }
     }
 
@@ -174,7 +193,7 @@ export class ComboBox extends HoistInput {
 
     queryOptionsReaction() {
         return {
-            track: () => [this.props.queryFn, this.internalValue],
+            track: () => [this.props.queryFn, this.internalQueryValue],
             run: ([queryFn, value]) => {
                 if (queryFn) {
                     queryFn(value).then(options => this.normalizeOptions(options));
