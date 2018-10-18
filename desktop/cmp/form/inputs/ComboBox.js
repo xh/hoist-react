@@ -6,13 +6,13 @@
  */
 
 import PT from 'prop-types';
-import {find, isObject, startsWith} from 'lodash';
-import {observable, bindable, settable, action} from '@xh/hoist/mobx';
+import {find, isObject, take} from 'lodash';
+import {observable, settable, action} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Classes, suggest} from '@xh/hoist/kit/blueprint';
 import {menuItem} from '@xh/hoist/kit/blueprint';
 import {HoistInput} from '@xh/hoist/cmp/form';
-import {withDefault, throwIf} from '@xh/hoist/utils/js';
+import {withDefault} from '@xh/hoist/utils/js';
 import {wait} from '@xh/hoist/promise';
 
 /**
@@ -34,6 +34,14 @@ export class ComboBox extends HoistInput {
 
         /** Icon to display inline on the left side of the input. */
         leftIcon: PT.element,
+
+        /**
+         * Maximum number of matching options to render in the drop-down list. Additional options
+         * will be truncated to avoid a major performance hit. This is defaulted to a relatively
+         * high value (250), the expectation being that for large list sizes scanning the dropdown
+         * is not productive and the user should keep typing to get a list of more precise matches.
+         */
+        maxListOptions: PT.number,
 
         /**
          * Custom renderer for each option within the popup list. Should return a BP menuItem.
@@ -71,7 +79,7 @@ export class ComboBox extends HoistInput {
 
     baseClassName = 'xh-combo-box';
 
-    @bindable internalQueryValue;
+    @observable internalQueryValue;
     @settable @observable.ref selectedItem = null;
     @observable.ref internalOptions = [];
 
@@ -113,18 +121,36 @@ export class ComboBox extends HoistInput {
 
                 onBlur: this.onBlur,
                 onFocus: this.onFocus,
-                onKeyPress: this.onKeyPress,
+                onKeyPress: this.onKeyPress
+            },
+
+            itemListPredicate: (q, items) => {
+                // If empty query or we are in queryFn mode, no need to filter here.
+                // For queryFns, we will be replacing the entire items list with matches.
+                // Otherwise simple startsWith matching for now (could expose a prop to customize).
+                if (q && !props.queryFn) {
+                    q = q.toLowerCase();
+                    items = items.filter(opt => opt.label.toLowerCase().startsWith(q));
+                }
+
+                // Always clamp at maxListOptions to avoid performance issues.
+                const max = withDefault(props.maxListOptions, 250);
+                if (items.length > max) {
+                    const diff = items.length - max;
+                    items = take(items, max);
+                    // TODO - this appears to be safe to push on here - we should verify...
+                    items.push({label: `(+${diff} more)`, value: null});
+                }
+
+                return items;
             },
 
             inputValueRenderer: withDefault(props.inputValueRenderer, this.defaultInputValueRenderer),
-            itemPredicate: (q, item) => {
-                return !q || startsWith(item.label.toLowerCase(), q.toLowerCase());
-            },
             itemRenderer: withDefault(props.optionRenderer, this.defaultOptionRenderer),
-            openOnKeyDown: true,
-            popoverProps: {popoverClassName: Classes.MINIMAL},
 
             disabled: props.disabled,
+            openOnKeyDown: true,
+            popoverProps: {popoverClassName: Classes.MINIMAL},
             selectedItem: this.selectedItem,
 
             className: this.getClassName(),
@@ -167,16 +193,24 @@ export class ComboBox extends HoistInput {
         this.noteValueChange(item.value);
     }
 
-    onQueryChange = (val) => {
-        this.setInternalQueryValue(val);
-        if (!this.requireSelection || !val) {
-            this.noteValueChange(val || null);
+    onQueryChange = (q) => {
+        this.setInternalQueryValue(q);
+
+        // TODO - how to blank out
+        if (!this.requireSelection && q) {
+            this.noteValueChange(q);
         }
+    }
+
+    @action
+    setInternalQueryValue(v) {
+        this.internalQueryValue = v;
     }
 
     onKeyPress = (ev) => {
         if (ev.key === 'Enter') {
-            wait(1).then(() => this.doCommit());
+            // Avoid committing partial query when pressing enter to select - timing issues
+            wait(300).then(() => this.doCommit());
         }
     }
 
@@ -194,9 +228,9 @@ export class ComboBox extends HoistInput {
     queryOptionsReaction() {
         return {
             track: () => [this.props.queryFn, this.internalQueryValue],
-            run: ([queryFn, value]) => {
+            run: ([queryFn, q]) => {
                 if (queryFn) {
-                    queryFn(value).then(options => this.normalizeOptions(options));
+                    queryFn(q).then(options => this.normalizeOptions(options));
                 }
             },
             delay: this.props.queryBuffer || 100,
