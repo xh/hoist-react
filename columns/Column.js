@@ -155,8 +155,8 @@ export class Column {
         this.chooserName = chooserName || this.headerName || this.colId;
         this.chooserGroup = chooserGroup;
         this.chooserDescription = chooserDescription;
-        this.excludeFromChooser = withDefault(excludeFromChooser, this.isTreeColumn);
-        this.hideable = withDefault(hideable, true);
+        this.excludeFromChooser = withDefault(excludeFromChooser, false);
+        this.hideable = withDefault(hideable, !this.isTreeColumn);
 
         this.exportName = exportName || this.headerName || this.colId;
         this.exportValue = exportValue;

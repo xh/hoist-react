@@ -24,7 +24,7 @@ export class RestGridToolbar extends Component {
 
     renderToolbarItems() {
         const {model} = this,
-            {store, unit, toolbarActions: actions, gridModel} = model,
+            {unit, toolbarActions: actions, gridModel} = model,
             extraItemsFn = this.props.extraToolbarItems,
             extraItems = extraItemsFn ? castArray(extraItemsFn()) : [];
 
@@ -33,8 +33,8 @@ export class RestGridToolbar extends Component {
             toolbarSep({omit: isEmpty(extraItems)}),
             ...extraItems,
             filler(),
-            storeCountLabel({store, unit}),
-            storeFilterField({store, fields: model.filterFields}),
+            storeCountLabel({gridModel, unit}),
+            storeFilterField({gridModel, includeFields: model.filterFields}),
             exportButton({model})
         ];
     }
