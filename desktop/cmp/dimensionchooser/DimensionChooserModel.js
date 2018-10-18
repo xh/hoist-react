@@ -6,8 +6,8 @@
  */
 
 import {HoistModel} from '@xh/hoist/core';
-import {startCase, last, isEmpty, remove, pull, isFunction, upperFirst} from 'lodash';
-import {computed, observable, action, runInAction} from '@xh/hoist/mobx';
+import {startCase, last, isEmpty, pull, isFunction, upperFirst} from 'lodash';
+import {computed, observable, action} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -19,12 +19,13 @@ export class DimensionChooserModel {
 
     @observable selectedDims = [];
 
-    constructor({
-                    dimensions,
-                    dimensionLabels,
-                    model,
-                    field
-                }) {
+    constructor(
+        {
+            dimensions,
+            dimensionLabels,
+            model,
+            field
+        }) {
         this.dimensions = dimensions;
         this.dimensionLabels = dimensionLabels;
         this.model = model;
@@ -53,8 +54,8 @@ export class DimensionChooserModel {
             return {
                 value: dims.join(','),
                 label: fmtDim(last(dims)) // Need to allow user defined label map
-            }
-        })
+            };
+        });
     }
 
     doCommit() {
@@ -66,18 +67,12 @@ export class DimensionChooserModel {
         }
     }
 
-
-
-
-    /** Load the underlying store. */
+    /** Will be used to populate history. */
     loadAsync() {
     }
-
-    /** Load the underlying store. */
     loadData() {
 
     }
-
 
     //------------------------
     // Implementation

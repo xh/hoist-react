@@ -7,17 +7,14 @@
 import {Component} from 'react';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {select} from '@xh/hoist/desktop/cmp/form';
-import {DimensionChooserModel} from './DimensionChooserModel'
+import {DimensionChooserModel} from './DimensionChooserModel';
 import {vbox, box} from '@xh/hoist/cmp/layout/index';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-
-
-
-import './DimensionChooser.scss';
-import {HoistInput} from '@xh/hoist/cmp/form';
 import {PropTypes as PT} from 'prop-types';
 import {isEmpty} from 'lodash';
+
+import './DimensionChooser.scss';
 
 @HoistComponent
 @LayoutSupport
@@ -48,7 +45,7 @@ export class DimensionChooser extends Component {
             dimensionLabels,
             model,
             field
-        })
+        });
     }
 
     render() {
@@ -66,7 +63,7 @@ export class DimensionChooser extends Component {
                 onCommit: this.onCommit,
                 omit: isEmpty(options)
             })
-        )
+        );
     }
 
     renderButton(dim) {
@@ -74,7 +71,7 @@ export class DimensionChooser extends Component {
             text: this.dimChooserModel.fmtDim(dim),
             icon: Icon.x(),
             onClick: () => this.onRemoveClick(dim)
-        })
+        });
     }
 
     onRemoveClick = (dim) => {
