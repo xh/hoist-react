@@ -9,20 +9,22 @@ import {action, observable} from 'mobx';
 import {upperFirst} from 'lodash';
 
 /**
- * Decorator to add a simple mobx action of the form 'setPropName()' to a class.
+ * Decorator to add a simple MobX action of the form 'setPropName()' to a class.
  *
- * Applications that wish to add more complicated logic to their setter should
- * simply define the setter manually instead.
+ * Applications that wish to add more complicated logic to their setter should define the setter
+ * manually instead. If the setter is already defined, this call will be a no-op. (This supports
+ * the use of the `@field` decorator in conjunction with a custom setter.)
  *
  * Modelled after approach in https://github.com/farwayer/mobx-decorators.
  */
 export function settable(target, property, descriptor) {
-    const name = 'set' + upperFirst(property),
-        fn = action.bound(target, name, {
+    const name = 'set' + upperFirst(property);
+    if (!target.hasOwnProperty(name)) {
+        const fn = action.bound(target, name, {
             value: function(v) {this[property] = v}
         });
-
-    Object.defineProperty(target, name, fn);
+        Object.defineProperty(target, name, fn);
+    }
 
     return descriptor && {...descriptor, configurable: true};
 }
