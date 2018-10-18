@@ -65,10 +65,7 @@ export class ActivityGrid extends Component {
             this.textInput({field: 'browser', placeholder: 'Browser...'}),
             refreshButton({model}),
             filler(),
-            storeCountLabel({
-                store: model.gridModel.store,
-                unit: 'log'
-            }),
+            storeCountLabel({gridModel: model.gridModel, unit: 'log'}),
             exportButton({model: model.gridModel})
         );
     }

@@ -30,8 +30,8 @@ export class UserPanel extends Component {
     }
 
     renderToolbar() {
-        const model = this.model,
-            {store} = model.gridModel;
+        const {model} = this,
+            {gridModel} = model;
         return toolbar(
             switchInput({
                 model,
@@ -39,14 +39,8 @@ export class UserPanel extends Component {
                 label: 'Active only'
             }),
             filler(),
-            storeCountLabel({
-                store,
-                unit: 'user'
-            }),
-            storeFilterField({
-                store,
-                fields: ['username', 'email', 'displayName', 'roles']
-            })
+            storeCountLabel({gridModel, unit: 'user'}),
+            storeFilterField({gridModel})
         );
     }
 
