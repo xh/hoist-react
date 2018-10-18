@@ -30,7 +30,7 @@ export class Column {
      * @param {(string|string[])} [c.cellClass] - additional css classes to add to each cell in the column.
      * @param {boolean} [c.isTreeColumn] - true if this column should show the tree affordances for a
      *      Tree Grid. See GridModel.treeMode.
-     * @param {boolean} [c.hide] - true to suppress default display of the column.
+     * @param {boolean} [c.hidden] - true to suppress default display of the column.
      * @param {string} [c.align] - horizontal alignment of cell contents.
      * @param {number} [c.width] - default width in pixels.
      * @param {number} [c.minWidth] - minimum width in pixels - grid will block user-driven as well
@@ -85,7 +85,7 @@ export class Column {
         headerName,
         headerClass,
         cellClass,
-        hide,
+        hidden,
         align,
         width,
         minWidth,
@@ -121,7 +121,7 @@ export class Column {
         this.headerName = withDefault(headerName, startCase(this.colId));
         this.headerClass = castArray(headerClass);
         this.cellClass = castArray(cellClass);
-        this.hide = withDefault(hide, false);
+        this.hidden = withDefault(hidden, false);
         this.align = align;
         this.isTreeColumn = withDefault(isTreeColumn, false);
 
@@ -176,7 +176,7 @@ export class Column {
                 headerName: this.headerName,
                 headerClass: this.headerClass,
                 cellClass: this.cellClass,
-                hide: this.hide,
+                hide: this.hidden,
                 absSort: this.absSort,
                 minWidth: this.minWidth,
                 maxWidth: this.maxWidth,
