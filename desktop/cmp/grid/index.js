@@ -10,4 +10,3 @@ export * from './GridModel';
 export * from './GridStateModel';
 export * from './ColChooserButton';
 export * from './ExportManager';
-export * from './SubFieldRenderer';

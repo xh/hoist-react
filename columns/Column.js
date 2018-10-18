@@ -9,7 +9,6 @@ import {Component} from 'react';
 import {castArray, startCase, isFunction, clone, find} from 'lodash';
 import {ExportFormat} from './ExportFormat';
 import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
-import {subFieldRenderer} from '@xh/hoist/desktop/cmp/grid';
 
 /**
  * Cross-platform definition and API for a standardized Grid column.
@@ -29,7 +28,6 @@ export class Column {
      * @param {string} [c.headerName] - display text for grid header.
      * @param {(string|string[])} [c.headerClass] - additional css classes to add to the column header.
      * @param {(string|string[])} [c.cellClass] - additional css classes to add to each cell in the column.
-     * @param {string[]} [c.subFields] - which subfields to show in this columns.
      * @param {boolean} [c.isTreeColumn] - true if this column should show the tree affordances for a
      *      Tree Grid. See GridModel.treeMode.
      * @param {boolean} [c.hide] - true to suppress default display of the column.
@@ -87,7 +85,6 @@ export class Column {
         headerName,
         headerClass,
         cellClass,
-        subFields,
         hide,
         align,
         width,
@@ -124,7 +121,6 @@ export class Column {
         this.headerName = withDefault(headerName, startCase(this.colId));
         this.headerClass = castArray(headerClass);
         this.cellClass = castArray(cellClass);
-        this.subFields = subFields;
         this.hide = withDefault(hide, false);
         this.align = align;
         this.isTreeColumn = withDefault(isTreeColumn, false);
@@ -226,19 +222,8 @@ export class Column {
             ret.width = this.width;
         }
 
-        const {subFields, renderer, elementRenderer} = this;
-        if (subFields && subFields.length) {
-            ret.cellRendererFramework = class extends Component {
-                render() {
-                    const agParams = this.props,
-                        {value, data: record} = agParams,
-                        fields = gridModel.subFields.filter(it => subFields.includes(it.field));
-
-                    return subFieldRenderer({fields, value, record, renderer, elementRenderer, column: me});
-                }
-                refresh() {return false}
-            };
-        } else if (renderer) {
+        const {renderer, elementRenderer} = this;
+        if (renderer) {
             ret.cellRenderer = (agParams) => {
                 return renderer(agParams.value, {record: agParams.data, column: this, agParams});
             };

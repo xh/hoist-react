@@ -74,7 +74,6 @@ export class Grid extends Component {
 
     static ROW_HEIGHT = 28;
     static COMPACT_ROW_HEIGHT = 24;
-    static SUB_FIELD_ROW_HEIGHT = 38;
 
     // Observable stamp incremented every time the ag-Grid receives a new set of data.
     // Used to ensure proper re-running / sequencing of data and selection reactions.
@@ -92,11 +91,10 @@ export class Grid extends Component {
     }
 
     render() {
-        const {colChooserModel, hasSubFields, compact} = this.model,
+        const {colChooserModel, compact} = this.model,
             {agOptions, showHover, onKeyDown} = this.props,
             mobile = XH.app.isMobile,
-            layoutProps = this.getLayoutProps(),
-            rowHeightCls = hasSubFields ? 'xh-grid-subfields' : compact ? 'xh-grid-compact' : 'xh-grid-standard';
+            layoutProps = this.getLayoutProps();
 
         // Default flex = 'auto' if no dimensions / flex specified.
         if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
@@ -113,7 +111,7 @@ export class Grid extends Component {
                 className: this.getClassName(
                     'ag-grid-holder',
                     XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
-                    rowHeightCls,
+                    compact ? 'xh-grid-compact' : 'xh-grid-standard',
                     !mobile && showHover ? 'xh-grid-show-hover' : ''
                 ),
                 onKeyDown: !mobile ? onKeyDown : null
@@ -153,11 +151,7 @@ export class Grid extends Component {
             frameworkComponents: {agColumnHeader: ColumnHeader},
             rowSelection: model.selModel.mode,
             rowDeselection: true,
-            getRowHeight: () => {
-                if (model.hasSubFields) return Grid.SUB_FIELD_ROW_HEIGHT;
-                if (model.compact) return Grid.COMPACT_ROW_HEIGHT;
-                return Grid.ROW_HEIGHT;
-            },
+            getRowHeight: () => model.compact ? Grid.COMPACT_ROW_HEIGHT : Grid.ROW_HEIGHT,
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             overlayNoRowsTemplate: model.emptyText || '<span></span>',
             onRowClicked: props.onRowClicked,
