@@ -19,48 +19,63 @@ import {withDefault, throwIf} from '@xh/hoist/utils/js';
 
 /**
  * A text input Component that generates a filter function based on simple word-boundary matching of
- * its value to those of configured fields on a candidate object. If any field values match, the
+ * its value to the value of configured fields on a candidate object. If any field values match, the
  * object itself is considered a match.
  *
- * Designed to easily filter records within a store - either directly (most common, with a store
- * or gridModel passed as a prop) or indirectly via a callback (in cases where custom logic is required, such as
- * layering on additional filters).
+ * Designed to easily filter records within a Store - either directly (most common) or indirectly
+ * via a callback (in cases where custom logic is required, such as layering on additional filters).
+ * A Store can be bound to this component via either its `store` OR `gridModel` props.
  *
- * Fields to be searched can be narrowed by using either the 'includeFields' or 'excludeFields' props.
- * In addition, if the component is bound to a GridModel, fields to be searched will be further narrowed by
- * fields associated with *visible* columns or fields used for grouping the grid.
+ * Fields to be searched can be automatically determined from the bound Store or GridModel, and/or
+ * customized via the include/excludeFields props. See prop comments for details.
  */
 @HoistComponent
 export class StoreFilterField extends Component {
 
     static propTypes = {
-        /** Initial empty text. */
-        placeholder: PT.string,
-
-        /** Store to which this control should bind and filter. Specify this or 'gridModel'. */
+        /**
+         * Store that this control should filter. By default, all fields configured on the Store
+         * will be used for matching. Do not configure this and `gridModel` on the same component.
+         */
         store: PT.instanceOf(BaseStore),
 
-        /** GridModel with Store that this control should filter. Specify this or 'store' */
+        /**
+         * GridModel whose Store this control should filter. When given a GridModel, this component
+         * will, by default, use the fields for all *visible* columns when matching, as well as any
+         * groupBy field. Do not configure this and `store` on the same component.
+         */
         gridModel: PT.instanceOf(GridModel),
 
-        /** Names of field(s) within store to include in search. Specify this or `excludeFields`*/
+        /**
+         * Names of field(s) to include in search. Required if neither a store nor gridModel are
+         * provided, as otherwise fields cannot be inferred.
+         *
+         * Can be used along with a gridModel to ensure a field is included, regardless of column
+         * visibility. Cannot be used with `excludeFields`.
+         */
         includeFields: PT.arrayOf(PT.string),
 
-        /** Names of field(s) within store record objects to exclude in  search. Specify this or `includeFields`*/
+        /** Names of field(s) to exclude from search. Cannot be used with `includeFields`. */
         excludeFields: PT.arrayOf(PT.string),
 
         /**
          * Delay (in ms) to buffer filtering of the store after the value changes from user input.
          * Default 200ms. Set to 0 to filter immediately on each keystroke. Applicable only when
-         * `store` is specified.
+         * bound to a Store (directly or via a GridModel).
          */
         filterBuffer: PT.number,
 
         /**
-         * Callback to receive an updated filter function. Can be used in place of the `store` or `gridModel` prop
-         * when direct filtering of a bound store by this component is not desired.
+         * Callback to receive an updated filter function. Can be used in place of the `store` or
+         * `gridModel` prop when direct filtering of a bound store by this component is not desired.
          */
-        onFilterChange: PT.func
+        onFilterChange: PT.func,
+
+        /** Text to display when the input is empty. */
+        placeholder: PT.string,
+
+        /** Width of the input in pixels. */
+        width: PT.number
     };
 
     @observable value = '';
@@ -93,19 +108,27 @@ export class StoreFilterField extends Component {
     }
 
     render() {
+        const {props} = this;
+
         return textInput({
-            placeholder: withDefault(this.props.placeholder, 'Quick filter'),
             value: this.value,
-            onChange: this.onValueChange,
+
             leftIcon: Icon.filter({style: {opacity: 0.5}}),
             rightElement: button({
                 icon: Icon.x(),
                 minimal: true,
                 onClick: this.onClearClick
             }),
-            className: this.getClassName()
+
+            placeholder: withDefault(props.placeholder, 'Quick filter'),
+            className: this.getClassName(),
+            style: props.style,
+            width: props.width,
+
+            onChange: this.onValueChange
         });
     }
+
 
     //------------------------
     // Implementation
@@ -133,6 +156,7 @@ export class StoreFilterField extends Component {
         this.filter = filter;
 
         if (onFilterChange) onFilterChange(filter);
+
         if (applyFilterFn) {
             if (applyImmediately) {
                 applyFilterFn.cancel();
@@ -174,7 +198,9 @@ export class StoreFilterField extends Component {
         if (gridModel) {
             const {columns, groupBy} = gridModel;
             ret = ret.filter(f => {
-                return columns.find(c => (c.field == f && !c.hide)) || groupBy.includes(f);
+                return (includeFields && includeFields.includes(f)) ||
+                        columns.find(c => (c.field == f && !c.hide)) ||
+                        groupBy.includes(f);
             });
         }
         return ret;
