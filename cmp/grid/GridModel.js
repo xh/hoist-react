@@ -350,7 +350,7 @@ export class GridModel {
             const col = this.findColumn(this.columns, colId);
             return {
                 colId,
-                hide,
+                hidden: hide,
                 width: col.flex ? undefined : width
             };
         });
@@ -382,7 +382,7 @@ export class GridModel {
             const col = this.findColumn(newCols, change.colId);
 
             if (!isNil(change.width)) col.width = change.width;
-            if (!isNil(change.hide)) col.hidden = change.hide;
+            if (!isNil(change.hidden)) col.hidden = change.hidden;
         });
 
         // 2) If the changes provided is a full list of leaf columns, synchronize the sort order
@@ -537,5 +537,5 @@ export class GridModel {
  * @typedef {Object} ColumnState
  * @property {string} colId - unique identifier of the column
  * @property {number} [width] - new width to set for the column
- * @property {boolean} [hide] - visibility of the column
+ * @property {boolean} [hidden] - visibility of the column
  */
