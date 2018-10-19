@@ -125,8 +125,8 @@ export class GridStateModel {
     getColumnState() {
         const cols = this.gridModel.getLeafColumns();
 
-        return cols.map(({colId, hide, width}) => {
-            return {colId, hide, width};
+        return cols.map(({colId, hidden, width}) => {
+            return {colId, hidden, width};
         });
     }
 

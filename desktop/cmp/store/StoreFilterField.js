@@ -199,7 +199,7 @@ export class StoreFilterField extends Component {
             const {columns, groupBy} = gridModel;
             ret = ret.filter(f => {
                 return (includeFields && includeFields.includes(f)) ||
-                        columns.find(c => (c.field == f && !c.hide)) ||
+                        columns.find(c => (c.field == f && !c.hidden)) ||
                         groupBy.includes(f);
             });
         }

@@ -76,8 +76,8 @@ export class ColChooserModel {
                 description: it.chooserDescription,
                 group: it.chooserGroup,
                 exclude: it.excludeFromChooser,
-                locked: !it.hide && !it.hideable,
-                side: it.hide ? 'left' : 'right'
+                locked: !it.hidden && !it.hideable,
+                side: it.hidden ? 'left' : 'right'
             };
         });
 
