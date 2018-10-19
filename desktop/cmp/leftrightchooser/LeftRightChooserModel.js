@@ -115,7 +115,7 @@ export class LeftRightChooserModel {
             groupCol = {
                 field: 'group',
                 headerName: 'Group',
-                hide: true
+                hidden: true
             };
 
         this.leftModel = new GridModel({

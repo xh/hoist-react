@@ -54,9 +54,9 @@ export class ColChooserModel {
         const colChanges = [];
         cols.forEach(({colId}) => {
             if (leftValues.includes(colId)) {
-                colChanges.push({colId, hide: true});
+                colChanges.push({colId, hidden: true});
             } else if (rightValues.includes(colId)) {
-                colChanges.push({colId, hide: false});
+                colChanges.push({colId, hidden: false});
             }
         });
 
