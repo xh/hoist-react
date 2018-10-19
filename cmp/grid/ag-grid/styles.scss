@@ -25,6 +25,7 @@
       flex-direction: row;
       align-items: center;
       min-height: 32px;
+      cursor: pointer;
 
       span {
         flex: 1;
@@ -55,7 +56,7 @@
       background-color: var(--xh-grid-bg-odd);
     }
 
-    &.ag-row-selected {
+    &.ag-row-selected, &:active {
       background-color: var(--xh-grid-bg-highlight);
     }
 

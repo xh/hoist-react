@@ -170,6 +170,7 @@ export class Column {
      */
     getAgSpec() {
         const {gridModel} = this,
+            me = this,
             ret = {
                 field: this.field,
                 colId: this.colId,
@@ -227,16 +228,12 @@ export class Column {
                 return renderer(agParams.value, {record: agParams.data, column: this, agParams});
             };
         } else if (elementRenderer) {
-            // eslint-disable-next-line consistent-this
-            const column = this;
             ret.cellRendererFramework = class extends Component {
                 render() {
                     const agParams = this.props,
                         {value, data: record} = agParams;
-
-                    return elementRenderer(value, {record, agParams, column});
+                    return elementRenderer(value, {record, agParams, column: me});
                 }
-
                 refresh() {return false}
             };
         }

@@ -22,11 +22,11 @@ import {
     isNil
 } from 'lodash';
 import {Column, ColumnGroup} from '@xh/hoist/columns';
-import {throwIf, warnIf} from '@xh/hoist/utils/js';
-import {ColChooserModel} from './ColChooserModel';
+import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {GridStateModel} from './GridStateModel';
-import {GridSorter} from './GridSorter';
-import {ExportManager} from './ExportManager';
+import {ColChooserModel} from './impl/ColChooserModel';
+import {GridSorter} from './impl/GridSorter';
+import {ExportManager} from './impl/ExportManager';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -130,7 +130,7 @@ export class GridModel {
         store,
         columns,
         treeMode = false,
-        selModel = 'single',
+        selModel,
         stateModel = null,
         emptyText = null,
         sortBy = [],
@@ -163,6 +163,7 @@ export class GridModel {
         this.setSortBy(sortBy);
         this.setCompact(compact);
 
+        selModel = withDefault(selModel, XH.app.isMobile ? 'disabled' : 'single');
         this.selModel = this.initSelModel(selModel, store);
         this.stateModel = this.initStateModel(stateModel);
     }

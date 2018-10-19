@@ -8,7 +8,7 @@
 import {HoistModel, XH} from '@xh/hoist/core';
 import {LocalStore} from '@xh/hoist/data';
 import {allSettled} from '@xh/hoist/promise';
-import {GridModel} from '@xh/hoist/desktop/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {boolCheckCol} from '@xh/hoist/columns';
 import {usernameCol} from '@xh/hoist/admin/columns';
 import {bindable, action} from '@xh/hoist/mobx/index';

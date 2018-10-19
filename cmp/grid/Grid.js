@@ -14,10 +14,10 @@ import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import './ag-grid';
 import {agGridReact, navigateSelection, ColumnHeader} from './ag-grid';
-import {colChooser} from './ColChooser';
+import {colChooser} from './impl/ColChooser';
 
 /**
- * The primary rich data grid component within the Hoist desktop toolkit.
+ * The primary rich data grid component within the Hoist toolkit.
  * It is a highly managed wrapper around ag-Grid and is the main display component for GridModel.
  *
  * Applications should typically configure and interact with Grids via a GridModel, which provides
@@ -55,7 +55,13 @@ export class Grid extends Component {
         onKeyDown: PT.func,
 
         /**
-         * Callback to call when a row is double clicked.  Function will receive an event
+         * Callback to call when a row is double clicked. Function will receive an event
+         * with a data node containing the row's data.
+         */
+        onRowClicked: PT.func,
+
+        /**
+         * Callback to call when a row is double clicked. Function will receive an event
          * with a data node containing the row's data.
          */
         onRowDoubleClicked: PT.func,
@@ -87,6 +93,7 @@ export class Grid extends Component {
     render() {
         const {colChooserModel, compact} = this.model,
             {agOptions, showHover, onKeyDown} = this.props,
+            mobile = XH.app.isMobile,
             layoutProps = this.getLayoutProps();
 
         // Default flex = 'auto' if no dimensions / flex specified.
@@ -105,12 +112,12 @@ export class Grid extends Component {
                     'ag-grid-holder',
                     XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                     compact ? 'xh-grid-compact' : 'xh-grid-standard',
-                    showHover ? 'xh-grid-show-hover' : ''
+                    !mobile && showHover ? 'xh-grid-show-hover' : ''
                 ),
-                onKeyDown
+                onKeyDown: !mobile ? onKeyDown : null
             }),
             colChooser({
-                omit: !colChooserModel,
+                omit: mobile || !colChooserModel,
                 model: colChooserModel
             })
         );
@@ -128,10 +135,8 @@ export class Grid extends Component {
             enableColResize: true,
             deltaRowDataMode: true,
             getRowNodeId: (data) => data.id,
-            allowContextMenuWithControlKey: true,
             defaultColDef: {suppressMenu: true, menuTabs: ['filterMenuTab']},
             popupParent: document.querySelector('body'),
-            navigateToNextCell: this.onNavigateToNextCell,
             defaultGroupSortComparator: this.sortByGroup,
             headerHeight: props.hideHeaders ? 0 : undefined,
             icons: {
@@ -150,7 +155,7 @@ export class Grid extends Component {
             getRowHeight: () => model.compact ? Grid.COMPACT_ROW_HEIGHT : Grid.ROW_HEIGHT,
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             overlayNoRowsTemplate: model.emptyText || '<span></span>',
-            getContextMenuItems: this.getContextMenuItems,
+            onRowClicked: props.onRowClicked,
             onRowDoubleClicked: props.onRowDoubleClicked,
             onGridReady: this.onGridReady,
             onSelectionChanged: this.onSelectionChanged,
@@ -161,6 +166,23 @@ export class Grid extends Component {
             groupUseEntireRow: true
         };
 
+        // Platform specific defaults
+        if (XH.app.isMobile) {
+            ret = {
+                ...ret,
+                allowContextMenuWithControlKey: false,
+                scrollbarWidth: 0
+            };
+        } else {
+            ret = {
+                ...ret,
+                allowContextMenuWithControlKey: true,
+                getContextMenuItems: this.getContextMenuItems,
+                navigateToNextCell: this.onNavigateToNextCell
+            };
+        }
+
+        // Tree grid defaults
         if (model.treeMode) {
             ret = {
                 ...ret,
@@ -170,6 +192,7 @@ export class Grid extends Component {
                 getDataPath: this.getDataPath
             };
         }
+
         return ret;
     }
 
