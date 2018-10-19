@@ -6,17 +6,18 @@
  */
 
 export * from './FormField';
-export * from './Label';
 export * from './inputs/ButtonGroupInput';
 export * from './inputs/CheckBox';
+export * from './inputs/ComboBox';
 export * from './inputs/DateInput';
 export * from './inputs/JsonInput';
+export * from './inputs/MultiSelect';
 export * from './inputs/NumberInput';
 export * from './inputs/RadioInput';
+export * from './inputs/Select';
+export * from './inputs/NewSelect';
 export * from './inputs/Slider';
 export * from './inputs/SwitchInput';
 export * from './inputs/TextArea';
 export * from './inputs/TextInput';
-export * from './inputs/ComboBox';
-export * from './inputs/Select';
-export * from './inputs/MultiSelect';
+export * from './Label';

@@ -37,6 +37,7 @@
     "prop-types": "~15.6.2",
     "qs": "~6.5.2",
     "react-onsenui": "~1.11.0",
+    "react-select": "~2.1.0",
     "react-transition-group": "~2.5.0",
     "router5": "~6.6.0",
     "rsvp": "~4.8.4",
