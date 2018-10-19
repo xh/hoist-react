@@ -4,7 +4,7 @@ import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {RecordAction, Record, StoreSelectionModel} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {Column} from '@xh/hoist/columns';
+import {Column} from '@xh/hoist/cmp/grid/columns';
 import {first, omit} from 'lodash';
 
 /**
