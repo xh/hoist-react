@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {XH, HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
-import {grid, GridModel} from '@xh/hoist/desktop/cmp/grid';
+import {grid, GridModel} from '@xh/hoist/cmp/grid';
 import {omit} from 'lodash';
 
 /**

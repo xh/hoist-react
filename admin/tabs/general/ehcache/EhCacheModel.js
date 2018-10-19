@@ -6,7 +6,7 @@
  */
 
 import {XH, HoistModel} from '@xh/hoist/core';
-import {GridModel} from '@xh/hoist/desktop/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {UrlStore} from '@xh/hoist/data';
 import {emptyFlexCol, numberCol} from '@xh/hoist/columns';
 
