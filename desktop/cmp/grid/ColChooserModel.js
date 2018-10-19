@@ -54,9 +54,9 @@ export class ColChooserModel {
         const colChanges = [];
         cols.forEach(({colId}) => {
             if (leftValues.includes(colId)) {
-                colChanges.push({colId, hidden: true});
+                colChanges.push({colId, hide: true});
             } else if (rightValues.includes(colId)) {
-                colChanges.push({colId, hidden: false});
+                colChanges.push({colId, hide: false});
             }
         });
 
@@ -76,8 +76,8 @@ export class ColChooserModel {
                 description: it.chooserDescription,
                 group: it.chooserGroup,
                 exclude: it.excludeFromChooser,
-                locked: !it.hide && !it.hideable,
-                side: it.hide ? 'left' : 'right'
+                locked: !it.hidden && !it.hideable,
+                side: it.hidden ? 'left' : 'right'
             };
         });
 
