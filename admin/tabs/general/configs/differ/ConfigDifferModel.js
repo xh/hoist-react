@@ -12,7 +12,7 @@ import {pluralize} from '@xh/hoist/utils/js';
 import {XH, HoistModel} from '@xh/hoist/core';
 import {LocalStore} from '@xh/hoist/data';
 import {p} from '@xh/hoist/cmp/layout';
-import {GridModel} from '@xh/hoist/desktop/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {Icon} from '@xh/hoist/icon';
 import {actionCol} from '@xh/hoist/desktop/columns';

@@ -6,7 +6,7 @@
  */
 
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
-import {numberRenderer} from '../format';
+import {numberRenderer} from '@xh/hoist/format';
 
 export const emptyFlexCol =  {
     colId: 'emptyFlex',

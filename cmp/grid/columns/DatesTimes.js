@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {ExportFormat} from './ExportFormat';
-import {dateRenderer, dateTimeRenderer, timeRenderer, compactDateRenderer} from '../format';
+import {dateRenderer, dateTimeRenderer, timeRenderer, compactDateRenderer} from '@xh/hoist/format';
 
 const defaults = {align: 'right'};
 

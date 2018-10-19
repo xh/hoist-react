@@ -21,12 +21,12 @@ import {
     uniq,
     isNil
 } from 'lodash';
-import {Column, ColumnGroup} from '@xh/hoist/columns';
-import {throwIf, warnIf} from '@xh/hoist/utils/js';
-import {ColChooserModel} from './ColChooserModel';
+import {Column, ColumnGroup} from '@xh/hoist/cmp/grid/columns';
+import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {GridStateModel} from './GridStateModel';
-import {GridSorter} from './GridSorter';
-import {ExportManager} from './ExportManager';
+import {ColChooserModel} from './impl/ColChooserModel';
+import {GridSorter} from './impl/GridSorter';
+import {ExportManager} from './impl/ExportManager';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -130,7 +130,7 @@ export class GridModel {
         store,
         columns,
         treeMode = false,
-        selModel = 'single',
+        selModel,
         stateModel = null,
         emptyText = null,
         sortBy = [],
@@ -163,6 +163,7 @@ export class GridModel {
         this.setSortBy(sortBy);
         this.setCompact(compact);
 
+        selModel = withDefault(selModel, XH.app.isMobile ? 'disabled' : 'single');
         this.selModel = this.initSelModel(selModel, store);
         this.stateModel = this.initStateModel(stateModel);
     }
@@ -256,14 +257,14 @@ export class GridModel {
         leafCols.forEach(col => {
             if (col.agOptions.rowGroup) {
                 col.agOptions.rowGroup = false;
-                col.hide = false;
+                col.hidden = false;
             }
         });
 
         // Group and hide all newly requested columns.
         groupCols.forEach(col => {
             col.agOptions.rowGroup = true;
-            col.hide = true;
+            col.hidden = true;
         });
 
         // Set groupBy value based on verified column IDs and flush to grid.
@@ -349,7 +350,7 @@ export class GridModel {
             const col = this.findColumn(this.columns, colId);
             return {
                 colId,
-                hide,
+                hidden: hide,
                 width: col.flex ? undefined : width
             };
         });
@@ -381,7 +382,7 @@ export class GridModel {
             const col = this.findColumn(newCols, change.colId);
 
             if (!isNil(change.width)) col.width = change.width;
-            if (!isNil(change.hide)) col.hide = change.hide;
+            if (!isNil(change.hidden)) col.hidden = change.hidden;
         });
 
         // 2) If the changes provided is a full list of leaf columns, synchronize the sort order
@@ -536,5 +537,5 @@ export class GridModel {
  * @typedef {Object} ColumnState
  * @property {string} colId - unique identifier of the column
  * @property {number} [width] - new width to set for the column
- * @property {boolean} [hide] - visibility of the column
+ * @property {boolean} [hidden] - visibility of the column
  */
