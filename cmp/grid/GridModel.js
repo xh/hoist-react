@@ -21,7 +21,7 @@ import {
     uniq,
     isNil
 } from 'lodash';
-import {Column, ColumnGroup} from '@xh/hoist/columns';
+import {Column, ColumnGroup} from '@xh/hoist/cmp/grid/columns';
 import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {GridStateModel} from './GridStateModel';
 import {ColChooserModel} from './impl/ColChooserModel';

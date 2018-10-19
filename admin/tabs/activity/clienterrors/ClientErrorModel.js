@@ -11,7 +11,7 @@ import {action, observable} from '@xh/hoist/mobx';
 import {LocalStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {fmtDate} from '@xh/hoist/format';
-import {boolCheckCol, compactDateCol} from '@xh/hoist/columns';
+import {boolCheckCol, compactDateCol} from '@xh/hoist/cmp/grid/columns';
 import {usernameCol} from '@xh/hoist/admin/columns';
 
 @HoistModel
