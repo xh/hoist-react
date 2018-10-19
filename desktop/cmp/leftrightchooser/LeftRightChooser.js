@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {cloneDeep} from 'lodash';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {vbox, hframe} from '@xh/hoist/cmp/layout';
-import {grid} from '@xh/hoist/desktop/cmp/grid';
+import {grid} from '@xh/hoist/cmp/grid';
 
 import {description} from './impl/Description';
 import {chooserToolbar} from './impl/ChooserToolbar';

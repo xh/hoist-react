@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {GridModel} from '@xh/hoist/desktop/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {LocalStore} from '@xh/hoist/data';
 import {computed} from '@xh/hoist/mobx';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
@@ -115,7 +115,7 @@ export class LeftRightChooserModel {
             groupCol = {
                 field: 'group',
                 headerName: 'Group',
-                hide: true
+                hidden: true
             };
 
         this.leftModel = new GridModel({

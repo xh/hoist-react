@@ -12,7 +12,7 @@ import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {textInput} from '@xh/hoist/desktop/cmp/form';
-import {GridModel} from '@xh/hoist/desktop/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {BaseStore} from '@xh/hoist/data';
 import {withDefault, throwIf} from '@xh/hoist/utils/js';
@@ -199,7 +199,7 @@ export class StoreFilterField extends Component {
             const {columns, groupBy} = gridModel;
             ret = ret.filter(f => {
                 return (includeFields && includeFields.includes(f)) ||
-                        columns.find(c => (c.field == f && !c.hide)) ||
+                        columns.find(c => (c.field == f && !c.hidden)) ||
                         groupBy.includes(f);
             });
         }

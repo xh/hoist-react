@@ -68,6 +68,7 @@ export class ColumnHeader extends Component {
         return div({
             className: this.getClassName(...classNames),
             onClick: this.onClick,
+            onTouchEnd: this.onClick,
             items: [
                 span(displayName),
                 this.renderSortIcon(),

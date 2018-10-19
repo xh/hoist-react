@@ -8,7 +8,7 @@ import React, {Component} from 'react';
 import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {box, filler, fragment} from '@xh/hoist/cmp/layout';
-import {grid} from '@xh/hoist/desktop/cmp/grid';
+import {grid} from '@xh/hoist/cmp/grid';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {comboBox} from '@xh/hoist/desktop/cmp/form';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
