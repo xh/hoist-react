@@ -13,8 +13,15 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {PropTypes as PT} from 'prop-types';
 import {isEmpty} from 'lodash';
+import {div, fragment, span} from '@xh/hoist/cmp/layout';
+import {popover, tooltip} from '@xh/hoist/kit/blueprint';
+
+
 
 import './DimensionChooser.scss';
+import {throwIf} from '@xh/hoist/utils/js';
+import {HoistInput} from '@xh/hoist/cmp/form';
+import React from 'react';
 
 @HoistComponent
 @LayoutSupport
@@ -26,13 +33,14 @@ export class DimensionChooser extends Component {
         dimensions: PT.array,
         /** Array of labels for grid dimensions. If not provided, model will
          * default to using Lodash's 'startCase' method on the dimensions object*/
-        dimensionLabels: PT.object
+        dimensionLabels: PT.object,
         // Could potentially merge above to single prop. I.e. if array of objects, use provided labels. If array, use Lodash
 
     };
 
     static defaultProps = {
-        placeholder: 'Select dimension...'
+        placeholder: 'Select dimension...',
+        width: 200
     };
 
     baseClassName = 'xh-dim-chooser';
@@ -49,29 +57,10 @@ export class DimensionChooser extends Component {
     }
 
     render() {
-        const {model, field, placeholder} = this.props,
-            {options, selectedDims, fmtDim} = this.dimChooserModel,
-            renderedDims = selectedDims.map(dim => this.renderButton(dim));
-        return vbox(
-            box(selectedDims.map(fmtDim).join(' > ')),
-            ...renderedDims,
-            select({
-                model,
-                field,
-                options,
-                renderText: isEmpty(selectedDims) ? placeholder : 'Add...',
-                onCommit: this.onCommit,
-                omit: isEmpty(options)
-            })
-        );
-    }
-
-    renderButton(dim) {
-        return button({
-            text: this.dimChooserModel.fmtDim(dim),
-            icon: Icon.x(),
-            onClick: () => this.onRemoveClick(dim)
-        });
+        return div({
+            className: this.baseClassName,
+            item: this.prepareChild()
+        })
     }
 
     onRemoveClick = (dim) => {
@@ -80,6 +69,63 @@ export class DimensionChooser extends Component {
 
     onCommit = (v) => {
         this.dimChooserModel.addDimension(v);
+    }
+
+
+    //--------------------
+    // Implementation
+    //--------------------
+    prepareChild() {
+        const {model, field, placeholder, width} = this.props,
+            {options, selectedDims, fmtDim} = this.dimChooserModel;
+
+        // use throwIf() to handle exceptions here
+
+        const dimSelect = select({
+            model,
+            field,
+            options,
+            renderText: isEmpty(selectedDims) ? placeholder : 'Add...',
+            width,
+            style: {width},
+            onCommit: this.onCommit,
+            omit: isEmpty(options)
+        });
+
+        if (isEmpty(selectedDims)) return dimSelect;
+
+        const target = button({
+                text: selectedDims.map(fmtDim).join(' > '),
+                style: {width}
+            }),
+            // dimButtons = options.map((opt, i) => this.renderButton(opt, i));
+            renderedDims = selectedDims.map((dim, i) => this.renderButton(dim, i));
+
+        return popover({
+            target,
+            targetClassName: 'xh-dim-popover',
+            wrapperTagName: 'div',
+            targetTagName: 'div',
+            position: 'bottom',
+            content: vbox({
+                width,
+                className: 'xh-dim-popover-items',
+                items: [
+                    ...renderedDims,
+                    dimSelect
+                ]
+            })
+        });
+    }
+
+    renderButton(opt, i) {
+        const marginLeft = this.props.width * i / 10;
+        return button({
+            style: {marginLeft},
+            text: this.dimChooserModel.fmtDim(opt),
+            icon: Icon.x(),
+            onClick: () => this.onRemoveClick(opt)
+        });
     }
 }
 export const dimensionChooser = elemFactory(DimensionChooser);
