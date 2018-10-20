@@ -221,7 +221,7 @@ add their particular functionality, behaviors, and methods to the decorated clas
 | `HoistModel.js`     | Mixin for adding core Model support.                                   |   [⚛️](core/HoistModel.js)   |
 | `HoistComponent.js` | Mixin for adding core Component support.                               | [⚛️](core/HoistComponent.js) |
 | `HoistService.js`   | Mixin for adding core Service support.                                 |  [⚛️](core/HoistService.js)  |
-| `HoistApp.js`       | Mixin for adding additional support to an App's primary Model class.   |    [⚛️](core/HoistApp.js)    |
+| `HoistAppModel.js`  | Mixin for adding additional support to an App's primary Model class.   |    [⚛️](core/HoistApp.js)    |
 | `XH.js`             | Hoist's top-level Model / framework API entry-point, exported as `XH`. |       [⚛️](core/XH.js)       |
 | `ClassUtils.js`     | Library methods for providing and extending methods on core classes.   | [⚛️](utils/js/ClassUtils.js) |
 
@@ -276,16 +276,16 @@ aliases on itself for the most common framework service calls, e.g. `XH.getConf(
 #### HoistApp
 
 Each client application must define a top-level Model class using
-[the specialized `@HoistApp` decorator](core/HoistApp.js). This decorator installs core Model
+[the specialized `@HoistAppModel` decorator](core/HoistAppModel.js). This decorator installs core Model
 support as well as several additional methods specific to the high-level lifecycle of the
-application, including those dealing with authorization, init, and routing. This class instance is
-available via an import of the `XH` (as `XH.app`) and can be a a useful place to hang global state
+application, including those dealing with init, and routing. This class instance is
+available via an import of the `XH` (as `XH.appModel`) and can be is a useful place to hang global state
 specific to your application.
 
 Please review the inline documentation on the decorator for additional detailed information on what
 it provides and how an Application should provide concrete implementations for certain key methods.
-For an example within Hoist React itself, see HoistApp Model for the
-[built-in Admin Console](admin/App.js).
+For an example within Hoist React itself, see HoistAppModel for the
+[built-in Admin Console](admin/AppModel.js).
 
 #### Model Cleanup and Destruction
 

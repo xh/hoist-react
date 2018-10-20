@@ -15,7 +15,7 @@ import './LockoutPanel.scss';
 import {impersonationBar} from './ImpersonationBar';
 
 /**
- * Displayed in place of the UI when user does not have any access, as per App.checkAccess().
+ * Displayed in place of the UI when user does not have any access, as per AppSpec.checkAccess.
  *
  * @private
  */
@@ -50,7 +50,7 @@ export class LockoutPanel extends Component {
             }),
             logoutButton({
                 text: 'Logout',
-                omit: !XH.app.enableLogout
+                omit: XH.appSpec.isSSO
             })
         );
     }

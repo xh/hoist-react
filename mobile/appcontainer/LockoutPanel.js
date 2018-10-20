@@ -47,7 +47,7 @@ export class LockoutPanel extends Component {
             button({
                 icon: Icon.logout(),
                 text: 'Logout',
-                omit: !XH.app.enableLogout,
+                omit: XH.appSpec.isSSO,
                 onClick: () => {
                     XH.identityService.logoutAsync();
                 }

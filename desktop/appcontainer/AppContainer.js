@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {Children, Component} from 'react';
+import {Component} from 'react';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {HoistComponent, elemFactory, elem, AppState, XH} from '@xh/hoist/core';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
@@ -77,7 +77,7 @@ export class AppContainer extends Component {
                     vframe(
                         impersonationBar({model: model.impersonationBarModel}),
                         updateBar({model}),
-                        frame(Children.only(this.props.children)),
+                        frame(elem(XH.appSpec.componentClass, {model: XH.appModel})),
                         versionBar({model})
                     ),
                     mask({model: model.appLoadModel, spinner: true}),
@@ -100,7 +100,7 @@ export class AppContainer extends Component {
     // Implementation
     //------------------------
     renderSuspendedDialog() {
-        const dialogClass = XH.app.suspendedDialogClass || SuspendedDialog;
+        const dialogClass = XH.appSpec.suspendedDialogClass || SuspendedDialog;
 
         return XH.appState == AppState.SUSPENDED && dialogClass ?
             elem(dialogClass, {onReactivate: () => XH.reloadApp()}) :

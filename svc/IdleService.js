@@ -16,7 +16,7 @@ import {debounce} from 'lodash';
  * system from unattended clients and/or as a "belt-and-suspenders" defence against memory
  * leaks or other performance issues that can arise with long-running sessions.
  *
- * This service consults the HoistApp `idleDetectionDisabled` getter, the `xhIdleTimeoutMins`
+ * This service consults the AppSpec `idleDetectionDisabled` property, the `xhIdleTimeoutMins`
  * soft-config, and the `xh.disableIdleDetection` user preference to determine if and when it
  * should suspend the app.
  *
@@ -29,7 +29,7 @@ export class IdleService {
 
     async initAsync() {
         const timeout = XH.getConf('xhIdleTimeoutMins') * MINUTES,
-            appDisabled = XH.app.isMobile || XH.app.idleDetectionDisabled,
+            appDisabled = XH.isMobile || XH.appSpec.idleDetectionDisabled,
             configDisabled = timeout <= 0,
             userDisabled = XH.getPref('xhIdleDetectionDisabled');
 

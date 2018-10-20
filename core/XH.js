@@ -6,9 +6,9 @@
  */
 
 import ReactDOM from 'react-dom';
-import {flatten, uniqueId} from 'lodash';
+import {flatten, uniqueId, isArray} from 'lodash';
 
-import {elem, HoistModel, AppState} from '@xh/hoist/core';
+import {elem, HoistModel, AppState, AppSpec} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {observable, action} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
@@ -109,29 +109,21 @@ class XHClass {
     /** Currently authenticated user. */
     @observable authUsername = null;
 
-    /** Currently running HoistApp - set in `renderApp()` below. */
-    app = null;
+    /** Root level HoistAppModel */
+    appModel = null;
+
+    /** Specifications for this application. Specified in renderApp() */
+    appSpec = null;
 
     /**
      * Main entry point. Initialize and render application code.
      *
-     * @param {Object} app - object containing main application state and logic.
-     *      Should be an instance of a class decorated with @HoistApp.
+     * @param {(AppSpec|Object)} appSpec. Specifications for this application.
+     *      Should be an AppSpec, or a config for one.
      */
-    renderApp(app) {
-        this.app = app;
-        const {componentClass, containerClass} = app;
-        throwIf(!componentClass, 'A HoistApp must define a componentClass getter to specify its top-level component.');
-        throwIf(!containerClass, 'A HoistApp must define a containerClass that it should be hosted within.');
-
-        const rootView = elem(
-            containerClass,
-            {
-                model: this.appContainerModel,
-                item: elem(componentClass, {model: app})
-            }
-        );
-
+    renderApp(appSpec) {
+        this.appSpec = appSpec instanceof AppSpec ? appSpec : new AppSpec(appSpec);
+        const rootView = elem(appSpec.containerClass, {model: this.appContainerModel});
         ReactDOM.render(rootView, document.getElementById('root'));
     }
 
@@ -355,7 +347,7 @@ class XHClass {
 
             // ...if not, throw in SSO mode (unexpected error case) or trigger a login prompt.
             if (!userIsAuthenticated) {
-                throwIf(this.app.requireSSO, 'Failed to authenticate user via SSO.');
+                throwIf(XH.appSpec.isSSO, 'Failed to authenticate user via SSO.');
                 this.setAppState(S.LOGIN_REQUIRED);
                 return;
             }
@@ -386,14 +378,15 @@ class XHClass {
             // Delay to workaround hot-reload styling issues in dev.
             await wait(XH.isDevelopmentMode ? 300 : 1);
 
-            const access = this.app.checkAccess(XH.getUser());
+            const access = this.checkAccess();
             if (!access.hasAccess) {
                 this.acm.showAccessDenied(access.message || 'Access denied.');
                 this.setAppState(S.ACCESS_DENIED);
                 return;
             }
 
-            await this.app.initAsync();
+            this.appModel = new this.appSpec.modelClass();
+            await this.appModel.initAsync();
             this.startRouter();
             this.setAppState(S.RUNNING);
         } catch (e) {
@@ -405,6 +398,23 @@ class XHClass {
     //------------------------
     // Implementation
     //------------------------
+    checkAccess() {
+        const user = XH.getUser(),
+            {checkAccess} = this.appSpec;
+
+        if (!checkAccess) return {hasAccess: true}
+
+        if (isArray(checkAccess)) {
+            return {
+                hasAccess: checkAccess.some(it => user.hasRole(it)),
+                message: `User needs one of the following roles to access this application: ${checkAccess.join(',')}`
+            }
+        } else {
+            return checkAccess(user);
+        }
+    }
+
+
     async getAuthStatusFromServerAsync() {
         return await this.fetchService
             .fetchJson({url: 'xh/authStatus'})
@@ -441,7 +451,7 @@ class XHClass {
     }
 
     startRouter() {
-        this.router.add(this.app.getRoutes());
+        this.router.add(this.appModel.getRoutes());
         this.router.start();
     }
 
@@ -451,7 +461,6 @@ class XHClass {
         this.safeDestroy(
             this.appContainerModel,
             this.routerModel,
-
             this.configService,
             this.environmentService,
             this.fetchService,

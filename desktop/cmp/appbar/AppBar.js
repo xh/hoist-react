@@ -93,7 +93,7 @@ export class AppBar extends Component {
                         refreshButton({
                             omit: hideRefreshButton,
                             intent: 'success',
-                            onClick: () => XH.app.requestRefresh(true)
+                            onClick: () => XH.appModel.requestRefresh(true)
                         })
                     ]
                 })

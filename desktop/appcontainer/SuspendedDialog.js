@@ -15,7 +15,7 @@ import {message} from './Message';
  * Default display of application suspension.
  *
  * This display can be overridden by applications.
- * @see HoistApp.suspendedDialogClass
+ * @see AppSpec.suspendedDialogClass
  *
  * @private
  */
