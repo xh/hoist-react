@@ -90,7 +90,7 @@ export class TextInput extends HoistInput {
                 placeholder: props.placeholder,
                 rightElement: props.rightElement,
                 round: withDefault(props.round, false),
-                spellCheck: withDefault(props.spellCheck, true),
+                spellCheck: withDefault(props.spellCheck, false),
                 tabIndex: props.tabIndex,
                 type: props.type,
 
