@@ -74,7 +74,8 @@ export class JsonInput extends HoistInput {
             run: (value) => {
                 const {editor} = this;
                 if (editor && editor.getValue() != value) {
-                    editor.setValue(value);
+                    // CodeMirror will throw on null value.
+                    editor.setValue(value == null ? '' : value);
                 }
             }
         });
