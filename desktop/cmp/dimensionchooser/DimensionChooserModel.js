@@ -6,13 +6,9 @@
  */
 
 import {HoistModel} from '@xh/hoist/core';
-import {startCase, last, isEmpty, pull, isFunction, upperFirst} from 'lodash';
+import {startCase, last, isEmpty, pull, isFunction, upperFirst, indexOf, difference} from 'lodash';
 import {computed, observable, action} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-
-/**
- *                 label: dims.map((dim) => this.fmtDim(dim)).join(' > ') // Need to allow user defined label map
- */
 
 @HoistModel
 export class DimensionChooserModel {
@@ -22,40 +18,58 @@ export class DimensionChooserModel {
     constructor(
         {
             dimensions,
-            dimensionLabels,
             model,
             field
         }) {
-        this.dimensions = dimensions;
-        this.dimensionLabels = dimensionLabels;
         this.model = model;
         this.field = field;
-        this.selectedDims = model[field].split(',');
+        this.allDims = dimensions;
+        this.defaultDims = model[field].split(',');
+        this.selectedDims = this.defaultDims;
+        this.history = createHistoryArray(5);
     }
 
     @action
-    addDimension(v) {
-        this.selectedDims = v.split(',');
+    handleDim(dim) {
+      const {selectedDims} = this;
+
+      if (selectedDims.includes(dim)) {
+          pull(selectedDims, dim);
+      } else {
+          selectedDims.push(dim);
+      }
+
+      this.doCommit();
+      this.history.unshift(this.orderedDims);
     }
 
     @action
-    removeDimension(dim) {
-        pull(this.selectedDims, dim);
-        this.doCommit(); // What's the DRY way to do this?
+    setDims(type) {
+        const {selectedDims} = this;
+        switch(type) {
+            case 'reset':
+                selectedDims.replace(this.defaultDims);
+                break;
+            case 'clear':
+                selectedDims.clear();
+                break;
+            case 'all':
+                selectedDims.replace(this.allDims);
+                break;
+        }
+        this.doCommit();
+    }
+
+    @action
+    setDimsFromHistory(history) {
+        this.selectedDims.replace(history);
+        this.doCommit();
+        this.history.unshift(this.orderedDims);
     }
 
     @computed
-    get options() {
-        const {dimensions, selectedDims, fmtDim} = this,
-            curIndex = isEmpty(selectedDims) ? 0 : dimensions.indexOf(last(selectedDims)) + 1,
-            remainingDims = dimensions.slice(curIndex),
-            opts = remainingDims.map((dim) => [...selectedDims, dim]);
-        return opts.map(dims => {
-            return {
-                value: dims.join(','),
-                label: fmtDim(last(dims)) // Need to allow user defined label map
-            };
-        });
+    get orderedDims() {
+        return this.selectedDims.slice().sort((a,b) => indexOf(this.allDims, a) - indexOf(this.allDims, b));
     }
 
     doCommit() {
@@ -63,7 +77,7 @@ export class DimensionChooserModel {
         if (model && field) {
             const setterName = `set${upperFirst(field)}`;
             throwIf(!isFunction(model[setterName]), `Required function '${setterName}()' not found on bound model`);
-            model[setterName](this.selectedDims.join(','));
+            model[setterName](this.orderedDims.join(','));
         }
     }
 
@@ -71,17 +85,19 @@ export class DimensionChooserModel {
     loadAsync() {
     }
     loadData() {
-
-    }
-
-    //------------------------
-    // Implementation
-    //------------------------
-
-    fmtDim = (dim) => {
-        return this.dimensionLabels ?
-            this.dimensionLabels[dim] :
-            startCase(dim);
     }
 
 }
+
+const createHistoryArray = (length) => {
+    const array = [];
+
+    array.unshift = function () {
+        if (this.length >= length) {
+            this.pop();
+        }
+        return Array.prototype.unshift.apply(this, arguments);
+    };
+
+    return array;
+};
