@@ -7,6 +7,10 @@
       background: var(--xh-input-bg);
       border: none;
       box-shadow: var(--xh-form-field-box-shadow);
+
+      &--is-focused {
+        box-shadow: var(--xh-form-field-focused-box-shadow);
+      }
     }
 
     &__single-value,

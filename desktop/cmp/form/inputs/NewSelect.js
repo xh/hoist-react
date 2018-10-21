@@ -21,7 +21,7 @@ import {
 import './NewSelect.scss';
 
 /**
- * TODO - custom renderers, custom local query, test in dialog, very large lists
+ * TODO - custom renderers, custom local query, very large lists
  */
 @HoistComponent
 export class NewSelect extends HoistInput {
@@ -274,6 +274,10 @@ export class NewSelect extends HoistInput {
             },
             dropdownIndicator: (base) => {
                 return {...base, padding: 4};
+            },
+            menuPortal: (base) => {
+                // Support display within a dialog by boosting menu portal z-index.
+                return {...base, zIndex: 999};
             }
         };
     }

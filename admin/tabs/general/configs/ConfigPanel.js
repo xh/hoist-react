@@ -34,13 +34,13 @@ export class ConfigPanel extends Component {
                     name: 'groupName',
                     label: 'Group',
                     lookupName: 'groupNames',
-                    required: true
+                    required: true,
+                    enableCreate: true
                 },
                 {
                     name: 'valueType',
                     label: 'Type',
                     lookupName: 'valueTypes',
-                    lookupStrict: true,
                     editable: 'onAdd',
                     required: true
                 },
