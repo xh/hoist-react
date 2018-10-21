@@ -170,7 +170,9 @@
 //------------------------
 // Forms + Inputs
 //------------------------
-.bp3-input, .bp3-input-ghost {
+.bp3-input, .bp3-dark .bp3-input, textarea.bp3-input, .bp3-dark textarea.bp3-input, .bp3-input-ghost {
+  color: var(--xh-input-text-color);
+  background: var(--xh-input-bg);
   font-size: var(--xh-font-size);
 }
 
@@ -209,7 +211,7 @@
 }
 
 .bp3-dark .bp3-input-group svg:not(.bp3-icon) {
-  color: var(--xh-text-color);
+  color: var(--xh-input-text-color);
 }
 
 .bp3-button svg:not(.bp3-icon):first-child:last-child, .bp3-button .bp3-spinner + svg:not(.bp3-icon):last-child {

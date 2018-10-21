@@ -80,8 +80,6 @@ export class TextInput extends HoistInput {
         const {props} = this;
 
         return div({
-            onBlur: this.onBlur,
-            onFocus: this.onFocus,
             item: inputGroup({
                 value: this.renderValue || '',
 
@@ -105,7 +103,10 @@ export class TextInput extends HoistInput {
 
                 onChange: this.onChange,
                 onKeyPress: this.onKeyPress
-            })
+            }),
+
+            onBlur: this.onBlur,
+            onFocus: this.onFocus
         });
     }
 
