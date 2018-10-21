@@ -80,7 +80,7 @@ export function ReactiveSupport(C) {
          * @param {function} conf.run - function to run - second arg to underlying reaction()/when() call.
          */
         addReaction({track, when, run, ...options}) {
-            throwIf((track && when) || (!track && !when), "Must specify either `track` or `when` in addReaction.");
+            throwIf((track && when) || (!track && !when), "Must specify either 'track' or 'when' in addReaction.");
             if (track) {
                 this.addMobxDisposer(mobxReaction(track, run.bind(this), options));
             } else {
