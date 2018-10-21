@@ -6,8 +6,8 @@
  */
 
 import {isFunction} from 'lodash';
-import {autorun, reaction} from '@xh/hoist/mobx';
-import {provideMethods, chainMethods, markClass} from '@xh/hoist/utils/js';
+import {autorun as mobxAutorun, reaction as mobxReaction, when as mobxWhen} from '@xh/hoist/mobx';
+import {provideMethods, chainMethods, markClass, throwIf} from '@xh/hoist/utils/js';
 
 /**
  * Mixin to add MobX reactivity to Components, Models, and Services.
@@ -49,7 +49,7 @@ export function ReactiveSupport(C) {
                 ({run, ...options} = conf);
             }
             run = run.bind(this);
-            this.addMobxDisposer(autorun(run, options));
+            this.addMobxDisposer(mobxAutorun(run, options));
         },
 
 
@@ -61,7 +61,11 @@ export function ReactiveSupport(C) {
          * the run function. The reaction will also run only when the output of the track function
          * changes, and this output is passed to the run function.
          *
-         * Choose a reaction over an autorun when you wish to explicitly declare which observables
+         * Specify the property 'track' to run the reaction continuously until disposal.  Alternatively, specify
+         * the 'when' property to run this reaction only until the predicate passes, and the run function is executed
+         * once.  (These map on to mobX's native `reaction()` and `when()` functions, respectively).
+         *
+         * Choose this method over an autorun when you wish to explicitly declare which observables
          * should be tracked. A common pattern is to have the track function return these
          * observables in a simple array or object, which the run function can use as its input or
          * (commonly) ignore. This helps to clarify that the track function is only enumerating
@@ -69,14 +73,19 @@ export function ReactiveSupport(C) {
          *
          * @param {Object} conf - configuration of reaction, containing options accepted by MobX
          *      reaction() API, as well as arguments below.
-         * @param {function} conf.track - function returning data to track - first arg to the
-         *      underlying reaction() call.
-         * @param {function} conf.run - function to run - second arg to underlying reaction() call.
+         * @param {function} conf.track - function returning data to observe - first arg to the
+         *      underlying reaction() call. Specify this or `when`.
+         * @param {function} conf.when - function returning data to observe - first arg to the
+         *      underlying when() call. Specify this or `track`.
+         * @param {function} conf.run - function to run - second arg to underlying reaction()/when() call.
          */
-        addReaction(conf) {
-            let {track, run, ...options} = conf;
-            run = run.bind(this);
-            this.addMobxDisposer(reaction(track, run, options));
+        addReaction({track, when, run, ...options}) {
+            throwIf((track && when) || (!track && !when), "Must specify either `track` or `when` in addReaction.");
+            if (track) {
+                this.addMobxDisposer(mobxReaction(track, run.bind(this), options));
+            } else {
+                this.addMobxDisposer(mobxWhen(when, run.bind(this), options));
+            }
         },
 
 

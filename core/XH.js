@@ -6,12 +6,12 @@
  */
 
 import ReactDOM from 'react-dom';
-import {flatten, uniqueId, isArray} from 'lodash';
+import {flatten, uniqueId, isArray, camelCase} from 'lodash';
 
 import {elem, HoistModel, AppState, AppSpec} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {observable, action} from '@xh/hoist/mobx';
-import {never, wait} from '@xh/hoist/promise';
+import {never, wait, allSettled} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
 
 import {
@@ -28,8 +28,6 @@ import {
 import {AppContainerModel} from './appcontainer/AppContainerModel';
 import {RouterModel} from './RouterModel';
 import {ExceptionHandler} from './ExceptionHandler';
-
-import {initServicesAsync} from './HoistService';
 
 import '../styles/XH.scss';
 
@@ -71,26 +69,18 @@ class XHClass {
     isDevelopmentMode = xhIsDevelopmentMode;
 
     //---------------------------
-    // Services + aliased methods
+    // Aliased methods
     //---------------------------
-    configService = new ConfigService();
-    environmentService = new EnvironmentService();
-    fetchService = new FetchService();
-    identityService = new IdentityService();
-    idleService = new IdleService();
-    localStorageService = new LocalStorageService();
-    prefService = new PrefService();
-    trackService = new TrackService();
-
     track(opts)                 {return this.trackService.track(opts)}
     fetch(opts)                 {return this.fetchService.fetch(opts)}
     fetchJson(opts)             {return this.fetchService.fetchJson(opts)}
-    getUser()                   {return this.identityService.getUser()}
-    getUsername()               {return this.identityService.getUsername()}
     getConf(key, defaultVal)    {return this.configService.get(key, defaultVal)}
     getPref(key, defaultVal)    {return this.prefService.get(key, defaultVal)}
     setPref(key, val)           {return this.prefService.set(key, val)}
     getEnv(key)                 {return this.environmentService.get(key)}
+
+    getUser()                   {return this.identityService ? this.identityService.getUser() : null}
+    getUsername()               {return this.identityService ? this.identityService.getUsername() : null}
 
     //-------------------------------
     // Models
@@ -105,7 +95,7 @@ class XHClass {
 
     /** State of app -- see AppState for valid values. */
     @observable appState = AppState.PRE_AUTH;
-
+    
     /** Currently authenticated user. */
     @observable authUsername = null;
 
@@ -125,6 +115,29 @@ class XHClass {
         this.appSpec = appSpec instanceof AppSpec ? appSpec : new AppSpec(appSpec);
         const rootView = elem(appSpec.containerClass, {model: this.appContainerModel});
         ReactDOM.render(rootView, document.getElementById('root'));
+    }
+
+    /**
+     * Install HoistServices on this object.
+     *
+     * @param {...Object} - Classes decorated with @HoistService
+     *
+     * This method will create, initialize, and install the services classes listed on XH.  All services
+     * will be initialized concurrently.  To guarantee execution order of service initialization make multiple calls
+     * to this method with await.
+     *
+     * Note that the instantiated services will be placed directly on the XH object for easy access.  Therefore
+     * applications should be careful to use the naming convention of choosing a unique name of the form
+     * xxxService to avoid naming collisions.  If naming collisions are detected, an error will be thrown.
+     */
+    async installServicesAsync(...serviceClasses) {
+        const svcs = serviceClasses.map(serviceClass => new serviceClass());
+        await this.initServicesInternalAsync(svcs);
+        svcs.forEach(svc => {
+            const name = camelCase(svc.constructor.name);
+            throwIf(this[name], `Service cannot be installed. Property'${name}' already exists on XH object.`);
+            this[name] = svc;
+        });
     }
 
     /**
@@ -332,7 +345,8 @@ class XHClass {
     /**
      * Called when application mounted in order to trigger initial authentication and
      * initialization of framework and application.
-     * Used by framework. Not intended for application use.
+     *
+     * Not intended for application use.
      */
     async initAsync() {
         const S = AppState;
@@ -340,11 +354,13 @@ class XHClass {
         document.body.classList.add('xh-app');
 
         try {
+            await this.installServicesAsync(FetchService, LocalStorageService);
+            await this.installServicesAsync(EnvironmentService, TrackService, IdleService);
             this.setAppState(S.PRE_AUTH);
 
             // Check if user has already been authenticated (prior login, SSO)...
             const userIsAuthenticated = await this.getAuthStatusFromServerAsync();
-
+            
             // ...if not, throw in SSO mode (unexpected error case) or trigger a login prompt.
             if (!userIsAuthenticated) {
                 throwIf(XH.appSpec.isSSO, 'Failed to authenticate user via SSO.');
@@ -364,7 +380,9 @@ class XHClass {
     /**
      * Complete initialization. Called after the client has confirmed that the user is generally
      * authenticated and known to the server (regardless of application roles at this point).
-     * Used by framework. Not intended for application use.
+     * Used by framework.
+     *
+     * Not intended for application use.
      */
     @action
     async completeInitAsync() {
@@ -372,12 +390,11 @@ class XHClass {
 
         this.setAppState(S.INITIALIZING);
         try {
-            await this.initServicesAsync();
+            await this.installServicesAsync(IdentityService)
+            // TODO: Whitelist ConfigService in core and load preAuth?
+            await this.installServicesAsync(PrefService, ConfigService);
             this.initModels();
-
-            // Delay to workaround hot-reload styling issues in dev.
-            await wait(XH.isDevelopmentMode ? 300 : 1);
-
+            
             const access = this.checkAccess();
             if (!access.hasAccess) {
                 this.acm.showAccessDenied(access.message || 'Access denied.');
@@ -402,13 +419,13 @@ class XHClass {
         const user = XH.getUser(),
             {checkAccess} = this.appSpec;
 
-        if (!checkAccess) return {hasAccess: true}
+        if (!checkAccess) return {hasAccess: true};
 
         if (isArray(checkAccess)) {
             return {
                 hasAccess: checkAccess.some(it => user.hasRole(it)),
                 message: `User needs one of the following roles to access this application: ${checkAccess.join(',')}`
-            }
+            };
         } else {
             return checkAccess(user);
         }
@@ -427,25 +444,6 @@ class XHClass {
             });
     }
 
-    async initServicesAsync() {
-        await initServicesAsync(
-            this.fetchService,
-            this.localStorageService
-        );
-        await initServicesAsync(
-            this.identityService
-        );
-        await initServicesAsync(
-            this.configService,
-            this.prefService
-        );
-        await initServicesAsync(
-            this.environmentService,
-            this.idleService,
-            this.trackService
-        );
-    }
-
     initModels() {
         this.acm.init();
     }
@@ -457,17 +455,35 @@ class XHClass {
 
     get acm() {return this.appContainerModel}
 
+    async initServicesInternalAsync(svcs) {
+        const promises = svcs.map(it => it.initAsync()),
+            results = await allSettled(promises),
+            errs = results.filter(it => it.state === 'rejected');
+
+        if (errs.length === 1) {
+            throw errs[0].reason;
+        }
+
+        if (errs.length > 1) {
+            // Enhance entire result col w/class name, we care about errs only
+            results.forEach((it, idx) => {
+                it.name = svcs[idx].constructor.name;
+            });
+            const names = errs.map(it => it.name).join(', ');
+
+            throw this.exception({
+                message: 'Failed to initialize services: ' + names,
+                details: errs
+            });
+        }
+    }
+    
     destroy() {
+        const services = values(this).filter(v => v && v.isHoistService);
         this.safeDestroy(
             this.appContainerModel,
             this.routerModel,
-            this.configService,
-            this.environmentService,
-            this.fetchService,
-            this.identityService,
-            this.localStorageService,
-            this.prefService,
-            this.trackService
+            ...services
         );
     }
 }

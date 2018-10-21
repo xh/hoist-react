@@ -30,7 +30,10 @@ export class EnvironmentService {
             reactVersion: React.version
         }, serverEnv);
 
-        this.startVersionChecking();
+        this.addReaction({
+            when: () => XH.appState === 'RUNNING',
+            run: () => this.startVersionChecking
+        });
     }
 
     get(key) {

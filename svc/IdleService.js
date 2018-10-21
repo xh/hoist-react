@@ -27,19 +27,23 @@ export class IdleService {
 
     ACTIVITY_EVENTS = ['keydown', 'mousemove', 'mousedown', 'scroll'];
 
-    async initAsync() {
-        const timeout = XH.getConf('xhIdleTimeoutMins') * MINUTES,
-            appDisabled = XH.isMobile || XH.appSpec.idleDetectionDisabled,
-            configDisabled = timeout <= 0,
-            userDisabled = XH.getPref('xhIdleDetectionDisabled');
+    constructor() {
+        this.addReaction({
+            when: () => XH.appState === 'RUNNING',
+            run: () => {
+                const timeout = XH.getConf('xhIdleTimeoutMins') * MINUTES,
+                    appDisabled = XH.isMobile || XH.appSpec.idleDetectionDisabled,
+                    configDisabled = timeout <= 0,
+                    userDisabled = XH.getPref('xhIdleDetectionDisabled');
 
-        if (!appDisabled && !configDisabled && !userDisabled) {
-            this.startCountdown = debounce(() => this.suspendApp(), timeout, {trailing: true});
-            this.startCountdown();
-            this.createAppListeners();
-        }
+                if (!appDisabled && !configDisabled && !userDisabled) {
+                    this.startCountdown = debounce(() => this.suspendApp(), timeout, {trailing: true});
+                    this.startCountdown();
+                    this.createAppListeners();
+                }
+            }
+        });
     }
-
 
     //------------------------
     // Implementation
