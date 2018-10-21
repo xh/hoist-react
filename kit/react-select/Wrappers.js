@@ -9,12 +9,18 @@ import {elemFactory} from '@xh/hoist/core';
 
 import Select from 'react-select';
 import AsyncSelect from 'react-select/lib/Async';
+import AsyncCreatable from 'react-select/lib/AsyncCreatable';
+import Creatable from 'react-select/lib/Creatable';
 
 export {
     Select,
-    AsyncSelect
+    AsyncSelect,
+    AsyncCreatable,
+    Creatable
 };
 
 export const
     reactSelect = elemFactory(Select),
-    reactAsyncSelect = elemFactory(AsyncSelect);
+    reactCreatableSelect = elemFactory(Creatable),
+    reactAsyncSelect = elemFactory(AsyncSelect),
+    reactAsyncCreatableSelect = elemFactory(AsyncCreatable);

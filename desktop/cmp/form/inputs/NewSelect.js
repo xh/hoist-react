@@ -5,98 +5,157 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {castArray, isEmpty, isPlainObject, keyBy, find} from 'lodash';
+import PT from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {castArray, isEmpty, isPlainObject, keyBy, find} from 'lodash';
 import {observable, action} from '@xh/hoist/mobx';
 import {HoistInput} from '@xh/hoist/cmp/form';
 import {withDefault, throwIf} from '@xh/hoist/utils/js';
-import {reactSelect, reactAsyncSelect} from '@xh/hoist/kit/react-select';
+import {
+    reactSelect,
+    reactCreatableSelect,
+    reactAsyncSelect,
+    reactAsyncCreatableSelect
+} from '@xh/hoist/kit/react-select';
 
 /**
- * TODO - custom renderers, custom local query, test in dialog, very large lists, dark theme
+ * TODO - custom renderers, custom local query, test in dialog, very large lists, dark theme, creatable
  */
 @HoistComponent
 export class NewSelect extends HoistInput {
+
+
+    static propTypes = {
+        ...HoistInput.propTypes,
+
+        /** True to focus the control on render. */
+        autoFocus: PT.bool,
+
+        /** True to allow entry/selection of values not present in options or returned by a query. */
+        enableCreate: PT.bool,
+
+        /** True to allow entry/selection of multiple values - "tag picker" style. */
+        enableMulti: PT.bool,
+
+        /** Function to return loading message during async query. Passed current query input. */
+        loadingMessageFn: PT.func,
+
+        /** Function to return message indicating no options loaded. Passed current query input. */
+        noOptionsMessageFn: PT.func,
+
+        /** Text to display when control is empty. */
+        placeholder: PT.string,
+
+        /** Escape-hatch props passed directly to react-select. Use with care. */
+        rsOptions: PT.object,
+
+        /** True (default) to enable type-to-search. False to present pop-up on click only . */
+        searchable: PT.bool,
+
+        /** Width of the control in pixels. */
+        width: PT.number
+    };
 
     baseClassName = 'xh-select';
 
     @observable.ref internalOptions = [];
 
+    // Prop flags that switch core behavior.
+    get asyncMode() {return !!this.props.queryFnAsync}
+    get creatableMode() {return !!this.props.enableCreate}
+    get multiMode() {return !!this.props.enableMulti}
+
     constructor(props) {
         super(props);
         this.addReaction({
             track: () => this.props.options,
-            run: (opts) => this.normalizeOptions(opts),
+            run: (opts) => {
+                opts = this.normalizeOptions(opts);
+                this.setInternalOptions(opts);
+            },
             fireImmediately: true
         });
-    }
-
-    get multiValueMode() {
-        return !!this.props.multi;
-    }
-
-    get asyncMode() {
-        return !!this.props.queryFnAsync;
-    }
-
-    log(...args) {
-        if (this.props.log) console.log(...args);
     }
 
     render() {
         const {props, renderValue} = this;
 
-        const commonProps = {
+        let reactSelectProps = {
             value: renderValue,
+
+            autoFocus: props.autoFocus,
             isDisabled: props.disabled,
-            isMulti: props.multi,
+            isMulti: props.enableMulti,
             menuPortalTarget: document.body,
+            noOptionsMessage: this.noOptionsMessageFn,
             placeholder: withDefault(props.placeholder, 'Select...'),
+
             onChange: this.onSelectChange
         };
 
         if (this.asyncMode) {
-            this.log('renderAsync', renderValue);
-            return reactAsyncSelect({
+            reactSelectProps = {
+                ...reactSelectProps,
                 loadOptions: this.doQueryAsync,
-                ...commonProps
-            });
+                loadingMessage: this.loadingMessageFn
+            };
         } else {
-            this.log('render', renderValue);
-            return reactSelect({
+            reactSelectProps = {
+                ...reactSelectProps,
                 options: this.internalOptions,
-                ...commonProps
-            });
+                isSearchable: withDefault(props.searchable, true),
+            };
         }
+
+        if (this.creatableMode) {
+            reactSelectProps = {
+                ...reactSelectProps
+                // TODO
+            };
+        }
+
+        let factory;
+        if (this.asyncMode) {
+            factory = this.creatableMode ? reactAsyncCreatableSelect : reactAsyncSelect;
+        } else {
+            factory = this.creatableMode ? reactCreatableSelect : reactSelect;
+        }
+
+        return factory({
+            ...reactSelectProps,
+            ...(props.rsOptions || {})
+        });
     }
 
     doQueryAsync = (query) => {
         return this.props
             .queryFnAsync(query)
-            .then(newOpts => {
-                // Normalize query return
-                newOpts = isEmpty(newOpts) ? [] : newOpts;
-                newOpts = newOpts.map(it => this.toOption(it));
+            .then(matchOpts => {
+                // Normalize query return.
+                matchOpts = this.normalizeOptions(matchOpts);
 
-                // Carry forward any existing internalOpts (TODO think through...)
-                // Required for multi-select to continue resolving earlier values w/new query.
-                const newByVal = keyBy(newOpts, 'value');
+                // Carry forward and add to any existing internalOpts to allow our value
+                // converters to continue all selected values in multiMode.
+                const matchesByVal = keyBy(matchOpts, 'value'),
+                    newOpts = [...matchOpts];
+
                 this.internalOptions.forEach(currOpt => {
-                    const newOpt = newByVal[currOpt.value];
-                    if (!newOpt) newOpts.push(currOpt);
+                    const matchOpt = matchesByVal[currOpt.value];
+                    if (!matchOpt) newOpts.push(currOpt);  // avoiding dupes
                 });
 
-                // Could just set directly and return vs. no-op normalize call
-                this.normalizeOptions(newOpts);
-                return this.internalOptions;
+                this.setInternalOptions(newOpts);
+
+                // But only return the matching options back to the combo.
+                return matchOpts;
             });
     }
 
     // Convert external value into option object(s). Options created if missing; this is the
-    // external value and we will respect that even if we don't know about it.
+    // external value, and we will respect that even if we don't know about it.
     toInternal(external) {
-        if (this.multiValueMode) {
-            // Find or create n opts. Don't create null value opts in multiValueMode.
+        if (this.multiMode) {
+            // Find or create all opts. Don't create null value opts in multiMode.
             return castArray(external)
                 .filter(it => !isEmpty(it))
                 .map(it => this.findOption(it, true));
@@ -129,10 +188,14 @@ export class NewSelect extends HoistInput {
         this.noteValueChange(opt);
     }
 
-    @action
     normalizeOptions(options) {
         options = options || [];
-        this.internalOptions = options.map(it => this.toOption(it));
+        return options.map(it => this.toOption(it));
+    }
+
+    @action
+    setInternalOptions(options) {
+        this.internalOptions = options;
     }
 
     // Normalize / clone a single source value into a normalized option object.
@@ -147,6 +210,27 @@ export class NewSelect extends HoistInput {
         return srcIsObject ?
             {label: withDefault(src.label, src.value), ...src} :
             {label: src != null ? src.toString() : '-null-', value: src};
+    }
+
+
+    loadingMessageFn = (params) => {
+        const {loadingMessageFn} = this.props,
+            q = params.inputValue;
+
+        return loadingMessageFn ? loadingMessageFn(q) : 'Loading...';
+    }
+
+    noOptionsMessageFn = (params) => {
+        const {noOptionsMessageFn} = this.props,
+            q = params.inputValue;
+
+        return noOptionsMessageFn ?
+            noOptionsMessageFn(q) :
+            (q ? 'No matches found.' : 'Type to search.');
+    }
+
+    log(...args) {
+        if (this.props.log) console.log(...args);
     }
 
 }
