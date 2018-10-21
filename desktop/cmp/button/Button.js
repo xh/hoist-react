@@ -19,6 +19,7 @@ export class Button extends Component {
 
     static propTypes = {
         icon: PT.element,
+        rightIcon: PT.element,
         text: PT.string,
         onClick: PT.func
     };
@@ -26,9 +27,10 @@ export class Button extends Component {
     baseClassName = 'xh-button';
 
     render() {
-        const {icon, text, onClick, ...rest} = this.props;
+        const {icon, rightIcon, text, onClick, ...rest} = this.props;
         return bpButton({
             icon,
+            rightIcon,
             text,
             onClick,
             ...rest,

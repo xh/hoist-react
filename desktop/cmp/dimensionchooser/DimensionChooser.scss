@@ -20,9 +20,12 @@
 
 }
 
-.xh-dim-popover-items, .xh-dim-opts-popover-items {
+.xh-dim-popover-items, .xh-dim-opts-popover-items, .xh-dim-history-items {
   button {
-    display: inline;
+    justify-content: left;
+  }
+  .xh-dim-opts-history {
+    justify-content: space-between;
   }
 
   .xh-dim-not-selected {
