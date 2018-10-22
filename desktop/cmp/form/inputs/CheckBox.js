@@ -58,6 +58,11 @@ export class CheckBox extends HoistInput {
         });
     }
 
+    // Cast "false" -> false (see Admin config editor for a sample use case).
+    toInternal(external) {
+        return (external === 'false') ? false : external;
+    }
+
     onChange = (e) => {
         this.noteValueChange(e.target.checked);
     }
