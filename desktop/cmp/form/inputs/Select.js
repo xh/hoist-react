@@ -6,165 +6,316 @@
  */
 
 import PT from 'prop-types';
-import {find, isObject} from 'lodash';
-import {Classes, select as bpSelect} from '@xh/hoist/kit/blueprint';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
-import {menuItem} from '@xh/hoist/kit/blueprint';
+import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
+import {castArray, isEmpty, isPlainObject, keyBy, find} from 'lodash';
 import {observable, action} from '@xh/hoist/mobx';
+import {box} from '@xh/hoist/cmp/layout';
 import {HoistInput} from '@xh/hoist/cmp/form';
-import {withDefault} from '@xh/hoist/utils/js';
-import {Ref} from '@xh/hoist/utils/react';
+import {withDefault, throwIf} from '@xh/hoist/utils/js';
+import {
+    reactSelect,
+    reactCreatableSelect,
+    reactAsyncSelect,
+    reactAsyncCreatableSelect
+} from '@xh/hoist/kit/react-select';
 
 import './Select.scss';
 
 /**
- * Control to select from a list of preset options. Renders as a button that triggers a popup list.
- *
- * Best for lists of a limited size. See ComboBox if keyboard entry, querying, and/or user-supplied
- * ad hoc values are required.
+ * TODO - custom renderers, custom local query, cap large option lists.
  */
+@LayoutSupport
 @HoistComponent
 export class Select extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
 
-        /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
-        options: PT.arrayOf(PT.oneOfType([PT.object, PT.string, PT.bool])),
-
-        /** Button text when no value is set. */
-        placeholder: PT.string,
-
-        /** Button icon. */
-        icon: PT.element,
+        /** True to focus the control on render. */
+        autoFocus: PT.bool,
 
         /**
-         * Custom renderer for each option within the popup list. Should return a BP menuItem.
-         *
-         * See defaultOptionRenderer on this class for API / requirements. Note that menuItem.text
-         * takes a React node, and along with the multiline prop, can be used to render rich
-         * list option templates.
+         * Function to return a "create a new option" string prompt. Requires `allowCreate` true.
+         * Passed current query input.
          */
-        optionRenderer: PT.func,
+        createMessageFn: PT.func,
 
-        /** Width of the control in pixels. */
-        width: PT.number
+        /**
+         * True to have this Component emit value as object(s) of the form `{value, label, ...}`.
+         * False (default) to emit primitive values only.
+         */
+        emitObjects: PT.bool,
+
+        /** True to accept and commit input values not present in options or returned by a query. */
+        enableCreate: PT.bool,
+
+        /**
+         * True (default) to enable type-to-search keyboard input. False to disable keyboard input,
+         * showing the dropdown menu on click.
+         */
+        enableFilter: PT.bool,
+
+        /** True to allow entry/selection of multiple values - "tag picker" style. */
+        enableMulti: PT.bool,
+
+        /** Function to return loading message during an async query. Passed current query input. */
+        loadingMessageFn: PT.func,
+
+        /** Placement of the dropdown menu relative to the input control. */
+        menuPlacement: PT.oneOf(['auto', 'top', 'bottom']),
+
+        /** Function to return message indicating no options loaded. Passed current query input. */
+        noOptionsMessageFn: PT.func,
+
+        /**
+         * Preset list of options for selection. Objects must contain a `value` property; a `label`
+         * property will be used for the default display of each option. Other types will be taken
+         * as their value directly and displayed via toString().  See also `queryFn` to  supply
+         * options via an async query (i.e. from the server) instead of up-front in this prop.
+         */
+        options: PT.array,
+
+        /** Text to display when control is empty. */
+        placeholder: PT.string,
+
+        /**
+         * Async function to return a list of options for a given query string input.
+         * Replaces the `options` prop - use one or the other.
+         */
+        queryFn: PT.func,
+
+        /**
+         * Escape-hatch props passed directly to react-select. Use with care - not all props
+         * in the react-select API are guaranteed to be supported by this Hoist component,
+         * and providing them directly can interfere with the implementation of this class.
+         */
+        rsOptions: PT.object
     };
 
     baseClassName = 'xh-select';
 
-    selectRef = new Ref();
-    @observable.ref activeItem
+    // Normalized collection of selectable options. Passed directly to synchronous select.
+    // Maintained for (but not passed to) async select to resolve value string <> option objects.
     @observable.ref internalOptions = [];
+    @action setInternalOptions(options) {this.internalOptions = options}
+
+    // Prop flags that switch core behavior.
+    get asyncMode() {return !!this.props.queryFn}
+    get creatableMode() {return !!this.props.enableCreate}
+    get multiMode() {return !!this.props.enableMulti}
 
     constructor(props) {
         super(props);
-        this.addAutorun(() => this.normalizeOptions(this.props.options));
-        this.addAutorun(() => {
-            const match = find(this.internalOptions, {value: this.renderValue});
-            this.setActiveItem(match || null);
+        this.addReaction({
+            track: () => this.props.options,
+            run: (opts) => {
+                opts = this.normalizeOptions(opts);
+                this.setInternalOptions(opts);
+            },
+            fireImmediately: true
         });
     }
 
     render() {
-        const {props, renderValue, internalOptions} = this,
-            placeholder = withDefault(props.placeholder, 'Select');
+        const {props, renderValue} = this;
 
-        return bpSelect({
-            $items: internalOptions,
+        let reactSelectProps = {
+            value: renderValue,
 
-            item: button({
-                autoFocus: props.autoFocus,
-                disabled: props.disabled,
-                icon: props.icon,
-                rightIcon: 'caret-down',
-                tabIndex: props.tabIndex,
-                text: this.getDisplayValue(renderValue, internalOptions, placeholder),
+            autoFocus: props.autoFocus,
+            isDisabled: props.disabled,
+            isMulti: props.enableMulti,
+            menuPlacement: withDefault(props.menuPlacement, 'auto'),
+            menuPortalTarget: document.body,
+            noOptionsMessage: this.noOptionsMessageFn,
+            placeholder: withDefault(props.placeholder, 'Select...'),
+            tabIndex: props.tabIndex,
 
-                style: {
-                    ...props.style,
-                    width: props.width
-                },
+            classNamePrefix: 'xh-select',
+            styles: this.getStylesConfig(),
+            theme: this.getThemeConfig(),
 
-                onBlur: this.onBlur,
-                onFocus: this.onFocus
+            onChange: this.onSelectChange
+        };
+
+        if (this.asyncMode) {
+            reactSelectProps = {
+                ...reactSelectProps,
+                loadOptions: this.doQueryAsync,
+                loadingMessage: this.loadingMessageFn
+            };
+        } else {
+            reactSelectProps = {
+                ...reactSelectProps,
+                options: this.internalOptions,
+                isSearchable: withDefault(props.enableFilter, true)
+            };
+        }
+
+        if (this.creatableMode) {
+            reactSelectProps = {
+                ...reactSelectProps,
+                formatCreateLabel: this.createMessageFn
+            };
+        }
+
+        let factory;
+        if (this.asyncMode) {
+            factory = this.creatableMode ? reactAsyncCreatableSelect : reactAsyncSelect;
+        } else {
+            factory = this.creatableMode ? reactCreatableSelect : reactSelect;
+        }
+
+        return box({
+            item: factory({
+                ...reactSelectProps,
+                ...(props.rsOptions || {})
             }),
 
-            activeItem: this.activeItem,
-            disabled: props.disabled,
-            filterable: false,
-            itemRenderer: withDefault(props.optionRenderer, this.defaultOptionRenderer),
-            popoverProps: {popoverClassName: Classes.MINIMAL},
-            ref: this.selectRef.ref,
-
             className: this.getClassName(),
-
-            onActiveItemChange: (it) => this.onSelectActiveItemChange(it),
-            onItemSelect: this.onItemSelect
+            width: props.width,
+            ...this.getLayoutProps()
         });
     }
 
-    @action
-    normalizeOptions(options) {
-        options = withDefault(options, []);
-        this.internalOptions = options.map(o => {
-            const ret = isObject(o) ?
-                // Spread additional object properties to opt to make available to optionRenderer.
-                {label: o.label, value: o.value, ...o} :
-                {label: o != null ? o.toString() : '-null-', value: o};
 
-            ret.value = this.toInternal(ret.value);
-            return ret;
-        });
+    //------------------------
+    // Options / value handling
+    //------------------------
+    onSelectChange = (opt) => {
+        this.noteValueChange(opt);
     }
 
-    getDisplayValue(value, items, placeholder) {
-        const match = find(items, {value});
-
-        if (match) return match.label;
-        return (value == null) ? placeholder : value.toString();
-    }
-
-    noteBlurred() {
-        super.noteBlurred();
-        this.forcePopoverClose();
-    }
-
-    forcePopoverClose() {
-        const select = this.selectRef.value;
-        if (select) select.setState({isOpen: false});
-    }
-
-    @action
-    setActiveItem(v) {
-        this.activeItem = v;
-    }
-
-    // This handler is called as the user navigates *potential* opts in the list. We must accept
-    // those updates so the list UI will highlight the selected option.
-    //
-    // However it is called again after the popover closes with the first item in the list,
-    // regardless of the component value. We want to ignore that call to let our autorun leave
-    // the selected option as active so it is highlighted the next time the list opens.
-    onSelectActiveItemChange = (v) => {
-        const select = this.selectRef.value;
-        if (select && select.state.isOpen) {
-            this.setActiveItem(v);
+    // Convert external value into option object(s). Options created if missing - this takes the
+    // external value from the model, and we will respect that even if we don't know about it.
+    // (Exception for a null value, which we will only accept if explicitly present in options.)
+    toInternal(external) {
+        if (this.multiMode) {
+            if (external == null) external = [];  // avoid [null]
+            return castArray(external).map(it => this.findOption(it, !isEmpty(it)));
         }
+
+        return this.findOption(external, !isEmpty(external));
     }
 
-    defaultOptionRenderer = (option, optionProps) => {
-        return menuItem({
-            key: option.value,
-            text: option.label,
-            onClick: optionProps.handleClick,
-            active: optionProps.modifiers.active
-        });
-    };
+    findOption(val, createIfNotFound) {
+        const valAsOption = this.toOption(val),
+            match = find(this.internalOptions, {value: valAsOption.value});
 
-    onItemSelect = (item) => {
-        this.noteValueChange(item.value);
-    };
+        return match ? match : (createIfNotFound ? valAsOption : null);
+    }
+
+    // Convert internal option(s) into values, respecting our emitObjects prop and returning
+    // shallow clones of our options if we're expected to produce objects instead of primitives.
+    toExternal(internal) {
+        const {emitObjects} = this.props;
+
+        return this.multiMode ?
+            castArray(internal).map(it => emitObjects ? this.toOption(it) : it.value) :
+            isEmpty(internal) ? null : (emitObjects ? this.toOption(internal) : internal.value);
+    }
+
+    normalizeOptions(options) {
+        options = options || [];
+        return options.map(it => this.toOption(it));
+    }
+
+    // Normalize / clone a single source value into a normalized option object. Supports Strings
+    // and Objects. Objects are validated/defaulted to ensure a label+value, with other fields
+    // brought along to support Selects emitting value objects with ad hoc properties.
+    toOption(src) {
+        const srcIsObject = isPlainObject(src);
+
+        throwIf(
+            srcIsObject && !src.hasOwnProperty('value'),
+            "Select options/values provided as Objects must define a 'value' property."
+        );
+
+        return srcIsObject ?
+            {label: withDefault(src.label, src.value), ...src} :
+            {label: src != null ? src.toString() : '-null-', value: src};
+    }
+
+
+    //------------------------
+    // Async
+    //------------------------
+    doQueryAsync = (query) => {
+        return this.props
+            .queryFn(query)
+            .then(matchOpts => {
+                // Normalize query return.
+                matchOpts = this.normalizeOptions(matchOpts);
+
+                // Carry forward and add to any existing internalOpts to allow our value
+                // converters to continue all selected values in multiMode.
+                const matchesByVal = keyBy(matchOpts, 'value'),
+                    newOpts = [...matchOpts];
+
+                this.internalOptions.forEach(currOpt => {
+                    const matchOpt = matchesByVal[currOpt.value];
+                    if (!matchOpt) newOpts.push(currOpt);  // avoiding dupes
+                });
+
+                this.setInternalOptions(newOpts);
+
+                // But only return the matching options back to the combo.
+                return matchOpts;
+            });
+    }
+
+    loadingMessageFn = (params) => {
+        const {loadingMessageFn} = this.props,
+            q = params.inputValue;
+
+        return loadingMessageFn ? loadingMessageFn(q) : 'Loading...';
+    }
+
+
+    //------------------------
+    // Other Implementation
+    //------------------------
+    getStylesConfig() {
+        return {
+            control: (base) => {
+                return {
+                    ...base,
+                    minHeight: 30
+                };
+            },
+            dropdownIndicator: (base) => {
+                return {...base, padding: 4};
+            },
+            menuPortal: (base) => {
+                // Support display within a dialog by boosting menu portal z-index.
+                return {...base, zIndex: 999};
+            }
+        };
+    }
+
+    getThemeConfig() {
+        return (base) => {
+            return {
+                ...base,
+                spacing: {...base.spacing, menuGutter: 3},
+                borderRadius: 3
+            };
+        };
+    }
+
+    noOptionsMessageFn = (params) => {
+        const {noOptionsMessageFn} = this.props,
+            q = params.inputValue;
+
+        if (noOptionsMessageFn) return noOptionsMessageFn(q);
+        if (q) return 'No matches found.';
+        return this.asyncMode ? 'Type to search...' : '';
+    }
+
+    createMessageFn = (q) => {
+        const {createMessageFn} = this.props;
+        return createMessageFn ? createMessageFn(q) : `Create "${q}"`;
+    }
+
 }
 export const select = elemFactory(Select);

@@ -7,15 +7,15 @@
 
 import PT from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {checkbox} from '@xh/hoist/kit/blueprint';
+import {checkbox as bpCheckbox} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
- * Traditional CheckBox control for non-nullable boolean values.
+ * Traditional Checkbox control for non-nullable boolean values.
  */
 @HoistComponent
-export class CheckBox extends HoistInput {
+export class Checkbox extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
@@ -40,7 +40,7 @@ export class CheckBox extends HoistInput {
         const {props} = this,
             labelAlign = withDefault(props.labelAlign, 'right');
 
-        return checkbox({
+        return bpCheckbox({
             checked: !!this.renderValue,
 
             alignIndicator: labelAlign == 'left' ? 'right' : 'left',
@@ -67,4 +67,4 @@ export class CheckBox extends HoistInput {
         this.noteValueChange(e.target.checked);
     }
 }
-export const checkBox = elemFactory(CheckBox);
+export const checkbox = elemFactory(Checkbox);

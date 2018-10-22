@@ -13,9 +13,10 @@ import {hbox} from '@xh/hoist/cmp/layout';
 import {
     jsonInput,
     label,
-    newSelect,
+    select,
     numberInput,
     switchInput,
+    checkbox,
     textArea,
     textInput
 } from '@xh/hoist/desktop/cmp/form';
@@ -58,7 +59,8 @@ export class RestControl extends Component {
         } else if (type === 'bool') {
             // Boolean controls will intelligently default based on nullability, unless editor type is otherwise specified
             if (editorType === 'boolSelect') return this.renderSelect();
-            if (editorType === 'boolCheck') return this.renderSwitch();
+            if (editorType === 'boolCheck') return this.renderCheckbox();
+            if (editorType === 'boolSwitch') return this.renderSwitch();
             return field.required ? this.renderSwitch() : this.renderSelect();
         } else if (type === 'number') {
             return this.renderNumberField();
@@ -101,11 +103,20 @@ export class RestControl extends Component {
         // TODO - we should be able to let the user simply clear the field.
         if (!field.required) options.unshift(null);
 
-        return newSelect({
+        return select({
             model,
             field: 'value',
             options,
             enableCreate: field.enableCreate,
+            disabled: !model.isEditable
+        });
+    }
+
+    renderCheckbox() {
+        const model = this.model;
+        return checkbox({
+            model,
+            field: 'value',
             disabled: !model.isEditable
         });
     }

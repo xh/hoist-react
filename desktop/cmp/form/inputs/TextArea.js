@@ -39,7 +39,10 @@ export class TextArea extends HoistInput {
         spellCheck: PT.bool,
 
         /** Text to display when control is empty. */
-        placeholder: PT.string
+        placeholder: PT.string,
+
+        /** Width of the control in pixels. */
+        width: PT.number
     };
 
     baseClassName = 'xh-text-area';
@@ -58,12 +61,15 @@ export class TextArea extends HoistInput {
             disabled: props.disabled,
             fill: props.fill,
             placeholder: props.placeholder,
-            spellCheck: withDefault(props.spellCheck, true),
+            spellCheck: withDefault(props.spellCheck, false),
             tabIndex: props.tabIndex,
             type: props.type,
 
             className: this.getClassName(),
-            style: {...props.style, width: props.width},
+            style: {
+                ...props.style,
+                width: props.width
+            },
 
             onBlur: this.onBlur,
             onChange: this.onChange,
