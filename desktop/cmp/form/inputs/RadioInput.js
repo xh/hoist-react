@@ -41,10 +41,18 @@ export class RadioInput extends HoistInput {
     };
 
     @observable.ref internalOptions = [];
+    @action setInternalOptions(options) {this.internalOptions = options}
 
     constructor(props) {
         super(props);
-        this.addAutorun(() => this.normalizeOptions(this.props.options));
+        this.addReaction({
+            track: () => this.props.options,
+            run: (opts) => {
+                opts = this.normalizeOptions(opts);
+                this.setInternalOptions(opts);
+            },
+            fireImmediately: true
+        });
     }
 
     render() {
@@ -71,13 +79,13 @@ export class RadioInput extends HoistInput {
         });
     }
 
-    //-----------------------------
-    // Common handling of options
-    //-----------------------------
-    @action
+
+    //-------------------------
+    // Options / value handling
+    //-------------------------
     normalizeOptions(options) {
-        options = withDefault(options, []);
-        this.internalOptions = options.map(o => {
+        options = options || [];
+        return options.map(o => {
             const ret = isObject(o) ?
                 {label: o.label, value: o.value, disabled: o.disabled} :
                 {label: o.toString(), value: o};

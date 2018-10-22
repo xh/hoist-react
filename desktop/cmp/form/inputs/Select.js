@@ -179,9 +179,9 @@ export class Select extends HoistInput {
     }
 
 
-    //------------------------
+    //-------------------------
     // Options / value handling
-    //------------------------
+    //-------------------------
     onSelectChange = (opt) => {
         this.noteValueChange(opt);
     }
