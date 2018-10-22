@@ -30,6 +30,7 @@ export const table = elemFactory('table');
 export const tbody = elemFactory('tbody');
 export const td = elemFactory('td');
 export const th = elemFactory('th');
+export const thead = elemFactory('thead');
 export const tr = elemFactory('tr');
 export const ul = elemFactory('ul');
 export const ol = elemFactory('ol');

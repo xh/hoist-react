@@ -7,7 +7,8 @@
 
 import {Component} from 'react';
 import {XH, HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
-import {grid, GridModel} from '@xh/hoist/desktop/cmp/grid';
+import {grid, GridModel} from '@xh/hoist/cmp/grid';
+import {omit} from 'lodash';
 
 /**
  * A DataView is a specialized version of the Grid component. It displays its data within a
@@ -35,7 +36,7 @@ export class DataView extends Component {
                     flex: true,
                     elementRenderer: itemRenderer,
                     agOptions: {
-                        valueGetter: (params) => params.data
+                        valueGetter: this.valueGetter
                     }
                 }
             ]
@@ -55,6 +56,11 @@ export class DataView extends Component {
             },
             onRowDoubleClicked: onRowDoubleClicked
         });
+    }
+
+    valueGetter = (params) => {
+        const realData = omit(params.data.raw, 'id');
+        return Object.values(realData).join('\r');
     }
 
     destroy() {

@@ -6,7 +6,7 @@
 */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {grid} from '@xh/hoist/desktop/cmp/grid';
+import {grid} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
@@ -29,8 +29,8 @@ export class EhCachePanel extends Component {
     }
 
     renderToolbar() {
-        const model = this.model,
-            {store} = model.gridModel;
+        const {model} = this,
+            {gridModel} = model;
         return toolbar(
             button({
                 icon: Icon.sync(),
@@ -40,14 +40,8 @@ export class EhCachePanel extends Component {
             toolbarSep(),
             refreshButton({model}),
             filler(),
-            storeCountLabel({
-                store,
-                unit: 'cache'
-            }),
-            storeFilterField({
-                store,
-                fields: ['name', 'status']
-            })
+            storeCountLabel({gridModel, unit: 'cache'}),
+            storeFilterField({gridModel})
         );
     }
 

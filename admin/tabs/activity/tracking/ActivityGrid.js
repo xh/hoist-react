@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {grid} from '@xh/hoist/desktop/cmp/grid';
+import {grid} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {dateInput, textInput} from '@xh/hoist/desktop/cmp/form';
@@ -65,10 +65,7 @@ export class ActivityGrid extends Component {
             this.textInput({field: 'browser', placeholder: 'Browser...'}),
             refreshButton({model}),
             filler(),
-            storeCountLabel({
-                store: model.gridModel.store,
-                unit: 'log'
-            }),
+            storeCountLabel({gridModel: model.gridModel, unit: 'log'}),
             exportButton({model: model.gridModel})
         );
     }

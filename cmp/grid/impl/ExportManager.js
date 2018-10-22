@@ -9,7 +9,7 @@ import {XH} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {throwIf} from '@xh/hoist/utils/js';
-import {ExportFormat} from '@xh/hoist/columns';
+import {ExportFormat} from '@xh/hoist/cmp/grid/columns';
 import {orderBy, uniq, isString, isFunction} from 'lodash';
 import download from 'downloadjs';
 
@@ -56,7 +56,7 @@ export class ExportManager {
 
         // Show separate 'started' and 'complete' toasts for larger (i.e. slower) exports.
         // We use cell count as a heuristic for speed - this may need to be tweaked.
-        if (rows.length * columns.length > 5000) {
+        if (rows.length * columns.length > 3000) {
             XH.toast({
                 message: 'Your export is being prepared and will download shortly...',
                 intent: 'primary',

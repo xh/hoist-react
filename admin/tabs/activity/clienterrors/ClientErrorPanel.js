@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {grid} from '@xh/hoist/desktop/cmp/grid';
+import {grid} from '@xh/hoist/cmp/grid';
 import {textInput, dateInput} from '@xh/hoist/desktop/cmp/form';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {button, exportButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
@@ -65,10 +65,7 @@ export class ClientErrorPanel extends Component {
             this.textInput({field: 'error', placeholder: 'Error...'}),
             refreshButton({model}),
             filler(),
-            storeCountLabel({
-                store: model.gridModel.store,
-                unit: 'client error'
-            }),
+            storeCountLabel({gridModel: model.gridModel, unit: 'client error'}),
             exportButton({model: model.gridModel})
         );
     }
