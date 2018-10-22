@@ -12,7 +12,8 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
- * Traditional Checkbox control for non-nullable boolean values.
+ * Checkbox control for boolean values.
+ * Renders null with an "indeterminate" [-] display.
  */
 @HoistComponent
 export class Checkbox extends HoistInput {
@@ -21,7 +22,7 @@ export class Checkbox extends HoistInput {
         ...HoistInput.propTypes,
         value: PT.bool,
 
-        /** True if the control should appear as an inline element (defaults to true). */
+        /** True (default) if the control should appear as an inline element. */
         inline: PT.bool,
 
         /**
@@ -38,19 +39,21 @@ export class Checkbox extends HoistInput {
 
     render() {
         const {props} = this,
-            labelAlign = withDefault(props.labelAlign, 'right');
+            labelAlign = withDefault(props.labelAlign, 'right'),
+            nullValue = this.renderValue == null;
 
         return bpCheckbox({
-            checked: !!this.renderValue,
+            checked: nullValue ? undefined : !!this.renderValue,
+            indeterminate: nullValue,
 
             alignIndicator: labelAlign == 'left' ? 'right' : 'left',
             disabled: props.disabled,
             inline: withDefault(props.inline, true),
             label: props.label,
-            style: props.style,
             tabIndex: props.tabIndex,
 
             className: this.getClassName(),
+            style: props.style,
 
             onBlur: this.onBlur,
             onChange: this.onChange,
