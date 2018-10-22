@@ -11,7 +11,7 @@ import {flatten, uniqueId, isArray, camelCase, values} from 'lodash';
 import {elem, HoistModel, AppState, AppSpec} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {observable, action} from '@xh/hoist/mobx';
-import {never, allSettled} from '@xh/hoist/promise';
+import {never, wait, allSettled} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
 
 import {
@@ -394,7 +394,10 @@ class XHClass {
             // TODO: Whitelist ConfigService in core and load preAuth?
             await this.installServicesAsync(PrefService, ConfigService);
             this.initModels();
-            
+
+            // Delay to workaround hot-reload styling issues in dev.
+            await wait(XH.isDevelopmentMode ? 300 : 1);
+
             const access = this.checkAccess();
             if (!access.hasAccess) {
                 this.acm.showAccessDenied(access.message || 'Access denied.');
