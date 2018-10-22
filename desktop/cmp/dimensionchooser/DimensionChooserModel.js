@@ -7,13 +7,14 @@
 
 import {HoistModel} from '@xh/hoist/core';
 import {isEmpty, pull, isFunction, upperFirst, indexOf, pullAllWith, isEqual} from 'lodash';
-import {computed, observable, action} from '@xh/hoist/mobx';
+import {computed, observable, action, toJS} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
 @HoistModel
 export class DimensionChooserModel {
 
     @observable selectedDims = null;
+    @observable history = null;
 
     constructor(
         {
@@ -28,7 +29,7 @@ export class DimensionChooserModel {
         this.defaultDims = model[field].split(',');
         this.selectedDims = this.defaultDims;
         this.historyLength = historyLength;
-        this.history = createHistoryArray(this.historyLength);
+        this.history = [this.defaultDims];
     }
 
     @action
@@ -58,6 +59,7 @@ export class DimensionChooserModel {
                 break;
         }
         this.doCommit();
+        this.saveHistory(); // Does this make sense? Already ignoring 'clear' in saveHistory()
     }
 
     @action
@@ -67,8 +69,16 @@ export class DimensionChooserModel {
         this.saveHistory();
     }
 
+    @action
     saveHistory() {
-        this.history.unshift(this.orderedDims);
+        if (isEmpty(this.selectedDims)) return;             // Don't save empty dimensions array
+
+        let copy = toJS(this.history);
+        pullAllWith(copy, [this.orderedDims], isEqual);     // Remove duplicates
+        if (copy.length >= this.historyLength) copy.pop();  // Don't allow to go over max history length
+        copy.unshift(this.orderedDims);
+
+        this.history.replace(copy);
     }
 
     @computed
@@ -85,6 +95,7 @@ export class DimensionChooserModel {
         }
     }
 
+
     /** Will be used to populate history. */
     loadAsync() {
     }
@@ -93,15 +104,20 @@ export class DimensionChooserModel {
 
 }
 
-const createHistoryArray = (length) => {
-    const array = [];
+/** Unused for now... is it possible to override a mobx array method?
+ *
+ * const createHistoryArray = (length) => {
+    const array = observable([]);
 
     array.unshift = function() {
+        const arrayCopy = array.slice();
         if (isEmpty(arguments[0])) return;     // Don't save empty dimensions array
-        pullAllWith(this, arguments, isEqual); // Remove duplicates
-        if (this.length >= length) this.pop(); // Don't allow to go over max history length
-        return Array.prototype.unshift.apply(this, arguments);
+        pullAllWith(arrayCopy, arguments, isEqual); // Remove duplicates
+        if (this.length >= length) arrayCopy.pop(); // Don't allow to go over max history length
+        return Array.prototype.unshift.apply(arrayCopy, arguments);
     };
 
     return array;
 };
+
+ */
