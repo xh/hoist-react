@@ -80,6 +80,20 @@ export class HoistInput extends Component {
     @observable hasFocus;
     @observable internalValue;
 
+    constructor(props) {
+        super(props);
+
+        // Ensure that updates to the external value - sourced from either model or props - are
+        // always flushed to the internal value of this control and reflected in renderValue.
+        this.addReaction({
+            track: () => this.externalValue,
+            run: (externalVal) => {
+                this.setInternalValue(this.toInternal(externalVal));
+            },
+            fireImmediately: true
+        });
+    }
+
     /**
      * Model-based Field (if any) associated with this control.
      */
