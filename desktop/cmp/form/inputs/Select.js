@@ -7,7 +7,7 @@
 
 import PT from 'prop-types';
 import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
-import {castArray, isEmpty, isPlainObject, keyBy, find} from 'lodash';
+import {castArray, isEmpty, isPlainObject, keyBy, find, assign} from 'lodash';
 import {observable, action} from '@xh/hoist/mobx';
 import {box} from '@xh/hoist/cmp/layout';
 import {HoistInput} from '@xh/hoist/cmp/form';
@@ -40,11 +40,6 @@ export class Select extends HoistInput {
          */
         createMessageFn: PT.func,
 
-        /**
-         * True to have this Component emit value as object(s) of the form `{value, label, ...}`.
-         * False (default) to emit primitive values only.
-         */
-        emitObjects: PT.bool,
 
         /** True to accept and commit input values not present in options or returned by a query. */
         enableCreate: PT.bool,
@@ -117,61 +112,47 @@ export class Select extends HoistInput {
     }
 
     render() {
-        const {props, renderValue} = this;
+        const {props, renderValue} = this,
+            rsProps = {
+                value: renderValue,
 
-        let reactSelectProps = {
-            value: renderValue,
+                autoFocus: props.autoFocus,
+                isDisabled: props.disabled,
+                isMulti: props.enableMulti,
+                menuPlacement: withDefault(props.menuPlacement, 'auto'),
+                menuPortalTarget: document.body,
+                noOptionsMessage: this.noOptionsMessageFn,
+                placeholder: withDefault(props.placeholder, 'Select...'),
+                tabIndex: props.tabIndex,
 
-            autoFocus: props.autoFocus,
-            isDisabled: props.disabled,
-            isMulti: props.enableMulti,
-            menuPlacement: withDefault(props.menuPlacement, 'auto'),
-            menuPortalTarget: document.body,
-            noOptionsMessage: this.noOptionsMessageFn,
-            placeholder: withDefault(props.placeholder, 'Select...'),
-            tabIndex: props.tabIndex,
+                classNamePrefix: 'xh-select',
+                styles: this.getStylesConfig(),
+                theme: this.getThemeConfig(),
 
-            classNamePrefix: 'xh-select',
-            styles: this.getStylesConfig(),
-            theme: this.getThemeConfig(),
-
-            onChange: this.onSelectChange
-        };
+                onChange: this.onSelectChange
+            };
 
         if (this.asyncMode) {
-            reactSelectProps = {
-                ...reactSelectProps,
-                loadOptions: this.doQueryAsync,
-                loadingMessage: this.loadingMessageFn
-            };
+            rsProps.loadOptions = this.doQueryAsync;
+            rsProps.loadingMessage = this.loadingMessageFn;
         } else {
-            reactSelectProps = {
-                ...reactSelectProps,
-                options: this.internalOptions,
-                isSearchable: withDefault(props.enableFilter, true)
-            };
+            rsProps.options = this.internalOptions;
+            rsProps.isSearchable = withDefault(props.enableFilter, true);
         }
 
         if (this.creatableMode) {
-            reactSelectProps = {
-                ...reactSelectProps,
-                formatCreateLabel: this.createMessageFn
-            };
+            rsProps.formatCreateLabel = this.createMessageFn;
         }
 
-        let factory;
-        if (this.asyncMode) {
-            factory = this.creatableMode ? reactAsyncCreatableSelect : reactAsyncSelect;
-        } else {
-            factory = this.creatableMode ? reactCreatableSelect : reactSelect;
-        }
+        const factory = this.asyncMode ?
+            (this.creatableMode ? reactAsyncCreatableSelect : reactAsyncSelect) :
+            (this.creatableMode ? reactCreatableSelect : reactSelect);
+
+        assign(rsProps, props.rsOptions);
+
 
         return box({
-            item: factory({
-                ...reactSelectProps,
-                ...(props.rsOptions || {})
-            }),
-
+            item: factory(rsProps),
             className: this.getClassName(),
             width: props.width,
             ...this.getLayoutProps()
@@ -205,14 +186,10 @@ export class Select extends HoistInput {
         return match ? match : (createIfNotFound ? valAsOption : null);
     }
 
-    // Convert internal option(s) into values, respecting our emitObjects prop and returning
-    // shallow clones of our options if we're expected to produce objects instead of primitives.
     toExternal(internal) {
-        const {emitObjects} = this.props;
-
         return this.multiMode ?
-            castArray(internal).map(it => emitObjects ? this.toOption(it) : it.value) :
-            isEmpty(internal) ? null : (emitObjects ? this.toOption(internal) : internal.value);
+            castArray(internal).map(it => it.value) :
+            isEmpty(internal) ? null : internal.value;
     }
 
     normalizeOptions(options) {
