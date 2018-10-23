@@ -51,6 +51,9 @@ import {
 } from '@blueprintjs/core';
 
 import {DateInput} from '@blueprintjs/datetime';
+
+// TODO - if we could replace Omnibar (used in at least one client app) we could drop BP select dep.
+// I think this could be worth doing, even if we picked up a more dedicated omnibar library...
 import {MultiSelect, Omnibar, Select, Suggest} from '@blueprintjs/select';
 
 //---------------------

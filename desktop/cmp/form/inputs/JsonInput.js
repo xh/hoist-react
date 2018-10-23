@@ -1,9 +1,10 @@
 import ReactDOM from 'react-dom';
 import {XH, elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {defaultsDeep} from 'lodash';
 import {box} from '@xh/hoist/cmp/layout';
 import {textArea} from '@xh/hoist/kit/blueprint';
+import {withDefault} from '@xh/hoist/utils/js';
 
 import {HoistInput} from '@xh/hoist/cmp/form';
 
@@ -14,7 +15,7 @@ import 'codemirror/addon/lint/lint.css';
 import 'codemirror/theme/dracula.css';
 
 import * as codemirror from 'codemirror';
-import {jsonlint} from './impl/jsonlint';
+import {jsonlint} from '../impl/jsonlint';
 import 'codemirror/mode/javascript/javascript.js';
 import 'codemirror/mode/jsx/jsx';
 import 'codemirror/addon/fold/foldcode.js';
@@ -26,7 +27,10 @@ import 'codemirror/addon/lint/lint.js';
 import './JsonInput.scss';
 
 /**
- * An input for editing and validating JSON, providing a mini-IDE style editor powered by CodeMirror.
+ * Code-editor style input for editing and validating JSON, powered by CodeMirror.
+ *
+ * TODO - understanding sizing spec / requirements for component vs. generated CodeMirror.
+ * Reconcile LayoutSupport with width/height props. https://github.com/exhi/hoist-react/issues/327
  */
 @HoistComponent
 @LayoutSupport
@@ -34,20 +38,27 @@ export class JsonInput extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
-
-        /** Value of the control */
         value: PT.string,
-        
-        /** width of field, in pixels */
-        width: PT.number,
-        /** height of field, in pixels */
-        height: PT.number,
+
+        /** True to commit on every change/keystroke, default false. */
+        commitOnChange: PT.bool,
+
         /**
-         * Configuration object with any properties supported by the CodeMirror api.
+         * Configuration object with any properties supported by the CodeMirror API.
          * @see {@link https://codemirror.net/doc/manual.html#api_configuration|CodeMirror Docs}
          */
-        editorProps: PT.object
+        editorProps: PT.object,
+
+        /** Height of the embedded editor in pixels. */
+        height: PT.number,
+
+        /** Width of the embedded editor in pixels. */
+        width: PT.number
     };
+
+    get commitOnChange() {
+        withDefault(this.props.commitOnChange, false);
+    }
 
     constructor(props) {
         super(props);
@@ -63,7 +74,8 @@ export class JsonInput extends HoistInput {
             run: (value) => {
                 const {editor} = this;
                 if (editor && editor.getValue() != value) {
-                    editor.setValue(value);
+                    // CodeMirror will throw on null value.
+                    editor.setValue(value == null ? '' : value);
                 }
             }
         });
@@ -76,17 +88,19 @@ export class JsonInput extends HoistInput {
 
     render() {
         return box({
-            // TODO - understanding sizing spec / requirements for component vs. generated CodeMirror
-            // https://github.com/exhi/hoist-react/issues/327
+            item: textArea({
+                value: this.renderValue || '',
+                ref: this.manageJsonEditor,
+                onChange: this.onChange
+            }),
+
+            className: this.getClassName(),
             flex: 1,
             flexDirection: 'column',
             ...this.getLayoutProps(),
-            className: this.getClassName(),
-            item: textArea({
-                value: this.renderValue || '',
-                onChange: this.onChange,
-                ref: this.manageJsonEditor
-            })
+
+            onBlur: this.onBlur,
+            onFocus:  this.onFocus
         });
     }
 
@@ -111,9 +125,6 @@ export class JsonInput extends HoistInput {
             editor = codemirror.fromTextArea(taDom, editorSpec);
 
         editor.on('change', this.handleEditorChange);
-        editor.on('focus',  this.onFocus);
-        editor.on('blur',  this.onBlur);
-        editor.on('keyup',  this.onKeyUp);
 
         if (width != null || height != null) {
             editor.setSize(width, height);
@@ -145,32 +156,20 @@ export class JsonInput extends HoistInput {
         };
     }
 
-    onBlur = () => {
-        this.noteBlurred();
-    }
-
-    onFocus = () => {
-        this.noteFocused();
-    }
-
-    onKeyUp = (instance, ev) => {
-        if (ev.key === 'Enter' && !ev.shiftKey) this.doCommit();
-    }
-
     onChange = (ev) => {
         this.noteValueChange(ev.target.value);
-    }
+    };
 
     handleEditorChange = (editor) => {
         this.noteValueChange(editor.getValue());
-    }
-    
+    };
+
     onFormatKey = () => {
         const editor = this.editor,
             val = this.tryPrettyPrint(editor.getValue());
 
         editor.setValue(val);
-    }
+    };
 
     tryPrettyPrint(str) {
         try {
@@ -180,37 +179,37 @@ export class JsonInput extends HoistInput {
         }
     }
 
-    // CodeMirror docs: If you dynamically create and destroy editors made with `fromTextArea`
-    // ...you should make sure to call `toTextArea` to remove the editor
     destroy() {
+        // Cleanup editor component as per CodeMirror docs.
         if (this.editor) this.editor.toTextArea();
     }
-
 }
 export const jsonInput = elemFactory(JsonInput);
 
 
-//------------------------------------------------------------------------------------------------------
-// see https://codemirror.net/demo/lint.html for demo implementation of linting on a codemirror editor
-//     this function is taken from /addon/lint/json-lint.js which did not work with
-//     'jsonlint-mod-fix' (which is a fork of jsonlint, adapted to work with modules).
-//------------------------------------------------------------------------------------------------------
+/**
+ * See https://codemirror.net/demo/lint.html for demo implementation of linting support.
+ *
+ * The below is adapted from /addon/lint/json-lint.js, modified to work with the jsonlint-mod-fix
+ * library (which is a fork of jsonlint, modified to work with modules).
+ */
 codemirror.registerHelper('lint', 'json', function(text) {
-    var found = [];
+    const found = [];
+
     jsonlint.parseError = function(str, hash) {
-        var loc = hash.loc;
+        const loc = hash.loc;
         found.push({
             from: codemirror.Pos(loc.first_line - 1, loc.first_column),
             to: codemirror.Pos(loc.last_line - 1, loc.last_column),
             message: str
         });
     };
+
     if (!text) return found;
 
     try {
         jsonlint.parse(text);
-    } catch (e) {
+    } catch (ignored) {}
 
-    }
     return found;
 });
