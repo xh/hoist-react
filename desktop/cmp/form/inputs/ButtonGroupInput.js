@@ -5,36 +5,42 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import PT from 'prop-types';
 import React from 'react';
+import {castArray} from 'lodash';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {buttonGroup} from '@xh/hoist/kit/blueprint';
-import {castArray} from 'lodash';
-import {throwIf} from '@xh/hoist/utils/js';
-
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
  * A segmented group of buttons, one of which is depressed to indicate the input's current value.
  *
  * Should receive a list of Buttons as a children. Each Button requires a 'value' prop.
- * The Buttons are automatically configured to set this value on click,
- * and appear pressed if the ButtonGroupInput's value matches.
+ * The buttons are automatically configured to set this value on click and appear pressed if the
+ * ButtonGroupInput's value matches.
  */
 @HoistComponent
 export class ButtonGroupInput extends HoistInput {
 
     static propTypes = {
-        ...HoistInput.propTypes
-    };
+        ...HoistInput.propTypes,
 
-    static defaultProps = {
-        commitOnChange: true
+        /** True to have all buttons fill available width equally. */
+        fill: PT.bool,
+
+        /** True to render each button with minimal surrounding chrome. */
+        minimal: PT.bool,
+
+        /** True to render in a vertical orientation. */
+        vertical: PT.bool
     };
 
     baseClassName = 'xh-button-group-input';
 
     render() {
-        const children = castArray(this.props.children),
+        const {props} = this,
+            children = castArray(props.children),
             buttons = children.map(button => {
                 const {value} = button.props;
 
@@ -42,12 +48,17 @@ export class ButtonGroupInput extends HoistInput {
                 throwIf(!value, 'ButtonGroupInput child must declare a value');
 
                 return React.cloneElement(button, {
-                    onClick: () => this.noteValueChange(value),
-                    active: this.renderValue == value
+                    active: this.renderValue == value,
+                    onClick: () => this.noteValueChange(value)
                 });
             });
 
-        return buttonGroup(buttons);
+        return buttonGroup({
+            fill: withDefault(props.fill, false),
+            minimal: withDefault(props.minimal, false),
+            vertical: withDefault(props.vertical, false),
+            items: buttons
+        });
     }
 
 }

@@ -11,12 +11,12 @@ import {controlGroup} from '@xh/hoist/kit/blueprint';
 import {fmtDateTime} from '@xh/hoist/format';
 import {hbox} from '@xh/hoist/cmp/layout';
 import {
-    label,
-    checkBox,
-    comboBox,
     jsonInput,
-    numberInput,
+    label,
     select,
+    numberInput,
+    switchInput,
+    checkbox,
     textArea,
     textInput
 } from '@xh/hoist/desktop/cmp/form';
@@ -55,15 +55,13 @@ export class RestControl extends Component {
         if (!isEditable) return this.renderDisplayField();
         
         if (field.lookup) {
-            // Lookup controls will intelligently default based on lookupStrict, unless editor type is otherwise specified
-            if (editorType === 'lookupSelect') return this.renderSelect();
-            if (editorType === 'lookupCombo') return this.renderCombo();
-            return field.lookupStrict ? this.renderSelect() : this.renderCombo();
+            return this.renderSelect();
         } else if (type === 'bool') {
             // Boolean controls will intelligently default based on nullability, unless editor type is otherwise specified
             if (editorType === 'boolSelect') return this.renderSelect();
-            if (editorType === 'boolCheck') return this.renderCheckField();
-            return field.required ? this.renderCheckField() : this.renderSelect();
+            if (editorType === 'boolCheck') return this.renderCheckbox();
+            if (editorType === 'boolSwitch') return this.renderSwitch();
+            return field.required ? this.renderSwitch() : this.renderSelect();
         } else if (type === 'number') {
             return this.renderNumberField();
         } else {
@@ -88,51 +86,44 @@ export class RestControl extends Component {
         return label(!isNil(value) ? value.toString() : null);
     }
 
-    renderCombo() {
-        const model = this.model,
-            field = model.field,
-            requireSelection = field.lookupStrict || model.editor.requireSelection,
-            lookup = field.lookup;
-
-        const options = [...lookup];
-
-        return comboBox({
-            model,
-            field: 'value',
-            options,
-            requireSelection,
-            disabled: !model.isEditable
-        });
-    }
-
     renderSelect() {
         const model = this.model,
             field = model.field,
-            lookup = field.lookup,
             type = model.type;
 
         let options;
-        if (lookup) {
-            options = [...lookup];
+        if (field.lookup) {
+            options = field.lookup;
         } else if (type == 'bool') {
             options = [true, false];
         } else {
             options = [];
         }
 
-        if (!field.required && !field.lookupStrict) options.unshift(null);
+        // TODO - we should be able to let the user simply clear the field.
+        if (!field.required) options.unshift(null);
 
         return select({
             model,
             field: 'value',
             options,
+            enableCreate: field.enableCreate,
             disabled: !model.isEditable
         });
     }
 
-    renderCheckField() {
+    renderCheckbox() {
         const model = this.model;
-        return checkBox({
+        return checkbox({
+            model,
+            field: 'value',
+            disabled: !model.isEditable
+        });
+    }
+
+    renderSwitch() {
+        const model = this.model;
+        return switchInput({
             model,
             field: 'value',
             disabled: !model.isEditable

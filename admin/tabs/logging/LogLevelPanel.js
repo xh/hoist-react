@@ -27,8 +27,7 @@ export class LogLevelPanel extends Component {
                 {
                     name: 'level',
                     label: 'Override',
-                    lookupName: 'levels',
-                    lookupStrict: true
+                    lookupName: 'levels'
                 },
                 {
                     name: 'defaultLevel',

@@ -23,8 +23,6 @@ export class Label extends HoistInput {
         children: PT.node
     };
 
-    delegateProps = ['className'];
-
     baseClassName = 'xh-input-label';
 
     render() {
@@ -32,10 +30,8 @@ export class Label extends HoistInput {
         return div({
             className: this.getClassName(),
             style: {...style, whiteSpace: 'nowrap', width},
-            items: children,
-            ...this.getDelegateProps()
+            items: children
         });
     }
 }
-
 export const label = elemFactory(Label);

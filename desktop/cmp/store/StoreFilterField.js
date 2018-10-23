@@ -123,7 +123,7 @@ export class StoreFilterField extends Component {
             placeholder: withDefault(props.placeholder, 'Quick filter'),
             className: this.getClassName(),
             style: props.style,
-            width: withDefault(props.width, 160),
+            width: withDefault(props.width, 180),
 
             onChange: this.onValueChange
         });
