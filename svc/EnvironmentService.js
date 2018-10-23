@@ -30,7 +30,10 @@ export class EnvironmentService {
             reactVersion: React.version
         }, serverEnv);
 
-        this.startVersionChecking();
+        this.addReaction({
+            when: () => XH.appIsRunning,
+            run: this.startVersionChecking
+        });
     }
 
     get(key) {
@@ -48,7 +51,6 @@ export class EnvironmentService {
         const interval = XH.getConf('xhAppVersionCheckSecs');
         Timer.create({
             runFn: this.checkAppVersionAsync,
-            delay: 15 * SECONDS,
             interval: interval * SECONDS
         });
     }

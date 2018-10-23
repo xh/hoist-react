@@ -27,7 +27,7 @@ import './LoginPanel.scss';
 export class LoginPanel extends Component {
 
     render() {
-        const {loginMessage} = XH.app;
+        const {loginMessage} = XH.appSpec;
         const {model} = this;
 
         return viewport({

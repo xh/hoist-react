@@ -163,7 +163,7 @@ export class GridModel {
         this.setSortBy(sortBy);
         this.setCompact(compact);
 
-        selModel = withDefault(selModel, XH.app.isMobile ? 'disabled' : 'single');
+        selModel = withDefault(selModel, XH.isMobile ? 'disabled' : 'single');
         this.selModel = this.initSelModel(selModel, store);
         this.stateModel = this.initStateModel(stateModel);
     }

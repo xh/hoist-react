@@ -29,10 +29,7 @@ export class ConfigService {
     _data = {};
 
     async initAsync() {
-        this._data = await XH.fetchJson({
-            url: 'xh/getConfig',
-            params: {clientUsername: XH.getUsername()}
-        });
+        this._data = await XH.fetchJson({url: 'xh/getConfig'});
     }
 
     /**
