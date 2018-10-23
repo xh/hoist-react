@@ -9,9 +9,9 @@ import {throwIf} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
 
 /**
- * Class used to hold specfication for a Client-Side Hoist Application.
- * Passed to XH.renderApp() to kick-off application rendering, and
- * available thereafter as XH.appSpec;
+ * Object used to hold the specfication for a Client-Side Hoist Application.
+ *
+ * Passed to XH.renderApp() to kick-off application rendering and available thereafter as XH.appSpec;
  */
 export class AppSpec {
 
@@ -24,47 +24,58 @@ export class AppSpec {
      *          This class is platform specific, and should be typically either
      *          @xh/hoist/desktop/AppContainer or @xh/hoist/mobile/AppContainer.
      * @param {boolean} c.isMobile, Is the app designed to be run on mobile devices?
-     * @param {boolean} c.isSSO - Is SSO authentication required for this application? Set to true to prevent
-     *          display of the loginPanel form and instead display a lockoutPanel if the user cannot be identified.
+     * @param {boolean} c.isSSO - Is SSO authentication used for this application?
      *
-     * @param {(string[] | function)} c.checkAccess - If a list of strings, these will be interpreted as required
-     *      roles, of which the user must have at least one.  Otherwise, function to determine if the passed user
-     *      should be able to access the UI.
-     *
-     * @param {Class} [c.suspendedDialogClass] -- Component to indicate App has been suspended.
-     * @param The component will receive a single prop -- onReactivate -- a callback called when user has acknowledged
-     *          the suspension and wishes to reload the app and continue working.
-     * @param {boolean} [c.idleDetectionDisabled] -  Disable app suspension by IdleService?
-     *          @see IdleService.  App suspension is also configurable in soft config, and via user preference.
-     * @param {string} [c.loginMessage] - Optional Login Message for applications using built-in form based login.
+     * @param {(string | CheckAccessCb)} c.checkAccess - If a string, will be interpreted as a required
+     *      roles.  Otherwise, function to determine if the passed user should be able to access the UI.
+
+     * @param {boolean} [c.idleDetectionEnabled] -  Enable automatic app suspension by IdleService? @see IdleService.
+     * @param {Class} [c.idleDetectionClass] -- Component class used to indicate App has been suspended.
+     *      The component will receive a single prop -- onReactivate -- a callback called when user has acknowledged
+     *      the suspension and wishes to reload the app and continue working.
+
+     * @param {string} [c.loginMessage] - Optional additional message to show with login form (for non-sso applications).
+     * @param {string} [c.lockoutMessage] - Optional additional message to show users when denied access to app.
      */
     constructor({
         componentClass,
         modelClass,
         containerClass,
-        suspendedDialogClass,
         isMobile,
         isSSO,
         checkAccess,
-        idleDetectionDisabled = false,
-        loginMessage = null
+        idleDetectionEnabled = false,
+        idleDialogClass = null,
+        loginMessage = null,
+        lockoutMessage = null
     }) {
         throwIf(!modelClass, 'A Hoist App must define a modelClass.');
         throwIf(!componentClass, 'A Hoist App must define a componentClass');
         throwIf(!containerClass, 'A Hoist App must define a containerClass');
         throwIf(isNil(isMobile), 'A Hoist App must define isMobile');
         throwIf(isNil(isSSO), 'A Hoist App must define isSSO');
-        throwIf(!checkAccess, 'A Hoist App must define checkAccess');
+        throwIf(!checkAccess, 'A Hoist App must define a required role or a function for checkAccess');
+
+        throwIf(isMobile && idleDetectionEnabled, 'Idle Detection not yet implemented on Mobile.');
 
         this.componentClass = componentClass;
         this.modelClass = modelClass;
         this.containerClass = containerClass;
-        this.suspendedDialogClass = suspendedDialogClass;
         this.isMobile = isMobile;
         this.isSSO = isSSO;
         this.checkAccess = checkAccess;
 
-        this.idleDetectionDisabled = idleDetectionDisabled;
+        this.idleDetectionEnabled = idleDetectionEnabled;
+        this.idleDialogClass = idleDialogClass;
         this.loginMessage = loginMessage;
+        this.lockoutMessage = lockoutMessage;
     }
 }
+
+
+/**
+ * @callback CheckAccessCb
+ * @param {Object} user
+ * @returns {(boolean | Object)} - boolean indicating whether user should have access to the app or an o
+ *      object of the form {hasAccess: boolean, message: 'explanatory message'}
+ */

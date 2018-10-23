@@ -20,7 +20,7 @@ import {updateBar} from './UpdateBar';
 import {versionBar}  from './VersionBar';
 import {lockoutPanel} from './LockoutPanel';
 import {messageSource} from './MessageSource';
-import {SuspendedDialog} from './SuspendedDialog';
+import {IdleDialog} from './IdleDialog';
 import {ToastSource} from './ToastSource';
 
 
@@ -84,7 +84,7 @@ export class AppContainer extends Component {
                     messageSource({model: model.messageSourceModel}),
                     feedbackDialog({model: model.feedbackDialogModel}),
                     aboutDialog({model: model.aboutDialogModel}),
-                    this.renderSuspendedDialog()
+                    this.renderIdleDialog()
                 );
             default:
                 return null;
@@ -99,8 +99,8 @@ export class AppContainer extends Component {
     //------------------------
     // Implementation
     //------------------------
-    renderSuspendedDialog() {
-        const dialogClass = XH.appSpec.suspendedDialogClass || SuspendedDialog;
+    renderIdleDialog() {
+        const dialogClass = XH.appSpec.idleDialogClass || IdleDialog;
 
         return XH.appState == AppState.SUSPENDED && dialogClass ?
             elem(dialogClass, {onReactivate: () => XH.reloadApp()}) :

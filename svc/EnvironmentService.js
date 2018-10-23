@@ -31,8 +31,8 @@ export class EnvironmentService {
         }, serverEnv);
 
         this.addReaction({
-            when: () => XH.appState === 'RUNNING',
-            run: () => this.startVersionChecking
+            when: () => XH.appIsRunning,
+            run: this.startVersionChecking
         });
     }
 
@@ -51,7 +51,6 @@ export class EnvironmentService {
         const interval = XH.getConf('xhAppVersionCheckSecs');
         Timer.create({
             runFn: this.checkAppVersionAsync,
-            delay: 15 * SECONDS,
             interval: interval * SECONDS
         });
     }

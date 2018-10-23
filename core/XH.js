@@ -6,7 +6,7 @@
  */
 
 import ReactDOM from 'react-dom';
-import {flatten, uniqueId, isArray, camelCase, values} from 'lodash';
+import {flatten, uniqueId, isString, isBoolean, camelCase, values} from 'lodash';
 
 import {elem, HoistModel, AppState, AppSpec} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
@@ -95,7 +95,13 @@ class XHClass {
 
     /** State of app -- see AppState for valid values. */
     @observable appState = AppState.PRE_AUTH;
-    
+
+    /**
+     * Is Application running?
+     * Observable shortcut for appState == AppState.RUNNING.
+     */
+    get appIsRunning() {return this.appState === AppState.RUNNING}
+
     /** Currently authenticated user. */
     @observable authUsername = null;
 
@@ -135,7 +141,7 @@ class XHClass {
         await this.initServicesInternalAsync(svcs);
         svcs.forEach(svc => {
             const name = camelCase(svc.constructor.name);
-            throwIf(this[name], `Service cannot be installed. Property'${name}' already exists on XH object.`);
+            throwIf(this[name], `Service cannot be installed. Property '${name}' already exists on XH object.`);
             this[name] = svc;
         });
     }
@@ -343,8 +349,8 @@ class XHClass {
     // Framework Methods
     //---------------------------------
     /**
-     * Called when application mounted in order to trigger initial authentication and
-     * initialization of framework and application.
+     * Called when application container first mounted in order to trigger initial
+     * authentication and initialization of framework and application.
      *
      * Not intended for application use.
      */
@@ -391,7 +397,6 @@ class XHClass {
         this.setAppState(S.INITIALIZING);
         try {
             await this.installServicesAsync(IdentityService);
-            // TODO: Whitelist ConfigService in core and load preAuth?
             await this.installServicesAsync(PrefService, ConfigService);
             this.initModels();
 
@@ -422,15 +427,13 @@ class XHClass {
         const user = XH.getUser(),
             {checkAccess} = this.appSpec;
 
-        if (!checkAccess) return {hasAccess: true};
-
-        if (isArray(checkAccess)) {
-            return {
-                hasAccess: checkAccess.some(it => user.hasRole(it)),
-                message: `User needs one of the following roles to access this application: ${checkAccess.join(',')}`
-            };
+        if (isString(checkAccess)) {
+            return user.hasRole(checkAccess) ?
+                {hasAccess: true} :
+                {hasAccess: false, message: `User needs the role "${checkAccess}" to access this application.`};
         } else {
-            return checkAccess(user);
+            const ret = checkAccess(user);
+            return isBoolean(ret) ? {hasAccess: ret} : ret;
         }
     }
 

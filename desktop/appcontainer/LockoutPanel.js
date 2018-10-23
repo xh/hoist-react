@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {isEmpty} from 'lodash';
 import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
-import {div, box, filler, vframe, viewport} from '@xh/hoist/cmp/layout';
+import {div, box, filler, vframe, viewport, p} from '@xh/hoist/cmp/layout';
 import {logoutButton} from '@xh/hoist/desktop/cmp/button';
 
 import './LockoutPanel.scss';
@@ -37,20 +37,20 @@ export class LockoutPanel extends Component {
     }
 
     unauthorizedMessage() {
-        const user = XH.getUser(),
-            roleMsg = isEmpty(user.roles) ?
-                'no roles assigned' :
-                `the roles [${user.roles.join(', ')}]`;
+        const {appSpec} = XH,
+            user = XH.getUser(),
+            roleMsg = isEmpty(user.roles) ? 'no roles assigned' : `the roles [${user.roles.join(', ')}]`;
 
         return div(
-            this.model.accessDeniedMessage,
-            box({
-                margin: '10 0 20 0',
-                item: `You are logged in as ${user.username} and have ${roleMsg}.`
+            p(this.model.accessDeniedMessage),
+            p(`You are logged in as ${user.username} and have ${roleMsg}.`),
+            p({
+                item: appSpec.lockoutMessage,
+                omit: !appSpec.lockoutMessage
             }),
             logoutButton({
                 text: 'Logout',
-                omit: XH.appSpec.isSSO
+                omit: appSpec.isSSO
             })
         );
     }

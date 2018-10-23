@@ -34,20 +34,20 @@ export class LockoutPanel extends Component {
     }
 
     unauthorizedMessage() {
-        const user = XH.getUser();
+        const user = XH.getUser(),
+            {appSpec} = XH;
 
         return div(
             this.model.accessDeniedMessage,
             vspacer(10),
-            `
-                You are logged in as ${user.username} 
-                and have the roles [${user.roles.join(', ') || '--'}].
-            `,
+            `You are logged in as ${user.username} and have the roles [${user.roles.join(', ') || '--'}].`,
+            vspacer(10),
+            appSpec.lockoutMessage,
             vspacer(20),
             button({
                 icon: Icon.logout(),
                 text: 'Logout',
-                omit: XH.appSpec.isSSO,
+                omit: appSpec.isSSO,
                 onClick: () => {
                     XH.identityService.logoutAsync();
                 }
