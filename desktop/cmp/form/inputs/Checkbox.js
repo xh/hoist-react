@@ -43,7 +43,8 @@ export class Checkbox extends HoistInput {
             nullValue = this.renderValue == null;
 
         return bpCheckbox({
-            checked: nullValue ? undefined : !!this.renderValue,
+            // Always specify checked to ensure input is in controlled mode.
+            checked: nullValue ? false : !!this.renderValue,
             indeterminate: nullValue,
 
             alignIndicator: labelAlign == 'left' ? 'right' : 'left',
