@@ -6,9 +6,9 @@
  */
 
 import ReactDOM from 'react-dom';
-import {flatten, uniqueId, isString, isBoolean, camelCase, values} from 'lodash';
+import {flatten, uniqueId, isString, isBoolean, camelCase} from 'lodash';
 
-import {elem, HoistModel, AppState, AppSpec} from '@xh/hoist/core';
+import {elem, AppState, AppSpec, EventSupport} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {observable, action} from '@xh/hoist/mobx';
 import {never, wait, allSettled} from '@xh/hoist/promise';
@@ -41,7 +41,7 @@ import '../styles/XH.scss';
  *
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
  */
-@HoistModel
+@EventSupport
 class XHClass {
 
     //------------------------------------------------------------------
@@ -456,7 +456,6 @@ class XHClass {
         }
     }
 
-
     async getAuthStatusFromServerAsync() {
         return await this.fetchService
             .fetchJson({url: 'xh/authStatus'})
@@ -498,14 +497,6 @@ class XHClass {
             });
         }
     }
-    
-    destroy() {
-        const services = values(this).filter(v => v && v.isHoistService);
-        this.safeDestroy(
-            this.appContainerModel,
-            this.routerModel,
-            ...services
-        );
-    }
+
 }
 export const XH = window.XH = new XHClass();
