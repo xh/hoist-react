@@ -49,12 +49,12 @@ export class App extends Component {
                 button({
                     icon: Icon.mail(),
                     text: 'Contact',
-                    onClick: this.onContactClick
+                    onClick: () => window.open('https://xh.io/contact')
                 }),
                 button({
                     icon: Icon.openExternal(),
                     title: 'Open app...',
-                    onClick: this.onOpenAppClick
+                    onClick: () => window.open('/')
                 }),
                 appBarSeparator()
             ],
@@ -63,11 +63,4 @@ export class App extends Component {
         });
     }
 
-    onContactClick = () => {
-        window.open('https://xh.io/contact');
-    };
-
-    onOpenAppClick = () => {
-        window.open('/');
-    };
 }
