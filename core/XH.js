@@ -82,6 +82,9 @@ class XHClass {
     getUser()                   {return this.identityService ? this.identityService.getUser() : null}
     getUsername()               {return this.identityService ? this.identityService.getUsername() : null}
 
+    get isMobile()              {return this.appSpec.isMobile}
+    
+
     //-------------------------------
     // Models
     //-------------------------------
