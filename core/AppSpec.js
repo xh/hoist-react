@@ -6,36 +6,32 @@
  */
 
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNil} from 'lodash';
+import {isNil, isString, isFunction} from 'lodash';
 
 /**
- * Object used to hold the specfication for a Client-Side Hoist Application.
- *
- * Passed to XH.renderApp() to kick-off application rendering and available thereafter as XH.appSpec;
+ * Object used to hold the specification for a client-side Hoist application.
+ * Passed to XH.renderApp() to kick-off app rendering and available thereafter as `XH.appSpec`.
  */
 export class AppSpec {
 
     /**
      * @param {Object} c - object containing app specifications.
-     *
-     * @param {Class} c.modelClass - root Model class for App.  Should be @HoistAppModel.
-     * @param {Class} c.componentClass - root Component class for App.  Should extend Component and be @HoistComponent.
+     * @param {Class} c.modelClass - root Model class for App, decorated with `@HoistAppModel`.
+     * @param {Class} c.componentClass - root Component class for App, decorated with `@HoistComponent`.
      * @param {Class} c.containerClass - Container component to be used to host this application.
-     *          This class is platform specific, and should be typically either
-     *          @xh/hoist/desktop/AppContainer or @xh/hoist/mobile/AppContainer.
-     * @param {boolean} c.isMobile, Is the app designed to be run on mobile devices?
-     * @param {boolean} c.isSSO - Is SSO authentication used for this application?
-     *
-     * @param {(string | CheckAccessCb)} c.checkAccess - If a string, will be interpreted as a required
-     *      roles.  Otherwise, function to determine if the passed user should be able to access the UI.
-
-     * @param {boolean} [c.idleDetectionEnabled] -  Enable automatic app suspension by IdleService? @see IdleService.
-     * @param {Class} [c.idleDetectionClass] -- Component class used to indicate App has been suspended.
-     *      The component will receive a single prop -- onReactivate -- a callback called when user has acknowledged
-     *      the suspension and wishes to reload the app and continue working.
-
-     * @param {string} [c.loginMessage] - Optional additional message to show with login form (for non-sso applications).
-     * @param {string} [c.lockoutMessage] - Optional additional message to show users when denied access to app.
+     *      This class is platform specific, and should be typically either
+     *      `@xh/hoist/desktop/AppContainer` or `@xh/hoist/mobile/AppContainer`.
+     * @param {boolean} c.isMobile - true if the app is designed to be run on mobile devices.
+     * @param {boolean} c.isSSO - true if SSO auth is enabled, as opposed to a login prompt.
+     * @param {(string|CheckAccessCb)} c.checkAccess - If a string, will be interpreted as the role
+     *      required for basic UI access. Otherwise, function to determine if the passed user should
+     *      be able to access the UI.
+     * @param {boolean} [c.idleDetectionEnabled] - true to enable auto-suspension by `IdleService`.
+     * @param {Class} [c.idleDialogClass] - Component class used to indicate App has been suspended.
+     *      The component will receive a single prop -- onReactivate -- a callback called when user
+     *      has acknowledged the suspension and wishes to reload the app and continue working.
+     * @param {string} [c.loginMessage] - Optional message to show on login form (for non-SSO apps).
+     * @param {string} [c.lockoutMessage] - Optional message to show users when denied access to app.
      */
     constructor({
         componentClass,
@@ -54,7 +50,11 @@ export class AppSpec {
         throwIf(!containerClass, 'A Hoist App must define a containerClass');
         throwIf(isNil(isMobile), 'A Hoist App must define isMobile');
         throwIf(isNil(isSSO), 'A Hoist App must define isSSO');
-        throwIf(!checkAccess, 'A Hoist App must define a required role or a function for checkAccess');
+
+        throwIf(
+            !isString(checkAccess) && !isFunction(checkAccess),
+            'A Hoist App must specify a required role string or a function for checkAccess.'
+        );
 
         throwIf(isMobile && idleDetectionEnabled, 'Idle Detection not yet implemented on Mobile.');
 
@@ -76,6 +76,6 @@ export class AppSpec {
 /**
  * @callback CheckAccessCb
  * @param {Object} user
- * @returns {(boolean | Object)} - boolean indicating whether user should have access to the app or an o
- *      object of the form {hasAccess: boolean, message: 'explanatory message'}
+ * @returns {(boolean|Object)} - boolean indicating whether user should have access to the app or
+ *      an  object of the form {hasAccess: boolean, message: 'explanatory message'}.
  */

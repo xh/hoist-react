@@ -23,10 +23,9 @@ export function HoistAppModel(C) {
 
     defaultMethods(C, {
 
-
         /**
-         * Call this once when application mounted in order to trigger initial authentication and
-         * initialization of the application and its services.
+         * Hoist will call this method once Hoist services have initialized and the application
+         * has mounted. Use to trigger initialization of the app and any app-specific services.
          */
         async initAsync() {},
 
@@ -41,7 +40,8 @@ export function HoistAppModel(C) {
          * App can implement this method to customize global App refresh behavior.
          * This is called by the default refresh button in the AppBar component.
          *
-         * @param {boolean} userInitiated whether the refresh was triggered by user action or triggered programmatically
+         * @param {boolean} userInitiated - true if the refresh was triggered by user action,
+         *      false if triggered programmatically. Referenced to determine e.g. masking, tracking.
          */
         requestRefresh(userInitiated) { }
     });

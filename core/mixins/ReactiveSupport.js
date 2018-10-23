@@ -62,9 +62,10 @@ export function ReactiveSupport(C) {
          * the run function. The reaction will also run only when the output of the track function
          * changes, and this output is passed to the run function.
          *
-         * Specify the property 'track' to run the reaction continuously until disposal.  Alternatively, specify
-         * the 'when' property to run this reaction only until the predicate passes, and the run function is executed
-         * once.  (These map on to mobX's native `reaction()` and `when()` functions, respectively).
+         * Specify the property 'track' to run the reaction continuously until disposal.
+         * Alternatively, specify the 'when' property to run this reaction only until the predicate
+         * passes, and the run function is executed once. (These map to mobX's native `reaction()`
+         * and `when()` functions, respectively).
          *
          * Choose this method over an autorun when you wish to explicitly declare which observables
          * should be tracked. A common pattern is to have the track function return these
@@ -81,7 +82,10 @@ export function ReactiveSupport(C) {
          * @param {function} conf.run - function to run - second arg to underlying reaction()/when() call.
          */
         addReaction({track, when, run, ...options}) {
-            throwIf((track && when) || (!track && !when), "Must specify either 'track' or 'when' in addReaction.");
+            throwIf(
+                (track && when) || (!track && !when),
+                "Must specify either 'track' or 'when' in addReaction."
+            );
             this.validateMobxOptions(options);
 
             if (track) {

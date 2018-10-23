@@ -31,10 +31,9 @@ import {ExceptionHandler} from './ExceptionHandler';
 
 import '../styles/XH.scss';
 
-// noinspection JSUnresolvedVariable
 
 /**
- * Top-level Singleton model for Hoist.  This is the main entry point for the API.
+ * Top-level Singleton model for Hoist. This is the main entry point for the API.
  *
  * Provides access to the built-in Hoist services, metadata about the application and environment,
  * and convenience aliases to the most common framework operations. It also maintains key observable
@@ -69,6 +68,24 @@ class XHClass {
     isDevelopmentMode = xhIsDevelopmentMode;
 
     //---------------------------
+    // Hoist Services
+    //---------------------------
+    /** @member {ConfigService} */
+    configService;
+    /** @member {EnvironmentService} */
+    environmentService;
+    /** @member {FetchService} */
+    fetchService;
+    /** @member {IdentityService} */
+    identityService;
+    /** @member {IdleService} */
+    idleService;
+    /** @member {PrefService} */
+    prefService;
+    /** @member {TrackService} */
+    trackService;
+
+    //---------------------------
     // Aliased methods
     //---------------------------
     track(opts)                 {return this.trackService.track(opts)}
@@ -84,7 +101,6 @@ class XHClass {
 
     get isMobile()              {return this.appSpec.isMobile}
     
-
     //-------------------------------
     // Models
     //-------------------------------
@@ -96,7 +112,7 @@ class XHClass {
     //-----------------------------
     exceptionHandler = new ExceptionHandler();
 
-    /** State of app -- see AppState for valid values. */
+    /** State of app - see AppState for valid values. */
     @observable appState = AppState.PRE_AUTH;
 
     /**
@@ -108,16 +124,16 @@ class XHClass {
     /** Currently authenticated user. */
     @observable authUsername = null;
 
-    /** Root level HoistAppModel */
+    /** Root level HoistAppModel. */
     appModel = null;
 
-    /** Specifications for this application. Specified in renderApp() */
+    /** Specifications for this application, provided in call to `XH.renderApp()`. */
     appSpec = null;
 
     /**
      * Main entry point. Initialize and render application code.
      *
-     * @param {(AppSpec|Object)} appSpec. Specifications for this application.
+     * @param {(AppSpec|Object)} appSpec - specifications for this application.
      *      Should be an AppSpec, or a config for one.
      */
     renderApp(appSpec) {
@@ -129,15 +145,15 @@ class XHClass {
     /**
      * Install HoistServices on this object.
      *
-     * @param {...Object} - Classes decorated with @HoistService
+     * @param {...Object} serviceClasses - Classes decorated with @HoistService
      *
-     * This method will create, initialize, and install the services classes listed on XH.  All services
-     * will be initialized concurrently.  To guarantee execution order of service initialization make multiple calls
-     * to this method with await.
+     * This method will create, initialize, and install the services classes listed on XH.
+     * All services will be initialized concurrently. To guarantee execution order of service
+     * initialization, make multiple calls to this method with await.
      *
-     * Note that the instantiated services will be placed directly on the XH object for easy access.  Therefore
-     * applications should be careful to use the naming convention of choosing a unique name of the form
-     * xxxService to avoid naming collisions.  If naming collisions are detected, an error will be thrown.
+     * Note that the instantiated services will be placed directly on the XH object for easy access.
+     * Therefore applications should choose a unique name of the form xxxService to avoid naming
+     * collisions. If naming collisions are detected, an error will be thrown.
      */
     async installServicesAsync(...serviceClasses) {
         const svcs = serviceClasses.map(serviceClass => new serviceClass());
@@ -469,11 +485,7 @@ class XHClass {
             results = await allSettled(promises),
             errs = results.filter(it => it.state === 'rejected');
 
-        if (errs.length === 1) {
-            throw errs[0].reason;
-        }
-
-        if (errs.length > 1) {
+        if (errs.length > 0) {
             // Enhance entire result col w/class name, we care about errs only
             results.forEach((it, idx) => {
                 it.name = svcs[idx].constructor.name;
