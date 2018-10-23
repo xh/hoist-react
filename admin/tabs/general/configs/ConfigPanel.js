@@ -34,13 +34,13 @@ export class ConfigPanel extends Component {
                     name: 'groupName',
                     label: 'Group',
                     lookupName: 'groupNames',
-                    required: true
+                    required: true,
+                    enableCreate: true
                 },
                 {
                     name: 'valueType',
                     label: 'Type',
                     lookupName: 'valueTypes',
-                    lookupStrict: true,
                     editable: 'onAdd',
                     required: true
                 },
@@ -89,8 +89,7 @@ export class ConfigPanel extends Component {
             {field: 'name'},
             {field: 'groupName'},
             {field: 'valueType'},
-            // special handling to keep dynamically generated controls consistent
-            {field: 'value', type: 'boolSelect', height: 300},
+            {field: 'value'},
             {field: 'clientVisible'},
             {field: 'note', type: 'textarea'},
             {field: 'lastUpdated'},

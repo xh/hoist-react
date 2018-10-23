@@ -22,9 +22,7 @@ export class NumberInput extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
-
-        /** Value of the control */
-        value: PT.string,
+        value: PT.number,
 
         /** Text to display when control is empty */
         placeholder: PT.string,
@@ -51,46 +49,33 @@ export class NumberInput extends HoistInput {
 
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/gi;
 
-    delegateProps = ['className', 'disabled', 'min', 'max', 'placeholder', 'modifier'];
-
     baseClassName = 'xh-number-input';
 
     render() {
-        const {width, style, enableShorthandUnits} = this.props;
+        const {props, renderValue, hasFocus} = this,
+            formattedValue = hasFocus ? renderValue : this.formatValue(renderValue);
 
         return input({
             className: this.getClassName(),
-            value: this.renderValue || '',
+            value: formattedValue || '',
             onChange: this.onChange,
             onKeyPress: this.onKeyPress,
             onBlur: this.onBlur,
             onFocus: this.onFocus,
-            style: {width, ...style},
+            style: {width: props.width, ...props.style},
             spellCheck: false,
-            type: enableShorthandUnits ? 'text' : 'number',
-            ...this.getDelegateProps()
+            type: props.enableShorthandUnits ? 'text' : 'number',
+            disabled: props.disabled,
+            min: props.min,
+            max: props.max,
+            placeholder: props.placeholder,
+            modifier: props.modifier
         });
     }
 
-    onChange = (ev) => {
-        let v = ev.target.value;
-        if (v) v = v.toString();
-        this.noteValueChange(v);
-    }
-
-    onKeyPress = (ev) => {
-        if (ev.key === 'Enter') this.doCommit();
-        if (this.props.onKeyPress) this.props.onKeyPress(ev);
-    }
-
-    toExternal(value) {
-        value = this.parseValue(value);
-        return isNaN(value) ? null : value;
-    }
-
-    toInternal(value) {
+    formatValue(value) {
         if (value == null) return '';
-        const props = this.props,
+        const {props} = this,
             precision = props.precision != null ? props.precision : 4,
             zeroPad = !!props.zeroPad,
             formattedVal = fmtNumber(value, {precision, zeroPad});
@@ -99,6 +84,8 @@ export class NumberInput extends HoistInput {
     }
 
     parseValue(value) {
+        if (!value) return value;
+        value = value.toString();
         value = value.replace(/,/g, '');
 
         if (NumberInput.shorthandValidator.test(value)) {
@@ -113,15 +100,12 @@ export class NumberInput extends HoistInput {
                 case 'b':
                     return num * 1000000000;
                 default:
-                    return NaN;
+                    return null;
             }
         }
 
-        return parseFloat(value);
-    }
-
-    onBlur = () => {
-        this.noteBlurred();
+        value = parseFloat(value);
+        return isNaN(value) ? null : value;
     }
 
     onFocus = (ev) => {
@@ -130,6 +114,17 @@ export class NumberInput extends HoistInput {
         }
         this.noteFocused();
     }
-}
 
+    onChange = (ev) => {
+        const v = this.parseValue(ev.target.value);
+        this.noteValueChange(v);
+    };
+
+    onKeyPress = (ev) => {
+        const {onKeyPress} = this.props;
+
+        if (ev.key === 'Enter') this.doCommit();
+        if (onKeyPress) onKeyPress(ev);
+    };
+}
 export const numberInput = elemFactory(NumberInput);

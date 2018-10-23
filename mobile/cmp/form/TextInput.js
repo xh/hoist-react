@@ -8,7 +8,7 @@
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {input} from '@xh/hoist/kit/onsen';
-
+import {withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
@@ -21,8 +21,6 @@ export class TextInput extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
-
-        /** Value of the control */
         value: PT.string,
 
         /** Type of input desired */
@@ -39,12 +37,11 @@ export class TextInput extends HoistInput {
         selectOnFocus: PT.bool
     };
 
-    delegateProps = ['className', 'disabled', 'type', 'placeholder', 'modifier'];
-
     baseClassName = 'xh-text-input';
 
     render() {
-        const {style, width, spellCheck} = this.props;
+        const {props} = this,
+            spellCheck = withDefault(props.spellCheck, false);
 
         return input({
             className: this.getClassName(),
@@ -53,9 +50,12 @@ export class TextInput extends HoistInput {
             onKeyPress: this.onKeyPress,
             onBlur: this.onBlur,
             onFocus: this.onFocus,
-            style: {...style, width},
-            spellCheck: !!spellCheck,
-            ...this.getDelegateProps()
+            style: {...props.style, width: props.width},
+            spellCheck,
+            disabled: props.disabled,
+            type: props.type,
+            placeholder: props.placeholder,
+            modifier: props.modifier
         });
     }
 
@@ -64,12 +64,10 @@ export class TextInput extends HoistInput {
     }
 
     onKeyPress = (ev) => {
+        const {onKeyPress} = this.props;
+
         if (ev.key === 'Enter') this.doCommit();
-        if (this.props.onKeyPress) this.props.onKeyPress(ev);
-    }
-    
-    onBlur = () => {
-        this.noteBlurred();
+        if (onKeyPress) onKeyPress(ev);
     }
 
     onFocus = (ev) => {
@@ -79,5 +77,4 @@ export class TextInput extends HoistInput {
         this.noteFocused();
     }
 }
-
 export const textInput = elemFactory(TextInput);

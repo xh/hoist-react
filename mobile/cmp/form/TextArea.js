@@ -8,7 +8,7 @@
 import {PropTypes as PT} from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {textarea as textareaTag} from '@xh/hoist/cmp/layout';
-
+import {withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
@@ -21,8 +21,6 @@ export class TextArea extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
-
-        /** Value of the control */
         value: PT.string,
 
         /** Text to display when control is empty */
@@ -35,12 +33,11 @@ export class TextArea extends HoistInput {
         selectOnFocus: PT.bool
     };
 
-    delegateProps = ['className', 'disabled', 'type', 'placeholder'];
-
     baseClassName = 'xh-textarea';
 
     render() {
-        const {style, width, spellCheck} = this.props;
+        const {props} = this,
+            spellCheck = withDefault(props.spellCheck, true);
 
         return textareaTag({
             className: this.getClassName(),
@@ -49,30 +46,28 @@ export class TextArea extends HoistInput {
             onKeyPress: this.onKeyPress,
             onBlur: this.onBlur,
             onFocus: this.onFocus,
-            style: {...style, width},
-            spellCheck: spellCheck !== false,
-            ...this.getDelegateProps()
+            style: {...props.style, width: props.width},
+            spellCheck,
+            disabled: props.disabled,
+            type: props.type,
+            placeholder: props.placeholder
         });
     }
 
     onChange = (ev) => {
         this.noteValueChange(ev.target.value);
-    }
+    };
 
     onKeyPress = (ev) => {
-        if (this.props.onKeyPress) this.props.onKeyPress(ev);
-    }
-
-    onBlur = () => {
-        this.noteBlurred();
-    }
+        const {onKeyPress} = this.props;
+        if (onKeyPress) onKeyPress(ev);
+    };
 
     onFocus = (ev) => {
         if (this.props.selectOnFocus && ev.target && ev.target.select) {
             ev.target.select();
         }
         this.noteFocused();
-    }
-
+    };
 }
 export const textArea = elemFactory(TextArea);

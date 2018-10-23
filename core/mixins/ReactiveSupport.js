@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {isFunction} from 'lodash';
+import {isFunction, isNil} from 'lodash';
 import {autorun as mobxAutorun, reaction as mobxReaction, when as mobxWhen} from '@xh/hoist/mobx';
 import {provideMethods, chainMethods, markClass, throwIf} from '@xh/hoist/utils/js';
 
@@ -48,6 +48,7 @@ export function ReactiveSupport(C) {
             } else {
                 ({run, ...options} = conf);
             }
+            this.validateMobxOptions(options);
             run = run.bind(this);
             this.addMobxDisposer(mobxAutorun(run, options));
         },
@@ -81,6 +82,8 @@ export function ReactiveSupport(C) {
          */
         addReaction({track, when, run, ...options}) {
             throwIf((track && when) || (!track && !when), "Must specify either 'track' or 'when' in addReaction.");
+            this.validateMobxOptions(options);
+
             if (track) {
                 this.addMobxDisposer(mobxReaction(track, run.bind(this), options));
             } else {
@@ -95,6 +98,13 @@ export function ReactiveSupport(C) {
         addMobxDisposer(disposer) {
             this._disposers = this._disposers || [];
             this._disposers.push(disposer);
+        },
+
+        validateMobxOptions(options) {
+            throwIf(
+                !isNil(options.runImmediately),
+                '"runImmediately" is not a reaction option.  Did you mean "fireImmediately"?'
+            );
         }
     });
 
