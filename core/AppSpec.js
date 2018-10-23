@@ -76,6 +76,6 @@ export class AppSpec {
 /**
  * @callback CheckAccessCb
  * @param {Object} user
- * @returns {(boolean|Object)} - boolean indicating whether user should have access to the app or
- *      an  object of the form {hasAccess: boolean, message: 'explanatory message'}.
+ * @returns {(boolean|Object)} - boolean indicating whether user should have access to the app,
+ *      or an object of the form `{hasAccess: boolean, message: 'explanatory message'}`.
  */
