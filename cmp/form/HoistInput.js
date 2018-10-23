@@ -128,7 +128,6 @@ export class HoistInput extends Component {
     /** Set normalized internal value, and fire associated value changed **/
     noteValueChange(val) {
         const {commitOnChange, onChange} = this.props;
-
         this.setInternalValue(val);
         if (onChange) onChange(this.toExternal(val));
         if (commitOnChange) this.doCommit();

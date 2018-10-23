@@ -7,12 +7,14 @@
 import {Component} from 'react';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {PropTypes as PT} from 'prop-types';
-import {vbox} from '@xh/hoist/cmp/layout/index';
+import {vbox, hbox} from '@xh/hoist/cmp/layout/index';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroup, popover, Classes} from '@xh/hoist/kit/blueprint';
 import {Icon} from '@xh/hoist/icon';
 import {div} from '@xh/hoist/cmp/layout';
 import {startCase, isEmpty} from 'lodash';
+import {select} from '@xh/hoist/desktop/cmp/form';
+
 
 import {DimensionChooserModel} from './DimensionChooserModel';
 import './DimensionChooser.scss';
@@ -32,11 +34,15 @@ export class DimensionChooser extends Component {
         // Could potentially merge above to single prop. I.e. if array of objects, use provided labels. If array, use Lodash
 
         /** Maximum number of dimension settings to save in state */
-        historyLength: PT.number,
+        historyLength: PT.number, // maxhistory ?
         /** Flag to enable / disable indentation of each dimension. */
-        indentLevels: PT.bool,
+        indentLevels: PT.bool, /// Do we need this? No we dont
         /** Percentage of total width used to indent each level */
         indentWidthPct: PT.number
+
+        //maxDepth - default to all dimensions
+
+
 
     };
 
@@ -72,8 +78,8 @@ export class DimensionChooser extends Component {
         });
     }
 
-    onDimClick = (dim) => {
-        this.dimChooserModel.handleDim(dim);
+    onDimChange = (dim, i) => {
+        this.dimChooserModel.addDim(dim, i);
     }
 
     onOptClick = (type) => {
@@ -88,16 +94,16 @@ export class DimensionChooser extends Component {
     // Implementation
     //--------------------
     prepareDimensions() {
-        const {dimensions, placeholder, width} = this.props,
-            {orderedDims} = this.dimChooserModel;
+        const {placeholder, width} = this.props,
+            {selectedDims} = this.dimChooserModel;
 
         const target = button({
-                item: isEmpty(orderedDims) ?
+                item: isEmpty(selectedDims) ?
                     placeholder :
-                    orderedDims.map(this.fmtDim).join(' > '),
+                    selectedDims.map(this.fmtDim).join(' > '),
                 style: {width},
                 placeholder
-            }), dimButtons = dimensions.map((dim, i) => this.renderButton(dim, i));
+            }), dimSelects = this.renderSelectChildren();
 
         return popover({
             target,
@@ -107,8 +113,8 @@ export class DimensionChooser extends Component {
             position: 'bottom',
             content: vbox({
                 width,
-                className: 'xh-dim-popover-items',
-                items: [...dimButtons]
+                className: `xh-dim-popover-items`,
+                items: [...dimSelects]
             }),
             onClose: () => this.onDimsPopoverClose()
         });
@@ -139,8 +145,8 @@ export class DimensionChooser extends Component {
                         disabled: isEmpty(this.dimChooserModel.history),
                         target: button({
                             className: 'xh-dim-opts-history',
-                            rightIcon: Icon.caretRight(),
-                            text: 'History'
+                            text: 'History',
+                            rightIcon: 'caret-right'
                         }),
                         position: 'auto',
                         content: this.renderHistory(),
@@ -156,17 +162,55 @@ export class DimensionChooser extends Component {
         });
     }
 
-    renderButton(dim, i) {
-        const {width, indentLevels, indentWidthPct} = this.props;
-        const marginLeft = indentLevels ? width * i * indentWidthPct / 100 : 0,
-            selected = this.dimChooserModel.selectedDims.includes(dim);
-        return button({
-            style: {marginLeft},
-            text: this.fmtDim(dim),
-            icon: selected ? Icon.eye() : Icon.eyeSlash(),
-            className: selected ? 'xh-dim-selected' : 'xh-dim-not-selected',
-            onClick: () => this.onDimClick(dim)
+    renderSelectChildren() {
+        const {dimensions, width, indentLevels, indentWidthPct} = this.props;
+        const {selectedDims, remainingDims} = this.dimChooserModel;
+        const marginIncrement = indentLevels ? width * indentWidthPct / 100 : 0;
+        let marginIndex = 0;
+        const ret = selectedDims.map((dim, i) => {
+            marginIndex++;
+            const marginLeft = marginIncrement * marginIndex;
+            return hbox(
+
+                select({
+                    width: width - marginLeft - 35,
+                    options: remainingDims.map((dim) => {
+                        return {
+                            label: this.fmtDim(dim),
+                            value: dim
+                        }
+                    }),
+                    value: this.fmtDim(dim),
+                    onChange: (newDim) => this.onDimChange(newDim, i),
+                    style: {marginLeft},
+                }),
+                button({
+                    icon: Icon.x(),
+                    disabled: selectedDims.length === 1,
+                    onClick: () => this.dimChooserModel.removeDim(dim)
+                })
+
+            )
         });
+        if (selectedDims.length === dimensions.length) return ret;
+        marginIndex++;
+        const marginLeft = marginIndex * marginIncrement;
+        ret.push(
+            select({
+                width: width - marginLeft - 35,
+                options: remainingDims.map((dim) => {
+                    return {
+                        label: this.fmtDim(dim),
+                        value: dim
+                    }
+                }),
+                onChange: (newDim) => this.onDimChange(newDim, selectedDims.length),
+                style: {marginLeft},
+                placeholder: 'Add dimension...'
+            })
+
+        )
+        return ret;
     }
 
     renderHistory() {

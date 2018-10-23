@@ -6,8 +6,8 @@
  */
 
 import {HoistModel} from '@xh/hoist/core';
-import {isEmpty, pull, isFunction, upperFirst, indexOf, pullAllWith, isEqual} from 'lodash';
-import {computed, observable, action, toJS} from '@xh/hoist/mobx';
+import {difference, isEmpty, pull, isFunction, upperFirst, indexOf, pullAllWith, isEqual} from 'lodash';
+import {computed, observable, action, toJS, addReaction} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
 @HoistModel
@@ -33,16 +33,18 @@ export class DimensionChooserModel {
     }
 
     @action
-    handleDim(dim) {
-        const {selectedDims} = this;
-
-        if (selectedDims.includes(dim)) {
-            pull(selectedDims, dim);
-        } else {
-            selectedDims.push(dim);
-        }
+    addDim(dim, i) {
+        this.selectedDims[i] = dim;
         this.doCommit();
     }
+
+    @action
+    removeDim(dim) {
+        pull(this.selectedDims, dim)
+        this.doCommit();
+    }
+
+
 
     @action
     setDims(type) {
@@ -59,39 +61,46 @@ export class DimensionChooserModel {
                 break;
         }
         this.doCommit();
-        this.saveHistory(); // Does this make sense? Already ignoring 'clear' in saveHistory()
+        // this.saveHistory(); // Does this make sense? Already ignoring 'clear' in saveHistory()
     }
 
     @action
     setDimsFromHistory(history) {
         this.selectedDims.replace(history);
         this.doCommit();
-        this.saveHistory();
+        // this.saveHistory();
     }
+
 
     @action
     saveHistory() {
         if (isEmpty(this.selectedDims)) return;             // Don't save empty dimensions array
 
         let copy = toJS(this.history);
-        pullAllWith(copy, [this.orderedDims], isEqual);     // Remove duplicates
+        pullAllWith(copy, [this.selectedDims], isEqual);     // Remove duplicates
         if (copy.length >= this.historyLength) copy.pop();  // Don't allow to go over max history length
-        copy.unshift(this.orderedDims);
+        copy.unshift(this.selectedDims);
 
         this.history.replace(copy);
     }
 
     @computed
-    get orderedDims() {
-        return this.selectedDims.slice().sort((a, b) => indexOf(this.allDims, a) - indexOf(this.allDims, b));
+    get remainingDims() {
+        return difference(this.allDims, this.selectedDims)
     }
+
+    // @computed
+    // get orderedDims() {
+    //     return this.selectedDims;
+    //     // return this.selectedDims.slice().sort((a, b) => indexOf(this.allDims, a) - indexOf(this.allDims, b));
+    // }
 
     doCommit() {
         const {model, field} = this;
         if (model && field) {
             const setterName = `set${upperFirst(field)}`;
             throwIf(!isFunction(model[setterName]), `Required function '${setterName}()' not found on bound model`);
-            model[setterName](this.orderedDims.join(','));
+            model[setterName](this.selectedDims.join(','));
         }
     }
 
