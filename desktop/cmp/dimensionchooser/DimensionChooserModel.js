@@ -6,8 +6,8 @@
  */
 
 import {HoistModel} from '@xh/hoist/core';
-import {difference, isEmpty, pull, isFunction, upperFirst, indexOf, pullAllWith, isEqual} from 'lodash';
-import {computed, observable, action, toJS, addReaction} from '@xh/hoist/mobx';
+import {difference, isEmpty, pull, isFunction, upperFirst, pullAllWith, isEqual} from 'lodash';
+import {computed, observable, action} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
 @HoistModel
@@ -31,7 +31,7 @@ export class DimensionChooserModel {
         this.history = createHistoryArray({
             maxHistoryLength,
             initialValue: this.defaultDims
-        })
+        });
     }
 
     @action
@@ -46,7 +46,7 @@ export class DimensionChooserModel {
 
     @action
     removeDim(dim) {
-        pull(this.selectedDims, dim)
+        pull(this.selectedDims, dim);
     }
 
     @action
@@ -57,7 +57,7 @@ export class DimensionChooserModel {
                 selectedDims.replace(this.defaultDims);
                 break;
             case 'last commit':
-                selectedDims.replace(this.model[this.field])
+                selectedDims.replace(this.model[this.field]);
         }
         this.updateSelectedDims();
     }
@@ -76,14 +76,13 @@ export class DimensionChooserModel {
 
     @computed
     get remainingDims() {
-        return difference(this.allDims, this.selectedDims)
+        return difference(this.allDims, this.selectedDims);
     }
 
     @computed
     get leafSelected() {
         return this.dimensions.filter((dim) => this.selectedDims.slice().includes(dim.value) &&
-        dim.isLeafColumn).length > 0
-
+        dim.isLeafColumn).length > 0;
     }
 
     doCommit() {
@@ -103,7 +102,7 @@ export class DimensionChooserModel {
 
 }
 
- const createHistoryArray = ({maxHistoryLength = 5, initialValue}) => {
+const createHistoryArray = ({maxHistoryLength = 5, initialValue}) => {
     let array = [];
 
     array.unshift = function() {
