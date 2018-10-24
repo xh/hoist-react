@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {PropTypes as PT} from 'prop-types';
 import {vbox, hbox, box} from '@xh/hoist/cmp/layout/index';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -42,6 +42,7 @@ export class DimensionChooser extends Component {
     };
 
     baseClassName = 'xh-dim-chooser';
+    popoverClassName = 'xh-dim-select-menu';
 
     @observable isMenuOpen = false;
     @action
@@ -72,6 +73,10 @@ export class DimensionChooser extends Component {
         });
     }
 
+    componentDidMount() {
+
+    }
+
     //--------------------
     // Event Handlers
     //--------------------
@@ -94,6 +99,18 @@ export class DimensionChooser extends Component {
         this.setPopoverDisplay(false);
     }
 
+    @action
+    onInteraction = (nextOpenState, e) => {
+        const notSelectClick = withDefault(e, false) &&
+            withDefault(e.target, false) &&
+            withDefault(!e.target.classList.contains('xh-select__option'), false);
+        /// should be checking for a class which we pass from this component to the select menu
+        /// for now should be fine, but should update once feature is added to select component
+        if (nextOpenState === false && notSelectClick) {
+            this.onSaveSelected();
+        }
+    };
+
     //--------------------
     // Rendering top-level menus
     //--------------------
@@ -101,9 +118,9 @@ export class DimensionChooser extends Component {
     prepareDimensionMenu() {
         const {width} = this.props,
             {isMenuOpen} = this,
-            {selectedDims, toRichDim} = this.dimChooserModel;
+            {history, toRichDim} = this.dimChooserModel;
         const target = button({
-            item: toRichDim(selectedDims).map(it => it.label).join(' > '),
+            item: toRichDim(history[0]).map(it => it.label).join(' > '),
             style: {width},
             onClick: () => this.setPopoverDisplay(true)
         });
@@ -112,6 +129,7 @@ export class DimensionChooser extends Component {
         return popover({
             target,
             isOpen: isMenuOpen,
+            onInteraction: (nextOpenState, e) => this.onInteraction(nextOpenState, e),
             targetClassName: 'xh-dim-popover',
             position: 'bottom',
             content: vbox({
@@ -146,7 +164,7 @@ export class DimensionChooser extends Component {
 
         return popover({
             target,
-            position: 'bottom-left',
+            position: 'bottom-right',
             content: buttonGroup({
                 vertical: true,
                 className: 'xh-dim-opts-popover-items',
@@ -189,6 +207,7 @@ export class DimensionChooser extends Component {
                 style: {marginLeft},
                 items: [
                     select({
+                        className: 'wooof',
                         enableFilter: false,
                         options: availableDims(i),
                         value: toRichDim(dim).label,
