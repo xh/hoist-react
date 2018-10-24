@@ -6,7 +6,7 @@
  */
 
 import {HoistModel} from '@xh/hoist/core';
-import {difference, isEmpty, pull, isFunction, upperFirst, pullAllWith, isEqual} from 'lodash';
+import {isObject, difference, isEmpty, pull, isFunction, upperFirst, pullAllWith, isEqual} from 'lodash';
 import {computed, observable, action} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
@@ -26,7 +26,7 @@ export class DimensionChooserModel {
         this.field = field;
         this.dimensions = dimensions;
         this.allDims = dimensions.map(d => d.value);
-        this.defaultDims = model[field];
+        this.defaultDims = model[field].slice();
         this.selectedDims = this.defaultDims;
         this.history = createHistoryArray({
             maxHistoryLength,
@@ -36,11 +36,13 @@ export class DimensionChooserModel {
 
     @action
     addDim(dim, i) {
-        const copy = this.selectedDims;
+        const {selectedDims} = this,
+            copy = selectedDims.slice();
+
         pull(copy, dim);
         copy[i] = dim;
-        const curDim = this.dimensions.find(d => d.value === dim);
-        if (curDim.isLeafColumn) copy.splice(i + 1);
+        if (this.toRichDim(dim).isLeafColumn) copy.splice(i + 1);
+
         this.selectedDims.replace(copy);
     }
 
@@ -58,6 +60,7 @@ export class DimensionChooserModel {
                 break;
             case 'last commit':
                 selectedDims.replace(this.model[this.field]);
+                break;
         }
         this.updateSelectedDims();
     }
@@ -72,11 +75,6 @@ export class DimensionChooserModel {
     updateSelectedDims() {
         this.doCommit();
         this.history.unshift(this.selectedDims.slice());
-    }
-
-    @computed
-    get remainingDims() {
-        return difference(this.allDims, this.selectedDims);
     }
 
     @computed
@@ -100,6 +98,26 @@ export class DimensionChooserModel {
     loadData() {
     }
 
+    //-------------------------
+    // Helpers
+    //-------------------------
+
+    get remainingDims() {
+        return this.toRichDim(difference(this.allDims, this.selectedDims));
+    }
+
+    availableDims =(i) => {
+        const dimChildren = this.toRichDim(this.selectedDims.slice(i + 1));
+        return [...this.remainingDims, ...dimChildren];
+    }
+
+    toRichDim = (value) => {
+        const {dimensions} = this,
+            retFn = (val) => dimensions.find(dim => dim.value === val);
+        return isObject(value) ?
+            value.map((it) => retFn(it)) :
+            retFn(value);
+    }
 }
 
 const createHistoryArray = ({maxHistoryLength = 5, initialValue}) => {
