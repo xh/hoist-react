@@ -80,10 +80,10 @@ export class ConfigPanel extends Component {
         columns: [
             {field: 'name', width: 200},
             {field: 'valueType', headerName: 'Type', width: 80, align: 'center'},
-            {field: 'value', width: 200, renderer: this.maskIfPwd},
+            {field: 'value', width: 200, renderer: this.maskIfPwd, tooltip: this.maskIfPwd},
             {field: 'clientVisible', ...boolCheckCol, headerName: 'Client?', width: 75},
             {field: 'groupName', headerName: 'Group', width: 100},
-            {field: 'note', minWidth: 60, flex: true}
+            {field: 'note', minWidth: 60, flex: true, tooltip: true}
         ],
         editors: [
             {field: 'name'},
