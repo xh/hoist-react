@@ -16,6 +16,10 @@ export class AppSpec {
 
     /**
      * @param {Object} c - object containing app specifications.
+     *
+     * @param {string} c.clientAppName - display name for this particular JS client application.
+     *      Note this can be more specific (or not) than appName specified within the app's webpack
+     *      config, which is applied to all apps built/shipped within the project as a whole.
      * @param {Class} c.modelClass - root Model class for App, decorated with `@HoistAppModel`.
      * @param {Class} c.componentClass - root Component class for App, decorated with `@HoistComponent`.
      * @param {Class} c.containerClass - Container component to be used to host this application.
@@ -26,6 +30,8 @@ export class AppSpec {
      * @param {(string|CheckAccessCb)} c.checkAccess - If a string, will be interpreted as the role
      *      required for basic UI access. Otherwise, function to determine if the passed user should
      *      be able to access the UI.
+     * @param {boolean} [c.trackAppLoad] - true (default) to write a track log statement after the
+     *      app has loaded and fully initialized, including elapsed time of asset loading and init.
      * @param {boolean} [c.idleDetectionEnabled] - true to enable auto-suspension by `IdleService`.
      * @param {Class} [c.idleDialogClass] - Component class used to indicate App has been suspended.
      *      The component will receive a single prop -- onReactivate -- a callback called when user
@@ -34,19 +40,22 @@ export class AppSpec {
      * @param {string} [c.lockoutMessage] - Optional message to show users when denied access to app.
      */
     constructor({
+        clientAppName,
         componentClass,
         modelClass,
         containerClass,
         isMobile,
         isSSO,
         checkAccess,
+        trackAppLoad = true,
         idleDetectionEnabled = false,
         idleDialogClass = null,
         loginMessage = null,
         lockoutMessage = null
     }) {
-        throwIf(!modelClass, 'A Hoist App must define a modelClass.');
+        throwIf(!clientAppName, 'A Hoist App must define a clientAppName.');
         throwIf(!componentClass, 'A Hoist App must define a componentClass');
+        throwIf(!modelClass, 'A Hoist App must define a modelClass.');
         throwIf(!containerClass, 'A Hoist App must define a containerClass');
         throwIf(isNil(isMobile), 'A Hoist App must define isMobile');
         throwIf(isNil(isSSO), 'A Hoist App must define isSSO');
@@ -58,12 +67,14 @@ export class AppSpec {
 
         throwIf(isMobile && idleDetectionEnabled, 'Idle Detection not yet implemented on Mobile.');
 
+        this.clientAppName = clientAppName;
         this.componentClass = componentClass;
         this.modelClass = modelClass;
         this.containerClass = containerClass;
         this.isMobile = isMobile;
         this.isSSO = isSSO;
         this.checkAccess = checkAccess;
+        this.trackAppLoad = trackAppLoad;
 
         this.idleDetectionEnabled = idleDetectionEnabled;
         this.idleDialogClass = idleDialogClass;

@@ -36,9 +36,10 @@ export class LoginPanel extends Component {
             flexDirection: 'column',
             items: [
                 panel({
+                    title: XH.clientAppName,
+                    icon: Icon.login(),
                     className: 'xh-login',
                     width: 300,
-                    title: `Welcome to ${XH.appName}`,
                     items: [
                         vspacer(10),
                         textInput({

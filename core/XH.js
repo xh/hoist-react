@@ -6,7 +6,7 @@
  */
 
 import ReactDOM from 'react-dom';
-import {flatten, uniqueId, isString, isBoolean, camelCase} from 'lodash';
+import {camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
 
 import {elem, AppState, AppSpec, EventSupport} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
@@ -52,7 +52,7 @@ class XHClass {
     /** Short internal code for the application. */
     appCode = xhAppCode;
 
-    /** User-facing display name for the application. */
+    /** User-facing display name for the application. See also `XH.clientAppName`. */
     appName = xhAppName;
 
     /** SemVer or Snapshot version of the client build. */
@@ -100,7 +100,9 @@ class XHClass {
     getUsername()               {return this.identityService ? this.identityService.getUsername() : null}
 
     get isMobile()              {return this.appSpec.isMobile}
-    
+    get clientAppName()         {return this.appSpec.clientAppName}
+
+
     //-------------------------------
     // Models
     //-------------------------------
@@ -127,7 +129,10 @@ class XHClass {
     /** Root level HoistAppModel. */
     appModel = null;
 
-    /** Specifications for this application, provided in call to `XH.renderApp()`. */
+    /**
+     * Specifications for this application, provided in call to `XH.renderApp()`.
+     * @member {AppSpec}
+     */
     appSpec = null;
 
     /**
@@ -433,6 +438,7 @@ class XHClass {
             await this.appModel.initAsync();
             this.startRouter();
             this.setAppState(S.RUNNING);
+            this.trackAppLoad();
         } catch (e) {
             this.setAppState(S.LOAD_FAILED);
             this.handleException(e, {requireReload: true});
@@ -496,6 +502,19 @@ class XHClass {
                 details: errs
             });
         }
+    }
+
+    trackAppLoad() {
+        if (!this.appSpec.trackAppLoad) return;
+
+        // xhLoadTimestamp is set in index.html via a script installed by WebpackHtmlPlugin.
+        const elapsed = window._xhLoadTimestamp ? Date.now() - window._xhLoadTimestamp : null;
+
+        XH.track({
+            category: 'App',
+            msg: `Loaded ${this.clientAppName}`,
+            elapsed
+        });
     }
 
 }

@@ -32,7 +32,7 @@ export class LoginPanel extends Component {
             renderToolbar: () => toolbar(
                 div({
                     className: 'center',
-                    item: `Welcome to ${XH.appName}`
+                    item: XH.clientAppName
                 })
             ),
             items: [

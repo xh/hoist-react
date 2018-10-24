@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {HoistComponent, XH} from '@xh/hoist/core';
+import {HoistComponent} from '@xh/hoist/core';
 import {tabContainer, tabSwitcher} from '@xh/hoist/desktop/cmp/tab';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -41,7 +41,6 @@ export class App extends Component {
     renderAppBar() {
         return appBar({
             icon: Icon.gears({size: '2x', prefix: 'fal'}),
-            title: `${XH.appName} Admin`,
             leftItems: [
                 tabSwitcher({model: this.model.tabModel})
             ],
