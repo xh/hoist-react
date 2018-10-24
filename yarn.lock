@@ -770,7 +770,7 @@
     lodash "^4.17.10"
     to-fast-properties "^2.0.0"
 
-"@blueprintjs/core@^3.6.0", "@blueprintjs/core@^3.7.0", "@blueprintjs/core@~3.7.0":
+"@blueprintjs/core@^3.7.0", "@blueprintjs/core@~3.7.0":
   version "3.7.0"
   resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.7.0.tgz#ac20038266163d457b76d1bdd9a74a321401e10e"
   integrity sha512-fr1jgAY/sPWJ7BorebuyLQKTTk7x+/1suayaxKVh1WMQ7aIi3Zb7HnJPEVFQyaT+9rVl97b7/2DiID3N8/UGMw==
@@ -801,15 +801,6 @@
   resolved "https://registry.yarnpkg.com/@blueprintjs/icons/-/icons-3.2.0.tgz#d21cceebfac9c1bceded047e493ee1e180b86f11"
   integrity sha512-MoI4TdZ2QMM9DEd+/vJOMSlhuvPID3Zip0TB/MB1J7p7GnUThIRq2FlETMUg6ig1GZweAWNl7cUtYFNHZ3EiUQ==
   dependencies:
-    classnames "^2.2"
-    tslib "^1.9.0"
-
-"@blueprintjs/select@~3.2.0":
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/select/-/select-3.2.0.tgz#743fdafd6b4d3140473f45cba452bd937338b419"
-  integrity sha512-kieg23ktzCXBUT7oVKBwlnPrjpwH8GgB722BL4nMV+c9cnt9gHuhk6eGORd3w8tK9gI85F/+brVkimbmQShVZg==
-  dependencies:
-    "@blueprintjs/core" "^3.6.0"
     classnames "^2.2"
     tslib "^1.9.0"
 

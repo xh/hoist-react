@@ -52,10 +52,6 @@ import {
 
 import {DateInput} from '@blueprintjs/datetime';
 
-// TODO - if we could replace Omnibar (used in at least one client app) we could drop BP select dep.
-// I think this could be worth doing, even if we picked up a more dedicated omnibar library...
-import {MultiSelect, Omnibar, Select, Suggest} from '@blueprintjs/select';
-
 //---------------------
 // Re-exports
 //---------------------
@@ -78,22 +74,18 @@ export {
     Menu,
     MenuItem,
     MenuDivider,
-    MultiSelect,
     Navbar,
     NavbarDivider,
     NavbarGroup,
     NavbarHeading,
     NumericInput,
-    Omnibar,
     Overlay,
     Popover,
     Radio,
     RadioGroup,
     RangeSlider,
-    Select,
     Slider,
     Spinner,
-    Suggest,
     Switch,
     Tab,
     Tabs,
@@ -124,22 +116,18 @@ export const
     menu = elemFactory(Menu),
     menuDivider = elemFactory(MenuDivider),
     menuItem = elemFactory(MenuItem),
-    multiSelect = elemFactory(MultiSelect),
     navbar = elemFactory(Navbar),
     navbarHeading = elemFactory(NavbarHeading),
     navbarGroup = elemFactory(NavbarGroup),
     navbarDivider = elemFactory(NavbarDivider),
     numericInput = elemFactory(NumericInput),
-    omnibar = elemFactory(Omnibar),
     overlay = elemFactory(Overlay),
     popover = elemFactory(Popover),
     radio = elemFactory(Radio),
     radioGroup = elemFactory(RadioGroup),
     rangeSlider = elemFactory(RangeSlider),
     slider = elemFactory(Slider),
-    select = elemFactory(Select),
     spinner = elemFactory(Spinner),
-    suggest = elemFactory(Suggest),
     switchControl = elemFactory(Switch),
     tabs = elemFactory(Tabs),
     tab = elemFactory(Tab),
