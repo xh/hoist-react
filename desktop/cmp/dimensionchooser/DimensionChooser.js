@@ -7,17 +7,20 @@
 import {Component} from 'react';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {PropTypes as PT} from 'prop-types';
-import {vbox, hbox} from '@xh/hoist/cmp/layout/index';
+import {vbox, hbox, box} from '@xh/hoist/cmp/layout/index';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {buttonGroup, popover, Classes} from '@xh/hoist/kit/blueprint';
+import {buttonGroup, popover, Classes, PopoverInteractionKind} from '@xh/hoist/kit/blueprint';
 import {Icon} from '@xh/hoist/icon';
-import {div} from '@xh/hoist/cmp/layout';
-import {startCase, isEmpty} from 'lodash';
+import {div, hspacer} from '@xh/hoist/cmp/layout';
+import {startCase, isEmpty, isPlainObject} from 'lodash';
 import {select} from '@xh/hoist/desktop/cmp/form';
+import {observable, action} from '@xh/hoist/mobx';
+
 
 
 import {DimensionChooserModel} from './DimensionChooserModel';
 import './DimensionChooser.scss';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
 
 @HoistComponent
 @LayoutSupport
@@ -27,23 +30,14 @@ export class DimensionChooser extends Component {
 
         /** Array of grid dimensions, in ordered from least to most specific */
         dimensions: PT.array,
-        /** Array of labels for grid dimensions. If not provided, model will
-         * default to using Lodash's 'startCase' method on props.dimensions */
-        dimensionLabels: PT.object,
-
-        // Could potentially merge above to single prop. I.e. if array of objects, use provided labels. If array, use Lodash
-
         /** Maximum number of dimension settings to save in state */
-        historyLength: PT.number, // maxhistory ?
+        maxHistoryLength: PT.number,
         /** Flag to enable / disable indentation of each dimension. */
         indentLevels: PT.bool, /// Do we need this? No we dont
         /** Percentage of total width used to indent each level */
-        indentWidthPct: PT.number
-
-        //maxDepth - default to all dimensions
-
-
-
+        indentWidthPct: PT.number,
+        /** Maximum number of dimensions that can be set on the grid */
+        maxDepth: PT.number
     };
 
     static defaultProps = {
@@ -56,27 +50,38 @@ export class DimensionChooser extends Component {
 
     baseClassName = 'xh-dim-chooser';
 
+    @observable isOpen = false;
+    @action
+    setPopoverDisplay(bool) {
+        this.isOpen = bool
+    }
+
     constructor(props) {
         super(props);
-        const {dimensions, dimensionLabels, historyLength, model, field} = this.props;
+        const {dimensions, historyLength, model, field, maxDepth} = this.props;
+        this.internalDimensions = this.normalizeDimensions(dimensions);
         this.dimChooserModel = new DimensionChooserModel({
-            dimensions,
-            dimensionLabels,
+            dimensions: this.internalDimensions,
             historyLength,
             model,
             field
         });
+        this.maxDepth = withDefault(maxDepth, dimensions.length)
     }
 
     render() {
         return div({
             className: this.baseClassName,
             items: [
-                this.prepareDimensions(),
-                this.prepareOptions()
+                this.prepareDimensionMenu(),
+                this.prepareOptionMenu()
             ]
         });
     }
+
+    //--------------------
+    // Event Handlers
+    //--------------------
 
     onDimChange = (dim, i) => {
         this.dimChooserModel.addDim(dim, i);
@@ -86,27 +91,37 @@ export class DimensionChooser extends Component {
         this.dimChooserModel.setDims(type);
     }
 
-    onDimsPopoverClose = () => {
-        this.dimChooserModel.saveHistory();
+    onSaveSelected = () => {
+        this.dimChooserModel.updateSelectedDims();
+        this.setPopoverDisplay(false);
+    }
+
+    onCancelSelected = () => {
+        this.dimChooserModel.setDims('last commit');
+        this.setPopoverDisplay(false);
     }
 
     //--------------------
     // Implementation
     //--------------------
-    prepareDimensions() {
+
+    prepareDimensionMenu() {
         const {placeholder, width} = this.props,
+            {isOpen} = this,
             {selectedDims} = this.dimChooserModel;
 
         const target = button({
-                item: isEmpty(selectedDims) ?
-                    placeholder :
-                    selectedDims.map(this.fmtDim).join(' > '),
-                style: {width},
-                placeholder
+            item: isEmpty(selectedDims) ?
+                placeholder :
+                selectedDims.map(this.fmtDim).join(' > '),
+            style: {width},
+            placeholder,
+            onClick: () => this.setPopoverDisplay(true)
             }), dimSelects = this.renderSelectChildren();
 
         return popover({
             target,
+            isOpen,
             targetClassName: 'xh-dim-popover',
             wrapperTagName: 'div',
             targetTagName: 'div',
@@ -114,13 +129,28 @@ export class DimensionChooser extends Component {
             content: vbox({
                 width,
                 className: `xh-dim-popover-items`,
-                items: [...dimSelects]
-            }),
-            onClose: () => this.onDimsPopoverClose()
+                items: [
+                    ...dimSelects,
+                    hbox(
+                        button({
+                            icon: Icon.x(),
+                            intent: 'danger',
+                            style: {width: '40%'},
+                            onClick: () => this.onCancelSelected()
+                        }),
+                        button({
+                            icon: Icon.check(),
+                            intent: 'success',
+                            style: {width: '60%'},
+                            onClick: () => this.onSaveSelected()
+                        })
+                    )
+                ]
+            })
         });
     }
 
-    prepareOptions() {
+    prepareOptionMenu() {
         const target =  button({
             icon: Icon.ellipsisV(),
             className: 'xh-dim-options'
@@ -133,14 +163,6 @@ export class DimensionChooser extends Component {
                 vertical: true,
                 className: 'xh-dim-opts-popover-items',
                 items: [
-                    button({
-                        text: 'Show all',
-                        onClick: () => this.onOptClick('all')
-                    }),
-                    button({
-                        text: 'Hide all',
-                        onClick: () => this.onOptClick('clear')
-                    }),
                     popover({
                         disabled: isEmpty(this.dimChooserModel.history),
                         target: button({
@@ -155,7 +177,7 @@ export class DimensionChooser extends Component {
                     }),
                     button({
                         text: 'Reset defaults',
-                        onClick: () => this.onOptClick('reset')
+                        onClick: () => this.onOptClick('reset defaults')
                     })
                 ]
             })
@@ -170,46 +192,46 @@ export class DimensionChooser extends Component {
         const ret = selectedDims.map((dim, i) => {
             marginIndex++;
             const marginLeft = marginIncrement * marginIndex;
-            return hbox(
-
-                select({
-                    width: width - marginLeft - 35,
-                    options: remainingDims.map((dim) => {
-                        return {
-                            label: this.fmtDim(dim),
-                            value: dim
-                        }
+            return hbox({
+                style: {marginLeft},
+                items: [
+                    select({
+                        enableFilter: false,
+                        options: this.prepareOptions(i),
+                        value: this.fmtDim(dim),
+                        onChange: (newDim) => this.onDimChange(newDim, i)
                     }),
-                    value: this.fmtDim(dim),
-                    onChange: (newDim) => this.onDimChange(newDim, i),
-                    style: {marginLeft},
-                }),
-                button({
-                    icon: Icon.x(),
-                    disabled: selectedDims.length === 1,
-                    onClick: () => this.dimChooserModel.removeDim(dim)
-                })
-
-            )
+                    button({
+                        icon: Icon.x(),
+                        disabled: selectedDims.length === 1,
+                        onClick: () => this.dimChooserModel.removeDim(dim)
+                    })
+                ]
+            })
         });
-        if (selectedDims.length === dimensions.length) return ret;
+        if (selectedDims.length === this.maxDepth || this.dimChooserModel.leafSelected) return ret;
         marginIndex++;
         const marginLeft = marginIndex * marginIncrement;
         ret.push(
-            select({
-                width: width - marginLeft - 35,
-                options: remainingDims.map((dim) => {
-                    return {
-                        label: this.fmtDim(dim),
-                        value: dim
-                    }
-                }),
-                onChange: (newDim) => this.onDimChange(newDim, selectedDims.length),
+            box({
                 style: {marginLeft},
-                placeholder: 'Add dimension...'
-            })
+                items: [
+                    select({
+                        enableFilter: false,
+                        options: remainingDims.map((dim) => {
+                            return {
+                                label: this.fmtDim(dim),
+                                value: dim
+                            }
+                        }),
+                        onChange: (newDim) => this.onDimChange(newDim, selectedDims.length),
+                        placeholder: 'Add...'
+                    }),
+                    hspacer(30)
+                ]
 
-        )
+            })
+        );
         return ret;
     }
 
@@ -228,6 +250,41 @@ export class DimensionChooser extends Component {
                 })
             ]
         });
+    }
+
+    prepareOptions(i) {
+        const lowerDims = this.dimChooserModel.selectedDims.slice(i + 1);
+        const availDims = this.dimChooserModel.remainingDims;
+        const displayDims = [...lowerDims, ...availDims];
+        return this.internalDimensions.reduce((ret, dim) => {
+            if (displayDims.includes(dim.value)) ret.push({
+                value: dim.value,
+                label: dim.label
+            });
+            return ret
+        }, [])
+    }
+
+    //-------------------------
+    // Options / value handling
+    //-------------------------
+
+    normalizeDimensions(dims) {
+        dims = dims || [];
+        return dims.map(it => this.toRichDimension(it));
+    }
+
+    toRichDimension(src) {
+        const srcIsObject = isPlainObject(src);
+
+        throwIf(
+            srcIsObject && !src.hasOwnProperty('value'),
+            "Select options/values provided as Objects must define a 'value' property."
+        );
+
+        return srcIsObject ?
+            {label: withDefault(src.label, src.value), isLeafColumn: withDefault(src.leaf, false), ...src} :
+            {label: src != null ? src.toString() : '-null-', value: src, isLeafColumn: false};
     }
 
     fmtDim = (dim) => {

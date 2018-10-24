@@ -14,74 +14,64 @@ import {throwIf} from '@xh/hoist/utils/js';
 export class DimensionChooserModel {
 
     @observable selectedDims = null;
-    @observable history = null;
 
     constructor(
         {
             model,
             field,
             dimensions,
-            historyLength
+            maxHistoryLength
         }) {
         this.model = model;
         this.field = field;
-        this.allDims = dimensions;
-        this.defaultDims = model[field].split(',');
+        this.dimensions = dimensions;
+        this.allDims = dimensions.map(d => d.value);
+        this.defaultDims = model[field];
         this.selectedDims = this.defaultDims;
-        this.historyLength = historyLength;
-        this.history = [this.defaultDims];
+        this.history = createHistoryArray({
+            maxHistoryLength,
+            initialValue: this.defaultDims
+        })
     }
 
     @action
     addDim(dim, i) {
-        this.selectedDims[i] = dim;
-        this.doCommit();
+        const copy = this.selectedDims;
+        pull(copy, dim);
+        copy[i] = dim;
+        const curDim = this.dimensions.find(d => d.value === dim);
+        if (curDim.isLeafColumn) copy.splice(i + 1);
+        this.selectedDims.replace(copy);
     }
 
     @action
     removeDim(dim) {
         pull(this.selectedDims, dim)
-        this.doCommit();
     }
-
-
 
     @action
     setDims(type) {
         const {selectedDims} = this;
         switch (type) {
-            case 'reset':
+            case 'reset defaults':
                 selectedDims.replace(this.defaultDims);
                 break;
-            case 'clear':
-                selectedDims.clear();
-                break;
-            case 'all':
-                selectedDims.replace(this.allDims);
-                break;
+            case 'last commit':
+                selectedDims.replace(this.model[this.field])
         }
-        this.doCommit();
-        // this.saveHistory(); // Does this make sense? Already ignoring 'clear' in saveHistory()
+        this.updateSelectedDims();
     }
 
     @action
     setDimsFromHistory(history) {
         this.selectedDims.replace(history);
-        this.doCommit();
-        // this.saveHistory();
+        this.updateSelectedDims();
     }
 
-
     @action
-    saveHistory() {
-        if (isEmpty(this.selectedDims)) return;             // Don't save empty dimensions array
-
-        let copy = toJS(this.history);
-        pullAllWith(copy, [this.selectedDims], isEqual);     // Remove duplicates
-        if (copy.length >= this.historyLength) copy.pop();  // Don't allow to go over max history length
-        copy.unshift(this.selectedDims);
-
-        this.history.replace(copy);
+    updateSelectedDims() {
+        this.doCommit();
+        this.history.unshift(this.selectedDims.slice());
     }
 
     @computed
@@ -89,21 +79,21 @@ export class DimensionChooserModel {
         return difference(this.allDims, this.selectedDims)
     }
 
-    // @computed
-    // get orderedDims() {
-    //     return this.selectedDims;
-    //     // return this.selectedDims.slice().sort((a, b) => indexOf(this.allDims, a) - indexOf(this.allDims, b));
-    // }
+    @computed
+    get leafSelected() {
+        return this.dimensions.filter((dim) => this.selectedDims.slice().includes(dim.value) &&
+        dim.isLeafColumn).length > 0
+
+    }
 
     doCommit() {
         const {model, field} = this;
         if (model && field) {
             const setterName = `set${upperFirst(field)}`;
             throwIf(!isFunction(model[setterName]), `Required function '${setterName}()' not found on bound model`);
-            model[setterName](this.selectedDims.join(','));
+            model[setterName](this.selectedDims.slice());
         }
     }
-
 
     /** Will be used to populate history. */
     loadAsync() {
@@ -113,20 +103,18 @@ export class DimensionChooserModel {
 
 }
 
-/** Unused for now... is it possible to override a mobx array method?
- *
- * const createHistoryArray = (length) => {
-    const array = observable([]);
+ const createHistoryArray = ({maxHistoryLength = 5, initialValue}) => {
+    let array = [];
 
     array.unshift = function() {
-        const arrayCopy = array.slice();
-        if (isEmpty(arguments[0])) return;     // Don't save empty dimensions array
-        pullAllWith(arrayCopy, arguments, isEqual); // Remove duplicates
-        if (this.length >= length) arrayCopy.pop(); // Don't allow to go over max history length
-        return Array.prototype.unshift.apply(arrayCopy, arguments);
+        if (isEmpty(arguments[0])) return;                  // Don't save empty dimensions array
+        pullAllWith(this, arguments, isEqual);              // Remove duplicates
+        if (this.length >= maxHistoryLength) this.pop();    // Don't allow to go over max history length
+
+        return Array.prototype.unshift.apply(this, arguments);
     };
 
+    array.unshift(initialValue);
     return array;
 };
 
- */
