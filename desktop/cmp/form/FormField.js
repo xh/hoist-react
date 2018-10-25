@@ -62,7 +62,7 @@ export class FormField extends Component {
             labelStr = isUndefined(label) ? (fieldModel ? fieldModel.displayName : null) : label,
             requiredStr = isRequired ? span(' *') : null,
             item = this.prepareChild(notValid, errors),
-            classes = [className];
+            classes = [];
 
         if (isRequired) classes.push('xh-form-field-required');
         if (notValid) classes.push('xh-form-field-invalid');
