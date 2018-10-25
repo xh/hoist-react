@@ -169,10 +169,10 @@ export class Column {
      * Produce a Column definition appropriate for AG Grid.
      */
     getAgSpec() {
-        const {gridModel} = this,
+        const {gridModel, field} = this,
             me = this,
             ret = {
-                field: this.field,
+                field,
                 colId: this.colId,
                 headerName: this.headerName,
                 headerClass: this.headerClass,
@@ -190,14 +190,19 @@ export class Column {
                 headerComponentParams: {gridModel, column: this}
             };
 
+        // Our implementation of Grid.getDataPath() > Record.xhTreePath returns data path []s of
+        // Record IDs. TreeColumns use those IDs as their cell values, regardless of field.
+        // Add valueGetters below to correct + additional fixes for sorting below.
         if (this.isTreeColumn) {
             ret.showRowGroup = true;
             ret.cellRenderer = 'agGroupCellRenderer';
             ret.cellRendererParams = {
                 suppressCount: true,
                 suppressDoubleClickExpand: true,
-                innerRenderer: (v) => v.data[this.field]
+                innerRenderer: (v) => v.data[field]
             };
+            ret.valueGetter = (v) => v.data[field];
+            ret.filterValueGetter = (v) => v.data[field];
         }
 
         if (this.tooltip) {
@@ -238,11 +243,22 @@ export class Column {
             };
         }
 
+        // Support enhanced, absValue-aware sorting via GridSorters in GridModel.sortBy[].
         const sortCfg = find(gridModel.sortBy, {colId: ret.colId});
         if (sortCfg) {
             ret.sort = sortCfg.sort;
             ret.sortedAt = gridModel.sortBy.indexOf(sortCfg);
-            ret.comparator = (v1, v2) => sortCfg.comparator(v1, v2);
+
+            // ag-Grid sort impl. sources its primary values from the node's `groupData` property,
+            // which is not what we want when sorting treeColumns.
+            if (this.isTreeColumn) {
+                ret.comparator = (v1, v2, node1, node2) => {
+                    return sortCfg.comparator(node1.data[field], node2.data[field]);
+                };
+            } else {
+                ret.comparator = (v1, v2) => sortCfg.comparator(v1, v2);
+            }
+
         }
 
         // Finally, apply explicit app requests.  The customer is always right....

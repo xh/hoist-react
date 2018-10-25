@@ -162,6 +162,7 @@ export class Grid extends Component {
             onGridSizeChanged: this.onGridSizeChanged,
             onDragStopped: this.onDragStopped,
             onColumnResized: this.onColumnResized,
+            processCellForClipboard: this.processCellForClipboard,
             groupDefaultExpanded: 1,
             groupUseEntireRow: true
         };
@@ -435,6 +436,12 @@ export class Grid extends Component {
 
     writeFilterState(api, filterState) {
         api.setFilterModel(filterState);
+    }
+
+    // Underlying value for treeColumns is actually the record ID due to getDataPath() impl.
+    // Special handling here, similar to that in Column class, to extract the desired value.
+    processCellForClipboard({value, node, column}) {
+        return column.isTreeColumn ? node.data[column.field] : value;
     }
 
 }
