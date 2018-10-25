@@ -20,7 +20,7 @@ import './Collapser.scss';
 export class Collapser extends Component {
     
     render() {
-        const {vertical, showResizeButton} = this.model;
+        const {vertical, showSplitterCollapseButton} = this.model;
 
         const cmp = vertical ? hbox : vbox,
             cfg = {
@@ -29,7 +29,7 @@ export class Collapser extends Component {
                     className: 'xh-resizable-collapser-btn',
                     icon: Icon[this.getChevron()](),
                     onClick: this.onClick,
-                    omit: !showResizeButton
+                    omit: !showSplitterCollapseButton
                 })
             };
 

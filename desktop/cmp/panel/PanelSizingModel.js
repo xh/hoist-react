@@ -27,8 +27,8 @@ export class PanelSizingModel {
     side;
     collapsedRenderMode;
     prefName;
-    showResizeBar;
-    showResizeButton;
+    showSplitter;
+    showSplitterCollapseButton;
     showHeaderCollapseButton;
 
     //---------------------
@@ -54,6 +54,11 @@ export class PanelSizingModel {
      * @param {string} [config.collapsedRenderMode] - How should collapsed content be rendered?
      *      Valid values include 'lazy', 'always', and 'unmountOnHide'.
      * @param {string} [config.prefName] - preference name to store sizing and collapsed state.
+     * @param {boolean} [config.showSplitter] - Should a splitter be rendered at the panel edge?
+     * @param {boolean} [config.showSplitterCollapseButton] - Should the collapse button be visible
+     *      on the splitter? Only applicable if the splitter is visible and the panel is collapsible.
+     * @param {boolean} [config.showHeaderCollapseButton - Should a collapse button be added to the
+     *      end of the panel header? Only applicable if the panel is collapsible.
      */
     constructor({
         collapsible = true,
@@ -63,9 +68,9 @@ export class PanelSizingModel {
         side,
         collapsedRenderMode = 'lazy',
         prefName = null,
-        showResizeBar = true,
-        showResizeButton = true,
-        showHeaderCollapseButton = true
+        showSplitter = true,
+        showSplitterCollapseButton = true,
+        showHeaderCollapseButton = false
     }) {
         throwIf(isNil(defaultSize) || isNil(side), "Must specify 'defaultSize' and 'side' for PanelSizingModel");
 
@@ -76,8 +81,8 @@ export class PanelSizingModel {
         this.defaultCollapsed = defaultCollapsed;
         this.side = side;
         this.collapsedRenderMode = collapsedRenderMode;
-        this.showResizeBar = showResizeBar;
-        this.showResizeButton = showResizeButton;
+        this.showSplitter = showSplitter;
+        this.showSplitterCollapseButton = showSplitterCollapseButton;
         this.showHeaderCollapseButton = showHeaderCollapseButton;
 
         if (prefName && !XH.prefService.hasKey(prefName)) {

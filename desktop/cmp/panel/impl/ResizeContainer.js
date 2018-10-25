@@ -23,10 +23,10 @@ export class ResizeContainer extends Component {
 
     render() {
         let {model} = this,
-            {collapsible, resizable, collapsed, vertical, contentFirst, showResizeBar} = model,
+            {collapsible, resizable, collapsed, vertical, contentFirst, showSplitter} = model,
             items = [this.renderChild()];
         
-        if (collapsible && showResizeBar) {
+        if (collapsible && showSplitter) {
             const collapserCmp = collapser({model});
             items = (contentFirst ? [...items, collapserCmp] : [collapserCmp, ...items]);
         }
