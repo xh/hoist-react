@@ -54,6 +54,7 @@ export class ButtonGroupInput extends HoistInput {
             });
 
         return buttonGroup({
+            className: this.getClassName(),
             fill: withDefault(props.fill, false),
             minimal: withDefault(props.minimal, false),
             vertical: withDefault(props.vertical, false),
