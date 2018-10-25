@@ -6,7 +6,7 @@
  */
 import {Component, isValidElement} from 'react';
 import PT from 'prop-types';
-import {isNil, isString, merge, xor, dropRightWhile, dropWhile, isEmpty} from 'lodash';
+import {isNil, isString, merge, xor, dropRightWhile, dropWhile, isEmpty, last} from 'lodash';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
@@ -226,7 +226,7 @@ export class Grid extends Component {
         let items = [];
         recordActions.forEach(action => {
             if (action === '-') {
-                items.push('separator');
+                if (last(items) !== 'separator') items.push('separator');
                 return;
             }
 
@@ -314,7 +314,7 @@ export class Grid extends Component {
         const {model} = this;
         return {
             track: () => [model.agApi, model.selection, this._dataVersion],
-            run: ([api]) => {             
+            run: ([api]) => {
                 if (!api) return;
 
                 const modelSelection = model.selModel.ids,
