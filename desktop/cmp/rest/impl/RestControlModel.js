@@ -28,7 +28,10 @@ export class RestControlModel  {
             this.addReaction({
                 track: () => this.type,
                 run: () => {
-                    if (this.parent.isDirty) this.setValue(null);
+                    if (this.parent.isDirty) {
+                        const defVal = this.type == 'bool' ? false : null;
+                        this.setValue(defVal);
+                    }
                 }
             });
         }

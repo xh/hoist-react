@@ -221,7 +221,7 @@ add their particular functionality, behaviors, and methods to the decorated clas
 | `HoistModel.js`     | Mixin for adding core Model support.                                   |   [⚛️](core/HoistModel.js)   |
 | `HoistComponent.js` | Mixin for adding core Component support.                               | [⚛️](core/HoistComponent.js) |
 | `HoistService.js`   | Mixin for adding core Service support.                                 |  [⚛️](core/HoistService.js)  |
-| `HoistApp.js`       | Mixin for adding additional support to an App's primary Model class.   |    [⚛️](core/HoistApp.js)    |
+| `HoistAppModel.js`  | Mixin for adding additional support to an App's primary Model class.   |    [⚛️](core/HoistApp.js)    |
 | `XH.js`             | Hoist's top-level Model / framework API entry-point, exported as `XH`. |       [⚛️](core/XH.js)       |
 | `ClassUtils.js`     | Library methods for providing and extending methods on core classes.   | [⚛️](utils/js/ClassUtils.js) |
 
@@ -276,16 +276,16 @@ aliases on itself for the most common framework service calls, e.g. `XH.getConf(
 #### HoistApp
 
 Each client application must define a top-level Model class using
-[the specialized `@HoistApp` decorator](core/HoistApp.js). This decorator installs core Model
+[the specialized `@HoistAppModel` decorator](core/HoistAppModel.js). This decorator installs core Model
 support as well as several additional methods specific to the high-level lifecycle of the
-application, including those dealing with authorization, init, and routing. This class instance is
-available via an import of the `XH` (as `XH.app`) and can be a a useful place to hang global state
+application, including those dealing with init, and routing. This class instance is
+available via an import of the `XH` (as `XH.appModel`) and can be a useful place to hang global state
 specific to your application.
 
 Please review the inline documentation on the decorator for additional detailed information on what
 it provides and how an Application should provide concrete implementations for certain key methods.
-For an example within Hoist React itself, see HoistApp Model for the
-[built-in Admin Console](admin/App.js).
+For an example within Hoist React itself, see HoistAppModel for the
+[built-in Admin Console](admin/AppModel.js).
 
 #### Model Cleanup and Destruction
 
@@ -315,12 +315,14 @@ Model and Component classes that's tailored to their needs.
 Service instances persist for the life of the app and have a defined initialization process. By
 convention they are stored within an `svc/` package within an app's file structure.
 
-Use the `@HoistService` decorator to mark a class as a service within an application. As with the
+Use the `@HoistService` decorator to mark a class as a global service within. As with the
 other decorators, this installs MobX and Event support and defines an empty `initAsync()` lifecycle
-method. This same file exports the `initServicesAsync` method, which can be called during app
-initialization within a `HoistApp` to call the `initAsync()` method on services in parallel or in
-phased groups. Services will commonly (but not always) load any reference data they need to function
-within their init method.
+method. To instantiate and make services available to application code, use the `XH.installServicesAsync()` 
+method.  This method will construct, initialize, and install the services as a property on the XH object. 
+Note that there is a strict expectation that service classes will be named ending with the word
+'Service', e.g. `MyCustomService.`.  The installed instance in this case would then be made available  
+to application code as `XH.myCustomService'. 
+ 
 
 Many core Hoist features are exposed on the client via services such as `PrefService`,
 `ConfigService`, and `IdentityService`. See these examples for a better understanding of the kind of

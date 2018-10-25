@@ -4,8 +4,6 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH} from '@xh/hoist/core';
-import {allSettled} from '@xh/hoist/promise';
 import {defaultMethods, markClass} from '@xh/hoist/utils/js';
 
 import {EventSupport} from './mixins/EventSupport';
@@ -35,34 +33,4 @@ export function HoistService(C) {
     });
 
     return C;
-}
-
-
-/**
- * Initialize multiple services in parallel.
- *
- * @param svcs - one or more HoistServices.
- */
-export async function initServicesAsync(...svcs) {
-    const promises = svcs.map(it => it.initAsync()),
-        results = await allSettled(promises),
-        errs = results.filter(it => it.state === 'rejected');
-
-    if (errs.length === 1) {
-        throw errs[0].reason;
-    }
-
-    if (errs.length > 1) {
-        // Enhance entire result col w/class name, we care about errs only
-        results.forEach((it, idx) => {
-            it.name = svcs[idx].constructor.name;
-        });
-        const names = errs.map(it => it.name).join(', ');
-
-        throw XH.exception({
-            message: 'Failed to initialize services: ' + names,
-            details: errs
-        });
-    }
-    return svcs;
 }

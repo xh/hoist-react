@@ -10,7 +10,7 @@ import {HotkeysTarget, hotkeys, hotkey} from '@xh/hoist/kit/blueprint';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {filler, span} from '@xh/hoist/cmp/layout';
-import {comboBox} from '@xh/hoist/desktop/cmp/form';
+import {select} from '@xh/hoist/desktop/cmp/form';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -50,13 +50,13 @@ export class ImpersonationBar extends Component {
                 Icon.user(),
                 span(`${isImpersonating ? 'Impersonating' : ''} ${XH.getUsername()}`),
                 filler(),
-                // Note we deliberately do not requireSelection, as some apps will be able to
-                // create unknown users on the fly.
-                comboBox({
+                select({
                     model: this,
                     field: 'pendingTarget',
                     options: targets,
+                    enableCreate: true,
                     placeholder: 'Select User...',
+                    width: 200,
                     onCommit: this.onCommit
                 }),
                 this.exitButton()

@@ -24,7 +24,6 @@ export class UserPreferencePanel extends Component {
                     name: 'name',
                     label: 'Pref',
                     lookupName: 'names',
-                    lookupStrict: true,
                     editable: 'onAdd',
                     required: true
                 },
@@ -32,7 +31,7 @@ export class UserPreferencePanel extends Component {
                     name: 'groupName',
                     label: 'Group',
                     lookupName: 'groupNames',
-                    required: true
+                    editable: false
                 },
                 {
                     name: 'type',
@@ -73,7 +72,7 @@ export class UserPreferencePanel extends Component {
         editors: [
             {field: 'name'},
             {field: 'username'},
-            {field: 'userValue', type: 'boolSelect'},
+            {field: 'userValue'},
             {field: 'lastUpdated'},
             {field: 'lastUpdatedBy'}
         ]

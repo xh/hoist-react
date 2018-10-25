@@ -15,12 +15,12 @@ import {message} from './Message';
  * Default display of application suspension.
  *
  * This display can be overridden by applications.
- * @see HoistApp.suspendedDialogClass
+ * @see AppSpec.idleDialogClass
  *
  * @private
  */
 @HoistComponent
-export class SuspendedDialog extends Component {
+export class IdleDialog extends Component {
 
     localModel = new MessageModel({
         title: 'Application Sleeping',

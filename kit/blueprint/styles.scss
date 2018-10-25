@@ -170,7 +170,9 @@
 //------------------------
 // Forms + Inputs
 //------------------------
-.bp3-input, .bp3-input-ghost {
+.bp3-input, .bp3-dark .bp3-input, textarea.bp3-input, .bp3-dark textarea.bp3-input, .bp3-input-ghost {
+  color: var(--xh-input-text-color);
+  background: var(--xh-input-bg);
   font-size: var(--xh-font-size);
 }
 
@@ -187,11 +189,10 @@
 .bp3-dark .bp3-control.bp3-switch input ~ .bp3-control-indicator {
   box-shadow: var(--xh-form-field-box-shadow) !important;
 }
-//
+
 .bp3-dark .bp3-control.bp3-switch:hover input ~ .bp3-control-indicator {
   background-color:#202b33;
 }
-
 
 /* Apply blueprint styling to non-blueprint icons within input groups */
 .bp3-input-group svg:not(.bp3-icon) {
@@ -209,7 +210,7 @@
 }
 
 .bp3-dark .bp3-input-group svg:not(.bp3-icon) {
-  color: var(--xh-text-color);
+  color: var(--xh-input-text-color);
 }
 
 .bp3-button svg:not(.bp3-icon):first-child:last-child, .bp3-button .bp3-spinner + svg:not(.bp3-icon):last-child {
@@ -218,10 +219,6 @@
 
 .bp3-input-group .bp3-input:not(:focus) + .bp3-button.bp3-minimal:not(:hover):not(:focus) svg:not(.bp3-icon), .bp3-input-group .bp3-input:not(:focus) + .bp3-input-action .bp3-button.bp3-minimal:not(:hover):not(:focus) svg:not(.bp3-icon) {
   color: var(--xh-blue-gray);
-}
-
-.bp3-select-popover .bp3-popover-content {
-  padding: 0 !important;
 }
 
 // Controls ship with default bottom and (inline) right margins. We expose variables

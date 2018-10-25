@@ -54,6 +54,16 @@ export function HoistComponent(C) {
         },
 
         /**
+         *  Does this component contain a particular element.
+         */
+        containsElement(elem) {
+            for (let thisElem = this.getDOMNode(); elem; elem = elem.parentElement) {
+                if (elem == thisElem) return true;
+            }
+            return false;
+        },
+
+        /**
          * Get the DOM element underlying this component.
          * Returns null if component is not mounted.
          */

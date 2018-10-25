@@ -9,8 +9,8 @@ import {HoistComponent} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
-import {button, refreshButton} from '@xh/hoist/desktop/cmp/button';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 
@@ -37,8 +37,6 @@ export class EhCachePanel extends Component {
                 text: 'Clear All',
                 onClick: this.onClearAllClick
             }),
-            toolbarSep(),
-            refreshButton({model}),
             filler(),
             storeCountLabel({gridModel, unit: 'cache'}),
             storeFilterField({gridModel})

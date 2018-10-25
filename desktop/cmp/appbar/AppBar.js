@@ -77,7 +77,7 @@ export class AppBar extends Component {
                     align: 'left',
                     items: [
                         icon,
-                        span({className: 'xh-appbar-title', item: title || XH.appName}),
+                        span({className: 'xh-appbar-title', item: title || XH.clientAppName}),
                         appBarSeparator({omit: isEmpty(leftItems)}),
                         ...leftItems || []
                     ]
@@ -93,7 +93,7 @@ export class AppBar extends Component {
                         refreshButton({
                             omit: hideRefreshButton,
                             intent: 'success',
-                            onClick: () => XH.app.requestRefresh(true)
+                            onClick: () => XH.appModel.requestRefresh(true)
                         })
                     ]
                 })

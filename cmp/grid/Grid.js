@@ -93,7 +93,7 @@ export class Grid extends Component {
     render() {
         const {colChooserModel, compact} = this.model,
             {agOptions, showHover, onKeyDown} = this.props,
-            mobile = XH.app.isMobile,
+            {isMobile} = XH,
             layoutProps = this.getLayoutProps();
 
         // Default flex = 'auto' if no dimensions / flex specified.
@@ -112,12 +112,12 @@ export class Grid extends Component {
                     'ag-grid-holder',
                     XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                     compact ? 'xh-grid-compact' : 'xh-grid-standard',
-                    !mobile && showHover ? 'xh-grid-show-hover' : ''
+                    !isMobile && showHover ? 'xh-grid-show-hover' : ''
                 ),
-                onKeyDown: !mobile ? onKeyDown : null
+                onKeyDown: !isMobile ? onKeyDown : null
             }),
             colChooser({
-                omit: mobile || !colChooserModel,
+                omit: isMobile || !colChooserModel,
                 model: colChooserModel
             })
         );
@@ -167,7 +167,7 @@ export class Grid extends Component {
         };
 
         // Platform specific defaults
-        if (XH.app.isMobile) {
+        if (XH.isMobile) {
             ret = {
                 ...ret,
                 allowContextMenuWithControlKey: false,
@@ -314,7 +314,7 @@ export class Grid extends Component {
         const {model} = this;
         return {
             track: () => [model.agApi, model.selection, this._dataVersion],
-            run: ([api]) => {
+            run: ([api]) => {             
                 if (!api) return;
 
                 const modelSelection = model.selModel.ids,

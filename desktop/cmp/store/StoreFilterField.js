@@ -123,7 +123,7 @@ export class StoreFilterField extends Component {
             placeholder: withDefault(props.placeholder, 'Quick filter'),
             className: this.getClassName(),
             style: props.style,
-            width: withDefault(props.width, 160),
+            width: withDefault(props.width, 180),
 
             onChange: this.onValueChange
         });
@@ -196,7 +196,9 @@ export class StoreFilterField extends Component {
         if (excludeFields) ret = without(ret, excludeFields);
         
         if (gridModel) {
-            const {columns, groupBy} = gridModel;
+            const groupBy = gridModel.groupBy,
+                columns = gridModel.getLeafColumns();
+
             ret = ret.filter(f => {
                 return (includeFields && includeFields.includes(f)) ||
                         columns.find(c => (c.field == f && !c.hidden)) ||

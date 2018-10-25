@@ -25,14 +25,14 @@ import './LoginPanel.scss';
 export class LoginPanel extends Component {
 
     render() {
-        const {loginMessage} = XH.app,
+        const {loginMessage} = XH.appSpec,
             {model} = this;
 
         return page({
             renderToolbar: () => toolbar(
                 div({
                     className: 'center',
-                    item: `Welcome to ${XH.appName}`
+                    item: XH.clientAppName
                 })
             ),
             items: [
