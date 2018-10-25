@@ -75,9 +75,9 @@ export function ReactiveSupport(C) {
          *
          * @param {Object} conf - configuration of reaction, containing options accepted by MobX
          *      reaction() API, as well as arguments below.
-         * @param {function} conf.track - function returning data to observe - first arg to the
+         * @param {function} [conf.track] - function returning data to observe - first arg to the
          *      underlying reaction() call. Specify this or `when`.
-         * @param {function} conf.when - function returning data to observe - first arg to the
+         * @param {function} [conf.when] - function returning data to observe - first arg to the
          *      underlying when() call. Specify this or `track`.
          * @param {function} conf.run - function to run - second arg to underlying reaction()/when() call.
          */
