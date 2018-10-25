@@ -52,7 +52,7 @@ export class FormField extends Component {
     blockChildren = ['TextInput', 'JsonInput'];
 
     render() {
-        const {model, field, label, minimal, ...rest} = this.props,
+        const {model, field, label, minimal, className, ...rest} = this.props,
             hasFieldSupport = model && field && model.hasFieldSupport,
             fieldModel = hasFieldSupport ? model.getField(field) : null,
             isRequired = fieldModel && fieldModel.isRequired,
