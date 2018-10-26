@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from './Button';
@@ -22,12 +22,16 @@ import {warnIf} from '@xh/hoist/utils/js';
 export class RefreshButton extends Component {
 
     static propTypes = {
-        /** Icon to display for the button. Defaults to Icon.sync(). */
+
+        /** Icon to display for the button. Defaults to Icon.refresh(). */
         icon: PT.element,
-        /** Tooltip text to display when the mouse is over the button. Defaults to 'Refresh'. */
+
+        /** Tooltip text. */
         title: PT.string,
+
         /** Function to call when the button is clicked. */
         onClick: PT.func,
+
         /** Model to refresh via loadAsync(), if onClick prop not provided. */
         model: PT.object
     };

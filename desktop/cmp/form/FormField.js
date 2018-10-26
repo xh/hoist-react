@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import React, {Component} from 'react';
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {isArray, isUndefined} from 'lodash';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {formGroup, spinner, tooltip} from '@xh/hoist/kit/blueprint';
@@ -32,17 +32,22 @@ import './FormField.scss';
 export class FormField extends Component {
 
     static propTypes = {
+
         /** Bound Model. */
         model: PT.object,
+
         /** Name of bound property on Model. */
         field: PT.string,
+
         /**
          * Label for form field.
          * Defaults to Field displayName if used with @FieldSupport. Set to null to hide label.
          */
         label: PT.string,
+
         /** Apply minimal styling - validation errors are only displayed with a tooltip */
         minimal: PT.bool,
+
         /** Display warning glyph in the far left side of the input (TextField, NumberInput only) */
         leftErrorIcon: PT.bool
     };

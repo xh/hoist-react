@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {HoistComponent, LayoutSupport, elemFactory} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {box} from '@xh/hoist/cmp/layout';
@@ -53,6 +53,7 @@ export class RelativeTimestamp extends Component {
     static propTypes = {
         /** Date object that will be used as reference, can also be specified in milliseconds*/
         timestamp: PT.oneOfType([PT.instanceOf(Date), PT.number]),
+
         /** @see getRelativeTimestamp options */
         options: PT.object
     };

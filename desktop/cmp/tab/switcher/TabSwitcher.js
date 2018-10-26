@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {tab as blueprintTab, tabs as blueprintTabs} from '@xh/hoist/kit/blueprint';
 import {TabContainerModel} from '../container/TabContainerModel';
@@ -25,6 +25,7 @@ export class TabSwitcher extends Component {
     static propTypes = {
         /** TabContainerModel to be controlled. */
         model: PT.instanceOf(TabContainerModel).isRequired,
+
         /** Relative position within the parent TabContainer. Defaults to 'top'. */
         orientation: PT.oneOf(['top', 'bottom', 'left', 'right'])
     };

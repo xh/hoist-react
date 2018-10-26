@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {vbox, fragment, div, hspacer} from '@xh/hoist/cmp/layout';
 import {listItem} from '@xh/hoist/kit/onsen';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
@@ -19,9 +19,10 @@ import {mask} from '@xh/hoist/mobile/cmp/mask';
 export class Menu extends Component {
 
     static propTypes = {
-        /** the width of the menu */
+        /** Width of the menu. */
         width: PT.number,
-        /** how to interpret the provided xPos when showing */
+
+        /** How to interpret the provided xPos when showing. */
         align: PT.oneOf(['left', 'right'])
     };
 

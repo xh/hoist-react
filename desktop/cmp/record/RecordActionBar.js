@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Record, RecordAction, StoreSelectionModel} from '@xh/hoist/data';
 import {buttonGroup} from '@xh/hoist/kit/blueprint';
@@ -34,16 +34,22 @@ export class RecordActionBar extends Component {
     static propTypes = {
         /** RecordAction configs. */
         actions: PT.arrayOf(PT.object).isRequired,
+
         /** The data Record to associate with the actions. */
         record: PT.oneOfType([PT.object, Record]),
+
         /** The selection model used to determine the selected records */
         selModel: PT.instanceOf(StoreSelectionModel),
+
         /** The grid model which contains the records we may act on. Required if record is omitted. */
         gridModel: PT.instanceOf(GridModel),
+
         /** The column in a grid where this button is displayed */
         column: PT.instanceOf(Column),
+
         /** Props to pass to the button components */
         buttonProps: PT.object,
+
         /** Set to true to stack the buttons vertically */
         vertical: PT.bool
     };

@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {select as onsenSelect} from '@xh/hoist/kit/onsen';
 import {option} from '@xh/hoist/cmp/layout';
@@ -26,6 +26,7 @@ export class Select extends HoistInput {
 
         /** Collection of form [{value: string, label: string}, ...] or [val, val, ...] */
         options: PT.arrayOf(PT.oneOfType([PT.object, PT.string])).isRequired,
+
         /** Onsen modifier string */
         modifier: PT.string
     };

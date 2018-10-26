@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
 import {toolbarButton} from '@xh/hoist/kit/onsen';
 import {Icon} from '@xh/hoist/icon';
