@@ -40,21 +40,21 @@ export class BaseStore {
     /** All records.  These are the pre-filtered records. */
     get allRecords() {}
 
+    /** Current records.  These represent the post-filtered root records. */
+    get rootRecords() {}
+
+    /** All records.  These are the pre-filtered root records. */
+    get allRootRecords() {}
+
     /** Filter.  Filter function to be applied. */
     get filter() {}
     setFilter(filterFn) {}
 
-    /** Get the count of all records loaded into the store. */
-    get allCount() {}
-
-    /** Get the count of the filtered record in the store. */
-    get count() {}
-
     /** Is the store empty after filters have been applied? */
-    get empty() {return this.count === 0}
+    get empty() {return this.records.length === 0}
 
     /** Is this store empty before filters have been applied? */
-    get allEmpty() {return this.allCount === 0}
+    get allEmpty() {return this.allRecords.length === 0}
 
     /**
      * Get a record by ID. Return null if no record found.
