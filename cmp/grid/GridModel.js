@@ -37,7 +37,7 @@ import {ExportManager} from './impl/ExportManager';
  * This model also supports nested tree data. To show a tree:
  *   1) Bind this model to a store with hierarchical records.
  *   2) Set `treeMode: true` on this model.
- *   3) Include a a single column with `isTreeColumn: true`. This column will provide expand /
+ *   3) Include a single column with `isTreeColumn: true`. This column will provide expand /
  *      collapse controls and indent child columns in addition to displaying its own data.
  *
  */
@@ -277,7 +277,6 @@ export class GridModel {
         const {agApi} = this;
         if (agApi) {
             agApi.expandAll();
-
         }
     }
 
@@ -329,8 +328,10 @@ export class GridModel {
     /** @param {Object[]} colConfigs - {@link Column} or {@link ColumnGroup} configs. */
     @action
     setColumns(colConfigs) {
-        throwIf(colConfigs.some(c => !isPlainObject(c)),
-            'setColumns only accepts plain objects for Column or ColumnGroup configs!');
+        throwIf(
+            colConfigs.some(c => !isPlainObject(c)),
+            'GridModel only accepts plain objects for Column or ColumnGroup configs'
+        );
 
         const columns = colConfigs.map(c => this.buildColumn(c));
 
@@ -467,6 +468,12 @@ export class GridModel {
 
         const groupColsHaveDupes = groupIds.length != uniq(groupIds).length;
         throwIf(groupColsHaveDupes, 'All groupIds in column collection must be unique.');
+
+        const treeCols = cols.filter(it => it.isTreeColumn);
+        warnIf(
+            this.treeMode && treeCols.length != 1,
+            'Grids in treeMode should include exactly one column with isTreeColumn:true.'
+        );
 
         warnIf(
             !cols.some(c => c.flex),
