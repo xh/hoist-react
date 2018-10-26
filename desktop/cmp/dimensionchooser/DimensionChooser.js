@@ -99,8 +99,11 @@ export class DimensionChooser extends Component {
         const notSelectClick = withDefault(e, false) &&
             withDefault(e.target, false) &&
             withDefault(!e.target.classList.contains('xh-select__option'), false);
-        /// should be checking for a class which we pass from this component to the select menu
-        /// for now should be fine, but should update once feature is added to select component
+        /*
+         * Should be checking for a class which we pass from this component to the select menu.
+         * For now should be fine, but should update once feature is added to select component.
+         */
+
         if (nextOpenState === false && notSelectClick) {
             this.onSaveSelected();
         }
@@ -133,7 +136,7 @@ export class DimensionChooser extends Component {
                 items: [
                     vbox({
                         className: 'xh-dim-popover-selects',
-                        items: [...dimSelects,]
+                        items: [...dimSelects]
                     }),
                     hbox(
                         button({

@@ -6,9 +6,9 @@
  */
 
 import {HoistModel, XH} from '@xh/hoist/core';
-import {isObject, difference, isEmpty, pull, isFunction, upperFirst, pullAllWith, isEqual} from 'lodash';
+import {isArray, isObject, difference, isEmpty, pull, isFunction, upperFirst, pullAllWith, isEqual} from 'lodash';
 import {computed, observable, action} from '@xh/hoist/mobx';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
 
 @HoistModel
 export class DimensionChooserModel {
@@ -26,17 +26,25 @@ export class DimensionChooserModel {
         this.field = field;
         this.dimensions = dimensions;
         this.allDims = dimensions.map(d => d.value);
-
-        this.defaultDims = withDefault(XH.prefService.get('xhDimensionsHistory')[0], model[field].slice(), dimensions[0]);
+        const prefs = this.getPrefs();
+        this.defaultDims = prefs.defaultDims || model[field].slice();
         this.selectedDims = this.defaultDims;
         this.history = createHistoryArray({
             maxHistoryLength,
-            initialValue: withDefault(XH.prefService.get('xhDimensionsHistory'), model[field].slice(), dimensions[0])
+            initialValue: prefs.initialValue || model[field].slice()
         });
     }
 
-    async getPrefs() {
-        return XH.prefService.get('xhDimensionsHistory')
+    getPrefs() {
+        let defaultDims, initialValue = null;
+        if (XH.prefService.hasKey('xhDimensionsHistory')) {
+            const history = XH.prefService.get('xhDimensionsHistory');
+            if (Object.keys(history).length) {
+                defaultDims = history[0];
+                initialValue = history;
+            }
+        }
+        return {defaultDims, initialValue};
     }
 
     @action
@@ -113,9 +121,7 @@ export class DimensionChooserModel {
 
     toRichDim = (value) => {
         const {dimensions} = this,
-            retFn = (val) => {
-            return dimensions.find(dim => dim.value === val);
-            }
+            retFn = (val) => dimensions.find(dim => dim.value === val);
         return isObject(value) ?
             value.map((it) => retFn(it)) :
             retFn(value);
@@ -123,7 +129,7 @@ export class DimensionChooserModel {
 }
 
 const createHistoryArray = ({maxHistoryLength = 5, initialValue}) => {
-    const array = initialValue.length > 1 ? [...initialValue] : [initialValue];
+    const array = isArray(initialValue[0]) ? [...initialValue] : [initialValue];
 
     array.unshift = function() {
         if (isEmpty(arguments[0])) return;                  // Don't save empty dimensions array
