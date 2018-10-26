@@ -88,7 +88,7 @@ export class DimensionChooserModel {
     updateSelectedDims() {
         this.doCommit();
         this.history.unshift(this.selectedDims.slice());
-        XH.prefService.set('xhDimensionsHistory', this.history.slice());
+        if (XH.prefService.hasKey('xhDimensionsHistory')) XH.prefService.set('xhDimensionsHistory', this.history.slice());
     }
 
     @computed
