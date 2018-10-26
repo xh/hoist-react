@@ -125,6 +125,7 @@ export class Select extends HoistInput {
                 placeholder: withDefault(props.placeholder, 'Select...'),
                 tabIndex: props.tabIndex,
 
+                inputId: props.id,
                 classNamePrefix: 'xh-select',
                 styles: this.getStylesConfig(),
                 theme: this.getThemeConfig(),

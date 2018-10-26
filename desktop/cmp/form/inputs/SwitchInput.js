@@ -50,6 +50,7 @@ export class SwitchInput extends HoistInput {
             style: props.style,
             tabIndex: props.tabIndex,
 
+            id: props.id,
             className: this.getClassName(),
 
             onBlur: this.onBlur,

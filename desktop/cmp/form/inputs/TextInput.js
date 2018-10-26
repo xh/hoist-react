@@ -94,6 +94,7 @@ export class TextInput extends HoistInput {
                 tabIndex: props.tabIndex,
                 type: props.type,
 
+                id: props.id,
                 className: this.getClassName(),
                 style: {
                     ...props.style,
