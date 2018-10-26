@@ -5,10 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
 import {isObject, difference, isEmpty, pull, isFunction, upperFirst, pullAllWith, isEqual} from 'lodash';
 import {computed, observable, action} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
 
 @HoistModel
 export class DimensionChooserModel {
@@ -26,12 +26,17 @@ export class DimensionChooserModel {
         this.field = field;
         this.dimensions = dimensions;
         this.allDims = dimensions.map(d => d.value);
-        this.defaultDims = model[field].slice();
+
+        this.defaultDims = withDefault(XH.prefService.get('xhDimensionsHistory')[0], model[field].slice(), dimensions[0]);
         this.selectedDims = this.defaultDims;
         this.history = createHistoryArray({
             maxHistoryLength,
-            initialValue: this.defaultDims
+            initialValue: withDefault(XH.prefService.get('xhDimensionsHistory'), model[field].slice(), dimensions[0])
         });
+    }
+
+    async getPrefs() {
+        return XH.prefService.get('xhDimensionsHistory')
     }
 
     @action
@@ -75,6 +80,7 @@ export class DimensionChooserModel {
     updateSelectedDims() {
         this.doCommit();
         this.history.unshift(this.selectedDims.slice());
+        XH.prefService.set('xhDimensionsHistory', this.history.slice());
     }
 
     @computed
@@ -92,12 +98,6 @@ export class DimensionChooserModel {
         }
     }
 
-    /** Will be used to populate history. */
-    loadAsync() {
-    }
-    loadData() {
-    }
-
     //-------------------------
     // Helpers
     //-------------------------
@@ -113,7 +113,9 @@ export class DimensionChooserModel {
 
     toRichDim = (value) => {
         const {dimensions} = this,
-            retFn = (val) => dimensions.find(dim => dim.value === val);
+            retFn = (val) => {
+            return dimensions.find(dim => dim.value === val);
+            }
         return isObject(value) ?
             value.map((it) => retFn(it)) :
             retFn(value);
@@ -121,7 +123,7 @@ export class DimensionChooserModel {
 }
 
 const createHistoryArray = ({maxHistoryLength = 5, initialValue}) => {
-    let array = [];
+    const array = initialValue.length > 1 ? [...initialValue] : [initialValue];
 
     array.unshift = function() {
         if (isEmpty(arguments[0])) return;                  // Don't save empty dimensions array
@@ -131,7 +133,6 @@ const createHistoryArray = ({maxHistoryLength = 5, initialValue}) => {
         return Array.prototype.unshift.apply(this, arguments);
     };
 
-    array.unshift(initialValue);
     return array;
 };
 

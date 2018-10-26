@@ -5,13 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {PropTypes as PT} from 'prop-types';
 import {vbox, hbox, box} from '@xh/hoist/cmp/layout/index';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroup, popover, Classes} from '@xh/hoist/kit/blueprint';
 import {Icon} from '@xh/hoist/icon';
-import {div, hspacer} from '@xh/hoist/cmp/layout';
+import {div} from '@xh/hoist/cmp/layout';
 import {isEmpty, isPlainObject} from 'lodash';
 import {select} from '@xh/hoist/desktop/cmp/form';
 import {observable, action} from '@xh/hoist/mobx';
@@ -42,7 +42,6 @@ export class DimensionChooser extends Component {
     };
 
     baseClassName = 'xh-dim-chooser';
-    popoverClassName = 'xh-dim-select-menu';
 
     @observable isMenuOpen = false;
     @action
@@ -71,10 +70,6 @@ export class DimensionChooser extends Component {
                 this.prepareOptionMenu()
             ]
         });
-    }
-
-    componentDidMount() {
-
     }
 
     //--------------------
@@ -136,7 +131,10 @@ export class DimensionChooser extends Component {
                 width,
                 className: 'xh-dim-popover-items',
                 items: [
-                    ...dimSelects,
+                    vbox({
+                        className: 'xh-dim-popover-selects',
+                        items: [...dimSelects,]
+                    }),
                     hbox(
                         button({
                             icon: Icon.x(),
@@ -169,6 +167,10 @@ export class DimensionChooser extends Component {
                 vertical: true,
                 className: 'xh-dim-opts-popover-items',
                 items: [
+                    button({
+                        text: 'Reset defaults',
+                        onClick: () => this.onOptClick('reset defaults')
+                    }),
                     popover({
                         disabled: isEmpty(this.dimChooserModel.history),
                         target: button({
@@ -180,10 +182,6 @@ export class DimensionChooser extends Component {
                         content: this.renderHistoryItems(),
                         interactionKind: 'hover',
                         openOnTargetFocus: false
-                    }),
-                    button({
-                        text: 'Reset defaults',
-                        onClick: () => this.onOptClick('reset defaults')
                     })
                 ]
             })
@@ -198,16 +196,13 @@ export class DimensionChooser extends Component {
         const {width} = this.props,
             {selectedDims, availableDims, toRichDim} = this.dimChooserModel,
             marginIncrement = width * 5 / 100;
-        let marginIndex = 0;
-
         const ret = selectedDims.map((dim, i) => {
-            marginIndex++;
-            const marginLeft = marginIncrement * marginIndex;
+            const marginLeft = marginIncrement * i;
             return hbox({
+                className: 'xh-dim-popover-row',
                 style: {marginLeft},
                 items: [
                     select({
-                        className: 'wooof',
                         enableFilter: false,
                         options: availableDims(i),
                         value: toRichDim(dim).label,
@@ -215,6 +210,7 @@ export class DimensionChooser extends Component {
                     }),
                     button({
                         icon: Icon.x(),
+                        minimal: true,
                         disabled: selectedDims.length === 1,
                         onClick: () => this.dimChooserModel.removeDim(dim)
                     })
@@ -229,18 +225,18 @@ export class DimensionChooser extends Component {
 
     appendAddDim(ret) {
         const {selectedDims, remainingDims} = this.dimChooserModel;
-        const marginLeft = (selectedDims.length + 1) * this.props.width * 5 / 100;
+        const marginLeft = (selectedDims.length) * this.props.width * 5 / 100;
         ret.push(
             box({
                 style: {marginLeft},
                 items: [
                     select({
+                        className: 'xh-dim-popover-add-dim',
                         enableFilter: false,
                         options: remainingDims,
                         onChange: (newDim) => this.onDimChange(newDim, selectedDims.length),
                         placeholder: 'Add...'
-                    }),
-                    hspacer(30)
+                    })
                 ]
             })
         );

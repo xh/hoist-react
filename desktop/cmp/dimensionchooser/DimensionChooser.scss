@@ -20,17 +20,27 @@
 
 }
 
-.xh-dim-popover-items, .xh-dim-opts-popover-items, .xh-dim-history-items {
-  button {
-    justify-content: left;
+.xh-dim-popover-items {
+  background-color: var(--xh-bg);
+
+  .xh-dim-popover-selects {
+    opacity: 20%;
+    padding: 3px 0 3px 3px;
+    .xh-dim-popover-row {
+      margin-bottom: 2px;
+      button {
+        padding: 0;
+      }
+    }
+
+    .xh-dim-popover-add-dim {
+      margin-right: 30px;
+    }
   }
+}
 
-
+.xh-dim-opts-popover-items {
   .xh-dim-opts-history {
     justify-content: space-between;
-  }
-
-  .xh-dim-not-selected {
-    opacity: 0.6;
   }
 }
