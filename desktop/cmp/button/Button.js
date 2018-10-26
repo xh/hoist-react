@@ -30,7 +30,7 @@ export class Button extends Component {
     baseClassName = 'xh-button';
 
     render() {
-        const {icon, text, onClick, minimal, style, ...rest} = this.props;
+        const {icon, text, onClick, minimal, style, ...rest} = this.getNonLayoutProps();
         return bpButton({
             icon,
             text,
