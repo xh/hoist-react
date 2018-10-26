@@ -29,10 +29,10 @@ export class UserModel {
         sortBy: 'username',
         columns: [
             {field: 'username', ...usernameCol},
-            {field: 'email', width: 175},
-            {field: 'displayName', width: 150},
+            {field: 'email', width: 200},
+            {field: 'displayName', width: 200},
             {field: 'active', ...boolCheckCol, width: 75},
-            {field: 'roles', minWidth: 130, flex: true}
+            {field: 'roles', minWidth: 130, flex: true, tooltip: true}
         ]
     });
 

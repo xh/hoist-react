@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {Children, Component} from 'react';
+import {Component} from 'react';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {HoistComponent, elemFactory, elem, AppState, XH} from '@xh/hoist/core';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
@@ -20,7 +20,7 @@ import {updateBar} from './UpdateBar';
 import {versionBar}  from './VersionBar';
 import {lockoutPanel} from './LockoutPanel';
 import {messageSource} from './MessageSource';
-import {SuspendedDialog} from './SuspendedDialog';
+import {IdleDialog} from './IdleDialog';
 import {ToastSource} from './ToastSource';
 
 
@@ -77,14 +77,14 @@ export class AppContainer extends Component {
                     vframe(
                         impersonationBar({model: model.impersonationBarModel}),
                         updateBar({model}),
-                        frame(Children.only(this.props.children)),
+                        frame(elem(XH.appSpec.componentClass, {model: XH.appModel})),
                         versionBar({model})
                     ),
                     mask({model: model.appLoadModel, spinner: true}),
                     messageSource({model: model.messageSourceModel}),
                     feedbackDialog({model: model.feedbackDialogModel}),
                     aboutDialog({model: model.aboutDialogModel}),
-                    this.renderSuspendedDialog()
+                    this.renderIdleDialog()
                 );
             default:
                 return null;
@@ -99,8 +99,8 @@ export class AppContainer extends Component {
     //------------------------
     // Implementation
     //------------------------
-    renderSuspendedDialog() {
-        const dialogClass = XH.app.suspendedDialogClass || SuspendedDialog;
+    renderIdleDialog() {
+        const dialogClass = XH.appSpec.idleDialogClass || IdleDialog;
 
         return XH.appState == AppState.SUSPENDED && dialogClass ?
             elem(dialogClass, {onReactivate: () => XH.reloadApp()}) :

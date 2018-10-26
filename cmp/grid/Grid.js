@@ -6,7 +6,7 @@
  */
 import {Component, isValidElement} from 'react';
 import PT from 'prop-types';
-import {isNil, isString, merge, xor, dropRightWhile, dropWhile, isEmpty} from 'lodash';
+import {isNil, isString, merge, xor, dropRightWhile, dropWhile, isEmpty, last} from 'lodash';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
@@ -93,7 +93,7 @@ export class Grid extends Component {
     render() {
         const {colChooserModel, compact} = this.model,
             {agOptions, showHover, onKeyDown} = this.props,
-            mobile = XH.app.isMobile,
+            {isMobile} = XH,
             layoutProps = this.getLayoutProps();
 
         // Default flex = 'auto' if no dimensions / flex specified.
@@ -112,12 +112,12 @@ export class Grid extends Component {
                     'ag-grid-holder',
                     XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                     compact ? 'xh-grid-compact' : 'xh-grid-standard',
-                    !mobile && showHover ? 'xh-grid-show-hover' : ''
+                    !isMobile && showHover ? 'xh-grid-show-hover' : ''
                 ),
-                onKeyDown: !mobile ? onKeyDown : null
+                onKeyDown: !isMobile ? onKeyDown : null
             }),
             colChooser({
-                omit: mobile || !colChooserModel,
+                omit: isMobile || !colChooserModel,
                 model: colChooserModel
             })
         );
@@ -162,12 +162,13 @@ export class Grid extends Component {
             onGridSizeChanged: this.onGridSizeChanged,
             onDragStopped: this.onDragStopped,
             onColumnResized: this.onColumnResized,
+            processCellForClipboard: this.processCellForClipboard,
             groupDefaultExpanded: 1,
             groupUseEntireRow: true
         };
 
         // Platform specific defaults
-        if (XH.app.isMobile) {
+        if (XH.isMobile) {
             ret = {
                 ...ret,
                 allowContextMenuWithControlKey: false,
@@ -226,7 +227,7 @@ export class Grid extends Component {
         let items = [];
         recordActions.forEach(action => {
             if (action === '-') {
-                items.push('separator');
+                if (last(items) !== 'separator') items.push('separator');
                 return;
             }
 
@@ -314,7 +315,7 @@ export class Grid extends Component {
         const {model} = this;
         return {
             track: () => [model.agApi, model.selection, this._dataVersion],
-            run: ([api]) => {             
+            run: ([api]) => {
                 if (!api) return;
 
                 const modelSelection = model.selModel.ids,
@@ -435,6 +436,12 @@ export class Grid extends Component {
 
     writeFilterState(api, filterState) {
         api.setFilterModel(filterState);
+    }
+
+    // Underlying value for treeColumns is actually the record ID due to getDataPath() impl.
+    // Special handling here, similar to that in Column class, to extract the desired value.
+    processCellForClipboard({value, node, column}) {
+        return column.isTreeColumn ? node.data[column.field] : value;
     }
 
 }

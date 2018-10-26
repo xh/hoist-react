@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {input} from '@xh/hoist/kit/onsen';
 import {fmtNumber} from '@xh/hoist/format';
@@ -26,23 +26,32 @@ export class NumberInput extends HoistInput {
 
         /** Text to display when control is empty */
         placeholder: PT.string,
-        /** minimum value */
+
+        /** Minimum value */
         min: PT.number,
-        /** maximum value */
+
+        /** Maximum value */
         max: PT.number,
+
         /** Number of decimal places to allow on field's value, defaults to 4 */
         precision: PT.number,
+
         /** Allow/automatically fill in trailing zeros in accord with precision, defaults to false */
         zeroPad: PT.bool,
+
         /** Set to true for advanced input evaluation, defaults to false.
          Inputs suffixed with k, m, or b will be calculated as thousands, millions, or billions respectively */
         enableShorthandUnits: PT.bool,
+
         /** Whether to display large values with commas */
         displayWithCommas: PT.bool,
+
         /** Onsen modifier string */
         modifier: PT.string,
+
         /** Function which receives keypress event */
         onKeyPress: PT.func,
+
         /** Whether text in field is selected when field receives focus */
         selectOnFocus: PT.bool
     };

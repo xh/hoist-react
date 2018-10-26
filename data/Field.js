@@ -5,6 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {Record} from '@xh/hoist/data/Record';
+import {throwIf} from '@xh/hoist/utils/js';
 import {startCase} from 'lodash';
 
 /**
@@ -34,6 +36,12 @@ export class Field {
         nullable = true,
         defaultValue = null
     }) {
+
+        throwIf(
+            Record.RESERVED_FIELD_NAMES.includes(name),
+            `Field name "${name}" cannot be used. It is reserved as a top-level property of the Record class.`
+        );
+
         this.name = name;
         this.type = type;
         this.label = label;

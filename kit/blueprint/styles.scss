@@ -189,11 +189,10 @@
 .bp3-dark .bp3-control.bp3-switch input ~ .bp3-control-indicator {
   box-shadow: var(--xh-form-field-box-shadow) !important;
 }
-//
+
 .bp3-dark .bp3-control.bp3-switch:hover input ~ .bp3-control-indicator {
   background-color:#202b33;
 }
-
 
 /* Apply blueprint styling to non-blueprint icons within input groups */
 .bp3-input-group svg:not(.bp3-icon) {
@@ -220,10 +219,6 @@
 
 .bp3-input-group .bp3-input:not(:focus) + .bp3-button.bp3-minimal:not(:hover):not(:focus) svg:not(.bp3-icon), .bp3-input-group .bp3-input:not(:focus) + .bp3-input-action .bp3-button.bp3-minimal:not(:hover):not(:focus) svg:not(.bp3-icon) {
   color: var(--xh-blue-gray);
-}
-
-.bp3-select-popover .bp3-popover-content {
-  padding: 0 !important;
 }
 
 // Controls ship with default bottom and (inline) right margins. We expose variables

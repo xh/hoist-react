@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {searchInput as onsenSearchInput} from '@xh/hoist/kit/onsen';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -25,12 +25,16 @@ export class SearchInput extends HoistInput {
 
         /** Text to display when control is empty */
         placeholder: PT.string,
+
         /** Whether to allow browser spell check, defaults to false */
         spellCheck: PT.bool,
+
         /** Onsen modifier string */
         modifier: PT.string,
+
         /** Function which receives keypress event */
         onKeyPress: PT.func,
+
         /** Whether text in field is selected when field receives focus */
         selectOnFocus: PT.bool
     };
