@@ -6,7 +6,7 @@
  */
 
 import {HoistModel, XH} from '@xh/hoist/core';
-import {isArray, isObject, difference, isEmpty, pull, isFunction, upperFirst, pullAllWith, isEqual} from 'lodash';
+import {isArray, isObject, difference, isEmpty, pull, isFunction, upperFirst, pullAllWith, isEqual, isEqualWith} from 'lodash';
 import {computed, observable, action} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
@@ -35,19 +35,6 @@ export class DimensionChooserModel {
         });
     }
 
-    loadPrefs() {
-        let defaultDims, initialValue = null;
-        if (XH.prefService.hasKey('xhDimensionsHistory')) {
-            const history = XH.prefService.get('xhDimensionsHistory');
-            if (Object.keys(history).length) {
-                defaultDims = history[0];
-                initialValue = history;
-            }
-        }
-
-        return {defaultDims, initialValue};
-    }
-
     @action
     addDim(dim, i) {
         const {selectedDims} = this,
@@ -71,7 +58,7 @@ export class DimensionChooserModel {
         switch (type) {
             case 'reset defaults':
                 selectedDims.replace(this.defaultDims);
-                this.updateSelectedDims();
+                this.saveSelectedDims();
                 break;
             case 'last commit':
                 selectedDims.replace(this.model[this.field]);
@@ -82,20 +69,45 @@ export class DimensionChooserModel {
     @action
     setDimsFromHistory(idx) {
         this.selectedDims.replace(this.history[idx]);
-        this.updateSelectedDims();
+        this.saveSelectedDims();
     }
 
-    @action
-    updateSelectedDims() {
+    saveSelectedDims() {
+        console.log(this.history.slice())
+        if (isEqualWith(this.selectedDims.slice(), this.history, this.customizer)) return;
         this.doCommit();
         this.history.unshift(this.selectedDims.slice());
         if (XH.prefService.hasKey('xhDimensionsHistory')) XH.prefService.set('xhDimensionsHistory', this.history.slice());
     }
 
+
     @computed
     get leafSelected() {
         return this.dimensions.filter((dim) => this.selectedDims.slice().includes(dim.value) &&
         dim.isLeafColumn).length > 0;
+    }
+
+    customizer(a,b) {
+        console.log(a,b)
+        return false;
+    }
+
+
+    //-------------------------
+    // Implementation
+    //-------------------------
+
+    loadPrefs() {
+        let defaultDims, initialValue = null;
+        if (XH.prefService.hasKey('xhDimensionsHistory')) {
+            const history = XH.prefService.get('xhDimensionsHistory');
+            if (Object.keys(history).length) {
+                defaultDims = history[0];
+                initialValue = history;
+            }
+        }
+
+        return {defaultDims, initialValue};
     }
 
     doCommit() {

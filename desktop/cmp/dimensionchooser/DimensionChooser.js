@@ -85,7 +85,7 @@ export class DimensionChooser extends Component {
     }
 
     onSaveSelected = () => {
-        this.dimChooserModel.updateSelectedDims();
+        this.dimChooserModel.saveSelectedDims();
         this.setPopoverDisplay(false);
     }
 
