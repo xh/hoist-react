@@ -94,6 +94,10 @@ export class DimensionChooser extends Component {
         this.setPopoverDisplay(false);
     }
 
+    onResetFromHistory = (idx)=> {
+        this.dimChooserModel.setDimsFromHistory(idx)
+    }
+
     @action
     onInteraction = (nextOpenState, e) => {
         const notSelectClick = withDefault(e, false) &&
@@ -248,7 +252,7 @@ export class DimensionChooser extends Component {
     }
 
     renderHistoryItems() {
-        const {history, toRichDim, setDimsFromHistory} = this.dimChooserModel;
+        const {history, toRichDim} = this.dimChooserModel;
         return buttonGroup({
             className: 'xh-dim-history-items',
             vertical: true,
@@ -257,7 +261,7 @@ export class DimensionChooser extends Component {
                     h = toRichDim(h);
                     return button({
                         text: `${i+1}. ${h.map(it => it.label).join(' > ')}`,
-                        onClick: () => setDimsFromHistory(h.value),
+                        onClick: () => this.onResetFromHistory(i),
                         className: Classes.POPOVER_DISMISS,
                         key: `dim-history-${i}`
                     });

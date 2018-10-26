@@ -26,7 +26,7 @@ export class DimensionChooserModel {
         this.field = field;
         this.dimensions = dimensions;
         this.allDims = dimensions.map(d => d.value);
-        const prefs = this.getPrefs();
+        const prefs = this.loadPrefs();
         this.defaultDims = prefs.defaultDims || model[field].slice();
         this.selectedDims = this.defaultDims;
         this.history = createHistoryArray({
@@ -35,7 +35,7 @@ export class DimensionChooserModel {
         });
     }
 
-    getPrefs() {
+    loadPrefs() {
         let defaultDims, initialValue = null;
         if (XH.prefService.hasKey('xhDimensionsHistory')) {
             const history = XH.prefService.get('xhDimensionsHistory');
@@ -44,6 +44,7 @@ export class DimensionChooserModel {
                 initialValue = history;
             }
         }
+
         return {defaultDims, initialValue};
     }
 
@@ -70,17 +71,17 @@ export class DimensionChooserModel {
         switch (type) {
             case 'reset defaults':
                 selectedDims.replace(this.defaultDims);
+                this.updateSelectedDims();
                 break;
             case 'last commit':
                 selectedDims.replace(this.model[this.field]);
                 break;
         }
-        this.updateSelectedDims();
     }
 
     @action
-    setDimsFromHistory(history) {
-        this.selectedDims.replace(history);
+    setDimsFromHistory(idx) {
+        this.selectedDims.replace(this.history[idx]);
         this.updateSelectedDims();
     }
 
