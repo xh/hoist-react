@@ -6,7 +6,9 @@
  */
 import React, {Component} from 'react';
 import PT from 'prop-types';
+import uniqueId from 'react-html-id';
 import {isArray, isUndefined} from 'lodash';
+
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {formGroup, spinner, tooltip} from '@xh/hoist/kit/blueprint';
 import {HoistInput} from '@xh/hoist/cmp/form';
@@ -49,15 +51,26 @@ export class FormField extends Component {
         minimal: PT.bool,
 
         /** Display warning glyph in the far left side of the input (TextField, NumberInput only) */
-        leftErrorIcon: PT.bool
+        leftErrorIcon: PT.bool,
+
+        /** CSS id */
+        labelFor: PT.string,
+
+        /** True by default.  If false, clicking on label won't put the label's control in focus. */
+        clickableLabel: PT.bool
     };
 
     baseClassName = 'xh-form-field';
 
     blockChildren = ['TextInput', 'JsonInput'];
 
+    constructor(props) {
+        super(props);
+        if (!props.labelFor && props.clickableLabel !== false) uniqueId.enableUniqueIds(this);
+    }
+
     render() {
-        const {model, field, label, minimal, className, ...rest} = this.props,
+        const {model, field, label, minimal, className, labelFor, clickableLabel = true, ...rest} = this.props,
             hasFieldSupport = model && field && model.hasFieldSupport,
             fieldModel = hasFieldSupport ? model.getField(field) : null,
             isRequired = fieldModel && fieldModel.isRequired,
@@ -65,8 +78,9 @@ export class FormField extends Component {
             notValid = fieldModel && fieldModel.isNotValid,
             errors = fieldModel ? fieldModel.errors : [],
             labelStr = isUndefined(label) ? (fieldModel ? fieldModel.displayName : null) : label,
+            uniqueId = !clickableLabel ? undefined : labelFor ? labelFor : this.nextUniqueId(),
             requiredStr = isRequired ? span(' *') : null,
-            item = this.prepareChild(notValid, errors),
+            item = this.prepareChild(notValid, errors, uniqueId),
             classes = [];
 
         if (isRequired) classes.push('xh-form-field-required');
@@ -80,6 +94,7 @@ export class FormField extends Component {
                 item: labelStr ? span(labelStr, requiredStr) : null,
                 className: minimal && notValid ? 'xh-form-field-error-label' : null
             }),
+            labelFor: uniqueId,
             className: this.getClassName(classes),
             helperText: !minimal ? fragment(
                 div({
@@ -104,7 +119,7 @@ export class FormField extends Component {
     //--------------------
     // Implementation
     //--------------------
-    prepareChild(notValid, errors) {
+    prepareChild(notValid, errors, uniqueId) {
         const {model, field, minimal, disabled} = this.props,
             item = this.props.children;
 
@@ -112,7 +127,7 @@ export class FormField extends Component {
         throwIf(item.props.field || item.props.model, 'HoistInputs should not declare "field" or "model" when used with FormField');
 
         const leftIcon = notValid ? this.leftIcon(item) : {},
-            target = React.cloneElement(item, {model, field, disabled, ...leftIcon});
+            target = React.cloneElement(item, {model, field, disabled, id: uniqueId, ...leftIcon});
 
         if (!minimal) return target;
 
