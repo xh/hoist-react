@@ -47,7 +47,7 @@
   }
 
   &.xh-select select {
-    padding: 0 var(--xh-pad-px);
+    padding: 0 calc(var(--xh-pad-px) + 15px) 0 var(--xh-pad-px);
     background-position: calc(100% - 10px) center;
   }
 
