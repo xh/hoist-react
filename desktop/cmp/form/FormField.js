@@ -6,7 +6,7 @@
  */
 import React, {Component} from 'react';
 import PT from 'prop-types';
-import uniqueId from 'react-html-id';
+import {enableUniqueIds} from 'react-html-id';
 import {isArray, isUndefined} from 'lodash';
 
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
@@ -66,7 +66,7 @@ export class FormField extends Component {
 
     constructor(props) {
         super(props);
-        if (!props.labelFor && props.clickableLabel !== false) uniqueId.enableUniqueIds(this);
+        enableUniqueIds(this);
     }
 
     render() {
@@ -78,9 +78,10 @@ export class FormField extends Component {
             notValid = fieldModel && fieldModel.isNotValid,
             errors = fieldModel ? fieldModel.errors : [],
             labelStr = isUndefined(label) ? (fieldModel ? fieldModel.displayName : null) : label,
-            uniqueId = !clickableLabel ? undefined : labelFor ? labelFor : this.nextUniqueId(),
+            uniqueId = this.nextUniqueId(),
+            idAttr = !clickableLabel ? undefined : labelFor ? labelFor : uniqueId,
             requiredStr = isRequired ? span(' *') : null,
-            item = this.prepareChild(notValid, errors, uniqueId),
+            item = this.prepareChild(notValid, errors, idAttr),
             classes = [];
 
         if (isRequired) classes.push('xh-form-field-required');
@@ -94,7 +95,7 @@ export class FormField extends Component {
                 item: labelStr ? span(labelStr, requiredStr) : null,
                 className: minimal && notValid ? 'xh-form-field-error-label' : null
             }),
-            labelFor: uniqueId,
+            labelFor: idAttr,
             className: this.getClassName(classes),
             helperText: !minimal ? fragment(
                 div({
