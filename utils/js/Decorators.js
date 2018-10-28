@@ -12,8 +12,8 @@ import {isObject} from 'lodash';
  * Call this when defining a 'parameterized' decorator that needs to be called as a function.
  * This will throw if the decorator is ever applied to a property without calling it first.
  *
- *  @args {String} name, the name of the decorator being defined.
- *  @args {...*} params, the arguments passed to the invocation of the parameterized decorator.
+ *  @param {string} name - the name of the decorator being defined.
+ *  @param {...*} params - the arguments passed to the invocation of the parameterized decorator.
  *
  * See implementation of `field` decorator for an example.
  */
