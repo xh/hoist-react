@@ -8,7 +8,6 @@
 import {isPlainObject, defaults, isString} from 'lodash';
 import {HoistModel} from '@xh/hoist/core';
 import {StoreSelectionModel} from '@xh/hoist/data';
-import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 
 /**
  * DataViewModel is a wrapper around GridModel, which shows sorted data in a single column,
