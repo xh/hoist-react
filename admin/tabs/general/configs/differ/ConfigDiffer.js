@@ -10,10 +10,11 @@ import {dialog} from '@xh/hoist/kit/blueprint';
 import {box, filler, fragment} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
-import {comboBox} from '@xh/hoist/desktop/cmp/form';
+import {select} from '@xh/hoist/desktop/cmp/form';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {identity} from 'lodash';
 
 import {configDifferDetail} from './ConfigDifferDetail';
 
@@ -51,11 +52,12 @@ export class ConfigDiffer extends Component {
                 box(<b>Configuration Comparison</b>),
                 filler(),
                 box('Compare with:'),
-                comboBox({
+                select({
                     model,
-                    commitOnChange: true,
-                    placeholder: 'https://remote-host/',
                     field: 'remoteHost',
+                    placeholder: 'https://remote-host/',
+                    enableCreate: true,
+                    createMessageFn: identity,
                     width: 250,
                     options: XH.getConf('xhAppInstances').filter(it => it != window.location.origin)
                 }),

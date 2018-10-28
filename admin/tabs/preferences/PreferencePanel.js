@@ -28,13 +28,13 @@ export class PreferencePanel extends Component {
                     name: 'groupName',
                     label: 'Group',
                     lookupName: 'groupNames',
-                    required: true
+                    required: true,
+                    enableCreate: true
                 },
                 {
                     name: 'type',
                     defaultValue: 'string',
                     lookupName: 'types',
-                    lookupStrict: true,
                     editable: 'onAdd',
                     required: true
                 },
@@ -83,7 +83,7 @@ export class PreferencePanel extends Component {
             {field: 'name'},
             {field: 'groupName'},
             {field: 'type'},
-            {field: 'defaultValue', type: 'boolSelect'},
+            {field: 'defaultValue'},
             {field: 'local'},
             {field: 'notes', type: 'textarea'},
             {field: 'lastUpdated'},

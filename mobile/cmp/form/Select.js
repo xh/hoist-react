@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {select as onsenSelect} from '@xh/hoist/kit/onsen';
 import {option} from '@xh/hoist/cmp/layout';
@@ -31,12 +31,11 @@ export class Select extends HoistInput {
         modifier: PT.string
     };
 
-    delegateProps = ['disabled', 'modifier'];
-
     baseClassName = 'xh-select';
 
     render() {
-        const {options, style, width} = this.props;
+        const {props} = this,
+            items = props.options.map(it => this.renderOption(it));
 
         return onsenSelect({
             className: this.getClassName(),
@@ -44,9 +43,10 @@ export class Select extends HoistInput {
             onChange: this.onChange,
             onBlur: this.onBlur,
             onFocus: this.onFocus,
-            style: {...style, width},
-            items: options.map(it => this.renderOption(it)),
-            ...this.getDelegateProps()
+            style: {...props.style, width: props.width},
+            items,
+            disabled: props.disabled,
+            modifier: props.modifier
         });
     }
 
@@ -56,7 +56,7 @@ export class Select extends HoistInput {
 
         return option({
             key: value,
-            value: value,
+            value,
             item: label
         });
     }
@@ -64,17 +64,6 @@ export class Select extends HoistInput {
     onChange = (ev) => {
         this.noteValueChange(ev.target.value);
         this.doCommit();
-    }
-
-
-    onBlur = () => {
-        this.noteBlurred();
-    }
-
-    onFocus = () => {
-        this.noteFocused();
-    }
-
+    };
 }
-
 export const select = elemFactory(Select);

@@ -31,9 +31,12 @@ export class TrackService {
             msg = options.msg !== undefined ? options.msg : options.message;
         }
 
+        const username = XH.getUsername();
+        if (!username) return;
+
         const params = {
             msg: stripTags(msg),
-            clientUsername: XH.getUsername()
+            clientUsername: username
         };
 
         try {

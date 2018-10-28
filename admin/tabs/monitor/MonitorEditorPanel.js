@@ -30,7 +30,6 @@ export class MonitorEditorPanel extends Component {
                 {
                     name: 'metricType',
                     lookupName: 'metricTypes',
-                    lookupStrict: true,
                     required: true
                 },
                 {

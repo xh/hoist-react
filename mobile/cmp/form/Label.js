@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 
@@ -23,8 +23,6 @@ export class Label extends HoistInput {
         children: PT.node
     };
 
-    delegateProps = ['className'];
-
     baseClassName = 'xh-input-label';
 
     render() {
@@ -32,10 +30,8 @@ export class Label extends HoistInput {
         return div({
             className: this.getClassName(),
             style: {...style, whiteSpace: 'nowrap', width},
-            items: children,
-            ...this.getDelegateProps()
+            items: children
         });
     }
 }
-
 export const label = elemFactory(Label);

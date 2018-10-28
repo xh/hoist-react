@@ -283,7 +283,7 @@ function valueColor(v, colorSpec) {
 function buildFormatConfig(v, precision, zeroPad) {
     const num = Math.abs(v);
 
-    const config = {thousandSeparated: true};
+    const config = {thousandSeparated: num >= 1000};
     let mantissa = undefined;
 
     if (precision % 1 === 0) {
