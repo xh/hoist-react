@@ -8,7 +8,8 @@
 import {Component} from 'react';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {button, HotkeysTarget, hotkeys, hotkey} from '@xh/hoist/kit/blueprint';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {HotkeysTarget, hotkeys, hotkey} from '@xh/hoist/kit/blueprint';
 
 /**
  * Convenience Button preconfigured for use as a trigger for light/dark theme toggling.
@@ -31,7 +32,7 @@ export class ThemeToggleButton extends Component {
 
     render() {
         return button({
-            icon: XH.darkTheme ? Icon.sun() : Icon.moon(),
+            icon: XH.darkTheme ? Icon.sun({prefix: 'fas'}) : Icon.moon(),
             title: XH.darkTheme ? 'Switch to light theme' : 'Switch to dark theme',
             onClick: this.onThemeToggleClick
         });

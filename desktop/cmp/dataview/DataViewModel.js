@@ -8,7 +8,6 @@
 import {isPlainObject, defaults, isString} from 'lodash';
 import {HoistModel} from '@xh/hoist/core';
 import {StoreSelectionModel} from '@xh/hoist/data';
-import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 
 /**
  * DataViewModel is a wrapper around GridModel, which shows sorted data in a single column,
@@ -25,16 +24,6 @@ export class DataViewModel {
     selModel = null;
     contextMenuFn = null;
 
-    static defaultContextMenu = () => {
-        return new StoreContextMenu({
-            items: [
-                'copy',
-                '-',
-                'export'
-            ]
-        });
-    };
-
     /**
      * @param {Object} c - DataViewModel configuration.
      * @param {Column~elementRendererFn} c.itemRenderer - function which returns a React component.
@@ -49,7 +38,7 @@ export class DataViewModel {
         store,
         selModel,
         emptyText,
-        contextMenuFn = DataViewModel.defaultContextMenu
+        contextMenuFn = null
     }) {
         this.itemRenderer = itemRenderer;
         this.store = store;
