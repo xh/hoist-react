@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {PropTypes as PT} from 'prop-types';
-import {vbox, hbox, box} from '@xh/hoist/cmp/layout/index';
+import {vbox, hbox, box, vspacer} from '@xh/hoist/cmp/layout/index';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroup, popover, Classes} from '@xh/hoist/kit/blueprint';
 import {Icon} from '@xh/hoist/icon';
@@ -29,12 +29,6 @@ export class DimensionChooser extends Component {
 
     baseClassName = 'xh-dim-chooser';
 
-    @observable isMenuOpen = false;
-    @action
-    setPopoverDisplay(bool) {
-        this.isMenuOpen = bool;
-    }
-
     constructor(props) {
         super(props);
     }
@@ -42,10 +36,7 @@ export class DimensionChooser extends Component {
     render() {
         return div({
             className: this.baseClassName,
-            items: [
-                this.prepareDimensionMenu(),
-                this.prepareOptionMenu()
-            ]
+            item: this.prepareDimensionMenu()
         });
     }
 
@@ -57,18 +48,20 @@ export class DimensionChooser extends Component {
         this.model.addDim(dim, i);
     }
 
+    onAddNewClick = () => {
+        this.model.setDisplayHistory(false)
+    }
+
     onOptClick = (type) => {
         this.model.setDims(type);
     }
 
     onSaveSelected = () => {
         this.model.saveDimensions();
-        this.setPopoverDisplay(false);
     }
 
     onCancelSelected = () => {
         this.model.setDims('last commit');
-        this.setPopoverDisplay(false);
     }
 
     onResetFromHistory = (idx)=> {
@@ -96,14 +89,15 @@ export class DimensionChooser extends Component {
 
     prepareDimensionMenu() {
         const {width} = this.props,
-            {isMenuOpen} = this,
-            {history, toRichDim} = this.model;
+            {history, toRichDim, isMenuOpen, displayHistoryItems} = this.model;
+
         const target = button({
             item: toRichDim(history[0]).map(it => it.label).join(' > '),
             style: {width},
-            onClick: () => this.setPopoverDisplay(true)
+            onClick: () => this.model.setPopoverDisplay(true)
         });
-        const dimSelects = this.renderSelectChildren();
+
+        const content = displayHistoryItems ? this.renderHistory() : this.renderAddNew();
 
         return popover({
             target,
@@ -111,15 +105,24 @@ export class DimensionChooser extends Component {
             onInteraction: (nextOpenState, e) => this.onInteraction(nextOpenState, e),
             targetClassName: 'xh-dim-popover',
             position: 'bottom',
-            content: vbox({
-                width,
-                className: 'xh-dim-popover-items',
-                items: [
-                    vbox({
-                        className: 'xh-dim-popover-selects',
-                        items: [...dimSelects]
-                    }),
-                    hbox(
+            content
+        });
+    }
+
+    renderAddNew() {
+        const dimSelects = this.renderSelectChildren(),
+            {width} = this.props;
+
+        return vbox({
+            width,
+            className: 'xh-dim-add-popover',
+            items: [
+                vbox({
+                    className: 'xh-dim-popover-selects',
+                    items: [...dimSelects]
+                }),
+                buttonGroup({
+                    items: [
                         button({
                             icon: Icon.x(),
                             intent: 'danger',
@@ -132,10 +135,52 @@ export class DimensionChooser extends Component {
                             style: {width: '60%'},
                             onClick: () => this.onSaveSelected()
                         })
-                    )
-                ]
-            })
-        });
+                    ]
+                })
+            ]
+        })
+    }
+
+    renderHistory() {
+        const {width} = this.props;
+        return vbox({
+            width,
+            className: 'xh-dim-history-popover',
+            items: [
+                this.renderHistoryItems(),
+                hbox({
+                    items: [
+                        popover({
+                            flex: 1,
+                            wrapperTagName: 'span',
+                            targetTagName: 'div',
+                            position: 'bottom-left',
+                            minimal: true,
+                            target: button({
+                                icon: Icon.gear(),
+                            }),
+                            content: buttonGroup({
+                                vertical: true,
+                                items: [
+                                    button({
+                                        text: 'Save current as default'
+                                    }),
+                                    button({
+                                        text: 'Reset default view'
+                                    })
+                                ]
+                            })
+                        }),
+                        button({
+                            flex: 2,
+                            icon: Icon.add(),
+                            intent: 'primary',
+                            onClick: this.onAddNewClick
+                        })
+                    ]
+                })
+            ]
+        })
     }
 
     prepareOptionMenu() {
@@ -178,7 +223,7 @@ export class DimensionChooser extends Component {
 
     renderSelectChildren() {
         const {width} = this.props,
-            {selectedDims, availableDims, toRichDim} = this.model,
+            {selectedDims, availableDims, toRichDim, maxDepth, leafSelected} = this.model,
             marginIncrement = width * 5 / 100;
         const ret = selectedDims.map((dim, i) => {
             const marginLeft = marginIncrement * i;
@@ -202,7 +247,7 @@ export class DimensionChooser extends Component {
             });
         });
 
-        return selectedDims.length === this.maxDepth || this.model.leafSelected ?
+        return selectedDims.length === maxDepth || leafSelected ?
             ret :
             this.appendAddDim(ret);
     }
@@ -237,7 +282,9 @@ export class DimensionChooser extends Component {
                 history.map((h, i) => {
                     h = toRichDim(h);
                     return button({
-                        text: `${i+1}. ${h.map(it => it.label).join(' > ')}`,
+                        minimal: true,
+                        title: `${h.map((it, i) => ' '.repeat(i*2) + '\u21d2 ' + it.label).join('\n')}`,
+                        text: `${h.map(it => it.label).join(' > ')}`,
                         onClick: () => this.onResetFromHistory(i),
                         className: Classes.POPOVER_DISMISS,
                         key: `dim-history-${i}`

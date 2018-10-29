@@ -23,9 +23,25 @@ export class DimensionChooserModel {
 };
      */
 
-    @observable selectedDims = null;
+    @observable.ref dimensions = null;
+    @observable.ref selectedDims = null;
     maxHistoryLength = null;
     maxDepth = null;
+
+    //-------------------------
+    // Popover rendering
+    //-------------------------
+    @observable isMenuOpen = false;
+    @action
+    setPopoverDisplay(bool) {
+        this.isMenuOpen = bool;
+    }
+
+    @observable displayHistoryItems = true;
+    @action
+    setDisplayHistory(bool) {
+        this.displayHistoryItems = bool;
+    }
 
     constructor(
         {
@@ -41,13 +57,10 @@ export class DimensionChooserModel {
 
         const prefs = this.loadPrefs();
 
-        this.defaultDims = prefs.defaultDims || dimensionOptions[0];
+        this.defaultDims = prefs.defaultDims || [this.allDims[0]];
         this.selectedDims = this.defaultDims;
 
-        this.history = createHistoryArray({
-            maxHistoryLength,
-            initialValue: prefs.initialValue || dimensionOptions[0]
-        });
+        this.history = prefs.initialValue ? [...prefs.initialValue] : [[this.allDims[0]]];
 
         this.dimensions = this.defaultDims
 
@@ -55,46 +68,51 @@ export class DimensionChooserModel {
 
     @action
     addDim(dim, i) {
-        const {selectedDims} = this,
-            copy = selectedDims.slice();
+        const copy = this.selectedDims.slice();
 
         pull(copy, dim);
         copy[i] = dim;
         if (this.toRichDim(dim).isLeafColumn) copy.splice(i + 1);
 
-        selectedDims.replace(copy);
+        this.selectedDims = copy;
     }
 
     @action
     removeDim(dim) {
-        pull(this.selectedDims, dim);
+        const copy = this.selectedDims.slice();
+        pull(copy, dim);
+        this.selectedDims = copy;
     }
 
     @action
     setDims(type) {
-        const {selectedDims} = this;
         switch (type) {
             case 'reset defaults':
-                selectedDims.replace(this.defaultDims);
+                this.selectedDims = this.defaultDims;
                 this.saveDimensions();
                 break;
             case 'last commit':
-                selectedDims.replace(this.dimensions);
+                this.selectedDims = this.dimensions;
+                this.setDisplayHistory(true);
                 break;
         }
     }
 
     @action
     setDimsFromHistory(idx) {
-        this.selectedDims.replace(this.history[idx]);
+        this.selectedDims = this.history[idx];
         this.saveDimensions();
     }
 
+    @action
     saveDimensions() {
-        const newDims = this.selectedDims.slice();
-        this.dimensions = newDims;
-        this.history.unshift(newDims);
-        if (XH.prefService.hasKey('xhDimensionsHistory')) XH.prefService.set('xhDimensionsHistory', this.history);
+        const {selectedDims} = this;
+
+        this.dimensions = selectedDims;
+        this.saveHistory(selectedDims);
+
+        this.setPopoverDisplay(false);
+        this.setDisplayHistory(true);
     }
 
 
@@ -113,6 +131,17 @@ export class DimensionChooserModel {
         }
 
         return {defaultDims, initialValue};
+    }
+
+    saveHistory(newDims) {
+        const {history} = this;
+
+        if (isEmpty(newDims)) return                                    // Don't save empty dimensions array
+        pullAllWith(history, [newDims], isEqual);                       // Remove duplicates
+        if (history.length >= this.maxHistoryLength) history.pop();     // Don't allow to go over max history length
+
+        history.unshift(newDims);
+        if (XH.prefService.hasKey('xhDimensionsHistory')) XH.prefService.set('xhDimensionsHistory', history);
     }
 
 
@@ -162,19 +191,7 @@ export class DimensionChooserModel {
             {label: withDefault(src.label, src.value), isLeafColumn: withDefault(src.leaf, false), ...src} :
             {label: src != null ? src.toString() : '-null-', value: src, isLeafColumn: false};
     }
+
+
+
 }
-
-const createHistoryArray = ({maxHistoryLength = 5, initialValue}) => {
-    const array = isArray(initialValue[0]) ? [...initialValue] : [initialValue];
-
-    array.unshift = function() {
-        if (isEmpty(arguments[0])) return;                  // Don't save empty dimensions array
-        pullAllWith(this, arguments, isEqual);              // Remove duplicates
-        if (this.length >= maxHistoryLength) this.pop();    // Don't allow to go over max history length
-
-        return Array.prototype.unshift.apply(this, arguments);
-    };
-
-    return array;
-};
-
