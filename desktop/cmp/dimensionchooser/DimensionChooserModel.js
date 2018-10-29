@@ -6,33 +6,51 @@
  */
 
 import {HoistModel, XH} from '@xh/hoist/core';
-import {isArray, isObject, difference, isEmpty, pull, isFunction, upperFirst, pullAllWith, isEqual, isEqualWith} from 'lodash';
+import {isPlainObject, isArray, isObject, difference, isEmpty, pull, isFunction, upperFirst, pullAllWith, isEqual, isEqualWith} from 'lodash';
 import {computed, observable, action} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
 
 @HoistModel
 export class DimensionChooserModel {
+    /*
+            static propTypes = {
+        Array of grid dimensions, in ordered from least to most specific
+    dimensions: PT.array,
+     Maximum number of dimension groupings to save in state
+    maxHistoryLength: PT.number,
+     Maximum number of dimensions that can be set on the grid
+    maxDepth: PT.number
+};
+     */
 
     @observable selectedDims = null;
+    maxHistoryLength = null;
+    maxDepth = null;
 
     constructor(
         {
-            model,
-            field,
-            dimensions,
-            maxHistoryLength
+            dimensionOptions,
+            maxHistoryLength = 5,
+            maxDepth
         }) {
-        this.model = model;
-        this.field = field;
-        this.dimensions = dimensions;
-        this.allDims = dimensions.map(d => d.value);
+        this.dimensionOptions = this.normalizeDimensions(dimensionOptions);
+        this.maxHistoryLength = maxHistoryLength;
+        this.maxDepth = withDefault(maxDepth, this.dimensionOptions.length);
+
+        this.allDims = this.dimensionOptions.map(d => d.value);
+
         const prefs = this.loadPrefs();
-        this.defaultDims = prefs.defaultDims || model[field].slice();
+
+        this.defaultDims = prefs.defaultDims || dimensionOptions[0];
         this.selectedDims = this.defaultDims;
+
         this.history = createHistoryArray({
             maxHistoryLength,
-            initialValue: prefs.initialValue || model[field].slice()
+            initialValue: prefs.initialValue || dimensionOptions[0]
         });
+
+        this.dimensions = this.defaultDims
+
     }
 
     @action
@@ -44,7 +62,7 @@ export class DimensionChooserModel {
         copy[i] = dim;
         if (this.toRichDim(dim).isLeafColumn) copy.splice(i + 1);
 
-        this.selectedDims.replace(copy);
+        selectedDims.replace(copy);
     }
 
     @action
@@ -58,10 +76,10 @@ export class DimensionChooserModel {
         switch (type) {
             case 'reset defaults':
                 selectedDims.replace(this.defaultDims);
-                this.saveSelectedDims();
+                this.saveDimensions();
                 break;
             case 'last commit':
-                selectedDims.replace(this.model[this.field]);
+                selectedDims.replace(this.dimensions);
                 break;
         }
     }
@@ -69,27 +87,14 @@ export class DimensionChooserModel {
     @action
     setDimsFromHistory(idx) {
         this.selectedDims.replace(this.history[idx]);
-        this.saveSelectedDims();
+        this.saveDimensions();
     }
 
-    saveSelectedDims() {
-        console.log(this.history.slice())
-        if (isEqualWith(this.selectedDims.slice(), this.history, this.customizer)) return;
-        this.doCommit();
-        this.history.unshift(this.selectedDims.slice());
-        if (XH.prefService.hasKey('xhDimensionsHistory')) XH.prefService.set('xhDimensionsHistory', this.history.slice());
-    }
-
-
-    @computed
-    get leafSelected() {
-        return this.dimensions.filter((dim) => this.selectedDims.slice().includes(dim.value) &&
-        dim.isLeafColumn).length > 0;
-    }
-
-    customizer(a,b) {
-        console.log(a,b)
-        return false;
+    saveDimensions() {
+        const newDims = this.selectedDims.slice();
+        this.dimensions = newDims;
+        this.history.unshift(newDims);
+        if (XH.prefService.hasKey('xhDimensionsHistory')) XH.prefService.set('xhDimensionsHistory', this.history);
     }
 
 
@@ -110,34 +115,52 @@ export class DimensionChooserModel {
         return {defaultDims, initialValue};
     }
 
-    doCommit() {
-        const {model, field} = this;
-        if (model && field) {
-            const setterName = `set${upperFirst(field)}`;
-            throwIf(!isFunction(model[setterName]), `Required function '${setterName}()' not found on bound model`);
-            model[setterName](this.selectedDims.slice());
-        }
-    }
 
     //-------------------------
-    // Helpers
+    // Render helpers
     //-------------------------
+    get leafSelected() {
+        return this.dimensionOptions.filter((dim) => this.selectedDims.slice().includes(dim.value) &&
+            dim.isLeafColumn).length > 0;
+    }
 
     get remainingDims() {
         return this.toRichDim(difference(this.allDims, this.selectedDims));
     }
 
-    availableDims =(i) => {
+    availableDims = (i) => {
         const dimChildren = this.toRichDim(this.selectedDims.slice(i + 1));
         return [...this.remainingDims, ...dimChildren];
     }
 
+    //-------------------------
+    // Value handling
+    //-------------------------
+
     toRichDim = (value) => {
-        const {dimensions} = this,
-            retFn = (val) => dimensions.find(dim => dim.value === val);
+        const {dimensionOptions} = this,
+            retFn = (val) => dimensionOptions.find(dim => dim.value === val);
         return isObject(value) ?
             value.map((it) => retFn(it)) :
             retFn(value);
+    }
+
+    normalizeDimensions(dims) {
+        dims = dims || [];
+        return dims.map(it => this.createDimension(it));
+    }
+
+    createDimension(src) {
+        const srcIsObject = isPlainObject(src);
+
+        throwIf(
+            srcIsObject && !src.hasOwnProperty('value'),
+            "Select options/values provided as Objects must define a 'value' property."
+        );
+
+        return srcIsObject ?
+            {label: withDefault(src.label, src.value), isLeafColumn: withDefault(src.leaf, false), ...src} :
+            {label: src != null ? src.toString() : '-null-', value: src, isLeafColumn: false};
     }
 }
 

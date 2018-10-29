@@ -11,12 +11,11 @@ import {vbox, hbox, box} from '@xh/hoist/cmp/layout/index';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroup, popover, Classes} from '@xh/hoist/kit/blueprint';
 import {Icon} from '@xh/hoist/icon';
-import {div} from '@xh/hoist/cmp/layout';
+import {div, span} from '@xh/hoist/cmp/layout';
 import {isEmpty, isPlainObject} from 'lodash';
 import {select} from '@xh/hoist/desktop/cmp/form';
 import {observable, action} from '@xh/hoist/mobx';
 
-import {DimensionChooserModel} from './DimensionChooserModel';
 import './DimensionChooser.scss';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 
@@ -24,20 +23,7 @@ import {throwIf, withDefault} from '@xh/hoist/utils/js';
 @LayoutSupport
 export class DimensionChooser extends Component {
 
-    static propTypes = {
-        /** Array of grid dimensions, in ordered from least to most specific */
-        dimensions: PT.array,
-        /** Maximum number of dimension groupings to save in state */
-        maxHistoryLength: PT.number,
-        /** Maximum number of dimensions that can be set on the grid */
-        maxDepth: PT.number
-    };
-
     static defaultProps = {
-        historyLength: 5,
-        indentLevels: true,
-        indentWidthPct: 5,
-        placeholder: 'Select groupings...',
         width: 200
     };
 
@@ -51,15 +37,6 @@ export class DimensionChooser extends Component {
 
     constructor(props) {
         super(props);
-        const {dimensions, historyLength, model, field, maxDepth} = this.props;
-        this.internalDimensions = this.normalizeDimensions(dimensions);
-        this.dimChooserModel = new DimensionChooserModel({
-            dimensions: this.internalDimensions,
-            historyLength,
-            model,
-            field
-        });
-        this.maxDepth = withDefault(maxDepth, dimensions.length);
     }
 
     render() {
@@ -77,25 +54,25 @@ export class DimensionChooser extends Component {
     //--------------------
 
     onDimChange = (dim, i) => {
-        this.dimChooserModel.addDim(dim, i);
+        this.model.addDim(dim, i);
     }
 
     onOptClick = (type) => {
-        this.dimChooserModel.setDims(type);
+        this.model.setDims(type);
     }
 
     onSaveSelected = () => {
-        this.dimChooserModel.saveSelectedDims();
+        this.model.saveDimensions();
         this.setPopoverDisplay(false);
     }
 
     onCancelSelected = () => {
-        this.dimChooserModel.setDims('last commit');
+        this.model.setDims('last commit');
         this.setPopoverDisplay(false);
     }
 
     onResetFromHistory = (idx)=> {
-        this.dimChooserModel.setDimsFromHistory(idx)
+        this.model.setDimsFromHistory(idx)
     }
 
     @action
@@ -120,7 +97,7 @@ export class DimensionChooser extends Component {
     prepareDimensionMenu() {
         const {width} = this.props,
             {isMenuOpen} = this,
-            {history, toRichDim} = this.dimChooserModel;
+            {history, toRichDim} = this.model;
         const target = button({
             item: toRichDim(history[0]).map(it => it.label).join(' > '),
             style: {width},
@@ -179,7 +156,7 @@ export class DimensionChooser extends Component {
                         onClick: () => this.onOptClick('reset defaults')
                     }),
                     popover({
-                        disabled: isEmpty(this.dimChooserModel.history),
+                        disabled: isEmpty(this.model.history),
                         target: button({
                             className: 'xh-dim-opts-history',
                             text: 'History',
@@ -201,7 +178,7 @@ export class DimensionChooser extends Component {
 
     renderSelectChildren() {
         const {width} = this.props,
-            {selectedDims, availableDims, toRichDim} = this.dimChooserModel,
+            {selectedDims, availableDims, toRichDim} = this.model,
             marginIncrement = width * 5 / 100;
         const ret = selectedDims.map((dim, i) => {
             const marginLeft = marginIncrement * i;
@@ -219,19 +196,19 @@ export class DimensionChooser extends Component {
                         icon: Icon.x(),
                         minimal: true,
                         disabled: selectedDims.length === 1,
-                        onClick: () => this.dimChooserModel.removeDim(dim)
+                        onClick: () => this.model.removeDim(dim)
                     })
                 ]
             });
         });
 
-        return selectedDims.length === this.maxDepth || this.dimChooserModel.leafSelected ?
+        return selectedDims.length === this.maxDepth || this.model.leafSelected ?
             ret :
             this.appendAddDim(ret);
     }
 
     appendAddDim(ret) {
-        const {selectedDims, remainingDims} = this.dimChooserModel;
+        const {selectedDims, remainingDims} = this.model;
         const marginLeft = (selectedDims.length) * this.props.width * 5 / 100;
         ret.push(
             box({
@@ -252,7 +229,7 @@ export class DimensionChooser extends Component {
     }
 
     renderHistoryItems() {
-        const {history, toRichDim} = this.dimChooserModel;
+        const {history, toRichDim} = this.model;
         return buttonGroup({
             className: 'xh-dim-history-items',
             vertical: true,
@@ -270,27 +247,6 @@ export class DimensionChooser extends Component {
         });
     }
 
-    //-------------------------
-    // Options / value handling
-    //-------------------------
-
-    normalizeDimensions(dims) {
-        dims = dims || [];
-        return dims.map(it => this.toRichDimension(it));
-    }
-
-    toRichDimension(src) {
-        const srcIsObject = isPlainObject(src);
-
-        throwIf(
-            srcIsObject && !src.hasOwnProperty('value'),
-            "Select options/values provided as Objects must define a 'value' property."
-        );
-
-        return srcIsObject ?
-            {label: withDefault(src.label, src.value), isLeafColumn: withDefault(src.leaf, false), ...src} :
-            {label: src != null ? src.toString() : '-null-', value: src, isLeafColumn: false};
-    }
 }
 
 export const dimensionChooser = elemFactory(DimensionChooser);
