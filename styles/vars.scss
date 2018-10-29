@@ -94,6 +94,14 @@ body {
   --xh-grid-compact-line-height: var(--grid-compact-line-height, 22);
   --xh-grid-compact-line-height-px: calc(var(--xh-grid-compact-line-height) * 1px);
 
+  // Multifield renderer
+  --xh-grid-multifield-top-font-size: var(--grid-multifield-top-font-size, 12);
+  --xh-grid-multifield-top-font-size-px: calc(var(--xh-grid-multifield-top-font-size) * 1px);
+  --xh-grid-multifield-bottom-font-size: var(--grid-multifield-bottom-font-size, 10);
+  --xh-grid-multifield-bottom-font-size-px: calc(var(--xh-grid-multifield-bottom-font-size) * 1px);
+  --xh-grid-multifield-line-height: var(--grid-multifield-line-height, 14);
+  --xh-grid-multifield-line-height-px: calc(var(--xh-grid-multifield-line-height) * 1px);
+
   // Fonts
   --xh-font-family: var(--font-family, #{(-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif)});
   --xh-font-family-headings: var(--font-family-headings, #{(-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif)});

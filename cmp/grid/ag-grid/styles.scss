@@ -135,6 +135,39 @@
   }
 }
 
+.xh-multifield-renderer {
+  line-height: var(--xh-grid-multifield-line-height-px);
+
+  .xh-multifield-renderer-top {
+    padding: 4px 0 0;
+    font-size: var(--xh-grid-multifield-top-font-size-px);
+  }
+  .xh-multifield-renderer-bottom {
+    font-size: var(--xh-grid-multifield-bottom-font-size-px);
+    color: var(--xh-text-color-muted);
+
+    .xh-multifield-renderer-bottom-field {
+      margin: 0 4px 0 0;
+
+      & > span {
+        padding: 0 4px 0 0;
+      }
+    }
+  }
+}
+
+.xh-align-right .xh-multifield-renderer .xh-multifield-renderer-bottom {
+  justify-content: flex-end;
+
+  .xh-multifield-renderer-bottom-field {
+    margin: 0 0 0 4px;
+
+    & > span {
+      padding: 0 0 0 4px;
+    }
+  }
+}
+
 .ag-overlay {
   // Match loading overlay color to mask, suppress display of text in center.
   .ag-overlay-loading-wrapper {

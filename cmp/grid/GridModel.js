@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, computed} from '@xh/hoist/mobx';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {
@@ -19,7 +19,9 @@ import {
     sortBy,
     pull,
     uniq,
-    isNil
+    isNil,
+    isFinite,
+    map
 } from 'lodash';
 import {Column, ColumnGroup} from '@xh/hoist/cmp/grid/columns';
 import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
@@ -313,6 +315,13 @@ export class GridModel {
     @action
     setCompact(compact) {
         this.compact = compact;
+    }
+
+    /** Return the minimum row height specified by the columns (if any) */
+    @computed
+    get columnRowHeight() {
+        const ret = Math.max(...map(this.columns, 'rowHeight').filter(isFinite));
+        return isFinite(ret) ? ret : null;
     }
 
     /** Load the underlying store. */
