@@ -91,7 +91,7 @@ export class Grid extends Component {
     }
 
     render() {
-        const {colChooserModel, compact} = this.model,
+        const {colChooserModel, compact, treeMode, store} = this.model,
             {agOptions, showHover, onKeyDown} = this.props,
             {isMobile} = XH,
             layoutProps = this.getLayoutProps();
@@ -112,6 +112,7 @@ export class Grid extends Component {
                     'ag-grid-holder',
                     XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                     compact ? 'xh-grid-compact' : 'xh-grid-standard',
+                    treeMode && store.tree ? 'xh-grid-tree-mode' : '',
                     !isMobile && showHover ? 'xh-grid-show-hover' : ''
                 ),
                 onKeyDown: !isMobile ? onKeyDown : null

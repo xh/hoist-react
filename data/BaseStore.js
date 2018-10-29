@@ -56,6 +56,12 @@ export class BaseStore {
     /** Is this store empty before filters have been applied? */
     get allEmpty() {return this.allCount === 0}
 
+    /** Do any post-filtered records have children? */
+    get tree() {}
+
+    /** Do any pre-filtered records have children? */
+    get allTree() {}
+
     /**
      * Get a record by ID. Return null if no record found.
      *
