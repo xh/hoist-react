@@ -28,7 +28,7 @@ export class FeedbackButton extends Component {
     render() {
         const {icon, onClick, ...rest} = this.props;
         return toolbarButton({
-            item: icon || Icon.comment(),
+            item: icon || Icon.comment({className: 'fa-flip-horizontal'}),
             onClick: onClick || this.onFeedbackClick,
             ...rest
         });
