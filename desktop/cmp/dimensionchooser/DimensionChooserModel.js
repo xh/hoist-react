@@ -6,104 +6,84 @@
  */
 
 import {HoistModel, XH} from '@xh/hoist/core';
-import {isPlainObject, isObject, difference, isEmpty, pull, pullAllWith, isEqual} from 'lodash';
-import {observable, action} from '@xh/hoist/mobx';
+import {isPlainObject, isObject, difference, isEmpty, without, pullAllWith, isEqual} from 'lodash';
+import {observable, action, bindable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 
 @HoistModel
 export class DimensionChooserModel {
 
-    @observable.ref dimensions = null;
-    @observable.ref selectedDims = null;
+    @observable.ref value = null;
+    @observable.ref pendingDims = null;
+
     maxHistoryLength = null;
     maxDepth = null;
+    dimensions = null;
+    history = null;
+    historyPreference = null;
 
     //-------------------------
     // Popover rendering
     //-------------------------
-    @observable isMenuOpen = false;
-    @action
-    setPopoverDisplay(bool) {
-        this.isMenuOpen = bool;
-    }
+    @bindable isMenuOpen = false;
+    @bindable isAddNewOpen = false;
 
-    @observable displayHistoryItems = true;
-    @action
-    setDisplayHistory(bool) {
-        this.displayHistoryItems = bool;
-    }
 
-    constructor(
-        {
-            dimensionOptions,
-            maxHistoryLength = 5,
-            maxDepth
-        }) {
-        this.dimensionOptions = this.normalizeDimensions(dimensionOptions);
+    constructor({
+        dimensions,
+        defaultDims,
+        historyPreference,
+        maxHistoryLength = 5,
+        maxDepth = 4
+    }) {
+        this.dimensions = this.normalizeDimensions(dimensions);
         this.maxHistoryLength = maxHistoryLength;
-        this.maxDepth = withDefault(maxDepth, this.dimensionOptions.length);
+        this.maxDepth = maxDepth;
 
-        this.allDims = this.dimensionOptions.map(d => d.value);
+        this.allDims = this.dimensions.map(d => d.value);
 
-        const prefs = this.loadPrefs();
+        this.historyPreference = historyPreference;
+        const historyFromPrefs = this.loadHistory();
 
-        this.defaultDims = prefs.defaultDims || [this.allDims[0]];
-        this.selectedDims = this.defaultDims;
-        this.history = prefs.initialValue ? [...prefs.initialValue] : [[this.allDims[0]]];
-        this.dimensions = this.history[0];
+        if (isEmpty(historyFromPrefs)) {
+            console.warn('XH Dimension Chooser failed to load user history');
+            this.history = withDefault(defaultDims, [[this.allDims[0]]]);
+        } else {
+            this.history = historyFromPrefs;
+        }
+
+        this.value = this.history[0];
+        this.pendingDims = [];
     }
 
     @action
     addDim(dim, i) {
-        const copy = this.selectedDims.slice();
+        const newDims = without(this.pendingDims, dim);
+        newDims[i] = dim;
+        if (this.toRichDim(dim).isLeafColumn) newDims.splice(i + 1);
 
-        pull(copy, dim);
-        copy[i] = dim;
-        if (this.toRichDim(dim).isLeafColumn) copy.splice(i + 1);
-
-        this.selectedDims = copy;
+        this.pendingDims = newDims;
     }
 
     @action
     removeDim(dim) {
-        const copy = this.selectedDims.slice();
-        pull(copy, dim);
-        this.selectedDims = copy;
-    }
-
-    @action
-    setDims(type) {
-        switch (type) {
-            case 'restore default':
-                this.selectedDims = this.defaultDims;
-                this.saveDimensions();
-                break;
-            case 'last commit':
-                this.selectedDims = this.dimensions;
-                this.setDisplayHistory(true);
-                break;
-            case 'new default':
-                this.defaultDims = this.dimensions;
-                if (XH.prefService.hasKey('xhDimensionsDefault')) XH.prefService.set('xhDimensionsDefault', this.defaultDims);
-                break;
-        }
+        this.pendingDims = without(this.pendingDims, dim);
     }
 
     @action
     setDimsFromHistory(idx) {
-        this.selectedDims = this.history[idx];
-        this.saveDimensions();
+        this.pendingDims = this.history[idx];
+        this.commitPendingDims();
     }
 
     @action
-    saveDimensions() {
-        const {selectedDims} = this;
+    commitPendingDims() {
+        const {pendingDims} = this;
 
-        this.dimensions = selectedDims;
-        this.saveHistory(selectedDims);
+        this.value = pendingDims;
+        this.saveHistory(pendingDims);
 
-        this.setPopoverDisplay(false);
-        this.setDisplayHistory(true);
+        this.setIsMenuOpen(false);
     }
 
 
@@ -111,32 +91,19 @@ export class DimensionChooserModel {
     // Implementation
     //-------------------------
 
-    loadPrefs() {
-        let defaultDims, initialValue = null;
-        if (XH.prefService.hasKey('xhDimensionsHistory')) {
-            const history = XH.prefService.get('xhDimensionsHistory');
-            if (Object.keys(history).length) {
-                initialValue = history;
-            }
-        }
-
-        if (XH.prefService.hasKey('xhDimensionsDefault')) {
-            const defaults = XH.prefService.get('xhDimensionsDefault');
-            if (Object.keys(defaults).length) defaultDims = defaults;
-        }
-
-        return {defaultDims, initialValue};
+    loadHistory() {
+        return XH.prefService.get(this.historyPreference, null);
     }
 
     saveHistory(newDims) {
-        const {history} = this;
+        const {history, historyPreference} = this;
 
         if (isEmpty(newDims)) return;                                    // Don't save empty dimensions array
         pullAllWith(history, [newDims], isEqual);                       // Remove duplicates
         if (history.length >= this.maxHistoryLength) history.pop();     // Don't allow to go over max history length
 
         history.unshift(newDims);
-        if (XH.prefService.hasKey('xhDimensionsHistory')) XH.prefService.set('xhDimensionsHistory', history);
+        if (XH.prefService.hasKey(historyPreference)) XH.prefService.set(historyPreference, history);
     }
 
 
@@ -144,16 +111,16 @@ export class DimensionChooserModel {
     // Render helpers
     //-------------------------
     get leafSelected() {
-        return this.dimensionOptions.filter((dim) => this.selectedDims.slice().includes(dim.value) &&
+        return this.dimensions.filter((dim) => this.pendingDims.slice().includes(dim.value) &&
             dim.isLeafColumn).length > 0;
     }
 
     get remainingDims() {
-        return this.toRichDim(difference(this.allDims, this.selectedDims));
+        return this.toRichDim(difference(this.allDims, this.pendingDims));
     }
 
     availableDims = (i) => {
-        const dimChildren = this.toRichDim(this.selectedDims.slice(i + 1));
+        const dimChildren = this.toRichDim(this.pendingDims.slice(i + 1));
         return [...this.remainingDims, ...dimChildren];
     }
 
@@ -162,8 +129,8 @@ export class DimensionChooserModel {
     //-------------------------
 
     toRichDim = (value) => {
-        const {dimensionOptions} = this,
-            retFn = (val) => dimensionOptions.find(dim => dim.value === val);
+        const {dimensions} = this,
+            retFn = (val) => dimensions.find(dim => dim.value === val);
         return isObject(value) ?
             value.map((it) => retFn(it)) :
             retFn(value);

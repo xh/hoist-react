@@ -1,5 +1,4 @@
 .xh-dim-chooser {
-  display: flex;
   .xh-dim-popover {
     .xh-button {
       overflow: hidden;
@@ -8,20 +7,10 @@
       display: inline;
     }
   }
-
-  .xh-dim-options {
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    border-left: 0;
-    padding: 2px 5px;
-  }
-
 }
 
 .xh-dim-add-popover {
-
   .xh-dim-popover-selects {
-
     padding: 3px 0 3px 3px;
     .xh-dim-popover-row {
       margin-bottom: 2px;
@@ -44,14 +33,6 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       display: inline;
-
-      &:nth-child(even) {
-      }
     }
   }
 }
-button.xh-dim-default-button {
-  justify-content: left;
-}
-
-

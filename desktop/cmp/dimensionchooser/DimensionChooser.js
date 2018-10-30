@@ -12,9 +12,7 @@ import {buttonGroup, popover, Classes} from '@xh/hoist/kit/blueprint';
 import {Icon} from '@xh/hoist/icon';
 import {div} from '@xh/hoist/cmp/layout';
 import {withDefault} from '@xh/hoist/utils/js';
-import {isEqual} from 'lodash';
 import {select} from '@xh/hoist/desktop/cmp/form';
-import classNames from 'classnames';
 
 import './DimensionChooser.scss';
 
@@ -23,7 +21,8 @@ import './DimensionChooser.scss';
 export class DimensionChooser extends Component {
 
     static defaultProps = {
-        width: 200
+        minWidth: 200,
+        maxWidth: 350
     };
 
     baseClassName = 'xh-dim-chooser';
@@ -43,45 +42,46 @@ export class DimensionChooser extends Component {
     // Event Handlers
     //--------------------
 
+    onTargetClick = () => {
+        this.model.setIsAddNewOpen(false);
+        this.model.setIsMenuOpen(true);
+    }
+
     onDimChange = (dim, i) => {
         this.model.addDim(dim, i);
     }
 
     onAddNewClick = () => {
-        this.model.setDisplayHistory(false);
+        this.model.pendingDims = this.model.value;
+        this.model.setIsAddNewOpen(true);
     }
 
     onSaveSelected = () => {
-        this.model.saveDimensions();
+        this.model.commitPendingDims();
     }
 
-    onCancelSelected = () => {
-        this.model.setDims('last commit');
+    onBackSelected = () => {
+        this.model.setIsAddNewOpen(false);
     }
 
-    onResetFromHistory = (idx) => {
+    onSetFromHistory = (idx) => {
         this.model.setDimsFromHistory(idx);
     }
 
-    onSaveDefault = () => {
-        this.model.setDims('new default');
-    }
-
-    onRestoreDefault = () => {
-        this.model.setDims('restore default');
+    onCancelSelected = () => {
+        this.model.setIsMenuOpen(false);
     }
 
     onInteraction = (nextOpenState, e) => {
-        const notSelectClick = withDefault(e, false) &&
-            withDefault(e.target, false) &&
-            withDefault(!e.target.classList.contains('xh-select__option'), false);
-        /*
-         * Should be checking for a class which we pass from this component to the select menu.
-         * For now should be fine, but should update once feature is added to select component.
-         */
-
-        if (nextOpenState === false && notSelectClick) {
-            this.onSaveSelected();
+        if (nextOpenState === false) {
+            if (this.model.isAddNewOpen) {
+                const notSelectClick = withDefault(e, false) &&
+                    withDefault(e.target, false) &&
+                    withDefault(!e.target.classList.contains('xh-select__option'), false);
+                if (notSelectClick) this.onSaveSelected();
+            } else {
+                this.model.setIsMenuOpen(false);
+            }
         }
     };
 
@@ -90,88 +90,72 @@ export class DimensionChooser extends Component {
     //--------------------
 
     prepareDimensionMenu() {
-        const {width} = this.props,
-            {dimensions, toRichDim, isMenuOpen, displayHistoryItems} = this.model;
+        const {maxWidth, minWidth} = this.props,
+            {value, toRichDim, isMenuOpen, isAddNewOpen} = this.model;
 
         const target = button({
-            item: toRichDim(dimensions).map(it => it.label).join(' \u203a '),
-            style: {width},
-            onClick: () => this.model.setPopoverDisplay(true)
+            item: toRichDim(value).map(it => it.label).join(' \u203a '),
+            style: {maxWidth, minWidth},
+            onClick: () => this.onTargetClick()
         });
 
-        const content = displayHistoryItems ? this.renderHistory() : this.prepareAddNewMenu();
+        const menuContent = isAddNewOpen ? this.prepareAddNewMenu() : this.prepareHistoryMenu();
 
         return popover({
             target,
+            content: vbox({...menuContent, minWidth, maxWidth}),
             isOpen: isMenuOpen,
             onInteraction: (nextOpenState, e) => this.onInteraction(nextOpenState, e),
             targetClassName: 'xh-dim-popover',
-            position: 'bottom',
-            content
+            position: 'bottom'
         });
     }
 
-    renderHistory() {
-        const {width} = this.props;
-
-        return vbox({
-            width,
+    prepareHistoryMenu() {
+        return {
             className: 'xh-dim-history-popover',
             items: [
                 this.renderHistoryItems(),
                 buttonGroup({
                     items: [
-                        popover({
-                            position: 'bottom-left',
-                            minimal: true,
-                            target: button({
-                                style: {width: 65},
-                                icon: Icon.gear()
-                            }),
-                            content: this.renderDefaultsMenu()
-                        }),
                         button({
                             style: {flex: 1},
+                            icon: Icon.x(),
+                            onClick: this.onCancelSelected
+                        }),
+                        button({
+                            style: {flex: 2},
                             icon: Icon.add(),
-                            intent: 'primary',
+                            title: 'Add a new grouping',
                             onClick: this.onAddNewClick
                         })
                     ]
                 })
             ]
-        });
+        };
     }
 
     prepareAddNewMenu() {
-        const dimSelects = this.renderSelectChildren(),
-            {width} = this.props;
-
-        return vbox({
-            width,
+        return {
             className: 'xh-dim-add-popover',
             items: [
-                vbox({
-                    className: 'xh-dim-popover-selects',
-                    items: [...dimSelects]
-                }),
+                this.renderSelectChildren(),
                 buttonGroup({
                     items: [
                         button({
-                            icon: Icon.x(),
-                            intent: 'danger',
+                            icon: Icon.arrowLeft(),
                             style: {width: '40%'},
-                            onClick: () => this.onCancelSelected()
+                            onClick: () => this.onBackSelected()
                         }),
                         button({
                             icon: Icon.check(),
-                            intent: 'success',
                             style: {width: '60%'},
                             onClick: () => this.onSaveSelected()
                         })
                     ]
                 })
             ]
-        });
+        };
     }
 
     //--------------------
@@ -179,17 +163,15 @@ export class DimensionChooser extends Component {
     //--------------------
 
     renderSelectChildren() {
-        const {width} = this.props,
-            {selectedDims, availableDims, toRichDim, maxDepth, leafSelected} = this.model,
-            marginIncrement = width * 5 / 100;
-        const ret = selectedDims.map((dim, i) => {
-            const marginLeft = marginIncrement * i;
+        const {pendingDims, availableDims, toRichDim, maxDepth, allDims, leafSelected} = this.model;
+        let children = pendingDims.map((dim, i) => {
             return hbox({
                 className: 'xh-dim-popover-row',
-                style: {marginLeft},
+                style: {marginLeft: 10*i},
                 items: [
                     select({
                         enableFilter: false,
+                        width: this.props.minWidth - 10*i - 33,
                         options: availableDims(i),
                         value: toRichDim(dim).label,
                         onChange: (newDim) => this.onDimChange(newDim, i)
@@ -197,36 +179,39 @@ export class DimensionChooser extends Component {
                     button({
                         icon: Icon.x(),
                         minimal: true,
-                        disabled: selectedDims.length === 1,
+                        disabled: pendingDims.length === 1,
                         onClick: () => this.model.removeDim(dim)
                     })
                 ]
             });
         });
 
-        return selectedDims.length === maxDepth || leafSelected ?
-            ret :
-            this.appendAddDim(ret);
+        children = pendingDims.length === Math.min(maxDepth, allDims.length)  || leafSelected ?
+            children :
+            this.appendAddDim(children);
+
+        return vbox({className: 'xh-dim-popover-selects', items: children});
     }
 
-    appendAddDim(ret) {
-        const {selectedDims, remainingDims} = this.model;
-        const marginLeft = (selectedDims.length) * this.props.width * 5 / 100;
-        ret.push(
+    appendAddDim(children) {
+        const {pendingDims, remainingDims} = this.model;
+        const indent = (pendingDims.length) * 10;
+        children.push(
             box({
-                style: {marginLeft},
+                style: {marginLeft: indent},
                 items: [
                     select({
                         className: 'xh-dim-popover-add-dim',
+                        width: this.props.minWidth - indent - 33,
                         enableFilter: false,
                         options: remainingDims,
-                        onChange: (newDim) => this.onDimChange(newDim, selectedDims.length),
+                        onChange: (newDim) => this.onDimChange(newDim, pendingDims.length),
                         placeholder: 'Add...'
                     })
                 ]
             })
         );
-        return ret;
+        return children;
 
     }
 
@@ -241,37 +226,11 @@ export class DimensionChooser extends Component {
                     return button({
                         minimal: true,
                         title: ` ${h.map((it, i) => ' '.repeat(i) + '\u203a '.repeat(i ? 1 : 0) + it.label).join('\n')}`,
-                        text: `${i+1}. ${h.map(it => it.label).join(' \u203a ')}`,
-                        onClick: () => this.onResetFromHistory(i),
+                        text: `${h.map(it => it.label).join(' \u203a ')}`,
+                        onClick: () => this.onSetFromHistory(i),
                         className: Classes.POPOVER_DISMISS,
                         key: `dim-history-${i}`
                     });
-                })
-            ]
-        });
-    }
-
-    renderDefaultsMenu() {
-        const {width} = this.props,
-            {defaultDims, selectedDims} = this.model,
-            defaultSelected = isEqual(defaultDims, selectedDims);
-
-        return buttonGroup({
-            className: classNames(Classes.POPOVER_DISMISS, 'xh-dim-defaults-menu'),
-            vertical: true,
-            style: {width},
-            items: [
-                button({
-                    className: 'xh-dim-default-button',
-                    text: 'Save current as default',
-                    disabled: defaultSelected,
-                    onClick: this.onSaveDefault
-                }),
-                button({
-                    className: 'xh-dim-default-button',
-                    text: 'Restore default view',
-                    disabled: defaultSelected,
-                    onClick: this.onRestoreDefault
                 })
             ]
         });
