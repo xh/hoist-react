@@ -53,7 +53,10 @@ export class FormField extends Component {
         /** Display warning glyph in the far left side of the input (TextField, NumberInput only) */
         leftErrorIcon: PT.bool,
 
-        /** CSS id */
+        /**
+         * Sets "for" attribute on label element, and "id" attribute on input element.
+         * Ignored if clickableLabel == false.
+         */
         labelFor: PT.string,
 
         /** True by default.  If false, clicking on label won't put the label's control in focus. */
@@ -120,7 +123,7 @@ export class FormField extends Component {
     //--------------------
     // Implementation
     //--------------------
-    prepareChild(notValid, errors, uniqueId) {
+    prepareChild(notValid, errors, idAttr) {
         const {model, field, minimal, disabled} = this.props,
             item = this.props.children;
 
@@ -128,7 +131,7 @@ export class FormField extends Component {
         throwIf(item.props.field || item.props.model, 'HoistInputs should not declare "field" or "model" when used with FormField');
 
         const leftIcon = notValid ? this.leftIcon(item) : {},
-            target = React.cloneElement(item, {model, field, disabled, id: uniqueId, ...leftIcon});
+            target = React.cloneElement(item, {model, field, disabled, id: idAttr, ...leftIcon});
 
         if (!minimal) return target;
 
