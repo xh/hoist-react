@@ -116,14 +116,6 @@
 // Buttons
 //------------------------
 .bp3-button {
-  // Use padding vars, tighter default LR padding (driven in part by our minimal mode default).
-  padding: var(--xh-pad-half-px) var(--xh-pad-half-px);
-
-  // Except in button groups, which are already compressing buttons more closely together.
-  .bp3-button-group & {
-    padding: var(--xh-pad-half-px) var(--xh-pad-px);
-  }
-
   border-radius: var(--xh-border-radius-px);
   font-size: var(--xh-button-font-size-px);
   white-space: nowrap;
