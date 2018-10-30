@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@blueprintjs/core": "~3.7.0",
-    "@blueprintjs/datetime": "~3.3.0",
+    "@blueprintjs/datetime": "~3.3.1",
     "@fortawesome/fontawesome-pro": "~5.4.2",
     "@fortawesome/fontawesome-svg-core": "~1.2.7",
     "@fortawesome/pro-light-svg-icons": "~5.4.2",
