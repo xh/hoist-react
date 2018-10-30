@@ -12,7 +12,7 @@ import {startCase, partition, isFunction, isEmpty, isString, forOwn} from 'lodas
 import {Field} from './Field';
 import {FieldsModel} from './impl/FieldsModel';
 import {bindable} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
+import {throwIf, ensureParameterizedDecoratorPreCalled} from '@xh/hoist/utils/js';
 import {ValidationState} from './validation/ValidationState';
 
 
@@ -170,8 +170,10 @@ export function FieldSupport(C) {
  * added to this field.
  */
 export function field(...params) {
-    return (target, property, descriptor) => {
 
+    ensureParameterizedDecoratorPreCalled('field', ...params);
+
+    return (target, property, descriptor) => {
         // 0) Prepare static property on class itself to host field configs.
         if (!target._xhFieldConfigs) {
             Object.defineProperty(target, '_xhFieldConfigs', {value: {}});

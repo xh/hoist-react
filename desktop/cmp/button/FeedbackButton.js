@@ -28,7 +28,7 @@ export class FeedbackButton extends Component {
     render() {
         const {icon, title, onClick, ...rest} = this.props;
         return button({
-            icon: icon || Icon.comment(),
+            icon: icon || Icon.comment({className: 'fa-flip-horizontal'}),
             title: title || 'Feedback',
             onClick: onClick || this.onFeedbackClick,
             ...rest
