@@ -2,8 +2,6 @@
   display: flex;
   .xh-dim-popover {
     .xh-button {
-      //border-top-right-radius: 0;
-      //border-bottom-right-radius: 0;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -40,15 +38,20 @@
 .xh-dim-history-popover {
   background-color: var(--xh-bg);
   .xh-dim-history-items {
-
     padding: 3px 0;
     button {
-      justify-content: left;
-      box-shadow: var(--xh-form-field-box-shadow);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: inline;
 
       &:nth-child(even) {
       }
     }
   }
 }
+button.xh-dim-default-button {
+  justify-content: left;
+}
+
 

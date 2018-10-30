@@ -49,10 +49,8 @@ export class DimensionChooserModel {
 
         this.defaultDims = prefs.defaultDims || [this.allDims[0]];
         this.selectedDims = this.defaultDims;
-
         this.history = prefs.initialValue ? [...prefs.initialValue] : [[this.allDims[0]]];
-
-        this.dimensions = this.defaultDims;
+        this.dimensions = this.history[0];
     }
 
     @action
@@ -119,14 +117,13 @@ export class DimensionChooserModel {
             const history = XH.prefService.get('xhDimensionsHistory');
             if (Object.keys(history).length) {
                 initialValue = history;
-                defaultDims = history[0];
             }
         }
 
-        // if (XH.prefService.hasKey('xhDimensionsDefault')) {
-        //     const defaults = XH.prefService.get('xhDimensionsDefault');
-        //     if (Object.keys(defaults).length) defaultDims = defaults;
-        // }
+        if (XH.prefService.hasKey('xhDimensionsDefault')) {
+            const defaults = XH.prefService.get('xhDimensionsDefault');
+            if (Object.keys(defaults).length) defaultDims = defaults;
+        }
 
         return {defaultDims, initialValue};
     }
