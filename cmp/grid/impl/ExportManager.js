@@ -64,14 +64,15 @@ export class ExportManager {
             });
         }
 
+        const formData = new FormData(),
+            params = JSON.stringify({filename, type, meta, rows: rows.slice(0, 10)});
+
+        formData.append('params', params);
         const response = await XH.fetch({
             url: 'xh/export',
-            params: {
-                filename: filename,
-                filetype: type,
-                meta: JSON.stringify(meta),
-                rows: JSON.stringify(rows)
-            }
+            method: 'POST',
+            body: formData,
+            headers: new Headers()
         });
 
         const blob = response.status === 204 ? null : await response.blob();
