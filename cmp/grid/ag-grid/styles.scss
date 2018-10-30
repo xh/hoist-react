@@ -74,8 +74,8 @@
     }
   }
 
-  &.xh-grid-tree-mode {
-    // Generate indentations for tree grids.
+  &.xh-grid-hierarchical {
+    // Generate indentations for tree grids with hierarchical data.
     // Based upon https://github.com/ag-grid/ag-grid/blob/master/packages/ag-grid-community/src/styles/ag-grid.scss#L1018
     $xh-tree-indent: 10px !default;
     @for $i from 0 to 50 {

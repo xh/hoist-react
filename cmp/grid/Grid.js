@@ -79,6 +79,9 @@ export class Grid extends Component {
     // Used to ensure proper re-running / sequencing of data and selection reactions.
     @observable _dataVersion = 0;
 
+    // Do any root level records have children?
+    @observable _isHierarchical = false;
+
     baseClassName = 'xh-grid';
 
     constructor(props) {
@@ -91,7 +94,7 @@ export class Grid extends Component {
     }
 
     render() {
-        const {colChooserModel, compact, treeMode, store} = this.model,
+        const {colChooserModel, compact, treeMode} = this.model,
             {agOptions, showHover, onKeyDown} = this.props,
             {isMobile} = XH,
             layoutProps = this.getLayoutProps();
@@ -112,7 +115,7 @@ export class Grid extends Component {
                     'ag-grid-holder',
                     XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                     compact ? 'xh-grid-compact' : 'xh-grid-standard',
-                    treeMode && store.tree ? 'xh-grid-tree-mode' : '',
+                    treeMode && this._isHierarchical ? 'xh-grid-hierarchical' : '',
                     !isMobile && showHover ? 'xh-grid-show-hover' : ''
                 ),
                 onKeyDown: !isMobile ? onKeyDown : null
@@ -303,6 +306,9 @@ export class Grid extends Component {
                         // renderer API (where renderers can reference other properties on the data
                         // object). See https://github.com/exhi/hoist-react/issues/550.
                         api.refreshCells({force: true});
+
+                        // Set flag if data is hierarchical.
+                        this._isHierarchical = model.store.allRecords.some(rec => !!rec.children.length);
 
                         // Increment version counter to trigger selectionReaction w/latest data.
                         this._dataVersion++;

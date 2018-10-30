@@ -99,14 +99,6 @@ export class LocalStore extends BaseStore {
         return rs.map.get(id);
     }
 
-    get tree() {
-        return this.records.some(rec => !!rec.children.length);
-    }
-
-    get allTree() {
-        return this.allRecords.some(rec => !!rec.children.length);
-    }
-
     //-----------------------------------
     // Protected methods for subclasses
     //-----------------------------------
