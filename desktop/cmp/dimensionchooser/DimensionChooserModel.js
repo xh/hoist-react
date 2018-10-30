@@ -6,22 +6,12 @@
  */
 
 import {HoistModel, XH} from '@xh/hoist/core';
-import {isPlainObject, isArray, isObject, difference, isEmpty, pull, isFunction, upperFirst, pullAllWith, isEqual, isEqualWith} from 'lodash';
-import {computed, observable, action} from '@xh/hoist/mobx';
+import {isPlainObject, isObject, difference, isEmpty, pull, pullAllWith, isEqual} from 'lodash';
+import {observable, action} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 
 @HoistModel
 export class DimensionChooserModel {
-    /*
-            static propTypes = {
-        Array of grid dimensions, in ordered from least to most specific
-    dimensions: PT.array,
-     Maximum number of dimension groupings to save in state
-    maxHistoryLength: PT.number,
-     Maximum number of dimensions that can be set on the grid
-    maxDepth: PT.number
-};
-     */
 
     @observable.ref dimensions = null;
     @observable.ref selectedDims = null;
@@ -62,8 +52,7 @@ export class DimensionChooserModel {
 
         this.history = prefs.initialValue ? [...prefs.initialValue] : [[this.allDims[0]]];
 
-        this.dimensions = this.defaultDims
-
+        this.dimensions = this.defaultDims;
     }
 
     @action
@@ -87,13 +76,17 @@ export class DimensionChooserModel {
     @action
     setDims(type) {
         switch (type) {
-            case 'reset defaults':
+            case 'restore default':
                 this.selectedDims = this.defaultDims;
                 this.saveDimensions();
                 break;
             case 'last commit':
                 this.selectedDims = this.dimensions;
                 this.setDisplayHistory(true);
+                break;
+            case 'new default':
+                this.defaultDims = this.dimensions;
+                if (XH.prefService.hasKey('xhDimensionsDefault')) XH.prefService.set('xhDimensionsDefault', this.defaultDims);
                 break;
         }
     }
@@ -125,10 +118,15 @@ export class DimensionChooserModel {
         if (XH.prefService.hasKey('xhDimensionsHistory')) {
             const history = XH.prefService.get('xhDimensionsHistory');
             if (Object.keys(history).length) {
-                defaultDims = history[0];
                 initialValue = history;
+                defaultDims = history[0];
             }
         }
+
+        // if (XH.prefService.hasKey('xhDimensionsDefault')) {
+        //     const defaults = XH.prefService.get('xhDimensionsDefault');
+        //     if (Object.keys(defaults).length) defaultDims = defaults;
+        // }
 
         return {defaultDims, initialValue};
     }
@@ -136,7 +134,7 @@ export class DimensionChooserModel {
     saveHistory(newDims) {
         const {history} = this;
 
-        if (isEmpty(newDims)) return                                    // Don't save empty dimensions array
+        if (isEmpty(newDims)) return;                                    // Don't save empty dimensions array
         pullAllWith(history, [newDims], isEqual);                       // Remove duplicates
         if (history.length >= this.maxHistoryLength) history.pop();     // Don't allow to go over max history length
 
@@ -191,7 +189,5 @@ export class DimensionChooserModel {
             {label: withDefault(src.label, src.value), isLeafColumn: withDefault(src.leaf, false), ...src} :
             {label: src != null ? src.toString() : '-null-', value: src, isLeafColumn: false};
     }
-
-
 
 }

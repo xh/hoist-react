@@ -23,7 +23,7 @@
 .xh-dim-add-popover {
 
   .xh-dim-popover-selects {
-    opacity: 20%;
+
     padding: 3px 0 3px 3px;
     .xh-dim-popover-row {
       margin-bottom: 2px;
@@ -31,7 +31,6 @@
         padding: 0;
       }
     }
-
     .xh-dim-popover-add-dim {
       margin-right: 30px;
     }
@@ -41,9 +40,14 @@
 .xh-dim-history-popover {
   background-color: var(--xh-bg);
   .xh-dim-history-items {
+
     padding: 3px 0;
     button {
       justify-content: left;
+      box-shadow: var(--xh-form-field-box-shadow);
+
+      &:nth-child(even) {
+      }
     }
   }
 }
