@@ -74,17 +74,23 @@
     }
   }
 
-  // Generate indentations for tree grids.
-  // Based upon https://github.com/ag-grid/ag-grid/blob/master/packages/ag-grid-community/src/styles/ag-grid.scss#L1018
-  $xh-tree-indent: 10px !default;
-  @for $i from 1 to 50 {
-    .ag-ltr .ag-row-group-indent-#{$i} {
-      padding-left: $i * $xh-tree-indent;
+  &.xh-grid-hierarchical {
+    // Generate indentations for tree grids with hierarchical data.
+    // Based upon https://github.com/ag-grid/ag-grid/blob/master/packages/ag-grid-community/src/styles/ag-grid.scss#L1018
+    $xh-tree-indent: 10px !default;
+    @for $i from 0 to 50 {
+      .ag-ltr .ag-row-group-indent-#{$i} {
+        padding-left: $i * $xh-tree-indent;
+      }
+    }
+
+    .ag-ltr .ag-row-group-leaf-indent {
+      margin-left: 20px;
     }
   }
 
   .ag-ltr .ag-row-group-leaf-indent {
-    margin-left: 20px;
+    margin-left: 0;
   }
 
   &.xh-grid-show-hover .ag-row.ag-row-hover:not(.ag-row-group):not(.ag-row-selected) {
