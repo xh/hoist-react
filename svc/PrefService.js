@@ -94,11 +94,11 @@ export class PrefService {
         if (isEqual(oldValue, value)) return;
 
         // Change local value and fire.
-        this._data[key].value = value;
-        this.fireEvent('prefChange', {key, value, oldValue});
+        this._data[key].value = cloneDeep(value);
+        this.fireEvent('prefChange', {key, value: cloneDeep(value), oldValue});
 
         // Schedule serialization to storage
-        this._updates[key] = value;
+        this._updates[key] = this._data[key].value;
         this.pushPendingBuffered();
     }
 
@@ -230,7 +230,6 @@ export class PrefService {
 
     validateBeforeSet(key, value) {
         const pref = this._data[key];
-
 
         throwIf(!pref, `Cannot set preference ${key}: not found`);
 
