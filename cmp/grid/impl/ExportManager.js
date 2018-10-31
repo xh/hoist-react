@@ -65,7 +65,7 @@ export class ExportManager {
         }
 
         const formData = new FormData(),
-            params = JSON.stringify({filename, type, meta, rows: rows.slice(0, 10)});
+            params = JSON.stringify({filename, type, meta, rows});
 
         formData.append('params', params);
         const response = await XH.fetch({
