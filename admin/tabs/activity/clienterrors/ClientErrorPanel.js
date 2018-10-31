@@ -66,7 +66,7 @@ export class ClientErrorPanel extends Component {
             refreshButton({model}),
             filler(),
             storeCountLabel({gridModel: model.gridModel, unit: 'client error'}),
-            exportButton({model: model.gridModel})
+            exportButton({model: model.gridModel, exportOptions: {type: 'excelTable'}})
         );
     }
 

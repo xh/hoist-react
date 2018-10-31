@@ -113,7 +113,7 @@ export class RestGridModel {
 
         this.gridModel = new GridModel({
             contextMenuFn: this.contextMenuFn,
-            exportFilename: pluralize(unit),
+            exportOptions: {filename: pluralize(unit)},
             restGridModel: this,
             ...rest
         });

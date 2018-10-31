@@ -25,11 +25,18 @@ export class ExportManager {
     /**
      * Export a GridModel to a file. Typically called via `GridModel.export()`.
      *
-     * @param {GridModel} gridModel - GridModel to export.
-     * @param {(string|function)} filename - name for exported file or closure to generate.
-     * @param {string} type - type of export - one of ['excel', 'excelTable', 'csv'].
+     * @param {Object} options - Export options.
+     * @param {GridModel} options.gridModel - GridModel to export.
+     * @param {(string|function)} options.filename - name for exported file or closure to generate.
+     * @param {string} options.type - type of export - one of ['excel', 'excelTable', 'csv'].
+     * @param {boolean} [options.includeHiddenCols] - include hidden grid columns in the export.
      */
-    async exportAsync(gridModel, filename, type) {
+    async exportAsync({
+        gridModel,
+        filename,
+        type,
+        includeHiddenCols = false
+    }) {
         throwIf(!gridModel, 'GridModel required for export');
         throwIf(!isString(filename) && !isFunction(filename), 'Export filename must be either a string or a closure');
         throwIf(!['excel', 'excelTable', 'csv'].includes(type), `Invalid export type "${type}". Must be either "excel", "excelTable" or "csv"`);
@@ -37,7 +44,7 @@ export class ExportManager {
         if (isFunction(filename)) filename = filename(gridModel);
 
         const {store, sortBy} = gridModel,
-            columns = gridModel.getLeafColumns(),
+            columns = this.getExportableColumns(gridModel.getLeafColumns(), includeHiddenCols),
             sortColIds = sortBy.map(it => it.colId),
             sorts = sortBy.map(it => it.sort),
             records = orderBy(store.records, sortColIds, sorts),
@@ -86,22 +93,23 @@ export class ExportManager {
     //-----------------------
     // Implementation
     //-----------------------
-    getColumnMetadata(columns) {
-        return this.getExportableColumns(columns)
-            .map(column => {
-                const {field, exportFormat, exportWidth: width} = column;
-                let type = null;
-                if (exportFormat === ExportFormat.DATE_FMT) type = 'date';
-                if (exportFormat === ExportFormat.DATETIME_FMT) type = 'datetime';
-                if (exportFormat === ExportFormat.LONG_TEXT) type = 'longText';
+    getExportableColumns(columns, includeHiddenColumns) {
+        return columns.filter(it => !it.excludeFromExport && (!it.hidden || includeHiddenColumns));
+    }
 
-                return {field, type, format: exportFormat, width};
-            });
+    getColumnMetadata(columns) {
+        return columns.map(column => {
+            const {field, exportFormat, exportWidth: width} = column;
+            let type = null;
+            if (exportFormat === ExportFormat.DATE_FMT) type = 'date';
+            if (exportFormat === ExportFormat.DATETIME_FMT) type = 'datetime';
+            if (exportFormat === ExportFormat.LONG_TEXT) type = 'longText';
+            return {field, type, format: exportFormat, width};
+        });
     }
 
     getHeaderRow(columns, type) {
-        const headers = this.getExportableColumns(columns)
-            .map(it => it.exportName);
+        const headers = columns.map(it => it.exportName);
         if (type === 'excelTable' && uniq(headers).length !== headers.length) {
             console.warn('Excel tables require unique headers on each column. Consider using the "exportName" property to ensure unique headers.');
         }
@@ -109,13 +117,8 @@ export class ExportManager {
     }
 
     getRecordRow(record, columns) {
-        const data = this.getExportableColumns(columns)
-            .map(it => this.getCellData(record, it));
+        const data = columns.map(it => this.getCellData(record, it));
         return {data, depth: 0};
-    }
-
-    getExportableColumns(columns) {
-        return columns.filter(it => !it.excludeFromExport);
     }
 
     getCellData(record, column) {
