@@ -64,14 +64,20 @@ export class ExportManager {
             });
         }
 
+        // POST the data as a file (using multipart/form-data) to work around size limits when using application/x-www-form-urlencoded.
+        // This allows the data to be split into multiple parts and streamed, allowing for larger excel exports.
+        // The content of the "file" is a JSON encoded string, which will be streamed and decoded on the server.
+        // Note: It may be necessary to set maxFileSize and maxRequestSize in application.groovy to facilitate very large exports.
         const formData = new FormData(),
-            params = JSON.stringify({filename, type, meta, rows});
+            params = {filename, type, meta, rows};
 
-        formData.append('params', params);
+        formData.append('params', JSON.stringify(params));
         const response = await XH.fetch({
             url: 'xh/export',
             method: 'POST',
             body: formData,
+            // Note: We must explicitly *not* set Content-Type headers to allow the browser to set it's own multipart/form-data boundary.
+            // See https://stanko.github.io/uploading-files-using-fetch-multipart-form-data/ for further explanation.
             headers: new Headers()
         });
 
