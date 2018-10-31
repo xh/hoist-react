@@ -8,7 +8,7 @@
 import ReactDOM from 'react-dom';
 import {camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
 
-import {elem, AppState, AppSpec, EventSupport} from '@xh/hoist/core';
+import {elem, AppState, AppSpec, EventSupport, ReactiveSupport} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {observable, action} from '@xh/hoist/mobx';
 import {never, wait, allSettled} from '@xh/hoist/promise';
@@ -42,6 +42,7 @@ import '../styles/XH.scss';
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
  */
 @EventSupport
+@ReactiveSupport
 class XHClass {
 
     //------------------------------------------------------------------
@@ -379,7 +380,11 @@ class XHClass {
      * Not intended for application use.
      */
     async initAsync() {
-        const S = AppState;
+        const S = AppState,
+            {appSpec} = this;
+
+        if (appSpec.trackAppLoad) this.trackLoad();
+
         // Add xh-app class to body element to power Hoist CSS selectors
         document.body.classList.add('xh-app');
 
@@ -393,7 +398,7 @@ class XHClass {
             
             // ...if not, throw in SSO mode (unexpected error case) or trigger a login prompt.
             if (!userIsAuthenticated) {
-                throwIf(XH.appSpec.isSSO, 'Failed to authenticate user via SSO.');
+                throwIf(appSpec.isSSO, 'Failed to authenticate user via SSO.');
                 this.setAppState(S.LOGIN_REQUIRED);
                 return;
             }
@@ -438,7 +443,6 @@ class XHClass {
             await this.appModel.initAsync();
             this.startRouter();
             this.setAppState(S.RUNNING);
-            this.trackAppLoad();
         } catch (e) {
             this.setAppState(S.LOAD_FAILED);
             this.handleException(e, {requireReload: true});
@@ -504,18 +508,32 @@ class XHClass {
         }
     }
 
-    trackAppLoad() {
-        if (!this.appSpec.trackAppLoad) return;
+    trackLoad() {
+        let loadStarted = window._xhLoadTimestamp, // set in index.html
+            loginStarted = null,
+            loginElapsed = 0;
 
-        // xhLoadTimestamp is set in index.html via a script installed by WebpackHtmlPlugin.
-        const elapsed = window._xhLoadTimestamp ? Date.now() - window._xhLoadTimestamp : null;
-
-        XH.track({
-            category: 'App',
-            msg: `Loaded ${this.clientAppName}`,
-            elapsed
+        const disposer = this.addReaction({
+            track: () => this.appState,
+            run: (state) => {
+                const now = Date.now();
+                switch (state) {
+                    case AppState.RUNNING:
+                        XH.track({
+                            category: 'App',
+                            msg: `Loaded ${this.clientAppName}`,
+                            elapsed: now - loadStarted - loginElapsed
+                        });
+                        disposer();
+                        break;
+                    case AppState.LOGIN_REQUIRED:
+                        loginStarted = now;
+                        break;
+                    default:
+                        if (loginStarted) loginElapsed = now - loginStarted;
+                }
+            }
         });
     }
-
 }
 export const XH = window.XH = new XHClass();
