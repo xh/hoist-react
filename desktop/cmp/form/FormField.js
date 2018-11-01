@@ -62,6 +62,8 @@ export class FormField extends Component {
     blockChildren = ['TextInput', 'JsonInput', 'Select'];
 
     render() {
+        this.ensureConditions();
+
         const {model, field, label, minimal, className, labelFor, clickableLabel = true, ...rest} = this.props,
             hasFieldSupport = model && field && model.hasFieldSupport,
             fieldModel = hasFieldSupport ? model.getField(field) : null,
@@ -117,9 +119,6 @@ export class FormField extends Component {
         const {model, field, minimal, disabled} = this.props,
             item = this.props.children;
 
-        throwIf(!item || isArray(item) || !(item.type.prototype instanceof HoistInput), 'FormField child must be a single component that extends HoistInput.');
-        throwIf(item.props.field || item.props.model, 'HoistInputs should not declare "field" or "model" when used with FormField');
-
         const leftIcon = notValid ? this.leftIcon(item) : {},
             target = React.cloneElement(item, {model, field, disabled, id: idAttr, ...leftIcon});
 
@@ -150,6 +149,12 @@ export class FormField extends Component {
                 {errors.map((it, idx) => <li key={idx}>{it}</li>)}
             </ul>
         );
+    }
+
+    ensureConditions() {
+        const item = this.props.children;
+        throwIf(!item || isArray(item) || !(item.type.prototype instanceof HoistInput), 'FormField child must be a single component that extends HoistInput.');
+        throwIf(item.props.field || item.props.model, 'HoistInputs should not declare "field" or "model" when used with FormField');
     }
 
 }
