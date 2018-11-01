@@ -6,21 +6,25 @@
  */
 
 import {HoistModel, XH} from '@xh/hoist/core';
-import {isPlainObject, isObject, difference, isEmpty, without, pullAllWith, isEqual} from 'lodash';
+import {isString, difference, isEmpty, without, pullAllWith, isEqual, keys} from 'lodash';
 import {observable, action, bindable} from '@xh/hoist/mobx';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 
 @HoistModel
 export class DimensionChooserModel {
 
     @observable.ref value = null;
-    @observable.ref pendingDims = null;
 
+    // Immutable properties
     maxHistoryLength = null;
     maxDepth = null;
-    dimensions = null;
-    history = null;
     historyPreference = null;
+    dimensions = null;
+    dimensionVals = null;
+
+    // Internal state
+    history = null;
+    @observable.ref pendingValue = null;
 
     //-------------------------
     // Popover rendering
@@ -28,130 +32,122 @@ export class DimensionChooserModel {
     @bindable isMenuOpen = false;
     @bindable isAddNewOpen = false;
 
-
     constructor({
         dimensions,
-        defaultDims,
+        defaultValue,
         historyPreference,
         maxHistoryLength = 5,
         maxDepth = 4
     }) {
-        this.dimensions = this.normalizeDimensions(dimensions);
         this.maxHistoryLength = maxHistoryLength;
         this.maxDepth = maxDepth;
-
-        this.allDims = this.dimensions.map(d => d.value);
-
         this.historyPreference = historyPreference;
-        const historyFromPrefs = this.loadHistory();
 
-        if (isEmpty(historyFromPrefs)) {
-            console.warn('XH Dimension Chooser failed to load user history');
-            this.history = withDefault(defaultDims, [[this.allDims[0]]]);
-        } else {
-            this.history = historyFromPrefs;
-        }
+        this.dimensions = this.normalizeDimensions(dimensions);
+        this.dimensionVals = keys(this.dimensions);
+
+        const history = this.loadHistory();
+        this.history = isEmpty(history) ?
+            withDefault([defaultValue], [[this.dimensionVals[0]]]) :
+            history;
 
         this.value = this.history[0];
-        this.pendingDims = [];
+        this.pendingValue = [];
     }
 
     @action
-    addDim(dim, i) {
-        const newDims = without(this.pendingDims, dim);
-        newDims[i] = dim;
-        if (this.toRichDim(dim).isLeafColumn) newDims.splice(i + 1);
+    setValue(value) {
+        // Validate?
+        this.value = value;
+        this.addToHistory(value);
+    }
 
-        this.pendingDims = newDims;
+    //---------------------------------
+    // Edit methods for add menu
+    //---------------------------------
+    @action
+    addPendingDim(dim, i) {
+        const newValue = without(this.pendingValue, dim);
+        newValue[i] = dim;
+        if (this.dimensions[dim].leaf) newValue.splice(i + 1);
+
+        this.pendingValue = newValue;
     }
 
     @action
-    removeDim(dim) {
-        this.pendingDims = without(this.pendingDims, dim);
+    removePendingDim(dim) {
+        this.pendingValue = without(this.pendingValue, dim);
     }
 
     @action
-    setDimsFromHistory(idx) {
-        this.pendingDims = this.history[idx];
-        this.commitPendingDims();
-    }
-
-    @action
-    commitPendingDims() {
-        const {pendingDims} = this;
-
-        this.value = pendingDims;
-        this.saveHistory(pendingDims);
-
+    commitPendingValue() {
+        this.setValue(this.pendingValue);
         this.setIsMenuOpen(false);
     }
 
+    //------------------------------
+    // Render Helpers for add menu
+    //-------------------------------
+    get leafInPending() {
+        this.pendingValue.some(dim => this.dimensions[dim].leaf);
+    }
+
+    dimOptionsForLevel(level) {
+        const remainingDims = difference(this.dimensionVals, this.pendingValue);
+        const childDims = this.pendingValue.slice(level + 1) || [];
+        return [...remainingDims, ...childDims].map(it => this.dimensions[it]);
+    }
 
     //-------------------------
     // Implementation
     //-------------------------
-
     loadHistory() {
-        return XH.prefService.get(this.historyPreference, null);
+        const {historyPreference} = this,
+            {prefService} = XH;
+        warnIf(
+            !prefService.hasKey(historyPreference),
+            `Dimension Chooser failed to load user history: '${historyPreference}'`
+        );
+
+        return prefService.get(historyPreference, null);
     }
 
-    saveHistory(newDims) {
-        const {history, historyPreference} = this;
+    addToHistory(value) {
+        const {history, historyPreference} = this,
+            {prefService} = XH;
 
-        if (isEmpty(newDims)) return;                                    // Don't save empty dimensions array
-        pullAllWith(history, [newDims], isEqual);                       // Remove duplicates
-        if (history.length >= this.maxHistoryLength) history.pop();     // Don't allow to go over max history length
+        pullAllWith(history, [value], isEqual);                         // Remove duplicates
 
-        history.unshift(newDims);
-        if (XH.prefService.hasKey(historyPreference)) XH.prefService.set(historyPreference, history);
-    }
+        history.unshift(value);
+        if (history.length > this.maxHistoryLength) history.pop();     // trim if needed
 
-
-    //-------------------------
-    // Render helpers
-    //-------------------------
-    get leafSelected() {
-        return this.dimensions.filter((dim) => this.pendingDims.slice().includes(dim.value) &&
-            dim.isLeafColumn).length > 0;
-    }
-
-    get remainingDims() {
-        return this.toRichDim(difference(this.allDims, this.pendingDims));
-    }
-
-    availableDims = (i) => {
-        const dimChildren = this.toRichDim(this.pendingDims.slice(i + 1));
-        return [...this.remainingDims, ...dimChildren];
+        if (prefService.hasKey(historyPreference)) {
+            prefService.set(historyPreference, history);
+        }
     }
 
     //-------------------------
     // Value handling
     //-------------------------
-
-    toRichDim = (value) => {
-        const {dimensions} = this,
-            retFn = (val) => dimensions.find(dim => dim.value === val);
-        return isObject(value) ?
-            value.map((it) => retFn(it)) :
-            retFn(value);
-    }
-
     normalizeDimensions(dims) {
         dims = dims || [];
-        return dims.map(it => this.createDimension(it));
+        const ret = {};
+        dims.forEach(it => {
+            const dim = this.createDimension(it);
+            ret[dim.value] = dim;
+        });
+        return ret;
     }
 
     createDimension(src) {
-        const srcIsObject = isPlainObject(src);
+        src = isString(src) ? {value: src} : src;
 
         throwIf(
-            srcIsObject && !src.hasOwnProperty('value'),
-            "Select options/values provided as Objects must define a 'value' property."
+            !src.hasOwnProperty('value'),
+            "Dimensions provided as Objects must define a 'value' property."
         );
 
-        return srcIsObject ?
-            {label: withDefault(src.label, src.value), isLeafColumn: withDefault(src.leaf, false), ...src} :
-            {label: src != null ? src.toString() : '-null-', value: src, isLeafColumn: false};
+        return {label: src.value, leaf: false, ...src};
     }
 
 }

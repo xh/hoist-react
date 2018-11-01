@@ -13,6 +13,7 @@ import {Icon} from '@xh/hoist/icon';
 import {div} from '@xh/hoist/cmp/layout';
 import {withDefault} from '@xh/hoist/utils/js';
 import {select} from '@xh/hoist/desktop/cmp/form';
+import {size, isEmpty} from 'lodash';
 
 import './DimensionChooser.scss';
 
@@ -48,24 +49,24 @@ export class DimensionChooser extends Component {
     }
 
     onDimChange = (dim, i) => {
-        this.model.addDim(dim, i);
+        this.model.addPendingDim(dim, i);
     }
 
     onAddNewClick = () => {
-        this.model.pendingDims = this.model.value;
+        this.model.pendingValue = this.model.value;
         this.model.setIsAddNewOpen(true);
     }
 
     onSaveSelected = () => {
-        this.model.commitPendingDims();
+        this.model.commitPendingValue();
     }
 
     onBackSelected = () => {
         this.model.setIsAddNewOpen(false);
     }
 
-    onSetFromHistory = (idx) => {
-        this.model.setDimsFromHistory(idx);
+    onSetFromHistory = (value) => {
+        this.model.setValue(value);
     }
 
     onCancelSelected = () => {
@@ -91,10 +92,10 @@ export class DimensionChooser extends Component {
 
     prepareDimensionMenu() {
         const {maxWidth, minWidth} = this.props,
-            {value, toRichDim, isMenuOpen, isAddNewOpen} = this.model;
+            {value, dimensions, isMenuOpen, isAddNewOpen} = this.model;
 
         const target = button({
-            item: toRichDim(value).map(it => it.label).join(' \u203a '),
+            item: value.map(it => dimensions[it].label).join(' \u203a '),
             style: {maxWidth, minWidth},
             onClick: () => this.onTargetClick()
         });
@@ -163,30 +164,32 @@ export class DimensionChooser extends Component {
     //--------------------
 
     renderSelectChildren() {
-        const {pendingDims, availableDims, toRichDim, maxDepth, allDims, leafSelected} = this.model;
-        let children = pendingDims.map((dim, i) => {
+        const {pendingValue, dimensions, dimOptionsForLevel, maxDepth, leafInPending} = this.model;
+        let children = pendingValue.map((dim, i) => {
+            const options = dimOptionsForLevel.call(this.model, i);
             return hbox({
                 className: 'xh-dim-popover-row',
                 style: {marginLeft: 10*i},
                 items: [
                     select({
+                        options,
                         enableFilter: false,
                         width: this.props.minWidth - 10*i - 33,
-                        options: availableDims(i),
-                        value: toRichDim(dim).label,
-                        onChange: (newDim) => this.onDimChange(newDim, i)
+                        value: dimensions[dim].label,
+                        onChange: (newDim) => this.onDimChange(newDim, i),
+                        disabled: isEmpty(options)
                     }),
                     button({
                         icon: Icon.x(),
                         minimal: true,
-                        disabled: pendingDims.length === 1,
-                        onClick: () => this.model.removeDim(dim)
+                        disabled: pendingValue.length === 1,
+                        onClick: () => this.model.removePendingDim(dim)
                     })
                 ]
             });
         });
 
-        children = pendingDims.length === Math.min(maxDepth, allDims.length)  || leafSelected ?
+        children = pendingValue.length === Math.min(maxDepth, size(dimensions)) || leafInPending ?
             children :
             this.appendAddDim(children);
 
@@ -194,18 +197,19 @@ export class DimensionChooser extends Component {
     }
 
     appendAddDim(children) {
-        const {pendingDims, remainingDims} = this.model;
-        const indent = (pendingDims.length) * 10;
+        const {pendingValue, dimOptionsForLevel} = this.model,
+            pendingCount = pendingValue.length,
+            indent = pendingCount * 10;
         children.push(
             box({
                 style: {marginLeft: indent},
                 items: [
                     select({
+                        options: dimOptionsForLevel.call(this.model, pendingCount),
                         className: 'xh-dim-popover-add-dim',
                         width: this.props.minWidth - indent - 33,
                         enableFilter: false,
-                        options: remainingDims,
-                        onChange: (newDim) => this.onDimChange(newDim, pendingDims.length),
+                        onChange: (newDim) => this.onDimChange(newDim, pendingCount),
                         placeholder: 'Add...'
                     })
                 ]
@@ -216,18 +220,18 @@ export class DimensionChooser extends Component {
     }
 
     renderHistoryItems() {
-        const {history, toRichDim} = this.model;
+        const {history, dimensions} = this.model;
         return buttonGroup({
             className: 'xh-dim-history-items',
             vertical: true,
             items: [
                 history.map((h, i) => {
-                    h = toRichDim(h);
+                    h = h.map(h => dimensions[h].label);
                     return button({
                         minimal: true,
-                        title: ` ${h.map((it, i) => ' '.repeat(i) + '\u203a '.repeat(i ? 1 : 0) + it.label).join('\n')}`,
-                        text: `${h.map(it => it.label).join(' \u203a ')}`,
-                        onClick: () => this.onSetFromHistory(i),
+                        title: ` ${h.map((it, i) => ' '.repeat(i) + '\u203a '.repeat(i ? 1 : 0) + it).join('\n')}`,
+                        text: h.join(' \u203a '),
+                        onClick: () => this.onSetFromHistory(history[i]),
                         className: Classes.POPOVER_DISMISS,
                         key: `dim-history-${i}`
                     });
