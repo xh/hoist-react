@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
-import {isObject, forOwn, mixin} from 'lodash';
+import {isObject, isObjectLike, forOwn, mixin} from 'lodash';
 import _inflection from 'lodash-inflection';
 
 mixin(_inflection);
@@ -64,4 +64,15 @@ export function warnIf(condition, message) {
 
 export function withDefault(...args) {
     return args.find(it => it !== undefined);
+}
+
+export function deepFreeze(object) {
+    // Adapted from MDN
+    if (!isObjectLike(object)) return object;
+
+    const propNames = Object.getOwnPropertyNames(object);
+    for (const name of propNames) {
+        deepFreeze(object[name]);
+    }
+    return Object.freeze(object);
 }
