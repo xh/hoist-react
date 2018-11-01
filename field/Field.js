@@ -7,7 +7,7 @@
 
 import {HoistModel} from '@xh/hoist/core';
 import {observable, when} from '@xh/hoist/mobx';
-import {flatten} from 'lodash';
+import {flatten, isEmpty} from 'lodash';
 import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
 import {action, computed} from '@xh/hoist/mobx';
 
@@ -33,14 +33,19 @@ export class Field {
     /** @member {String[]} list of validation errors.  Null if the validity state not computed. */
     @observable.ref errors = null;
 
-    @observable _validationRunning = false;
+    /** @member {boolean}
+     * Should the GUI currently display this validation? False when a validation is "passive",
+     * and activateDisplay() has not yet been called, because the field has not yet been visited
+     * or edited since the last reset.
+     **/
+    @observable displayActive = false;
+
     _validationTask = new PendingTaskModel();
     _validationRunId = 0;
 
     //-----------------------------
     // Accessors and lifecycle
     //-----------------------------
-    
     /** Current value of field. */
     get value() {
         return this.model[this.name];
@@ -57,8 +62,8 @@ export class Field {
     @action
     reset() {
         this.model[this.name] = this.initialValue;
-        this._validationRunning = false;
         this.errors = null;
+        this.displayActive = false;
     }
 
     /**
@@ -74,10 +79,10 @@ export class Field {
         this.displayName = displayName;
         this.addRules(...rules);
         this.addAutorun(() => {
-            if (this._validationRunning) this.computeValidation();
+            this.computeValidation();
         });
         this.addAutorun(() => {
-            if (this.isDirty) this.startValidating();
+            if (this.isDirty) this.activateDisplay();
         });
     }
 
@@ -86,20 +91,23 @@ export class Field {
     // Validation
     //------------------------------------
 
-    /** Start reactive validation of this field. */
+    /**
+     * Call to indicate the state of this validation should be shown to the user.  Called automatically
+     * when field is dirtied.  May also be called manually, e.g. on blur, or when the user requests
+     * to move to next page, validate button, etc.
+     **/
     @action
-    startValidating() {
-        this._validationRunning = true;
+    activateDisplay() {
+        this._displayActive = true;
     }
 
     /** Validation state of the field. */
     get validationState() {
         const VS = ValidationState;
-        const {errors, _validationRunning} = this;
-
-        if (!_validationRunning || errors == null) return VS.Unknown;
-
-        return errors.length ? VS.NotValid : VS.Valid;
+        const {errors, rules} = this;
+        return (errors == null) ?
+            isEmpty(rules) ? VS.Valid : VS.Unknown :
+            isEmpty(errors) ? VS.NotValid : VS.Valid;
     }
 
     /** True if this field is confirmed to be Valid. **/
@@ -132,18 +140,13 @@ export class Field {
     }
     
     /**
-     * Return a resolved validation state of the field, starting validation if necessary.
-     *
-     * Validation on the field will automatically be triggered by an actual change to
-     * the field, but can also be triggered manually by this method.  For example,
-     * HoistInput will trigger this on blur to ensure that fields associated with
-     * "visited" inputs are validated, even if they are never changed.
+     * Return a resolved validation state of the field, waiting for any pending
+     * validations to complete, if necessary.
      *
      * @returns {Promise<String>} - the validation state of the object.
      */
     @action
     async validateAsync() {
-        this.startValidating();
         await when(() =>  this.validationState != ValidationState.Unknown && !this.validationPending);
         return this.validationState;
     }
