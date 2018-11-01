@@ -32,6 +32,9 @@ export class TextArea extends HoistInput {
         /** True to take up the full width of container. */
         fill: PT.bool,
 
+        /** Height of the control in pixels. */
+        height: PT.number,
+
         /** True to select contents when control receives focus. */
         selectOnFocus: PT.bool,
 
@@ -63,13 +66,13 @@ export class TextArea extends HoistInput {
             placeholder: props.placeholder,
             spellCheck: withDefault(props.spellCheck, false),
             tabIndex: props.tabIndex,
-            type: props.type,
 
             id: props.id,
             className: this.getClassName(),
             style: {
-                ...props.style,
-                width: props.width
+                height: props.height,
+                width: props.width,
+                ...props.style
             },
 
             onBlur: this.onBlur,

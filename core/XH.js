@@ -390,7 +390,15 @@ class XHClass {
 
         try {
             await this.installServicesAsync(FetchService, LocalStorageService);
-            await this.installServicesAsync(EnvironmentService, TrackService, IdleService);
+            await this.installServicesAsync(TrackService, IdleService);
+
+            // Special handling for EnvironmentService, which makes the first fetch back to the Grails layer.
+            try {
+                await this.installServicesAsync(EnvironmentService);
+            } catch (e) {
+                throw `Unable to load environment info - is the server running and reachable? (${e.message})`;
+            }
+
             this.setAppState(S.PRE_AUTH);
 
             // Check if user has already been authenticated (prior login, SSO)...

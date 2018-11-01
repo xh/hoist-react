@@ -65,7 +65,7 @@ export class FormField extends Component {
 
     baseClassName = 'xh-form-field';
 
-    blockChildren = ['TextInput', 'JsonInput'];
+    blockChildren = ['TextInput', 'JsonInput', 'Select'];
 
     constructor(props) {
         super(props);
