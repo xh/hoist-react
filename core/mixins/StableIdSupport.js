@@ -12,7 +12,7 @@ import {provideMethods, overrideMethods, markClass, withDefault} from '@xh/hoist
  * Mixin to add ability to generate globally unique ids for a component that are
  * stable within multiple invocations of render()
  */
-export function StableIdSupoort(C) {
+export function StableIdSupport(C) {
 
     markClass(C, 'hasStableIdSupport');
 
