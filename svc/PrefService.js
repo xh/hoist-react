@@ -93,8 +93,8 @@ export class PrefService {
         const oldValue = this.get(key);
         if (isEqual(oldValue, value)) return;
 
-        // Change local value and fire.
-        deepFreeze(value);
+        // Change local value to sanitized copy and fire.
+        deepFreeze(cloneDeep(value));
         this._data[key].value = value;
         this.fireEvent('prefChange', {key, value, oldValue});
 
