@@ -6776,11 +6776,6 @@ react-dom@~16.5.2:
     prop-types "^15.6.2"
     schedule "^0.5.0"
 
-react-html-id@^0.1.4:
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/react-html-id/-/react-html-id-0.1.4.tgz#0194ae54f0eeb57140693d283e2767a4d204a914"
-  integrity sha512-NGXQP2HwtJlyQh3rPFMg0+ToqNRM+KP+kIxEu0eb148XO7LwYMqd18qK0y4QGstvJJbsym0tgi1Yi5Ct1RE1ZA==
-
 react-input-autosize@^2.2.1:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/react-input-autosize/-/react-input-autosize-2.2.1.tgz#ec428fa15b1592994fb5f9aa15bb1eb6baf420f8"

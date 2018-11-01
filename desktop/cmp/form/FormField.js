@@ -6,10 +6,9 @@
  */
 import React, {Component} from 'react';
 import PT from 'prop-types';
-import {enableUniqueIds} from 'react-html-id';
 import {isArray, isUndefined} from 'lodash';
 
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, StableIdSupport} from '@xh/hoist/core';
 import {formGroup, spinner, tooltip} from '@xh/hoist/kit/blueprint';
 import {HoistInput} from '@xh/hoist/cmp/form';
 import {div, fragment, span} from '@xh/hoist/cmp/layout';
@@ -31,6 +30,7 @@ import './FormField.scss';
  * Accepts any props supported by Blueprint's FormGroup.
  */
 @HoistComponent
+@StableIdSupport
 export class FormField extends Component {
 
     static propTypes = {
@@ -53,12 +53,6 @@ export class FormField extends Component {
         /** Display warning glyph in the far left side of the input (TextField, NumberInput only) */
         leftErrorIcon: PT.bool,
 
-        /**
-         * Sets "for" attribute on label element, and "id" attribute on input element.
-         * Ignored if clickableLabel == false.
-         */
-        labelFor: PT.string,
-
         /** True by default.  If false, clicking on label won't put the label's control in focus. */
         clickableLabel: PT.bool
     };
@@ -66,11 +60,6 @@ export class FormField extends Component {
     baseClassName = 'xh-form-field';
 
     blockChildren = ['TextInput', 'JsonInput', 'Select'];
-
-    constructor(props) {
-        super(props);
-        enableUniqueIds(this);
-    }
 
     render() {
         const {model, field, label, minimal, className, labelFor, clickableLabel = true, ...rest} = this.props,
@@ -81,8 +70,9 @@ export class FormField extends Component {
             notValid = fieldModel && fieldModel.isNotValid,
             errors = fieldModel ? fieldModel.errors : [],
             labelStr = isUndefined(label) ? (fieldModel ? fieldModel.displayName : null) : label,
-            uniqueId = this.nextUniqueId(),
-            idAttr = !clickableLabel ? undefined : labelFor ? labelFor : uniqueId,
+            stableId = this.stableId(),
+            inputId = this.props.children.props.id,
+            idAttr = inputId ? inputId : stableId,
             requiredStr = isRequired ? span(' *') : null,
             item = this.prepareChild(notValid, errors, idAttr),
             classes = [];
@@ -98,7 +88,7 @@ export class FormField extends Component {
                 item: labelStr ? span(labelStr, requiredStr) : null,
                 className: minimal && notValid ? 'xh-form-field-error-label' : null
             }),
-            labelFor: idAttr,
+            labelFor: clickableLabel ? idAttr : null,
             className: this.getClassName(classes),
             helperText: !minimal ? fragment(
                 div({
