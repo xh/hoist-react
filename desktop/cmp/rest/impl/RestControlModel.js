@@ -29,7 +29,7 @@ export class RestControlModel  {
                 track: () => this.type,
                 run: () => {
                     if (this.parent.isDirty) {
-                        const defVal = this.type == 'bool' ? false : null;
+                        const defVal = this.type === 'bool' ? false : null;
                         this.setValue(defVal);
                     }
                 }
@@ -39,8 +39,8 @@ export class RestControlModel  {
 
     @computed
     get value()  {
-        const {record, field} = this;
-        return record ? record[field.name] : null;
+        const {record, field, handleBoolean} = this;
+        return record ? handleBoolean(record[field.name]) : null;
     }
 
     setValue(value) {
@@ -88,5 +88,10 @@ export class RestControlModel  {
             default:
                 return rawType || 'string';
         }
+    }
+
+    handleBoolean = (val) => {
+        const convertToFalse = this.field.typeField && this.type === 'bool' && val === 'false';
+        return convertToFalse ? false : val;
     }
 }
