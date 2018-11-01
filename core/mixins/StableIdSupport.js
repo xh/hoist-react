@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist';
+import {XH} from '@xh/hoist/core';
 import {provideMethods, overrideMethods, markClass, withDefault} from '@xh/hoist/utils/js';
 
 /**
@@ -16,16 +16,16 @@ export function StableIdSupoort(C) {
 
     markClass(C, 'hasStableIdSupport');
 
-    overrideMethods({
-        render(exist)  {
+    overrideMethods(C, {
+        render(existing)  {
             return function() {
                 this._renderUniqueId = 0;
-                exist.call(this);
+                return existing.call(this);
             };
         }
     });
 
-    provideMethods({
+    provideMethods(C, {
         stableId() {
             this._componentUniqueId = withDefault(this._componentUniqueId || XH.genId());
             this._renderUniqueId = withDefault(this._renderUniqueId, 0);
