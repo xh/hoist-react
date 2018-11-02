@@ -9,8 +9,8 @@ import {XH} from '@xh/hoist/core';
 import {provideMethods, overrideMethods, markClass, withDefault} from '@xh/hoist/utils/js';
 
 /**
- * Mixin to add ability to generate globally unique ids for a component that are
- * stable within multiple invocations of render()
+ * Adds ability to Component to generate globally unique ids for an instance that are
+ * stable across multiple invocations of render().
  */
 export function StableIdSupport(C) {
 
