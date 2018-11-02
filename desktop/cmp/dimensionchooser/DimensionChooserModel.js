@@ -6,23 +6,21 @@
  */
 
 import {HoistModel, XH} from '@xh/hoist/core';
-import {isString, difference, isEmpty, without, pullAllWith, isEqual, keys} from 'lodash';
+import {isString, isArray, difference, isEmpty, without, pullAllWith, isEqual, keys} from 'lodash';
 import {observable, action, bindable} from '@xh/hoist/mobx';
-import {throwIf, warnIf} from '@xh/hoist/utils/js';
+import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 
 /**
  * This model is responsible for managing the state of a DimensionChooser component,
- * which allows a user to control the hierarchy of a Grid's tree column. Its observable API
- * is a list of strings which represents a dimension grouping.
+ * which allows a user to a list of dimensions for any grouping based API. It produces an
+ * observable list of strings which represents a dimension grouping.
  *
  * To connect this model to an application:
- *  1) Create a new instance of this model with a list of dimensions corresponding to
- *  the grid's tree column.
- *  2) To persist user history, create a application preference with type 'JSON' and
- *  pass its name as a string to this model.
+ *  1) Create a new instance of this model with a list of dimensions.
+ *  2) To persist user history, create an application preference with type 'JSON' and
+ *  pass its key to this model.
  *  3) Track this model's 'value' property and fetch new data when it updates.
  */
-
 @HoistModel
 export class DimensionChooserModel {
 
@@ -46,12 +44,12 @@ export class DimensionChooserModel {
     @bindable isAddNewOpen = false;
 
     /**
-     * @param {string[]|Object[]} dimensions - possible dimensions on which to set the treeColumn.
-     *      Each object accepts value, label, and leaf keys, where leaf: true indicates a leafColumn.
-     * @param {string[]} initialValue - Initial value of the control if no user history is found on the server.
-     * @param {string} historyPreference - UserPreference key used to persist grouping history.
-     * @param {number} maxHistoryLength - dimension groupings to save. Default is 5.
-     * @param {number} maxDepth - dimensions allowed in a single grouping.
+     * @param {string[]|Object[]} dimensions - possible dimensions.
+     *      Each object accepts value, label, and leaf keys, where leaf: true indicates a leaf
+     * @param {string[]} [initialValue] - Initial value of the control if no user history is found on the server.
+     * @param {string} [historyPreference] - Preference key used to persist grouping history.
+     * @param {number} [maxHistoryLength] - dimension groupings to save.
+     * @param {number} [maxDepth] - dimensions allowed in a single grouping.
      */
 
     constructor({
@@ -69,18 +67,15 @@ export class DimensionChooserModel {
         this.dimensionVals = keys(this.dimensions);
 
         // Set control's initial value with priorities 1) prefService 2) initialValue prop 3) 1st item in dimensions prop
-        const history = this.loadHistory(),
-            defaultVal = initialValue ? [initialValue] : [[this.dimensionVals[0]]];
-        this.history = isEmpty(history) ? defaultVal : history;
-
-        this.value = this.history[0];
+        this.history = this.loadHistory();
+        initialValue = withDefault(initialValue,  [this.dimensionVals[0]]);
+        this.value = !isEmpty(this.history) ? this.history[0] : initialValue;
         this.pendingValue = [];
     }
 
-    /** Update the control's value. Should trigger a load and re-render of the grid */
+    /** Update the control's value. */
     @action
     setValue(value) {
-        // Validate?
         this.value = value;
         this.addToHistory(value);
     }
@@ -88,21 +83,23 @@ export class DimensionChooserModel {
     //---------------------------------
     // Edit methods for add menu
     //---------------------------------
-    /** Add or replace a dimension in the add menu*/
+    /** Add or replace a dimension in the add menu. */
     @action
-    addPendingDim(dim, i) {
-        const newValue = without(this.pendingValue, dim);           // Ensure the new dimension hasn't been selected at another level
-        newValue[i] = dim;                                          // Insert the new dimension
-        if (this.dimensions[dim].leaf) newValue.splice(i + 1);      // If it's a leaf dimension, remove any subordinate dimensions
+    addPendingDim(dim, level) {
+        const newValue = without(this.pendingValue, dim);               // Ensure the new dimension hasn't been selected at another level
+        newValue[level] = dim;                                          // Insert the new dimension
+        if (this.dimensions[dim].leaf) newValue.splice(level + 1);      // If it's a leaf dimension, remove any subordinate dimensions
 
-        this.pendingValue = newValue;                               // Update intermediate state
+        this.pendingValue = newValue;                                   // Update intermediate state
     }
-    /** Remove a dimension from the add menu */
+
+    /** Remove a dimension from the add menu. */
     @action
     removePendingDim(dim) {
         this.pendingValue = without(this.pendingValue, dim);
     }
-    /** Save add menu dimensions as the control's value and close popover */
+
+    /** Save add menu dimensions as the control's value. */
     @action
     commitPendingValue() {
         this.setValue(this.pendingValue);
@@ -116,7 +113,8 @@ export class DimensionChooserModel {
     get leafInPending() {
         this.pendingValue.some(dim => this.dimensions[dim].leaf);
     }
-    /** Options passed to the select control at each leave of the add menu */
+
+    /** Options passed to the select control at each level of the add menu. */
     dimOptionsForLevel(level) {
         // Dimensions which do not appear in the add menu
         const remainingDims = difference(this.dimensionVals, this.pendingValue);
@@ -136,17 +134,22 @@ export class DimensionChooserModel {
             `Dimension Chooser failed to load user history: '${historyPreference}'`
         );
 
-        return prefService.get(historyPreference, null);
+        return this.validateHistory(prefService.get(historyPreference, []));
+    }
+
+    validateHistory(history) {
+        if (isEmpty(history) || !isArray(history[0])) return history;
+        return history.filter(value => value.every(h => this.dimensionVals.includes(h)));
     }
 
     addToHistory(value) {
         const {history, historyPreference} = this,
             {prefService} = XH;
 
-        pullAllWith(history, [value], isEqual);                         // Remove duplicates
+        pullAllWith(history, [value], isEqual); // Remove duplicates
 
         history.unshift(value);
-        if (history.length > this.maxHistoryLength) history.pop();     // trim if needed
+        if (history.length > this.maxHistoryLength) history.pop();
 
         if (prefService.hasKey(historyPreference)) {
             prefService.set(historyPreference, history);
@@ -173,8 +176,6 @@ export class DimensionChooserModel {
             !src.hasOwnProperty('value'),
             "Dimensions provided as Objects must define a 'value' property."
         );
-
         return {label: src.value, leaf: false, ...src};
     }
-
 }
