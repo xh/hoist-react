@@ -8,24 +8,19 @@
     }
   }
 }
-
 .xh-dim-add-popover {
   .xh-dim-popover-selects {
-    padding: 3px 0 3px 3px;
+    padding: 3px 0;
     .xh-dim-popover-row {
       margin-bottom: 2px;
       button {
         padding: 0;
       }
     }
-    .xh-dim-popover-add-dim {
-      margin-right: 30px;
-    }
   }
 }
 
 .xh-dim-history-popover {
-  background-color: var(--xh-bg);
   .xh-dim-history-items {
     padding: 3px 0;
     button {

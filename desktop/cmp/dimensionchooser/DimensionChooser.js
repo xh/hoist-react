@@ -17,6 +17,13 @@ import {size, isEmpty} from 'lodash';
 
 import './DimensionChooser.scss';
 
+/**
+ * Control which sets a grouping of dimensions on a tree-enabled Grid.
+ * Configured by a DimensionChooserModel.
+ *
+ * @see DimensionChooserModel
+ */
+
 @HoistComponent
 @LayoutSupport
 export class DimensionChooser extends Component {
@@ -27,6 +34,11 @@ export class DimensionChooser extends Component {
     };
 
     baseClassName = 'xh-dim-chooser';
+
+    /** Add menu style. Ensures proper alignment in appendAddDim */
+    INDENT = 10;        // Indentation unit applied at each level
+    X_BTN_WIDTH = 20;   // Minimum width of 'x' buttons
+    ROW_PAD = 3;        // Left padding
 
     constructor(props) {
         super(props);
@@ -126,7 +138,7 @@ export class DimensionChooser extends Component {
                         }),
                         button({
                             style: {flex: 2},
-                            icon: Icon.add(),
+                            icon: Icon.edit(),
                             title: 'Add a new grouping',
                             onClick: this.onAddNewClick
                         })
@@ -145,12 +157,12 @@ export class DimensionChooser extends Component {
                     items: [
                         button({
                             icon: Icon.arrowLeft(),
-                            style: {width: '40%'},
+                            style: {flex: 1},
                             onClick: () => this.onBackSelected()
                         }),
                         button({
                             icon: Icon.check(),
-                            style: {width: '60%'},
+                            style: {flex: 2},
                             onClick: () => this.onSaveSelected()
                         })
                     ]
@@ -164,23 +176,25 @@ export class DimensionChooser extends Component {
     //--------------------
 
     renderSelectChildren() {
-        const {pendingValue, dimensions, dimOptionsForLevel, maxDepth, leafInPending} = this.model;
+        const {pendingValue, dimensions, dimOptionsForLevel, maxDepth, leafInPending} = this.model,
+            {INDENT, X_BTN_WIDTH, ROW_PAD} = this;
         let children = pendingValue.map((dim, i) => {
             const options = dimOptionsForLevel.call(this.model, i);
             return hbox({
                 className: 'xh-dim-popover-row',
-                style: {marginLeft: 10*i},
+                style: {marginLeft: 10*i, paddingLeft: ROW_PAD},
                 items: [
                     select({
                         options,
                         enableFilter: false,
-                        width: this.props.minWidth - 10*i - 33,
+                        width: this.props.minWidth - (INDENT * i) - (X_BTN_WIDTH + ROW_PAD),
                         value: dimensions[dim].label,
                         onChange: (newDim) => this.onDimChange(newDim, i),
                         disabled: isEmpty(options)
                     }),
                     button({
                         icon: Icon.x(),
+                        style: {minWidth: X_BTN_WIDTH},
                         minimal: true,
                         disabled: pendingValue.length === 1,
                         onClick: () => this.model.removePendingDim(dim)
@@ -199,15 +213,16 @@ export class DimensionChooser extends Component {
     appendAddDim(children) {
         const {pendingValue, dimOptionsForLevel} = this.model,
             pendingCount = pendingValue.length,
-            indent = pendingCount * 10;
+            marginLeft = pendingCount * this.INDENT + this.ROW_PAD,
+            width = this.props.minWidth - marginLeft - this.X_BTN_WIDTH;
         children.push(
             box({
-                style: {marginLeft: indent},
+                style: {marginLeft},
                 items: [
                     select({
                         options: dimOptionsForLevel.call(this.model, pendingCount),
                         className: 'xh-dim-popover-add-dim',
-                        width: this.props.minWidth - indent - 33,
+                        width,
                         enableFilter: false,
                         onChange: (newDim) => this.onDimChange(newDim, pendingCount),
                         placeholder: 'Add...'
