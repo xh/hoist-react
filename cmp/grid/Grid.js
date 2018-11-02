@@ -74,6 +74,7 @@ export class Grid extends Component {
 
     static ROW_HEIGHT = 28;
     static COMPACT_ROW_HEIGHT = 24;
+    static MULTIFIELD_ROW_HEIGHT = 38;
 
     // The minimum required row height specified by the columns (if any) */
     @computed

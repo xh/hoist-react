@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {vbox, hbox, span} from '@xh/hoist/cmp/layout';
-import {throwIf} from '@xh/hoist/utils/js';
+import {warnIf, throwIf} from '@xh/hoist/utils/js';
 import {isString} from 'lodash';
 
 import {SubField} from './SubField';
@@ -44,7 +44,7 @@ class MultiFieldCell extends Component {
             hasSubFields = !!subFields.length;
 
         // Set rowHeight on column
-        column.rowHeight = hasSubFields ? 38 : undefined;
+        warnIf(!column.rowHeight, 'MultiFieldRenderer works best with rowHeight: Grid.MULTIFIELD_ROW_HEIGHT');
 
         return vbox({
             className: hasSubFields ? 'xh-multifield-renderer' : '',
