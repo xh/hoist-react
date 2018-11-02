@@ -53,6 +53,9 @@ export class Select extends HoistInput {
         /** True to allow entry/selection of multiple values - "tag picker" style. */
         enableMulti: PT.bool,
 
+        /** Field on provided options for sourcing each option's display text (default `value`). */
+        labelField: PT.string,
+
         /** Function to return loading message during an async query. Passed current query input. */
         loadingMessageFn: PT.func,
 
@@ -70,6 +73,13 @@ export class Select extends HoistInput {
          */
         options: PT.array,
 
+        /**
+         * Function to render options in the dropdown list. Called for each option object (which
+         * will contain at minimum a value and label field, as well as any other fields present in
+         * the source objects). Returns a React.node.
+         */
+        optionRenderer: PT.func,
+
         /** Text to display when control is empty. */
         placeholder: PT.string,
 
@@ -84,7 +94,11 @@ export class Select extends HoistInput {
          * in the react-select API are guaranteed to be supported by this Hoist component,
          * and providing them directly can interfere with the implementation of this class.
          */
-        rsOptions: PT.object
+        rsOptions: PT.object,
+
+        /** Field on provided options for sourcing each option's value (default `value`). */
+        valueField: PT.string
+
     };
 
     baseClassName = 'xh-select';
@@ -117,6 +131,7 @@ export class Select extends HoistInput {
                 value: renderValue,
 
                 autoFocus: props.autoFocus,
+                formatOptionLabel: this.formatOptionLabel,
                 isDisabled: props.disabled,
                 isMulti: props.enableMulti,
                 menuPlacement: withDefault(props.menuPlacement, 'auto'),
@@ -130,7 +145,9 @@ export class Select extends HoistInput {
                 styles: this.getStylesConfig(),
                 theme: this.getThemeConfig(),
 
-                onChange: this.onSelectChange
+                onBlur: this.onBlur,
+                onChange: this.onSelectChange,
+                onFocus: this.onFocus
             };
 
         if (this.asyncMode) {
@@ -156,6 +173,11 @@ export class Select extends HoistInput {
             item: factory(rsProps),
             className: this.getClassName(),
             width: props.width,
+            onKeyDown: (e) => {
+                // Esc. can be used within the select to clear value / dismiss dropdown menu.
+                // Catch in this wrapper box - specifically to avoid dismissing dialogs.
+                if (e.key == 'Escape') e.stopPropagation();
+            },
             ...this.getLayoutProps()
         });
     }
@@ -202,15 +224,18 @@ export class Select extends HoistInput {
     // and Objects. Objects are validated/defaulted to ensure a label+value, with other fields
     // brought along to support Selects emitting value objects with ad hoc properties.
     toOption(src) {
-        const srcIsObject = isPlainObject(src);
+        const {props} = this,
+            srcIsObject = isPlainObject(src),
+            labelField = withDefault(props.labelField, 'label'),
+            valueField = withDefault(props.valueField, 'value');
 
         throwIf(
-            srcIsObject && !src.hasOwnProperty('value'),
-            "Select options/values provided as Objects must define a 'value' property."
+            srcIsObject && !src.hasOwnProperty(valueField),
+            `Select options/values provided as Objects must define a '${valueField}' property.`
         );
 
         return srcIsObject ?
-            {label: withDefault(src.label, src.value), ...src} :
+            {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]} :
             {label: src != null ? src.toString() : '-null-', value: src};
     }
 
@@ -255,17 +280,8 @@ export class Select extends HoistInput {
     //------------------------
     getStylesConfig() {
         return {
-            control: (base) => {
-                return {
-                    ...base,
-                    minHeight: 30
-                };
-            },
-            dropdownIndicator: (base) => {
-                return {...base, padding: 4};
-            },
+            // Support display within a dialog by boosting menu portal z-index.
             menuPortal: (base) => {
-                // Support display within a dialog by boosting menu portal z-index.
                 return {...base, zIndex: 999};
             }
         };
@@ -279,6 +295,14 @@ export class Select extends HoistInput {
                 borderRadius: 3
             };
         };
+    }
+
+    formatOptionLabel = (opt, params) => {
+        const {optionRenderer} = this.props;
+
+        // Always display the standard label string in the value container (context == 'value').
+        // If we need to expose customization here, we could consider a dedicated prop.
+        return (optionRenderer && params.context == 'menu') ? optionRenderer(opt) : opt.label;
     }
 
     noOptionsMessageFn = (params) => {
