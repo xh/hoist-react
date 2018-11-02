@@ -5,7 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {withDefault} from '@xh/hoist/utils/js';
 import {Component} from 'react';
 import PT from 'prop-types';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
@@ -30,18 +29,18 @@ export class Button extends Component {
     baseClassName = 'xh-button';
 
     render() {
-        const {icon, text, onClick, minimal, style, ...rest} = this.getNonLayoutProps();
+        const {icon, text, onClick, minimal = true, style, ...rest} = this.getNonLayoutProps();
         return bpButton({
             icon,
             text,
             onClick,
-            minimal: withDefault(minimal, true),
+            minimal,
             style: {
                 ...style,
                 ...this.getLayoutProps()
             },
             ...rest,
-            className: this.getClassName()
+            className: this.getClassName(minimal ? 'xh-button--minimal' : '')
         });
     }
 
