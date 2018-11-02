@@ -35,22 +35,22 @@ export class RecordActionBar extends Component {
         /** RecordAction configs. */
         actions: PT.arrayOf(PT.object).isRequired,
 
-        /** The data Record to associate with the actions. */
+        /** The data Record to associate with the actions. Required if selModel is omitted. */
         record: PT.oneOfType([PT.object, Record]),
 
-        /** The selection model used to determine the selected records */
+        /** The selection model used to determine the selected records. Required if record is omitted. */
         selModel: PT.instanceOf(StoreSelectionModel),
 
-        /** The grid model which contains the records we may act on. Required if record is omitted. */
+        /** The grid model which contains the records we may act on. */
         gridModel: PT.instanceOf(GridModel),
 
-        /** The column in a grid where this button is displayed */
+        /** The column in a grid where this button is displayed. */
         column: PT.instanceOf(Column),
 
-        /** Props to pass to the button components */
+        /** Props to pass to the button components. */
         buttonProps: PT.object,
 
-        /** Set to true to stack the buttons vertically */
+        /** Set to true to stack the buttons vertically. */
         vertical: PT.bool
     };
 
