@@ -63,6 +63,7 @@ export class Field {
     reset() {
         this.model[this.name] = this.initialValue;
         this.errors = null;
+        this.computeValidation();
         this.displayActive = false;
     }
 
