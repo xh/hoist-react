@@ -13,10 +13,9 @@ import {ValidationState} from '../validation/ValidationState';
 
 
 /**
- * Implementation object for FieldsSupport.
+ * Implementation object for FieldSupport.
  *
- * Allows the observation, cached aggregation, and bulk actions on the
- * state of all the individual fields.
+ * Allows observation, cached aggregation, and bulk actions on the state of all individual fields.
  *
  * @private
  */
