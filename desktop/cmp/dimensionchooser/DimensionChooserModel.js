@@ -69,13 +69,13 @@ export class DimensionChooserModel {
         this.dimensions = this.normalizeDimensions(dimensions);
         this.dimensionVals = keys(this.dimensions);
 
-        const history = this.loadHistory();
-        this.history = isEmpty(history) ?
-            withDefault([initialValue], [[this.dimensionVals[0]]]) :
-            history;
+        const history = this.loadHistory(),
+            defaultVal = initialValue ? [initialValue] : [[this.dimensionVals[0]]];
+        this.history = isEmpty(history) ? defaultVal : history;
 
         this.value = this.history[0];
         this.pendingValue = [];
+        console.log(this)
     }
 
     @action
