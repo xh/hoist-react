@@ -10,6 +10,19 @@ import {isString, difference, isEmpty, without, pullAllWith, isEqual, keys} from
 import {observable, action, bindable} from '@xh/hoist/mobx';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 
+/**
+ * This model is responsible for managing the state of a DimensionChooser component,
+ * which allows the user to control the hierarchy of a Grid's tree column. It exposes a 'value',
+ * an observable list of strings which represents a dimension grouping.
+ *
+ * To connect this model to an application:
+ *  1) Create a new instance of this model with a list of dimensions corresponding to
+ *  the grid's tree column.
+ *  2) To persist user history, create a application preference with type 'JSON' and
+ *  pass its name as a string to this model.
+ *  3) Track this model's value and fetch new data when it updates.
+ */
+
 @HoistModel
 export class DimensionChooserModel {
 
@@ -32,9 +45,19 @@ export class DimensionChooserModel {
     @bindable isMenuOpen = false;
     @bindable isAddNewOpen = false;
 
+    /**
+     *
+     * @param {string[]|Object[]} dimensions - possible dimensions on which to set the grid.
+     *      Object accepts value, label, and leaf keys, where leaf: true indicates a leafColumn.
+     * @param {string[]} initialValue - Initial value of the control if no user history is found.
+     * @param {string} historyPreference - UserPreference key used to persist grouping history.
+     * @param {number} maxHistoryLength - dimension groupings to save. Default is 5.
+     * @param {number} maxDepth - dimensions allowed in a single grouping.
+     */
+
     constructor({
         dimensions,
-        defaultValue,
+        initialValue,
         historyPreference,
         maxHistoryLength = 5,
         maxDepth = 4
@@ -48,7 +71,7 @@ export class DimensionChooserModel {
 
         const history = this.loadHistory();
         this.history = isEmpty(history) ?
-            withDefault([defaultValue], [[this.dimensionVals[0]]]) :
+            withDefault([initialValue], [[this.dimensionVals[0]]]) :
             history;
 
         this.value = this.history[0];
