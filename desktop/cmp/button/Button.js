@@ -22,8 +22,9 @@ export class Button extends Component {
 
     static propTypes = {
         icon: PT.element,
-        text: PT.string,
-        onClick: PT.func
+        minimal: PT.bool,
+        onClick: PT.func,
+        text: PT.string
     };
 
     baseClassName = 'xh-button';
@@ -32,13 +33,15 @@ export class Button extends Component {
         const {icon, text, onClick, minimal = true, style, ...rest} = this.getNonLayoutProps();
         return bpButton({
             icon,
-            text,
-            onClick,
             minimal,
+            onClick,
+            text,
+
             style: {
                 ...style,
                 ...this.getLayoutProps()
             },
+
             ...rest,
             className: this.getClassName(minimal ? 'xh-button--minimal' : '')
         });
