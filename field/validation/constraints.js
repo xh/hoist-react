@@ -6,19 +6,24 @@
  */
 
 import {fmtDate} from '@xh/hoist/format';
-import {isNil, isString} from 'lodash';
+import {isNil, isString, isArray} from 'lodash';
 /**
  * A set of validation functions to assist in form field validation.
  */
 
 /**
  * Validate that a value is not null or undefined.
- * For strings this validation will also fail empty strings, or strings with blanks only.
+ * For strings this validation will fail if empty or containing only whitespace.
+ * For arrays (e.g. Select w/multiple values) this validation will fail if empty.
  *
  * @type ConstraintCb
  */
 export const required = ({value, displayName}) => {
-    if (isNil(value) || (isString(value) && value.trim().length == 0)) return `${displayName} is required.`;
+    if (
+        isNil(value) ||
+        (isString(value) && value.trim().length == 0) ||
+        (isArray(value) && value.length == 0)
+    ) return `${displayName} is required.`;
 };
 
 
