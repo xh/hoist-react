@@ -72,9 +72,8 @@ export class FormField extends Component {
             notValid = fieldModel && fieldModel.isNotValid,
             errors = fieldModel ? fieldModel.errors : [],
             labelStr = isUndefined(label) ? (fieldModel ? fieldModel.displayName : null) : label,
-            stableId = this.stableId(),
             inputId = this.props.children.props.id,
-            idAttr = inputId ? inputId : stableId,
+            idAttr = inputId ? inputId : this.stableId(),
             requiredStr = isRequired ? span(' *') : null,
             item = this.prepareChild(notValid, errors, idAttr),
             classes = [];
