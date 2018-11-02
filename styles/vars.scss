@@ -189,6 +189,8 @@ body {
   // Toolbars
   --xh-tbar-bg: var(--tbar-bg, var(--xh-bg-alt));
   --xh-tbar-border-color: var(--tbar-border-color, #{mc('grey', '400')});
+  --xh-tbar-item-pad: var(--tbar-item-pad, var(--xh-pad-half));
+  --xh-tbar-item-pad-px: calc(var(--xh-tbar-item-pad) * 1px);
   --xh-tbar-separator-color: var(--tbar-separator-color, #{mc('grey', '400')});
   --xh-tbar-text-color: var(--tbar-text-color, var(--xh-text-color));
 
