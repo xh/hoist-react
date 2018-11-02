@@ -39,8 +39,9 @@ export class RestControlModel  {
 
     @computed
     get value()  {
-        const {record, field, handleBoolean} = this;
-        return record ? handleBoolean(record[field.name]) : null;
+        const {record, field, parseString} = this;
+        console.log(record);
+        return record ? parseString(record[field.name]) : null;
     }
 
     setValue(value) {
@@ -90,8 +91,22 @@ export class RestControlModel  {
         }
     }
 
-    handleBoolean = (val) => {
-        const convertToFalse = this.field.typeField && this.type === 'bool' && val === 'false';
-        return convertToFalse ? false : val;
+    parseString = (val) => {
+        if (!this.field.typeField) return val;
+        if (this.type === 'bool') {
+            console.log(val);
+            return val === 'false' ? false : val;
+            // if (val === 'false') return false;
+            // if (val === 'true') return true;
+            // console.log(val)
+            // switch(val) {
+            //     case 'true':    return true;
+            //     case 'false':   return false;
+            // }
+        } else if (!isNaN(Number(val))) {
+            return Number(val);
+        } else {
+            return val;
+        }
     }
 }
