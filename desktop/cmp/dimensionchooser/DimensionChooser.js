@@ -50,7 +50,7 @@ export class DimensionChooser extends Component {
     // Event Handlers
     //--------------------
     onTargetClick = () => {
-        this.model.setIsAddNewOpen(false);
+        this.model.setIsAddNewOpen(isEmpty(this.model.history));
         this.model.setIsMenuOpen(true);
     }
 
@@ -151,6 +151,7 @@ export class DimensionChooser extends Component {
                         button({
                             icon: Icon.arrowLeft(),
                             style: {flex: 1},
+                            omit: isEmpty(this.model.history),
                             onClick: this.onBackSelected
                         }),
                         button({
