@@ -10,6 +10,7 @@ import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {version as hoistReactVersion} from '@xh/hoist/package.json';
 import {defaults} from 'lodash';
+import {deepFreeze} from '@xh/hoist/utils/js';
 
 @HoistService
 export class EnvironmentService {
@@ -29,6 +30,8 @@ export class EnvironmentService {
             hoistReactVersion: hoistReactVersion,
             reactVersion: React.version
         }, serverEnv);
+
+        deepFreeze(this._data);
 
         this.addReaction({
             when: () => XH.appIsRunning,

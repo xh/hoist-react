@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistService} from '@xh/hoist/core';
+import {deepFreeze} from '@xh/hoist/utils/js';
 
 /**
  * Provides basic information related to the authenticated user, including application roles.
@@ -22,10 +23,10 @@ export class IdentityService {
     async initAsync() {
         const data = await XH.fetchJson({url: 'xh/getIdentity'});
         if (data.user) {
-            this._apparentUser = this._authUser = this.enhanceUser(data.user, data.roles);
+            this._apparentUser = this._authUser = this.createUser(data.user, data.roles);
         } else {
-            this._apparentUser = this.enhanceUser(data.apparentUser, data.apparentUserRoles);
-            this._authUser = this.enhanceUser(data.authUser, data.authUserRoles);
+            this._apparentUser = this.createUser(data.apparentUser, data.apparentUserRoles);
+            this._authUser = this.createUser(data.authUser, data.authUserRoles);
         }
     }
 
@@ -89,13 +90,13 @@ export class IdentityService {
     //------------------------
     // Implementation
     //------------------------
-    enhanceUser(user, roles) {
+    createUser(user, roles) {
         if (!user) return null;
         user.roles = roles;
         user.hasRole = (role) => user.roles.includes(role);
         user.isHoistAdmin = user.hasRole('HOIST_ADMIN');
         user.hasGate = (gate) => this.hasGate(gate, user);
-        return user;
+        return deepFreeze(user);
     }
 
     hasGate(gate, user) {

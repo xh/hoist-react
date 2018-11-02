@@ -73,6 +73,9 @@ export class HoistInput extends Component {
         /** CSS class name. **/
         className: PT.string,
 
+        /** HTML id attribute **/
+        id: PT.string,
+
         /** Tab order for focus control, or -1 to skip. If unset, browser layout-based order. **/
         tabIndex: PT.number
     };

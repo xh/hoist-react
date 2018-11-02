@@ -5,13 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {ExportFormat} from '@xh/hoist/cmp/grid/columns';
 import {XH} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {throwIf} from '@xh/hoist/utils/js';
-import {ExportFormat} from '@xh/hoist/cmp/grid/columns';
-import {orderBy, uniq, isString, isFunction} from 'lodash';
 import download from 'downloadjs';
+import {isFunction, isNil, isString, orderBy, uniq} from 'lodash';
 
 /**
  * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
@@ -138,7 +138,7 @@ export class ExportManager {
             value = exportValue(value);
         }
 
-        if (value === null) return null;
+        if (isNil(value)) return null;
 
         // Enforce date formats expected by server
         if (exportFormat === ExportFormat.DATE_FMT) value = fmtDate(value);

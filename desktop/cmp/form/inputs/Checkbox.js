@@ -53,6 +53,7 @@ export class Checkbox extends HoistInput {
             label: props.label,
             tabIndex: props.tabIndex,
 
+            id: props.id,
             className: this.getClassName(),
             style: props.style,
 
