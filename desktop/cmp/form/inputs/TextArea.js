@@ -67,6 +67,7 @@ export class TextArea extends HoistInput {
             spellCheck: withDefault(props.spellCheck, false),
             tabIndex: props.tabIndex,
 
+            id: props.id,
             className: this.getClassName(),
             style: {
                 height: props.height,
