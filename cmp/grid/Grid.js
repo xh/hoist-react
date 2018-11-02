@@ -6,8 +6,8 @@
  */
 import {Component, isValidElement} from 'react';
 import PT from 'prop-types';
-import {isNil, isString, merge, xor, dropRightWhile, dropWhile, isEmpty, last} from 'lodash';
-import {observable, runInAction} from '@xh/hoist/mobx';
+import {isNil, isString, merge, xor, dropRightWhile, dropWhile, isEmpty, last, map, isFinite} from 'lodash';
+import {observable, computed, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
@@ -74,6 +74,13 @@ export class Grid extends Component {
 
     static ROW_HEIGHT = 28;
     static COMPACT_ROW_HEIGHT = 24;
+
+    // The minimum required row height specified by the columns (if any) */
+    @computed
+    get columnRowHeight() {
+        const ret = Math.max(...map(this.model.columns, 'rowHeight').filter(isFinite));
+        return isFinite(ret) ? ret : null;
+    }
 
     // Observable stamp incremented every time the ag-Grid receives a new set of data.
     // Used to ensure proper re-running / sequencing of data and selection reactions.
@@ -156,7 +163,7 @@ export class Grid extends Component {
             frameworkComponents: {agColumnHeader: ColumnHeader},
             rowSelection: model.selModel.mode,
             rowDeselection: true,
-            getRowHeight: () => Math.max(model.columnRowHeight, model.compact ? Grid.COMPACT_ROW_HEIGHT : Grid.ROW_HEIGHT),
+            getRowHeight: () => Math.max(this.columnRowHeight, model.compact ? Grid.COMPACT_ROW_HEIGHT : Grid.ROW_HEIGHT),
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             overlayNoRowsTemplate: model.emptyText || '<span></span>',
             onRowClicked: props.onRowClicked,

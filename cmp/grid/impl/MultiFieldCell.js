@@ -8,40 +8,38 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {Record} from '@xh/hoist/data';
-import {GridModel} from '@xh/hoist/cmp/grid';
 import {vbox, hbox, span} from '@xh/hoist/cmp/layout';
 import {throwIf} from '@xh/hoist/utils/js';
+import {isString} from 'lodash';
 
 import {SubField} from './SubField';
 
 /**
  * Renders a collection of additional sub fields in a row beneath the main column field.
- * Typically not used directly - instead created by using the MultiFieldRenderer elementRendererFn.
+ *
+ * Requires the column to also specify a multiFieldRendererCfg, with the following params:
+ *
+ *      {SubField[]} subFields - Array of SubField specifications to render
+ *      {Column~rendererFn} [mainRenderer] - renderer for primary field.
+ *      {Column~elementRendererFn} [mainElementRenderer] - elementRenderer for primary field (returns a React component).
+ *
+ * Typically not used directly - instead created by using the multiFieldRenderer elementRendererFn.
  * @private
  */
 @HoistComponent
-class MultiFieldRenderer extends Component {
+class MultiFieldCell extends Component {
 
     static propTypes = {
         /** Primary value to render */
         value: PT.oneOfType([PT.string, PT.number, PT.bool]).isRequired,
-        /** The data Record to render. */
-        record: PT.instanceOf(Record).isRequired,
-        /** Reference to the Column */
-        column: PT.object.isRequired,
-        /** Reference to the GridModel. */
-        gridModel: PT.instanceOf(GridModel).isRequired,
-        /** Array of SubField specifications to render */
-        subFields: PT.arrayOf(PT.object),
-        /** Renderer for primary field. */
-        mainRenderer: PT.func,
-        /** Element renderer for primary field (returns a React component) */
-        mainElementRenderer: PT.func
+        /** CellRendererMetadata provided by Column.elementRendererFn. */
+        rendererMetadata: PT.object.isRequired
     };
 
     render() {
-        const {value, column, mainRenderer, mainElementRenderer} = this.props,
+        const {value, rendererMetadata} = this.props,
+            {column} = rendererMetadata,
+            {mainRenderer, mainElementRenderer} = this.getMultiFieldRendererCfg(),
             subFields = this.getSubFields(),
             hasSubFields = !!subFields.length;
 
@@ -53,7 +51,7 @@ class MultiFieldRenderer extends Component {
             items: [
                 span({
                     className: 'xh-multifield-renderer-top',
-                    item: this.renderValue(value, mainRenderer, mainElementRenderer)
+                    item: this.renderValue(value, column, mainRenderer || mainElementRenderer)
                 }),
                 hbox({
                     omit: !hasSubFields,
@@ -68,7 +66,7 @@ class MultiFieldRenderer extends Component {
     // Implementation
     //------------------------
     renderBottomRowField({colId, label}) {
-        const {record, gridModel} = this.props,
+        const {record, gridModel} = this.props.rendererMetadata,
             column = gridModel.findColumn(gridModel.columns, colId);
 
         throwIf(!column, `Subfield ${colId} not found`);
@@ -76,30 +74,37 @@ class MultiFieldRenderer extends Component {
         const {field, headerName, renderer, elementRenderer} = column,
             value = record[field];
 
+        if (label && !isString(label)) label = headerName;
+
         return hbox({
             className: 'xh-multifield-renderer-bottom-field',
             items: [
-                label ? span(`${headerName}:`) : null,
-                span(this.renderValue(value, renderer || elementRenderer))
+                label ? span(`${label}:`) : null,
+                span(this.renderValue(value, column, renderer || elementRenderer))
             ]
         });
     }
 
-    renderValue(value, renderer) {
-        const {record, column, agParams, gridModel} = this.props;
+    renderValue(value, column, renderer) {
         let ret = value;
-        if (renderer) ret = renderer(value, {record, column, agParams, gridModel});
+        if (renderer) ret = renderer(value, {...this.rendererMetadata, column});
+        return ret;
+    }
+
+    getMultiFieldRendererCfg() {
+        const ret = this.props.rendererMetadata.column.multiFieldRendererCfg;
+        throwIf(!ret, 'Columns using multiFieldRenderer must specify a multiFieldRendererCfg');
         return ret;
     }
 
     getSubFields() {
-        const {subFields = []} = this.props;
+        const {subFields = []} = this.getMultiFieldRendererCfg();
         return subFields.map(it => {
             if (it instanceof SubField) return it;
-            return SubField(it);
+            return new SubField(it);
         });
     }
 
 }
 
-export const multiFieldRenderer = elemFactory(MultiFieldRenderer);
+export const multiFieldCell = elemFactory(MultiFieldCell);

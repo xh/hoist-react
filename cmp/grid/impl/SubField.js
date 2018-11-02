@@ -15,7 +15,7 @@ export class SubField {
     /**
      * @param {Object} s - SubField configuration.
      * @param {string} s.colId - Column ID to render.
-     * @param {boolean} [c.label] - true to include label.
+     * @param {boolean|string} [c.label] - true to include the Column's headerName as label, or string
      */
     constructor({
         colId,

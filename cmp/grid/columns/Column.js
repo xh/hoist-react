@@ -274,14 +274,14 @@ export class Column {
 /**
  * @callback Column~rendererFn - normalized renderer function for a grid cell.
  * @param {*} value - cell data value (column + row).
- * @param {CellRendererMetadata} metadata - additional data about the column and row.
+ * @param {CellRendererMetadata} metadata - additional data about the column, row and GridModel.
  * @return {string} - the formatted value for display.
  */
 
 /**
  * @callback Column~elementRendererFn - renderer function for a grid cell which returns a React component
  * @param {*} value - cell data value (column + row).
- * @param {CellRendererMetadata} metadata - additional data about the column and row.
+ * @param {CellRendererMetadata} metadata - additional data about the column, row and GridModel.
  * @return {Element} - the React element to render.
  */
 
@@ -289,6 +289,7 @@ export class Column {
  * @typedef {Object} CellRendererMetadata
  * @property {Record} record - row-level data Record.
  * @property {Column} column - column for the cell being rendered.
+ * @property {GridModel} gridModel - gridModel for the grid.
  * @property {ICellRendererParams} [agParams] - the ag-grid cell renderer params.
  */
 

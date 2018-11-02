@@ -5,29 +5,20 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {throwIf} from '@xh/hoist/utils/js';
-import {multiFieldRenderer as multiFieldRendererImpl} from '../impl/MultiFieldRenderer';
+import {multiFieldCell} from '../impl/MultiFieldCell';
 
 /**
  * An grid elementRendererFn that renders a collection of additional sub fields in a row beneath the main column field.
  *
  * Requires the column to also specify a multiFieldRendererCfg, with the following params:
  *
- *      {Column~rendererFn} [mainRenderer] - renderer for primary field.
- *      {Column~elementRendererFn} [mainElementRenderer] - elementrenderer for primary field (returns a React component).
  *      {SubField[]} subFields - Array of SubField specifications to render
+ *      {Column~rendererFn} [mainRenderer] - renderer for primary field.
+ *      {Column~elementRendererFn} [mainElementRenderer] - elementRenderer for primary field (returns a React component).
  */
-export const multiFieldRenderer = (value, {record, column, agParams, gridModel}) => {
-    const {multiFieldRendererCfg} = column;
-
-    throwIf(!multiFieldRendererCfg, 'Columns using MultiFieldRenderer must specify a multiFieldRendererCfg');
-
-    return multiFieldRendererImpl({
+export const multiFieldRenderer = (value, rendererMetadata) => {
+    return multiFieldCell({
         value,
-        record,
-        column,
-        agParams,
-        gridModel,
-        ...multiFieldRendererCfg
+        rendererMetadata
     });
 };
