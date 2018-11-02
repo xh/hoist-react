@@ -93,7 +93,7 @@ export class RestControlModel  {
     parseString = (val) => {
         if (!this.field.typeField) return val;
         if (this.type === 'bool') {
-            switch(val) {
+            switch (val) {
                 case 'true':    return true;
                 case 'false':   return false;
                 default:        return val;
