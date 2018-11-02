@@ -60,7 +60,7 @@
       color: var(--xh-intent-danger);
     }
 
-    textarea {
+    .xh-text-area.textarea {
       border: var(--xh-form-field-invalid-border) !important;
     }
   }
@@ -70,7 +70,7 @@
   }
 
   .xh-form-field-error-label {
-    color: var(--xh-red);
+    color: var(--xh-intent-danger);
   }
 }
 
