@@ -40,7 +40,6 @@ export class RestControlModel  {
     @computed
     get value()  {
         const {record, field, parseString} = this;
-        console.log(record);
         return record ? parseString(record[field.name]) : null;
     }
 
@@ -94,15 +93,11 @@ export class RestControlModel  {
     parseString = (val) => {
         if (!this.field.typeField) return val;
         if (this.type === 'bool') {
-            console.log(val);
-            return val === 'false' ? false : val;
-            // if (val === 'false') return false;
-            // if (val === 'true') return true;
-            // console.log(val)
-            // switch(val) {
-            //     case 'true':    return true;
-            //     case 'false':   return false;
-            // }
+            switch(val) {
+                case 'true':    return true;
+                case 'false':   return false;
+                default:        return val;
+            }
         } else if (!isNaN(Number(val))) {
             return Number(val);
         } else {
