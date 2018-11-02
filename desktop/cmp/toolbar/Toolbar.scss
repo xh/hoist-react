@@ -11,7 +11,7 @@
     white-space: nowrap;
     flex-shrink: 0;
     &:not([class*='xh-no-pad']) {
-      margin-left: var(--xh-pad-px);
+      margin-left: var(--xh-tbar-item-pad-px);
     }
   }
 
@@ -35,7 +35,7 @@
     padding: 0 var(--xh-pad-half-px) var(--xh-pad-px) var(--xh-pad-half-px);
 
     > *:not([class*='xh-no-pad']) {
-      margin-top: var(--xh-pad-px);
+      margin-top: var(--xh-tbar-item-pad-px);
       margin-left: 0;
     }
 

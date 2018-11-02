@@ -29,7 +29,7 @@ export class ButtonGroupInput extends HoistInput {
         /** True to have all buttons fill available width equally. */
         fill: PT.bool,
 
-        /** True to render each button with minimal surrounding chrome. */
+        /** True to render each button with minimal surrounding chrome (default false). */
         minimal: PT.bool,
 
         /** True to render in a vertical orientation. */
@@ -49,6 +49,7 @@ export class ButtonGroupInput extends HoistInput {
 
                 return React.cloneElement(button, {
                     active: this.renderValue == value,
+                    minimal: withDefault(props.minimal, false),
                     onClick: () => this.noteValueChange(value)
                 });
             });
@@ -56,7 +57,6 @@ export class ButtonGroupInput extends HoistInput {
         return buttonGroup({
             className: this.getClassName(),
             fill: withDefault(props.fill, false),
-            minimal: withDefault(props.minimal, false),
             vertical: withDefault(props.vertical, false),
             items: buttons
         });
