@@ -7,7 +7,8 @@
 import React, {Component} from 'react';
 import PT from 'prop-types';
 import {isArray, isUndefined} from 'lodash';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+
+import {elemFactory, HoistComponent, StableIdSupport} from '@xh/hoist/core';
 import {formGroup, spinner, tooltip} from '@xh/hoist/kit/blueprint';
 import {HoistInput} from '@xh/hoist/cmp/form';
 import {div, fragment, span} from '@xh/hoist/cmp/layout';
@@ -29,6 +30,7 @@ import './FormField.scss';
  * Accepts any props supported by Blueprint's FormGroup.
  */
 @HoistComponent
+@StableIdSupport
 export class FormField extends Component {
 
     static propTypes = {
@@ -49,7 +51,10 @@ export class FormField extends Component {
         minimal: PT.bool,
 
         /** Display warning glyph in the far left side of the input (TextField, NumberInput only) */
-        leftErrorIcon: PT.bool
+        leftErrorIcon: PT.bool,
+
+        /** True by default.  If false, clicking on label won't put the label's control in focus. */
+        clickableLabel: PT.bool
     };
 
     baseClassName = 'xh-form-field';
@@ -57,7 +62,9 @@ export class FormField extends Component {
     blockChildren = ['TextInput', 'JsonInput', 'Select'];
 
     render() {
-        const {model, field, label, minimal, className, ...rest} = this.props,
+        this.ensureConditions();
+
+        const {model, field, label, minimal, className, labelFor, clickableLabel = true, ...rest} = this.props,
             hasFieldSupport = model && field && model.hasFieldSupport,
             fieldModel = hasFieldSupport ? model.getField(field) : null,
             isRequired = fieldModel && fieldModel.isRequired,
@@ -65,8 +72,10 @@ export class FormField extends Component {
             notValid = fieldModel && fieldModel.isNotValid,
             errors = fieldModel ? fieldModel.errors : [],
             labelStr = isUndefined(label) ? (fieldModel ? fieldModel.displayName : null) : label,
+            inputId = this.props.children.props.id,
+            idAttr = inputId ? inputId : this.stableId(),
             requiredStr = isRequired ? span(' *') : null,
-            item = this.prepareChild(notValid, errors),
+            item = this.prepareChild(notValid, errors, idAttr),
             classes = [];
 
         if (isRequired) classes.push('xh-form-field-required');
@@ -80,6 +89,7 @@ export class FormField extends Component {
                 item: labelStr ? span(labelStr, requiredStr) : null,
                 className: minimal && notValid ? 'xh-form-field-error-label' : null
             }),
+            labelFor: clickableLabel ? idAttr : null,
             className: this.getClassName(classes),
             helperText: !minimal ? fragment(
                 div({
@@ -104,15 +114,12 @@ export class FormField extends Component {
     //--------------------
     // Implementation
     //--------------------
-    prepareChild(notValid, errors) {
+    prepareChild(notValid, errors, idAttr) {
         const {model, field, minimal, disabled} = this.props,
             item = this.props.children;
 
-        throwIf(!item || isArray(item) || !(item.type.prototype instanceof HoistInput), 'FormField child must be a single component that extends HoistInput.');
-        throwIf(item.props.field || item.props.model, 'HoistInputs should not declare "field" or "model" when used with FormField');
-
         const leftIcon = notValid ? this.leftIcon(item) : {},
-            target = React.cloneElement(item, {model, field, disabled, ...leftIcon});
+            target = React.cloneElement(item, {model, field, disabled, id: idAttr, ...leftIcon});
 
         if (!minimal) return target;
 
@@ -141,6 +148,12 @@ export class FormField extends Component {
                 {errors.map((it, idx) => <li key={idx}>{it}</li>)}
             </ul>
         );
+    }
+
+    ensureConditions() {
+        const item = this.props.children;
+        throwIf(!item || isArray(item) || !(item.type.prototype instanceof HoistInput), 'FormField child must be a single component that extends HoistInput.');
+        throwIf(item.props.field || item.props.model, 'HoistInputs should not declare "field" or "model" when used with FormField');
     }
 
 }
