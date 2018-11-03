@@ -10,6 +10,7 @@
   > * {
     white-space: nowrap;
     flex-shrink: 0;
+
     &:not([class*='xh-no-pad']) {
       margin-left: var(--xh-tbar-item-pad-px);
     }
@@ -28,6 +29,8 @@
     .xh-toolbar__separator {
       border-left: 1px solid var(--xh-tbar-separator-color);
       height: 20px;  // matches BluePrint navBarSeparator
+      margin-left: calc(var(--xh-tbar-item-pad) * 2px);
+      margin-right: var(--xh-tbar-item-pad-px);
     }
   }
 
