@@ -127,11 +127,13 @@ export class DimensionChooser extends Component {
                         button({
                             style: {flex: 1},
                             icon: Icon.x(),
+                            minimal: false,
                             onClick: this.onCancelSelected
                         }),
                         button({
                             style: {flex: 2},
                             icon: Icon.edit(),
+                            minimal: false,
                             title: 'Add a new grouping',
                             onClick: this.onAddNewClick
                         })

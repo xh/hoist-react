@@ -6,9 +6,9 @@
  */
 
 import {HoistModel, XH} from '@xh/hoist/core';
-import {isString, isArray, difference, isEmpty, without, pullAllWith, isEqual, keys} from 'lodash';
+import {cloneDeep, isString, isArray, difference, isEmpty, without, pullAllWith, isEqual, keys} from 'lodash';
 import {observable, action, bindable} from '@xh/hoist/mobx';
-import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
 
 /**
  * This model is responsible for managing the state of a DimensionChooser component,
@@ -129,12 +129,14 @@ export class DimensionChooserModel {
     loadHistory() {
         const {historyPreference} = this,
             {prefService} = XH;
-        warnIf(
-            !prefService.hasKey(historyPreference),
-            `Dimension Chooser failed to load user history: '${historyPreference}'`
+
+        throwIf(
+            historyPreference && !prefService.hasKey(historyPreference),
+            `Dimension Chooser configured with missing history preference key: '${historyPreference}'`
         );
 
-        return this.validateHistory(prefService.get(historyPreference, []));
+        const history = historyPreference ? cloneDeep(prefService.get(historyPreference)) : [];
+        return this.validateHistory(history);
     }
 
     validateHistory(history) {

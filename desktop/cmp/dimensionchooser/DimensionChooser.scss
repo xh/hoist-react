@@ -7,6 +7,11 @@
       display: inline;
     }
   }
+
+  .xh-button {
+    border: var(--xh-border-solid);
+    padding-left: var(--xh-pad-px);
+  }
 }
 .xh-dim-add-popover {
   .xh-dim-popover-selects {
