@@ -9,7 +9,7 @@ import {Component} from 'react';
 import PT from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Record, RecordAction, StoreSelectionModel} from '@xh/hoist/data';
-import {buttonGroup} from '@xh/hoist/kit/blueprint';
+import {buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {throwIf} from '@xh/hoist/utils/js';
 import {Column} from '@xh/hoist/cmp/grid/columns';
@@ -63,7 +63,6 @@ export class RecordActionBar extends Component {
 
         return buttonGroup({
             vertical,
-            className: this.getClassName(),
             items: actions.filter(Boolean).map(action => recordActionButton({
                 action: new RecordAction(action),
                 record,
@@ -72,7 +71,8 @@ export class RecordActionBar extends Component {
                 column,
                 ...buttonProps
             })),
-            ...rest
+            ...rest,
+            className: this.getClassName()
         });
     }
 }

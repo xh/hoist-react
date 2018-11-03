@@ -5,11 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import PT from 'prop-types';
 import React from 'react';
 import {castArray} from 'lodash';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {buttonGroup} from '@xh/hoist/kit/blueprint';
+import {HoistComponent, LayoutSupport, elemFactory} from '@xh/hoist/core';
+import {ButtonGroup, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/form';
 
@@ -21,27 +20,19 @@ import {HoistInput} from '@xh/hoist/cmp/form';
  * ButtonGroupInput's value matches.
  */
 @HoistComponent
+@LayoutSupport
 export class ButtonGroupInput extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
-
-        /** True to have all buttons fill available width equally. */
-        fill: PT.bool,
-
-        /** True to render each button with minimal surrounding chrome (default false). */
-        minimal: PT.bool,
-
-        /** True to render in a vertical orientation. */
-        vertical: PT.bool
+        ...ButtonGroup.propTypes
     };
 
     baseClassName = 'xh-button-group-input';
 
     render() {
-        const {props} = this,
-            children = castArray(props.children),
-            buttons = children.map(button => {
+        const {children, minimal, ...rest} = this.getNonLayoutProps(),
+            buttons = castArray(children).map(button => {
                 const {value} = button.props;
 
                 throwIf(button.type.name !== 'Button', 'ButtonGroupInput child must be a Button.');
@@ -49,16 +40,16 @@ export class ButtonGroupInput extends HoistInput {
 
                 return React.cloneElement(button, {
                     active: this.renderValue == value,
-                    minimal: withDefault(props.minimal, false),
+                    minimal: withDefault(minimal, false),
                     onClick: () => this.noteValueChange(value)
                 });
             });
 
         return buttonGroup({
-            className: this.getClassName(),
-            fill: withDefault(props.fill, false),
-            vertical: withDefault(props.vertical, false),
-            items: buttons
+            items: buttons,
+            ...rest,
+            ...this.getLayoutProps(),
+            className: this.getClassName()
         });
     }
 

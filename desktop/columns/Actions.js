@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {buttonGroup} from '@xh/hoist/kit/blueprint';
+import {buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {recordActionButton} from '@xh/hoist/desktop/cmp/record/impl/RecordActionButton';
 import {RecordAction} from '@xh/hoist/data';
 import {isEmpty} from 'lodash';
