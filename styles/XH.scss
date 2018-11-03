@@ -71,6 +71,10 @@ body.xh-app {
 .xh-border            {border: var(--xh-border-solid);}
 .xh-border-solid      {border: var(--xh-border-solid);}
 .xh-border-dotted     {border: var(--xh-border-dotted);}
+.xh-border-top        {border-top: var(--xh-border-solid) !important;}
+.xh-border-right      {border-right: var(--xh-border-solid) !important;}
+.xh-border-bottom     {border-bottom: var(--xh-border-solid) !important;}
+.xh-border-left       {border-left: var(--xh-border-solid) !important;}
 
 .xh-align-center      {text-align: center;}
 .xh-align-left        {text-align: left;}
