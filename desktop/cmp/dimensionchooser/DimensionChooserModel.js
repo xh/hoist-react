@@ -8,7 +8,7 @@
 import {HoistModel, XH} from '@xh/hoist/core';
 import {cloneDeep, isString, isArray, difference, isEmpty, without, pullAllWith, isEqual, keys} from 'lodash';
 import {observable, action, bindable} from '@xh/hoist/mobx';
-import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
 
 /**
  * This model is responsible for managing the state of a DimensionChooser component,
