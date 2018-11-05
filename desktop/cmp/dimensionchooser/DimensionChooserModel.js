@@ -140,7 +140,7 @@ export class DimensionChooserModel {
     }
 
     validateHistory(history) {
-        if (isEmpty(history) || !isArray(history[0])) return history;
+        if (isEmpty(history) || !isArray(history[0])) return [];
         return history.filter(value => value.every(h => this.dimensionVals.includes(h)));
     }
 
