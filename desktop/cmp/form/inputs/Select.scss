@@ -1,3 +1,9 @@
+// Host div for Select option menu portal - written into DOM by static/index.html.
+#xh-select-input-portal {
+  z-index: 999;
+  position: absolute;
+}
+
 .xh-select {
   // Default width of wrapping box.
   width: 200px;
