@@ -69,8 +69,7 @@ export class DimensionChooserModel {
         // Set control's initial value with priorities 1) prefService 2) initialValue prop 3) 1st item in dimensions prop
         this.history = this.loadHistory();
         initialValue = withDefault(initialValue,  [this.dimensionVals[0]]);
-        this.value = !isEmpty(this.history) ? this.history[0] : initialValue;
-        this.pendingValue = [];
+        this.value = this.pendingValue = !isEmpty(this.history) ? this.history[0] : initialValue;
     }
 
     /** Update the control's value. */
@@ -140,8 +139,9 @@ export class DimensionChooserModel {
     }
 
     validateHistory(history) {
-        if (isEmpty(history) || !isArray(history[0])) return history;
-        return history.filter(value => value.every(h => this.dimensionVals.includes(h)));
+        return isEmpty(history) ?
+            [] :
+            history.filter(value => isArray(value) && value.every(h => this.dimensionVals.includes(h)));
     }
 
     addToHistory(value) {
