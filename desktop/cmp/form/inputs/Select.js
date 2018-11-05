@@ -138,9 +138,9 @@ export class Select extends HoistInput {
                 placeholder: withDefault(props.placeholder, 'Select...'),
                 tabIndex: props.tabIndex,
 
-                // This node is written into the DOM directly within static/index.html and assigned
+                // A shared div is created lazily here as needed, appended to the body, and assigned
                 // a high z-index to ensure options menus render over dialogs or other modals.
-                menuPortalTarget: document.getElementById('xh-select-input-portal'),
+                menuPortalTarget: this.getOrCreatePortalDiv(),
 
                 inputId: props.id,
                 classNamePrefix: 'xh-select',
@@ -308,6 +308,18 @@ export class Select extends HoistInput {
     createMessageFn = (q) => {
         const {createMessageFn} = this.props;
         return createMessageFn ? createMessageFn(q) : `Create "${q}"`;
+    }
+
+    getOrCreatePortalDiv() {
+        let portal = document.getElementById('xh-select-input-portal');
+
+        if (!portal) {
+            portal = document.createElement('div');
+            portal.id = 'xh-select-input-portal';
+            document.body.appendChild(portal);
+        }
+
+        return portal;
     }
 
 }
