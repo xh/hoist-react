@@ -145,7 +145,7 @@ class XHClass {
     renderApp(appSpec) {
         this.appSpec = appSpec instanceof AppSpec ? appSpec : new AppSpec(appSpec);
         const rootView = elem(appSpec.containerClass, {model: this.appContainerModel});
-        ReactDOM.render(rootView, document.getElementById('root'));
+        ReactDOM.render(rootView, document.getElementById('xh-root'));
     }
 
     /**

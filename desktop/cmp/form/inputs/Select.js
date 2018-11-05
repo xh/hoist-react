@@ -40,7 +40,6 @@ export class Select extends HoistInput {
          */
         createMessageFn: PT.func,
 
-
         /** True to accept and commit input values not present in options or returned by a query. */
         enableCreate: PT.bool,
 
@@ -135,14 +134,16 @@ export class Select extends HoistInput {
                 isDisabled: props.disabled,
                 isMulti: props.enableMulti,
                 menuPlacement: withDefault(props.menuPlacement, 'auto'),
-                menuPortalTarget: document.body,
                 noOptionsMessage: this.noOptionsMessageFn,
                 placeholder: withDefault(props.placeholder, 'Select...'),
                 tabIndex: props.tabIndex,
 
+                // A shared div is created lazily here as needed, appended to the body, and assigned
+                // a high z-index to ensure options menus render over dialogs or other modals.
+                menuPortalTarget: this.getOrCreatePortalDiv(),
+
                 inputId: props.id,
                 classNamePrefix: 'xh-select',
-                styles: this.getStylesConfig(),
                 theme: this.getThemeConfig(),
 
                 onBlur: this.onBlur,
@@ -167,7 +168,6 @@ export class Select extends HoistInput {
             (this.creatableMode ? reactCreatableSelect : reactSelect);
 
         assign(rsProps, props.rsOptions);
-
 
         return box({
             item: factory(rsProps),
@@ -278,15 +278,6 @@ export class Select extends HoistInput {
     //------------------------
     // Other Implementation
     //------------------------
-    getStylesConfig() {
-        return {
-            // Support display within a dialog by boosting menu portal z-index.
-            menuPortal: (base) => {
-                return {...base, zIndex: 999};
-            }
-        };
-    }
-
     getThemeConfig() {
         return (base) => {
             return {
@@ -317,6 +308,18 @@ export class Select extends HoistInput {
     createMessageFn = (q) => {
         const {createMessageFn} = this.props;
         return createMessageFn ? createMessageFn(q) : `Create "${q}"`;
+    }
+
+    getOrCreatePortalDiv() {
+        let portal = document.getElementById('xh-select-input-portal');
+
+        if (!portal) {
+            portal = document.createElement('div');
+            portal.id = 'xh-select-input-portal';
+            document.body.appendChild(portal);
+        }
+
+        return portal;
     }
 
 }
