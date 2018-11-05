@@ -35,6 +35,7 @@
   }
 
   &--vertical {
+    width: 42px;
     padding: 0 var(--xh-pad-half-px) var(--xh-pad-px) var(--xh-pad-half-px);
 
     > *:not([class*='xh-no-pad']) {
