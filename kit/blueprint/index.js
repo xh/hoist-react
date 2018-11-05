@@ -17,6 +17,7 @@ export {
     ContextMenuTarget,
     Classes,
     HotkeysTarget,
+    PopoverInteractionKind,
     Position,
     Toaster
 } from '@blueprintjs/core';
