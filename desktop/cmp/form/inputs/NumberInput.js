@@ -128,7 +128,6 @@ export class NumberInput extends HoistInput {
                 textAlign: withDefault(props.textAlign, 'right'),
                 width: props.width
             },
-
             onBlur: this.onBlur,
             onFocus: this.onFocus,
             onKeyPress: this.onKeyPress,
@@ -137,9 +136,18 @@ export class NumberInput extends HoistInput {
     }
 
     onValueChange = (val, valAsString) => {
-        let value = this.parseValue(valAsString);
+        this.noteValueChange(valAsString);
+    }
+
+    onBlur = () => {
+        let value = this.parseValue(this.internalValue.toString());
         value = isNaN(value) ? null : value;
         this.noteValueChange(value);
+        wait(200).then(() => {
+            if (!this.containsElement(document.activeElement)) {
+                this.noteBlurred();
+            }
+        });
     }
 
     onKeyPress = (ev) => {
