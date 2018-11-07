@@ -86,7 +86,7 @@
 * StoreContextMenuAction has been renamed to RecordAction. Its action property has been renamed to actionFn for consistency and clarity.
 * LocalStore : The method LocalStore.processRawData no longer takes an array of all records, but instead takes just a single record. Applications that need to operate on all raw records in bulk should do so before presenting them to LocalStore. Also, LocalStores template methods for override have also changed substantially, and sub-classes that rely on these methods will need to be adjusted accordingly.
 ### 🎁 New Features
-####Grid
+#### Grid
 * The Store API now supports hierarchical datasets. Applications need to simply provide raw data for records with a "children" property containing the raw data for their children.
 * Grid supports a 'TreeGrid' mode. To show a tree grid, bind the GridModel to a store containing hierarchical data (as above), set treeMode: true on the GridModel, and specify a column to display the tree controls (isTreeColumn: true)
 * Grid supports absolute sorting for numerical columns. Specify absSort: true on your column config to enable. Clicking the grid header will now cycle through ASC > DESC > DESC (abs) sort modes.
@@ -118,9 +118,8 @@ It also includes contributions from new ExHI team members Arjun and Brendan.  �
 * The little-used `hoistComponentFactory()` method was also removed as a further simplification (#587).
 * The `HoistField` superclass has been renamed to `HoistInput` and the various **desktop form control components have been renamed** to match (55afb8f). Apps using these components (which will likely be most apps) will need to adapt to the new names.
   * This was done to better distinguish between the input components and the upgraded Field concept on model classes (see below).
-
-### 🎁 New Features
-### ⭐️ **Forms and Fields** have been a major focus of attention, with support for structured data fields added to Models via the `@FieldSupport` and `@field()` decorators. 
+### :gift: New Features
+⭐️ **Forms and Fields** have been a major focus of attention, with support for structured data fields added to Models via the `@FieldSupport` and `@field()` decorators. 
 * Models annotated with `@FieldSupport` can decorate member properties with `@field()`, making those properties observable and settable (with a generated `setXXX()` method). 
 * The `@field()` decorators themselves can be passed an optional display label string as well as zero or more *validation rules* to define required constraints on the value of the field. 
 * A set of predefined constraints is provided within the toolkit within the `/field/` package. 
@@ -150,17 +149,17 @@ Other enhancements include:
 
 ## v12.1.0
 
-## :gift: New Features
+### :gift: New Features
 * New `@bindable` and `@settable` decorators added for MobX support. Decorating a class member property with `@bindable` makes it a MobX `@observable` and auto-generates a setter method on the class wrapped in a MobX `@action`. 
 * A `fontAwesomeIcon` element factory is exported for use with other FA icons not enumerated by the `Icon` class.
 * CSS variables added to control desktop Blueprint form control margins. These remain defaulted to zero, but now within CSS with support for variable overrides. A Blueprint library update also brought some changes to certain field-related alignment and style properties. Review any form controls within apps to ensure they remain aligned as desired (8275719e66b4677ec5c68a56ccc6aa3055283457 and df667b75d41d12dba96cbd206f5736886cb2ac20).
 
-## :beetle: Bug Fixes
+### :beetle: Bug Fixes
 * Grid cells are fully refreshed on a data update, ensuring cell renderers that rely on data other than their primary display field are updated (#550).
 * Grid auto-sizing is run after a data update, ensuring flex columns resize to adjust for possible scrollbar visibility changes (#553).
 * Dropdown fields can be instantiated with fewer required properties set (#541).
 
-## :books: Libraries
+### :books: Libraries
 * Blueprint `3.0.1 -> 3.4.0`
 * FontAwesome `5.2.0 -> 5.3.0`
 * CodeMirror `5.39.2 -> 5.40.0`
@@ -174,9 +173,9 @@ Other enhancements include:
 
 Hoist React v12 is a relatively large release, with multiple refactorings around grid columns, `elemFactory` support, classNames, and a re-organization of classes and exports within `utils`.
 
-## 💥 Breaking Changes
+### 💥 Breaking Changes
 
-### ⭐️ Grid Columns
+#### ⭐️ Grid Columns
 **A new [Column class](https://github.com/exhi/hoist-react/blob/master/columns/Column.js) describes a top-level API for columns and their supported options** and is intended to be a cross-platform layer on top of ag-Grid and TBD mobile grid implementations.
 * The desktop `GridModel` class now accepts a collection of `Column` configuration objects to define its available columns.
 * Columns may be configured with `flex: true` to cause them to stretch all available horizontal space within a grid, sharing it equally with any other flex columns. However note that this should be used sparingly, as flex columns have some deliberate limitations to ensure stable and consistent behavior. Most noticeably, they cannot be resized directly by users. Often, a best practice will be to insert an [`emptyFlexCol` configuration](https://github.com/exhi/hoist-react/blob/master/columns/Core.js) as the last column in a grid - this will avoid messy-looking gaps in the layout while not requiring a data-driven column be flexed.
@@ -186,7 +185,7 @@ Hoist React v12 is a relatively large release, with multiple refactorings around
 * The "factory pattern" for Column templates / defaults has been removed, replaced by a simpler approach that recommends exporting simple configuration partials and spreading them into instance-specific column configs. [See the Admin app for some examples](https://github.com/exhi/hoist-react/blob/a1b14ac6d41aa8f8108a518218ce889fe5596780/admin/tabs/activity/tracking/ActivityGridModel.js#L42) of this pattern.
 * See 0798f6bb20092c59659cf888aeaf9ecb01db52a6 for primary commit.
 
-### ⭐️ Element Factory, LayoutSupport, BaseClassName
+#### ⭐️ Element Factory, LayoutSupport, BaseClassName
 Hoist provides core support for creating components via a factory pattern, powered by the [`elem()` and `elemFactory()` methods](https://github.com/exhi/hoist-react/blob/master/core/elem.js). This approach remains the recommended way to instantiate component elements, but was **simplified and streamlined**. 
 * The rarely used `itemSpec` argument was removed (this previously applied defaults to child items).
 * Developers can now also use JSX to instantiate all Hoist-provided components while still taking advantage of auto-handling for layout-related properties provided by the [`LayoutSupport` mixin]. 
@@ -194,12 +193,12 @@ Hoist provides core support for creating components via a factory pattern, power
 * All HoistComponents can now specify a **baseClassName** on their component class and should pass `className: this.getClassName()` down to their outermost rendered child. This allows components to cleanly layer on a base CSS class name with any instance-specific classes.
 * See 8342d3870102ee9bda4d11774019c4928866f256 for primary commit.
 
-### ⭐️ Panel resizing / collapsing
+#### ⭐️ Panel resizing / collapsing
 **The `Panel` component now takes a `sizingModel` prop to control and encapsulate newly built-in resizing and collapsing behavior** (#534).
 * [See the `PanelSizingModel` class](https://github.com/exhi/hoist-react/blob/master/desktop/cmp/panel/PanelSizingModel.js) for configurable details, including continued support for saving sizing / collapsed state as a user preference.
 * **The standalone `Resizable` component was removed** in favor of the improved support built into Panel directly.
 
-### Other
+#### Other
 * Two promise-related models have been combined into **a new, more powerful `PendingTaskModel`**, and the `LoadMask` component has been removed and consolidated into `Mask` (d00a5c6e8fc1e0e89c2ce3eef5f3e14cb842f3c8).
   * `Panel` now exposes a single `mask` prop that can take either a configured `mask` element or a simple boolean to display/remove a default mask.
 * **Classes within the `utils` package have been re-organized** into more standardized and scalable namespaces. Imports of these classes will need to be adjusted.
@@ -365,6 +364,8 @@ Hoist React v8 brings a big set of improvements and fixes, some API and package 
 * Improvements to `Grid` component's interaction with underlying ag-Grid instance, avoiding extra renderings and unwanted loss of state. 03de0ae7
 
 :octocat:  [Commit Log](https://github.com/exhi/hoist-react/compare/v6.0.0...v7.0.0)
+
+## v6.0.0
 ### 💥 Breaking Changes
 
 * API for `MessageModel` has changed as part of the feature addition noted below, with `alert()` and `confirm()` replaced by `show()` and new `XH` convenience methods making the need for direct calls rare.
