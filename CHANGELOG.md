@@ -1,112 +1,111 @@
-Latest release
 ## v15.1.2
 
-### 🛠 Hotfix release to MultiSelect to cap the maximum number of options rendered by the drop-down list. Note, this component is being replaced in Hoist v16 by the react-select library.
+🛠 Hotfix release to MultiSelect to cap the maximum number of options rendered by the drop-down list. Note, this component is being replaced in Hoist v16 by the react-select library.
 
 ## v15.1.1
 
 ### 🐞 Bug Fixes
-Fix to minimal validation mode for FormField disrupting input focus.
-Fix to JsonInput disrupting input focus.
+* Fix to minimal validation mode for FormField disrupting input focus.
+* Fix to JsonInput disrupting input focus.
 ### ⚙️ Technical
-Support added for TLBR-style notation when specifying margin/padding via layoutSupport - e.g. box({margin: '10 20 5 5'}).
-Tweak to lockout panel message when the user has no roles.
+* Support added for TLBR-style notation when specifying margin/padding via layoutSupport - e.g. box({margin: '10 20 5 5'}).
+* Tweak to lockout panel message when the user has no roles.
 :octocat: Commit Log
 
 
 ## v15.1.0
 
 ### 🎁 New Features
-The FormField component takes a new minimal prop to display validation errors with a tooltip only as opposed to an inline message string. This can be used to help reduce shifting / jumping form layouts as required.
-The admin-only user impersonation toolbar will now accept new/unknown users, to support certain SSO application implementations that can create users on the fly.
+* The FormField component takes a new minimal prop to display validation errors with a tooltip only as opposed to an inline message string. This can be used to help reduce shifting / jumping form layouts as required.
+* The admin-only user impersonation toolbar will now accept new/unknown users, to support certain SSO application implementations that can create users on the fly.
 ### ⚙️ Technical
-Error reporting to server w/ custom user messages is disabled if the user is not known to the client (edge case with errors early in app lifecycle, prior to successful authentication).
+* Error reporting to server w/ custom user messages is disabled if the user is not known to the client (edge case with errors early in app lifecycle, prior to successful authentication).
 :octocat: Commit Log
 
 
 ## v15.0.0
 
 ### 💥 Breaking Changes
-This update does not require any application client code changes, but does require updating the Hoist Core Grails plugin to >= 5.0. Hoist Core changes to how application roles are loaded and users are authenticated required minor changes to how JS clients bootstrap themselves and load user data.
-The Hoist Core HoistImplController has also been renamed to XhController, again requiring Hoist React adjustments to call the updated /xh/ paths for these (implementation) endpoints. Again, no app updates required beyond taking the latest Hoist Core plugin.
+* This update does not require any application client code changes, but does require updating the Hoist Core Grails plugin to >= 5.0. Hoist Core changes to how application roles are loaded and users are authenticated required minor changes to how JS clients bootstrap themselves and load user data.
+* The Hoist Core HoistImplController has also been renamed to XhController, again requiring Hoist React adjustments to call the updated /xh/ paths for these (implementation) endpoints. Again, no app updates required beyond taking the latest Hoist Core plugin.
 :octocat: Commit Log
 
 
 ## v14.2.0
 
 ### 🎁 New Features
-Upgraded hoist-dev-utils to 3.0.3. Client builds now use the latest Webpack 4 and Babel 7 for noticeably faster builds and recompiles during CI and at development time.
-GridModel now has a top-level agColumnApi property to provide a direct handle on the ag-Grid Column API object.
+* Upgraded hoist-dev-utils to 3.0.3. Client builds now use the latest Webpack 4 and Babel 7 for noticeably faster builds and recompiles during CI and at development time.
+* GridModel now has a top-level agColumnApi property to provide a direct handle on the ag-Grid Column API object.
 ### ⚙️ Technical
-Support for column groups strengthened with the addition of a dedicated ColumnGroup sibling class to Column. This includes additional internal refactoring to reduce unnecessary cloning of Column configurations and provide a more managed path for Column updates. Public APIs did not change. (#694)
+* Support for column groups strengthened with the addition of a dedicated ColumnGroup sibling class to Column. This includes additional internal refactoring to reduce unnecessary cloning of Column configurations and provide a more managed path for Column updates. Public APIs did not change. (#694)
 ### 📚 Libraries
-Blueprint Core 3.6.1 -> 3.7.0
-Blueprint Datetime 3.2.0 -> 3.3.0
-Fontawesome 5.3.x -> 5.4.x
-MobX 5.1.2 -> 5.5.0
-Router5 6.5.0 -> 6.6.0
+* Blueprint Core 3.6.1 -> 3.7.0
+* Blueprint Datetime 3.2.0 -> 3.3.0
+* Fontawesome 5.3.x -> 5.4.x
+* MobX 5.1.2 -> 5.5.0
+* Router5 6.5.0 -> 6.6.0
 :octocat: Commit Log
 
 
 ## v14.1.3
 
 ### 🐞 Bug Fixes
-Ensure JsonInput reacts properly to value changes.
+* Ensure JsonInput reacts properly to value changes.
 ### ⚙️ Technical
-Block user pinning/unpinning in Grid via drag-and-drop - pending further work via #687.
-Support "now" as special token for dateIs min/max validation rules.
-Tweak grouped grid row background color.
+* Block user pinning/unpinning in Grid via drag-and-drop - pending further work via #687.
+* Support "now" as special token for dateIs min/max validation rules.
+* Tweak grouped grid row background color.
 :octocat: Commit Log
 
 
 ## v14.1.1
 
 ### 🐞 Bug Fixes
-Fixes GridModel support for row-level grouping at same time as column grouping.
+* Fixes GridModel support for row-level grouping at same time as column grouping.
 :octocat: Commit Log
 
 
 ## v14.1.0
 
 ### 🎁 New Features
-GridModel now supports multiple levels of row grouping. Pass the public setGroupBy() method an array of string column IDs, or a falsey value / empty array to ungroup. Note that the public and observable groupBy property on GridModel will now always be an array, even if the grid is not grouped or has only a single level of grouping.
-GridModel exposes public expandAll() and collapseAll() methods for grouped / tree grids, and StoreContextMenu supports a new "expandCollapseAll" string token to insert context menu items. These are added to the default menu, but auto-hide when the grid is not in a grouped state.
-The Grid component provides a new onKeyDown prop, which takes a callback and will fire on any keypress targeted within the Grid. Note such a handler is not provided directly by ag-Grid.
-The Column class supports pinned as a top-level config. Supports passing true to pin to the left.
+* GridModel now supports multiple levels of row grouping. Pass the public setGroupBy() method an array of string column IDs, or a falsey value / empty array to ungroup. Note that the public and observable groupBy property on GridModel will now always be an array, even if the grid is not grouped or has only a single level of grouping.
+* GridModel exposes public expandAll() and collapseAll() methods for grouped / tree grids, and StoreContextMenu supports a new "expandCollapseAll" string token to insert context menu items. These are added to the default menu, but auto-hide when the grid is not in a grouped state.
+* The Grid component provides a new onKeyDown prop, which takes a callback and will fire on any keypress targeted within the Grid. Note such a handler is not provided directly by ag-Grid.
+* The Column class supports pinned as a top-level config. Supports passing true to pin to the left.
 ### 🐞 Bug Fixes
-Updates to Grid column widths made via ag-Grid's "autosize to fit" API are properly persisted to grid state.
+* Updates to Grid column widths made via ag-Grid's "autosize to fit" API are properly persisted to grid state.
 :octocat: Commit Log
 
 
 ## v14.0.0
 
-Along with numerous bug fixes, v14 brings with it a number of important enhancements for grids, including support for tree display, 'action' columns, and absolute value sorting. It also includes some new controls and improvement to focus display.
+* Along with numerous bug fixes, v14 brings with it a number of important enhancements for grids, including support for tree display, 'action' columns, and absolute value sorting. It also includes some new controls and improvement to focus display.
 
 ### 💥 Breaking Changes
-The signatures of the Column.elementRenderer and Column.renderer have been changed to be consistent with each other, and more extensible. Each takes two arguments -- the value to be rendered, and a single bundle of metadata.
-StoreContextMenuAction has been renamed to RecordAction. Its action property has been renamed to actionFn for consistency and clarity.
-LocalStore : The method LocalStore.processRawData no longer takes an array of all records, but instead takes just a single record. Applications that need to operate on all raw records in bulk should do so before presenting them to LocalStore. Also, LocalStores template methods for override have also changed substantially, and sub-classes that rely on these methods will need to be adjusted accordingly.
+* The signatures of the Column.elementRenderer and Column.renderer have been changed to be consistent with each other, and more extensible. Each takes two arguments -- the value to be rendered, and a single bundle of metadata.
+* StoreContextMenuAction has been renamed to RecordAction. Its action property has been renamed to actionFn for consistency and clarity.
+* LocalStore : The method LocalStore.processRawData no longer takes an array of all records, but instead takes just a single record. Applications that need to operate on all raw records in bulk should do so before presenting them to LocalStore. Also, LocalStores template methods for override have also changed substantially, and sub-classes that rely on these methods will need to be adjusted accordingly.
 ### 🎁 New Features
-Grid
-The Store API now supports hierarchical datasets. Applications need to simply provide raw data for records with a "children" property containing the raw data for their children.
-Grid supports a 'TreeGrid' mode. To show a tree grid, bind the GridModel to a store containing hierarchical data (as above), set treeMode: true on the GridModel, and specify a column to display the tree controls (isTreeColumn: true)
-Grid supports absolute sorting for numerical columns. Specify absSort: true on your column config to enable. Clicking the grid header will now cycle through ASC > DESC > DESC (abs) sort modes.
-Grid supports an 'Actions' column for one-click record actions. See cmp/desktop/columns/actionCol.
-A new showHover prop on the desktop Grid component will highlight the hovered row with default styling. A new GridModel.rowClassFn callback was added to support per-row custom classes based on record data.
-A new ExportFormat.LONG_TEXT format has been added, along with a new Column.exportWidth config. This supports exporting columns that contain long text (e.g. notes) as multi-line cells within Excel.
-Other Components
-RadioInput and ButtonGroupInputhave been added to the desktop/cmp/form package.
-DateInput now has support for entering and displaying time values.
-NumberInput displays its unformatted value when focused.
-Focused components are now better highlighted, with additional CSS vars provided to customize as needed.
+####Grid
+* The Store API now supports hierarchical datasets. Applications need to simply provide raw data for records with a "children" property containing the raw data for their children.
+* Grid supports a 'TreeGrid' mode. To show a tree grid, bind the GridModel to a store containing hierarchical data (as above), set treeMode: true on the GridModel, and specify a column to display the tree controls (isTreeColumn: true)
+* Grid supports absolute sorting for numerical columns. Specify absSort: true on your column config to enable. Clicking the grid header will now cycle through ASC > DESC > DESC (abs) sort modes.
+* Grid supports an 'Actions' column for one-click record actions. See cmp/desktop/columns/actionCol.
+* A new showHover prop on the desktop Grid component will highlight the hovered row with default styling. A new GridModel.rowClassFn callback was added to support per-row custom classes based on record data.
+* A new ExportFormat.LONG_TEXT format has been added, along with a new Column.exportWidth config. This supports exporting columns that contain long text (e.g. notes) as multi-line cells within Excel.
+#### Other Components
+* RadioInput and ButtonGroupInputhave been added to the desktop/cmp/form package.
+* DateInput now has support for entering and displaying time values.
+* NumberInput displays its unformatted value when focused.
+* Focused components are now better highlighted, with additional CSS vars provided to customize as needed.
 ### 🐞 Bug Fixes
-Calls to GridModel.setGroupBy() work properly not only on the first, but also all subsequent calls (#644).
-Background / style issues resolved on several input components in dark theme (#657).
-Grid context menus appear properly over other floating components.
+* Calls to GridModel.setGroupBy() work properly not only on the first, but also all subsequent calls (#644).
+* Background / style issues resolved on several input components in dark theme (#657).
+* Grid context menus appear properly over other floating components.
 ### 📚 Libraries
-React 16.5.1 -> 16.5.2
-router5 6.4.2 -> 6.5.0
-CodeMirror, Highcharts, and MobX patch updates
+* React 16.5.1 -> 16.5.2
+* router5 6.4.2 -> 6.5.0
+* CodeMirror, Highcharts, and MobX patch updates
 
 ## v13.0.0
 
@@ -130,11 +129,6 @@ It also includes contributions from new ExHI team members Arjun and Brendan.  �
 
 Other enhancements include:
 * **Grid columns can be grouped**, with support for grouping added to the grid state management system, column chooser, and export manager (#565). To define a column group, nest column definitions passed to `GridModel.columns` within a wrapper object of the form `{headerName: 'My group', children: [...]}`.
-
-
-### 🐞 Bug Fixes
-
-### 📚 Libraries
 
 ## v12.1.2
 
@@ -226,7 +220,7 @@ Hoist provides core support for creating components via a factory pattern, power
 :octocat: [Commit Log](https://github.com/exhi/hoist-react/compare/v11.0.0...v12.0.0)
 
 ## v11.0.0
-## 💥 Breaking Changes
+### 💥 Breaking Changes
 * **Blueprint has been upgraded to the latest 3.x release.** The primary breaking change here is the renaming of all `pt-` CSS classes to use a new `bp3-` prefix. Any in-app usages of the BP selectors will need to be updated. See the [Blueprint "What's New" page](http://blueprintjs.com/docs/#blueprint/whats-new-3.0).
 * **FontAwesome has been upgraded to the latest 5.2 release.** Only the icons enumerated in the Hoist `Icon` class are now registered via the FA `library.add()` method for inclusion in bundled code, resulting in a significant reduction in bundle size. Apps wishing to use other FA icons not included by Hoist must import and register them - see the [FA React Readme](https://github.com/FortAwesome/react-fontawesome/blob/master/README.md) for details.
 * **The `mobx-decorators` dependency has been removed** due to lack of official support for the latest MobX update, as well as limited usage within the toolkit. This package was primarily providing the optional `@setter` decorator, which should now be replaced as needed by dedicated `@action` setter methods (19cbf86138499bda959303e602a6d58f6e95cb40).
@@ -258,7 +252,7 @@ Hoist provides core support for creating components via a factory pattern, power
 * Columns with `field === null` skipped for server-side export (considered spacer / structural columns).
 
 ## v10.0.0
-## 💥 Breaking Changes
+### 💥 Breaking Changes
 * **Access to the router API has changed** with the `XH` global now exposing `router` and `routerState` properties and a `navigate()` method directly.
 * `ToastManager` has been deprecated.  Use `XH.toast` instead.
 * `Message` is no longer a public class (and its API has changed). Use `XH.message/confirm/alert` instead.
@@ -279,7 +273,7 @@ Hoist provides core support for creating components via a factory pattern, power
 :octocat: [Commit Log](https://github.com/exhi/hoist-react/compare/v9.0.0...v10.0.0)
 
 ## v9.0.0
-## 💥 Breaking Changes
+### 💥 Breaking Changes
 
 * **Hoist-provided mixins (decorators) have been refactored to be more granular and have been broken out of `HoistComponent`.**
   * New discrete mixins now exist for `LayoutSupport` and `ContextMenuSupport` - these should be added directly to components that require the functionality they add for auto-handling of layout-related props and support for showing right-click menus. The corresponding options on `HoistComponent` that used to enable them have been removed.
@@ -298,7 +292,7 @@ Hoist provides core support for creating components via a factory pattern, power
 ## v8.0.0
 Hoist React v8 brings a big set of improvements and fixes, some API and package re-organizations, and ag-Grid upgrade, and more. 🚀 
 
-## 💥 Breaking Changes
+### 💥 Breaking Changes
 
 * **Component package directories have been re-organized** to provide better symmetry between pre-existing "desktop" components and a new set of mobile-first component. Current desktop applications should replace imports from `@xh/hoist/cmp/xxx` with `@xh/hoist/desktop/cmp/xxx`.
   * Important exceptions include several classes within `@xh/hoist/cmp/layout/`, which remain cross-platform.
@@ -355,7 +349,7 @@ Hoist React v8 brings a big set of improvements and fixes, some API and package 
 :octocat:  [Commit Log](https://github.com/exhi/hoist-react/compare/v7.0.0...v7.1.0)
 
 ## v7.0.0
-## 💥 Breaking Changes
+### 💥 Breaking Changes
 
 * **Restructuring of core `App` concept** with change to new `@HoistApp` decorator and conventions around defining `App.js` and `AppComponent.js` files as core app entry points. `XH.app` now installed to provide access to singleton instance of primary app class.  See #387.
 
@@ -371,7 +365,7 @@ Hoist React v8 brings a big set of improvements and fixes, some API and package 
 * Improvements to `Grid` component's interaction with underlying ag-Grid instance, avoiding extra renderings and unwanted loss of state. 03de0ae7
 
 :octocat:  [Commit Log](https://github.com/exhi/hoist-react/compare/v6.0.0...v7.0.0)
-## 💥 Breaking Changes
+### 💥 Breaking Changes
 
 * API for `MessageModel` has changed as part of the feature addition noted below, with `alert()` and `confirm()` replaced by `show()` and new `XH` convenience methods making the need for direct calls rare.
 * `TabContainerModel` no longer takes an `orientation` prop, replaced by the more flexible `switcherPosition` as noted below.
@@ -383,7 +377,7 @@ Hoist React v8 brings a big set of improvements and fixes, some API and package 
 * **`TabContainer` components can now be controlled with a remote `TabSwitcher`** that does not need to be directly docked to the container itself. Specify `switcherPosition:none` on the `TabContainerModel` to suppress showing the switching affordance on the tabs themselves and instantiate a `TabSwitcher` bound to the same model to control a tabset from elsewhere in the component hierarchy. In particular, this enabled top-level application tab navigation to move up into the top toolbar, saving vertical space in the layout. #368 
 * `DataViewModel` supports an `emptyText` config.
 
-## 🐞 Bugfixes
+### 🐞 Bugfixes
 
 * Dropdown fields no longer fire multiple commit messages, and no longer commit partial entries under some circumstances. #353 and #354 
 * Grids resizing fixed when shrinking the containing component. #357 
@@ -391,7 +385,7 @@ Hoist React v8 brings a big set of improvements and fixes, some API and package 
 :octocat:  [Commit Log](https://github.com/exhi/hoist-react/compare/v5.0.0...v6.0.0)
 
 ## v5.0.0
-## 💥 Breaking Changes
+### 💥 Breaking Changes
 
 * **Multi environment configs have been unwound** See these release notes/instructions for how to migrate: https://github.com/exhi/hoist-core/releases/tag/release-3.0.0
 * **Breaking change to context menus in dataviews and grids not using the default context menu:** StoreContextMenu no longer takes an array of items as an argument to its constructor. Instead it takes a configuration object with an ‘items’ key that will point to any current implementation’s array of items. 
@@ -402,7 +396,7 @@ This object can also contain an optional gridModel argument which is intended to
 * Config differ presents inline view, easier to read diffs now.
 * Print Icon added!  
 
-## 🐞 Bugfixes
+### 🐞 Bugfixes
 * Update processFailedLoad to loadData into gridModel store, Fixes #337 
 * Fix regression to ErrorTracking. Make errorTrackingService safer/simpler to call at any point in life-cycle.
 *  Fix broken LocalStore state.
@@ -410,12 +404,12 @@ This object can also contain an optional gridModel argument which is intended to
 * Provide token parsing for storeContextMenus.  Context menus are all grown up!  Fixes #300
 
 ## v4.0.1
-## 🐞 Bugfixes
+### 🐞 Bugfixes
 
 * DataView now properly re-renders its items when properties on their records change (and the ID does not)
 
 ## v4.0.0
-## 💥 Breaking Changes
+### 💥 Breaking Changes
 
 * **The `GridModel` selection API has been reworked for clarity.** These models formerly exposed their selectionModel as `grid.selection` - now that getter returns the selected records. A new `selectedRecord` getter is also available to return a single selection, and new string shortcut options are available when configuring GridModel selection behavior. 
 * **Grid components can now take an `agOptions` prop** to pass directly to the underlying ag-grid component, as well as an `onRowDoubleClicked` handler function. 16be2bfa10e5aab4ce8e7e2e20f8569979dd70d1
@@ -424,17 +418,17 @@ This object can also contain an optional gridModel argument which is intended to
 
 * Additional core components have been updated with built-in `layoutSupport`, allowing developers to set width/height/flex and other layout properties directly as top-level props for key comps such as Grid, DataView, and Chart. These special props are processed via `elemFactory` into a `layoutConfig` prop that is now passed down to the underlying wrapper div for these components. 081fb1f3a2246a4ff624ab123c6df36c1474ed4b
 
-## 🐞 Bugfixes
+### 🐞 Bugfixes
 
 * Log viewer tail mode now working properly for long log files - #325 
 
 ## v3.0.1
-## 🐞 Bugfixes
+### 🐞 Bugfixes
 
 * FetchService throws a dedicated exception when the server is unreachable, fixes a confusing failure case detailed in #315 
 
 ## v3.0.0
-## 💥 Breaking Changes
+### 💥 Breaking Changes
 
 * **An application's `AppModel` class must now implement a new `checkAccess()` method.** This method is passed the current user, and the appModel should determine if that user should see the UI and return an object with a `hasAccess` boolean and an optional `message` string. For a return with `hasAccess: false`, the framework will render a lockout panel instead of the primary UI. 974c1def99059f11528c476f04e0d8c8a0811804
     * Note that this is only a secondary level of "security" designed to avoid showing an unauthorized user a confusing / non-functional UI. The server or any other third-party data sources must always be the actual enforcer of access to data or other operations.
@@ -445,6 +439,6 @@ This object can also contain an optional gridModel argument which is intended to
 
 * Built-in client-side lockout support, as per above.
 
-## 🐞 Bugfixes
+### 🐞 Bugfixes
 
 * None
