@@ -202,7 +202,7 @@ export class GridModel {
     selectFirst() {
         const {agApi, selModel} = this;
         if (agApi) {
-            const idx = this.groupBy ? 1 : 0,
+            const idx = (this.groupBy && !this.treeMode) ? 1 : 0,
                 first = agApi.getDisplayedRowAtIndex(idx);
 
             if (first) selModel.select(first);

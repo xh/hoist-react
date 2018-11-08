@@ -5,10 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
-import {vbox, hbox, box} from '@xh/hoist/cmp/layout/index';
-import {button} from '@xh/hoist/desktop/cmp/button';
-import {buttonGroup, popover, Classes} from '@xh/hoist/kit/blueprint';
+import PT from 'prop-types';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {vbox, hbox} from '@xh/hoist/cmp/layout/index';
+import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
+import {popover, Classes} from '@xh/hoist/kit/blueprint';
 import {Icon} from '@xh/hoist/icon';
 import {div} from '@xh/hoist/cmp/layout';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -22,26 +23,38 @@ import './DimensionChooser.scss';
  *
  * @see DimensionChooserModel
  */
-
 @HoistComponent
-@LayoutSupport
 export class DimensionChooser extends Component {
 
-    static defaultProps = {
-        minWidth: 200,
-        maxWidth: 350
-    };
+    static propTypes = {
+
+        /** Width in pixels of the target button (that triggers show of popover). */
+        buttonWidth: PT.number,
+
+        /** Title for popover (default "GROUP BY") or null to suppress. */
+        popoverTitle: PT.string,
+
+        /** Width in pixels of the popover menu itself. */
+        popoverWidth: PT.number
+    }
 
     baseClassName = 'xh-dim-chooser';
 
-    // Add menu styles
-    INDENT = 10;        // Indentation unit applied at each level
-    X_BTN_WIDTH = 20;   // Minimum width of 'x' buttons
-    ROW_PAD = 3;        // Left padding
+    INDENT = 10;        // Indentation applied at each level.
+    X_BTN_WIDTH = 26;   // Width of 'x' buttons.
+    LEFT_PAD = 5;       // Left-padding for inputs.
+
+    get popoverWidth() {
+        return withDefault(this.props.popoverWidth, 250);
+    }
+
+    get buttonWidth() {
+        return withDefault(this.props.buttonWidth, 220);
+    }
 
     render() {
         return div({
-            className: this.baseClassName,
+            className: this.getClassName(),
             item: this.renderDimensionMenu()
         });
     }
@@ -96,12 +109,11 @@ export class DimensionChooser extends Component {
     // Rendering top-level menus
     //---------------------------
     renderDimensionMenu() {
-        const {maxWidth, minWidth} = this.props,
-            {value, dimensions, isMenuOpen, isAddNewOpen} = this.model;
+        const {value, dimensions, isMenuOpen, isAddNewOpen} = this.model;
 
         const target = button({
             item: value.map(it => dimensions[it].label).join(' \u203a '),
-            style: {maxWidth, minWidth},
+            width: this.buttonWidth,
             onClick: this.onTargetClick
         });
 
@@ -109,30 +121,61 @@ export class DimensionChooser extends Component {
 
         return popover({
             target,
-            content: vbox({...menuContent, minWidth, maxWidth}),
             isOpen: isMenuOpen,
-            onInteraction: (nextOpenState, e) => this.onInteraction(nextOpenState, e),
             targetClassName: 'xh-dim-popover',
-            position: 'bottom'
+            position: 'bottom',
+            content: vbox({
+                width: this.popoverWidth,
+                ...menuContent
+            }),
+            onInteraction: (nextOpenState, e) => this.onInteraction(nextOpenState, e)
         });
+    }
+
+    renderAddNewMenu() {
+        return {
+            className: 'xh-dim-add-popover',
+            items: [
+                this.renderPopoverTitle(),
+                this.renderSelectChildren(),
+                buttonGroup({
+                    className: 'xh-dim-nav-row',
+                    items: [
+                        button({
+                            icon: Icon.arrowLeft(),
+                            flex: 1,
+                            omit: isEmpty(this.model.history),
+                            onClick: this.onBackSelected
+                        }),
+                        button({
+                            icon: Icon.check(),
+                            flex: 2,
+                            onClick: this.onSaveSelected
+                        })
+                    ]
+                })
+            ]
+        };
     }
 
     renderHistoryMenu() {
         return {
             className: 'xh-dim-history-popover',
             items: [
+                this.renderPopoverTitle(),
                 this.renderHistoryItems(),
                 buttonGroup({
                     className: 'xh-dim-nav-row',
+                    minimal: true,
                     items: [
                         button({
-                            style: {flex: 1},
                             icon: Icon.x(),
+                            flex: 1,
                             onClick: this.onCancelSelected
                         }),
                         button({
-                            style: {flex: 2},
                             icon: Icon.edit(),
+                            flex: 2,
                             title: 'Add a new grouping',
                             onClick: this.onAddNewClick
                         })
@@ -142,55 +185,35 @@ export class DimensionChooser extends Component {
         };
     }
 
-    renderAddNewMenu() {
-        return {
-            className: 'xh-dim-add-popover',
-            items: [
-                this.renderSelectChildren(),
-                buttonGroup({
-                    className: 'xh-dim-nav-row',
-                    items: [
-                        button({
-                            icon: Icon.arrowLeft(),
-                            style: {flex: 1},
-                            omit: isEmpty(this.model.history),
-                            onClick: this.onBackSelected
-                        }),
-                        button({
-                            icon: Icon.check(),
-                            style: {flex: 2},
-                            onClick: this.onSaveSelected
-                        })
-                    ]
-                })
-            ]
-        };
-    }
 
     //--------------------
     // Render popover items
     //--------------------
     renderSelectChildren() {
-        const {INDENT, X_BTN_WIDTH, ROW_PAD, model} = this,
+        const {LEFT_PAD, INDENT, X_BTN_WIDTH, model} = this,
             {pendingValue, dimensions, maxDepth, leafInPending} = model;
+
         let children = pendingValue.map((dim, i) => {
-            const options = model.dimOptionsForLevel(i);
+            const options = model.dimOptionsForLevel(i),
+                marginLeft = LEFT_PAD + (INDENT * i),
+                width = this.popoverWidth - marginLeft - X_BTN_WIDTH;
+
             return hbox({
                 className: 'xh-dim-popover-row',
-                style: {marginLeft: 10*i, paddingLeft: ROW_PAD},
                 items: [
                     select({
                         options,
-                        enableFilter: false,
-                        width: this.props.minWidth - (INDENT * i) - (X_BTN_WIDTH + ROW_PAD),
                         value: dimensions[dim].label,
-                        onChange: (newDim) => this.onDimChange(newDim, i),
-                        disabled: isEmpty(options)
+                        disabled: isEmpty(options),
+                        enableFilter: false,
+                        width,
+                        marginLeft,
+                        onChange: (newDim) => this.onDimChange(newDim, i)
                     }),
                     button({
-                        icon: Icon.x(),
-                        style: {minWidth: X_BTN_WIDTH},
-                        minimal: true,
+                        icon: Icon.x({className: 'xh-red'}),
+                        maxWidth: X_BTN_WIDTH,
+                        minWidth: X_BTN_WIDTH,
                         disabled: pendingValue.length === 1,
                         onClick: () => model.removePendingDim(dim)
                     })
@@ -199,33 +222,31 @@ export class DimensionChooser extends Component {
         });
 
         const atMaxDepth = (pendingValue.length === Math.min(maxDepth, size(dimensions)));
-        children = atMaxDepth || leafInPending ? children : this.appendAddDim(children);
+        if (!atMaxDepth && !leafInPending) {
+            children.push(this.createAddSelect());
+        }
 
-        return vbox({className: 'xh-dim-popover-selects', items: children});
+        return vbox({
+            className: 'xh-dim-popover-selects',
+            items: children
+        });
     }
 
-    appendAddDim(children) {
-        const {model, INDENT, ROW_PAD, X_BTN_WIDTH} = this,
+    createAddSelect() {
+        const {model, LEFT_PAD, INDENT, X_BTN_WIDTH} = this,
             {pendingValue} = model,
             pendingCount = pendingValue.length,
-            marginLeft = pendingCount * INDENT + ROW_PAD,
-            width = this.props.minWidth - marginLeft - X_BTN_WIDTH;
-        children.push(
-            box({
-                style: {marginLeft},
-                items: [
-                    select({
-                        options: model.dimOptionsForLevel(pendingCount),
-                        className: 'xh-dim-popover-add-dim',
-                        width,
-                        enableFilter: false,
-                        onChange: (newDim) => this.onDimChange(newDim, pendingCount),
-                        placeholder: 'Add...'
-                    })
-                ]
-            })
-        );
-        return children;
+            marginLeft = LEFT_PAD + (pendingCount * INDENT),
+            width = this.popoverWidth - marginLeft - X_BTN_WIDTH;
+
+        return select({
+            options: model.dimOptionsForLevel(pendingCount),
+            enableFilter: false,
+            placeholder: 'Add...',
+            width,
+            marginLeft,
+            onChange: (newDim) => this.onDimChange(newDim, pendingCount)
+        });
     }
 
     renderHistoryItems() {
@@ -240,13 +261,24 @@ export class DimensionChooser extends Component {
                         minimal: true,
                         title: ` ${labels.map((it, i) => ' '.repeat(i) + '\u203a '.repeat(i ? 1 : 0) + it).join('\n')}`,
                         text: labels.join(' \u203a '),
-                        onClick: () => this.onSetFromHistory(value),
                         className: Classes.POPOVER_DISMISS,
-                        key: `dim-history-${i}`
+                        key: `dim-history-${i}`,
+                        onClick: () => this.onSetFromHistory(value)
                     });
                 })
             ]
         });
     }
+
+    renderPopoverTitle() {
+        const title = withDefault(this.props.popoverTitle, 'Group By');
+        if (!title) return null;
+
+        return div({
+            className: 'xh-dim-popover-title',
+            item: title
+        });
+    }
+
 }
 export const dimensionChooser = elemFactory(DimensionChooser);
