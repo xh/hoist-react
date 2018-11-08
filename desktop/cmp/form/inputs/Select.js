@@ -22,7 +22,15 @@ import {
 import './Select.scss';
 
 /**
- * TODO - custom renderers, custom local query, cap large option lists.
+ * A managed wrapper around the React-Select combobox/dropdown component.
+ *
+ * Supports advanced options such as:
+ *      + Asynchronous queries
+ *      + Multiple selection
+ *      + Custom dropdown option renderers
+ *      + User-created ad-hoc entries
+ *
+ * @see {@link https://react-select.com|React Select Docs}
  */
 @LayoutSupport
 @HoistComponent
@@ -63,6 +71,9 @@ export class Select extends HoistInput {
 
         /** Function to return message indicating no options loaded. Passed current query input. */
         noOptionsMessageFn: PT.func,
+
+        /** True to auto-open the dropdown menu on input focus. */
+        openMenuOnFocus: PT.bool,
 
         /**
          * Preset list of options for selection. Objects must contain a `value` property; a `label`
@@ -135,6 +146,7 @@ export class Select extends HoistInput {
                 isMulti: props.enableMulti,
                 menuPlacement: withDefault(props.menuPlacement, 'auto'),
                 noOptionsMessage: this.noOptionsMessageFn,
+                openMenuOnFocus: props.openMenuOnFocus,
                 placeholder: withDefault(props.placeholder, 'Select...'),
                 tabIndex: props.tabIndex,
 
