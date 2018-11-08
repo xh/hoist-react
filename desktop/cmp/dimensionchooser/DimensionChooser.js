@@ -16,11 +16,11 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {select} from '@xh/hoist/desktop/cmp/form';
 import {size, isEmpty} from 'lodash';
 
+import {DimensionChooserModel} from './DimensionChooserModel';
 import './DimensionChooser.scss';
 
 /**
  * Control for selecting a list of dimensions for grouping APIs.
- *
  * @see DimensionChooserModel
  */
 @HoistComponent
@@ -30,6 +30,9 @@ export class DimensionChooser extends Component {
 
         /** Width in pixels of the target button (that triggers show of popover). */
         buttonWidth: PT.number,
+
+        /** Controlling model instance. */
+        model: PT.instanceOf(DimensionChooserModel).isRequired,
 
         /** Title for popover (default "GROUP BY") or null to suppress. */
         popoverTitle: PT.string,
@@ -62,62 +65,42 @@ export class DimensionChooser extends Component {
     //--------------------
     // Event Handlers
     //--------------------
-    onTargetClick = () => {
-        this.model.setIsAddNewOpen(isEmpty(this.model.history));
-        this.model.setIsMenuOpen(true);
-    }
-
     onDimChange = (dim, i) => {
         this.model.addPendingDim(dim, i);
-    }
-
-    onAddNewClick = () => {
-        this.model.pendingValue = this.model.value;
-        this.model.setIsAddNewOpen(true);
-    }
-
-    onSaveSelected = () => {
-        this.model.commitPendingValue();
-    }
-
-    onBackSelected = () => {
-        this.model.setIsAddNewOpen(false);
     }
 
     onSetFromHistory = (value) => {
         this.model.setValue(value);
     }
 
-    onCancelSelected = () => {
-        this.model.setIsMenuOpen(false);
-    }
-
     onInteraction = (nextOpenState, e) => {
+        const {model} = this;
         if (nextOpenState === false) {
-            if (this.model.isAddNewOpen) {
+            if (model.activeMode == 'edit') {
                 const notSelectClick = withDefault(e, false) &&
                     withDefault(e.target, false) &&
                     withDefault(!e.target.classList.contains('xh-select__option'), false);
-                if (notSelectClick) this.onSaveSelected();
+                if (notSelectClick) this.model.commitPendingValue();
             } else {
-                this.model.setIsMenuOpen(false);
+                model.closeMenu();
             }
         }
     };
+
 
     //---------------------------
     // Rendering top-level menus
     //---------------------------
     renderDimensionMenu() {
-        const {value, dimensions, isMenuOpen, isAddNewOpen} = this.model;
+        const {value, dimensions, isMenuOpen, activeMode} = this.model;
 
         const target = button({
             item: value.map(it => dimensions[it].label).join(' \u203a '),
             width: this.buttonWidth,
-            onClick: this.onTargetClick
+            onClick: () => this.model.showMenu()
         });
 
-        const menuContent = isAddNewOpen ? this.renderAddNewMenu() : this.renderHistoryMenu();
+        const menuContent = (activeMode == 'history') ? this.renderHistoryMenu() : this.renderEditMenu();
 
         return popover({
             target,
@@ -132,12 +115,12 @@ export class DimensionChooser extends Component {
         });
     }
 
-    renderAddNewMenu() {
+    renderEditMenu() {
         return {
             className: 'xh-dim-add-popover',
             items: [
                 this.renderPopoverTitle(),
-                this.renderSelectChildren(),
+                this.renderSelectEditors(),
                 buttonGroup({
                     className: 'xh-dim-nav-row',
                     items: [
@@ -145,12 +128,12 @@ export class DimensionChooser extends Component {
                             icon: Icon.arrowLeft(),
                             flex: 1,
                             omit: isEmpty(this.model.history),
-                            onClick: this.onBackSelected
+                            onClick: () => this.model.showHistory()
                         }),
                         button({
-                            icon: Icon.check(),
+                            icon: Icon.check({className: 'xh-green'}),
                             flex: 2,
-                            onClick: this.onSaveSelected
+                            onClick: () => this.model.commitPendingValue()
                         })
                     ]
                 })
@@ -171,13 +154,13 @@ export class DimensionChooser extends Component {
                         button({
                             icon: Icon.x(),
                             flex: 1,
-                            onClick: this.onCancelSelected
+                            onClick: () => this.model.closeMenu()
                         }),
                         button({
                             icon: Icon.edit(),
                             flex: 2,
                             title: 'Add a new grouping',
-                            onClick: this.onAddNewClick
+                            onClick: () => this.model.showEditor()
                         })
                     ]
                 })
@@ -189,7 +172,7 @@ export class DimensionChooser extends Component {
     //--------------------
     // Render popover items
     //--------------------
-    renderSelectChildren() {
+    renderSelectEditors() {
         const {LEFT_PAD, INDENT, X_BTN_WIDTH, model} = this,
             {pendingValue, dimensions, maxDepth, leafInPending} = model;
 
@@ -223,7 +206,7 @@ export class DimensionChooser extends Component {
 
         const atMaxDepth = (pendingValue.length === Math.min(maxDepth, size(dimensions)));
         if (!atMaxDepth && !leafInPending) {
-            children.push(this.createAddSelect());
+            children.push(this.renderAddButtonOrSelect());
         }
 
         return vbox({
@@ -232,21 +215,30 @@ export class DimensionChooser extends Component {
         });
     }
 
-    createAddSelect() {
+    renderAddButtonOrSelect() {
         const {model, LEFT_PAD, INDENT, X_BTN_WIDTH} = this,
             {pendingValue} = model,
             pendingCount = pendingValue.length,
             marginLeft = LEFT_PAD + (pendingCount * INDENT),
             width = this.popoverWidth - marginLeft - X_BTN_WIDTH;
 
-        return select({
-            options: model.dimOptionsForLevel(pendingCount),
-            enableFilter: false,
-            placeholder: 'Add...',
-            width,
-            marginLeft,
-            onChange: (newDim) => this.onDimChange(newDim, pendingCount)
-        });
+        return model.showAddSelect ?
+            select({
+                options: model.dimOptionsForLevel(pendingCount),
+                enableFilter: false,
+                autoFocus: true,
+                width,
+                marginLeft,
+                rsOptions: {openMenuOnFocus: true},
+                onChange: (newDim) => this.onDimChange(newDim, pendingCount)
+            }) :
+            button({
+                text: 'Add grouping...',
+                icon: Icon.add({className: 'xh-green'}),
+                width,
+                marginLeft,
+                onClick: () => this.model.setShowAddSelect(true)
+            });
     }
 
     renderHistoryItems() {
@@ -261,7 +253,6 @@ export class DimensionChooser extends Component {
                         minimal: true,
                         title: ` ${labels.map((it, i) => ' '.repeat(i) + '\u203a '.repeat(i ? 1 : 0) + it).join('\n')}`,
                         text: labels.join(' \u203a '),
-                        className: Classes.POPOVER_DISMISS,
                         key: `dim-history-${i}`,
                         onClick: () => this.onSetFromHistory(value)
                     });
