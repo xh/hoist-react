@@ -71,6 +71,7 @@ export class DimensionChooser extends Component {
 
     onSetFromHistory = (value) => {
         this.model.setValue(value);
+        this.model.closeMenu();
     }
 
     onInteraction = (nextOpenState, e) => {
@@ -227,9 +228,9 @@ export class DimensionChooser extends Component {
                 options: model.dimOptionsForLevel(pendingCount),
                 enableFilter: false,
                 autoFocus: true,
+                openMenuOnFocus: true,
                 width,
                 marginLeft,
-                rsOptions: {openMenuOnFocus: true},
                 onChange: (newDim) => this.onDimChange(newDim, pendingCount)
             }) :
             button({
