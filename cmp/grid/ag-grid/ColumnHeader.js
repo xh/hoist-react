@@ -25,7 +25,8 @@ import {clone, remove} from 'lodash';
 export class ColumnHeader extends Component {
 
     gridModel;
-    column;
+    hoistColumn;
+    agColumn;
     colId;
 
     menuButton = new Ref();
@@ -37,6 +38,7 @@ export class ColumnHeader extends Component {
     // Get any active sortBy for this column, or null
     @computed
     get activeGridSorter() {
+        if (!this.gridModel) return;
         return this.gridModel.sortBy.find(it => {
             return it.colId === this.colId;
         });
@@ -50,9 +52,10 @@ export class ColumnHeader extends Component {
 
     constructor(props) {
         super(props);
-        const {gridModel, column} = this.props;
+        const {gridModel, hoistColumn, column} = this.props;
         this.gridModel = gridModel;
-        this.column = column;
+        this.hoistColumn = hoistColumn;
+        this.agColumn = column;
         this.colId = column.colId;
         column.addEventListener('filterChanged', () => this.onFilterChanged());
     }
@@ -117,7 +120,7 @@ export class ColumnHeader extends Component {
     // Implementation
     //--------------------
     onClick = (e) => {
-        if (!this.props.enableSorting) return;
+        if (!this.props.enableSorting || !this.gridModel) return;
 
         const {gridModel, activeGridSorter, colId} = this,
             nextSortBy = this.getNextSortBy();
@@ -136,16 +139,16 @@ export class ColumnHeader extends Component {
 
     @action
     onFilterChanged = () => {
-        this.isFiltered = this.column.isFilterActive();
-    }
+        this.isFiltered = this.agColumn.isFilterActive();
+    };
 
     getNextSortBy() {
-        const {colId, column, activeGridSorter} = this,
+        const {colId, hoistColumn, activeGridSorter} = this,
             {sort, abs = false} = activeGridSorter || {};
 
         if (sort === 'asc') {
             return {colId, sort: 'desc', abs: false};
-        } else if (column.absSort && !abs && (!activeGridSorter || sort === 'desc')) {
+        } else if (hoistColumn.absSort && !abs && (!activeGridSorter || sort === 'desc')) {
             return {colId, sort: 'desc', abs: true};
         } else {
             return {colId, sort: 'asc', abs: false};

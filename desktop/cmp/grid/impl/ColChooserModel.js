@@ -49,7 +49,7 @@ export class ColChooserModel {
     commit() {
         const {gridModel, lrModel} = this,
             {leftValues, rightValues} = lrModel,
-            cols = gridModel.getLeafColumns();
+            cols = gridModel.columnState;
 
         const colChanges = [];
         cols.forEach(({colId}) => {

@@ -41,11 +41,13 @@ export class GridStateModel {
      * @param {boolean} [c.trackColumns] - true to save state of columns,
      *      including visibility, ordering and pixel widths.
      * @param {boolean} [c.trackSort] - true to save sorting.
+     * @param {boolean} [c.trackGrouping] - true to save column grouping.
      */
-    constructor({gridId, trackColumns = true, trackSort = true}) {
+    constructor({gridId, trackColumns = true, trackSort = true, trackGrouping = true}) {
         this.gridId = gridId;
         this.trackColumns = trackColumns;
         this.trackSort = trackSort;
+        this.trackGrouping = trackGrouping;
     }
 
     init(gridModel) {
@@ -57,6 +59,10 @@ export class GridStateModel {
 
         if (this.trackSort) {
             this.addReaction(this.sortReaction());
+        }
+
+        if (this.trackGrouping) {
+            this.addReaction(this.groupReaction());
         }
 
         this.initializeState();
@@ -98,13 +104,15 @@ export class GridStateModel {
     readStateFromGrid() {
         return {
             columns: this.getColumnState(),
-            sortBy: this.gridModel.sortBy
+            sortBy: this.gridModel.sortBy,
+            groupBy: this.gridModel.groupBy
         };
     }
 
     loadState(state) {
         this.state = cloneDeep(state);
         if (this.trackColumns) this.updateGridColumns();
+        if (this.trackGrouping) this.updateGridGroupBy();
         if (this.trackSort) this.updateGridSort();
     }
 
@@ -116,7 +124,7 @@ export class GridStateModel {
         return {
             track: () => gridModel.columns,
             run: () => {
-                this.state.columns = this.getColumnState();
+                this.state.columns = gridModel.columnState;
                 this.saveStateChange();
             }
         };
@@ -168,6 +176,27 @@ export class GridStateModel {
     updateGridSort() {
         const {sortBy} = this.state;
         if (sortBy) this.gridModel.setSortBy(sortBy);
+    }
+
+    //--------------------------
+    // Grouping
+    //--------------------------
+    groupReaction() {
+        const {gridModel} = this;
+        return {
+            track: () => gridModel.groupBy,
+            run: () => {
+                this.state.groupBy = gridModel.groupBy;
+                this.saveStateChange();
+            }
+        };
+    }
+
+    updateGridGroupBy() {
+        const {gridModel, state} = this;
+        if (!state.groupBy) return;
+
+        gridModel.setGroupBy(state.groupBy);
     }
 
     //--------------------------

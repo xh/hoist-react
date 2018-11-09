@@ -71,6 +71,8 @@ export class GridModel {
     //------------------------
     /** @member {Object[]} - {@link Column} and {@link ColumnGroup} objects */
     @observable.ref columns = [];
+    /** @member {ColumnState[]} */
+    @observable.ref columnState = [];
     /** @member {GridSorter[]} */
     @observable.ref sortBy = [];
     /** @member {string[]} */
@@ -249,30 +251,20 @@ export class GridModel {
      */
     @action
     setGroupBy(colIds) {
+        if (!colIds) {
+            this.groupBy = [];
+            return;
+        }
+
         colIds = castArray(colIds);
 
-        const cols = this.columns,
-            leafCols = this.getLeafColumns(),
-            groupCols = leafCols.filter(it => colIds.includes(it.colId)),
-            groupColIds = groupCols.map(it => it.colId);
+        const invalidColIds = colIds.filter(it => !this.findColumn(this.columns, it));
+        if (invalidColIds.length) {
+            console.warn('GroupBy colId not found in grid columns', invalidColIds);
+            return;
+        }
 
-        // Ungroup and re-show any currently grouped columns.
-        leafCols.forEach(col => {
-            if (col.agOptions.rowGroup) {
-                col.agOptions.rowGroup = false;
-                col.hidden = false;
-            }
-        });
-
-        // Group and hide all newly requested columns.
-        groupCols.forEach(col => {
-            col.agOptions.rowGroup = true;
-            col.hidden = true;
-        });
-
-        // Set groupBy value based on verified column IDs and flush to grid.
-        this.groupBy = groupColIds;
-        this.columns = [...cols];
+        this.groupBy = colIds;
     }
 
     /** Expand all parent rows in grouped or tree grid. (Note, this is recursive for trees!) */
@@ -341,6 +333,8 @@ export class GridModel {
         this.validateColumns(columns);
 
         this.columns = columns;
+        this.columnState = this.getLeafColumns()
+            .map(({colId, width, hidden}) => ({colId, width, hidden}));
     }
 
     showColChooser() {
@@ -352,6 +346,7 @@ export class GridModel {
     noteAgColumnStateChanged(agColState) {
         const colChanges = agColState.map(({colId, width, hide}) => {
             const col = this.findColumn(this.columns, colId);
+            if (!col) return null;
             return {
                 colId,
                 hidden: hide,
@@ -359,7 +354,7 @@ export class GridModel {
             };
         });
 
-        this.applyColumnChanges(colChanges);
+        this.applyColumnChanges(colChanges.filter(Boolean));
     }
 
     /**
@@ -375,15 +370,14 @@ export class GridModel {
      */
     @action
     applyColumnChanges(colChanges) {
-        let {columns} = this,
-            newCols = [...columns];
+        let columnState = [...this.columnState];
 
-        throwIf(colChanges.some(({colId}) => !this.findColumn(columns, colId)),
+        throwIf(colChanges.some(({colId}) => !this.findColumn(columnState, colId)),
             'Invalid columns detected in column changes!');
 
         // 1) Update any width or visibility changes
         colChanges.forEach(change => {
-            const col = this.findColumn(newCols, change.colId);
+            const col = this.findColumn(columnState, change.colId);
 
             if (!isNil(change.width)) col.width = change.width;
             if (!isNil(change.hidden)) col.hidden = change.hidden;
@@ -394,22 +388,22 @@ export class GridModel {
         if (colChanges.length === leafCols.length) {
             // 2.a) Mark (potentially changed) sort order
             colChanges.forEach((change, index) => {
-                const col = this.findColumn(newCols, change.colId);
+                const col = this.findColumn(columnState, change.colId);
                 col._sortOrder = index;
             });
 
             // 2.b) Install implied group sort orders and sort
-            newCols.forEach(it => this.markGroupSortOrder(it));
-            newCols = this.sortColumns(newCols);
+            columnState.forEach(it => this.markGroupSortOrder(it));
+            columnState = this.sortColumns(columnState);
 
             // 2.c) Force any emptyFlexCol that is last to stay last (avoid user dragging)!
-            const emptyFlex = findLast(newCols, {colId: 'emptyFlex'});
-            if (emptyFlex && last(columns).colId == 'emptyFlex' && last(newCols) != emptyFlex) {
-                pull(newCols, emptyFlex).push(emptyFlex);
+            const emptyFlex = findLast(columnState, {colId: 'emptyFlex'});
+            if (emptyFlex && last(this.columns).colId === 'emptyFlex' && last(columnState) !== emptyFlex) {
+                pull(columnState, emptyFlex).push(emptyFlex);
             }
         }
 
-        this.columns = newCols;
+        this.columnState = columnState;
     }
 
     getLeafColumns() {
@@ -438,7 +432,10 @@ export class GridModel {
     gatherLeaves(columns, leaves = []) {
         columns.forEach(col => {
             if (col.groupId) this.gatherLeaves(col.children, leaves);
-            if (col.colId) leaves.push(col);
+            if (col.colId) {
+                const colState = this.columnState.find(it => it.colId === col.colId) || {};
+                leaves.push(Object.assign({}, col, colState));
+            }
         });
 
         return leaves;
