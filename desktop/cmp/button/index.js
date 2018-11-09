@@ -13,3 +13,4 @@ export * from './RefreshButton';
 export * from './ExportButton';
 export * from './FeedbackButton';
 export * from './RestoreDefaultsButton';
+export * from './ColChooserButton';
