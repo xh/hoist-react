@@ -41,7 +41,6 @@ export const actionCol = {
     sortable: false,
     resizable: false,
     chooserName: 'Actions',
-    chooserDescription: 'Record Actions',
     excludeFromExport: true,
     elementRenderer: (value, {record, column, agParams}) => {
         if (agParams.node.group) return null;

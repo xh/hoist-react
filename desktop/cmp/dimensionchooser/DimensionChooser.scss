@@ -1,51 +1,77 @@
-.xh-dim-chooser {
-  .xh-dim-popover {
+.xh-dim-popover {
+  .xh-button {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline;
+    border: var(--xh-border-solid);
+    padding-left: var(--xh-pad-px);
+    padding-right: var(--xh-pad-px);
+  }
+}
+
+.xh-dim-popover-title {
+  padding: var(--xh-pad-half-px);
+  text-align: center;
+  text-transform: uppercase;
+  font-size: var(--xh-font-size-small-px);
+  background-color: var(--xh-popup-title-bg);
+  color: var(--xh-title-text-color);
+}
+
+.xh-dim-add-popover {
+  background-color: var(--xh-grid-bg);
+
+  .xh-dim-popover-selects {
+    padding: var(--xh-pad-half-px) 0;
+
+    .xh-select {
+      flex: none;
+    }
+
+    .xh-dim-popover-row {
+      margin-bottom: 2px;
+    }
+
     .xh-button {
+      padding: 0;
+      flex: none;
+    }
+
+  }
+}
+
+.xh-dim-history-popover {
+  background-color: var(--xh-grid-bg);
+
+  .xh-dim-history-items {
+    padding: var(--xh-pad-half-px) 0;
+    button {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
       display: inline;
-    }
-  }
+      background-color: var(--xh-grid-bg);
 
-  button.xh-button {
-    border: var(--xh-border-solid);
-    padding-left: var(--xh-pad-px);
+      &:hover {
+        background-color: var(--xh-grid-bg-hover) !important;
+      }
+
+      &:nth-child(odd) {
+        background-color: var(--xh-grid-bg-odd);
+      }
+    }
   }
 }
 
-.bp3-popover-content {
-  .xh-dim-nav-row {
-    .xh-button {
-      border-radius: 0;
-      border-top: var(--xh-border-solid);
-    }
-    .xh-button:not(:last-child) {
+.xh-dim-nav-row {
+  background-color: var(--xh-tbar-bg);
+  .xh-button {
+    border-radius: 0;
+    border-top: var(--xh-border-solid);
+
+    &:not(:last-child) {
       border-right: var(--xh-border-solid);
     }
   }
-  .xh-dim-add-popover {
-    .xh-dim-popover-selects {
-      padding: 3px 0;
-      .xh-dim-popover-row {
-        margin-bottom: 2px;
-        button {
-          padding: 0;
-        }
-      }
-    }
-  }
-
-  .xh-dim-history-popover {
-    .xh-dim-history-items {
-      padding: 3px 0;
-      button {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        display: inline;
-      }
-    }
-  }
 }
-
