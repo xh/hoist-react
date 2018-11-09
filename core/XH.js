@@ -45,6 +45,8 @@ import '../styles/XH.scss';
 @ReactiveSupport
 class XHClass {
 
+    _initCalled = false;
+
     //------------------------------------------------------------------
     // Metadata
     // The values below are set via webpack.DefinePlugin at build time.
@@ -102,7 +104,6 @@ class XHClass {
 
     get isMobile()              {return this.appSpec.isMobile}
     get clientAppName()         {return this.appSpec.clientAppName}
-
 
     //-------------------------------
     // Models
@@ -380,6 +381,10 @@ class XHClass {
      * Not intended for application use.
      */
     async initAsync() {
+
+        if (this._initCalled) return;
+        this._initCalled = true;
+
         const S = AppState,
             {appSpec} = this;
 
