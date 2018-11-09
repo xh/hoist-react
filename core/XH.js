@@ -382,6 +382,7 @@ class XHClass {
      */
     async initAsync() {
 
+        // Avoid multiple calls, which can occur if AppContainer remounted.
         if (this._initCalled) return;
         this._initCalled = true;
 
