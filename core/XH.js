@@ -6,7 +6,7 @@
  */
 
 import ReactDOM from 'react-dom';
-import {camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
+import {camelCase, flatten, isBoolean, isString, uniqueId, clone} from 'lodash';
 
 import {elem, AppState, AppSpec, EventSupport, ReactiveSupport} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
@@ -44,6 +44,8 @@ import '../styles/XH.scss';
 @EventSupport
 @ReactiveSupport
 class XHClass {
+
+    _initCalled = false;
 
     //------------------------------------------------------------------
     // Metadata
@@ -102,7 +104,6 @@ class XHClass {
 
     get isMobile()              {return this.appSpec.isMobile}
     get clientAppName()         {return this.appSpec.clientAppName}
-
 
     //-------------------------------
     // Models
@@ -380,6 +381,10 @@ class XHClass {
      * Not intended for application use.
      */
     async initAsync() {
+
+        if (this._initCalled) return;
+        this._initCalled = true;
+
         const S = AppState,
             {appSpec} = this;
 

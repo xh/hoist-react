@@ -11,10 +11,10 @@ import {observable, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
-import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import './ag-grid';
 import {agGridReact, navigateSelection, ColumnHeader} from './ag-grid';
-import {colChooser} from './impl/ColChooser';
+
+import {colChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -120,10 +120,7 @@ export class Grid extends Component {
                 ),
                 onKeyDown: !isMobile ? onKeyDown : null
             }),
-            colChooser({
-                omit: isMobile || !colChooserModel,
-                model: colChooserModel
-            })
+            colChooserModel ? colChooser({model: colChooserModel}) : null
         );
     }
 
