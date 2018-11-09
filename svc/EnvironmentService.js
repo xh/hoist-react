@@ -33,6 +33,8 @@ export class EnvironmentService {
 
         deepFreeze(this._data);
 
+        this.adjustDocTitleForNonProdEnv();
+
         this.addReaction({
             when: () => XH.appIsRunning,
             run: this.startVersionChecking
@@ -50,6 +52,13 @@ export class EnvironmentService {
     //------------------------------
     // Implementation
     //------------------------------
+    adjustDocTitleForNonProdEnv() {
+        const env = this.get('appEnvironment');
+        if (env != 'Production') {
+            document.title += ` (${env})`;
+        }
+    }
+
     startVersionChecking() {
         const interval = XH.getConf('xhAppVersionCheckSecs');
         Timer.create({
