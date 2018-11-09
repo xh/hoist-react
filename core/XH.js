@@ -6,7 +6,7 @@
  */
 
 import ReactDOM from 'react-dom';
-import {camelCase, flatten, isBoolean, isString, uniqueId, clone} from 'lodash';
+import {camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
 
 import {elem, AppState, AppSpec, EventSupport, ReactiveSupport} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
