@@ -248,22 +248,27 @@ export class Column {
         if (sortCfg) {
             ret.sort = sortCfg.sort;
             ret.sortedAt = gridModel.sortBy.indexOf(sortCfg);
-
-            // ag-Grid sort impl. sources its primary values from the node's `groupData` property,
-            // which is not what we want when sorting treeColumns.
-            if (this.isTreeColumn) {
-                ret.comparator = (v1, v2, node1, node2) => {
-                    return sortCfg.comparator(node1.data[field], node2.data[field]);
-                };
-            } else {
-                ret.comparator = (v1, v2) => sortCfg.comparator(v1, v2);
-            }
-
+            ret.comparator = this.comparator;
         }
 
         // Finally, apply explicit app requests.  The customer is always right....
         return {...ret, ...this.agOptions};
     }
+
+    //--------------------
+    // Implementation
+    //--------------------
+
+    comparator = (v1, v2, node1, node2) => {
+        const sortCfg = find(this.gridModel.sortBy, {colId: this.colId}),
+            // ag-Grid sort impl. sources its primary values from the node's `groupData` property,
+            // which is not what we want when sorting treeColumns.
+            val1 = this.isTreeColumn ? node1.data[field] : v1,
+            val2 = this.isTreeColumn ? node2.data[field] : v2;
+
+        return sortCfg.comparator(val1, val2);
+    };
+
 }
 
 /**

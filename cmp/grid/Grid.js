@@ -352,7 +352,7 @@ export class Grid extends Component {
 
     columnsReaction() {
         return {
-            track: () => [this.model.agApi, this.model.columns, this.model.sortBy],
+            track: () => [this.model.agApi, this.model.columns],
             run: ([api]) => {
                 if (api) {
                     // ag-grid loses expand state and column filter state
