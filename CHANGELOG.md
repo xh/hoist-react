@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### 💥 Breaking Changes
+
+* The `ColChooserButton` has been moved from the incorrect location `@xh/hoist/cmp/grid` to `@xh/hoist/desktop/cmp/button`.
+This is a desktop-only component.  Apps will have to adjust these imports. 
+
 * TODO
 
 ## v15.1.2
