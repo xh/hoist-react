@@ -203,8 +203,8 @@ export class RestGridModel {
         }
     }
 
-    export(...args) {
-        this.gridModel.export(...args);
+    async exportAsync(...args) {
+        return this.gridModel.exportAsync(...args);
     }
 
     destroy() {

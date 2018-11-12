@@ -15,8 +15,8 @@ import {Icon} from '@xh/hoist/icon';
  * Convenience Button preconfigured for use as a trigger for an export/download of data.
  *
  * Must be provided either an onClick handler *or* a model. If a model is provided, this button
- * will call export() on the model class. Options supported by by GridModel.export can be set
- * via the exportOptions props.
+ * will call exportAsync() on the model class. Options supported by GridExportService.exportAsync()
+ * can be set via the exportOptions props.
  */
 @HoistComponent
 export class ExportButton extends Component {
@@ -45,7 +45,7 @@ export class ExportButton extends Component {
     //---------------------------
     onExportClick = () => {
         const {exportOptions = {}} = this.props;
-        this.model.export(exportOptions);
+        this.model.exportAsync(exportOptions);
     }
 
 }

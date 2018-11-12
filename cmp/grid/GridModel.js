@@ -24,7 +24,6 @@ import {Column, ColumnGroup} from '@xh/hoist/cmp/grid/columns';
 import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';
-import {ExportManager} from './impl/ExportManager';
 
 import {StoreContextMenu, ColChooserModel} from '@xh/hoist/dynamics/desktop';
 
@@ -119,7 +118,7 @@ export class GridModel {
      * @param {boolean} [c.enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
      * @param {boolean} [c.enableExport] - true to install default export context menu items.
-     * @param {object} [c.exportOptions] - default options used in export().
+     * @param {object} [c.exportOptions] - default options used in exportAsync().
      * @param {function} [c.rowClassFn] - closure to generate css class names for a row.
      *      Should return a string or array of strings. Receives record data as param.
      * @param {function} [c.contextMenuFn] - closure returning a StoreContextMenu (desktop only)
@@ -172,10 +171,10 @@ export class GridModel {
     /**
      * Export grid data using Hoist's server-side export.
      *
-     * @param {Object} options - Export options. See ExportManager.exportAsync() for options.
+     * @param {Object} options - Export options. See GridExportService.exportAsync() for options.
      */
-    export(options = {}) {
-        new ExportManager().exportAsync({...this.exportOptions, ...options});
+    async exportAsync(options = {}) {
+        return XH.gridExportService.exportAsync({...this.exportOptions, ...options});
     }
 
     /**
