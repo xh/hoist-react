@@ -7,7 +7,7 @@
 
 import PT from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {textarea as textareaTag} from '@xh/hoist/cmp/layout';
+import {textarea as textareaTag, div} from '@xh/hoist/cmp/layout';
 import {withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/form';
 
@@ -42,18 +42,20 @@ export class TextArea extends HoistInput {
         const {props} = this,
             spellCheck = withDefault(props.spellCheck, true);
 
-        return textareaTag({
+        return div({
             className: this.getClassName(),
-            value: this.renderValue || '',
-            onChange: this.onChange,
-            onKeyPress: this.onKeyPress,
-            onBlur: this.onBlur,
-            onFocus: this.onFocus,
-            style: {...props.style, width: props.width},
-            spellCheck,
-            disabled: props.disabled,
-            type: props.type,
-            placeholder: props.placeholder
+            item: textareaTag({
+                value: this.renderValue || '',
+                onChange: this.onChange,
+                onKeyPress: this.onKeyPress,
+                onBlur: this.onBlur,
+                onFocus: this.onFocus,
+                style: {...props.style, width: props.width},
+                spellCheck,
+                disabled: props.disabled,
+                type: props.type,
+                placeholder: props.placeholder
+            })
         });
     }
 
