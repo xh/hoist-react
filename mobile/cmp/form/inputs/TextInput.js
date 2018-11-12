@@ -13,8 +13,6 @@ import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
  * A Text Input
- *
- * @see HoistInput for properties additional to those documented below.
  */
 @HoistComponent
 export class TextInput extends HoistInput {
@@ -49,11 +47,11 @@ export class TextInput extends HoistInput {
         /** Whether text in field is selected when field receives focus */
         selectOnFocus: PT.bool,
 
-        /** Alignment of entry text within control, default 'left'. */
-        textAlign: PT.oneOf(['left', 'right']),
-
         /** Whether to allow browser spell check, defaults to false */
         spellCheck: PT.bool,
+
+        /** Alignment of entry text within control, default 'left'. */
+        textAlign: PT.oneOf(['left', 'right']),
 
         /** Underlying HTML <input> element type. */
         type: PT.oneOf(['text', 'password']),
@@ -79,6 +77,7 @@ export class TextInput extends HoistInput {
             modifier: props.modifier,
             placeholder: props.placeholder,
             spellCheck: withDefault(props.spellCheck, false),
+            tabIndex: props.tabIndex,
             type: props.type,
 
             className: this.getClassName(),

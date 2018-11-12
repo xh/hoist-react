@@ -15,9 +15,7 @@ import {wait} from '@xh/hoist/promise';
 import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
- * Number Input, with optional support for formatted of display value, shorthand units, and more.
- *
- * @see HoistInput for properties additional to those documented below.
+ * Number Input, with optional support for formatted of display value,
  */
 @HoistComponent
 export class NumberInput extends HoistInput {
@@ -85,6 +83,7 @@ export class NumberInput extends HoistInput {
             max: props.max,
             placeholder: props.placeholder,
             modifier: props.modifier,
+            tabIndex: props.tabIndex,
 
             className: this.getClassName(),
             style: {
