@@ -109,7 +109,7 @@ body {
   --xh-font-size: var(--font-size, 13);
   --xh-font-size-large-mult: var(--font-size-large-mult, 1.2);
   --xh-font-size-large-em: var(--font-size-large-em, 1.2em);
-  --xh-font-size-small-mult: var(--font-size-small-mult, 0.9);
+  --xh-font-size-small-mult: var(--font-size-small-mult, 0.8);
   --xh-font-size-small-em: var(--font-size-small-em, 0.9em);
 
   // Font sizes - calculated from above
@@ -197,6 +197,8 @@ body {
   // Toolbars
   --xh-tbar-bg: var(--tbar-bg, var(--xh-bg-alt));
   --xh-tbar-border-color: var(--tbar-border-color, #{mc('grey', '400')});
+  --xh-tbar-item-pad: var(--tbar-item-pad, var(--xh-pad-half));
+  --xh-tbar-item-pad-px: calc(var(--xh-tbar-item-pad) * 1px);
   --xh-tbar-separator-color: var(--tbar-separator-color, #{mc('grey', '400')});
   --xh-tbar-text-color: var(--tbar-text-color, var(--xh-text-color));
 

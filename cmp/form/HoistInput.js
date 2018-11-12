@@ -199,9 +199,9 @@ export class HoistInput extends Component {
     @action
     noteBlurred() {
         if (!this.hasFocus) return;
-        
+
         this.doCommit();
-        
+
         const field = this.getField();
         if (field) field.startValidating();
 
@@ -225,7 +225,7 @@ export class HoistInput extends Component {
     @action
     noteFocused() {
         if (this.hasFocus) return;
-        
+
         this.setInternalValue(this.toInternal(this.externalValue));
         this.hasFocus = true;
     }

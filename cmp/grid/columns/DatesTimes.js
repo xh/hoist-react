@@ -24,6 +24,7 @@ export const timeCol = {
 
 export const dateTimeCol = {
     ...defaults,
+    align: 'left',
     renderer: dateTimeRenderer(),
     exportFormat: ExportFormat.DATETIME_FMT,
     width: 160

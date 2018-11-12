@@ -7,7 +7,6 @@
 import {HoistModel, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {StoreSelectionModel} from '@xh/hoist/data';
-import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {
     castArray,
     defaults,
@@ -24,9 +23,10 @@ import {
 import {Column, ColumnGroup} from '@xh/hoist/cmp/grid/columns';
 import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {GridStateModel} from './GridStateModel';
-import {ColChooserModel} from './impl/ColChooserModel';
 import {GridSorter} from './impl/GridSorter';
 import {ExportManager} from './impl/ExportManager';
+
+import {StoreContextMenu, ColChooserModel} from '@xh/hoist/dynamics/desktop';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -95,6 +95,7 @@ export class GridModel {
     ];
 
     defaultContextMenu = () => {
+        if (XH.isMobile) return null;
         return new StoreContextMenu({
             items: GridModel.defaultContextMenuTokens,
             gridModel: this
@@ -122,7 +123,7 @@ export class GridModel {
      *      or a closure to generate one.
      * @param {function} [c.rowClassFn] - closure to generate css class names for a row.
      *      Should return a string or array of strings. Receives record data as param.
-     * @param {function} [c.contextMenuFn] - closure returning a StoreContextMenu.
+     * @param {function} [c.contextMenuFn] - closure returning a StoreContextMenu (desktop only)
      * @param {*} [c...rest] - additional data to store
      *      @see StoreContextMenu
      */
@@ -155,7 +156,7 @@ export class GridModel {
 
         this.setColumns(columns);
 
-        if (enableColChooser) {
+        if (enableColChooser && !XH.isMobile) {
             this.colChooserModel = new ColChooserModel(this);
         }
 
@@ -202,7 +203,9 @@ export class GridModel {
     selectFirst() {
         const {agApi, selModel} = this;
         if (agApi) {
-            const first = agApi.getDisplayedRowAtIndex(0);
+            const idx = (this.groupBy && !this.treeMode) ? 1 : 0,
+                first = agApi.getDisplayedRowAtIndex(idx);
+
             if (first) selModel.select(first);
         }
     }

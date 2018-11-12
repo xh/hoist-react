@@ -58,7 +58,7 @@ export class ExportManager {
         // We use cell count as a heuristic for speed - this may need to be tweaked.
         if (rows.length * columns.length > 3000) {
             XH.toast({
-                message: 'Your export is being prepared and will download shortly...',
+                message: 'Your export is being prepared and will download when complete...',
                 intent: 'primary',
                 icon: Icon.download()
             });

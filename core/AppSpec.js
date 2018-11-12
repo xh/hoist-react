@@ -80,6 +80,7 @@ export class AppSpec {
         this.idleDialogClass = idleDialogClass;
         this.loginMessage = loginMessage;
         this.lockoutMessage = lockoutMessage;
+        Object.freeze(this);
     }
 }
 

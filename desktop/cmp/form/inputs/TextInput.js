@@ -97,9 +97,9 @@ export class TextInput extends HoistInput {
                 id: props.id,
                 className: this.getClassName(),
                 style: {
-                    ...props.style,
                     textAlign: withDefault(props.textAlign, 'left'),
-                    width: props.width
+                    width: props.width,
+                    ...props.style
                 },
 
                 onChange: this.onChange,

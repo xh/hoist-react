@@ -6,8 +6,8 @@
  */
 
 import {XH} from '@xh/hoist/core';
-
 import {UrlStore, Record} from '@xh/hoist/data';
+import {pickBy} from 'lodash';
 
 import {RestField} from './RestField';
 
@@ -69,9 +69,14 @@ export class RestStore extends UrlStore {
     async saveRecordInternalAsync(rec, isAdd) {
         let {url} = this;
         if (!isAdd) url += '/' + rec.id;
+
+        // Only include editable fields in the request data
+        const editableFields = this.fields.filter(it => it.editable).map(it => it.name),
+            data = pickBy(rec, (v, k) => k == 'id' || editableFields.includes(k));
+
         return XH.fetchService[isAdd ? 'postJson' : 'putJson']({
             url,
-            body: {data: rec}
+            body: {data}
         }).then(response => {
             const newRec = new Record({fields: this.fields, raw: response.data});
             if (isAdd) {
