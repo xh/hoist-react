@@ -94,11 +94,12 @@ export class TextInput extends HoistInput {
                 tabIndex: props.tabIndex,
                 type: props.type,
 
+                id: props.id,
                 className: this.getClassName(),
                 style: {
-                    ...props.style,
                     textAlign: withDefault(props.textAlign, 'left'),
-                    width: props.width
+                    width: props.width,
+                    ...props.style
                 },
 
                 onChange: this.onChange,

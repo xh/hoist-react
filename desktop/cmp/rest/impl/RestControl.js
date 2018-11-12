@@ -93,7 +93,7 @@ export class RestControl extends Component {
 
         let options;
         if (field.lookup) {
-            options = field.lookup;
+            options = [...field.lookup];
         } else if (type == 'bool') {
             options = [true, false];
         } else {

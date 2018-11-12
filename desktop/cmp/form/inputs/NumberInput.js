@@ -121,6 +121,7 @@ export class NumberInput extends HoistInput {
             stepSize: props.stepSize,
             tabIndex: props.tabIndex,
 
+            id: props.id,
             className: this.getClassName(),
             style: {
                 ...props.style,

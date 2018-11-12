@@ -37,7 +37,7 @@ export class ClientErrorModel {
         }),
         sortBy: {colId: 'dateCreated', sort: 'desc'},
         columns: [
-            {field: 'dateCreated', ...compactDateCol, width: 100},
+            {field: 'dateCreated', ...compactDateCol, width: 140},
             {field: 'username', ...usernameCol},
             {field: 'userAlerted', ...boolCheckCol, headerName: 'Alerted', width: 90},
             {field: 'browser', width: 100},

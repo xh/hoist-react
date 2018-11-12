@@ -73,6 +73,9 @@ export class HoistInput extends Component {
         /** CSS class name. **/
         className: PT.string,
 
+        /** HTML id attribute **/
+        id: PT.string,
+
         /** Tab order for focus control, or -1 to skip. If unset, browser layout-based order. **/
         tabIndex: PT.number
     };
@@ -196,9 +199,9 @@ export class HoistInput extends Component {
     @action
     noteBlurred() {
         if (!this.hasFocus) return;
-        
+
         this.doCommit();
-        
+
         const field = this.getField();
         if (field) field.startValidating();
 
@@ -222,7 +225,7 @@ export class HoistInput extends Component {
     @action
     noteFocused() {
         if (this.hasFocus) return;
-        
+
         this.setInternalValue(this.toInternal(this.externalValue));
         this.hasFocus = true;
     }
