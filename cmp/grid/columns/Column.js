@@ -243,13 +243,8 @@ export class Column {
             };
         }
 
-        // Support enhanced, absValue-aware sorting via GridSorters in GridModel.sortBy[].
-        const sortCfg = find(gridModel.sortBy, {colId: ret.colId});
-        if (sortCfg) {
-            ret.sort = sortCfg.sort;
-            ret.sortedAt = gridModel.sortBy.indexOf(sortCfg);
-            ret.comparator = this.comparator;
-        }
+        // Delegate comparator sorting to absValue-aware GridSorters in GridModel.sortBy[].
+        ret.comparator = this.comparator;
 
         // Finally, apply explicit app requests.  The customer is always right....
         return {...ret, ...this.agOptions};
@@ -258,13 +253,12 @@ export class Column {
     //--------------------
     // Implementation
     //--------------------
-
     comparator = (v1, v2, node1, node2) => {
         const sortCfg = find(this.gridModel.sortBy, {colId: this.colId}),
             // ag-Grid sort impl. sources its primary values from the node's `groupData` property,
             // which is not what we want when sorting treeColumns.
-            val1 = this.isTreeColumn ? node1.data[field] : v1,
-            val2 = this.isTreeColumn ? node2.data[field] : v2;
+            val1 = this.isTreeColumn ? node1.data[this.field] : v1,
+            val2 = this.isTreeColumn ? node2.data[this.field] : v2;
 
         return sortCfg.comparator(val1, val2);
     };
