@@ -122,7 +122,7 @@ export class GridStateModel {
     columnReaction() {
         const {gridModel} = this;
         return {
-            track: () => gridModel.columns,
+            track: () => gridModel.columnState,
             run: () => {
                 this.state.columns = gridModel.columnState;
                 this.saveStateChange();
