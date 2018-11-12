@@ -23,6 +23,7 @@
     font-size: 14px;
     border: none !important;
     outline: none !important;
+    text-align: inherit;
   }
 
   &:not(.xh-input-label) {
@@ -46,10 +47,6 @@
       height: 30px;
       padding: 0 var(--xh-pad-px);
     }
-  }
-
-  &.xh-number-input .text-input {
-    text-align: right;
   }
 
   &.xh-textarea {
