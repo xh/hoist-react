@@ -12,9 +12,7 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
- * A Text Area Input
- *
- * @see HoistInput for properties additional to those documented below.
+ * A multi-line text input.
  */
 @HoistComponent
 export class TextArea extends HoistInput {
@@ -23,38 +21,57 @@ export class TextArea extends HoistInput {
         ...HoistInput.propTypes,
         value: PT.string,
 
-        /** Text to display when control is empty */
-        placeholder: PT.string,
+        /** True to commit on every change/keystroke, default false. */
+        commitOnChange: PT.bool,
 
-        /** Whether to allow browser spell check, defaults to true */
-        spellCheck: PT.bool,
+        /** Height of the control in pixels. */
+        height: PT.number,
 
         /** Function which receives keypress event */
         onKeyPress: PT.func,
 
+        /** Text to display when control is empty */
+        placeholder: PT.string,
+
         /** Whether text in field is selected when field receives focus */
-        selectOnFocus: PT.bool
+        selectOnFocus: PT.bool,
+
+        /** Whether to allow browser spell check, defaults to true */
+        spellCheck: PT.bool,
+
+        /** Width of the control in pixels. */
+        width: PT.number
     };
 
     baseClassName = 'xh-textarea';
 
+    get commitOnChange() {
+        return withDefault(this.props.commitOnChange, false);
+    }
+
     render() {
-        const {props} = this,
-            spellCheck = withDefault(props.spellCheck, true);
+        const {props} = this;
 
         return div({
             className: this.getClassName(),
             item: textareaTag({
                 value: this.renderValue || '',
+
+                disabled: props.disabled,
+                placeholder: props.placeholder,
+                spellCheck: withDefault(props.spellCheck, false),
+                tabIndex: props.tabIndex,
+
+                style: {
+                    height: props.height,
+                    width: props.width,
+                    ...props.style
+                },
+
                 onChange: this.onChange,
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,
-                onFocus: this.onFocus,
-                style: {...props.style, width: props.width},
-                spellCheck,
-                disabled: props.disabled,
-                type: props.type,
-                placeholder: props.placeholder
+                onFocus: this.onFocus
             })
         });
     }
