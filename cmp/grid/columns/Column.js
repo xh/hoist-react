@@ -178,7 +178,6 @@ export class Column {
                 headerClass: this.headerClass,
                 cellClass: this.cellClass,
                 hide: this.hidden,
-                absSort: this.absSort,
                 minWidth: this.minWidth,
                 maxWidth: this.maxWidth,
                 suppressResize: !this.resizable,
@@ -187,7 +186,13 @@ export class Column {
                 lockPinned: true, // Block user-driven pinning/unpinning - https://github.com/exhi/hoist-react/issues/687
                 pinned: this.pinned,
                 lockVisible: !gridModel.colChooserModel,
-                headerComponentParams: {gridModel, column: this}
+                headerComponentParams: {gridModel, xhColumn: this},
+                suppressToolPanel: this.excludeFromChooser,
+                headerValueGetter: ({location}) => {
+                    return location === 'header' ?
+                        this.headerName:
+                        this.chooserName;
+                }
             };
 
         // Our implementation of Grid.getDataPath() > Record.xhTreePath returns data path []s of
@@ -207,7 +212,8 @@ export class Column {
 
         if (this.tooltip) {
             ret.tooltip = isFunction(this.tooltip) ?
-                (agParams) => this.tooltip(agParams.value, {record: agParams.data, column: this, agParams}) :
+                (agParams) => this.tooltip(agParams.value,
+                    {record: agParams.data, column: this, agParams}) :
                 ({value}) => value;
         }
 
@@ -239,31 +245,32 @@ export class Column {
                         {value, data: record} = agParams;
                     return elementRenderer(value, {record, agParams, column: me});
                 }
+
                 refresh() {return false}
             };
         }
 
-        // Support enhanced, absValue-aware sorting via GridSorters in GridModel.sortBy[].
         const sortCfg = find(gridModel.sortBy, {colId: ret.colId});
         if (sortCfg) {
             ret.sort = sortCfg.sort;
             ret.sortedAt = gridModel.sortBy.indexOf(sortCfg);
-
-            // ag-Grid sort impl. sources its primary values from the node's `groupData` property,
-            // which is not what we want when sorting treeColumns.
-            if (this.isTreeColumn) {
-                ret.comparator = (v1, v2, node1, node2) => {
-                    return sortCfg.comparator(node1.data[field], node2.data[field]);
-                };
-            } else {
-                ret.comparator = (v1, v2) => sortCfg.comparator(v1, v2);
-            }
-
         }
+
+        // Delegate comparator sorting to absValue-aware GridSorters in GridModel.sortBy[].
+        ret.comparator = this.comparator;
 
         // Finally, apply explicit app requests.  The customer is always right....
         return {...ret, ...this.agOptions};
     }
+
+    //--------------------
+    // Implementation
+    //--------------------
+    comparator = (v1, v2) => {
+        const sortCfg = find(this.gridModel.sortBy, {colId: this.colId});
+        return sortCfg.comparator(v1, v2);
+    };
+
 }
 
 /**
