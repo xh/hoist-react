@@ -189,11 +189,9 @@ export class Column {
                 headerComponentParams: {gridModel, xhColumn: this},
                 suppressToolPanel: this.excludeFromChooser,
                 headerValueGetter: ({location}) => {
-                    if (location === 'header') {
-                        return this.headerName;
-                    }
-
-                    return this.chooserName;
+                    return location === 'header' ?
+                        this.headerName:
+                        this.chooserName;
                 }
             };
 
