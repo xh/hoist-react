@@ -102,10 +102,11 @@ export class GridStateModel {
     }
 
     readStateFromGrid() {
+        const {gridModel} = this;
         return {
             columns: this.getColumnState(),
-            sortBy: this.gridModel.sortBy,
-            groupBy: this.gridModel.groupBy
+            sortBy: gridModel.sortBy,
+            groupBy: gridModel.groupBy
         };
     }
 
@@ -120,11 +121,10 @@ export class GridStateModel {
     // Columns
     //--------------------------
     columnReaction() {
-        const {gridModel} = this;
         return {
-            track: () => gridModel.columnState,
-            run: () => {
-                this.state.columns = gridModel.columnState;
+            track: () => this.gridModel.columnState,
+            run: (columnState) => {
+                this.state.columns = columnState;
                 this.saveStateChange();
             }
         };
@@ -182,11 +182,10 @@ export class GridStateModel {
     // Grouping
     //--------------------------
     groupReaction() {
-        const {gridModel} = this;
         return {
-            track: () => gridModel.groupBy,
-            run: () => {
-                this.state.groupBy = gridModel.groupBy;
+            track: () => this.gridModel.groupBy,
+            run: (groupBy) => {
+                this.state.groupBy = groupBy;
                 this.saveStateChange();
             }
         };

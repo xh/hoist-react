@@ -260,7 +260,7 @@ export class GridModel {
 
         const invalidColIds = colIds.filter(it => !this.findColumn(this.columns, it));
         if (invalidColIds.length) {
-            console.warn('GroupBy colId not found in grid columns', invalidColIds);
+            console.warn('groupBy colId not found in grid columns', invalidColIds);
             return;
         }
 
