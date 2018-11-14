@@ -60,7 +60,7 @@ export class ColChooserModel {
             }
         });
 
-        gridModel.applyColumnChanges(colChanges);
+        gridModel.applyColumnStateChanges(colChanges);
     }
 
     //------------------------

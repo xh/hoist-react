@@ -156,7 +156,7 @@ export class GridStateModel {
             }
         });
 
-        gridModel.applyColumnChanges(colState);
+        gridModel.applyColumnStateChanges(colState);
     }
 
     //--------------------------

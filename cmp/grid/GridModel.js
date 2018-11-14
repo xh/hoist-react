@@ -344,7 +344,7 @@ export class GridModel {
     }
 
     noteAgColumnStateChanged(agColState) {
-        const colChanges = agColState.map(({colId, width, hide}) => {
+        const colStateChanges = agColState.map(({colId, width, hide}) => {
             const col = this.findColumn(this.columns, colId);
             if (!col) return null;
             return {
@@ -354,29 +354,30 @@ export class GridModel {
             };
         });
 
-        this.applyColumnChanges(colChanges.filter(Boolean));
+        pull(colStateChanges, null);
+        this.applyColumnStateChanges(colStateChanges);
     }
 
     /**
      * This method will update the current column definition. Throws an exception if any of the
-     * columns provided in colChanges are not present in the current column list.
+     * columns provided in colStateChanges are not present in the current column list.
      *
      * Note: Column ordering is determined by the individual (leaf-level) columns in state.
      * This means that if a column has been redefined to a new column group, that entire group may
      * be moved to a new index.
      *
-     * @param {ColumnState[]} colChanges - changes to apply to the columns. If all leaf columns are
+     * @param {ColumnState[]} colStateChanges - changes to apply to the columns. If all leaf columns are
      *      represented in these changes then the sort order will be applied as well.
      */
     @action
-    applyColumnChanges(colChanges) {
+    applyColumnStateChanges(colStateChanges) {
         let columnState = [...this.columnState];
 
-        throwIf(colChanges.some(({colId}) => !this.findColumn(columnState, colId)),
+        throwIf(colStateChanges.some(({colId}) => !this.findColumn(columnState, colId)),
             'Invalid columns detected in column changes!');
 
         // 1) Update any width or visibility changes
-        colChanges.forEach(change => {
+        colStateChanges.forEach(change => {
             const col = this.findColumn(columnState, change.colId);
 
             if (!isNil(change.width)) col.width = change.width;
@@ -385,9 +386,9 @@ export class GridModel {
 
         // 2) If the changes provided is a full list of leaf columns, synchronize the sort order
         const leafCols = this.getLeafColumns();
-        if (colChanges.length === leafCols.length) {
+        if (colStateChanges.length === leafCols.length) {
             // 2.a) Mark (potentially changed) sort order
-            colChanges.forEach((change, index) => {
+            colStateChanges.forEach((change, index) => {
                 const col = this.findColumn(columnState, change.colId);
                 col._sortOrder = index;
             });

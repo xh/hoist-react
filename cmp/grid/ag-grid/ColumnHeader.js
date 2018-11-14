@@ -25,7 +25,7 @@ import {clone, remove} from 'lodash';
 export class ColumnHeader extends Component {
 
     gridModel;
-    hoistColumn;
+    xhColumn;
     agColumn;
     colId;
 
@@ -38,7 +38,8 @@ export class ColumnHeader extends Component {
     // Get any active sortBy for this column, or null
     @computed
     get activeGridSorter() {
-        if (!this.gridModel) return;
+        if (!this.gridModel) return; // ag-grid auto group column wont have a gridModel
+
         return this.gridModel.sortBy.find(it => {
             return it.colId === this.colId;
         });
@@ -52,9 +53,9 @@ export class ColumnHeader extends Component {
 
     constructor(props) {
         super(props);
-        const {gridModel, hoistColumn, column} = this.props;
+        const {gridModel, xhColumn, column} = this.props;
         this.gridModel = gridModel;
-        this.hoistColumn = hoistColumn;
+        this.xhColumn = xhColumn;
         this.agColumn = column;
         this.colId = column.colId;
         column.addEventListener('filterChanged', () => this.onFilterChanged());
@@ -143,12 +144,12 @@ export class ColumnHeader extends Component {
     };
 
     getNextSortBy() {
-        const {colId, hoistColumn, activeGridSorter} = this,
+        const {colId, xhColumn, activeGridSorter} = this,
             {sort, abs = false} = activeGridSorter || {};
 
         if (sort === 'asc') {
             return {colId, sort: 'desc', abs: false};
-        } else if (hoistColumn.absSort && !abs && (!activeGridSorter || sort === 'desc')) {
+        } else if (xhColumn.absSort && !abs && (!activeGridSorter || sort === 'desc')) {
             return {colId, sort: 'desc', abs: true};
         } else {
             return {colId, sort: 'asc', abs: false};
