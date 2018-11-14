@@ -103,7 +103,7 @@ export class GridStateModel {
 
     readStateFromGrid() {
         return {
-            columns: this.getColumnState(),
+            columns: this.gridModel.columnState,
             sortBy: this.gridModel.sortBy,
             groupBy: this.gridModel.groupBy
         };
@@ -130,17 +130,9 @@ export class GridStateModel {
         };
     }
 
-    getColumnState() {
-        const cols = this.gridModel.getLeafColumns();
-
-        return cols.map(({colId, hidden, width}) => {
-            return {colId, hidden, width};
-        });
-    }
-
     updateGridColumns() {
-        const {gridModel, state} = this;
-        if (!state.columns) return;
+        const {gridModel, state, trackColumns} = this;
+        if (!trackColumns || !state.columns) return;
 
         const cols = gridModel.getLeafColumns(),
             colState = [...state.columns];
@@ -174,8 +166,7 @@ export class GridStateModel {
     }
 
     updateGridSort() {
-        const {sortBy} = this.state;
-        if (sortBy) this.gridModel.setSortBy(sortBy);
+        if (this.trackSort) this.gridModel.setSortBy(this.state.sortBy);
     }
 
     //--------------------------
@@ -193,10 +184,7 @@ export class GridStateModel {
     }
 
     updateGridGroupBy() {
-        const {gridModel, state} = this;
-        if (!state.groupBy) return;
-
-        gridModel.setGroupBy(state.groupBy);
+        if (this.trackGrouping) this.gridModel.setGroupBy(this.state.groupBy);
     }
 
     //--------------------------

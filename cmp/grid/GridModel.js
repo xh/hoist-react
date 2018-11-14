@@ -18,7 +18,8 @@ import {
     sortBy,
     pull,
     uniq,
-    isNil
+    isNil,
+    cloneDeep
 } from 'lodash';
 import {Column, ColumnGroup} from '@xh/hoist/cmp/grid/columns';
 import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
@@ -246,7 +247,7 @@ export class GridModel {
 
     /**
      * Apply full-width row-level grouping to the grid for the given column ID(s).
-     * IDs that do not have a corresponding leaf-level column will be dropped and ignored.
+     * This method is no-op if provided any ids without a corresponding column.
      * @param {(string|string[])} colIds - column ID(s) for row grouping, or falsey value to ungroup.
      */
     @action
@@ -286,10 +287,15 @@ export class GridModel {
     /**
      * This method is no-op if provided any sorters without a corresponding column.
      * @param {(string|string[]|Object|Object[])} sorters - colId(s), GridSorter config(s)
-     *      or GridSorter strings.
+     *      GridSorter strings, or a falsey value to clear the sort config.
      */
     @action
     setSortBy(sorters) {
+        if (!sorters) {
+            this.sortBy = [];
+            return;
+        }
+
         sorters = castArray(sorters);
         sorters = sorters.map(it => {
             if (it instanceof GridSorter) return it;
@@ -371,7 +377,7 @@ export class GridModel {
      */
     @action
     applyColumnStateChanges(colStateChanges) {
-        let columnState = [...this.columnState];
+        let columnState = cloneDeep(this.columnState);
 
         throwIf(colStateChanges.some(({colId}) => !this.findColumn(columnState, colId)),
             'Invalid columns detected in column changes!');
@@ -427,16 +433,17 @@ export class GridModel {
         return c.children ? new ColumnGroup(c, this) : new Column(c, this);
     }
 
+    getStateForColumn(id) {
+        return this.columnState.find(it => it.colId === id);
+    }
+
     //-----------------------
     // Implementation
     //-----------------------
     gatherLeaves(columns, leaves = []) {
         columns.forEach(col => {
             if (col.groupId) this.gatherLeaves(col.children, leaves);
-            if (col.colId) {
-                const colState = this.columnState.find(it => it.colId === col.colId) || {};
-                leaves.push(Object.assign({}, col, colState));
-            }
+            if (col.colId) leaves.push(col);
         });
 
         return leaves;

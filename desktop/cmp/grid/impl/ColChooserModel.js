@@ -52,10 +52,10 @@ export class ColChooserModel {
             cols = gridModel.columnState;
 
         const colChanges = [];
-        cols.forEach(({colId}) => {
-            if (leftValues.includes(colId)) {
+        cols.forEach(({colId, hidden}) => {
+            if (leftValues.includes(colId) && !hidden) {
                 colChanges.push({colId, hidden: true});
-            } else if (rightValues.includes(colId)) {
+            } else if (rightValues.includes(colId) && hidden) {
                 colChanges.push({colId, hidden: false});
             }
         });
@@ -70,14 +70,15 @@ export class ColChooserModel {
         const {gridModel, lrModel} = this;
 
         const data = gridModel.getLeafColumns().map(it => {
+            const state = gridModel.getStateForColumn(it.colId);
             return {
                 value: it.colId,
                 text: it.chooserName,
                 description: it.chooserDescription,
                 group: it.chooserGroup,
                 exclude: it.excludeFromChooser,
-                locked: !it.hidden && !it.hideable,
-                side: it.hidden ? 'left' : 'right'
+                locked: !state.hidden && !it.hideable,
+                side: state.hidden ? 'left' : 'right'
             };
         });
 
