@@ -43,10 +43,12 @@ export class AppMenuModel extends MenuModel {
                 prepareFn: (item) => item.hidden = hideFeedbackItem
             },
             {
-                icon: XH.darkTheme ? Icon.sun() : Icon.moon(),
-                text: XH.darkTheme ? 'Light theme' : 'Dark theme',
                 action: () => XH.toggleTheme(),
-                prepareFn: (item) => item.hidden = hideThemeItem
+                prepareFn: (item) => {
+                    item.hidden = hideThemeItem;
+                    item.text = XH.darkTheme ? 'Light theme' : 'Dark theme';
+                    item.icon = XH.darkTheme ? Icon.sun() : Icon.moon();
+                }
             },
             {
                 icon: Icon.user(),

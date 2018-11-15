@@ -11,10 +11,10 @@ import {observable, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
-import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import './ag-grid';
 import {agGridReact, navigateSelection, ColumnHeader} from './ag-grid';
-import {colChooser} from './impl/ColChooser';
+
+import {colChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -89,8 +89,10 @@ export class Grid extends Component {
         this.addReaction(this.selectionReaction());
         this.addReaction(this.sortReaction());
         this.addReaction(this.columnsReaction());
+        this.addReaction(this.columnStateReaction());
         this.addReaction(this.dataReaction());
         this.addReaction(this.compactReaction());
+        this.addReaction(this.groupReaction());
     }
 
     render() {
@@ -120,10 +122,7 @@ export class Grid extends Component {
                 ),
                 onKeyDown: !isMobile ? onKeyDown : null
             }),
-            colChooser({
-                omit: isMobile || !colChooserModel,
-                model: colChooserModel
-            })
+            colChooserModel ? colChooser({model: colChooserModel}) : null
         );
     }
 
@@ -134,7 +133,6 @@ export class Grid extends Component {
         const {model, props} = this;
 
         let ret = {
-            toolPanelSuppressSideButtons: true,
             enableSorting: true,
             enableColResize: true,
             deltaRowDataMode: true,
@@ -166,9 +164,14 @@ export class Grid extends Component {
             onGridSizeChanged: this.onGridSizeChanged,
             onDragStopped: this.onDragStopped,
             onColumnResized: this.onColumnResized,
+            onColumnRowGroupChanged: this.onColumnRowGroupChanged,
+            onColumnVisible: this.onColumnVisible,
             processCellForClipboard: this.processCellForClipboard,
             groupDefaultExpanded: 1,
-            groupUseEntireRow: true
+            groupUseEntireRow: true,
+            autoGroupColumnDef: {
+                suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
+            }
         };
 
         // Platform specific defaults
@@ -308,7 +311,9 @@ export class Grid extends Component {
                         api.refreshCells({force: true});
 
                         // Set flag if data is hierarchical.
-                        this._isHierarchical = model.store.allRecords.some(rec => !!rec.children.length);
+                        this._isHierarchical = model.store.allRecords.some(
+                            rec => !!rec.children.length
+                        );
 
                         // Increment version counter to trigger selectionReaction w/latest data.
                         this._dataVersion++;
@@ -350,9 +355,18 @@ export class Grid extends Component {
         };
     }
 
+    groupReaction() {
+        return {
+            track: () => [this.model.agColumnApi, this.model.groupBy],
+            run: ([colApi, groupBy]) => {
+                if (colApi) colApi.setRowGroupColumns(groupBy);
+            }
+        };
+    }
+
     columnsReaction() {
         return {
-            track: () => [this.model.agApi, this.model.columns, this.model.sortBy],
+            track: () => [this.model.agApi, this.model.columns],
             run: ([api]) => {
                 if (api) {
                     // ag-grid loses expand state and column filter state
@@ -363,6 +377,41 @@ export class Grid extends Component {
                     api.setColumnDefs(this.getColumnDefs());
                     this.writeExpandState(api, expandState);
                     this.writeFilterState(api, filterState);
+                    api.sizeColumnsToFit();
+                }
+            }
+        };
+    }
+
+    columnStateReaction() {
+        return {
+            track: () => [this.model.agApi, this.model.agColumnApi, this.model.columnState],
+            run: ([api, colApi, colState]) => {
+                if (colApi) {
+                    // Merge our state onto the ag column state to get any state which we do not yet support
+                    const agColState = colApi.getColumnState();
+                    colState = colState.map(({colId, width, hidden}) => {
+                        const agCol = agColState.find(it => it.colId === colId) || {};
+                        return {
+                            ...agCol,
+                            colId,
+                            width,
+                            hide: hidden
+                        };
+                    });
+
+                    // Insert the auto group col state if it exists, since we won't have it in our column state list
+                    const autoColState = agColState.find(it => it.colId === 'ag-Grid-AutoColumn');
+                    if (autoColState) {
+                        colState.splice(agColState.indexOf(autoColState), 0, autoColState);
+                    }
+
+                    const expandState = this.readExpandState(api);
+
+                    colApi.setColumnState(colState);
+
+                    this.writeExpandState(api, expandState);
+
                     api.sizeColumnsToFit();
                 }
             }
@@ -406,6 +455,20 @@ export class Grid extends Component {
     // Catches column resizing on call to autoSize API.
     onColumnResized = (ev) => {
         if (this.isDisplayed && ev.finished && ev.source == 'autosizeColumns') {
+            this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
+        }
+    };
+
+    // Catches row group changes triggered from ag-grid ui components
+    onColumnRowGroupChanged = (ev) => {
+        if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
+            this.model.setGroupBy(ev.columnApi.getRowGroupColumns().map(it => it.colId));
+        }
+    };
+
+    // Catches column visibility changes triggered from ag-grid ui components
+    onColumnVisible = (ev) => {
+        if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
             this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
         }
     };

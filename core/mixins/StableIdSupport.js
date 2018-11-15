@@ -29,7 +29,7 @@ export function StableIdSupport(C) {
         stableId() {
             this._componentUniqueId = withDefault(this._componentUniqueId || XH.genId());
             this._renderUniqueId = withDefault(this._renderUniqueId, 0);
-            return this._componentUniqueId + '_' + this._renderUniqueId;
+            return this._componentUniqueId + '_' + this._renderUniqueId++;
         }
     });
 

@@ -11,8 +11,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {grid} from '@xh/hoist/cmp/grid';
 import {textInput, dateInput} from '@xh/hoist/desktop/cmp/form';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
-import {button, exportButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
-import {buttonGroup} from '@xh/hoist/kit/blueprint';
+import {button, buttonGroup, exportButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {storeCountLabel} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 
@@ -51,13 +50,11 @@ export class ClientErrorPanel extends Component {
                 }),
                 button({
                     icon: Icon.caretRight(),
-                    onClick: this.onDateGoForwardClick,
-                    className: 'xh-no-pad'
+                    onClick: this.onDateGoForwardClick
                 }),
                 button({
                     icon: Icon.arrowToRight(),
-                    onClick: this.onGoToCurrentDateClick,
-                    className: 'xh-no-pad'
+                    onClick: this.onGoToCurrentDateClick
                 })
             ),
             toolbarSep(),

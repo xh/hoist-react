@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-export * from './Grid';
-export * from './GridModel';
-export * from './GridStateModel';
+export * from './impl/ColChooser';
+export * from './impl/ColChooserModel';
+
+

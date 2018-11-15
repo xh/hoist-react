@@ -174,6 +174,19 @@ export class FetchService {
         return this.sendJson(opts);
     }
 
+    /**
+     * Send a DELETE HTTP request to a URL with an optional JSON body, and decode the optional response as JSON.
+     *
+     * This method delegates to @see {fetch} and accepts the same options.
+     *
+     * @returns {Promise} the decoded JSON object, or null if the response had no content.
+     */
+    async deleteJson(opts) {
+        opts.method = 'DELETE';
+        return this.sendJson(opts);
+    }
+
+
     //-----------------------
     // Implementation
     //-----------------------

@@ -1,3 +1,9 @@
+// Host div for Select option menu portal.
+#xh-select-input-portal {
+  z-index: 999;
+  position: absolute;
+}
+
 .xh-select {
   // Default width of wrapping box.
   width: 200px;
@@ -15,6 +21,7 @@
       background: var(--xh-input-bg);
       border: none;
       box-shadow: var(--xh-form-field-box-shadow);
+      min-height: 30px;
 
       &--is-focused {
         box-shadow: var(--xh-form-field-focused-box-shadow);
@@ -27,6 +34,7 @@
     }
 
     &__indicator {
+      padding: 0 var(--xh-pad-half-px);
       color: var(--xh-border-color);
     }
 

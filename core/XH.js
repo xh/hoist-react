@@ -45,6 +45,8 @@ import '../styles/XH.scss';
 @ReactiveSupport
 class XHClass {
 
+    _initCalled = false;
+
     //------------------------------------------------------------------
     // Metadata
     // The values below are set via webpack.DefinePlugin at build time.
@@ -103,7 +105,6 @@ class XHClass {
     get isMobile()              {return this.appSpec.isMobile}
     get clientAppName()         {return this.appSpec.clientAppName}
 
-
     //-------------------------------
     // Models
     //-------------------------------
@@ -145,7 +146,7 @@ class XHClass {
     renderApp(appSpec) {
         this.appSpec = appSpec instanceof AppSpec ? appSpec : new AppSpec(appSpec);
         const rootView = elem(appSpec.containerClass, {model: this.appContainerModel});
-        ReactDOM.render(rootView, document.getElementById('root'));
+        ReactDOM.render(rootView, document.getElementById('xh-root'));
     }
 
     /**
@@ -380,6 +381,11 @@ class XHClass {
      * Not intended for application use.
      */
     async initAsync() {
+
+        // Avoid multiple calls, which can occur if AppContainer remounted.
+        if (this._initCalled) return;
+        this._initCalled = true;
+
         const S = AppState,
             {appSpec} = this;
 
