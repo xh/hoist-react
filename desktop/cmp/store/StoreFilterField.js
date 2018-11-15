@@ -113,7 +113,7 @@ export class StoreFilterField extends Component {
         return textInput({
             value: this.value,
 
-            leftIcon: Icon.filter({style: {opacity: 0.5}}),
+            leftIcon: Icon.filter(),
             rightElement: button({
                 icon: Icon.x(),
                 minimal: true,
