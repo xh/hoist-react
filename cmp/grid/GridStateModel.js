@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {cloneDeep, debounce, find, remove} from 'lodash';
+import {cloneDeep, debounce, find, remove, isUndefined} from 'lodash';
 import {start} from '@xh/hoist/promise';
 
 /**
@@ -166,7 +166,8 @@ export class GridStateModel {
     }
 
     updateGridSort() {
-        if (this.trackSort) this.gridModel.setSortBy(this.state.sortBy);
+        const {sortBy} = this.state;
+        if (this.trackSort && !isUndefined(sortBy)) this.gridModel.setSortBy(sortBy);
     }
 
     //--------------------------
@@ -183,7 +184,8 @@ export class GridStateModel {
     }
 
     updateGridGroupBy() {
-        if (this.trackGrouping) this.gridModel.setGroupBy(this.state.groupBy);
+        const {groupBy} = this.state;
+        if (this.trackGrouping && !isUndefined(groupBy)) this.gridModel.setGroupBy(groupBy);
     }
 
     //--------------------------
