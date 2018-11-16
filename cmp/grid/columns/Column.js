@@ -9,6 +9,7 @@ import {Component} from 'react';
 import {castArray, startCase, isFunction, clone, find} from 'lodash';
 import {ExportFormat} from './ExportFormat';
 import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
+import {Utils as agUtils} from 'ag-grid-community';
 
 /**
  * Cross-platform definition and API for a standardized Grid column.
@@ -268,7 +269,7 @@ export class Column {
     //--------------------
     comparator = (v1, v2) => {
         const sortCfg = find(this.gridModel.sortBy, {colId: this.colId});
-        return sortCfg.comparator(v1, v2);
+        return sortCfg ? sortCfg.comparator(v1, v2) : agUtils.defaultComparator(v1, v2);
     };
 
 }
