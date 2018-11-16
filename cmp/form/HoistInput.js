@@ -39,7 +39,7 @@ import './HoistInput.scss';
  * as the change event. Other fields such as textInput maintain the distinction described above,
  * but expose a `commitOnChange` prop to force them to eagerly flush their values on every change.
  *
- * HoistInputs support built-in validation when bound to a model enhanced by `@FieldSupport`.
+ * HoistInputs support built-in validation when bound to a model enhanced by `@FormSupport`.
  * When a HoistInput control is linked to a property on the underlying model decorated by `@field`,
  * the model Field will be used to provide validation info and styling to the input component.
  *
@@ -102,7 +102,7 @@ export class HoistInput extends Component {
      */
     getField() {
         const {model, field} = this.props;
-        return model && field && model.hasFieldSupport && model.getField(field);
+        return model && field && model.hasFormSupport && model.getField(field);
     }
 
     //------------------------------
@@ -203,7 +203,7 @@ export class HoistInput extends Component {
         this.doCommit();
 
         const field = this.getField();
-        if (field) field.startValidating();
+        if (field) field.displayValidation;
 
         this.hasFocus = false;
     }
@@ -243,7 +243,7 @@ export class HoistInput extends Component {
      */
     getClassName(...extraClassNames) {
         const field = this.getField(),
-            validityClass = field && field.isNotValid ? 'xh-input-invalid' : null;
+            validityClass = field && field.isNotValid && field.validationDisplayed ? 'xh-input-invalid' : null;
 
         return classNames('xh-input', validityClass, this.baseClassName, this.props.className, ...extraClassNames);
     }

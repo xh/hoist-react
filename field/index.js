@@ -6,7 +6,7 @@
  */
 
 export * from './Field';
-export * from './FieldSupport';
+export * from './FormSupport';
 export * from './impl/FieldsModel';
 
 export * from './validation/ValidationState';

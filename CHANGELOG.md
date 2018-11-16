@@ -224,13 +224,13 @@ It also includes contributions from new ExHI team members Arjun and Brendan. �
 ### 🎁 New Features
 
 ⭐️ **Forms and Fields** have been a major focus of attention, with support for structured data
-fields added to Models via the `@FieldSupport` and `@field()` decorators.
-* Models annotated with `@FieldSupport` can decorate member properties with `@field()`, making those
+fields added to Models via the `@FormSupport` and `@field()` decorators.
+* Models annotated with `@FormSupport` can decorate member properties with `@field()`, making those
   properties observable and settable (with a generated `setXXX()` method).
 * The `@field()` decorators themselves can be passed an optional display label string as well as
   zero or more *validation rules* to define required constraints on the value of the field.
 * A set of predefined constraints is provided within the toolkit within the `/field/` package.
-* Models using `FieldSupport` should be sure to call the `initFields()` method installed by the
+* Models using `FormSupport` should be sure to call the `initFields()` method installed by the
   decorator within their constructor. This method can be called without arguments to generally
   initialize the field system, or it can be passed an object of field names to initial/default
   values, which will set those values on the model class properties and provide change/dirty

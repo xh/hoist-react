@@ -17,7 +17,7 @@ import {ValidationState} from './validation/ValidationState';
 
 
 /**
- * Mixin to add field support to a Hoist Model.
+ * Mixin to add Form support to a Hoist Model.
  *
  * Includes support for field display names, validation, and dirty state when used
  * in conjunction with the property-level `@field` decorator (below). Note that the use
@@ -25,9 +25,9 @@ import {ValidationState} from './validation/ValidationState';
  *
  * @mixin
  */
-export function FieldSupport(C) {
+export function FormSupport(C) {
 
-    markClass(C, 'hasFieldSupport');
+    markClass(C, 'hasFormSupport');
     
     defaultMethods(C, {
 
@@ -103,6 +103,14 @@ export function FieldSupport(C) {
             return this.fieldsModel.validateAsync();
         },
 
+        /**
+         * Activate Display of all fields.
+         */
+        displayValidation() {
+            this.fieldsModel.displayValidation();
+        },
+
+
         //----------------------------
         // Dirty State
         //----------------------------
@@ -156,7 +164,7 @@ export function FieldSupport(C) {
 
 /**
  * Decorator to mark a class property as an observable form field.
- * For use on a HoistModel decorated with `@FieldSupport`.
+ * For use on a HoistModel decorated with `@FormSupport`.
  *
  * This decorator will mark the property as `@bindable` and add support for validation, labelling,
  * and dirty state management.

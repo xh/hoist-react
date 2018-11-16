@@ -15,7 +15,11 @@ import {ValidationState} from './validation/ValidationState';
 import {Rule} from './validation/Rule';
 
 /**
- * Maintains state relating to a property marked with `@field` decorator.
+ *
+ * A data field in a Form.
+ *
+ * Applications typically create fields using the `@field` decorator on
+ * properties of a model marked with @FormSupport.
  */
 @HoistModel
 export class Field {
@@ -33,12 +37,12 @@ export class Field {
     /** @member {String[]} list of validation errors.  Null if the validity state not computed. */
     @observable.ref errors = null;
 
-    /** @member {boolean}
+    /**
+     * @member {boolean}
      * Should the GUI currently display this validation? False when a validation is "passive",
-     * and activateDisplay() has not yet been called, because the field has not yet been visited
-     * or edited since the last reset.
-     **/
-    @observable displayActive = false;
+     * because, e.g. the field has not yet been visited or edited since the last reset.
+     */
+    @observable validationDisplayed = false;
 
     _validationTask = new PendingTaskModel();
     _validationRunId = 0;
@@ -51,20 +55,23 @@ export class Field {
         return this.model[this.name];
     }
 
-    /** Initialize this field. */
+    /**
+     * Set the initial value of the field, reset
+     * to that value, and reset validation state.
+     */
     @action
     init(initialValue = null) {
         this.initialValue = initialValue;
         this.reset();
     }
 
-    /** Reset the field to its initial value and reset validation state. */
+    /** Reset to the initial value and reset validation state. */
     @action
     reset() {
         this.model[this.name] = this.initialValue;
         this.errors = null;
         this.computeValidation();
-        this.displayActive = false;
+        this.validationDisplayed = false;
     }
 
     /**
@@ -83,7 +90,7 @@ export class Field {
             this.computeValidation();
         });
         this.addAutorun(() => {
-            if (this.isDirty) this.activateDisplay();
+            if (this.isDirty) this.displayValidation();
         });
     }
 
@@ -94,12 +101,12 @@ export class Field {
 
     /**
      * Call to indicate the state of this validation should be shown to the user.  Called automatically
-     * when field is dirtied.  May also be called manually, e.g. on blur, or when the user requests
-     * to move to next page, validate button, etc.
+     * when field is dirtied.  May also be called manually, e.g. on blur, on Focus or when the user requests
+     * to move to next page, validate buttons, etc.
      **/
     @action
-    activateDisplay() {
-        this._displayActive = true;
+    displayValidation() {
+        this.validationDisplayed = true;
     }
 
     /** Validation state of the field. */
@@ -108,7 +115,7 @@ export class Field {
         const {errors, rules} = this;
         return (errors == null) ?
             isEmpty(rules) ? VS.Valid : VS.Unknown :
-            isEmpty(errors) ? VS.NotValid : VS.Valid;
+            isEmpty(errors) ? VS.Valid : VS.NotValid;
     }
 
     /** True if this field is confirmed to be Valid. **/

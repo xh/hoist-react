@@ -21,7 +21,7 @@ import './FormField.scss';
  * Standardised wrapper around a HoistInput Component.
  *
  * Should receive a single HoistInput as a child element. FormField is typically bound
- * to a model enhanced with `@FieldSupport` via its `model` and `field` props. This allows
+ * to a model enhanced with `@FormSupport` via its `model` and `field` props. This allows
  * FormField to automatically display a label, a required asterisk, and any validation messages.
  *
  * When FormField is used in bound mode, the child HoistInput should *not* declare its own
@@ -43,7 +43,7 @@ export class FormField extends Component {
 
         /**
          * Label for form field.
-         * Defaults to Field displayName if used with @FieldSupport. Set to null to hide label.
+         * Defaults to Field displayName if used with @FormSupport. Set to null to hide label.
          */
         label: PT.string,
 
@@ -65,9 +65,10 @@ export class FormField extends Component {
         this.ensureConditions();
 
         const {model, field, label, minimal, className, labelFor, clickableLabel = true, ...rest} = this.props,
-            hasFieldSupport = model && field && model.hasFieldSupport,
-            fieldModel = hasFieldSupport ? model.getField(field) : null,
+            hasFormSupport = model && field && model.hasFormSupport,
+            fieldModel = hasFormSupport ? model.getField(field) : null,
             isRequired = fieldModel && fieldModel.isRequired,
+            validationDisplayed = fieldModel && fieldModel.validationDisplayed,
             isPending = fieldModel && fieldModel.isValidationPending,
             notValid = fieldModel && fieldModel.isNotValid,
             errors = fieldModel ? fieldModel.errors : [],
@@ -75,30 +76,30 @@ export class FormField extends Component {
             inputId = this.props.children.props.id,
             idAttr = inputId ? inputId : this.stableId(),
             requiredStr = isRequired ? span(' *') : null,
-            item = this.prepareChild(notValid, errors, idAttr),
+            item = this.prepareChild(notValid && validationDisplayed, errors, idAttr),
             classes = [];
 
         if (isRequired) classes.push('xh-form-field-required');
-        if (notValid) classes.push('xh-form-field-invalid');
         if (minimal) classes.push('xh-form-field-minimal');
+        if (notValid && validationDisplayed) classes.push('xh-form-field-invalid');
 
         return formGroup({
             item,
             width: 50,
             label: span({
                 item: labelStr ? span(labelStr, requiredStr) : null,
-                className: minimal && notValid ? 'xh-form-field-error-label' : null
+                className: minimal && validationDisplayed && notValid ? 'xh-form-field-error-label' : null
             }),
             labelFor: clickableLabel ? idAttr : null,
             className: this.getClassName(classes),
-            helperText: !minimal ? fragment(
+            helperText: !minimal && validationDisplayed ? fragment(
                 div({
-                    omit: !isPending || minimal,
+                    omit: !isPending,
                     className: 'xh-form-field-pending',
                     item: spinner({size: 15})
                 }),
                 div({
-                    omit: !notValid || minimal,
+                    omit: !notValid,
                     className: 'xh-form-field-error-msg',
                     items: notValid ? tooltip({
                         item: errors[0],
@@ -122,7 +123,7 @@ export class FormField extends Component {
             target = React.cloneElement(item, {model, field, disabled, id: idAttr, ...leftIcon});
 
         if (!minimal) return target;
-
+       
         // Wrap target in a tooltip if in minimal mode
         return tooltip({
             target,

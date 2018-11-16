@@ -13,7 +13,7 @@ import {ValidationState} from '../validation/ValidationState';
 
 
 /**
- * Implementation object for FieldSupport.
+ * Implementation object for FormSupport.
  *
  * Allows observation, cached aggregation, and bulk actions on the state of all individual fields.
  *
@@ -72,6 +72,10 @@ export class FieldsModel {
         const promises = this.fields.map(it => it.validateAsync(this));
         await Promise.all(promises);
         return this.validationState;
+    }
+
+    displayValidation() {
+        this.fields.forEach(f => f.displayValidation());
     }
 
     //----------------------------

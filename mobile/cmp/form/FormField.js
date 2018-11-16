@@ -19,7 +19,7 @@ import './FormField.scss';
  * Standardised wrapper around a HoistInput Component.
  *
  * Should receive a single HoistInput as a child element. FormField is typically bound
- * to a model enhanced with `@FieldSupport` via its `model` and `field` props. This allows
+ * to a model enhanced with `@FormSupport` via its `model` and `field` props. This allows
  * FormField to automatically display a label, a required asterisk, and any validation messages.
  *
  * When FormField is used in bound mode, the child HoistInput should *not* declare its own
@@ -37,7 +37,7 @@ export class FormField extends Component {
 
         /**
          * Label for form field.
-         * Defaults to Field displayName if used with @FieldSupport. Set to null to hide label.
+         * Defaults to Field displayName if used with @FormSupport. Set to null to hide label.
          */
         label: PT.string
     };
@@ -47,8 +47,8 @@ export class FormField extends Component {
     render() {
         const {model, field, label, ...rest} = this.props,
             item = this.prepareChild(),
-            hasFieldSupport = model && field && model.hasFieldSupport,
-            fieldModel = hasFieldSupport ? model.getField(field) : null,
+            hasFormSupport = model && field && model.hasFormSupport,
+            fieldModel = hasFormSupport ? model.getField(field) : null,
             isRequired = fieldModel && fieldModel.isRequired,
             isPending = fieldModel && fieldModel.isValidationPending,
             notValid = fieldModel && fieldModel.isNotValid,
