@@ -18,7 +18,7 @@ import {throwIf, withDefault} from '@xh/hoist/utils/js';
  * To connect this model to an application:
  *  1) Create a new instance of this model with a list of dimensions.
  *  2) To persist user history, create an application preference with type 'JSON' and
- *  pass its key to this model.
+ *     pass its key to this model.
  *  3) Track this model's 'value' property and fetch new data when it updates.
  */
 @HoistModel
@@ -41,17 +41,22 @@ export class DimensionChooserModel {
     // Popover rendering
     //-------------------------
     @bindable isMenuOpen = false;
-    @bindable isAddNewOpen = false;
+    @bindable showAddSelect = false;
+    @bindable activeMode = 'history'; // history vs. edit
 
     /**
-     * @param {string[]|Object[]} dimensions - possible dimensions.
-     *      Each object accepts value, label, and leaf keys, where leaf: true indicates a leaf
-     * @param {string[]} [initialValue] - Initial value of the control if no user history is found on the server.
-     * @param {string} [historyPreference] - Preference key used to persist grouping history.
-     * @param {number} [maxHistoryLength] - dimension groupings to save.
-     * @param {number} [maxDepth] - dimensions allowed in a single grouping.
+     * @param c - DimensionChooserModel configuration.
+     * @param {string[]|Object[]} c.dimensions - dimensions available for selection. The object
+     *      form supports value, label, and leaf keys, where `leaf: true` indicates that the
+     *      dimension does not support any further sub-groupings.
+     * @param {string[]} [c.initialValue] - initial dimensions if history empty / not configured.
+     *      If neither are specified, the first available dimension will be used as the value.
+     * @param {string} [c.historyPreference] - preference key used to persist the user's most
+     *      recently selected groupings for easy re-selection.
+     * @param {number} [c.maxHistoryLength] - number of recent selections to maintain in the user's
+     *      history (maintained automatically by the control oon a FIFO basis).
+     * @param {number} [c.maxDepth] - maximum number of dimensions allowed in a single grouping.
      */
-
     constructor({
         dimensions,
         initialValue,
@@ -72,7 +77,6 @@ export class DimensionChooserModel {
         this.value = this.pendingValue = !isEmpty(this.history) ? this.history[0] : initialValue;
     }
 
-    /** Update the control's value. */
     @action
     setValue(value) {
         this.value = value;
@@ -90,6 +94,7 @@ export class DimensionChooserModel {
         if (this.dimensions[dim].leaf) newValue.splice(level + 1);      // If it's a leaf dimension, remove any subordinate dimensions
 
         this.pendingValue = newValue;                                   // Update intermediate state
+        this.setShowAddSelect(false);
     }
 
     /** Remove a dimension from the add menu. */
@@ -102,6 +107,29 @@ export class DimensionChooserModel {
     @action
     commitPendingValue() {
         this.setValue(this.pendingValue);
+        this.setIsMenuOpen(false);
+    }
+
+    showHistory() {
+        this.setActiveMode('history');
+    }
+
+    showEditor() {
+        this.pendingValue = this.value;
+        this.setShowAddSelect(false);
+        this.setActiveMode('edit');
+    }
+
+    showMenu() {
+        if (isEmpty(this.history)) {
+            this.showEditor();
+        } else {
+            this.showHistory();
+        }
+        this.setIsMenuOpen(true);
+    }
+
+    closeMenu() {
         this.setIsMenuOpen(false);
     }
 
@@ -121,6 +149,7 @@ export class DimensionChooserModel {
         const childDims = this.pendingValue.slice(level + 1) || [];
         return [...remainingDims, ...childDims].map(it => this.dimensions[it]);
     }
+
 
     //-------------------------
     // Implementation
