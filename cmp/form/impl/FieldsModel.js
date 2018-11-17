@@ -68,8 +68,8 @@ export class FieldsModel {
         return this.fields.some(it => it.isValidationPending);
     }
 
-    async validateAsync() {
-        const promises = this.fields.map(it => it.validateAsync(this));
+    async validateAsync({display = true} = {}) {
+        const promises = this.fields.map(it => it.validateAsync(this, {display}));
         await Promise.all(promises);
         return this.validationState;
     }

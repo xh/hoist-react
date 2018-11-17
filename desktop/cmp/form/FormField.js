@@ -65,7 +65,7 @@ export class FormField extends Component {
         this.ensureConditions();
 
         const {model, field, label, minimal, className, labelFor, clickableLabel = true, ...rest} = this.props,
-            hasFormSupport = model && field && model.hasFormSupport,
+            hasFormSupport = model && field && model.isFormModel,
             fieldModel = hasFormSupport ? model.getField(field) : null,
             isRequired = fieldModel && fieldModel.isRequired,
             validationDisplayed = fieldModel && fieldModel.validationDisplayed,

@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
+import {XH, HoistModel} from '@xh/hoist/core';
 import {defaultMethods, chainMethods, markClass} from '@xh/hoist/utils/js';
 import {startCase, partition, isFunction, isEmpty, isString, forOwn} from 'lodash';
 
@@ -17,18 +17,23 @@ import {ValidationState} from './validation/ValidationState';
 
 
 /**
- * Mixin to add Form support to a Hoist Model.
+ * Mixin to make a backing model for a Form.
  *
- * Includes support for field display names, validation, and dirty state when used
- * in conjunction with the property-level `@field` decorator (below). Note that the use
- * of this mixin requires a call to `initFields()` within the Model's constructor.
+ * Co-ordinates support for the specification and control of a collection of fields which
+ * constituite the state of this Form.  Use the @field decorator to add fields to this model.
+ *
+ * Note that the use of this mixin requires a call to `initFields()` within the constructor.
  *
  * @mixin
  */
-export function FormSupport(C) {
+export function FormModel(C) {
 
-    markClass(C, 'hasFormSupport');
-    
+    markClass(C, 'isFormModel');
+
+    if (!C.isHoistModel) {
+        C = HoistModel(C);
+    }
+
     defaultMethods(C, {
 
         //-----------------------------
@@ -96,11 +101,17 @@ export function FormSupport(C) {
         },
 
         /**
-         * Trigger an immediate validation of all fields.
+         * Return a resolved validation state of the form, waiting for any pending
+         * validations to complete, if necessary.
+         *
+         * @param {Object} [c]
+         * @param {boolean] [c.display] - true to activate validation display
+         *      for the form after validation has been peformed.
+         *
          * @returns {Promise<ValidationState>}
          */
-        async validateAsync() {
-            return this.fieldsModel.validateAsync();
+        async validateAsync({display = true} = {}) {
+            return this.fieldsModel.validateAsync({display});
         },
 
         /**
@@ -109,7 +120,6 @@ export function FormSupport(C) {
         displayValidation() {
             this.fieldsModel.displayValidation();
         },
-
 
         //----------------------------
         // Dirty State

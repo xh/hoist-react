@@ -70,8 +70,8 @@ export class Field {
     reset() {
         this.model[this.name] = this.initialValue;
         this.errors = null;
-        this.computeValidation();
         this.validationDisplayed = false;
+        this.computeValidationAsync();
     }
 
     /**
@@ -87,7 +87,7 @@ export class Field {
         this.displayName = displayName;
         this.addRules(...rules);
         this.addAutorun(() => {
-            this.computeValidation();
+            this.computeValidationAsync();
         });
         this.addAutorun(() => {
             if (this.isDirty) this.displayValidation();
@@ -100,9 +100,10 @@ export class Field {
     //------------------------------------
 
     /**
-     * Call to indicate the state of this validation should be shown to the user.  Called automatically
-     * when field is dirtied.  May also be called manually, e.g. on blur, on Focus or when the user requests
-     * to move to next page, validate buttons, etc.
+     * Set the validationDisplayed property.
+     *
+     * Called automatically when field is dirtied.  May also be called manually by applications
+     * e.g. on blur on Focus or when the user requests to move to next page, validate buttons, etc.
      **/
     @action
     displayValidation() {
@@ -151,11 +152,16 @@ export class Field {
      * Return a resolved validation state of the field, waiting for any pending
      * validations to complete, if necessary.
      *
+     * @param {Object} [c]
+     * @param {boolean] [c.display] - true to activate validation display
+     *      for the field after validation has been peformed.
+     *
      * @returns {Promise<String>} - the validation state of the object.
      */
     @action
-    async validateAsync() {
-        await when(() =>  this.validationState != ValidationState.Unknown && !this.validationPending);
+    async validateAsync({display = true} = {}) {
+        await this.computeValidationAsync();
+        if (display) this.displayValidation();
         return this.validationState;
     }
 
@@ -172,7 +178,6 @@ export class Field {
     //------------------------------
     // Dirty State
     //------------------------------
-
     /** Does the field have changes from its initial state? */
     get isDirty() {
         return this.value !== this.initialValue;
@@ -182,12 +187,15 @@ export class Field {
     //--------------------------
     // Implementation
     //-------------------------
-    computeValidation() {
+    computeValidationAsync() {
         const runId = ++this._validationRunId;
-        this.evaluateAsync(this.rules)
+        return this
+            .evaluateAsync(this.rules)
             .thenAction(errors => {
-                if (runId != this._validationRunId) return;
-                this.errors = errors;
+                if (runId == this._validationRunId) {
+                    this.errors = errors;
+                }
+                return this.validationState;
             }).linkTo(this._validationTask);
     }
 
