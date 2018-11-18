@@ -10,7 +10,7 @@ import {isArray, isUndefined} from 'lodash';
 
 import {elemFactory, HoistComponent, StableIdSupport} from '@xh/hoist/core';
 import {formGroup, spinner, tooltip} from '@xh/hoist/kit/blueprint';
-import {HoistInput} from '@xh/hoist/cmp/form';
+import {HoistInput, FormContext} from '@xh/hoist/cmp/form';
 import {div, fragment, span} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -18,16 +18,12 @@ import {throwIf} from '@xh/hoist/utils/js';
 import './FormField.scss';
 
 /**
- * Standardised wrapper around a HoistInput Component.
+ * Standardised wrapper around a HoistInput Component.  FormField provides
+ * consistent layout, labelling, and optional validation display for the input.
  *
- * Should receive a single HoistInput as a child element. FormField is typically bound
- * to a model enhanced with `@FormSupport` via its `model` and `field` props. This allows
- * FormField to automatically display a label, a required asterisk, and any validation messages.
- *
- * When FormField is used in bound mode, the child HoistInput should *not* declare its own `model`
- * and `field` props, as these are managed by the FormField.
- *
- * Accepts any props supported by Blueprint's FormGroup.
+ * FormField is often used within a Form component, and bound to a particular Field within
+ * the related FormModel. In this case, FormField will display validation information for its
+ * bound field, and may receive behavioral and visual defaults from its contained Field.
  */
 @HoistComponent
 @StableIdSupport
@@ -54,28 +50,27 @@ export class FormField extends Component {
         leftErrorIcon: PT.bool,
 
         /** Apply minimal styling - validation errors are only displayed with a tooltip */
-        minimal: PT.bool,
-
-        /** Bound HoistModel instance. */
-        model: PT.object
+        minimal: PT.bool
     };
 
     baseClassName = 'xh-form-field';
 
     blockChildren = ['TextInput', 'JsonInput', 'Select'];
 
+    static contextType = FormContext;
+
     render() {
         this.ensureConditions();
 
-        const {model, field, label, minimal, className, labelFor, clickableLabel = true, ...rest} = this.props,
-            hasFormSupport = model && field && model.isFormModel,
-            fieldModel = hasFormSupport ? model.getField(field) : null,
-            isRequired = fieldModel && fieldModel.isRequired,
-            validationDisplayed = fieldModel && fieldModel.validationDisplayed,
-            isPending = fieldModel && fieldModel.isValidationPending,
-            notValid = fieldModel && fieldModel.isNotValid,
-            errors = fieldModel ? fieldModel.errors : [],
-            labelStr = isUndefined(label) ? (fieldModel ? fieldModel.displayName : null) : label,
+        const {field: fieldName, label, minimal, className, labelFor, clickableLabel = true, ...rest} = this.props,
+            {formModel} = this,
+            field = formModel ? formModel.getField(fieldName) : null,
+            isRequired = field && field.isRequired,
+            validationDisplayed = field && field.validationDisplayed,
+            isPending = field && field.isValidationPending,
+            notValid = field && field.isNotValid,
+            errors = field ? field.errors : [],
+            labelStr = isUndefined(label) ? (field ? field.displayName : null) : label,
             inputId = this.props.children.props.id,
             idAttr = inputId ? inputId : this.stableId(),
             requiredStr = isRequired ? span(' *') : null,
@@ -118,12 +113,17 @@ export class FormField extends Component {
     //--------------------
     // Implementation
     //--------------------
+    get formModel() {
+        const form = this.context;
+        return form ? form.model : null;
+    }
+
     prepareChild(notValid, errors, idAttr) {
-        const {model, field, minimal, disabled} = this.props,
+        const {field, minimal, disabled} = this.props,
             item = this.props.children;
 
         const leftIcon = notValid ? this.leftIcon(item) : {},
-            target = React.cloneElement(item, {model, field, disabled, id: idAttr, ...leftIcon});
+            target = React.cloneElement(item, {model: this.formModel, field, disabled, id: idAttr, ...leftIcon});
 
         if (!minimal) return target;
 
@@ -157,7 +157,7 @@ export class FormField extends Component {
     ensureConditions() {
         const item = this.props.children;
         throwIf(!item || isArray(item) || !(item.type.prototype instanceof HoistInput), 'FormField child must be a single component that extends HoistInput.');
-        throwIf(item.props.field || item.props.model, 'HoistInputs should not declare "field" or "model" when used with FormField');
+        throwIf(item.props.field || item.props.model, 'HoistInputs should not specify "field" or "model" when used with FormField');
     }
 
 }

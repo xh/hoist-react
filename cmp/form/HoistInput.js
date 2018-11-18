@@ -204,7 +204,7 @@ export class HoistInput extends Component {
         this.doCommit();
 
         const field = this.getField();
-        if (field) field.displayValidation;
+        if (field) field.displayValidation();
 
         this.hasFocus = false;
     }

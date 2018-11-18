@@ -6,9 +6,9 @@
  */
 export * from './HoistInput';
 
-export * from './Field';
+export * from './Form';
 export * from './FormModel';
-
+export * from './Field';
 export * from './validation/ValidationState';
 export * from './validation/Rule';
 export * from './validation/constraints';
