@@ -11,15 +11,11 @@
       window._xhLoadTimestamp = Date.now();
       (function(W) {
           var D = document,
-              PRM = W.Promise,
-              hasPromise = (
-                  PRM !== undefined &&
-                  PRM !== null &&
-                  Object.prototype.toString.call(PRM.resolve()) === '[object Promise]' &&
-                  PRM.prototype['finally'] !== undefined
-              );
+              // IE 11 does not support Proxy, which Mobx 5+ requires.
+              // Using W['Proxy'] rather than W.Proxy so as to no throw in IE 11 in IE 7 Compatibility Mode
+              hasProxy = W['Proxy'];
 
-          if (!hasPromise) {
+          if (!hasProxy) {
               D.body.innerHTML = (
                   '<div style="margin:80px auto; font-family: sans-serif; width:450px; text-align:center; padding: 20px; border: 1px solid #ccc;">' +
                   'This application can not be loaded in your current browser<br/>' +
