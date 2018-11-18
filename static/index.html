@@ -11,8 +11,7 @@
       window._xhLoadTimestamp = Date.now();
       (function(W) {
           var D = document,
-              // IE 11 does not support Proxy, which Mobx 5+ requires.
-              // Using W['Proxy'] rather than W.Proxy so as to not throw in IE 11 in IE 7 Compatibility Mode
+              // Mobx 5+ has a hard requirement for Proxy (test w/string access for max safety).              
               hasProxy = W['Proxy'];
 
           if (!hasProxy) {
