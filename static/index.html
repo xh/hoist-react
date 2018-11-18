@@ -12,7 +12,7 @@
       (function(W) {
           var D = document,
               // IE 11 does not support Proxy, which Mobx 5+ requires.
-              // Using W['Proxy'] rather than W.Proxy so as to no throw in IE 11 in IE 7 Compatibility Mode
+              // Using W['Proxy'] rather than W.Proxy so as to not throw in IE 11 in IE 7 Compatibility Mode
               hasProxy = W['Proxy'];
 
           if (!hasProxy) {
