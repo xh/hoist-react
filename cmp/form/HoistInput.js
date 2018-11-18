@@ -56,13 +56,13 @@ export class HoistInput extends Component {
         /** True to disable user interaction. */
         disabled: PT.bool,
 
-        /** Property name on bound Model from which to read/write data. */
-        field: PT.string,
-
         /** HTML id attribute **/
         id: PT.string,
 
-        /** Bound HoistModel instance. */
+        /** Property name on bound Model from which to read/write data. */
+        field: PT.string,
+
+        /** Bound HoistModel instance.  If contained within a FormField, this will be provided by FormField.*/
         model: PT.object,
 
         /** Handler called when value changes - passed the new value. */
@@ -99,7 +99,7 @@ export class HoistInput extends Component {
     }
 
     /**
-     * Model-based Field (if any) associated with this control.
+     * FormModel Field (if any) associated with this control.
      */
     getField() {
         const {model, field} = this.props;

@@ -92,7 +92,7 @@ export class FormField extends Component {
             item = this.props.children;
 
         throwIf(isArray(item) || !(item.type.prototype instanceof HoistInput), 'FormField child must be a single component that extends HoistInput.');
-        throwIf(item.props.field || item.props.model, 'HoistInputs should not declare "field" or "model" when used with FormField');
+        throwIf(item.props.field || item.props.model, 'HoistInputs should not specify "field" or "model" when used with FormField');
 
         return React.cloneElement(item, {model: this.formModel, field});
     }
