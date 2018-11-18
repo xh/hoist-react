@@ -24,8 +24,8 @@ import './FormField.scss';
  * to a model enhanced with `@FormSupport` via its `model` and `field` props. This allows
  * FormField to automatically display a label, a required asterisk, and any validation messages.
  *
- * When FormField is used in bound mode, the child HoistInput should *not* declare its own
- * `model` and `field` props, as these are managed by the FormField.
+ * When FormField is used in bound mode, the child HoistInput should *not* declare its own `model`
+ * and `field` props, as these are managed by the FormField.
  *
  * Accepts any props supported by Blueprint's FormGroup.
  */
@@ -35,10 +35,13 @@ export class FormField extends Component {
 
     static propTypes = {
 
-        /** Bound Model. */
-        model: PT.object,
+        /** True (default) to focus or toggle input when label is clicked. */
+        clickableLabel: PT.bool,
 
-        /** Name of bound property on Model. */
+        /** True to disable user interaction. */
+        disabled: PT.bool,
+
+        /** Property name on bound Model from which to read/write data. */
         field: PT.string,
 
         /**
@@ -47,14 +50,14 @@ export class FormField extends Component {
          */
         label: PT.string,
 
-        /** Apply minimal styling - validation errors are only displayed with a tooltip */
-        minimal: PT.bool,
-
         /** Display warning glyph in the far left side of the input (TextField, NumberInput only) */
         leftErrorIcon: PT.bool,
 
-        /** True by default.  If false, clicking on label won't put the label's control in focus. */
-        clickableLabel: PT.bool
+        /** Apply minimal styling - validation errors are only displayed with a tooltip */
+        minimal: PT.bool,
+
+        /** Bound HoistModel instance. */
+        model: PT.object
     };
 
     baseClassName = 'xh-form-field';
@@ -123,7 +126,7 @@ export class FormField extends Component {
             target = React.cloneElement(item, {model, field, disabled, id: idAttr, ...leftIcon});
 
         if (!minimal) return target;
-       
+
         // Wrap target in a tooltip if in minimal mode
         return tooltip({
             target,

@@ -31,7 +31,7 @@ export class ButtonGroupInput extends HoistInput {
     baseClassName = 'xh-button-group-input';
 
     render() {
-        const {children, minimal, ...rest} = this.getNonLayoutProps(),
+        const {children, minimal, disabled, ...rest} = this.getNonLayoutProps(),
             buttons = castArray(children).map(button => {
                 const {value} = button.props;
 
@@ -41,6 +41,7 @@ export class ButtonGroupInput extends HoistInput {
                 return React.cloneElement(button, {
                     active: this.renderValue == value,
                     minimal: withDefault(minimal, false),
+                    disabled: withDefault(disabled, false),
                     onClick: () => this.noteValueChange(value)
                 });
             });
