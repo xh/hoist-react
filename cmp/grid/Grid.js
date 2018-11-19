@@ -392,7 +392,7 @@ export class Grid extends Component {
                     colState.splice(agColState.indexOf(autoColState), 0, autoColState);
                 }
 
-                // 1) Column in correct order -- simply update incorrect props we maintain
+                // 1) Columns all in right place -- simply update incorrect props we maintain
                 if (isEqual(colState.map(c => c.colId), agColState.map(c => c.colId))) {
                     let hadChanges = false;
                     colState.forEach((col, index) => {
