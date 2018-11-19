@@ -411,7 +411,7 @@ export class Grid extends Component {
                     return;
                 }
 
-                // 2) Otherwise do an (expensive) full referesh of column state
+                // 2) Otherwise do an (expensive) full refresh of column state
                 // Merge our state onto the ag column state to get any state which we do not yet support
                 colState = colState.map(({colId, width, hidden}) => {
                     const agCol = agColState.find(c => c.colId === colId) || {};
