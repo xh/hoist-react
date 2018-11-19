@@ -406,6 +406,7 @@ export class Grid extends Component {
                         colState.splice(agColState.indexOf(autoColState), 0, autoColState);
                     }
 
+
                     const expandState = this.readExpandState(api);
 
                     colApi.setColumnState(colState);

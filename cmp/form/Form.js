@@ -5,21 +5,38 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import React, {Component} from 'react';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import PT from 'prop-types';
+import box from '@xh/hoist/layout';
 
 export const FormContext = React.createContext(null);
 const formContextProvider = elemFactory(FormContext.Provider);
 
 /**
- * A container for HoistInput fields bound to a FormModel.
+ * A container for structured user input.
+ *
+ * Co-ordinates the binding of contained FormFields to a FormModel.
  */
 @HoistComponent
+@LayoutSupport
 export class Form extends Component {
 
+    static propTypes = {
+
+        /**
+         * Default props for contained FormFields.
+         */
+        fieldDefaults: PT.boolean
+    }
+
+
     render() {
-        return formContextProvider({
-            value: this,
-            items: this.props.children
+        return box({
+            ...this.getLayoutProps(),
+            item: formContextProvider({
+                value: this,
+                items: this.props.children
+            })
         });
     }
 }
