@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import PT from 'prop-types';
-import {isFunction, upperFirst} from 'lodash';
+import {isEqual, isFunction, upperFirst} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
 import {observable, computed, action} from '@xh/hoist/mobx';
 import classNames from 'classnames';
@@ -165,7 +165,7 @@ export class HoistInput extends Component {
         let externalValue = this.externalValue,
             newValue = this.toExternal(this.internalValue);
 
-        if (newValue === externalValue) return;
+        if (isEqual(newValue, externalValue)) return;
 
         if (model && field) {
             const setterName = `set${upperFirst(field)}`;
