@@ -19,6 +19,10 @@ import './Select.scss';
 /**
  * A managed wrapper around the React-Select dropdown component.
  *
+ * This is simplified version of the desktop Select Input. Type-to-search has been excluded, due to concerns
+ * about showing the on-device keyboard. Consequently, asynchronous queries, multiple selection and user-created
+ * ad-hoc entries are not yet supported.
+ *
  * Supports custom dropdown option renderers.
  *
  * @see {@link https://react-select.com|React Select Docs}
