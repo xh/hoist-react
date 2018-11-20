@@ -6,6 +6,11 @@ body.xh-app {
   color: var(--xh-text-color);
   font-family: var(--xh-font-family);
   font-size: var(--xh-font-size-px);
+  box-sizing: border-box;
+
+  *, *:before, *:after {
+    box-sizing: inherit;
+  }
 
   // Important for using the body as the `popupParent` for our ag-grids
   height: 100vh;
