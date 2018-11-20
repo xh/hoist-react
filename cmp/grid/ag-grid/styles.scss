@@ -112,13 +112,13 @@
     }
   }
 
-  .ag-tool-panel {
-    border: none;
-  }
+  // Hiding borders on typically-collapsed accessory panels. This avoids unexpected borders on the
+  // right and bottom edges of the grids. Custom grids that wish to use these panels will likely
+  // want to override and restore borders.
+  .ag-side-bar {border: none;}
+  .ag-status-bar {border: none;}
 
-  .ag-bl-overlay {
-    display: none;
-  }
+  .ag-bl-overlay {display: none;}
 }
 
 .xh-grid-compact {
