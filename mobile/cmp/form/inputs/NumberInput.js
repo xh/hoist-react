@@ -9,13 +9,13 @@ import PT from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {input} from '@xh/hoist/kit/onsen';
 import {fmtNumber} from '@xh/hoist/format';
+import {withDefault} from '@xh/hoist/utils/js';
+import {wait} from '@xh/hoist/promise';
 
 import {HoistInput} from '@xh/hoist/cmp/form';
 
 /**
- * A Number Input
- *
- * @see HoistInput for properties additional to those documented below.
+ * Number Input, with optional support for formatted of display value,
  */
 @HoistComponent
 export class NumberInput extends HoistInput {
@@ -24,8 +24,15 @@ export class NumberInput extends HoistInput {
         ...HoistInput.propTypes,
         value: PT.number,
 
-        /** Text to display when control is empty */
-        placeholder: PT.string,
+        /** True to commit on every change/keystroke, default false. */
+        commitOnChange: PT.bool,
+
+        /** Whether to display large values with commas */
+        displayWithCommas: PT.bool,
+
+        /** Set to true for advanced input evaluation, defaults to false.
+         Inputs suffixed with k, m, or b will be calculated as thousands, millions, or billions respectively */
+        enableShorthandUnits: PT.bool,
 
         /** Minimum value */
         min: PT.number,
@@ -33,53 +40,91 @@ export class NumberInput extends HoistInput {
         /** Maximum value */
         max: PT.number,
 
-        /** Number of decimal places to allow on field's value, defaults to 4 */
-        precision: PT.number,
-
-        /** Allow/automatically fill in trailing zeros in accord with precision, defaults to false */
-        zeroPad: PT.bool,
-
-        /** Set to true for advanced input evaluation, defaults to false.
-         Inputs suffixed with k, m, or b will be calculated as thousands, millions, or billions respectively */
-        enableShorthandUnits: PT.bool,
-
-        /** Whether to display large values with commas */
-        displayWithCommas: PT.bool,
-
         /** Onsen modifier string */
         modifier: PT.string,
 
         /** Function which receives keypress event */
         onKeyPress: PT.func,
 
+        /** Text to display when control is empty */
+        placeholder: PT.string,
+
+        /** Number of decimal places to allow on field's value, defaults to 4 */
+        precision: PT.number,
+
         /** Whether text in field is selected when field receives focus */
-        selectOnFocus: PT.bool
+        selectOnFocus: PT.bool,
+
+        /** Alignment of entry text within control, default 'right'. */
+        textAlign: PT.oneOf(['left', 'right']),
+
+        /** Allow/automatically fill in trailing zeros in accord with precision, defaults to false */
+        zeroPad: PT.bool
     };
 
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/gi;
 
     baseClassName = 'xh-number-input';
 
+    get commitOnChange() {
+        return withDefault(this.props.commitOnChange, false);
+    }
+
     render() {
-        const {props, renderValue, hasFocus} = this,
-            formattedValue = hasFocus ? renderValue : this.formatValue(renderValue);
+        const {props, hasFocus, renderValue} = this,
+            displayValue = hasFocus ? this.displayValue(renderValue) : this.formatValue(renderValue);
 
         return input({
-            className: this.getClassName(),
-            value: formattedValue || '',
-            onChange: this.onChange,
-            onKeyPress: this.onKeyPress,
-            onBlur: this.onBlur,
-            onFocus: this.onFocus,
-            style: {width: props.width, ...props.style},
-            spellCheck: false,
+            value: displayValue,
+
             type: props.enableShorthandUnits ? 'text' : 'number',
             disabled: props.disabled,
             min: props.min,
             max: props.max,
             placeholder: props.placeholder,
-            modifier: props.modifier
+            modifier: props.modifier,
+            tabIndex: props.tabIndex,
+
+            className: this.getClassName(),
+            style: {
+                ...props.style,
+                textAlign: withDefault(props.textAlign, 'right'),
+                width: props.width
+            },
+            spellCheck: false,
+
+            onChange: this.onChange,
+            onKeyPress: this.onKeyPress,
+            onBlur: this.onBlur,
+            onFocus: this.onFocus
         });
+    }
+
+    onChange = (ev) => {
+        let value = this.parseValue(ev.target.value);
+        value = isNaN(value) ? null : value;
+        this.noteValueChange(value);
+    };
+
+    onKeyPress = (ev) => {
+        const {onKeyPress} = this.props;
+        if (ev.key === 'Enter') this.doCommit();
+        if (onKeyPress) onKeyPress(ev);
+    };
+
+    onFocus = (ev) => {
+        this.noteFocused();
+
+        // Deferred to allow any value conversion to complete and flush into input.
+        if (this.props.selectOnFocus) {
+            const target = ev.target;
+            wait(1).then(() => target.select());
+        }
+    };
+
+    displayValue(value) {
+        if (value == null) return '';
+        return value.toString();
     }
 
     formatValue(value) {
@@ -117,23 +162,6 @@ export class NumberInput extends HoistInput {
         return isNaN(value) ? null : value;
     }
 
-    onFocus = (ev) => {
-        if (this.props.selectOnFocus && ev.target && ev.target.select) {
-            ev.target.select();
-        }
-        this.noteFocused();
-    }
-
-    onChange = (ev) => {
-        const v = this.parseValue(ev.target.value);
-        this.noteValueChange(v);
-    };
-
-    onKeyPress = (ev) => {
-        const {onKeyPress} = this.props;
-
-        if (ev.key === 'Enter') this.doCommit();
-        if (onKeyPress) onKeyPress(ev);
-    };
 }
+
 export const numberInput = elemFactory(NumberInput);
