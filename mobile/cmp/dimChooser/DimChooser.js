@@ -22,11 +22,13 @@ export class DimChooser extends Component {
     static propTypes = {
         // /** How to interpret the provided xPos when showing. */
         // align: PT.oneOf(['left', 'right'])
+        xPos: PT.number,
+        yPos: PT.number
     };
 
     render() {
-        const {model} = this;
-        console.log(model)
+        const {model, props} = this;
+
         return div(
             this.renderDimMenu(),
             menuButton({

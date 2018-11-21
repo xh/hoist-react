@@ -60,7 +60,6 @@ export class Menu extends Component {
         const {text, icon, action, hidden, element} = itemModel,
             // labelItems = icon ? [icon, hspacer(10), text] : [text];
             item = element || formatText();
-        console.log(item)
         return listItem({
             item,
             // item: div({className: 'center', items: labelItems}),
