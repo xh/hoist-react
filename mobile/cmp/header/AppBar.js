@@ -11,6 +11,8 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/kit/onsen';
 import {navigatorBackButton, menuButton, refreshButton} from '@xh/hoist/mobile/cmp/button';
+import {DimChooserModel} from '@xh/hoist/mobile/cmp/dimChooser';
+
 
 /**
  * A standard application navigation bar which displays the current page title and a standard set of

@@ -16,6 +16,7 @@ export class MenuItemModel {
     disabled;
     hidden;
     prepareFn;
+    element;
 
     /**
      * @param {Object} c - MenuItemModel configuration.
@@ -34,7 +35,8 @@ export class MenuItemModel {
         action = null,
         disabled = false,
         hidden = false,
-        prepareFn = null
+        prepareFn = null,
+        element = null
     }) {
         this.text = text;
         this.icon = icon;
@@ -42,5 +44,6 @@ export class MenuItemModel {
         this.disabled = disabled;
         this.hidden = hidden;
         this.prepareFn = prepareFn;
+        this.element = element;
     }
 }

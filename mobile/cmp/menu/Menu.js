@@ -57,20 +57,28 @@ export class Menu extends Component {
     }
 
     renderItem(itemModel, idx) {
-        const {text, icon, action, hidden} = itemModel,
-            labelItems = icon ? [icon, hspacer(10), text] : [text];
-
+        const {text, icon, action, hidden, element} = itemModel,
+            // labelItems = icon ? [icon, hspacer(10), text] : [text];
+            item = element || formatText();
+        console.log(item)
         return listItem({
+            item,
+            // item: div({className: 'center', items: labelItems}),
             key: idx,
             tappable: true,
-            item: div({className: 'center', items: labelItems}),
             omit: hidden,
             onClick: () => {
                 if (action) action();
-                this.model.close();
+                // this.model.close();
             }
         });
+
+        function formatText() {
+            const labelItems = icon ? [icon, hspacer(10), text] : [text];
+            return div({className: 'center', items: labelItems});
+        }
     }
+
 }
 
 export const menu = elemFactory(Menu);
