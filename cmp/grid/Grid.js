@@ -6,7 +6,7 @@
  */
 import {Component, isValidElement} from 'react';
 import PT from 'prop-types';
-import {isNil, isString, merge, xor, dropRightWhile, dropWhile, isEmpty, last, map, isFinite} from 'lodash';
+import {isNil, isString, merge, xor, dropRightWhile, dropWhile, isEmpty, last, isEqual, map, isFinite} from 'lodash';
 import {observable, computed, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
@@ -97,8 +97,10 @@ export class Grid extends Component {
         this.addReaction(this.selectionReaction());
         this.addReaction(this.sortReaction());
         this.addReaction(this.columnsReaction());
+        this.addReaction(this.columnStateReaction());
         this.addReaction(this.dataReaction());
         this.addReaction(this.compactReaction());
+        this.addReaction(this.groupReaction());
     }
 
     render() {
@@ -139,7 +141,6 @@ export class Grid extends Component {
         const {model, props} = this;
 
         let ret = {
-            toolPanelSuppressSideButtons: true,
             enableSorting: true,
             enableColResize: true,
             deltaRowDataMode: true,
@@ -171,9 +172,14 @@ export class Grid extends Component {
             onGridSizeChanged: this.onGridSizeChanged,
             onDragStopped: this.onDragStopped,
             onColumnResized: this.onColumnResized,
+            onColumnRowGroupChanged: this.onColumnRowGroupChanged,
+            onColumnVisible: this.onColumnVisible,
             processCellForClipboard: this.processCellForClipboard,
             groupDefaultExpanded: 1,
-            groupUseEntireRow: true
+            groupUseEntireRow: true,
+            autoGroupColumnDef: {
+                suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
+            }
         };
 
         // Platform specific defaults
@@ -313,7 +319,9 @@ export class Grid extends Component {
                         api.refreshCells({force: true});
 
                         // Set flag if data is hierarchical.
-                        this._isHierarchical = model.store.allRecords.some(rec => !!rec.children.length);
+                        this._isHierarchical = model.store.allRecords.some(
+                            rec => !!rec.children.length
+                        );
 
                         // Increment version counter to trigger selectionReaction w/latest data.
                         this._dataVersion++;
@@ -355,21 +363,78 @@ export class Grid extends Component {
         };
     }
 
+    groupReaction() {
+        return {
+            track: () => [this.model.agColumnApi, this.model.groupBy],
+            run: ([colApi, groupBy]) => {
+                if (colApi) colApi.setRowGroupColumns(groupBy);
+            }
+        };
+    }
+
     columnsReaction() {
         return {
-            track: () => [this.model.agApi, this.model.columns, this.model.sortBy],
+            track: () => [this.model.agApi, this.model.columns],
             run: ([api]) => {
                 if (api) {
-                    // ag-grid loses expand state and column filter state
-                    // when columns are re-defined.
-                    const expandState = this.readExpandState(api),
-                        filterState = this.readFilterState(api);
-
-                    api.setColumnDefs(this.getColumnDefs());
-                    this.writeExpandState(api, expandState);
-                    this.writeFilterState(api, filterState);
+                    this.doWithPreservedState({expansion: true, filters: true}, () => {
+                        api.setColumnDefs(this.getColumnDefs());
+                    });
                     api.sizeColumnsToFit();
                 }
+            }
+        };
+    }
+
+    columnStateReaction() {
+        return {
+            track: () => [this.model.agApi, this.model.agColumnApi, this.model.columnState],
+            run: ([api, colApi, colState]) => {
+                if (!colApi || !api) return;
+
+                const agColState = colApi.getColumnState();
+
+                // 0) Insert the auto group col state if it exists, since we won't have it in our column state list
+                const autoColState = agColState.find(c => c.colId === 'ag-Grid-AutoColumn');
+                if (autoColState) {
+                    colState.splice(agColState.indexOf(autoColState), 0, autoColState);
+                }
+
+                // 1) Columns all in right place -- simply update incorrect props we maintain
+                if (isEqual(colState.map(c => c.colId), agColState.map(c => c.colId))) {
+                    let hadChanges = false;
+                    colState.forEach((col, index) => {
+                        const agCol = agColState[index],
+                            id = col.colId;
+                        if (agCol.width != col.width) {
+                            colApi.setColumnWidth(id, col.width);
+                            hadChanges = true;
+                        }
+                        if (agCol.hide != col.hidden) {
+                            colApi.setColumnVisible(id, !col.hidden);
+                            hadChanges = true;
+                        }
+                    });
+                    if (hadChanges) api.sizeColumnsToFit();
+                    return;
+                }
+
+                // 2) Otherwise do an (expensive) full refresh of column state
+                // Merge our state onto the ag column state to get any state which we do not yet support
+                colState = colState.map(({colId, width, hidden}) => {
+                    const agCol = agColState.find(c => c.colId === colId) || {};
+                    return {
+                        colId,
+                        ...agCol,
+                        width,
+                        hide: hidden
+                    };
+                });
+
+                this.doWithPreservedState({expansion: true}, () => {
+                    colApi.setColumnState(colState);
+                });
+                api.sizeColumnsToFit();
             }
         };
     }
@@ -415,19 +480,42 @@ export class Grid extends Component {
         }
     };
 
+    // Catches row group changes triggered from ag-grid ui components
+    onColumnRowGroupChanged = (ev) => {
+        if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
+            this.model.setGroupBy(ev.columnApi.getRowGroupColumns().map(it => it.colId));
+        }
+    };
+
+    // Catches column visibility changes triggered from ag-grid ui components
+    onColumnVisible = (ev) => {
+        if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
+            this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
+        }
+    };
+
     onGridSizeChanged = (ev) => {
         if (this.isDisplayed) {
             ev.api.sizeColumnsToFit();
         }
     };
 
-    readExpandState(api) {
+    doWithPreservedState({expansion, filters}, fn) {
+        const expandState = expansion ? this.readExpandState() : null,
+            filterState = filters ? this.readFilterState() : null;
+        fn();
+        if (expandState) this.writeExpandState(expandState);
+        if (filterState) this.writeFilterState(filterState);
+    }
+
+    readExpandState() {
         const ret = [];
-        api.forEachNode(node => ret.push(node.expanded));
+        this.model.agApi.forEachNode(node => ret.push(node.expanded));
         return ret;
     }
 
-    writeExpandState(api, expandState) {
+    writeExpandState(expandState) {
+        const api = this.model.agApi;
         let wasChanged = false,
             i = 0;
         api.forEachNode(node => {
@@ -442,12 +530,12 @@ export class Grid extends Component {
         }
     }
 
-    readFilterState(api) {
-        return api.getFilterModel();
+    readFilterState() {
+        return this.model.agApi.getFilterModel();
     }
 
-    writeFilterState(api, filterState) {
-        api.setFilterModel(filterState);
+    writeFilterState(filterState) {
+        this.model.agApi.setFilterModel(filterState);
     }
 
     // Underlying value for treeColumns is actually the record ID due to getDataPath() impl.
@@ -455,7 +543,5 @@ export class Grid extends Component {
     processCellForClipboard({value, node, column}) {
         return column.isTreeColumn ? node.data[column.field] : value;
     }
-
 }
-
 export const grid = elemFactory(Grid);
