@@ -113,6 +113,8 @@ body {
 
   // Inputs
   --xh-input-bg: var(--input-bg, var(--xh-bg));
+  --xh-input-disabled-bg: var(--form-field-disabled-bg, rgba(206, 217, 224, 0.5));  // This and below currently matched from Blueprint defaults
+  --xh-input-disabled-text-color: var(--form-field-disabled-text-color, rgba(92, 112, 128, 0.5));
   --xh-input-text-color: var(--input-text-color, var(--xh-text-color));
 
   // Form fields
@@ -243,8 +245,9 @@ body.xh-dark {
   --xh-grid-header-bg: var(--grid-header-bg, var(--xh-black));
 
   // Inputs
-  // Allow some blending w/backgrounds - e.g. in dialog.
-  --xh-input-bg: var(--input-bg, rgba(0, 0, 0, 0.3));
+  --xh-input-bg: var(--input-bg, rgba(0, 0, 0, 0.3)); // Allow some blending w/backgrounds - e.g. in dialog.
+  --xh-input-disabled-bg: var(--form-field-disabled-bg, rgba(57, 75, 89, 0.5)); // This and below currently matched from Blueprint defaults
+  --xh-input-disabled-text-color: var(--form-field-disabled-text-color, rgba(191, 204, 214, 0.5));
 
   // Form Fields
   --xh-form-field-box-shadow-color-top: var(--form-field-box-shadow-color-top, #{mc-trans('blue-grey', '800', 0.15)});

@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import PT from 'prop-types';
-import {isFunction, upperFirst} from 'lodash';
+import {isEqual, isFunction, upperFirst} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
 import {observable, computed, action} from '@xh/hoist/mobx';
 import classNames from 'classnames';
@@ -49,8 +49,21 @@ import './HoistInput.scss';
 export class HoistInput extends Component {
 
     static propTypes = {
-        /** Value of the control, if provided directly. */
-        value: PT.any,
+
+        /** CSS class name. **/
+        className: PT.string,
+
+        /** True to disable user interaction. */
+        disabled: PT.bool,
+
+        /** Property name on bound Model from which to read/write data. */
+        field: PT.string,
+
+        /** HTML id attribute **/
+        id: PT.string,
+
+        /** Bound HoistModel instance. */
+        model: PT.object,
 
         /** Handler called when value changes - passed the new value. */
         onChange: PT.func,
@@ -58,26 +71,14 @@ export class HoistInput extends Component {
         /** Handler called when value is committed to backing model - passed the new value. */
         onCommit: PT.func,
 
-        /** Bound HoistModel instance. */
-        model: PT.object,
-
-        /** Property name on bound Model from which to read/write data. */
-        field: PT.string,
-
-        /** True to disable user interaction. */
-        disabled: PT.bool,
-
         /** Style block. */
         style: PT.object,
 
-        /** CSS class name. **/
-        className: PT.string,
-
-        /** HTML id attribute **/
-        id: PT.string,
-
         /** Tab order for focus control, or -1 to skip. If unset, browser layout-based order. **/
-        tabIndex: PT.number
+        tabIndex: PT.number,
+
+        /** Value of the control, if provided directly. */
+        value: PT.any
     };
 
     @observable hasFocus;
@@ -164,7 +165,7 @@ export class HoistInput extends Component {
         let externalValue = this.externalValue,
             newValue = this.toExternal(this.internalValue);
 
-        if (newValue === externalValue) return;
+        if (isEqual(newValue, externalValue)) return;
 
         if (model && field) {
             const setterName = `set${upperFirst(field)}`;
