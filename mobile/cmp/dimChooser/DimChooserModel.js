@@ -44,7 +44,7 @@ export class DimChooserModel {
             maxDepth: 4
         });
         this.addReaction({
-            track: () => [this.dimensionChooserModel.value],
+            track: () => [this.dimensionChooserModel.value, this.dimensionChooserModel.pendingValue],
             run: () => {
                 const itemModels = this.getItemModels();
                 this.menuModel = new MenuModel({
@@ -60,14 +60,16 @@ export class DimChooserModel {
 
 
     getItemModels() {
-        const
-        const {pendingValue} = this.dimensionChooserModel,
-            optionsForLevel = pendingValue.map((dim, i) => .dimOptionsForLevel(i))
-        debugger;
-        return optionsForLevel.map((options) => {
-            {
+        const {dimensionChooserModel} = this,
+            {pendingValue, dimensions} = dimensionChooserModel;
+        console.log(dimensionChooserModel.dimOptionsForLevel(0))
+        return pendingValue.map((dim, i) => {
+            const options = [{value: '', label: ''}, ...dimensionChooserModel.dimOptionsForLevel(i)];
+            return {
                 element: select({
-                    options
+                    options,
+                    value: dimensions[dim].label,
+                    onChange: (e) => dimensionChooserModel.addPendingDim(e.target.value, i)
                 })
             }
         })

@@ -28,7 +28,9 @@ export class Select extends HoistInput {
         options: PT.arrayOf(PT.oneOfType([PT.object, PT.string])).isRequired,
 
         /** Onsen modifier string */
-        modifier: PT.string
+        modifier: PT.string,
+
+        onChange: PT.func
     };
 
     baseClassName = 'xh-select';
@@ -36,12 +38,11 @@ export class Select extends HoistInput {
     render() {
         const {props} = this,
             items = props.options.map(it => this.renderOption(it));
-        console.log(items);
-
+        console.log(this.props.value);
         return onsenSelect({
             className: this.getClassName(),
             value: this.renderValue || '',
-            onChange: this.onChange,
+            onChange: props.onChange || this.onChange,
             onBlur: this.onBlur,
             onFocus: this.onFocus,
             style: {...props.style, width: props.width},
