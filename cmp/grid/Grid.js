@@ -78,9 +78,10 @@ export class Grid extends Component {
 
     // The minimum required row height specified by the columns (if any) */
     @computed
-    get columnRowHeight() {
-        const ret = Math.max(...map(this.model.columns, 'rowHeight').filter(isFinite));
-        return isFinite(ret) ? ret : null;
+    get rowHeight() {
+        const modelHeight = this.model.compact ? Grid.COMPACT_ROW_HEIGHT : Grid.ROW_HEIGHT,
+            columnHeight = Math.max(...map(this.model.columns, 'rowHeight').filter(isFinite));
+        return isFinite(columnHeight) ? Math.max(modelHeight, columnHeight) : modelHeight;
     }
 
     // Observable stamp incremented every time the ag-Grid receives a new set of data.
@@ -162,7 +163,7 @@ export class Grid extends Component {
             frameworkComponents: {agColumnHeader: ColumnHeader},
             rowSelection: model.selModel.mode,
             rowDeselection: true,
-            getRowHeight: () => Math.max(this.columnRowHeight, model.compact ? Grid.COMPACT_ROW_HEIGHT : Grid.ROW_HEIGHT),
+            getRowHeight: () => this.rowHeight,
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             overlayNoRowsTemplate: model.emptyText || '<span></span>',
             onRowClicked: props.onRowClicked,

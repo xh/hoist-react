@@ -12,12 +12,10 @@ import {vbox, hbox, span} from '@xh/hoist/cmp/layout';
 import {warnIf, throwIf} from '@xh/hoist/utils/js';
 import {isString} from 'lodash';
 
-import {SubField} from './SubField';
-
 /**
  * Renders a collection of additional sub fields in a row beneath the main column field.
  *
- * Requires the column to also specify a multiFieldRendererCfg, with the following params:
+ * Requires the column to also specify a multiFieldConfig, with the following params:
  *
  *      {SubField[]} subFields - Array of SubField specifications to render
  *      {Column~rendererFn} [mainRenderer] - renderer for primary field.
@@ -32,15 +30,14 @@ class MultiFieldCell extends Component {
     static propTypes = {
         /** Primary value to render */
         value: PT.oneOfType([PT.string, PT.number, PT.bool]).isRequired,
-        /** CellRendererMetadata provided by Column.elementRendererFn. */
-        rendererMetadata: PT.object.isRequired
+        /** CellRendererContext provided by Column.elementRendererFn. */
+        context: PT.object.isRequired
     };
 
     render() {
-        const {value, rendererMetadata} = this.props,
-            {column} = rendererMetadata,
-            {mainRenderer, mainElementRenderer} = this.getMultiFieldRendererCfg(),
-            subFields = this.getSubFields(),
+        const {value, context} = this.props,
+            {column} = context,
+            {mainRenderer, mainElementRenderer, subFields = []} = this.getMultiFieldConfig(),
             hasSubFields = !!subFields.length;
 
         // Set rowHeight on column
@@ -66,7 +63,7 @@ class MultiFieldCell extends Component {
     // Implementation
     //------------------------
     renderBottomRowField({colId, label}) {
-        const {record, gridModel} = this.props.rendererMetadata,
+        const {record, gridModel} = this.props.context,
             column = gridModel.findColumn(gridModel.columns, colId);
 
         throwIf(!column, `Subfield ${colId} not found`);
@@ -87,24 +84,22 @@ class MultiFieldCell extends Component {
 
     renderValue(value, column, renderer) {
         let ret = value;
-        if (renderer) ret = renderer(value, {...this.rendererMetadata, column});
+        if (renderer) ret = renderer(value, {...this.context, column});
         return ret;
     }
 
-    getMultiFieldRendererCfg() {
-        const ret = this.props.rendererMetadata.column.multiFieldRendererCfg;
-        throwIf(!ret, 'Columns using multiFieldRenderer must specify a multiFieldRendererCfg');
+    getMultiFieldConfig() {
+        const ret = this.props.context.column.multiFieldConfig;
+        throwIf(!ret, 'Columns using multiFieldRenderer must specify a multiFieldConfig');
         return ret;
-    }
-
-    getSubFields() {
-        const {subFields = []} = this.getMultiFieldRendererCfg();
-        return subFields.map(it => {
-            if (it instanceof SubField) return it;
-            return new SubField(it);
-        });
     }
 
 }
 
 export const multiFieldCell = elemFactory(MultiFieldCell);
+
+/**
+ * @typedef {Object} SubField
+ * @property {string} colId - Column ID to render
+ * @property {boolean|string} label - true to include the Column's headerName as label, or string
+ */
