@@ -7,7 +7,14 @@
 * The `ColChooserButton` has been moved from the incorrect location `@xh/hoist/cmp/grid` to `@xh/hoist/desktop/cmp/button`.
 This is a desktop-only component.  Apps will have to adjust these imports. 
 
-* TODO
+### 🎁 New Features
+
+* Added `multiFieldRenderer`, an elementRendererFn that renders a collection of additional sub fields in a row beneath the main column field.
+Columns must define a `multiFieldRendererCfg` to use this renderer, which specifies which `subFields` to render.
+See MultiFieldRenderer for more information.
+* `Column.renderer` and `Column.elementRenderer` now receive `GridModel` as part of the `CellRendererMetadata`.
+* Column supports an optional `rowHeight` property, which specifies the cell height required (in pixels) by this columns renderer.
+Grids use this to determine an appropriate minimum row height when the column is visible.
 
 ## v15.1.2
 

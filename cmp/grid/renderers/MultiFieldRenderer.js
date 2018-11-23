@@ -8,7 +8,7 @@
 import {multiFieldCell} from '../impl/MultiFieldCell';
 
 /**
- * An grid elementRendererFn that renders a collection of additional sub fields in a row beneath the main column field.
+ * A grid elementRendererFn that renders a collection of additional sub fields in a row beneath the main column field.
  *
  * Requires the column to also specify a multiFieldRendererCfg, with the following params:
  *
