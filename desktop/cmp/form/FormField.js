@@ -11,7 +11,7 @@ import {isArray, isUndefined} from 'lodash';
 import {elemFactory, HoistComponent, StableIdSupport} from '@xh/hoist/core';
 import {formGroup, spinner, tooltip} from '@xh/hoist/kit/blueprint';
 import {HoistInput, FormContext} from '@xh/hoist/cmp/form';
-import {div, fragment, span} from '@xh/hoist/cmp/layout';
+import {div, fragment, span, vframe} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 
@@ -80,7 +80,7 @@ export class FormField extends Component {
     render() {
         this.ensureConditions();
 
-        const {field: fieldName, info} = this.props;
+        const {field: fieldName, label, info} = this.props;
 
         // Model related props
         const {formModel} = this,
@@ -106,10 +106,11 @@ export class FormField extends Component {
         if (minimal) classes.push('xh-form-field-minimal');
         if (displayNotValid) classes.push('xh-form-field-invalid');
 
-        const item = this.prepareChild({displayNotValid, errors, idAttr, leftErrorIcon, minimal});
+        const control = this.prepareChild({displayNotValid, errors, idAttr, leftErrorIcon, minimal});
+        const infoDiv = info ? div({class: 'bp3-form-helper-text', item: info}) : null;
 
         return formGroup({
-            item,
+            item: control,//vframe(control, infoDiv),
             width: 50,
             label: span({
                 item: labelStr ? span(labelStr, requiredStr) : null,
@@ -131,9 +132,7 @@ export class FormField extends Component {
                         content: this.getErrorTooltipContent(errors)
                     }) : null
                 })
-            ) : null,
-            label: info
-
+            ) : null
         });
     }
 
@@ -147,9 +146,11 @@ export class FormField extends Component {
     }
 
     getDefaultedProp(name, defaultVal) {
+        const form = this.context;
+
         return withDefault(
             this.props[name],
-            this.context ? this.context.defaultFieldProps[name] : undefined,
+            form ? form.fieldDefaults[name] : undefined,
             defaultVal
         );
     }
@@ -162,7 +163,7 @@ export class FormField extends Component {
         if (displayNotValid && item.type.props.leftIcon && leftErrorIcon) {
             overrides.leftIcon = Icon.warningCircle();
         }
-        const target = React.cloneElement(item, ...overrides);
+        const target = React.cloneElement(item, overrides);
 
         if (minimal) return target;
 

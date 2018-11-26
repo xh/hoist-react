@@ -6,8 +6,9 @@
  */
 import React, {Component} from 'react';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {withDefault} from '@xh/hoist/utils/js';
+import {box} from '@xh/hoist/cmp/layout';
 import PT from 'prop-types';
-import box from '@xh/hoist/layout';
 
 export const FormContext = React.createContext(null);
 const formContextProvider = elemFactory(FormContext.Provider);
@@ -38,6 +39,11 @@ export class Form extends Component {
                 items: this.props.children
             })
         });
+    }
+
+
+    get fieldDefaults() {
+        return withDefault(this.props.fieldDefaults, {});
     }
 }
 export const form = elemFactory(Form);

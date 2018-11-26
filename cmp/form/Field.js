@@ -6,7 +6,7 @@
  */
 
 import {HoistModel} from '@xh/hoist/core';
-import {observable, when} from '@xh/hoist/mobx';
+import {observable} from '@xh/hoist/mobx';
 import {flatten, isEmpty} from 'lodash';
 import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
 import {action, computed} from '@xh/hoist/mobx';
