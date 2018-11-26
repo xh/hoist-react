@@ -38,7 +38,6 @@ export class Select extends HoistInput {
     render() {
         const {props} = this,
             items = props.options.map(it => this.renderOption(it));
-        console.log(this.props.value);
         return onsenSelect({
             className: this.getClassName(),
             value: this.renderValue || '',

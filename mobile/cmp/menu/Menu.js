@@ -23,7 +23,9 @@ export class Menu extends Component {
         width: PT.number,
 
         /** How to interpret the provided xPos when showing. */
-        align: PT.oneOf(['left', 'right'])
+        align: PT.oneOf(['left', 'right']),
+
+        // onClose: PT.func
     };
 
     render() {
@@ -45,7 +47,10 @@ export class Menu extends Component {
         return fragment(
             mask({
                 isDisplayed: true,
-                onClick: () => model.close()
+                onClick: () => {
+                    // onClose();
+                    model.close();
+                }
             }),
             vbox({
                 className: 'xh-menu',

@@ -11,7 +11,7 @@ import PT from 'prop-types';
 import {vbox, fragment, div, hspacer} from '@xh/hoist/cmp/layout';
 
 import {menuButton} from '@xh/hoist/mobile/cmp/button';
-import {menu, MenuModel} from '@xh/hoist/mobile/cmp/menu';
+import {menu} from '@xh/hoist/mobile/cmp/menu';
 
 /**
  * Menu Component
@@ -27,13 +27,11 @@ export class DimChooser extends Component {
     };
 
     render() {
-        const {model, props} = this;
-
+        const {model} = this;
         return div(
             this.renderDimMenu(),
             menuButton({
                 model,
-                width: 200,
                 align: 'left',
                 style: {color: 'black'}
             })
@@ -41,10 +39,12 @@ export class DimChooser extends Component {
     }
 
     renderDimMenu = () => {
-        const {model} = this;
+        const {model} = this,
+            {dimensionChooserModel} = model;
         if (!model) return null;
         return menu({
             model,
+            onClose: () => dimensionChooserModel.commitPendingValue(),
             width: 260,
             align: 'left'
         });
