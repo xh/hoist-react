@@ -12,7 +12,6 @@ import {div} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/kit/onsen';
 import {navigatorBackButton, menuButton, refreshButton} from '@xh/hoist/mobile/cmp/button';
 
-
 /**
  * A standard application navigation bar which displays the current page title and a standard set of
  * buttons for common application actions. Application specific items can be displayed on the left

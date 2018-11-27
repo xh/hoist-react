@@ -80,7 +80,6 @@ export class AppContainer extends Component {
                         frame(elem(XH.appSpec.componentClass, {model: XH.appModel})),
                         versionBar({model}),
                         this.renderAppMenu()
-                        // this.renderDimMenu(),
                     ),
                     mask({model: model.appLoadModel, spinner: true}),
                     messageSource({model: model.messageSourceModel}),
@@ -110,15 +109,5 @@ export class AppContainer extends Component {
             align: 'left'
         });
     }
-
-    // renderDimMenu() {
-    //     const model = XH.appModel.dimMenuModel;
-    //     if (!model) return null;
-    //     return menu({
-    //         model: model,
-    //         width: 260,
-    //         align: 'left'
-    //     });
-    // }
 }
 export const appContainer = elemFactory(AppContainer);

@@ -39,7 +39,7 @@ export class DimensionChooser extends Component {
 
         /** Width in pixels of the popover menu itself. */
         popoverWidth: PT.number
-    };
+    }
 
     baseClassName = 'xh-dim-chooser';
 
