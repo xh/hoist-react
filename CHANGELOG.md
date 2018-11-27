@@ -26,10 +26,10 @@ requests that have been superceded by more recent variants.
  under a new sub-package in this location.
 * Hoist top-level App Structure has changed in order to improve consistency of the Model-View conventions,
 to improve the accessibility of services, and to support the improvements in app initialization mentioned above:
-  - `XH.renderApp` now takes a new `AppSpec` configuration.
-  - `XH.app` is now `XH.appModel`.
-  - All services are installed directly on `XH`.
-  - `@HoistApp` is now `@HoistAppModel`
+    - `XH.renderApp` now takes a new `AppSpec` configuration.
+    - `XH.app` is now `XH.appModel`.
+    - All services are installed directly on `XH`.
+    - `@HoistApp` is now `@HoistAppModel`
 * `RecordAction` has been substantially refactored and improved. These are now typically immutable and may be shared.   
     - `prepareFn` has been replaced with a `displayFn`.
     - `actionFn` and `displayFn` now take a single object as their parameter. 
