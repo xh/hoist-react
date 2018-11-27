@@ -5,13 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {box, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {Classes, overlay, spinner} from '@xh/hoist/kit/blueprint';
-import {withDefault, withDefaultFalse, withDefaultTrue} from '@xh/hoist/utils/js';
+import {withDefault} from '@xh/hoist/utils/js';
 
 
 import './Mask.scss';
@@ -26,16 +26,22 @@ import './Mask.scss';
 export class Mask extends Component {
 
     static propTypes = {
+
         /** True to display mask. */
         isDisplayed: PT.bool,
+
         /** Optional text to be displayed. */
         message: PT.string,
+
         /** True to display a spinning image.  Default false. */
         spinner: PT.bool,
-        /** If true (default) mask should be contained within its parent, if set to false it will fill the viewport. */
+
+        /** True (default) to contain mask within its parent, false to fill the viewport. */
         inline: PT.bool,
+
         /** Click handler **/
         onClick: PT.func,
+
         /** Model to govern behavior of mask.  Use as an alternative to setting isDisplayed and message props. */
         model: PT.instanceOf(PendingTaskModel)
     };
@@ -50,8 +56,8 @@ export class Mask extends Component {
         if (!isDisplayed) return null;
 
         const message = withDefault(props.message, model && model.message),
-            inline = withDefaultTrue(props.inline),
-            showSpinner = withDefaultFalse(props.spinner),
+            inline = withDefault(props.inline, true),
+            showSpinner = withDefault(props.spinner, false),
             onClick = props.onClick;
 
         return overlay({

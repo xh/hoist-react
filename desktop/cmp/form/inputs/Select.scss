@@ -1,0 +1,99 @@
+// Host div for Select option menu portal.
+#xh-select-input-portal {
+  z-index: 999;
+  position: absolute;
+}
+
+.xh-select {
+  // Default width of wrapping box.
+  width: 200px;
+
+  // Outer div of the actual react-select control, causing it to fill its box.
+  > div {
+    flex: 1;
+  }
+
+  color: var(--xh-input-text-color);
+
+  // This ".xh-select" is the prefix for nested BEM values below, not itself a level of nesting.
+  .xh-select {
+    &__control {
+      background: var(--xh-input-bg);
+      border: none;
+      box-shadow: var(--xh-form-field-box-shadow);
+      min-height: 30px;
+
+      &--is-disabled {
+        background-color: var(--xh-input-disabled-bg);
+
+        .xh-select__placeholder {
+          color: var(--xh-input-disabled-text-color);
+        }
+      }
+
+      &--is-focused {
+        box-shadow: var(--xh-form-field-focused-box-shadow);
+      }
+    }
+
+    &__single-value,
+    &__input {
+      color: var(--xh-input-text-color);
+
+      &--is-disabled {
+        color: var(--xh-input-disabled-text-color);
+      }
+    }
+
+    &__indicator {
+      padding: 0 var(--xh-pad-half-px);
+      color: var(--xh-border-color);
+    }
+
+    &__indicator-separator {
+      background-color: var(--xh-border-color);
+    }
+
+    &__multi-value {
+      background-color: var(--xh-bg-alt);
+
+      &__label {
+        color: var(--xh-text-color);
+      }
+
+      &__remove {
+        color: var(--xh-text-color-muted);
+      }
+
+      &--is-disabled {
+        .xh-select__multi-value__label {
+          color: var(--xh-input-disabled-text-color);
+        }
+      }
+    }
+
+
+  }
+}
+
+// The menu is rendered under the xh-app body, not within the control DOM.
+.xh-app {
+  .xh-select {
+    &__menu {
+      background-color: var(--xh-bg);
+      box-shadow: var(--xh-form-field-box-shadow);
+    }
+    &__option {
+      &--is-selected {
+        color: var(--xh-text-color);
+        background: var(--xh-bg-alt);
+      }
+      &--is-focused {
+        color: var(--xh-text-color-highlight);
+        background: var(--xh-bg-highlight);
+      }
+    }
+  }
+
+}
+

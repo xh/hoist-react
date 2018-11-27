@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {hbox, vbox} from '@xh/hoist/cmp/layout';
 
@@ -20,6 +20,7 @@ export class Toolbar extends Component {
     static propTypes = {
         /** Custom classes that will be applied to this component */
         className: PT.string,
+
         /** Set to true to vertically align the items of this toolbar */
         vertical: PT.bool
     };

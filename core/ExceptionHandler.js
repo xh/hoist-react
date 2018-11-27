@@ -7,7 +7,7 @@
 import {Exception} from '@xh/hoist/exception';
 import {XH} from './XH';
 import {stringifyErrorSafely} from '@xh/hoist/exception';
-import {stripTags} from '@xh/hoist/utils/js';
+import {stripTags, withDefault} from '@xh/hoist/utils/js';
 
 /**
  * Provides Centralized Exception Handling for Hoist Application.
@@ -122,17 +122,24 @@ export class ExceptionHandler {
     logException(exception, options) {
         return (options.showAsError) ?
             console.error(options.message, exception) :
-            console.log(options.message, exception);
+            console.log(options.message);
     }
 
     parseOptions(exception, options) {
         const ret = Object.assign({}, options),
             isAutoRefresh = exception.fetchOptions && exception.fetchOptions.isAutoRefresh;
 
-        ret.showAsError = ret.showAsError != null ? ret.showAsError : true;
-        ret.logOnServer = ret.logOnServer != null ? ret.logOnServer : ret.showAsError;
-        ret.showAlert = ret.showAlert != null ? ret.showAlert : !isAutoRefresh;
         ret.requireReload = !!ret.requireReload;
+
+        if (exception.name == 'Fetch Aborted') {
+            ret.showAsError = withDefault(ret.showAsError, false);
+            ret.logOnServer = withDefault(ret.logOnServer, false);
+            ret.showAlert = withDefault(ret.showAlert, false);
+        } else {
+            ret.showAsError = withDefault(ret.showAsError, true);
+            ret.logOnServer = withDefault(ret.logOnServer, ret.showAsError);
+            ret.showAlert = withDefault(ret.showAlert, !isAutoRefresh);
+        }
 
         ret.title = ret.title || (ret.showAsError ? 'Error' : 'Message');
         ret.message = ret.message || exception.message || exception.name || 'An unknown error occurred.';

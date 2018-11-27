@@ -8,8 +8,8 @@
 import {HoistModel, XH} from '@xh/hoist/core';
 import {LocalStore} from '@xh/hoist/data';
 import {allSettled} from '@xh/hoist/promise';
-import {GridModel} from '@xh/hoist/desktop/cmp/grid';
-import {boolCheckCol} from '@xh/hoist/columns';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {boolCheckCol} from '@xh/hoist/cmp/grid/columns';
 import {usernameCol} from '@xh/hoist/admin/columns';
 import {bindable, action} from '@xh/hoist/mobx/index';
 import {keyBy, keys} from 'lodash';
@@ -29,10 +29,10 @@ export class UserModel {
         sortBy: 'username',
         columns: [
             {field: 'username', ...usernameCol},
-            {field: 'email', width: 175},
-            {field: 'displayName', width: 150},
+            {field: 'email', width: 200},
+            {field: 'displayName', width: 200},
             {field: 'active', ...boolCheckCol, width: 75},
-            {field: 'roles', minWidth: 130, flex: true}
+            {field: 'roles', minWidth: 130, flex: true, tooltip: true}
         ]
     });
 

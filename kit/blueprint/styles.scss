@@ -116,6 +116,14 @@
 // Buttons
 //------------------------
 .bp3-button {
+  // Use padding vars, tighter default LR padding (driven in part by our minimal mode default).
+  padding: var(--xh-pad-half-px) var(--xh-pad-half-px);
+
+  // Except in button groups, which are already compressing buttons more closely together.
+  .bp3-button-group & {
+    padding: var(--xh-pad-half-px) var(--xh-pad-px);
+  }
+
   border-radius: var(--xh-border-radius-px);
   font-size: var(--xh-button-font-size-px);
   white-space: nowrap;
@@ -170,7 +178,9 @@
 //------------------------
 // Forms + Inputs
 //------------------------
-.bp3-input, .bp3-input-ghost {
+.bp3-input, .bp3-dark .bp3-input, textarea.bp3-input, .bp3-dark textarea.bp3-input, .bp3-input-ghost {
+  color: var(--xh-input-text-color);
+  background: var(--xh-input-bg);
   font-size: var(--xh-font-size);
 }
 
@@ -187,11 +197,10 @@
 .bp3-dark .bp3-control.bp3-switch input ~ .bp3-control-indicator {
   box-shadow: var(--xh-form-field-box-shadow) !important;
 }
-//
+
 .bp3-dark .bp3-control.bp3-switch:hover input ~ .bp3-control-indicator {
   background-color:#202b33;
 }
-
 
 /* Apply blueprint styling to non-blueprint icons within input groups */
 .bp3-input-group svg:not(.bp3-icon) {
@@ -205,23 +214,12 @@
   -webkit-font-smoothing: antialiased;
   z-index: 1;
   margin: 7px;
-  color: var(--xh-blue-gray);
+  color: var(--xh-text-color-muted);
 }
 
-.bp3-dark .bp3-input-group svg:not(.bp3-icon) {
-  color: var(--xh-text-color);
-}
-
+// Avoid misaligned rightIcon within inputs.
 .bp3-button svg:not(.bp3-icon):first-child:last-child, .bp3-button .bp3-spinner + svg:not(.bp3-icon):last-child {
   margin-left: 0;
-}
-
-.bp3-input-group .bp3-input:not(:focus) + .bp3-button.bp3-minimal:not(:hover):not(:focus) svg:not(.bp3-icon), .bp3-input-group .bp3-input:not(:focus) + .bp3-input-action .bp3-button.bp3-minimal:not(:hover):not(:focus) svg:not(.bp3-icon) {
-  color: var(--xh-blue-gray);
-}
-
-.bp3-select-popover .bp3-popover-content {
-  padding: 0 !important;
 }
 
 // Controls ship with default bottom and (inline) right margins. We expose variables

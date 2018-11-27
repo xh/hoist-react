@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {boolCheckCol, numberCol} from '@xh/hoist/columns';
+import {boolCheckCol, numberCol} from '@xh/hoist/cmp/grid/columns';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 
 @HoistComponent
@@ -30,7 +30,6 @@ export class MonitorEditorPanel extends Component {
                 {
                     name: 'metricType',
                     lookupName: 'metricTypes',
-                    lookupStrict: true,
                     required: true
                 },
                 {

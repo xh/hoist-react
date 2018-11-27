@@ -11,6 +11,7 @@ import {castArray, intersection, union} from 'lodash';
 
 /**
  * Model for managing store selections.
+ * Typically accessed from a GridModel to observe/control Grid selection.
  */
 @HoistModel
 export class StoreSelectionModel {
@@ -19,6 +20,17 @@ export class StoreSelectionModel {
     mode = null;
 
     @observable.ref ids = [];
+
+    /**
+     * @param {Object} c - StoreSelectionModel configuration.
+     * @param {BaseStore} c.store - Store containing the data.
+     * @param {string} [c.mode] - one of ['single', 'multiple', 'disabled'].
+     */
+    constructor({store, mode = 'single'}) {
+        this.store = store;
+        this.mode = mode;
+        this.addReaction(this.cullSelectionReaction());
+    }
 
     /** Single selected record, or null if multiple or no records selected. */
     @computed
@@ -46,19 +58,7 @@ export class StoreSelectionModel {
     }
 
     /**
-     * @param {Object} c - StoreSelectionModel configuration.
-     * @param {BaseStore} c.store - Store containing the data.
-     * @param {string} [c.mode] - one of ['single', 'multiple', 'disabled'].
-     */
-    constructor({store, mode = 'single'}) {
-        this.store = store;
-        this.mode = mode;
-        this.addReaction(this.cullSelectionReaction());
-    }
-
-    /**
      * Set the selection.
-     *
      * @param {(Object[]|Object)} records - single record/ID or array of records/IDs to select.
      * @param {boolean} [clearSelection] - true to clear previous selection (rather than add to it).
      */
@@ -77,17 +77,16 @@ export class StoreSelectionModel {
         this.ids = clearSelection ? ids : union(this.ids, ids);
     }
 
-    /**
-     * Clear the selection.
-     */
+    /** Clear the selection. */
     @action
     clear() {
         this.select([]);
     }
-    
-    //-----------------------------
+
+
+    //------------------------
     // Implementation
-    //-----------------------------
+    //------------------------
     cullSelectionReaction() {
         // Remove recs from selection if they are no longer in store e.g. (due to filtering)
         return {

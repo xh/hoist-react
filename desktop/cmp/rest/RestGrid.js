@@ -7,12 +7,12 @@
 
 import {Component} from 'react';
 import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
-import {grid} from '@xh/hoist/desktop/cmp/grid';
+import {grid} from '@xh/hoist/cmp/grid';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {fragment} from '@xh/hoist/cmp/layout';
 
-import {restGridToolbar} from './RestGridToolbar';
-import {restForm} from './RestForm';
+import {restGridToolbar} from './impl/RestGridToolbar';
+import {restForm} from './impl/RestForm';
 
 @HoistComponent
 @LayoutSupport

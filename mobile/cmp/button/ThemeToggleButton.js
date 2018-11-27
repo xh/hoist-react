@@ -18,7 +18,7 @@ export class ThemeToggleButton extends Component {
 
     render() {
         return toolbarButton({
-            item: XH.darkTheme ? Icon.sun() : Icon.moon(),
+            item: XH.darkTheme ? Icon.sun({prefix: 'fas'}) : Icon.moon(),
             onClick: this.onThemeToggleClick
         });
     }

@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
 import {toolbarButton} from '@xh/hoist/kit/onsen';
 import {Icon} from '@xh/hoist/icon';
@@ -28,7 +28,7 @@ export class FeedbackButton extends Component {
     render() {
         const {icon, onClick, ...rest} = this.props;
         return toolbarButton({
-            item: icon || Icon.comment(),
+            item: icon || Icon.comment({className: 'fa-flip-horizontal'}),
             onClick: onClick || this.onFeedbackClick,
             ...rest
         });

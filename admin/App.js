@@ -4,120 +4,62 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {HoistApp, XH} from '@xh/hoist/core';
-import {AppContainer} from '@xh/hoist/desktop/appcontainer';
-import {TabContainerModel} from '@xh/hoist/desktop/cmp/tab';
 
-import {AppComponent} from './AppComponent';
-import {ActivityTab} from './tabs/activity/ActivityTab';
-import {GeneralTab} from './tabs/general/GeneralTab';
-import {LoggingTab} from './tabs/logging/LoggingTab';
-import {MonitorTab} from './tabs/monitor/MonitorTab';
-import {PreferencesTab} from './tabs/preferences/PreferencesTab';
+import {Component} from 'react';
+import {HoistComponent} from '@xh/hoist/core';
+import {tabContainer, tabSwitcher} from '@xh/hoist/desktop/cmp/tab';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {Icon} from '@xh/hoist/icon';
+import {appBar, appBarSeparator} from '@xh/hoist/desktop/cmp/appbar';
+import {ContextMenuItem, ContextMenuSupport} from '@xh/hoist/desktop/cmp/contextmenu';
 
-@HoistApp
-export class App {
+import './App.scss';
 
-    tabModel = new TabContainerModel({
-        route: 'default',
-        tabs: this.createTabs()
-    });
-
-    checkAccess(user) {
-        const role = 'HOIST_ADMIN',
-            hasAccess = user.hasRole(role),
-            message = hasAccess ? '' : `Admin console access requires the "${role}" role.`;
-        return {hasAccess, message};
+@HoistComponent
+@ContextMenuSupport
+export class App extends Component {
+    render() {
+        return panel({
+            tbar: this.renderAppBar(),
+            className: 'xh-admin-app-frame',
+            item: tabContainer({
+                model: this.model.tabModel,
+                switcherPosition: 'none'
+            })
+        });
     }
 
-    get componentClass() {return AppComponent}
-    get containerClass() {return AppContainer}
-
-    get idleDetectionDisabled() {return true}
-
-    requestRefresh() {
-        this.tabModel.requestRefresh();
+    getContextMenuItems() {
+        const Item = ContextMenuItem;
+        return [Item.reloadApp(), Item.about(), Item.logout()];
     }
 
-    getRoutes() {
-        return [
-            {
-                name: 'default',
-                path: '/admin',
-                forwardTo: 'default.general',
-                children: this.getTabRoutes()
-            }
-        ];
+    //------------------
+    // Implementation
+    //------------------
+    renderAppBar() {
+        return appBar({
+            icon: Icon.gears({size: '2x', prefix: 'fal'}),
+            leftItems: [
+                tabSwitcher({model: this.model.tabModel})
+            ],
+            rightItems: [
+                button({
+                    icon: Icon.mail(),
+                    text: 'Contact',
+                    onClick: () => window.open('https://xh.io/contact')
+                }),
+                button({
+                    icon: Icon.openExternal(),
+                    title: 'Open app...',
+                    onClick: () => window.open('/')
+                }),
+                appBarSeparator()
+            ],
+            hideAdminButton: true,
+            hideFeedbackButton: true
+        });
     }
 
-    //------------------------
-    // For override / extension
-    //------------------------
-    getTabRoutes() {
-        return [
-            {
-                name: 'general',
-                path: '/general',
-                forwardTo: 'default.general.about',
-                children: [
-                    {name: 'about', path: '/about'},
-                    {name: 'config', path: '/config'},
-                    {name: 'services', path: '/services'},
-                    {name: 'ehCache', path: '/ehCache'},
-                    {name: 'users', path: '/users'}
-                ]
-            },
-            {
-                name: 'logging',
-                path: '/logging',
-                forwardTo: 'default.logging.viewer',
-                children: [
-                    {name: 'viewer', path: '/viewer'},
-                    {name: 'levels', path: '/levels'}
-                ]
-            },
-            {
-                name: 'monitor',
-                path: '/monitor',
-                forwardTo: 'default.monitor.status',
-                children: [
-                    {name: 'status', path: '/status'},
-                    {name: 'editMonitors', path: '/editMonitors'}
-                ]
-            },
-            {
-                name: 'activity',
-                path: '/activity',
-                forwardTo: 'default.activity.tracking',
-                children: [
-                    {name: 'tracking', path: '/tracking'},
-                    {name: 'clientErrors', path: '/clientErrors'},
-                    {name: 'feedback', path: '/feedback'}
-                ]
-            },
-            {
-                name: 'preferences',
-                path: '/preferences',
-                forwardTo: 'default.preferences.prefs',
-                children: [
-                    {name: 'prefs', path: '/prefs'},
-                    {name: 'userPrefs', path: '/userPrefs'}
-                ]
-            }
-        ];
-    }
-
-    createTabs() {
-        return [
-            {id: 'general', content: GeneralTab},
-            {id: 'activity', content: ActivityTab},
-            {id: 'logging', content: LoggingTab},
-            {id: 'monitor', content: MonitorTab},
-            {id: 'preferences', content: PreferencesTab}
-        ];
-    }
-
-    destroy() {
-        XH.safeDestroy(this.tabModel);
-    }
 }

@@ -24,6 +24,7 @@ import {stringify} from 'qs';
 @HoistService
 export class FetchService {
 
+    autoAbortControllers = {};
     /**
      * Send a request via the underlying fetch API.
      *
@@ -45,11 +46,13 @@ export class FetchService {
      * @param {Object} [opts.qsOpts] - Object of options to pass to the param converter library, qs.
      *      The default qsOpts are: {arrayFormat: 'repeat', allowDots: true}.
      *      @see {@link https://www.npmjs.com/package/qs}
+     * @param {string} [opts.autoAbortKey] - If set, any pending requests associated with the same autoAbortKey will
+     be immediately aborted when a new request is made.
      *
      * @returns {Promise<Response>} - Promise which resolves to a Fetch Response.
      */
     async fetch(opts) {
-        let {params, method, contentType, url} = opts;
+        let {params, method, contentType, url, autoAbortKey} = opts;
 
         // 1) Compute / install defaults
         if (!method) {
@@ -93,6 +96,14 @@ export class FetchService {
             }
         }
 
+        // 4) Cancel prior request, and add new AbortController if autoAbortKey used
+        if (autoAbortKey) {
+            this.abort(autoAbortKey);
+            const ctlr = new AbortController();
+            fetchOpts.signal = ctlr.signal;
+            this.autoAbortControllers[autoAbortKey] = ctlr;
+        }
+
         delete fetchOpts.contentType;
         delete fetchOpts.url;
 
@@ -100,7 +111,12 @@ export class FetchService {
         try {
             ret = await fetch(url, fetchOpts);
         } catch (e) {
+            if (e.name == 'AbortError') throw Exception.fetchAborted(opts, e);
             throw Exception.serverUnavailable(opts, e);
+        }
+
+        if (autoAbortKey) {
+            delete this.autoAbortControllers[autoAbortKey];
         }
 
         if (!ret.ok) {
@@ -158,9 +174,30 @@ export class FetchService {
         return this.sendJson(opts);
     }
 
+    /**
+     * Send a DELETE HTTP request to a URL with an optional JSON body, and decode the optional response as JSON.
+     *
+     * This method delegates to @see {fetch} and accepts the same options.
+     *
+     * @returns {Promise} the decoded JSON object, or null if the response had no content.
+     */
+    async deleteJson(opts) {
+        opts.method = 'DELETE';
+        return this.sendJson(opts);
+    }
+
+
     //-----------------------
     // Implementation
     //-----------------------
+    abort(key) {
+        const ctrl = this.autoAbortControllers[key];
+        if (ctrl) {
+            delete this.autoAbortControllers[key];
+            ctrl.abort();
+        }
+    }
+
     async sendJson(opts) {
         opts = {
             ...opts,

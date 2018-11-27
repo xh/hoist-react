@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {GridModel} from '@xh/hoist/desktop/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {LocalStore} from '@xh/hoist/data';
 import {computed} from '@xh/hoist/mobx';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
@@ -115,7 +115,7 @@ export class LeftRightChooserModel {
             groupCol = {
                 field: 'group',
                 headerName: 'Group',
-                hide: true
+                hidden: true
             };
 
         this.leftModel = new GridModel({
@@ -158,11 +158,11 @@ export class LeftRightChooserModel {
         const groupingEnabled = side == 'left' ? this.leftGroupingEnabled : this.rightGroupingEnabled,
             lockSvg = convertIconToSvg(Icon.lock({prefix: 'fal'}));
 
-        return (v, data) => {
+        return (v, {record}) => {
             const groupClass = groupingEnabled && this._hasGrouping ? 'xh-lr-chooser__group-row' : '';
             return `
                 <div class='xh-lr-chooser__item-row ${groupClass}'>
-                    ${v} ${data.locked ? lockSvg : ''}
+                    ${v} ${record.locked ? lockSvg : ''}
                 </div>
             `;
         };

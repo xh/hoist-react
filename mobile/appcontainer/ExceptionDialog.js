@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
-import {fragment} from '@xh/hoist/cmp/layout';
+import {fragment, filler} from '@xh/hoist/cmp/layout';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -45,6 +45,7 @@ export class ExceptionDialog extends Component {
                         onClick: this.onShowDetailsClick,
                         omit: !model.options.showAsError
                     }),
+                    filler(),
                     dismissButton({model})
                 ]
             }),
@@ -78,7 +79,6 @@ class DismissButton extends Component {
             }) :
             button({
                 text: 'Close',
-                modifier: 'outline',
                 onClick: this.onCloseClick
             });
     }

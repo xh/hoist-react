@@ -5,13 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {div, vbox, vspacer, box} from '@xh/hoist/cmp/layout';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {progressCircular} from '@xh/hoist/kit/onsen';
-import {withDefault, withDefaultFalse} from '@xh/hoist/utils/js';
+import {withDefault} from '@xh/hoist/utils/js';
 
 import './Mask.scss';
 
@@ -26,12 +26,16 @@ export class Mask extends Component {
     static propTypes = {
         /** True to display the mask. */
         isDisplayed: PT.bool,
+
         /** Text to be displayed under the loading spinner image */
         message: PT.string,
+
         /** True (default) to display a spinning image. */
         spinner: PT.bool,
+
         /** Model to govern behavior of mask.  Use as an alternative to setting props above. */
         model: PT.instanceOf(PendingTaskModel),
+
         /** Click handler **/
         onClick: PT.func
     };
@@ -46,7 +50,7 @@ export class Mask extends Component {
         if (!isDisplayed) return null;
 
         const message = withDefault(props.message, model && model.message),
-            showSpinner = withDefaultFalse(props.spinner),
+            showSpinner = withDefault(props.spinner, false),
             onClick = props.onClick;
 
         return div({
