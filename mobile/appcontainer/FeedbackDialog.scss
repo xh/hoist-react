@@ -2,12 +2,17 @@
   padding: 0;
   display: flex;
 
-  textarea {
-    margin: 0;
-    padding: var(--xh-pad-px);
-    height: 250px;
-    width: 100%;
-    line-height: 1.5;
-    resize: none;
+  .xh-textarea {
+    flex: 1;
+    border: none;
+
+    textarea {
+      margin: 0;
+      padding: var(--xh-pad-px);
+      height: 250px;
+      width: 100%;
+      line-height: 1.5;
+      resize: none;
+    }
   }
 }

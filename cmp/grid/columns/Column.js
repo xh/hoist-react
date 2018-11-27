@@ -41,6 +41,8 @@ export class Column {
      * @param {boolean} [c.flex] - true to auto-adjust column width based on space available
      *      within the overall grid. Flex columns are not user-resizable as they will dynamically
      *      adjust whenever the grid changes size to absorb available horizontal space.
+     * @param {number} [c.rowHeight] - row height required by column in pixels - grids can use this to
+     *      determine an appropriate row height when the column is visible.
      * @param {boolean} [c.absSort] - true to enable absolute value sorting for this column,
      *      with column header clicks progressing from ASC > DESC > DESC (abs value).
      * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
@@ -92,6 +94,7 @@ export class Column {
         minWidth,
         maxWidth,
         flex,
+        rowHeight,
         absSort,
         resizable,
         movable,
@@ -132,6 +135,7 @@ export class Column {
         );
         this.flex = withDefault(flex, false);
         this.width = this.flex ? null : width || Column.DEFAULT_WIDTH;
+        this.rowHeight = rowHeight;
 
         // Prevent flex col from becoming hidden inadvertently.  Can be avoided by setting minWidth to null or 0.
         this.minWidth = withDefault(minWidth, this.flex ? Column.FLEX_COL_MIN_WIDTH : null);
@@ -237,14 +241,14 @@ export class Column {
         const {renderer, elementRenderer} = this;
         if (renderer) {
             ret.cellRenderer = (agParams) => {
-                return renderer(agParams.value, {record: agParams.data, column: this, agParams});
+                return renderer(agParams.value, {record: agParams.data, column: this, agParams, gridModel});
             };
         } else if (elementRenderer) {
             ret.cellRendererFramework = class extends Component {
                 render() {
                     const agParams = this.props,
                         {value, data: record} = agParams;
-                    return elementRenderer(value, {record, agParams, column: me});
+                    return elementRenderer(value, {record, agParams, column: me, gridModel});
                 }
 
                 refresh() {return false}
@@ -277,21 +281,22 @@ export class Column {
 /**
  * @callback Column~rendererFn - normalized renderer function for a grid cell.
  * @param {*} value - cell data value (column + row).
- * @param {CellRendererMetadata} metadata - additional data about the column and row.
+ * @param {CellRendererContext} context - additional data about the column, row and GridModel.
  * @return {string} - the formatted value for display.
  */
 
 /**
  * @callback Column~elementRendererFn - renderer function for a grid cell which returns a React component
  * @param {*} value - cell data value (column + row).
- * @param {CellRendererMetadata} metadata - additional data about the column and row.
+ * @param {CellRendererContext} context - additional data about the column, row and GridModel.
  * @return {Element} - the React element to render.
  */
 
 /**
- * @typedef {Object} CellRendererMetadata
+ * @typedef {Object} CellRendererContext
  * @property {Record} record - row-level data Record.
  * @property {Column} column - column for the cell being rendered.
+ * @property {GridModel} gridModel - gridModel for the grid.
  * @property {ICellRendererParams} [agParams] - the ag-grid cell renderer params.
  */
 
