@@ -165,7 +165,7 @@ export class FormField extends Component {
         }
         const target = React.cloneElement(item, overrides);
 
-        if (minimal) return target;
+        if (!minimal) return target;
 
         // Wrap target in a tooltip if in minimal mode
         return tooltip({
