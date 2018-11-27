@@ -461,6 +461,7 @@ class XHClass {
             this.appModel = new this.appSpec.modelClass();
             await this.appModel.initAsync();
             this.startRouter();
+            this.startOptionsDialog();
             this.setAppState(S.RUNNING);
         } catch (e) {
             this.setAppState(S.LOAD_FAILED);
@@ -504,6 +505,10 @@ class XHClass {
     startRouter() {
         this.router.add(this.appModel.getRoutes());
         this.router.start();
+    }
+
+    startOptionsDialog() {
+        this.acm.optionsDialogModel.setOptions(this.appModel.getAppOptions());
     }
 
     get acm() {return this.appContainerModel}

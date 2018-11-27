@@ -5,12 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {dialog} from '@xh/hoist/kit/blueprint';
-import {HoistComponent, elemFactory, elem} from '@xh/hoist/core';
+import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {filler} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {formField} from '@xh/hoist/desktop/cmp/form';
 
 /**
  * A dialog component to manage user preferences from directly within the application.
@@ -21,30 +22,37 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 export class OptionsDialog extends Component {
 
     render() {
-        const {model} = this;
-        if (!model.isOpen) return null;
+        const {model} = this,
+            {isOpen, hasChanges, requiresRefresh} = model;
 
-        console.log(model.controls);
+        if (!isOpen) return null;
 
         return dialog({
             title: 'Options',
             icon: Icon.gear(),
-            style: {width: 450},
+            style: {width: 400},
             isOpen: true,
             onClose: this.onCloseClick,
             canOutsideClickClose: false,
-            items: [
-                ...model.controls.map(it => this.renderControl(it)),
+            item: [
+                dialogBody(...model.options.map(it => this.renderControl(it))),
                 toolbar(
+                    button({
+                        disabled: !hasChanges,
+                        text: 'Reset',
+                        onClick: this.onResetClick
+                    }),
                     filler(),
                     button({
                         text: 'Cancel',
                         onClick: this.onCloseClick
                     }),
                     button({
-                        text: 'Send',
+                        disabled: !hasChanges,
+                        text: requiresRefresh ? 'Save & Reload' : 'Save',
+                        icon: requiresRefresh ? Icon.refresh() : Icon.check(),
                         intent: 'success',
-                        onClick: this.onSendClick
+                        onClick: this.onSaveClick
                     })
                 )
             ]
@@ -52,16 +60,25 @@ export class OptionsDialog extends Component {
     }
 
     renderControl(cfg) {
-        const {control, prefName} = cfg;
+        const {label, field, control, disabled} = cfg;
 
-        return elem(control, {
+        return formField({
+            label: label,
+            field: field,
+            item: control,
             model: this.model,
-            field: prefName
+            disabled: disabled,
+            minimal: true,
+            inline: true
         });
     }
 
-    onSendClick = () => {
+    onResetClick = () => {
+        this.model.reset();
+    }
 
+    onSaveClick = () => {
+        this.model.save();
     }
 
     onCloseClick = () => {

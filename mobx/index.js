@@ -12,6 +12,7 @@ export {
     autorun,
     computed,
     observable,
+    extendObservable,
     reaction,
     runInAction,
     toJS,

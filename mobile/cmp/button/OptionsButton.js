@@ -17,7 +17,7 @@ import {Icon} from '@xh/hoist/icon';
  * Can be provided an onClick handler, otherwise will use default action provided by framework.
  */
 @HoistComponent
-export class FeedbackButton extends Component {
+export class OptionsButton extends Component {
 
     static propTypes = {
         icon: PT.element,
@@ -42,4 +42,4 @@ export class FeedbackButton extends Component {
     }
 
 }
-export const feedbackButton = elemFactory(FeedbackButton);
+export const optionsButton = elemFactory(OptionsButton);

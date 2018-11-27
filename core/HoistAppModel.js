@@ -37,9 +37,9 @@ export function HoistAppModel(C) {
         },
 
         /**
-         * Provide a list of options to be displayed in the app's Options Dialog.
+         * Provide a list of app options to be displayed in the app's Options Dialog.
          */
-        getOptionControls() {
+        getAppOptions() {
             return [];
         },
 
