@@ -20,8 +20,11 @@ import {size, isEmpty} from 'lodash';
 @HoistModel
 export class DimChooserModel {
 
-    @observable.ref menuModel = null;
     dimensionChooserModel = null;
+
+    @bindable isDialogOpen = true;
+
+    @observable.ref dialogContent = null;
 
     /**
      * @param c - DimensionChooserModel configuration.
@@ -45,13 +48,8 @@ export class DimChooserModel {
             maxHistoryLength: 5,
             maxDepth: 4
         });
-        const itemModels = this.getItemModels();
-        this.menuModel = new MenuModel({
-            itemModels,
-            xPos: 50,
-            yPos: 100
-        });
 
+        this.dialogContent = this.getDialogContent();
 
         this.addReaction({
             track: () => [
@@ -61,27 +59,22 @@ export class DimChooserModel {
                 this.dimensionChooserModel.activeMode
             ],
             run: () => {
-                this.menuModel.open();
-                this.menuModel.itemModels = this.getItemModels();
+                this.dialogContent = this.getDialogContent();
             },
         });
 
     }
 
 
-    getItemModels() {
+    getDialogContent() {
         const menu = this.dimensionChooserModel.activeMode === 'history' ?
-            this.renderHistoryMenu() :
-            this.renderSelectMenu()
+            this.getHistoryMenu() :
+            this.getSelectMenu()
 
-        return [{
-            element: div(
-                menu
-            )
-        }]
+        return menu;
     }
 
-    renderHistoryMenu() {
+    getHistoryMenu() {
         const {dimensionChooserModel: model} = this,
             {history, dimensions} = model;
         const historyItems = history.map((value, i) => {
@@ -122,7 +115,7 @@ export class DimChooserModel {
         )
     }
 
-    renderSelectMenu() {
+    getSelectMenu() {
         const {dimensionChooserModel: model} = this,
             {pendingValue, dimensions, maxDepth, leafInPending} = model;
         const ret = pendingValue.map((dim, i) => {

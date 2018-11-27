@@ -114,7 +114,6 @@ export class DimensionChooserModel {
         this.setActiveMode('history');
     }
 
-    @action
     showEditor() {
         this.pendingValue = this.value;
         this.setShowAddSelect(false);
