@@ -48,7 +48,7 @@
     "react-dom-factories": "~1.0.2"
   },
   "devDependencies": {
-    "@xh/hoist-dev-utils": "~3.2.0",
+    "@xh/hoist-dev-utils": "~3.3.0",
     "react": "~16.6.3",
     "react-dom": "~16.6.3",
     "react-dom-factories": "~1.0.2"
