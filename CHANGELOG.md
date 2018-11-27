@@ -4,15 +4,15 @@
 
 ### 🎁 New Features
 
-* Support for ComboBoxes and Dropdowns has been improved dramatically, via a new `Select` component based on react-select.
-* The ag-Grid based `Grid` and `GridModel` is now available on both mobile and desktop.   We have also added new support 
-for multi-row and multi-field columns via the new `multiFieldRenderer` renderer function. 
+* Support for ComboBoxes and Dropdowns have been improved dramatically, via a new `Select` component based on react-select.
+* The ag-Grid based `Grid` and `GridModel` are now available on both mobile and desktop.   We have also added new support 
+for multi-row/multi-field columns via the new `multiFieldRenderer` renderer function. 
 * The app initialization lifecycle has been restructured so that no App classes are constructed until Hoist is fully 
 initialized.      
 * `Column` now supports an optional `rowHeight` property.
 * `Button` now defaults to 'minimal' mode, providing a much lighter-weight visual look-and-feel to HoistApps.  `Button` also
-implements `@LayoutSupport`  
-* grouping state is now saved by the grid state support on `GridModel`.
+implements `@LayoutSupport`.  
+* Grouping state is now saved by the grid state support on `GridModel`.
 * The Hoist `DimChooser` component has been ported to hoist-react. 
 * `fetchService` now supports an `autoAbortKey` in its fetch methods.  This can be used to automatically cancel obsolete
 requests that have been superceded by more recent variants.
@@ -22,10 +22,10 @@ requests that have been superceded by more recent variants.
 
 ### 💥 Breaking Changes
 
-* The new location for the new cross-platform grid component is `@xh/hoist/cmp/grid`.  The `columns` package has also moved 
+* The new location for the cross-platform grid component is `@xh/hoist/cmp/grid`.  The `columns` package has also moved 
  under a new sub-package in this location.
 * Hoist top-level App Structure has changed in order to improve consistency of the Model-View conventions,
-to improve the accessibility of services, and to support the improvements in app initialization mentioned above. 
+to improve the accessibility of services, and to support the improvements in app initialization mentioned above:
   - `XH.renderApp` now takes a new `AppSpec` configuration.
   - `XH.app` is now `XH.appModel`.
   - All services are installed directly on `XH`.
