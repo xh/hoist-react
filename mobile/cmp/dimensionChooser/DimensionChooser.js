@@ -150,7 +150,7 @@ export class DimensionChooser extends Component {
                     select({
                         options,
                         width,
-                        style: {marginLeft},
+                        marginLeft,
                         value: dim,
                         onChange: val => model.addPendingDim(val, i)
                     }),
@@ -182,7 +182,7 @@ export class DimensionChooser extends Component {
             select({
                 options: model.dimOptionsForLevel(pendingCount),
                 width,
-                style: {marginLeft},
+                marginLeft,
                 onChange: val => model.addPendingDim(val, pendingCount)
             }) :
             button({
