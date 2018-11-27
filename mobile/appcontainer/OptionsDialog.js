@@ -9,7 +9,6 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {button} from '@xh/hoist/mobile/cmp/button';
-import {textAreaField} from '@xh/hoist/mobile/cmp/form';
 
 import './FeedbackDialog.scss';
 
@@ -26,16 +25,11 @@ export class OptionsDialog extends Component {
         if (!model.isOpen) return null;
 
         return dialog({
-            title: 'Submit Feedback',
+            title: 'Options',
             icon: Icon.gear(),
             className: 'xh-options-dialog',
             isOpen: true,
             onCancel: this.onCancelClick,
-            content: textAreaField({
-                placeholder: 'Please enter your comments...',
-                model,
-                field: 'message'
-            }),
             buttons: [
                 button({
                     text: 'Cancel',

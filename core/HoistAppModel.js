@@ -37,6 +37,13 @@ export function HoistAppModel(C) {
         },
 
         /**
+         * Provide a list of options to be displayed in the app's Options Dialog.
+         */
+        getOptionControls() {
+            return [];
+        },
+
+        /**
          * App can implement this method to customize global App refresh behavior.
          * This is called by the default refresh button in the AppBar component.
          *

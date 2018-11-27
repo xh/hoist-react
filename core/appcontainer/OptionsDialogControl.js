@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {HoistField} from '@xh/hoist/cmp/form/HoistField';
+import {HoistInput} from '@xh/hoist/cmp/form/HoistInput';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -22,7 +22,7 @@ export class OptionsDialogControl {
     /**
      * @param {Object} c - OptionsDialogControl configuration.
      * @param {string} c.prefName - preference name for option managed by the control.
-     * @param {Object} c.control - HoistField component used to manage the option.
+     * @param {Object} c.control - HoistInput component used to manage the option.
      * @param {boolean} [c.refreshRequired] - true to refresh the app after changing this option.
      * @param {boolean} [c.disabled] - true to disable this item.
      * @param {boolean} [c.hidden] - true to hide this item.
@@ -34,8 +34,8 @@ export class OptionsDialogControl {
         disabled = false,
         hidden = false
     }) {
-        const extendsHoistField = control.prototype instanceof HoistField;
-        throwIf(!extendsHoistField, 'Option control must be a component that extends HoistField.');
+        const extendsHoistInput = control && control.prototype instanceof HoistInput;
+        throwIf(!extendsHoistInput, 'Option control must be a component that extends HoistInput.');
         throwIf(!prefName, 'Must specify prefName for an options dialog control.');
 
         this.prefName = prefName;

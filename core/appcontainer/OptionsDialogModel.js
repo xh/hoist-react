@@ -19,7 +19,7 @@ export class OptionsDialogModel {
     @observable isOpen = false;
 
     get controls() {
-        return XH.app.getOptionControls().map(it => it instanceof OptionsDialogControl ? it : new OptionsDialogControl(it));
+        return XH.appModel.getOptionControls().map(it => it instanceof OptionsDialogControl ? it : new OptionsDialogControl(it));
     }
 
     get hasOptions() {
