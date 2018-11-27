@@ -26,7 +26,7 @@ import {withDefault} from '@xh/hoist/utils/js';
  * Menu Component
  */
 @HoistComponent
-export class DimChooser extends Component {
+export class DimensionChooser extends Component {
 
     static propTypes = {
 
@@ -152,7 +152,7 @@ export class DimChooser extends Component {
                         width,
                         style: {marginLeft},
                         value: dim,
-                        onChange: (e) => model.addPendingDim(e.target.value, i)
+                        onChange: val => model.addPendingDim(val, i)
                     }),
                     button({
                         icon: Icon.x({className: 'xh-red'}),
@@ -183,8 +183,7 @@ export class DimChooser extends Component {
                 options: model.dimOptionsForLevel(pendingCount),
                 width,
                 style: {marginLeft},
-                onChange: (e) => model.addPendingDim(e.target.value, pendingCount)
-
+                onChange: val => model.addPendingDim(val, pendingCount)
             }) :
             button({
                 text: 'Add grouping...',
@@ -195,4 +194,4 @@ export class DimChooser extends Component {
     }
 }
 
-export const dimChooser = elemFactory(DimChooser);
+export const dimensionChooser = elemFactory(DimensionChooser);
