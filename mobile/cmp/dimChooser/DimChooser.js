@@ -17,7 +17,7 @@ import {select} from '@xh/hoist/mobile/cmp/form';
 
 import {size, isEmpty} from 'lodash';
 
-import './DimensionChooser.scss'
+import './DimensionChooser.scss';
 import {DimensionChooserModel} from '@xh/hoist/desktop/cmp/dimensionchooser';
 import {withDefault} from '@xh/hoist/utils/js';
 
@@ -57,7 +57,7 @@ export class DimChooser extends Component {
                 text: value.map(it => dimensions[it].label).join(' \u203a '),
                 onClick: () => model.showMenu()
             })
-        )
+        );
     }
 
     onSetFromHistory = (value) => {
@@ -65,7 +65,7 @@ export class DimChooser extends Component {
         this.model.closeMenu();
     }
 
-    renderDialog () {
+    renderDialog() {
         const {model} = this,
             {isMenuOpen} = model;
         if (!model) return null;
@@ -84,7 +84,7 @@ export class DimChooser extends Component {
     renderDialogContent() {
         return this.model.activeMode === 'history' ?
             this.renderHistoryMenu() :
-            this.renderSelectMenu()
+            this.renderSelectMenu();
     }
 
     renderDialogButtons() {
@@ -112,7 +112,7 @@ export class DimChooser extends Component {
                     icon: Icon.check({className: 'xh-green'}),
                     onClick: () => model.commitPendingValue()
                 })
-            ]
+            ];
     }
 
     renderHistoryMenu() {
@@ -128,12 +128,12 @@ export class DimChooser extends Component {
                 onClick: () => {
                     this.onSetFromHistory(value);
                 }
-            })
+            });
         });
 
         return div(
             ...historyItems
-        )
+        );
     }
 
     renderSelectMenu() {
@@ -163,7 +163,7 @@ export class DimChooser extends Component {
                         }
                     })
                 ]
-            })
+            });
         });
         const atMaxDepth = (pendingValue.length === Math.min(maxDepth, size(dimensions)));
         if (!atMaxDepth && !leafInPending) children.push(this.renderAddOrSelectButton());

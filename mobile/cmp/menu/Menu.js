@@ -23,9 +23,7 @@ export class Menu extends Component {
         width: PT.number,
 
         /** How to interpret the provided xPos when showing. */
-        align: PT.oneOf(['left', 'right']),
-
-        // onClose: PT.func
+        align: PT.oneOf(['left', 'right'])
     };
 
     render() {
@@ -48,7 +46,6 @@ export class Menu extends Component {
             mask({
                 isDisplayed: true,
                 onClick: () => {
-                    // onClose();
                     model.close();
                 }
             }),

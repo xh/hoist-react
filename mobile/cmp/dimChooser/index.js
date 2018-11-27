@@ -1,2 +1,1 @@
-export * from './DimChooserModel'
-export * from './DimChooser'
+export * from './DimChooser';
