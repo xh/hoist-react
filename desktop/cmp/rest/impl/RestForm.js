@@ -34,7 +34,8 @@ export class RestForm extends Component {
             className: this.getClassName(),
             isOpen: true,
             isCloseButtonShown: false,
-            items: this.getDialogItems()
+            items: this.getDialogItems(),
+            transitionName: 'none'
         });
     }
 

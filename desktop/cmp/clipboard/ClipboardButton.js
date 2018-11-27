@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {HoistComponent, XH, elemFactory} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -22,12 +22,13 @@ export class ClipboardButton extends Component {
         /** Spec object as expected by the clipboard.js library. */
         clipboardSpec: PT.shape({
             /** Function returning the text to copy. */
-            text: PT.function,
+            text: PT.func,
             /** Function returning the textarea or input DOM element whose value will be copied. */
-            target: PT.function,
+            target: PT.func,
             /** Action to take when pointing at a target element containing text - default is copy. */
             action: PT.oneOf(['copy', 'cut'])
         }).isRequired,
+
         icon: PT.element,
         text: PT.string,
         successMessage: PT.string

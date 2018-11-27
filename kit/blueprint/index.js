@@ -7,7 +7,6 @@
 
 import '@blueprintjs/core/lib/css/blueprint.css';
 import '@blueprintjs/datetime/lib/css/blueprint-datetime.css';
-import '@blueprintjs/select/lib/css/blueprint-select.css';
 import './styles.scss';
 
 import {FocusStyleManager} from '@blueprintjs/core';
@@ -18,6 +17,7 @@ export {
     ContextMenuTarget,
     Classes,
     HotkeysTarget,
+    PopoverInteractionKind,
     Position,
     Toaster
 } from '@blueprintjs/core';

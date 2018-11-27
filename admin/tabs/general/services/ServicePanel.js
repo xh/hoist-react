@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {grid} from '@xh/hoist/desktop/cmp/grid';
+import {grid} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
@@ -25,6 +25,7 @@ export class ServicePanel extends Component {
             tbar: this.renderToolbar(),
             item: grid({
                 model: this.model.gridModel,
+                hideHeaders: true,
                 agOptions: {
                     groupRowInnerRenderer: this.groupRowInnerRenderer
                 }
@@ -34,25 +35,19 @@ export class ServicePanel extends Component {
 
     renderToolbar() {
         const {model} = this,
-            {store, selModel} = model.gridModel;
+            {gridModel} = model;
         return toolbar(
             button({
                 icon: Icon.sync(),
                 text: 'Clear Caches',
                 onClick: this.onClearCachesClick,
-                disabled: selModel.isEmpty
+                disabled: gridModel.selModel.isEmpty
             }),
             toolbarSep(),
             refreshButton({model}),
             filler(),
-            storeCountLabel({
-                store,
-                unit: 'service'
-            }),
-            storeFilterField({
-                store,
-                fields: ['name']
-            })
+            storeCountLabel({gridModel, unit: 'service'}),
+            storeFilterField({gridModel})
         );
     }
 

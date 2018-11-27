@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {XH, HoistComponent} from '@xh/hoist/core';
 import {fragment} from '@xh/hoist/cmp/layout';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
-import {boolCheckCol} from '@xh/hoist/columns';
+import {boolCheckCol} from '@xh/hoist/cmp/grid/columns';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
@@ -34,13 +34,13 @@ export class ConfigPanel extends Component {
                     name: 'groupName',
                     label: 'Group',
                     lookupName: 'groupNames',
-                    required: true
+                    required: true,
+                    enableCreate: true
                 },
                 {
                     name: 'valueType',
                     label: 'Type',
                     lookupName: 'valueTypes',
-                    lookupStrict: true,
                     editable: 'onAdd',
                     required: true
                 },
@@ -80,17 +80,16 @@ export class ConfigPanel extends Component {
         columns: [
             {field: 'name', width: 200},
             {field: 'valueType', headerName: 'Type', width: 80, align: 'center'},
-            {field: 'value', width: 200, renderer: this.maskIfPwd},
+            {field: 'value', width: 200, renderer: this.maskIfPwd, tooltip: this.maskIfPwd},
             {field: 'clientVisible', ...boolCheckCol, headerName: 'Client?', width: 75},
             {field: 'groupName', headerName: 'Group', width: 100},
-            {field: 'note', minWidth: 60, flex: true}
+            {field: 'note', minWidth: 60, flex: true, tooltip: true}
         ],
         editors: [
             {field: 'name'},
             {field: 'groupName'},
             {field: 'valueType'},
-            // special handling to keep dynamically generated controls consistent
-            {field: 'value', type: 'boolSelect', height: 300},
+            {field: 'value'},
             {field: 'clientVisible'},
             {field: 'note', type: 'textarea'},
             {field: 'lastUpdated'},

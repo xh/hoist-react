@@ -6,33 +6,44 @@
  */
 
 import {Component} from 'react';
-import {PropTypes as PT} from 'prop-types';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import PT from 'prop-types';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {button as bpButton} from '@xh/hoist/kit/blueprint';
 
 /**
- * Wrapper around Blueprint's Button component.
- * Hoist's most basic button accepts any props supported by Blueprint's Button.
+ * Wrapper around Blueprint's Button component. Defaults to the `minimal` style for reduced chrome
+ * and adds LayoutSupport for top-level sizing and margin/padding props.
+ *
+ * Relays all other props supported by Blueprint's button.
  */
 @HoistComponent
+@LayoutSupport
 export class Button extends Component {
 
     static propTypes = {
         icon: PT.element,
-        text: PT.string,
-        onClick: PT.func
+        minimal: PT.bool,
+        onClick: PT.func,
+        text: PT.string
     };
 
     baseClassName = 'xh-button';
 
     render() {
-        const {icon, text, onClick, ...rest} = this.props;
+        const {icon, text, onClick, minimal = true, style, ...rest} = this.getNonLayoutProps();
         return bpButton({
             icon,
-            text,
+            minimal,
             onClick,
+            text,
+
+            style: {
+                ...style,
+                ...this.getLayoutProps()
+            },
+
             ...rest,
-            className: this.getClassName()
+            className: this.getClassName(minimal ? 'xh-button--minimal' : '')
         });
     }
 

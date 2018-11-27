@@ -12,7 +12,7 @@ import {pluralize} from '@xh/hoist/utils/js';
 import {XH, HoistModel} from '@xh/hoist/core';
 import {LocalStore} from '@xh/hoist/data';
 import {p} from '@xh/hoist/cmp/layout';
-import {GridModel} from '@xh/hoist/desktop/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {Icon} from '@xh/hoist/icon';
 import {actionCol} from '@xh/hoist/desktop/columns';
@@ -33,7 +33,11 @@ export class ConfigDifferModel  {
     applyRemoteAction = {
         text: 'Apply Remote',
         icon: Icon.cloudDownload(),
-        actionFn: (action, rec, selection) => this.confirmApplyRemote(selection),
+        // Account for use in both action column (record only) and context menu (selectedRecords).
+        actionFn: ({record, selectedRecords}) => {
+            const selection = selectedRecords || [record];
+            this.confirmApplyRemote(selection);
+        },
         recordsRequired: true
     };
 
@@ -49,7 +53,6 @@ export class ConfigDifferModel  {
                 name: 'differ',
                 filter: (it) => it.status !== 'Identical'
             }),
-            emptyText: 'Please enter remote host for comparison',
             selModel: 'multiple',
             columns: [
                 {field: 'name', width: 200},
@@ -106,7 +109,15 @@ export class ConfigDifferModel  {
             this.processResponse(resp);
         } catch (e) {
             this.processFailedLoad();
-            XH.handleException(e, {showAsError: false, logOnServer: false});
+            if (e.httpStatus == 401) {
+                XH.alert({
+                    title: 'Access Denied',
+                    icon: Icon.accessDenied(),
+                    message: 'Access denied when querying configs. Are you logged in to an account with admin rights on the remote instance?'
+                });
+            } else {
+                XH.handleException(e, {showAsError: false, logOnServer: false});
+            }
         }
     }
 

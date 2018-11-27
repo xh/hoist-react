@@ -6,12 +6,12 @@
  */
 
 import ReactDOM from 'react-dom';
-import {flatten, uniqueId} from 'lodash';
+import {camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
 
-import {elem, HoistModel, AppState} from '@xh/hoist/core';
+import {elem, AppState, AppSpec, EventSupport, ReactiveSupport} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {observable, action} from '@xh/hoist/mobx';
-import {never, wait} from '@xh/hoist/promise';
+import {never, wait, allSettled} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
 
 import {
@@ -29,14 +29,11 @@ import {AppContainerModel} from './appcontainer/AppContainerModel';
 import {RouterModel} from './RouterModel';
 import {ExceptionHandler} from './ExceptionHandler';
 
-import {initServicesAsync} from './HoistService';
-
 import '../styles/XH.scss';
 
-// noinspection JSUnresolvedVariable
 
 /**
- * Top-level Singleton model for Hoist.  This is the main entry point for the API.
+ * Top-level Singleton model for Hoist. This is the main entry point for the API.
  *
  * Provides access to the built-in Hoist services, metadata about the application and environment,
  * and convenience aliases to the most common framework operations. It also maintains key observable
@@ -44,8 +41,11 @@ import '../styles/XH.scss';
  *
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
  */
-@HoistModel
+@EventSupport
+@ReactiveSupport
 class XHClass {
+
+    _initCalled = false;
 
     //------------------------------------------------------------------
     // Metadata
@@ -55,7 +55,7 @@ class XHClass {
     /** Short internal code for the application. */
     appCode = xhAppCode;
 
-    /** User-facing display name for the application. */
+    /** User-facing display name for the application. See also `XH.clientAppName`. */
     appName = xhAppName;
 
     /** SemVer or Snapshot version of the client build. */
@@ -71,26 +71,39 @@ class XHClass {
     isDevelopmentMode = xhIsDevelopmentMode;
 
     //---------------------------
-    // Services + aliased methods
+    // Hoist Services
     //---------------------------
-    configService = new ConfigService();
-    environmentService = new EnvironmentService();
-    fetchService = new FetchService();
-    identityService = new IdentityService();
-    idleService = new IdleService();
-    localStorageService = new LocalStorageService();
-    prefService = new PrefService();
-    trackService = new TrackService();
+    /** @member {ConfigService} */
+    configService;
+    /** @member {EnvironmentService} */
+    environmentService;
+    /** @member {FetchService} */
+    fetchService;
+    /** @member {IdentityService} */
+    identityService;
+    /** @member {IdleService} */
+    idleService;
+    /** @member {PrefService} */
+    prefService;
+    /** @member {TrackService} */
+    trackService;
 
+    //---------------------------
+    // Aliased methods
+    //---------------------------
     track(opts)                 {return this.trackService.track(opts)}
     fetch(opts)                 {return this.fetchService.fetch(opts)}
     fetchJson(opts)             {return this.fetchService.fetchJson(opts)}
-    getUser()                   {return this.identityService.getUser()}
-    getUsername()               {return this.identityService.getUsername()}
     getConf(key, defaultVal)    {return this.configService.get(key, defaultVal)}
     getPref(key, defaultVal)    {return this.prefService.get(key, defaultVal)}
     setPref(key, val)           {return this.prefService.set(key, val)}
     getEnv(key)                 {return this.environmentService.get(key)}
+
+    getUser()                   {return this.identityService ? this.identityService.getUser() : null}
+    getUsername()               {return this.identityService ? this.identityService.getUsername() : null}
+
+    get isMobile()              {return this.appSpec.isMobile}
+    get clientAppName()         {return this.appSpec.clientAppName}
 
     //-------------------------------
     // Models
@@ -103,36 +116,60 @@ class XHClass {
     //-----------------------------
     exceptionHandler = new ExceptionHandler();
 
-    /** State of app -- see AppState for valid values. */
+    /** State of app - see AppState for valid values. */
     @observable appState = AppState.PRE_AUTH;
+
+    /**
+     * Is Application running?
+     * Observable shortcut for appState == AppState.RUNNING.
+     */
+    get appIsRunning() {return this.appState === AppState.RUNNING}
 
     /** Currently authenticated user. */
     @observable authUsername = null;
 
-    /** Currently running HoistApp - set in `renderApp()` below. */
-    app = null;
+    /** Root level HoistAppModel. */
+    appModel = null;
+
+    /**
+     * Specifications for this application, provided in call to `XH.renderApp()`.
+     * @member {AppSpec}
+     */
+    appSpec = null;
 
     /**
      * Main entry point. Initialize and render application code.
      *
-     * @param {Object} app - object containing main application state and logic.
-     *      Should be an instance of a class decorated with @HoistApp.
+     * @param {(AppSpec|Object)} appSpec - specifications for this application.
+     *      Should be an AppSpec, or a config for one.
      */
-    renderApp(app) {
-        this.app = app;
-        const {componentClass, containerClass} = app;
-        throwIf(!componentClass, 'A HoistApp must define a componentClass getter to specify its top-level component.');
-        throwIf(!containerClass, 'A HoistApp must define a containerClass that it should be hosted within.');
+    renderApp(appSpec) {
+        this.appSpec = appSpec instanceof AppSpec ? appSpec : new AppSpec(appSpec);
+        const rootView = elem(appSpec.containerClass, {model: this.appContainerModel});
+        ReactDOM.render(rootView, document.getElementById('xh-root'));
+    }
 
-        const rootView = elem(
-            containerClass,
-            {
-                model: this.appContainerModel,
-                item: elem(componentClass, {model: app})
-            }
-        );
-
-        ReactDOM.render(rootView, document.getElementById('root'));
+    /**
+     * Install HoistServices on this object.
+     *
+     * @param {...Object} serviceClasses - Classes decorated with @HoistService
+     *
+     * This method will create, initialize, and install the services classes listed on XH.
+     * All services will be initialized concurrently. To guarantee execution order of service
+     * initialization, make multiple calls to this method with await.
+     *
+     * Note that the instantiated services will be placed directly on the XH object for easy access.
+     * Therefore applications should choose a unique name of the form xxxService to avoid naming
+     * collisions. If naming collisions are detected, an error will be thrown.
+     */
+    async installServicesAsync(...serviceClasses) {
+        const svcs = serviceClasses.map(serviceClass => new serviceClass());
+        await this.initServicesInternalAsync(svcs);
+        svcs.forEach(svc => {
+            const name = camelCase(svc.constructor.name);
+            throwIf(this[name], `Service cannot be installed. Property '${name}' already exists on XH object.`);
+            this[name] = svc;
+        });
     }
 
     /**
@@ -343,24 +380,44 @@ class XHClass {
     // Framework Methods
     //---------------------------------
     /**
-     * Called when application mounted in order to trigger initial authentication and
-     * initialization of framework and application.
-     * Used by framework. Not intended for application use.
+     * Called when application container first mounted in order to trigger initial
+     * authentication and initialization of framework and application.
+     *
+     * Not intended for application use.
      */
     async initAsync() {
-        const S = AppState;
+
+        // Avoid multiple calls, which can occur if AppContainer remounted.
+        if (this._initCalled) return;
+        this._initCalled = true;
+
+        const S = AppState,
+            {appSpec} = this;
+
+        if (appSpec.trackAppLoad) this.trackLoad();
+
         // Add xh-app class to body element to power Hoist CSS selectors
         document.body.classList.add('xh-app');
 
         try {
+            await this.installServicesAsync(FetchService, LocalStorageService);
+            await this.installServicesAsync(TrackService, IdleService);
+
+            // Special handling for EnvironmentService, which makes the first fetch back to the Grails layer.
+            try {
+                await this.installServicesAsync(EnvironmentService);
+            } catch (e) {
+                throw `Unable to load environment info - is the server running and reachable? (${e.message})`;
+            }
+
             this.setAppState(S.PRE_AUTH);
 
             // Check if user has already been authenticated (prior login, SSO)...
             const userIsAuthenticated = await this.getAuthStatusFromServerAsync();
-
+            
             // ...if not, throw in SSO mode (unexpected error case) or trigger a login prompt.
             if (!userIsAuthenticated) {
-                throwIf(this.app.requireSSO, 'Failed to authenticate user via SSO.');
+                throwIf(appSpec.isSSO, 'Failed to authenticate user via SSO.');
                 this.setAppState(S.LOGIN_REQUIRED);
                 return;
             }
@@ -377,7 +434,9 @@ class XHClass {
     /**
      * Complete initialization. Called after the client has confirmed that the user is generally
      * authenticated and known to the server (regardless of application roles at this point).
-     * Used by framework. Not intended for application use.
+     * Used by framework.
+     *
+     * Not intended for application use.
      */
     @action
     async completeInitAsync() {
@@ -385,20 +444,22 @@ class XHClass {
 
         this.setAppState(S.INITIALIZING);
         try {
-            await this.initServicesAsync();
+            await this.installServicesAsync(IdentityService);
+            await this.installServicesAsync(PrefService, ConfigService);
             this.initModels();
 
             // Delay to workaround hot-reload styling issues in dev.
             await wait(XH.isDevelopmentMode ? 300 : 1);
 
-            const access = this.app.checkAccess(XH.getUser());
+            const access = this.checkAccess();
             if (!access.hasAccess) {
                 this.acm.showAccessDenied(access.message || 'Access denied.');
                 this.setAppState(S.ACCESS_DENIED);
                 return;
             }
 
-            await this.app.initAsync();
+            this.appModel = new this.appSpec.modelClass();
+            await this.appModel.initAsync();
             this.startRouter();
             this.setAppState(S.RUNNING);
         } catch (e) {
@@ -410,6 +471,20 @@ class XHClass {
     //------------------------
     // Implementation
     //------------------------
+    checkAccess() {
+        const user = XH.getUser(),
+            {checkAccess} = this.appSpec;
+
+        if (isString(checkAccess)) {
+            return user.hasRole(checkAccess) ?
+                {hasAccess: true} :
+                {hasAccess: false, message: `User needs the role "${checkAccess}" to access this application.`};
+        } else {
+            const ret = checkAccess(user);
+            return isBoolean(ret) ? {hasAccess: ret} : ret;
+        }
+    }
+
     async getAuthStatusFromServerAsync() {
         return await this.fetchService
             .fetchJson({url: 'xh/authStatus'})
@@ -422,49 +497,62 @@ class XHClass {
             });
     }
 
-    async initServicesAsync() {
-        await initServicesAsync(
-            this.fetchService,
-            this.localStorageService
-        );
-        await initServicesAsync(
-            this.identityService
-        );
-        await initServicesAsync(
-            this.configService,
-            this.prefService
-        );
-        await initServicesAsync(
-            this.environmentService,
-            this.idleService,
-            this.trackService
-        );
-    }
-
     initModels() {
         this.acm.init();
     }
 
     startRouter() {
-        this.router.add(this.app.getRoutes());
+        this.router.add(this.appModel.getRoutes());
         this.router.start();
     }
 
     get acm() {return this.appContainerModel}
 
-    destroy() {
-        this.safeDestroy(
-            this.appContainerModel,
-            this.routerModel,
+    async initServicesInternalAsync(svcs) {
+        const promises = svcs.map(it => it.initAsync()),
+            results = await allSettled(promises),
+            errs = results.filter(it => it.state === 'rejected');
 
-            this.configService,
-            this.environmentService,
-            this.fetchService,
-            this.identityService,
-            this.localStorageService,
-            this.prefService,
-            this.trackService
-        );
+        if (errs.length > 0) {
+            // Enhance entire result col w/class name, we care about errs only
+            results.forEach((it, idx) => {
+                it.name = svcs[idx].constructor.name;
+            });
+            const names = errs.map(it => it.name).join(', ');
+
+            throw this.exception({
+                message: 'Failed to initialize services: ' + names,
+                details: errs
+            });
+        }
+    }
+
+    trackLoad() {
+        let loadStarted = window._xhLoadTimestamp, // set in index.html
+            loginStarted = null,
+            loginElapsed = 0;
+
+        const disposer = this.addReaction({
+            track: () => this.appState,
+            run: (state) => {
+                const now = Date.now();
+                switch (state) {
+                    case AppState.RUNNING:
+                        XH.track({
+                            category: 'App',
+                            msg: `Loaded ${this.clientAppName}`,
+                            elapsed: now - loadStarted - loginElapsed
+                        });
+                        disposer();
+                        break;
+                    case AppState.LOGIN_REQUIRED:
+                        loginStarted = now;
+                        break;
+                    default:
+                        if (loginStarted) loginElapsed = now - loginStarted;
+                }
+            }
+        });
     }
 }
 export const XH = window.XH = new XHClass();

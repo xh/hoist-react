@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {grid} from '@xh/hoist/desktop/cmp/grid';
+import {grid} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -30,8 +30,8 @@ export class UserPanel extends Component {
     }
 
     renderToolbar() {
-        const model = this.model,
-            {store} = model.gridModel;
+        const {model} = this,
+            {gridModel} = model;
         return toolbar(
             switchInput({
                 model,
@@ -39,14 +39,8 @@ export class UserPanel extends Component {
                 label: 'Active only'
             }),
             filler(),
-            storeCountLabel({
-                store,
-                unit: 'user'
-            }),
-            storeFilterField({
-                store,
-                fields: ['username', 'email', 'displayName', 'roles']
-            })
+            storeCountLabel({gridModel, unit: 'user'}),
+            storeFilterField({gridModel})
         );
     }
 

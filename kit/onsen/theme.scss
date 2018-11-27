@@ -162,4 +162,9 @@ body.xh-app {
   .select-input--underbar:invalid {
     color: var(--xh-text-color);
   }
+
+  // Remove outlines
+  .tabbar__button:focus {
+    outline: none;
+  }
 }

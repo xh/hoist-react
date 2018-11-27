@@ -5,8 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistService} from '@xh/hoist/core';
-import {throwIf} from '@xh/hoist/utils/js';
-import {cloneDeep} from 'lodash';
+import {throwIf, deepFreeze} from '@xh/hoist/utils/js';
 
 /**
  * Service to read soft-configuration values.
@@ -29,10 +28,8 @@ export class ConfigService {
     _data = {};
 
     async initAsync() {
-        this._data = await XH.fetchJson({
-            url: 'xh/getConfig',
-            params: {clientUsername: XH.getUsername()}
-        });
+        this._data = await XH.fetchJson({url: 'xh/getConfig'});
+        deepFreeze(this._data);
     }
 
     /**
@@ -48,7 +45,7 @@ export class ConfigService {
         const data = this._data;
 
         if (data.hasOwnProperty(key)) {
-            return cloneDeep(data[key]);
+            return data[key];
         }
 
         throwIf(defaultValue === undefined, `Config key not found: '${key}'`);

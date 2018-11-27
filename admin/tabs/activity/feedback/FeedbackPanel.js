@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
 import {restGrid, RestGridModel, RestStore, deleteAction} from '@xh/hoist/desktop/cmp/rest';
-import {compactDateCol} from '@xh/hoist/columns';
+import {compactDateCol} from '@xh/hoist/cmp/grid/columns';
 import {usernameCol} from '@xh/hoist/admin/columns';
 
 @HoistComponent
@@ -55,7 +55,7 @@ export class FeedbackPanel extends Component {
         unit: 'report',
         filterFields: ['username', 'msg'],
         columns: [
-            {field: 'dateCreated', ...compactDateCol, width: 100},
+            {field: 'dateCreated', ...compactDateCol, width: 140},
             {field: 'username', ...usernameCol},
             {field: 'browser', width: 120},
             {field: 'device', width: 100},

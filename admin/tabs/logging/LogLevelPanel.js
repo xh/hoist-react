@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
-import {emptyFlexCol} from '@xh/hoist/columns';
+import {emptyFlexCol} from '@xh/hoist/cmp/grid/columns';
 
 @HoistComponent
 export class LogLevelPanel extends Component {
@@ -27,8 +27,7 @@ export class LogLevelPanel extends Component {
                 {
                     name: 'level',
                     label: 'Override',
-                    lookupName: 'levels',
-                    lookupStrict: true
+                    lookupName: 'levels'
                 },
                 {
                     name: 'defaultLevel',

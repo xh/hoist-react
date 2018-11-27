@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {buttonGroup} from '@xh/hoist/kit/blueprint';
+import {buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {recordActionButton} from '@xh/hoist/desktop/cmp/record/impl/RecordActionButton';
 import {RecordAction} from '@xh/hoist/data';
 import {isEmpty} from 'lodash';
@@ -26,8 +26,10 @@ import {actionColPad} from './Actions.scss';
  * column config as well as a `StoreContextMenu`. This offers the user two ways of accessing actions
  * without duplicating the action definitions.
  *
- * Finally, see the `calcActionColWidth` helper function exported below - this returns a pixel width
+ * See the `calcActionColWidth` helper function exported below - this returns a pixel width
  * for your column given a number of actions (accounting for button sizing and padding).
+ *
+ * Note that action columns will be empty for group rows.
  *
  * @see RecordAction
  */
@@ -39,9 +41,10 @@ export const actionCol = {
     sortable: false,
     resizable: false,
     chooserName: 'Actions',
-    chooserDescription: 'Record Actions',
     excludeFromExport: true,
-    elementRenderer: (value, {record, column}) => {
+    elementRenderer: (value, {record, column, agParams}) => {
+        if (agParams.node.group) return null;
+
         const {actions, actionsShowOnHoverOnly, gridModel} = column;
         if (isEmpty(actions)) return null;
 

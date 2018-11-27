@@ -6,6 +6,7 @@
  */
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {filler} from '@xh/hoist/cmp/layout';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {textArea} from '@xh/hoist/mobile/cmp/form';
@@ -35,6 +36,7 @@ export class FeedbackDialog extends Component {
                 field: 'message'
             }),
             buttons: [
+                filler(),
                 button({
                     text: 'Cancel',
                     modifier: 'quiet',

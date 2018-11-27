@@ -10,8 +10,9 @@
   > * {
     white-space: nowrap;
     flex-shrink: 0;
+
     &:not([class*='xh-no-pad']) {
-      margin-left: var(--xh-pad-px);
+      margin-left: var(--xh-tbar-item-pad-px);
     }
   }
 
@@ -28,14 +29,17 @@
     .xh-toolbar__separator {
       border-left: 1px solid var(--xh-tbar-separator-color);
       height: 20px;  // matches BluePrint navBarSeparator
+      margin-left: calc(var(--xh-tbar-item-pad) * 2px);
+      margin-right: var(--xh-tbar-item-pad-px);
     }
   }
 
   &--vertical {
+    width: 42px;
     padding: 0 var(--xh-pad-half-px) var(--xh-pad-px) var(--xh-pad-half-px);
 
     > *:not([class*='xh-no-pad']) {
-      margin-top: var(--xh-pad-px);
+      margin-top: var(--xh-tbar-item-pad-px);
       margin-left: 0;
     }
 

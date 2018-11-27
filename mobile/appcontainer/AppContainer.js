@@ -5,9 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {Children, Component} from 'react';
+import {Component} from 'react';
 import {observable, runInAction} from '@xh/hoist/mobx';
-import {HoistComponent, elemFactory, AppState, XH} from '@xh/hoist/core';
+import {HoistComponent, elem, elemFactory, AppState, XH} from '@xh/hoist/core';
 import {div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {menu} from '@xh/hoist/mobile/cmp/menu';
@@ -24,6 +24,9 @@ import {lockoutPanel} from './LockoutPanel';
 import {toastSource} from './ToastSource';
 import {messageSource} from './MessageSource';
 
+import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
+installMobileImpls({});
+
 /**
  * Top-level wrapper for Mobile applications.
  *
@@ -32,7 +35,7 @@ import {messageSource} from './MessageSource';
  * impersonation bar header, version bar footer, an app-wide load mask, a base context menu,
  * popup message support, and exception rendering.
  *
- * @see HoistApp.containerClass
+ * @see AppSpec.containerClass
  */
 @HoistComponent
 export class AppContainer extends Component {
@@ -75,7 +78,7 @@ export class AppContainer extends Component {
                     vframe(
                         impersonationBar({model: model.impersonationBarModel}),
                         updateBar({model}),
-                        frame(Children.only(this.props.children)),
+                        frame(elem(XH.appSpec.componentClass, {model: XH.appModel})),
                         versionBar({model}),
                         this.renderAppMenu()
                     ),
@@ -100,7 +103,7 @@ export class AppContainer extends Component {
     // Implementation
     //------------------------
     renderAppMenu() {
-        const model = XH.app.appMenuModel;
+        const model = XH.appModel.appMenuModel;
         if (!model) return null;
         return menu({
             model: model,

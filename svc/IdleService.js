@@ -16,7 +16,7 @@ import {debounce} from 'lodash';
  * system from unattended clients and/or as a "belt-and-suspenders" defence against memory
  * leaks or other performance issues that can arise with long-running sessions.
  *
- * This service consults the HoistApp `idleDetectionDisabled` getter, the `xhIdleTimeoutMins`
+ * This service consults the AppSpec `idleDetectionEnabled` property, the `xhIdleTimeoutMins`
  * soft-config, and the `xh.disableIdleDetection` user preference to determine if and when it
  * should suspend the app.
  *
@@ -27,23 +27,29 @@ export class IdleService {
 
     ACTIVITY_EVENTS = ['keydown', 'mousemove', 'mousedown', 'scroll'];
 
-    async initAsync() {
-        const timeout = XH.getConf('xhIdleTimeoutMins') * MINUTES,
-            appDisabled = XH.app.isMobile || XH.app.idleDetectionDisabled,
-            configDisabled = timeout <= 0,
-            userDisabled = XH.getPref('xhIdleDetectionDisabled');
+    constructor() {
+        this.addReaction({
+            when: () => XH.appIsRunning,
+            run: this.startMonitoring
+        });
+    }
 
-        if (!appDisabled && !configDisabled && !userDisabled) {
+    //------------------------
+    // Implementation
+    //------------------------
+    startMonitoring() {
+        const timeout = XH.getConf('xhIdleTimeoutMins') * MINUTES,
+            appEnabled = XH.appSpec.idleDetectionEnabled,
+            configEnabled = timeout > 0,
+            userEnabled = !XH.getPref('xhIdleDetectionDisabled');
+
+        if (appEnabled && configEnabled && userEnabled) {
             this.startCountdown = debounce(() => this.suspendApp(), timeout, {trailing: true});
             this.startCountdown();
             this.createAppListeners();
         }
     }
 
-
-    //------------------------
-    // Implementation
-    //------------------------
     createAppListeners() {
         this.ACTIVITY_EVENTS.forEach(e => addEventListener(e, this.startCountdown, true));
     }

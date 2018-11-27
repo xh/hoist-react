@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
 import {navbar, navbarGroup} from '@xh/hoist/kit/blueprint';
 import {optionsButton, feedbackButton, launchAdminButton, logoutButton, refreshButton, themeToggleButton} from '@xh/hoist/desktop/cmp/button';
@@ -26,34 +26,42 @@ import './AppBar.scss';
 @HoistComponent
 export class AppBar extends Component {
     static propTypes = {
-        /** Icon to display before the title. */
+
+        /** Icon to display to the left of the title. */
         icon: PT.element,
+
         /**
-         * Title to display to the left side of the AppBar. Defaults to the application name if not
-         * provided.
+         * Title to display to the left side of the AppBar. Defaults to XH.clientAppName.
          */
         title: PT.string,
+
         /** Items to be added to the left side of the AppBar, immediately after the title (or . */
         leftItems: PT.node,
+
         /** Items to be added to the right side of the AppBar, before the standard buttons. */
         rightItems: PT.node,
+
         /**
-         * Set to true to hide the Launch Admin button. Will be automatically hidden for users
+         * True to hide the Launch Admin button. Will be automatically hidden for users
          * without the HOIST_ADMIN role.
          */
         hideAdminButton: PT.bool,
-        /** Set to true to hide the Options button. */
+
+        /** True to hide the Options button. */
         hideOptionsButton: PT.bool,
-        /** Set to true to hide the Feedback button. */
+
+        /** True to hide the Feedback button. */
         hideFeedbackButton: PT.bool,
-        /** Set to true to hide the Theme Toggle button. */
+
+        /** True to hide the Theme Toggle button. */
         hideThemeButton: PT.bool,
+
         /**
-         * Set to true to hide the Logout button. Will be automatically hidden for applications with
-         * logout disabled.
+         * True to hide the Logout button (always hidden for SSO applications).
          */
         hideLogoutButton: PT.bool,
-        /** Set to true to hide the Refresh button. */
+
+        /** True to hide the Refresh button. */
         hideRefreshButton: PT.bool
     };
 
@@ -80,7 +88,7 @@ export class AppBar extends Component {
                     align: 'left',
                     items: [
                         icon,
-                        span({className: 'xh-appbar-title', item: title || XH.appName}),
+                        span({className: 'xh-appbar-title', item: title || XH.clientAppName}),
                         appBarSeparator({omit: isEmpty(leftItems)}),
                         ...leftItems || []
                     ]
@@ -97,7 +105,7 @@ export class AppBar extends Component {
                         refreshButton({
                             omit: hideRefreshButton,
                             intent: 'success',
-                            onClick: () => XH.app.requestRefresh(true)
+                            onClick: () => XH.appModel.requestRefresh(true)
                         })
                     ]
                 })
