@@ -2,17 +2,11 @@
   margin: 40px;
 
   &__fields {
-    margin-bottom: 40px;
-    border: var(--xh-border-solid);
-    border-radius: var(--xh-border-radius-px);
+    margin-bottom: 20px;
 
     .xh-input {
-      margin: 0;
+      margin: 0 0 8px;
       padding: 4px 8px;
-
-      &:not(:last-child) {
-        border-bottom: var(--xh-border-solid);
-      }
     }
   }
 

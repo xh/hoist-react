@@ -273,7 +273,7 @@ instantiates Hoist service singletons and installs references to these instances
 aliases on itself for the most common framework service calls, e.g. `XH.getConf()` as a shortcut to
 `XH.configService.get()`.
 
-#### HoistApp
+#### HoistAppModel
 
 Each client application must define a top-level Model class using
 [the specialized `@HoistAppModel` decorator](core/HoistAppModel.js). This decorator installs core Model
