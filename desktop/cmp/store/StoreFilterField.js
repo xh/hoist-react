@@ -88,6 +88,7 @@ export class StoreFilterField extends Component {
 
         throwIf(props.gridModel && props.store, "Cannot specify both 'gridModel' and 'store' props.");
         throwIf(props.includeFields && props.excludeFields, "Cannot specify both 'includeFields' and 'excludeFields' props.");
+        throwIf(!props.gridModel && !props.store && !props.includeFields, "Must specify one of 'gridModel', 'store', or 'includeFields'");
 
         const store = this.getActiveStore();
         if (store) {
@@ -192,9 +193,9 @@ export class StoreFilterField extends Component {
             store = this.getActiveStore();
 
         let ret = store ? store.fields.map(f => f.name) : [];
-        if (includeFields) ret = intersection(ret, includeFields);
+        if (includeFields) ret = store ? intersection(ret, includeFields) : includeFields;
         if (excludeFields) ret = without(ret, excludeFields);
-        
+
         if (gridModel) {
             const groupBy = gridModel.groupBy,
                 columns = gridModel.getLeafColumns();
