@@ -140,11 +140,11 @@ export class NumberInput extends HoistInput {
     }
 
     onBlur = () => {
-        let value = this.parseValue(this.internalValue.toString());
-        value = isNaN(value) ? null : value;
-        this.noteValueChange(value);
         wait(200).then(() => {
             if (!this.containsElement(document.activeElement)) {
+                let value = this.parseValue(this.internalValue.toString());
+                value = isNaN(value) ? null : value;
+                this.noteValueChange(value);
                 this.noteBlurred();
             }
         });
