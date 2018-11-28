@@ -93,7 +93,7 @@ export class NumberInput extends HoistInput {
         zeroPad: PT.bool
     };
 
-    static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/gi;
+    static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/i;
 
     baseClassName = 'xh-number-input';
 
