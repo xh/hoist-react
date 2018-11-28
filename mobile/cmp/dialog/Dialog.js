@@ -8,8 +8,6 @@ import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import {dialog as onsenDialog} from '@xh/hoist/kit/onsen';
-import {withDefault} from '@xh/hoist/utils/js';
-
 
 import './Dialog.scss';
 

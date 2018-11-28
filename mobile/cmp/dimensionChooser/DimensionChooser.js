@@ -87,7 +87,7 @@ export class DimensionChooser extends Component {
             {
                 content: this.renderSelectMenu(),
                 buttons: this.renderSelectButtons()
-            }
+            };
     }
 
     renderHistoryMenu() {
@@ -122,7 +122,7 @@ export class DimensionChooser extends Component {
                 icon: Icon.edit(),
                 onClick: () => model.showEditor()
             })
-        ]
+        ];
     }
 
     renderSelectMenu() {
