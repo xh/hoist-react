@@ -29,10 +29,6 @@ import {withDefault} from '@xh/hoist/utils/js';
 export class DimensionChooser extends Component {
 
     static propTypes = {
-
-        /** Width in pixels of the target button (that triggers show of popover). */
-        buttonWidth: PT.number,
-
         /** Controlling model instance. */
         model: PT.instanceOf(DimensionChooserModel).isRequired,
 
@@ -69,11 +65,12 @@ export class DimensionChooser extends Component {
         const {model} = this,
             {isMenuOpen} = model;
         if (!model) return null;
+        const {content, buttons} = this.getDialogProps();
         return dialog({
             className: 'xh-dim-dialog',
             title: 'Group By',
-            content: this.renderDialogContent(),
-            buttons: this.renderDialogButtons(),
+            content,
+            buttons,
             isOpen: isMenuOpen,
             onCancel: () => model.commitPendingValue(),
             width: 260,
@@ -81,38 +78,16 @@ export class DimensionChooser extends Component {
         });
     }
 
-    renderDialogContent() {
+    getDialogProps() {
         return this.model.activeMode === 'history' ?
-            this.renderHistoryMenu() :
-            this.renderSelectMenu();
-    }
-
-    renderDialogButtons() {
-        const {model} = this,
-            {history, activeMode} = model;
-
-        return activeMode == 'history' ?
-            [
-                button({
-                    icon: Icon.x(),
-                    onClick: () => this.model.closeMenu()
-                }),
-                button({
-                    icon: Icon.edit(),
-                    onClick: () => model.showEditor()
-                })
-            ] :
-            [
-                button({
-                    icon: Icon.arrowLeft(),
-                    omit: isEmpty(history),
-                    onClick: () => model.showHistory()
-                }),
-                button({
-                    icon: Icon.check({className: 'xh-green'}),
-                    onClick: () => model.commitPendingValue()
-                })
-            ];
+            {
+                content: this.renderHistoryMenu(),
+                buttons: this.renderHistoryButtons()
+            } :
+            {
+                content: this.renderSelectMenu(),
+                buttons: this.renderSelectButtons()
+            }
     }
 
     renderHistoryMenu() {
@@ -134,6 +109,20 @@ export class DimensionChooser extends Component {
         return div(
             ...historyItems
         );
+    }
+
+    renderHistoryButtons() {
+        const {model} = this;
+        return [
+            button({
+                icon: Icon.x(),
+                onClick: () => model.closeMenu()
+            }),
+            button({
+                icon: Icon.edit(),
+                onClick: () => model.showEditor()
+            })
+        ]
     }
 
     renderSelectMenu() {
@@ -191,6 +180,21 @@ export class DimensionChooser extends Component {
                 icon: Icon.add({className: 'xh-green'}),
                 onClick: () => model.setShowAddSelect(true)
             });
+    }
+
+    renderSelectButtons() {
+        const {model} = this;
+        return [
+            button({
+                icon: Icon.arrowLeft(),
+                omit: isEmpty(history),
+                onClick: () => model.showHistory()
+            }),
+            button({
+                icon: Icon.check({className: 'xh-green'}),
+                onClick: () => model.commitPendingValue()
+            })
+        ];
     }
 }
 
