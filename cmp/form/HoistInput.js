@@ -248,4 +248,5 @@ export class HoistInput extends Component {
 
         return classNames('xh-input', validityClass, this.baseClassName, this.props.className, ...extraClassNames);
     }
+
 }
