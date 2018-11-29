@@ -6,6 +6,7 @@
  */
 
 import PT from 'prop-types';
+import {isNumber, isNaN} from 'lodash';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {fmtNumber} from '@xh/hoist/format';
@@ -139,15 +140,9 @@ export class NumberInput extends HoistInput {
         this.noteValueChange(valAsString);
     }
 
-    onBlur = () => {
-        wait(200).then(() => {
-            if (!this.containsElement(document.activeElement)) {
-                let value = this.parseValue(this.internalValue.toString());
-                value = isNaN(value) ? null : value;
-                this.noteValueChange(value);
-                this.noteBlurred();
-            }
-        });
+    toExternal() {
+        const val = this.parseValue(this.internalValue);
+        return isNaN(val) ? null : val;
     }
 
     onKeyPress = (ev) => {
@@ -165,6 +160,8 @@ export class NumberInput extends HoistInput {
     }
 
     parseValue(value) {
+        if (isNumber(value)) return value;
+
         value = value.replace(/,/g, '');
 
         if (NumberInput.shorthandValidator.test(value)) {
