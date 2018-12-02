@@ -216,7 +216,6 @@ export class HoistInput extends Component {
     }
 
     onBlur = () => {
-        console.log('blurred');
         // Focus very frequently will be jumping internally from element to element *within* a control.
         // This delay prevents extraneous 'flapping' of focus state at this level.
         wait(200).then(() => {
