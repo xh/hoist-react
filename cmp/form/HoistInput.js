@@ -204,7 +204,6 @@ export class HoistInput extends Component {
      */
     @action
     noteBlurred() {
-        console.log('blurred');
         if (!this.hasFocus) return;
 
         this.doCommit();
