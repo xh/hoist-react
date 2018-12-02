@@ -165,17 +165,22 @@ export class HoistInput extends Component {
         let externalValue = this.externalValue,
             newValue = this.toExternal(this.internalValue);
 
-        if (isEqual(newValue, externalValue)) return;
+        // If there is an effective change, we need to update bound model and fire it.
+        if (!isEqual(newValue, externalValue)) {
 
-        if (model && field) {
-            const setterName = `set${upperFirst(field)}`;
-            throwIf(!isFunction(model[setterName]), `Required function '${setterName}()' not found on bound model`);
+            if (model && field) {
+                const setterName = `set${upperFirst(field)}`;
+                throwIf(!isFunction(model[setterName]), `Required function '${setterName}()' not found on bound model`);
 
-            model[setterName](newValue);
-            newValue = this.externalValue; // Round trip this, in case model decides to intervene.
+                model[setterName](newValue);
+                newValue = this.externalValue; // Re-read effective value after set in case model setter had an opinion
+            }
+
+            if (onCommit) onCommit(newValue);
         }
 
-        if (onCommit) onCommit(newValue);
+        // ... and always round trip back to the internal representation.
+        // (Commit should flush any inconsistencies)
         this.setInternalValue(this.toInternal(newValue));
     }
 
@@ -199,6 +204,7 @@ export class HoistInput extends Component {
      */
     @action
     noteBlurred() {
+        console.log('blurred');
         if (!this.hasFocus) return;
 
         this.doCommit();
@@ -210,6 +216,7 @@ export class HoistInput extends Component {
     }
 
     onBlur = () => {
+        console.log('blurred');
         // Focus very frequently will be jumping internally from element to element *within* a control.
         // This delay prevents extraneous 'flapping' of focus state at this level.
         wait(200).then(() => {
