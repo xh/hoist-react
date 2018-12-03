@@ -87,12 +87,14 @@ export class HoistInput extends Component {
     constructor(props) {
         super(props);
 
-        // Ensure that updates to the external value - sourced from either model or props - are
-        // always flushed to the internal value of this control and reflected in renderValue.
         this.addReaction({
             track: () => this.externalValue,
             run: (externalVal) => {
-                this.setInternalValue(this.toInternal(externalVal));
+                // Ensure that updates to the external value - are always flushed to the internal value but
+                // only change internal if not already a valid representation of external to avoid flapping
+                if (this.toExternal(this.internalValue) != externalVal) {
+                    this.setInternalValue(this.toInternal(externalVal));
+                }
             },
             fireImmediately: true
         });
@@ -153,7 +155,7 @@ export class HoistInput extends Component {
 
         this.setInternalValue(val);
         if (onChange) onChange(this.toExternal(val));
-        if (this.commitOnChange) this.doCommit();
+        if (this.commitOnChange) this.doCommitInternal();
     }
 
     /**
@@ -161,27 +163,10 @@ export class HoistInput extends Component {
      * Fire commit handlers and synchronize state.
      */
     doCommit() {
-        const {onCommit, model, field} = this.props;
-        let externalValue = this.externalValue,
-            newValue = this.toExternal(this.internalValue);
+        this.doCommitInternal();
+        // After explicit commit, we want to fully round-trip external value to get canonical value.
+        this.setInternalValue(this.toInternal(this.externalValue));
 
-        // If there is an effective change, we need to update bound model and fire it.
-        if (!isEqual(newValue, externalValue)) {
-
-            if (model && field) {
-                const setterName = `set${upperFirst(field)}`;
-                throwIf(!isFunction(model[setterName]), `Required function '${setterName}()' not found on bound model`);
-
-                model[setterName](newValue);
-                newValue = this.externalValue; // Re-read effective value after set in case model setter had an opinion
-            }
-
-            if (onCommit) onCommit(newValue);
-        }
-
-        // ... and always round trip back to the internal representation.
-        // (Commit should flush any inconsistencies)
-        this.setInternalValue(this.toInternal(newValue));
     }
 
     /** Hook to convert an internal representation of the value to an appropriate external one. */
@@ -192,6 +177,24 @@ export class HoistInput extends Component {
     /** Hook to convert an external representation of the value to an appropriate internal one. */
     toInternal(external) {
         return external;
+    }
+
+    doCommitInternal() {
+        const {onCommit, model, field} = this.props;
+        let externalValue = this.externalValue,
+            newValue = this.toExternal(this.internalValue);
+
+        if (isEqual(newValue, externalValue)) return;
+
+        if (model && field) {
+            const setterName = `set${upperFirst(field)}`;
+            throwIf(!isFunction(model[setterName]), `Required function '${setterName}()' not found on bound model`);
+
+            model[setterName](newValue);
+            newValue = this.externalValue; // Re-read effective value after set in case model setter had an opinion
+        }
+
+        if (onCommit) onCommit(newValue);
     }
 
 

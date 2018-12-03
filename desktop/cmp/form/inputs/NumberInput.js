@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {isNumber, isNaN} from 'lodash';
+import {isNumber, isNaN, isEmpty} from 'lodash';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {fmtNumber} from '@xh/hoist/format';
@@ -160,6 +160,7 @@ export class NumberInput extends HoistInput {
     }
 
     parseValue(value) {
+        if (isEmpty(value)) return null;
         if (isNumber(value)) return value;
 
         value = value.replace(/,/g, '');
