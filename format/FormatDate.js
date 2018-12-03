@@ -33,6 +33,7 @@ const INVALID_DATE = moment(null).format();
  *      Not typically used by applications.
  */
 export function fmtDate(v, opts = {}) {
+    if (v == null) return '';
     if (isString(v)) return v;
     if (isString(opts)) opts = {fmt: opts};
 
