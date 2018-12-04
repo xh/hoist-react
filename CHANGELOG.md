@@ -5,6 +5,10 @@
 ### 🎁 New Features
 
 * `Toolbar` and `ToolbarSeparator` have been added to the mobile component library.
+* `PanelSizingModel` has the following new optional properties, all of which are `true` by default:
+  * `showSplitter` - controls visibility of the splitter bar on the outside edge of the panel
+  * `showSplitterCollapseButton` - controls visibility of the collapse button on the splitter bar
+  * `showHeaderCollapseButton` - controls visibility of a (new) collapse button in the `Panel` header
 
 ## v16.0.0
 
