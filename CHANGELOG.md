@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### 🎁 New Features
+
+* `Toolbar` and `ToolbarSeparator` have been added to the mobile component library.
+
 ## v16.0.0
 
 ### 🎁 New Features
