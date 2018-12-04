@@ -116,6 +116,14 @@
 // Buttons
 //------------------------
 .bp3-button {
+  // Use padding vars, tighter default LR padding (driven in part by our minimal mode default).
+  padding: var(--xh-pad-half-px) var(--xh-pad-half-px);
+
+  // Except in button groups, which are already compressing buttons more closely together.
+  .bp3-button-group & {
+    padding: var(--xh-pad-half-px) var(--xh-pad-px);
+  }
+
   border-radius: var(--xh-border-radius-px);
   font-size: var(--xh-button-font-size-px);
   white-space: nowrap;
@@ -206,19 +214,12 @@
   -webkit-font-smoothing: antialiased;
   z-index: 1;
   margin: 7px;
-  color: var(--xh-blue-gray);
+  color: var(--xh-text-color-muted);
 }
 
-.bp3-dark .bp3-input-group svg:not(.bp3-icon) {
-  color: var(--xh-input-text-color);
-}
-
+// Avoid misaligned rightIcon within inputs.
 .bp3-button svg:not(.bp3-icon):first-child:last-child, .bp3-button .bp3-spinner + svg:not(.bp3-icon):last-child {
   margin-left: 0;
-}
-
-.bp3-input-group .bp3-input:not(:focus) + .bp3-button.bp3-minimal:not(:hover):not(:focus) svg:not(.bp3-icon), .bp3-input-group .bp3-input:not(:focus) + .bp3-input-action .bp3-button.bp3-minimal:not(:hover):not(:focus) svg:not(.bp3-icon) {
-  color: var(--xh-blue-gray);
 }
 
 // Controls ship with default bottom and (inline) right margins. We expose variables

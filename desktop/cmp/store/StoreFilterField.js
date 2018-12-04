@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {debounce, escapeRegExp, isEmpty, intersection, without} from 'lodash';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
@@ -15,7 +15,7 @@ import {textInput} from '@xh/hoist/desktop/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {BaseStore} from '@xh/hoist/data';
-import {withDefault, throwIf} from '@xh/hoist/utils/js';
+import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
 
 /**
  * A text input Component that generates a filter function based on simple word-boundary matching of
@@ -88,6 +88,7 @@ export class StoreFilterField extends Component {
 
         throwIf(props.gridModel && props.store, "Cannot specify both 'gridModel' and 'store' props.");
         throwIf(props.includeFields && props.excludeFields, "Cannot specify both 'includeFields' and 'excludeFields' props.");
+        warnIf(!props.gridModel && !props.store && isEmpty(props.includeFields), "Must specify one of 'gridModel', 'store', or 'includeFields' or the filter will be a no-op");
 
         const store = this.getActiveStore();
         if (store) {
@@ -113,7 +114,7 @@ export class StoreFilterField extends Component {
         return textInput({
             value: this.value,
 
-            leftIcon: Icon.filter({style: {opacity: 0.5}}),
+            leftIcon: Icon.filter(),
             rightElement: button({
                 icon: Icon.x(),
                 minimal: true,
@@ -192,9 +193,9 @@ export class StoreFilterField extends Component {
             store = this.getActiveStore();
 
         let ret = store ? store.fields.map(f => f.name) : [];
-        if (includeFields) ret = intersection(ret, includeFields);
+        if (includeFields) ret = store ? intersection(ret, includeFields) : includeFields;
         if (excludeFields) ret = without(ret, excludeFields);
-        
+
         if (gridModel) {
             const groupBy = gridModel.groupBy,
                 columns = gridModel.getLeafColumns();

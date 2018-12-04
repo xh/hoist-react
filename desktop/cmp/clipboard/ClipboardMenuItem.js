@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {defaultsDeep} from 'lodash';
 import {clipboardButton} from './ClipboardButton';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';

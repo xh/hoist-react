@@ -36,9 +36,13 @@ export function ReactiveSupport(C) {
          * observables should be tracked and trigger a reaction, regardless of their use within
          * the function itself. See addReaction() below for that functionality.
          *
+         * This autorun will be disposed of automatically when this object is destroyed. It can also be
+         * ended/disposed of manually using the native mobx disposer function returned by this method.
+         *
          * @param {(Object|function)} conf - function to run, or a config object containing options
          *      accepted by MobX autorun() API as well as argument below.
          * @param {function} [conf.run] - function to run - first arg to underlying autorun() call.
+         * @returns {function} - disposer to manually dispose of the created autorun.
          */
         addAutorun(conf) {
             let run, options;
@@ -50,7 +54,7 @@ export function ReactiveSupport(C) {
             }
             this.validateMobxOptions(options);
             run = run.bind(this);
-            this.addMobxDisposer(mobxAutorun(run, options));
+            return this.addMobxDisposer(mobxAutorun(run, options));
         },
 
 
@@ -73,6 +77,9 @@ export function ReactiveSupport(C) {
          * (commonly) ignore. This helps to clarify that the track function is only enumerating
          * the observables to be watched, and not necessarily generating or transforming values.
          *
+         *  This reaction will be disposed of automatically when this object is destroyed. It can also be
+         *  ended/disposed of manually using the native mobx disposer function returned by this method.
+         *
          * @param {Object} conf - configuration of reaction, containing options accepted by MobX
          *      reaction() API, as well as arguments below.
          * @param {function} [conf.track] - function returning data to observe - first arg to the
@@ -80,6 +87,7 @@ export function ReactiveSupport(C) {
          * @param {function} [conf.when] - function returning data to observe - first arg to the
          *      underlying when() call. Specify this or `track`.
          * @param {function} conf.run - function to run - second arg to underlying reaction()/when() call.
+         * @returns {function} - disposer to manually dispose of the created reaction.
          */
         addReaction({track, when, run, ...options}) {
             throwIf(
@@ -88,11 +96,9 @@ export function ReactiveSupport(C) {
             );
             this.validateMobxOptions(options);
 
-            if (track) {
-                this.addMobxDisposer(mobxReaction(track, run.bind(this), options));
-            } else {
+            return track ?
+                this.addMobxDisposer(mobxReaction(track, run.bind(this), options)):
                 this.addMobxDisposer(mobxWhen(when, run.bind(this), options));
-            }
         },
 
 
@@ -102,6 +108,7 @@ export function ReactiveSupport(C) {
         addMobxDisposer(disposer) {
             this._disposers = this._disposers || [];
             this._disposers.push(disposer);
+            return disposer;
         },
 
         validateMobxOptions(options) {

@@ -6,7 +6,7 @@
  */
 import React, {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {HoistInput} from '@xh/hoist/cmp/form';
 import {label as labelCmp} from '@xh/hoist/mobile/cmp/form';
@@ -31,8 +31,10 @@ export class FormField extends Component {
     static propTypes = {
         /** Bound Model. */
         model: PT.object,
+
         /** Name of bound property on Model. */
         field: PT.string,
+
         /**
          * Label for form field.
          * Defaults to Field displayName if used with @FieldSupport. Set to null to hide label.

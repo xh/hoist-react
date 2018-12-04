@@ -40,32 +40,27 @@
       }
     }
 
-    .bp3-popover-target {
-      .bp3-control-indicator {
-        box-shadow: var(--xh-form-field-invalid-box-shadow) !important;
-      }
-
-      .bp3-button-group button.bp3-button {
-        box-shadow: var(--xh-form-field-invalid-box-shadow) !important;
-      }
-
-      span.bp3-slider-handle {
-        box-shadow: var(--xh-form-field-invalid-box-shadow) !important;
-      }
-
-      div.bp3-multi-select {
-        border: var(--xh-form-field-invalid-border) !important;
-        input {
-          border: none;
-        }
-      }
+    .xh-check-box span {
+      box-shadow: var(--xh-form-field-invalid-box-shadow);
     }
 
-    .bp3-input-group > svg {
+    .xh-button-group-input button.xh-button {
+      box-shadow: var(--xh-form-field-invalid-box-shadow);
+    }
+
+    .xh-slider span {
+      box-shadow: var(--xh-form-field-invalid-box-shadow);
+    }
+
+    div.xh-select__control {
+      border: var(--xh-form-field-invalid-border);
+    }
+
+    .xh-text-input > svg {
       color: var(--xh-intent-danger);
     }
 
-    textarea {
+    .xh-text-area.textarea {
       border: var(--xh-form-field-invalid-border) !important;
     }
   }
@@ -75,7 +70,7 @@
   }
 
   .xh-form-field-error-label {
-    color: var(--xh-red);
+    color: var(--xh-intent-danger);
   }
 }
 

@@ -24,6 +24,15 @@ import {IdleDialog} from './IdleDialog';
 import {ToastSource} from './ToastSource';
 
 
+import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
+import {colChooser, ColChooserModel} from '@xh/hoist/desktop/cmp/grid';
+import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
+
+installDesktopImpls({
+    colChooser,
+    ColChooserModel,
+    StoreContextMenu
+});
 /**
  * Top-level wrapper for Desktop applications.
  *
@@ -31,6 +40,8 @@ import {ToastSource} from './ToastSource';
  * root Component. Provides a standard viewport that includes standard UI elements such as an
  * impersonation bar header, version bar footer, an app-wide load mask, a base context menu,
  * popup message support, and exception rendering.
+ *
+ * This component will kick off the Hoist application lifecycle when mounted.
  */
 @HoistComponent
 export class AppContainer extends Component {

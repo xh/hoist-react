@@ -4,10 +4,10 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {cloneDeep, debounce, isNil, isEqual, isEmpty, pickBy, map} from 'lodash';
+import {debounce, isNil, isEqual, isEmpty, pickBy, map, cloneDeep, forEach} from 'lodash';
 import {XH, HoistService} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {throwIf} from '@xh/hoist/utils/js';
+import {throwIf, deepFreeze} from '@xh/hoist/utils/js';
 
 /**
  * Service to read and set user-specific preference values.
@@ -71,7 +71,7 @@ export class PrefService {
         }
 
         throwIf(ret === undefined, `Preference key not found: '${key}'`);
-        return cloneDeep(ret);
+        return ret;
     }
 
     /**
@@ -93,7 +93,8 @@ export class PrefService {
         const oldValue = this.get(key);
         if (isEqual(oldValue, value)) return;
 
-        // Change local value and fire.
+        // Change local value to sanitized copy and fire.
+        value = deepFreeze(cloneDeep(value));
         this._data[key].value = value;
         this.fireEvent('prefChange', {key, value, oldValue});
 
@@ -178,10 +179,15 @@ export class PrefService {
     //  Implementation
     //-------------------
     async loadPrefsAsync() {
-        this._data = await XH.fetchJson({
+        const data = await XH.fetchJson({
             url: 'xh/getPrefs',
             params: {clientUsername: XH.getUsername()}
         });
+        forEach(data, v => {
+            deepFreeze(v.value);
+            deepFreeze(v.defaultValue);
+        });
+        this._data = data;
         this.syncLocalPrefs();
     }
 
@@ -193,7 +199,9 @@ export class PrefService {
 
         for (let key in data) {
             if (data[key].local) {
-                data[key].value = !isNil(localPrefs[key]) ? localPrefs[key] : data[key].defaultValue;
+                data[key].value = !isNil(localPrefs[key]) ?
+                    deepFreeze(cloneDeep(localPrefs[key])) :
+                    data[key].defaultValue;
             }
         }
     }

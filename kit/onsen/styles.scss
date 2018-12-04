@@ -19,15 +19,21 @@
 }
 
 .xh-input {
-  input, textarea, select {
+  input, textarea {
     font-size: 14px;
     border: none !important;
+    outline: none !important;
+    text-align: inherit;
   }
 
   &:not(.xh-input-label) {
     font-size: 14px;
     border: var(--xh-border-solid);
     border-radius: var(--xh-border-radius-px);
+
+    &:not(.xh-input-invalid):focus-within {
+      border-color: var(--xh-focus-outline-color);
+    }
   }
 
   &.xh-input-invalid {
@@ -38,25 +44,22 @@
   &.xh-number-input {
     .text-input,
     .text-input__label {
+      height: 30px;
       padding: 0 var(--xh-pad-px);
     }
   }
 
-  &.xh-number-input .text-input {
-    text-align: right;
-  }
-
-  &.xh-select select {
-    padding: 0 var(--xh-pad-px);
-    background-position: calc(100% - 10px) center;
-  }
-
   &.xh-textarea {
-    padding: var(--xh-pad-px);
     background-color: var(--xh-bg);
-    color: var(--xh-text-color);
-    outline: none;
-    resize: none;
+
+    textarea {
+      padding: var(--xh-pad-px);
+      box-sizing: border-box;
+      width: 100%;
+      background-color: transparent;
+      color: var(--xh-text-color);
+      resize: none;
+    }
   }
 
   &.xh-input-label {

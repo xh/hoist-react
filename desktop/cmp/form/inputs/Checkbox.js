@@ -53,6 +53,7 @@ export class Checkbox extends HoistInput {
             label: props.label,
             tabIndex: props.tabIndex,
 
+            id: props.id,
             className: this.getClassName(),
             style: props.style,
 
@@ -61,12 +62,7 @@ export class Checkbox extends HoistInput {
             onFocus: this.onFocus
         });
     }
-
-    // Cast "false" -> false (see Admin config editor for a sample use case).
-    toInternal(external) {
-        return (external === 'false') ? false : external;
-    }
-
+    
     onChange = (e) => {
         this.noteValueChange(e.target.checked);
     }

@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/kit/onsen';
@@ -26,16 +26,22 @@ export class AppBar extends Component {
     static propTypes = {
         /** NavigatorModel. Bound to back button and title. */
         navigatorModel: PT.object,
+
         /** AppMenuModel. Used to populate main menu. */
         appMenuModel: PT.object,
+
         /** Title to display to the center the AppBar. Defaults to the current page title if not provided. */
         title: PT.string,
+
         /** Items to be added to the right side of the AppBar, before the refresh buttons. */
         rightItems: PT.node,
+
         /** Set to true to hide the Refresh button. */
         hideRefreshButton: PT.bool,
+
         /** Allows overriding the default properties of the Back button. @see NavigatorBackButton */
         backButtonProps: PT.object,
+
         /** Allows overriding the default properties of the Refresh button. @see RefreshButton */
         refreshButtonProps: PT.object
     };

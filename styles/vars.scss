@@ -94,6 +94,14 @@ body {
   --xh-grid-compact-line-height: var(--grid-compact-line-height, 22);
   --xh-grid-compact-line-height-px: calc(var(--xh-grid-compact-line-height) * 1px);
 
+  // Multifield renderer
+  --xh-grid-multifield-top-font-size: var(--grid-multifield-top-font-size, 12);
+  --xh-grid-multifield-top-font-size-px: calc(var(--xh-grid-multifield-top-font-size) * 1px);
+  --xh-grid-multifield-bottom-font-size: var(--grid-multifield-bottom-font-size, 10);
+  --xh-grid-multifield-bottom-font-size-px: calc(var(--xh-grid-multifield-bottom-font-size) * 1px);
+  --xh-grid-multifield-line-height: var(--grid-multifield-line-height, 14);
+  --xh-grid-multifield-line-height-px: calc(var(--xh-grid-multifield-line-height) * 1px);
+
   // Fonts
   --xh-font-family: var(--font-family, #{(-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif)});
   --xh-font-family-headings: var(--font-family-headings, #{(-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif)});
@@ -101,7 +109,7 @@ body {
   --xh-font-size: var(--font-size, 13);
   --xh-font-size-large-mult: var(--font-size-large-mult, 1.2);
   --xh-font-size-large-em: var(--font-size-large-em, 1.2em);
-  --xh-font-size-small-mult: var(--font-size-small-mult, 0.9);
+  --xh-font-size-small-mult: var(--font-size-small-mult, 0.8);
   --xh-font-size-small-em: var(--font-size-small-em, 0.9em);
 
   // Font sizes - calculated from above
@@ -113,6 +121,8 @@ body {
 
   // Inputs
   --xh-input-bg: var(--input-bg, var(--xh-bg));
+  --xh-input-disabled-bg: var(--form-field-disabled-bg, rgba(206, 217, 224, 0.5));  // This and below currently matched from Blueprint defaults
+  --xh-input-disabled-text-color: var(--form-field-disabled-text-color, rgba(92, 112, 128, 0.5));
   --xh-input-text-color: var(--input-text-color, var(--xh-text-color));
 
   // Form fields
@@ -189,6 +199,8 @@ body {
   // Toolbars
   --xh-tbar-bg: var(--tbar-bg, var(--xh-bg-alt));
   --xh-tbar-border-color: var(--tbar-border-color, #{mc('grey', '400')});
+  --xh-tbar-item-pad: var(--tbar-item-pad, var(--xh-pad-half));
+  --xh-tbar-item-pad-px: calc(var(--xh-tbar-item-pad) * 1px);
   --xh-tbar-separator-color: var(--tbar-separator-color, #{mc('grey', '400')});
   --xh-tbar-text-color: var(--tbar-text-color, var(--xh-text-color));
 
@@ -241,8 +253,9 @@ body.xh-dark {
   --xh-grid-header-bg: var(--grid-header-bg, var(--xh-black));
 
   // Inputs
-  // Allow some blending w/backgrounds - e.g. in dialog.
-  --xh-input-bg: var(--input-bg, rgba(0, 0, 0, 0.3));
+  --xh-input-bg: var(--input-bg, rgba(0, 0, 0, 0.3)); // Allow some blending w/backgrounds - e.g. in dialog.
+  --xh-input-disabled-bg: var(--form-field-disabled-bg, rgba(57, 75, 89, 0.5)); // This and below currently matched from Blueprint defaults
+  --xh-input-disabled-text-color: var(--form-field-disabled-text-color, rgba(191, 204, 214, 0.5));
 
   // Form Fields
   --xh-form-field-box-shadow-color-top: var(--form-field-box-shadow-color-top, #{mc-trans('blue-grey', '800', 0.15)});

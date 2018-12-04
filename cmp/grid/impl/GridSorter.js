@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {Utils} from 'ag-grid';
+import {Utils as agUtils} from 'ag-grid-community';
 import {isString, isNumber} from 'lodash';
 
 export class GridSorter {
@@ -61,7 +61,7 @@ export class GridSorter {
             v1 = isNumber(v1) ? Math.abs(v1) : v1;
             v2 = isNumber(v2) ? Math.abs(v2) : v2;
         }
-        return Utils.defaultComparator(v1, v2);
+        return agUtils.defaultComparator(v1, v2);
     }
 
 }

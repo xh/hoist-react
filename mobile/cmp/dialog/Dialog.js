@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {div, filler} from '@xh/hoist/cmp/layout';
+import {div} from '@xh/hoist/cmp/layout';
 import {dialog as onsenDialog} from '@xh/hoist/kit/onsen';
 
 import './Dialog.scss';
@@ -41,7 +41,6 @@ export class Dialog extends Component {
                     className: `${baseClassName}__toolbar`,
                     omit: !buttons.length,
                     items: [
-                        filler(),
                         ...buttons
                     ]
                 })

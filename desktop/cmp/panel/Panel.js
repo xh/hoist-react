@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {castArray, omitBy} from 'lodash';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
@@ -35,14 +35,19 @@ export class Panel extends Component {
     static propTypes = {
         /** A title text added to the panel's header. */
         title: PT.oneOfType([PT.string, PT.node]),
+
         /** An icon placed at the left-side of the panel's header. */
         icon: PT.element,
+
         /** Items to be added to the right-side of the panel's header. */
         headerItems: PT.node,
+
         /** A toolbar to be docked at the top of the panel. */
         tbar: PT.element,
+
         /** A toolbar to be docked at the bottom of the panel. */
         bbar: PT.element,
+
         /**
          * Mask to render on this panel.
          *
@@ -51,6 +56,7 @@ export class Panel extends Component {
          * or set to true for a simple default mask.
          */
         mask: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool]),
+
         /** Model governing Resizing and Collapsing of the panel.*/
         sizingModel: PT.instanceOf(PanelSizingModel)
     };

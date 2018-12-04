@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
 
@@ -36,6 +36,7 @@ export class TabContainer extends Component {
     static propTypes = {
         /** The controlling TabContainerModel instance. */
         model: PT.instanceOf(TabContainerModel).isRequired,
+
         /** Position of the switcher docked within this component (or 'none'). */
         switcherPosition: PT.oneOf(['top', 'bottom', 'left', 'right', 'none'])
     };
