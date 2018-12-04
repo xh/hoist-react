@@ -57,7 +57,7 @@ export class PanelSizingModel {
      * @param {boolean} [config.showSplitter] - Should a splitter be rendered at the panel edge?
      * @param {boolean} [config.showSplitterCollapseButton] - Should the collapse button be visible
      *      on the splitter? Only applicable if the splitter is visible and the panel is collapsible.
-     * @param {boolean} [config.showHeaderCollapseButton - Should a collapse button be added to the
+     * @param {boolean} [config.showHeaderCollapseButton] - Should a collapse button be added to the
      *      end of the panel header? Only applicable if the panel is collapsible.
      */
     constructor({
@@ -70,7 +70,7 @@ export class PanelSizingModel {
         prefName = null,
         showSplitter = true,
         showSplitterCollapseButton = true,
-        showHeaderCollapseButton = false
+        showHeaderCollapseButton = true
     }) {
         throwIf(isNil(defaultSize) || isNil(side), "Must specify 'defaultSize' and 'side' for PanelSizingModel");
 
