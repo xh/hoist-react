@@ -210,7 +210,6 @@ export class Select extends HoistInput {
         if (!portal) {
             portal = document.createElement('div');
             portal.id = 'xh-select-input-portal';
-            portal.style.zIndex = '20002';
             document.body.appendChild(portal);
         }
 

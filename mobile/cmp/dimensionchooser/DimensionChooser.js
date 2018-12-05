@@ -14,12 +14,11 @@ import {button} from '@xh/hoist/mobile/cmp/button';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {Icon} from '@xh/hoist/icon';
 import {select} from '@xh/hoist/mobile/cmp/form';
-
+import {withDefault} from '@xh/hoist/utils/js';
 import {size, isEmpty} from 'lodash';
 
+import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import './DimensionChooser.scss';
-import {DimensionChooserModel} from '@xh/hoist/desktop/cmp/dimensionchooser';
-import {withDefault} from '@xh/hoist/utils/js';
 
 
 /**
