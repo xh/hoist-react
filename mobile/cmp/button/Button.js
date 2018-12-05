@@ -24,11 +24,12 @@ export class Button extends Component {
         icon: PT.element,
         text: PT.string,
         modifier: PT.string,
+        active: PT.bool,
         onClick: PT.func
     };
 
     render() {
-        const {icon, text, modifier, onClick, ...rest} = this.props,
+        const {icon, text, modifier, active, onClick, ...rest} = this.props,
             items = [];
 
         if (icon && text) {
@@ -40,7 +41,7 @@ export class Button extends Component {
         }
 
         return onsenButton({
-            className: 'xh-button',
+            className: this.getClassName('xh-button', active ? 'xh-button-active' : ''),
             items,
             modifier,
             onClick,
