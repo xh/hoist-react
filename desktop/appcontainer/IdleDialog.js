@@ -22,7 +22,7 @@ import {message} from './Message';
 @HoistComponent
 export class IdleDialog extends Component {
 
-    localModel = new MessageModel({
+    model = new MessageModel({
         title: 'Application Sleeping',
         icon: Icon.moon(),
         message: 'This application is sleeping due to inactivity. Please click below to reload it.',

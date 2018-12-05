@@ -18,7 +18,7 @@ import {UserModel} from './UserModel';
 @HoistComponent
 export class UserPanel extends Component {
 
-    localModel = new UserModel();
+    model = new UserModel();
 
     render() {
         return panel({

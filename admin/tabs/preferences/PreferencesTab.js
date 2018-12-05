@@ -15,7 +15,7 @@ import {UserPreferencePanel} from './UserPreferencePanel';
 @HoistComponent
 export class PreferencesTab extends Component {
 
-    localModel = new TabContainerModel({
+    model = new TabContainerModel({
         route: 'default.preferences',
         tabs: [
             {id: 'prefs', content: PreferencePanel},

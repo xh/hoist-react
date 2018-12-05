@@ -12,7 +12,7 @@ import {boolCheckCol} from '@xh/hoist/cmp/grid/columns';
 @HoistComponent
 export class PreferencePanel extends Component {
 
-    localModel = new RestGridModel({
+    model = new RestGridModel({
         stateModel: 'xhPreferenceGrid',
         enableColChooser: true,
         enableExport: true,

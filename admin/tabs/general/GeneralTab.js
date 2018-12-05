@@ -17,7 +17,7 @@ import {UserPanel} from './users/UserPanel';
 @HoistComponent
 export class GeneralTab extends Component {
 
-    localModel = new TabContainerModel({
+    model = new TabContainerModel({
         route: 'default.general',
         tabs: [
             {id: 'about', content: AboutPanel},

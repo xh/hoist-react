@@ -6,6 +6,7 @@
  */
 import {EventSupport} from './mixins/EventSupport';
 import {ReactiveSupport} from './mixins/ReactiveSupport';
+import {XhIdSupport} from './mixins/XhIdSupport';
 import {markClass} from '@xh/hoist/utils/js';
 
 
@@ -20,6 +21,7 @@ export function HoistModel(C) {
 
     C = EventSupport(C);
     C = ReactiveSupport(C);
+    C = XhIdSupport(C);
 
     return C;
 }
