@@ -2,19 +2,64 @@
 
 ## Unreleased
 
-### 💥 Breaking Changes
+### 🎁 New Features
 
-* The `ColChooserButton` has been moved from the incorrect location `@xh/hoist/cmp/grid` to `@xh/hoist/desktop/cmp/button`.
-This is a desktop-only component.  Apps will have to adjust these imports. 
+* `Toolbar` and `ToolbarSeparator` have been added to the mobile component library.
+
+## v16.0.0
 
 ### 🎁 New Features
 
-* Added `multiFieldRenderer`, an elementRendererFn that renders a collection of additional sub fields in a row beneath the main column field.
-Columns must define a `multiFieldRendererCfg` to use this renderer, which specifies which `subFields` to render.
-See MultiFieldRenderer for more information.
-* `Column.renderer` and `Column.elementRenderer` now receive `GridModel` as part of the `CellRendererContext`.
-* Column supports an optional `rowHeight` property, which specifies the cell height required (in pixels) by this columns renderer.
-Grids use this to determine an appropriate minimum row height when the column is visible.
+* Support for ComboBoxes and Dropdowns have been improved dramatically, via a new `Select` component based on react-select.
+* The ag-Grid based `Grid` and `GridModel` are now available on both mobile and desktop.   We have also added new support 
+for multi-row/multi-field columns via the new `multiFieldRenderer` renderer function. 
+* The app initialization lifecycle has been restructured so that no App classes are constructed until Hoist is fully 
+initialized.      
+* `Column` now supports an optional `rowHeight` property.
+* `Button` now defaults to 'minimal' mode, providing a much lighter-weight visual look-and-feel to HoistApps.  `Button` also
+implements `@LayoutSupport`.  
+* Grouping state is now saved by the grid state support on `GridModel`.
+* The Hoist `DimChooser` component has been ported to hoist-react. 
+* `fetchService` now supports an `autoAbortKey` in its fetch methods.  This can be used to automatically cancel obsolete
+requests that have been superceded by more recent variants.
+* Support for new `clickableLabel` property on `FormField`.
+* `RestForm` now supports a read-only view.
+* Hoist now supports automatic tracking of app/page load times.
+
+### 💥 Breaking Changes
+
+* The new location for the cross-platform grid component is `@xh/hoist/cmp/grid`.  The `columns` package has also moved 
+ under a new sub-package in this location.
+* Hoist top-level App Structure has changed in order to improve consistency of the Model-View conventions,
+to improve the accessibility of services, and to support the improvements in app initialization mentioned above:
+    - `XH.renderApp` now takes a new `AppSpec` configuration.
+    - `XH.app` is now `XH.appModel`.
+    - All services are installed directly on `XH`.
+    - `@HoistApp` is now `@HoistAppModel`
+* `RecordAction` has been substantially refactored and improved. These are now typically immutable and may be shared.   
+    - `prepareFn` has been replaced with a `displayFn`.
+    - `actionFn` and `displayFn` now take a single object as their parameter. 
+* The `hide` property on `Column` has been changed to `hidden`.
+* The `ColChooserButton` has been moved from the incorrect location `@xh/hoist/cmp/grid` to `@xh/hoist/desktop/cmp/button`.
+This is a desktop-only component.  Apps will have to adjust these imports. 
+* `withDefaultTrue` and `withDefaultFalse` in `@xh/hoist/utils/js` have been removed.  Use `withDefault` instead.
+* `CheckBox` has been renamed `Checkbox`
+
+
+### ⚙️ Technical
+
+* ag-Grid has been upgraded to v19.1
+* mobx has been upgraded to v5.6
+* React has been upgraded to v16.6
+* Allow browsers with proper support for Proxy (e.g Edge) to access Hoist Applications.
+
+
+### 🐞 Bug Fixes
+
+* Extensive.  See full change list below.
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v15.1.2...v16.0.0)
+
 
 ## v15.1.2
 

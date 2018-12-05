@@ -84,7 +84,7 @@ class MultiFieldCell extends Component {
 
     renderValue(value, column, renderer) {
         let ret = value;
-        if (renderer) ret = renderer(value, {...this.context, column});
+        if (renderer) ret = renderer(value, {...this.props.context, column});
         return ret;
     }
 
