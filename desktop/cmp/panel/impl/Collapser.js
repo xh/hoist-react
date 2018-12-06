@@ -9,7 +9,6 @@ import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/desktop/cmp/button';
-
 import {hbox, vbox} from '@xh/hoist/cmp/layout';
 
 import './Collapser.scss';
@@ -21,7 +20,7 @@ import './Collapser.scss';
 export class Collapser extends Component {
     
     render() {
-        const {vertical} = this.model;
+        const {vertical, showSplitterCollapseButton} = this.model;
 
         const cmp = vertical ? hbox : vbox,
             cfg = {
@@ -29,7 +28,8 @@ export class Collapser extends Component {
                 item: button({
                     className: 'xh-resizable-collapser-btn',
                     icon: Icon[this.getChevron()](),
-                    onClick: this.onClick
+                    onClick: this.onClick,
+                    omit: !showSplitterCollapseButton
                 })
             };
 

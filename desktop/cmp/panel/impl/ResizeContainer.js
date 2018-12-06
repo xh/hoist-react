@@ -23,13 +23,14 @@ export class ResizeContainer extends Component {
 
     render() {
         let {model} = this,
-            {collapsible, resizable, collapsed, vertical, contentFirst} = model,
+            {collapsible, resizable, collapsed, vertical, contentFirst, showSplitter} = model,
             items = [this.renderChild()];
         
-        if (collapsible) {
+        if (collapsible && showSplitter) {
             const collapserCmp = collapser({model});
             items = (contentFirst ? [...items, collapserCmp] : [collapserCmp, ...items]);
         }
+
         if (!collapsed && resizable) {
             items.push(dragger({model}));
         }
