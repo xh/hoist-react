@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import PT from 'prop-types';
 
-import {div} from '@xh/hoist/cmp/layout';
+import {fragment, div} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {Icon} from '@xh/hoist/icon';
@@ -20,20 +20,25 @@ import {size, isEmpty} from 'lodash';
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import './DimensionChooser.scss';
 
-
 /**
- * Menu Component
+ * Control for selecting a list of dimensions for grouping APIs.
+ * @see DimensionChooserModel
  */
 @HoistComponent
 export class DimensionChooser extends Component {
 
     static propTypes = {
+        /** Width in pixels of the target button (that triggers show of popover). */
+        buttonWidth: PT.number,
+
         /** Controlling model instance. */
         model: PT.instanceOf(DimensionChooserModel).isRequired,
 
         /** Width in pixels of the popover menu itself. */
         dialogWidth: PT.number
     };
+
+    baseClassName = 'xh-dim-chooser';
 
     INDENT = 10;        // Indentation applied at each level.
     X_BTN_WIDTH = 26;   // Width of 'x' buttons.
@@ -43,16 +48,29 @@ export class DimensionChooser extends Component {
         return withDefault(this.props.dialogWidth, 250);
     }
 
+    get buttonWidth() {
+        return withDefault(this.props.buttonWidth, undefined);
+    }
+
     render() {
         const {model} = this,
             {value, dimensions} = model;
+
         return div(
             this.renderDialog(),
             button({
                 text: value.map(it => dimensions[it].label).join(' \u203a '),
+                width: this.buttonWidth,
                 onClick: () => model.showMenu()
             })
         );
+    }
+
+    //--------------------
+    // Event Handlers
+    //--------------------
+    onDimChange = (dim, i) => {
+        this.model.addPendingDim(dim, i);
     }
 
     onSetFromHistory = (value) => {
@@ -60,25 +78,26 @@ export class DimensionChooser extends Component {
         this.model.closeMenu();
     }
 
+    //---------------------------
+    // Rendering dialog
+    //---------------------------
     renderDialog() {
-        const {model} = this,
-            {isMenuOpen} = model;
+        const {model} = this;
         if (!model) return null;
-        const {content, buttons} = this.getDialogProps();
+
         return dialog({
-            className: 'xh-dim-dialog',
+            className: this.getClassName('xh-dim-dialog'),
             title: 'Group By',
-            content,
-            buttons,
-            isOpen: isMenuOpen,
+            isOpen: model.isMenuOpen,
             onCancel: () => model.commitPendingValue(),
-            width: 260,
-            align: 'left'
+            width: this.dialogWidth,
+            align: 'left',
+            ...this.getDialogPropsForMode(model.activeMode)
         });
     }
 
-    getDialogProps() {
-        return this.model.activeMode === 'history' ?
+    getDialogPropsForMode(mode) {
+        return mode === 'history' ?
             {
                 content: this.renderHistoryMenu(),
                 buttons: this.renderHistoryButtons()
@@ -89,25 +108,28 @@ export class DimensionChooser extends Component {
             };
     }
 
+    //---------------------------
+    // Rendering history mode
+    //---------------------------
     renderHistoryMenu() {
         const {model} = this,
             {history, dimensions} = model;
+
         const historyItems = history.map((value, i) => {
             const labels = value.map(h => dimensions[h].label);
             return button({
-                minimal: true,
+                className: 'dim-history-btn',
                 title: ` ${labels.map((it, i) => ' '.repeat(i) + '\u203a '.repeat(i ? 1 : 0) + it).join('\n')}`,
                 text: labels.join(' \u203a '),
                 key: `dim-history-${i}`,
+                modifier: 'quiet',
                 onClick: () => {
                     this.onSetFromHistory(value);
                 }
             });
         });
 
-        return div(
-            ...historyItems
-        );
+        return fragment(...historyItems);
     }
 
     renderHistoryButtons() {
@@ -115,18 +137,26 @@ export class DimensionChooser extends Component {
         return [
             button({
                 icon: Icon.x(),
+                modifier: 'quiet',
+                flex: 1,
                 onClick: () => model.closeMenu()
             }),
             button({
                 icon: Icon.edit(),
+                modifier: 'quiet',
+                flex: 1,
                 onClick: () => model.showEditor()
             })
         ];
     }
 
+    //---------------------------
+    // Rendering select mode
+    //---------------------------
     renderSelectMenu() {
         const {LEFT_PAD, INDENT, X_BTN_WIDTH, model} = this,
             {pendingValue, dimensions, maxDepth, leafInPending} = model;
+
         const children = pendingValue.map((dim, i) => {
             const options = [dimensions[dim], ...model.dimOptionsForLevel(i)],
                 marginLeft = LEFT_PAD + (INDENT * i),
@@ -140,11 +170,12 @@ export class DimensionChooser extends Component {
                         width,
                         marginLeft,
                         value: dim,
-                        onChange: val => model.addPendingDim(val, i)
+                        onChange: val => this.onDimChange(val, i)
                     }),
                     button({
                         icon: Icon.x({className: 'xh-red'}),
                         disabled: pendingValue.length === 1,
+                        modifier: 'quiet',
                         onClick: () => {
                             model.removePendingDim(dim);
                             model.setShowAddSelect(false);
@@ -153,8 +184,12 @@ export class DimensionChooser extends Component {
                 ]
             });
         });
+
         const atMaxDepth = (pendingValue.length === Math.min(maxDepth, size(dimensions)));
-        if (!atMaxDepth && !leafInPending) children.push(this.renderAddOrSelectButton());
+        if (!atMaxDepth && !leafInPending) {
+            children.push(this.renderAddOrSelectButton());
+        }
+
         return children;
     }
 
@@ -171,12 +206,13 @@ export class DimensionChooser extends Component {
                 options: model.dimOptionsForLevel(pendingCount),
                 width,
                 marginLeft,
-                onChange: val => model.addPendingDim(val, pendingCount)
+                onChange: val => this.onDimChange(val, pendingCount)
             }) :
             button({
                 text: 'Add grouping...',
                 style: {marginLeft, width},
                 icon: Icon.add({className: 'xh-green'}),
+                modifier: 'quiet',
                 onClick: () => model.setShowAddSelect(true)
             });
     }
@@ -186,11 +222,15 @@ export class DimensionChooser extends Component {
         return [
             button({
                 icon: Icon.arrowLeft(),
-                omit: isEmpty(history),
+                omit: isEmpty(model.history),
+                modifier: 'quiet',
+                flex: 1,
                 onClick: () => model.showHistory()
             }),
             button({
                 icon: Icon.check({className: 'xh-green'}),
+                modifier: 'quiet',
+                flex: 1,
                 onClick: () => model.commitPendingValue()
             })
         ];

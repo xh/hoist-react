@@ -1,24 +1,15 @@
-body.xh-app {
-  .xh-dim-dialog {
-    .button:not(.button--outline):not(.button--quiet):not(.button--light) {
-      background: none;
-      color: black;
+.xh-dim-dialog {
+  .dim-history-btn {
+    text-align: left;
+    background: var(--xh-bg-alt);
+    justify-content: flex-start;
+    &:not(:last-of-type) {
+      margin-bottom: 5px;
     }
   }
+
   .xh-dim-dialog-select-row {
     display: flex;
     padding-bottom: 5px;
-  }
-
-  .xh-dialog__toolbar {
-    display: flex;
-    justify-content: center;
-    .xh-button {
-      flex: 1;
-      width: 40%;
-    }
-    .button:not(.button--outline):not(.button--quiet):not(.button--light) {
-      color: black;
-    }
   }
 }
