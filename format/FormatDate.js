@@ -25,6 +25,7 @@ const INVALID_DATE = moment(null).format();
  * @param {*} v - a date value to format, can be any value MomentJs can parse.
  *      @see {@link https://momentjs.com/docs/#/parsing/|MomentJS Docs}
  * @param {(Object|string)} [opts] - a MomentJs format string or an options object.
+ * @param {string} [opts.nullDisplay] - display string for null values.
  * @param {string} [opts.fmt] - a MomentJs format string.
  * @param {function} [opts.tooltip] - function to generate a tooltip string,
  *      passed the original value to be formatted.
@@ -33,7 +34,7 @@ const INVALID_DATE = moment(null).format();
  *      Not typically used by applications.
  */
 export function fmtDate(v, opts = {}) {
-    if (v == null) return '';
+    if (v == null) return opts.nullDisplay || '';
     if (isString(v)) return v;
     if (isString(opts)) opts = {fmt: opts};
 
