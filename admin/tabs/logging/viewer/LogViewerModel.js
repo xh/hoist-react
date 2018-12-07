@@ -32,7 +32,8 @@ export class LogViewerModel {
 
     filesSizingModel = new PanelSizingModel({
         side: 'left',
-        defaultSize: 250
+        defaultSize: 250,
+        showHeaderCollapseButton: false
     });
 
     filesGridModel = new GridModel({
@@ -98,7 +99,7 @@ export class LogViewerModel {
     //---------------------------------
     // Implementation
     //---------------------------------
-    fetchFile() {
+    fetchFile({isAutoRefresh = false} = {}) {
         return XH
             .fetchJson({
                 url: 'logViewerAdmin/getFile',
@@ -110,7 +111,7 @@ export class LogViewerModel {
                 }
             })
             .thenAction(rows => this.rows = this.startLine ? rows.content : rows.content.reverse())
-            .linkTo(this.loadModel)
+            .linkTo(isAutoRefresh ? null : this.loadModel)
             .catchDefault();
     }
 
