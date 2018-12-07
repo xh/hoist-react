@@ -7,6 +7,7 @@
 import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {box, hbox, vbox, filler} from '@xh/hoist/cmp/layout';
+import {headerCollapseButton} from './HeaderCollapseButton';
 
 import './PanelHeader.scss';
 
@@ -18,9 +19,9 @@ import './PanelHeader.scss';
 export class PanelHeader extends Component {
     render() {
         let {title, icon, headerItems = [], sizingModel} = this.props,
-            {collapsed, vertical, side} = sizingModel || {};
+            {collapsed, vertical, side, showHeaderCollapseButton} = sizingModel || {};
 
-        if (!title && !icon && !headerItems.length) return null;
+        if (!title && !icon && !headerItems.length && !showHeaderCollapseButton) return null;
 
         if (!collapsed || vertical) {
             return hbox({
@@ -33,8 +34,9 @@ export class PanelHeader extends Component {
                             flex: 1,
                             item: title
                         }) :
-                        null,
-                    ...(!collapsed ? headerItems : [])
+                        filler(),
+                    ...(!collapsed ? headerItems : []),
+                    this.renderHeaderCollapseButton()
                 ],
                 onDoubleClick: this.onDblClick
             });
@@ -45,7 +47,7 @@ export class PanelHeader extends Component {
                 className: `xh-panel-header xh-panel-header-${side}`,
                 flex: 1,
                 items: [
-                    isLeft ? filler() : null,
+                    isLeft ? filler() : this.renderHeaderCollapseButton(),
                     icon || null,
                     title ?
                         box({
@@ -53,11 +55,20 @@ export class PanelHeader extends Component {
                             item: title
                         }) :
                         null,
-                    !isLeft ? filler() : null
+                    !isLeft ? filler() : this.renderHeaderCollapseButton()
                 ],
                 onDoubleClick: this.onDblClick
             });
         }
+    }
+
+    renderHeaderCollapseButton() {
+        const {sizingModel} = this.props;
+        if (!sizingModel) return null;
+
+        return sizingModel.showHeaderCollapseButton && sizingModel.collapsible ?
+            headerCollapseButton({model: sizingModel}) :
+            null;
     }
 
     onDblClick = () => {
@@ -65,7 +76,7 @@ export class PanelHeader extends Component {
         if (sizingModel && sizingModel.collapsible) {
             sizingModel.toggleCollapsed();
         }
-    }
+    };
 }
 
 export const panelHeader = elemFactory(PanelHeader);

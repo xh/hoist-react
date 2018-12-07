@@ -16,7 +16,7 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {select} from '@xh/hoist/desktop/cmp/form';
 import {size, isEmpty} from 'lodash';
 
-import {DimensionChooserModel} from './DimensionChooserModel';
+import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import './DimensionChooser.scss';
 
 /**

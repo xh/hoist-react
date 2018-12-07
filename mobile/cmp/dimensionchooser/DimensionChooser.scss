@@ -1,0 +1,15 @@
+.xh-dim-dialog {
+  .dim-history-btn {
+    text-align: left;
+    background: var(--xh-bg-alt);
+    justify-content: flex-start;
+    &:not(:last-of-type) {
+      margin-bottom: 5px;
+    }
+  }
+
+  .xh-dim-dialog-select-row {
+    display: flex;
+    padding-bottom: 5px;
+  }
+}
