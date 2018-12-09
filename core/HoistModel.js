@@ -4,9 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {EventSupport} from './mixins/EventSupport';
-import {ReactiveSupport} from './mixins/ReactiveSupport';
-import {XhIdSupport} from './mixins/XhIdSupport';
+import {EventSupport, ReactiveSupport, XhIdSupport} from './mixins';
 import {markClass} from '@xh/hoist/utils/js';
 
 

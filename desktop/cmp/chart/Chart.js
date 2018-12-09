@@ -14,6 +14,7 @@ import Highcharts from 'highcharts/highstock';
 import {LightTheme} from './theme/Light';
 import {DarkTheme} from './theme/Dark';
 
+import {ChartModel} from './ChartModel';
 
 /**
  * Wrapper Component for a Highcharts chart. Provides basic rendering / lifecycle management
@@ -23,6 +24,8 @@ import {DarkTheme} from './theme/Dark';
 @HoistComponent
 @LayoutSupport
 export class Chart extends Component {
+
+    static modelClass = ChartModel;
 
     baseClassName = 'xh-chart';
 

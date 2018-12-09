@@ -11,12 +11,15 @@ import PT from 'prop-types';
 import {vbox, fragment, div, hspacer} from '@xh/hoist/cmp/layout';
 import {listItem} from '@xh/hoist/kit/onsen';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
+import {MenuModel} from '@xh/hoist/mobile/cmp/menu/MenuModel';
 
 /**
  * Menu Component
  */
 @HoistComponent
 export class Menu extends Component {
+
+    static modelClass = MenuModel;
 
     static propTypes = {
         /** Width of the menu. */

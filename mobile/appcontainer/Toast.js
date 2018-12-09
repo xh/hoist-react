@@ -12,6 +12,7 @@ import {span} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 
 import './Toast.scss';
+import {ToastModel} from '@xh/hoist/core/appcontainer/ToastModel';
 
 /**
  * Display an instance of ToastModel.
@@ -20,6 +21,8 @@ import './Toast.scss';
  */
 @HoistComponent
 export class Toast extends Component {
+
+    static modelClass = ToastModel;
 
     render() {
         const {icon, message, timeout, intent} = this.model,

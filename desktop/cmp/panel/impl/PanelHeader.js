@@ -10,6 +10,7 @@ import {box, hbox, vbox, filler} from '@xh/hoist/cmp/layout';
 import {headerCollapseButton} from './HeaderCollapseButton';
 
 import './PanelHeader.scss';
+import {PanelModel} from '../PanelModel';
 
 /**
  * A standardized header for a Panel component
@@ -17,9 +18,12 @@ import './PanelHeader.scss';
  */
 @HoistComponent
 export class PanelHeader extends Component {
+
+    static modelClass = PanelModel;
+
     render() {
-        let {title, icon, headerItems = [], sizingModel} = this.props,
-            {collapsed, vertical, side, showHeaderCollapseButton} = sizingModel || {};
+        let {title, icon, headerItems = []} = this.props,
+            {collapsed, vertical, side, showHeaderCollapseButton} = this.model || {};
 
         if (!title && !icon && !headerItems.length && !showHeaderCollapseButton) return null;
 
@@ -63,18 +67,18 @@ export class PanelHeader extends Component {
     }
 
     renderHeaderCollapseButton() {
-        const {sizingModel} = this.props;
-        if (!sizingModel) return null;
+        const {model} = this;
+        if (!model) return null;
 
-        return sizingModel.showHeaderCollapseButton && sizingModel.collapsible ?
-            headerCollapseButton({model: sizingModel}) :
+        return model.showHeaderCollapseButton && model.collapsible ?
+            headerCollapseButton({model}) :
             null;
     }
 
     onDblClick = () => {
-        const {sizingModel} = this.props;
-        if (sizingModel && sizingModel.collapsible) {
-            sizingModel.toggleCollapsed();
+        const {model} = this;
+        if (model && model.collapsible) {
+            model.toggleCollapsed();
         }
     };
 }

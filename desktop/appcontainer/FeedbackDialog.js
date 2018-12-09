@@ -12,6 +12,8 @@ import {textArea} from '@xh/hoist/desktop/cmp/form';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 
+import {FeedbackDialogModel} from '@xh/hoist/core/appcontainer/FeedbackDialogModel';
+
 /**
  * A simple dialog component to collect user feedback from directly within the application.
  * @see FeedbackService
@@ -21,6 +23,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 @HoistComponent
 export class FeedbackDialog extends Component {
 
+    static modelClass = FeedbackDialogModel;
     render() {
         const {model} = this;
         if (!model.isOpen) return null;

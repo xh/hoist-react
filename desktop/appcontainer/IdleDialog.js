@@ -8,7 +8,6 @@
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {MessageModel} from '@xh/hoist/core/appcontainer/MessageModel';
 import {message} from './Message';
 
 /**
@@ -22,15 +21,15 @@ import {message} from './Message';
 @HoistComponent
 export class IdleDialog extends Component {
 
-    model = new MessageModel({
-        title: 'Application Sleeping',
-        icon: Icon.moon(),
-        message: 'This application is sleeping due to inactivity. Please click below to reload it.',
-        confirmText: 'Reload',
-        onConfirm: this.props.onReactivate
-    });
-
     render() {
-        return message({model: this.model});
+        return message({
+            model: {
+                title: 'Application Sleeping',
+                icon: Icon.moon(),
+                message: 'This application is sleeping due to inactivity. Please click below to reload it.',
+                confirmText: 'Reload',
+                onConfirm: this.props.onReactivate
+            }
+        });
     }
 }

@@ -21,18 +21,16 @@ import './DimensionChooser.scss';
 
 /**
  * Control for selecting a list of dimensions for grouping APIs.
- * @see DimensionChooserModel
  */
 @HoistComponent
 export class DimensionChooser extends Component {
+
+    static modelClass = DimensionChooserModel;
 
     static propTypes = {
 
         /** Width in pixels of the target button (that triggers show of popover). */
         buttonWidth: PT.number,
-
-        /** Controlling model instance. */
-        model: PT.instanceOf(DimensionChooserModel).isRequired,
 
         /** Title for popover (default "GROUP BY") or null to suppress. */
         popoverTitle: PT.string,

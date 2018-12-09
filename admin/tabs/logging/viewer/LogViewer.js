@@ -30,18 +30,22 @@ export class LogViewer extends Component {
 
     render() {
         const {model} = this,
-            {filesGridModel, filesSizingModel, loadModel} = model;
+            {filesGridModel, loadModel} = model;
 
         return hframe({
             className: 'xh-log-viewer',
             items: [
                 panel({
+                    model: {
+                        side: 'left',
+                        defaultSize: 250,
+                        showHeaderCollapseButton: false
+                    },
                     item: grid({model: filesGridModel}),
                     bbar: toolbar(
                         filler(),
                         storeFilterField({gridModel: filesGridModel})
-                    ),
-                    sizingModel: filesSizingModel
+                    )
                 }),
                 panel({
                     tbar: logViewerToolbar({model}),

@@ -14,6 +14,7 @@ import {textInput} from '@xh/hoist/mobile/cmp/form';
 import {Icon} from '@xh/hoist/icon';
 
 import './LoginPanel.scss';
+import {LoginPanelModel} from '@xh/hoist/core/appcontainer/LoginPanelModel';
 
 /**
  *
@@ -23,6 +24,8 @@ import './LoginPanel.scss';
  */
 @HoistComponent
 export class LoginPanel extends Component {
+
+    static modelClass = LoginPanelModel;
 
     render() {
         const {loginMessage} = XH.appSpec,

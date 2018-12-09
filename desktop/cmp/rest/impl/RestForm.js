@@ -18,9 +18,12 @@ import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {restControl} from './RestControl';
 
 import './RestForm.scss';
+import {RestFormModel} from './RestFormModel';
 
 @HoistComponent
 export class RestForm extends Component {
+
+    static modelClass = RestFormModel;
 
     baseClassName = 'xh-rest-form';
 
