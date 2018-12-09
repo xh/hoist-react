@@ -222,9 +222,10 @@ export class Select extends HoistInput {
     }
 
     toExternal(internal) {
+        if (isEmpty(internal)) return null;
         return this.multiMode ?
             castArray(internal).map(it => it.value) :
-            isEmpty(internal) ? null : internal.value;
+            internal.value;
     }
 
     normalizeOptions(options) {

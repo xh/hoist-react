@@ -14,7 +14,7 @@ import {LogViewer} from './viewer/LogViewer';
 @HoistComponent
 export class LoggingTab extends Component {
 
-    localModel = new TabContainerModel({
+    model = new TabContainerModel({
         route: 'default.logging',
         tabs: [
             {id: 'viewer', content: LogViewer},

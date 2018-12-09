@@ -15,7 +15,7 @@ import {FeedbackPanel} from './feedback/FeedbackPanel';
 @HoistComponent
 export class ActivityTab extends Component {
 
-    localModel = new TabContainerModel({
+    model = new TabContainerModel({
         route: 'default.activity',
         tabs: [
             {id: 'tracking', content: TrackingPanel},

@@ -25,6 +25,8 @@ import './Mask.scss';
 @HoistComponent
 export class Mask extends Component {
 
+    static modelClass = PendingTaskModel;
+
     static propTypes = {
 
         /** True to display mask. */
@@ -40,10 +42,7 @@ export class Mask extends Component {
         inline: PT.bool,
 
         /** Click handler **/
-        onClick: PT.func,
-
-        /** Model to govern behavior of mask.  Use as an alternative to setting isDisplayed and message props. */
-        model: PT.instanceOf(PendingTaskModel)
+        onClick: PT.func
     };
 
     baseClassName = 'xh-mask';

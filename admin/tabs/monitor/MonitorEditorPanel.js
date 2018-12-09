@@ -12,7 +12,7 @@ import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 @HoistComponent
 export class MonitorEditorPanel extends Component {
 
-    localModel = new RestGridModel({
+    model = new RestGridModel({
         stateModel: 'xhMonitorEditorGrid',
         enableColChooser: true,
         enableExport: true,

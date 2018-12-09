@@ -9,16 +9,17 @@ import {Component} from 'react';
 import {XH, HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {grid, GridModel} from '@xh/hoist/cmp/grid';
 import {omit} from 'lodash';
+import {DataViewModel} from './DataViewModel';
 
 /**
  * A DataView is a specialized version of the Grid component. It displays its data within a
  * single column, using a configured component for rendering each item.
- *
- * @see DataViewModel
  */
 @HoistComponent
 @LayoutSupport
 export class DataView extends Component {
+
+    static modelClass = DataViewModel;
 
     baseClassName = 'xh-data-view';
 
