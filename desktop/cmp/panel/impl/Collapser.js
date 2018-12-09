@@ -11,6 +11,7 @@ import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {hbox, vbox} from '@xh/hoist/cmp/layout';
 
+import {PanelModel} from '../PanelModel';
 import './Collapser.scss';
 
 /**
@@ -18,7 +19,9 @@ import './Collapser.scss';
  */
 @HoistComponent
 export class Collapser extends Component {
-    
+
+    static modelClass = PanelModel;
+
     render() {
         const {vertical, showSplitterCollapseButton} = this.model;
 

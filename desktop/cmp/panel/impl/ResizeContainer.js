@@ -10,15 +10,18 @@ import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
 
 import {dragger} from './Dragger';
 import {collapser} from './Collapser';
+import {PanelModel} from '../PanelModel';
 
 /**
- * A Resizable/Collapsible Container used by Panel to implement SizableSupport.
+ * A Resizable/Collapsible Container used by Panel.
  *
  * @private
  */
 @HoistComponent
 export class ResizeContainer extends Component {
-    
+
+    static modelClass = PanelModel;
+
     baseClassName = 'xh-resizable';
 
     render() {

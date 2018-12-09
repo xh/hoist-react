@@ -13,7 +13,7 @@ import {usernameCol} from '@xh/hoist/admin/columns';
 @HoistComponent
 export class FeedbackPanel extends Component {
 
-    localModel = new RestGridModel({
+    model = new RestGridModel({
         stateModel: 'xhFeedbackGrid',
         enableColChooser: true,
         enableExport: true,

@@ -22,10 +22,10 @@ import {omit} from 'lodash';
  */
 @HoistComponent
 export class TabSwitcher extends Component {
-    static propTypes = {
-        /** TabContainerModel to be controlled. */
-        model: PT.instanceOf(TabContainerModel).isRequired,
 
+    static modelClass = TabContainerModel;
+
+    static propTypes = {
         /** Relative position within the parent TabContainer. Defaults to 'top'. */
         orientation: PT.oneOf(['top', 'bottom', 'left', 'right'])
     };

@@ -10,11 +10,15 @@ import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import './Dragger.scss';
 
+import {PanelModel} from '../PanelModel';
+
 /** This is an implementation class private to Hoist
  * @private
  */
 @HoistComponent
 export class Dragger extends Component {
+
+    static modelClass = PanelModel;
 
     resizeState = null;
     startSize = null;

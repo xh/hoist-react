@@ -20,10 +20,15 @@ import {
     textArea,
     textInput
 } from '@xh/hoist/desktop/cmp/form';
+
+import {RestControlModel} from './RestControlModel';
+
 import {isNil} from 'lodash';
 
 @HoistComponent
 export class RestControl extends Component {
+
+    static modelClass = RestControlModel;
 
     render() {
         if (this.isBlankMetaData()) return null;
