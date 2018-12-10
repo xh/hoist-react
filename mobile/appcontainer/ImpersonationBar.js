@@ -13,6 +13,7 @@ import {button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
 import './ImpersonationBar.scss';
+import {ImpersonationBarModel} from '@xh/hoist/core/appcontainer/ImpersonationBarModel';
 
 /**
  * An admin-only toolbar that provides a UI for impersonating application users, as well as ending
@@ -22,6 +23,8 @@ import './ImpersonationBar.scss';
  */
 @HoistComponent
 export class ImpersonationBar extends Component {
+
+    static modelClass = ImpersonationBarModel;
 
     render() {
         const {isOpen, targets} = this.model;

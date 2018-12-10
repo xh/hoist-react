@@ -8,18 +8,22 @@
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {navigator as onsenNavigator} from '@xh/hoist/kit/onsen';
+import {NavigatorModel} from './NavigatorModel';
 
 @HoistComponent
 export class Navigator extends Component {
 
+    static modelClass = NavigatorModel;
+    
     render() {
-        const {initPageModel} = this.model;
+        const {model} = this,
+            {initPageModel} = model;
         return onsenNavigator({
             initialRoute: initPageModel,
             animationOptions: {duration: 0.2, delay: 0, timing: 'ease-in'},
-            renderPage: (pageModel, navigator) => this.model.renderPage(pageModel, navigator),
-            onPostPush: () => this.model.onPageChange(),
-            onPostPop: () => this.model.onPageChange()
+            renderPage: (pageModel, navigator) => model.renderPage(pageModel, navigator),
+            onPostPush: () => model.onPageChange(),
+            onPostPop: () => model.onPageChange()
         });
     }
 

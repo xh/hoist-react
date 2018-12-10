@@ -3,8 +3,25 @@
 ## Unreleased
 
 ### 🎁 New Features
-
+* The implementation of the `model` property on `HoistComponent` has been substantially enhanced:
+    *  "Local" Models can now be specified on the Component class declaration by simply setting the `model` property,
+        rather than the confusing `localModel` property.
+    *  HoistComponent now supports a static `modelClass` propety.  If set, this property will allow a HoistComponent
+        to auto-create a model internally when presented with a plain javascript object as its `model` prop.  This is
+        especially useful, in cases like `Panel` and `TabContainer`, where apps often needs to specify a model, but do 
+        not require a reference to the model.
+    *   An Exception will now be thrown if an application attempts to changes the model on an existing HoistComponent 
+        instance, or presents the wrong type of model to a HoistComponent.
+* `PanelSizingModel` has been renamed `PanelModel`. The class now also has the following new 
+optional properties, all of which are `true` by default:
+  * `showSplitter` - controls visibility of the splitter bar on the outside edge of the panel
+  * `showSplitterCollapseButton` - controls visibility of the collapse button on the splitter bar
+  * `showHeaderCollapseButton` - controls visibility of a (new) collapse button in the `Panel` header.
 * `Toolbar` and `ToolbarSeparator` have been added to the mobile component library.
+
+### 💥 Breaking Changes
+* references to `localModel` statements need to be changed to `model`.
+* `PanelSizingModel` has been renamed `PanelModel`.
 
 ## v16.0.0
 

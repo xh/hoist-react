@@ -18,7 +18,7 @@ import {ServiceModel} from './ServiceModel';
 @HoistComponent
 export class ServicePanel extends Component {
 
-    localModel = new ServiceModel();
+    model = new ServiceModel();
 
     render() {
         return panel({

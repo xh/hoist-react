@@ -14,6 +14,7 @@ import {button} from '@xh/hoist/mobile/cmp/button';
 
 import './LockoutPanel.scss';
 import {impersonationBar} from './ImpersonationBar';
+import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
 
 /**
  * Panel for display to prevent user access to all content.
@@ -23,6 +24,8 @@ import {impersonationBar} from './ImpersonationBar';
 @HoistComponent
 export class LockoutPanel extends Component {
 
+    static modelClass = AppContainerModel;
+    
     render() {
         return page(
             impersonationBar({model: this.model.impersonationBarModel}),

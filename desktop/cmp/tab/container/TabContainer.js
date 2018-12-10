@@ -33,10 +33,9 @@ import '../Tabs.scss';
 @LayoutSupport
 export class TabContainer extends Component {
 
-    static propTypes = {
-        /** The controlling TabContainerModel instance. */
-        model: PT.instanceOf(TabContainerModel).isRequired,
+    static modelClass = TabContainerModel;
 
+    static propTypes = {
         /** Position of the switcher docked within this component (or 'none'). */
         switcherPosition: PT.oneOf(['top', 'bottom', 'left', 'right', 'none'])
     };

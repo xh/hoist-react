@@ -213,7 +213,9 @@ Object.assign(Promise.prototype, {
      * @param {?string} [message]
      */
     linkTo(model, message) {
-        model.link(this, message);
+        if (model) {
+            model.link(this, message);
+        }
         return this;
     },
 

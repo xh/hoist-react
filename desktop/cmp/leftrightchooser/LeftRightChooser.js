@@ -10,6 +10,8 @@ import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {vbox, hframe} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
 
+import {LeftRightChooserModel} from './LeftRightChooserModel';
+
 import {description} from './impl/Description';
 import {chooserToolbar} from './impl/ChooserToolbar';
 import './LeftRightChooser.scss';
@@ -23,6 +25,8 @@ import './LeftRightChooser.scss';
 @HoistComponent
 @LayoutSupport
 export class LeftRightChooser extends Component {
+
+    static modelClass = LeftRightChooserModel;
 
     baseClassName = 'xh-lr-chooser';
 

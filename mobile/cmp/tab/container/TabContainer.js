@@ -8,13 +8,15 @@
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {tabbar} from '@xh/hoist/kit/onsen';
+import {TabContainerModel} from './TabContainerModel';
 
 /**
  * Display for a TabContainer.
- * @see TabContainerModel
  */
 @HoistComponent
 export class TabContainer extends Component {
+
+    static modelClass = TabContainerModel;
 
     render() {
         const {model} = this,

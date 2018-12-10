@@ -7,6 +7,7 @@
 import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Ref} from '@xh/hoist/utils/react';
+import {TabModel} from './TabModel';
 
 /**
  * Wrapper for Pages to be shown inside of a TabContainer tab. Reloads the active tab whenever
@@ -17,6 +18,8 @@ import {Ref} from '@xh/hoist/utils/react';
  */
 @HoistComponent
 export class Tab extends Component {
+
+    static modelClass = TabModel;
 
     child = new Ref();
 

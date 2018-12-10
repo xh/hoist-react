@@ -11,6 +11,8 @@ import {filler} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 
+import {MessageModel} from '@xh/hoist/core/appcontainer/MessageModel';
+
 /**
  * A modal dialog that supports imperative alert/confirm.
  *
@@ -18,6 +20,8 @@ import {button} from '@xh/hoist/desktop/cmp/button';
  */
 @HoistComponent
 export class Message extends Component {
+
+    static modelClass = MessageModel;
 
     render() {
         const model = this.model,

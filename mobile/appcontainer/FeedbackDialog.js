@@ -11,6 +11,7 @@ import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {textArea} from '@xh/hoist/mobile/cmp/form';
 
+import {FeedbackDialogModel} from '@xh/hoist/core/appcontainer/FeedbackDialogModel';
 import './FeedbackDialog.scss';
 
 /**
@@ -20,6 +21,8 @@ import './FeedbackDialog.scss';
  */
 @HoistComponent
 export class FeedbackDialog extends Component {
+
+    static modelClass = FeedbackDialogModel;
 
     render() {
         const {model} = this;
