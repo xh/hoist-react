@@ -39,12 +39,9 @@ import './HoistInput.scss';
  * as the change event. Other fields such as textInput maintain the distinction described above,
  * but expose a `commitOnChange` prop to force them to eagerly flush their values on every change.
  *
- * HoistInputs support built-in validation when bound to a model enhanced by `@FormSupport`.
- * When a HoistInput control is linked to a property on the underlying model decorated by `@field`,
- * the model Field will be used to provide validation info and styling to the input component.
- *
- * For an even more managed display, consider wrapping HoistInputs in a FormField Component, which
- * provide out-of-the-box support for labels and validation messages, both read from the Model.
+ * For a managed display optimized for user-input forms, consider wrapping HoistInputs in a FormField
+ * Component within a `Form`. Forms provide out-of-the-box support for labels, validation, disable state
+ * and read-only sate.
  */
 export class HoistInput extends Component {
 
@@ -53,17 +50,8 @@ export class HoistInput extends Component {
         /** CSS class name. **/
         className: PT.string,
 
-        /** True to disable user interaction. */
-        disabled: PT.bool,
-
         /** HTML id attribute **/
         id: PT.string,
-
-        /** Property name on bound Model from which to read/write data. */
-        field: PT.string,
-
-        /** Bound HoistModel instance.  If contained within a FormField, this will be provided by FormField.*/
-        model: PT.object,
 
         /** Handler called when value changes - passed the new value. */
         onChange: PT.func,
@@ -74,11 +62,35 @@ export class HoistInput extends Component {
         /** Style block. */
         style: PT.object,
 
-        /** Tab order for focus control, or -1 to skip. If unset, browser layout-based order. **/
+        /** Value of the control, if provided directly. */
+        value: PT.any,
+
+        /**
+         * Tab order for focus control, or -1 to skip. If unset, browser layout-based order.
+         */
         tabIndex: PT.number,
 
-        /** Value of the control, if provided directly. */
-        value: PT.any
+        // --- Default from FormField ------
+        /**
+         * True to disable user interaction.
+         *
+         * Provided by any containing FormField.
+         */
+        disabled: PT.bool,
+
+        /**
+         * Bound HoistModel instance
+         *
+         * Provided by any containing FormField.
+         */
+        model: PT.object,
+
+        /**
+         * Property name on bound Model from which to read/write data.
+         *
+         * Provided by any containing FormField.
+         */
+        field: PT.string
     };
 
     @observable hasFocus;

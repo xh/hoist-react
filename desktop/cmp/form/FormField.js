@@ -31,9 +31,6 @@ export class FormField extends Component {
 
     static propTypes = {
 
-        /** True to disable user interaction. */
-        disabled: PT.bool,
-
         /** Property name on bound FormModel from which to read/write data. */
         field: PT.string,
 
@@ -49,12 +46,22 @@ export class FormField extends Component {
          */
         info: PT.node,
 
+        //----------------------
+        // -- Default from Form
+        //----------------------
         /**
          *  Apply minimal styling - validation errors are only displayed with a tooltip.
          *
          *  Defaulted from containing Form, or false.
          */
         minimal: PT.bool,
+
+        /**
+         * CommitOnChange property for underlying HoistInput (for inputs that support)
+         *
+         * Defaulted from containing Form.
+         */
+        commitOnChange: PT.bool,
 
         /**
          * Display warning glyph in the far left side of the input (TextField, NumberInput only).
@@ -107,10 +114,10 @@ export class FormField extends Component {
         if (displayNotValid) classes.push('xh-form-field-invalid');
 
         const control = this.prepareChild({displayNotValid, errors, idAttr, leftErrorIcon, minimal});
-        const infoDiv = info ? div({class: 'bp3-form-helper-text', item: info}) : null;
+        const infoDiv = info ? div({className: 'bp3-form-helper-text', item: info}) : null;
 
         return formGroup({
-            item: control,//vframe(control, infoDiv),
+            item: vframe(control, infoDiv),
             width: 50,
             label: span({
                 item: labelStr ? span(labelStr, requiredStr) : null,
@@ -118,21 +125,22 @@ export class FormField extends Component {
             }),
             labelFor: clickableLabel ? idAttr : null,
             className: this.getClassName(classes),
-            helperText: !minimal && validationDisplayed ? fragment(
-                div({
-                    omit: !isPending,
-                    className: 'xh-form-field-pending',
-                    item: spinner({size: 15})
-                }),
-                div({
-                    omit: !displayNotValid,
-                    className: 'xh-form-field-error-msg',
-                    items: displayNotValid ? tooltip({
-                        item: errors[0],
-                        content: this.getErrorTooltipContent(errors)
-                    }) : null
-                })
-            ) : null
+            helperText: !minimal && validationDisplayed ?
+                fragment(
+                    div({
+                        omit: !isPending,
+                        className: 'xh-form-field-pending',
+                        item: spinner({size: 15})
+                    }),
+                    div({
+                        omit: !displayNotValid,
+                        className: 'xh-form-field-error-msg',
+                        items: displayNotValid ? tooltip({
+                            item: errors[0],
+                            content: this.getErrorTooltipContent(errors)
+                        }) : null
+                    })
+                ) : null
         });
     }
 
@@ -160,7 +168,7 @@ export class FormField extends Component {
             item = this.props.children;
 
         const overrides = {model: this.formModel, field, disabled, id: idAttr};
-        if (displayNotValid && item.type.props.leftIcon && leftErrorIcon) {
+        if (displayNotValid && item.type.propTypes.leftIcon && leftErrorIcon) {
             overrides.leftIcon = Icon.warningCircle();
         }
         const target = React.cloneElement(item, overrides);

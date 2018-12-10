@@ -28,10 +28,12 @@ export class Field {
     name;
     /** @member {Object} model containing the field. */
     model;
-    /** @member {string} user visible name for a field.  For use in validation messages and form labelling. */
-    displayName;
     /** @member {*} initial value of this field. */
     initialValue;
+    /** @member {string} user visible name for a field.  For use in validation messages and form labelling. */
+    @observable displayName;
+    /** @member {boolean}.  True to disable input on this field.*/
+    @observable disabled;
     /** @member {Rule[]} list of validation rules to apply to this field. */
     @observable.ref rules = [];
     /** @member {String[]} list of validation errors.  Null if the validity state not computed. */

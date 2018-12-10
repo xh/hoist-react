@@ -25,9 +25,10 @@ export class Form extends Component {
     static propTypes = {
 
         /**
-         * Default props for contained FormFields.
+         * Defaults for certain props on contained FormFields.
+         * See FormField.
          */
-        fieldDefaults: PT.boolean
+        fieldDefaults: PT.object
     }
 
 
