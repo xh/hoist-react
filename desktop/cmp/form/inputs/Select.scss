@@ -86,14 +86,15 @@
     &__option {
       &--is-selected {
         color: var(--xh-text-color);
-        background: var(--xh-bg-alt);
+        background: var(--xh-select-selected);
       }
       &--is-focused {
         color: var(--xh-text-color-highlight);
-        background: var(--xh-bg-highlight);
+        background: var(--xh-select-focused);
       }
     }
   }
 
 }
+//--xh-bg-highlight: var(--bg-highlight, #{mc-trans('blue', '200')});
 

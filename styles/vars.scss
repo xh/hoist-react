@@ -192,6 +192,10 @@ body {
   --xh-scrollbar-bg: var(--scrollbar-bg, #{mc('blue-grey', '100')});
   --xh-scrollbar-thumb: var(--scrollbar-thumb, #{mc('blue-grey', '300')});
 
+  // Select menus
+  --xh-select-selected: var(--select-selected, #{mc('blue', '100')});
+  --xh-select-focused: var(--select-selected, #{mc('blue', '50')});
+
   // Tabs
   --xh-tab-border-width: var(--tab-border-width, var(--xh-border-width));
   --xh-tab-border-width-px: calc(var(--xh-tab-border-width) * 1px);
