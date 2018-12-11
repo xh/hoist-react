@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import {castArray, isArray, isPlainObject, forOwn} from 'lodash';
+import {castArray, isArray, isPlainObject} from 'lodash';
 import {isReactElement} from '@xh/hoist/utils/react';
 
 /**
@@ -15,35 +15,38 @@ import {isReactElement} from '@xh/hoist/utils/react';
  * serves as an alternative to JSX, and is especially useful for code-heavy element trees.  For element
  * trees with a signifigant amount of hypertext, consider JSX instead.
  *
- * An important feature of this method is that elements given a config of `omit=true` will be removed from the
- * element tree, allowing for conditional inclusion of elements in a declarative style.
+ * This function is a *very* thin layer around React.createElement().  The core enhancement is that child
+ * elements and props are specified in a single bundle, with children placed within an 'item' or 'items'
+ * key.  This allows a highly readable style for creating declarative element trees.
  *
- * Note that if a React Component has a native property that conflicts with the properties described below,
- * it may be specified as native with a '$' prefix (e.g. '$items'). This method will recognize and pass the
- * property appropriately.
+ * An additional minor, but highly useful feature is support for an 'omit' key, which allows element
+ * subtrees to be excluded declaratively as well.
+ *
+ * Note that if a React Component has its own property of 'item', 'items', or 'omit', the property may be
+ * specified with a '$' prefix (e.g. '$item') to avoid conflicting with the elem() api.
  *
  * @param {(Object|string)} type - class that extends Component, or a string representing an HTML element
- * @param {Object} [config] - config props to be applied to the Component
+ * @param {Object} [config] - config to create the react element.
  * @param {(Array|Element|string)} [config.items] - child element(s).
  * @param {(Element|string)} [config.item] - a single child - equivalent to items, offered
  *      for code clarity when only one child is needed.
- * @param {*} [config...props] - any additional props to apply to this element
+ * @param {boolean} [config.omit] - true to exclude the element, by returning null from this function.
+ * @param {*} [config ...props] - any props to apply to this element
  * @return ReactElement
  */
 export function elem(type, config = {}) {
 
     const {item, items, omit, ...props} = config;
 
-    // 1) An omitted element gets marked with dom-safe, unique prop
-    if (omit) props.xhOmit = 'true';
+    // 1) Convenience omission syntax
+    if (omit) return null;
 
-    // 2) Process children -- skip empty and omitted
-    let children = castArray(item || items);
-    children = children.filter(c => c != null && !(c.props && c.props.xhOmit));
+    // 2) Capture children
+    const children = castArray(item || items).filter(c => c != null);
 
-    // 3) Recapture API props that needed '$' prefix to avoid conflicts with above.
-    forOwn(props, (val, key) => {
-        if (key.startsWith('$')) {
+    // 3) Recapture API props that needed '$' prefix to avoid conflicts.
+    ['$omit', '$item', '$items'] .forEach(key => {
+        if (props.hasOwnProperty(key)) {
             props[key.substring(1)] = props[key];
             delete props[key];
         }
