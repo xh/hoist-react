@@ -25,6 +25,8 @@
 ### 🎁 New Features
 
 * `Toolbar` and `ToolbarSeparator` have been added to the mobile component library.
+* `TextInput` on desktop now supports an `enableClear` property to allow easy addition
+of a clear button at the right edge of the component.
 
 
 ## v16.0.0

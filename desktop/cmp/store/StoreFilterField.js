@@ -115,11 +115,7 @@ export class StoreFilterField extends Component {
             value: this.value,
 
             leftIcon: Icon.filter(),
-            rightElement: button({
-                icon: Icon.x(),
-                minimal: true,
-                onClick: this.onClearClick
-            }),
+            enableClear: true,
 
             placeholder: withDefault(props.placeholder, 'Quick filter'),
             className: this.getClassName(),
