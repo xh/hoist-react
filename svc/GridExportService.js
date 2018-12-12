@@ -33,7 +33,7 @@ export class GridExportService {
         filename = 'export',
         type = 'excelTable',
         includeHiddenCols = false
-    }) {
+    } = {}) {
         throwIf(!gridModel, 'GridModel required for export');
         throwIf(!isString(filename) && !isFunction(filename), 'Export filename must be either a string or a closure');
         throwIf(!['excel', 'excelTable', 'csv'].includes(type), `Invalid export type "${type}". Must be either "excel", "excelTable" or "csv"`);
