@@ -177,7 +177,7 @@ export class GridModel {
      * @param {Object} options - Export options. See GridExportService.exportAsync() for options.
      */
     async exportAsync(options = {}) {
-        throwIf(!this.enableExport, 'The GridModel.enableExport config option must be true.');
+        throwIf(!this.enableExport, 'Export not enabled for this grid. See GridModel.enableExport');
         return XH.gridExportService.exportAsync(this, {...this.exportOptions, ...options});
     }
 
