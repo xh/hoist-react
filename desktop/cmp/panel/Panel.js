@@ -22,8 +22,10 @@ import './Panel.scss';
  * A Panel container builds on the lower-level layout components to offer a header element
  * w/standardized styling, title, and Icon as well as support for top and bottom toolbars.
  *
- * This component also includes support for resizing and collapsing its contents, if given a
- * PanelModel.
+ * Panels also support resizing and collapsing their contents via its `model` prop. Pass a
+ * `PanelModel` configuration object as a prop to enable and customize these features.
+ *
+ * @see PanelModel
  */
 @HoistComponent
 @LayoutSupport
@@ -50,11 +52,10 @@ export class Panel extends Component {
         bbar: PT.element,
 
         /**
-         * Mask to render on this panel.
-         *
-         * Set to a React element specifying a Mask instance,
-         * or set to a PendingTaskModel for a default loading mask w/spinner bound to that model,
-         * or set to true for a simple default mask.
+         * Mask to render on this panel. Set to:
+         *   + a ReactElement specifying a Mask instance - or -
+         *   + a PendingTaskModel for a default loading mask w/spinner bound to that model - or -
+         *   + true for a simple default mask.
          */
         mask: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool])
     };

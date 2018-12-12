@@ -30,9 +30,7 @@ import {ColChooserModel} from './ColChooserModel';
 @HoistComponent
 export class ColChooser extends Component {
 
-
     static modelClass = ColChooserModel;
-
 
     render() {
         const {isOpen, gridModel, lrModel} = this.model;
