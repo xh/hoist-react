@@ -18,13 +18,16 @@ import {Icon} from '@xh/hoist/icon';
 export class VisitsChart extends Component {
     
     render() {
-        const {sizingModel, chartModel} = this.model;
         return panel({
             icon: Icon.users(),
             title: 'Unique Daily Visitors',
-            item: chart({model: chartModel}),
+            item: chart({model: this.model.chartModel}),
             bbar: this.renderToolbar(),
-            sizingModel
+            model: {
+                defaultSize: 500,
+                side: 'bottom',
+                prefName: 'xhAdminActivityChartSize'
+            }
         });
     }
 

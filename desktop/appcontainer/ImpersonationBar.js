@@ -15,6 +15,8 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
+import {ImpersonationBarModel} from '@xh/hoist/core/appcontainer/ImpersonationBarModel';
+
 /**
  * An admin-only toolbar that provides a UI for impersonating application users, as well as ending
  * any current impersonation setting. Can be shown via a global Shift+i keyboard shortcut.
@@ -25,6 +27,8 @@ import {Icon} from '@xh/hoist/icon';
 @HotkeysTarget
 export class ImpersonationBar extends Component {
 
+    static modelClass = ImpersonationBarModel;
+    
     @observable pendingTarget = null;
 
     renderHotkeys() {

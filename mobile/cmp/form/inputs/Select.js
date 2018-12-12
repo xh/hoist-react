@@ -207,7 +207,6 @@ export class Select extends HoistInput {
 
     getOrCreatePortalDiv() {
         let portal = document.getElementById('xh-select-input-portal');
-
         if (!portal) {
             portal = document.createElement('div');
             portal.id = 'xh-select-input-portal';

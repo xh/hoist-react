@@ -13,6 +13,7 @@ import {leftRightChooser, leftRightChooserFilter} from '@xh/hoist/desktop/cmp/le
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
+import {ColChooserModel} from './ColChooserModel';
 /**
  * Hoist UI for user selection and discovery of available Grid columns, enabled via the
  * GridModel.enableColChooser config option.
@@ -28,6 +29,8 @@ import {Icon} from '@xh/hoist/icon';
  */
 @HoistComponent
 export class ColChooser extends Component {
+
+    static modelClass = ColChooserModel;
 
     render() {
         const {isOpen, gridModel, lrModel} = this.model;

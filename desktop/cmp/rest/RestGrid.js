@@ -13,10 +13,13 @@ import {fragment} from '@xh/hoist/cmp/layout';
 
 import {restGridToolbar} from './impl/RestGridToolbar';
 import {restForm} from './impl/RestForm';
+import {RestGridModel} from './RestGridModel';
 
 @HoistComponent
 @LayoutSupport
 export class RestGrid extends Component {
+
+    static modelClass = RestGridModel;
 
     baseClassName = 'xh-rest-grid';
 

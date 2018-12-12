@@ -13,8 +13,8 @@ import {box, fragment} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import './ag-grid';
 import {agGridReact, navigateSelection, ColumnHeader} from './ag-grid';
-
 import {colChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
+import {GridModel} from './GridModel';
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -31,6 +31,8 @@ import {colChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 @HoistComponent
 @LayoutSupport
 export class Grid extends Component {
+
+    static modelClass = GridModel;
 
     static propTypes = {
         /**

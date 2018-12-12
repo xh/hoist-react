@@ -10,7 +10,6 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {ChartModel} from '@xh/hoist/desktop/cmp/chart';
 import {fmtDate} from '@xh/hoist/format';
-import {PanelSizingModel} from '@xh/hoist/desktop/cmp/panel';
 
 @HoistModel
 export class VisitsChartModel {
@@ -18,12 +17,6 @@ export class VisitsChartModel {
     @observable startDate = moment().subtract(3, 'months').toDate();
     @observable endDate = new Date();
     @observable username = '';
-
-    sizingModel = new PanelSizingModel({
-        defaultSize: 500,
-        side: 'bottom',
-        prefName: 'xhAdminActivityChartSize'
-    });
 
     chartModel = new ChartModel({
         config: {
@@ -97,6 +90,6 @@ export class VisitsChartModel {
     }
 
     destroy() {
-        XH.safeDestroy(this.chartModel, this.sizingModel);
+        XH.safeDestroy(this.chartModel);
     }
 }

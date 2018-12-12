@@ -24,6 +24,7 @@ import {messageSource} from './MessageSource';
 import {IdleDialog} from './IdleDialog';
 import {ToastSource} from './ToastSource';
 
+import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
 
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {colChooser, ColChooserModel} from '@xh/hoist/desktop/cmp/grid';
@@ -46,6 +47,8 @@ installDesktopImpls({
  */
 @HoistComponent
 export class AppContainer extends Component {
+
+    static modelClass = AppContainerModel;
 
     @observable.ref caughtException = null;
 

@@ -25,6 +25,7 @@ import {toastSource} from './ToastSource';
 import {messageSource} from './MessageSource';
 
 import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
+import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
 installMobileImpls({});
 
 /**
@@ -39,6 +40,8 @@ installMobileImpls({});
  */
 @HoistComponent
 export class AppContainer extends Component {
+
+    static modelClass = AppContainerModel;
 
     @observable.ref caughtException = null;
 
