@@ -17,6 +17,8 @@ import {Icon} from '@xh/hoist/icon';
  * Must be provided either an onClick handler *or* a model. If a model is provided, this button
  * will call exportAsync() on the model class. Options supported by GridExportService.exportAsync()
  * can be set via the exportOptions props.
+ *
+ * Requires the `GridModel.enableExport` config option to be true.
  */
 @HoistComponent
 export class ExportButton extends Component {
@@ -25,12 +27,12 @@ export class ExportButton extends Component {
         icon: PT.element,
         title: PT.string,
         onClick: PT.func,
-        model: PT.object,
+        gridModel: PT.object,
         exportOptions: PT.object
     };
 
     render() {
-        const {icon, title, onClick, model, exportOptions, ...rest} = this.props;
+        const {icon, title, onClick, gridModel, exportOptions, ...rest} = this.props;
         return button({
             icon: icon || Icon.download(),
             title: title || 'Export',
@@ -44,8 +46,8 @@ export class ExportButton extends Component {
     // Implementation
     //---------------------------
     onExportClick = () => {
-        const {exportOptions = {}} = this.props;
-        this.model.exportAsync(exportOptions);
+        const {exportOptions = {}, gridModel} = this.props;
+        gridModel.exportAsync(exportOptions).catchDefault();
     }
 
 }

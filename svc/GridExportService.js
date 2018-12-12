@@ -23,16 +23,15 @@ export class GridExportService {
     /**
      * Export a GridModel to a file. Typically called via `GridModel.exportAsync()`.
      *
-     * @param {Object} options - Export options.
-     * @param {GridModel} options.gridModel - GridModel to export.
-     * @param {(string|function)} options.filename - name for exported file or closure to generate.
-     * @param {string} options.type - type of export - one of ['excel', 'excelTable', 'csv'].
+     * @param {GridModel} gridModel - GridModel to export.
+     * @param {Object} [options] - Export options.
+     * @param {(string|function)} [options.filename] - name for exported file or closure to generate.
+     * @param {string} [options.type] - type of export - one of ['excel', 'excelTable', 'csv'].
      * @param {boolean} [options.includeHiddenCols] - include hidden grid columns in the export.
      */
-    async exportAsync({
-        gridModel,
-        filename,
-        type,
+    async exportAsync(gridModel, {
+        filename = 'export',
+        type = 'excelTable',
         includeHiddenCols = false
     }) {
         throwIf(!gridModel, 'GridModel required for export');

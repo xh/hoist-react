@@ -152,7 +152,7 @@ export class GridModel {
         this.rowClassFn = rowClassFn;
 
         this.enableExport = enableExport;
-        this.exportOptions = {gridModel: this, filename: 'export', ...exportOptions};
+        this.exportOptions = exportOptions;
 
         Object.assign(this, rest);
 
@@ -177,7 +177,8 @@ export class GridModel {
      * @param {Object} options - Export options. See GridExportService.exportAsync() for options.
      */
     async exportAsync(options = {}) {
-        return XH.gridExportService.exportAsync({...this.exportOptions, ...options});
+        throwIf(!this.enableExport, 'The GridModel.enableExport config option must be true.');
+        return XH.gridExportService.exportAsync(this, {...this.exportOptions, ...options});
     }
 
     /**

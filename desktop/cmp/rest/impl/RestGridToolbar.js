@@ -38,7 +38,7 @@ export class RestGridToolbar extends Component {
             filler(),
             storeCountLabel({gridModel, unit}),
             storeFilterField({gridModel, includeFields: model.filterFields}),
-            exportButton({model, exportOptions: {type: 'excelTable'}})
+            exportButton({gridModel})
         ];
     }
 }
