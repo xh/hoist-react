@@ -12,7 +12,8 @@ import {start} from '@xh/hoist/promise';
 import {isNil} from 'lodash';
 
 /**
- * This class provides the underlying state for the resizing/collapse state of a Panel.
+ * PanelModel supports configuration and state-management for user-driven Panel resizing and
+ * expand/collapse functionality, including the option to persist such state into a Hoist preference.
  */
 @HoistModel
 export class PanelModel {
@@ -106,8 +107,9 @@ export class PanelModel {
     //----------------------
     @action
     setCollapsed(collapsed) {
-        // When opening from collapsed position restore *default* size.  This may be suboptimal in some cases
-        // -- you lose user set "size" -- but avoids confusing behavior where 'opening' a panel could cause it to shrink.
+        // When opening from collapsed position restore *default* size. This may be suboptimal
+        // in some cases -- you lose user set "size" -- but avoids confusing behavior where
+        // 'opening' a panel could cause it to shrink.
         if (this.collapsed === true && !collapsed) {
             this.size = this.defaultSize;
         }
@@ -132,12 +134,12 @@ export class PanelModel {
     //---------------------------------------------
     // Implementation (for related private classes)
     //---------------------------------------------
-    get vertical()              {
+    get vertical() {
         return this.side === 'top' || this.side === 'bottom';
     }
 
     // Does the Panel come before the resizing affordances?
-    get contentFirst()          {
+    get contentFirst() {
         return this.side === 'top' || this.side === 'left';
     }
     

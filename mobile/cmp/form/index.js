@@ -7,6 +7,7 @@
 
 export * from './FormField';
 export * from './Label';
+export * from './inputs/ButtonGroupInput';
 export * from './inputs/Checkbox';
 export * from './inputs/NumberInput';
 export * from './inputs/SearchInput';

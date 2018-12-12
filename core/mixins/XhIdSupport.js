@@ -10,7 +10,7 @@ import {provideMethods, markClass} from '@xh/hoist/utils/js';
 
 
 /**
- *  Support for automatic generation of a unique id for instances.
+ * Support automatic, on-demand generation of a unique ID string for class instances.
  */
 export function XhIdSupport(C) {
 

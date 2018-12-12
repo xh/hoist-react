@@ -34,37 +34,44 @@ export function HoistComponent(C) {
         /**
          * Model instance which this component is rendering.
          *
-         * Applications can specify this by setting it either as a field directly on the component class definition
-         * or as a prop specifed by a parent Component.   If specified as a prop, it can be specified as either an actual
-         * model instance, or a config for one to be created of type 'modelClass'.
+         * Applications specify a Component's model by either setting it as a field directly on the
+         * Component class definition or by passing it as a prop from a parent Component. If
+         * provided as a prop, the model can be passed as either an already-created class instance
+         * or as a config for one to be created internally. A Component class definition should
+         * include a static `modelClass` field to support this latter create-on-demand pattern.
          *
-         * Parent components should provide concrete instances of models to their children only if they wish to
-         * programmatically access those models to reference data, or manipulate the component.  Otherwise the models
-         * can be specified internally, either in the class definition, or via a prop which is a simple object,
-         * representing the model to be created.
+         * Parent components should provide concrete instances of models to their children only if
+         * they wish to programmatically access those models to reference data or otherwise
+         * manipulate the component using the model's API. Otherwise, models can and should be
+         * created internally by the Component, either in the class definition or via a config
+         * object prop.
          *
-         * When concrete instances are  provided via props, they are assumed to be managed by a parent component.
-         * Otherwise models are assumed to be owned by this component and will be destroyed when the
-         * component itself is unmounted and destroyed.
+         * When concrete instances are provided via props they are assumed to be owned and managed
+         * by a parent Component. Otherwise models are considered to be "locally owned" by the
+         * Component itself and will be destroyed when the Component is unmounted and destroyed.
          *
-         * The model object is not expected to change for the lifetime of the component.  Applications that wish to
-         * change the model for a mounted component should ensure that a new instance of the component gets mounted --
-         * this can be done easily by setting the component's key prop to model.xhId.
+         * The model instance is not expected to change for the lifetime of the component. Apps that
+         * wish to swap out the model for a mounted component should ensure that a new instance of
+         * the component gets mounted. This can be accomplished by setting the component's `key`
+         * prop to `model.xhId` (as a model will always return an ID unique to each instance).
+         *
+         * @see HoistModel
          */
         model: {
             get() {
 
                 const {_model, _modelWasProvided, props} = this;
 
-                // Return any previously created or seen
+                // Return any model instance that has already been processed / set on the Component.
                 if (_model) {
                     if (_modelWasProvided && props.model !== _model) this.throwModelChangeException();
                     return _model;
                 }
 
-                // ..or gather from props, potentially instantiating if appropriate
+                // ...or source from props, potentially instantiating if appropriate.
                 const {modelClass} = C,
                     propsModel = props.model;
+
                 if (propsModel) {
                     if (isPlainObject(propsModel)) {
                         if (!modelClass) this.throwNoModelClassProvided();
@@ -77,6 +84,7 @@ export function HoistComponent(C) {
                     return this._model;
                 }
 
+                // ...or return null if no model is available.
                 return null;
             },
 
@@ -87,7 +95,7 @@ export function HoistComponent(C) {
         },
 
         /**
-         * Is this component in the DOM and not within a hidden sub-tree (e.g. hidden tab).
+         * Is this component in the DOM and not within a hidden sub-tree (e.g. hidden tab)?
          * Based on the underlying css 'display' property of all ancestor properties.
          */
         isDisplayed: {
@@ -103,7 +111,7 @@ export function HoistComponent(C) {
         },
 
         /**
-         *  Does this component contain a particular element.
+         *  Does this component contain a particular element?
          */
         containsElement(elem) {
             for (let thisElem = this.getDOMNode(); elem; elem = elem.parentElement) {
@@ -113,8 +121,7 @@ export function HoistComponent(C) {
         },
 
         /**
-         * Get the DOM element underlying this component.
-         * Returns null if component is not mounted.
+         * Get the DOM element underlying this component, or null if component is not mounted.
          */
         getDOMNode() {
             return this._mounted ? ReactDom.findDOMNode(this) : null;
@@ -157,19 +164,22 @@ export function HoistComponent(C) {
 
     defaultMethods(C, {
         throwModelChangeException() {
-            throw XH.exception(
-                'Cannot re-render Component with a different model.  If you wish to do ' +
-                'this, ensure the Component gets re-mounted by rendering it with a unique "key", e.g. ' +
-                '"key: model.xhId"'
-            );
+            throw XH.exception(`
+                Cannot re-render Component with a different model. If a new model is required, ensure 
+                the Component is re-mounted by rendering it with a unique key, e.g. "key: model.xhId".
+            `);
         },
 
         throwWrongModelClass() {
-            throw XH.exception(`Component requires model of type ${this.constructor.modelClass}.`);
+            throw XH.exception(`
+                Component requires model of type ${this.constructor.modelClass}.
+            `);
         },
 
         throwNoModelClassProvided() {
-            throw XH.exception('Component requires specification of modelClass in order to create model.');
+            throw XH.exception(`
+                Component class definition must specify a modelClass to support creating models from prop objects.
+            `);
         }
     });
 

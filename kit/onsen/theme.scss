@@ -88,23 +88,39 @@ body.xh-app {
     &:active {
       background-color: var(--xh-btn-color);
     }
+    &.xh-button-active {
+      background-color: var(--xh-btn-active-color);
+      opacity: 1;
+    }
   }
 
   .button--outline,
   .button--outline:active,
   .button--outline:hover {
     border-color: var(--xh-btn-color);
+    color: var(--xh-btn-color);
+    &.xh-button-active {
+      background-color: var(--xh-btn-color);
+      color: white;
+    }
   }
   .button--light,
   .button--light:active,
   .button--light:hover {
     border-color: var(--xh-text-color-muted);
     color: var(--xh-text-color-muted);
+    &.xh-button-active {
+      background-color: var(--xh-bg-alt);
+      color: var(--xh-text-color);
+    }
   }
   .button--quiet,
   .button--quiet:active,
   .tabbar__button {
     color: var(--xh-text-color);
+    &.xh-button-active {
+      background-color: var(--xh-bg-alt);
+    }
   }
 
   // Accented

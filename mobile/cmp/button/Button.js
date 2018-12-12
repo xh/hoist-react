@@ -23,13 +23,14 @@ export class Button extends Component {
         icon: PT.element,
         text: PT.string,
         modifier: PT.string,
+        active: PT.bool,
         onClick: PT.func
     };
 
     baseClassName = 'xh-button';
 
     render() {
-        const {icon, text, onClick, modifier, style, ...rest} = this.getNonLayoutProps(),
+        const {icon, text, modifier, active, onClick, style, ...rest} = this.getNonLayoutProps(),
             items = [];
 
         if (icon && text) {
@@ -51,7 +52,7 @@ export class Button extends Component {
             },
 
             ...rest,
-            className: this.getClassName('xh-button')
+            className: this.getClassName('xh-button', active ? 'xh-button-active' : '')
         });
     }
 
