@@ -120,7 +120,8 @@ export class GridModel {
      * @param {boolean} [c.compact] - true to render the grid in compact mode.
      * @param {boolean} [c.enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
-     * @param {boolean} [c.enableExport] - true to install default export context menu items.
+     * @param {boolean} [c.enableExport] - true to enable exporting this grid and
+     *      install default context menu items.
      * @param {object} [c.exportOptions] - default options used in exportAsync().
      * @param {function} [c.rowClassFn] - closure to generate css class names for a row.
      *      Should return a string or array of strings. Receives record data as param.
