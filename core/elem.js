@@ -11,41 +11,42 @@ import {isReactElement} from '@xh/hoist/utils/react';
 
 /**
  * Convenience method for creating React Elements. This method is designed to provide a well-
- * formatted, declarative native javascript approach to configuring Elements and their children. It
- * serves as an alternative to JSX, and is especially useful for code-heavy element trees.  For element
- * trees with a signifigant amount of hypertext, consider JSX instead.
+ * formatted, declarative, native javascript approach to configuring Elements and their children.
+ * It serves as an alternative to JSX and is especially useful for code-heavy element trees.
+ * (For element trees with a significant amount of hypertext, JSX could be a better choice.)
  *
- * This function is a *very* thin layer around React.createElement().  The core enhancement is that child
- * elements and props are specified in a single bundle, with children placed within an 'item' or 'items'
- * key.  This allows a highly readable style for creating declarative element trees.
+ * This function is a *very* thin layer around `React.createElement()`. The core enhancement is that
+ * it expects child elements and props to be specified in a single bundle, with children placed
+ * within an `item` or `items` key. This allows developers to write declarative, multi-level element
+ * trees in a concise yet highly-readable style.
  *
- * An additional minor, but highly useful feature is support for an 'omit' key, which allows element
- * subtrees to be excluded declaratively as well.
+ * An additional minor-but-useful feature is support for an `omit` config, which allows element
+ * subtrees to be declaratively excluded from rendering if a given condition is met.
  *
- * Note that if a React Component has its own property of 'item', 'items', or 'omit', the property may be
- * specified with a '$' prefix (e.g. '$item') to avoid conflicting with the elem() api.
+ * Note that if a React Component has its own property of `item`, `items`, or `omit`, the property
+ * must be specified with a `$` prefix (e.g. `$item`) to avoid conflicting with the elem() API.
  *
- * @param {(Object|string)} type - class that extends Component, or a string representing an HTML element
- * @param {Object} [config] - config to create the react element.
- * @param {(Array|Element|string)} [config.items] - child element(s).
- * @param {(Element|string)} [config.item] - a single child - equivalent to items, offered
- *      for code clarity when only one child is needed.
- * @param {boolean} [config.omit] - true to exclude the element, by returning null from this function.
- * @param {*} [config ...props] - any props to apply to this element
+ * @param {(Object|string)} type - class extending Component or string representing an HTML element.
+ * @param {Object} [config] - Element configuration.
+ * @param {(Array|Element|string)} [config.items] - child Element(s).
+ * @param {(Element|string)} [config.item] - equivalent to `items`, offered for code clarity when
+ *      only one child is needed.
+ * @param {boolean} [config.omit] - true to exclude the Element by returning null.
+ * @param {*} [config ...props] - props to apply to the Element.
  * @return ReactElement
  */
 export function elem(type, config = {}) {
 
-    const {item, items, omit, ...props} = config;
+    const {omit, item, items, ...props} = config;
 
-    // 1) Convenience omission syntax
+    // 1) Convenience omission syntax.
     if (omit) return null;
 
-    // 2) Capture children
+    // 2) Read children from item[s] config.
     const children = castArray(item || items).filter(c => c != null);
 
     // 3) Recapture API props that needed '$' prefix to avoid conflicts.
-    ['$omit', '$item', '$items'] .forEach(key => {
+    ['$omit', '$item', '$items'].forEach(key => {
         if (props.hasOwnProperty(key)) {
             props[key.substring(1)] = props[key];
             delete props[key];
@@ -60,13 +61,13 @@ export function elem(type, config = {}) {
  * Returns a factory function that can create a ReactElement using native JS (i.e. not JSX).
  * This is a 'curried' version of the raw elem() method.
  *
- * One critical enhancement provided by this factory is that its arguments may be *either* a single config for elem(),
- * or alternatively, an array or rest argument representing just the the children to be passed to the new Element.
- * This latter case is fully equivalent to specifying `{items: [,]}` and is useful when no attributes need to be
- * applied directly to the Element.
+ * One critical enhancement provided by this factory is that its arguments may be *either* a single
+ * config for elem() or either an array or rest arguments representing just the the children to be
+ * passed to the new Element. This latter case is fully equivalent to specifying `{items: [...]}`
+ * and is useful when no attributes need to be applied directly to the Element.
 
- * @param {(Object|string)} type - class that extends Component - or a string representing an HTML
- *      element - for which this factory will create Elements.
+ * @param {(Object|string)} type - class extending Component or string representing an HTML element
+ *      for which this factory will create Elements.
  * @return {function}
  */
 export function elemFactory(type) {
@@ -74,6 +75,7 @@ export function elemFactory(type) {
         return elem(type, normalizeArgs(args));
     };
 }
+
 
 //------------------------
 // Implementation
