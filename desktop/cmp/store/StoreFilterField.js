@@ -10,7 +10,6 @@ import PT from 'prop-types';
 import {debounce, escapeRegExp, isEmpty, intersection, without} from 'lodash';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
-import {button} from '@xh/hoist/desktop/cmp/button';
 import {textInput} from '@xh/hoist/desktop/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
