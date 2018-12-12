@@ -18,6 +18,7 @@ import {
     ConfigService,
     EnvironmentService,
     FetchService,
+    GridExportService,
     IdentityService,
     IdleService,
     LocalStorageService,
@@ -79,6 +80,8 @@ class XHClass {
     environmentService;
     /** @member {FetchService} */
     fetchService;
+    /** @member {GridExportService} */
+    gridExportService;
     /** @member {IdentityService} */
     identityService;
     /** @member {IdleService} */
@@ -396,7 +399,7 @@ class XHClass {
 
         try {
             await this.installServicesAsync(FetchService, LocalStorageService);
-            await this.installServicesAsync(TrackService, IdleService);
+            await this.installServicesAsync(TrackService, IdleService, GridExportService);
 
             // Special handling for EnvironmentService, which makes the first fetch back to the Grails layer.
             try {

@@ -63,7 +63,7 @@ export class ActivityGrid extends Component {
             refreshButton({model}),
             filler(),
             storeCountLabel({gridModel: model.gridModel, unit: 'log'}),
-            exportButton({model: model.gridModel})
+            exportButton({gridModel: model.gridModel})
         );
     }
     

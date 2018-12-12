@@ -66,7 +66,7 @@ export class Column {
      *      Defaults to headerName.
      * @param {(string|function)} [c.exportValue] - alternate field name to reference or function
      *      to call when producing a value for a file export.
-     *      @see ExportManager
+     *      @see GridExportService
      * @param {ExportFormat} [c.exportFormat] - structured format string for Excel-based exports.
      *      @see ExportFormat
      * @param {number} [c.exportWidth] - width in characters for Excel-based exports. Typically used

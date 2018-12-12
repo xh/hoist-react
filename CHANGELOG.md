@@ -22,6 +22,14 @@
   * `showSplitterCollapseButton` - controls visibility of the collapse button on the splitter bar.
   * `showHeaderCollapseButton` - controls visibility of a (new) collapse button in the header.
 
+* The API methods for exporting grid data have been changed:
+  * Grids must opt-in to export with the `GridModel.enableExport` config.
+  * Exporting a `GridModel` is handled by the new `GridExportService`, which takes a collection of `exportOptions`.
+    See `GridExportService.exportAsync` for available `exportOptions`.
+  * All export entry points
+    (`GridModel.exportAsync()`, `ExportButton` and the export context menu items) support `exportOptions`.
+    Additionally, `GridModel` can be configured with default `exportOptions` in its config.
+
 ### 🎁 New Features
 
 * `Toolbar` and `ToolbarSeparator` have been added to the mobile component library.
