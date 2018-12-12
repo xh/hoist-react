@@ -13,6 +13,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {frame, filler} from '@xh/hoist/cmp/layout';
 
+import {AboutDialogModel} from '@xh/hoist/core/appcontainer/AboutDialogModel';
 import './AboutDialog.scss';
 
 /**
@@ -24,6 +25,8 @@ import './AboutDialog.scss';
  */
 @HoistComponent
 export class AboutDialog extends Component {
+
+    static modelClass = AboutDialogModel;
 
     render() {
         const {model} = this;

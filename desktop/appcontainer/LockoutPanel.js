@@ -13,6 +13,7 @@ import {logoutButton} from '@xh/hoist/desktop/cmp/button';
 
 import './LockoutPanel.scss';
 import {impersonationBar} from './ImpersonationBar';
+import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
 
 /**
  * Displayed in place of the UI when user does not have any access, as per AppSpec.checkAccess.
@@ -21,6 +22,8 @@ import {impersonationBar} from './ImpersonationBar';
  */
 @HoistComponent
 export class LockoutPanel extends Component {
+
+    static modelClass = AppContainerModel;
 
     render() {
         return viewport(

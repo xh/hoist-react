@@ -10,7 +10,6 @@ import {action, observable} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {UrlStore} from '@xh/hoist/data';
-import {PanelSizingModel} from '@xh/hoist/desktop/cmp/panel';
 
 /**
  * @private
@@ -29,11 +28,6 @@ export class LogViewerModel {
     @observable.ref rows = [];
 
     loadModel = new PendingTaskModel();
-
-    filesSizingModel = new PanelSizingModel({
-        side: 'left',
-        defaultSize: 250
-    });
 
     filesGridModel = new GridModel({
         enableExport: true,
@@ -98,7 +92,7 @@ export class LogViewerModel {
     //---------------------------------
     // Implementation
     //---------------------------------
-    fetchFile() {
+    fetchFile({isAutoRefresh = false} = {}) {
         return XH
             .fetchJson({
                 url: 'logViewerAdmin/getFile',
@@ -110,7 +104,7 @@ export class LogViewerModel {
                 }
             })
             .thenAction(rows => this.rows = this.startLine ? rows.content : rows.content.reverse())
-            .linkTo(this.loadModel)
+            .linkTo(isAutoRefresh ? null : this.loadModel)
             .catchDefault();
     }
 
@@ -136,6 +130,6 @@ export class LogViewerModel {
     }
     
     destroy() {
-        XH.safeDestroy(this.loadModel, this.filesGridModel, this.filesSizingModel);
+        XH.safeDestroy(this.loadModel, this.filesGridModel);
     }
 }

@@ -12,7 +12,7 @@ import {usernameCol} from '@xh/hoist/admin/columns';
 @HoistComponent
 export class UserPreferencePanel extends Component {
 
-    localModel = new RestGridModel({
+    model = new RestGridModel({
         stateModel: 'xhUserPreferenceGrid',
         enableColChooser: true,
         enableExport: true,

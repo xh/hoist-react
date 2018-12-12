@@ -21,7 +21,7 @@ import {clientErrorDetail} from './ClientErrorDetail';
 @HoistComponent
 export class ClientErrorPanel extends Component {
 
-    localModel = new ClientErrorModel();
+    model = new ClientErrorModel();
 
     render() {
         const {model} = this;

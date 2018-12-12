@@ -17,7 +17,7 @@ import './MonitorResultsPanel.scss';
 
 @HoistComponent
 export class MonitorResultsPanel extends Component {
-    localModel = new MonitorResultsModel({view: this});
+    model = new MonitorResultsModel({view: this});
 
     async loadAsync() {
         this.model.loadAsync();

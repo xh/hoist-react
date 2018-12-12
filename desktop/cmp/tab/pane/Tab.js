@@ -5,7 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import PT from 'prop-types';
 import {elem, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Ref} from '@xh/hoist/utils/react';
 import {frame} from '@xh/hoist/cmp/layout';
@@ -28,10 +27,7 @@ import {TabModel} from './TabModel';
 @HoistComponent
 export class Tab extends Component {
 
-    static propTypes = {
-        /** The controlling TabModel instance. */
-        model: PT.instanceOf(TabModel).isRequired
-    };
+    static modelClass = TabModel;
 
     baseClassName = 'xh-tab';
 

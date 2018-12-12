@@ -14,6 +14,7 @@ import {Icon} from '@xh/hoist/icon';
 
 import './ExceptionDialog.scss';
 import {exceptionDialogDetails} from './ExceptionDialogDetails';
+import {ExceptionDialogModel} from '@xh/hoist/core/appcontainer/ExceptionDialogModel';
 
 /**
  * Dialog for display of exceptions, with support for viewing a detailed stacktrace
@@ -23,6 +24,8 @@ import {exceptionDialogDetails} from './ExceptionDialogDetails';
  */
 @HoistComponent
 export class ExceptionDialog extends Component {
+
+    static modelClass = ExceptionDialogModel;
 
     render() {
         const {model} = this,

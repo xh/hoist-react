@@ -1,13 +1,94 @@
 # Changelog
 
-## Unreleased
+## v17.0.0-SNAPSHOT (in development / unreleased)
 
 ### 💥 Breaking Changes
 
-* The `ColChooserButton` has been moved from the incorrect location `@xh/hoist/cmp/grid` to `@xh/hoist/desktop/cmp/button`.
-This is a desktop-only component.  Apps will have to adjust these imports. 
+* The implementation of the `model` property on `HoistComponent` has been substantially enhanced:
+  *  "Local" Models should now be specified on the Component class declaration by simply setting the
+     `model` property, rather than the confusing `localModel` property.
+  *  HoistComponent now supports a static `modelClass` class property. If set, this property will
+     allow a HoistComponent to auto-create a model internally when presented with a plain javascript
+     object as its `model` prop. This is especially useful in cases like `Panel` and `TabContainer`,
+     where apps often need to specify a model but do not require a reference to the model and
+     therefore can skip importing and instantiating an instance of model class themselves.
+  *  Hoist will now throw an Exception if an application attempts to changes the model on an
+     existing HoistComponent instance or presents the wrong type of model to a HoistComponent where
+     `modelClass` has been specified.
 
-* TODO
+* `PanelSizingModel` has been renamed `PanelModel`. The class now also has the following new
+  optional properties, all of which are `true` by default:
+  * `showSplitter` - controls visibility of the splitter bar on the outside edge of the component.
+  * `showSplitterCollapseButton` - controls visibility of the collapse button on the splitter bar.
+  * `showHeaderCollapseButton` - controls visibility of a (new) collapse button in the header.
+
+### 🎁 New Features
+
+* `Toolbar` and `ToolbarSeparator` have been added to the mobile component library.
+* `TextInput` on desktop now supports an `enableClear` property to allow easy addition
+of a clear button at the right edge of the component.
+
+
+## v16.0.0
+
+### 🎁 New Features
+
+* Support for ComboBoxes and Dropdowns have been improved dramatically, via a new `Select` component
+  based on react-select.
+* The ag-Grid based `Grid` and `GridModel` are now available on both mobile and desktop. We have
+  also added new support for multi-row/multi-field columns via the new `multiFieldRenderer` renderer
+  function.
+* The app initialization lifecycle has been restructured so that no App classes are constructed
+  until Hoist is fully initialized.
+* `Column` now supports an optional `rowHeight` property.
+* `Button` now defaults to 'minimal' mode, providing a much lighter-weight visual look-and-feel to
+  HoistApps. `Button` also implements `@LayoutSupport`.
+* Grouping state is now saved by the grid state support on `GridModel`.
+* The Hoist `DimChooser` component has been ported to hoist-react.
+* `fetchService` now supports an `autoAbortKey` in its fetch methods. This can be used to
+  automatically cancel obsolete requests that have been superceded by more recent variants.
+* Support for new `clickableLabel` property on `FormField`.
+* `RestForm` now supports a read-only view.
+* Hoist now supports automatic tracking of app/page load times.
+
+### 💥 Breaking Changes
+
+* The new location for the cross-platform grid component is `@xh/hoist/cmp/grid`. The `columns`
+  package has also moved under a new sub-package in this location.
+* Hoist top-level App Structure has changed in order to improve consistency of the Model-View
+  conventions, to improve the accessibility of services, and to support the improvements in app
+  initialization mentioned above:
+  - `XH.renderApp` now takes a new `AppSpec` configuration.
+  - `XH.app` is now `XH.appModel`.
+  - All services are installed directly on `XH`.
+  - `@HoistApp` is now `@HoistAppModel`
+* `RecordAction` has been substantially refactored and improved. These are now typically immutable
+  and may be shared.
+  - `prepareFn` has been replaced with a `displayFn`.
+  - `actionFn` and `displayFn` now take a single object as their parameter.
+* The `hide` property on `Column` has been changed to `hidden`.
+* The `ColChooserButton` has been moved from the incorrect location `@xh/hoist/cmp/grid` to
+  `@xh/hoist/desktop/cmp/button`. This is a desktop-only component. Apps will have to adjust these
+  imports.
+* `withDefaultTrue` and `withDefaultFalse` in `@xh/hoist/utils/js` have been removed. Use
+  `withDefault` instead.
+* `CheckBox` has been renamed `Checkbox`
+
+
+### ⚙️ Technical
+
+* ag-Grid has been upgraded to v19.1
+* mobx has been upgraded to v5.6
+* React has been upgraded to v16.6
+* Allow browsers with proper support for Proxy (e.g Edge) to access Hoist Applications.
+
+
+### 🐞 Bug Fixes
+
+* Extensive. See full change list below.
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v15.1.2...v16.0.0)
+
 
 ## v15.1.2
 
@@ -365,9 +446,8 @@ elements, but was **simplified and streamlined**.
 
 **The `Panel` component now takes a `sizingModel` prop to control and encapsulate newly built-in
 resizing and collapsing behavior** (#534).
-* [See the `PanelSizingModel` class](https://github.com/exhi/hoist-react/blob/master/desktop/cmp/panel/PanelSizingModel.js)
-  for configurable details, including continued support for saving sizing / collapsed state as a
-  user preference.
+* See the `PanelSizingModel` class for configurable details, including continued support for saving
+  sizing / collapsed state as a user preference.
 * **The standalone `Resizable` component was removed** in favor of the improved support built into
   Panel directly.
 
@@ -521,9 +601,9 @@ resizing and collapsing behavior** (#534).
 ### 🐞 Bug Fixes
 
 * TabContainer active tab can become out of sync with the router state (#451)
-  * ⚠️ Note this also involved a change to the `TabContainerModel` API - `activateTab()` is now the
-    public method to set the active tab and ensure both the tab and the route land in the correct
-    state.
+  * ⚠️ Note this also involved a change to the `TabContainerModel` API - `activateTab()` is now
+    the public method to set the active tab and ensure both the tab and the route land in the
+    correct state.
 * Remove unintended focused cell borders that came back with the prior ag-Grid upgrade.
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v8.0.0...v9.0.0)

@@ -6,9 +6,10 @@
  */
 
 import {Component} from 'react';
-import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {Icon} from '@xh/hoist/icon';
+import {AboutDialogModel} from '@xh/hoist/core/appcontainer/AboutDialogModel';
 
 import './AboutDialog.scss';
 
@@ -21,6 +22,8 @@ import './AboutDialog.scss';
  */
 @HoistComponent
 export class AboutDialog extends Component {
+
+    static modelClass = AboutDialogModel;
 
     render() {
         const {model} = this;

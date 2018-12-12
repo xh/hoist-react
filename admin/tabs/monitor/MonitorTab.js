@@ -14,7 +14,7 @@ import {MonitorEditorPanel} from './MonitorEditorPanel';
 @HoistComponent
 export class MonitorTab extends Component {
 
-    localModel = new TabContainerModel({
+    model = new TabContainerModel({
         route: 'default.monitor',
         tabs: [
             {id: 'status', content: MonitorResultsPanel},

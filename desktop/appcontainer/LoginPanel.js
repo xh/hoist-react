@@ -15,6 +15,8 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
+import {LoginPanelModel} from '@xh/hoist/core/appcontainer/LoginPanelModel';
+
 import './LoginPanel.scss';
 
 /**
@@ -25,6 +27,8 @@ import './LoginPanel.scss';
  */
 @HoistComponent
 export class LoginPanel extends Component {
+
+    static modelClass = LoginPanelModel;
 
     render() {
         const {loginMessage} = XH.appSpec;

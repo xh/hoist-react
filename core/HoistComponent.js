@@ -7,10 +7,11 @@
 import ReactDom from 'react-dom';
 import {XH} from '@xh/hoist/core';
 import {observer} from '@xh/hoist/mobx';
+import {isPlainObject} from 'lodash';
 import {defaultMethods, chainMethods, markClass} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 
-import {ReactiveSupport} from './mixins/ReactiveSupport';
+import {ReactiveSupport, XhIdSupport} from './mixins';
 
 /**
  * Core decorator for Components in Hoist.
@@ -26,19 +27,75 @@ export function HoistComponent(C) {
     markClass(C, 'isHoistComponent');
 
     C = ReactiveSupport(C);
+    C = XhIdSupport(C);
 
     defaultMethods(C, {
+
         /**
-         * Model class which this component is rendering.  This is a shortcut getter
-         * for either a 'localModel' property on the component or a 'model' placed in props.
+         * Model instance which this component is rendering.
+         *
+         * Applications specify a Component's model by either setting it as a field directly on the
+         * Component class definition or by passing it as a prop from a parent Component. If
+         * provided as a prop, the model can be passed as either an already-created class instance
+         * or as a config for one to be created internally. A Component class definition should
+         * include a static `modelClass` field to support this latter create-on-demand pattern.
+         *
+         * Parent components should provide concrete instances of models to their children only if
+         * they wish to programmatically access those models to reference data or otherwise
+         * manipulate the component using the model's API. Otherwise, models can and should be
+         * created internally by the Component, either in the class definition or via a config
+         * object prop.
+         *
+         * When concrete instances are provided via props they are assumed to be owned and managed
+         * by a parent Component. Otherwise models are considered to be "locally owned" by the
+         * Component itself and will be destroyed when the Component is unmounted and destroyed.
+         *
+         * The model instance is not expected to change for the lifetime of the component. Apps that
+         * wish to swap out the model for a mounted component should ensure that a new instance of
+         * the component gets mounted. This can be accomplished by setting the component's `key`
+         * prop to `model.xhId` (as a model will always return an ID unique to each instance).
+         *
+         * @see HoistModel
          */
         model: {
-            get() {return this.localModel ? this.localModel : this.props.model}
+            get() {
+
+                const {_model, _modelWasProvided, props} = this;
+
+                // Return any model instance that has already been processed / set on the Component.
+                if (_model) {
+                    if (_modelWasProvided && props.model !== _model) this.throwModelChangeException();
+                    return _model;
+                }
+
+                // ...or source from props, potentially instantiating if appropriate.
+                const {modelClass} = C,
+                    propsModel = props.model;
+
+                if (propsModel) {
+                    if (isPlainObject(propsModel)) {
+                        if (!modelClass) this.throwNoModelClassProvided();
+                        this._model = new modelClass(propsModel);
+                    } else {
+                        if (modelClass && !(propsModel instanceof modelClass)) this.throwWrongModelClass();
+                        this._modelWasProvided = true;
+                        this._model = propsModel;
+                    }
+                    return this._model;
+                }
+
+                // ...or return null if no model is available.
+                return null;
+            },
+
+            set(value) {
+                if (this._model) this.throwModelChangeException();
+                this._model = value;
+            }
         },
 
-
         /**
-         * Is this component in the DOM and not within a hidden sub-tree (e.g. hidden tab).
+         * Is this component in the DOM and not within a hidden sub-tree (e.g. hidden tab)?
          * Based on the underlying css 'display' property of all ancestor properties.
          */
         isDisplayed: {
@@ -54,7 +111,7 @@ export function HoistComponent(C) {
         },
 
         /**
-         *  Does this component contain a particular element.
+         *  Does this component contain a particular element?
          */
         containsElement(elem) {
             for (let thisElem = this.getDOMNode(); elem; elem = elem.parentElement) {
@@ -64,8 +121,7 @@ export function HoistComponent(C) {
         },
 
         /**
-         * Get the DOM element underlying this component.
-         * Returns null if component is not mounted.
+         * Get the DOM element underlying this component, or null if component is not mounted.
          */
         getDOMNode() {
             return this._mounted ? ReactDom.findDOMNode(this) : null;
@@ -100,7 +156,30 @@ export function HoistComponent(C) {
         },
 
         destroy() {
-            XH.safeDestroy(this.localModel);
+            if (!this._modelWasProvided) {
+                XH.safeDestroy(this._model);
+            }
+        }
+    });
+
+    defaultMethods(C, {
+        throwModelChangeException() {
+            throw XH.exception(`
+                Cannot re-render Component with a different model. If a new model is required, ensure 
+                the Component is re-mounted by rendering it with a unique key, e.g. "key: model.xhId".
+            `);
+        },
+
+        throwWrongModelClass() {
+            throw XH.exception(`
+                Component requires model of type ${this.constructor.modelClass}.
+            `);
+        },
+
+        throwNoModelClassProvided() {
+            throw XH.exception(`
+                Component class definition must specify a modelClass to support creating models from prop objects.
+            `);
         }
     });
 

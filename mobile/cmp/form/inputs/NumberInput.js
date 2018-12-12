@@ -118,7 +118,7 @@ export class NumberInput extends HoistInput {
         // Deferred to allow any value conversion to complete and flush into input.
         if (this.props.selectOnFocus) {
             const target = ev.target;
-            wait(1).then(() => target.select());
+            if (target && target.select) wait(1).then(() => target.select());
         }
     };
 
