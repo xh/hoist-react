@@ -46,7 +46,7 @@ export class ExportButton extends Component {
     // Implementation
     //---------------------------
     onExportClick = () => {
-        const {exportOptions = {}, gridModel} = this.props;
+        const {gridModel, exportOptions = {}} = this.props;
         gridModel.exportAsync(exportOptions).catchDefault();
     }
 
