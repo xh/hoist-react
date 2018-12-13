@@ -60,6 +60,7 @@ export class TabContainerModel {
         throwIf(tabs.length == 0, 'TabContainerModel needs at least one child tab.');
         throwIf(tabs.length != childIds.length, 'One or more Tabs in TabContainer has a non-unique ID.');
 
+        tabs = tabs.filter(p => !p.omit);
         tabs = tabs.map(p => isPlainObject(p) ? new TabModel(p) : p);
         tabs.forEach(p => p.containerModel = this);
         this.tabs = tabs;
