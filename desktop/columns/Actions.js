@@ -5,9 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {buttonGroup} from '@xh/hoist/desktop/cmp/button';
-import {recordActionButton} from '@xh/hoist/desktop/cmp/record/impl/RecordActionButton';
 import {RecordAction} from '@xh/hoist/data';
+import {convertIconToSvg} from '@xh/hoist/icon';
 import {isEmpty} from 'lodash';
 
 import {actionColPad} from './Actions.scss';
@@ -42,23 +41,41 @@ export const actionCol = {
     resizable: false,
     chooserName: 'Actions',
     excludeFromExport: true,
-    elementRenderer: (value, {record, column, agParams}) => {
+    renderer: (value, {record, column, agParams}) => {
         if (agParams.node.group) return null;
 
         const {actions, actionsShowOnHoverOnly, gridModel} = column;
         if (isEmpty(actions)) return null;
 
-        return buttonGroup({
-            className: actionsShowOnHoverOnly ? 'xh-show-on-hover' : null,
-            items: actions.map(it => recordActionButton({
-                action: new RecordAction(it),
-                record,
-                gridModel,
-                column,
-                minimal: true,
-                small: true
-            }))
+        const buttonGroupEl = document.createElement('div');
+        buttonGroupEl.classList.add('bp3-button-group', 'xh-button-group');
+        if (actionsShowOnHoverOnly) {
+            buttonGroupEl.classList.add('xh-show-on-hover');
+        }
+
+        actions.forEach(action => {
+            action = new RecordAction(action);
+
+            const {icon, intent, disabled, tooltip, hidden} = action.getDisplaySpec({record, selectedRecords: [record], gridModel, column});
+            if (hidden) return;
+
+            const actionButtonEl = document.createElement('button');
+            actionButtonEl.classList.add('bp3-button', 'bp3-minimal', 'bp3-small', 'xh-button', 'xh-record-action-button', 'xh-button--minimal');
+
+            if (disabled) actionButtonEl.setAttribute('disabled', 'true');
+            if (!isEmpty(tooltip)) actionButtonEl.setAttribute('title', tooltip);
+            if (!isEmpty(intent)) actionButtonEl.classList.add(`bp3-intent-${intent}`);
+
+            actionButtonEl.innerHTML = convertIconToSvg(icon);
+            actionButtonEl.addEventListener('click', (ev) => {
+                ev.stopPropagation();
+                action.actionFn({record, selectedRecords: [record], gridModel, column});
+            });
+
+            buttonGroupEl.appendChild(actionButtonEl);
         });
+
+        return buttonGroupEl;
     }
 };
 
