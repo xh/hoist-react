@@ -83,6 +83,11 @@ export class TabContainerModel {
         return find(this.tabs, {id: this.activeTabId});
     }
 
+    /** @type TabModel */
+    get firstEnabledTab() {
+        return find(this.tabs, {disabled: false});
+    }
+
     /**
      * Set the currently active Tab.
      *
@@ -94,6 +99,12 @@ export class TabContainerModel {
      */
     activateTab(id) {
         if (this.activeTabId === id) return;
+
+        const tab = this.getTabById(id);
+        if (tab.disabled) {
+            console.warn(`Attempted to activate disabled tab ${id}`);
+            return;
+        }
 
         const {route} = this;
         if (route) {
@@ -110,15 +121,23 @@ export class TabContainerModel {
         this.tabs.forEach(it => it.requestRefresh());
     }
 
+    /**
+     * @param {string} id - unique ID of the Tab to retrieve
+     * @returns {TabModel} - the tab, or null if not found
+     */
+    getTabById(id) {
+        return find(this.tabs, {id});
+    }
+
     //-------------------------
     // Implementation
     //-------------------------
     @action
     setActiveTabId(id) {
-        const {tabs} = this,
-            tab = find(tabs, {id});
+        const tab = this.getTabById(id);
 
         throwIf(!tab, `Unknown Tab ${id} in TabContainer.`);
+        throwIf(tab.disabled, `Cannot activate Tab ${id} because it is disabled!`);
 
         this.activeTabId = id;
         if (tab.reloadOnShow) tab.requestRefresh();
@@ -137,6 +156,11 @@ export class TabContainerModel {
                     });
 
                     if (activateTab) {
+                        if (activateTab.disabled) {
+                            console.warn(`Attempted to route to disabled tab ${activateTab.id}`);
+                            return;
+                        }
+
                         this.setActiveTabId(activateTab.id);
                     }
                 }
