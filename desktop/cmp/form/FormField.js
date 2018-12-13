@@ -6,13 +6,14 @@
  */
 import React, {Component} from 'react';
 import PT from 'prop-types';
-import {isArray, isUndefined} from 'lodash';
+import {isArray, isUndefined, isDate, isFinite, isBoolean} from 'lodash';
 
 import {elemFactory, HoistComponent, StableIdSupport} from '@xh/hoist/core';
 import {formGroup, spinner, tooltip} from '@xh/hoist/kit/blueprint';
 import {HoistInput} from '@xh/hoist/cmp/form';
 import {div, fragment, span} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
+import {fmtDate, fmtNumber} from '@xh/hoist/format';
 import {throwIf} from '@xh/hoist/utils/js';
 
 import './FormField.scss';
@@ -55,6 +56,12 @@ export class FormField extends Component {
 
         /** Apply minimal styling - validation errors are only displayed with a tooltip */
         minimal: PT.bool,
+
+        /** Render the bound value as a string rather than the HoistInput */
+        readonly: PT.bool,
+
+        /** Function which returns a human-readable string. Receives (value) */
+        readonlyRenderer: PT.func,
 
         /** Bound HoistModel instance. */
         model: PT.object
@@ -118,11 +125,11 @@ export class FormField extends Component {
     // Implementation
     //--------------------
     prepareChild(notValid, errors, idAttr) {
-        const {model, field, minimal, disabled} = this.props,
+        const {model, field, minimal, disabled, readonly} = this.props,
             item = this.props.children;
 
         const leftIcon = notValid ? this.leftIcon(item) : {},
-            target = React.cloneElement(item, {model, field, disabled, id: idAttr, ...leftIcon});
+            target = readonly ? this.renderReadonly() : React.cloneElement(item, {model, field, disabled, id: idAttr, ...leftIcon});
 
         if (!minimal) return target;
 
@@ -141,6 +148,21 @@ export class FormField extends Component {
     leftIcon(item) {
         const leftIcon = item.props.leftIcon || (this.props.leftErrorIcon ? Icon.warningCircle() : null);
         return item.type.propTypes.leftIcon ? {leftIcon} : {};
+    }
+
+    renderReadonly() {
+        const {model, field, readonlyRenderer} = this.props,
+            value = model[field],
+            renderer = readonlyRenderer || this.defaultReadonlyRenderer;
+
+        return span(renderer(value));
+    }
+
+    defaultReadonlyRenderer(value) {
+        if (isDate(value)) return fmtDate(value);
+        if (isFinite(value)) return fmtNumber(value);
+        if (isBoolean(value)) return value.toString();
+        return value;
     }
 
     getErrorTooltipContent(errors) {
