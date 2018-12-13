@@ -35,7 +35,17 @@
 * `Toolbar` and `ToolbarSeparator` have been added to the mobile component library.
 * `TextInput` on desktop now supports an `enableClear` property to allow easy addition of a clear
   button at the right edge of the component.
-
+* `TabContainer` enhancements:
+  * An `omit` property can now be passed in the tab configs passed to the `TabContainerModel` 
+    constructor to conditionally exclude a tab from the container
+  * Each `TabModel` can now be retrieved by id via the new `getTabById` method on `TabContainerModel`.
+  * `TabModel.title` can now be changed at runtime.
+  * `TabModel` now supports the following properties, which can be changed at runtime or set
+    via the config:
+    * `disabled` - applies a disabled style in the switcher and the tab cannot be navigated to by
+      any means.
+    * `excludeFromSwitcher` - removes the tab from the switcher, but the tab can still be 
+      navigated to programmatically or via routing. 
 
 ## v16.0.1
 
