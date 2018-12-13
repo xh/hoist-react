@@ -29,7 +29,7 @@ class MultiFieldCell extends Component {
 
     static propTypes = {
         /** Primary value to render */
-        value: PT.oneOfType([PT.string, PT.number, PT.bool]).isRequired,
+        value: PT.oneOfType([PT.string, PT.number, PT.bool, PT.instanceOf(Date)]),
         /** CellRendererContext provided by Column.elementRendererFn. */
         context: PT.object.isRequired
     };
