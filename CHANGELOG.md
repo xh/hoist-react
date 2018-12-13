@@ -24,17 +24,26 @@
 
 * The API methods for exporting grid data have been changed:
   * Grids must opt-in to export with the `GridModel.enableExport` config.
-  * Exporting a `GridModel` is handled by the new `GridExportService`, which takes a collection of `exportOptions`.
-    See `GridExportService.exportAsync` for available `exportOptions`.
-  * All export entry points
-    (`GridModel.exportAsync()`, `ExportButton` and the export context menu items) support `exportOptions`.
-    Additionally, `GridModel` can be configured with default `exportOptions` in its config.
+  * Exporting a `GridModel` is handled by the new `GridExportService`, which takes a collection of
+    `exportOptions`. See `GridExportService.exportAsync` for available `exportOptions`.
+  * All export entry points (`GridModel.exportAsync()`, `ExportButton` and the export context menu
+    items) support `exportOptions`. Additionally, `GridModel` can be configured with default
+    `exportOptions` in its config.
 
 ### 🎁 New Features
 
 * `Toolbar` and `ToolbarSeparator` have been added to the mobile component library.
-* `TextInput` on desktop now supports an `enableClear` property to allow easy addition
-of a clear button at the right edge of the component.
+* `TextInput` on desktop now supports an `enableClear` property to allow easy addition of a clear
+  button at the right edge of the component.
+
+
+## v16.0.1
+
+### 🐞 Bug Fixes
+
+* Fix to FeedbackForm allowing attempted submission with an empty message.
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v16.0.0...v16.0.1)
 
 
 ## v16.0.0
