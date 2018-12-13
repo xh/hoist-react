@@ -1,5 +1,14 @@
 # Changelog
 
+## v16.0.1
+
+### 🐞 Bug Fixes
+
+* Fix to FeedbackForm allowing attempted submission with an empty message.
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v16.0.0...v16.0.1)
+
+
 ## v16.0.0
 
 ### 🎁 New Features
