@@ -29,12 +29,13 @@ export class FeedbackDialog extends Component {
             title: 'Submit Feedback',
             style: {width: 450},
             isOpen: true,
-            onClose: this.onCloseClick,
+            onClose: () => this.model.hide(),
             canOutsideClickClose: false,
             items: [
                 textArea({
                     placeholder: 'Please enter your comments...',
                     style: {height: 250, marginBottom: 2},
+                    commitOnChange: true,
                     model,
                     field: 'message'
                 }),
@@ -42,24 +43,17 @@ export class FeedbackDialog extends Component {
                     filler(),
                     button({
                         text: 'Cancel',
-                        onClick: this.onCloseClick
+                        onClick: () => this.model.hide()
                     }),
                     button({
                         text: 'Send',
                         intent: 'success',
-                        onClick: this.onSendClick
+                        disabled: !model.message,
+                        onClick: () => this.model.submitAsync()
                     })
                 )
             ]
         });
-    }
-
-    onSendClick = () => {
-        this.model.submitAsync();
-    }
-
-    onCloseClick = () => {
-        this.model.hide();
     }
 }
 export const feedbackDialog = elemFactory(FeedbackDialog);
