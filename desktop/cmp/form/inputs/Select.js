@@ -191,16 +191,16 @@ export class Select extends HoistInput {
             className: this.getClassName(),
             width: props.width,
             onKeyDown: (e) => {
-                // Esc. can be used within the select to clear value / dismiss dropdown menu.
-                // Catch in this wrapper box - specifically to avoid dismissing dialogs.
-                if (e.key == 'Escape' && this.reactSelectRef.current.state.menuIsOpen) e.stopPropagation();
-                // For forms that have 'save on enter' behaviour
-                if (e.key == 'Enter' && this.reactSelectRef.current.state.menuIsOpen) e.stopPropagation();
+                // Esc. and Enter can be use by other things -- stop the key propogation,
+                // only if react select already likely to have used for menu management.
+                const {menuIsOpen} = this.reactSelectRef.current.state;
+                if (menuIsOpen && (e.key == 'Escape' || e.key == 'Enter')) {
+                    e.stopPropagation();
+                }
             },
             ...this.getLayoutProps()
         });
     }
-
 
     //-------------------------
     // Options / value handling
