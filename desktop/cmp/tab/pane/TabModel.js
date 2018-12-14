@@ -5,8 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, computed, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {throwIf} from '@xh/hoist/utils/js';
 import {startCase} from 'lodash';
 
 /**
@@ -18,7 +19,10 @@ import {startCase} from 'lodash';
 @HoistModel
 export class TabModel {
     id;
-    title;
+    @bindable title;
+    @observable disabled;
+
+    excludeFromSwitcher;
     reloadOnShow;
 
     /** @member {TabContainerModel} */
@@ -32,6 +36,8 @@ export class TabModel {
      * @param {Object} c - TabModel configuration.
      * @param {string} c.id - unique ID, used by container for locating tabs and generating routes.
      * @param {string} [c.title] - display title for the Tab in the container's TabSwitcher.
+     * @param {string} [c.disabled] - whether this tab should appear disabled in the container's TabSwitcher.
+     * @param {string} [c.excludeFromSwitcher] - set to true to hide this Tab in the container's TabSwitcher, but still be able to activate the tab manually or via routing
      * @param {Object} c.content - content to be rendered by this Tab. Component class or a custom
      *      element factory of the form returned by elemFactory.
      * @param {boolean} [c.reloadOnShow] - true to reload data for this tab each time it is activated.
@@ -39,11 +45,15 @@ export class TabModel {
     constructor({
         id,
         title = startCase(id),
+        disabled,
+        excludeFromSwitcher,
         content,
         reloadOnShow = false
     }) {
         this.id = id;
         this.title = title;
+        this.disabled = !!disabled;
+        this.excludeFromSwitcher = excludeFromSwitcher;
         this.content = content;
         this.reloadOnShow = reloadOnShow;
     }
@@ -62,6 +72,19 @@ export class TabModel {
     @action
     requestRefresh() {
         this.lastRefreshRequest = Date.now();
+    }
+
+    @action
+    setDisabled(disabled) {
+        if (disabled && this.isActive) {
+            const {containerModel} = this,
+                tab = containerModel.tabs.find(tab => tab.id !== this.id && !tab.disabled);
+
+            throwIf(!tab, 'Cannot disable last enabled tab.');
+            containerModel.activateTab(tab.id);
+        }
+
+        this.disabled = disabled;
     }
 
     //---------------------------
