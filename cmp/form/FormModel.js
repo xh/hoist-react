@@ -34,6 +34,11 @@ export class FormModel {
     @observable.ref
     children = [];
 
+    @computed
+    get members() {
+        return [...this.fields, ...this.children];
+    }
+
     /**
      *  @member {Object} -- proxy for accessing all of the current data values
      *  in this form, and related forms.  Passed to validation rules to facilitate
@@ -53,17 +58,21 @@ export class FormModel {
     @action
     addField(field) {
         field = field instanceof FieldModel ? field : new FieldModel(field);
-        throwIf(this.getField(field.name), `Form already has field with name ${name}`);
+        throwIf(this.getMember(field.name), `Form already has member with name ${name}`);
         field.formModel = this;
         this.fields = [...this.fields, field];
     }
 
     @action
     addChild(child) {
-        child = child instanceof FormModel ? child : new FieldModel(child);
-        throwIf(this.getChild(child.name), `Form already has child with name ${name}`);
+        child = child instanceof FormModel ? child : new FormModel(child);
+        throwIf(this.getMember(child.name), `Form already has member with name ${name}`);
         child.parent = this;
         this.children = [...this.children, child];
+    }
+
+    getMember(name) {
+        return find(this.members, {name});
     }
 
     getField(name) {
@@ -78,7 +87,7 @@ export class FormModel {
      * Reset fields to initial values and reset validation.
      */
     reset() {
-        this.eachMember(m => m.reset());
+        this.members.forEach(m => m.reset());
     }
 
     /**
@@ -91,7 +100,7 @@ export class FormModel {
      * into the form for editing.
      */
     init(initialValues = {}) {
-        this.eachMember(m => m.init(initialValues[m.name]));
+        this.members.forEach(m => m.init(initialValues[m.name]));
     }
 
     //--------------------------
@@ -101,7 +110,7 @@ export class FormModel {
     @computed
     get validationState() {
         const VS = ValidationState,
-            states = this.mapMembers(m => m.validationState);
+            states = this.members.map(m => m.validationState);
         if (states.includes(VS.NotValid)) return VS.NotValid;
         if (states.includes(VS.Unknown)) return VS.Unknown;
         return VS.Valid;
@@ -113,7 +122,7 @@ export class FormModel {
      */
     @computed
     get isValidationPending() {
-        return this.someMember(m => m.isValidationPending);
+        return this.members.some(m => m.isValidationPending);
     }
 
     /** True if all fields are valid. */
@@ -137,7 +146,7 @@ export class FormModel {
      * @returns {Promise<ValidationState>}
      */
     async validateAsync({display = true} = {}) {
-        const promises = this.mapMembers(m => m.validateAsync({display}));
+        const promises = this.members.map(m => m.validateAsync({display}));
         await Promise.all(promises);
         return this.validationState;
     }
@@ -146,7 +155,7 @@ export class FormModel {
      * Activate Display of all fields.
      */
     displayValidation() {
-        this.eachMember(m => m.displayValidation());
+        this.members.forEach(m => m.displayValidation());
     }
 
     //----------------------------
@@ -156,28 +165,12 @@ export class FormModel {
      * True if any fields have been changed since last reset/initialization.
      */
     isDirty() {
-        return this.someMember(m => m.isDirty);
+        return this.members.some(m => m.isDirty);
     }
 
     //---------------------------
     // Implementation
     //---------------------------
-    eachMember(fn) {
-        this.fields.forEach(fn);
-        this.children.forEach(fn);
-    }
-
-    mapMembers(fn) {
-        return [
-            ...this.fields.map(fn),
-            ...this.children.map(fn)
-        ];
-    }
-
-    someMember(fn) {
-        return this.fields.some(fn) || this.children.some(fn);
-    }
-
     createDataProxy() {
         const me = this;
 

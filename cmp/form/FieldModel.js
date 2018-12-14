@@ -210,7 +210,7 @@ export class FieldModel {
     }
 
     
-    computeValidationAsync() {
+    async computeValidationAsync() {
         const runId = ++this._validationRunId;
         return this
             .evaluateAsync(this.rules)
