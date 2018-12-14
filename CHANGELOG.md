@@ -46,6 +46,8 @@
       any means.
     * `excludeFromSwitcher` - removes the tab from the switcher, but the tab can still be 
       navigated to programmatically or via routing. 
+* MultiFieldRenderer's `multiFieldConfig` now supports a `delimiter` property, to separate consecutive SubFields.
+* MultiFieldRenderer SubFields now support a `position` property, to allow rendering in either the top or bottom row.
 
 ## v16.0.1
 
