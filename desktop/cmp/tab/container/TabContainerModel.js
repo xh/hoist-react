@@ -144,11 +144,10 @@ export class TabContainerModel {
 
                 if (router.isActive(route)) {
                     const activateTab = tabs.find(tab => {
-                        return router.isActive(route + '.' + tab.id) && !tab.isActive;
+                        return router.isActive(route + '.' + tab.id) && !tab.isActive && !tab.disabled;
                     });
 
                     if (activateTab) {
-                        if (activateTab.disabled) return;
                         this.setActiveTabId(activateTab.id);
                     }
                 }

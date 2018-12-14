@@ -21,7 +21,8 @@ export class TabModel {
     id;
     @bindable title;
     @observable disabled;
-    @bindable excludeFromSwitcher;
+
+    excludeFromSwitcher;
     reloadOnShow;
 
     /** @member {TabContainerModel} */
@@ -79,7 +80,7 @@ export class TabModel {
             const {containerModel} = this,
                 tab = containerModel.tabs.find(tab => tab.id !== this.id && !tab.disabled);
 
-            throwIf(!tab, 'Could not find an enabled tab to activate!');
+            throwIf(!tab, 'Cannot disable last enabled tab.');
             containerModel.activateTab(tab.id);
         }
 
