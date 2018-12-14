@@ -4,6 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+import React from 'react';
 
 import PT from 'prop-types';
 import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
@@ -135,6 +136,8 @@ export class Select extends HoistInput {
         });
     }
 
+    reactSelectRef = React.createRef();
+
     render() {
         const {props, renderValue} = this,
             rsProps = {
@@ -160,7 +163,9 @@ export class Select extends HoistInput {
 
                 onBlur: this.onBlur,
                 onChange: this.onSelectChange,
-                onFocus: this.onFocus
+                onFocus: this.onFocus,
+
+                ref: this.reactSelectRef
             };
 
         if (this.asyncMode) {
@@ -188,7 +193,9 @@ export class Select extends HoistInput {
             onKeyDown: (e) => {
                 // Esc. can be used within the select to clear value / dismiss dropdown menu.
                 // Catch in this wrapper box - specifically to avoid dismissing dialogs.
-                if (e.key == 'Escape') e.stopPropagation();
+                if (e.key == 'Escape' && this.reactSelectRef.current.state.menuIsOpen) e.stopPropagation();
+                // For forms that have 'save on enter' behaviour
+                if (e.key == 'Enter' && this.reactSelectRef.current.state.menuIsOpen) e.stopPropagation();
             },
             ...this.getLayoutProps()
         });
