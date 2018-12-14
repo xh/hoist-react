@@ -83,11 +83,6 @@ export class TabContainerModel {
         return find(this.tabs, {id: this.activeTabId});
     }
 
-    /** @type TabModel */
-    get firstEnabledTab() {
-        return find(this.tabs, {disabled: false});
-    }
-
     /**
      * Set the currently active Tab.
      *
@@ -101,10 +96,7 @@ export class TabContainerModel {
         if (this.activeTabId === id) return;
 
         const tab = this.getTabById(id);
-        if (tab.disabled) {
-            console.warn(`Attempted to activate disabled tab ${id}`);
-            return;
-        }
+        if (tab.disabled) return;
 
         const {route} = this;
         if (route) {
@@ -156,11 +148,7 @@ export class TabContainerModel {
                     });
 
                     if (activateTab) {
-                        if (activateTab.disabled) {
-                            console.warn(`Attempted to route to disabled tab ${activateTab.id}`);
-                            return;
-                        }
-
+                        if (activateTab.disabled) return;
                         this.setActiveTabId(activateTab.id);
                     }
                 }

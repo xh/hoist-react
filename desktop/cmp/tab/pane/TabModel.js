@@ -75,14 +75,15 @@ export class TabModel {
 
     @action
     setDisabled(disabled) {
-        this.disabled = disabled;
         if (disabled && this.isActive) {
             const {containerModel} = this,
-                tab = containerModel.firstEnabledTab;
+                tab = containerModel.tabs.find(tab => tab.id !== this.id && !tab.disabled);
 
             throwIf(!tab, 'Could not find an enabled tab to activate!');
             containerModel.activateTab(tab.id);
         }
+
+        this.disabled = disabled;
     }
 
     //---------------------------
