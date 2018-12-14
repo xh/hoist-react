@@ -10,8 +10,8 @@ import PT from 'prop-types';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {FormContext, HoistInput} from '@xh/hoist/cmp/form';
 import {label as labelCmp} from '@xh/hoist/mobile/cmp/form';
-import {throwIf} from '@xh/hoist/utils/js';
-import {isArray, isUndefined} from 'lodash';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {isArray} from 'lodash';
 
 import './FormField.scss';
 
@@ -43,15 +43,17 @@ export class FormField extends Component {
     static contextType = FormContext;
 
     render() {
-        const  {field: fieldName, label, ...rest} = this.props,
-            {formModel} = this,
-            field = formModel ? formModel.getField(fieldName) : null,
-            isRequired = field && field.isRequired,
-            isPending = field && field.isValidationPending,
-            validationDisplayed = field && field.validationDisplayed,
-            notValid = field && field.isNotValid,
-            errors = field ? field.errors : [],
-            labelStr = isUndefined(label) ? (field ? field.displayName : null) : label,
+        this.ensureConditions();
+
+        const {label, ...rest} = this.props;
+
+        const {fieldModel} = this,
+            isRequired = fieldModel && fieldModel.isRequired,
+            isPending = fieldModel && fieldModel.isValidationPending,
+            validationDisplayed = fieldModel && fieldModel.validationDisplayed,
+            notValid = fieldModel && fieldModel.isNotValid,
+            errors = fieldModel ? fieldModel.errors : [],
+            labelStr = withDefault(label, (fieldModel ? fieldModel.displayName : null)),
             requiredStr = isRequired ? span(' *') : null,
             item = this.prepareChild(),
             classes = [];
@@ -82,19 +84,36 @@ export class FormField extends Component {
     //--------------------
     // Implementation
     //--------------------
+    get form() {
+        return this.context;
+    }
+
     get formModel() {
-        const form = this.context;
+        const {form} = this;
         return form ? form.model : null;
     }
 
+    get fieldModel() {
+        const {formModel} = this;
+        formModel ? formModel.getField(this.props.field) : null;
+    }
+
     prepareChild() {
-        const {field} = this.props,
+        const {fieldModel} = this,
             item = this.props.children;
 
-        throwIf(isArray(item) || !(item.type.prototype instanceof HoistInput), 'FormField child must be a single component that extends HoistInput.');
-        throwIf(item.props.field || item.props.model, 'HoistInputs should not specify "field" or "model" when used with FormField');
-
-        return React.cloneElement(item, {model: this.formModel, field});
+        return React.cloneElement(item, {
+            model: fieldModel,
+            field: 'value',
+            disabled: fieldModel && fieldModel.disabled
+        });
     }
+
+    ensureConditions() {
+        const child = this.props.children;
+        throwIf(!child || isArray(child) || !(child.type.prototype instanceof HoistInput), 'FormField child must be a single component that extends HoistInput.');
+        throwIf(child.props.field || child.props.model, 'HoistInputs should not specify "field" or "model" when used with FormField');
+    }
+
 }
 export const formField = elemFactory(FormField);

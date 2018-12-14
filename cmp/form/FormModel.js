@@ -6,214 +6,199 @@
  */
 
 import {XH, HoistModel} from '@xh/hoist/core';
-import {defaultMethods, chainMethods, markClass} from '@xh/hoist/utils/js';
-import {startCase, partition, isFunction, isEmpty, isString, forOwn} from 'lodash';
-
-import {Field} from './Field';
-import {FieldsModel} from './impl/FieldsModel';
-import {bindable} from '@xh/hoist/mobx';
-import {throwIf, ensureParameterizedDecoratorPreCalled} from '@xh/hoist/utils/js';
+import {FieldModel} from '@xh/hoist/cmp/form/FieldModel';
+import {observable, computed, action} from '@xh/hoist/mobx';
 import {ValidationState} from './validation/ValidationState';
-
+import {throwIf} from '@xh/hoist/utils/js';
+import {find} from 'lodash';
 
 /**
- * Mixin to make a backing model for a Form.
+ * Backing model for a Form.
  *
  * Co-ordinates support for the specification and control of a collection of fields which
- * constituite the state of this Form.  Use the @field decorator to add fields to this model.
- *
- * Note that the use of this mixin requires a call to `initFields()` within the constructor.
- *
- * @mixin
+ * constituite the state of this Form.
  */
-export function FormModel(C) {
+@HoistModel
+export class FormModel {
 
-    markClass(C, 'isFormModel');
+    name = null
 
-    if (!C.isHoistModel) {
-        C = HoistModel(C);
+    /** @member {FieldModel[]} - all fields in this model. */
+    @observable.ref
+    fields = [];
+
+    /** @member {FormModel} - parent form model, or null. */
+    parent = null;
+
+    /** @member {FormModel[]} - all child models in this model. */
+    @observable.ref
+    children = [];
+
+    /**
+     *  @member {Object} -- proxy for accessing all of the current data values
+     *  in this form, and related forms.  Passed to validation rules to facilitate
+     *  observable cross-field validation.
+     */
+    dataProxy;
+
+    constructor({name = 'form', fields = [], children = []} = {}) {
+        this.dataProxy = this.createDataProxy();
+        fields.forEach(it => this.addField(it));
+        children.forEach(it => this.addChild(it));
     }
 
-    defaultMethods(C, {
+    //----------------------------
+    // Add/Remove Members
+    //----------------------------
+    @action
+    addField(field) {
+        field = field instanceof FieldModel ? field : new FieldModel(field);
+        throwIf(this.getField(field.name), `Form already has field with name ${name}`);
+        field.formModel = this;
+        this.fields = [...this.fields, field];
+    }
 
-        //-----------------------------
-        // Lifecycle + Accessors
-        //-----------------------------
-        /**
-         * Initialize this mixin.  Will set all fields to their initial values to be used as the
-         * baseline for dirty state and to support `resetFields()`.
-         *
-         * This method must be called once, before accessing the public APIs in this mixin.
-         *
-         * @param {Object} values - map of values by field name.
-         *      For any field not present in map, initialValue will be set to null.
-         */
-        initFields(values = {}) {
-            this.ensureFieldsModelCreated();
-            this.fieldsModel.initFields(values);
-        },
+    @action
+    addChild(child) {
+        child = child instanceof FormModel ? child : new FieldModel(child);
+        throwIf(this.getChild(child.name), `Form already has child with name ${name}`);
+        child.parent = this;
+        this.children = [...this.children, child];
+    }
 
-        /** @member {Field[]} -  all fields in this model. */
-        fields: {
-            get() {return this.fieldsModel.fields}
-        },
+    getField(name) {
+        return find(this.fields, {name});
+    }
 
-        /**
-         * Lookup a field in this model by name.
-         * @param {string} name
-         * @returns {Field}
-         */
-        getField(name) {
-            return this.fieldsModel.getField(name);
-        },
+    getChild(name) {
+        return find(this.children, {name});
+    }
 
-        /**
-         * Reset fields to initial values and reset validation.
-         */
-        resetFields() {
-            this.fieldsModel.resetFields();
-        },
+    /**
+     * Reset fields to initial values and reset validation.
+     */
+    reset() {
+        this.eachMember(m => m.reset());
+    }
 
-        //--------------------------
-        // Validation
-        //---------------------------
-        /** @member {ValidationState} - the current validation state. */
-        validationState: {
-            get() {return this.fieldsModel.validationState}
-        },
+    /**
+     * Set the initial value of all fields, and reset form.
+     *
+     * If initial values are undefined for any field, existing initial values
+     * will be used.
+     *
+     * This is the main entry point for loading new data (or an empty new record)
+     * into the form for editing.
+     */
+    init(initialValues = {}) {
+        this.eachMember(m => m.init(initialValues[m.name]));
+    }
 
-        /**
-         * True if any of the fields contained in this model are in the process
-         * of recomputing their validation state.
-         */
-        isValidationPending: {
-            get() {return this.fieldsModel.isValidationPending}
-        },
+    //--------------------------
+    // Validation
+    //---------------------------
+    /** @member {ValidationState} - the current validation state. */
+    @computed
+    get validationState() {
+        const VS = ValidationState,
+            states = this.mapMembers(m => m.validationState);
+        if (states.includes(VS.NotValid)) return VS.NotValid;
+        if (states.includes(VS.Unknown)) return VS.Unknown;
+        return VS.Valid;
+    }
 
-        /** True if all fields are valid. */
-        isValid: {
-            get() {return this.validationState == ValidationState.Valid}
-        },
+    /**
+     * True if any of the fields contained in this model are in the process
+     * of recomputing their validation state.
+     */
+    @computed
+    get isValidationPending() {
+        return this.someMember(m => m.isValidationPending);
+    }
 
-        /** True if any fields are not valid. */
-        isNotValid: {
-            get() {return this.validationState == ValidationState.NotValid}
-        },
+    /** True if all fields are valid. */
+    get isValid() {
+        return this.validationState == ValidationState.Valid;
+    }
 
-        /**
-         * Return a resolved validation state of the form, waiting for any pending
-         * validations to complete, if necessary.
-         *
-         * @param {Object} [c]
-         * @param {boolean] [c.display] - true to activate validation display
-         *      for the form after validation has been peformed.
-         *
-         * @returns {Promise<ValidationState>}
-         */
-        async validateAsync({display = true} = {}) {
-            return this.fieldsModel.validateAsync({display});
-        },
+    /** True if any fields are not valid. */
+    get isNotValid() {
+        return this.validationState == ValidationState.NotValid;
+    }
 
-        /**
-         * Activate Display of all fields.
-         */
-        displayValidation() {
-            this.fieldsModel.displayValidation();
-        },
+    /**
+     * Return a resolved validation state of the form, waiting for any pending
+     * validations to complete, if necessary.
+     *
+     * @param {Object} [c]
+     * @param {boolean] [c.display] - true to activate validation display
+     *      for the form after validation has been peformed.
+     *
+     * @returns {Promise<ValidationState>}
+     */
+    async validateAsync({display = true} = {}) {
+        const promises = this.mapMembers(m => m.validateAsync({display}));
+        await Promise.all(promises);
+        return this.validationState;
+    }
 
-        //----------------------------
-        // Dirty State
-        //----------------------------
-        /**
-         * True if any fields have been changed since last reset/initialization.
-         */
-        isDirty: {
-            get() {return this.fieldsModel.isDirty}
-        },
-        
-        //------------------------
-        // Implementation
-        //------------------------
-        fieldsModel: {
-            get() {
-                throwIf(!this._fieldsModel,
-                    `Attempted to access fields before calling initFields().  Call initFields() in the
-                    constructor of your model class. `
-                );
-                return this._fieldsModel;
+    /**
+     * Activate Display of all fields.
+     */
+    displayValidation() {
+        this.eachMember(m => m.displayValidation());
+    }
+
+    //----------------------------
+    // Dirty State
+    //----------------------------
+    /**
+     * True if any fields have been changed since last reset/initialization.
+     */
+    isDirty() {
+        return this.someMember(m => m.isDirty);
+    }
+
+    //---------------------------
+    // Implementation
+    //---------------------------
+    eachMember(fn) {
+        this.fields.forEach(fn);
+        this.children.forEach(fn);
+    }
+
+    mapMembers(fn) {
+        return [
+            ...this.fields.map(fn),
+            ...this.children.map(fn)
+        ];
+    }
+
+    someMember(fn) {
+        return this.fields.some(fn) || this.children.some(fn);
+    }
+
+    createDataProxy() {
+        const me = this;
+
+        return new Proxy({}, {
+            get(target, name, receiver) {
+
+                const field = me.getField(name);
+                if (field) return field.value;
+
+                const child = me.getChild(name);
+                if (child) return child.dataProxy;
+
+                const parent = (name === 'parent' ? me.parent : null);
+                if (parent) return parent.dataProxy;
+
+                return undefined;
             }
-        },
+        });
+    }
 
-        ensureFieldsModelCreated() {
-            if (this._fieldsModel) return;
-
-            const fields = {};
-            if (this._xhFieldConfigs) {
-                forOwn(this._xhFieldConfigs, ({displayName, rules}, name) => {
-                    fields[name] = new Field({
-                        name,
-                        displayName,
-                        rules,
-                        model: this
-                    });
-                });
-            }
-            this._fieldsModel = new FieldsModel(fields);
-        }
-    });
-
-    chainMethods(C, {
-        destroy() {
-            XH.safeDestroy(this._fieldsModel);
-        }
-    });
-
-    return C;
-}
-
-
-/**
- * Decorator to mark a class property as an observable form field.
- * For use on a HoistModel decorated with `@FormSupport`.
- *
- * This decorator will mark the property as `@bindable` and add support for validation, labelling,
- * and dirty state management.
- *
- * If the first arg to this function is a String, it will be interpreted as the field displayName.
- * If not specified, the start case of the property itself will be used for a display name.
- *
- * All other arguments will be considered to be specifications for validation for this field.
- * Arguments may be specified as configurations for a {@link Rule} or as individual functions
- * (constraints). In the latter case the constraints will be gathered into a single rule to be
- * added to this field.
- */
-export function field(...params) {
-
-    ensureParameterizedDecoratorPreCalled('field', ...params);
-
-    return (target, property, descriptor) => {
-        // 0) Prepare static property on class itself to host field configs.
-        if (!target._xhFieldConfigs) {
-            Object.defineProperty(target, '_xhFieldConfigs', {value: {}});
-        }
-
-        const config = target._xhFieldConfigs[property] = {};
-
-        // 1) Parse and install field name.
-        const firstParamIsName = !isEmpty(params) && isString(params[0]);
-        config.displayName = firstParamIsName ? params.shift() : startCase(property);
-
-        // 2) Parse and install additional params as Rules.
-        if (!isEmpty(params)) {
-            const [constraints, rules] = partition(params, r => isFunction(r));
-            if (!isEmpty(constraints)) {
-                rules.push({check: constraints});
-            }
-            config.rules = rules;
-        } else {
-            config.rules = [];
-        }
-
-        return bindable(target, property, descriptor);
-    };
+    destroy() {
+        XH.safeDestroy(this.fields, this.children);
+    }
 }

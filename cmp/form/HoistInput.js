@@ -8,6 +8,7 @@
 import {Component} from 'react';
 import PT from 'prop-types';
 import {isEqual, isFunction, upperFirst} from 'lodash';
+import {FieldModel} from '@xh/hoist/cmp/form';
 import {throwIf} from '@xh/hoist/utils/js';
 import {observable, computed, action} from '@xh/hoist/mobx';
 import classNames from 'classnames';
@@ -113,11 +114,11 @@ export class HoistInput extends Component {
     }
 
     /**
-     * FormModel Field (if any) associated with this control.
+     * FormField (if any) associated with this control.
      */
     getField() {
-        const {model, field} = this.props;
-        return model && field && model.hasFormSupport && model.getField(field);
+        const {model} = this;
+        return model &&  model instanceof FieldModel ? model : null;
     }
 
     //------------------------------

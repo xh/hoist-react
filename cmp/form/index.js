@@ -8,7 +8,7 @@ export * from './HoistInput';
 
 export * from './Form';
 export * from './FormModel';
-export * from './Field';
+export * from './FieldModel';
 export * from './validation/ValidationState';
 export * from './validation/Rule';
 export * from './validation/constraints';

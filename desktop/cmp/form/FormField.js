@@ -87,18 +87,17 @@ export class FormField extends Component {
     render() {
         this.ensureConditions();
 
-        const {field: fieldName, label, info} = this.props;
+        const {label, info} = this.props;
 
         // Model related props
-        const {formModel} = this,
-            field = formModel ? formModel.getField(fieldName) : null,
-            isRequired = field && field.isRequired,
-            validationDisplayed = field && field.validationDisplayed,
-            isPending = field && field.isValidationPending,
-            notValid = field && field.isNotValid,
+        const {fieldModel} = this,
+            isRequired = fieldModel && fieldModel.isRequired,
+            validationDisplayed = fieldModel && fieldModel.validationDisplayed,
+            isPending = fieldModel && fieldModel.isValidationPending,
+            notValid = fieldModel && fieldModel.isNotValid,
             displayNotValid = validationDisplayed && notValid,
-            errors = field ? field.errors : [],
-            labelStr = isUndefined(label) ? (field ? field.displayName : null) : label,
+            errors = fieldModel ? fieldModel.errors : [],
+            labelStr = isUndefined(label) ? (fieldModel ? fieldModel.displayName : null) : label,
             inputId = this.props.children.props.id,
             idAttr = inputId ? inputId : this.stableId(),
             requiredStr = isRequired ? span(' *') : null;
@@ -148,14 +147,22 @@ export class FormField extends Component {
     //--------------------
     // Implementation
     //--------------------
+    get form() {
+        return this.context;
+    }
+
     get formModel() {
-        const form = this.context;
+        const {form} = this;
         return form ? form.model : null;
     }
 
-    getDefaultedProp(name, defaultVal) {
-        const form = this.context;
+    get fieldModel() {
+        const {formModel} = this;
+        return formModel ? formModel.getField(this.props.field) : null;
+    }
 
+    getDefaultedProp(name, defaultVal) {
+        const {form} = this;
         return withDefault(
             this.props[name],
             form ? form.fieldDefaults[name] : undefined,
@@ -164,13 +171,19 @@ export class FormField extends Component {
     }
 
     prepareChild({displayNotValid, leftErrorIcon, idAttr, errors, minimal}) {
-        const {disabled, field} = this.props,
+        const {fieldModel} = this,
             item = this.props.children;
 
-        const overrides = {model: this.formModel, field, disabled, id: idAttr};
+        const overrides = {
+            model: fieldModel,
+            field: 'value',
+            disabled: fieldModel && fieldModel.disabled,
+            id: idAttr
+        };
         if (displayNotValid && item.type.propTypes.leftIcon && leftErrorIcon) {
             overrides.leftIcon = Icon.warningCircle();
         }
+
         const target = React.cloneElement(item, overrides);
 
         if (!minimal) return target;

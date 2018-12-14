@@ -8,6 +8,7 @@ import React, {Component} from 'react';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {withDefault} from '@xh/hoist/utils/js';
 import {box} from '@xh/hoist/cmp/layout';
+import {FormModel} from './FormModel';
 import PT from 'prop-types';
 
 export const FormContext = React.createContext(null);
@@ -21,6 +22,8 @@ const formContextProvider = elemFactory(FormContext.Provider);
 @HoistComponent
 @LayoutSupport
 export class Form extends Component {
+
+    static modelClass = FormModel;
 
     static propTypes = {
 

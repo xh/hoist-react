@@ -6,8 +6,8 @@
  */
 
 import {HoistModel} from '@xh/hoist/core';
-import {observable} from '@xh/hoist/mobx';
-import {flatten, isEmpty} from 'lodash';
+import {observable, bindable} from '@xh/hoist/mobx';
+import {flatten, isEmpty, startCase,partition, isFunction} from 'lodash';
 import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
 import {action, computed} from '@xh/hoist/mobx';
 
@@ -17,23 +17,25 @@ import {Rule} from './validation/Rule';
 /**
  *
  * A data field in a Form.
- *
- * Applications typically create fields using the `@field` decorator on
- * properties of a model marked with @FormSupport.
  */
 @HoistModel
-export class Field {
+export class FieldModel {
+
+    /** @member {FormModel} owning field */
+    _formModel;
 
     /** @member {string} name of property within model containing this field. */
     name;
-    /** @member {Object} model containing the field. */
-    model;
     /** @member {*} initial value of this field. */
     initialValue;
+    /** @member {*} value of this field. */
+    @bindable value;
     /** @member {string} user visible name for a field.  For use in validation messages and form labelling. */
     @observable displayName;
     /** @member {boolean}.  True to disable input on this field.*/
     @observable disabled;
+    /** @member {boolean}.  True to make this field read-only.*/
+    @observable readOnly;
     /** @member {Rule[]} list of validation rules to apply to this field. */
     @observable.ref rules = [];
     /** @member {String[]} list of validation errors.  Null if the validity state not computed. */
@@ -49,14 +51,56 @@ export class Field {
     _validationTask = new PendingTaskModel();
     _validationRunId = 0;
 
+    /**
+     * @param {Object} cfg
+     * @param {string} cfg.name
+     * @param {string} [cfg.displayName]
+     * @param {boolean} [cfg.readOnly]
+     * @param {boolean} [cfg.disabled]
+     * @param {(Rule|Object|Function)} [cfg.rules] -
+     *      Rules, rule configurations, or validation functions to create rules.
+     *      (All validation functions supplied will be combined in to a single rule)
+     */
+    constructor({
+        name,
+        displayName = startCase(name),
+        initialValue = null,
+        disabled = false,
+        readOnly = false,
+        rules = []
+    }) {
+        this.name = name;
+        this.displayName = displayName;
+        this.value = initialValue;
+        this.initialValue = initialValue;
+        this.disabled = disabled;
+        this.readOnly = readOnly;
+        this.rules = this.processRuleSpecs(rules);
+    }
+
+    /**
+     * Owning FormModel for this Field.
+     *
+     * Not set directly by applications.  See FormModel.addField().
+     */
+    get formModel() {
+        return this._formModel;
+    }
+
+    set formModel(formModel) {
+        this._formModel = formModel;
+        this.addAutorun(() => {
+            this.computeValidationAsync();
+        });
+        this.addAutorun(() => {
+            if (this.isDirty) this.displayValidation();
+        });
+    }
+
+
     //-----------------------------
     // Accessors and lifecycle
     //-----------------------------
-    /** Current value of field. */
-    get value() {
-        return this.model[this.name];
-    }
-
     /**
      * Set the initial value of the field, reset
      * to that value, and reset validation state.
@@ -70,37 +114,15 @@ export class Field {
     /** Reset to the initial value and reset validation state. */
     @action
     reset() {
-        this.model[this.name] = this.initialValue;
+        this.value = this.initialValue;
         this.errors = null;
         this.validationDisplayed = false;
         this.computeValidationAsync();
     }
 
-    /**
-     * @param {Object} cfg
-     * @param {string} cfg.name
-     * @param {Object} cfg.model
-     * @param {string} cfg.displayName
-     * @param {(Object|Object[])} [cfg.rules] - Rule(s) or configuration for rules
-     */
-    constructor({name, model, displayName, rules=[]}) {
-        this.name = name;
-        this.model = model;
-        this.displayName = displayName;
-        this.addRules(...rules);
-        this.addAutorun(() => {
-            this.computeValidationAsync();
-        });
-        this.addAutorun(() => {
-            if (this.isDirty) this.displayValidation();
-        });
-    }
-
-
     //------------------------------------
     // Validation
     //------------------------------------
-
     /**
      * Set the validationDisplayed property.
      *
@@ -167,16 +189,6 @@ export class Field {
         return this.validationState;
     }
 
-    /**
-     * Add Validation Rules
-     * @param {...(Rule|Object)} rules - Rules or configurations to create.
-     */
-    @action
-    addRules(...rules) {
-        rules = rules.map(r => r instanceof Rule ? r : new Rule(r));
-        this.rules = this.rules.concat(rules);
-    }
-
     //------------------------------
     // Dirty State
     //------------------------------
@@ -185,10 +197,19 @@ export class Field {
         return this.value !== this.initialValue;
     }
 
-
     //--------------------------
     // Implementation
     //-------------------------
+    processRuleSpecs(ruleSpecs) {
+        // Peel off raw validations into a single rule spec
+        const [constraints, rules] = partition(ruleSpecs, isFunction);
+        if (!isEmpty(constraints)) {
+            rules.push({check: constraints});
+        }
+        return rules.map(r => r instanceof Rule ? r : new Rule(r));
+    }
+
+    
     computeValidationAsync() {
         const runId = ++this._validationRunId;
         return this
@@ -202,7 +223,7 @@ export class Field {
     }
 
     async evaluateAsync(rules) {
-        const promises = rules.map(it => it.evaluateAsync(this));
+        const promises = rules.map(r => r.evaluateAsync(this));
         return flatten(await Promise.all(promises));
     }
 }
