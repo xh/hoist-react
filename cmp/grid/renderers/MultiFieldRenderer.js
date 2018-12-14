@@ -6,16 +6,15 @@
  */
 
 import {warnIf, throwIf} from '@xh/hoist/utils/js';
-import {isString} from 'lodash';
+import {partition, isString} from 'lodash';
 
 /**
- * A grid elementRendererFn that renders a collection of additional SubFields in a row beneath the main column field.
+ * A grid rendererFn that renders a collection of additional SubFields in a row beneath the main column field.
  *
  * Requires the column to also specify a multiFieldConfig, with the following params:
  *
  *      {SubField[]} subFields - Array of SubField specifications to render
  *      {Column~rendererFn} [mainRenderer] - renderer for primary field.
- *      {Column~elementRendererFn} [mainElementRenderer] - elementRenderer for primary field (returns a React component).
  *      {string} [delimiter] - string rendered between consecutive SubFields
  *
  * SubFields act as pointers to other columns that exist in the GridModel's columns collection (often hidden).
@@ -25,7 +24,7 @@ import {isString} from 'lodash';
  *
  *      {string} colId - Column ID to render.
  *      {boolean|string} [label] - true to include the Column's headerName as label, or string
- *      {boolean} [top] - true to add SubField to top row, false (default) for bottom row
+ *      {string} [position] - Where to render the SubField, either 'top' or 'bottom'. Default 'bottom'
  */
 export function multiFieldRenderer(value, context) {
     const {column} = context,
@@ -34,9 +33,8 @@ export function multiFieldRenderer(value, context) {
     throwIf(!multiFieldConfig, 'Columns using multiFieldRenderer must specify a multiFieldConfig');
     warnIf(!column.rowHeight, 'MultiFieldRenderer works best with rowHeight: Grid.MULTIFIELD_ROW_HEIGHT');
 
-    const {mainRenderer, mainElementRenderer, delimiter, subFields = []} = multiFieldConfig,
-        topFields = subFields.filter(it => it.top),
-        bottomFields = subFields.filter(it => !it.top),
+    const {mainRenderer, delimiter, subFields = []} = multiFieldConfig,
+        [topFields, bottomFields] = partition(subFields, it => it.position == 'top'),
         containerEl = document.createElement('div'),
         topEl = document.createElement('div'),
         bottomEl = document.createElement('div');
@@ -48,7 +46,7 @@ export function multiFieldRenderer(value, context) {
 
     // Render main field to top row
     topEl.classList.add('xh-multifield-renderer-row', 'xh-multifield-renderer-top');
-    topEl.appendChild(renderMainField(value, mainRenderer || mainElementRenderer, context));
+    topEl.appendChild(renderMainField(value, mainRenderer, context));
 
     // Render SubFields to top row
     topFields.forEach(it => {
@@ -84,14 +82,14 @@ function renderSubField({colId, label}, context) {
 
     throwIf(!column, `Subfield ${colId} not found`);
 
-    const {field, headerName, renderer, elementRenderer} = column,
+    const {field, headerName, renderer} = column,
         value = record[field],
         fieldEl = document.createElement('div');
 
     if (label && !isString(label)) label = headerName;
 
     fieldEl.classList.add('xh-multifield-renderer-field');
-    fieldEl.innerHTML = (label ? `${label}: ` : '') + renderValue(value, renderer || elementRenderer, column, context);
+    fieldEl.innerHTML = (label ? `${label}: ` : '') + renderValue(value, renderer, column, context);
     return fieldEl;
 }
 
