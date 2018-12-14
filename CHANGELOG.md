@@ -35,7 +35,8 @@
 * `Toolbar` and `ToolbarSeparator` have been added to the mobile component library.
 * `TextInput` on desktop now supports an `enableClear` property to allow easy addition of a clear
   button at the right edge of the component.
-
+* MultiFieldRenderer's `multiFieldConfig` now supports a `delimiter` property, to separate consecutive SubFields.
+* MultiFieldRenderer SubFields now support a `position` property, to allow rendering in either the top or bottom row.
 
 ## v16.0.1
 
