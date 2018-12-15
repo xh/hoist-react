@@ -48,6 +48,9 @@
       navigated to programmatically or via routing. 
 * MultiFieldRenderer's `multiFieldConfig` now supports a `delimiter` property, to separate consecutive SubFields.
 * MultiFieldRenderer SubFields now support a `position` property, to allow rendering in either the top or bottom row.
+* `Checkbox` now supports a `displayUnsetState` prop which may be used to display a visually distinct
+state for null values.
+
 
 ## v16.0.1
 
