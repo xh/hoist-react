@@ -8,7 +8,7 @@
 import ReactDOM from 'react-dom';
 import {camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
 
-import {elem, AppState, AppSpec, EventSupport} from '@xh/hoist/core';
+import {elem, AppState, AppSpec, EventSupport, ReactiveSupport} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {observable, action} from '@xh/hoist/mobx';
 import {never, wait, allSettled} from '@xh/hoist/promise';
@@ -18,6 +18,7 @@ import {
     ConfigService,
     EnvironmentService,
     FetchService,
+    GridExportService,
     IdentityService,
     IdleService,
     LocalStorageService,
@@ -42,7 +43,10 @@ import '../styles/XH.scss';
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
  */
 @EventSupport
+@ReactiveSupport
 class XHClass {
+
+    _initCalled = false;
 
     //------------------------------------------------------------------
     // Metadata
@@ -76,6 +80,8 @@ class XHClass {
     environmentService;
     /** @member {FetchService} */
     fetchService;
+    /** @member {GridExportService} */
+    gridExportService;
     /** @member {IdentityService} */
     identityService;
     /** @member {IdleService} */
@@ -101,7 +107,6 @@ class XHClass {
 
     get isMobile()              {return this.appSpec.isMobile}
     get clientAppName()         {return this.appSpec.clientAppName}
-
 
     //-------------------------------
     // Models
@@ -144,7 +149,7 @@ class XHClass {
     renderApp(appSpec) {
         this.appSpec = appSpec instanceof AppSpec ? appSpec : new AppSpec(appSpec);
         const rootView = elem(appSpec.containerClass, {model: this.appContainerModel});
-        ReactDOM.render(rootView, document.getElementById('root'));
+        ReactDOM.render(rootView, document.getElementById('xh-root'));
     }
 
     /**
@@ -379,13 +384,30 @@ class XHClass {
      * Not intended for application use.
      */
     async initAsync() {
-        const S = AppState;
+
+        // Avoid multiple calls, which can occur if AppContainer remounted.
+        if (this._initCalled) return;
+        this._initCalled = true;
+
+        const S = AppState,
+            {appSpec} = this;
+
+        if (appSpec.trackAppLoad) this.trackLoad();
+
         // Add xh-app class to body element to power Hoist CSS selectors
         document.body.classList.add('xh-app');
 
         try {
             await this.installServicesAsync(FetchService, LocalStorageService);
-            await this.installServicesAsync(EnvironmentService, TrackService, IdleService);
+            await this.installServicesAsync(TrackService, IdleService, GridExportService);
+
+            // Special handling for EnvironmentService, which makes the first fetch back to the Grails layer.
+            try {
+                await this.installServicesAsync(EnvironmentService);
+            } catch (e) {
+                throw `Unable to load environment info - is the server running and reachable? (${e.message})`;
+            }
+
             this.setAppState(S.PRE_AUTH);
 
             // Check if user has already been authenticated (prior login, SSO)...
@@ -393,7 +415,7 @@ class XHClass {
             
             // ...if not, throw in SSO mode (unexpected error case) or trigger a login prompt.
             if (!userIsAuthenticated) {
-                throwIf(XH.appSpec.isSSO, 'Failed to authenticate user via SSO.');
+                throwIf(appSpec.isSSO, 'Failed to authenticate user via SSO.');
                 this.setAppState(S.LOGIN_REQUIRED);
                 return;
             }
@@ -438,7 +460,6 @@ class XHClass {
             await this.appModel.initAsync();
             this.startRouter();
             this.setAppState(S.RUNNING);
-            this.trackAppLoad();
         } catch (e) {
             this.setAppState(S.LOAD_FAILED);
             this.handleException(e, {requireReload: true});
@@ -479,7 +500,7 @@ class XHClass {
     }
 
     startRouter() {
-        this.router.add(this.appModel.getRoutes());
+        this.routerModel.addRoutes(this.appModel.getRoutes());
         this.router.start();
     }
 
@@ -504,18 +525,32 @@ class XHClass {
         }
     }
 
-    trackAppLoad() {
-        if (!this.appSpec.trackAppLoad) return;
+    trackLoad() {
+        let loadStarted = window._xhLoadTimestamp, // set in index.html
+            loginStarted = null,
+            loginElapsed = 0;
 
-        // xhLoadTimestamp is set in index.html via a script installed by WebpackHtmlPlugin.
-        const elapsed = window._xhLoadTimestamp ? Date.now() - window._xhLoadTimestamp : null;
-
-        XH.track({
-            category: 'App',
-            msg: `Loaded ${this.clientAppName}`,
-            elapsed
+        const disposer = this.addReaction({
+            track: () => this.appState,
+            run: (state) => {
+                const now = Date.now();
+                switch (state) {
+                    case AppState.RUNNING:
+                        XH.track({
+                            category: 'App',
+                            msg: `Loaded ${this.clientAppName}`,
+                            elapsed: now - loadStarted - loginElapsed
+                        });
+                        disposer();
+                        break;
+                    case AppState.LOGIN_REQUIRED:
+                        loginStarted = now;
+                        break;
+                    default:
+                        if (loginStarted) loginElapsed = now - loginStarted;
+                }
+            }
         });
     }
-
 }
 export const XH = window.XH = new XHClass();

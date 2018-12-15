@@ -23,6 +23,10 @@ import {lockoutPanel} from './LockoutPanel';
 import {toastSource} from './ToastSource';
 import {messageSource} from './MessageSource';
 
+import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
+import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
+installMobileImpls({});
+
 /**
  * Top-level wrapper for Mobile applications.
  *
@@ -35,6 +39,8 @@ import {messageSource} from './MessageSource';
  */
 @HoistComponent
 export class AppContainer extends Component {
+
+    static modelClass = AppContainerModel;
 
     @observable.ref caughtException = null;
 

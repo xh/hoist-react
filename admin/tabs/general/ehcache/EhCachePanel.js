@@ -19,7 +19,7 @@ import {EhCacheModel} from './EhCacheModel';
 @HoistComponent
 export class EhCachePanel extends Component {
 
-    localModel = new EhCacheModel();
+    model = new EhCacheModel();
 
     render() {
         return panel({

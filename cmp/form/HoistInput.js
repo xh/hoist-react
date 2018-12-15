@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import PT from 'prop-types';
-import {isFunction, upperFirst} from 'lodash';
+import {isEqual, isFunction, upperFirst} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
 import {observable, computed, action} from '@xh/hoist/mobx';
 import classNames from 'classnames';
@@ -49,8 +49,21 @@ import './HoistInput.scss';
 export class HoistInput extends Component {
 
     static propTypes = {
-        /** Value of the control, if provided directly. */
-        value: PT.any,
+
+        /** CSS class name. **/
+        className: PT.string,
+
+        /** True to disable user interaction. */
+        disabled: PT.bool,
+
+        /** Property name on bound Model from which to read/write data. */
+        field: PT.string,
+
+        /** HTML id attribute **/
+        id: PT.string,
+
+        /** Bound HoistModel instance. */
+        model: PT.object,
 
         /** Handler called when value changes - passed the new value. */
         onChange: PT.func,
@@ -58,23 +71,14 @@ export class HoistInput extends Component {
         /** Handler called when value is committed to backing model - passed the new value. */
         onCommit: PT.func,
 
-        /** Bound HoistModel instance. */
-        model: PT.object,
-
-        /** Property name on bound Model from which to read/write data. */
-        field: PT.string,
-
-        /** True to disable user interaction. */
-        disabled: PT.bool,
-
         /** Style block. */
         style: PT.object,
 
-        /** CSS class name. **/
-        className: PT.string,
-
         /** Tab order for focus control, or -1 to skip. If unset, browser layout-based order. **/
-        tabIndex: PT.number
+        tabIndex: PT.number,
+
+        /** Value of the control, if provided directly. */
+        value: PT.any
     };
 
     @observable hasFocus;
@@ -83,12 +87,14 @@ export class HoistInput extends Component {
     constructor(props) {
         super(props);
 
-        // Ensure that updates to the external value - sourced from either model or props - are
-        // always flushed to the internal value of this control and reflected in renderValue.
         this.addReaction({
             track: () => this.externalValue,
             run: (externalVal) => {
-                this.setInternalValue(this.toInternal(externalVal));
+                // Ensure that updates to the external value - are always flushed to the internal value but
+                // only change internal if not already a valid representation of external to avoid flapping
+                if (this.toExternal(this.internalValue) != externalVal) {
+                    this.setInternalValue(this.toInternal(externalVal));
+                }
             },
             fireImmediately: true
         });
@@ -149,7 +155,7 @@ export class HoistInput extends Component {
 
         this.setInternalValue(val);
         if (onChange) onChange(this.toExternal(val));
-        if (this.commitOnChange) this.doCommit();
+        if (this.commitOnChange) this.doCommitInternal();
     }
 
     /**
@@ -157,22 +163,10 @@ export class HoistInput extends Component {
      * Fire commit handlers and synchronize state.
      */
     doCommit() {
-        const {onCommit, model, field} = this.props;
-        let externalValue = this.externalValue,
-            newValue = this.toExternal(this.internalValue);
+        this.doCommitInternal();
+        // After explicit commit, we want to fully round-trip external value to get canonical value.
+        this.setInternalValue(this.toInternal(this.externalValue));
 
-        if (newValue === externalValue) return;
-
-        if (model && field) {
-            const setterName = `set${upperFirst(field)}`;
-            throwIf(!isFunction(model[setterName]), `Required function '${setterName}()' not found on bound model`);
-
-            model[setterName](newValue);
-            newValue = this.externalValue; // Round trip this, in case model decides to intervene.
-        }
-
-        if (onCommit) onCommit(newValue);
-        this.setInternalValue(this.toInternal(newValue));
     }
 
     /** Hook to convert an internal representation of the value to an appropriate external one. */
@@ -183,6 +177,24 @@ export class HoistInput extends Component {
     /** Hook to convert an external representation of the value to an appropriate internal one. */
     toInternal(external) {
         return external;
+    }
+
+    doCommitInternal() {
+        const {onCommit, model, field} = this.props;
+        let externalValue = this.externalValue,
+            newValue = this.toExternal(this.internalValue);
+
+        if (isEqual(newValue, externalValue)) return;
+
+        if (model && field) {
+            const setterName = `set${upperFirst(field)}`;
+            throwIf(!isFunction(model[setterName]), `Required function '${setterName}()' not found on bound model`);
+
+            model[setterName](newValue);
+            newValue = this.externalValue; // Re-read effective value after set in case model setter had an opinion
+        }
+
+        if (onCommit) onCommit(newValue);
     }
 
 
@@ -196,9 +208,9 @@ export class HoistInput extends Component {
     @action
     noteBlurred() {
         if (!this.hasFocus) return;
-        
+
         this.doCommit();
-        
+
         const field = this.getField();
         if (field) field.startValidating();
 
@@ -222,7 +234,7 @@ export class HoistInput extends Component {
     @action
     noteFocused() {
         if (this.hasFocus) return;
-        
+
         this.setInternalValue(this.toInternal(this.externalValue));
         this.hasFocus = true;
     }

@@ -7,8 +7,11 @@
 
 export * from './FormField';
 export * from './Label';
-export * from './NumberInput';
-export * from './SearchInput';
-export * from './TextInput';
-export * from './TextArea';
-export * from './Select';
+export * from './inputs/ButtonGroupInput';
+export * from './inputs/Checkbox';
+export * from './inputs/NumberInput';
+export * from './inputs/SearchInput';
+export * from './inputs/Select';
+export * from './inputs/SwitchInput';
+export * from './inputs/TextInput';
+export * from './inputs/TextArea';

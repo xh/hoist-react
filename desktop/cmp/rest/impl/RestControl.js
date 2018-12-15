@@ -20,10 +20,15 @@ import {
     textArea,
     textInput
 } from '@xh/hoist/desktop/cmp/form';
+
+import {RestControlModel} from './RestControlModel';
+
 import {isNil} from 'lodash';
 
 @HoistComponent
 export class RestControl extends Component {
+
+    static modelClass = RestControlModel;
 
     render() {
         if (this.isBlankMetaData()) return null;
@@ -93,7 +98,7 @@ export class RestControl extends Component {
 
         let options;
         if (field.lookup) {
-            options = field.lookup;
+            options = [...field.lookup];
         } else if (type == 'bool') {
             options = [true, false];
         } else {

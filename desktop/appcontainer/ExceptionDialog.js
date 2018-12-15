@@ -13,6 +13,8 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/desktop/cmp/button';
 
+import {ExceptionDialogModel} from '@xh/hoist/core/appcontainer/ExceptionDialogModel';
+
 import {exceptionDialogDetails} from './ExceptionDialogDetails';
 
 /**
@@ -24,6 +26,8 @@ import {exceptionDialogDetails} from './ExceptionDialogDetails';
 @HoistComponent
 export class ExceptionDialog extends Component {
 
+    static modelClass = ExceptionDialogModel;
+    
     render() {
         const {model} = this,
             {exception, options} = model;

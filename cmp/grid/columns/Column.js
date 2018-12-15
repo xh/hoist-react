@@ -9,6 +9,7 @@ import {Component} from 'react';
 import {castArray, startCase, isFunction, clone, find} from 'lodash';
 import {ExportFormat} from './ExportFormat';
 import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
+import {Utils as agUtils} from 'ag-grid-community';
 
 /**
  * Cross-platform definition and API for a standardized Grid column.
@@ -40,6 +41,8 @@ export class Column {
      * @param {boolean} [c.flex] - true to auto-adjust column width based on space available
      *      within the overall grid. Flex columns are not user-resizable as they will dynamically
      *      adjust whenever the grid changes size to absorb available horizontal space.
+     * @param {number} [c.rowHeight] - row height required by column in pixels - grids can use this to
+     *      determine an appropriate row height when the column is visible.
      * @param {boolean} [c.absSort] - true to enable absolute value sorting for this column,
      *      with column header clicks progressing from ASC > DESC > DESC (abs value).
      * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
@@ -63,7 +66,7 @@ export class Column {
      *      Defaults to headerName.
      * @param {(string|function)} [c.exportValue] - alternate field name to reference or function
      *      to call when producing a value for a file export.
-     *      @see ExportManager
+     *      @see GridExportService
      * @param {ExportFormat} [c.exportFormat] - structured format string for Excel-based exports.
      *      @see ExportFormat
      * @param {number} [c.exportWidth] - width in characters for Excel-based exports. Typically used
@@ -91,6 +94,7 @@ export class Column {
         minWidth,
         maxWidth,
         flex,
+        rowHeight,
         absSort,
         resizable,
         movable,
@@ -131,6 +135,7 @@ export class Column {
         );
         this.flex = withDefault(flex, false);
         this.width = this.flex ? null : width || Column.DEFAULT_WIDTH;
+        this.rowHeight = rowHeight;
 
         // Prevent flex col from becoming hidden inadvertently.  Can be avoided by setting minWidth to null or 0.
         this.minWidth = withDefault(minWidth, this.flex ? Column.FLEX_COL_MIN_WIDTH : null);
@@ -178,7 +183,6 @@ export class Column {
                 headerClass: this.headerClass,
                 cellClass: this.cellClass,
                 hide: this.hidden,
-                absSort: this.absSort,
                 minWidth: this.minWidth,
                 maxWidth: this.maxWidth,
                 suppressResize: !this.resizable,
@@ -187,7 +191,13 @@ export class Column {
                 lockPinned: true, // Block user-driven pinning/unpinning - https://github.com/exhi/hoist-react/issues/687
                 pinned: this.pinned,
                 lockVisible: !gridModel.colChooserModel,
-                headerComponentParams: {gridModel, column: this}
+                headerComponentParams: {gridModel, xhColumn: this},
+                suppressToolPanel: this.excludeFromChooser,
+                headerValueGetter: ({location}) => {
+                    return location === 'header' ?
+                        this.headerName:
+                        this.chooserName;
+                }
             };
 
         // Our implementation of Grid.getDataPath() > Record.xhTreePath returns data path []s of
@@ -207,7 +217,8 @@ export class Column {
 
         if (this.tooltip) {
             ret.tooltip = isFunction(this.tooltip) ?
-                (agParams) => this.tooltip(agParams.value, {record: agParams.data, column: this, agParams}) :
+                (agParams) => this.tooltip(agParams.value,
+                    {record: agParams.data, column: this, agParams}) :
                 ({value}) => value;
         }
 
@@ -230,60 +241,62 @@ export class Column {
         const {renderer, elementRenderer} = this;
         if (renderer) {
             ret.cellRenderer = (agParams) => {
-                return renderer(agParams.value, {record: agParams.data, column: this, agParams});
+                return renderer(agParams.value, {record: agParams.data, column: this, agParams, gridModel});
             };
         } else if (elementRenderer) {
             ret.cellRendererFramework = class extends Component {
                 render() {
                     const agParams = this.props,
                         {value, data: record} = agParams;
-                    return elementRenderer(value, {record, agParams, column: me});
+                    return elementRenderer(value, {record, agParams, column: me, gridModel});
                 }
+
                 refresh() {return false}
             };
         }
 
-        // Support enhanced, absValue-aware sorting via GridSorters in GridModel.sortBy[].
         const sortCfg = find(gridModel.sortBy, {colId: ret.colId});
         if (sortCfg) {
             ret.sort = sortCfg.sort;
             ret.sortedAt = gridModel.sortBy.indexOf(sortCfg);
-
-            // ag-Grid sort impl. sources its primary values from the node's `groupData` property,
-            // which is not what we want when sorting treeColumns.
-            if (this.isTreeColumn) {
-                ret.comparator = (v1, v2, node1, node2) => {
-                    return sortCfg.comparator(node1.data[field], node2.data[field]);
-                };
-            } else {
-                ret.comparator = (v1, v2) => sortCfg.comparator(v1, v2);
-            }
-
         }
+
+        // Delegate comparator sorting to absValue-aware GridSorters in GridModel.sortBy[].
+        ret.comparator = this.comparator;
 
         // Finally, apply explicit app requests.  The customer is always right....
         return {...ret, ...this.agOptions};
     }
+
+    //--------------------
+    // Implementation
+    //--------------------
+    comparator = (v1, v2) => {
+        const sortCfg = find(this.gridModel.sortBy, {colId: this.colId});
+        return sortCfg ? sortCfg.comparator(v1, v2) : agUtils.defaultComparator(v1, v2);
+    };
+
 }
 
 /**
  * @callback Column~rendererFn - normalized renderer function for a grid cell.
  * @param {*} value - cell data value (column + row).
- * @param {CellRendererMetadata} metadata - additional data about the column and row.
+ * @param {CellRendererContext} context - additional data about the column, row and GridModel.
  * @return {string} - the formatted value for display.
  */
 
 /**
  * @callback Column~elementRendererFn - renderer function for a grid cell which returns a React component
  * @param {*} value - cell data value (column + row).
- * @param {CellRendererMetadata} metadata - additional data about the column and row.
+ * @param {CellRendererContext} context - additional data about the column, row and GridModel.
  * @return {Element} - the React element to render.
  */
 
 /**
- * @typedef {Object} CellRendererMetadata
+ * @typedef {Object} CellRendererContext
  * @property {Record} record - row-level data Record.
  * @property {Column} column - column for the cell being rendered.
+ * @property {GridModel} gridModel - gridModel for the grid.
  * @property {ICellRendererParams} [agParams] - the ag-grid cell renderer params.
  */
 

@@ -12,9 +12,12 @@ import {filler} from '@xh/hoist/cmp/layout';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
+import {RestGridModel} from '../RestGridModel';
 
 @HoistComponent
 export class RestGridToolbar extends Component {
+
+    static modelClass = RestGridModel;
 
     render() {
         return toolbar(
@@ -35,7 +38,7 @@ export class RestGridToolbar extends Component {
             filler(),
             storeCountLabel({gridModel, unit}),
             storeFilterField({gridModel, includeFields: model.filterFields}),
-            exportButton({model})
+            exportButton({gridModel})
         ];
     }
 }

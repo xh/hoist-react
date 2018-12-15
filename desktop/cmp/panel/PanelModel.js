@@ -11,12 +11,12 @@ import {withDefault, throwIf} from '@xh/hoist/utils/js';
 import {start} from '@xh/hoist/promise';
 import {isNil} from 'lodash';
 
-
 /**
- * This class provides the underlying state for the resizing/collapse state of a Panel.
+ * PanelModel supports configuration and state-management for user-driven Panel resizing and
+ * expand/collapse functionality, including the option to persist such state into a Hoist preference.
  */
 @HoistModel
-export class PanelSizingModel {
+export class PanelModel {
 
     //-----------------------
     // Immutable Properties
@@ -28,6 +28,9 @@ export class PanelSizingModel {
     side;
     collapsedRenderMode;
     prefName;
+    showSplitter;
+    showSplitterCollapseButton;
+    showHeaderCollapseButton;
 
     //---------------------
     // Observable State
@@ -52,6 +55,11 @@ export class PanelSizingModel {
      * @param {string} [config.collapsedRenderMode] - How should collapsed content be rendered?
      *      Valid values include 'lazy', 'always', and 'unmountOnHide'.
      * @param {string} [config.prefName] - preference name to store sizing and collapsed state.
+     * @param {boolean} [config.showSplitter] - Should a splitter be rendered at the panel edge?
+     * @param {boolean} [config.showSplitterCollapseButton] - Should the collapse button be visible
+     *      on the splitter? Only applicable if the splitter is visible and the panel is collapsible.
+     * @param {boolean} [config.showHeaderCollapseButton] - Should a collapse button be added to the
+     *      end of the panel header? Only applicable if the panel is collapsible.
      */
     constructor({
         collapsible = true,
@@ -60,9 +68,12 @@ export class PanelSizingModel {
         defaultCollapsed = false,
         side,
         collapsedRenderMode = 'lazy',
-        prefName = null
+        prefName = null,
+        showSplitter = true,
+        showSplitterCollapseButton = true,
+        showHeaderCollapseButton = true
     }) {
-        throwIf(isNil(defaultSize) || isNil(side), "Must specify 'defaultSize' and 'side' for PanelSizingModel");
+        throwIf(isNil(defaultSize) || isNil(side), "Must specify 'defaultSize' and 'side' for PanelModel");
 
         // Set immutables
         this.collapsible = collapsible;
@@ -71,6 +82,9 @@ export class PanelSizingModel {
         this.defaultCollapsed = defaultCollapsed;
         this.side = side;
         this.collapsedRenderMode = collapsedRenderMode;
+        this.showSplitter = showSplitter;
+        this.showSplitterCollapseButton = showSplitterCollapseButton;
+        this.showHeaderCollapseButton = showHeaderCollapseButton;
 
         if (prefName && !XH.prefService.hasKey(prefName)) {
             console.warn(`Unknown preference for storing state of Panel '${prefName}'`);
@@ -93,8 +107,9 @@ export class PanelSizingModel {
     //----------------------
     @action
     setCollapsed(collapsed) {
-        // When opening from collapsed position restore *default* size.  This may be suboptimal in some cases
-        // -- you lose user set "size" -- but avoids confusing behavior where 'opening' a panel could cause it to shrink.
+        // When opening from collapsed position restore *default* size. This may be suboptimal
+        // in some cases -- you lose user set "size" -- but avoids confusing behavior where
+        // 'opening' a panel could cause it to shrink.
         if (this.collapsed === true && !collapsed) {
             this.size = this.defaultSize;
         }
@@ -119,12 +134,12 @@ export class PanelSizingModel {
     //---------------------------------------------
     // Implementation (for related private classes)
     //---------------------------------------------
-    get vertical()              {
+    get vertical() {
         return this.side === 'top' || this.side === 'bottom';
     }
 
     // Does the Panel come before the resizing affordances?
-    get contentFirst()          {
+    get contentFirst() {
         return this.side === 'top' || this.side === 'left';
     }
     

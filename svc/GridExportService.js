@@ -5,31 +5,35 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
+import {XH, HoistService} from '@xh/hoist/core';
+import {ExportFormat} from '@xh/hoist/cmp/grid/columns';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {throwIf} from '@xh/hoist/utils/js';
-import {ExportFormat} from '@xh/hoist/cmp/grid/columns';
-import {orderBy, uniq, isString, isFunction} from 'lodash';
 import download from 'downloadjs';
+import {isFunction, isNil, isString, orderBy, uniq} from 'lodash';
 
 /**
  * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
  * @see HoistColumn API for options to control exported values and formats.
- *
- * It is not necessary to manually create instances of this class within an application.
- * @private
  */
-export class ExportManager {
+@HoistService
+export class GridExportService {
 
     /**
-     * Export a GridModel to a file. Typically called via `GridModel.export()`.
+     * Export a GridModel to a file. Typically called via `GridModel.exportAsync()`.
      *
      * @param {GridModel} gridModel - GridModel to export.
-     * @param {(string|function)} filename - name for exported file or closure to generate.
-     * @param {string} type - type of export - one of ['excel', 'excelTable', 'csv'].
+     * @param {Object} [options] - Export options.
+     * @param {(string|function)} [options.filename] - name for exported file or closure to generate.
+     * @param {string} [options.type] - type of export - one of ['excel', 'excelTable', 'csv'].
+     * @param {boolean} [options.includeHiddenCols] - include hidden grid columns in the export.
      */
-    async exportAsync(gridModel, filename, type) {
+    async exportAsync(gridModel, {
+        filename = 'export',
+        type = 'excelTable',
+        includeHiddenCols = false
+    } = {}) {
         throwIf(!gridModel, 'GridModel required for export');
         throwIf(!isString(filename) && !isFunction(filename), 'Export filename must be either a string or a closure');
         throwIf(!['excel', 'excelTable', 'csv'].includes(type), `Invalid export type "${type}". Must be either "excel", "excelTable" or "csv"`);
@@ -37,7 +41,7 @@ export class ExportManager {
         if (isFunction(filename)) filename = filename(gridModel);
 
         const {store, sortBy} = gridModel,
-            columns = gridModel.getLeafColumns(),
+            columns = this.getExportableColumns(gridModel.getLeafColumns(), includeHiddenCols),
             sortColIds = sortBy.map(it => it.colId),
             sorts = sortBy.map(it => it.sort),
             records = orderBy(store.records, sortColIds, sorts),
@@ -58,20 +62,27 @@ export class ExportManager {
         // We use cell count as a heuristic for speed - this may need to be tweaked.
         if (rows.length * columns.length > 3000) {
             XH.toast({
-                message: 'Your export is being prepared and will download shortly...',
+                message: 'Your export is being prepared and will download when complete...',
                 intent: 'primary',
                 icon: Icon.download()
             });
         }
 
+        // POST the data as a file (using multipart/form-data) to work around size limits when using application/x-www-form-urlencoded.
+        // This allows the data to be split into multiple parts and streamed, allowing for larger excel exports.
+        // The content of the "file" is a JSON encoded string, which will be streamed and decoded on the server.
+        // Note: It may be necessary to set maxFileSize and maxRequestSize in application.groovy to facilitate very large exports.
+        const formData = new FormData(),
+            params = {filename, type, meta, rows};
+
+        formData.append('params', JSON.stringify(params));
         const response = await XH.fetch({
             url: 'xh/export',
-            params: {
-                filename: filename,
-                filetype: type,
-                meta: JSON.stringify(meta),
-                rows: JSON.stringify(rows)
-            }
+            method: 'POST',
+            body: formData,
+            // Note: We must explicitly *not* set Content-Type headers to allow the browser to set it's own multipart/form-data boundary.
+            // See https://stanko.github.io/uploading-files-using-fetch-multipart-form-data/ for further explanation.
+            headers: new Headers()
         });
 
         const blob = response.status === 204 ? null : await response.blob();
@@ -82,26 +93,26 @@ export class ExportManager {
         });
     }
 
-
     //-----------------------
     // Implementation
     //-----------------------
-    getColumnMetadata(columns) {
-        return this.getExportableColumns(columns)
-            .map(column => {
-                const {field, exportFormat, exportWidth: width} = column;
-                let type = null;
-                if (exportFormat === ExportFormat.DATE_FMT) type = 'date';
-                if (exportFormat === ExportFormat.DATETIME_FMT) type = 'datetime';
-                if (exportFormat === ExportFormat.LONG_TEXT) type = 'longText';
+    getExportableColumns(columns, includeHiddenColumns) {
+        return columns.filter(it => !it.excludeFromExport && (!it.hidden || includeHiddenColumns));
+    }
 
-                return {field, type, format: exportFormat, width};
-            });
+    getColumnMetadata(columns) {
+        return columns.map(column => {
+            const {field, exportFormat, exportWidth: width} = column;
+            let type = null;
+            if (exportFormat === ExportFormat.DATE_FMT) type = 'date';
+            if (exportFormat === ExportFormat.DATETIME_FMT) type = 'datetime';
+            if (exportFormat === ExportFormat.LONG_TEXT) type = 'longText';
+            return {field, type, format: exportFormat, width};
+        });
     }
 
     getHeaderRow(columns, type) {
-        const headers = this.getExportableColumns(columns)
-            .map(it => it.exportName);
+        const headers = columns.map(it => it.exportName);
         if (type === 'excelTable' && uniq(headers).length !== headers.length) {
             console.warn('Excel tables require unique headers on each column. Consider using the "exportName" property to ensure unique headers.');
         }
@@ -109,13 +120,8 @@ export class ExportManager {
     }
 
     getRecordRow(record, columns) {
-        const data = this.getExportableColumns(columns)
-            .map(it => this.getCellData(record, it));
+        const data = columns.map(it => this.getCellData(record, it));
         return {data, depth: 0};
-    }
-
-    getExportableColumns(columns) {
-        return columns.filter(it => !it.excludeFromExport);
     }
 
     getCellData(record, column) {
@@ -131,7 +137,7 @@ export class ExportManager {
             value = exportValue(value);
         }
 
-        if (value === null) return null;
+        if (isNil(value)) return null;
 
         // Enforce date formats expected by server
         if (exportFormat === ExportFormat.DATE_FMT) value = fmtDate(value);

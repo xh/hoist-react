@@ -16,8 +16,8 @@ import {usernameCol} from '@xh/hoist/admin/columns';
 @HoistModel
 export class ActivityGridModel {
 
-    @observable startDate = moment().toDate();
-    @observable endDate = moment().toDate();
+    @observable startDate = moment().subtract(7, 'days').toDate();
+    @observable endDate = moment().add(1, 'days').toDate();  // https://github.com/exhi/hoist-react/issues/400
     @observable username = '';
     @observable msg = '';
     @observable category = '';
@@ -30,7 +30,7 @@ export class ActivityGridModel {
         stateModel: 'xhActivityGrid',
         enableColChooser: true,
         enableExport: true,
-        exportFilename: () => `Activity ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`,
+        exportOptions: {filename: () => `Activity ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`},
         store: new LocalStore({
             fields: [
                 'severity', 'dateCreated', 'username', 'msg', 'category',

@@ -10,6 +10,8 @@ import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {div} from '@xh/hoist/cmp/layout';
 import {HoistInput} from '@xh/hoist/cmp/form';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {Icon} from '@xh/hoist/icon';
 import {withDefault} from '@xh/hoist/utils/js';
 
 /**
@@ -38,6 +40,9 @@ export class TextInput extends HoistInput {
 
         /** True to commit on every change/keystroke, default false. */
         commitOnChange: PT.bool,
+
+        /** True to show a "clear" button as the right element. default false */
+        enableClear: PT.bool,
 
         /** Icon to display inline on the left side of the input. */
         leftIcon: PT.element,
@@ -88,17 +93,18 @@ export class TextInput extends HoistInput {
                 disabled: props.disabled,
                 leftIcon: props.leftIcon,
                 placeholder: props.placeholder,
-                rightElement: props.rightElement,
+                rightElement: props.rightElement || (props.enableClear ? this.renderClearIcon() : null),
                 round: withDefault(props.round, false),
                 spellCheck: withDefault(props.spellCheck, false),
                 tabIndex: props.tabIndex,
                 type: props.type,
 
+                id: props.id,
                 className: this.getClassName(),
                 style: {
-                    ...props.style,
                     textAlign: withDefault(props.textAlign, 'left'),
-                    width: props.width
+                    width: props.width,
+                    ...props.style
                 },
 
                 onChange: this.onChange,
@@ -107,6 +113,17 @@ export class TextInput extends HoistInput {
 
             onBlur: this.onBlur,
             onFocus: this.onFocus
+        });
+    }
+
+    renderClearIcon() {
+        return button({
+            icon: Icon.cross(),
+            minimal: true,
+            onClick: () => {
+                this.noteValueChange(null);
+                this.doCommit();
+            }
         });
     }
 

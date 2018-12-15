@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {cloneDeep, debounce, find, remove} from 'lodash';
+import {cloneDeep, debounce, find, remove, isUndefined} from 'lodash';
 import {start} from '@xh/hoist/promise';
 
 /**
@@ -41,11 +41,13 @@ export class GridStateModel {
      * @param {boolean} [c.trackColumns] - true to save state of columns,
      *      including visibility, ordering and pixel widths.
      * @param {boolean} [c.trackSort] - true to save sorting.
+     * @param {boolean} [c.trackGrouping] - true to save column grouping.
      */
-    constructor({gridId, trackColumns = true, trackSort = true}) {
+    constructor({gridId, trackColumns = true, trackSort = true, trackGrouping = true}) {
         this.gridId = gridId;
         this.trackColumns = trackColumns;
         this.trackSort = trackSort;
+        this.trackGrouping = trackGrouping;
     }
 
     init(gridModel) {
@@ -57,6 +59,10 @@ export class GridStateModel {
 
         if (this.trackSort) {
             this.addReaction(this.sortReaction());
+        }
+
+        if (this.trackGrouping) {
+            this.addReaction(this.groupReaction());
         }
 
         this.initializeState();
@@ -96,15 +102,18 @@ export class GridStateModel {
     }
 
     readStateFromGrid() {
+        const {gridModel} = this;
         return {
-            columns: this.getColumnState(),
-            sortBy: this.gridModel.sortBy
+            columns: gridModel.columnState,
+            sortBy: gridModel.sortBy,
+            groupBy: gridModel.groupBy
         };
     }
 
     loadState(state) {
         this.state = cloneDeep(state);
         if (this.trackColumns) this.updateGridColumns();
+        if (this.trackGrouping) this.updateGridGroupBy();
         if (this.trackSort) this.updateGridSort();
     }
 
@@ -112,27 +121,18 @@ export class GridStateModel {
     // Columns
     //--------------------------
     columnReaction() {
-        const {gridModel} = this;
         return {
-            track: () => gridModel.columns,
-            run: () => {
-                this.state.columns = this.getColumnState();
+            track: () => this.gridModel.columnState,
+            run: (columnState) => {
+                this.state.columns = columnState;
                 this.saveStateChange();
             }
         };
     }
 
-    getColumnState() {
-        const cols = this.gridModel.getLeafColumns();
-
-        return cols.map(({colId, hidden, width}) => {
-            return {colId, hidden, width};
-        });
-    }
-
     updateGridColumns() {
-        const {gridModel, state} = this;
-        if (!state.columns) return;
+        const {gridModel, state, trackColumns} = this;
+        if (!trackColumns || !state.columns) return;
 
         const cols = gridModel.getLeafColumns(),
             colState = [...state.columns];
@@ -148,7 +148,7 @@ export class GridStateModel {
             }
         });
 
-        gridModel.applyColumnChanges(colState);
+        gridModel.applyColumnStateChanges(colState);
     }
 
     //--------------------------
@@ -167,7 +167,25 @@ export class GridStateModel {
 
     updateGridSort() {
         const {sortBy} = this.state;
-        if (sortBy) this.gridModel.setSortBy(sortBy);
+        if (this.trackSort && !isUndefined(sortBy)) this.gridModel.setSortBy(sortBy);
+    }
+
+    //--------------------------
+    // Grouping
+    //--------------------------
+    groupReaction() {
+        return {
+            track: () => this.gridModel.groupBy,
+            run: (groupBy) => {
+                this.state.groupBy = groupBy;
+                this.saveStateChange();
+            }
+        };
+    }
+
+    updateGridGroupBy() {
+        const {groupBy} = this.state;
+        if (this.trackGrouping && !isUndefined(groupBy)) this.gridModel.setGroupBy(groupBy);
     }
 
     //--------------------------

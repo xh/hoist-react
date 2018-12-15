@@ -28,7 +28,7 @@ export class ClientErrorModel {
         stateModel: 'xhClientErrorGrid',
         enableColChooser: true,
         enableExport: true,
-        exportFilename: () => `Client Errors ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`,
+        exportOptions: {filename: () => `Client Errors ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`},
         store: new LocalStore({
             fields: [
                 'username', 'error', 'msg', 'userAlerted', 'browser', 'device',
@@ -37,7 +37,7 @@ export class ClientErrorModel {
         }),
         sortBy: {colId: 'dateCreated', sort: 'desc'},
         columns: [
-            {field: 'dateCreated', ...compactDateCol, width: 100},
+            {field: 'dateCreated', ...compactDateCol, width: 140},
             {field: 'username', ...usernameCol},
             {field: 'userAlerted', ...boolCheckCol, headerName: 'Alerted', width: 90},
             {field: 'browser', width: 100},

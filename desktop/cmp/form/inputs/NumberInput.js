@@ -6,6 +6,7 @@
  */
 
 import PT from 'prop-types';
+import {isNumber, isNaN, isEmpty} from 'lodash';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {fmtNumber} from '@xh/hoist/format';
@@ -93,7 +94,7 @@ export class NumberInput extends HoistInput {
         zeroPad: PT.bool
     };
 
-    static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/gi;
+    static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/i;
 
     baseClassName = 'xh-number-input';
 
@@ -121,13 +122,13 @@ export class NumberInput extends HoistInput {
             stepSize: props.stepSize,
             tabIndex: props.tabIndex,
 
+            id: props.id,
             className: this.getClassName(),
             style: {
                 ...props.style,
                 textAlign: withDefault(props.textAlign, 'right'),
                 width: props.width
             },
-
             onBlur: this.onBlur,
             onFocus: this.onFocus,
             onKeyPress: this.onKeyPress,
@@ -136,9 +137,12 @@ export class NumberInput extends HoistInput {
     }
 
     onValueChange = (val, valAsString) => {
-        let value = this.parseValue(valAsString);
-        value = isNaN(value) ? null : value;
-        this.noteValueChange(value);
+        this.noteValueChange(valAsString);
+    }
+
+    toExternal() {
+        const val = this.parseValue(this.internalValue);
+        return isNaN(val) ? null : val;
     }
 
     onKeyPress = (ev) => {
@@ -156,6 +160,9 @@ export class NumberInput extends HoistInput {
     }
 
     parseValue(value) {
+        if (isEmpty(value)) return null;
+        if (isNumber(value)) return value;
+
         value = value.replace(/,/g, '');
 
         if (NumberInput.shorthandValidator.test(value)) {

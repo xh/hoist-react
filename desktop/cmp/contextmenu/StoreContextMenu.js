@@ -72,7 +72,7 @@ export class StoreContextMenu {
                     icon: Icon.download(),
                     hidden: !gridModel || !gridModel.enableExport,
                     disabled: !gridModel || !gridModel.store.count,
-                    actionFn: () => gridModel.export({type: 'excelTable'})
+                    actionFn: () => gridModel.exportAsync({type: 'excelTable'})
                 });
             case 'exportCsv':
                 return new RecordAction({
@@ -80,7 +80,7 @@ export class StoreContextMenu {
                     icon: Icon.download(),
                     hidden: !gridModel || !gridModel.enableExport,
                     disabled: !gridModel || !gridModel.store.count,
-                    actionFn: () => gridModel.export({type: 'csv'})
+                    actionFn: () => gridModel.exportAsync({type: 'csv'})
                 });
             case 'expandCollapseAll':
                 return [

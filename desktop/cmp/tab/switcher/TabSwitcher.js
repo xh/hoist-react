@@ -22,10 +22,10 @@ import {omit} from 'lodash';
  */
 @HoistComponent
 export class TabSwitcher extends Component {
-    static propTypes = {
-        /** TabContainerModel to be controlled. */
-        model: PT.instanceOf(TabContainerModel).isRequired,
 
+    static modelClass = TabContainerModel;
+
+    static propTypes = {
         /** Relative position within the parent TabContainer. Defaults to 'top'. */
         orientation: PT.oneOf(['top', 'bottom', 'left', 'right'])
     };
@@ -46,8 +46,9 @@ export class TabSwitcher extends Component {
             vertical,
             onChange: this.onTabChange,
             selectedTabId: activeTabId,
-            items: tabs.map(({id, title}) => {
-                return blueprintTab({id, title});
+            items: tabs.map(({id, title, disabled, excludeFromSwitcher}) => {
+                if (excludeFromSwitcher) return null;
+                return blueprintTab({id, title, disabled});
             }),
             ...omit(this.props, 'model'),
             className: this.getClassName(`xh-tab-switcher--${orientation}`)

@@ -23,6 +23,8 @@ import './Mask.scss';
 @HoistComponent
 export class Mask extends Component {
 
+    static modelClass = PendingTaskModel;
+
     static propTypes = {
         /** True to display the mask. */
         isDisplayed: PT.bool,
@@ -32,9 +34,6 @@ export class Mask extends Component {
 
         /** True (default) to display a spinning image. */
         spinner: PT.bool,
-
-        /** Model to govern behavior of mask.  Use as an alternative to setting props above. */
-        model: PT.instanceOf(PendingTaskModel),
 
         /** Click handler **/
         onClick: PT.func

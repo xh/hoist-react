@@ -60,6 +60,7 @@ export class TabContainerModel {
         throwIf(tabs.length == 0, 'TabContainerModel needs at least one child tab.');
         throwIf(tabs.length != childIds.length, 'One or more Tabs in TabContainer has a non-unique ID.');
 
+        tabs = tabs.filter(p => !p.omit);
         tabs = tabs.map(p => isPlainObject(p) ? new TabModel(p) : p);
         tabs.forEach(p => p.containerModel = this);
         this.tabs = tabs;
@@ -94,6 +95,9 @@ export class TabContainerModel {
     activateTab(id) {
         if (this.activeTabId === id) return;
 
+        const tab = this.getTabById(id);
+        if (tab.disabled) return;
+
         const {route} = this;
         if (route) {
             XH.navigate(route + '.' + id);
@@ -109,15 +113,23 @@ export class TabContainerModel {
         this.tabs.forEach(it => it.requestRefresh());
     }
 
+    /**
+     * @param {string} id - unique ID of the Tab to retrieve
+     * @returns {TabModel} - the tab, or null if not found
+     */
+    getTabById(id) {
+        return find(this.tabs, {id});
+    }
+
     //-------------------------
     // Implementation
     //-------------------------
     @action
     setActiveTabId(id) {
-        const {tabs} = this,
-            tab = find(tabs, {id});
+        const tab = this.getTabById(id);
 
         throwIf(!tab, `Unknown Tab ${id} in TabContainer.`);
+        throwIf(tab.disabled, `Cannot activate Tab ${id} because it is disabled!`);
 
         this.activeTabId = id;
         if (tab.reloadOnShow) tab.requestRefresh();
@@ -132,7 +144,7 @@ export class TabContainerModel {
 
                 if (router.isActive(route)) {
                     const activateTab = tabs.find(tab => {
-                        return router.isActive(route + '.' + tab.id) && !tab.isActive;
+                        return router.isActive(route + '.' + tab.id) && !tab.isActive && !tab.disabled;
                     });
 
                     if (activateTab) {
