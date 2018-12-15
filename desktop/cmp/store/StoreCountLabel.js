@@ -12,14 +12,13 @@ import {box} from '@xh/hoist/cmp/layout';
 import {fmtNumber} from '@xh/hoist/format';
 import {singularize, pluralize} from '@xh/hoist/utils/js';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {throwIf} from '@xh/hoist/utils/js';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {BaseStore} from '@xh/hoist/data';
 
 /**
  * A component to display the number of records in a given store.
  *
- * This component will show the post-filtered record count, and in the
- * case of a store with hierarchical records, only the root records.
+ * This component will show the post-filtered record count.
  */
 @HoistComponent
 @LayoutSupport
@@ -32,6 +31,9 @@ export class StoreCountLabel extends Component {
 
         /** GridModel with Store that this control should count. Specify this or 'store' */
         gridModel: PT.instanceOf(GridModel),
+
+        /** True to count nested child records.  If false (default) only root records will be included in count. */
+        includeChildren: PT.bool,
 
         /** Name of entity that record in store represents */
         unit: PT.string
@@ -51,8 +53,11 @@ export class StoreCountLabel extends Component {
     }
 
     render() {
-        const store = this.getActiveStore(),
-            count = store ? store.rootRecords.length : 0,
+        const store = this.getActiveStore();
+        if (!store) return null;
+
+        const includeChildren = withDefault(this.props.includeChildren, false),
+            count = includeChildren ? store.records.length : store.rootRecords.length,
             countStr = fmtNumber(count, {precision: 0}),
             unitLabel = count === 1 ? this.oneUnit : this.manyUnits;
 

@@ -90,6 +90,14 @@ export class LocalStore extends BaseStore {
         this.rebuildFiltered();
     }
 
+    get allCount() {
+        return this._all.count;
+    }
+
+    get count() {
+        return this._filtered.count;
+    }
+
     getById(id, fromFiltered = false) {
         const rs = fromFiltered ? this._filtered : this._all;
         return rs.map.get(id);
