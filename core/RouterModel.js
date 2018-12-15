@@ -34,6 +34,18 @@ export class RouterModel {
         return flatNames.includes(routeName);
     }
 
+    /**
+     * Add routes to the router.
+     *
+     * @param {Object[]} routes - collection of router5 route spec.
+     *      This method supports an additional keyword 'omit' on each spec, in order to allow declarative
+     *      exclusion.  Otherwise these are Router5 configs to be passed directly to the Router5 API.
+     */
+    addRoutes(routes) {
+        this.router.add(this.preprocessRoutes(routes));
+    }
+
+
     //-------------------------
     // Implementation
     //-------------------------
@@ -62,6 +74,14 @@ export class RouterModel {
         ret.usePlugin(browserPlugin())
             .subscribe(ev => this.setCurrentState(ev.route));
 
+        return ret;
+    }
+
+    preprocessRoutes(routes) {
+        const ret = routes.filter(r => !r.omit);
+        ret.forEach(r => {
+            if (r.children) r.children = this.preprocessRoutes(r.children);
+        });
         return ret;
     }
 }

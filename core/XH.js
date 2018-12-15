@@ -500,7 +500,7 @@ class XHClass {
     }
 
     startRouter() {
-        this.router.add(this.appModel.getRoutes());
+        this.routerModel.addRoutes(this.appModel.getRoutes());
         this.router.start();
     }
 
