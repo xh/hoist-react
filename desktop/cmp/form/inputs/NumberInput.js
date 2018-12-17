@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {isNumber, isNaN, isEmpty} from 'lodash';
+import {isNumber, isNaN} from 'lodash';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {fmtNumber} from '@xh/hoist/format';
@@ -103,11 +103,10 @@ export class NumberInput extends HoistInput {
     }
 
     render() {
-        const {props, hasFocus, renderValue} = this,
-            displayValue = hasFocus ? renderValue : this.formatValue(renderValue);
+        const {props, renderValue} = this;
 
         return numericInput({
-            value: displayValue,
+            value: this.formatRenderValue(renderValue),
 
             allowNumericCharactersOnly: !props.enableShorthandUnits,
             buttonPosition: withDefault(props.buttonPosition, 'none'),
@@ -149,8 +148,11 @@ export class NumberInput extends HoistInput {
         if (ev.key === 'Enter') this.doCommit();
     }
 
-    formatValue(value) {
+    formatRenderValue(value) {
         if (value == null) return '';
+
+        if (this.hasFocus) return value;
+
         const props = this.props,
             precision = props.precision != null ? props.precision : 4,
             zeroPad = !!props.zeroPad,
@@ -160,7 +162,7 @@ export class NumberInput extends HoistInput {
     }
 
     parseValue(value) {
-        if (isEmpty(value)) return null;
+        if (value == null || value == '') return null;
         if (isNumber(value)) return value;
 
         value = value.replace(/,/g, '');
