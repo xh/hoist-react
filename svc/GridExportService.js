@@ -85,8 +85,11 @@ export class GridExportService {
             headers: new Headers()
         });
 
-        const blob = response.status === 204 ? null : await response.blob();
-        download(blob, filename);
+        const blob = response.status === 204 ? null : await response.blob(),
+            fileExt = this.getFileExtension(type),
+            contentType = this.getContentType(type);
+
+        download(blob, `${filename}${fileExt}`, contentType);
         XH.toast({
             message: 'Export complete',
             intent: 'success'
@@ -144,5 +147,25 @@ export class GridExportService {
         if (exportFormat === ExportFormat.DATETIME_FMT) value = fmtDate(value, 'YYYY-MM-DD HH:mm:ss');
 
         return value.toString();
+    }
+
+    getContentType(type) {
+        switch (type) {
+            case 'excelTable':
+            case 'excel':
+                return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+            case 'csv':
+                return 'text/csv';
+        }
+    }
+
+    getFileExtension(type) {
+        switch (type) {
+            case 'excelTable':
+            case 'excel':
+                return '.xlsx';
+            case 'csv':
+                return '.csv';
+        }
     }
 }
