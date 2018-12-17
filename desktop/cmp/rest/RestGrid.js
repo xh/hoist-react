@@ -25,7 +25,7 @@ export class RestGrid extends Component {
 
     render() {
         const {model} = this,
-            {extraToolbarItems, agOptions} = this.props;
+            {extraToolbarItems, onRowDoubleClicked = this.onRowDoubleClicked, agOptions} = this.props;
 
         return fragment(
             panel({
@@ -34,7 +34,7 @@ export class RestGrid extends Component {
                 tbar: restGridToolbar({model, extraToolbarItems}),
                 item: grid({
                     model: model.gridModel,
-                    onRowDoubleClicked: this.onRowDoubleClicked,
+                    onRowDoubleClicked,
                     agOptions
                 })
             }),
@@ -47,7 +47,13 @@ export class RestGrid extends Component {
     //------------------------
     onRowDoubleClicked = (row) => {
         if (!row.data) return;
-        this.model.formModel.openEdit(row.data);
+
+        const {editable, formModel} = this.model;
+        if (editable) {
+            formModel.openEdit(row.data);
+        } else {
+            formModel.openView(row.data);
+        }
     }
 }
 export const restGrid = elemFactory(RestGrid);
