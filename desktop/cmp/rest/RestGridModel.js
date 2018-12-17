@@ -55,7 +55,7 @@ export class RestGridModel {
     //----------------
     // Properties
     //----------------
-    readOnly;
+    readonly;
 
     toolbarActions;
     menuActions;
@@ -82,7 +82,7 @@ export class RestGridModel {
     get selectedRecord() {return this.gridModel.selectedRecord}
 
     /**
-     * @param {boolean} [readOnly] - Prevent users from creating, updating, or destroying a record. Defaults to false.
+     * @param {boolean} [readonly] - Prevent users from creating, updating, or destroying a record. Defaults to false.
      * @param {Object[]|RecordAction[]} [toolbarActions] - actions to display in the toolbar. Defaults to add, edit, delete.
      * @param {Object[]|RecordAction[]} [menuActions] - actions to display in the grid context menu. Defaults to add, edit, delete.
      * @param {Object[]|RecordAction[]} [formActions] - actions to display in the form toolbar. Defaults to delete.
@@ -94,10 +94,10 @@ export class RestGridModel {
      * @param {*} ...rest - arguments for GridModel.
      */
     constructor({
-        readOnly = false,
-        toolbarActions = !readOnly ? [addAction, editAction, deleteAction] : [viewAction],
-        menuActions = !readOnly ? [addAction, editAction, deleteAction] : [viewAction],
-        formActions = !readOnly ? [deleteAction] : [],
+        readonly = false,
+        toolbarActions = !readonly ? [addAction, editAction, deleteAction] : [viewAction],
+        menuActions = !readonly ? [addAction, editAction, deleteAction] : [viewAction],
+        formActions = !readonly ? [deleteAction] : [],
         actionWarning,
         unit = 'record',
         filterFields,
@@ -105,7 +105,7 @@ export class RestGridModel {
         editors = [],
         ...rest
     }) {
-        this.readOnly = readOnly;
+        this.readonly = readonly;
 
         this.toolbarActions = toolbarActions;
         this.menuActions = menuActions;
@@ -158,7 +158,7 @@ export class RestGridModel {
 
     @action
     deleteRecord(record) {
-        throwIf(this.readOnly, 'Record not deleted: this grid is read-only');
+        throwIf(this.readonly, 'Record not deleted: this grid is read-only');
         this.store.deleteRecordAsync(record)
             .then(() => this.formModel.close())
             .catchDefault();
