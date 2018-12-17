@@ -84,6 +84,8 @@
       box-shadow: var(--xh-form-field-box-shadow);
     }
     &__option {
+      margin-left: 0.5px;
+      padding-left: 0;
       &--is-selected {
         color: var(--xh-text-color);
         background: var(--xh-bg);

@@ -10,7 +10,7 @@ import PT from 'prop-types';
 import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {castArray, isEmpty, isPlainObject, keyBy, find, assign} from 'lodash';
 import {observable, action} from '@xh/hoist/mobx';
-import {box, hbox, div, hspacer, span} from '@xh/hoist/cmp/layout';
+import {box, hbox, div, span} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {HoistInput} from '@xh/hoist/cmp/form';
 import {withDefault, throwIf} from '@xh/hoist/utils/js';
@@ -319,15 +319,14 @@ export class Select extends HoistInput {
 
     optionRenderer = (opt) => {
         return hbox({
-            className: 'xh-select-option',
             items: [
                 div({
-                    style: {minWidth: 20},
+                    style: {minWidth: 25, textAlign: 'center'},
                     item: Icon.check({omit: this.externalValue !== opt.value, size: 'sm'})
                 }),
                 span(opt.label)
             ]
-        })
+        });
     }
 
     noOptionsMessageFn = (params) => {
