@@ -38,7 +38,7 @@ export class RestGrid extends Component {
          * Callback to call when a row is double clicked. Function will receive an event
          * with a data node containing the row's data.
          */
-        onRowDoubleClicked: PT.func,
+        onRowDoubleClicked: PT.func
     };
 
     baseClassName = 'xh-rest-grid';
