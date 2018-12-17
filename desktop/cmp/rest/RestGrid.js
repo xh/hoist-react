@@ -14,12 +14,32 @@ import {fragment} from '@xh/hoist/cmp/layout';
 import {restGridToolbar} from './impl/RestGridToolbar';
 import {restForm} from './impl/RestForm';
 import {RestGridModel} from './RestGridModel';
+import PT from 'prop-types';
 
 @HoistComponent
 @LayoutSupport
 export class RestGrid extends Component {
 
     static modelClass = RestGridModel;
+
+    static propTypes = {
+        /**
+         *
+         * This constitutes an 'escape hatch' for applications that need to get to the underlying
+         * ag-Grid API.  It should be used with care. Settings made here might be overwritten and/or
+         * interfere with the implementation of this component and its use of the ag-Grid API.
+         */
+        agOptions: PT.object,
+
+        /** Optional components rendered adjacent to the top toolbar's action buttons */
+        extraToolbarItems: PT.array,
+
+        /**
+         * Callback to call when a row is double clicked. Function will receive an event
+         * with a data node containing the row's data.
+         */
+        onRowDoubleClicked: PT.func,
+    };
 
     baseClassName = 'xh-rest-grid';
 

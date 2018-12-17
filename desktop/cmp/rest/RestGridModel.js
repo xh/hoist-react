@@ -80,7 +80,7 @@ export class RestGridModel {
     get selectedRecord() {return this.gridModel.selectedRecord}
 
     /**
-     * @param {boolean} [editable] - make CRUD controls visible. Defaults to true.
+     * @param {boolean} [editable] - allow users to create, update, or destroy a record. Defaults to true.
      * @param {Object[]|RecordAction[]} [toolbarActions] - actions to display in the toolbar. Defaults to add, edit, delete.
      * @param {Object[]|RecordAction[]} [menuActions] - actions to display in the grid context menu. Defaults to add, edit, delete.
      * @param {Object[]|RecordAction[]} [formActions] - actions to display in the form toolbar. Defaults to delete.
