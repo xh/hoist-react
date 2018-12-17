@@ -39,6 +39,11 @@ export class RecordSet {
         );
     }
 
+    /** Number of records contained in this recordset */
+    get count() {
+        return this.list.length;
+    }
+
     /**
      * Return a filtered version of this recordset.
      *
