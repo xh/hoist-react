@@ -82,7 +82,7 @@ export class RestGridModel {
     get selectedRecord() {return this.gridModel.selectedRecord}
 
     /**
-     * @param {boolean} [readOnly] - allow users to create, update, or destroy a record. Defaults to true.
+     * @param {boolean} [readOnly] - Prevent users from creating, updating, or destroying a record. Defaults to false.
      * @param {Object[]|RecordAction[]} [toolbarActions] - actions to display in the toolbar. Defaults to add, edit, delete.
      * @param {Object[]|RecordAction[]} [menuActions] - actions to display in the grid context menu. Defaults to add, edit, delete.
      * @param {Object[]|RecordAction[]} [formActions] - actions to display in the form toolbar. Defaults to delete.
