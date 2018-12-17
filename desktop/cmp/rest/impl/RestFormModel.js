@@ -66,6 +66,7 @@ export class RestFormModel {
     //-----------------
     @action
     saveRecord() {
+        throwIf(this.parent.readOnly, 'Record not saved: this grid is read-only.');
         const {isAdd, record, store} = this;
         start(() => {
             return isAdd ? store.addRecordAsync(record) : store.saveRecordAsync(record);

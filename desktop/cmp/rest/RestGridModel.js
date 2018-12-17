@@ -8,7 +8,7 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {pluralize} from '@xh/hoist/utils/js';
+import {pluralize, throwIf} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon/Icon';
 
 import {RestFormModel} from './impl/RestFormModel';
@@ -55,6 +55,8 @@ export class RestGridModel {
     //----------------
     // Properties
     //----------------
+    readOnly;
+
     toolbarActions;
     menuActions;
     formActions;
@@ -80,7 +82,7 @@ export class RestGridModel {
     get selectedRecord() {return this.gridModel.selectedRecord}
 
     /**
-     * @param {boolean} [editable] - allow users to create, update, or destroy a record. Defaults to true.
+     * @param {boolean} [readOnly] - allow users to create, update, or destroy a record. Defaults to true.
      * @param {Object[]|RecordAction[]} [toolbarActions] - actions to display in the toolbar. Defaults to add, edit, delete.
      * @param {Object[]|RecordAction[]} [menuActions] - actions to display in the grid context menu. Defaults to add, edit, delete.
      * @param {Object[]|RecordAction[]} [formActions] - actions to display in the form toolbar. Defaults to delete.
@@ -92,10 +94,10 @@ export class RestGridModel {
      * @param {*} ...rest - arguments for GridModel.
      */
     constructor({
-        editable = true,
-        toolbarActions = editable ? [addAction, editAction, deleteAction] : [viewAction],
-        menuActions = editable ? [addAction, editAction, deleteAction] : [viewAction],
-        formActions = editable ? [deleteAction] : [],
+        readOnly = false,
+        toolbarActions = !readOnly ? [addAction, editAction, deleteAction] : [viewAction],
+        menuActions = !readOnly ? [addAction, editAction, deleteAction] : [viewAction],
+        formActions = !readOnly ? [deleteAction] : [],
         actionWarning,
         unit = 'record',
         filterFields,
@@ -103,6 +105,8 @@ export class RestGridModel {
         editors = [],
         ...rest
     }) {
+        this.readOnly = readOnly;
+
         this.toolbarActions = toolbarActions;
         this.menuActions = menuActions;
         this.formActions = formActions;
@@ -154,6 +158,7 @@ export class RestGridModel {
 
     @action
     deleteRecord(record) {
+        throwIf(this.readOnly, 'Record not deleted: this grid is read-only');
         this.store.deleteRecordAsync(record)
             .then(() => this.formModel.close())
             .catchDefault();

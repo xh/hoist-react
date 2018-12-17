@@ -68,8 +68,8 @@ export class RestGrid extends Component {
     onRowDoubleClicked = (row) => {
         if (!row.data) return;
 
-        const {editable, formModel} = this.model;
-        if (editable) {
+        const {readOnly, formModel} = this.model;
+        if (!readOnly) {
             formModel.openEdit(row.data);
         } else {
             formModel.openView(row.data);
