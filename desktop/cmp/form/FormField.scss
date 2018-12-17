@@ -1,47 +1,42 @@
 .xh-form-field {
+  display: flex;
+  flex-direction: column;
   padding: 3px;
   margin: 0 0 var(--xh-pad-px);
 
-  .bp3-form-content {
-    position: relative;
+  .xh-form-field-label {
+    padding: 0 0 3px;
   }
 
-  .bp3-form-helper-text {
+  .xh-form-field-info,
+  .xh-form-field-error-msg {
     font-size: var(--xh-font-size-small-px);
+    line-height: calc(var(--xh-font-size-small-px) + var(--xh-pad-px));
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
 
-    .xh-form-field-pending {
-      width: 15px;
-      height: 15px;
-    }
+  .xh-form-field-error-msg {
+    color: var(--xh-red);
+  }
 
-    .xh-form-field-error-msg {
-      display: none;
+  & > .xh-vbox {
+    overflow: visible !important;
+  }
+
+  &.xh-form-field-inline {
+    flex-direction: row;
+
+    .xh-form-field-label {
+      padding: 6px 6px 6px 0;
+      min-width: 80px;
     }
   }
 
-  &.xh-form-field-invalid .bp3-form-content {
-    padding: 0 0 calc(var(--xh-font-size-small-px) + var(--xh-pad-px));
-
-    .bp3-form-helper-text {
-      position: absolute;
-      height: calc(var(--xh-font-size-small-px) + var(--xh-pad-px));
-      line-height: calc(var(--xh-font-size-small-px) + var(--xh-pad-px));
-      width: 100%;
-      overflow: hidden;
-      bottom: 0;
-
-      .xh-form-field-error-msg {
-        display: block;
-        color: var(--xh-red);
-        height: calc(var(--xh-font-size-small-px) + var(--xh-pad-px));
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
-      }
-    }
-
+  &.xh-form-field-invalid {
     .xh-check-box span {
-      box-shadow: var(--xh-form-field-invalid-box-shadow);
+      box-shadow: var(--xh-form-field-invalid-box-shadow) !important;
     }
 
     .xh-button-group-input button.xh-button {
@@ -63,14 +58,6 @@
     .xh-text-area.textarea {
       border: var(--xh-form-field-invalid-border) !important;
     }
-  }
-
-  &.xh-form-field-minimal .bp3-form-content {
-    padding: 0 !important;
-  }
-
-  .xh-form-field-error-label {
-    color: var(--xh-intent-danger);
   }
 }
 

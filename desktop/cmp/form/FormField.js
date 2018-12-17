@@ -8,10 +8,10 @@ import React, {Component} from 'react';
 import PT from 'prop-types';
 import {isArray, isUndefined} from 'lodash';
 
-import {elemFactory, HoistComponent, StableIdSupport} from '@xh/hoist/core';
-import {formGroup, spinner, tooltip} from '@xh/hoist/kit/blueprint';
+import {elemFactory, HoistComponent, LayoutSupport, StableIdSupport} from '@xh/hoist/core';
+import {spinner, tooltip} from '@xh/hoist/kit/blueprint';
 import {HoistInput, FormContext} from '@xh/hoist/cmp/form';
-import {div, fragment, span, vframe} from '@xh/hoist/cmp/layout';
+import {box, div, vbox, span, label as labelEl} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 
@@ -26,6 +26,7 @@ import './FormField.scss';
  * bound field, and may receive behavioral and visual defaults from its contained Field.
  */
 @HoistComponent
+@LayoutSupport
 @StableIdSupport
 export class FormField extends Component {
 
@@ -49,6 +50,13 @@ export class FormField extends Component {
         //----------------------
         // -- Default from Form
         //----------------------
+        /**
+         * Layout field inline with label to the left.
+         *
+         * Defaulted from containing Form, or false.
+         */
+        inline: PT.bool,
+
         /**
          *  Apply minimal styling - validation errors are only displayed with a tooltip.
          *
@@ -103,43 +111,48 @@ export class FormField extends Component {
             requiredStr = isRequired ? span(' *') : null;
 
         // Display related props
-        const minimal = this.getDefaultedProp('minimal', false),
+        const inline = this.getDefaultedProp('inline', false),
+            minimal = this.getDefaultedProp('minimal', false),
             leftErrorIcon = this.getDefaultedProp('leftErrorIcon', false),
-            clickableLabel = this.getDefaultedProp('clickableLabel', true);
+            clickableLabel = this.getDefaultedProp('clickableLabel', true),
+            control = this.prepareChild({displayNotValid, errors, idAttr, leftErrorIcon, minimal});
 
         const classes = [];
         if (isRequired) classes.push('xh-form-field-required');
+        if (inline) classes.push('xh-form-field-inline');
         if (minimal) classes.push('xh-form-field-minimal');
         if (displayNotValid) classes.push('xh-form-field-invalid');
 
-        const control = this.prepareChild({displayNotValid, errors, idAttr, leftErrorIcon, minimal});
-        const infoDiv = info ? div({className: 'bp3-form-helper-text', item: info}) : null;
-
-        return formGroup({
-            item: vframe(control, infoDiv),
-            width: 50,
-            label: span({
-                item: labelStr ? span(labelStr, requiredStr) : null,
-                className: minimal && displayNotValid ? 'xh-form-field-error-label' : null
-            }),
-            labelFor: clickableLabel ? idAttr : null,
+        return box({
             className: this.getClassName(classes),
-            helperText: !minimal && validationDisplayed ?
-                fragment(
+            items: [
+                labelEl({
+                    omit: !labelStr,
+                    className: 'xh-form-field-label',
+                    items: [labelStr, requiredStr],
+                    htmlFor: clickableLabel ? idAttr : null
+                }),
+                vbox(
+                    control,
                     div({
-                        omit: !isPending,
+                        omit: !info,
+                        className: 'xh-form-field-info',
+                        item: info
+                    }),
+                    div({
+                        omit: minimal || !isPending,
                         className: 'xh-form-field-pending',
                         item: spinner({size: 15})
                     }),
-                    div({
-                        omit: !displayNotValid,
+                    tooltip({
+                        omit: minimal || !displayNotValid,
                         className: 'xh-form-field-error-msg',
-                        items: displayNotValid ? tooltip({
-                            item: errors[0],
-                            content: this.getErrorTooltipContent(errors)
-                        }) : null
+                        item: errors ? errors[0] : null,
+                        content: this.getErrorTooltipContent(errors)
                     })
-                ) : null
+                )
+            ],
+            ...this.getLayoutProps()
         });
     }
 
@@ -192,7 +205,6 @@ export class FormField extends Component {
         return tooltip({
             target,
             targetClassName: `xh-input ${displayNotValid ? 'xh-input-invalid' : ''}`,
-            wrapperTagName: 'div',
             targetTagName: !this.blockChildren.includes(target.type.name) || target.props.width ? 'span' : 'div',
             position: 'right',
             disabled: !displayNotValid,
