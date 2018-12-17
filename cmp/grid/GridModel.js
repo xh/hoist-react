@@ -25,7 +25,6 @@ import {Column, ColumnGroup} from '@xh/hoist/cmp/grid/columns';
 import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';
-import {ExportManager} from './impl/ExportManager';
 
 import {StoreContextMenu, ColChooserModel} from '@xh/hoist/dynamics/desktop';
 
@@ -64,8 +63,8 @@ export class GridModel {
     contextMenuFn = null;
     /** @member {boolean} */
     enableExport = false;
-    /** @member {string} */
-    exportFilename = 'export';
+    /** @member {object} */
+    exportOptions = null;
 
     //------------------------
     // Observable API
@@ -121,9 +120,9 @@ export class GridModel {
      * @param {boolean} [c.compact] - true to render the grid in compact mode.
      * @param {boolean} [c.enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
-     * @param {boolean} [c.enableExport] - true to install default export context menu items.
-     * @param {(function|string)} [c.exportFilename] - filename for exported file,
-     *      or a closure to generate one.
+     * @param {boolean} [c.enableExport] - true to enable exporting this grid and
+     *      install default context menu items.
+     * @param {object} [c.exportOptions] - default options used in exportAsync().
      * @param {function} [c.rowClassFn] - closure to generate css class names for a row.
      *      Should return a string or array of strings. Receives record data as param.
      * @param {function} [c.contextMenuFn] - closure returning a StoreContextMenu (desktop only)
@@ -142,7 +141,7 @@ export class GridModel {
         compact = false,
         enableColChooser = false,
         enableExport = false,
-        exportFilename = 'export',
+        exportOptions = {},
         rowClassFn = null,
         contextMenuFn = () => this.defaultContextMenu(),
         ...rest
@@ -150,10 +149,11 @@ export class GridModel {
         this.store = store;
         this.treeMode = treeMode;
         this.emptyText = emptyText;
-        this.enableExport = enableExport;
-        this.exportFilename = exportFilename;
         this.contextMenuFn = contextMenuFn;
         this.rowClassFn = rowClassFn;
+
+        this.enableExport = enableExport;
+        this.exportOptions = exportOptions;
 
         Object.assign(this, rest);
 
@@ -175,13 +175,11 @@ export class GridModel {
     /**
      * Export grid data using Hoist's server-side export.
      *
-     * @param {Object} options
-     * @param {string} options.type - type of export - one of ['excel', 'excelTable', 'csv'].
-     * @param {(string|function)} [options.filename] - name for exported file or closure to generate.
+     * @param {Object} options - Export options. See GridExportService.exportAsync() for options.
      */
-    export(options = {}) {
-        const {type, filename = this.exportFilename} = options;
-        new ExportManager().exportAsync(this, filename, type);
+    async exportAsync(options = {}) {
+        throwIf(!this.enableExport, 'Export not enabled for this grid. See GridModel.enableExport');
+        return XH.gridExportService.exportAsync(this, {...this.exportOptions, ...options});
     }
 
     /**

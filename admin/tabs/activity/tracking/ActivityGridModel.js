@@ -30,7 +30,7 @@ export class ActivityGridModel {
         stateModel: 'xhActivityGrid',
         enableColChooser: true,
         enableExport: true,
-        exportFilename: () => `Activity ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`,
+        exportOptions: {filename: () => `Activity ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`},
         store: new LocalStore({
             fields: [
                 'severity', 'dateCreated', 'username', 'msg', 'category',
