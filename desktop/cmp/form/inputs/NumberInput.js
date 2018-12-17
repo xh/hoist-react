@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {isNumber, isNaN, isEmpty} from 'lodash';
+import {isNumber, isNaN} from 'lodash';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {fmtNumber} from '@xh/hoist/format';
