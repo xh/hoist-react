@@ -25,7 +25,8 @@ export class GridExportService {
      *
      * @param {GridModel} gridModel - GridModel to export.
      * @param {Object} [options] - Export options.
-     * @param {(string|function)} [options.filename] - name for exported file or closure to generate.
+     * @param {(string|function)} [options.filename] - name for the exported file, or a closure to generate.
+     *      Do not include the file extension - that will be appended based on the specified type.
      * @param {string} [options.type] - type of export - one of ['excel', 'excelTable', 'csv'].
      * @param {boolean} [options.includeHiddenCols] - include hidden grid columns in the export.
      */
