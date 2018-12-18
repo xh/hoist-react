@@ -114,8 +114,8 @@ export class FormField extends Component {
         // Model related props
         const {fieldModel} = this,
             isRequired = fieldModel && fieldModel.isRequired,
-            validationDisplayed = fieldModel && fieldModel.validationDisplayed,
             isPending = fieldModel && fieldModel.isValidationPending,
+            validationDisplayed = fieldModel && fieldModel.validationDisplayed,
             notValid = fieldModel && fieldModel.isNotValid,
             displayNotValid = validationDisplayed && notValid,
             errors = fieldModel ? fieldModel.errors : [],
@@ -129,15 +129,17 @@ export class FormField extends Component {
             minimal = this.getDefaultedProp('minimal', false),
             readonly = this.getDefaultedProp('readonly', false),
             leftErrorIcon = this.getDefaultedProp('leftErrorIcon', false),
-            clickableLabel = this.getDefaultedProp('clickableLabel', true),
-            control = this.prepareChild({displayNotValid, errors, idAttr, leftErrorIcon, minimal, readonly});
+            clickableLabel = this.getDefaultedProp('clickableLabel', true);
 
+        // Styles
         const classes = [];
         if (isRequired) classes.push('xh-form-field-required');
         if (inline) classes.push('xh-form-field-inline');
         if (minimal) classes.push('xh-form-field-minimal');
         if (readonly) classes.push('xh-form-field-readonly');
         if (displayNotValid) classes.push('xh-form-field-invalid');
+
+        const control = this.prepareChild({displayNotValid, errors, idAttr, leftErrorIcon, minimal, readonly});
 
         return box({
             className: this.getClassName(classes),
@@ -156,7 +158,7 @@ export class FormField extends Component {
                         item: info
                     }),
                     div({
-                        omit: minimal || !isPending,
+                        omit: minimal || !isPending || !validationDisplayed,
                         className: 'xh-form-field-pending',
                         item: spinner({size: 15})
                     }),
