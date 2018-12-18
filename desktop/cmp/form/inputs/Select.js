@@ -62,6 +62,11 @@ export class Select extends HoistInput {
         /** True to allow entry/selection of multiple values - "tag picker" style. */
         enableMulti: PT.bool,
 
+        /** True to suppress checked icon for the selected option. Defaults to false, except when
+         * `enableMulti` is true
+         */
+        hideSelectedOptionCheck: PT.bool,
+
         /** Field on provided options for sourcing each option's display text (default `label`). */
         labelField: PT.string,
 
@@ -159,7 +164,7 @@ export class Select extends HoistInput {
                 menuPortalTarget: this.getOrCreatePortalDiv(),
 
                 inputId: props.id,
-                classNamePrefix: 'xh-select',
+                classNamePrefix: props.hideSelectedOptionCheck ? 'xh-select-no-check' : 'xh-select-default',
                 theme: this.getThemeConfig(),
 
                 onBlur: this.onBlur,
@@ -318,15 +323,17 @@ export class Select extends HoistInput {
     }
 
     optionRenderer = (opt) => {
-        return hbox({
-            items: [
-                div({
-                    style: {minWidth: 25, textAlign: 'center'},
-                    item: Icon.check({omit: this.externalValue !== opt.value, size: 'sm'})
-                }),
-                span(opt.label)
-            ]
-        });
+        const {props}= this,
+            suppressCheck = withDefault(props.hideSelectedOptionCheck, props.enableMulti);
+
+        return hbox(
+            div({
+                omit: suppressCheck,
+                style: {minWidth: 25, textAlign: 'center'},
+                item: Icon.check({omit: this.externalValue !== opt.value, size: 'sm'})
+            }),
+            span(opt.label)
+        );
     }
 
     noOptionsMessageFn = (params) => {
