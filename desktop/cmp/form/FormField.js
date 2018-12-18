@@ -6,13 +6,14 @@
  */
 import React, {Component} from 'react';
 import PT from 'prop-types';
-import {isArray, isUndefined} from 'lodash';
+import {isArray, isUndefined, isDate, isFinite, isBoolean} from 'lodash';
 
 import {elemFactory, HoistComponent, LayoutSupport, StableIdSupport} from '@xh/hoist/core';
 import {spinner, tooltip} from '@xh/hoist/kit/blueprint';
 import {HoistInput, FormContext} from '@xh/hoist/cmp/form';
 import {box, div, vbox, span, label as labelEl} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
+import {fmtDate, fmtNumber} from '@xh/hoist/format';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 
 import './FormField.scss';
@@ -47,6 +48,12 @@ export class FormField extends Component {
          */
         info: PT.node,
 
+        /**
+         * Optional function for use in readonly mode.
+         * Receives (value), and should return a human-readable string.
+         */
+        readonlyRenderer: PT.func,
+
         //----------------------
         // -- Default from Form
         //----------------------
@@ -63,6 +70,13 @@ export class FormField extends Component {
          *  Defaulted from containing Form, or false.
          */
         minimal: PT.bool,
+
+        /**
+         * Render the bound value as a string rather than the HoistInput
+         *
+         * Defaulted from containing Form, or false.
+         */
+        readonly: PT.bool,
 
         /**
          * CommitOnChange property for underlying HoistInput (for inputs that support)
@@ -113,9 +127,10 @@ export class FormField extends Component {
         // Display related props
         const inline = this.getDefaultedProp('inline', false),
             minimal = this.getDefaultedProp('minimal', false),
+            readonly = this.getDefaultedProp('readonly', false),
             leftErrorIcon = this.getDefaultedProp('leftErrorIcon', false),
             clickableLabel = this.getDefaultedProp('clickableLabel', true),
-            control = this.prepareChild({displayNotValid, errors, idAttr, leftErrorIcon, minimal});
+            control = this.prepareChild({displayNotValid, errors, idAttr, leftErrorIcon, minimal, readonly});
 
         const classes = [];
         if (isRequired) classes.push('xh-form-field-required');
@@ -183,7 +198,7 @@ export class FormField extends Component {
         );
     }
 
-    prepareChild({displayNotValid, leftErrorIcon, idAttr, errors, minimal}) {
+    prepareChild({displayNotValid, leftErrorIcon, idAttr, errors, minimal, readonly}) {
         const {fieldModel} = this,
             item = this.props.children;
 
@@ -197,7 +212,7 @@ export class FormField extends Component {
             overrides.leftIcon = Icon.warningCircle();
         }
 
-        const target = React.cloneElement(item, overrides);
+        const target = readonly ? this.renderReadonly() : React.cloneElement(item, overrides);
 
         if (!minimal) return target;
 
@@ -212,6 +227,20 @@ export class FormField extends Component {
         });
     }
 
+    renderReadonly() {
+        const {model, field, readonlyRenderer} = this.props,
+            value = model[field],
+            renderer = readonlyRenderer || this.defaultReadonlyRenderer;
+
+        return span(renderer(value));
+    }
+
+    defaultReadonlyRenderer(value) {
+        if (isDate(value)) return fmtDate(value);
+        if (isFinite(value)) return fmtNumber(value);
+        if (isBoolean(value)) return value.toString();
+        return value;
+    }
 
     getErrorTooltipContent(errors) {
         if (!errors || !errors.length) return null;
