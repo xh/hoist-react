@@ -136,6 +136,7 @@ export class FormField extends Component {
         if (isRequired) classes.push('xh-form-field-required');
         if (inline) classes.push('xh-form-field-inline');
         if (minimal) classes.push('xh-form-field-minimal');
+        if (readonly) classes.push('xh-form-field-readonly');
         if (displayNotValid) classes.push('xh-form-field-invalid');
 
         return box({
@@ -228,11 +229,14 @@ export class FormField extends Component {
     }
 
     renderReadonly() {
-        const {model, field, readonlyRenderer} = this.props,
-            value = model[field],
-            renderer = readonlyRenderer || this.defaultReadonlyRenderer;
+        const {fieldModel} = this,
+            value = fieldModel ? fieldModel['value'] : null,
+            renderer = this.props.readonlyRenderer || this.defaultReadonlyRenderer;
 
-        return span(renderer(value));
+        return span({
+            className: 'xh-form-field-readonly-display',
+            item: renderer(value)
+        });
     }
 
     defaultReadonlyRenderer(value) {

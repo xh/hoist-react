@@ -35,7 +35,7 @@ export class FieldModel {
     /** @member {boolean}.  True to disable input on this field.*/
     @observable disabled;
     /** @member {boolean}.  True to make this field read-only.*/
-    @observable readOnly;
+    @observable readonly;
     /** @member {Rule[]} list of validation rules to apply to this field. */
     @observable.ref rules = [];
     /** @member {String[]} list of validation errors.  Null if the validity state not computed. */
@@ -55,7 +55,7 @@ export class FieldModel {
      * @param {Object} cfg
      * @param {string} cfg.name
      * @param {string} [cfg.displayName]
-     * @param {boolean} [cfg.readOnly]
+     * @param {boolean} [cfg.readonly]
      * @param {boolean} [cfg.disabled]
      * @param {(Rule|Object|Function)} [cfg.rules] -
      *      Rules, rule configurations, or validation functions to create rules.
@@ -66,7 +66,7 @@ export class FieldModel {
         displayName = startCase(name),
         initialValue = null,
         disabled = false,
-        readOnly = false,
+        readonly = false,
         rules = []
     }) {
         this.name = name;
@@ -74,7 +74,7 @@ export class FieldModel {
         this.value = initialValue;
         this.initialValue = initialValue;
         this.disabled = disabled;
-        this.readOnly = readOnly;
+        this.readonly = readonly;
         this.rules = this.processRuleSpecs(rules);
     }
 
