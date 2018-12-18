@@ -174,7 +174,7 @@ export class FormField extends Component {
     renderReadonly() {
         const {fieldModel} = this,
             value = fieldModel ? fieldModel['value'] : null,
-            renderer = this.props.readonlyRenderer || this.defaultReadonlyRenderer;
+            renderer = withDefault(this.props.readonlyRenderer, this.defaultReadonlyRenderer);
 
         return span({
             className: 'xh-form-field-readonly-display',
