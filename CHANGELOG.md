@@ -50,7 +50,7 @@
 * MultiFieldRenderer SubFields now support a `position` property, to allow rendering in either the top or bottom row.
 * `Checkbox` now supports a `displayUnsetState` prop which may be used to display a visually distinct
 state for null values.
-* `Select` now renders with a checkbox next to the selected item, but supports the new `hideSelectedOptionCheck' prop.
+* `Select` now renders with a checkbox next to the selected item, but supports the new `hideSelectedOptionCheck` prop.
 to disable.
 
 ## v16.0.1
