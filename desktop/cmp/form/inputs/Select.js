@@ -20,6 +20,7 @@ import {
     reactAsyncSelect,
     reactAsyncCreatableSelect
 } from '@xh/hoist/kit/react-select';
+import classNames from 'classnames';
 
 import './Select.scss';
 
@@ -164,7 +165,10 @@ export class Select extends HoistInput {
                 menuPortalTarget: this.getOrCreatePortalDiv(),
 
                 inputId: props.id,
-                classNamePrefix: props.hideSelectedOptionCheck ? 'xh-select-no-check' : 'xh-select-default',
+                classNamePrefix: classNames(
+                    (this.suppressCheck ? 'xh-suppress-check' : null),
+                    'xh-select'
+                ),
                 theme: this.getThemeConfig(),
 
                 onBlur: this.onBlur,
@@ -300,6 +304,34 @@ export class Select extends HoistInput {
         return loadingMessageFn ? loadingMessageFn(q) : 'Loading...';
     }
 
+    //----------------------
+    // Option Rendering
+    //----------------------
+
+    formatOptionLabel = (opt, params) => {
+        const {props, suppressCheck} = this,
+            {optionRenderer = this.optionRenderer} = props;
+        // Always display the standard label string in the value container (context == 'value').
+        // If we need to expose customization here, we could consider a dedicated prop.
+        return (!suppressCheck && params.context === 'menu') ? optionRenderer(opt) : opt.label;
+    }
+
+    optionRenderer = (opt) => {
+        return this.externalValue === opt.value ?
+            hbox(
+                div({
+                    style: {minWidth: 25, textAlign: 'center'},
+                    item: Icon.check({size: 'sm'})
+                }),
+                span(opt.label)
+            ) :
+            span({item: opt.label, style: {paddingLeft: 25}});
+    }
+
+    get suppressCheck() {
+        const {props} = this;
+        return withDefault(props.hideSelectedOptionCheck, props.enableMulti);
+    }
 
     //------------------------
     // Other Implementation
@@ -312,28 +344,6 @@ export class Select extends HoistInput {
                 borderRadius: 3
             };
         };
-    }
-
-    formatOptionLabel = (opt, params) => {
-        const {optionRenderer = this.optionRenderer} = this.props;
-
-        // Always display the standard label string in the value container (context == 'value').
-        // If we need to expose customization here, we could consider a dedicated prop.
-        return (params.context === 'menu') ? optionRenderer(opt) : opt.label;
-    }
-
-    optionRenderer = (opt) => {
-        const {props}= this,
-            suppressCheck = withDefault(props.hideSelectedOptionCheck, props.enableMulti);
-
-        return hbox(
-            div({
-                omit: suppressCheck,
-                style: {minWidth: 25, textAlign: 'center'},
-                item: Icon.check({omit: this.externalValue !== opt.value, size: 'sm'})
-            }),
-            span(opt.label)
-        );
     }
 
     noOptionsMessageFn = (params) => {

@@ -78,37 +78,27 @@
 
 // The menu is rendered under the xh-app body, not within the control DOM.
 .xh-app {
-  .xh-select-default {
-    &__option {
-      padding-left: 0;
-
-      &--is-selected {
-        background: var(--xh-bg);
-      }
-    }
-  }
-
-  .xh-select-default, .xh-select-no-check {
+  .xh-select {
     &__menu {
       background-color: var(--xh-bg);
-      box-shadow: 0 0 0 1px var(--xh-form-field-box-shadow-color-top)
+      box-shadow: 0 0 0 1px var(--xh-form-field-box-shadow-color-top);
     }
     &__option {
+      padding-left: 0;
       &--is-selected {
+        background: none;
         color: var(--xh-text-color);
+      }
+      &--is-selected.xh-suppress-check {
+        background: var(--xh-bg-highlight);
       }
       &--is-focused {
         color: var(--xh-text-color-highlight);
-        background: var(--xh-bg-highlight);
-      }
-    }
-  }
-
-  .xh-select-no-check {
-    &__option {
-      &--is-selected {
         background: var(--xh-bg-alt);
       }
+    }
+    &__option.xh-suppress-check {
+      padding-left: 12px;
     }
   }
 }
