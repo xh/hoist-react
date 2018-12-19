@@ -46,8 +46,8 @@ export class AboutPanel extends Component {
                     row('Server', svc.get('appVersion')),
                     row('Client', svc.get('clientVersion')),
                     row('Build', svc.get('clientBuild')),
-                    row('DB', svc.get('databaseConnectionString')),
-                    row('DB User', svc.get('databaseUser')),
+                    row('Database', svc.get('databaseConnectionString')),
+                    row('Database User', svc.get('databaseUser')),
                     row('DB Create Mode', svc.get('databaseCreateMode'))
                 )
             }),
