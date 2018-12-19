@@ -18,10 +18,12 @@ import {Icon} from '@xh/hoist/icon';
 export class VisitsChart extends Component {
     
     render() {
+        const {model} = this;
         return panel({
+            mask: model.loadModel,
             icon: Icon.users(),
             title: 'Unique Daily Visitors',
-            item: chart({model: this.model.chartModel}),
+            item: chart({model: model.chartModel}),
             bbar: this.renderToolbar(),
             model: {
                 defaultSize: 500,

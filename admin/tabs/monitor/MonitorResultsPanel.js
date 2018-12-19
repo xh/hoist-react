@@ -13,20 +13,23 @@ import {monitorResultsDisplay} from './MonitorResultsDisplay';
 import {MonitorResultsModel} from './MonitorResultsModel';
 
 import './MonitorResultsPanel.scss';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 
 @HoistComponent
 export class MonitorResultsPanel extends Component {
     model = new MonitorResultsModel({view: this});
+    loadModel = new PendingTaskModel();
 
     async loadAsync() {
-        this.model.loadAsync();
+        this.model.loadAsync().linkTo(this.loadModel);
     }
 
     render() {
-        const {model} = this;
+        const {model, loadModel} = this;
 
         return panel({
+            mask: loadModel,
             className: 'xh-monitor-results-panel',
             tbar: monitorResultsToolbar({model}),
             item: monitorResultsDisplay({model})

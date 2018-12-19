@@ -9,10 +9,13 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {UrlStore} from '@xh/hoist/data';
 import {emptyFlexCol, numberCol} from '@xh/hoist/cmp/grid/columns';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 
 @HoistModel
 export class EhCacheModel {
+
+    loadModel = new PendingTaskModel();
 
     gridModel = new GridModel({
         stateModel: 'xhEhCacheGrid',
@@ -46,7 +49,7 @@ export class EhCacheModel {
     }
 
     async loadAsync() {
-        return this.gridModel.loadAsync();
+        return this.gridModel.loadAsync().linkTo(this.loadModel);
     }
 
     destroy() {

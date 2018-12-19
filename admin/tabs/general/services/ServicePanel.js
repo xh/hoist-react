@@ -9,8 +9,8 @@ import {HoistComponent} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
-import {refreshButton, button} from '@xh/hoist/desktop/cmp/button';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 import {ServiceModel} from './ServiceModel';
@@ -21,10 +21,13 @@ export class ServicePanel extends Component {
     model = new ServiceModel();
 
     render() {
+        const {model} = this;
+
         return panel({
+            mask: model.loadModel,
             tbar: this.renderToolbar(),
             item: grid({
-                model: this.model.gridModel,
+                model: model.gridModel,
                 hideHeaders: true,
                 agOptions: {
                     groupRowInnerRenderer: this.groupRowInnerRenderer
@@ -43,8 +46,6 @@ export class ServicePanel extends Component {
                 onClick: this.onClearCachesClick,
                 disabled: gridModel.selModel.isEmpty
             }),
-            toolbarSep(),
-            refreshButton({model}),
             filler(),
             storeCountLabel({gridModel, unit: 'service'}),
             storeFilterField({gridModel})

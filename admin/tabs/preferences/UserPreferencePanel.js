@@ -66,7 +66,7 @@ export class UserPreferencePanel extends Component {
             {field: 'name', width: 200},
             {field: 'type', width: 100},
             {field: 'username', ...usernameCol},
-            {field: 'groupName', headerName: 'Group', width: 100},
+            {field: 'groupName', hidden: true},
             {field: 'userValue', minWidth: 200, flex: true}
         ],
         editors: [

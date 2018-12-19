@@ -12,6 +12,8 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {switchInput} from '@xh/hoist/desktop/cmp/form';
+import {exportButton} from '@xh/hoist/desktop/cmp/button';
+
 
 import {UserModel} from './UserModel';
 
@@ -21,10 +23,12 @@ export class UserPanel extends Component {
     model = new UserModel();
 
     render() {
+        const {model} = this;
         return panel({
+            mask: model.loadModel,
             tbar: this.renderToolbar(),
             item: grid({
-                model: this.model.gridModel
+                model: model.gridModel
             })
         });
     }
@@ -40,7 +44,8 @@ export class UserPanel extends Component {
             }),
             filler(),
             storeCountLabel({gridModel, unit: 'user'}),
-            storeFilterField({gridModel})
+            storeFilterField({gridModel}),
+            exportButton({gridModel})
         );
     }
 
