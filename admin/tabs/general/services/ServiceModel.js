@@ -26,7 +26,7 @@ export class ServiceModel {
         sortBy: 'displayName',
         groupBy: 'provider',
         columns: [
-            {field: 'provider', width: 100, hidden: true},
+            {field: 'provider', hidden: true},
             {field: 'displayName', minWidth: 300, flex: true}
         ]
     });
