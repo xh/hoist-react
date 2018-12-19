@@ -37,6 +37,10 @@
     items) support `exportOptions`. Additionally, `GridModel` can be configured with default
     `exportOptions` in its config.
 
+* The `buttonPosition` prop on `NumberInput` has been removed due to problems with the underlying
+implementation.  Support for incrementing buttons on NumberInputs will be re-considered for
+future versions of Hoist.
+
 ### 🎁 New Features
 
 * `TextInput` on desktop now supports an `enableClear` property to allow easy addition of a clear
