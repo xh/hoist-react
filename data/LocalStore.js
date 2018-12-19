@@ -26,6 +26,7 @@ export class LocalStore extends BaseStore {
     @observable.ref _filtered = this._all;
 
     _loadModel = new PendingTaskModel();
+
     _filter = null;
 
     /**
@@ -77,8 +78,11 @@ export class LocalStore extends BaseStore {
     //-----------------------------
     // Implementation of Store
     //-----------------------------
-    get records()       {return this._filtered.list}
-    get allRecords()    {return this._all.list}
+    get records()           {return this._filtered.list}
+    get allRecords()        {return this._all.list}
+    get rootRecords()       {return this._filtered.roots}
+    get allRootRecords()    {return this._all.roots}
+
     get loadModel()     {return this._loadModel}
     get filter()        {return this._filter}
     setFilter(filterFn) {

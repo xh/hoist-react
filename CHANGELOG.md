@@ -46,10 +46,13 @@
       any means.
     * `excludeFromSwitcher` - removes the tab from the switcher, but the tab can still be 
       navigated to programmatically or via routing. 
-* MultiFieldRenderer's `multiFieldConfig` now supports a `delimiter` property, to separate consecutive SubFields.
-* MultiFieldRenderer SubFields now support a `position` property, to allow rendering in either the top or bottom row.
+* `MultiFieldRenderer` `multiFieldConfig` now supports a `delimiter` property, to separate consecutive SubFields.
+* `MultiFieldRenderer` SubFields now support a `position` property, to allow rendering in either the top or bottom row.
+* `StoreCountLabel` now supports a new 'includeChildren' prop to control whether or not children records are included in the 
+count.  By default this is `false`.  
 * `Checkbox` now supports a `displayUnsetState` prop which may be used to display a visually distinct
 state for null values.
+* `RestGridModel` supports a `readonly` property.
 * `Select` now renders with a checkbox next to the selected item, but supports the new `hideSelectedOptionCheck` prop.
 to disable.
 
