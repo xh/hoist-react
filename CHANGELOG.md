@@ -75,8 +75,9 @@
   on plain HTML / CSS markup for a significant performance improvement when there are many rows
   and/or actions per row.
 * Grid exports more reliably include the appropriate file extension.
-* `Select` will prevent an <esc> keypress from bubbling up to parent components only when its menu
-  is open.
+* `Select` will prevent an `<esc>` keypress from bubbling up to parent components only when its menu
+  is open. (In that case, the component assumes escape was pressed to close its menu and captures the 
+  keypress, otherwise it should leave it alone and let it e.g. close a parent popover).
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v16.0.1...v17.0.0-rc1)
 
