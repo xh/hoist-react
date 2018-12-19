@@ -330,7 +330,10 @@ export class Select extends HoistInput {
             div({
                 omit: suppressCheck,
                 style: {minWidth: 25, textAlign: 'center'},
-                item: Icon.check({omit: this.externalValue !== opt.value, size: 'sm'})
+                item: Icon.check({
+                    omit: this.renderValue !== opt.value,
+                    size: 'sm'
+                })
             }),
             span(opt.label)
         );
