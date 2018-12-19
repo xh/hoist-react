@@ -15,29 +15,24 @@ import {find} from 'lodash';
 /**
  * Backing model for a Form.
  *
- * Co-ordinates support for the specification and control of a collection of fields which
- * constituite the state of this Form.
+ * FormModel is the main entry point for Form specification.  FormModels contain FieldModels
+ * ('fields') that hold the state of user edited data, and the validation rules around editing that data.
+ * FormModels also contain children forms (i.e. sub-forms).
+ *
+ * See FieldModel for more information on the state contained within FormModel.
  */
 @HoistModel
 export class FormModel {
 
     name = null
 
-    /** @member {FieldModel[]} - all fields in this model. */
     @observable.ref
     fields = [];
 
-    /** @member {FormModel} - parent form model, or null. */
     parent = null;
 
-    /** @member {FormModel[]} - all child models in this model. */
     @observable.ref
     children = [];
-
-    @computed
-    get members() {
-        return [...this.fields, ...this.children];
-    }
 
     /**
      *  @member {Object} -- proxy for accessing all of the current data values
@@ -46,10 +41,35 @@ export class FormModel {
      */
     dataProxy;
 
+    /**
+     *
+     * @param {string} [name] - name of this form.  This will be the unique id of
+     *      this form in its parent.
+     * @param {FieldModel[]} [fields] - all fields in this model.
+     * @param {FormModel[]} [children] - all children (sub-forms) in this model.
+     */
     constructor({name = 'form', fields = [], children = []} = {}) {
         this.dataProxy = this.createDataProxy();
         fields.forEach(it => this.addField(it));
         children.forEach(it => this.addChild(it));
+    }
+
+    @computed
+    /** All children and fields in this form. */
+    get members() {
+        return [...this.fields, ...this.children];
+    }
+
+    /**
+     * Get a simple map representation of the current data in the form.  Used for
+     * reading data from the form programmatically, or submitting data to a server.
+     */
+    getData() {
+        const ret = {};
+        this.members.forEach(m => {
+            ret[m.name] = m instanceof FieldModel ? m.value : m.getData();
+        });
+        return ret;
     }
 
     //----------------------------
@@ -192,6 +212,6 @@ export class FormModel {
     }
 
     destroy() {
-        XH.safeDestroy(this.fields, this.children);
+        XH.safeDestroy(this.members);
     }
 }
