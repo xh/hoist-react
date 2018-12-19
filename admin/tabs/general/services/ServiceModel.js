@@ -8,9 +8,12 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {lowerFirst} from 'lodash';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 @HoistModel
 export class ServiceModel {
+
+    loadModel = new PendingTaskModel();
 
     gridModel = new GridModel({
         enableExport: true,
@@ -23,7 +26,7 @@ export class ServiceModel {
         sortBy: 'displayName',
         groupBy: 'provider',
         columns: [
-            {field: 'provider', width: 100},
+            {field: 'provider', width: 100, hidden: true},
             {field: 'displayName', minWidth: 300, flex: true}
         ]
     });
@@ -47,7 +50,7 @@ export class ServiceModel {
     }
 
     async loadAsync() {
-        return this.gridModel.loadAsync();
+        return this.gridModel.loadAsync().linkTo(this.loadModel);
     }
 
     processRawData(r) {

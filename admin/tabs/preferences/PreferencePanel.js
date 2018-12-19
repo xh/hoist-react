@@ -76,7 +76,7 @@ export class PreferencePanel extends Component {
             {field: 'name', width: 200},
             {field: 'type', width: 100},
             {field: 'defaultValue', width: 200},
-            {field: 'groupName', headerName: 'Group', width: 100},
+            {field: 'groupName', headerName: 'Group', width: 100, hidden: true},
             {field: 'notes', minWidth: 200, flex: true}
         ],
         editors: [

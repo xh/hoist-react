@@ -53,6 +53,7 @@ export class FeedbackPanel extends Component {
         menuActions: [deleteAction],
         formActions: [deleteAction],
         unit: 'report',
+        sortBy: {colId: 'dateCreated', sort: 'desc'},
         filterFields: ['username', 'msg'],
         columns: [
             {field: 'dateCreated', ...compactDateCol, width: 140},

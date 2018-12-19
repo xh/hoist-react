@@ -12,6 +12,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
 import {dateTimeCol} from '@xh/hoist/cmp/grid/columns';
 import {usernameCol} from '@xh/hoist/admin/columns';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 @HoistModel
 export class ActivityGridModel {
@@ -25,6 +26,8 @@ export class ActivityGridModel {
     @observable browser = '';
 
     @observable detailRecord = null;
+
+    loadModel = new PendingTaskModel();
 
     gridModel = new GridModel({
         stateModel: 'xhActivityGrid',
@@ -64,7 +67,9 @@ export class ActivityGridModel {
             params: this.getParams()
         }).then(data => {
             this.gridModel.loadData(data);
-        }).catchDefault();
+        }).linkTo(
+            this.loadModel
+        ).catchDefault();
     }
 
     adjustDates(dir, toToday = false) {
