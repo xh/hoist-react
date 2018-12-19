@@ -63,7 +63,7 @@ export class Select extends HoistInput {
         enableMulti: PT.bool,
 
         /** True to suppress checked icon for the selected option. Defaults to false, except when
-         * `enableMulti` is true
+         * `enableMulti` is true.
          */
         hideSelectedOptionCheck: PT.bool,
 
@@ -323,7 +323,7 @@ export class Select extends HoistInput {
     }
 
     optionRenderer = (opt) => {
-        const {props}= this,
+        const {props} = this,
             suppressCheck = withDefault(props.hideSelectedOptionCheck, props.enableMulti);
 
         return hbox(
