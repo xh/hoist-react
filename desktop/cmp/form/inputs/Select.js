@@ -325,7 +325,7 @@ export class Select extends HoistInput {
                 }),
                 span(opt.label)
             ) :
-            span({item: opt.label, style: {paddingLeft: 25}});
+            div({item: opt.label, style: {paddingLeft: 25}});
     }
 
     get suppressCheck() {
