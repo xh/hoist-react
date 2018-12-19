@@ -78,6 +78,8 @@
 * `Select` will prevent an <esc> keypress from bubbling up to parent components only when its menu
   is open.
 
+[Commit Log](https://github.com/exhi/hoist-react/compare/v16.0.1...v17.0.0-rc1)
+
 ## v16.0.1
 
 ### 🐞 Bug Fixes
