@@ -20,7 +20,6 @@ import {
     reactAsyncSelect,
     reactAsyncCreatableSelect
 } from '@xh/hoist/kit/react-select';
-import classNames from 'classnames';
 
 import './Select.scss';
 
@@ -165,10 +164,7 @@ export class Select extends HoistInput {
                 menuPortalTarget: this.getOrCreatePortalDiv(),
 
                 inputId: props.id,
-                classNamePrefix: classNames(
-                    (this.suppressCheck ? 'xh-suppress-check' : null),
-                    'xh-select'
-                ),
+                classNamePrefix: 'xh-select',
                 theme: this.getThemeConfig(),
 
                 onBlur: this.onBlur,
@@ -201,8 +197,8 @@ export class Select extends HoistInput {
             className: this.getClassName(),
             width: props.width,
             onKeyDown: (e) => {
-                // Esc. and Enter can be use by other things -- stop the key propogation,
-                // only if react select already likely to have used for menu management.
+                // Esc. and Enter can be listened for by parents -- stop the keypress event
+                // propagation only if react-select already likely to have used for menu management.
                 const {menuIsOpen} = this.reactSelectRef.current.state;
                 if (menuIsOpen && (e.key == 'Escape' || e.key == 'Enter')) {
                     e.stopPropagation();
@@ -304,19 +300,28 @@ export class Select extends HoistInput {
         return loadingMessageFn ? loadingMessageFn(q) : 'Loading...';
     }
 
+
     //----------------------
     // Option Rendering
     //----------------------
-
     formatOptionLabel = (opt, params) => {
-        const {props, suppressCheck} = this,
-            {optionRenderer = this.optionRenderer} = props;
         // Always display the standard label string in the value container (context == 'value').
         // If we need to expose customization here, we could consider a dedicated prop.
-        return (!suppressCheck && params.context === 'menu') ? optionRenderer(opt) : opt.label;
+        if (params.context != 'menu') {
+            return opt.label;
+        }
+
+        // For rendering dropdown menu items, use an optionRenderer if provided - or use the
+        // implementation here to render a checkmark next to the active selection.
+        const optionRenderer = this.props.optionRenderer || this.optionRenderer;
+        return optionRenderer(opt);
     }
 
     optionRenderer = (opt) => {
+        if (this.suppressCheck) {
+            return div({item: opt.label, style: {paddingLeft: 8}});
+        }
+
         return this.externalValue === opt.value ?
             hbox(
                 div({

@@ -71,8 +71,6 @@
         }
       }
     }
-
-
   }
 }
 
@@ -86,19 +84,14 @@
     &__option {
       padding-left: 0;
       &--is-selected {
-        background: none;
+        // Suppress default highlighting - checkmark indicate selection.
         color: var(--xh-text-color);
-      }
-      &--is-selected.xh-suppress-check {
-        background: var(--xh-bg-highlight);
+        background: none;
       }
       &--is-focused {
         color: var(--xh-text-color-highlight);
         background: var(--xh-bg-alt);
       }
-    }
-    &__option.xh-suppress-check {
-      padding-left: 12px;
     }
   }
 }
