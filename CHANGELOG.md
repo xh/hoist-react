@@ -65,6 +65,8 @@ future versions of Hoist.
   records are included in the count. By default this is `false`.
 * `Checkbox` now supports a `displayUnsetState` prop which may be used to display a visually
   distinct state for null values.
+* `Select` now renders with a checkbox next to the selected item in its drowndown menu, instead of
+  relying on highlighting. A new `hideSelectedOptionCheck` prop is available to disable.
 * `RestGridModel` supports a `readonly` property.
 * `DimensionChooser`, various `HoistInput` components, `Toolbar` and `ToolbarSeparator` have been
   added to the mobile component library.
@@ -80,7 +82,7 @@ future versions of Hoist.
   and/or actions per row.
 * Grid exports more reliably include the appropriate file extension.
 * `Select` will prevent an `<esc>` keypress from bubbling up to parent components only when its menu
-  is open. (In that case, the component assumes escape was pressed to close its menu and captures the 
+  is open. (In that case, the component assumes escape was pressed to close its menu and captures the
   keypress, otherwise it should leave it alone and let it e.g. close a parent popover).
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v16.0.1...v17.0.0-rc1)
