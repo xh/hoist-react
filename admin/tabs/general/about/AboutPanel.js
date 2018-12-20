@@ -35,7 +35,7 @@ export class AboutPanel extends Component {
         let hrVersion = svc.get('hoistReactVersion');
         if (hrVersion.includes('SNAPSHOT.')) {
             const snapDate = new Date(parseInt(hrVersion.split('SNAPSHOT.')[1]));
-            hrVersion += ` ${fmtDateTime(snapDate)}`;
+            hrVersion += ` (${fmtDateTime(snapDate)})`;
         }
 
         return [

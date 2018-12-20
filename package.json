@@ -1,6 +1,6 @@
 {
   "name": "@xh/hoist",
-  "version": "17.0.0-rc1",
+  "version": "17.0.0-rc2",
   "description": "Hoist add-on for building and deploying React Applications.",
   "repository": "github:exhi/hoist-react",
   "homepage": "https://github.com/exhi/hoist-react",
@@ -26,7 +26,7 @@
     "clipboard": "~2.0.4",
     "codemirror": "~5.42.0",
     "downloadjs": "^1.4.7",
-    "highcharts": "~6.2.0",
+    "highcharts": "~7.0.1",
     "lodash-inflection": "~1.5.0",
     "mobx": "~5.8.0",
     "mobx-react": "~5.4.3",
