@@ -62,9 +62,7 @@ export class Select extends HoistInput {
         /** True to allow entry/selection of multiple values - "tag picker" style. */
         enableMulti: PT.bool,
 
-        /** True to suppress checked icon for the selected option. Defaults to false, except when
-         * `enableMulti` is true.
-         */
+        /** True to suppress the default check icon rendered for the currently selected option. */
         hideSelectedOptionCheck: PT.bool,
 
         /** Field on provided options for sourcing each option's display text (default `label`). */
