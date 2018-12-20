@@ -26,6 +26,7 @@ export class ClientErrorPanel extends Component {
     render() {
         const {model} = this;
         return panel({
+            mask: model.loadModel,
             tbar: this.renderToolbar(),
             items: [
                 grid({

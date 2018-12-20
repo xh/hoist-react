@@ -1,5 +1,7 @@
 # Changelog
 
+## v18.0.0-SNAPSHOT (in development / unreleased)
+
 ### 🎁 New Features
 
 * Form support has been susbstantially enhanced and restructured to provide both a cleaner API and new functionality:
@@ -17,7 +19,7 @@
 * Major changes to Form (see above).  `HoistInput` imports will also need to be adjusted to move from `form` to `input`. 
   
   
-## v17.0.0-SNAPSHOT (in development / unreleased)
+## v17.0.0-rc3 (release candidate)
 
 ### 💥 Breaking Changes
 
@@ -27,8 +29,9 @@
   *  HoistComponent now supports a static `modelClass` class property. If set, this property will
      allow a HoistComponent to auto-create a model internally when presented with a plain javascript
      object as its `model` prop. This is especially useful in cases like `Panel` and `TabContainer`,
-     where apps often need to specify a model but do not require a reference to the model and
-     therefore can skip importing and instantiating an instance of model class themselves.
+     where apps often need to specify a model but do not require a reference to the model. Those
+     usages can now skip importing and instantiating an instance of the component's model class
+     themselves.
   *  Hoist will now throw an Exception if an application attempts to changes the model on an
      existing HoistComponent instance or presents the wrong type of model to a HoistComponent where
      `modelClass` has been specified.
@@ -39,7 +42,7 @@
   * `showSplitterCollapseButton` - controls visibility of the collapse button on the splitter bar.
   * `showHeaderCollapseButton` - controls visibility of a (new) collapse button in the header.
 
-* The API methods for exporting grid data have been changed:
+* The API methods for exporting grid data have changed and gained new features:
   * Grids must opt-in to export with the `GridModel.enableExport` config.
   * Exporting a `GridModel` is handled by the new `GridExportService`, which takes a collection of
     `exportOptions`. See `GridExportService.exportAsync` for available `exportOptions`.
@@ -47,30 +50,53 @@
     items) support `exportOptions`. Additionally, `GridModel` can be configured with default
     `exportOptions` in its config.
 
+* The `buttonPosition` prop on `NumberInput` has been removed due to problems with the underlying
+implementation.  Support for incrementing buttons on NumberInputs will be re-considered for
+future versions of Hoist.
+
 ### 🎁 New Features
 
-* `Toolbar` and `ToolbarSeparator` have been added to the mobile component library.
 * `TextInput` on desktop now supports an `enableClear` property to allow easy addition of a clear
   button at the right edge of the component.
 * `TabContainer` enhancements:
-  * An `omit` property can now be passed in the tab configs passed to the `TabContainerModel` 
+  * An `omit` property can now be passed in the tab configs passed to the `TabContainerModel`
     constructor to conditionally exclude a tab from the container
-  * Each `TabModel` can now be retrieved by id via the new `getTabById` method on `TabContainerModel`.
+  * Each `TabModel` can now be retrieved by id via the new `getTabById` method on
+    `TabContainerModel`.
   * `TabModel.title` can now be changed at runtime.
-  * `TabModel` now supports the following properties, which can be changed at runtime or set
-    via the config:
-    * `disabled` - applies a disabled style in the switcher and the tab cannot be navigated to by
-      any means.
-    * `excludeFromSwitcher` - removes the tab from the switcher, but the tab can still be 
-      navigated to programmatically or via routing. 
-* `MultiFieldRenderer` `multiFieldConfig` now supports a `delimiter` property, to separate consecutive SubFields.
-* `MultiFieldRenderer` SubFields now support a `position` property, to allow rendering in either the top or bottom row.
-* `StoreCountLabel` now supports a new 'includeChildren' prop to control whether or not children records are included in the 
-count.  By default this is `false`.  
-* `Checkbox` now supports a `displayUnsetState` prop which may be used to display a visually distinct
-state for null values.
+  * `TabModel` now supports the following properties, which can be changed at runtime or set via the
+    config:
+    * `disabled` - applies a disabled style in the switcher and blocks navigation to the tab via
+      user click, routing, or the API.
+    * `excludeFromSwitcher` - removes the tab from the switcher, but the tab can still be navigated
+      to programmatically or via routing.
+* `MultiFieldRenderer` `multiFieldConfig` now supports a `delimiter` property to separate
+  consecutive SubFields.
+* `MultiFieldRenderer` SubFields now support a `position` property, to allow rendering in either the
+  top or bottom row.
+* `StoreCountLabel` now supports a new 'includeChildren' prop to control whether or not children
+  records are included in the count. By default this is `false`.
+* `Checkbox` now supports a `displayUnsetState` prop which may be used to display a visually
+  distinct state for null values.
 * `RestGridModel` supports a `readonly` property.
+* `DimensionChooser`, various `HoistInput` components, `Toolbar` and `ToolbarSeparator` have been
+  added to the mobile component library.
+* Additional environment enums for UAT and BCP, added to Hoist Core 5.4.0, are supported in the
+  application footer.
 
+### 🐞 Bug Fixes
+
+* `NumberInput` will no longer immediately convert its shorthand value (e.g. "3m") into numeric form
+  while the user remains focused on the input.
+* Grid `actionCol` columns no longer render Button components for each action, relying instead
+  on plain HTML / CSS markup for a significant performance improvement when there are many rows
+  and/or actions per row.
+* Grid exports more reliably include the appropriate file extension.
+* `Select` will prevent an `<esc>` keypress from bubbling up to parent components only when its menu
+  is open. (In that case, the component assumes escape was pressed to close its menu and captures the 
+  keypress, otherwise it should leave it alone and let it e.g. close a parent popover).
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v16.0.1...v17.0.0-rc1)
 
 ## v16.0.1
 
@@ -357,13 +383,13 @@ It also includes contributions from new ExHI team members Arjun and Brendan. �
 ### 🎁 New Features
 
 ⭐️ **Forms and Fields** have been a major focus of attention, with support for structured data
-fields added to Models via the `@FormSupport` and `@field()` decorators.
-* Models annotated with `@FormSupport` can decorate member properties with `@field()`, making those
+fields added to Models via the `@FieldSupport` and `@field()` decorators.
+* Models annotated with `@FieldSupport` can decorate member properties with `@field()`, making those
   properties observable and settable (with a generated `setXXX()` method).
 * The `@field()` decorators themselves can be passed an optional display label string as well as
   zero or more *validation rules* to define required constraints on the value of the field.
 * A set of predefined constraints is provided within the toolkit within the `/field/` package.
-* Models using `FormSupport` should be sure to call the `initFields()` method installed by the
+* Models using `FieldSupport` should be sure to call the `initFields()` method installed by the
   decorator within their constructor. This method can be called without arguments to generally
   initialize the field system, or it can be passed an object of field names to initial/default
   values, which will set those values on the model class properties and provide change/dirty
@@ -653,9 +679,9 @@ resizing and collapsing behavior** (#534).
 ### 🐞 Bug Fixes
 
 * TabContainer active tab can become out of sync with the router state (#451)
-  * ⚠️ Note this also involved a change to the `TabContainerModel` API - `activateTab()` is now
-    the public method to set the active tab and ensure both the tab and the route land in the
-    correct state.
+  * ⚠️ Note this also involved a change to the `TabContainerModel` API - `activateTab()` is now the
+    public method to set the active tab and ensure both the tab and the route land in the correct
+    state.
 * Remove unintended focused cell borders that came back with the prior ag-Grid upgrade.
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v8.0.0...v9.0.0)

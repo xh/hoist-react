@@ -35,7 +35,7 @@ export class AboutPanel extends Component {
         let hrVersion = svc.get('hoistReactVersion');
         if (hrVersion.includes('SNAPSHOT.')) {
             const snapDate = new Date(parseInt(hrVersion.split('SNAPSHOT.')[1]));
-            hrVersion += ` ${fmtDateTime(snapDate)}`;
+            hrVersion += ` (${fmtDateTime(snapDate)})`;
         }
 
         return [
@@ -45,7 +45,10 @@ export class AboutPanel extends Component {
                     row('Environment', svc.get('appEnvironment')),
                     row('Server', svc.get('appVersion')),
                     row('Client', svc.get('clientVersion')),
-                    row('Build', svc.get('clientBuild'))
+                    row('Build', svc.get('clientBuild')),
+                    row('Database', svc.get('databaseConnectionString')),
+                    row('Database User', svc.get('databaseUser')),
+                    row('DB Create Mode', svc.get('databaseCreateMode'))
                 )
             }),
             h2('Framework Versions'),

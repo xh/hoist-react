@@ -22,9 +22,12 @@ export class EhCachePanel extends Component {
     model = new EhCacheModel();
 
     render() {
+        const {model} = this;
+
         return panel({
+            mask: model.loadModel,
             tbar: this.renderToolbar(),
-            item: grid({model: this.model.gridModel})
+            item: grid({model: model.gridModel})
         });
     }
 
