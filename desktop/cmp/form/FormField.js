@@ -164,6 +164,7 @@ export class FormField extends Component {
                     }),
                     tooltip({
                         omit: minimal || !displayNotValid,
+                        openOnTargetFocus: false,
                         className: 'xh-form-field-error-msg',
                         item: errors ? errors[0] : null,
                         content: this.getErrorTooltipContent(errors)
@@ -219,7 +220,6 @@ export class FormField extends Component {
 
         if (!minimal) return target;
 
-        // Wrap target in a tooltip if in minimal mode
         return tooltip({
             target,
             targetClassName: `xh-input ${displayNotValid ? 'xh-input-invalid' : ''}`,
