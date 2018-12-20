@@ -78,7 +78,8 @@ export class DimensionChooser extends Component {
             if (model.activeMode == 'edit') {
                 const notSelectClick = withDefault(e, false) &&
                     withDefault(e.target, false) &&
-                    withDefault(!e.target.classList.contains('xh-select__option'), false);
+                    withDefault(!(e.target.parentNode.classList.contains('xh-select__option') ||
+                        e.target.classList.contains('xh-select__option')), false);
                 if (notSelectClick) this.model.commitPendingValue();
             } else {
                 model.closeMenu();
