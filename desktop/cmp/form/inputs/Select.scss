@@ -71,8 +71,6 @@
         }
       }
     }
-
-
   }
 }
 
@@ -81,19 +79,20 @@
   .xh-select {
     &__menu {
       background-color: var(--xh-bg);
-      box-shadow: var(--xh-form-field-box-shadow);
+      box-shadow: 0 0 0 1px var(--xh-form-field-box-shadow-color-top);
     }
     &__option {
+      padding-left: 0;
       &--is-selected {
+        // Suppress default highlighting - checkmark indicate selection.
         color: var(--xh-text-color);
-        background: var(--xh-bg-alt);
+        background: none;
       }
       &--is-focused {
         color: var(--xh-text-color-highlight);
-        background: var(--xh-bg-highlight);
+        background: var(--xh-bg-alt);
       }
     }
   }
-
 }
 

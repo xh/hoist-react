@@ -16,10 +16,9 @@
   of the Forms package.
   
 ### 💥 Breaking Changes
-* Major changes to Form (see above).  `HoistInput` imports will also need to be adjusted to move from `form` to `input`. 
+* Major changes to Form (see above).  `HoistInput` imports will also need to be adjusted to move from `form` to `input`.   
   
-  
-## v17.0.0-rc3 (release candidate)
+## v17.0.0-rc3 (release candidate) - 2018-12-20
 
 ### 💥 Breaking Changes
 
@@ -51,8 +50,8 @@
     `exportOptions` in its config.
 
 * The `buttonPosition` prop on `NumberInput` has been removed due to problems with the underlying
-implementation.  Support for incrementing buttons on NumberInputs will be re-considered for
-future versions of Hoist.
+  implementation. Support for incrementing buttons on NumberInputs will be re-considered for future
+  versions of Hoist.
 
 ### 🎁 New Features
 
@@ -78,6 +77,8 @@ future versions of Hoist.
   records are included in the count. By default this is `false`.
 * `Checkbox` now supports a `displayUnsetState` prop which may be used to display a visually
   distinct state for null values.
+* `Select` now renders with a checkbox next to the selected item in its drowndown menu, instead of
+  relying on highlighting. A new `hideSelectedOptionCheck` prop is available to disable.
 * `RestGridModel` supports a `readonly` property.
 * `DimensionChooser`, various `HoistInput` components, `Toolbar` and `ToolbarSeparator` have been
   added to the mobile component library.
@@ -88,13 +89,13 @@ future versions of Hoist.
 
 * `NumberInput` will no longer immediately convert its shorthand value (e.g. "3m") into numeric form
   while the user remains focused on the input.
-* Grid `actionCol` columns no longer render Button components for each action, relying instead
-  on plain HTML / CSS markup for a significant performance improvement when there are many rows
-  and/or actions per row.
+* Grid `actionCol` columns no longer render Button components for each action, relying instead on
+  plain HTML / CSS markup for a significant performance improvement when there are many rows and/or
+  actions per row.
 * Grid exports more reliably include the appropriate file extension.
 * `Select` will prevent an `<esc>` keypress from bubbling up to parent components only when its menu
-  is open. (In that case, the component assumes escape was pressed to close its menu and captures the 
-  keypress, otherwise it should leave it alone and let it e.g. close a parent popover).
+  is open. (In that case, the component assumes escape was pressed to close its menu and captures
+  the keypress, otherwise it should leave it alone and let it e.g. close a parent popover).
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v16.0.1...v17.0.0-rc1)
 

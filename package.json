@@ -26,7 +26,7 @@
     "clipboard": "~2.0.4",
     "codemirror": "~5.42.0",
     "downloadjs": "^1.4.7",
-    "highcharts": "~6.2.0",
+    "highcharts": "~7.0.1",
     "lodash-inflection": "~1.5.0",
     "mobx": "~5.8.0",
     "mobx-react": "~5.4.3",

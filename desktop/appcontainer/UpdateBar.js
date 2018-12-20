@@ -31,11 +31,13 @@ export class UpdateBar extends Component {
             className,
             items: [
                 Icon.rocket({size: 'lg'}),
-                div('An application update is available!'),
+                div(`A new version of ${XH.clientAppName} is available!`),
                 button({
                     icon: Icon.refresh(),
                     intent: 'primary',
+                    minimal: false,
                     small: true,
+                    marginLeft: 10,
                     text: `Update to ${updateVersion}`,
                     onClick: this.reloadApp
                 })
