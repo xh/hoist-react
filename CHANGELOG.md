@@ -2,11 +2,23 @@
 
 ## v18.0.0-SNAPSHOT (in development / unreleased)
 
-* This release will primarily feature a major upgrade and refactoring of form / field-field support.
-* Details and listings of other changes will be posted here as they are merged into the primary
-  development branch.
+### 🎁 New Features
 
-## v17.0.0-rc2 (release candidate) - 2018-12-19
+* Form support has been susbstantially enhanced and restructured to provide both a cleaner API and new functionality:
+  * `FormModel` and `FieldModel` are now concrete classes, and provide the main entry point for
+   specifying the contents of a form. The `Field` and `FieldSupport` decorators have been removed. 
+  * Fields and sub-forms may now be dynamically added to FormModel.
+  * The validation state of a FormModel is now *immediately* available after construction and independent of the GUI.
+    The triggering of the *display* of that state is now the seperate process that is triggered by GUI actions such as blur.   
+  * `FormField` has been substantially reworked to support a read-only display, and inherit common property
+  settings from its containing `Form`. 
+  * `HoistInput` has been moved into the `input` package to clarify that these are lower level controls and independent
+  of the Forms package.
+  
+### 💥 Breaking Changes
+* Major changes to Form (see above).  `HoistInput` imports will also need to be adjusted to move from `form` to `input`.   
+  
+## v17.0.0-rc3 (release candidate) - 2018-12-20
 
 ### 💥 Breaking Changes
 
