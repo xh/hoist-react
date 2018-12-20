@@ -10,6 +10,7 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {ChartModel} from '@xh/hoist/desktop/cmp/chart';
 import {fmtDate} from '@xh/hoist/format';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 @HoistModel
 export class VisitsChartModel {
@@ -17,6 +18,8 @@ export class VisitsChartModel {
     @observable startDate = moment().subtract(3, 'months').toDate();
     @observable endDate = new Date();
     @observable username = '';
+
+    loadModel = new PendingTaskModel();
 
     chartModel = new ChartModel({
         config: {
@@ -54,7 +57,9 @@ export class VisitsChartModel {
             }
         }).then(data => {
             this.chartModel.setSeries(this.getSeriesData(data));
-        }).catchDefault();
+        }).linkTo(
+            this.loadModel
+        ).catchDefault();
     }
 
     @action

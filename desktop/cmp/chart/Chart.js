@@ -6,15 +6,24 @@
  */
 import {Component} from 'react';
 import {castArray, clone, merge} from 'lodash';
+import Highcharts from 'highcharts/highstock';
+import highchartsExporting from 'highcharts/modules/exporting';
+import highchartsOfflineExporting from 'highcharts/modules/offline-exporting';
+import highchartsExportData from 'highcharts/modules/export-data';
+
 import {XH, elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {div, box} from '@xh/hoist/cmp/layout';
 import {Ref} from '@xh/hoist/utils/react';
-import Highcharts from 'highcharts/highstock';
 
 import {LightTheme} from './theme/Light';
 import {DarkTheme} from './theme/Dark';
 
 import {ChartModel} from './ChartModel';
+
+highchartsExporting(Highcharts);
+highchartsOfflineExporting(Highcharts);
+highchartsExportData(Highcharts);
+
 
 /**
  * Wrapper Component for a Highcharts chart. Provides basic rendering / lifecycle management
@@ -89,6 +98,7 @@ export class Chart extends Component {
 
     getDefaultConfig() {
         const exporting = {
+            enabled: false,
             fallbackToExportServer: false,
             chartOptions: {
                 scrollbar: {enabled: false}

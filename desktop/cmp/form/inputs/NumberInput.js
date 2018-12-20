@@ -39,9 +39,6 @@ export class NumberInput extends HoistInput {
         /** True to focus the control on render. */
         autoFocus: PT.bool,
 
-        /** Position of up/down buttons relative to input, default 'none' hides buttons. */
-        buttonPosition: PT.oneOf(['left', 'right', 'none']),
-
         /** True to commit on every change/keystroke, default false. */
         commitOnChange: PT.bool,
 
@@ -109,7 +106,7 @@ export class NumberInput extends HoistInput {
             value: this.formatRenderValue(renderValue),
 
             allowNumericCharactersOnly: !props.enableShorthandUnits,
-            buttonPosition: withDefault(props.buttonPosition, 'none'),
+            buttonPosition: 'none',
             disabled: props.disabled,
             fill: props.fill,
             leftIcon: props.leftIcon,
