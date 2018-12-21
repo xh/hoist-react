@@ -72,12 +72,12 @@ export class DimensionChooser extends Component {
         this.model.closeMenu();
     }
 
-    // Handle user clicks outside of the popover (which would be default close it).
+    // Handle user clicks outside of the popover (which would by default close it).
     onInteraction = (nextOpenState, e) => {
         const {model} = this;
         if (nextOpenState === false) {
             if (model.activeMode == 'edit') {
-                // If editing, save then close, unless dropdown menu option was clicked - in that case don't do anything.
+                // If editing, save then close. Unless dropdown menu option was clicked - then don't do anything.
                 const selectOptClick = e && e.target && e.target.closest(`#${Select.MENU_PORTAL_ID}`);
                 if (!selectOptClick) this.model.commitPendingValueAndClose();
             } else {
