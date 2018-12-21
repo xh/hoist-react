@@ -58,12 +58,12 @@ export class DimensionChooserModel {
      * @param {number} [c.maxDepth] - maximum number of dimensions allowed in a single grouping.
      */
     constructor({
-                    dimensions,
-                    initialValue,
-                    historyPreference,
-                    maxHistoryLength = 5,
-                    maxDepth = 4
-                }) {
+        dimensions,
+        initialValue,
+        historyPreference,
+        maxHistoryLength = 5,
+        maxDepth = 4
+    }) {
         this.maxHistoryLength = maxHistoryLength;
         this.maxDepth = maxDepth;
         this.historyPreference = historyPreference;
