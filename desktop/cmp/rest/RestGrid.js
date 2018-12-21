@@ -38,14 +38,24 @@ export class RestGrid extends Component {
          * Callback to call when a row is double clicked. Function will receive an event
          * with a data node containing the row's data.
          */
-        onRowDoubleClicked: PT.func
+        onRowDoubleClicked: PT.func,
+
+        /**
+         * Should the panel display Hoist's default loading mask while data is loading?
+         */
+        hideMask: PT.bool
     };
 
     baseClassName = 'xh-rest-grid';
 
     render() {
         const {model} = this,
-            {extraToolbarItems, onRowDoubleClicked = this.onRowDoubleClicked, agOptions} = this.props;
+            {
+                extraToolbarItems,
+                onRowDoubleClicked = this.onRowDoubleClicked,
+                hideMask = false,
+                agOptions
+            } = this.props;
 
         return fragment(
             panel({
@@ -56,7 +66,8 @@ export class RestGrid extends Component {
                     model: model.gridModel,
                     onRowDoubleClicked,
                     agOptions
-                })
+                }),
+                mask: hideMask ? null : model.loadModel
             }),
             restForm({model: model.formModel})
         );
