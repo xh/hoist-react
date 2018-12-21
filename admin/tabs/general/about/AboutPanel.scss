@@ -25,13 +25,12 @@
     padding: var(--xh-pad-half-px);
     background-color: var(--xh-bg-alt);
     width: 140px;
-    text-align: left;
+    text-align: right;
+    vertical-align: top;
   }
 
   td {
     padding: var(--xh-pad-half-px);
-    width: 250px;
-    text-align: right;
   }
 
   &__blurb {

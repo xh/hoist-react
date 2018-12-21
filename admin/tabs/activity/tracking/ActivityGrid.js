@@ -23,6 +23,7 @@ export class ActivityGrid extends Component {
     render() {
         const {model} = this;
         return panel({
+            mask: model.loadModel,
             tbar: this.renderToolbar(),
             items: [
                 grid({
@@ -63,7 +64,7 @@ export class ActivityGrid extends Component {
             refreshButton({model}),
             filler(),
             storeCountLabel({gridModel: model.gridModel, unit: 'log'}),
-            exportButton({model: model.gridModel})
+            exportButton({gridModel: model.gridModel})
         );
     }
     

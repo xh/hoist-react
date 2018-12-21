@@ -8,6 +8,7 @@
 import {Component} from 'react';
 import PT from 'prop-types';
 import {isEqual, isFunction, upperFirst} from 'lodash';
+import {FieldModel} from '@xh/hoist/cmp/form';
 import {throwIf} from '@xh/hoist/utils/js';
 import {observable, computed, action} from '@xh/hoist/mobx';
 import classNames from 'classnames';
@@ -39,12 +40,9 @@ import './HoistInput.scss';
  * as the change event. Other fields such as textInput maintain the distinction described above,
  * but expose a `commitOnChange` prop to force them to eagerly flush their values on every change.
  *
- * HoistInputs support built-in validation when bound to a model enhanced by `@FieldSupport`.
- * When a HoistInput control is linked to a property on the underlying model decorated by `@field`,
- * the model Field will be used to provide validation info and styling to the input component.
- *
- * For an even more managed display, consider wrapping HoistInputs in a FormField Component, which
- * provide out-of-the-box support for labels and validation messages, both read from the Model.
+ * For a managed display optimized for user-input forms, consider wrapping HoistInputs in a FormField
+ * Component within a `Form`. Forms provide out-of-the-box support for labels, validation, disable state
+ * and read-only sate.
  */
 export class HoistInput extends Component {
 
@@ -53,17 +51,8 @@ export class HoistInput extends Component {
         /** CSS class name. **/
         className: PT.string,
 
-        /** True to disable user interaction. */
-        disabled: PT.bool,
-
-        /** Property name on bound Model from which to read/write data. */
-        field: PT.string,
-
         /** HTML id attribute **/
         id: PT.string,
-
-        /** Bound HoistModel instance. */
-        model: PT.object,
 
         /** Handler called when value changes - passed the new value. */
         onChange: PT.func,
@@ -74,11 +63,35 @@ export class HoistInput extends Component {
         /** Style block. */
         style: PT.object,
 
-        /** Tab order for focus control, or -1 to skip. If unset, browser layout-based order. **/
+        /** Value of the control, if provided directly. */
+        value: PT.any,
+
+        /**
+         * Tab order for focus control, or -1 to skip. If unset, browser layout-based order.
+         */
         tabIndex: PT.number,
 
-        /** Value of the control, if provided directly. */
-        value: PT.any
+        // --- Default from FormField ------
+        /**
+         * True to disable user interaction.
+         *
+         * Provided by any containing FormField.
+         */
+        disabled: PT.bool,
+
+        /**
+         * Bound HoistModel instance
+         *
+         * Provided by any containing FormField.
+         */
+        model: PT.object,
+
+        /**
+         * Property name on bound Model from which to read/write data.
+         *
+         * Provided by any containing FormField.
+         */
+        field: PT.string
     };
 
     @observable hasFocus;
@@ -101,11 +114,11 @@ export class HoistInput extends Component {
     }
 
     /**
-     * Model-based Field (if any) associated with this control.
+     * FormField (if any) associated with this control.
      */
     getField() {
-        const {model, field} = this.props;
-        return model && field && model.hasFieldSupport && model.getField(field);
+        const {model} = this;
+        return model &&  model instanceof FieldModel ? model : null;
     }
 
     //------------------------------
@@ -212,7 +225,7 @@ export class HoistInput extends Component {
         this.doCommit();
 
         const field = this.getField();
-        if (field) field.startValidating();
+        if (field) field.displayValidation();
 
         this.hasFocus = false;
     }
@@ -252,7 +265,7 @@ export class HoistInput extends Component {
      */
     getClassName(...extraClassNames) {
         const field = this.getField(),
-            validityClass = field && field.isNotValid ? 'xh-input-invalid' : null;
+            validityClass = field && field.isNotValid && field.validationDisplayed ? 'xh-input-invalid' : null;
 
         return classNames('xh-input', validityClass, this.baseClassName, this.props.className, ...extraClassNames);
     }

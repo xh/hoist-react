@@ -10,7 +10,7 @@ import {observable, action} from '@xh/hoist/mobx';
 
 /**
  * Manages built-in collection of user feedback.
- *  @private
+ * @private
  */
 @HoistModel
 export class FeedbackDialogModel {
@@ -32,7 +32,7 @@ export class FeedbackDialogModel {
 
     @action
     setMessage(message) {
-        this.message = message;
+        this.message = stripTags(message);
     }
 
     /**
@@ -43,10 +43,11 @@ export class FeedbackDialogModel {
      */
     async submitAsync() {
         if (!this.message) this.hide();
+
         return XH.fetchJson({
             url: 'xh/submitFeedback',
             params: {
-                msg: stripTags(this.message),
+                msg: this.message,
                 appVersion: XH.getEnv('appVersion'),
                 clientUsername: XH.getUsername()
             }

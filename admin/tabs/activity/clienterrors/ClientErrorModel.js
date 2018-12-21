@@ -4,15 +4,15 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
 import moment from 'moment';
 import {XH, HoistModel} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {LocalStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {fmtDate} from '@xh/hoist/format';
+import {fmtDate, fmtSpan} from '@xh/hoist/format';
 import {boolCheckCol, compactDateCol} from '@xh/hoist/cmp/grid/columns';
 import {usernameCol} from '@xh/hoist/admin/columns';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 @HoistModel
 export class ClientErrorModel {
@@ -24,11 +24,14 @@ export class ClientErrorModel {
 
     @observable detailRecord = null;
 
+    loadModel = new PendingTaskModel();
+
+
     gridModel = new GridModel({
         stateModel: 'xhClientErrorGrid',
         enableColChooser: true,
         enableExport: true,
-        exportFilename: () => `Client Errors ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`,
+        exportOptions: {filename: () => `Client Errors ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`},
         store: new LocalStore({
             fields: [
                 'username', 'error', 'msg', 'userAlerted', 'browser', 'device',
@@ -44,7 +47,7 @@ export class ClientErrorModel {
             {field: 'device', width: 100},
             {field: 'appVersion', width: 130},
             {field: 'appEnvironment', headerName: 'Environment', width: 130},
-            {field: 'error', flex: true, minWidth: 150}
+            {field: 'error', flex: true, minWidth: 150, renderer: (e) => fmtSpan(e)}
         ]
     });
 
@@ -54,7 +57,9 @@ export class ClientErrorModel {
             params: this.getParams()
         }).then(data => {
             this.gridModel.loadData(data);
-        }).catchDefault();
+        }).linkTo(
+            this.loadModel
+        ).catchDefault();
     }
 
     adjustDates(dir, toToday = false) {

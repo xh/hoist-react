@@ -8,7 +8,7 @@ import {XH, HoistModel} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {pluralize} from '@xh/hoist/utils/js';
+import {pluralize, throwIf} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon/Icon';
 
 import {RestFormModel} from './impl/RestFormModel';
@@ -55,6 +55,8 @@ export class RestGridModel {
     //----------------
     // Properties
     //----------------
+    readonly;
+
     toolbarActions;
     menuActions;
     formActions;
@@ -80,6 +82,7 @@ export class RestGridModel {
     get selectedRecord() {return this.gridModel.selectedRecord}
 
     /**
+     * @param {boolean} [readonly] - Prevent users from creating, updating, or destroying a record. Defaults to false.
      * @param {Object[]|RecordAction[]} [toolbarActions] - actions to display in the toolbar. Defaults to add, edit, delete.
      * @param {Object[]|RecordAction[]} [menuActions] - actions to display in the grid context menu. Defaults to add, edit, delete.
      * @param {Object[]|RecordAction[]} [formActions] - actions to display in the form toolbar. Defaults to delete.
@@ -91,9 +94,10 @@ export class RestGridModel {
      * @param {*} ...rest - arguments for GridModel.
      */
     constructor({
-        toolbarActions = [addAction, editAction, deleteAction],
-        menuActions = [addAction, editAction, deleteAction],
-        formActions = [deleteAction],
+        readonly = false,
+        toolbarActions = !readonly ? [addAction, editAction, deleteAction] : [viewAction],
+        menuActions = !readonly ? [addAction, editAction, deleteAction] : [viewAction],
+        formActions = !readonly ? [deleteAction] : [],
         actionWarning,
         unit = 'record',
         filterFields,
@@ -101,6 +105,8 @@ export class RestGridModel {
         editors = [],
         ...rest
     }) {
+        this.readonly = readonly;
+
         this.toolbarActions = toolbarActions;
         this.menuActions = menuActions;
         this.formActions = formActions;
@@ -113,7 +119,7 @@ export class RestGridModel {
 
         this.gridModel = new GridModel({
             contextMenuFn: this.contextMenuFn,
-            exportFilename: pluralize(unit),
+            exportOptions: {filename: pluralize(unit)},
             restGridModel: this,
             ...rest
         });
@@ -152,6 +158,7 @@ export class RestGridModel {
 
     @action
     deleteRecord(record) {
+        throwIf(this.readonly, 'Record not deleted: this grid is read-only');
         this.store.deleteRecordAsync(record)
             .then(() => this.formModel.close())
             .catchDefault();
@@ -203,8 +210,8 @@ export class RestGridModel {
         }
     }
 
-    export(...args) {
-        this.gridModel.export(...args);
+    async exportAsync(...args) {
+        return this.gridModel.exportAsync(...args);
     }
 
     destroy() {

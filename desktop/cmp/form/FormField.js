@@ -6,110 +6,172 @@
  */
 import React, {Component} from 'react';
 import PT from 'prop-types';
-import {isArray, isUndefined} from 'lodash';
+import {isArray, isUndefined, isDate, isFinite, isBoolean} from 'lodash';
 
-import {elemFactory, HoistComponent, StableIdSupport} from '@xh/hoist/core';
-import {formGroup, spinner, tooltip} from '@xh/hoist/kit/blueprint';
-import {HoistInput} from '@xh/hoist/cmp/form';
-import {div, fragment, span} from '@xh/hoist/cmp/layout';
+import {elemFactory, HoistComponent, LayoutSupport, StableIdSupport} from '@xh/hoist/core';
+import {spinner, tooltip} from '@xh/hoist/kit/blueprint';
+import {HoistInput, FormContext} from '@xh/hoist/cmp/form';
+import {box, div, vbox, span, label as labelEl} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
-import {throwIf} from '@xh/hoist/utils/js';
+import {fmtDate, fmtNumber} from '@xh/hoist/format';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
 
 import './FormField.scss';
 
 /**
- * Standardised wrapper around a HoistInput Component.
+ * Standardised wrapper around a HoistInput Component.  FormField provides
+ * consistent layout, labelling, and optional validation display for the input.
  *
- * Should receive a single HoistInput as a child element. FormField is typically bound to a model
- * enhanced with `@FieldSupport` via its `model` and `field` props. This allows FormField to
- * automatically display a label, a required asterisk, and any validation messages.
- *
- * When FormField is used in bound mode, the child HoistInput should *not* declare its own `model`
- * and `field` props, as these are managed by the FormField.
- *
- * Accepts any props supported by Blueprint's FormGroup.
+ * FormField is typically used within a Form component, and bound to a particular Field within
+ * the related FormModel. In this case, FormField will display validation information for its
+ * bound field, and may receive behavioral and visual defaults from its contained Field.
  */
 @HoistComponent
+@LayoutSupport
 @StableIdSupport
 export class FormField extends Component {
 
     static propTypes = {
 
-        /** True (default) to focus or toggle input when label is clicked. */
-        clickableLabel: PT.bool,
-
-        /** True to disable user interaction. */
-        disabled: PT.bool,
-
-        /** Property name on bound Model from which to read/write data. */
+        /** Property name on bound FormModel from which to read/write data. */
         field: PT.string,
 
         /**
          * Label for form field.
-         * Defaults to Field displayName if used with @FieldSupport. Set to null to hide label.
+         *
+         * Defaults to Field displayName. Set to null to hide label.
          */
         label: PT.string,
 
-        /** Display warning glyph in the far left side of the input (TextField, NumberInput only) */
-        leftErrorIcon: PT.bool,
+        /**
+         * Additional metadata or description to be displayed with control
+         */
+        info: PT.node,
 
-        /** Apply minimal styling - validation errors are only displayed with a tooltip */
+        /**
+         * Optional function for use in readonly mode.
+         * Receives (value), and should return a human-readable string.
+         */
+        readonlyRenderer: PT.func,
+
+        //----------------------
+        // -- Default from Form
+        //----------------------
+        /**
+         * Layout field inline with label to the left.
+         *
+         * Defaulted from containing Form, or false.
+         */
+        inline: PT.bool,
+
+        /**
+         *  Apply minimal styling - validation errors are only displayed with a tooltip.
+         *
+         *  Defaulted from containing Form, or false.
+         */
         minimal: PT.bool,
 
-        /** Bound HoistModel instance. */
-        model: PT.object
+        /**
+         * Render the bound value as a string rather than the HoistInput
+         *
+         * Defaulted from containing Form, or false.
+         */
+        readonly: PT.bool,
+
+        /**
+         * CommitOnChange property for underlying HoistInput (for inputs that support)
+         *
+         * Defaulted from containing Form.
+         */
+        commitOnChange: PT.bool,
+
+        /**
+         * Display warning glyph in the far left side of the input (TextField, NumberInput only).
+         *
+         * Defaulted from containing Form, or false.
+         */
+        leftErrorIcon: PT.bool,
+
+        /**
+         * True to focus or toggle input when label is clicked.
+         *
+         * Defaulted from containing Form, or true.
+         */
+        clickableLabel: PT.bool
     };
 
     baseClassName = 'xh-form-field';
 
     blockChildren = ['TextInput', 'JsonInput', 'Select'];
 
+    static contextType = FormContext;
+
     render() {
         this.ensureConditions();
 
-        const {model, field, label, minimal, className, labelFor, clickableLabel = true, ...rest} = this.props,
-            hasFieldSupport = model && field && model.hasFieldSupport,
-            fieldModel = hasFieldSupport ? model.getField(field) : null,
+        const {label, info} = this.props;
+
+        // Model related props
+        const {fieldModel} = this,
             isRequired = fieldModel && fieldModel.isRequired,
             isPending = fieldModel && fieldModel.isValidationPending,
+            validationDisplayed = fieldModel && fieldModel.validationDisplayed,
             notValid = fieldModel && fieldModel.isNotValid,
+            displayNotValid = validationDisplayed && notValid,
             errors = fieldModel ? fieldModel.errors : [],
             labelStr = isUndefined(label) ? (fieldModel ? fieldModel.displayName : null) : label,
             inputId = this.props.children.props.id,
             idAttr = inputId ? inputId : this.stableId(),
-            requiredStr = isRequired ? span(' *') : null,
-            item = this.prepareChild(notValid, errors, idAttr),
-            classes = [];
+            requiredStr = isRequired ? span(' *') : null;
 
+        // Display related props
+        const inline = this.getDefaultedProp('inline', false),
+            minimal = this.getDefaultedProp('minimal', false),
+            readonly = this.getDefaultedProp('readonly', false),
+            leftErrorIcon = this.getDefaultedProp('leftErrorIcon', false),
+            clickableLabel = this.getDefaultedProp('clickableLabel', true);
+
+        // Styles
+        const classes = [];
         if (isRequired) classes.push('xh-form-field-required');
-        if (notValid) classes.push('xh-form-field-invalid');
+        if (inline) classes.push('xh-form-field-inline');
         if (minimal) classes.push('xh-form-field-minimal');
+        if (readonly) classes.push('xh-form-field-readonly');
+        if (displayNotValid) classes.push('xh-form-field-invalid');
 
-        return formGroup({
-            item,
-            width: 50,
-            label: span({
-                item: labelStr ? span(labelStr, requiredStr) : null,
-                className: minimal && notValid ? 'xh-form-field-error-label' : null
-            }),
-            labelFor: clickableLabel ? idAttr : null,
+        const control = this.prepareChild({displayNotValid, errors, idAttr, leftErrorIcon, minimal, readonly});
+
+        return box({
             className: this.getClassName(classes),
-            helperText: !minimal ? fragment(
-                div({
-                    omit: !isPending || minimal,
-                    className: 'xh-form-field-pending',
-                    item: spinner({size: 15})
+            items: [
+                labelEl({
+                    omit: !labelStr,
+                    className: 'xh-form-field-label',
+                    items: [labelStr, requiredStr],
+                    htmlFor: clickableLabel ? idAttr : null
                 }),
-                div({
-                    omit: !notValid || minimal,
-                    className: 'xh-form-field-error-msg',
-                    items: notValid ? tooltip({
-                        item: errors[0],
+                vbox(
+                    control,
+                    div({
+                        omit: !info,
+                        className: 'xh-form-field-info',
+                        item: info
+                    }),
+                    div({
+                        omit: minimal || !isPending || !validationDisplayed,
+                        className: 'xh-form-field-pending',
+                        item: spinner({size: 15})
+                    }),
+                    tooltip({
+                        omit: minimal || !displayNotValid,
+                        openOnTargetFocus: false,
+                        className: 'xh-form-field-error-msg',
+                        item: errors ? errors[0] : null,
                         content: this.getErrorTooltipContent(errors)
-                    }) : null
-                })
-            ) : null,
-            ...rest
+                    })
+                )
+            ],
+            ...this.getLayoutProps()
         });
     }
 
@@ -117,30 +179,73 @@ export class FormField extends Component {
     //--------------------
     // Implementation
     //--------------------
-    prepareChild(notValid, errors, idAttr) {
-        const {model, field, minimal, disabled} = this.props,
+    get form() {
+        return this.context;
+    }
+
+    get formModel() {
+        const {form} = this;
+        return form ? form.model : null;
+    }
+
+    get fieldModel() {
+        const {formModel} = this;
+        return formModel ? formModel.getField(this.props.field) : null;
+    }
+
+    getDefaultedProp(name, defaultVal) {
+        const {form} = this;
+        return withDefault(
+            this.props[name],
+            form ? form.fieldDefaults[name] : undefined,
+            defaultVal
+        );
+    }
+
+    prepareChild({displayNotValid, leftErrorIcon, idAttr, errors, minimal, readonly}) {
+        const {fieldModel} = this,
             item = this.props.children;
 
-        const leftIcon = notValid ? this.leftIcon(item) : {},
-            target = React.cloneElement(item, {model, field, disabled, id: idAttr, ...leftIcon});
+        const overrides = {
+            model: fieldModel,
+            field: 'value',
+            disabled: fieldModel && fieldModel.disabled,
+            id: idAttr
+        };
+        if (displayNotValid && item.type.propTypes.leftIcon && leftErrorIcon) {
+            overrides.leftIcon = Icon.warningCircle();
+        }
+
+        const target = readonly ? this.renderReadonly() : React.cloneElement(item, overrides);
 
         if (!minimal) return target;
 
-        // Wrap target in a tooltip if in minimal mode
         return tooltip({
             target,
-            targetClassName: `xh-input ${notValid ? 'xh-input-invalid' : ''}`,
-            wrapperTagName: 'div',
+            targetClassName: `xh-input ${displayNotValid ? 'xh-input-invalid' : ''}`,
             targetTagName: !this.blockChildren.includes(target.type.name) || target.props.width ? 'span' : 'div',
             position: 'right',
-            disabled: !notValid,
+            disabled: !displayNotValid,
             content: this.getErrorTooltipContent(errors)
         });
     }
 
-    leftIcon(item) {
-        const leftIcon = item.props.leftIcon || (this.props.leftErrorIcon ? Icon.warningCircle() : null);
-        return item.type.propTypes.leftIcon ? {leftIcon} : {};
+    renderReadonly() {
+        const {fieldModel} = this,
+            value = fieldModel ? fieldModel['value'] : null,
+            renderer = withDefault(this.props.readonlyRenderer, this.defaultReadonlyRenderer);
+
+        return span({
+            className: 'xh-form-field-readonly-display',
+            item: renderer(value)
+        });
+    }
+
+    defaultReadonlyRenderer(value) {
+        if (isDate(value)) return fmtDate(value);
+        if (isFinite(value)) return fmtNumber(value);
+        if (isBoolean(value)) return value.toString();
+        return value;
     }
 
     getErrorTooltipContent(errors) {
@@ -154,11 +259,9 @@ export class FormField extends Component {
     }
 
     ensureConditions() {
-        const item = this.props.children;
-        throwIf(!item || isArray(item) || !(item.type.prototype instanceof HoistInput), 'FormField child must be a single component that extends HoistInput.');
-        throwIf(item.props.field || item.props.model, 'HoistInputs should not declare "field" or "model" when used with FormField');
+        const child = this.props.children;
+        throwIf(!child || isArray(child) || !(child.type.prototype instanceof HoistInput), 'FormField child must be a single component that extends HoistInput.');
+        throwIf(child.props.field || child.props.model, 'HoistInputs should not specify "field" or "model" when used with FormField');
     }
-
 }
-
 export const formField = elemFactory(FormField);

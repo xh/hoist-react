@@ -60,18 +60,18 @@ export class Rule {
     //------------------------------
     isActive(field) {
         const {when} = this;
-        return !when || when(field, field.model);
+        return !when || when(field, field.formModel.dataProxy);
     }
 
     async evalConstraintAsync(constraint, field) {
-        return await constraint(field, field.model);
+        return await constraint(field, field.formModel.dataProxy);
     }
 }
 
 
 /**
  * @callback ConstraintCb
- * @param {FieldsModel} fieldModel
+ * @param {FieldModel} fieldModel
  * @param {Object} model
  * @returns {(string|string[])} - String or array of strings describing errors,
  *      or null or undefined if rule passes successfully.
@@ -79,7 +79,7 @@ export class Rule {
 
 /**
  * @callback WhenCb
- * @param {FieldsModel} fieldModel
+ * @param {FieldModel} fieldModel
  * @param {Object} model
  * @returns {boolean} - true if this rule is currently active.
  */

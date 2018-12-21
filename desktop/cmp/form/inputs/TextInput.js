@@ -88,7 +88,7 @@ export class TextInput extends HoistInput {
             item: inputGroup({
                 value: this.renderValue || '',
 
-                autoComplete: withDefault(props.autoComplete, props.type == 'password' ? 'new-password' : 'nope'),
+                autoComplete: withDefault(props.autoComplete, props.type == 'password' ? 'new-password' : 'off'),
                 autoFocus: props.autoFocus,
                 disabled: props.disabled,
                 leftIcon: props.leftIcon,

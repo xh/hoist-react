@@ -31,6 +31,12 @@ export class Checkbox extends HoistInput {
          */
         label: PT.string,
 
+        /**
+         * True to render null or undefined as a distinct visual state.  If false (default),
+         * these values will appear unchecked and visually indistinct from false.
+         */
+        displayUnsetState: PT.bool,
+
         /** Alignment of the inline label relative to the control itself, default right. */
         labelAlign: PT.oneOf(['left', 'right'])
     };
@@ -40,13 +46,12 @@ export class Checkbox extends HoistInput {
     render() {
         const {props} = this,
             labelAlign = withDefault(props.labelAlign, 'right'),
-            nullValue = this.renderValue == null;
+            displayUnsetState = withDefault(props.displayUnsetState, false),
+            valueIsUnset = (this.renderValue === null || this.renderValue === undefined);
 
         return bpCheckbox({
-            // Always specify checked to ensure input is in controlled mode.
-            checked: nullValue ? false : !!this.renderValue,
-            indeterminate: nullValue,
-
+            checked: !!this.renderValue,
+            indeterminate: valueIsUnset && displayUnsetState,
             alignIndicator: labelAlign == 'left' ? 'right' : 'left',
             disabled: props.disabled,
             inline: withDefault(props.inline, true),

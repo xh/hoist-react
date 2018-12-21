@@ -26,6 +26,7 @@ export class ClientErrorPanel extends Component {
     render() {
         const {model} = this;
         return panel({
+            mask: model.loadModel,
             tbar: this.renderToolbar(),
             items: [
                 grid({
@@ -63,7 +64,7 @@ export class ClientErrorPanel extends Component {
             refreshButton({model}),
             filler(),
             storeCountLabel({gridModel: model.gridModel, unit: 'client error'}),
-            exportButton({model: model.gridModel})
+            exportButton({gridModel: model.gridModel})
         );
     }
 

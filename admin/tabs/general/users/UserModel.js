@@ -13,11 +13,14 @@ import {boolCheckCol} from '@xh/hoist/cmp/grid/columns';
 import {usernameCol} from '@xh/hoist/admin/columns';
 import {bindable, action} from '@xh/hoist/mobx/index';
 import {keyBy, keys} from 'lodash';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 @HoistModel
 export class UserModel {
 
     @bindable activeOnly = true;
+
+    loadModel = new PendingTaskModel();
 
     gridModel = new GridModel({
         stateModel: 'xhUserGrid',
@@ -70,7 +73,9 @@ export class UserModel {
             });
 
             this.gridModel.loadData(users);
-        }).catchDefault();
+        }).linkTo(
+            this.loadModel
+        ).catchDefault();
     }
 }
 

@@ -39,3 +39,4 @@ export const a = elemFactory('a');
 export const img = elemFactory('img');
 export const textarea = elemFactory('textarea');
 export const option = elemFactory('option');
+export const label = elemFactory('label');

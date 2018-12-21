@@ -12,6 +12,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
 import {dateTimeCol} from '@xh/hoist/cmp/grid/columns';
 import {usernameCol} from '@xh/hoist/admin/columns';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 @HoistModel
 export class ActivityGridModel {
@@ -26,11 +27,13 @@ export class ActivityGridModel {
 
     @observable detailRecord = null;
 
+    loadModel = new PendingTaskModel();
+
     gridModel = new GridModel({
         stateModel: 'xhActivityGrid',
         enableColChooser: true,
         enableExport: true,
-        exportFilename: () => `Activity ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`,
+        exportOptions: {filename: () => `Activity ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`},
         store: new LocalStore({
             fields: [
                 'severity', 'dateCreated', 'username', 'msg', 'category',
@@ -64,7 +67,9 @@ export class ActivityGridModel {
             params: this.getParams()
         }).then(data => {
             this.gridModel.loadData(data);
-        }).catchDefault();
+        }).linkTo(
+            this.loadModel
+        ).catchDefault();
     }
 
     adjustDates(dir, toToday = false) {
