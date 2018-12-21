@@ -9,7 +9,7 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {button} from '@xh/hoist/mobile/cmp/button';
-import {textArea} from '@xh/hoist/mobile/cmp/form';
+import {textArea} from '@xh/hoist/mobile/cmp/input';
 
 import {FeedbackDialogModel} from '@xh/hoist/core/appcontainer/FeedbackDialogModel';
 import './FeedbackDialog.scss';

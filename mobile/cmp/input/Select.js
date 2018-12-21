@@ -10,7 +10,7 @@ import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {isEmpty, isPlainObject, find, assign} from 'lodash';
 import {observable, action} from '@xh/hoist/mobx';
 import {box} from '@xh/hoist/cmp/layout';
-import {HoistInput} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/input';
 import {withDefault, throwIf} from '@xh/hoist/utils/js';
 import {reactSelect} from '@xh/hoist/kit/react-select';
 
@@ -71,6 +71,8 @@ export class Select extends HoistInput {
         /** Field on provided options for sourcing each option's value (default `value`). */
         valueField: PT.string
     };
+
+    static MENU_PORTAL_ID = 'xh-select-input-portal';
 
     baseClassName = 'xh-select';
 
@@ -209,7 +211,7 @@ export class Select extends HoistInput {
         let portal = document.getElementById('xh-select-input-portal');
         if (!portal) {
             portal = document.createElement('div');
-            portal.id = 'xh-select-input-portal';
+            portal.id = Select.MENU_PORTAL_ID;
             document.body.appendChild(portal);
         }
 

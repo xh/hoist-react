@@ -13,7 +13,7 @@ import {fragment, div} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {Icon} from '@xh/hoist/icon';
-import {select} from '@xh/hoist/mobile/cmp/form';
+import {select} from '@xh/hoist/mobile/cmp/input';
 import {withDefault} from '@xh/hoist/utils/js';
 import {size, isEmpty} from 'lodash';
 

@@ -19,7 +19,7 @@ import {
     checkbox,
     textArea,
     textInput
-} from '@xh/hoist/desktop/cmp/form';
+} from '@xh/hoist/desktop/cmp/input';
 
 import {RestControlModel} from './RestControlModel';
 

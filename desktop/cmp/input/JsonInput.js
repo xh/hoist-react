@@ -6,7 +6,7 @@ import {box} from '@xh/hoist/cmp/layout';
 import {textArea} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 
-import {HoistInput} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/input';
 
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/addon/fold/foldgutter.css';
@@ -15,7 +15,7 @@ import 'codemirror/addon/lint/lint.css';
 import 'codemirror/theme/dracula.css';
 
 import * as codemirror from 'codemirror';
-import {jsonlint} from '../impl/jsonlint';
+import {jsonlint} from './impl/jsonlint';
 import 'codemirror/mode/javascript/javascript.js';
 import 'codemirror/mode/jsx/jsx';
 import 'codemirror/addon/fold/foldcode.js';

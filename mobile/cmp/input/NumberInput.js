@@ -12,7 +12,7 @@ import {fmtNumber} from '@xh/hoist/format';
 import {withDefault} from '@xh/hoist/utils/js';
 import {wait} from '@xh/hoist/promise';
 
-import {HoistInput} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/input';
 
 /**
  * Number Input, with optional support for formatted of display value,

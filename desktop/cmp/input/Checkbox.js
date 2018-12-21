@@ -9,7 +9,7 @@ import PT from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {checkbox as bpCheckbox} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
-import {HoistInput} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/input';
 
 /**
  * Checkbox control for boolean values.
