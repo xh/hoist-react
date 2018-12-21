@@ -6,7 +6,7 @@
 * Details and listings of other changes will be posted here as they are merged into the primary
   development branch.
 
-## v17.0.0-rc2 (release candidate) - 2018-12-19
+## v17.0.0 - 2018-12-21
 
 ### 💥 Breaking Changes
 
@@ -85,7 +85,7 @@
   is open. (In that case, the component assumes escape was pressed to close its menu and captures
   the keypress, otherwise it should leave it alone and let it e.g. close a parent popover).
 
-[Commit Log](https://github.com/exhi/hoist-react/compare/v16.0.1...v17.0.0-rc1)
+[Commit Log](https://github.com/exhi/hoist-react/compare/v16.0.1...v17.0.0)
 
 ## v16.0.1
 
