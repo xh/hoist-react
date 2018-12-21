@@ -9,10 +9,9 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {vframe, filler} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
+import {form} from '@xh/hoist/cmp/form';
 import {formField} from '@xh/hoist/mobile/cmp/form';
 import {button} from '@xh/hoist/mobile/cmp/button';
-
-import './FeedbackDialog.scss';
 
 /**
  * Display Options dialog
@@ -24,7 +23,7 @@ export class OptionsDialog extends Component {
 
     render() {
         const {model} = this,
-            {isOpen, hasChanges, requiresRefresh} = model;
+            {isOpen, formModel, hasChanges, requiresRefresh} = model;
 
         if (!isOpen) return null;
 
@@ -34,7 +33,10 @@ export class OptionsDialog extends Component {
             className: 'xh-options-dialog',
             isOpen: true,
             onCancel: this.onCloseClick,
-            content: vframe(...model.options.map(it => this.renderControl(it))),
+            content: form({
+                model: formModel,
+                item: vframe(...model.options.map(it => this.renderControl(it)))
+            }),
             buttons: [
                 button({
                     disabled: !hasChanges,
@@ -59,22 +61,16 @@ export class OptionsDialog extends Component {
     }
 
     renderControl(cfg) {
-        const {label, field, control} = cfg;
-
-        return formField({
-            label: label,
-            field: field,
-            item: control,
-            model: this.model
-        });
+        const {name, control} = cfg;
+        return formField({field: name, item: control});
     }
 
     onResetClick = () => {
-        this.model.reset();
+        this.model.formModel.reset();
     }
 
     onSaveClick = () => {
-        this.model.save();
+        this.model.saveAsync();
     }
 
     onCloseClick = () => {

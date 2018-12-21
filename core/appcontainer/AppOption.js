@@ -6,19 +6,28 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {HoistInput} from '@xh/hoist/cmp/form/HoistInput';
-import {throwIf} from '@xh/hoist/utils/js';
+import {FieldModel, HoistInput} from '@xh/hoist/cmp/form';
+import {throwIf, warnIf} from '@xh/hoist/utils/js';
 
 /**
- * An app option displayed within the XH options dialog.
+ * Extends FieldModel, adding additional properties for display within the XH Options Dialog.
  *
- * Typically used bound to a preference by setting `field` to a matching preference key.
- * Alternatively, can be used to manage non-preference values via valueGetter and valueSetter.
+ * Adds `control`, a HoistInput Component to be rendered within the dialog.
+ *
+ * By default, expects `name` (from FieldModel) to match an existing preference key. The options
+ * dialog will automatically bind the control to that preference when opening and saving.
+ *
+ * Alternatively, you can provide valueGetter and valueSetter functions if you don't want to
+ * bind the control directly to a preference, or need to do pre-processing. Note that both
+ * valueGetter and valueSetter are required when not bound to a preference.
+ *
+ * Applications will typically specify AppOption configurations in HoistAppModel.getAppOptions()
+ *
+ * In addition to the above, supports all configs of FieldModel.
+ * @see FieldModel
  */
-export class AppOption {
+export class AppOption extends FieldModel {
 
-    label;
-    field;
     control;
     valueGetter;
     valueSetter;
@@ -26,32 +35,32 @@ export class AppOption {
 
     /**
      * @param {Object} c - AppOption configuration.
-     * @param {string} c.label - label to display in the options dialog.
-     * @param {string} c.field - field name for option managed by the control.
      * @param {Object} c.control - HoistInput component used to manage the option.
      * @param {function} [c.valueGetter] - function which returns the external value.
      * @param {function} [c.valueSetter] - function which sets the external value. Receives (value).
      * @param {boolean} [c.refreshRequired] - true to refresh the app after changing this option.
      */
     constructor({
-        label,
-        field,
         control,
         valueGetter,
         valueSetter,
-        refreshRequired = false
+        refreshRequired = false,
+        ...rest
     }) {
-        const extendsHoistInput = control && control.type.prototype instanceof HoistInput;
-        throwIf(!extendsHoistInput, 'AppOption control must be a component that extends HoistInput.');
-        throwIf(!label, 'AppOption requires label.');
-        throwIf(!field, 'AppOption requires field.');
+        super({...rest});
 
-        if (!XH.prefService.hasKey(field)) {
-            throwIf(!valueGetter || !valueSetter, 'AppOption requires valueGetter and valueSetter when not bound to a preference.');
+        // Ensure control is present and a HoistInput
+        const extendsHoistInput = control && control.type.prototype instanceof HoistInput;
+        throwIf(!extendsHoistInput, `AppOption "${name}"'s control must be a component that extends HoistInput.`);
+
+        // Ensure is either bound to a preference OR has valueGetter and valueSetter
+        if (!XH.prefService.hasKey(rest.name)) {
+            throwIf(!valueGetter || !valueSetter, `AppOption "${name}" is not a recognized preference. Please update or provide a valueGetter and valueSetter.`);
         }
 
-        this.label = label;
-        this.field = field;
+        // Initial value will be ignored, instead read from preference or valueGetter
+        warnIf(rest.initialValue, `AppOption "${name}" should not set an initialValue - this will be ignored.`);
+
         this.control = control;
         this.valueGetter = valueGetter;
         this.valueSetter = valueSetter;

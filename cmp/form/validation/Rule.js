@@ -59,6 +59,7 @@ export class Rule {
     // Implementation
     //------------------------------
     isActive(field) {
+        if (!field.formModel) return;
         const {when} = this;
         return !when || when(field, field.formModel.dataProxy);
     }

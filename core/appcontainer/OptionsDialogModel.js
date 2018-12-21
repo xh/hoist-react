@@ -5,7 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {observable, computed, action, extendObservable, settable} from '@xh/hoist/mobx';
+import {FormModel} from '@xh/hoist/cmp/form';
+import {observable, computed, action} from '@xh/hoist/mobx';
 import {isFunction} from 'lodash';
 
 import {AppOption} from './AppOption';
@@ -21,6 +22,8 @@ export class OptionsDialogModel {
     @observable.ref options = [];
     @observable.ref changes = [];
 
+    formModel = new FormModel();
+
     //-------------------
     // Setting options
     //-------------------
@@ -29,21 +32,14 @@ export class OptionsDialogModel {
         // Ensure each is valid AppOption
         this.options = options.map(it => it instanceof AppOption ? it : new AppOption(it));
 
-        const obs = {};
-        this.options.forEach(it => {
-            const {field} = it;
+        // Add each AppOption to the FormModel
+        this.options.forEach(it => this.formModel.addField(it));
 
-            // Wire up observables & setters
-            obs[field] = this.getExternalValue(field);
-            settable(this, field);
-
-            // Add change detection reaction
-            this.addReaction({
-                track: () => this[field],
-                run: (v) => this.refreshChangedFields()
-            });
+        // Add change detection reaction
+        this.addReaction({
+            track: () => this.formModel.getData(),
+            run: () => this.refreshChangedFields()
         });
-        extendObservable(this, obs);
     }
 
     @computed
@@ -57,9 +53,9 @@ export class OptionsDialogModel {
     @action
     refreshChangedFields() {
         const changes = [];
-        this.options.forEach(it => {
-            const {field} = it;
-            if (this[field] != this.getExternalValue(field)) changes.push(field);
+        this.formModel.fields.forEach(it => {
+            const {name} = it;
+            if (it.isDirty) changes.push(name);
         });
         this.changes = changes;
     }
@@ -71,8 +67,8 @@ export class OptionsDialogModel {
 
     @computed
     get requiresRefresh() {
-        return this.hasChanges && this.changes.some(field => {
-            const opt = this.getOption(field);
+        return this.hasChanges && this.changes.some(name => {
+            const opt = this.getOption(name);
             return opt && opt.refreshRequired;
         });
     }
@@ -80,21 +76,21 @@ export class OptionsDialogModel {
     //-------------------
     // Value management
     //-------------------
-    getOption(field) {
-        return this.options.find(it => it.field == field);
+    getOption(name) {
+        return this.options.find(it => it.name == name);
     }
 
-    getExternalValue(field) {
-        const {valueGetter} = this.getOption(field);
-        return isFunction(valueGetter) ? valueGetter() : XH.prefService.get(field);
+    getExternalValue(name) {
+        const {valueGetter} = this.getOption(name);
+        return isFunction(valueGetter) ? valueGetter() : XH.prefService.get(name);
     }
 
-    setExternalValue(field, value) {
-        const {valueSetter} = this.getOption(field);
+    setExternalValue(name, value) {
+        const {valueSetter} = this.getOption(name);
         if (isFunction(valueSetter)) {
             valueSetter(value);
         } else {
-            XH.prefService.set(field, value);
+            XH.prefService.set(name, value);
         }
     }
 
@@ -104,7 +100,7 @@ export class OptionsDialogModel {
     @action
     show() {
         this.isOpen = true;
-        this.reset();
+        this.init();
     }
 
     @action
@@ -112,19 +108,18 @@ export class OptionsDialogModel {
         this.isOpen = false;
     }
 
-    @action
-    reset() {
-        // Loop all fields, set to pref value
+    init() {
         this.options.forEach(it => {
-            const {field} = it;
-            this[field] = this.getExternalValue(field);
+            it.init(this.getExternalValue(it.name));
         });
-        this.refreshChangedFields();
     }
 
-    save() {
+    async saveAsync() {
         this.refreshChangedFields();
         if (!this.hasChanges) return;
+
+        await this.formModel.validateAsync();
+        if (!this.formModel.isValid) return;
 
         if (this.requiresRefresh) {
             XH.confirm({
@@ -146,8 +141,10 @@ export class OptionsDialogModel {
     }
 
     async doSaveAsync() {
-        this.changes.forEach(field => {
-            this.setExternalValue(field, this[field]);
+        const data = this.formModel.getData();
+        this.changes.forEach(name => {
+            const value = data[name];
+            this.setExternalValue(name, value);
         });
         return XH.prefService.pushPendingAsync();
     }

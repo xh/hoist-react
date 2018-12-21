@@ -11,6 +11,7 @@ import {Icon} from '@xh/hoist/icon';
 import {filler} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {form} from '@xh/hoist/cmp/form';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 
 /**
@@ -23,7 +24,7 @@ export class OptionsDialog extends Component {
 
     render() {
         const {model} = this,
-            {isOpen, hasChanges, requiresRefresh} = model;
+            {isOpen, formModel, hasChanges, requiresRefresh} = model;
 
         if (!isOpen) return null;
 
@@ -35,7 +36,13 @@ export class OptionsDialog extends Component {
             onClose: this.onCloseClick,
             canOutsideClickClose: false,
             item: [
-                dialogBody(...model.options.map(it => this.renderControl(it))),
+                dialogBody(
+                    form({
+                        model: formModel,
+                        fieldDefaults: {minimal: true, inline: true},
+                        items: model.options.map(it => this.renderControl(it))
+                    })
+                ),
                 toolbar(
                     button({
                         disabled: !hasChanges,
@@ -60,30 +67,21 @@ export class OptionsDialog extends Component {
     }
 
     renderControl(cfg) {
-        const {label, field, control, disabled} = cfg;
-
-        return formField({
-            label: label,
-            field: field,
-            item: control,
-            model: this.model,
-            disabled: disabled,
-            minimal: true,
-            inline: true
-        });
+        const {name, control} = cfg;
+        return formField({field: name, item: control});
     }
 
     onResetClick = () => {
-        this.model.reset();
-    }
+        this.model.formModel.reset();
+    };
 
     onSaveClick = () => {
-        this.model.save();
-    }
+        this.model.saveAsync();
+    };
 
     onCloseClick = () => {
         this.model.hide();
-    }
+    };
 }
 
 export const optionsDialog = elemFactory(OptionsDialog);
