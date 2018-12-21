@@ -13,7 +13,7 @@ import {popover} from '@xh/hoist/kit/blueprint';
 import {Icon} from '@xh/hoist/icon';
 import {div} from '@xh/hoist/cmp/layout';
 import {withDefault} from '@xh/hoist/utils/js';
-import {select} from '@xh/hoist/desktop/cmp/form';
+import {select, Select} from '@xh/hoist/desktop/cmp/form';
 import {size, isEmpty} from 'lodash';
 
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
@@ -72,15 +72,16 @@ export class DimensionChooser extends Component {
         this.model.closeMenu();
     }
 
+    // Handle user clicks outside of the popover (which would be default close it).
     onInteraction = (nextOpenState, e) => {
         const {model} = this;
         if (nextOpenState === false) {
             if (model.activeMode == 'edit') {
-                const notSelectClick = withDefault(e, false) &&
-                    withDefault(e.target, false) &&
-                    withDefault(!e.target.classList.contains('xh-select__option'), false);
-                if (notSelectClick) this.model.commitPendingValue();
+                // If editing, save then close, unless dropdown menu option was clicked - in that case don't do anything.
+                const selectOptClick = e && e.target && e.target.closest(`#${Select.MENU_PORTAL_ID}`);
+                if (!selectOptClick) this.model.commitPendingValueAndClose();
             } else {
+                // ...otherwise just close.
                 model.closeMenu();
             }
         }
@@ -114,32 +115,6 @@ export class DimensionChooser extends Component {
         });
     }
 
-    renderEditMenu() {
-        return {
-            className: 'xh-dim-add-popover',
-            items: [
-                this.renderPopoverTitle(),
-                this.renderSelectEditors(),
-                buttonGroup({
-                    className: 'xh-dim-nav-row',
-                    items: [
-                        button({
-                            icon: Icon.arrowLeft(),
-                            flex: 1,
-                            omit: isEmpty(this.model.history),
-                            onClick: () => this.model.showHistory()
-                        }),
-                        button({
-                            icon: Icon.check({className: 'xh-green'}),
-                            flex: 2,
-                            onClick: () => this.model.commitPendingValue()
-                        })
-                    ]
-                })
-            ]
-        };
-    }
-
     renderHistoryMenu() {
         return {
             className: 'xh-dim-history-popover',
@@ -160,6 +135,32 @@ export class DimensionChooser extends Component {
                             flex: 2,
                             title: 'Add a new grouping',
                             onClick: () => this.model.showEditor()
+                        })
+                    ]
+                })
+            ]
+        };
+    }
+
+    renderEditMenu() {
+        return {
+            className: 'xh-dim-add-popover',
+            items: [
+                this.renderPopoverTitle(),
+                this.renderSelectEditors(),
+                buttonGroup({
+                    className: 'xh-dim-nav-row',
+                    items: [
+                        button({
+                            icon: Icon.arrowLeft(),
+                            flex: 1,
+                            omit: isEmpty(this.model.history),
+                            onClick: () => this.model.showHistory()
+                        }),
+                        button({
+                            icon: Icon.check({className: 'xh-green'}),
+                            flex: 2,
+                            onClick: () => this.model.commitPendingValueAndClose()
                         })
                     ]
                 })

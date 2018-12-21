@@ -87,7 +87,7 @@ export class DimensionChooser extends Component {
             className: this.getClassName('xh-dim-dialog'),
             title: 'Group By',
             isOpen: model.isMenuOpen,
-            onCancel: () => model.commitPendingValue(),
+            onCancel: () => model.commitPendingValueAndClose(),
             width: this.dialogWidth,
             align: 'left',
             ...this.getDialogPropsForMode(model.activeMode)
@@ -229,7 +229,7 @@ export class DimensionChooser extends Component {
                 icon: Icon.check({className: 'xh-green'}),
                 modifier: 'quiet',
                 flex: 1,
-                onClick: () => model.commitPendingValue()
+                onClick: () => model.commitPendingValueAndClose()
             })
         ];
     }

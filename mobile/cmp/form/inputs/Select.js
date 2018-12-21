@@ -72,6 +72,8 @@ export class Select extends HoistInput {
         valueField: PT.string
     };
 
+    static MENU_PORTAL_ID = 'xh-select-input-portal';
+
     baseClassName = 'xh-select';
 
     // Normalized collection of selectable options. Passed directly to synchronous select.
@@ -209,7 +211,7 @@ export class Select extends HoistInput {
         let portal = document.getElementById('xh-select-input-portal');
         if (!portal) {
             portal = document.createElement('div');
-            portal.id = 'xh-select-input-portal';
+            portal.id = Select.MENU_PORTAL_ID;
             document.body.appendChild(portal);
         }
 

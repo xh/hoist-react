@@ -58,12 +58,12 @@ export class DimensionChooserModel {
      * @param {number} [c.maxDepth] - maximum number of dimensions allowed in a single grouping.
      */
     constructor({
-        dimensions,
-        initialValue,
-        historyPreference,
-        maxHistoryLength = 5,
-        maxDepth = 4
-    }) {
+                    dimensions,
+                    initialValue,
+                    historyPreference,
+                    maxHistoryLength = 5,
+                    maxDepth = 4
+                }) {
         this.maxHistoryLength = maxHistoryLength;
         this.maxDepth = maxDepth;
         this.historyPreference = historyPreference;
@@ -81,33 +81,6 @@ export class DimensionChooserModel {
     setValue(value) {
         this.value = value;
         this.addToHistory(value);
-    }
-
-    //---------------------------------
-    // Edit methods for add menu
-    //---------------------------------
-    /** Add or replace a dimension in the add menu. */
-    @action
-    addPendingDim(dim, level) {
-        const newValue = without(this.pendingValue, dim);               // Ensure the new dimension hasn't been selected at another level
-        newValue[level] = dim;                                          // Insert the new dimension
-        if (this.dimensions[dim].leaf) newValue.splice(level + 1);      // If it's a leaf dimension, remove any subordinate dimensions
-
-        this.pendingValue = newValue;                                   // Update intermediate state
-        this.setShowAddSelect(false);
-    }
-
-    /** Remove a dimension from the add menu. */
-    @action
-    removePendingDim(dim) {
-        this.pendingValue = without(this.pendingValue, dim);
-    }
-
-    /** Save add menu dimensions as the control's value. */
-    @action
-    commitPendingValue() {
-        this.setValue(this.pendingValue);
-        this.setIsMenuOpen(false);
     }
 
     showHistory() {
@@ -133,15 +106,38 @@ export class DimensionChooserModel {
         this.setIsMenuOpen(false);
     }
 
-    //------------------------------
-    // Render Helpers for add menu
-    //-------------------------------
-    /** Has a leaf column been selected in the add menu? */
+
+    //------------------------
+    // Editor support
+    //------------------------
+    @action
+    addPendingDim(dim, level) {
+        const newValue = without(this.pendingValue, dim);               // Ensure the new dimension hasn't been selected at another level
+        newValue[level] = dim;                                          // Insert the new dimension
+        if (this.dimensions[dim].leaf) newValue.splice(level + 1);      // If it's a leaf dimension, remove any subordinate dimensions
+
+        this.pendingValue = newValue;                                   // Update intermediate state
+        this.setShowAddSelect(false);
+    }
+
+    @action
+    removePendingDim(dim) {
+        this.pendingValue = without(this.pendingValue, dim);
+    }
+
+    @action
+    commitPendingValueAndClose() {
+        this.setValue(this.pendingValue);
+        this.closeMenu();
+    }
+
+    // True if a leaf-level dim has been specified via the editor - any further child groupings
+    // would be derivative at this point and should not be allowed by the UI.
     get leafInPending() {
         this.pendingValue.some(dim => this.dimensions[dim].leaf);
     }
 
-    /** Options passed to the select control at each level of the add menu. */
+    // Returns options passed to the select control at each level of the add menu.
     dimOptionsForLevel(level) {
         // Dimensions which do not appear in the add menu
         const remainingDims = difference(this.dimensionVals, this.pendingValue);
