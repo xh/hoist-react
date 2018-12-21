@@ -1,0 +1,70 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2018 Extremely Heavy Industries Inc.
+ */
+
+.xh-dock-container {
+  position: absolute !important;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  justify-content: flex-end;
+  align-items: flex-end;
+  pointer-events: none;
+}
+
+.xh-dock-view {
+  flex: 0 0 auto;
+  margin-right: var(--xh-pad-px);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  pointer-events: auto;
+
+  .xh-dock-view-header {
+    align-items: center;
+    padding: var(--xh-pad-half-px) var(--xh-pad-px);
+    color: var(--xh-popup-title-text-color);
+    background-color: var(--xh-popup-title-bg);
+    font-size: var(--xh-popup-title-font-size-px);
+    border-top-right-radius: var(--xh-border-radius-px);
+    border-top-left-radius: var(--xh-border-radius-px);
+
+    .xh-dock-view-header-icon {
+      margin: 0 var(--xh-pad-px) 0 var(--xh-pad-half-px);
+    }
+
+    .xh-dock-view-header-title {
+      margin-right: var(--xh-pad-px);
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .xh-button {
+      color: var(--xh-popup-title-text-color);
+      font-size: var(--xh-popup-title-font-size-px);
+    }
+  }
+
+  .xh-dock-view-body {
+    background-color: var(--xh-bg);
+    border: var(--xh-border-solid);
+    border-width: 0 1px;
+  }
+
+  &.xh-dock-view-collapsed .xh-dock-view-body {
+    display: none;
+  }
+}
+
+.xh-dock-view-dialog {
+  width: auto;
+
+  .xh-dock-view-body {
+    border-bottom-right-radius: var(--xh-border-radius-px);
+    border-bottom-left-radius: var(--xh-border-radius-px);
+    overflow: hidden;
+  }
+}
