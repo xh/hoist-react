@@ -10,7 +10,7 @@ import {isNumber, isNaN} from 'lodash';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {fmtNumber} from '@xh/hoist/format';
-import {HoistInput} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/input';
 import {withDefault} from '@xh/hoist/utils/js';
 import {wait} from '@xh/hoist/promise';
 

@@ -11,7 +11,7 @@ import {box} from '@xh/hoist/cmp/layout';
 import {slider as bpSlider, rangeSlider as bpRangeSlider} from '@xh/hoist/kit/blueprint';
 import {isArray} from 'lodash';
 import {toJS} from '@xh/hoist/mobx';
-import {HoistInput} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/input';
 
 /**
  * A slider input to edit either a single number or an array of two (for a range).

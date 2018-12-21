@@ -9,7 +9,7 @@ import {dialog} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {filler, table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
-import {jsonInput} from '@xh/hoist/desktop/cmp/form';
+import {jsonInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {fmtDateTime} from '@xh/hoist/format';

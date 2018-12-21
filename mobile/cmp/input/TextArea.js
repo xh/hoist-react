@@ -7,11 +7,9 @@
 
 import PT from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {textArea as bpTextarea} from '@xh/hoist/kit/blueprint';
+import {textarea as textareaTag, div} from '@xh/hoist/cmp/layout';
 import {withDefault} from '@xh/hoist/utils/js';
-import {HoistInput} from '@xh/hoist/cmp/form';
-
-import './TextArea.scss';
+import {HoistInput} from '@xh/hoist/cmp/input';
 
 /**
  * A multi-line text input.
@@ -23,62 +21,58 @@ export class TextArea extends HoistInput {
         ...HoistInput.propTypes,
         value: PT.string,
 
-        /** True to focus the control on render. */
-        autoFocus: PT.bool,
-
         /** True to commit on every change/keystroke, default false. */
         commitOnChange: PT.bool,
-
-        /** True to take up the full width of container. */
-        fill: PT.bool,
 
         /** Height of the control in pixels. */
         height: PT.number,
 
-        /** True to select contents when control receives focus. */
+        /** Function which receives keypress event */
+        onKeyPress: PT.func,
+
+        /** Text to display when control is empty */
+        placeholder: PT.string,
+
+        /** Whether text in field is selected when field receives focus */
         selectOnFocus: PT.bool,
 
-        /** True to allow browser spell check, default false. */
+        /** Whether to allow browser spell check, defaults to true */
         spellCheck: PT.bool,
-
-        /** Text to display when control is empty. */
-        placeholder: PT.string,
 
         /** Width of the control in pixels. */
         width: PT.number
     };
 
-    baseClassName = 'xh-text-area';
+    baseClassName = 'xh-textarea';
 
     get commitOnChange() {
         return withDefault(this.props.commitOnChange, false);
     }
-    
+
     render() {
         const {props} = this;
 
-        return bpTextarea({
-            value: this.renderValue || '',
-
-            autoFocus: props.autoFocus,
-            disabled: props.disabled,
-            fill: props.fill,
-            placeholder: props.placeholder,
-            spellCheck: withDefault(props.spellCheck, false),
-            tabIndex: props.tabIndex,
-
-            id: props.id,
+        return div({
             className: this.getClassName(),
-            style: {
-                height: props.height,
-                width: props.width,
-                ...props.style
-            },
+            item: textareaTag({
+                value: this.renderValue || '',
 
-            onBlur: this.onBlur,
-            onChange: this.onChange,
-            onFocus: this.onFocus,
-            onKeyPress: this.onKeyPress
+                disabled: props.disabled,
+                placeholder: props.placeholder,
+                spellCheck: withDefault(props.spellCheck, false),
+                tabIndex: props.tabIndex,
+
+                style: {
+                    height: props.height,
+                    width: props.width,
+                    ...props.style
+                },
+
+                onChange: this.onChange,
+                onKeyPress: this.onKeyPress,
+                onBlur: this.onBlur,
+                onFocus: this.onFocus
+            })
         });
     }
 
@@ -87,11 +81,12 @@ export class TextArea extends HoistInput {
     };
 
     onKeyPress = (ev) => {
-        if (ev.key === 'Enter' && !ev.shiftKey) this.doCommit();
+        const {onKeyPress} = this.props;
+        if (onKeyPress) onKeyPress(ev);
     };
 
     onFocus = (ev) => {
-        if (this.props.selectOnFocus) {
+        if (this.props.selectOnFocus && ev.target && ev.target.select) {
             ev.target.select();
         }
         this.noteFocused();

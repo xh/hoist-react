@@ -11,7 +11,7 @@ import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
-import {switchInput} from '@xh/hoist/desktop/cmp/form';
+import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {exportButton} from '@xh/hoist/desktop/cmp/button';
 
 

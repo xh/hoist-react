@@ -9,7 +9,7 @@ import PT from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {div} from '@xh/hoist/cmp/layout';
-import {HoistInput} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/input';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {withDefault} from '@xh/hoist/utils/js';

@@ -10,7 +10,7 @@ import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {isEmpty, isPlainObject, find, assign} from 'lodash';
 import {observable, action} from '@xh/hoist/mobx';
 import {box} from '@xh/hoist/cmp/layout';
-import {HoistInput} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/input';
 import {withDefault, throwIf} from '@xh/hoist/utils/js';
 import {reactSelect} from '@xh/hoist/kit/react-select';
 

@@ -7,14 +7,14 @@
 
 import PT from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {checkbox as onsenCheckbox} from '@xh/hoist/kit/onsen';
-import {HoistInput} from '@xh/hoist/cmp/form';
+import {switchControl} from '@xh/hoist/kit/onsen';
+import {HoistInput} from '@xh/hoist/cmp/input';
 
 /**
- * Checkbox control for boolean values.
+ * Switch (toggle) control for non-nullable boolean values.
  */
 @HoistComponent
-export class Checkbox extends HoistInput {
+export class SwitchInput extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
@@ -24,12 +24,12 @@ export class Checkbox extends HoistInput {
         modifier: PT.string
     };
 
-    baseClassName = 'xh-check-box';
+    baseClassName = 'xh-switch-input';
 
     render() {
         const {props} = this;
 
-        return onsenCheckbox({
+        return switchControl({
             checked: !!this.renderValue,
 
             disabled: props.disabled,
@@ -49,4 +49,4 @@ export class Checkbox extends HoistInput {
         this.noteValueChange(e.target.checked);
     };
 }
-export const checkbox = elemFactory(Checkbox);
+export const switchInput = elemFactory(SwitchInput);

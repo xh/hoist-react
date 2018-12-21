@@ -12,7 +12,7 @@ import {castArray, isEmpty, isPlainObject, keyBy, find, assign} from 'lodash';
 import {observable, action} from '@xh/hoist/mobx';
 import {box, hbox, div, span} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
-import {HoistInput} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/input';
 import {withDefault, throwIf} from '@xh/hoist/utils/js';
 import {
     reactSelect,

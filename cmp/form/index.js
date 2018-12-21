@@ -4,8 +4,6 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-export * from './HoistInput';
-
 export * from './Form';
 export * from './FormModel';
 export * from './FieldModel';

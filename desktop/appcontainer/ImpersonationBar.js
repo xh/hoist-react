@@ -10,7 +10,7 @@ import {HotkeysTarget, hotkeys, hotkey} from '@xh/hoist/kit/blueprint';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {filler, span} from '@xh/hoist/cmp/layout';
-import {select} from '@xh/hoist/desktop/cmp/form';
+import {select} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';

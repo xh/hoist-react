@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {label, numberInput, textInput, switchInput} from '@xh/hoist/desktop/cmp/form';
+import {label, numberInput, textInput, switchInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 
 /**
