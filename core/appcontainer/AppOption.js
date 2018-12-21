@@ -6,7 +6,8 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {FieldModel, HoistInput} from '@xh/hoist/cmp/form';
+import {FieldModel} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/input';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 
 /**
