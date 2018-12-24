@@ -186,7 +186,7 @@ export class Chart extends Component {
             conf[axis] = arr.map(it => merge({}, defaultAxisConfig, theme[axis], it));
             theme[axis] = null;
         });
-    }S
+    }
 
     getDefaultAxisConfig(axis) {
         const defaults = {
