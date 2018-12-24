@@ -35,7 +35,7 @@ export class OptionsDialogModel {
         this.options = options.map(it => it instanceof AppOption ? it : new AppOption(it));
 
         // Add each AppOption to the FormModel
-        this.options.forEach(it => this.formModel.addField(it));
+        this.options.forEach(it => this.formModel.addField(it.fieldModel));
     }
 
     @computed
@@ -45,14 +45,14 @@ export class OptionsDialogModel {
 
     @computed
     get requiresRefresh() {
-        return this.formModel.fields.some(it => it.isDirty && it.refreshRequired);
+        return this.options.some(it => it.fieldModel.isDirty && it.refreshRequired);
     }
 
     //-------------------
     // Value management
     //-------------------
     getOption(name) {
-        return this.options.find(it => it.name == name);
+        return this.options.find(it => it.fieldModel.name === name);
     }
 
     async getExternalValueAsync(name) {
@@ -84,7 +84,7 @@ export class OptionsDialogModel {
     }
 
     async initAsync() {
-        const promises = this.options.map(it => {
+        const promises = this.formModel.fields.map(it => {
             return this.getExternalValueAsync(it.name).then(v => it.init(v));
         });
         await allSettled(promises).linkTo(this.loadModel);

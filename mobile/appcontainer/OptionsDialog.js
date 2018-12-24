@@ -65,8 +65,8 @@ export class OptionsDialog extends Component {
     }
 
     renderControl(cfg) {
-        const {name, control} = cfg;
-        return formField({field: name, item: control});
+        const {fieldModel, control} = cfg;
+        return formField({field: fieldModel.name, item: control});
     }
 
     onResetClick = () => {
