@@ -72,7 +72,9 @@ export class Chart extends Component {
     shouldComponentUpdate(nextProps) {
         const next = nextProps.dimensions,
             current = this.props.dimensions;
-        if (next.width != current.width || next.height != current.height) {
+        if (![next.width, next.height, current.width, current.height].includes(null) &&
+            (next.width != current.width || next.height != current.height)
+        ) {
             const dims = this.getDims(nextProps);
             this.resizeChart(dims.width, dims.height);
             return false;
@@ -91,14 +93,11 @@ export class Chart extends Component {
         this.destroyHighChart();
         const chartElem = this._chartElem.value;
         const dims = this.getDims(this.props);
-        console.log('props', this.props)
         if (chartElem) {
-            console.log(dims)
             const config = this.getMergedConfig();
             config.chart.width = dims.width ;
             config.chart.height = dims.height;
             config.chart.renderTo = chartElem;
-            console.log(config)
             this._chart = Highcharts.chart(config);
         }
     }
@@ -187,7 +186,7 @@ export class Chart extends Component {
             conf[axis] = arr.map(it => merge({}, defaultAxisConfig, theme[axis], it));
             theme[axis] = null;
         });
-    }
+    }S
 
     getDefaultAxisConfig(axis) {
         const defaults = {
