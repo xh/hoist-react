@@ -327,7 +327,7 @@ class XHClass {
     //---------------------------
     // Miscellaneous
     //---------------------------
-    /** Show a dialog to for users to set app options. */
+    /** Show a dialog for users to set app options. */
     showOptionsDialog() {
         return this.acm.optionsDialogModel.show();
     }
