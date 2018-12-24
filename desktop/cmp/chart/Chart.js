@@ -5,11 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import PT from 'prop-types';
 import {castArray, clone, merge} from 'lodash';
 import Highcharts from 'highcharts/highstock';
 import highchartsExporting from 'highcharts/modules/exporting';
 import highchartsOfflineExporting from 'highcharts/modules/offline-exporting';
 import highchartsExportData from 'highcharts/modules/export-data';
+import withDimensions from 'react-with-dimensions';
 
 import {XH, elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {div, box} from '@xh/hoist/cmp/layout';
@@ -30,9 +32,15 @@ highchartsExportData(Highcharts);
  * as well as configuration and theme defaults. The chart's core configuration should be sourced
  * from a ChartModel prop passed to this component.
  */
+@withDimensions  // must go first in decorator stack or else layoutSupport throws
 @HoistComponent
 @LayoutSupport
 export class Chart extends Component {
+
+    static propTypes = {
+        /** if defined and greater than 0, will enforce that width = height * n.  Else chart takes up all available space.  */
+        aspectRatio: PT.number
+    };
 
     static modelClass = ChartModel;
 
@@ -55,12 +63,22 @@ export class Chart extends Component {
             ...layoutProps,
             className: this.getClassName(),
             item: div({
-                style: {flex: 'auto'},
+                style: {margin: 'auto'},
                 ref: this._chartElem.ref
             })
         });
     }
 
+    shouldComponentUpdate(nextProps) {
+        const next = nextProps.dimensions,
+            current = this.props.dimensions;
+        if (next.width != current.width || next.height != current.height) {
+            const dims = this.getDims(nextProps);
+            this.resizeChart(dims.width, dims.height);
+            return false;
+        }
+        return true;
+    }
 
     //-------------------
     // Implementation
@@ -72,11 +90,53 @@ export class Chart extends Component {
     renderHighChart() {
         this.destroyHighChart();
         const chartElem = this._chartElem.value;
+        const dims = this.getDims(this.props);
+        console.log('props', this.props)
         if (chartElem) {
+            console.log(dims)
             const config = this.getMergedConfig();
+            config.chart.width = dims.width ;
+            config.chart.height = dims.height;
             config.chart.renderTo = chartElem;
+            console.log(config)
             this._chart = Highcharts.chart(config);
         }
+    }
+
+    resizeChart(width, height) {
+        this._chart.setSize(width, height, false);
+    }
+
+    getDims(props) {
+        const {dimensions, aspectRatio} = props;
+        let {width, height} = dimensions;
+
+        if (!aspectRatio) return {width, height};
+
+        return this.applyAspectRatio(width, height, aspectRatio);
+    }
+
+    applyAspectRatio(width, height, aspectRatio) {
+        const adjWidth = height * aspectRatio,
+            adjHeight = width / aspectRatio;
+
+        if (aspectRatio >= 1) {
+            // landscape
+            if (width >= height && adjWidth <= width) {
+                width = adjWidth;
+            } else {
+                height = adjHeight;
+            }
+        } else {
+            // portrait
+            if (height >= width && adjHeight <= height) {
+                height = adjHeight;
+            } else {
+                width = adjWidth;
+            }
+        }
+
+        return {width, height};
     }
 
     destroyHighChart() {
