@@ -20,7 +20,6 @@ export class OptionsDialogModel {
 
     @observable isOpen = false;
     @observable.ref options = [];
-    @observable.ref changes = [];
 
     formModel = new FormModel();
 
@@ -34,12 +33,6 @@ export class OptionsDialogModel {
 
         // Add each AppOption to the FormModel
         this.options.forEach(it => this.formModel.addField(it));
-
-        // Add change detection reaction
-        this.addReaction({
-            track: () => this.formModel.getData(),
-            run: () => this.refreshChangedFields()
-        });
     }
 
     @computed
@@ -47,30 +40,9 @@ export class OptionsDialogModel {
         return !!this.options.length;
     }
 
-    //-------------------
-    // Change management
-    //-------------------
-    @action
-    refreshChangedFields() {
-        const changes = [];
-        this.formModel.fields.forEach(it => {
-            const {name} = it;
-            if (it.isDirty) changes.push(name);
-        });
-        this.changes = changes;
-    }
-
-    @computed
-    get hasChanges() {
-        return !!this.changes.length;
-    }
-
     @computed
     get requiresRefresh() {
-        return this.hasChanges && this.changes.some(name => {
-            const opt = this.getOption(name);
-            return opt && opt.refreshRequired;
-        });
+        return this.formModel.fields.some(it => it.isDirty && it.refreshRequired);
     }
 
     //-------------------
@@ -115,9 +87,6 @@ export class OptionsDialogModel {
     }
 
     async saveAsync() {
-        this.refreshChangedFields();
-        if (!this.hasChanges) return;
-
         await this.formModel.validateAsync();
         if (!this.formModel.isValid) return;
 
@@ -141,9 +110,8 @@ export class OptionsDialogModel {
     }
 
     async doSaveAsync() {
-        const data = this.formModel.getData();
-        this.changes.forEach(name => {
-            const value = data[name];
+        this.formModel.fields.forEach(it => {
+            const {name, value} = it;
             this.setExternalValue(name, value);
         });
         return XH.prefService.pushPendingAsync();

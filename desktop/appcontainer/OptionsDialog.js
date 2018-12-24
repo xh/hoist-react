@@ -24,7 +24,7 @@ export class OptionsDialog extends Component {
 
     render() {
         const {model} = this,
-            {isOpen, formModel, hasChanges, requiresRefresh} = model;
+            {isOpen, formModel, requiresRefresh} = model;
 
         if (!isOpen) return null;
 
@@ -45,7 +45,7 @@ export class OptionsDialog extends Component {
                 ),
                 toolbar(
                     button({
-                        disabled: !hasChanges,
+                        disabled: !formModel.isDirty,
                         text: 'Reset',
                         onClick: this.onResetClick
                     }),
@@ -55,7 +55,7 @@ export class OptionsDialog extends Component {
                         onClick: this.onCloseClick
                     }),
                     button({
-                        disabled: !hasChanges,
+                        disabled: !formModel.isDirty,
                         text: requiresRefresh ? 'Save & Reload' : 'Save',
                         icon: requiresRefresh ? Icon.refresh() : Icon.check(),
                         intent: 'success',

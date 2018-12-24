@@ -23,7 +23,7 @@ export class OptionsDialog extends Component {
 
     render() {
         const {model} = this,
-            {isOpen, formModel, hasChanges, requiresRefresh} = model;
+            {isOpen, formModel, requiresRefresh} = model;
 
         if (!isOpen) return null;
 
@@ -39,7 +39,7 @@ export class OptionsDialog extends Component {
             }),
             buttons: [
                 button({
-                    disabled: !hasChanges,
+                    disabled: !formModel.isDirty,
                     text: 'Reset',
                     modifier: 'quiet',
                     onClick: this.onResetClick
@@ -51,7 +51,7 @@ export class OptionsDialog extends Component {
                     onClick: this.onCloseClick
                 }),
                 button({
-                    disabled: !hasChanges,
+                    disabled: !formModel.isDirty,
                     text: 'Save',
                     icon: requiresRefresh ? Icon.refresh() : Icon.check(),
                     onClick: this.onSaveClick
