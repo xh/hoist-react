@@ -37,8 +37,8 @@ export class AppOption extends FieldModel {
     /**
      * @param {Object} c - AppOption configuration.
      * @param {Object} c.control - HoistInput component used to manage the option.
-     * @param {function} [c.valueGetter] - function which returns the external value.
-     * @param {function} [c.valueSetter] - function which sets the external value. Receives (value).
+     * @param {function} [c.valueGetter] - async function which returns the external value.
+     * @param {function} [c.valueSetter] - async function which sets the external value. Receives (value).
      * @param {boolean} [c.refreshRequired] - true to refresh the app after changing this option.
      */
     constructor({

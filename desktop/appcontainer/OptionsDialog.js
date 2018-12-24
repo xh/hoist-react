@@ -7,6 +7,7 @@
 import {Component} from 'react';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {filler} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -24,7 +25,7 @@ export class OptionsDialog extends Component {
 
     render() {
         const {model} = this,
-            {isOpen, formModel, requiresRefresh} = model;
+            {isOpen, loadModel, formModel, requiresRefresh} = model;
 
         if (!isOpen) return null;
 
@@ -36,32 +37,35 @@ export class OptionsDialog extends Component {
             onClose: this.onCloseClick,
             canOutsideClickClose: false,
             item: [
-                dialogBody(
-                    form({
-                        model: formModel,
-                        fieldDefaults: {minimal: true, inline: true},
-                        items: model.options.map(it => this.renderControl(it))
-                    })
-                ),
-                toolbar(
-                    button({
-                        disabled: !formModel.isDirty,
-                        text: 'Reset',
-                        onClick: this.onResetClick
-                    }),
-                    filler(),
-                    button({
-                        text: 'Cancel',
-                        onClick: this.onCloseClick
-                    }),
-                    button({
-                        disabled: !formModel.isDirty,
-                        text: requiresRefresh ? 'Save & Reload' : 'Save',
-                        icon: requiresRefresh ? Icon.refresh() : Icon.check(),
-                        intent: 'success',
-                        onClick: this.onSaveClick
-                    })
-                )
+                panel({
+                    mask: loadModel,
+                    item: dialogBody(
+                        form({
+                            model: formModel,
+                            fieldDefaults: {minimal: true, inline: true},
+                            items: model.options.map(it => this.renderControl(it))
+                        })
+                    ),
+                    bbar: toolbar(
+                        button({
+                            disabled: !formModel.isDirty,
+                            text: 'Reset',
+                            onClick: this.onResetClick
+                        }),
+                        filler(),
+                        button({
+                            text: 'Cancel',
+                            onClick: this.onCloseClick
+                        }),
+                        button({
+                            disabled: !formModel.isDirty,
+                            text: requiresRefresh ? 'Save & Reload' : 'Save',
+                            icon: requiresRefresh ? Icon.refresh() : Icon.check(),
+                            intent: 'success',
+                            onClick: this.onSaveClick
+                        })
+                    )
+                })
             ]
         });
     }

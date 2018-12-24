@@ -9,6 +9,7 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {vframe, filler} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
+import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {form} from '@xh/hoist/cmp/form';
 import {formField} from '@xh/hoist/mobile/cmp/form';
 import {button} from '@xh/hoist/mobile/cmp/button';
@@ -23,7 +24,7 @@ export class OptionsDialog extends Component {
 
     render() {
         const {model} = this,
-            {isOpen, formModel, requiresRefresh} = model;
+            {isOpen, loadModel, formModel, requiresRefresh} = model;
 
         if (!isOpen) return null;
 
@@ -33,10 +34,13 @@ export class OptionsDialog extends Component {
             className: 'xh-options-dialog',
             isOpen: true,
             onCancel: this.onCloseClick,
-            content: form({
-                model: formModel,
-                item: vframe(...model.options.map(it => this.renderControl(it)))
-            }),
+            content: [
+                mask({model: loadModel, spinner: true}),
+                form({
+                    model: formModel,
+                    item: vframe(...model.options.map(it => this.renderControl(it)))
+                })
+            ],
             buttons: [
                 button({
                     disabled: !formModel.isDirty,

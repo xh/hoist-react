@@ -6,7 +6,9 @@
  */
 import {XH, HoistModel} from '@xh/hoist/core';
 import {FormModel} from '@xh/hoist/cmp/form';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {observable, computed, action} from '@xh/hoist/mobx';
+import {allSettled} from '@xh/hoist/promise';
 import {isFunction} from 'lodash';
 
 import {AppOption} from './AppOption';
@@ -21,6 +23,7 @@ export class OptionsDialogModel {
     @observable isOpen = false;
     @observable.ref options = [];
 
+    loadModel = new PendingTaskModel();
     formModel = new FormModel();
 
     //-------------------
@@ -52,15 +55,15 @@ export class OptionsDialogModel {
         return this.options.find(it => it.name == name);
     }
 
-    getExternalValue(name) {
+    async getExternalValueAsync(name) {
         const {valueGetter} = this.getOption(name);
-        return isFunction(valueGetter) ? valueGetter() : XH.prefService.get(name);
+        return await (isFunction(valueGetter) ? valueGetter() : XH.prefService.get(name));
     }
 
-    setExternalValue(name, value) {
+    async setExternalValueAsync(name, value) {
         const {valueSetter} = this.getOption(name);
         if (isFunction(valueSetter)) {
-            valueSetter(value);
+            await valueSetter(value);
         } else {
             XH.prefService.set(name, value);
         }
@@ -72,7 +75,7 @@ export class OptionsDialogModel {
     @action
     show() {
         this.isOpen = true;
-        this.init();
+        this.initAsync();
     }
 
     @action
@@ -80,10 +83,11 @@ export class OptionsDialogModel {
         this.isOpen = false;
     }
 
-    init() {
-        this.options.forEach(it => {
-            it.init(this.getExternalValue(it.name));
+    async initAsync() {
+        const promises = this.options.map(it => {
+            return this.getExternalValueAsync(it.name).then(v => it.init(v));
         });
+        await allSettled(promises).linkTo(this.loadModel);
     }
 
     async saveAsync() {
@@ -99,21 +103,22 @@ export class OptionsDialogModel {
                     this.doSaveAsync().then(() => {
                         this.hide();
                         XH.reloadApp();
-                    }).linkTo(XH.appLoadModel);
+                    }).linkTo(this.loadModel);
                 }
             });
         } else {
             this.doSaveAsync().then(() => {
                 this.hide();
-            }).linkTo(XH.appLoadModel);
+            }).linkTo(this.loadModel);
         }
     }
 
     async doSaveAsync() {
-        this.formModel.fields.forEach(it => {
+        const promises = this.formModel.fields.map(it => {
             const {name, value} = it;
-            this.setExternalValue(name, value);
+            return this.setExternalValueAsync(name, value);
         });
+        await allSettled(promises);
         return XH.prefService.pushPendingAsync();
     }
 
