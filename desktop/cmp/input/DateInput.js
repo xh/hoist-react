@@ -85,13 +85,13 @@ export class DateInput extends HoistInput {
         width: PT.number
     };
 
-    inputRef = new Ref();
+    bpRef = new Ref();
     popoverRef = new Ref();
 
     baseClassName = 'xh-date-input';
 
     get commitOnChange() {
-        withDefault(this.props.commitOnChange, false);
+        return withDefault(this.props.commitOnChange, false);
     }
 
     render() {
@@ -99,11 +99,12 @@ export class DateInput extends HoistInput {
 
         return bpDateInput({
             value: this.renderValue,
-            ref: this.inputRef.ref,
+            ref: this.bpRef.ref,
 
             formatDate: this.formatDate,
             parseDate: this.parseDate,
 
+            canClearSelection: false,
             dayPickerProps: assign({fixedWeeks: true}, props.dayPickerProps),
             disabled: props.disabled,
             inputProps: {
@@ -177,7 +178,9 @@ export class DateInput extends HoistInput {
     }
 
     parseDate = (dateString) => {
-        return moment(dateString, this.getFormat()).toDate();
+        // Handle 'invalid date'  as null.
+        const ret = moment(dateString, this.getFormat()).toDate();
+        return isNaN(ret) ? null : ret;
     }
 
     noteBlurred() {
@@ -190,8 +193,8 @@ export class DateInput extends HoistInput {
 
         if (date) {
             const {minDate, maxDate} = this.props;
-            if (date < minDate) date = minDate;
-            if (date > maxDate) date = maxDate;
+            if (minDate && date < minDate) date = minDate;
+            if (maxDate && date > maxDate) date = maxDate;
             date = this.applyPrecision(date);
         }
 
@@ -208,7 +211,7 @@ export class DateInput extends HoistInput {
     };
 
     forcePopoverClose() {
-        this.inputRef.value.setState({isOpen: false});
+        this.bpRef.value.setState({isOpen: false});
     }
     
     applyPrecision(date)  {
