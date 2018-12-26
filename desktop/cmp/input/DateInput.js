@@ -122,7 +122,7 @@ export class DateInput extends HoistInput {
                 onFocus: this.onFocus,
                 onKeyPress: this.onKeyPress
             },
-            // See Hoist #757. Blueprint setting arbitrary, narrrower limits without these
+            // See Hoist #757. Blueprint setting arbitrary, narrower limits without these
             maxDate: props.maxDate || moment().add(100, 'years').toDate(),
             minDate: props.minDate || moment().subtract(100, 'years').toDate(),
             placeholder: props.placeholder,
