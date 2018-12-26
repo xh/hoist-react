@@ -38,7 +38,10 @@ highchartsExportData(Highcharts);
 export class Chart extends Component {
 
     static propTypes = {
-        /** if defined and greater than 0, will enforce that width = height * n.  Else chart takes up all available space.  */
+        /**
+         * If defined and greater than 0, will aspect ratio is enforced within available space.
+         * Else chart takes up all available space.
+         * */
         aspectRatio: PT.number
     };
 
