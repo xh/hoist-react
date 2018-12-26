@@ -39,8 +39,8 @@ export class Chart extends Component {
 
     static propTypes = {
         /**
-         * If defined and greater than 0, will aspect ratio is enforced within available space.
-         * Else chart takes up all available space.
+         * If aspectRatio is defined and greater than 0, the chart size respects the aspectRatio, within available space.
+         * If aspectRatio is falsy, the chart takes up all available space.
          */
         aspectRatio: PT.number
     };
