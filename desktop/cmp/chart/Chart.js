@@ -144,6 +144,7 @@ export class Chart extends Component {
     destroyHighChart() {
         if (this._chart) {
             this._chart.destroy();
+            this._chart = null;
         }
     }
     //----------------------
