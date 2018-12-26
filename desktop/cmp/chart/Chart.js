@@ -41,7 +41,7 @@ export class Chart extends Component {
         /**
          * If defined and greater than 0, will aspect ratio is enforced within available space.
          * Else chart takes up all available space.
-         * */
+         */
         aspectRatio: PT.number
     };
 
