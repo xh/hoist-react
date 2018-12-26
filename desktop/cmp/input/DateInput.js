@@ -104,7 +104,7 @@ export class DateInput extends HoistInput {
             formatDate: this.formatDate,
             parseDate: this.parseDate,
 
-            canClearSelection: false,
+            canClearSelection: false,   // just disables clearing when re-clicking same date
             dayPickerProps: assign({fixedWeeks: true}, props.dayPickerProps),
             disabled: props.disabled,
             inputProps: {
