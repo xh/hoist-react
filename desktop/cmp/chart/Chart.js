@@ -147,6 +147,7 @@ export class Chart extends Component {
             this._chart = null;
         }
     }
+
     //----------------------
     // Highcharts Config
     //----------------------
