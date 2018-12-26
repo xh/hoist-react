@@ -13,8 +13,6 @@ import {throwIf, warnIf} from '@xh/hoist/utils/js';
 /**
  * Combines a HoistInput, a FieldModel and additional properties for display within the XH Options Dialog.
  *
- * Adds `control`, a HoistInput Component to be rendered within the dialog.
- *
  * By default, expects `name` (from FieldModel) to match an existing preference key. The options
  * dialog will automatically bind the control to that preference when opening and saving.
  *
