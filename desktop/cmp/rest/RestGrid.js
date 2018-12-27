@@ -37,7 +37,9 @@ export class RestGrid extends Component {
         extraToolbarItems: PT.array,
 
         /**
-         * Should the panel display Hoist's default loading mask while data is loading?
+         * Mask to render on this Component. Defaults to true, which renders a standard
+         * Hoist mask. Also can be set to false for no mask, or passed a ReactElement
+         * specifying a Mask instance.
          */
         mask: PT.oneOfType([PT.element, PT.bool]),
 
@@ -94,7 +96,7 @@ export class RestGrid extends Component {
         let mask = withDefault(props.mask, true);
 
         if (isReactElement(mask)) {
-            mask = cloneElement(mask)
+            mask = cloneElement(mask, {model: model.loadModel})
         } else if (mask === true) {
             mask = model.loadModel
         }
