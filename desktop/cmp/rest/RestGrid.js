@@ -5,12 +5,14 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
+import {Component, cloneElement} from 'react';
 import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
+
 import {grid} from '@xh/hoist/cmp/grid';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {fragment} from '@xh/hoist/cmp/layout';
-
+import {withDefault} from '@xh/hoist/utils/js';
+import {isReactElement} from '@xh/hoist/utils/react';
 import {restGridToolbar} from './impl/RestGridToolbar';
 import {restForm} from './impl/RestForm';
 import {RestGridModel} from './RestGridModel';
@@ -35,15 +37,16 @@ export class RestGrid extends Component {
         extraToolbarItems: PT.array,
 
         /**
+         * Should the panel display Hoist's default loading mask while data is loading?
+         */
+        mask: PT.oneOfType([PT.element, PT.bool]),
+
+        /**
          * Callback to call when a row is double clicked. Function will receive an event
          * with a data node containing the row's data.
          */
-        onRowDoubleClicked: PT.func,
+        onRowDoubleClicked: PT.func
 
-        /**
-         * Should the panel display Hoist's default loading mask while data is loading?
-         */
-        hideMask: PT.bool
     };
 
     baseClassName = 'xh-rest-grid';
@@ -52,8 +55,7 @@ export class RestGrid extends Component {
         const {model} = this,
             {
                 extraToolbarItems,
-                onRowDoubleClicked = this.onRowDoubleClicked,
-                hideMask = false,
+                onRowDoubleClicked,
                 agOptions
             } = this.props;
 
@@ -64,10 +66,10 @@ export class RestGrid extends Component {
                 tbar: restGridToolbar({model, extraToolbarItems}),
                 item: grid({
                     model: model.gridModel,
-                    onRowDoubleClicked,
+                    onRowDoubleClicked: withDefault(onRowDoubleClicked, this.onRowDoubleClicked),
                     agOptions
                 }),
-                mask: hideMask ? null : model.loadModel
+                mask: this.getMaskFromProps()
             }),
             restForm({model: model.formModel})
         );
@@ -85,6 +87,18 @@ export class RestGrid extends Component {
         } else {
             formModel.openView(row.data);
         }
+    }
+
+    getMaskFromProps() {
+        const {model, props} = this;
+        let mask = withDefault(props.mask, true);
+
+        if (isReactElement(mask)) {
+            mask = cloneElement(mask)
+        } else if (mask === true) {
+            mask = model.loadModel
+        }
+        return mask
     }
 }
 export const restGrid = elemFactory(RestGrid);
