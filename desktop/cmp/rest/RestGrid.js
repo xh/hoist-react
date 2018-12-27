@@ -96,11 +96,11 @@ export class RestGrid extends Component {
         let mask = withDefault(props.mask, true);
 
         if (isReactElement(mask)) {
-            mask = cloneElement(mask, {model: model.loadModel})
+            mask = cloneElement(mask, {model: model.loadModel});
         } else if (mask === true) {
-            mask = model.loadModel
+            mask = model.loadModel;
         }
-        return mask
+        return mask;
     }
 }
 export const restGrid = elemFactory(RestGrid);
