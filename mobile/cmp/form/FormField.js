@@ -10,8 +10,9 @@ import {isArray, isDate, isFinite, isBoolean} from 'lodash';
 
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {div, span} from '@xh/hoist/cmp/layout';
-import {FormContext, HoistInput} from '@xh/hoist/cmp/form';
-import {label as labelCmp} from '@xh/hoist/mobile/cmp/form';
+import {FormContext} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/input';
+import {label as labelCmp} from '@xh/hoist/mobile/cmp/input';
 import {fmtDate, fmtNumber} from '@xh/hoist/format';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 

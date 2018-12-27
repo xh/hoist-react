@@ -13,7 +13,7 @@ import {popover} from '@xh/hoist/kit/blueprint';
 import {Icon} from '@xh/hoist/icon';
 import {div} from '@xh/hoist/cmp/layout';
 import {withDefault} from '@xh/hoist/utils/js';
-import {select, Select} from '@xh/hoist/desktop/cmp/form';
+import {select, Select} from '@xh/hoist/desktop/cmp/input';
 import {size, isEmpty} from 'lodash';
 
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';

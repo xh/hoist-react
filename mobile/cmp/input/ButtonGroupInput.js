@@ -9,7 +9,7 @@ import React from 'react';
 import {HoistComponent, LayoutSupport, elemFactory} from '@xh/hoist/core';
 import {buttonGroup} from '@xh/hoist/mobile/cmp/button';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {HoistInput} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/input';
 import {castArray} from 'lodash';
 
 /**

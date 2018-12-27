@@ -10,7 +10,8 @@ import {isArray, isUndefined, isDate, isFinite, isBoolean} from 'lodash';
 
 import {elemFactory, HoistComponent, LayoutSupport, StableIdSupport} from '@xh/hoist/core';
 import {spinner, tooltip} from '@xh/hoist/kit/blueprint';
-import {HoistInput, FormContext} from '@xh/hoist/cmp/form';
+import {FormContext} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/input';
 import {box, div, vbox, span, label as labelEl} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {fmtDate, fmtNumber} from '@xh/hoist/format';

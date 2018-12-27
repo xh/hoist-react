@@ -9,7 +9,7 @@ import PT from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 
-import {HoistInput} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/input/HoistInput';
 
 /**
  * A simple label for a form.
@@ -26,13 +26,12 @@ export class Label extends HoistInput {
     baseClassName = 'xh-input-label';
 
     render() {
-        const {props} = this;
+        const {children, style, width} = this.props;
         return div({
-            className: this.getClassName('bp3-label', 'bp3-inline'),
-            style: {...props.style, whiteSpace: 'nowrap', width: props.width},
-            items: props.children
+            className: this.getClassName(),
+            style: {...style, whiteSpace: 'nowrap', width},
+            items: children
         });
     }
 }
-
 export const label = elemFactory(Label);

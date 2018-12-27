@@ -10,7 +10,7 @@ import {castArray} from 'lodash';
 import {HoistComponent, LayoutSupport, elemFactory} from '@xh/hoist/core';
 import {ButtonGroup, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {HoistInput} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/input';
 
 /**
  * A segmented group of buttons, one of which is depressed to indicate the input's current value.
