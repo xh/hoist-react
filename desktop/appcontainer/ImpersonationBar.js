@@ -72,6 +72,7 @@ export class ImpersonationBar extends Component {
         const text = XH.identityService.isImpersonating ? 'Exit Impersonation' : 'Cancel';
         return button({
             text,
+            style: {color: 'white'},
             onClick: this.onExitClick
         });
     }
