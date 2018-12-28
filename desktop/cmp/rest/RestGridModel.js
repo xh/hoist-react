@@ -12,6 +12,7 @@ import {pluralize, throwIf} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon/Icon';
 
 import {RestFormModel} from './impl/RestFormModel';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 export const addAction = {
     text: 'Add',
@@ -72,6 +73,7 @@ export class RestGridModel {
 
     gridModel = null;
     formModel = null;
+    loadModel = new PendingTaskModel();
 
     get store() {return this.gridModel.store}
 
@@ -133,7 +135,7 @@ export class RestGridModel {
 
     /** Load the underlying store. */
     loadAsync(...args) {
-        return this.store.loadAsync(...args);
+        return this.store.loadAsync(...args).linkTo(this.loadModel);
     }
 
     /** Load the underlying store. */
@@ -215,6 +217,6 @@ export class RestGridModel {
     }
 
     destroy() {
-        XH.safeDestroy(this.gridModel, this.formModel);
+        XH.safeDestroy(this.gridModel, this.formModel, this.pendingTaskModel);
     }
 }
