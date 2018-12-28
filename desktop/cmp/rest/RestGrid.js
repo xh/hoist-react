@@ -34,7 +34,7 @@ export class RestGrid extends Component {
         agOptions: PT.object,
 
         /** Optional components rendered adjacent to the top toolbar's action buttons */
-        extraToolbarItems: PT.func,
+        extraToolbarItems: PT.oneOfType([PT.func, PT.array]),
 
         /**
          * Mask to render on this Component. Defaults to true, which renders a standard

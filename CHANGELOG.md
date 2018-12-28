@@ -14,9 +14,16 @@
   settings from its containing `Form`.
   * `HoistInput` has been moved into the `input` package to clarify that these are lower level controls and independent
   of the Forms package.
+  
+* RestGrid
+    * Enclosing `Panel` receives a standard Hoist mask by default, and allows a custom mask to be set
 
 ### 💥 Breaking Changes
 * Major changes to Form (see above).  `HoistInput` imports will also need to be adjusted to move from `form` to `input`.
+
+### 🐞 Bug Fixes
+
+* `RestGrid`'s `extraToolbarItems` prop can take either a function or a string. Handles a console warning.
 
 ## v17.0.0 - 2018-12-21
 
