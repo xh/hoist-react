@@ -217,6 +217,6 @@ export class RestGridModel {
     }
 
     destroy() {
-        XH.safeDestroy(this.gridModel, this.formModel);
+        XH.safeDestroy(this.gridModel, this.formModel, this.pendingTaskModel);
     }
 }

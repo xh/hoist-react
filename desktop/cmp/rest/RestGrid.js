@@ -38,7 +38,7 @@ export class RestGrid extends Component {
 
         /**
          * Mask to render on this Component. Defaults to true, which renders a standard
-         * Hoist mask. Also can be set to false for no mask, or passed a ReactElement
+         * Hoist mask. Also can be set to false for no mask, or passed an element
          * specifying a Mask instance.
          */
         mask: PT.oneOfType([PT.element, PT.bool]),
@@ -48,28 +48,26 @@ export class RestGrid extends Component {
          * with a data node containing the row's data.
          */
         onRowDoubleClicked: PT.func
-
     };
 
     baseClassName = 'xh-rest-grid';
 
     render() {
-        const {model} = this,
-            {
-                extraToolbarItems,
-                onRowDoubleClicked,
-                agOptions
-            } = this.props;
+        const {model, props} = this,
+            onRowDoubleClicked = withDefault(props.onRowDoubleClicked, this.onRowDoubleClicked);
 
         return fragment(
             panel({
                 ...this.getLayoutProps(),
                 className: this.getClassName(),
-                tbar: restGridToolbar({model, extraToolbarItems}),
+                tbar: restGridToolbar({
+                    model,
+                    extraToolbarItems: props.extraToolbarItems
+                }),
                 item: grid({
                     model: model.gridModel,
-                    onRowDoubleClicked: withDefault(onRowDoubleClicked, this.onRowDoubleClicked),
-                    agOptions
+                    agOptions: props.agOptions,
+                    onRowDoubleClicked
                 }),
                 mask: this.getMaskFromProps()
             }),
