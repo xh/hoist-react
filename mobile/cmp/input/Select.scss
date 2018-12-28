@@ -20,6 +20,10 @@
       min-height: 30px;
     }
 
+    &__placeholder {
+      color: rgb(175, 183, 191);
+    }
+
     &__single-value,
     &__input {
       color: var(--xh-input-text-color);
