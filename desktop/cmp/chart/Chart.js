@@ -19,7 +19,7 @@ import {LightTheme} from './theme/Light';
 import {DarkTheme} from './theme/Dark';
 
 import {ChartModel} from './ChartModel';
-import {zoomout} from "./plugin/zoomout";
+import {zoomout} from './plugin/zoomout';
 
 highchartsExporting(Highcharts);
 highchartsOfflineExporting(Highcharts);
