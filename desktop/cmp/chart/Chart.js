@@ -19,12 +19,12 @@ import {LightTheme} from './theme/Light';
 import {DarkTheme} from './theme/Dark';
 
 import {ChartModel} from './ChartModel';
-import {zoomout} from './plugin/zoomout';
+import {installZoomoutGesture} from './impl/zoomout';
 
 highchartsExporting(Highcharts);
 highchartsOfflineExporting(Highcharts);
 highchartsExportData(Highcharts);
-zoomout(Highcharts);
+installZoomoutGesture(Highcharts);
 
 /**
  * Wrapper Component for a Highcharts chart. Provides basic rendering / lifecycle management

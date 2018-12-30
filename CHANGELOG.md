@@ -17,6 +17,7 @@
   * `HoistInput` has been moved into the `input` package to clarify that these are lower level controls and independent
   of the Forms package.
   * `RestGrid` now supports a `mask` prop.  RestGrid loading is now masked by default.   
+  * `Chart` component now supports a built-in zoomout gesture:  Drag right-to-left on charts with x-axis zooming.
 
 ### 💥 Breaking Changes
 * Major changes to Form (see above).  `HoistInput` imports will also need to be adjusted to move from `form` to `input`.

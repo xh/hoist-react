@@ -1,13 +1,20 @@
-/**
- * Highcharts "plugin" to transform the "select right-to-left" gesture into "zoom out" for charts with x-axis zooming.
- * The new gesture can be used in place of the default "reset zoom" button.
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-export function zoomout(Highcharts) {
+
+/**
+ * Transform the "select right-to-left" gesture into "zoom out" for charts with x-axis zooming.
+ * Gesture can be used in place of the default "reset zoom" button.
+ */
+export function installZoomoutGesture(Highcharts) {
     Highcharts.wrap(Highcharts.Chart.prototype, 'init', function(proceed) {
         proceed.apply(this, Array.prototype.slice.call(arguments, 1));
 
-        const container = this.container;
+        const {container} = this;
 
         if (this.options.chart.zoomType != 'x') return;
 
