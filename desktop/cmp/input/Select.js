@@ -9,7 +9,7 @@ import React from 'react';
 import PT from 'prop-types';
 import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {castArray, isEmpty, isPlainObject, keyBy, find, assign} from 'lodash';
-import {observable, action} from '@xh/hoist/mobx';
+import {observable, action, bindable} from '@xh/hoist/mobx';
 import {box, hbox, div, span} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {HoistInput} from '@xh/hoist/cmp/input';
@@ -125,6 +125,9 @@ export class Select extends HoistInput {
     @observable.ref internalOptions = [];
     @action setInternalOptions(options) {this.internalOptions = options}
 
+    @bindable inputValue = null;
+    @bindable controlShouldRenderValue = null;
+
     // Prop flags that switch core behavior.
     get asyncMode() {return !!this.props.queryFn}
     get creatableMode() {return !!this.props.enableCreate}
@@ -132,6 +135,7 @@ export class Select extends HoistInput {
 
     constructor(props) {
         super(props);
+
         this.addReaction({
             track: () => this.props.options,
             run: (opts) => {
@@ -140,6 +144,9 @@ export class Select extends HoistInput {
             },
             fireImmediately: true
         });
+        // this.inputValue = props.model.initialValue ?
+        //     this.findOption(props.model.initialValue).label : '';
+        this.controlShouldRenderValue = true;
     }
 
     reactSelectRef = React.createRef();
@@ -169,17 +176,24 @@ export class Select extends HoistInput {
 
                 onBlur: this.onBlur,
                 onChange: this.onSelectChange,
-                onFocus: this.onFocus,
 
                 ref: this.reactSelectRef
             };
 
+        const enableFilter = withDefault(props.enableFilter, true);
+        if (enableFilter && !props.enableMulti) {
+            rsProps.inputValue = this.inputValue || '';
+            rsProps.controlShouldRenderValue = this.controlShouldRenderValue;
+            rsProps.onInputChange = this.onInputChange;
+        }
+
         if (this.asyncMode) {
             rsProps.loadOptions = this.doQueryAsync;
             rsProps.loadingMessage = this.loadingMessageFn;
+            if (this.renderValue) rsProps.defaultOptions = [this.renderValue]
         } else {
             rsProps.options = this.internalOptions;
-            rsProps.isSearchable = withDefault(props.enableFilter, true);
+            rsProps.isSearchable = enableFilter;
         }
 
         if (this.creatableMode) {
@@ -191,7 +205,6 @@ export class Select extends HoistInput {
             (this.creatableMode ? reactCreatableSelect : reactSelect);
 
         assign(rsProps, props.rsOptions);
-
         return box({
             item: factory(rsProps),
             className: this.getClassName(),
@@ -212,7 +225,18 @@ export class Select extends HoistInput {
     // Options / value handling
     //-------------------------
     onSelectChange = (opt) => {
+        this.setInputValue(opt.label);
+
         this.noteValueChange(opt);
+    }
+
+    onInputChange = (input, {action}) => {
+        if (action === 'input-change') {
+            this.setInputValue(input);
+            this.setControlShouldRenderValue(false)
+        } else if (this.renderValue) {
+            this.setInputValue(this.renderValue.label);
+        }
     }
 
     // Convert external value into option object(s). Options created if missing - this takes the
@@ -270,6 +294,7 @@ export class Select extends HoistInput {
     // Async
     //------------------------
     doQueryAsync = (query) => {
+        console.log(query)
         return this.props
             .queryFn(query)
             .then(matchOpts => {

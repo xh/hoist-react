@@ -44,6 +44,12 @@
 
       .xh-grid-header-menu-icon {
         cursor: pointer;
+        svg {
+          visibility: hidden;
+        }
+        &:hover svg {
+          visibility: visible;
+        }
       }
     }
   }

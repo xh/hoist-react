@@ -45,6 +45,13 @@
       }
     }
 
+    &__value-container input {
+      opacity: 1 !important;
+      max-width: 150px;
+      text-overflow: ellipsis;
+    }
+
+
     &__indicator {
       padding: 0 var(--xh-pad-half-px);
       color: var(--xh-border-color);
