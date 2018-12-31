@@ -58,6 +58,7 @@ export class ColumnHeader extends Component {
         this.xhColumn = xhColumn;
         this.agColumn = column;
         this.colId = column.colId;
+        this.isFiltered = column.isFilterActive();
         column.addEventListener('filterChanged', () => this.onFilterChanged());
     }
 

@@ -184,7 +184,7 @@ export class FormModel {
     /**
      * True if any fields have been changed since last reset/initialization.
      */
-    isDirty() {
+    get isDirty() {
         return this.members.some(m => m.isDirty);
     }
 

@@ -170,6 +170,7 @@ export class Grid extends Component {
             overlayNoRowsTemplate: model.emptyText || '<span></span>',
             onRowClicked: props.onRowClicked,
             onRowDoubleClicked: props.onRowDoubleClicked,
+            onRowGroupOpened: this.onRowGroupOpened,
             onGridReady: this.onGridReady,
             onSelectionChanged: this.onSelectionChanged,
             onGridSizeChanged: this.onGridSizeChanged,
@@ -488,6 +489,10 @@ export class Grid extends Component {
         if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
             this.model.setGroupBy(ev.columnApi.getRowGroupColumns().map(it => it.colId));
         }
+    };
+
+    onRowGroupOpened = () => {
+        this.model.agApi.sizeColumnsToFit();
     };
 
     // Catches column visibility changes triggered from ag-grid ui components

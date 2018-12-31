@@ -271,6 +271,7 @@ export class GridModel {
         const {agApi} = this;
         if (agApi) {
             agApi.expandAll();
+            agApi.sizeColumnsToFit();
         }
     }
 
@@ -279,6 +280,7 @@ export class GridModel {
         const {agApi} = this;
         if (agApi) {
             agApi.collapseAll();
+            agApi.sizeColumnsToFit();
         }
     }
 
