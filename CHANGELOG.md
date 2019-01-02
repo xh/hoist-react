@@ -18,6 +18,7 @@
   of the Forms package.
   * `RestGrid` now supports a `mask` prop.  RestGrid loading is now masked by default.   
   * `Chart` component now supports a built-in zoomout gesture:  Drag right-to-left on charts with x-axis zooming.
+  * `Select` now supports an `enableClear` prop to control the presence of a clear button. Defaults to false.
 
 ### 💥 Breaking Changes
 * Major changes to Form (see above).  `HoistInput` imports will also need to be adjusted to move from `form` to `input`.
