@@ -29,7 +29,7 @@ export class FieldModel {
     /** @member {*} initial value of this field. */
     initialValue;
     /** @member {*} value of this field. */
-    @bindable value;
+    @observable.ref value;
     /** @member {string} user visible name for a field.  For use in validation messages and form labelling. */
     @observable displayName;
     /** @member {boolean}.  True to disable input on this field.*/
@@ -95,6 +95,11 @@ export class FieldModel {
         this.addAutorun(() => {
             if (this.isDirty) this.displayValidation();
         });
+    }
+
+    @action
+    setValue(v) {
+        this.value = v;
     }
 
 
