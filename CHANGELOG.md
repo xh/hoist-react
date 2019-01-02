@@ -22,6 +22,8 @@
 
 ### 💥 Breaking Changes
 * Major changes to Form (see above).  `HoistInput` imports will also need to be adjusted to move from `form` to `input`.
+* A `Select` input  with `enableMulti = true` will no longer show a clear affordance by default.  Use the `enableClear` 
+prop instead. 
 
 ## v17.0.0 
 
