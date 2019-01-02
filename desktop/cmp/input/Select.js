@@ -81,6 +81,11 @@ export class Select extends HoistInput {
         openMenuOnFocus: PT.bool,
 
         /**
+         * True to show a "clear" button at the right of the control.  Defaults to false.
+         */
+        enableClear: PT.bool,
+
+        /**
          * Preset list of options for selection. Objects must contain a `value` property; a `label`
          * property will be used for the default display of each option. Other types will be taken
          * as their value directly and displayed via toString().  See also `queryFn` to  supply
@@ -160,6 +165,7 @@ export class Select extends HoistInput {
                 formatOptionLabel: this.formatOptionLabel,
                 isDisabled: props.disabled,
                 isMulti: props.enableMulti,
+                isClearable: withDefault(props.enableClear, true),
                 menuPlacement: withDefault(props.menuPlacement, 'auto'),
                 noOptionsMessage: this.noOptionsMessageFn,
                 openMenuOnFocus: props.openMenuOnFocus,
@@ -190,7 +196,7 @@ export class Select extends HoistInput {
         if (this.asyncMode) {
             rsProps.loadOptions = this.doQueryAsync;
             rsProps.loadingMessage = this.loadingMessageFn;
-            if (this.renderValue) rsProps.defaultOptions = [this.renderValue]
+            if (this.renderValue) rsProps.defaultOptions = [this.renderValue];
         } else {
             rsProps.options = this.internalOptions;
             rsProps.isSearchable = enableFilter;
@@ -225,15 +231,15 @@ export class Select extends HoistInput {
     // Options / value handling
     //-------------------------
     onSelectChange = (opt) => {
-        this.setInputValue(opt.label);
-
+        this.setInputValue(opt ? opt.label : null);
         this.noteValueChange(opt);
     }
 
     onInputChange = (input, {action}) => {
         if (action === 'input-change') {
             this.setInputValue(input);
-            this.setControlShouldRenderValue(false)
+            this.setControlShouldRenderValue(false);
+            if (!input) this.noteValueChange(null);
         } else if (this.renderValue) {
             this.setInputValue(this.renderValue.label);
         }
@@ -294,7 +300,6 @@ export class Select extends HoistInput {
     // Async
     //------------------------
     doQueryAsync = (query) => {
-        console.log(query)
         return this.props
             .queryFn(query)
             .then(matchOpts => {

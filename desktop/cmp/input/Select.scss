@@ -10,13 +10,14 @@
 
   // Outer div of the actual react-select control, causing it to fill its box.
   > div {
-    flex: 1;
+    width: 100%;
   }
 
   color: var(--xh-input-text-color);
 
   // This ".xh-select" is the prefix for nested BEM values below, not itself a level of nesting.
   .xh-select {
+
     &__control {
       background: var(--xh-input-bg);
       border: none;
@@ -47,7 +48,6 @@
 
     &__value-container input {
       opacity: 1 !important;
-      max-width: 150px;
       text-overflow: ellipsis;
     }
 
