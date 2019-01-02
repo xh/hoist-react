@@ -177,20 +177,19 @@ export class FieldModel {
     }
     
     /**
-     * Return a resolved validation state of the field, waiting for any pending
-     * validations to complete, if necessary.
+     * Recompute all validations and return true if the field is valid.
      *
      * @param {Object} [c]
      * @param {boolean] [c.display] - true to activate validation display
      *      for the field after validation has been peformed.
      *
-     * @returns {Promise<String>} - the validation state of the object.
+     * @returns {Promise<boolean>} - the validation state of the object.
      */
     @action
     async validateAsync({display = true} = {}) {
         await this.computeValidationAsync();
         if (display) this.displayValidation();
-        return this.validationState;
+        return this.isValid;
     }
 
     //------------------------------
