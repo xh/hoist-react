@@ -1,0 +1,25 @@
+.xh-file-chooser {
+
+  &__target {
+    margin: var(--xh-pad-px);
+    padding: var(--xh-pad-px);
+    border: var(--xh-border-dotted);
+
+    flex: auto;
+
+    &--withGrid {
+      flex: unset;
+      width: 180px;
+    }
+
+    &--active {
+      border-color: var(--xh-green);
+    }
+  }
+
+  &__grid {
+    flex: 1;
+    border-left: var(--xh-border-solid);
+  }
+
+}
