@@ -37,7 +37,7 @@
     }
 
     &__placeholder {
-      color: rgb(175, 183, 191);
+      color: var(--xh-input-placeholder-text-color);
     }
 
     &__single-value,

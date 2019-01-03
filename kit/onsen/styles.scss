@@ -26,7 +26,7 @@
     text-align: inherit;
 
     &::placeholder {
-      color: rgb(175, 183, 191);
+      color: var(--xh-input-placeholder-text-color);
     }
   }
 

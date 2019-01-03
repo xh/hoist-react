@@ -24,7 +24,7 @@ body.xh-app {
   }
 
   ::-webkit-input-placeholder {
-    color: rgb(175, 183, 191);
+    color: var(--xh-input-placeholder-text-color);
   }
 
   ::-webkit-scrollbar-corner {
