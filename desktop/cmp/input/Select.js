@@ -80,6 +80,9 @@ export class Select extends HoistInput {
         /** True to auto-open the dropdown menu on input focus. */
         openMenuOnFocus: PT.bool,
 
+        /** Callback to execute on input focus */
+        onFocus: PT.func,
+
         /**
          * True to show a "clear" button at the right of the control.  Defaults to false.
          */
@@ -182,15 +185,16 @@ export class Select extends HoistInput {
 
                 onBlur: this.onBlur,
                 onChange: this.onSelectChange,
+                onFocus: this.onFocus,
 
                 ref: this.reactSelectRef
             };
 
-        const enableFilter = withDefault(props.enableFilter, true);
-        if (enableFilter && !props.enableMulti) {
+        if (this.isTextEditable) {
             rsProps.inputValue = this.inputValue || '';
             rsProps.controlShouldRenderValue = this.controlShouldRenderValue;
             rsProps.onInputChange = this.onInputChange;
+            rsProps.escapeClearsValue = true;
         }
 
         if (this.asyncMode) {
@@ -199,7 +203,7 @@ export class Select extends HoistInput {
             if (this.renderValue) rsProps.defaultOptions = [this.renderValue];
         } else {
             rsProps.options = this.internalOptions;
-            rsProps.isSearchable = enableFilter;
+            rsProps.isSearchable = withDefault(props.enableFilter, true);
         }
 
         if (this.creatableMode) {
@@ -227,23 +231,45 @@ export class Select extends HoistInput {
         });
     }
 
-    //-------------------------
-    // Options / value handling
-    //-------------------------
+
     onSelectChange = (opt) => {
         this.setInputValue(opt ? opt.label : null);
         this.noteValueChange(opt);
     }
 
+    //-------------------------
+    // Text input handling
+    //-------------------------
+
+    get isTextEditable() {
+        const {props} = this;
+        return withDefault(props.enableFilter, true) && !props.enableMulti;
+    }
+
     onInputChange = (input, {action}) => {
-        if (action === 'input-change') {
-            this.setInputValue(input);
-            this.setControlShouldRenderValue(false);
-            if (!input) this.noteValueChange(null);
-        } else if (this.renderValue) {
-            this.setInputValue(this.renderValue.label);
+        switch (action) {
+            case 'input-change':
+                this.setInputValue(input);
+                this.setControlShouldRenderValue(false);
+                if (!input) this.noteValueChange(null);
+                break;
+            case 'input-blur':
+                this.setInputValue(null);
+                this.setControlShouldRenderValue(true);
         }
     }
+
+    onFocus = () => {
+        if (this.isTextEditable) {
+            if (this.renderValue) this.setInputValue(this.renderValue.label);
+            this.setControlShouldRenderValue(false);
+        }
+        if (this.props.onFocus) this.props.onFocus();
+    }
+
+    //-------------------------
+    // Options / value handling
+    //-------------------------
 
     // Convert external value into option object(s). Options created if missing - this takes the
     // external value from the model, and we will respect that even if we don't know about it.
