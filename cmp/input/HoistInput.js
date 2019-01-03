@@ -33,7 +33,7 @@ import './HoistInput.scss';
  * as it is updated.  They also introduce the notion of "committing" a field to the model when the
  * user has completed a discrete act of data entry. This will vary by field but is commonly marked
  * by the user blurring the field, selecting a record from a combo, or pressing the <enter> key.
- * At this time, and specified `onCommit` callback prop will be called and the value will be flushed
+ * At this time, any specified `onCommit` callback prop will be called and the value will be flushed
  * back to any bound model.
  *
  * For many fields (e.g. checkbox, select, switchInput, slider) commit always fires at the same time
@@ -164,10 +164,11 @@ export class HoistInput extends Component {
      * This is the primary method for HoistInput implementations to call on value change.
      */
     noteValueChange(val) {
-        const {onChange} = this.props;
+        const {onChange} = this.props,
+            oldVal = this.internalValue;
 
         this.setInternalValue(val);
-        if (onChange) onChange(this.toExternal(val));
+        if (onChange) onChange(this.toExternal(val), this.toExternal(oldVal));
         if (this.commitOnChange) this.doCommitInternal();
     }
 
@@ -194,10 +195,10 @@ export class HoistInput extends Component {
 
     doCommitInternal() {
         const {onCommit, model, field} = this.props;
-        let externalValue = this.externalValue,
+        let currentValue = this.externalValue,
             newValue = this.toExternal(this.internalValue);
 
-        if (isEqual(newValue, externalValue)) return;
+        if (isEqual(newValue, currentValue)) return;
 
         if (model && field) {
             const setterName = `set${upperFirst(field)}`;
@@ -207,7 +208,7 @@ export class HoistInput extends Component {
             newValue = this.externalValue; // Re-read effective value after set in case model setter had an opinion
         }
 
-        if (onCommit) onCommit(newValue);
+        if (onCommit) onCommit(newValue, currentValue);
     }
 
 
