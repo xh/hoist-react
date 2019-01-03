@@ -14,8 +14,11 @@ import {actionColPad} from './Actions.scss';
 /**
  * A column definition partial for adding an "action column" to a grid. An action column displays
  * one or more record-aware buttons within a button group, providing the user with an easy
- * way to perform push-button operations on a given record. See the related classes for details on
- * how to prepare and fire these actions.
+ * way to perform push-button operations on a given record.
+ *
+ * Configure the actions to display within your column by layering on an `actions` array of config
+ * objects with the partial below. See the related classes for full details on how to configure,
+ * prepare, and handle these actions.
  *
  * Note that an action column can be configured with `actionsShowOnHoverOnly: true` to hide the
  * buttons for all rows except the currently hovered row. This can be a used to avoid overloading
