@@ -156,7 +156,8 @@ export class Select extends HoistInput {
                 formatOptionLabel: this.formatOptionLabel,
                 isDisabled: props.disabled,
                 isMulti: props.enableMulti,
-                isClearable: props.enableClear,
+                // Explicit false ensures consistent default for single and multi-value instances.
+                isClearable: withDefault(props.enableClear, false),
                 menuPlacement: withDefault(props.menuPlacement, 'auto'),
                 noOptionsMessage: this.noOptionsMessageFn,
                 openMenuOnFocus: props.openMenuOnFocus,
