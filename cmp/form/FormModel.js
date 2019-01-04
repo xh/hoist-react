@@ -156,19 +156,18 @@ export class FormModel {
     }
 
     /**
-     * Return a resolved validation state of the form, waiting for any pending
-     * validations to complete, if necessary.
+     * Recompute all validations and return true if the form is valid.
      *
      * @param {Object} [c]
      * @param {boolean] [c.display] - true to activate validation display
      *      for the form after validation has been peformed.
      *
-     * @returns {Promise<ValidationState>}
+     * @returns {Promise<boolean>}
      */
     async validateAsync({display = true} = {}) {
         const promises = this.members.map(m => m.validateAsync({display}));
         await Promise.all(promises);
-        return this.validationState;
+        return this.isValid;
     }
 
     /**

@@ -23,6 +23,10 @@ body.xh-app {
     height: 10px;
   }
 
+  ::-webkit-input-placeholder {
+    color: var(--xh-input-placeholder-text-color);
+  }
+
   ::-webkit-scrollbar-corner {
     background-color: var(--xh-scrollbar-bg);
   }

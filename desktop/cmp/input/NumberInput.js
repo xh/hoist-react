@@ -136,8 +136,8 @@ export class NumberInput extends HoistInput {
         this.noteValueChange(valAsString);
     }
 
-    toExternal() {
-        const val = this.parseValue(this.internalValue);
+    toExternal(val) {
+        val = this.parseValue(val);
         return isNaN(val) ? null : val;
     }
 

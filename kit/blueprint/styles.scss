@@ -101,6 +101,10 @@
       margin-right: var(--xh-pad-px);
     }
   }
+
+  .bp3-dialog-body {
+    word-break: break-all;
+  }
 }
 
 .bp3-dialog-container {
@@ -172,6 +176,10 @@
   }
   &.bp3-intent-warning {
     background-color: var(--xh-intent-warning);
+  }
+
+  .bp3-toast-message {
+    word-break: break-all;
   }
 }
 

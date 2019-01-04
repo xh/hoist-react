@@ -6,10 +6,9 @@
  */
 
 import {HoistModel} from '@xh/hoist/core';
-import {observable, bindable} from '@xh/hoist/mobx';
+import {observable, action, computed} from '@xh/hoist/mobx';
 import {flatten, isEmpty, startCase, partition, isFunction} from 'lodash';
 import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
-import {action, computed} from '@xh/hoist/mobx';
 
 import {ValidationState} from './validation/ValidationState';
 import {Rule} from './validation/Rule';
@@ -29,7 +28,7 @@ export class FieldModel {
     /** @member {*} initial value of this field. */
     initialValue;
     /** @member {*} value of this field. */
-    @bindable value;
+    @observable.ref value;
     /** @member {string} user visible name for a field.  For use in validation messages and form labelling. */
     @observable displayName;
     /** @member {boolean}.  True to disable input on this field.*/
@@ -95,6 +94,11 @@ export class FieldModel {
         this.addAutorun(() => {
             if (this.isDirty) this.displayValidation();
         });
+    }
+
+    @action
+    setValue(v) {
+        this.value = v;
     }
 
 
@@ -173,20 +177,19 @@ export class FieldModel {
     }
     
     /**
-     * Return a resolved validation state of the field, waiting for any pending
-     * validations to complete, if necessary.
+     * Recompute all validations and return true if the field is valid.
      *
      * @param {Object} [c]
      * @param {boolean] [c.display] - true to activate validation display
      *      for the field after validation has been peformed.
      *
-     * @returns {Promise<String>} - the validation state of the object.
+     * @returns {Promise<boolean>} - the validation state of the object.
      */
     @action
     async validateAsync({display = true} = {}) {
         await this.computeValidationAsync();
         if (display) this.displayValidation();
-        return this.validationState;
+        return this.isValid;
     }
 
     //------------------------------
