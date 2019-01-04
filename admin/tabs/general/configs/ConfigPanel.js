@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {XH, HoistComponent} from '@xh/hoist/core';
 import {fragment} from '@xh/hoist/cmp/layout';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
-import {boolCheckCol} from '@xh/hoist/cmp/grid/columns';
+import {boolCheckCol} from '@xh/hoist/cmp/grid';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 

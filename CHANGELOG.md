@@ -2,6 +2,12 @@
 
 ## v19.0.0-SNAPSHOT (in development / unreleased)
 
+### 💥 Breaking Changes
+
+* Column definitions are exported from the `grid` package. To update from prior Hoist versions:
+    * Replace imports from '@xh/hoist/cmp/grid/columns' with '@xh/hoist/cmp/grid'
+    * Replace imports from '@xh/hoist/desktop/cmp/columns' with '@xh/hoist/desktop/cmp/grid'
+
 ## v18.0.0-rcx
 
 ### 🎁 New Features
