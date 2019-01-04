@@ -124,6 +124,7 @@ body {
   --xh-input-disabled-bg: var(--form-field-disabled-bg, rgba(206, 217, 224, 0.5));  // This and below currently matched from Blueprint defaults
   --xh-input-disabled-text-color: var(--form-field-disabled-text-color, rgba(92, 112, 128, 0.5));
   --xh-input-text-color: var(--input-text-color, var(--xh-text-color));
+  --xh-input-placeholder-text-color: var(--input-placeholder-color, rgb(175, 183, 191));
 
   // Form fields
   --xh-form-field-box-shadow-color-top: var(--form-field-box-shadow-color-top, #{mc-trans('blue-grey', '100', 0.15)});
