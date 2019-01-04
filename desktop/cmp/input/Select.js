@@ -80,9 +80,7 @@ export class Select extends HoistInput {
         /** True to auto-open the dropdown menu on input focus. */
         openMenuOnFocus: PT.bool,
 
-        /**
-         * True to show a "clear" button at the right of the control.  Defaults to false.
-         */
+        /** True to show a "clear" button at the right of the control.  Defaults to false. */
         enableClear: PT.bool,
 
         /**
