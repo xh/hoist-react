@@ -2,6 +2,10 @@
 
 ## v19.0.0-SNAPSHOT (in development / unreleased)
 
+### 🎁 New Features
+
+* `Grid` components take `onCellClicked` and `onCellDoubleClicked` event handlers
+
 ## v18.0.0-rcx (release candidate)
 
 ### 🎁 New Features
