@@ -57,7 +57,7 @@ export class Grid extends Component {
         onKeyDown: PT.func,
 
         /**
-         * Callback to call when a row is double clicked. Function will receive an event
+         * Callback to call when a row is clicked. Function will receive an event
          * with a data node containing the row's data.
          */
         onRowClicked: PT.func,
@@ -67,6 +67,18 @@ export class Grid extends Component {
          * with a data node containing the row's data.
          */
         onRowDoubleClicked: PT.func,
+
+        /**
+         * Callback to call when a cell is clicked. Function will receive an event
+         * with a data node, cell value, and column.
+         */
+        onCellClicked: PT.func,
+
+        /**
+         * Callback to call when a cell is double clicked. Function will receive an event
+         * with a data node, cell value, and column.
+         */
+        onCellDoubleClicked: PT.func,
 
         /**
          * Show a colored row background on hover. Defaults to false.
@@ -170,6 +182,8 @@ export class Grid extends Component {
             overlayNoRowsTemplate: model.emptyText || '<span></span>',
             onRowClicked: props.onRowClicked,
             onRowDoubleClicked: props.onRowDoubleClicked,
+            onCellClicked: props.onCellClicked,
+            onCellDoubleClicked: props.onCellDoubleClicked,
             onRowGroupOpened: this.onRowGroupOpened,
             onGridReady: this.onGridReady,
             onSelectionChanged: this.onSelectionChanged,
