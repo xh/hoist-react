@@ -7,7 +7,7 @@
 import React, {Component} from 'react';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {withDefault} from '@xh/hoist/utils/js';
-import {box} from '@xh/hoist/cmp/layout';
+import {frame} from '@xh/hoist/cmp/layout';
 import {FormModel} from './FormModel';
 import PT from 'prop-types';
 
@@ -36,7 +36,7 @@ export class Form extends Component {
 
 
     render() {
-        return box({
+        return frame({
             ...this.getLayoutProps(),
             item: formContextProvider({
                 value: this,
