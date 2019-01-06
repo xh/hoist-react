@@ -24,15 +24,10 @@ import {find} from 'lodash';
 @HoistModel
 export class FormModel {
 
-    name = null
-
     @observable.ref
     fields = [];
 
     parent = null;
-
-    @observable.ref
-    children = [];
 
     /**
      *  @member {Object} -- proxy for accessing all of the current data values
@@ -46,18 +41,10 @@ export class FormModel {
      * @param {string} [name] - name of this form.  This will be the unique id of
      *      this form in its parent.
      * @param {FieldModel[]} [fields] - all fields in this model.
-     * @param {FormModel[]} [children] - all children (sub-forms) in this model.
      */
-    constructor({name = 'form', fields = [], children = []} = {}) {
+    constructor({fields = []} = {}) {
         this.dataProxy = this.createDataProxy();
         fields.forEach(it => this.addField(it));
-        children.forEach(it => this.addChild(it));
-    }
-
-    @computed
-    /** All children and fields in this form. */
-    get members() {
-        return [...this.fields, ...this.children];
     }
 
     /**
@@ -66,8 +53,8 @@ export class FormModel {
      */
     getData() {
         const ret = {};
-        this.members.forEach(m => {
-            ret[m.name] = m instanceof FieldModel ? m.value : m.getData();
+        this.fields.forEach(m => {
+            ret[m.name] = m.getData();
         });
         return ret;
     }
@@ -83,31 +70,15 @@ export class FormModel {
         this.fields = [...this.fields, field];
     }
 
-    @action
-    addChild(child) {
-        child = child instanceof FormModel ? child : new FormModel(child);
-        throwIf(this.getMember(child.name), `Form already has member with name ${name}`);
-        child.parent = this;
-        this.children = [...this.children, child];
-    }
-
-    getMember(name) {
-        return find(this.members, {name});
-    }
-
     getField(name) {
         return find(this.fields, {name});
-    }
-
-    getChild(name) {
-        return find(this.children, {name});
     }
 
     /**
      * Reset fields to initial values and reset validation.
      */
     reset() {
-        this.members.forEach(m => m.reset());
+        this.fields.forEach(m => m.reset());
     }
 
     /**
@@ -120,7 +91,7 @@ export class FormModel {
      * into the form for editing.
      */
     init(initialValues = {}) {
-        this.members.forEach(m => m.init(initialValues[m.name]));
+        this.fields.forEach(m => m.init(initialValues[m.name]));
     }
 
     //--------------------------
@@ -130,7 +101,7 @@ export class FormModel {
     @computed
     get validationState() {
         const VS = ValidationState,
-            states = this.members.map(m => m.validationState);
+            states = this.fields.map(m => m.validationState);
         if (states.includes(VS.NotValid)) return VS.NotValid;
         if (states.includes(VS.Unknown)) return VS.Unknown;
         return VS.Valid;
@@ -142,7 +113,7 @@ export class FormModel {
      */
     @computed
     get isValidationPending() {
-        return this.members.some(m => m.isValidationPending);
+        return this.fields.some(m => m.isValidationPending);
     }
 
     /** True if all fields are valid. */
@@ -166,7 +137,7 @@ export class FormModel {
      * @returns {Promise<ValidationState>}
      */
     async validateAsync({display = true} = {}) {
-        const promises = this.members.map(m => m.validateAsync({display}));
+        const promises = this.fields.map(m => m.validateAsync({display}));
         await Promise.all(promises);
         return this.validationState;
     }
@@ -175,7 +146,7 @@ export class FormModel {
      * Activate Display of all fields.
      */
     displayValidation() {
-        this.members.forEach(m => m.displayValidation());
+        this.fields.forEach(m => m.displayValidation());
     }
 
     //----------------------------
@@ -185,7 +156,7 @@ export class FormModel {
      * True if any fields have been changed since last reset/initialization.
      */
     get isDirty() {
-        return this.members.some(m => m.isDirty);
+        return this.fields.some(m => m.isDirty);
     }
 
     //---------------------------
@@ -198,10 +169,7 @@ export class FormModel {
             get(target, name, receiver) {
 
                 const field = me.getField(name);
-                if (field) return field.value;
-
-                const child = me.getChild(name);
-                if (child) return child.dataProxy;
+                if (field) return field.dataProxy;
 
                 const parent = (name === 'parent' ? me.parent : null);
                 if (parent) return parent.dataProxy;
@@ -212,6 +180,6 @@ export class FormModel {
     }
 
     destroy() {
-        XH.safeDestroy(this.members);
+        XH.safeDestroy(this.fields);
     }
 }

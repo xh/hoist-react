@@ -19,7 +19,7 @@ import {Rule} from './validation/Rule';
  * A data field in a Form.
  */
 @HoistModel
-export class FieldModel {
+export class BaseFieldModel {
 
     /** @member {FormModel} owning field */
     _formModel;
@@ -32,10 +32,6 @@ export class FieldModel {
     @bindable value;
     /** @member {string} user visible name for a field.  For use in validation messages and form labelling. */
     @observable displayName;
-    /** @member {boolean}.  True to disable input on this field.*/
-    @observable disabled;
-    /** @member {boolean}.  True to make this field read-only.*/
-    @observable readonly;
     /** @member {Rule[]} list of validation rules to apply to this field. */
     @observable.ref rules = [];
     /** @member {String[]} list of validation errors.  Null if the validity state not computed. */
@@ -55,8 +51,7 @@ export class FieldModel {
      * @param {Object} cfg
      * @param {string} cfg.name
      * @param {string} [cfg.displayName]
-     * @param {boolean} [cfg.readonly]
-     * @param {boolean} [cfg.disabled]
+     * @param {string} [cfg.initialValue]
      * @param {(Rule|Object|Function)} [cfg.rules] -
      *      Rules, rule configurations, or validation functions to create rules.
      *      (All validation functions supplied will be combined in to a single rule)
@@ -65,16 +60,12 @@ export class FieldModel {
         name,
         displayName = startCase(name),
         initialValue = null,
-        disabled = false,
-        readonly = false,
-        rules = []
+        rules = [],
     }) {
         this.name = name;
         this.displayName = displayName;
         this.value = initialValue;
         this.initialValue = initialValue;
-        this.disabled = disabled;
-        this.readonly = readonly;
         this.rules = this.processRuleSpecs(rules);
     }
 
@@ -97,6 +88,9 @@ export class FieldModel {
         });
     }
 
+    get dataProxy() {
+        return value;
+    }
 
     //-----------------------------
     // Accessors and lifecycle
@@ -186,7 +180,7 @@ export class FieldModel {
     async validateAsync({display = true} = {}) {
         await this.computeValidationAsync();
         if (display) this.displayValidation();
-        return this.validationState;
+        return this.isValid;
     }
 
     //------------------------------
