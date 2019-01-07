@@ -6,11 +6,12 @@
  */
 
 import {XH, HoistModel} from '@xh/hoist/core';
-import {FieldModel} from '@xh/hoist/cmp/form/FieldModel';
 import {observable, computed, action} from '@xh/hoist/mobx';
-import {ValidationState} from './validation/ValidationState';
 import {throwIf} from '@xh/hoist/utils/js';
 import {find} from 'lodash';
+
+import {ValidationState} from './validation/ValidationState';
+import {FieldModel} from './field/FieldModel';
 
 /**
  * Backing model for a Form.
@@ -24,8 +25,7 @@ import {find} from 'lodash';
 @HoistModel
 export class FormModel {
 
-    @observable.ref
-    fields = [];
+    @observable.ref fields = [];
 
     parent = null;
 
@@ -34,7 +34,7 @@ export class FormModel {
      *  in this form, and related forms.  Passed to validation rules to facilitate
      *  observable cross-field validation.
      */
-    dataProxy;
+    dataProxy = this.createDataProxy();
 
     /**
      *
@@ -43,7 +43,6 @@ export class FormModel {
      * @param {FieldModel[]} [fields] - all fields in this model.
      */
     constructor({fields = []} = {}) {
-        this.dataProxy = this.createDataProxy();
         fields.forEach(it => this.addField(it));
     }
 
@@ -64,8 +63,10 @@ export class FormModel {
     //----------------------------
     @action
     addField(field) {
-        field = field instanceof FieldModel ? field : new FieldModel(field);
-        throwIf(this.getMember(field.name), `Form already has member with name ${name}`);
+        if (!(field instanceof FieldModel)) {
+            field = (field.type == 'subform' ? new SubformFieldModel(field) : new FieldModel(field));
+        }
+        throwIf(this.getField(field.name), `Form already has member with name ${name}`);
         field.formModel = this;
         this.fields = [...this.fields, field];
     }
@@ -127,6 +128,13 @@ export class FormModel {
     }
 
     /**
+     * List of all validation errors for this form
+     */
+    get allErrors() {
+        return this.fields ? flatMap(fields , s => s.allErrors) : []
+    }
+
+    /**
      * Recompute all validations and return true if the form is valid.
      *
      * @param {Object} [c]
@@ -163,7 +171,6 @@ export class FormModel {
     //---------------------------
     createDataProxy() {
         const me = this;
-
         return new Proxy({}, {
             get(target, name, receiver) {
 

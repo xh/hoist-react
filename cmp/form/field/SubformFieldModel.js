@@ -5,21 +5,29 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel} from '@xh/hoist/core';
-import {observable, bindable} from '@xh/hoist/mobx';
-import {flatten, isEmpty, startCase, partition, isFunction} from 'lodash';
-import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
+import {HoistModel, XH} from '@xh/hoist/core';
+import {isArray, isNumber} from 'lodash';
 import {action, computed} from '@xh/hoist/mobx';
+import {throwIf} from '@xh/hoist/utils/js';
 
-import {ValidationState} from './validation/ValidationState';
-import {Rule} from './validation/Rule';
+import {FieldModel} from './FieldModel';
+import {ValidationState} from '../validation/ValidationState';
 
 /**
  *
- * A data field in a Form containing a collection of sub-forms.
+ * A data field in a form whose value is a collection of FormModels (subforms).
+ *
+ * Applications should populate the contents of this collection by setting the
+ * value property of this object to an array of FormModels.  Applications should *not* modify
+ * the existing value property.
+ *
+ * Validation rules for the entire collection may be specified as for any field, but
+ * validations on the subform will also bubble up to this field, effecting its overall validation
+ * state.
  */
-@HoistModel
-export class SubFormFieldModel extends BaseFieldModel {
+export class SubformFieldModel extends FieldModel {
+
+    dataProxy = this.createDataProxy();
 
     get subforms() {
         return this.value || [];
@@ -28,34 +36,59 @@ export class SubFormFieldModel extends BaseFieldModel {
     //-----------------------------
     // Overrides
     //-----------------------------
+    @action
+    setValue(v) {
+        throwIf(v && (!isArray(v) || v.any(s => !(s instanceof FormModel))), "Subform field must contain forms.");
+        super.setValue(v);
+        this.subforms.forEach(s => s.parent = this.formModel);
+    }
+
+    set formModel(formModel) {
+        super.formModel = formModel;
+        this.subforms.forEach(s => s.parent = formModel);
+    }
+
+    @computed
+    get allErrors() {
+        const {errors} = this,
+            subErrs = flatMap(this.subforms, s => s.allErrors);
+        return errors ? [...errors, subErrs] : subErrs;
+    }
+
+    @action
     reset() {
         super.reset();
-        subforms.forEach(s => s.reset());
+        this.subforms.forEach(s => s.reset());
     }
 
+    @action
     displayValidation() {
         super.displayValidation();
-        subforms.forEach(s => s.displayValidation());
+        this.subforms.forEach(s => s.displayValidation());
     }
 
+    @computed
     get validationState() {
         const VS = ValidationState,
             states = this.subforms.map(s => s.validationState);
-        state.push(super.validationState);
+        states.push(super.validationState);
 
         if (states.includes(VS.NotValid)) return VS.NotValid;
         if (states.includes(VS.Unknown))  return VS.Unknown;
         return VS.Valid;
     }
 
+    @computed
     get isValidationPending() {
         return this.subforms.any(m => m.isValidationPending) || super.isValidationPending;
     }
 
+    @computed
     get isDirty() {
         return this.subforms.any(s => s.isDirty) || super.isDirty;
     }
 
+    @action
     async validateAsync({display = true} = {}) {
         const promises = this.subforms.map(m => m.validateAsync({display}));
         promises.push(super.validateAsync({display}));
@@ -63,27 +96,13 @@ export class SubFormFieldModel extends BaseFieldModel {
         return this.isValid;
     }
 
-
-    //--------------------------
-    // Implementation
-    //-------------------------
-    async computeValidationAsync() {
-        const runId = ++this._validationRunId;
-        return this
-            .evaluateAsync(this.rules)
-            .thenAction(errors => {
-                if (runId == this._validationRunId) {
-                    this.errors = errors;
-                }
-                return this.validationState;
-            }).linkTo(this._validationTask);
+    setDisabled(disabled) {
+        throw XH.exception('Disabled not implemented on subform fields');
     }
 
-    async evaluateAsync(rules) {
-        const promises = rules.map(r => r.evaluateAsync(this));
-        return flatten(await Promise.all(promises));
+    setReadonly(readonly) {
+        throw XH.exception('Readonly not implemented on subform fields');
     }
-
 
     //---------------------------
     // Implementation
@@ -92,14 +111,16 @@ export class SubFormFieldModel extends BaseFieldModel {
         const me = this;
 
         return new Proxy({}, {
-            get(target, name, receiver) {
-                if (isArray(value)) {
-                    return value[name].dataProxy;
-                }
-
-                return value ? value.dataProxy : null;
+            get(target, index, receiver) {
+                const {value} = me;
+                throwIf(!isNumber(index), 'Subform must be dereferenced with a number.');
+                throwIf(!isArray(value) || value.length <= index, 'Attempted to access non-existent subform:  ' + name);
+                return value[index].dataProxy;
             }
         });
     }
 
+    destroy() {
+        XH.safeDestroy(this.subforms);
+    }
 }

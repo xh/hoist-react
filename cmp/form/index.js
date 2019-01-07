@@ -6,7 +6,8 @@
  */
 export * from './Form';
 export * from './FormModel';
-export * from './FieldModel';
+export * from './field/FieldModel';
+export * from './field/SubformFieldModel';
 export * from './validation/ValidationState';
 export * from './validation/Rule';
 export * from './validation/constraints';
