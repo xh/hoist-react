@@ -8,10 +8,12 @@
 import {XH, HoistModel} from '@xh/hoist/core';
 import {observable, computed, action} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {find} from 'lodash';
+import {find, flatMap} from 'lodash';
 
 import {ValidationState} from './validation/ValidationState';
 import {FieldModel} from './field/FieldModel';
+import {SubformsFieldModel} from './field/SubformsFieldModell';
+
 
 /**
  * Backing model for a Form.
@@ -28,13 +30,17 @@ export class FormModel {
     @observable.ref fields = [];
 
     parent = null;
-
+    _valuesProxy = this.createValuesProxy();
+    
     /**
      *  @member {Object} -- proxy for accessing all of the current data values
-     *  in this form, and related forms.  Passed to validation rules to facilitate
-     *  observable cross-field validation.
+     *  in this form by name.
+     *
+     *  Passed to validation rules to facilitate observable cross-field validation.
      */
-    dataProxy = this.createDataProxy();
+    get values() {
+        return this._valuesProxy;
+    }
 
     /**
      *
@@ -47,7 +53,7 @@ export class FormModel {
     }
 
     /**
-     * Get a simple map representation of the current data in the form.  Used for
+     * Get a fully enumerated map representation of the current data in the form.  Used for
      * reading data from the form programmatically, or submitting data to a server.
      */
     getData() {
@@ -64,7 +70,7 @@ export class FormModel {
     @action
     addField(field) {
         if (!(field instanceof FieldModel)) {
-            field = (field.type == 'subform' ? new SubformFieldModel(field) : new FieldModel(field));
+            field = (field.type == 'subform' ? new SubformsFieldModel(field) : new FieldModel(field));
         }
         throwIf(this.getField(field.name), `Form already has member with name ${name}`);
         field.formModel = this;
@@ -131,7 +137,7 @@ export class FormModel {
      * List of all validation errors for this form
      */
     get allErrors() {
-        return this.fields ? flatMap(fields , s => s.allErrors) : []
+        return this.fields ? flatMap(fields, s => s.allErrors) : []
     }
 
     /**
@@ -169,16 +175,16 @@ export class FormModel {
     //---------------------------
     // Implementation
     //---------------------------
-    createDataProxy() {
+    createValuesProxy() {
         const me = this;
         return new Proxy({}, {
             get(target, name, receiver) {
 
                 const field = me.getField(name);
-                if (field) return field.dataProxy;
+                if (field) return field.values;
 
                 const parent = (name === 'parent' ? me.parent : null);
-                if (parent) return parent.dataProxy;
+                if (parent) return parent.values;
 
                 return undefined;
             }

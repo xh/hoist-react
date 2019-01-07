@@ -5,11 +5,12 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel, XH} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 import {isArray, isNumber} from 'lodash';
 import {action, computed} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
+import {FormModel} from './FormModel';
 import {FieldModel} from './FieldModel';
 import {ValidationState} from '../validation/ValidationState';
 
@@ -25,9 +26,9 @@ import {ValidationState} from '../validation/ValidationState';
  * validations on the subform will also bubble up to this field, effecting its overall validation
  * state.
  */
-export class SubformFieldModel extends FieldModel {
+export class SubformsFieldModel extends FieldModel {
 
-    dataProxy = this.createDataProxy();
+    _valuesProxy = this.createValuesProxy();
 
     get subforms() {
         return this.value || [];
@@ -36,9 +37,17 @@ export class SubformFieldModel extends FieldModel {
     //-----------------------------
     // Overrides
     //-----------------------------
+    get values() {
+        return this._valuesProxy;
+    }
+
+    getData() {
+        return this.subforms.map(s => s.getData());
+    }
+
     @action
     setValue(v) {
-        throwIf(v && (!isArray(v) || v.any(s => !(s instanceof FormModel))), "Subform field must contain forms.");
+        throwIf(v && (!isArray(v) || v.any(s => !(s instanceof FormModel))), 'Subform field must contain forms.');
         super.setValue(v);
         this.subforms.forEach(s => s.parent = this.formModel);
     }
@@ -107,7 +116,7 @@ export class SubformFieldModel extends FieldModel {
     //---------------------------
     // Implementation
     //---------------------------
-    createDataProxy() {
+    createValuesProxy() {
         const me = this;
 
         return new Proxy({}, {
@@ -115,7 +124,7 @@ export class SubformFieldModel extends FieldModel {
                 const {value} = me;
                 throwIf(!isNumber(index), 'Subform must be dereferenced with a number.');
                 throwIf(!isArray(value) || value.length <= index, 'Attempted to access non-existent subform:  ' + name);
-                return value[index].dataProxy;
+                return value[index].values;
             }
         });
     }

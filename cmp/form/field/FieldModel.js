@@ -100,8 +100,15 @@ export class FieldModel {
         });
     }
 
+    /** Proxy for accessing all of the current data values in this field by name. */
+    get values() {
+        return this.value;
+    }
 
-    get dataProxy() {
+    /**
+     * The current data in this field, fully enumerated.  Used for gather and submitting form data to a server.
+     */
+    getData() {
         return this.value;
     }
 
