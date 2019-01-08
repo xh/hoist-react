@@ -6,7 +6,7 @@
  */
 import React, {Component} from 'react';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
-import {withDefault} from '@xh/hoist/utils/js';
+import {defaults} from 'lodash';
 import {frame} from '@xh/hoist/cmp/layout';
 import {FormModel} from './FormModel';
 import PT from 'prop-types';
@@ -24,6 +24,8 @@ const formContextProvider = elemFactory(FormContext.Provider);
 export class Form extends Component {
 
     static modelClass = FormModel;
+
+    static contextType = FormContext;
 
     static propTypes = {
 
@@ -47,7 +49,16 @@ export class Form extends Component {
 
 
     get fieldDefaults() {
-        return withDefault(this.props.fieldDefaults, {});
+        const {parentForm} = this,
+            parentDefaults = parentForm ? parentForm.fieldDefaults : null,
+            myDefaults = this.props.fieldDefaults;
+
+        return defaults({}, myDefaults, parentDefaults);
+    }
+
+
+    get parentForm() {
+        return this.context;
     }
 }
 export const form = elemFactory(Form);
