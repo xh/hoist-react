@@ -6,11 +6,11 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {isArray, isNumber} from 'lodash';
+import {isArray, isNumber, flatMap} from 'lodash';
 import {action, computed} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
-import {FormModel} from './FormModel';
+import {FormModel} from '../FormModel';
 import {FieldModel} from './FieldModel';
 import {ValidationState} from '../validation/ValidationState';
 
@@ -28,8 +28,6 @@ import {ValidationState} from '../validation/ValidationState';
  */
 export class SubformsFieldModel extends FieldModel {
 
-    _valuesProxy = this.createValuesProxy();
-
     get subforms() {
         return this.value || [];
     }
@@ -38,7 +36,7 @@ export class SubformsFieldModel extends FieldModel {
     // Overrides
     //-----------------------------
     get values() {
-        return this._valuesProxy;
+        return this.subforms.map(s => s.values);
     }
 
     getData() {
@@ -47,7 +45,7 @@ export class SubformsFieldModel extends FieldModel {
 
     @action
     setValue(v) {
-        throwIf(v && (!isArray(v) || v.any(s => !(s instanceof FormModel))), 'Subform field must contain forms.');
+        throwIf(v && (!isArray(v) || v.some(s => !(s instanceof FormModel))), 'Subform field must contain forms.');
         super.setValue(v);
         this.subforms.forEach(s => s.parent = this.formModel);
     }
@@ -89,12 +87,12 @@ export class SubformsFieldModel extends FieldModel {
 
     @computed
     get isValidationPending() {
-        return this.subforms.any(m => m.isValidationPending) || super.isValidationPending;
+        return this.subforms.some(m => m.isValidationPending) || super.isValidationPending;
     }
 
     @computed
     get isDirty() {
-        return this.subforms.any(s => s.isDirty) || super.isDirty;
+        return this.subforms.some(s => s.isDirty) || super.isDirty;
     }
 
     @action
@@ -111,22 +109,6 @@ export class SubformsFieldModel extends FieldModel {
 
     setReadonly(readonly) {
         throw XH.exception('Readonly not implemented on subform fields');
-    }
-
-    //---------------------------
-    // Implementation
-    //---------------------------
-    createValuesProxy() {
-        const me = this;
-
-        return new Proxy({}, {
-            get(target, index, receiver) {
-                const {value} = me;
-                throwIf(!isNumber(index), 'Subform must be dereferenced with a number.');
-                throwIf(!isArray(value) || value.length <= index, 'Attempted to access non-existent subform:  ' + name);
-                return value[index].values;
-            }
-        });
     }
 
     destroy() {

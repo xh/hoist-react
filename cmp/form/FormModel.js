@@ -12,7 +12,7 @@ import {find, flatMap} from 'lodash';
 
 import {ValidationState} from './validation/ValidationState';
 import {FieldModel} from './field/FieldModel';
-import {SubformsFieldModel} from './field/SubformsFieldModell';
+import {SubformsFieldModel} from './field/SubformsFieldModel';
 
 
 /**
@@ -70,7 +70,7 @@ export class FormModel {
     @action
     addField(field) {
         if (!(field instanceof FieldModel)) {
-            field = (field.type == 'subform' ? new SubformsFieldModel(field) : new FieldModel(field));
+            field = (field.type == 'subforms' ? new SubformsFieldModel(field) : new FieldModel(field));
         }
         throwIf(this.getField(field.name), `Form already has member with name ${name}`);
         field.formModel = this;
@@ -137,7 +137,7 @@ export class FormModel {
      * List of all validation errors for this form
      */
     get allErrors() {
-        return this.fields ? flatMap(fields, s => s.allErrors) : []
+        return flatMap(this.fields, s => s.allErrors);
     }
 
     /**
