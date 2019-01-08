@@ -6,7 +6,7 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {isArray, isNumber, flatMap} from 'lodash';
+import {isArray, flatMap} from 'lodash';
 import {action, computed} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
