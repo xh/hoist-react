@@ -5,9 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import React, {Component} from 'react';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {defaults} from 'lodash';
-import {frame} from '@xh/hoist/cmp/layout';
 import {FormModel} from './FormModel';
 import PT from 'prop-types';
 
@@ -20,7 +19,6 @@ const formContextProvider = elemFactory(FormContext.Provider);
  * Co-ordinates the binding of contained FormFields to a FormModel.
  */
 @HoistComponent
-@LayoutSupport
 export class Form extends Component {
 
     static modelClass = FormModel;
@@ -36,17 +34,12 @@ export class Form extends Component {
         fieldDefaults: PT.object
     }
 
-
     render() {
-        return frame({
-            ...this.getLayoutProps(),
-            item: formContextProvider({
-                value: this,
-                items: this.props.children
-            })
+        return formContextProvider({
+            value: this,
+            items: this.props.children
         });
     }
-
 
     get fieldDefaults() {
         const {parentForm} = this,
