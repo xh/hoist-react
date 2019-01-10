@@ -5,8 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {RecordAction} from '@xh/hoist/data/index';
-import {convertIconToSvg} from '@xh/hoist/icon/index';
+import {RecordAction} from '@xh/hoist/data';
+import {convertIconToSvg} from '@xh/hoist/icon';
 import {isEmpty} from 'lodash';
 
 import {actionColPad} from './Actions.scss';

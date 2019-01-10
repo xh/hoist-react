@@ -34,6 +34,8 @@
   `form` to `input`.
 * A `Select` input with `enableMulti = true` will by default no longer show an inline x to clear the
   input value. Use the `enableClear` prop to re-enable.
+* Column definitions are exported from the `grid` package. To ensure backwards compatibility, 
+  replace imports from '@xh/hoist/desktop/columns' with '@xh/hoist/desktop/cmp/grid'
 
 
 ## v17.0.0 - 2018-12-21
