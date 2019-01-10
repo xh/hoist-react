@@ -61,11 +61,11 @@ export class Rule {
     isActive(field) {
         if (!field.formModel) return false;
         const {when} = this;
-        return !when || when(field, field.formModel.dataProxy);
+        return !when || when(field, field.formModel.values);
     }
 
     async evalConstraintAsync(constraint, field) {
-        return await constraint(field, field.formModel.dataProxy);
+        return await constraint(field, field.formModel.values);
     }
 }
 

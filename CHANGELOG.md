@@ -2,13 +2,11 @@
 
 ## v19.0.0-SNAPSHOT (in development / unreleased)
 
-### 💥 Breaking Changes
+### 🎁 New Features
 
-* Column definitions are exported from the `grid` package. To update from prior Hoist versions:
-    * Replace imports from '@xh/hoist/cmp/grid/columns' with '@xh/hoist/cmp/grid'
-    * Replace imports from '@xh/hoist/desktop/cmp/columns' with '@xh/hoist/desktop/cmp/grid'
+* `Grid` components take `onCellClicked` and `onCellDoubleClicked` event handlers
 
-## v18.0.0-rcx
+## v18.0.0-rcx (release candidate)
 
 ### 🎁 New Features
 
@@ -25,13 +23,17 @@
   * `HoistInput` has been moved into the `input` package to clarify that these are lower level
     controls and independent of the Forms package.
   * `RestGrid` now supports a `mask` prop. RestGrid loading is now masked by default.
-  * `Chart` component now supports a built-in zoomout gesture: Drag right-to-left on charts with
-    x-axis zooming.
+  * `Chart` component now supports a built-in zoom out gesture: click and drag from right-to-left on
+    charts with x-axis zooming.
+  * `Select` now supports an `enableClear` prop to control the presence of a clear button. Defaults
+    to false.
 
 ### 💥 Breaking Changes
 
 * Major changes to Form (see above). `HoistInput` imports will also need to be adjusted to move from
   `form` to `input`.
+* A `Select` input with `enableMulti = true` will by default no longer show an inline x to clear the
+  input value. Use the `enableClear` prop to re-enable.
 
 
 ## v17.0.0 - 2018-12-21

@@ -205,7 +205,8 @@ export class FormField extends Component {
 
     prepareChild({displayNotValid, leftErrorIcon, idAttr, errors, minimal, readonly}) {
         const {fieldModel} = this,
-            item = this.props.children;
+            item = this.props.children,
+            {propTypes} = item.type;
 
         const overrides = {
             model: fieldModel,
@@ -213,10 +214,15 @@ export class FormField extends Component {
             disabled: fieldModel && fieldModel.disabled,
             id: idAttr
         };
-        if (displayNotValid && item.type.propTypes.leftIcon && leftErrorIcon) {
+        if (displayNotValid && propTypes.leftIcon && leftErrorIcon) {
             overrides.leftIcon = Icon.warningCircle();
         }
 
+        const commitOnChange = this.getDefaultedProp('commitOnChange');
+        if (propTypes.commitOnChange && !isUndefined(commitOnChange)) {
+            overrides.commitOnChange = commitOnChange;
+        }
+        
         const target = readonly ? this.renderReadonly() : React.cloneElement(item, overrides);
 
         if (!minimal) return target;

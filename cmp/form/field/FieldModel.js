@@ -5,13 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {flatten, isEmpty, startCase, partition, isFunction} from 'lodash';
 import {HoistModel} from '@xh/hoist/core';
 import {observable, action, computed} from '@xh/hoist/mobx';
-import {flatten, isEmpty, startCase, partition, isFunction} from 'lodash';
 import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
 
-import {ValidationState} from './validation/ValidationState';
-import {Rule} from './validation/Rule';
+import {ValidationState} from '../validation/ValidationState';
+import {Rule} from '../validation/Rule';
 
 /**
  *
@@ -22,6 +22,7 @@ export class FieldModel {
 
     /** @member {FormModel} owning field */
     _formModel;
+
 
     /** @member {string} name of property within model containing this field. */
     name;
@@ -54,8 +55,9 @@ export class FieldModel {
      * @param {Object} cfg
      * @param {string} cfg.name
      * @param {string} [cfg.displayName]
-     * @param {boolean} [cfg.readonly]
+     * @param {string} [cfg.initialValue]
      * @param {boolean} [cfg.disabled]
+     * @param {boolean} [cfg.readonly]
      * @param {(Rule|Object|Function)} [cfg.rules] -
      *      Rules, rule configurations, or validation functions to create rules.
      *      (All validation functions supplied will be combined in to a single rule)
@@ -77,6 +79,9 @@ export class FieldModel {
         this.rules = this.processRuleSpecs(rules);
     }
 
+    //-----------------------------
+    // Accessors and lifecycle
+    //-----------------------------
     /**
      * Owning FormModel for this Field.
      *
@@ -85,7 +90,6 @@ export class FieldModel {
     get formModel() {
         return this._formModel;
     }
-
     set formModel(formModel) {
         this._formModel = formModel;
         this.addAutorun(() => {
@@ -96,15 +100,32 @@ export class FieldModel {
         });
     }
 
+    /** Proxy for accessing all of the current data values in this field by name. */
+    get values() {
+        return this.value;
+    }
+
+    /**
+     * The current data in this field, fully enumerated.  Used for gather and submitting form data to a server.
+     */
+    getData() {
+        return this.value;
+    }
+
     @action
     setValue(v) {
         this.value = v;
     }
 
 
-    //-----------------------------
-    // Accessors and lifecycle
-    //-----------------------------
+    /**
+     * List of all validation errors for this field and its sub-forms.
+     */
+    get allErrors() {
+        return this.errors || [];
+    }
+
+
     /**
      * Set the initial value of the field, reset
      * to that value, and reset validation state.
@@ -118,11 +139,25 @@ export class FieldModel {
     /** Reset to the initial value and reset validation state. */
     @action
     reset() {
-        this.value = this.initialValue;
+        this.setValue(this.initialValue);
         this.errors = null;
         this.validationDisplayed = false;
         this.computeValidationAsync();
     }
+
+    //----------------------
+    // Disabled/readonly
+    //----------------------
+    @action
+    setDisabled(disabled) {
+        this.setDisabled = disabled;
+    }
+
+    @action
+    setReadonly(readonly) {
+        this.setReadonly = readonly;
+    }
+
 
     //------------------------------------
     // Validation
