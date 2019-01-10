@@ -69,9 +69,11 @@ export class SubformsFieldModel extends FieldModel {
     }
 
     @action
-    displayValidation() {
-        super.displayValidation();
-        this.subforms.forEach(s => s.displayValidation());
+    displayValidation(includeSubforms = true) {
+        super.displayValidation(includeSubforms);
+        if (includeSubforms) {
+            this.subforms.forEach(s => s.displayValidation());
+        }
     }
 
     @computed

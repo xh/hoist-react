@@ -96,7 +96,7 @@ export class FieldModel {
             this.computeValidationAsync();
         });
         this.addAutorun(() => {
-            if (this.isDirty) this.displayValidation();
+            if (this.isDirty) this.displayValidation(false);
         });
     }
 
@@ -116,7 +116,6 @@ export class FieldModel {
     setValue(v) {
         this.value = v;
     }
-
 
     /**
      * List of all validation errors for this field and its sub-forms.
@@ -163,13 +162,16 @@ export class FieldModel {
     // Validation
     //------------------------------------
     /**
-     * Set the validationDisplayed property.
+     * Set the validationDisplayed property to true.
      *
-     * Called automatically when field is dirtied.  May also be called manually by applications
-     * e.g. on blur on Focus or when the user requests to move to next page, validate buttons, etc.
+     * @param {boolean} [includeSubforms] - true to include all subforms of this field.
+     *
+     * Typically called when containing form is validated, when the field is dirtied or
+     * a HoistInput bound to the field is blurred.  May also be called manually,
+     * e.g. when the user requests to move to next page, validate buttons, etc.
      **/
     @action
-    displayValidation() {
+    displayValidation(includeSubforms = true) {
         this.validationDisplayed = true;
     }
 
