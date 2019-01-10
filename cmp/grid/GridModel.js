@@ -21,7 +21,7 @@ import {
     isNil,
     cloneDeep
 } from 'lodash';
-import {Column, ColumnGroup} from '@xh/hoist/cmp/grid/columns';
+import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
 import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';

@@ -7,5 +7,6 @@
 
 export * from './impl/ColChooser';
 export * from './impl/ColChooserModel';
+export * from './columns';
 
 
