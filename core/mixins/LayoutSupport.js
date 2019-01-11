@@ -7,6 +7,7 @@
 
 import {provideMethods, markClass} from '@xh/hoist/utils/js';
 import {pick, isNumber, isString, forOwn, omit} from 'lodash';
+import PT from 'prop-types';
 
 /**
  * This mixin provides support for flexbox related styles that are set as top-level properties
@@ -75,6 +76,42 @@ export function LayoutSupport(C) {
     return C;
 }
 
+/** Available to spread into the propTypes of LayoutSupport enabled components. */
+export const layoutSupportProps = {
+    margin: PT.oneOfType([PT.number, PT.string]),
+    marginTop: PT.oneOfType([PT.number, PT.string]),
+    marginRight: PT.oneOfType([PT.number, PT.string]),
+    marginBottom: PT.oneOfType([PT.number, PT.string]),
+    marginLeft: PT.oneOfType([PT.number, PT.string]),
+    padding: PT.oneOfType([PT.number, PT.string]),
+    paddingTop: PT.oneOfType([PT.number, PT.string]),
+    paddingRight: PT.oneOfType([PT.number, PT.string]),
+    paddingBottom: PT.oneOfType([PT.number, PT.string]),
+    paddingLeft: PT.oneOfType([PT.number, PT.string]),
+    height: PT.oneOfType([PT.number, PT.string]),
+    minHeight: PT.oneOfType([PT.number, PT.string]),
+    maxHeight: PT.oneOfType([PT.number, PT.string]),
+    width: PT.oneOfType([PT.number, PT.string]),
+    minWidth: PT.oneOfType([PT.number, PT.string]),
+    maxWidth: PT.oneOfType([PT.number, PT.string]),
+    flex: PT.oneOfType([PT.number, PT.string]),
+    flexBasis: PT.oneOfType([PT.number, PT.string]),
+    flexDirection: PT.string,
+    flexGrow: PT.number,
+    flexShrink: PT.number,
+    flexWrap: PT.string,
+    alignItems: PT.string,
+    alignSelf: PT.string,
+    alignContent: PT.string,
+    justifyContent: PT.string,
+    overflow: PT.string,
+    overflowX: PT.string,
+    overflowY: PT.string,
+    top: PT.oneOfType([PT.number, PT.string]),
+    left: PT.oneOfType([PT.number, PT.string]),
+    position: PT.string,
+    display: PT.string
+};
 
 //-------------------------
 // Keys to be processed

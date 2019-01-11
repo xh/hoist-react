@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import PT from 'prop-types';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport, layoutSupportProps} from '@xh/hoist/core';
 import {button as bpButton} from '@xh/hoist/kit/blueprint';
 
 /**
@@ -21,6 +21,7 @@ import {button as bpButton} from '@xh/hoist/kit/blueprint';
 export class Button extends Component {
 
     static propTypes = {
+        ...layoutSupportProps,
         icon: PT.element,
         minimal: PT.bool,
         onClick: PT.func,

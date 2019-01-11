@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import PT from 'prop-types';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport, layoutSupportProps} from '@xh/hoist/core';
 import {button as onsenButton} from '@xh/hoist/kit/onsen';
 import {hspacer} from '@xh/hoist/cmp/layout';
 
@@ -20,6 +20,7 @@ import {hspacer} from '@xh/hoist/cmp/layout';
 export class Button extends Component {
 
     static propTypes = {
+        ...layoutSupportProps,
         icon: PT.element,
         text: PT.string,
         modifier: PT.string,

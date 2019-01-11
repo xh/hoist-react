@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {merge, castArray} from 'lodash';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport, layoutSupportProps} from '@xh/hoist/core';
 import {div} from './Tags';
 
 /**
@@ -20,6 +20,7 @@ import {div} from './Tags';
 @HoistComponent
 @LayoutSupport
 export class Box extends Component {
+    static propTypes = {...layoutSupportProps}
     render() {
         let {children, ...props} = this.getNonLayoutProps();
         props = merge(
@@ -38,6 +39,7 @@ export class Box extends Component {
 @HoistComponent
 @LayoutSupport
 export class VBox extends Component {
+    static propTypes = {...Box.propTypes}
     baseClassName = 'xh-vbox';
     render() {
         return box({
@@ -51,6 +53,7 @@ export class VBox extends Component {
 @HoistComponent
 @LayoutSupport
 export class HBox extends Component {
+    static propTypes = {...Box.propTypes}
     baseClassName = 'xh-hbox';
     render() {
         return box({

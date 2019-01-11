@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import PT from 'prop-types';
 import {castArray, omitBy} from 'lodash';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport, layoutSupportProps} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {isReactElement} from '@xh/hoist/utils/react';
@@ -36,6 +36,8 @@ export class Panel extends Component {
     static modelClass = PanelModel;
 
     static propTypes = {
+        ...layoutSupportProps,
+
         /** A title text added to the panel's header. */
         title: PT.oneOfType([PT.string, PT.node]),
 
