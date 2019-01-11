@@ -21,7 +21,7 @@ import './HoistInput.scss';
  * writing, converting, and displaying their values.
  *
  * Hoist Inputs can *either* operate in bound mode or in standard controlled mode.
- *      + If provided with `model` and `field` props, they will will operate in bound mode,
+ *      + If provided with `model` and `bind` props, they will will operate in bound mode,
  *        reading their value from the model and writing back to it on commit (see below).
  *      + Otherwise, they will get their value directly via the `value` prop.
  *
@@ -30,14 +30,14 @@ import './HoistInput.scss';
  * do not cause the parent of this control to re-render.
  *
  * Regardless of mode, Hoist Inputs will call an `onChange` callback prop with the latest value
- * as it is updated.  They also introduce the notion of "committing" a field to the model when the
- * user has completed a discrete act of data entry. This will vary by field but is commonly marked
- * by the user blurring the field, selecting a record from a combo, or pressing the <enter> key.
+ * as it is updated.  They also introduce the notion of "committing" a value to the model when the
+ * user has completed a discrete act of data entry. This will vary by input but is commonly marked
+ * by the user blurring the input, selecting a record from a combo, or pressing the <enter> key.
  * At this time, any specified `onCommit` callback prop will be called and the value will be flushed
  * back to any bound model.
  *
- * For many fields (e.g. checkbox, select, switchInput, slider) commit always fires at the same time
- * as the change event. Other fields such as textInput maintain the distinction described above,
+ * For many inputs (e.g. checkbox, select, switchInput, slider) commit always fires at the same time
+ * as the change event. Other inputs such as textInput maintain the distinction described above,
  * but expose a `commitOnChange` prop to force them to eagerly flush their values on every change.
  *
  * For a managed display optimized for user-input forms, consider wrapping HoistInputs in a FormField
@@ -89,9 +89,8 @@ export class HoistInput extends Component {
         /**
          * Property name on bound Model from which to read/write data.
          *
-         * Provided by any containing FormField.
          */
-        field: PT.string
+        bind: PT.string
     };
 
     @observable hasFocus;
@@ -146,9 +145,9 @@ export class HoistInput extends Component {
      */
     @computed
     get externalValue() {
-        const {value, model, field} = this.props;
-        if (model && field) {
-            return model[field];
+        const {value, model, bind} = this.props;
+        if (model && bind) {
+            return model[bind];
         }
         return value;
     }
@@ -194,14 +193,14 @@ export class HoistInput extends Component {
     }
 
     doCommitInternal() {
-        const {onCommit, model, field} = this.props;
+        const {onCommit, model, bind} = this.props;
         let currentValue = this.externalValue,
             newValue = this.toExternal(this.internalValue);
 
         if (isEqual(newValue, currentValue)) return;
 
-        if (model && field) {
-            const setterName = `set${upperFirst(field)}`;
+        if (model && bind) {
+            const setterName = `set${upperFirst(bind)}`;
             throwIf(!isFunction(model[setterName]), `Required function '${setterName}()' not found on bound model`);
 
             model[setterName](newValue);

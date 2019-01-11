@@ -165,7 +165,7 @@ export class FormField extends Component {
 
         const overrides = {
             model: fieldModel,
-            field: 'value',
+            bind: 'value',
             disabled: fieldModel && fieldModel.disabled
         };
 
