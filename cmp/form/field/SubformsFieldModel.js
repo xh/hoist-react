@@ -15,16 +15,13 @@ import {FieldModel} from './FieldModel';
 import {ValidationState} from '../validation/ValidationState';
 
 /**
- *
  * A data field in a form whose value is a collection of FormModels (subforms).
  *
- * Applications should populate the contents of this collection by setting the
- * value property of this object to an array of FormModels.  Applications should *not* modify
- * the existing value property.
+ * Applications should populate the contents of this collection by setting the value property of
+ * this object to an array of FormModels. Apps should *not* modify the existing value property.
  *
- * Validation rules for the entire collection may be specified as for any field, but
- * validations on the subform will also bubble up to this field, effecting its overall validation
- * state.
+ * Validation rules for the entire collection may be specified as for any field, but validations on
+ * the subform will also bubble up to this field, affecting its overall validation state.
  */
 export class SubformsFieldModel extends FieldModel {
 
