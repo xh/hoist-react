@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {flatten, isEmpty, startCase, partition, isFunction} from 'lodash';
+import {flatten, isEmpty, startCase, partition, isFunction, isUndefined} from 'lodash';
 import {HoistModel} from '@xh/hoist/core';
 import {observable, action, computed} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
@@ -129,18 +129,19 @@ export class FieldModel {
      * @param {*} initialValue
      */
     @action
-    init(initialValue = null) {
-        this.initialValue = initialValue;
+    init(initialValue) {
+        if (!isUndefined(initialValue)) {
+            this.initialValue = initialValue;
+        }
         this.reset();
     }
 
     /** Reset to the initial value and reset validation state. */
     @action
     reset() {
-        this.setValue(this.initialValue);
+        this.value = this.initialValue;
         this.errors = null;
         this.validationDisplayed = false;
-        this.computeValidationAsync();
     }
 
     /** @member {boolean} - true if value has been changed since last reset/init. */

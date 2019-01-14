@@ -59,8 +59,9 @@ export class FormModel {
      * @param {Object} c - FormModel configuration.
      * @param {(FieldModel[]|Object[])} [c.fields] - FieldModels, or configurations to create them,
      *      for all data fields managed by this FormModel.
+     * @param {Object} [initialValues] - Map of initial values for fields in this model
      */
-    constructor({fields = []} = {}) {
+    constructor({fields = [], initialValues = {}} = {}) {
         fields.forEach(it => this.addField(it));
     }
 
@@ -82,7 +83,7 @@ export class FormModel {
     @action
     addField(field) {
         if (!(field instanceof FieldModel)) {
-            field = (field.type == 'subforms' ? new SubformsFieldModel(field) : new FieldModel(field));
+            field = (field.subforms ? new SubformsFieldModel(field) : new FieldModel(field));
         }
         throwIf(this.getField(field.name), `Form already has member with name ${name}`);
         field.formModel = this;
@@ -111,7 +112,6 @@ export class FormModel {
      * @param {Object} initialValues - map of field name to value.
      */
     init(initialValues = {}) {
-        // TODO - won't this null out initial values if undefined? (-ATM)
         this.fields.forEach(m => m.init(initialValues[m.name]));
     }
 
