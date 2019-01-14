@@ -18,45 +18,55 @@ import {SubformsFieldModel} from './field/SubformsFieldModel';
 /**
  * Backing model for a Form.
  *
- * FormModel is the main entry point for Form specification.  FormModels contain FieldModels
- * ('fields') that hold the state of user edited data, and the validation rules around editing that data.
- * FormModels also contain children forms (i.e. sub-forms).
+ * FormModel is the main entry point for Form specification. This Model's `fields` collection holds
+ * multiple FieldModel instances, which in turn hold the state of user edited data and the
+ * validation rules around editing that data.
  *
- * See FieldModel for more information on the state contained within FormModel.
+ * A complete representation of all fields and data within a Form can be produced via this model's
+ * `getData()` method, making it easy to harvest all values for e.g. submission to a server.
+ *
+ * This Model provides an overall validation state, determined by the current validation state of
+ * its fields as per their configured rules and constraints.
+ *
+ * FormModels can be nested via SubformsFieldModels, a specialized type of FieldModel that itself
+ * manages a collection of child FormModels. This allows use cases where Forms support editing of
+ * dynamic collections of complex objects with their own internal validation rules (e.g. a FormModel
+ * representing a market order might have multiple nested FormModels to represent execution splits,
+ * where each split has its own internal fields for broker, quantity, and time).
+ *
+ * @see FieldModel for details on state and validation maintained at the individual field level.
  */
 @HoistModel
 export class FormModel {
 
+    /** @member {FieldModel[]} */
     @observable.ref fields = [];
 
+    /** @member {FormModel} */
     parent = null;
+
     _valuesProxy = this.createValuesProxy();
-    
+
     /**
-     *  @member {Object} -- proxy for accessing all of the current data values
-     *  in this form by name.
-     *
-     *  Passed to validation rules to facilitate observable cross-field validation.
+     * @member {Object} - proxy for accessing all of the current data values in this form by name.
+     *      Passed to validation rules to facilitate observable cross-field validation.
      */
     get values() {
         return this._valuesProxy;
     }
 
     /**
-     *
-     * @param {string} [name] - name of this form.  This will be the unique id of
-     *      this form in its parent.
-     * @param {(FieldModel|Object)[]} [fields] - collection of fields or configs for fields.
-     * @param {Object} [initialValues] - Map of initial values for fields in this model.
+     * @param {Object} c - FormModel configuration.
+     * @param {(FieldModel[]|Object[])} [c.fields] - FieldModels, or configurations to create them,
+     *      for all data fields managed by this FormModel.
+     * @param {Object} [initialValues] - Map of initial values for fields in this model
      */
     constructor({fields = [], initialValues = {}} = {}) {
         fields.forEach(it => this.addField(it));
-        this.init(initialValues);
     }
 
     /**
-     * Get a fully enumerated map representation of the current data in the form.  Used for
-     * reading data from the form programmatically, or submitting data to a server.
+     * @returns {Object} - a complete map of this model's fields (by name) to their current value.
      */
     getData() {
         const ret = {};
@@ -66,12 +76,9 @@ export class FormModel {
         return ret;
     }
 
-    //----------------------------
-    // Add/Remove Members
-    //----------------------------
     /**
-     * Add a field to this model
-     * @param {FieldModel|Object} field - field to add to this model.
+     * Register a new FieldModel (or config for one) to be managed by this Model.
+     * @param field {(FieldModel|Object)}
      */
     @action
     addField(field) {
@@ -83,33 +90,39 @@ export class FormModel {
         this.fields = [...this.fields, field];
     }
 
+    /**
+     * @param {String} name
+     * @returns {FieldModel}
+     */
     getField(name) {
         return find(this.fields, {name});
     }
 
-    /**
-     * Reset fields to initial values and reset validation.
-     */
+    /** Reset fields to initial values and reset validation. */
     reset() {
         this.fields.forEach(m => m.reset());
     }
 
     /**
-     * Set the initial value of all fields, and reset form.
+     * Set the initial value of all fields and reset the form.
      *
-     * If initial values are undefined for any field, existing initial values
-     * will be used.
+     * This is the main entry point for loading new data (or an empty new record) into the form for
+     * editing. If initial values are undefined for any field, existing initial values will be used.
      *
-     * This is the main entry point for loading new data (or an empty new record)
-     * into the form for editing.
+     * @param {Object} initialValues - map of field name to value.
      */
     init(initialValues = {}) {
         this.fields.forEach(m => m.init(initialValues[m.name]));
     }
 
-    //--------------------------
+    /** @member {boolean} - true if any fields have been changed since last reset/init. */
+    get isDirty() {
+        return this.fields.some(m => m.isDirty);
+    }
+
+    //------------------------
     // Validation
-    //---------------------------
+    //------------------------
     /** @member {ValidationState} - the current validation state. */
     @computed
     get validationState() {
@@ -120,28 +133,23 @@ export class FormModel {
         return VS.Valid;
     }
 
-    /**
-     * True if any of the fields contained in this model are in the process
-     * of recomputing their validation state.
-     */
+    /** @member {boolean} - true if any fields are currently recomputing their validation state. */
     @computed
     get isValidationPending() {
         return this.fields.some(m => m.isValidationPending);
     }
 
-    /** True if all fields are valid. */
+    /** @member {boolean} - true if all fields are valid. */
     get isValid() {
         return this.validationState == ValidationState.Valid;
     }
 
-    /** True if any fields are not valid. */
+    /** @member {boolean} - true if any fields are not valid. */
     get isNotValid() {
         return this.validationState == ValidationState.NotValid;
     }
 
-    /**
-     * List of all validation errors for this form.
-     */
+    /** @member {String[]} - list of all validation errors for this form. */
     get allErrors() {
         return flatMap(this.fields, s => s.allErrors);
     }
@@ -150,9 +158,8 @@ export class FormModel {
      * Recompute all validations and return true if the form is valid.
      *
      * @param {Object} [c]
-     * @param {boolean] [c.display] - true to activate validation display
-     *      for the form after validation has been peformed.
-     *
+     * @param {boolean} [c.display] - true to trigger the display of validation errors (if any)
+     *      by bound FormField components after validation is complete.
      * @returns {Promise<boolean>}
      */
     async validateAsync({display = true} = {}) {
@@ -161,26 +168,14 @@ export class FormModel {
         return this.isValid;
     }
 
-    /**
-     * Activate Display of all fields.
-     */
+    /** Trigger the display of validation errors (if any) by bound FormField components. */
     displayValidation() {
         this.fields.forEach(m => m.displayValidation());
     }
 
-    //----------------------------
-    // Dirty State
-    //----------------------------
-    /**
-     * True if any fields have been changed since last reset/initialization.
-     */
-    get isDirty() {
-        return this.fields.some(m => m.isDirty);
-    }
-
-    //---------------------------
+    //------------------------
     // Implementation
-    //---------------------------
+    //------------------------
     createValuesProxy() {
         const me = this;
         return new Proxy({}, {
