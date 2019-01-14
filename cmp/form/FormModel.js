@@ -91,7 +91,6 @@ export class FormModel {
      * Reset fields to initial values and reset validation.
      */
     reset() {
-        super.reset();
         this.fields.forEach(m => m.reset());
     }
 
