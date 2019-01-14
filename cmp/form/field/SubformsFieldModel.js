@@ -121,7 +121,7 @@ export class SubformsFieldModel extends FieldModel {
 
     @action
     async validateAsync({display = true} = {}) {
-        const promises = this.subforms.map(m => m.validateAsync({display}));
+        const promises = this.value.map(m => m.validateAsync({display}));
         promises.push(super.validateAsync({display}));
         await Promise.all(promises);
         return this.isValid;
