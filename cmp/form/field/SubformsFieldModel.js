@@ -6,7 +6,7 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {isArray, flatMap, partition, clone, without, defaults} from 'lodash';
+import {isArray, flatMap, partition, clone, without, defaults, isUndefined} from 'lodash';
 import {action, computed} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
@@ -58,8 +58,11 @@ export class SubformsFieldModel extends FieldModel {
     }
 
     @action
-    init(initialValue = []) {
-        super.init(this.parseValue(initialValue));
+    init(initialValue) {
+        if (!isUndefined(initialValue)) {
+            this.initialValue = this.parseValue(initialValue);
+        }
+        this.reset();
         this.cleanupModels();
     }
 
@@ -143,11 +146,11 @@ export class SubformsFieldModel extends FieldModel {
      * @param {integer} [index] - index in collection where subform should be inserted.
      */
     @action
-    add({initialValues = {}, index = this.value.length - 1} = {}) {
+    add({initialValues = {}, index = this.value.length} = {}) {
         const newSubforms = this.parseValue([initialValues]),
             newValue = clone(this.value);
 
-        newValue.splice(index, 0, newSubforms);
+        newValue.splice(index, 0, ...newSubforms);
 
         this.value = newValue;
     }
