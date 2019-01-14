@@ -141,8 +141,8 @@ export class SubformsFieldModel extends FieldModel {
     /**
      * Add a new record (subform) to this field.
      *
-     * @param {Object} [initialValue] - object containing initial values for new record.
-     * @param {integer} [index] - index in collection where subform should be inserted.
+     * @param {Object} [initialValues] - object containing initial values for new record.
+     * @param {number} [index] - index in collection where subform should be inserted.
      */
     @action
     add({initialValues = {}, index = this.value.length} = {}) {

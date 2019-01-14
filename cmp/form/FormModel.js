@@ -59,10 +59,11 @@ export class FormModel {
      * @param {Object} c - FormModel configuration.
      * @param {(FieldModel[]|Object[])} [c.fields] - FieldModels, or configurations to create them,
      *      for all data fields managed by this FormModel.
-     * @param {Object} [initialValues] - Map of initial values for fields in this model
+     * @param {Object} [c.initialValues] - Map of initial values for fields in this model.
      */
     constructor({fields = [], initialValues = {}} = {}) {
         fields.forEach(it => this.addField(it));
+        this.init(initialValues);
     }
 
     /**
