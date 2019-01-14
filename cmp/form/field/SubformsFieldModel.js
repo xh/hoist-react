@@ -60,7 +60,7 @@ export class SubformsFieldModel extends FieldModel {
     @action
     init(initialValue = []) {
         super.init(this.parseValue(initialValue));
-        this.cleanupModel();
+        this.cleanupModels();
     }
 
     @action
@@ -143,7 +143,7 @@ export class SubformsFieldModel extends FieldModel {
      * @param {integer} [index] - index in collection where subform should be inserted.
      */
     @action
-    add({initialValues = {}, index = this.value.length - 1}) {
+    add({initialValues = {}, index = this.value.length - 1} = {}) {
         const newSubforms = this.parseValue([initialValues]),
             newValue = clone(this.value);
 
@@ -177,7 +177,7 @@ export class SubformsFieldModel extends FieldModel {
     cleanupModels() {
         // destroy any models we know we are finished with early..
         const {_createdModels, initialValue, value} = this,
-            [keep, destroy] = partition(_createdModels(m => initialValue.includes(m) || value.includes(m)));
+            [keep, destroy] = partition(_createdModels, m => initialValue.includes(m) || value.includes(m));
         this._createdModels = keep;
         XH.safeDestroy(destroy);
     }

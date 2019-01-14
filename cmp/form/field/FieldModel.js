@@ -72,10 +72,11 @@ export class FieldModel {
     }) {
         this.name = name;
         this.displayName = displayName;
+        this.value = initialValue;
+        this.initialValue = initialValue;
         this.disabled = disabled;
         this.readonly = readonly;
         this.rules = this.processRuleSpecs(rules);
-        this.value = this.initialValue = initialValue;
     }
 
     //-----------------------------
