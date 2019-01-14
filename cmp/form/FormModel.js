@@ -46,10 +46,12 @@ export class FormModel {
      *
      * @param {string} [name] - name of this form.  This will be the unique id of
      *      this form in its parent.
-     * @param {FieldModel[]} [fields] - all fields in this model.
+     * @param {(FieldModel|Object)[]} [fields] - collection of fields or configs for fields.
+     * @param {Object} [initialValues] - Map of initial values for fields in this model.
      */
-    constructor({fields = []} = {}) {
+    constructor({fields = [], initialValues = {}} = {}) {
         fields.forEach(it => this.addField(it));
+        this.init(initialValues);
     }
 
     /**
@@ -67,10 +69,14 @@ export class FormModel {
     //----------------------------
     // Add/Remove Members
     //----------------------------
+    /**
+     * Add a field to this model
+     * @param {FieldModel|Object} field - field to add to this model.
+     */
     @action
     addField(field) {
         if (!(field instanceof FieldModel)) {
-            field = (field.type == 'subforms' ? new SubformsFieldModel(field) : new FieldModel(field));
+            field = (field.subforms ? new SubformsFieldModel(field) : new FieldModel(field));
         }
         throwIf(this.getField(field.name), `Form already has member with name ${name}`);
         field.formModel = this;
@@ -85,6 +91,7 @@ export class FormModel {
      * Reset fields to initial values and reset validation.
      */
     reset() {
+        super.reset();
         this.fields.forEach(m => m.reset());
     }
 
@@ -134,7 +141,7 @@ export class FormModel {
     }
 
     /**
-     * List of all validation errors for this form
+     * List of all validation errors for this form.
      */
     get allErrors() {
         return flatMap(this.fields, s => s.allErrors);

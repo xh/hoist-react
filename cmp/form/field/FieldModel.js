@@ -55,7 +55,7 @@ export class FieldModel {
      * @param {Object} cfg
      * @param {string} cfg.name
      * @param {string} [cfg.displayName]
-     * @param {string} [cfg.initialValue]
+     * @param {*} [cfg.initialValue]
      * @param {boolean} [cfg.disabled]
      * @param {boolean} [cfg.readonly]
      * @param {(Rule|Object|Function)} [cfg.rules] -
@@ -72,11 +72,10 @@ export class FieldModel {
     }) {
         this.name = name;
         this.displayName = displayName;
-        this.value = initialValue;
-        this.initialValue = initialValue;
         this.disabled = disabled;
         this.readonly = readonly;
         this.rules = this.processRuleSpecs(rules);
+        this.value = this.initialValue = initialValue;
     }
 
     //-----------------------------
@@ -138,10 +137,9 @@ export class FieldModel {
     /** Reset to the initial value and reset validation state. */
     @action
     reset() {
-        this.setValue(this.initialValue);
+        this.value = this.initialValue;
         this.errors = null;
         this.validationDisplayed = false;
-        this.computeValidationAsync();
     }
 
     //----------------------

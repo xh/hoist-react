@@ -6,7 +6,7 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {isArray, flatMap} from 'lodash';
+import {isArray, flatMap, partition, clone, without, defaults} from 'lodash';
 import {action, computed} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
@@ -18,68 +18,87 @@ import {ValidationState} from '../validation/ValidationState';
  *
  * A data field in a form whose value is a collection of FormModels (subforms).
  *
- * Applications should populate the contents of this collection by setting the
- * value property of this object to an array of FormModels.  Applications should *not* modify
- * the existing value property.
+ * Applications should initialize this field with an array of objects.  These values will be
+ * loaded into an array of managed FormModels which will form the value of this field.
+ *
+ * Applications should *not* modify the value property directly, unless they wish to reinitialize
+ * all existing form contents to new values.  Use the methods add() or remove() to
+ * adjust the contents of the collection while preserving existing form state.
  *
  * Validation rules for the entire collection may be specified as for any field, but
- * validations on the subform will also bubble up to this field, effecting its overall validation
- * state.
+ * validations on the subforms will also bubble up to this field, effecting its overall
+ * validation state.
  */
 export class SubformsFieldModel extends FieldModel {
 
-    get subforms() {
-        return this.value || [];
+    _createdModels = []; // Any subform models created by this model.  Hold on to for cleanup.
+    _modelConfig = null;
+
+    /**
+     *
+     * @param {Object} subforms - config for FormModel representing a subform.
+     * @param {Object[]} [cfg.initialValue]
+     * @param {...} rest - arguments for FieldModel
+     */
+    constructor({subforms, initialValue = [],  ...rest}) {
+        super({...rest});
+        this._modelConfig = subforms;
+        this.init(initialValue);
     }
 
     //-----------------------------
     // Overrides
     //-----------------------------
     get values() {
-        return this.subforms.map(s => s.values);
+        return this.value.map(s => s.values);
     }
 
     getData() {
-        return this.subforms.map(s => s.getData());
+        return this.value.map(s => s.getData());
+    }
+
+    @action
+    init(initialValue = []) {
+        super.init(this.parseValue(initialValue));
+        this.cleanup();
     }
 
     @action
     setValue(v) {
-        throwIf(v && (!isArray(v) || v.some(s => !(s instanceof FormModel))), 'Subform field must contain forms.');
-        super.setValue(v);
-        this.subforms.forEach(s => s.parent = this.formModel);
+        super.setValue(this.parseValue(v));
+        this.cleanup();
     }
 
     set formModel(formModel) {
         super.formModel = formModel;
-        this.subforms.forEach(s => s.parent = formModel);
+        this.value.forEach(s => s.parent = formModel);
     }
 
     @computed
     get allErrors() {
         const {errors} = this,
-            subErrs = flatMap(this.subforms, s => s.allErrors);
+            subErrs = flatMap(this.value, s => s.allErrors);
         return errors ? [...errors, subErrs] : subErrs;
     }
 
     @action
     reset() {
         super.reset();
-        this.subforms.forEach(s => s.reset());
+        this.value.forEach(s => s.reset());
     }
 
     @action
     displayValidation(includeSubforms = true) {
         super.displayValidation(includeSubforms);
         if (includeSubforms) {
-            this.subforms.forEach(s => s.displayValidation());
+            this.value.forEach(s => s.displayValidation());
         }
     }
 
     @computed
     get validationState() {
         const VS = ValidationState,
-            states = this.subforms.map(s => s.validationState);
+            states = this.value.map(s => s.validationState);
         states.push(super.validationState);
 
         if (states.includes(VS.NotValid)) return VS.NotValid;
@@ -89,12 +108,12 @@ export class SubformsFieldModel extends FieldModel {
 
     @computed
     get isValidationPending() {
-        return this.subforms.some(m => m.isValidationPending) || super.isValidationPending;
+        return this.value.some(m => m.isValidationPending) || super.isValidationPending;
     }
 
     @computed
     get isDirty() {
-        return this.subforms.some(s => s.isDirty) || super.isDirty;
+        return this.value.some(s => s.isDirty) || super.isDirty;
     }
 
     @action
@@ -113,7 +132,57 @@ export class SubformsFieldModel extends FieldModel {
         throw XH.exception('Readonly not implemented on subform fields');
     }
 
+
+    //-----------------------------
+    // Collection management
+    //-----------------------------
+    /**
+     * Add a new record (subform) to this field.
+     *
+     * @param {Object} [initialValue] - object containing initial values for new record.
+     * @param {integer} [index] - index in collection where subform should be inserted.
+     */
+    @action
+    add({initialValues = {}, index = this.value.length - 1}) {
+        const newSubforms = this.parseValue([initialValues]),
+            newValue = clone(this.value);
+
+        newValue.splice(index, 0, newSubforms);
+
+        this.value = newValue;
+    }
+
+    @action
+    remove(formModel) {
+        this.value = without(this.value, formModel);
+        this.cleanupModels();
+    }
+
+    //-----------------------
+    // Implementation
+    //----------------------
+    parseValue(externalVal) {
+        throwIf(!isArray(externalVal), 'Value of a SubformsField must be an array.');
+
+        const {_modelConfig, _createdModels} = this;
+        return externalVal.map(v => {
+            const initialValues = defaults({}, v, _modelConfig.initialValues),
+                ret = new FormModel({..._modelConfig, initialValues});
+            ret.parent = this.formModel;
+            _createdModels.push(ret);
+            return ret;
+        });
+    }
+
+    cleanupModels() {
+        // destroy any models we know we are finished with early..
+        const {_createdModels, initialValue, value} = this,
+            [keep, destroy] = partition(_createdModels(m => initialValue.includes(m) || value.includes(m)));
+        this._createdModels = keep;
+        XH.safeDestroy(destroy);
+    }
+
     destroy() {
-        XH.safeDestroy(this.subforms);
+        XH.safeDestroy(this._createdModels);
     }
 }
