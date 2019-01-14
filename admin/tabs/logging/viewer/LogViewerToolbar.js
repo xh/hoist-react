@@ -22,7 +22,7 @@ export class LogViewerToolbar extends Component {
                 label('Start line:'),
                 numberInput({
                     model,
-                    field: 'startLine',
+                    bind: 'startLine',
                     min: 0,
                     width: 80,
                     disabled: model.tail,
@@ -32,7 +32,7 @@ export class LogViewerToolbar extends Component {
                 label('Max lines:'),
                 numberInput({
                     model,
-                    field: 'maxLines',
+                    bind: 'maxLines',
                     min: 1,
                     width: 80,
                     displayWithCommas: true,
@@ -41,7 +41,7 @@ export class LogViewerToolbar extends Component {
                 toolbarSep(),
                 textInput({
                     model,
-                    field: 'pattern',
+                    bind: 'pattern',
                     placeholder: 'Search...',
                     width: 150,
                     onCommit: this.onCommit
@@ -49,7 +49,7 @@ export class LogViewerToolbar extends Component {
                 toolbarSep(),
                 switchInput({
                     model,
-                    field: 'tail',
+                    bind: 'tail',
                     label: 'Tail mode'
                 })
             ]

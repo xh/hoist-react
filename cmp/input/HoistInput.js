@@ -20,78 +20,68 @@ import './HoistInput.scss';
  * Abstract superclass for Components used for data entry with common functionality around reading,
  * writing, converting, and displaying their values.
  *
- * Hoist Inputs can *either* operate in bound mode or in standard controlled mode.
- *      + If provided with `model` and `field` props, they will will operate in bound mode,
- *        reading their value from the model and writing back to it on commit (see below).
+ * If building a classic data-entry form (i.e. multiple labelled inputs used to enter or edit a
+ * chunk of data), please review and consider the use of Form and FormField components and their
+ * corresponding models. They work together as a system with child HoistInputs to provide
+ * consolidated data initialization and extraction, support for client-side validation, and more.
+ *
+ * HoistInputs can *either* operate in bound mode or in standard controlled mode.
+ *      + If provided with `model` and `bind` props (either directly or via a parent FormField),
+ *        they will will operate in bound mode, reading their value from the model and writing back
+ *        to it on commit (as described below).
  *      + Otherwise, they will get their value directly via the `value` prop.
  *
  * Note that providing a model as a value source may allow for more efficient (re)rendering in a
  * MobX context. The bound value is only read *within* this control, so that changes to its value
  * do not cause the parent of this control to re-render.
  *
- * Regardless of mode, Hoist Inputs will call an `onChange` callback prop with the latest value
- * as it is updated.  They also introduce the notion of "committing" a field to the model when the
- * user has completed a discrete act of data entry. This will vary by field but is commonly marked
- * by the user blurring the field, selecting a record from a combo, or pressing the <enter> key.
+ * Regardless of mode, HoistInputs will call an `onChange` callback prop with the latest value
+ * as they are updated. They also introduce the notion of "committing" a value to the model when the
+ * user has completed a discrete act of data entry. This will vary by input but is commonly marked
+ * by the user blurring the input, selecting a record from a combo, or pressing the <enter> key.
  * At this time, any specified `onCommit` callback prop will be called and the value will be flushed
  * back to any bound model.
  *
- * For many fields (e.g. checkbox, select, switchInput, slider) commit always fires at the same time
- * as the change event. Other fields such as textInput maintain the distinction described above,
+ * For many inputs (e.g. checkbox, select, switchInput, slider) commit always fires at the same time
+ * as the change event. Other inputs such as textInput maintain the distinction described above,
  * but expose a `commitOnChange` prop to force them to eagerly flush their values on every change.
- *
- * For a managed display optimized for user-input forms, consider wrapping HoistInputs in a FormField
- * Component within a `Form`. Forms provide out-of-the-box support for labels, validation, disable state
- * and read-only sate.
  */
 export class HoistInput extends Component {
 
     static propTypes = {
 
+        /**
+         * Field or model property name from which this component should read and write its value
+         * in controlled mode. Can be set by parent FormField.
+         */
+        bind: PT.string,
+
         /** CSS class name. **/
         className: PT.string,
 
-        /** HTML id attribute **/
+        /** True to disable user interaction. Can be set by parent FormField. */
+        disabled: PT.bool,
+
+        /** DOM ID of this input. */
         id: PT.string,
 
-        /** Handler called when value changes - passed the new value. */
+        /** Bound HoistModel instance. Can be set by parent FormField. */
+        model: PT.object,
+
+        /** Called when value changes - passed new and prior values. */
         onChange: PT.func,
 
-        /** Handler called when value is committed to backing model - passed the new value. */
+        /** Called when value is committed to backing model - passed new and prior values. */
         onCommit: PT.func,
 
         /** Style block. */
         style: PT.object,
 
-        /** Value of the control, if provided directly. */
-        value: PT.any,
-
-        /**
-         * Tab order for focus control, or -1 to skip. If unset, browser layout-based order.
-         */
+        /** Tab order for focus control, or -1 to skip. If unset, browser layout-based order. */
         tabIndex: PT.number,
 
-        // --- Default from FormField ------
-        /**
-         * True to disable user interaction.
-         *
-         * Provided by any containing FormField.
-         */
-        disabled: PT.bool,
-
-        /**
-         * Bound HoistModel instance
-         *
-         * Provided by any containing FormField.
-         */
-        model: PT.object,
-
-        /**
-         * Property name on bound Model from which to read/write data.
-         *
-         * Provided by any containing FormField.
-         */
-        field: PT.string
+        /** Value of the control, if provided directly. */
+        value: PT.any
     };
 
     @observable hasFocus;
@@ -113,9 +103,7 @@ export class HoistInput extends Component {
         });
     }
 
-    /**
-     * FormField (if any) associated with this control.
-     */
+    /** @return {FieldModel} (if any) associated with this control. */
     getField() {
         const {model} = this;
         return model &&  model instanceof FieldModel ? model : null;
@@ -125,7 +113,7 @@ export class HoistInput extends Component {
     // Value conversion / committing
     //------------------------------
     /**
-     * Should the input commit immediately when value is changed?
+     * True if this input should commit immediately when its value is changed.
      * Components can/do provide a prop to override this value.
      */
     get commitOnChange() {
@@ -146,14 +134,13 @@ export class HoistInput extends Component {
      */
     @computed
     get externalValue() {
-        const {value, model, field} = this.props;
-        if (model && field) {
-            return model[field];
+        const {value, model, bind} = this.props;
+        if (model && bind) {
+            return model[bind];
         }
         return value;
     }
 
-    /** Set internal value. **/
     @action
     setInternalValue(val) {
         this.internalValue = val;
@@ -173,8 +160,7 @@ export class HoistInput extends Component {
     }
 
     /**
-     * Commit the internal value to the external value.
-     * Fire commit handlers and synchronize state.
+     * Commit the internal value to the external value, fire commit handlers, and synchronize state.
      */
     doCommit() {
         this.doCommitInternal();
@@ -194,14 +180,14 @@ export class HoistInput extends Component {
     }
 
     doCommitInternal() {
-        const {onCommit, model, field} = this.props;
+        const {onCommit, model, bind} = this.props;
         let currentValue = this.externalValue,
             newValue = this.toExternal(this.internalValue);
 
         if (isEqual(newValue, currentValue)) return;
 
-        if (model && field) {
-            const setterName = `set${upperFirst(field)}`;
+        if (model && bind) {
+            const setterName = `set${upperFirst(bind)}`;
             throwIf(!isFunction(model[setterName]), `Required function '${setterName}()' not found on bound model`);
 
             model[setterName](newValue);

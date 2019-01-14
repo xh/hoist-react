@@ -4,9 +4,8 @@
 
 ### 🎁 New Features
 
-* `Grid` components take `onCellClicked` and `onCellDoubleClicked` event handlers
 
-## v18.0.0-rcx (release candidate)
+## v18.0.0-rc4 (release candidate)
 
 ### 🎁 New Features
 
@@ -27,14 +26,19 @@
     charts with x-axis zooming.
   * `Select` now supports an `enableClear` prop to control the presence of a clear button. Defaults
     to false.
+* `Grid` components take `onCellClicked` and `onCellDoubleClicked` event handlers
 
 ### 💥 Breaking Changes
 
 * Major changes to Form (see above). `HoistInput` imports will also need to be adjusted to move from
   `form` to `input`.
+* The name of the HoistInput `field` prop has been changed to `bind`. This change distinguishes the
+  lower-level input package more clearly from the higher-level form package which uses it. It also
+  more clearly relates the property to the associated `@bindable` annotation for models.
 * A `Select` input with `enableMulti = true` will by default no longer show an inline x to clear the
   input value. Use the `enableClear` prop to re-enable.
-
+* Column definitions are exported from the `grid` package. To ensure backwards compatibility,
+  replace imports from '@xh/hoist/desktop/columns' with '@xh/hoist/desktop/cmp/grid'
 
 ## v17.0.0 - 2018-12-21
 

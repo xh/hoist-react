@@ -21,7 +21,7 @@ import {
     isNil,
     cloneDeep
 } from 'lodash';
-import {Column, ColumnGroup} from '@xh/hoist/cmp/grid/columns';
+import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
 import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';
@@ -108,7 +108,7 @@ export class GridModel {
      * @param {Object} c - GridModel configuration.
      * @param {BaseStore} c.store - store containing the data for the grid.
      * @param {Object[]} c.columns - {@link Column} or {@link ColumnGroup} configs
-     * @param {(boolean)} [c.treeMode] - true if grid is a tree grid (default false).
+     * @param {boolean} [c.treeMode] - true if grid is a tree grid (default false).
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
      * @param {(Object|string)} [c.stateModel] - config or string `gridId` for a GridStateModel.

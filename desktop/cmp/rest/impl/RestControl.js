@@ -110,7 +110,7 @@ export class RestControl extends Component {
 
         return select({
             model,
-            field: 'value',
+            bind: 'value',
             options,
             enableCreate: field.enableCreate,
             disabled: !model.isEditable
@@ -121,7 +121,7 @@ export class RestControl extends Component {
         const model = this.model;
         return checkbox({
             model,
-            field: 'value',
+            bind: 'value',
             disabled: !model.isEditable
         });
     }
@@ -130,7 +130,7 @@ export class RestControl extends Component {
         const model = this.model;
         return switchInput({
             model,
-            field: 'value',
+            bind: 'value',
             disabled: !model.isEditable
         });
     }
@@ -139,7 +139,7 @@ export class RestControl extends Component {
         const model = this.model;
         return numberInput({
             model,
-            field: 'value',
+            bind: 'value',
             className: 'bp3-fill',
             disabled: !model.isEditable,
             commitOnChange: true
@@ -150,7 +150,7 @@ export class RestControl extends Component {
         const model = this.model;
         return textArea({
             model,
-            field: 'value',
+            bind: 'value',
             autoFocus: this.props.autoFocus,
             className: 'bp3-fill',
             style: {height: model.editor.height || 100},
@@ -166,7 +166,7 @@ export class RestControl extends Component {
         return textInput({
             model,
             type,
-            field: 'value',
+            bind: 'value',
             autoFocus: this.props.autoFocus,
             className: 'bp3-fill',
             disabled: !model.isEditable,
@@ -179,7 +179,7 @@ export class RestControl extends Component {
         const model = this.model;
         return jsonInput({
             model,
-            field: 'value',
+            bind: 'value',
             className: 'bp3-fill',
             disabled: !model.isEditable,
             // setting size appears to be the only way to get scrollbars

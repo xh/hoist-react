@@ -56,7 +56,7 @@ export class ImpersonationBar extends Component {
                 filler(),
                 select({
                     model: this,
-                    field: 'pendingTarget',
+                    bind: 'pendingTarget',
                     options: targets,
                     enableCreate: true,
                     placeholder: 'Select User...',

@@ -88,3 +88,11 @@ body.xh-app {
 .xh-align-center      {text-align: center;}
 .xh-align-left        {text-align: left;}
 .xh-align-right       {text-align: right;}
+
+// Lightly patterned background with light and dark theme variants.
+.xh-tiled-bg {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="21" height="21"><rect x="0" y="0" width="20" height="20" style="fill: #F5F5F5;" /></svg>');
+  .xh-dark & {
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="21" height="21"><rect x="0" y="0" width="20" height="20" style="fill: #212121;" /></svg>');
+  }
+}
