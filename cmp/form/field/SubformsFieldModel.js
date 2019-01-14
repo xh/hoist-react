@@ -60,13 +60,13 @@ export class SubformsFieldModel extends FieldModel {
     @action
     init(initialValue = []) {
         super.init(this.parseValue(initialValue));
-        this.cleanup();
+        this.cleanupModel();
     }
 
     @action
     setValue(v) {
         super.setValue(this.parseValue(v));
-        this.cleanup();
+        this.cleanupModels();
     }
 
     set formModel(formModel) {
