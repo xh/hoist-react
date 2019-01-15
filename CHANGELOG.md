@@ -2,7 +2,7 @@
 
 ## v19.0.0-SNAPSHOT (in development / unreleased)
 
-## v18.0.0-rc4 (release candidate)
+## v18.0.0 - 2019-01-15
 
 ### 🎁 New Features
 
