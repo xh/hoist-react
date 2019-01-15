@@ -40,6 +40,12 @@
 * Column definitions are exported from the `grid` package. To ensure backwards compatibility,
   replace imports from `@xh/hoist/desktop/columns` with `@xh/hoist/desktop/cmp/grid`.
 
+### 📚 Libraries
+
+* React `~16.6.0 -> ~16.7.0`
+* Patch version updates to multiple other dependencies.
+
+
 ## v17.0.0 - 2018-12-21
 
 ### 💥 Breaking Changes
@@ -265,11 +271,11 @@ list. Note, this component is being replaced in Hoist v16 by the react-select li
 
 ### 📚 Libraries
 
-* Blueprint Core 3.6.1 -> 3.7.0
-* Blueprint Datetime 3.2.0 -> 3.3.0
-* Fontawesome 5.3.x -> 5.4.x
-* MobX 5.1.2 -> 5.5.0
-* Router5 6.5.0 -> 6.6.0
+* Blueprint Core `3.6.1 -> 3.7.0`
+* Blueprint Datetime `3.2.0 -> 3.3.0`
+* Fontawesome `5.3.x -> 5.4.x`
+* MobX `5.1.2 -> 5.5.0`
+* Router5 `6.5.0 -> 6.6.0`
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v14.1.3...v14.2.0)
 
@@ -376,8 +382,8 @@ list. Note, this component is being replaced in Hoist v16 by the react-select li
 
 ### 📚 Libraries
 
-* React 16.5.1 -> 16.5.2
-* router5 6.4.2 -> 6.5.0
+* React `16.5.1 -> 16.5.2`
+* router5 `6.4.2 -> 6.5.0`
 * CodeMirror, Highcharts, and MobX patch updates
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v13.0.0...v14.0.0)
