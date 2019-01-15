@@ -5578,6 +5578,11 @@ neo-async@^2.5.0:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.0.tgz#b9d15e4d71c6762908654b5183ed38b753340835"
   integrity sha512-MFh0d/Wa7vkKO3Y3LlacqAEeHK0mckVqzDieUKTT+KGxi+zIpeVsFxymkIiRpbpDziHc290Xr9A1O4Om7otoRA==
 
+next-node@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/next-node/-/next-node-1.0.3.tgz#229348b326b6a1203515494fa6ae9a2b1db88ca6"
+  integrity sha1-IpNIsya2oSA1FUlPpq6aKx24jKY=
+
 nice-try@^1.0.4:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/nice-try/-/nice-try-1.0.5.tgz#a3378a7696ce7d223e88fc9b764bd7ef1089e366"
@@ -6788,6 +6793,14 @@ react-transition-group@^2.2.1, react-transition-group@~2.5.1:
     loose-envify "^1.4.0"
     prop-types "^15.6.2"
     react-lifecycles-compat "^3.0.4"
+
+react-with-dimensions@~1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/react-with-dimensions/-/react-with-dimensions-1.1.0.tgz#3b0d1444628fd84e4f4c36c1576396facbc3006d"
+  integrity sha512-aMBIeY6q/1XRzrvJJY/A51lV1LEhLUe1Sq5fmRk+8CV3QAQYPaiW+6crsylg/GY2y7ep6lRDveg0Sf/f2OBV+w==
+  dependencies:
+    next-node "^1.0.3"
+    resize-observer-polyfill "^1.5.0"
 
 react@~16.7.0:
   version "16.7.0"
