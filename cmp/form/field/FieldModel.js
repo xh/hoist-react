@@ -79,8 +79,8 @@ export class FieldModel {
         this.displayName = displayName;
         this.value = initialValue;
         this.initialValue = initialValue;
-        this.disabled = disabled;
-        this.readonly = readonly;
+        this._disabled = disabled;
+        this._readonly = readonly;
         this.rules = this.processRuleSpecs(rules);
     }
 
@@ -118,7 +118,8 @@ export class FieldModel {
         return !!(this._disabled || (formModel && formModel.disabled));
     }
 
-    set disabled(disabled) {
+    @action
+    setDisabled(disabled) {
         this._disabled = disabled;
     }
 
@@ -128,7 +129,8 @@ export class FieldModel {
         return !!(this._readonly || (formModel && formModel.readonly));
     }
 
-    set readonly(readonly) {
+    @action
+    setReadonly(readonly) {
         this._readonly = readonly;
     }
 
@@ -165,19 +167,6 @@ export class FieldModel {
     /** @member {boolean} - true if value has been changed since last reset/init. */
     get isDirty() {
         return this.value !== this.initialValue;
-    }
-
-    //------------------------
-    // Disabled/readonly
-    //------------------------
-    @action
-    setDisabled(disabled) {
-        this.setDisabled = disabled;
-    }
-
-    @action
-    setReadonly(readonly) {
-        this.setReadonly = readonly;
     }
 
     //------------------------

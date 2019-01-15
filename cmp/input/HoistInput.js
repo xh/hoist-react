@@ -90,6 +90,7 @@ export class HoistInput extends Component {
     constructor(props) {
         super(props);
 
+        throwIf(props.field, "HoistInput no longer supports a field property.  Use 'bind' instead.");
         this.addReaction({
             track: () => this.externalValue,
             run: (externalVal) => {

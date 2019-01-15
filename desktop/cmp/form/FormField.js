@@ -167,7 +167,7 @@ export class FormField extends Component {
     get fieldModel() {
         const {formModel} = this,
             {field} = this.props;
-        return formModel && field ? formModel.getField(field) : null;
+        return formModel && field ? formModel.fields[field] : null;
     }
 
     get label() {

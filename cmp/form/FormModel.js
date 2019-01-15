@@ -6,9 +6,9 @@
  */
 
 import {XH, HoistModel} from '@xh/hoist/core';
-import {observable, bindable, computed, action} from '@xh/hoist/mobx';
+import {bindable, computed, action, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {find, flatMap, uniqBy} from 'lodash';
+import {flatMap, forOwn, some, mapValues, map, values} from 'lodash';
 
 import {ValidationState} from './validation/ValidationState';
 import {FieldModel} from './field/FieldModel';
@@ -39,8 +39,8 @@ import {SubformsFieldModel} from './field/SubformsFieldModel';
 @HoistModel
 export class FormModel {
 
-    /** @member {FieldModel[]} */
-    @observable.ref fields = [];
+    /** @member {Object} */
+    @observable.ref fields = {};
     
     /** @member {FormModel} */
     parent = null;
@@ -68,41 +68,33 @@ export class FormModel {
      * @param {Object} [c.initialValues] - Map of initial values for fields in this model.
      */
     constructor({fields = [], initialValues = {}} = {}) {
-        throwIf(!uniqBy(fields, 'name'), 'Form cannot contain multiple fields with same name');
-        this.fields = fields.map(f => {
-            return f instanceof FieldModel ? f : (f.subforms ? new SubformsFieldModel(f) : new FieldModel(f));
+        const models = {};
+        fields.forEach(f => {
+            const model = f instanceof FieldModel ? f : (f.subforms ? new SubformsFieldModel(f) : new FieldModel(f));
+            throwIf(models[model.name], 'Form cannot contain multiple fields with same name: ' + model.name);
+            models[model.name] = model;
         });
+        this.fields = models;
 
         this.init(initialValues);
 
         // Set the owning formModel *last* after all fields in place with data.
         // This (currently) kicks off the validation and other reativity.
-        this.fields.forEach(f => f.formModel = this);
+        forOwn(this.fields, f => f.formModel = this);
     }
 
     /**
      * @returns {Object} - a complete map of this model's fields (by name) to their current value.
      */
     getData() {
-        const ret = {};
-        this.fields.forEach(m => {
-            ret[m.name] = m.getData();
-        });
-        return ret;
+        return mapValues(this.fields, v =>  v.getData());
     }
 
-    /**
-     * @param {String} name
-     * @returns {FieldModel}
-     */
-    getField(name) {
-        return find(this.fields, {name});
-    }
 
     /** Reset fields to initial values and reset validation. */
     @action
     reset() {
-        this.fields.forEach(m => m.reset());
+        forOwn(this.fields, m => m.reset());
     }
 
     /**
@@ -115,12 +107,13 @@ export class FormModel {
      */
     @action
     init(initialValues = {}) {
-        this.fields.forEach(m => m.init(initialValues[m.name]));
+        forOwn(this.fields, m => m.init(initialValues[m.name]));
     }
 
     /** @member {boolean} - true if any fields have been changed since last reset/init. */
+    @computed
     get isDirty() {
-        return this.fields.some(m => m.isDirty);
+        return some(this.fields, m => m.isDirty);
     }
 
     //------------------------
@@ -130,7 +123,7 @@ export class FormModel {
     @computed
     get validationState() {
         const VS = ValidationState,
-            states = this.fields.map(m => m.validationState);
+            states = map(this.fields, m => m.validationState);
         if (states.includes(VS.NotValid)) return VS.NotValid;
         if (states.includes(VS.Unknown)) return VS.Unknown;
         return VS.Valid;
@@ -166,14 +159,14 @@ export class FormModel {
      * @returns {Promise<boolean>}
      */
     async validateAsync({display = true} = {}) {
-        const promises = this.fields.map(m => m.validateAsync({display}));
+        const promises = map(this.fields, m => m.validateAsync({display}));
         await Promise.all(promises);
         return this.isValid;
     }
 
     /** Trigger the display of validation errors (if any) by bound FormField components. */
     displayValidation() {
-        this.fields.forEach(m => m.displayValidation());
+        forOwn(this.fields, m => m.displayValidation());
     }
 
     //------------------------
@@ -184,7 +177,7 @@ export class FormModel {
         return new Proxy({}, {
             get(target, name, receiver) {
 
-                const field = me.getField(name);
+                const field = me.fields[name];
                 if (field) return field.values;
 
                 const parent = (name === 'parent' ? me.parent : null);
@@ -196,6 +189,6 @@ export class FormModel {
     }
 
     destroy() {
-        XH.safeDestroy(this.fields);
+        XH.safeDestroy(values(this.fields));
     }
 }
