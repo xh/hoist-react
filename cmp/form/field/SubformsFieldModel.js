@@ -71,9 +71,21 @@ export class SubformsFieldModel extends FieldModel {
         this.cleanupModels();
     }
 
+    get formModel() {
+        return super.formModel;  // Need to define setter/getter pair together - see below.
+    }
+
     set formModel(formModel) {
         super.formModel = formModel;
         this.value.forEach(s => s.parent = formModel);
+
+        this.addAutorun(() => {
+            const {disabled, readonly, value} = this;
+            value.forEach(sub => {
+                sub.setDisabled(disabled);
+                sub.setReadonly(readonly);
+            });
+        });
     }
 
     @computed
@@ -126,15 +138,6 @@ export class SubformsFieldModel extends FieldModel {
         return this.isValid;
     }
 
-    setDisabled(disabled) {
-        throw XH.exception('Disabled not implemented on subform fields');
-    }
-
-    setReadonly(readonly) {
-        throw XH.exception('Readonly not implemented on subform fields');
-    }
-
-
     //-----------------------------
     // Collection management
     //-----------------------------
@@ -168,6 +171,7 @@ export class SubformsFieldModel extends FieldModel {
 
         const {_modelConfig, _createdModels} = this;
         return externalVal.map(v => {
+
             const initialValues = defaults({}, v, _modelConfig.initialValues),
                 ret = new FormModel({..._modelConfig, initialValues});
             ret.parent = this.formModel;

@@ -84,6 +84,7 @@ export class FormField extends Component {
         const {fieldModel} = this,
             isRequired = fieldModel && fieldModel.isRequired,
             isPending = fieldModel && fieldModel.isValidationPending,
+            readonly = fieldModel && fieldModel.readonly,
             validationDisplayed = fieldModel && fieldModel.validationDisplayed,
             notValid = fieldModel && fieldModel.isNotValid,
             displayNotValid = validationDisplayed && notValid,
@@ -92,8 +93,7 @@ export class FormField extends Component {
             requiredStr = isRequired ? span(' *') : null;
 
         // Display related props
-        const minimal = this.getDefaultedProp('minimal', false),
-            readonly = this.getDefaultedProp('readonly', false);
+        const minimal = this.getDefaultedProp('minimal', false);
 
         // Styles
         const classes = [];

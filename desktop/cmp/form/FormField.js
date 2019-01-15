@@ -62,14 +62,7 @@ export class FormField extends Component {
          * Defaulted from containing Form, or false.
          */
         minimal: PT.bool,
-
-        /**
-         * Render the bound value as a string. In contrast to `disabled`, the HoistInput child is
-         * not rendered at all in read-only mode.
-         * Defaulted from containing Form, or false.
-         */
-        readonly: PT.bool,
-
+        
         /**
          * CommitOnChange property for underlying HoistInput (for inputs that support).
          * Defaulted from containing Form.
@@ -104,6 +97,7 @@ export class FormField extends Component {
         // Model related props
         const {fieldModel, label} = this,
             isRequired = fieldModel && fieldModel.isRequired,
+            readonly = fieldModel && fieldModel.readonly,
             validationDisplayed = fieldModel && fieldModel.validationDisplayed,
             notValid = fieldModel && fieldModel.isNotValid,
             displayNotValid = validationDisplayed && notValid,
@@ -115,7 +109,6 @@ export class FormField extends Component {
         // Display related props
         const inline = this.getDefaultedProp('inline', false),
             minimal = this.getDefaultedProp('minimal', false),
-            readonly = this.getDefaultedProp('readonly', false),
             leftErrorIcon = this.getDefaultedProp('leftErrorIcon', false),
             clickableLabel = this.getDefaultedProp('clickableLabel', true);
 

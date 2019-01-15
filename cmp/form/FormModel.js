@@ -6,9 +6,9 @@
  */
 
 import {XH, HoistModel} from '@xh/hoist/core';
-import {observable, computed, action} from '@xh/hoist/mobx';
+import {observable, bindable, computed, action} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {find, flatMap} from 'lodash';
+import {find, flatMap, uniqBy} from 'lodash';
 
 import {ValidationState} from './validation/ValidationState';
 import {FieldModel} from './field/FieldModel';
@@ -41,9 +41,15 @@ export class FormModel {
 
     /** @member {FieldModel[]} */
     @observable.ref fields = [];
-
+    
     /** @member {FormModel} */
     parent = null;
+
+    /** @member {boolean} */
+    @bindable disabled;
+
+    /** @member {boolean} */
+    @bindable readonly;
 
     _valuesProxy = this.createValuesProxy();
 
@@ -62,8 +68,16 @@ export class FormModel {
      * @param {Object} [c.initialValues] - Map of initial values for fields in this model.
      */
     constructor({fields = [], initialValues = {}} = {}) {
-        fields.forEach(it => this.addField(it));
+        throwIf(!uniqBy(fields, 'name'), 'Form cannot contain multiple fields with same name');
+        this.fields = fields.map(f => {
+            return f instanceof FieldModel ? f : (f.subforms ? new SubformsFieldModel(f) : new FieldModel(f));
+        });
+
         this.init(initialValues);
+
+        // Set the owning formModel *last* after all fields in place with data.
+        // This (currently) kicks off the validation and other reativity.
+        this.fields.forEach(f => f.formModel = this);
     }
 
     /**
@@ -78,20 +92,6 @@ export class FormModel {
     }
 
     /**
-     * Register a new FieldModel (or config for one) to be managed by this Model.
-     * @param field {(FieldModel|Object)}
-     */
-    @action
-    addField(field) {
-        if (!(field instanceof FieldModel)) {
-            field = (field.subforms ? new SubformsFieldModel(field) : new FieldModel(field));
-        }
-        throwIf(this.getField(field.name), `Form already has member with name ${name}`);
-        field.formModel = this;
-        this.fields = [...this.fields, field];
-    }
-
-    /**
      * @param {String} name
      * @returns {FieldModel}
      */
@@ -100,6 +100,7 @@ export class FormModel {
     }
 
     /** Reset fields to initial values and reset validation. */
+    @action
     reset() {
         this.fields.forEach(m => m.reset());
     }
@@ -112,6 +113,7 @@ export class FormModel {
      *
      * @param {Object} initialValues - map of field name to value.
      */
+    @action
     init(initialValues = {}) {
         this.fields.forEach(m => m.init(initialValues[m.name]));
     }

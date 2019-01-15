@@ -37,10 +37,6 @@ export class FieldModel {
     name;
     /** @member {string} */
     @observable displayName;
-    /** @member {boolean} */
-    @observable disabled;
-    /** @member {boolean} */
-    @observable readonly;
 
     /** @member {Rule[]} */
     @observable.ref rules = [];
@@ -55,6 +51,8 @@ export class FieldModel {
      */
     @observable validationDisplayed = false;
 
+    @observable _disabled;
+    @observable _readonly;
     _validationTask = new PendingTaskModel();
     _validationRunId = 0;
 
@@ -112,6 +110,26 @@ export class FieldModel {
     /** Current data in this field, fully enumerated. */
     getData() {
         return this.value;
+    }
+
+    /** @member {boolean} */
+    get disabled() {
+        const {formModel} = this;
+        return !!(this._disabled || (formModel && formModel.disabled));
+    }
+
+    set disabled(disabled) {
+        this._disabled = disabled;
+    }
+
+    /** @member {boolean} */
+    get readonly() {
+        const {formModel} = this;
+        return !!(this._readonly || (formModel && formModel.readonly));
+    }
+
+    set readonly(readonly) {
+        this._readonly = readonly;
     }
 
     @action
