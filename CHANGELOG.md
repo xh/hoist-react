@@ -1,22 +1,44 @@
 # Changelog
 
-## v18.0.0-SNAPSHOT (in development / unreleased)
+## v19.0.0-SNAPSHOT (in development / unreleased)
 
 ### 🎁 New Features
 
-* Form support has been susbstantially enhanced and restructured to provide both a cleaner API and new functionality:
-  * `FormModel` and `FieldModel` are now concrete classes, and provide the main entry point for
-   specifying the contents of a form. The `Field` and `FieldSupport` decorators have been removed.
+
+## v18.0.0-rc4 (release candidate)
+
+### 🎁 New Features
+
+* Form support has been substantially enhanced and restructured to provide both a cleaner API and
+  new functionality:
+  * `FormModel` and `FieldModel` are now concrete classes and provide the main entry point for
+    specifying the contents of a form. The `Field` and `FieldSupport` decorators have been removed.
   * Fields and sub-forms may now be dynamically added to FormModel.
-  * The validation state of a FormModel is now *immediately* available after construction and independent of the GUI.
-    The triggering of the *display* of that state is now the seperate process that is triggered by GUI actions such as blur.
-  * `FormField` has been substantially reworked to support a read-only display, and inherit common property
-  settings from its containing `Form`.
-  * `HoistInput` has been moved into the `input` package to clarify that these are lower level controls and independent
-  of the Forms package.
+  * The validation state of a FormModel is now *immediately* available after construction and
+    independent of the GUI. The triggering of the *display* of that state is now a separate process
+    triggered by GUI actions such as blur.
+  * `FormField` has been substantially reworked to support a read-only display and inherit common
+    property settings from its containing `Form`.
+  * `HoistInput` has been moved into the `input` package to clarify that these are lower level
+    controls and independent of the Forms package.
+  * `RestGrid` now supports a `mask` prop. RestGrid loading is now masked by default.
+  * `Chart` component now supports a built-in zoom out gesture: click and drag from right-to-left on
+    charts with x-axis zooming.
+  * `Select` now supports an `enableClear` prop to control the presence of a clear button. Defaults
+    to false.
+* `Grid` components take `onCellClicked` and `onCellDoubleClicked` event handlers
 
 ### 💥 Breaking Changes
-* Major changes to Form (see above).  `HoistInput` imports will also need to be adjusted to move from `form` to `input`.
+
+* Major changes to Form (see above). `HoistInput` imports will also need to be adjusted to move from
+  `form` to `input`.
+* The name of the HoistInput `field` prop has been changed to `bind`. This change distinguishes the
+  lower-level input package more clearly from the higher-level form package which uses it. It also
+  more clearly relates the property to the associated `@bindable` annotation for models.
+* A `Select` input with `enableMulti = true` will by default no longer show an inline x to clear the
+  input value. Use the `enableClear` prop to re-enable.
+* Column definitions are exported from the `grid` package. To ensure backwards compatibility,
+  replace imports from '@xh/hoist/desktop/columns' with '@xh/hoist/desktop/cmp/grid'
 
 ## v17.0.0 - 2018-12-21
 
@@ -99,7 +121,7 @@
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v16.0.1...v17.0.0)
 
-## v16.0.1
+## v16.0.1 - 2018-12-12
 
 ### 🐞 Bug Fixes
 
