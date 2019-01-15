@@ -28,12 +28,6 @@ import './FileChooser.scss';
  * The application is responsible for processing the selected files (e.g. by uploading them to a
  * server) and clearing the selection when complete.
  *
- * TODO:
- *  + Props to control accepted file types/sizes
- *  + Indication of rejected files
- *  + API to update per-file status (i.e. processing/uploading, failed, complete)?
- *  + Prop or model-config based callbacks?
- *
  * @see FileChooserModel
  */
 @LayoutSupport
@@ -41,6 +35,10 @@ import './FileChooser.scss';
 export class FileChooser extends Component {
 
     static propTypes = {
+
+        /** File type(s) to accept (e.g. *.txt). */
+        accept: PT.oneOfType([PT.string, PT.arrayOf(PT.string)]),
+
         /** True (default) to allow selection of more than one file. */
         enableMulti: PT.bool,
 
@@ -57,7 +55,10 @@ export class FileChooser extends Component {
          * True (default) to display the selected file(s) in a grid alongside the dropzone. Note
          * that, if false, the component will not provide any built-in indication of its selection.
          */
-        showFileGrid: PT.bool
+        showFileGrid: PT.bool,
+
+        /** Intro/help text to display within the dropzone target. */
+        targetText: PT.node
     }
 
     static modelClass = FileChooserModel;
@@ -65,8 +66,8 @@ export class FileChooser extends Component {
     baseClassName = 'xh-file-chooser';
 
     render() {
-        const {model, props} = this,
-            {gridModel} = model,
+        const {model, props, fileNoun} = this,
+            {gridModel, lastRejectedCount} = model,
             enableMulti = withDefault(props.enableMulti, true),
             showFileGrid = withDefault(props.showFileGrid, true);
 
@@ -79,15 +80,20 @@ export class FileChooser extends Component {
                     multiple: enableMulti,
                     item: ({getRootProps, getInputProps, isDragActive, draggedFiles}) => {
                         const draggedCount = draggedFiles.length,
-                            noun =  draggedCount > 1 ? 'files' : 'file',
                             targetText = isDragActive ?
-                                `Drop to add ${draggedCount} ${noun}` :
-                                'Drag and drop files here, or click to browse...';
+                                `Drop to add ${fileNoun(draggedCount)}.` :
+                                withDefault(props.targetText, 'Drag and drop files here, or click to browse...'),
+                            rejectText = lastRejectedCount && !isDragActive ?
+                                `Unable to accept ${fileNoun(lastRejectedCount)} for upload.` : '';
 
                         return div({
                             ...getRootProps(),
                             items: [
                                 targetText,
+                                div({
+                                    className: 'xh-file-chooser__reject-warning',
+                                    item: rejectText
+                                }),
                                 input({...getInputProps()})
                             ],
                             className: this.getClassName(
@@ -111,6 +117,10 @@ export class FileChooser extends Component {
             className: this.getClassName(),
             ...this.getLayoutProps()
         });
+    }
+
+    fileNoun(count) {
+        return `${count} ${count == 1 ? 'file' : 'files'}`;
     }
 
 }

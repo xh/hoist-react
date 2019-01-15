@@ -7,10 +7,9 @@
 import {HoistModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {LocalStore} from '@xh/hoist/data';
-import {action, observable} from '@xh/hoist/mobx';
-import {GridModel} from '@xh/hoist/cmp/grid';
-import {fileExtCol} from '@xh/hoist/cmp/grid/columns';
-import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/columns';
+import {action, bindable, observable} from '@xh/hoist/mobx';
+import {fileExtCol, GridModel} from '@xh/hoist/cmp/grid';
+import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {find, last, without, uniqBy} from 'lodash';
 import filesize from 'filesize';
 
@@ -20,6 +19,9 @@ export class FileChooserModel {
 
     @observable.ref
     files = [];
+
+    @bindable
+    lastRejectedCount;
 
     gridModel = new GridModel({
         store: new LocalStore({
@@ -100,7 +102,7 @@ export class FileChooserModel {
             this.addFiles(accepted);
         }
 
-        // TODO - how to indicate rejections?
+        this.setLastRejectedCount(rejected.length);
     }
 
     onFilesChange(files) {

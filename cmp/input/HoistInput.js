@@ -9,7 +9,7 @@ import {Component} from 'react';
 import PT from 'prop-types';
 import {isEqual, isFunction, upperFirst} from 'lodash';
 import {FieldModel} from '@xh/hoist/cmp/form';
-import {throwIf} from '@xh/hoist/utils/js';
+import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {observable, computed, action} from '@xh/hoist/mobx';
 import classNames from 'classnames';
 import {wait} from '@xh/hoist/promise';
