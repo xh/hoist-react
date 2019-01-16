@@ -8,7 +8,7 @@
 import {XH, HoistModel} from '@xh/hoist/core';
 import {bindable, computed, action, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {flatMap, forOwn, some, mapValues, map, values} from 'lodash';
+import {flatMap, forOwn, some, mapValues, map, values, pickBy} from 'lodash';
 
 import {ValidationState} from './validation/ValidationState';
 import {FieldModel} from './field/FieldModel';
@@ -84,10 +84,15 @@ export class FormModel {
     }
 
     /**
+     * Get the current values for this form, by field name.
+     *
+     * @param {boolean} [dirtyOnly] -- include only dirty fields.
      * @returns {Object} - a complete map of this model's fields (by name) to their current value.
      */
-    getData() {
-        return mapValues(this.fields, v =>  v.getData());
+    getData(dirtyOnly = false) {
+        const fields = dirtyOnly ? pickBy(this.fields, f => f.isDirty) : this.fields;
+        return mapValues(fields, v =>  v.getData());
+
     }
 
 
