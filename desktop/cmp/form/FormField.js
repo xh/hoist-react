@@ -12,7 +12,7 @@ import {elemFactory, HoistComponent, LayoutSupport, StableIdSupport} from '@xh/h
 import {tooltip} from '@xh/hoist/kit/blueprint';
 import {FormContext} from '@xh/hoist/cmp/form';
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {box, div, vbox, span, label as labelEl} from '@xh/hoist/cmp/layout';
+import {box, div, span, label as labelEl} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {fmtDate, fmtNumber} from '@xh/hoist/format';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
@@ -130,7 +130,7 @@ export class FormField extends Component {
                     items: [label, requiredStr],
                     htmlFor: clickableLabel ? idAttr : null
                 }),
-                vbox(
+                div(
                     control,
                     div({
                         omit: !info,

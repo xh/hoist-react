@@ -21,15 +21,12 @@
     color: var(--xh-red);
   }
 
-  & > .xh-vbox {
-    overflow: visible !important;
-  }
-
   &.xh-form-field-inline {
     flex-direction: row;
+    align-items: baseline;
 
     .xh-form-field-label {
-      padding: 6px 6px 6px 0;
+      padding: 0 var(--xh-pad-half-px) 0 0;
       min-width: 80px;
     }
   }
