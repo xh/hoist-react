@@ -6,7 +6,7 @@
  */
 
 import {XH, HoistService} from '@xh/hoist/core';
-import {ExportFormat} from '@xh/hoist/cmp/grid/columns';
+import {ExportFormat} from '@xh/hoist/cmp/grid';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {throwIf} from '@xh/hoist/utils/js';

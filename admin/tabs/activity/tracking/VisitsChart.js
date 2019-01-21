@@ -39,12 +39,12 @@ export class VisitsChart extends Component {
     renderToolbar() {
         const model = this.model;
         return toolbar(
-            this.dateInput({field: 'startDate'}),
+            this.dateInput({bind: 'startDate'}),
             Icon.angleRight(),
-            this.dateInput({field: 'endDate'}),
+            this.dateInput({bind: 'endDate'}),
             textInput({
                 model,
-                field: 'username',
+                bind: 'username',
                 placeholder: 'Username',
                 onCommit: this.onCommit,
                 width: 120

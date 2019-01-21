@@ -67,6 +67,7 @@ export class StoreFilterField extends Component {
         /**
          * Callback to receive an updated filter function. Can be used in place of the `store` or
          * `gridModel` prop when direct filtering of a bound store by this component is not desired.
+         * NOTE that calls to this function are NOT buffered and will be made on each keystroke.
          */
         onFilterChange: PT.func,
 

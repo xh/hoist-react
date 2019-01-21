@@ -54,7 +54,7 @@ export class ConfigDiffer extends Component {
                 box('Compare with:'),
                 select({
                     model,
-                    field: 'remoteHost',
+                    bind: 'remoteHost',
                     placeholder: 'https://remote-host/',
                     enableCreate: true,
                     createMessageFn: identity,

@@ -56,7 +56,7 @@ export class ImpersonationBar extends Component {
                 filler(),
                 select({
                     model: this,
-                    field: 'pendingTarget',
+                    bind: 'pendingTarget',
                     options: targets,
                     enableCreate: true,
                     placeholder: 'Select User...',
@@ -72,6 +72,7 @@ export class ImpersonationBar extends Component {
         const text = XH.identityService.isImpersonating ? 'Exit Impersonation' : 'Cancel';
         return button({
             text,
+            style: {color: 'white'},
             onClick: this.onExitClick
         });
     }

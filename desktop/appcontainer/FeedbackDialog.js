@@ -41,7 +41,7 @@ export class FeedbackDialog extends Component {
                     style: {height: 250, marginBottom: 2},
                     commitOnChange: true,
                     model,
-                    field: 'message'
+                    bind: 'message'
                 }),
                 toolbar(
                     filler(),
