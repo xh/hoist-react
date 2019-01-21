@@ -20,6 +20,10 @@
       min-height: 30px;
     }
 
+    &__placeholder {
+      color: var(--xh-input-placeholder-text-color);
+    }
+
     &__single-value,
     &__input {
       color: var(--xh-input-text-color);

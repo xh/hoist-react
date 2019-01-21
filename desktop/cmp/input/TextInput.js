@@ -33,7 +33,7 @@ export class TextInput extends HoistInput {
          *
          *  See https://developer.mozilla.org/en-US/docs/Web/Security/Securing_your_site/Turning_off_form_autocompletion
          */
-        autoComplete: PT.oneOf(['on', 'off', 'new-password', 'nope']),
+        autoComplete: PT.oneOf(['on', 'new-password', 'nope']),
 
         /** True to focus the control on render. */
         autoFocus: PT.bool,
@@ -88,7 +88,7 @@ export class TextInput extends HoistInput {
             item: inputGroup({
                 value: this.renderValue || '',
 
-                autoComplete: withDefault(props.autoComplete, props.type == 'password' ? 'new-password' : 'off'),
+                autoComplete: withDefault(props.autoComplete, props.type == 'password' ? 'new-password' : 'nope'),
                 autoFocus: props.autoFocus,
                 disabled: props.disabled,
                 leftIcon: props.leftIcon,

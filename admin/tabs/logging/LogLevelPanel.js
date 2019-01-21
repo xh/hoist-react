@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
-import {emptyFlexCol} from '@xh/hoist/cmp/grid/columns';
+import {emptyFlexCol} from '@xh/hoist/cmp/grid';
 
 @HoistComponent
 export class LogLevelPanel extends Component {

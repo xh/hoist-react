@@ -15,7 +15,7 @@ import {p} from '@xh/hoist/cmp/layout';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {Icon} from '@xh/hoist/icon';
-import {actionCol} from '@xh/hoist/desktop/columns';
+import {actionCol} from '@xh/hoist/desktop/cmp/grid';
 
 import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
 
