@@ -9,6 +9,11 @@
       border: var(--xh-form-field-invalid-border);
     }
   }
+  &.xh-input-disabled {
+    .CodeMirror {
+      background-color: var(--xh-input-disabled-bg);
+    }
+  }
 
   // TODO - understanding sizing spec / requirements for component vs. generated CodeMirror.
   // See also layout props on the component itself.

@@ -94,7 +94,7 @@ export class JsonInput extends HoistInput {
                 onChange: this.onChange
             }),
 
-            className: this.getClassName(),
+            className: this.getClassName(this.props.disabled ? 'xh-input-disabled': null),
             flex: 1,
             flexDirection: 'column',
             ...this.getLayoutProps(),
@@ -147,7 +147,7 @@ export class JsonInput extends HoistInput {
             },
             foldGutter: true,
             scrollbarStyle: 'simple',
-            readOnly: disabled,
+            readOnly: disabled ? 'nocursor' : false,
             gutters: [
                 'CodeMirror-linenumbers',
                 'CodeMirror-foldgutter'
