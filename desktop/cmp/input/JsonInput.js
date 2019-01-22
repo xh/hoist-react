@@ -94,7 +94,7 @@ export class JsonInput extends HoistInput {
                 onChange: this.onChange
             }),
 
-            className: this.getClassName(this.props.disabled ? 'xh-input-disabled': null),
+            className: this.getClassName(),
             flex: 1,
             flexDirection: 'column',
             ...this.getLayoutProps(),

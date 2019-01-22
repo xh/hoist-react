@@ -12,6 +12,7 @@
   &.xh-input-disabled {
     .CodeMirror {
       background-color: var(--xh-input-disabled-bg);
+      color: var(--xh-input-disabled-text-color);
     }
   }
 
