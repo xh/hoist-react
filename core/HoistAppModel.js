@@ -6,6 +6,7 @@
  */
 import {defaultMethods, markClass} from '@xh/hoist/utils/js';
 import {HoistModel} from './HoistModel';
+import {RefreshModel} from './RefreshModel';
 
 /**
  * Mixin for defining a Hoist Application. An instance of this class will be initialized by Hoist
@@ -37,13 +38,17 @@ export function HoistAppModel(C) {
         },
 
         /**
-         * App can implement this method to customize global App refresh behavior.
-         * This is called by the default refresh button in the AppBar component.
+         * @member {RefreshModel}
          *
-         * @param {boolean} userInitiated - true if the refresh was triggered by user action,
-         *      false if triggered programmatically. Referenced to determine e.g. masking, tracking.
+         * Apps can use this model to trigger refreshes, and control auto-refresh behavior.
+         * This model is also called by the default refresh button in the AppBar component.
          */
-        requestRefresh(userInitiated) { }
+        get refreshModel() {
+            if (!this._refreshModel) {
+                this.refreshModel = new RefreshModel();
+            }
+            return this.refreshModel;
+        }
     });
 
     return C;

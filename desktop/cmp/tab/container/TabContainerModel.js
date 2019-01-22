@@ -108,9 +108,11 @@ export class TabContainerModel {
 
     /**
      * Immediately refresh active tab and require a refresh of all other tabs when next shown.
+     * @param {boolean} userInitiated - true if the refresh was triggered by user action,
+     *  false if triggered programmatically.
      */
-    requestRefresh() {
-        this.tabs.forEach(it => it.requestRefresh());
+    requestRefresh(userInitiated = false) {
+        this.tabs.forEach(it => it.requestRefresh(userInitiated));
     }
 
     /**

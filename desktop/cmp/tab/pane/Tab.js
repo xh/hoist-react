@@ -6,7 +6,6 @@
  */
 import {Component} from 'react';
 import {elem, elemFactory, HoistComponent} from '@xh/hoist/core';
-import {Ref} from '@xh/hoist/utils/react';
 import {frame} from '@xh/hoist/cmp/layout';
 import {TabModel} from './TabModel';
 
@@ -17,30 +16,19 @@ import {TabModel} from './TabModel';
  * This wrapper component provides a default implementation of the following behavior:
  *
  *   - Mounts/unmounts its contents according to TabContainerModel.tabRenderMode.
- *   - Reloads its contents whenever it is visible or when it is made visible and has not been
- *      refreshed since the last refresh request on the TabContainerModel.
  *   - Stretches its contents using a flex layout.
  *
- * Contained components that load data/state from the server should implement loadAsync(),
- * but generally leave the calling of that method to this component.
  */
 @HoistComponent
 export class Tab extends Component {
 
     static modelClass = TabModel;
-
     baseClassName = 'xh-tab';
 
-    child = new Ref();
     wasActivated = false;
 
-    constructor(props) {
-        super(props);
-        this.addAutorun(this.syncLoad);
-    }
-
     render() {
-        const {content, isActive, containerModel} = this.model,
+        const {content, isActive, containerModel, childRef} = this.model,
             mode = containerModel.tabRenderMode;
 
         this.wasActivated = this.wasActivated || isActive;
@@ -50,7 +38,7 @@ export class Tab extends Component {
         }
 
         const item = content.prototype.render ?
-            elem(content, {flex: 1, ref: this.child.ref}) :
+            elem(content, {flex: 1, ref: childRef.ref}) :
             content({flex: 1});
         
         return frame({
@@ -58,30 +46,6 @@ export class Tab extends Component {
             className: this.getClassName(),
             item
         });
-    }
-
-
-    //------------------------
-    // Implementation
-    //------------------------
-    loadChild() {
-        const {model} = this,
-            child = this.child.value;
-
-        if (!child || !child.loadAsync) {  // Anonymous panels won't have a loadAsync method, that's ok.
-            model.markLoaded();
-        } else {
-            child.loadAsync()
-                .finally(() => model.markLoaded())
-                .linkTo(model.loadState)
-                .catchDefault();
-        }
-    }
-
-    syncLoad() {
-        if (this.model.needsLoad && this.child.value) {
-            this.loadChild();
-        }
     }
 }
 export const tab = elemFactory(Tab);

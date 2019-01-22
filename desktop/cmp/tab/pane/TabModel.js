@@ -9,6 +9,7 @@ import {action, bindable, computed, observable} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {throwIf} from '@xh/hoist/utils/js';
 import {startCase} from 'lodash';
+import {Ref} from '@xh/hoist/utils/react';
 
 /**
  * Model for a Tab within a TabContainer - manages the active and refresh state of its contents.
@@ -27,6 +28,9 @@ export class TabModel {
 
     /** @member {TabContainerModel} */
     containerModel = null;
+
+    /** @member {Ref}.  Ref to rendered contents, if any.*/
+    childRef = new Ref();
 
     @observable lastRefreshRequest = null;
     @observable lastLoaded = null;
@@ -65,15 +69,7 @@ export class TabModel {
     get isActive() {
         return this.containerModel.activeTabId === this.id;
     }
-
-    /**
-     * Require a refresh of all contents when they are next shown.
-     */
-    @action
-    requestRefresh() {
-        this.lastRefreshRequest = Date.now();
-    }
-
+    
     @action
     setDisabled(disabled) {
         if (disabled && this.isActive) {
@@ -90,18 +86,27 @@ export class TabModel {
     //---------------------------
     // Implementation
     //---------------------------
+    loadChild(userInitiated = false) {
+        const child = this.childRef.value;
+
+        if (!child || !child.loadAsync) {  // Anonymous panels won't have a loadAsync method, that's ok.
+            this.markLoaded();
+        } else {
+            child.loadAsync(userInitiated)
+                .finally(() => this.markLoaded())
+                .linkTo(this.loadState)
+                .catchDefault({
+                    showAlert: userInitiated
+                });
+        }
+    }
+
+
     @computed
-    get needsLoad() {
-        if (!this.isActive || this.loadState.isPending) return false;
+    get displayChild() {
 
-        const {lastLoaded, lastRefreshRequest} = this;
-        return (!lastLoaded || (lastRefreshRequest && (lastLoaded < lastRefreshRequest)));
     }
 
-    @action
-    markLoaded() {
-        this.lastLoaded = Date.now();
-    }
 
     destroy() {
         XH.safeDestroy(this.loadState);
