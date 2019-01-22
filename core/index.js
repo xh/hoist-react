@@ -10,7 +10,7 @@ export * from './mixins/ReactiveSupport';
 export * from './mixins/EventSupport';
 export * from './mixins/LayoutSupport';
 export * from './mixins/StableIdSupport';
-export * from './mixins/LoadSupport';
+export * from './mixins/RefreshSupport';
 export * from './AppState';
 export * from './AppSpec';
 export * from './HoistAppModel';

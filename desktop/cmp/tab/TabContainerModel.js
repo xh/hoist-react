@@ -8,7 +8,7 @@ import {HoistModel, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {find, isPlainObject, uniqBy} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
-import {TabModel} from '@xh/hoist/desktop/cmp/tab';
+import {TabModel} from './TabModel';
 
 /**
  * Model for a TabContainer, representing its layout/contents and the currently displayed Tab.
@@ -37,6 +37,9 @@ export class TabContainerModel {
     /** How should this container render hidden tabs? */
     tabRenderMode = null;
 
+    /** How should this container refresh hidden tabs? */
+    tabRefreshMode = null;
+
     /**
      * @param {Object} c - TabContainerModel configuration.
      * @param {Object[]} c.tabs - configs for TabModels (or TabModel instances) to be displayed
@@ -45,15 +48,18 @@ export class TabContainerModel {
      *      specify otherwise. If not set, will default to first tab in the provided collection.
      * @param {?string} [c.route] - base route name for this container. If set, this container will
      *      be route-enabled, with the route for each tab being "[route]/[tab.id]".
-     * @param {?string} [c.tabRenderMode] - how to render hidden tabs - [lazy|always|unmountOnHide].
+     * @param {?string} [c.tabRenderMode] - how to render hidden tabs - [always|lazy|unmountOnHide].
+     * @param {?string} [c.tabRefreshMode] - how to refresh hidden tabs - [always|skipHidden|onShowLazy|onShowAlways].
      */
     constructor({
         tabs,
         defaultTabId = null,
         route = null,
-        tabRenderMode = 'lazy'
+        tabRenderMode = 'lazy',
+        tabRefreshMode = 'onShowLazy'
     }) {
         this.tabRenderMode = tabRenderMode;
+        this.tabRefreshMode = tabRefreshMode;
 
         // 1) Validate and wire tabs, instantiate if needed.
         const childIds = uniqBy(tabs, 'id');

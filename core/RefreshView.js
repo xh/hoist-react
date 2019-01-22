@@ -7,13 +7,13 @@
 import React, {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {RefreshModel} from './RefreshModel';
-import {LoadSupport} from './mixins/RefreshSupport';
+import {RefreshSupport} from './mixins/RefreshSupport';
 
 export const RefreshContext = React.createContext(null);
 const refreshContextProvider = elemFactory(RefreshContext.Provider);
 
 @HoistComponent
-@LoadSupport
+@RefreshSupport
 export class RefreshView extends Component {
 
     static modelClass = RefreshModel;
@@ -24,10 +24,6 @@ export class RefreshView extends Component {
             value: this.model,
             items: this.props.children
         });
-    }
-
-    async refreshAsync({isAutoRefresh = false}) {
-        this.model.refreshAsync({isAutoRefresh});
     }
 }
 export const refreshView = elemFactory(RefreshView);

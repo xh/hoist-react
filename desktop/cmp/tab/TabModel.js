@@ -4,12 +4,10 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
-import {action, bindable, computed, observable} from '@xh/hoist/mobx';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {HoistModel} from '@xh/hoist/core';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {startCase} from 'lodash';
-import {Ref} from '@xh/hoist/utils/react';
 
 /**
  * Model for a Tab within a TabContainer - manages the active and refresh state of its contents.
@@ -29,12 +27,6 @@ export class TabModel {
     /** @member {TabContainerModel} */
     containerModel = null;
 
-    /** @member {Ref}.  Ref to rendered contents, if any.*/
-    childRef = new Ref();
-
-    @observable lastRefreshRequest = null;
-    @observable lastLoaded = null;
-    loadState = new PendingTaskModel();
 
     /**
      * @param {Object} c - TabModel configuration.
@@ -44,7 +36,8 @@ export class TabModel {
      * @param {string} [c.excludeFromSwitcher] - set to true to hide this Tab in the container's TabSwitcher, but still be able to activate the tab manually or via routing
      * @param {Object} c.content - content to be rendered by this Tab. Component class or a custom
      *      element factory of the form returned by elemFactory.
-     * @param {boolean} [c.reloadOnShow] - true to reload data for this tab each time it is activated.
+     * @param {?string} [c.tabRenderMode] - how to render hidden tabs - [always|lazy|unmountOnHide].
+     * @param {?string} [c.tabRefreshMode] - how to refresh hidden tabs - [always|skipHidden|onShowLazy|onShowAlways].
      */
     constructor({
         id,
@@ -52,20 +45,26 @@ export class TabModel {
         disabled,
         excludeFromSwitcher,
         content,
-        reloadOnShow = false
+        tabRefreshMode,
+        tabRenderMode
     }) {
         this.id = id;
         this.title = title;
         this.disabled = !!disabled;
         this.excludeFromSwitcher = excludeFromSwitcher;
         this.content = content;
-        this.reloadOnShow = reloadOnShow;
+        this._tabRenderMode = tabRenderMode;
+        this._tabRefreshMode = tabRefreshMode;
     }
 
     activate() {
         this.containerModel.activateTab(this.id);
     }
 
+    get tabRenderMode()     {return this._tabRenderMode || this.containerModel.tabRenderMode}
+
+    get tabRefreshMode()    {return this._tabRefreshMode || this.containerModel.tabRefreshMode}
+    
     get isActive() {
         return this.containerModel.activeTabId === this.id;
     }
@@ -81,34 +80,5 @@ export class TabModel {
         }
 
         this.disabled = disabled;
-    }
-
-    //---------------------------
-    // Implementation
-    //---------------------------
-    loadChild(userInitiated = false) {
-        const child = this.childRef.value;
-
-        if (!child || !child.loadAsync) {  // Anonymous panels won't have a loadAsync method, that's ok.
-            this.markLoaded();
-        } else {
-            child.loadAsync(userInitiated)
-                .finally(() => this.markLoaded())
-                .linkTo(this.loadState)
-                .catchDefault({
-                    showAlert: userInitiated
-                });
-        }
-    }
-
-
-    @computed
-    get displayChild() {
-
-    }
-
-
-    destroy() {
-        XH.safeDestroy(this.loadState);
     }
 }

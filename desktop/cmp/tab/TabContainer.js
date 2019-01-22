@@ -10,9 +10,9 @@ import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
 
 import {TabContainerModel} from './TabContainerModel';
-import {tabSwitcher} from '../switcher/TabSwitcher';
-import {tab} from '../pane/Tab';
-import '../Tabs.scss';
+import {tabSwitcher} from './TabSwitcher';
+import {tab} from './impl/Tab';
+import './Tabs.scss';
 
 /**
  * Display a set of child Tabs and (optionally) a switcher control.

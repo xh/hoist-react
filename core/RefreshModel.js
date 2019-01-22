@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from './HoistModel';
+import {HoistModel} from '@xh/hoist/core';
 import {allSettled} from '@xh/hoist/promise';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 
@@ -27,7 +27,7 @@ export class RefreshModel {
     async refreshAsync({isAutoRefresh = false}) {
         this.lastRefreshRequested = new Date();
         return XH.try(() => {
-            allSettled(this.targets.map(t => t.refreshAsync({isAutoRefresh})));
+            allSettled(this.targets.map(t => this.doRefreshAsync(t, isAutoRefresh)));
         }).finally(() => {
             this.lastRefreshCompleted = new Date();
         }).linkTo(
@@ -50,4 +50,14 @@ export class RefreshModel {
         this.targets = null;
         XH.safeDestroy(this.loadModel);
     }
+
+    //-------------------------
+    // Implementation
+    //-------------------------
+    doRefreshAsync(target, isAutoRefresh) {
+        if (target.refreshAsync)    return target.refreshAsync({isAutoRefresh});
+        if (target.loadAsync)       return target.loadAsync({isAutoRefresh});
+    }
+
+
 }
