@@ -51,11 +51,15 @@ export class IdleService {
     }
 
     createAppListeners() {
-        this.ACTIVITY_EVENTS.forEach(e => addEventListener(e, this.startCountdown, true));
+        this.ACTIVITY_EVENTS.forEach(e => {
+            window.addEventListener(e, this.startCountdown, true);
+        });
     }
 
     destroyAppListeners() {
-        this.ACTIVITY_EVENTS.forEach(e => removeEventListener(e, this.startCountdown, true));
+        this.ACTIVITY_EVENTS.forEach(e => {
+            window.removeEventListener(e, this.startCountdown, true);
+        });
     }
 
     suspendApp() {
