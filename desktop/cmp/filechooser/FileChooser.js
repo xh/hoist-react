@@ -6,6 +6,7 @@
  */
 import {Component} from 'react';
 import PT from 'prop-types';
+import classNames from 'classnames';
 import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {withDefault} from '@xh/hoist/utils/js';
 import {hbox, div, input} from '@xh/hoist/cmp/layout';
@@ -96,7 +97,7 @@ export class FileChooser extends Component {
                                 }),
                                 input({...getInputProps()})
                             ],
-                            className: this.getClassName(
+                            className: classNames(
                                 'xh-file-chooser__target',
                                 isDragActive ? 'xh-file-chooser__target--active' : null,
                                 showFileGrid ? 'xh-file-chooser__target--withGrid' : null,
