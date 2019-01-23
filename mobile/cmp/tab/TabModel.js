@@ -5,9 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {action, computed, observable} from '@xh/hoist/mobx';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
-import {max} from 'lodash';
+import {computed} from '@xh/hoist/mobx';
+
+import {TabRefreshModel} from './impl/TabRefreshModel';
+
 
 /**
  * Model for a Tab within a TabContainer, representing its content's active and load state.
@@ -17,14 +18,11 @@ export class TabModel {
     id = null;
     pageFactory = null;
     pageProps = null;
-    reloadOnShow = false;
     label = null;
     icon = null;
     parent = null;
 
-    @observable _lastRefreshRequest = null;
-    @observable lastLoaded = null;
-    loadState = new PendingTaskModel();
+    refreshModel = new TabRefreshModel(this);
 
     /**
      * @param {Object} c - TabModel configuration.
@@ -32,9 +30,9 @@ export class TabModel {
      * @param {TabContainerModel} c.parent - owner TabContainerModel model.
      * @param {function} c.pageFactory - element factory for page component.
      * @param {Object} [c.pageProps] - props to passed to page upon creation
-     * @param {boolean} [c.reloadOnShow] - whether to load fresh data for this tab each time it is selected
      * @param {String} c.label - text to be displayed in the Tabbar.
      * @param {Icon} [c.icon] - icon to be displayed in the Tabbar.
+     * @param {string} [c.tabRefreshMode] - how to refresh hidden tabs - [always|skipHidden|onShowLazy|onShowAlways].
      */
     constructor({
         id,
@@ -43,47 +41,23 @@ export class TabModel {
         pageProps,
         reloadOnShow,
         label,
-        icon
+        icon,
+        tabRefreshMode
     }) {
         this.id = id;
         this.parent = parent;
         this.pageFactory = pageFactory;
         this.pageProps = pageProps;
-        this.reloadOnShow = reloadOnShow;
         this.label = label;
         this.icon = icon;
+        this._tabRefreshMode = tabRefreshMode;
     }
+
+    get tabRefreshMode()    {return this._tabRefreshMode || this.parent.tabRefreshMode}
 
     @computed
     get isActive() {
-        return this.parent.activeTabId === this.id;
-    }
-
-    @action
-    requestRefresh() {
-        this._lastRefreshRequest = Date.now();
-    }
-
-    @computed
-    get lastRefreshRequest() {
-        const parentVal = this.parent && this.parent.lastRefreshRequest;
-        return max([parentVal, this._lastRefreshRequest]);
-    }
-
-    @computed
-    get needsLoad() {
-        if (this.isActive) {
-            if (!this.loadState.isPending) {
-                const {lastRefreshRequest, lastLoaded} = this;
-                return (!lastLoaded || (lastRefreshRequest && (lastLoaded < lastRefreshRequest)));
-            }
-        }
-        return false;
-    }
-
-    @action
-    markLoaded() {
-        this.lastLoaded = Date.now();
+        return this.parent && this.parent.activeTabId === this.id;
     }
 
     destroy() {

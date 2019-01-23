@@ -4,8 +4,10 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+import React from 'react';
 import {provideMethods, markClass, chainMethods, throwIf} from '@xh/hoist/utils/js';
-import {RefreshContext} from '../RefreshView';
+
+export const RefreshContext = React.createContext(null);
 
 export function RefreshSupport(C) {
 

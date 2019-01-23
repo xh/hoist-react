@@ -9,6 +9,8 @@ import {action, bindable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {startCase} from 'lodash';
 
+import {TabRefreshModel} from './impl/TabRefreshModel';
+
 /**
  * Model for a Tab within a TabContainer - manages the active and refresh state of its contents.
  *
@@ -22,11 +24,11 @@ export class TabModel {
     @observable disabled;
 
     excludeFromSwitcher;
-    reloadOnShow;
 
     /** @member {TabContainerModel} */
     containerModel = null;
 
+    refreshModel = new TabRefreshModel(this);
 
     /**
      * @param {Object} c - TabModel configuration.
@@ -66,7 +68,7 @@ export class TabModel {
     get tabRefreshMode()    {return this._tabRefreshMode || this.containerModel.tabRefreshMode}
     
     get isActive() {
-        return this.containerModel.activeTabId === this.id;
+        return this.containerModel && this.containerModel.activeTabId === this.id;
     }
     
     @action

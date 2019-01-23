@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {observable, runInAction} from '@xh/hoist/mobx';
-import {HoistComponent, elemFactory, elem, AppState, XH, refreshView} from '@xh/hoist/core';
+import {HoistComponent, elemFactory, elem, AppState, XH} from '@xh/hoist/core';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 
@@ -28,6 +28,7 @@ import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {colChooser, ColChooserModel} from '@xh/hoist/desktop/cmp/grid';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
+import {refreshView} from '@xh/hoist/cmp/refresh';
 
 installDesktopImpls({
     colChooser,

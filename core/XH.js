@@ -113,7 +113,7 @@ class XHClass {
     //-------------------------------
     appContainerModel = new AppContainerModel();
     routerModel = new RouterModel();
-
+    
     //-----------------------------
     // Other State
     //-----------------------------
@@ -202,6 +202,10 @@ class XHClass {
      */
     get appLoadModel() {
         return this.acm.appLoadModel;
+    }
+
+    get refreshModel() {
+        return this.acm.refreshModel;
     }
 
     //------------------------

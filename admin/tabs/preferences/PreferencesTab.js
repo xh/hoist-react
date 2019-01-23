@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {tabContainer, TabContainerModel} from '@xh/hoist/desktop/cmp/tab';
+import {tabContainer} from '@xh/hoist/desktop/cmp/tab';
 
 import {PreferencePanel} from './PreferencePanel';
 import {UserPreferencePanel} from './UserPreferencePanel';
@@ -15,19 +15,16 @@ import {UserPreferencePanel} from './UserPreferencePanel';
 @HoistComponent
 export class PreferencesTab extends Component {
 
-    model = new TabContainerModel({
-        route: 'default.preferences',
-        tabs: [
-            {id: 'prefs', content: PreferencePanel},
-            {id: 'userPrefs', content: UserPreferencePanel, reloadOnShow: true}
-        ]
-    });
-
-    async loadAsync() {
-        this.model.requestRefresh();
-    }
-    
     render() {
-        return tabContainer({model: this.model, switcherPosition: 'left'});
+        return tabContainer({
+            model: {
+                route: 'default.preferences',
+                tabs: [
+                    {id: 'prefs', content: PreferencePanel},
+                    {id: 'userPrefs', content: UserPreferencePanel, reloadOnShow: true}
+                ]
+            },
+            switcherPosition: 'left'
+        });
     }
 }

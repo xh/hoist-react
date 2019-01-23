@@ -6,13 +6,9 @@
  */
 import {XH, HoistModel} from '@xh/hoist/core';
 import {action, computed, observable} from '@xh/hoist/mobx';
-import {tab as onsenTab} from '@xh/hoist/kit/onsen';
-import {div} from '@xh/hoist/cmp/layout';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isPlainObject, uniqBy} from 'lodash';
-
-import {tab} from '../pane/Tab';
-import {TabModel} from '../pane/TabModel';
+import {TabModel} from './TabModel';
 
 /**
  * Model for a TabContainer, representing its tabs and the currently selected tab.
@@ -32,9 +28,6 @@ export class TabContainerModel {
     /** ID of the currently active Tab. */
     @observable activeTabId = null;
 
-    /** Timestamp of last call to requestRefresh(). Used to refresh children. */
-    @observable lastRefreshRequest = null;
-
     @computed
     get activeTabIndex() {
         const tab = this.findById(this.activeTabId);
@@ -46,10 +39,12 @@ export class TabContainerModel {
      * @param {Object[]} c.tabs - TabModels or configs to create.
      * @param {string} [c.defaultTabId] - ID of Tab to be shown initially.
      *      If not set, will default to first tab in the provided collection.
+     * @param {string} [c.tabRefreshMode] - how to refresh hidden tabs - [always|skipHidden|onShowLazy|onShowAlways].
      */
     constructor({
         tabs,
-        defaultTabId
+        defaultTabId,
+        tabRefreshMode = 'onShowLazy'
     }) {
         // 1) Validate and wire tabs, instantiate if needed.
         throwIf(tabs.length == 0,
@@ -71,6 +66,7 @@ export class TabContainerModel {
         // 2) Setup and activate default tab
         if (defaultTabId == null) defaultTabId = tabs[0].id;
         this.activeTabId = this.defaultTabId = defaultTabId;
+        this.tabRefreshMode = tabRefreshMode;
     }
 
     @action
@@ -83,13 +79,7 @@ export class TabContainerModel {
         const tabs = this.tabs,
             tab = this.findById(id);
 
-        if (tab && tab.reloadOnShow) tab.requestRefresh();
         this.activeTabId = tab ? id : tabs[0].id;
-    }
-
-    @action
-    requestRefresh() {
-        this.lastRefreshRequest = Date.now();
     }
 
     //-------------------------
@@ -99,27 +89,7 @@ export class TabContainerModel {
         return this.tabs.find(it => it.id === id);
     }
 
-    renderTabs() {
-        return this.tabs.map(tabModel => this.renderTab(tabModel));
-    }
-
-    renderTab(tabModel) {
-        const {id, label, icon} = tabModel;
-
-        return {
-            content: tab({key: id, model: tabModel}),
-            tab: onsenTab({
-                key: id,
-                className: 'xh-tab',
-                items: [
-                    div({className: 'xh-tab-icon', item: icon, omit: !icon}),
-                    div({className: 'xh-tab-label', item: label})
-                ]
-            })
-        };
-    }
-
     destroy() {
-        XH.safeDestroy(...this.tabs);
+        XH.safeDestroy(this.tabs);
     }
 }

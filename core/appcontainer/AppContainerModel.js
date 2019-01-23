@@ -17,6 +17,8 @@ import {MessageSourceModel} from './MessageSourceModel';
 import {ToastSourceModel} from './ToastSourceModel';
 import {ThemeModel} from './ThemeModel';
 
+import {RefreshModel} from '@xh/hoist/cmp/refresh';
+
 /**
  *  Root object for Framework GUI State.
  */
@@ -34,6 +36,7 @@ export class AppContainerModel {
     messageSourceModel = new MessageSourceModel();
     toastSourceModel = new ToastSourceModel();
     themeModel = new ThemeModel();
+    refreshModel = new RefreshModel();
 
     /**
      * Tracks globally loading promises.
@@ -51,7 +54,8 @@ export class AppContainerModel {
             this.messageSourceModel,
             this.toastSourceModel,
             this.themeModel,
-            this.appLoadModel
+            this.appLoadModel,
+            this.refreshModel
         ];
         this.models.forEach(it => {
             if (it.init) it.init();

@@ -7,10 +7,11 @@
 
 import {Component} from 'react';
 import {observable, runInAction} from '@xh/hoist/mobx';
-import {HoistComponent, elem, elemFactory, AppState, XH, refreshView} from '@xh/hoist/core';
+import {HoistComponent, elem, elemFactory, AppState, XH} from '@xh/hoist/core';
 import {div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {menu} from '@xh/hoist/mobile/cmp/menu';
+import {refreshView} from '@xh/hoist/cmp/refresh';
 
 import {aboutDialog} from './AboutDialog';
 import {feedbackDialog} from './FeedbackDialog';

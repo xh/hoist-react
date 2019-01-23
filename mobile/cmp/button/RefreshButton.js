@@ -37,9 +37,7 @@ export class RefreshButton extends Component {
     // Implementation
     //---------------------------
     onRefreshClick = () => {
-        XH.appModel.requestRefresh(true);
+        XH.refreshModel.refreshAsync();
     }
-
 }
-
 export const refreshButton = elemFactory(RefreshButton);

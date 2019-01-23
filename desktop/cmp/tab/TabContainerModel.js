@@ -113,15 +113,6 @@ export class TabContainerModel {
     }
 
     /**
-     * Immediately refresh active tab and require a refresh of all other tabs when next shown.
-     * @param {boolean} userInitiated - true if the refresh was triggered by user action,
-     *  false if triggered programmatically.
-     */
-    requestRefresh(userInitiated = false) {
-        this.tabs.forEach(it => it.requestRefresh(userInitiated));
-    }
-
-    /**
      * @param {string} id - unique ID of the Tab to retrieve
      * @returns {TabModel} - the tab, or null if not found
      */
@@ -140,7 +131,6 @@ export class TabContainerModel {
         throwIf(tab.disabled, `Cannot activate Tab ${id} because it is disabled!`);
 
         this.activeTabId = id;
-        if (tab.reloadOnShow) tab.requestRefresh();
     }
 
     routerReaction() {

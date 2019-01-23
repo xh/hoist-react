@@ -7,8 +7,10 @@
 
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {tabbar} from '@xh/hoist/kit/onsen';
+import {tab as onsenTab, tabbar} from '@xh/hoist/kit/onsen';
+import {tab} from './impl/Tab';
 import {TabContainerModel} from './TabContainerModel';
+import {div} from '@xh/hoist/cmp/layout';
 
 /**
  * Display for a TabContainer.
@@ -24,11 +26,25 @@ export class TabContainer extends Component {
 
         return tabbar({
             index: activeTabIndex,
-            renderTabs: () => model.renderTabs(),
+            renderTabs: () => this.tabs.map(tabModel => this.renderTab(tabModel)),
             onPreChange: (event) => model.setActiveTabIndex(event.index)
         });
     }
 
-}
+    renderTab(tabModel) {
+        const {id, label, icon} = tabModel;
 
+        return {
+            content: tab({key: id, model: tabModel}),
+            tab: onsenTab({
+                key: id,
+                className: 'xh-tab',
+                items: [
+                    div({className: 'xh-tab-icon', item: icon, omit: !icon}),
+                    div({className: 'xh-tab-label', item: label})
+                ]
+            })
+        };
+    }
+}
 export const tabContainer = elemFactory(TabContainer);

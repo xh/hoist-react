@@ -5,9 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elem, elemFactory, HoistComponent, refreshView} from '@xh/hoist/core';
+import {elem, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {frame} from '@xh/hoist/cmp/layout';
 import {TabModel} from '../TabModel';
+import {refreshView} from '@xh/hoist/cmp/refresh';
 
 /**
  * @private

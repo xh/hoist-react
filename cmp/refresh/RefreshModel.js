@@ -4,10 +4,10 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from '@xh/hoist/core';
-import {allSettled} from '@xh/hoist/promise';
+import {HoistModel, XH} from '@xh/hoist/core';
+import {allSettled, start} from '@xh/hoist/promise';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
-
+import {pull} from 'lodash';
 
 /**
  * Refresh Model.
@@ -15,7 +15,7 @@ import {PendingTaskModel} from '@xh/hoist/utils/async';
 @HoistModel
 export class RefreshModel {
 
-    targets = new Set();
+    targets = [];
 
     loadModel = new PendingTaskModel();
     lastRefreshRequested = null;
@@ -24,10 +24,10 @@ export class RefreshModel {
     //------------------------------------------
     // Application API
     //------------------------------------------
-    async refreshAsync({isAutoRefresh = false}) {
+    async refreshAsync({isAutoRefresh = false} = {}) {
         this.lastRefreshRequested = new Date();
-        return XH.try(() => {
-            allSettled(this.targets.map(t => this.doRefreshAsync(t, isAutoRefresh)));
+        return start(() => {
+            return allSettled(this.targets.map(t => this.doRefreshAsync(t, isAutoRefresh)));
         }).finally(() => {
             this.lastRefreshCompleted = new Date();
         }).linkTo(
@@ -39,11 +39,12 @@ export class RefreshModel {
     // Target management
     //-----------------------------------------
     register(target) {
-        this.targets.add(target);
+        const {targets} = this;
+        if (!targets.includes(target)) targets.push(target);
     }
 
     unregister(target) {
-        this.targets.delete(target);
+        pull(this.targets, target);
     }
 
     destroy() {
@@ -58,6 +59,4 @@ export class RefreshModel {
         if (target.refreshAsync)    return target.refreshAsync({isAutoRefresh});
         if (target.loadAsync)       return target.loadAsync({isAutoRefresh});
     }
-
-
 }
