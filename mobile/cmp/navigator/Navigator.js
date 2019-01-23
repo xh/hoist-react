@@ -18,6 +18,7 @@ export class Navigator extends Component {
     render() {
         const {model} = this,
             {initPageModel} = model;
+
         return onsenNavigator({
             initialRoute: initPageModel,
             animationOptions: {duration: 0.2, delay: 0, timing: 'ease-in'},

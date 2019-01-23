@@ -19,7 +19,7 @@ export class NavigatorPageModel {
 
     /**
      * @param {function} pageFactory - element factory for page component.
-     * @param {Object} [pageProps] - props to passed to page upon creation
+     * @param {Object} [pageProps] - props to be passed to page upon creation
      * @param {string} [title] - title for page. Displayed in AppBar header.
      */
     constructor({

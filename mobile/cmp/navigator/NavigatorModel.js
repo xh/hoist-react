@@ -4,9 +4,9 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from '@xh/hoist/core';
+import {XH, HoistModel} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
-import {clone} from 'lodash';
+import {clone, keys} from 'lodash';
 
 import {NavigatorPageModel} from './NavigatorPageModel';
 
@@ -25,9 +25,12 @@ export class NavigatorModel {
     /**
      * @param {Object} page - configuration for NavigatorPageModel
      */
-    constructor(page) {
+    constructor({routes, ...page}) {
+        console.log(routes, page);
         this.initPageModel = new NavigatorPageModel(page);
         this.onPageChange();
+
+        this.addReaction(this.routerReaction());
     }
 
     /**
@@ -81,6 +84,32 @@ export class NavigatorModel {
     doCallback() {
         if (this._callback) this._callback();
         this._callback = null;
+    }
+
+    routerReaction() {
+        return {
+            track: () => XH.routerState,
+            run: (state) => {
+                if (!state) return;
+                const {meta, name, params, path} = state,
+                    parts = name.split('.');
+
+                // Break the route into parts, and collect any params for each part.
+                // Use meta.params to determine which params are associated with each route part.
+                const routeParts = parts.map((part, idx) => {
+                    const metaKey = parts.slice(0, idx + 1).join('.'),
+                        ret = {};
+
+                    keys(meta.params[metaKey]).forEach(it => {
+                        ret[it] = params[it];
+                    });
+
+                    return {id: part, params: ret};
+                });
+
+                console.log(routeParts, meta, name, params, path);
+            }
+        };
     }
 
 }
