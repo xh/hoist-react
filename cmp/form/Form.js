@@ -34,13 +34,16 @@ export class Form extends Component {
     static contextType = FormContext;
 
     static propTypes = {
-
         /**
          * Defaults for certain props on child/nested FormFields.
          * @see FormField (note there are both desktop and mobile implementations).
          */
-        fieldDefaults: PT.object
-    }
+        fieldDefaults: PT.object,
+
+
+        /** Primary component model instance. */
+        model: PT.oneOfType([PT.instanceOf(FormModel), PT.object]).isRequired
+    };
 
     render() {
         return formContextProvider({
