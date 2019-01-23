@@ -7,6 +7,7 @@
 import {HoistModel, XH} from '@xh/hoist/core';
 import {allSettled, start} from '@xh/hoist/promise';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {throwIf} from '@xh/hoist/utils/js';
 import {pull} from 'lodash';
 
 /**
@@ -27,7 +28,7 @@ export class RefreshModel {
     async refreshAsync({isAutoRefresh = false} = {}) {
         this.lastRefreshRequested = new Date();
         return start(() => {
-            return allSettled(this.targets.map(t => this.doRefreshAsync(t, isAutoRefresh)));
+            return allSettled(this.targets.map(t => t.refreshAsync({isAutoRefresh})));
         }).finally(() => {
             this.lastRefreshCompleted = new Date();
         }).linkTo(
@@ -39,6 +40,7 @@ export class RefreshModel {
     // Target management
     //-----------------------------------------
     register(target) {
+        throwIf(!target.isHoistModel, 'RefreshModel target must be a HoistModel.');
         const {targets} = this;
         if (!targets.includes(target)) targets.push(target);
     }
@@ -50,13 +52,5 @@ export class RefreshModel {
     destroy() {
         this.targets = null;
         XH.safeDestroy(this.loadModel);
-    }
-
-    //-------------------------
-    // Implementation
-    //-------------------------
-    doRefreshAsync(target, isAutoRefresh) {
-        if (target.refreshAsync)    return target.refreshAsync({isAutoRefresh});
-        if (target.loadAsync)       return target.loadAsync({isAutoRefresh});
     }
 }

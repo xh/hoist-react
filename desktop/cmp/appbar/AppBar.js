@@ -99,8 +99,7 @@ export class AppBar extends Component {
                         logoutButton({omit: hideLogoutButton}),
                         refreshButton({
                             omit: hideRefreshButton,
-                            intent: 'success',
-                            onClick: () => XH.refreshModel.refreshAsync()
+                            intent: 'success'
                         })
                     ]
                 })

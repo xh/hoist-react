@@ -7,9 +7,10 @@
 
 import {Component} from 'react';
 import PT from 'prop-types';
-import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {toolbarButton} from '@xh/hoist/kit/onsen';
+import {warnIf} from '@xh/hoist/utils/js';
 
 /**
  * Convenience Button preconfigured for use as a trigger for a refresh operation.
@@ -21,23 +22,40 @@ export class RefreshButton extends Component {
 
     static propTypes = {
         icon: PT.element,
-        onClick: PT.func
+
+        /** Function to call when the button is clicked. */
+        onClick: PT.func,
+
+        /** HoistModel to refresh. */
+        model: PT.object
     };
 
     render() {
-        const {icon, onClick, ...rest} = this.props;
+        warnIf(
+            (this.props.model && this.props.onClick) || (!this.props.model && !this.props.onClick),
+            'RefreshButton must be provided either a model or an onClick handler to call (but not both).'
+        );
+
+        const {
+            icon = Icon.sync(),
+            onClick = this.defaultOnClick,
+            model,
+            ...rest
+        } = this.props;
+
         return toolbarButton({
-            item: icon || Icon.sync(),
-            onClick: onClick || this.onRefreshClick,
+            item: icon,
+            onClick,
             ...rest
         });
     }
 
-    //-------------------------
+    //---------------------------
     // Implementation
     //---------------------------
-    onRefreshClick = () => {
-        XH.refreshModel.refreshAsync();
-    }
+    defaultOnClick = () => {
+        const target = this.model || this.context;
+        if (target) target.refreshAsync();
+    };
 }
 export const refreshButton = elemFactory(RefreshButton);

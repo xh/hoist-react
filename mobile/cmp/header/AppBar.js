@@ -82,7 +82,6 @@ export class AppBar extends Component {
             ]
         });
     }
-
 }
 
 export const appBar = elemFactory(AppBar);
