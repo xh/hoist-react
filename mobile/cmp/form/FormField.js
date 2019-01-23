@@ -10,8 +10,9 @@ import {isArray, isDate, isFinite, isBoolean} from 'lodash';
 
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {div, span} from '@xh/hoist/cmp/layout';
-import {FormContext, HoistInput} from '@xh/hoist/cmp/form';
-import {label as labelCmp} from '@xh/hoist/mobile/cmp/form';
+import {FormContext} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/input';
+import {label as labelCmp} from '@xh/hoist/mobile/cmp/input';
 import {fmtDate, fmtNumber} from '@xh/hoist/format';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 
@@ -83,6 +84,7 @@ export class FormField extends Component {
         const {fieldModel} = this,
             isRequired = fieldModel && fieldModel.isRequired,
             isPending = fieldModel && fieldModel.isValidationPending,
+            readonly = fieldModel && fieldModel.readonly,
             validationDisplayed = fieldModel && fieldModel.validationDisplayed,
             notValid = fieldModel && fieldModel.isNotValid,
             displayNotValid = validationDisplayed && notValid,
@@ -91,8 +93,7 @@ export class FormField extends Component {
             requiredStr = isRequired ? span(' *') : null;
 
         // Display related props
-        const minimal = this.getDefaultedProp('minimal', false),
-            readonly = this.getDefaultedProp('readonly', false);
+        const minimal = this.getDefaultedProp('minimal', false);
 
         // Styles
         const classes = [];
@@ -146,7 +147,7 @@ export class FormField extends Component {
 
     get fieldModel() {
         const {formModel} = this;
-        return formModel ? formModel.getField(this.props.field) : null;
+        return formModel ? formModel.fields[this.props.field] : null;
     }
 
     getDefaultedProp(name, defaultVal) {
@@ -164,7 +165,7 @@ export class FormField extends Component {
 
         const overrides = {
             model: fieldModel,
-            field: 'value',
+            bind: 'value',
             disabled: fieldModel && fieldModel.disabled
         };
 

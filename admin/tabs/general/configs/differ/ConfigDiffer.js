@@ -10,7 +10,7 @@ import {dialog} from '@xh/hoist/kit/blueprint';
 import {box, filler, fragment} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
-import {select} from '@xh/hoist/desktop/cmp/form';
+import {select} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -54,7 +54,7 @@ export class ConfigDiffer extends Component {
                 box('Compare with:'),
                 select({
                     model,
-                    field: 'remoteHost',
+                    bind: 'remoteHost',
                     placeholder: 'https://remote-host/',
                     enableCreate: true,
                     createMessageFn: identity,

@@ -10,7 +10,7 @@ import PT from 'prop-types';
 import {debounce, escapeRegExp, isEmpty, intersection, without} from 'lodash';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
-import {textInput} from '@xh/hoist/desktop/cmp/form';
+import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {BaseStore} from '@xh/hoist/data';
@@ -67,6 +67,7 @@ export class StoreFilterField extends Component {
         /**
          * Callback to receive an updated filter function. Can be used in place of the `store` or
          * `gridModel` prop when direct filtering of a bound store by this component is not desired.
+         * NOTE that calls to this function are NOT buffered and will be made on each keystroke.
          */
         onFilterChange: PT.func,
 

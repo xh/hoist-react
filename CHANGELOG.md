@@ -1,24 +1,52 @@
 # Changelog
 
-## v18.0.0-SNAPSHOT (in development / unreleased)
+## v19.0.0-SNAPSHOT (in development / unreleased)
+
+## v18.0.0 - 2019-01-15
 
 ### 🎁 New Features
 
-* Form support has been susbstantially enhanced and restructured to provide both a cleaner API and new functionality:
-  * `FormModel` and `FieldModel` are now concrete classes, and provide the main entry point for
-   specifying the contents of a form. The `Field` and `FieldSupport` decorators have been removed. 
+* Form support has been substantially enhanced and restructured to provide both a cleaner API and
+  new functionality:
+  * `FormModel` and `FieldModel` are now concrete classes and provide the main entry point for
+    specifying the contents of a form. The `Field` and `FieldSupport` decorators have been removed.
   * Fields and sub-forms may now be dynamically added to FormModel.
-  * The validation state of a FormModel is now *immediately* available after construction and independent of the GUI.
-    The triggering of the *display* of that state is now the seperate process that is triggered by GUI actions such as blur.   
-  * `FormField` has been substantially reworked to support a read-only display, and inherit common property
-  settings from its containing `Form`. 
-  * `HoistInput` has been moved into the `input` package to clarify that these are lower level controls and independent
-  of the Forms package.
-  
+  * The validation state of a FormModel is now *immediately* available after construction and
+    independent of the GUI. The triggering of the *display* of that state is now a separate process
+    triggered by GUI actions such as blur.
+  * `FormField` has been substantially reworked to support a read-only display and inherit common
+    property settings from its containing `Form`.
+  * `HoistInput` has been moved into the `input` package to clarify that these are lower level
+    controls and independent of the Forms package.
+
+* `RestGrid` now supports a `mask` prop. RestGrid loading is now masked by default.
+* `Chart` component now supports a built-in zoom out gesture: click and drag from right-to-left on
+  charts with x-axis zooming.
+* `Select` now supports an `enableClear` prop to control the presence of an optional inline clear
+  button.
+* `Grid` components take `onCellClicked` and `onCellDoubleClicked` event handlers.
+* A new desktop `FileChooser` wraps a preconfigured react-dropzone component to allow users to
+  easily select files for upload or other client-side processing.
+
 ### 💥 Breaking Changes
-* Major changes to Form (see above).  `HoistInput` imports will also need to be adjusted to move from `form` to `input`.   
-  
-## v17.0.0-rc3 (release candidate) - 2018-12-20
+
+* Major changes to Form (see above). `HoistInput` imports will also need to be adjusted to move from
+  `form` to `input`.
+* The name of the HoistInput `field` prop has been changed to `bind`. This change distinguishes the
+  lower-level input package more clearly from the higher-level form package which uses it. It also
+  more clearly relates the property to the associated `@bindable` annotation for models.
+* A `Select` input with `enableMulti = true` will by default no longer show an inline x to clear the
+  input value. Use the `enableClear` prop to re-enable.
+* Column definitions are exported from the `grid` package. To ensure backwards compatibility,
+  replace imports from `@xh/hoist/desktop/columns` with `@xh/hoist/desktop/cmp/grid`.
+
+### 📚 Libraries
+
+* React `~16.6.0 -> ~16.7.0`
+* Patch version updates to multiple other dependencies.
+
+
+## v17.0.0 - 2018-12-21
 
 ### 💥 Breaking Changes
 
@@ -97,9 +125,9 @@
   is open. (In that case, the component assumes escape was pressed to close its menu and captures
   the keypress, otherwise it should leave it alone and let it e.g. close a parent popover).
 
-[Commit Log](https://github.com/exhi/hoist-react/compare/v16.0.1...v17.0.0-rc1)
+[Commit Log](https://github.com/exhi/hoist-react/compare/v16.0.1...v17.0.0)
 
-## v16.0.1
+## v16.0.1 - 2018-12-12
 
 ### 🐞 Bug Fixes
 
@@ -243,11 +271,11 @@ list. Note, this component is being replaced in Hoist v16 by the react-select li
 
 ### 📚 Libraries
 
-* Blueprint Core 3.6.1 -> 3.7.0
-* Blueprint Datetime 3.2.0 -> 3.3.0
-* Fontawesome 5.3.x -> 5.4.x
-* MobX 5.1.2 -> 5.5.0
-* Router5 6.5.0 -> 6.6.0
+* Blueprint Core `3.6.1 -> 3.7.0`
+* Blueprint Datetime `3.2.0 -> 3.3.0`
+* Fontawesome `5.3.x -> 5.4.x`
+* MobX `5.1.2 -> 5.5.0`
+* Router5 `6.5.0 -> 6.6.0`
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v14.1.3...v14.2.0)
 
@@ -354,8 +382,8 @@ list. Note, this component is being replaced in Hoist v16 by the react-select li
 
 ### 📚 Libraries
 
-* React 16.5.1 -> 16.5.2
-* router5 6.4.2 -> 6.5.0
+* React `16.5.1 -> 16.5.2`
+* router5 `6.4.2 -> 6.5.0`
 * CodeMirror, Highcharts, and MobX patch updates
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v13.0.0...v14.0.0)

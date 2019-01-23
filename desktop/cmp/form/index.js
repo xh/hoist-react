@@ -6,15 +6,3 @@
  */
 
 export * from './FormField';
-export * from './inputs/ButtonGroupInput';
-export * from './inputs/Checkbox';
-export * from './inputs/DateInput';
-export * from './inputs/JsonInput';
-export * from './inputs/NumberInput';
-export * from './inputs/RadioInput';
-export * from './inputs/Select';
-export * from './inputs/Slider';
-export * from './inputs/SwitchInput';
-export * from './inputs/TextArea';
-export * from './inputs/TextInput';
-export * from './Label';

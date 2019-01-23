@@ -10,7 +10,7 @@ import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {page, toolbar} from '@xh/hoist/kit/onsen';
 import {div, vframe, vbox} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/mobile/cmp/button';
-import {textInput} from '@xh/hoist/mobile/cmp/form';
+import {textInput} from '@xh/hoist/mobile/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 
 import './LoginPanel.scss';
@@ -47,13 +47,13 @@ export class LoginPanel extends Component {
                             items: [
                                 textInput({
                                     model,
-                                    field: 'username',
+                                    bind: 'username',
                                     placeholder: 'Username...',
                                     commitOnChange: true
                                 }),
                                 textInput({
                                     model,
-                                    field: 'password',
+                                    bind: 'password',
                                     placeholder: 'Password...',
                                     type: 'password',
                                     commitOnChange: true

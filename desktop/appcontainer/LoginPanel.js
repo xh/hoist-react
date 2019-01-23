@@ -10,7 +10,7 @@ import {text} from '@xh/hoist/kit/blueprint';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {vspacer, box, filler, viewport} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {textInput} from '@xh/hoist/desktop/cmp/form';
+import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -48,7 +48,7 @@ export class LoginPanel extends Component {
                         vspacer(10),
                         textInput({
                             model,
-                            field: 'username',
+                            bind: 'username',
                             placeholder: 'Username...',
                             autoFocus: true,
                             commitOnChange: true,
@@ -57,7 +57,7 @@ export class LoginPanel extends Component {
                         }),
                         textInput({
                             model,
-                            field: 'password',
+                            bind: 'password',
                             placeholder: 'Password...',
                             type: 'password',
                             commitOnChange: true,
