@@ -7,7 +7,7 @@
 import {XH, HoistModel} from '@xh/hoist/core';
 import {action, computed, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {uniqBy} from 'lodash';
+import {uniqBy, find} from 'lodash';
 import {TabModel} from './TabModel';
 
 /**
@@ -37,18 +37,18 @@ export class TabContainerModel {
      * @param {Object[]} c.tabs - configs for TabModels to be displayed.
      * @param {string} [c.defaultTabId] - ID of Tab to be shown initially.
      *      If not set, will default to first tab in the provided collection.
-     * @param {string} [c.tabRefreshMode] - how to refresh hidden tabs - [always|skipHidden|onShowLazy|onShowAlways].
+     * @param {string} [c.refreshMode] - how to refresh hidden tabs - [always|skipHidden|onShowLazy|onShowAlways].
      */
     constructor({
         tabs,
         defaultTabId,
-        tabRefreshMode = 'onShowLazy'
+        refreshMode = 'onShowLazy'
     }) {
         tabs = tabs.filter(p => !p.omit);
         throwIf(tabs.length == 0, 'TabContainerModel needs at least one child.');
         throwIf(tabs.length != uniqBy(tabs, 'id').length, 'One or more tabs in TabContainerModel has a non-unique id.');
 
-        this.tabRefreshMode = tabRefreshMode;
+        this.refreshMode = refreshMode;
         this.activeTabId = find(tabs, {id: defaultTabId}) ? defaultTabId : tabs[0].id;
         this.tabs = tabs.map(p => new TabModel({...p, containerModel: this}));
     }

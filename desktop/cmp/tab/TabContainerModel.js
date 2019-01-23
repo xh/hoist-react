@@ -44,23 +44,23 @@ export class TabContainerModel {
      *      specify otherwise. If not set, will default to first tab in the provided collection.
      * @param {?string} [c.route] - base route name for this container. If set, this container will
      *      be route-enabled, with the route for each tab being "[route]/[tab.id]".
-     * @param {?string} [c.tabRenderMode] - how to render hidden tabs - [always|lazy|unmountOnHide].
-     * @param {?string} [c.tabRefreshMode] - how to refresh hidden tabs - [always|skipHidden|onShowLazy|onShowAlways].
+     * @param {?string} [c.renderMode] - how to render hidden tabs - [always|lazy|unmountOnHide].
+     * @param {?string} [c.refreshMode] - how to refresh hidden tabs - [always|skipHidden|onShowLazy|onShowAlways].
      */
     constructor({
         tabs,
         defaultTabId = null,
         route = null,
-        tabRenderMode = 'lazy',
-        tabRefreshMode = 'onShowLazy'
+        renderMode = 'lazy',
+        refreshMode = 'onShowLazy'
     }) {
 
         tabs = tabs.filter(p => !p.omit);
         throwIf(tabs.length == 0, 'TabContainerModel needs at least one child.');
         throwIf(tabs.length != uniqBy(tabs, 'id').length, 'One or more tabs in TabContainerModel has a non-unique id.');
 
-        this.tabRenderMode = tabRenderMode;
-        this.tabRefreshMode = tabRefreshMode;
+        this.renderMode = renderMode;
+        this.refreshMode = refreshMode;
         this.activeTabId = find(tabs, {id: defaultTabId}) ? defaultTabId : tabs[0].id;
         this.tabs = tabs.map(p => new TabModel({...p, containerModel: this}));
         

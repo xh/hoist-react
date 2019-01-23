@@ -37,8 +37,8 @@ export class TabModel {
      * @param {string} [c.excludeFromSwitcher] - set to true to hide this Tab in the container's TabSwitcher, but still be able to activate the tab manually or via routing
      * @param {Object} c.content - content to be rendered by this Tab. Component class or a custom
      *      element factory of the form returned by elemFactory.
-     * @param {?string} [c.tabRenderMode] - how to render hidden tabs - [always|lazy|unmountOnHide].
-     * @param {?string} [c.tabRefreshMode] - how to refresh hidden tabs - [always|skipHidden|onShowLazy|onShowAlways].
+     * @param {?string} [c.renderMode] - how to render hidden tabs - [always|lazy|unmountOnHide].
+     * @param {?string} [c.refreshMode] - how to refresh hidden tabs - [always|skipHidden|onShowLazy|onShowAlways].
      */
     constructor({
         id,
@@ -47,8 +47,8 @@ export class TabModel {
         disabled,
         excludeFromSwitcher,
         content,
-        tabRefreshMode,
-        tabRenderMode
+        refreshMode,
+        renderMode
     }) {
         this.id = id;
         this.containerModel = containerModel;
@@ -56,8 +56,8 @@ export class TabModel {
         this.disabled = !!disabled;
         this.excludeFromSwitcher = excludeFromSwitcher;
         this.content = content;
-        this._tabRenderMode = tabRenderMode;
-        this._tabRefreshMode = tabRefreshMode;
+        this._renderMode = renderMode;
+        this._refreshMode = refreshMode;
 
         this.refreshModel = new TabRefreshModel(this);
     }
@@ -66,9 +66,9 @@ export class TabModel {
         this.containerModel.activateTab(this.id);
     }
 
-    get tabRenderMode()     {return this._tabRenderMode || this.containerModel.tabRenderMode}
+    get renderMode()     {return this._renderMode || this.containerModel.renderMode}
 
-    get tabRefreshMode()    {return this._tabRefreshMode || this.containerModel.tabRefreshMode}
+    get refreshMode()    {return this._refreshMode || this.containerModel.refreshMode}
     
     get isActive() {
         return this.containerModel.activeTabId === this.id;

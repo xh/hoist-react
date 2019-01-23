@@ -40,7 +40,7 @@ export class TabModel {
         pageProps,
         label,
         icon,
-        tabRefreshMode
+        refreshMode
     }) {
         this.id = id;
         this.containerModel = containerModel;
@@ -48,11 +48,11 @@ export class TabModel {
         this.pageProps = pageProps;
         this.label = label;
         this.icon = icon;
-        this._tabRefreshMode = tabRefreshMode;
+        this._refreshMode = refreshMode;
         this.refreshModel = new TabRefreshModel(this);
     }
 
-    get tabRefreshMode()    {return this._tabRefreshMode || this.containerModel.tabRefreshMode}
+    get refreshMode()    {return this._refreshMode || this.containerModel.refreshMode}
 
     get isActive() {
         return this.containerModel.activeTabId === this.id;

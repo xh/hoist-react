@@ -24,7 +24,7 @@ export class TabRefreshModel extends RefreshModel {
 
     async refreshAsync({isAutoRefresh = false}) {
         const {tabModel} = this,
-            mode = tabModel.tabRefreshMode;
+            mode = tabModel.refreshMode;
 
         if (tabModel.isActive || mode == 'always') {
             return super.refreshAsync({isAutoRefresh});
@@ -37,7 +37,7 @@ export class TabRefreshModel extends RefreshModel {
 
     noteActiveChanged(isActive) {
         if (isActive) {
-            const mode = this.tabModel.tabRefreshMode;
+            const mode = this.tabModel.refreshMode;
             if (mode == 'onShowAlways') {
                 super.refreshAsync();
             } else if (mode == 'onShowLazy' && this.refreshPending) {

@@ -18,7 +18,7 @@ import {refreshView} from '@xh/hoist/cmp/refresh';
  *
  * This wrapper component provides a default implementation of the following behavior:
  *
- *   - Mounts/unmounts its contents according to TabContainerModel.tabRenderMode.
+ *   - Mounts/unmounts its contents according to TabModel.renderMode.
  *   - Stretches its contents using a flex layout.
  */
 @HoistComponent
@@ -30,11 +30,11 @@ export class Tab extends Component {
     wasActivated = false;
 
     render() {
-        const {content, isActive, tabRenderMode, refreshModel} = this.model;
+        const {content, isActive, renderMode, refreshModel} = this.model;
 
         this.wasActivated = this.wasActivated || isActive;
 
-        if (!isActive && (tabRenderMode == 'unmountOnHide' || !this.wasActivated && tabRenderMode == 'lazy')) {
+        if (!isActive && (renderMode == 'unmountOnHide' || !this.wasActivated && renderMode == 'lazy')) {
             return null;
         }
 
