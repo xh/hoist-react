@@ -147,7 +147,7 @@ export class JsonInput extends HoistInput {
             },
             foldGutter: true,
             scrollbarStyle: 'simple',
-            readOnly: disabled,
+            readOnly: disabled ? 'nocursor' : false,
             gutters: [
                 'CodeMirror-linenumbers',
                 'CodeMirror-foldgutter'

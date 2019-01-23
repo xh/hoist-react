@@ -36,7 +36,7 @@ export class FileChooser extends Component {
 
     static propTypes = {
 
-        /** File type(s) to accept (e.g. *.txt). */
+        /** File type(s) to accept (e.g. `['.doc', '.docx', '.pdf']`). */
         accept: PT.oneOfType([PT.string, PT.arrayOf(PT.string)]),
 
         /** True (default) to allow selection of more than one file. */
