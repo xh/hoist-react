@@ -25,14 +25,13 @@ export class TabModel {
 
     excludeFromSwitcher;
 
-    /** @member {TabContainerModel} */
     containerModel = null;
-
-    refreshModel = new TabRefreshModel(this);
+    refreshModel = null;
 
     /**
      * @param {Object} c - TabModel configuration.
      * @param {string} c.id - unique ID, used by container for locating tabs and generating routes.
+     * @param {TabContainerModel} c.containerModel - owner TabContainerModel.
      * @param {string} [c.title] - display title for the Tab in the container's TabSwitcher.
      * @param {string} [c.disabled] - whether this tab should appear disabled in the container's TabSwitcher.
      * @param {string} [c.excludeFromSwitcher] - set to true to hide this Tab in the container's TabSwitcher, but still be able to activate the tab manually or via routing
@@ -43,6 +42,7 @@ export class TabModel {
      */
     constructor({
         id,
+        containerModel,
         title = startCase(id),
         disabled,
         excludeFromSwitcher,
@@ -51,12 +51,15 @@ export class TabModel {
         tabRenderMode
     }) {
         this.id = id;
+        this.containerModel = containerModel;
         this.title = title;
         this.disabled = !!disabled;
         this.excludeFromSwitcher = excludeFromSwitcher;
         this.content = content;
         this._tabRenderMode = tabRenderMode;
         this._tabRefreshMode = tabRefreshMode;
+
+        this.refreshModel = new TabRefreshModel(this);
     }
 
     activate() {
@@ -68,7 +71,7 @@ export class TabModel {
     get tabRefreshMode()    {return this._tabRefreshMode || this.containerModel.tabRefreshMode}
     
     get isActive() {
-        return this.containerModel && this.containerModel.activeTabId === this.id;
+        return this.containerModel.activeTabId === this.id;
     }
     
     @action

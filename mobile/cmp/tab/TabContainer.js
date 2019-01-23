@@ -26,7 +26,7 @@ export class TabContainer extends Component {
 
         return tabbar({
             index: activeTabIndex,
-            renderTabs: () => this.tabs.map(tabModel => this.renderTab(tabModel)),
+            renderTabs: () => model.tabs.map(tabModel => this.renderTab(tabModel)),
             onPreChange: (event) => model.setActiveTabIndex(event.index)
         });
     }

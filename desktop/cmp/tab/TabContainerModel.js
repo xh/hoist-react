@@ -6,7 +6,7 @@
  */
 import {HoistModel, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
-import {find, isPlainObject, uniqBy} from 'lodash';
+import {find, uniqBy} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
 import {TabModel} from './TabModel';
 
@@ -28,9 +28,6 @@ export class TabContainerModel {
     /** Base route for this container. */
     route = null;
 
-    /** ID of the Tab to be active by default. */
-    defaultTabId = null;
-
     /** ID of the currently active Tab. */
     @observable activeTabId = null;
 
@@ -42,8 +39,7 @@ export class TabContainerModel {
 
     /**
      * @param {Object} c - TabContainerModel configuration.
-     * @param {Object[]} c.tabs - configs for TabModels (or TabModel instances) to be displayed
-     *      by this container.
+     * @param {Object[]} c.tabs - configs for TabModels to be displayed.
      * @param {?string} [c.defaultTabId] - ID of Tab to be shown initially if routing does not
      *      specify otherwise. If not set, will default to first tab in the provided collection.
      * @param {?string} [c.route] - base route name for this container. If set, this container will
@@ -58,26 +54,16 @@ export class TabContainerModel {
         tabRenderMode = 'lazy',
         tabRefreshMode = 'onShowLazy'
     }) {
-        this.tabRenderMode = tabRenderMode;
-        this.tabRefreshMode = tabRefreshMode;
-
-        // 1) Validate and wire tabs, instantiate if needed.
-        const childIds = uniqBy(tabs, 'id');
-        throwIf(tabs.length == 0, 'TabContainerModel needs at least one child tab.');
-        throwIf(tabs.length != childIds.length, 'One or more Tabs in TabContainer has a non-unique ID.');
 
         tabs = tabs.filter(p => !p.omit);
-        tabs = tabs.map(p => isPlainObject(p) ? new TabModel(p) : p);
-        tabs.forEach(p => p.containerModel = this);
-        this.tabs = tabs;
+        throwIf(tabs.length == 0, 'TabContainerModel needs at least one child.');
+        throwIf(tabs.length != uniqBy(tabs, 'id').length, 'One or more tabs in TabContainerModel has a non-unique id.');
 
-        // 2) Setup and activate default tab
-        if (defaultTabId == null) {
-            defaultTabId = tabs[0].id;
-        }
-        this.activeTabId = this.defaultTabId = defaultTabId;
-
-        // 3) Setup routes
+        this.tabRenderMode = tabRenderMode;
+        this.tabRefreshMode = tabRefreshMode;
+        this.activeTabId = find(tabs, {id: defaultTabId}) ? defaultTabId : tabs[0].id;
+        this.tabs = tabs.map(p => new TabModel({...p, containerModel: this}));
+        
         this.route = route;
         if (route) {
             this.addReaction(this.routerReaction());
@@ -101,7 +87,7 @@ export class TabContainerModel {
     activateTab(id) {
         if (this.activeTabId === id) return;
 
-        const tab = this.getTabById(id);
+        const tab = find(this.tabs, {id});
         if (tab.disabled) return;
 
         const {route} = this;
@@ -112,20 +98,12 @@ export class TabContainerModel {
         }
     }
 
-    /**
-     * @param {string} id - unique ID of the Tab to retrieve
-     * @returns {TabModel} - the tab, or null if not found
-     */
-    getTabById(id) {
-        return find(this.tabs, {id});
-    }
-
     //-------------------------
     // Implementation
     //-------------------------
     @action
     setActiveTabId(id) {
-        const tab = this.getTabById(id);
+        const tab = find(this.tabs, {id});
 
         throwIf(!tab, `Unknown Tab ${id} in TabContainer.`);
         throwIf(tab.disabled, `Cannot activate Tab ${id} because it is disabled!`);

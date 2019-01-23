@@ -5,7 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {computed} from '@xh/hoist/mobx';
 
 import {TabRefreshModel} from './impl/TabRefreshModel';
 
@@ -20,14 +19,14 @@ export class TabModel {
     pageProps = null;
     label = null;
     icon = null;
-    parent = null;
 
-    refreshModel = new TabRefreshModel(this);
+    containerModel = null;
+    refreshModel = null;
 
     /**
      * @param {Object} c - TabModel configuration.
      * @param {string} c.id - unique ID within its container.
-     * @param {TabContainerModel} c.parent - owner TabContainerModel model.
+     * @param {TabContainerModel} c.containerModel - owner TabContainerModel.
      * @param {function} c.pageFactory - element factory for page component.
      * @param {Object} [c.pageProps] - props to passed to page upon creation
      * @param {String} c.label - text to be displayed in the Tabbar.
@@ -36,31 +35,30 @@ export class TabModel {
      */
     constructor({
         id,
-        parent,
+        containerModel,
         pageFactory,
         pageProps,
-        reloadOnShow,
         label,
         icon,
         tabRefreshMode
     }) {
         this.id = id;
-        this.parent = parent;
+        this.containerModel = containerModel;
         this.pageFactory = pageFactory;
         this.pageProps = pageProps;
         this.label = label;
         this.icon = icon;
         this._tabRefreshMode = tabRefreshMode;
+        this.refreshModel = new TabRefreshModel(this);
     }
 
-    get tabRefreshMode()    {return this._tabRefreshMode || this.parent.tabRefreshMode}
+    get tabRefreshMode()    {return this._tabRefreshMode || this.containerModel.tabRefreshMode}
 
-    @computed
     get isActive() {
-        return this.parent && this.parent.activeTabId === this.id;
+        return this.containerModel.activeTabId === this.id;
     }
 
     destroy() {
-        XH.safeDestroy(this.loadState);
+        XH.safeDestroy(this.loadState, this.refreshModel);
     }
 }
