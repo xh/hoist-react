@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from '@xh/hoist/core';
+import {XH, HoistModel, managed} from '@xh/hoist/core';
 import {find} from 'lodash';
 import {action, observable} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
@@ -27,8 +27,10 @@ export class LogViewerModel {
     @observable file = null;
     @observable.ref rows = [];
 
+    @managed
     loadModel = new PendingTaskModel();
 
+    @managed
     filesGridModel = new GridModel({
         enableExport: true,
         store: new UrlStore({
@@ -127,9 +129,5 @@ export class LogViewerModel {
                 this.fetchFile();
             }
         };
-    }
-    
-    destroy() {
-        XH.safeDestroy(this.loadModel, this.filesGridModel);
     }
 }
