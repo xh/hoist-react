@@ -7,12 +7,10 @@
 
 import React, {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {controlGroup} from '@xh/hoist/kit/blueprint';
 import {fmtDateTime} from '@xh/hoist/format';
-import {hbox} from '@xh/hoist/cmp/layout';
+import {formField} from '@xh/hoist/desktop/cmp/form';
 import {
     jsonInput,
-    label,
     select,
     numberInput,
     switchInput,
@@ -31,129 +29,86 @@ export class RestControl extends Component {
     static modelClass = RestControlModel;
 
     render() {
-        if (this.isBlankMetaData()) return null;
-
-        return hbox({
-            className: 'xh-rest-form__control',
-            items: [
-                this.renderLabel(),
-                //  Needed to stretch control, and also avoid focus clipping?
-                controlGroup({
-                    fill: true,
-                    style: {flex: 1, margin: 1},
-                    item: this.renderControl()
-                })
-            ]
-        });
+        // if (this.isBlankMetaData()) return null;
+        const {name, disabled, readonly} = this.props;
+        return formField({
+            readonly,
+            field: name,
+            disabled,
+            item: this.renderFormField()
+        })
     }
 
-    renderControl() {
-        const {field, editor, type, isEditable} = this.model,
-            editorType = editor.type;
-
-        if (type == null) return null;
-
-        if (type === 'json') {
-            return this.renderJsonField();
-        }
-
-        if (!isEditable) return this.renderDisplayField();
-        
-        if (field.lookup) {
+    renderFormField() {
+        const {restField, inputType, inputRenderer} = this.props;
+        if (inputType == null) {
+            return null;
+        } else if (restField.lookup) {
             return this.renderSelect();
-        } else if (type === 'bool') {
-            // Boolean controls will intelligently default based on nullability, unless editor type is otherwise specified
-            if (editorType === 'boolSelect') return this.renderSelect();
-            if (editorType === 'boolCheck') return this.renderCheckbox();
-            if (editorType === 'boolSwitch') return this.renderSwitch();
-            return field.required ? this.renderSwitch() : this.renderSelect();
-        } else if (type === 'number') {
-            return this.renderNumberField();
+        } else if (inputRenderer) {
+            //TODO: handle custom input component
         } else {
-            return editorType === 'textarea' ? this.renderTextArea() : this.renderTextField();
+            return this.renderInputFromType()
         }
     }
 
-    renderLabel() {
-        const lbl = this.model.field.label,
-            isValid = this.model.isValid,
-            item = <span>{lbl} <span style={{color: 'red'}}>{!isValid ? '*' : ''}</span> </span>;
-
-        return label({item, width: 115});
-    }
-
-    renderDisplayField() {
-        let {value, type} = this.model;
-        if (type === 'date') {
-            value = value ? fmtDateTime(value) : '';
+    renderInputFromType() {
+        const {inputType, restField} = this.props;
+        
+        switch(inputType) {
+            case 'bool':
+                return restField.required ? this.renderSwitch() : this.renderCheckbox();
+            case 'number':
+                return this.renderNumberField();
+            case 'json':
+                return this.renderJsonField();
+            case 'textarea':
+                return this.renderTextArea();
+            // case 'date':
+            //     return this.renderDatePicker();
+            default:
+                return this.renderTextField();
         }
-
-        return label(!isNil(value) ? value.toString() : null);
     }
+
+
 
     renderSelect() {
-        const model = this.model,
-            field = model.field,
-            type = model.type;
+        const {inputType, restField} = this.props;
 
         let options;
-        if (field.lookup) {
-            options = [...field.lookup];
-        } else if (type == 'bool') {
+        if (restField.lookup) {
+            options = [...restField.lookup];
+        } else if (inputType === 'bool') {
             options = [true, false];
         } else {
             options = [];
         }
 
-        // TODO - we should be able to let the user simply clear the field.
-        if (!field.required) options.unshift(null);
-
         return select({
-            model,
-            bind: 'value',
             options,
-            enableCreate: field.enableCreate,
-            disabled: !model.isEditable
-        });
-    }
-
-    renderCheckbox() {
-        const model = this.model;
-        return checkbox({
-            model,
-            bind: 'value',
-            disabled: !model.isEditable
+            enableCreate: restField.enableCreate
         });
     }
 
     renderSwitch() {
-        const model = this.model;
-        return switchInput({
-            model,
-            bind: 'value',
-            disabled: !model.isEditable
-        });
+        return switchInput();
+    }
+
+    renderCheckbox() {
+        return checkbox();
     }
 
     renderNumberField() {
-        const model = this.model;
         return numberInput({
-            model,
-            bind: 'value',
-            className: 'bp3-fill',
-            disabled: !model.isEditable,
             commitOnChange: true
         });
     }
 
     renderTextArea() {
-        const model = this.model;
         return textArea({
-            model,
-            bind: 'value',
             autoFocus: this.props.autoFocus,
-            className: 'bp3-fill',
-            style: {height: model.editor.height || 100},
+            style: {height: this.props.height || 100},
             disabled: !model.isEditable,
             spellCheck: model.editor.spellCheck,
             commitOnChange: true
@@ -161,38 +116,35 @@ export class RestControl extends Component {
     }
 
     renderTextField() {
-        const model = this.model,
-            type = model.type === 'pwd' ? 'password' : 'text';
+        const {props, inputType} = this,
+            {autoFocus, spellCheck} = props,
+            type = inputType === 'pwd' ? 'password' : 'text';
         return textInput({
-            model,
             type,
-            bind: 'value',
-            autoFocus: this.props.autoFocus,
-            className: 'bp3-fill',
-            disabled: !model.isEditable,
-            spellCheck: model.editor.spellCheck,
+            autoFocus,
+            spellCheck,
             commitOnChange: true
         });
     }
 
     renderJsonField() {
-        const model = this.model;
         return jsonInput({
-            model,
-            bind: 'value',
-            className: 'bp3-fill',
-            disabled: !model.isEditable,
             // setting size appears to be the only way to get scrollbars
-            width: 343,
-            height: model.editor.height || 150,
+            // width: 343,
+            height: this.props.height || 150,
             commitOnChange: true
         });
     }
+
+    //------------------------
+    // Implementation
+    //------------------------
 
     isBlankMetaData() {
         const model = this.model;
         return !model.value && ['lastUpdatedBy', 'lastUpdated'].includes(model.field.name);
     }
+
 }
 export const restControl = elemFactory(RestControl);
 

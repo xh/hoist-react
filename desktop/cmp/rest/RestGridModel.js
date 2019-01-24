@@ -92,7 +92,7 @@ export class RestGridModel {
      * @param {string} [unit] - name that describes records in this grid.
      * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
      * @param {function} [enhanceToolbar] - a function used to mutate RestGridToolbar items
-     * @param {Object[]} editors - array of editors
+     * @param {Object[]} formFields - array of editors
      * @param {*} ...rest - arguments for GridModel.
      */
     constructor({
@@ -104,7 +104,7 @@ export class RestGridModel {
         unit = 'record',
         filterFields,
         enhanceToolbar,
-        editors = [],
+        formFields = [],
         ...rest
     }) {
         this.readonly = readonly;
@@ -128,7 +128,7 @@ export class RestGridModel {
 
         this.formModel = new RestFormModel({
             parent: this,
-            editors,
+            formFields,
             actions: formActions
         });
     }

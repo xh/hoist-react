@@ -7,11 +7,10 @@
 
 import {XH, HoistModel} from '@xh/hoist/core';
 import {start} from '@xh/hoist/promise';
-import {observable, computed, action} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
-import {isEqual} from 'lodash';
-
-import {RestControlModel} from './RestControlModel';
+import {observable, computed, action, bindable} from '@xh/hoist/mobx';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {isEqual, cloneDeep} from 'lodash';
+import {dateIs, FormModel, lengthIs, numberIs, required} from '@xh/hoist/cmp/form';
 
 @HoistModel
 export class RestFormModel {
@@ -19,47 +18,44 @@ export class RestFormModel {
     /** @member {RestGridModel} */
     parent = null;
 
-    controlModels = [];
+    /** @member {Object} */
+    fieldDefaults = null;
+
+    /** @member {RecordAction[]} */
     actions;
 
-    // If not null, form will be open and display it
-    @observable record = null;
-    originalRecord = null;
+    currentRecord = null;
 
-    isWritable;
+    readonly;
+    @observable formModel = null;
+    formFields = null;
+
+    @bindable isOpen = false;
+    @bindable isAdd = null;
 
     get actionWarning() {return this.parent.actionWarning}
     get store()          {return this.parent.store}
-    get fields()         {return this.store.fields}
     get loadModel()      {return this.store.loadModel}
-
-    @computed
-    get isAdd() {
-        const rec = this.record;
-        return (rec && rec.id === null);
-    }
-
-    @computed
-    get isValid() {
-        return this.controlModels.every(it => it.isValid);
-    }
 
     @computed
     get isDirty() {
         return !isEqual(this.record, this.originalRecord);
     }
 
-    constructor({parent, editors, actions}) {
+    constructor({parent, formFields, actions, fieldDefaults}) {
         this.parent = parent;
-        this.controlModels = editors.map((editor) => {
-            const field = this.store.getField(editor.field);
-            throwIf(!field, `Unknown field '${editor.field}' in RestGrid.`);
-
-            return new RestControlModel({editor, field, parent: this});
+        this.formFields = formFields.map(f => this.createFormField(f));
+        this.formModel = new FormModel({
+            parent,
+            fields: this.formFields,
+            readonly: this.readonly
         });
 
+        this.fieldDefaults = fieldDefaults;
         this.actions = actions;
     }
+
+
 
     //-----------------
     // Actions
@@ -67,7 +63,9 @@ export class RestFormModel {
     @action
     saveRecord() {
         throwIf(this.parent.readonly, 'Record not saved: this grid is read-only.');
-        const {isAdd, record, store} = this;
+        const {isAdd, store, formModel, currentRecord} = this,
+            record = {...currentRecord, ...(formModel.getData())};
+
         start(() => {
             return isAdd ? store.addRecordAsync(record) : store.saveRecordAsync(record);
         }).then(
@@ -77,38 +75,74 @@ export class RestFormModel {
 
     @action
     close() {
-        this.originalRecord = this.record = null;
+        this.formModel.reset()
+        console.log(this.formModel)
+        this.setIsOpen(false)
     }
 
     @action
     openAdd() {
-        const newRec = {id: null};
-        this.fields.forEach(f => {
-            newRec[f.name] = f.defaultValue;
-        });
-
-        this.originalRecord = this.record = newRec;
-        this.isWritable = true;
+        console.log(this.formModel.getData())
+        this.currentRecord = {id: null};
+        this.formModel.init();
+        this.readonly = false; // needed?
+        this.setIsOpen(true);
+        this.setIsAdd(true);
     }
 
     @action
     openEdit(rec)  {
-        this.originalRecord = this.record = Object.assign({}, rec);
-        this.isWritable = true;
+        this.currentRecord = rec;
+        this.formModel.init(rec);
+        this.readonly = false;
+        this.setIsOpen(true);
+        this.setIsAdd(false);
     }
 
     @action
     openView(rec) {
-        this.originalRecord = this.record = Object.assign({}, rec);
-        this.isWritable = false;
-    }
-
-    @action
-    setValue = (field, value) => {
-        this.record[field] = value;
+        this.formModel.init(rec);
+        this.readonly = true;
+        this.setIsAdd(false);
     }
 
     destroy() {
-        XH.safeDestroy(...this.controlModels);
+        XH.safeDestroy(this.formModel)
+    }
+
+    //---------------------
+    // Implementation
+    //---------------------
+
+    createFormField(f) {
+        const field = cloneDeep(f),
+            restField = this.store.getField(field.name);
+        throwIf(!restField, `Unknown field '${field.name}' in RestGrid.`);
+
+        if (restField.required) field.rules = [...(field.rules ? field.rules : []), required];
+
+        const inputType = restField.typeField ? this.getDynamicType(restField.typeField) : restField.type;
+
+        if (inputType === 'bool') field.initialValue = withDefault(field.initialValue, false);
+
+        field.readonly = !(restField.editable || (restField.editable === 'onAdd' && this.isAdd));
+        // field.omit = field.readonly && this.currentRecord && !this.currentRecord[field.name];
+
+        return {...field, restField, inputType};
+    }
+
+    getDynamicType(typeField) {
+        const {record, store}  = this.parent,
+            field = store.getField(typeField);
+        const rawType = record && field ? record[field.name] : null;
+
+        switch (rawType) {
+            case 'double':
+            case 'int':
+            case 'long':
+                return 'number';
+            default:
+                return rawType || 'string';
+        }
     }
 }

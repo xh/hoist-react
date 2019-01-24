@@ -13,12 +13,13 @@ import {withDefault} from '@xh/hoist/utils/js';
  */
 export class RestField extends Field {
 
-    editable
-    required
-    lookup
-    lookupName
-    enableCreate
-    typeField
+    editable;
+    required;
+    lookup;
+    lookupName;
+    enableCreate;
+    typeField;
+    formType;
 
     /**
      * @param {(boolean|'addOnly')} [editable]
@@ -48,4 +49,5 @@ export class RestField extends Field {
         this.enableCreate = withDefault(enableCreate, false);
         this.typeField = typeField;
     }
+
 }

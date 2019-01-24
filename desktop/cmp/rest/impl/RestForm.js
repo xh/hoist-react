@@ -12,30 +12,29 @@ import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {filler, vframe} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {form} from '@xh/hoist/cmp/form';
+
 import {Icon} from '@xh/hoist/icon';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 
 import {restControl} from './RestControl';
 
 import './RestForm.scss';
-import {RestFormModel} from './RestFormModel';
 
 @HoistComponent
 export class RestForm extends Component {
 
-    static modelClass = RestFormModel;
 
     baseClassName = 'xh-rest-form';
 
     render() {
-        const {record, isAdd, isWritable} = this.model;
-        if (!record) return null;
-
+        const {record, isAdd, readonly, isOpen} = this.model;
+        // if (!record) return null;
         return dialog({
-            title: isAdd ? 'Add Record' : (isWritable ? 'Edit Record' : 'View Record'),
+            title: isAdd ? 'Add Record' : (!readonly ? 'Edit Record' : 'View Record'),
             icon: isAdd ? Icon.add() : Icon.edit(),
             className: this.getClassName(),
-            isOpen: true,
+            isOpen,
             isCloseButtonShown: false,
             items: this.getDialogItems(),
             transitionName: 'none'
@@ -55,34 +54,38 @@ export class RestForm extends Component {
     }
 
     getForm() {
-        const {isWritable} = this.model;
+        const {model} = this,
+            {formModel, fieldDefaults, formFields} = model;
         return vframe(
-            this.model.controlModels.map((model,
-                idx) => restControl({model, disabled: !isWritable, autoFocus: idx === 0}))
-        );
+            form({
+                model: formModel,
+                fieldDefaults,
+                items: formFields.map(f => restControl(f))
+            })
+        )
     }
 
     getButtons() {
-        const {isValid, isWritable, isDirty, record, actions, parent} = this.model;
-
+        const {formModel, actions, parent} = this.model,
+            {disabled, readonly} = formModel;
         return [
             recordActionBar({
                 actions,
-                record,
+                record: formModel.getData(),
                 gridModel: parent.gridModel
             }),
             filler(),
             button({
-                text: isWritable ? 'Cancel' : 'Close',
+                text: readonly ? 'Cancel' : 'Close',
                 onClick: this.onCloseClick
             }),
             button({
                 text: 'Save',
                 icon: Icon.check(),
                 intent: 'success',
-                disabled: !isValid || !isDirty,
+                disabled: !formModel.isValid || disabled,
                 onClick: this.onSaveClick,
-                omit: !isWritable
+                omit: readonly
             })
         ];
     }
