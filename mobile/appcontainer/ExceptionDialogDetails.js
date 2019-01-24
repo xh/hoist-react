@@ -54,7 +54,7 @@ export class ExceptionDialogDetails extends Component {
                 textArea({
                     placeholder: 'Add message here...',
                     model: model,
-                    field: 'userMessage'
+                    bind: 'userMessage'
                 })
             ),
             buttons: [

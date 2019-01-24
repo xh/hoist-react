@@ -84,6 +84,7 @@ export class FormField extends Component {
         const {fieldModel} = this,
             isRequired = fieldModel && fieldModel.isRequired,
             isPending = fieldModel && fieldModel.isValidationPending,
+            readonly = fieldModel && fieldModel.readonly,
             validationDisplayed = fieldModel && fieldModel.validationDisplayed,
             notValid = fieldModel && fieldModel.isNotValid,
             displayNotValid = validationDisplayed && notValid,
@@ -92,8 +93,7 @@ export class FormField extends Component {
             requiredStr = isRequired ? span(' *') : null;
 
         // Display related props
-        const minimal = this.getDefaultedProp('minimal', false),
-            readonly = this.getDefaultedProp('readonly', false);
+        const minimal = this.getDefaultedProp('minimal', false);
 
         // Styles
         const classes = [];
@@ -147,7 +147,7 @@ export class FormField extends Component {
 
     get fieldModel() {
         const {formModel} = this;
-        return formModel ? formModel.getField(this.props.field) : null;
+        return formModel ? formModel.fields[this.props.field] : null;
     }
 
     getDefaultedProp(name, defaultVal) {
@@ -165,7 +165,7 @@ export class FormField extends Component {
 
         const overrides = {
             model: fieldModel,
-            field: 'value',
+            bind: 'value',
             disabled: fieldModel && fieldModel.disabled
         };
 

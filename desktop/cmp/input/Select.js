@@ -80,12 +80,10 @@ export class Select extends HoistInput {
         /** True to auto-open the dropdown menu on input focus. */
         openMenuOnFocus: PT.bool,
 
-        /** Callback to execute on input focus */
+      /** Callback to execute on input focus */
         onFocus: PT.func,
 
-        /**
-         * True to show a "clear" button at the right of the control.  Defaults to false.
-         */
+        /** True to show a "clear" button at the right of the control.  Defaults to false. */
         enableClear: PT.bool,
 
         /**
@@ -168,7 +166,8 @@ export class Select extends HoistInput {
                 formatOptionLabel: this.formatOptionLabel,
                 isDisabled: props.disabled,
                 isMulti: props.enableMulti,
-                isClearable: withDefault(props.enableClear, true),
+                // Explicit false ensures consistent default for single and multi-value instances.
+                isClearable: withDefault(props.enableClear, false),
                 menuPlacement: withDefault(props.menuPlacement, 'auto'),
                 noOptionsMessage: this.noOptionsMessageFn,
                 openMenuOnFocus: props.openMenuOnFocus,

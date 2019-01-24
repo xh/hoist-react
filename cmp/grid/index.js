@@ -8,3 +8,5 @@
 export * from './Grid';
 export * from './GridModel';
 export * from './GridStateModel';
+
+export * from './columns/';

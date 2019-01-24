@@ -47,13 +47,13 @@ export class LoginPanel extends Component {
                             items: [
                                 textInput({
                                     model,
-                                    field: 'username',
+                                    bind: 'username',
                                     placeholder: 'Username...',
                                     commitOnChange: true
                                 }),
                                 textInput({
                                     model,
-                                    field: 'password',
+                                    bind: 'password',
                                     placeholder: 'Password...',
                                     type: 'password',
                                     commitOnChange: true

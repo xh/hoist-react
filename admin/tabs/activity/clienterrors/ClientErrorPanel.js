@@ -41,9 +41,9 @@ export class ClientErrorPanel extends Component {
     renderToolbar() {
         const model = this.model;
         return toolbar(
-            this.dateInput({field: 'startDate'}),
+            this.dateInput({bind: 'startDate'}),
             Icon.angleRight(),
-            this.dateInput({field: 'endDate'}),
+            this.dateInput({bind: 'endDate'}),
             buttonGroup(
                 button({
                     icon: Icon.caretLeft(),
@@ -59,8 +59,8 @@ export class ClientErrorPanel extends Component {
                 })
             ),
             toolbarSep(),
-            this.textInput({field: 'username', placeholder: 'User...'}),
-            this.textInput({field: 'error', placeholder: 'Error...'}),
+            this.textInput({bind: 'username', placeholder: 'User...'}),
+            this.textInput({bind: 'error', placeholder: 'Error...'}),
             refreshButton({model}),
             filler(),
             storeCountLabel({gridModel: model.gridModel, unit: 'client error'}),

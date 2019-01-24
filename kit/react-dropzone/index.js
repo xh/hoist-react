@@ -4,9 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+import {elemFactory} from '@xh/hoist/core';
+import Dropzone from 'react-dropzone';
 
-export * from './impl/ColChooser';
-export * from './impl/ColChooserModel';
-export * from './columns';
-
-
+export {Dropzone};
+export const dropzone = elemFactory(Dropzone);

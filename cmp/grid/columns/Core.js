@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {convertIconToSvg, Icon} from '@xh/hoist/icon';
+import {convertIconToSvg, fileIcon, Icon} from '@xh/hoist/icon';
 import {numberRenderer} from '@xh/hoist/format';
 
 export const emptyFlexCol =  {
@@ -36,3 +36,10 @@ export const numberCol = {
     renderer: numberRenderer()
 };
 
+export const fileExtCol = {
+    headerName: '',
+    width: 28,
+    align: 'center',
+    resizable: false,
+    renderer: (v) => convertIconToSvg(fileIcon(v))
+};

@@ -39,7 +39,7 @@ export class UserPanel extends Component {
         return toolbar(
             switchInput({
                 model,
-                field: 'activeOnly',
+                bind: 'activeOnly',
                 label: 'Active only'
             }),
             filler(),

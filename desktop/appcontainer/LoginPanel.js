@@ -48,7 +48,7 @@ export class LoginPanel extends Component {
                         vspacer(10),
                         textInput({
                             model,
-                            field: 'username',
+                            bind: 'username',
                             placeholder: 'Username...',
                             autoFocus: true,
                             commitOnChange: true,
@@ -57,7 +57,7 @@ export class LoginPanel extends Component {
                         }),
                         textInput({
                             model,
-                            field: 'password',
+                            bind: 'password',
                             placeholder: 'Password...',
                             type: 'password',
                             commitOnChange: true,

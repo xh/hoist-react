@@ -38,9 +38,9 @@ export class ActivityGrid extends Component {
     renderToolbar() {
         const model = this.model;
         return toolbar(
-            this.dateInput({field: 'startDate'}),
+            this.dateInput({bind: 'startDate'}),
             Icon.angleRight(),
-            this.dateInput({field: 'endDate'}),
+            this.dateInput({bind: 'endDate'}),
             buttonGroup(
                 button({
                     icon: Icon.caretLeft(),
@@ -56,11 +56,11 @@ export class ActivityGrid extends Component {
                 })
             ),
             toolbarSep(),
-            this.textInput({field: 'username', placeholder: 'User...'}),
-            this.textInput({field: 'msg', placeholder: 'Msg...'}),
-            this.textInput({field: 'category', placeholder: 'Category...'}),
-            this.textInput({field: 'device', placeholder: 'Device...'}),
-            this.textInput({field: 'browser', placeholder: 'Browser...'}),
+            this.textInput({bind: 'username', placeholder: 'User...'}),
+            this.textInput({bind: 'msg', placeholder: 'Msg...'}),
+            this.textInput({bind: 'category', placeholder: 'Category...'}),
+            this.textInput({bind: 'device', placeholder: 'Device...'}),
+            this.textInput({bind: 'browser', placeholder: 'Browser...'}),
             refreshButton({model}),
             filler(),
             storeCountLabel({gridModel: model.gridModel, unit: 'log'}),

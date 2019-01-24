@@ -36,7 +36,7 @@ export class FeedbackDialog extends Component {
             content: textArea({
                 placeholder: 'Please enter your comments...',
                 model,
-                field: 'message'
+                bind: 'message'
             }),
             buttons: [
                 filler(),
