@@ -15,8 +15,8 @@ import {isBoolean, isNumber, isNil, isEmpty} from 'lodash';
  * and call their `actionFn` when clicked, passing it a data object sourced from the selected row(s)
  * or node(s) on the underlying grid or data view.
  *
- * The `displayFn` callback provides a means by which applications can customize any display
- * properties of the action prior to each render.
+ * The `displayFn` callback allows apps to customize any display properties of the action prior to
+ * each render by returning an object with keys/values to override (e.g. `{hidden: true}`).
  *
  * @see RecordActionBar
  * @see StoreContextMenu
@@ -161,4 +161,5 @@ export class RecordAction {
  * @param {Object} [p.record] - row data object (entire row, if any).
  * @param {Object[]} [p.selection] - all currently selected records (if any).
  * @param {*} [p...rest] - additional data provided by the context where this action presides
+ * @returns {Object} - display configs to override for this render of the action.
  */

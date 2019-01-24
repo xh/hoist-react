@@ -6,10 +6,10 @@
  */
 
 import {Component} from 'react';
-import PT from 'prop-types';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {button, Button} from '@xh/hoist/desktop/cmp/button';
+import {withDefault} from '@xh/hoist/utils/js';
 
 /**
  * Convenience Button preconfigured for use as a trigger for a logout operation.
@@ -21,10 +21,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 export class LogoutButton extends Component {
 
     static propTypes = {
-        icon: PT.element,
-        title: PT.string,
-        intent: PT.string,
-        onClick: PT.func
+        ...Button.propTypes
     };
 
     render() {
@@ -32,10 +29,10 @@ export class LogoutButton extends Component {
 
         const {icon, title, intent, onClick, ...rest} = this.props;
         return button({
-            icon: icon || Icon.logout(),
-            title: title || 'Logout',
-            intent: intent || 'danger',
-            onClick: onClick || this.onClick,
+            icon: withDefault(icon, Icon.logout()),
+            title: withDefault(title, 'Logout'),
+            intent: withDefault(intent, 'danger'),
+            onClick: withDefault(onClick, this.logout),
             ...rest
         });
     }
@@ -43,7 +40,7 @@ export class LogoutButton extends Component {
     //---------------------------
     // Implementation
     //---------------------------
-    onClick = () => {
+    logout = () => {
         XH.identityService.logoutAsync();
     }
 

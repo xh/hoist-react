@@ -21,7 +21,7 @@ export class Record {
     id
     /** @member {Object} - unconverted source data. */
     raw
-    /** @member {Fields[]} - fields for this record. */
+    /** @member {Field[]} - fields for this record. */
     fields
     /** @member {Record[]} - Children of this record. */
     children
