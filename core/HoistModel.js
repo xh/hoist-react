@@ -22,12 +22,12 @@ export function HoistModel(C) {
     C = XhIdSupport(C);
     
     defaultMethods(C, {
-        loadAsync() {
+        loadAsync({isAutoRefresh = false} = {}) {
 
         },
 
-        refreshAsync() {
-            return this.loadAsync();
+        refreshAsync({isAutoRefresh = false} = {}) {
+            return this.loadAsync({isAutoRefresh});
         }
     });
 

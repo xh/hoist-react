@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import PT from 'prop-types';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, RefreshContext} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {toolbarButton} from '@xh/hoist/kit/onsen';
 import {warnIf} from '@xh/hoist/utils/js';
@@ -20,6 +20,8 @@ import {warnIf} from '@xh/hoist/utils/js';
 @HoistComponent
 export class RefreshButton extends Component {
 
+    static contextType = RefreshContext;
+    
     static propTypes = {
         icon: PT.element,
 
@@ -32,8 +34,8 @@ export class RefreshButton extends Component {
 
     render() {
         warnIf(
-            (this.props.model && this.props.onClick) || (!this.props.model && !this.props.onClick),
-            'RefreshButton must be provided either a model or an onClick handler to call (but not both).'
+            this.props.model && this.props.onClick,
+            'RefreshButton may be provided either a model or an onClick handler to call (but not both).'
         );
 
         const {

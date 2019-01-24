@@ -40,8 +40,8 @@ export class RefreshButton extends Component {
 
     render() {
         warnIf(
-            (this.props.model && this.props.onClick) || (!this.props.model && !this.props.onClick),
-            'RefreshButton must be provided either a model or an onClick handler to call (but not both).'
+            this.props.model && this.props.onClick,
+            'RefreshButton may be provided either a model or an onClick handler to call (but not both).'
         );
 
         const {
