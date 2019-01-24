@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {RefreshModel} from '@xh/hoist/cmp/refresh';
+import {RefreshModel} from '@xh/hoist/core';
 
 /**
  * @private

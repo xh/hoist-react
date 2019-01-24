@@ -5,8 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {HoistComponent, elemFactory, RefreshSupport, RefreshContext} from '@xh/hoist/core';
-import {RefreshModel} from './RefreshModel';
+import {HoistComponent, elemFactory, RefreshSupport, RefreshModel, RefreshContext} from '@xh/hoist/core';
 
 const refreshContextProvider = elemFactory(RefreshContext.Provider);
 

@@ -5,4 +5,3 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 export * from './RefreshView';
-export * from './RefreshModel';

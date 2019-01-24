@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from '@xh/hoist/core';
+import {XH, HoistModel, RefreshModel} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 
@@ -16,8 +16,6 @@ import {ImpersonationBarModel} from './ImpersonationBarModel';
 import {MessageSourceModel} from './MessageSourceModel';
 import {ToastSourceModel} from './ToastSourceModel';
 import {ThemeModel} from './ThemeModel';
-
-import {RefreshModel} from '@xh/hoist/cmp/refresh';
 
 /**
  *  Root object for Framework GUI State.
