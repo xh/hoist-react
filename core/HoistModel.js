@@ -26,24 +26,27 @@ export function HoistModel(C) {
         /**
          * Load this model
          *
+         * Instances should implement this method to define how they load data/resources.
+         *
+         * @param {boolean} [isRefresh] - true if this load was triggered by a refresh.
          * @param {boolean} [isAutoRefresh] - true if this load was triggered by a programmatic refresh process,
          *      rather than a user action.
          */
-        loadAsync({isAutoRefresh = false} = {}) {
+        loadAsync({isRefresh = false, isAutoRefresh = false} = {}) {
 
         },
 
         /**
          * Refresh this model
          *
-         * This method defaults to delegating to loadAsync.  Override this method
-         * if thic component has behavior that should only occur on refresh.
+         * This method delegates to loadAsync() and should not typically be overridden/implemented.
+         * Instances of HoistModel should implement loadAsync() instead.
          *
          * @param {boolean} [isAutoRefresh] - true if this load was triggered by a programmatic refresh process,
          *      rather than a user action.
          */
         refreshAsync({isAutoRefresh = false} = {}) {
-            return this.loadAsync({isAutoRefresh});
+            return this.loadAsync({isAutoRefresh, isRefresh: true});
         }
     });
 
