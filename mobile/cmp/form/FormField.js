@@ -147,7 +147,7 @@ export class FormField extends Component {
 
     get fieldModel() {
         const {formModel} = this;
-        return formModel ? formModel.getField(this.props.field) : null;
+        return formModel ? formModel.fields[this.props.field] : null;
     }
 
     getDefaultedProp(name, defaultVal) {

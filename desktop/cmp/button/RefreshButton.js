@@ -9,8 +9,9 @@ import {Component} from 'react';
 import PT from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {button} from './Button';
+import {Button, button} from './Button';
 import {warnIf} from '@xh/hoist/utils/js';
+import {withDefault} from '@xh/hoist/utils/js';
 
 /**
  * Convenience Button preconfigured for use as a trigger for a refresh operation.
@@ -22,15 +23,7 @@ import {warnIf} from '@xh/hoist/utils/js';
 export class RefreshButton extends Component {
 
     static propTypes = {
-
-        /** Icon to display for the button. Defaults to Icon.refresh(). */
-        icon: PT.element,
-
-        /** Tooltip text. */
-        title: PT.string,
-
-        /** Function to call when the button is clicked. */
-        onClick: PT.func,
+        ...Button.propTypes,
 
         /** Model to refresh via loadAsync(), if onClick prop not provided. */
         model: PT.object
@@ -42,18 +35,12 @@ export class RefreshButton extends Component {
             'RefreshButton must be provided either a model or an onClick handler to call (but not both).'
         );
 
-        const {
-            icon = Icon.refresh(),
-            title = 'Refresh',
-            onClick = this.model ? this.refreshModel : undefined,
-            model,
-            ...rest
-        } = this.props;
-
+        const {icon, title, intent, onClick, model, ...rest} = this.props;
         return button({
-            icon,
-            title,
-            onClick,
+            icon: withDefault(icon, Icon.refresh()),
+            title: withDefault(title, 'Refresh'),
+            intent: withDefault(intent, 'success'),
+            onClick: withDefault(onClick, this.model ? this.refreshModel : undefined),
             ...rest
         });
     }

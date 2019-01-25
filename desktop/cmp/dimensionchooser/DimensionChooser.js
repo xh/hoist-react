@@ -28,16 +28,18 @@ export class DimensionChooser extends Component {
     static modelClass = DimensionChooserModel;
 
     static propTypes = {
-
         /** Width in pixels of the target button (that triggers show of popover). */
         buttonWidth: PT.number,
+
+        /** Primary component model instance. */
+        model: PT.oneOfType([PT.instanceOf(DimensionChooserModel), PT.object]).isRequired,
 
         /** Title for popover (default "GROUP BY") or null to suppress. */
         popoverTitle: PT.string,
 
         /** Width in pixels of the popover menu itself. */
         popoverWidth: PT.number
-    }
+    };
 
     baseClassName = 'xh-dim-chooser';
 

@@ -1,14 +1,3 @@
 {
-  "extends": ["@xh/eslint-config"],
-
-  "globals": {
-    "xhAppCode": false,
-    "xhAppName": false,
-    "xhAppVersion": false,
-    "xhAppBuild": false,
-    "xhBaseUrl": false,
-    "xhIsDevelopmentMode": false,
-    "xhAgGridLicenseKey": false
-  }
-
+  "extends": ["@xh/eslint-config"]
 }
