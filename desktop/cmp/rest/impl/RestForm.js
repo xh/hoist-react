@@ -15,7 +15,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {form} from '@xh/hoist/cmp/form';
 
 import {Icon} from '@xh/hoist/icon';
-import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
+import {} from '@xh/hoist/desktop/cmp/record';
 
 import {restControl} from './RestControl';
 
@@ -62,11 +62,11 @@ export class RestForm extends Component {
                 fieldDefaults,
                 items: formFields.map(f => restControl(f))
             })
-        )
+        );
     }
 
     getButtons() {
-        const {formModel, actions, parent} = this.model,
+        const {formModel} = this.model,
             {disabled, readonly} = formModel;
         return [
             // recordActionBar({

@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import React, {Component} from 'react';
+import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {
@@ -20,8 +20,6 @@ import {
 } from '@xh/hoist/desktop/cmp/input';
 
 import {RestControlModel} from './RestControlModel';
-
-import {isNil} from 'lodash';
 
 @HoistComponent
 export class RestControl extends Component {
@@ -38,7 +36,7 @@ export class RestControl extends Component {
             disabled: true,
             omit,
             ...fieldOptions
-        })
+        });
     }
 
     renderFormField() {
@@ -50,14 +48,14 @@ export class RestControl extends Component {
         } else if (renderer) {
             return renderer;
         } else {
-            return this.renderInputFromType()
+            return this.renderInputFromType();
         }
     }
 
     renderInputFromType() {
         const {inputType, restField} = this.props;
         
-        switch(inputType) {
+        switch (inputType) {
             case 'bool':
                 return restField.required ? switchInput() : checkbox();
             case 'number':

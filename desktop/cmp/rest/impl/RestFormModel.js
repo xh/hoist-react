@@ -6,9 +6,9 @@
  */
 
 import {XH, HoistModel} from '@xh/hoist/core';
-import {observable, computed, action, bindable} from '@xh/hoist/mobx';
+import {action, bindable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {isEqual, cloneDeep} from 'lodash';
+import {cloneDeep} from 'lodash';
 import {FormModel, required} from '@xh/hoist/cmp/form';
 
 @HoistModel
@@ -64,7 +64,7 @@ export class RestFormModel {
 
     @action
     close() {
-        this.setIsOpen(false)
+        this.setIsOpen(false);
     }
 
     openAdd() {
@@ -83,7 +83,7 @@ export class RestFormModel {
     }
 
     destroy() {
-        XH.safeDestroy(this.formModel)
+        XH.safeDestroy(this.formModel);
     }
 
     //---------------------
@@ -101,7 +101,7 @@ export class RestFormModel {
 
         this.formFields = fields.map(f => rec ? f : {...f, omit: f.readonly});
         this.isAdd = !rec;
-        this.setIsOpen(true)
+        this.setIsOpen(true);
     }
 
     createFormField(f) {
