@@ -28,7 +28,7 @@ export class RestForm extends Component {
     baseClassName = 'xh-rest-form';
 
     render() {
-        const {record, isAdd, readonly, isOpen} = this.model;
+        const {isAdd, readonly, isOpen} = this.model;
         // if (!record) return null;
         return dialog({
             title: isAdd ? 'Add Record' : (!readonly ? 'Edit Record' : 'View Record'),
@@ -69,11 +69,11 @@ export class RestForm extends Component {
         const {formModel, actions, parent} = this.model,
             {disabled, readonly} = formModel;
         return [
-            recordActionBar({
-                actions,
-                record: formModel.getData(),
-                gridModel: parent.gridModel
-            }),
+            // recordActionBar({
+            //     actions,
+            //     record: formModel.getData(),
+            //     gridModel: parent.gridModel
+            // }),
             filler(),
             button({
                 text: readonly ? 'Cancel' : 'Close',

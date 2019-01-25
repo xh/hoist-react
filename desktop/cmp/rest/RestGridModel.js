@@ -92,7 +92,8 @@ export class RestGridModel {
      * @param {string} [unit] - name that describes records in this grid.
      * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
      * @param {function} [enhanceToolbar] - a function used to mutate RestGridToolbar items
-     * @param {Object[]} formFields - array of editors
+     * @param {Object[]|FieldModel[]} formFields - array of fieldModels passed to the the record edit form's model.
+     *      Respects the additional properties 'fieldOptions' (@see FormField) and renderer (@see HoistInput).
      * @param {*} ...rest - arguments for GridModel.
      */
     constructor({

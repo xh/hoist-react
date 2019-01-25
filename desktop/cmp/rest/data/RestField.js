@@ -19,7 +19,6 @@ export class RestField extends Field {
     lookupName;
     enableCreate;
     typeField;
-    formType;
 
     /**
      * @param {(boolean|'addOnly')} [editable]
