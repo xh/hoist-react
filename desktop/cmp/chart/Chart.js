@@ -6,16 +6,16 @@
  */
 import {Component} from 'react';
 import PT from 'prop-types';
-import {castArray, clone, merge} from 'lodash';
+import {assign, castArray, clone, merge} from 'lodash';
 import Highcharts from 'highcharts/highstock';
 import highchartsExporting from 'highcharts/modules/exporting';
 import highchartsOfflineExporting from 'highcharts/modules/offline-exporting';
 import highchartsExportData from 'highcharts/modules/export-data';
-import withDimensions from 'react-with-dimensions';
 
-import {XH, elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
-import {div, box} from '@xh/hoist/cmp/layout';
-import {Ref} from '@xh/hoist/utils/react';
+import { XH, elemFactory, HoistComponent, LayoutSupport } from '@xh/hoist/core';
+import { div, box } from '@xh/hoist/cmp/layout';
+import { Ref } from '@xh/hoist/utils/react';
+import { resizeSensor } from '@xh/hoist/kit/blueprint';
 
 import {LightTheme} from './theme/Light';
 import {DarkTheme} from './theme/Dark';
@@ -33,7 +33,6 @@ installZoomoutGesture(Highcharts);
  * as well as configuration and theme defaults. The chart's core configuration should be sourced
  * from a ChartModel prop passed to this component.
  */
-@withDimensions  // must go first in decorator stack or else layoutSupport throws
 @HoistComponent
 @LayoutSupport
 export class Chart extends Component {
@@ -60,7 +59,9 @@ export class Chart extends Component {
 
     render() {
         // Default flex = 1 (flex: 1 1 0) if no dimensions / flex specified, i.e. do not consult child for dimensions;
-        const layoutProps = this.getLayoutProps();
+        const {aspectRatio} = this.props,
+            layoutProps = this.getLayoutProps();
+
         if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
             layoutProps.flex = 1;
         }
@@ -68,27 +69,17 @@ export class Chart extends Component {
         this.renderHighChart();
 
         // Inner div required to be the ref for the chart element
-        return box({
-            ...layoutProps,
-            className: this.getClassName(),
-            item: div({
-                style: {margin: 'auto'},
-                ref: this._chartElem.ref
+        return resizeSensor({
+            onResize: (e) => this.resizeChart(e),
+            item: box({
+                ...layoutProps,
+                className: this.getClassName(),
+                item: div({
+                    style: { [aspectRatio ? 'margin' : 'flex']: 'auto' },
+                    ref: this._chartElem.ref
+                })
             })
         });
-    }
-
-    shouldComponentUpdate(nextProps) {
-        const next = nextProps.dimensions,
-            current = this.props.dimensions;
-        if (![next.width, next.height, current.width, current.height].includes(null) &&
-            (next.width != current.width || next.height != current.height)
-        ) {
-            const dims = this.getDims(nextProps);
-            this.resizeChart(dims.width, dims.height);
-            return false;
-        }
-        return true;
     }
 
     //-------------------
@@ -101,23 +92,27 @@ export class Chart extends Component {
     renderHighChart() {
         this.destroyHighChart();
         const chartElem = this._chartElem.value;
-        const dims = this.getDims(this.props);
         if (chartElem) {
-            const config = this.getMergedConfig();
-            config.chart.width = dims.width ;
-            config.chart.height = dims.height;
+            const config = this.getMergedConfig(),
+                parentEl = chartElem.parentElement;
+
+            assign(config.chart, this.getDims({
+                width: parentEl.offsetWidth,
+                height: parentEl.offsetHeight
+            }));
+         
             config.chart.renderTo = chartElem;
             this._chart = Highcharts.chart(config);
         }
     }
 
-    resizeChart(width, height) {
+    resizeChart(e) {
+        const {width, height} = this.getDims(e[0].contentRect);
         this._chart.setSize(width, height, false);
     }
 
-    getDims(props) {
-        const {dimensions, aspectRatio} = props;
-        let {width, height} = dimensions;
+    getDims({width, height}) {
+        const {aspectRatio} = this.props;
 
         if (!aspectRatio) return {width, height};
 
