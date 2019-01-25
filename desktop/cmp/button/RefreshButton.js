@@ -16,8 +16,9 @@ import {withDefault} from '@xh/hoist/utils/js';
 /**
  * Convenience Button preconfigured for use as a trigger for a refresh operation.
  *
- * Must be provided either an onClick handler *or* a model. If a model is provided and an onClick
- * handler is not provided, this button will call loadAsync() on the model class.
+ * If a model is provided it will be directly refreshed.  Alternatively an onClick handler
+ * may be provided.  If neither of these props are provided, the contextual RefreshModel for this
+ * button will be used.
  */
 @HoistComponent
 export class RefreshButton extends Component {

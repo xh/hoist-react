@@ -2,6 +2,29 @@
 
 ## v19.0.0-SNAPSHOT (in development / unreleased)
 
+
+### 🎁 New Features
+* A new architecture for application refreshing has been added.  The new architectures relies on
+ React context to minimizes the need for explicit application wiring, and improves support for 
+ auto-refresh. See `RefreshSupport`, `RefreshModel`, `RefreshView`, and `RefreshContext` for more info.
+
+* `TabContainerModel` and `TabModel` now support `refreshMode` and `renderMode` preperties to allow
+fine-grained handling of the refreshing and mounting/unmounting of hidden tabs.
+
+
+### 💥 Breaking Changes
+* `HoistAppModel.requestRefresh` and `TabContainerModel.requestRefresh` have been removed.  
+Applications should use the new Refresh architecture described above instead.
+
+* `tabRefreshMode` on TabContainer has been renamed `renderMode`.
+
+* `TabModel.reloadOnShow` has been removed.  Set the `refreshMode` property on 
+TabContainerModel/TabModel to 'onShowAlways' instead.
+
+* The mobile APIs for `TabContainerModel`, `TabModel`,  and `RefreshButton` have been rewritten
+to more closely mirror the desktop API.
+
+
 ## v18.0.0 - 2019-01-15
 
 ### 🎁 New Features

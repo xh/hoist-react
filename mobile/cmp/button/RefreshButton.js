@@ -15,7 +15,9 @@ import {warnIf} from '@xh/hoist/utils/js';
 /**
  * Convenience Button preconfigured for use as a trigger for a refresh operation.
  *
- * Can be provided an onClick handler, otherwise will use default action provided by framework.
+ * If a model is provided it will be directly refreshed.  Alternatively an onClick handler
+ * may be provided.  If neither of these props are provided, the contextual RefreshModel for this
+ * button will be used.
  */
 @HoistComponent
 export class RefreshButton extends Component {
