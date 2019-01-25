@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {dateInput, textInput} from '@xh/hoist/desktop/cmp/input';
+import {dateInputNew, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {refreshButton} from '@xh/hoist/desktop/cmp/button';
@@ -54,7 +54,7 @@ export class VisitsChart extends Component {
     }
 
     dateInput(args) {
-        return dateInput({
+        return dateInputNew({
             model: this.model,
             onCommit: this.onCommit,
             popoverPosition: 'top-left',

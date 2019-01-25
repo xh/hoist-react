@@ -9,7 +9,7 @@ import {HoistComponent} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {grid} from '@xh/hoist/cmp/grid';
-import {textInput, dateInput} from '@xh/hoist/desktop/cmp/input';
+import {textInput, dateInputNew} from '@xh/hoist/desktop/cmp/input';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {button, buttonGroup, exportButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {storeCountLabel} from '@xh/hoist/desktop/cmp/store';
@@ -72,7 +72,7 @@ export class ClientErrorPanel extends Component {
     // Implementation
     //-----------------------------
     dateInput(args) {
-        return dateInput({
+        return dateInputNew({
             model: this.model,
             onCommit: this.onCommit,
             commitOnChange: true,

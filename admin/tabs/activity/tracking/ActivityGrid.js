@@ -9,7 +9,7 @@ import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {dateInput, textInput} from '@xh/hoist/desktop/cmp/input';
+import {dateInputNew, textInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {button, buttonGroup, exportButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {storeCountLabel} from '@xh/hoist/desktop/cmp/store';
@@ -72,7 +72,7 @@ export class ActivityGrid extends Component {
     // Implementation
     //-----------------------------
     dateInput(args) {
-        return dateInput({
+        return dateInputNew({
             model: this.model,
             popoverPosition: 'bottom',
             width: 100,

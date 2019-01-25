@@ -8,6 +8,7 @@
 export * from './ButtonGroupInput';
 export * from './Checkbox';
 export * from './DateInput';
+export * from './DateInputNew';
 export * from './JsonInput';
 export * from './NumberInput';
 export * from './RadioInput';
