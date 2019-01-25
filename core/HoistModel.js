@@ -22,10 +22,26 @@ export function HoistModel(C) {
     C = XhIdSupport(C);
     
     defaultMethods(C, {
+
+        /**
+         * Load this model
+         *
+         * @param {boolean} [isAutoRefresh] - true if this load was triggered by a programmatic refresh process,
+         *      rather than a user action.
+         */
         loadAsync({isAutoRefresh = false} = {}) {
 
         },
 
+        /**
+         * Refresh this model
+         *
+         * This method defaults to delegating to loadAsync.  Override this method
+         * if thic component has behavior that should only occur on refresh.
+         *
+         * @param {boolean} [isAutoRefresh] - true if this load was triggered by a programmatic refresh process,
+         *      rather than a user action.
+         */
         refreshAsync({isAutoRefresh = false} = {}) {
             return this.loadAsync({isAutoRefresh});
         }

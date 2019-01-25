@@ -5,13 +5,27 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import PT from 'prop-types';
 import {HoistComponent, elemFactory, RefreshSupport, RefreshModel, RefreshContext} from '@xh/hoist/core';
 
 const refreshContextProvider = elemFactory(RefreshContext.Provider);
 
 @HoistComponent
 @RefreshSupport
+/**
+ * Establishes an area of the application with an independent RefreshModel.
+ *
+ * All graphical children may access this RefreshModel via the
+ * RefreshContext.
+ *
+ * @see RefreshContext
+ * @see RefreshModel
+ */
 export class RefreshView extends Component {
+
+    static propTypes = {
+        model: PT.instanceOf(RefreshModel).required
+    }
 
     static modelClass = RefreshModel;
    
