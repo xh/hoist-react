@@ -48,6 +48,11 @@ export class Chart extends Component {
 
     static modelClass = ChartModel;
 
+    static propTypes = {
+        /** Primary component model instance. */
+        model: PT.oneOfType([PT.instanceOf(ChartModel), PT.object]).isRequired
+    };
+
     baseClassName = 'xh-chart';
 
     _chartElem = new Ref();

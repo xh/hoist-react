@@ -90,6 +90,7 @@ export class HoistInput extends Component {
     constructor(props) {
         super(props);
 
+        throwIf(props.field, "HoistInput no longer supports a field property.  Use 'bind' instead.");
         this.addReaction({
             track: () => this.externalValue,
             run: (externalVal) => {
@@ -252,9 +253,10 @@ export class HoistInput extends Component {
      */
     getClassName(...extraClassNames) {
         const field = this.getField(),
-            validityClass = field && field.isNotValid && field.validationDisplayed ? 'xh-input-invalid' : null;
+            validityClass = field && field.isNotValid && field.validationDisplayed ? 'xh-input-invalid' : null,
+            disabledClass = this.props.disabled ? 'xh-input-disabled' : null;
 
-        return classNames('xh-input', validityClass, this.baseClassName, this.props.className, ...extraClassNames);
+        return classNames('xh-input', validityClass, disabledClass, this.baseClassName, this.props.className, ...extraClassNames);
     }
 
 }

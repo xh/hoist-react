@@ -6,6 +6,7 @@
  */
 import {XH, HoistService} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
+import {throwIf} from '@xh/hoist/utils/js';
 import {stringify} from 'qs';
 
 /**
@@ -53,6 +54,7 @@ export class FetchService {
      */
     async fetch(opts) {
         let {params, method, contentType, url, autoAbortKey} = opts;
+        throwIf(!url, 'No url specified in call to fetchService.');
 
         // 1) Compute / install defaults
         if (!method) {

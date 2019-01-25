@@ -12,7 +12,7 @@ import {elemFactory, HoistComponent, LayoutSupport, StableIdSupport} from '@xh/h
 import {tooltip} from '@xh/hoist/kit/blueprint';
 import {FormContext} from '@xh/hoist/cmp/form';
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {box, div, vbox, span, label as labelEl} from '@xh/hoist/cmp/layout';
+import {box, div, span, label as labelEl} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {fmtDate, fmtNumber} from '@xh/hoist/format';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
@@ -62,14 +62,7 @@ export class FormField extends Component {
          * Defaulted from containing Form, or false.
          */
         minimal: PT.bool,
-
-        /**
-         * Render the bound value as a string. In contrast to `disabled`, the HoistInput child is
-         * not rendered at all in read-only mode.
-         * Defaulted from containing Form, or false.
-         */
-        readonly: PT.bool,
-
+        
         /**
          * CommitOnChange property for underlying HoistInput (for inputs that support).
          * Defaulted from containing Form.
@@ -104,6 +97,7 @@ export class FormField extends Component {
         // Model related props
         const {fieldModel, label} = this,
             isRequired = fieldModel && fieldModel.isRequired,
+            readonly = fieldModel && fieldModel.readonly,
             validationDisplayed = fieldModel && fieldModel.validationDisplayed,
             notValid = fieldModel && fieldModel.isNotValid,
             displayNotValid = validationDisplayed && notValid,
@@ -115,7 +109,6 @@ export class FormField extends Component {
         // Display related props
         const inline = this.getDefaultedProp('inline', false),
             minimal = this.getDefaultedProp('minimal', false),
-            readonly = this.getDefaultedProp('readonly', false),
             leftErrorIcon = this.getDefaultedProp('leftErrorIcon', false),
             clickableLabel = this.getDefaultedProp('clickableLabel', true);
 
@@ -137,7 +130,7 @@ export class FormField extends Component {
                     items: [label, requiredStr],
                     htmlFor: clickableLabel ? idAttr : null
                 }),
-                vbox(
+                div(
                     control,
                     div({
                         omit: !info,
@@ -174,7 +167,7 @@ export class FormField extends Component {
     get fieldModel() {
         const {formModel} = this,
             {field} = this.props;
-        return formModel && field ? formModel.getField(field) : null;
+        return formModel && field ? formModel.fields[field] : null;
     }
 
     get label() {

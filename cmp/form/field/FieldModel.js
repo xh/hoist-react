@@ -37,10 +37,6 @@ export class FieldModel {
     name;
     /** @member {string} */
     @observable displayName;
-    /** @member {boolean} */
-    @observable disabled;
-    /** @member {boolean} */
-    @observable readonly;
 
     /** @member {Rule[]} */
     @observable.ref rules = [];
@@ -55,6 +51,8 @@ export class FieldModel {
      */
     @observable validationDisplayed = false;
 
+    @observable _disabled;
+    @observable _readonly;
     _validationTask = new PendingTaskModel();
     _validationRunId = 0;
 
@@ -81,8 +79,8 @@ export class FieldModel {
         this.displayName = displayName;
         this.value = initialValue;
         this.initialValue = initialValue;
-        this.disabled = disabled;
-        this.readonly = readonly;
+        this._disabled = disabled;
+        this._readonly = readonly;
         this.rules = this.processRuleSpecs(rules);
     }
 
@@ -112,6 +110,28 @@ export class FieldModel {
     /** Current data in this field, fully enumerated. */
     getData() {
         return this.value;
+    }
+
+    /** @member {boolean} */
+    get disabled() {
+        const {formModel} = this;
+        return !!(this._disabled || (formModel && formModel.disabled));
+    }
+
+    @action
+    setDisabled(disabled) {
+        this._disabled = disabled;
+    }
+
+    /** @member {boolean} */
+    get readonly() {
+        const {formModel} = this;
+        return !!(this._readonly || (formModel && formModel.readonly));
+    }
+
+    @action
+    setReadonly(readonly) {
+        this._readonly = readonly;
     }
 
     @action
@@ -147,19 +167,6 @@ export class FieldModel {
     /** @member {boolean} - true if value has been changed since last reset/init. */
     get isDirty() {
         return this.value !== this.initialValue;
-    }
-
-    //------------------------
-    // Disabled/readonly
-    //------------------------
-    @action
-    setDisabled(disabled) {
-        this.setDisabled = disabled;
-    }
-
-    @action
-    setReadonly(readonly) {
-        this.setReadonly = readonly;
     }
 
     //------------------------

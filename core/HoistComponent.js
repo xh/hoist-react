@@ -11,7 +11,7 @@ import {isPlainObject} from 'lodash';
 import {defaultMethods, chainMethods, markClass} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 
-import {ReactiveSupport, XhIdSupport} from './mixins';
+import {ReactiveSupport, XhIdSupport, ManagedSupport} from './mixins';
 
 /**
  * Core decorator for Components in Hoist.
@@ -26,6 +26,7 @@ export function HoistComponent(C) {
 
     markClass(C, 'isHoistComponent');
 
+    C = ManagedSupport(C);
     C = ReactiveSupport(C);
     C = XhIdSupport(C);
 

@@ -2,10 +2,7 @@
 
 ## v19.0.0-SNAPSHOT (in development / unreleased)
 
-### 🎁 New Features
-
-
-## v18.0.0-rc4 (release candidate)
+## v18.0.0 - 2019-01-15
 
 ### 🎁 New Features
 
@@ -21,12 +18,15 @@
     property settings from its containing `Form`.
   * `HoistInput` has been moved into the `input` package to clarify that these are lower level
     controls and independent of the Forms package.
-  * `RestGrid` now supports a `mask` prop. RestGrid loading is now masked by default.
-  * `Chart` component now supports a built-in zoom out gesture: click and drag from right-to-left on
-    charts with x-axis zooming.
-  * `Select` now supports an `enableClear` prop to control the presence of a clear button. Defaults
-    to false.
-* `Grid` components take `onCellClicked` and `onCellDoubleClicked` event handlers
+
+* `RestGrid` now supports a `mask` prop. RestGrid loading is now masked by default.
+* `Chart` component now supports a built-in zoom out gesture: click and drag from right-to-left on
+  charts with x-axis zooming.
+* `Select` now supports an `enableClear` prop to control the presence of an optional inline clear
+  button.
+* `Grid` components take `onCellClicked` and `onCellDoubleClicked` event handlers.
+* A new desktop `FileChooser` wraps a preconfigured react-dropzone component to allow users to
+  easily select files for upload or other client-side processing.
 
 ### 💥 Breaking Changes
 
@@ -38,7 +38,13 @@
 * A `Select` input with `enableMulti = true` will by default no longer show an inline x to clear the
   input value. Use the `enableClear` prop to re-enable.
 * Column definitions are exported from the `grid` package. To ensure backwards compatibility,
-  replace imports from '@xh/hoist/desktop/columns' with '@xh/hoist/desktop/cmp/grid'
+  replace imports from `@xh/hoist/desktop/columns` with `@xh/hoist/desktop/cmp/grid`.
+
+### 📚 Libraries
+
+* React `~16.6.0 -> ~16.7.0`
+* Patch version updates to multiple other dependencies.
+
 
 ## v17.0.0 - 2018-12-21
 
@@ -265,11 +271,11 @@ list. Note, this component is being replaced in Hoist v16 by the react-select li
 
 ### 📚 Libraries
 
-* Blueprint Core 3.6.1 -> 3.7.0
-* Blueprint Datetime 3.2.0 -> 3.3.0
-* Fontawesome 5.3.x -> 5.4.x
-* MobX 5.1.2 -> 5.5.0
-* Router5 6.5.0 -> 6.6.0
+* Blueprint Core `3.6.1 -> 3.7.0`
+* Blueprint Datetime `3.2.0 -> 3.3.0`
+* Fontawesome `5.3.x -> 5.4.x`
+* MobX `5.1.2 -> 5.5.0`
+* Router5 `6.5.0 -> 6.6.0`
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v14.1.3...v14.2.0)
 
@@ -376,8 +382,8 @@ list. Note, this component is being replaced in Hoist v16 by the react-select li
 
 ### 📚 Libraries
 
-* React 16.5.1 -> 16.5.2
-* router5 6.4.2 -> 6.5.0
+* React `16.5.1 -> 16.5.2`
+* router5 `6.4.2 -> 6.5.0`
 * CodeMirror, Highcharts, and MobX patch updates
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v13.0.0...v14.0.0)
