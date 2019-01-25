@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {HoistAppModel, XH} from '@xh/hoist/core';
+import {HoistAppModel, managed} from '@xh/hoist/core';
 import {TabContainerModel} from '@xh/hoist/desktop/cmp/tab';
 
 import {ActivityTab} from './tabs/activity/ActivityTab';
@@ -16,6 +16,7 @@ import {PreferencesTab} from './tabs/preferences/PreferencesTab';
 @HoistAppModel
 export class AppModel {
 
+    @managed
     tabModel = new TabContainerModel({
         route: 'default',
         tabs: this.createTabs()
@@ -97,9 +98,5 @@ export class AppModel {
             {id: 'monitor', content: MonitorTab},
             {id: 'preferences', content: PreferencesTab}
         ];
-    }
-
-    destroy() {
-        XH.safeDestroy(this.tabModel);
     }
 }

@@ -41,11 +41,8 @@ export class GridExportService {
 
         if (isFunction(filename)) filename = filename(gridModel);
 
-        const {store, sortBy} = gridModel,
-            columns = this.getExportableColumns(gridModel.getLeafColumns(), includeHiddenCols),
-            sortColIds = sortBy.map(it => it.colId),
-            sorts = sortBy.map(it => it.sort),
-            records = orderBy(store.records, sortColIds, sorts),
+        const columns = this.getExportableColumns(gridModel.getLeafColumns(), includeHiddenCols),
+            records = gridModel.store.rootRecords,
             meta = this.getColumnMetadata(columns),
             rows = [];
 
@@ -55,9 +52,7 @@ export class GridExportService {
         }
 
         rows.push(this.getHeaderRow(columns, type));
-        records.forEach(record => {
-            rows.push(this.getRecordRow(record, columns));
-        });
+        rows.push(...this.getRecordRowsRecursive(gridModel, records, columns, 0));
 
         // Show separate 'started' and 'complete' toasts for larger (i.e. slower) exports.
         // We use cell count as a heuristic for speed - this may need to be tweaked.
@@ -123,9 +118,26 @@ export class GridExportService {
         return {data: headers, depth: 0};
     }
 
-    getRecordRow(record, columns) {
+    getRecordRowsRecursive(gridModel, records, columns, depth) {
+        const {sortBy, treeMode} = gridModel,
+            sortColIds = sortBy.map(it => it.colId),
+            sorts = sortBy.map(it => it.sort),
+            sortedRecords = orderBy(records, sortColIds, sorts),
+            ret = [];
+
+        sortedRecords.forEach(record => {
+            ret.push(this.getRecordRow(record, columns, depth));
+            if (treeMode && record.children.length) {
+                ret.push(...this.getRecordRowsRecursive(gridModel, record.children, columns, depth + 1));
+            }
+        });
+
+        return ret;
+    }
+
+    getRecordRow(record, columns, depth) {
         const data = columns.map(it => this.getCellData(record, it));
-        return {data, depth: 0};
+        return {data, depth};
     }
 
     getCellData(record, column) {
