@@ -59,8 +59,7 @@ export class Chart extends Component {
 
     render() {
         // Default flex = 1 (flex: 1 1 0) if no dimensions / flex specified, i.e. do not consult child for dimensions;
-        const {aspectRatio} = this.props,
-            layoutProps = this.getLayoutProps();
+        const layoutProps = this.getLayoutProps();
 
         if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
             layoutProps.flex = 1;
@@ -75,7 +74,7 @@ export class Chart extends Component {
                 ...layoutProps,
                 className: this.getClassName(),
                 item: div({
-                    style: { [aspectRatio ? 'margin' : 'flex']: 'auto' },
+                    style: {margin: 'auto'},
                     ref: this._chartElem.ref
                 })
             })
