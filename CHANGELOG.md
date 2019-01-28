@@ -1,6 +1,6 @@
 # Changelog
 
-## v19.0.0-SNAPSHOT (in development / unreleased)
+## v18.1.0 - 2019-01-28
 
 ### 🎁 New Features
 
@@ -28,6 +28,12 @@
 
 * Hoist-dev-utils `3.4.1 -> 3.5.0` - updated webpack and other build tool dependencies, as well as
   an improved eslint configuration.
+* @blueprintjs/core `3.10 -> 3.12`
+* @blueprintjs/datetime `3.5 -> 3.7`
+* fontawesome `5.6 -> 5.7`
+* mobx `5.8 -> 5.9`
+* react-select `2.2 -> 2.3`
+* Other patch updates
 
 
 ## v18.0.0 - 2019-01-15
