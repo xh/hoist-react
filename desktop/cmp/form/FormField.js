@@ -47,7 +47,7 @@ export class FormField extends Component {
 
         /**
          * Optional function for use in readonly mode. Called with the Field's current value
-         * and should return a string suitable for presentation to the end-user.
+         * and should return an element suitable for presentation to the end-user.
          */
         readonlyRenderer: PT.func,
 
@@ -224,7 +224,7 @@ export class FormField extends Component {
             value = fieldModel ? fieldModel['value'] : null,
             renderer = withDefault(this.props.readonlyRenderer, this.defaultReadonlyRenderer);
 
-        return span({
+        return div({
             className: 'xh-form-field-readonly-display',
             item: renderer(value)
         });
@@ -234,7 +234,7 @@ export class FormField extends Component {
         if (isDate(value)) return fmtDate(value);
         if (isFinite(value)) return fmtNumber(value);
         if (isBoolean(value)) return value.toString();
-        return value;
+        return span(value);
     }
 
     getErrorTooltipContent(errors) {

@@ -5,66 +5,46 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH, HoistModel} from '@xh/hoist/core';
-import {action, bindable} from '@xh/hoist/mobx';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {cloneDeep} from 'lodash';
+import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {action, observable} from '@xh/hoist/mobx';
+import {throwIf} from '@xh/hoist/utils/js';
 import {FormModel, required} from '@xh/hoist/cmp/form';
+import {Icon} from '@xh/hoist/icon';
+import {merge} from 'lodash';
 
 @HoistModel
 export class RestFormModel {
 
-    /** @member {RestGridModel} */
+    // Parent RestGridModel
     parent = null;
 
-    /** @member {Object} */
-    fieldDefaults = null;
-
-    /** @member {RecordAction[]} */
-    actions;
-
+    // Mutable State
     currentRecord = null;
-
     readonly = null;
-    formModel = null;
-    formFields = null;
-
-    @bindable isOpen = false;
     isAdd = null;
 
-    get actionWarning() {return this.parent.actionWarning}
-    get store()          {return this.parent.store}
-    get loadModel()      {return this.store.loadModel}
+    @observable isOpen = false;
 
-    constructor({parent, formFields, actions, fieldDefaults}) {
+    @managed
+    formModel = null;
+
+    get actionWarning()     {return this.parent.actionWarning}
+    get actions()           {return this.parent.formActions}
+    get editors()           {return this.parent.editors}
+    get store()             {return this.parent.store}
+    get loadModel()         {return this.store.loadModel}
+
+    constructor(parent) {
         this.parent = parent;
-
-        this.formFields = formFields.map(f => this.createFormField(f));
-        this.formModel = new FormModel({fields: this.formFields});
-
-        this.fieldDefaults = {commitOnChange: true, minimal: true, ...fieldDefaults};
-        this.actions = actions;
     }
-
 
     //-----------------
     // Actions
     //-----------------
     @action
-    saveRecord() {
-        throwIf(this.parent.readonly, 'Record not saved: this grid is read-only.');
-        const {isAdd, store, formModel, currentRecord} = this,
-            record = {...currentRecord, ...(formModel.getData())},
-            saveFn = () => isAdd ? store.addRecordAsync(record) : store.saveRecordAsync(record);
-        saveFn()
-            .then(() => this.close())
-            .linkTo(this.loadModel)
-            .catchDefault();
-    }
-
-    @action
     close() {
-        this.setIsOpen(false);
+        this.isOpen = false;
+        XH.safeDestroy(this.formModel);
     }
 
     openAdd() {
@@ -82,49 +62,81 @@ export class RestFormModel {
         this.initForm(rec);
     }
 
-    destroy() {
-        XH.safeDestroy(this.formModel);
+    async validateAndSaveAsync() {
+        throwIf(this.parent.readonly, 'Record not saved: this grid is read-only.');
+        const warning = this.actionWarning[this.isAdd ? 'add' : 'edit'];
+
+        const valid = await this.formModel.validateAsync();
+        if (!valid) {
+            XH.toast({message: 'Form not valid.  Please correct errors.'});
+            return;
+        }
+
+        if (warning) {
+            await XH.confirm({
+                message: warning,
+                title: 'Warning',
+                icon: Icon.warning({size: 'lg'})
+            });
+        }
+
+        return this.saveRecordAsync();
     }
 
     //---------------------
     // Implementation
     //---------------------
-
     @action
     initForm(rec) {
-        const {formFields: fields, parent} = this;
         this.currentRecord = rec ? rec : {id: null};
 
-        this.formModel = new FormModel({fields});
-        this.formModel.init(rec);
-        this.formModel.setReadonly(parent.readonly || this.readonly);
+        const fields = this.editors.map(editor => this.fieldModelConfig(editor));
 
-        this.formFields = fields.map(f => rec ? f : {...f, omit: f.readonly});
+        this.formModel = new FormModel({
+            fields,
+            initialValues: rec,
+            readonly: this.parent.readonly || this.readonly
+        });
+
         this.isAdd = !rec;
-        this.setIsOpen(true);
+        this.isOpen = true;
     }
 
-    createFormField(f) {
-        const field = cloneDeep(f),
-            restField = this.store.getField(field.name);
-        throwIf(!restField, `Unknown field '${field.name}' in RestGrid.`);
+    @action
+    saveRecordAsync() {
+        const {isAdd, store, formModel, currentRecord} = this,
+            record = {...currentRecord, ...formModel.getData(true)},
+            saveFn = () => isAdd ? store.addRecordAsync(record) : store.saveRecordAsync(record);
+        return saveFn()
+            .then(() => this.close())
+            .linkTo(this.loadModel)
+            .catchDefault();
+    }
 
-        if (restField.required) field.rules = [...(field.rules ? field.rules : []), required];
+    fieldModelConfig(editor) {
+        const name = editor.field,
+            restField = this.store.getField(name);
+        throwIf(!restField, `Unknown field '${name}' in RestGrid.`);
 
-        const inputType = restField.typeField ? this.getDynamicType(restField.typeField) : restField.type;
-        if (inputType === 'bool') field.initialValue = withDefault(field.initialValue, false);
+        return merge({
+            name,
+            rules: restField.required ? [required] : [],
+            displayName: editor.label,
+            readonly: !(restField.editable || (restField.editable === 'onAdd' && this.isAdd))
+        }, editor.fieldModel);
 
-        field.readonly = !(restField.editable || (restField.editable === 'onAdd' && this.isAdd));
-
-        return {...field, restField, inputType};
     }
 
     //-------------------------
     // Helpers
     //-------------------------
+    getType(name) {
+        const restField = this.store.getField(name);
+        return restField.typeField ? this.getDynamicType(restField.typeField) : restField.type;
+    }
 
     getDynamicType(typeField) {
-        const {record, store}  = this.parent,
+        const {record, store} = this.parent,
             field = store.getField(typeField);
         const rawType = record && field ? record[field.name] : null;
 

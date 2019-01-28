@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from '@xh/hoist/core';
+import {XH, HoistModel, managed} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
@@ -58,6 +58,7 @@ export class RestGridModel {
     //----------------
     readonly;
 
+    editors;
     toolbarActions;
     menuActions;
     formActions;
@@ -71,8 +72,13 @@ export class RestGridModel {
     unit = null;
     filterFields = null;
 
+    @managed
     gridModel = null;
+
+    @managed
     formModel = null;
+
+    @managed
     loadModel = new PendingTaskModel();
 
     get store() {return this.gridModel.store}
@@ -92,8 +98,8 @@ export class RestGridModel {
      * @param {string} [unit] - name that describes records in this grid.
      * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
      * @param {function} [enhanceToolbar] - a function used to mutate RestGridToolbar items
-     * @param {Object[]|FieldModel[]} formFields - array of fieldModels passed to the the record edit form's model.
-     *      Respects the additional properties 'fieldOptions' (@see FormField) and renderer (@see HoistInput).
+     * @param {Object[]} editors - FieldModel configs representing Fields to be edited in the editor form, enhanced with
+     *      an option 'formFieldProps' property, which provides rendering advice for the displayed FormField.
      * @param {*} ...rest - arguments for GridModel.
      */
     constructor({
@@ -105,11 +111,11 @@ export class RestGridModel {
         unit = 'record',
         filterFields,
         enhanceToolbar,
-        formFields = [],
+        editors = [],
         ...rest
     }) {
         this.readonly = readonly;
-
+        this.editors = editors;
         this.toolbarActions = toolbarActions;
         this.menuActions = menuActions;
         this.formActions = formActions;
@@ -127,11 +133,7 @@ export class RestGridModel {
             ...rest
         });
 
-        this.formModel = new RestFormModel({
-            parent: this,
-            formFields,
-            actions: formActions
-        });
+        this.formModel = new RestFormModel(this);
     }
 
     /** Load the underlying store. */
@@ -147,7 +149,6 @@ export class RestGridModel {
     //-----------------
     // Actions
     //------------------
-
     @action
     addRecord() {
         this.formModel.openAdd();
@@ -215,9 +216,5 @@ export class RestGridModel {
 
     async exportAsync(...args) {
         return this.gridModel.exportAsync(...args);
-    }
-
-    destroy() {
-        XH.safeDestroy(this.gridModel, this.formModel, this.pendingTaskModel);
     }
 }

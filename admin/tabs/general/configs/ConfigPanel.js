@@ -14,6 +14,7 @@ import {Icon} from '@xh/hoist/icon';
 
 import {configDiffer} from './differ/ConfigDiffer';
 import {ConfigDifferModel} from './differ/ConfigDifferModel';
+import {textArea} from "@xh/hoist/desktop/cmp/input";
 
 @HoistComponent
 export class ConfigPanel extends Component {
@@ -91,7 +92,7 @@ export class ConfigPanel extends Component {
             {field: 'valueType'},
             {field: 'value'},
             {field: 'clientVisible'},
-            {field: 'note', type: 'textarea'},
+            {field: 'note', formField: {item: textArea()}},
             {field: 'lastUpdated'},
             {field: 'lastUpdatedBy'}
         ]

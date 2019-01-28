@@ -7,36 +7,37 @@
 
 import {Component} from 'react';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-import {HoistComponent, elemFactory, XH} from '@xh/hoist/core';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {filler, vframe} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {form} from '@xh/hoist/cmp/form';
-
 import {Icon} from '@xh/hoist/icon';
-import {} from '@xh/hoist/desktop/cmp/record';
 
-import {restControl} from './RestControl';
-
-import './RestForm.scss';
+import {restFormField} from './RestFormField';
 
 @HoistComponent
 export class RestForm extends Component {
 
-
     baseClassName = 'xh-rest-form';
 
     render() {
-        const {isAdd, readonly, isOpen} = this.model;
-        // if (!record) return null;
+        const {model} = this,
+            {isAdd, readonly, isOpen} = this.model;
+        if (!isOpen) return null;
+
         return dialog({
             title: isAdd ? 'Add Record' : (!readonly ? 'Edit Record' : 'View Record'),
             icon: isAdd ? Icon.add() : Icon.edit(),
             className: this.getClassName(),
-            isOpen,
+            isOpen: true,
             isCloseButtonShown: false,
-            items: this.getDialogItems(),
+            items: [
+                this.renderForm(),
+                this.renderToolbar(),
+                mask({model: model.loadModel, spinner: true})
+            ],
             transitionName: 'none'
         });
     }
@@ -44,72 +45,39 @@ export class RestForm extends Component {
     //------------------------
     // Implementation
     //------------------------
-    getDialogItems() {
-        const model = this.model;
-        return [
-            dialogBody(this.getForm()),
-            toolbar(this.getButtons()),
-            mask({model: model.loadModel, spinner: true})
-        ];
-    }
-
-    getForm() {
+    renderForm() {
         const {model} = this,
-            {formModel, fieldDefaults, formFields} = model;
-        return vframe(
+            formFields = model.editors.map(editor => {
+                return restFormField({editor, model});
+            });
+
+        return dialogBody(
             form({
-                model: formModel,
-                fieldDefaults,
-                items: formFields.map(f => restControl(f))
+                model: model.formModel,
+                fieldDefaults: {commitOnChange: true, minimal: true},
+                item: vframe(formFields)
             })
         );
     }
 
-    getButtons() {
-        const {formModel} = this.model,
-            {disabled, readonly} = formModel;
-        return [
-            // recordActionBar({
-            //     actions,
-            //     record: formModel.getData(),
-            //     gridModel: parent.gridModel
-            // }),
+    renderToolbar() {
+        const {model} = this,
+            {formModel} = model;
+        return toolbar(
             filler(),
             button({
-                text: readonly ? 'Cancel' : 'Close',
-                onClick: this.onCloseClick
+                text: formModel.readonly ? 'Cancel' : 'Close',
+                onClick: () => model.close()
             }),
             button({
                 text: 'Save',
                 icon: Icon.check(),
                 intent: 'success',
-                disabled: !formModel.isValid || disabled,
-                onClick: this.onSaveClick,
-                omit: readonly
+                disabled: !formModel.isDirty,
+                onClick: () => model.validateAndSaveAsync(),
+                omit: formModel.readonly
             })
-        ];
+        );
     }
-
-    onCloseClick = () => {
-        this.model.close();
-    };
-
-    onSaveClick = () => {
-        const model = this.model,
-            isAdd = model.isAdd,
-            warning = model.actionWarning[isAdd ? 'add' : 'edit'];
-
-        if (warning) {
-            XH.confirm({
-                message: warning,
-                title: 'Warning',
-                icon: Icon.warning({size: 'lg'}),
-                onConfirm: () => model.saveRecord()
-            });
-        } else {
-            model.saveRecord();
-        }
-    };
 }
-
 export const restForm = elemFactory(RestForm);

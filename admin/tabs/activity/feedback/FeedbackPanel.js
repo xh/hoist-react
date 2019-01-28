@@ -9,6 +9,7 @@ import {HoistComponent} from '@xh/hoist/core';
 import {restGrid, RestGridModel, RestStore, deleteAction} from '@xh/hoist/desktop/cmp/rest';
 import {compactDateCol} from '@xh/hoist/cmp/grid';
 import {usernameCol} from '@xh/hoist/admin/columns';
+import {textArea} from '@xh/hoist/desktop/cmp/input';
 
 @HoistComponent
 export class FeedbackPanel extends Component {
@@ -66,7 +67,7 @@ export class FeedbackPanel extends Component {
         ],
         editors: [
             {field: 'username'},
-            {field: 'msg', type: 'textarea'},
+            {field: 'msg', formField: {item: textArea()}},
             {field: 'browser'},
             {field: 'device'},
             {field: 'appVersion'},
