@@ -1,6 +1,40 @@
 # Changelog
 
-## v19.0.0-SNAPSHOT (in development / unreleased)
+## v18.1.0 - 2019-01-28
+
+### 🎁 New Features
+
+* New `@managed` class field decorator can be used to mark a property as fully created/owned by its
+  containing class (provided that class has installed the matching `@ManagedSupport` decorator).
+  * The framework will automatically pass any `@managed` class members to `XH.safeDestroy()` on
+    destroy/unmount to ensure their own `destroy()` lifecycle methods are called and any related
+    resources are disposed of properly, notably MobX observables and reactions.
+  * In practice, this should be used to decorate any properties on `HoistModel`, `HoistService`, or
+    `HoistComponent` classes that hold a reference to a `HoistModel` created by that class. All of
+    those core artifacts support the new decorator, `HoistModel` already provides a built-in
+    `destroy()` method, and calling that method when an app is done with a Model is an important
+    best practice that can now happen more reliably / easily.
+* `FormModel.getData()` accepts a new single parameter `dirtyOnly` - pass true to get back only
+  fields which have been modified.
+* The mobile `Select` component indicates the current value with a ✅ in the drop-down list.
+* Excel exports from tree grids now include the matching expand/collapse tree controls baked into
+  generated Excel file.
+
+### 🐞 Bug Fixes
+
+* The `JsonInput` component now properly respects / indicates disabled state.
+
+### 📚 Libraries
+
+* Hoist-dev-utils `3.4.1 -> 3.5.0` - updated webpack and other build tool dependencies, as well as
+  an improved eslint configuration.
+* @blueprintjs/core `3.10 -> 3.12`
+* @blueprintjs/datetime `3.5 -> 3.7`
+* fontawesome `5.6 -> 5.7`
+* mobx `5.8 -> 5.9`
+* react-select `2.2 -> 2.3`
+* Other patch updates
+
 
 
 ### 🎁 New Features
@@ -754,9 +788,9 @@ and ag-Grid upgrade, and more. 🚀
   * `Panel` and `Resizable` components have moved to their own packages in
     `@xh/hoist/desktop/cmp/panel` and `@xh/hoist/desktop/cmp/resizable`.
 * **Multiple changes and improvements made to tab-related APIs and components.**
-  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes`
-    -> `route` (to specify a starting route as a string) and `switcherPosition` has moved from a
-    model config to a prop on the `TabContainer` component.
+  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes` ->
+    `route` (to specify a starting route as a string) and `switcherPosition` has moved from a model
+    config to a prop on the `TabContainer` component.
   * `TabPane` and `TabPaneModel` have been renamed `Tab` and `TabModel`, respectively, with several
     related renames.
 * **Application entry-point classes decorated with `@HoistApp` must implement the new getter method
