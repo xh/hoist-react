@@ -11,19 +11,18 @@ import {throwIf} from '@xh/hoist/utils/js';
 import {pull} from 'lodash';
 
 /**
- * Refresh Model.
+ * Model to manage refreshing sections of the application, where "refreshing" refers to app-specific
+ * actions to load and display updated data. Calling `refreshAsync()` on this model will cause it to
+ * trigger a refresh on all linked models within its containing context.
  *
- * This object controls the refreshing of sections of the application.
+ * A global instance of this class is provided by the framework as `XH.refreshModel`. Apps can
+ * create additional RefreshModels and pass them to nested RefreshView components to establish
+ * distinct areas of the component hierarchy that can then be refreshed independently.
  *
- * A global instance of this class is provided by the framework as
- * XH.refreshModel.  Applications may create additional sub-models to apply
- * to individual sections of the graphical hierarchy by the use of nested
- * RefreshViews.
- *
- * Also note that TabContainer establishes seperate RefreshModels for its
- * tabs and uses these to implement efficient refresh handling within its hidden
- * tabs.  See TabContainerModel.refreshMode and TabModel.refreshMode for more
- * information.
+ * Note that TabContainer automatically establishes separate RefreshModels for its tabs and uses
+ * these to implement efficient refresh handling of inactive / not-yet-rendered tabs. See the
+ * `refreshMode` configs on `TabContainerModel` and `TabModel` for more information on this common
+ * use case.
  *
  * @see RefreshView
  * @see RefreshSupport
@@ -51,10 +50,10 @@ export class RefreshModel {
     /**
      * Register a HoistModel with this model for refreshing.
      *
-     * @param {HoistModel} target
+     * For models backing HoistComponents, consider applying the `@RefreshSupport` decorator to
+     * the component to have this method called automatically for the component's primary model.
      *
-     * For models backing HoistComponents, this method should not need to
-     * be called directly.  Use @RefreshSupport instead.
+     * @param {HoistModel} target
      */
     register(target) {
         throwIf(!target.isHoistModel, 'Cannot register non-HoistModel with RefreshModel.');
@@ -65,10 +64,10 @@ export class RefreshModel {
     /**
      * Unregister a HoistModel from this model.
      *
-     * @param {HoistModel} target
+     * For models backing HoistComponents, consider applying the `@RefreshSupport` decorator to
+     * the component to have this method called automatically for the component's primary model.
      *
-     * For models backing HoistComponents, this method may not need to
-     * be called directly.  Use @RefreshSupport instead.
+     * @param {HoistModel} target
      */
     unregister(target) {
         pull(this.targets, target);

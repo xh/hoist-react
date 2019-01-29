@@ -8,8 +8,7 @@ import React from 'react';
 import {provideMethods, markClass, chainMethods, throwIf} from '@xh/hoist/utils/js';
 
 /**
- * Context establishing an area of the application that can be independently
- * refreshed via a RefreshModel.
+ * Context establishing an area of the app that can be independently refreshed via a RefreshModel.
  *
  * @see RefreshModel
  * @see RefreshSupport
@@ -17,11 +16,12 @@ import {provideMethods, markClass, chainMethods, throwIf} from '@xh/hoist/utils/
 export const RefreshContext = React.createContext(null);
 
 /**
- * Mixin to indicate that a component has a model that implements loading and refreshing
- * and should participate in its containing RefreshContext/RefreshModel
+ * Mixin to indicate that a component has a model that implements loading and refreshing and should
+ * participate in a containing RefreshContext.
  *
- * This mixin will cause the component's model to be registered/unregistered with the
- * RefreshModel when the component is mounted/unmounted.
+ * This mixin will cause the component's model to be registered/unregistered with a context-provided
+ * RefreshModel when the component is mounted/unmounted. The RefreshModel will then in turn make
+ * coordinated calls to loadAsync() and refreshAsync() when coordinating a refresh.
  */
 export function RefreshSupport(C) {
 

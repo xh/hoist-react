@@ -14,9 +14,7 @@ const refreshContextProvider = elemFactory(RefreshContext.Provider);
 @RefreshSupport
 /**
  * Establishes an area of the application with an independent RefreshModel.
- *
- * All graphical children may access this RefreshModel via the
- * RefreshContext.
+ * All graphical children may access this RefreshModel via the RefreshContext.
  *
  * @see RefreshContext
  * @see RefreshModel
@@ -24,8 +22,8 @@ const refreshContextProvider = elemFactory(RefreshContext.Provider);
 export class RefreshView extends Component {
 
     static propTypes = {
-        model: PT.instanceOf(RefreshModel).required
-    }
+        model: PT.instanceOf(RefreshModel).isRequired
+    };
 
     static modelClass = RefreshModel;
    
