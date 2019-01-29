@@ -5,8 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import moment from 'moment';
-import {XH, HoistModel} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {action, observable, comparer} from '@xh/hoist/mobx';
 import {LocalStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {fmtDate, fmtSpan} from '@xh/hoist/format';
@@ -24,9 +24,10 @@ export class ClientErrorModel {
 
     @observable detailRecord = null;
 
+    @managed
     loadModel = new PendingTaskModel();
 
-
+    @managed
     gridModel = new GridModel({
         stateModel: 'xhClientErrorGrid',
         enableColChooser: true,
@@ -50,6 +51,14 @@ export class ClientErrorModel {
             {field: 'error', flex: true, minWidth: 150, renderer: (e) => fmtSpan(e)}
         ]
     });
+
+    constructor() {
+        this.addReaction({
+            track: () => this.getParams(),
+            run: this.loadAsync,
+            equals: comparer.structural
+        });
+    }
 
     async loadAsync() {
         return XH.fetchJson({
@@ -128,9 +137,5 @@ export class ClientErrorModel {
 
     isValidDate(date) {
         return date && date.toString() !== 'Invalid Date';
-    }
-
-    destroy() {
-        XH.safeDestroy(this.gridModel);
     }
 }

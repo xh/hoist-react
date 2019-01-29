@@ -25,7 +25,6 @@ import {pull} from 'lodash';
  * use case.
  *
  * @see RefreshView
- * @see RefreshSupport
  */
 @HoistModel
 export class RefreshModel {
@@ -50,7 +49,7 @@ export class RefreshModel {
     /**
      * Register a HoistModel with this model for refreshing.
      *
-     * For models backing HoistComponents, consider applying the `@RefreshSupport` decorator to
+     * For models backing HoistComponents, consider applying the `@LoadSupport` decorator to
      * the component to have this method called automatically for the component's primary model.
      *
      * @param {HoistModel} target
@@ -64,7 +63,7 @@ export class RefreshModel {
     /**
      * Unregister a HoistModel from this model.
      *
-     * For models backing HoistComponents, consider applying the `@RefreshSupport` decorator to
+     * For models backing HoistComponents, consider applying the `@LoadSupport` decorator to
      * the component to have this method called automatically for the component's primary model.
      *
      * @param {HoistModel} target

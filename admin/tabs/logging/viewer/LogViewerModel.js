@@ -46,7 +46,8 @@ export class LogViewerModel {
 
     constructor() {
         this.addReaction(this.syncSelectionReaction());
-        this.addReaction(this.toggleTail());
+        this.addReaction(this.toggleTailReaction());
+        this.addReaction(this.reloadReaction());
     }
     
     @action
@@ -121,7 +122,14 @@ export class LogViewerModel {
         };
     }
 
-    toggleTail() {
+    reloadReaction() {
+        return {
+            track: () => [this.pattern, this.maxLines, this.startLine],
+            run: this.loadLines
+        };
+    }
+
+    toggleTailReaction() {
         return {
             track: () => this.tail,
             run: (checked) => {

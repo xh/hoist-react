@@ -131,7 +131,6 @@ export class RestGridModel {
             editors,
             actions: formActions
         });
-        this.loadAsync();
     }
 
     /** Load the underlying store. */

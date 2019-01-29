@@ -29,20 +29,20 @@ export class ConfigDifferDetail extends Component {
         return dialog({
             title: 'Detail',
             isOpen: model.record,
-            onClose: this.onCloseClick,
+            onClose: () => model.close(),
             item: panel({
                 item: this.renderDiffTable(),
                 bbar: toolbar(
                     filler(),
                     button({
                         text: 'Cancel',
-                        onClick: this.onCloseClick
+                        onClick: () => model.close()
                     }),
                     button({
                         text: 'Accept Remote',
                         icon: Icon.cloudDownload(),
                         intent: 'primary',
-                        onClick: this.onAcceptRemoteClick
+                        onClick: () => model.confirmApplyRemote()
                     })
                 )
             })
@@ -73,14 +73,6 @@ export class ConfigDifferDetail extends Component {
                 ...rows
             )
         });
-    }
-    
-    onAcceptRemoteClick = () => {
-        this.model.confirmApplyRemote();
-    }
-
-    onCloseClick = () => {
-        this.model.close();
     }
 }
 export const configDifferDetail= elemFactory(ConfigDifferDetail);

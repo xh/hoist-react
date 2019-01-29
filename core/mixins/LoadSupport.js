@@ -11,7 +11,6 @@ import {provideMethods, markClass, chainMethods, throwIf} from '@xh/hoist/utils/
  * Context establishing an area of the app that can be independently refreshed via a RefreshModel.
  *
  * @see RefreshModel
- * @see RefreshSupport
  */
 export const RefreshContext = React.createContext(null);
 
@@ -19,15 +18,20 @@ export const RefreshContext = React.createContext(null);
  * Mixin to indicate that a component has a model that implements loading and refreshing and should
  * participate in a containing RefreshContext.
  *
+ * This mixin will cause the component's model to load after the component is mounted.
+ *
+ * This mixin will also cause the component's model to be registered/unregistered with the
+ * RefreshModel when the component is mounted/unmounted.
+ *
  * This mixin will cause the component's model to be registered/unregistered with a context-provided
  * RefreshModel when the component is mounted/unmounted. The RefreshModel will then in turn make
  * coordinated calls to loadAsync() and refreshAsync() when coordinating a refresh.
  */
-export function RefreshSupport(C) {
+export function LoadSupport(C) {
 
-    markClass(C, 'hasRefreshSupport');
+    markClass(C, 'hasLoadSupport');
 
-    throwIf(C.contextType,  'Cannot decorate a class with RefreshSupport if it already uses context type');
+    throwIf(C.contextType,  'Cannot decorate a class with LoadSupport if it already uses context type');
     C.contextType = RefreshContext;
 
     provideMethods(C, {
@@ -40,6 +44,8 @@ export function RefreshSupport(C) {
         componentDidMount() {
             const {refreshModel, model} = this;
             if (refreshModel && model) refreshModel.register(model);
+
+            if (model) model.loadAsync();
         },
 
         componentWillUnmount() {

@@ -11,7 +11,6 @@ import {tabContainer} from '@xh/hoist/desktop/cmp/tab';
 import {PreferencePanel} from './PreferencePanel';
 import {UserPreferencePanel} from './UserPreferencePanel';
 
-
 @HoistComponent
 export class PreferencesTab extends Component {
 

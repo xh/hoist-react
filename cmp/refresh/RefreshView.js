@@ -6,12 +6,12 @@
  */
 import {Component} from 'react';
 import PT from 'prop-types';
-import {HoistComponent, elemFactory, RefreshSupport, RefreshModel, RefreshContext} from '@xh/hoist/core';
+import {HoistComponent, elemFactory, LoadSupport, RefreshModel, RefreshContext} from '@xh/hoist/core';
 
 const refreshContextProvider = elemFactory(RefreshContext.Provider);
 
 @HoistComponent
-@RefreshSupport
+@LoadSupport
 /**
  * Establishes an area of the application with an independent RefreshModel.
  * All graphical children may access this RefreshModel via the RefreshContext.
@@ -23,7 +23,7 @@ export class RefreshView extends Component {
 
     static propTypes = {
         model: PT.instanceOf(RefreshModel).isRequired
-    };
+    }
 
     static modelClass = RefreshModel;
    

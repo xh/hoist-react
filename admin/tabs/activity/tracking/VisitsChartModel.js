@@ -6,8 +6,8 @@
  */
 import moment from 'moment';
 import {forOwn} from 'lodash';
-import {XH, HoistModel} from '@xh/hoist/core';
-import {observable, action} from '@xh/hoist/mobx';
+import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {observable, action, comparer} from '@xh/hoist/mobx';
 import {ChartModel} from '@xh/hoist/desktop/cmp/chart';
 import {fmtDate} from '@xh/hoist/format';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
@@ -19,8 +19,10 @@ export class VisitsChartModel {
     @observable endDate = new Date();
     @observable username = '';
 
+    @managed
     loadModel = new PendingTaskModel();
 
+    @managed
     chartModel = new ChartModel({
         config: {
             chart: {type: 'column'},
@@ -43,18 +45,21 @@ export class VisitsChartModel {
         }
     });
 
-    async loadAsync() {
-        const {startDate, endDate, username} = this;
+    constructor() {
+        this.addReaction({
+            track: () => this.getParams(),
+            run: this.loadAsync,
+            equals: comparer.structural
+        });
+    }
 
-        if ((!this.isValidDate(startDate)) || !this.isValidDate(endDate)) return;
+    async loadAsync() {
+        const params = this.getParams();
+        if (!params.startDate || !params.endDate) return;
 
         return XH.fetchJson({
             url: 'trackLogAdmin/dailyVisitors',
-            params: {
-                startDate: fmtDate(startDate, 'YYYYMMDD'),
-                endDate: fmtDate(endDate, 'YYYYMMDD'),
-                username: username
-            }
+            params
         }).then(data => {
             this.chartModel.setSeries(this.getSeriesData(data));
         }).linkTo(
@@ -80,6 +85,16 @@ export class VisitsChartModel {
     //----------------
     // Implementation
     //----------------
+    getParams() {
+        const {endDate, startDate, username} = this;
+
+        return {
+            startDate: this.isValidDate(startDate) ? fmtDate(startDate, 'YYYYMMDD') : null,
+            endDate: this.isValidDate(endDate) ? fmtDate(endDate, 'YYYYMMDD') : null,
+            username
+        };
+    }
+
     isValidDate(date) {
         return date && date.toString() !== 'Invalid Date';
     }
@@ -92,9 +107,5 @@ export class VisitsChartModel {
         });
 
         return [{data}];
-    }
-
-    destroy() {
-        XH.safeDestroy(this.chartModel);
     }
 }

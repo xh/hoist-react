@@ -5,8 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import moment from 'moment';
-import {XH, HoistModel} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {action, observable, computed, comparer} from '@xh/hoist/mobx';
 import {LocalStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
@@ -27,8 +27,10 @@ export class ActivityGridModel {
 
     @observable detailRecord = null;
 
+    @managed
     loadModel = new PendingTaskModel();
 
+    @managed
     gridModel = new GridModel({
         stateModel: 'xhActivityGrid',
         enableColChooser: true,
@@ -64,12 +66,20 @@ export class ActivityGridModel {
     async loadAsync() {
         return XH.fetchJson({
             url: 'trackLogAdmin',
-            params: this.getParams()
+            params: this.params
         }).then(data => {
             this.gridModel.loadData(data);
         }).linkTo(
             this.loadModel
         ).catchDefault();
+    }
+
+    constructor() {
+        this.addReaction({
+            track: () => this.getParams(),
+            run: this.loadAsync,
+            equals: comparer.structural
+        });
     }
 
     adjustDates(dir, toToday = false) {
@@ -156,9 +166,5 @@ export class ActivityGridModel {
 
     isValidDate(date) {
         return date && date.toString() !== 'Invalid Date';
-    }
-
-    destroy() {
-        XH.safeDestroy(this.gridModel);
     }
 }
