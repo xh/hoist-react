@@ -6,7 +6,7 @@
  */
 import moment from 'moment';
 import {XH, HoistModel, managed} from '@xh/hoist/core';
-import {action, observable, computed, comparer} from '@xh/hoist/mobx';
+import {action, observable, comparer} from '@xh/hoist/mobx';
 import {LocalStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
