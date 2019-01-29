@@ -84,8 +84,8 @@ export class RestStore extends UrlStore {
             } else {
                 this.updateRecordInternal(rec, newRec);
             }
-        }).then(() => {
-            return this.ensureLookupsLoadedAsync();
+
+            return this.ensureLookupsLoadedAsync().then(() => newRec);
         }).linkTo(
             this.loadModel
         );
