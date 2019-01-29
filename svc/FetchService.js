@@ -84,6 +84,29 @@ export class FetchService {
             delete fetchOpts.acceptJson;
         }
 
+        // Install JSON Web token in Header, if possible
+        // Check freshness, and try refreshing if needed.
+        let tokenGrant = XH.localStorageService.get('tokenGrant');
+        if (tokenGrant) {
+            const currTime = (new Date()).getTime();
+            if (tokenGrant.expires < currTime) {
+                try {
+                    tokenGrant = await this.postJson({
+                        url: 'http://localhost:8099/auth/refresh',
+                        params: {
+                            refreshToken: tokenGrant.refreshToken
+                        }
+                    });
+                } catch (e) {
+                    tokenGrant = null;
+                }
+                XH.localStorageService.set('tokenGrant', tokenGrant);
+            }
+        }
+
+        if (tokenGrant) {
+            fetchOpts.headers.append('Authorization', 'Bearer ' + tokenGrant.accessToken);
+        }
 
         // 3) Preprocess and apply params
         if (params) {

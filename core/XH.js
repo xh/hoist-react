@@ -13,6 +13,7 @@ import {Exception} from '@xh/hoist/exception';
 import {observable, action} from '@xh/hoist/mobx';
 import {never, wait, allSettled} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 
 import {
     ConfigService,
@@ -521,9 +522,13 @@ class XHClass {
 
     async getAuthStatusFromServerAsync() {
         return await this.fetchService
-            .fetchJson({url: 'xh/authStatus'})
-            .then(r => r.authenticated)
-            .catch(e => {
+            .fetchJson({url: 'http://localhost:8099/auth/sso'})
+            .then(tokenGrant => {
+                const svc = XH.localStorageService;
+                tokenGrant.expires = (new Date()).getTime() + tokenGrant.expiresInMillis - 10 * SECONDS;
+                svc.set('tokenGrant', tokenGrant);
+                return true;
+            }).catch(e => {
                 // 401s normal / expected for non-SSO apps when user not yet logged in.
                 if (e.httpStatus == 401) return false;
                 // Other exceptions indicate e.g. connectivity issue, server down - raise to user.
