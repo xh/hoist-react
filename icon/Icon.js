@@ -737,7 +737,7 @@ export const fileIcon = function(extension) {
         case 'doc':
         case 'docx':
             return Icon.fileWord();
-        case 'xlx':
+        case 'xls':
         case 'xlsx':
             return Icon.fileExcel();
         case 'ppt':
