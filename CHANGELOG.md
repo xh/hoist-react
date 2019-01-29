@@ -1,5 +1,11 @@
 # Changelog
 
+## v18.1.1 - 2019-01-29
+
+* Grid cell padding can be controlled via a new set of CSS vars and is reduced by default for grids
+  in compact mode.
+* The `addRecordAsync()` and `saveRecordAsync()` methods on `RestStore` return the updated record.
+
 ## v18.1.0 - 2019-01-28
 
 ### 🎁 New Features
