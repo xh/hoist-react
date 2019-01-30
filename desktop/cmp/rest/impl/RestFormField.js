@@ -35,13 +35,13 @@ export class RestFormField extends Component {
         let config = assign({field: name}, editor.formField);
 
         if (!config.item && !config.items) {
-            config = {item: this.defaultInput(name), ...config};
+            config = {item: this.renderDefaultInput(name), ...config};
         }
 
         return formField(config);
     }
 
-    defaultInput() {
+    renderDefaultInput() {
         const {model} = this,
             name = this.props.editor.field,
             type = model.getType(name),
@@ -49,12 +49,16 @@ export class RestFormField extends Component {
             fieldModel = model.formModel.fields[name];
 
         if (storeField.lookup) {
-            return this.select(type, storeField, fieldModel);
+            return this.renderSelect({
+                options: [...storeField.lookup],
+                enableClear: !fieldModel.isRequired,
+                enableCreate: storeField.enableCreate
+            });
         }
 
         switch (type) {
             case 'bool':
-                return fieldModel.isRequired ? switchInput() : this.select(type, storeField, fieldModel);
+                return this.renderBoolean(fieldModel);
             case 'number':
                 return numberInput({width: 300});
             case 'json':
@@ -66,21 +70,18 @@ export class RestFormField extends Component {
         }
     }
 
-    select(type, storeField, fieldModel) {
-        let options = [];
-        if (storeField.lookup) {
-            options = [...storeField.lookup];
-        } else if (type === 'bool') {
-            options = [true, false];
-        }
+    renderBoolean(fieldModel) {
+        return fieldModel.isRequired && fieldModel.value != null ?
+            switchInput() :
+            this.renderSelect({
+                options: [true, false],
+                enableClear: !fieldModel.isRequired,
+                enableCreate: false
+            });
+    }
 
-        if (!fieldModel.isRequired) options.unshift(null);
-
-        return select({
-            options,
-            width: 300,
-            enableCreate: storeField.enableCreate
-        });
+    renderSelect(args) {
+        return select({...args, width: 300});
     }
 
     isBlankMetaData(name) {

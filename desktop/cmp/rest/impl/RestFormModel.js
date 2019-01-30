@@ -120,7 +120,8 @@ export class RestFormModel {
             name,
             rules: restField.required ? [required] : [],
             displayName: editor.label,
-            readonly: restField.editable === false || (restField.editable === 'onAdd' && !this.isAdd)
+            readonly: restField.editable === false || (restField.editable === 'onAdd' && !this.isAdd),
+            initialValue: restField.defaultValue
         }, editor.fieldModel);
 
     }
