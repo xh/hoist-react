@@ -38,9 +38,9 @@
 
 
 ### 🎁 New Features
-* A new architecture for application refreshing has been added.  The new architectures relies on
+* A new architecture for application loading/refreshing has been added.  The new architectures relies on
  React context to minimizes the need for explicit application wiring, and improves support for 
- auto-refresh. See `LoadSupport`, `RefreshModel`, `RefreshView`, and `RefreshContext` for more info.
+ auto-refresh. See `LoadSupport`, `RefreshContext`, `RefreshContextModel`, and `RefreshContextView` for more info.
 
 * `TabContainerModel` and `TabModel` now support `refreshMode` and `renderMode` preperties to allow
 fine-grained handling of the refreshing and mounting/unmounting of hidden tabs.

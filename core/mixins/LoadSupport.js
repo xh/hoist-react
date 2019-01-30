@@ -4,15 +4,9 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import React from 'react';
 import {provideMethods, markClass, chainMethods, throwIf} from '@xh/hoist/utils/js';
+import {RefreshContext} from '../RefreshContext';
 
-/**
- * Context establishing an area of the app that can be independently refreshed via a RefreshModel.
- *
- * @see RefreshModel
- */
-export const RefreshContext = React.createContext(null);
 
 /**
  * Mixin to indicate that a component has a model that implements loading and refreshing and should
@@ -20,12 +14,9 @@ export const RefreshContext = React.createContext(null);
  *
  * This mixin will cause the component's model to load after the component is mounted.
  *
- * This mixin will also cause the component's model to be registered/unregistered with the
- * RefreshModel when the component is mounted/unmounted.
- *
- * This mixin will cause the component's model to be registered/unregistered with a context-provided
- * RefreshModel when the component is mounted/unmounted. The RefreshModel will then in turn make
- * coordinated calls to loadAsync() and refreshAsync() when coordinating a refresh.
+ * This mixin will cause the component's model to be registered/unregistered with the appropriate
+ * RefreshContextModel when the component is mounted/unmounted. The RefreshContextModel will then
+ * in turn make coordinated calls to loadAsync() and refreshAsync() when coordinating a refresh.
  */
 export function LoadSupport(C) {
 
@@ -35,22 +26,22 @@ export function LoadSupport(C) {
     C.contextType = RefreshContext;
 
     provideMethods(C, {
-        refreshModel: {
+        refreshContextModel: {
             get() {return this.context}
         }
     });
 
     chainMethods(C, {
         componentDidMount() {
-            const {refreshModel, model} = this;
-            if (refreshModel && model) refreshModel.register(model);
+            const {refreshContextModel, model} = this;
+            if (refreshContextModel && model) refreshContextModel.register(model);
 
             if (model) model.loadAsync();
         },
 
         componentWillUnmount() {
-            const {refreshModel, model} = this;
-            if (refreshModel && model) refreshModel.unregister(model);
+            const {refreshContextModel, model} = this;
+            if (refreshContextModel && model) refreshContextModel.unregister(model);
         }
     });
 }

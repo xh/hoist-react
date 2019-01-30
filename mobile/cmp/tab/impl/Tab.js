@@ -5,9 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, refreshContextView} from '@xh/hoist/core';
 import {TabModel} from '../TabModel';
-import {refreshView} from '@xh/hoist/cmp/refresh';
 
 /**
  * @private
@@ -18,10 +17,10 @@ export class Tab extends Component {
     static modelClass = TabModel;
 
     render() {
-        const {pageFactory, pageProps, refreshModel} = this.model;
+        const {pageFactory, pageProps, refreshContextModel} = this.model;
 
-        return refreshView({
-            model: refreshModel,
+        return refreshContextView({
+            model: refreshContextModel,
             item: pageFactory({
                 ...pageProps,
                 tabModel: this.model

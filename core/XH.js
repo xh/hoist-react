@@ -204,8 +204,8 @@ class XHClass {
         return this.acm.appLoadModel;
     }
 
-    get refreshModel() {
-        return this.acm.refreshModel;
+    get refreshContextModel() {
+        return this.acm.refreshContextModel;
     }
 
     //------------------------

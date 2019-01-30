@@ -4,9 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from '@xh/hoist/core';
-
-import {TabRefreshModel} from './impl/TabRefreshModel';
+import {HoistModel, managed} from '@xh/hoist/core';
+import {TabRefreshContextModel} from './impl/TabRefreshContextModel';
 
 
 /**
@@ -21,7 +20,9 @@ export class TabModel {
     icon = null;
 
     containerModel = null;
-    refreshModel = null;
+
+    @managed
+    refreshContextModel = null;
 
     /**
      * @param {Object} c - TabModel configuration.
@@ -49,16 +50,12 @@ export class TabModel {
         this.label = label;
         this.icon = icon;
         this._refreshMode = refreshMode;
-        this.refreshModel = new TabRefreshModel(this);
+        this.refreshContextModel = new TabRefreshContextModel(this);
     }
 
     get refreshMode()    {return this._refreshMode || this.containerModel.refreshMode}
 
     get isActive() {
         return this.containerModel.activeTabId === this.id;
-    }
-
-    destroy() {
-        XH.safeDestroy(this.loadState, this.refreshModel);
     }
 }

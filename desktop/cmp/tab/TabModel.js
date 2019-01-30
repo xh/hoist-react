@@ -4,12 +4,12 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from '@xh/hoist/core';
+import {HoistModel, managed} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {startCase} from 'lodash';
 
-import {TabRefreshModel} from './impl/TabRefreshModel';
+import {TabRefreshContextModel} from './impl/TabRefreshContextModel';
 
 /**
  * Model for a Tab within a TabContainer - manages the active and refresh state of its contents.
@@ -26,7 +26,9 @@ export class TabModel {
     excludeFromSwitcher;
 
     containerModel = null;
-    refreshModel = null;
+
+    @managed
+    refreshContextModel = null;
 
     /**
      * @param {Object} c - TabModel configuration.
@@ -59,7 +61,7 @@ export class TabModel {
         this._renderMode = renderMode;
         this._refreshMode = refreshMode;
 
-        this.refreshModel = new TabRefreshModel(this);
+        this.refreshContextModel = new TabRefreshContextModel(this);
     }
 
     activate() {

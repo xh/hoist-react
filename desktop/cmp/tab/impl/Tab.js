@@ -5,10 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elem, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {elem, elemFactory, refreshContextView, HoistComponent} from '@xh/hoist/core';
 import {frame} from '@xh/hoist/cmp/layout';
 import {TabModel} from '../TabModel';
-import {refreshView} from '@xh/hoist/cmp/refresh';
 
 /**
  * @private
@@ -30,7 +29,7 @@ export class Tab extends Component {
     wasActivated = false;
 
     render() {
-        const {content, isActive, renderMode, refreshModel} = this.model;
+        const {content, isActive, renderMode, refreshContextModel} = this.model;
 
         this.wasActivated = this.wasActivated || isActive;
 
@@ -43,8 +42,8 @@ export class Tab extends Component {
         return frame({
             display: isActive ? 'flex' : 'none',
             className: this.getClassName(),
-            item: refreshView({
-                model: refreshModel,
+            item: refreshContextView({
+                model: refreshContextModel,
                 item: contentElem
             })
         });
