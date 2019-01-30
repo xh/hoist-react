@@ -427,7 +427,7 @@ export class GridModel {
             ret = ret.filter(col => {
                 const state = this.getStateForColumn(col.colId);
                 return !state || !state.hidden;
-            })
+            });
         }
 
         return ret;
