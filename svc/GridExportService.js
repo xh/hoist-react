@@ -41,7 +41,7 @@ export class GridExportService {
 
         if (isFunction(filename)) filename = filename(gridModel);
 
-        const columns = this.getExportableColumns(gridModel.getLeafColumns(), includeHiddenCols),
+        const columns = this.getExportableColumns(gridModel, includeHiddenCols),
             records = gridModel.store.rootRecords,
             meta = this.getColumnMetadata(columns),
             rows = [];
@@ -95,8 +95,10 @@ export class GridExportService {
     //-----------------------
     // Implementation
     //-----------------------
-    getExportableColumns(columns, includeHiddenColumns) {
-        return columns.filter(it => !it.excludeFromExport && (!it.hidden || includeHiddenColumns));
+    getExportableColumns(gridModel, includeHiddenColumns) {
+        return gridModel
+            .getLeafColumns({excludeHidden: !includeHiddenColumns})
+            .filter(col => !col.excludeFromExport);
     }
 
     getColumnMetadata(columns) {

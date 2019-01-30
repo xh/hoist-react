@@ -10,6 +10,7 @@ import {StoreSelectionModel} from '@xh/hoist/data';
 import {
     castArray,
     defaults,
+    find,
     findLast,
     isEmpty,
     isPlainObject,
@@ -413,29 +414,59 @@ export class GridModel {
         this.columnState = columnState;
     }
 
-    getLeafColumns() {
-        return this.gatherLeaves(this.columns);
+    /**
+     * Return all leaf-level columns - i.e. excluding column groups.
+     * @param {Object} [opts]
+     * @param {boolean} [opts.excludeHidden] - true to return currently-visible leaves only.
+     * @returns {Column[]}
+     */
+    getLeafColumns({excludeHidden = false} = {}) {
+        let ret = this.gatherLeaves(this.columns);
+
+        if (excludeHidden) {
+            ret = ret.filter(col => {
+                const state = this.getStateForColumn(col.colId);
+                return !state || !state.hidden;
+            })
+        }
+
+        return ret;
     }
 
-    findColumn(cols, id) {
+    /**
+     * Return matching leaf-level Column or ColumnState object from the provided collection for the
+     * given colId, if any. Used as a utility function to find both types of objects.
+     */
+    findColumn(cols, colId) {
         for (let col of cols) {
             if (col.children) {
-                const ret = this.findColumn(col.children, id);
+                const ret = this.findColumn(col.children, colId);
                 if (ret) return ret;
             } else {
-                if (col.colId == id) return col;
+                if (col.colId == colId) return col;
             }
         }
         return null;
+    }
+
+    /**
+     * Return the current state object representation for the given colId.
+     *
+     * Note that column state updates do not write changes back to the original Column object (as
+     * held in this model's `columns` collection), so this method should be called whenever the
+     * current value of any state-tracked property is required.
+     *
+     * @param {string} colId
+     * @returns {ColumnState}
+     */
+    getStateForColumn(colId) {
+        return find(this.columnState, {colId});
     }
 
     buildColumn(c) {
         return c.children ? new ColumnGroup(c, this) : new Column(c, this);
     }
 
-    getStateForColumn(id) {
-        return this.columnState.find(it => it.colId === id);
-    }
 
     //-----------------------
     // Implementation
