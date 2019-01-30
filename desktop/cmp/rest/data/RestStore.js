@@ -7,7 +7,7 @@
 
 import {XH} from '@xh/hoist/core';
 import {UrlStore, Record} from '@xh/hoist/data';
-import {pickBy} from 'lodash';
+import {pickBy, filter} from 'lodash';
 
 import {RestField} from './RestField';
 
@@ -56,11 +56,13 @@ export class RestStore extends UrlStore {
     }
 
     async addRecordAsync(rec) {
-        return this.saveRecordInternalAsync(rec, true);
+        return this.saveRecordInternalAsync(rec, true)
+            .linkTo(this.loadModel);
     }
 
     async saveRecordAsync(rec) {
-        return this.saveRecordInternalAsync(rec, false);
+        return this.saveRecordInternalAsync(rec, false)
+            .linkTo(this.loadModel);
     }
 
     //--------------------------------
@@ -71,23 +73,21 @@ export class RestStore extends UrlStore {
         if (!isAdd) url += '/' + rec.id;
 
         // Only include editable fields in the request data
-        const editableFields = this.fields.filter(it => it.editable).map(it => it.name),
+        const editableFields = filter(this.fields, 'editable').map(it => it.name),
             data = pickBy(rec, (v, k) => k == 'id' || editableFields.includes(k));
-        return XH.fetchService[isAdd ? 'postJson' : 'putJson']({
-            url,
-            body: {data}
-        }).then(response => {
-            const newRec = new Record({fields: this.fields, raw: response.data});
-            if (isAdd) {
-                this.addRecordInternal(newRec);
-            } else {
-                this.updateRecordInternal(rec, newRec);
-            }
-        }).then(() => {
-            return this.ensureLookupsLoadedAsync();
-        }).linkTo(
-            this.loadModel
-        );
+
+        const fetchMethod = isAdd ? 'postJson' : 'putJson',
+            response = await XH.fetchService[fetchMethod]({url, body: {data}}),
+            newRec = new Record({fields: this.fields, raw: response.data});
+
+        if (isAdd) {
+            this.addRecordInternal(newRec);
+        } else {
+            this.updateRecordInternal(rec, newRec);
+        }
+
+        await this.ensureLookupsLoadedAsync();
+        return newRec;
     }
 
     async ensureLookupsLoadedAsync() {
