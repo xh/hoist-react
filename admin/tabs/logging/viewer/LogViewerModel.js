@@ -62,13 +62,17 @@ export class LogViewerModel {
         this.loadLines();
     }
 
-    @action
     loadLines() {
         if (!this.file) {
-            this.rows = [];
+            this.setRows([]);
         } else {
-            this.fetchFile();
+            this.fetchFileAsync();
         }
+    }
+
+    @action
+    setRows(rows) {
+        this.rows = rows;
     }
 
     @action
@@ -94,7 +98,9 @@ export class LogViewerModel {
     //---------------------------------
     // Implementation
     //---------------------------------
-    fetchFile({isAutoRefresh = false} = {}) {
+    fetchFileAsync({isAutoRefresh = false} = {}) {
+        if (!this.file) return;
+
         return XH
             .fetchJson({
                 url: 'logViewerAdmin/getFile',
@@ -105,9 +111,17 @@ export class LogViewerModel {
                     pattern: this.pattern
                 }
             })
-            .thenAction(rows => this.rows = this.startLine ? rows.content : rows.content.reverse())
+            .then(response => {
+                if (!response.success) throw new Error(response.exception);
+                this.setRows(this.startLine ? response.content : response.content.reverse());
+            })
             .linkTo(isAutoRefresh ? null : this.loadModel)
-            .catchDefault();
+            .catch(e => {
+                // Show errors inline in the viewer vs. a modal alert or catchDefault().
+                const msg = e.message || 'An unknown error occurred';
+                this.setRows([[0, `Error: ${msg}`]]);
+                console.error(e);
+            });
     }
 
     syncSelectionReaction() {
@@ -126,7 +140,7 @@ export class LogViewerModel {
             track: () => this.tail,
             run: (checked) => {
                 this.setStartLine(checked ? null : 1);
-                this.fetchFile();
+                this.fetchFileAsync();
             }
         };
     }
