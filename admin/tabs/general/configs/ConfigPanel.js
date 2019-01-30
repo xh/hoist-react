@@ -92,7 +92,7 @@ export class ConfigPanel extends Component {
             {field: 'valueType'},
             {field: 'value'},
             {field: 'clientVisible'},
-            {field: 'note', formField: {item: textArea()}},
+            {field: 'note', formField: {item: textArea({width: 300, height: 100})}},
             {field: 'lastUpdated'},
             {field: 'lastUpdatedBy'}
         ]

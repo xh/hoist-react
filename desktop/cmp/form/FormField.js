@@ -80,7 +80,17 @@ export class FormField extends Component {
          * Focus or toggle input when label is clicked.
          * Defaulted from containing Form, or true.
          */
-        clickableLabel: PT.bool
+        clickableLabel: PT.bool,
+
+        /**
+         * Alignment of label text, default 'left'.
+         */
+        labelAlign: PT.oneOf(['left', 'right']),
+
+        /**
+         * Width of the label in pixels
+         */
+        labelWidth: PT.number
     };
 
     baseClassName = 'xh-form-field';
@@ -110,7 +120,9 @@ export class FormField extends Component {
         const inline = this.getDefaultedProp('inline', false),
             minimal = this.getDefaultedProp('minimal', false),
             leftErrorIcon = this.getDefaultedProp('leftErrorIcon', false),
-            clickableLabel = this.getDefaultedProp('clickableLabel', true);
+            clickableLabel = this.getDefaultedProp('clickableLabel', true),
+            labelAlign = this.getDefaultedProp('labelAlign', 'left'),
+            labelWidth = this.getDefaultedProp('labelWidth', null);
 
         // Styles
         const classes = [];
@@ -128,7 +140,11 @@ export class FormField extends Component {
                     omit: !label,
                     className: 'xh-form-field-label',
                     items: [label, requiredStr],
-                    htmlFor: clickableLabel ? idAttr : null
+                    htmlFor: clickableLabel ? idAttr : null,
+                    style: {
+                        textAlign: labelAlign,
+                        width: labelWidth
+                    }
                 }),
                 div(
                     control,
