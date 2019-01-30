@@ -55,13 +55,13 @@ export class RestFormField extends Component {
             case 'bool':
                 return fieldModel.isRequired ? switchInput() : this.select(type, storeField, fieldModel);
             case 'number':
-                return numberInput();
+                return numberInput({width: 300});
             case 'json':
-                return jsonInput({width: 343, height: 150});
+                return jsonInput({width: 300, height: 150});
             case 'date':
-                return dateInput();
+                return dateInput({width: 300});
             default:
-                return textInput();
+                return textInput({width: 300});
         }
     }
 
@@ -77,6 +77,7 @@ export class RestFormField extends Component {
 
         return select({
             options,
+            width: 300,
             enableCreate: storeField.enableCreate
         });
     }

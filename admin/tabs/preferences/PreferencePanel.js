@@ -86,7 +86,7 @@ export class PreferencePanel extends Component {
             {field: 'type'},
             {field: 'defaultValue'},
             {field: 'local'},
-            {field: 'notes', formField: {item: textArea()}},
+            {field: 'notes', formField: {item: textArea({width: 300})}},
             {field: 'lastUpdated'},
             {field: 'lastUpdatedBy'}
         ]

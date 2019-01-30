@@ -16,6 +16,7 @@ import {form} from '@xh/hoist/cmp/form';
 import {Icon} from '@xh/hoist/icon';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 
+import './RestForm.scss';
 import {restFormField} from './RestFormField';
 
 @HoistComponent
@@ -58,7 +59,9 @@ export class RestForm extends Component {
                 fieldDefaults: {
                     commitOnChange: true,
                     minimal: true,
-                    inline: true
+                    inline: true,
+                    labelWidth: 120,
+                    labelAlign: 'right'
                 },
                 item: vframe(formFields)
             })
