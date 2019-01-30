@@ -32,9 +32,10 @@ export class RestFormField extends Component {
 
         if (this.isBlankMetaData(name)) return null;
 
-        const config = assign({field: name}, editor.formField);
-        if (!config.children && !config.item && !config.items) {
-            config.item = this.defaultInput(name);
+        let config = assign({field: name}, editor.formField);
+
+        if (!config.item && !config.items) {
+            config = {item: this.defaultInput(name), ...config};
         }
 
         return formField(config);

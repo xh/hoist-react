@@ -19,14 +19,13 @@ export class RestFormModel {
     parent = null;
 
     // Mutable State
-    currentRecord = null;
-    readonly = null;
-    isAdd = null;
-
+    @observable currentRecord = null;
+    @observable readonly = null;
+    @observable isAdd = null;
     @observable isOpen = false;
 
     @managed
-    formModel = null;
+    @observable formModel = null;
 
     get actionWarning()     {return this.parent.actionWarning}
     get actions()           {return this.parent.formActions}
@@ -47,16 +46,19 @@ export class RestFormModel {
         XH.safeDestroy(this.formModel);
     }
 
+    @action
     openAdd() {
         this.readonly = false;
         this.initForm();
     }
 
+    @action
     openEdit(rec)  {
         this.readonly = false;
         this.initForm(rec);
     }
 
+    @action
     openView(rec) {
         this.readonly = true;
         this.initForm(rec);
@@ -86,20 +88,16 @@ export class RestFormModel {
     //---------------------
     // Implementation
     //---------------------
-    @action
     initForm(rec) {
         this.currentRecord = rec ? rec : {id: null};
-
+        this.isAdd = !rec;
+        this.isOpen = true;
         const fields = this.editors.map(editor => this.fieldModelConfig(editor));
-
         this.formModel = new FormModel({
             fields,
             initialValues: rec,
             readonly: this.parent.readonly || this.readonly
         });
-
-        this.isAdd = !rec;
-        this.isOpen = true;
     }
 
     @action
@@ -122,7 +120,7 @@ export class RestFormModel {
             name,
             rules: restField.required ? [required] : [],
             displayName: editor.label,
-            readonly: !(restField.editable || (restField.editable === 'onAdd' && this.isAdd))
+            readonly: restField.editable === false || (restField.editable === 'onAdd' && !this.isAdd)
         }, editor.fieldModel);
 
     }
@@ -136,9 +134,16 @@ export class RestFormModel {
     }
 
     getDynamicType(typeField) {
+        // Favor (observable) value in form itself, if present!
         const {record, store} = this.parent,
-            field = store.getField(typeField);
-        const rawType = record && field ? record[field.name] : null;
+            field = store.getField(typeField),
+            formField = this.formModel.fields[typeField];
+        let rawType = null;
+        if (formField) {
+            rawType = formField.value;
+        } else if (record && field) {
+            rawType = record[field.name];
+        }
 
         switch (rawType) {
             case 'double':
