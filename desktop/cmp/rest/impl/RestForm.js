@@ -14,6 +14,7 @@ import {filler, vframe} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {form} from '@xh/hoist/cmp/form';
 import {Icon} from '@xh/hoist/icon';
+import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 
 import {restFormField} from './RestFormField';
 
@@ -54,7 +55,11 @@ export class RestForm extends Component {
         return dialogBody(
             form({
                 model: model.formModel,
-                fieldDefaults: {commitOnChange: true, minimal: true},
+                fieldDefaults: {
+                    commitOnChange: true,
+                    minimal: true,
+                    inline: true
+                },
                 item: vframe(formFields)
             })
         );
@@ -64,6 +69,11 @@ export class RestForm extends Component {
         const {model} = this,
             {formModel} = model;
         return toolbar(
+            recordActionBar({
+                actions: model.actions,
+                record: model.currentRecord,
+                gridModel: model.parent.gridModel
+            }),
             filler(),
             button({
                 text: formModel.readonly ? 'Cancel' : 'Close',

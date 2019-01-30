@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 import {boolCheckCol} from '@xh/hoist/cmp/grid';
-import {textArea} from "@xh/hoist/desktop/cmp/input";
+import {textArea} from '@xh/hoist/desktop/cmp/input';
 
 @HoistComponent
 export class PreferencePanel extends Component {

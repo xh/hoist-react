@@ -14,7 +14,7 @@ import {Icon} from '@xh/hoist/icon';
 
 import {configDiffer} from './differ/ConfigDiffer';
 import {ConfigDifferModel} from './differ/ConfigDifferModel';
-import {textArea} from "@xh/hoist/desktop/cmp/input";
+import {textArea} from '@xh/hoist/desktop/cmp/input';
 
 @HoistComponent
 export class ConfigPanel extends Component {
