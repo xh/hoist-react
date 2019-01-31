@@ -9,7 +9,7 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {observable, computed, action} from '@xh/hoist/mobx';
 import {allSettled} from '@xh/hoist/promise';
-import {isFunction} from 'lodash';
+import {isFunction, values} from 'lodash';
 
 import {AppOption} from './AppOption';
 
@@ -24,7 +24,7 @@ export class OptionsDialogModel {
     @observable.ref options = [];
 
     loadModel = new PendingTaskModel();
-    formModel = new FormModel();
+    formModel = null;
 
     //-------------------
     // Setting options
@@ -34,8 +34,8 @@ export class OptionsDialogModel {
         // Ensure each is valid AppOption
         this.options = options.map(it => it instanceof AppOption ? it : new AppOption(it));
 
-        // Add each AppOption to the FormModel
-        this.options.forEach(it => this.formModel.addField(it.fieldModel));
+        // Create FormModel with FieldModels from AppOptions
+        this.formModel = new FormModel({fields: this.options.map(it => it.fieldModel)});
     }
 
     @computed
@@ -84,7 +84,7 @@ export class OptionsDialogModel {
     }
 
     async initAsync() {
-        const promises = this.formModel.fields.map(it => {
+        const promises = values(this.formModel.fields).map(it => {
             return this.getExternalValueAsync(it.name).then(v => it.init(v));
         });
         await allSettled(promises).linkTo(this.loadModel);
@@ -114,7 +114,7 @@ export class OptionsDialogModel {
     }
 
     async doSaveAsync() {
-        const promises = this.formModel.fields.map(it => {
+        const promises = values(this.formModel.fields).map(it => {
             const {name, value} = it;
             return this.setExternalValueAsync(name, value);
         });

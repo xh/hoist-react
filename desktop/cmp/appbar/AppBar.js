@@ -9,7 +9,7 @@ import {Component} from 'react';
 import PT from 'prop-types';
 import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
 import {navbar, navbarGroup} from '@xh/hoist/kit/blueprint';
-import {optionsButton, feedbackButton, launchAdminButton, logoutButton, refreshButton, themeToggleButton} from '@xh/hoist/desktop/cmp/button';
+import {appMenuButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {span} from '@xh/hoist/cmp/layout';
 import {appBarSeparator} from '@xh/hoist/desktop/cmp/appbar';
 import {isEmpty} from 'lodash';
@@ -41,28 +41,14 @@ export class AppBar extends Component {
         /** Items to be added to the right side of the AppBar, before the standard buttons. */
         rightItems: PT.node,
 
-        /**
-         * True to hide the Launch Admin button. Will be automatically hidden for users
-         * without the HOIST_ADMIN role.
-         */
-        hideAdminButton: PT.bool,
-
-        /** True to hide the Options button. */
-        hideOptionsButton: PT.bool,
-
-        /** True to hide the Feedback button. */
-        hideFeedbackButton: PT.bool,
-
-        /** True to hide the Theme Toggle button. */
-        hideThemeButton: PT.bool,
-
-        /**
-         * True to hide the Logout button (always hidden for SSO applications).
-         */
-        hideLogoutButton: PT.bool,
-
         /** True to hide the Refresh button. */
-        hideRefreshButton: PT.bool
+        hideRefreshButton: PT.bool,
+
+        /** True to hide the AppMenuButton. */
+        hideAppMenuButton: PT.bool,
+
+        /** Props to pass to the AppMenuButton. */
+        appMenuProps: PT.object
     };
 
     baseClassName = 'xh-appbar';
@@ -73,12 +59,9 @@ export class AppBar extends Component {
             title,
             leftItems,
             rightItems,
-            hideAdminButton,
-            hideOptionsButton,
-            hideFeedbackButton,
-            hideThemeButton,
-            hideLogoutButton,
-            hideRefreshButton
+            hideRefreshButton,
+            hideAppMenuButton,
+            appMenuProps = {}
         } = this.props;
 
         return navbar({
@@ -97,14 +80,13 @@ export class AppBar extends Component {
                     align: 'right',
                     items: [
                         ...rightItems || [],
-                        optionsButton({omit: hideOptionsButton}),
-                        feedbackButton({omit: hideFeedbackButton}),
-                        themeToggleButton({omit: hideThemeButton}),
-                        launchAdminButton({omit: hideAdminButton}),
-                        logoutButton({omit: hideLogoutButton}),
                         refreshButton({
                             omit: hideRefreshButton,
                             onClick: () => XH.appModel.requestRefresh(true)
+                        }),
+                        appMenuButton({
+                            omit: hideAppMenuButton,
+                            ...appMenuProps
                         })
                     ]
                 })
