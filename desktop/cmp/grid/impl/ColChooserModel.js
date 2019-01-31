@@ -70,15 +70,15 @@ export class ColChooserModel {
         const {gridModel, lrModel} = this;
 
         const data = gridModel.getLeafColumns().map(it => {
-            const state = gridModel.getStateForColumn(it.colId);
+            const visible = gridModel.isColumnVisible(it.colId);
             return {
                 value: it.colId,
                 text: it.chooserName,
                 description: it.chooserDescription,
                 group: it.chooserGroup,
                 exclude: it.excludeFromChooser,
-                locked: !state.hidden && !it.hideable,
-                side: state.hidden ? 'left' : 'right'
+                locked: visible && !it.hideable,
+                side: visible ? 'right' : 'left'
             };
         });
 

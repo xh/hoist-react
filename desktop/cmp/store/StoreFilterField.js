@@ -67,6 +67,7 @@ export class StoreFilterField extends Component {
         /**
          * Callback to receive an updated filter function. Can be used in place of the `store` or
          * `gridModel` prop when direct filtering of a bound store by this component is not desired.
+         * NOTE that calls to this function are NOT buffered and will be made on each keystroke.
          */
         onFilterChange: PT.func,
 
@@ -176,7 +177,7 @@ export class StoreFilterField extends Component {
 
     onClearClick = () => {
         this.setValue('', {applyImmediately: true});
-    }
+    };
 
     getActiveStore() {
         const {gridModel, store} = this.props;
@@ -193,12 +194,16 @@ export class StoreFilterField extends Component {
 
         if (gridModel) {
             const groupBy = gridModel.groupBy,
-                columns = gridModel.getLeafColumns();
+                visibleCols = gridModel
+                    .getLeafColumns()
+                    .filter(col => gridModel.isColumnVisible(col.colId));
 
             ret = ret.filter(f => {
-                return (includeFields && includeFields.includes(f)) ||
-                        columns.find(c => (c.field == f && !c.hidden)) ||
-                        groupBy.includes(f);
+                return (
+                    (includeFields && includeFields.includes(f)) ||
+                    visibleCols.find(c => c.field == f) ||
+                    groupBy.includes(f)
+                );
             });
         }
         return ret;

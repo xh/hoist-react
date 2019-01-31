@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import PT from 'prop-types';
 import {castArray, clone, merge} from 'lodash';
 import Highcharts from 'highcharts/highstock';
 import highchartsExporting from 'highcharts/modules/exporting';
@@ -19,11 +20,12 @@ import {LightTheme} from './theme/Light';
 import {DarkTheme} from './theme/Dark';
 
 import {ChartModel} from './ChartModel';
+import {installZoomoutGesture} from './impl/zoomout';
 
 highchartsExporting(Highcharts);
 highchartsOfflineExporting(Highcharts);
 highchartsExportData(Highcharts);
-
+installZoomoutGesture(Highcharts);
 
 /**
  * Wrapper Component for a Highcharts chart. Provides basic rendering / lifecycle management
@@ -35,6 +37,11 @@ highchartsExportData(Highcharts);
 export class Chart extends Component {
 
     static modelClass = ChartModel;
+
+    static propTypes = {
+        /** Primary component model instance. */
+        model: PT.oneOfType([PT.instanceOf(ChartModel), PT.object]).isRequired
+    };
 
     baseClassName = 'xh-chart';
 

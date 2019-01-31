@@ -10,6 +10,7 @@ import {StoreSelectionModel} from '@xh/hoist/data';
 import {
     castArray,
     defaults,
+    find,
     findLast,
     isEmpty,
     isPlainObject,
@@ -21,7 +22,7 @@ import {
     isNil,
     cloneDeep
 } from 'lodash';
-import {Column, ColumnGroup} from '@xh/hoist/cmp/grid/columns';
+import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
 import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';
@@ -108,7 +109,7 @@ export class GridModel {
      * @param {Object} c - GridModel configuration.
      * @param {BaseStore} c.store - store containing the data for the grid.
      * @param {Object[]} c.columns - {@link Column} or {@link ColumnGroup} configs
-     * @param {(boolean)} [c.treeMode] - true if grid is a tree grid (default false).
+     * @param {boolean} [c.treeMode] - true if grid is a tree grid (default false).
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
      * @param {(Object|string)} [c.stateModel] - config or string `gridId` for a GridStateModel.
@@ -271,6 +272,7 @@ export class GridModel {
         const {agApi} = this;
         if (agApi) {
             agApi.expandAll();
+            agApi.sizeColumnsToFit();
         }
     }
 
@@ -279,6 +281,7 @@ export class GridModel {
         const {agApi} = this;
         if (agApi) {
             agApi.collapseAll();
+            agApi.sizeColumnsToFit();
         }
     }
 
@@ -411,29 +414,62 @@ export class GridModel {
         this.columnState = columnState;
     }
 
+    /**
+     * Return all leaf-level columns - i.e. excluding column groups.
+     * @returns {Column[]}
+     */
     getLeafColumns() {
         return this.gatherLeaves(this.columns);
     }
 
-    findColumn(cols, id) {
+    /**
+     * Determine whether or not a given leaf-level column is currently visible.
+     *
+     * Call this method instead of inspecting the `hidden` property on the Column itself, as that
+     * property is not updated with state changes.
+     *
+     * @param {String} colId
+     * @returns {boolean}
+     */
+    isColumnVisible(colId) {
+        const state = this.getStateForColumn(colId);
+        return state ? !state.hidden : false;
+    }
+
+    /**
+     * Return matching leaf-level Column or ColumnState object from the provided collection for the
+     * given colId, if any. Used as a utility function to find both types of objects.
+     */
+    findColumn(cols, colId) {
         for (let col of cols) {
             if (col.children) {
-                const ret = this.findColumn(col.children, id);
+                const ret = this.findColumn(col.children, colId);
                 if (ret) return ret;
             } else {
-                if (col.colId == id) return col;
+                if (col.colId == colId) return col;
             }
         }
         return null;
+    }
+
+    /**
+     * Return the current state object representation for the given colId.
+     *
+     * Note that column state updates do not write changes back to the original Column object (as
+     * held in this model's `columns` collection), so this method should be called whenever the
+     * current value of any state-tracked property is required.
+     *
+     * @param {string} colId
+     * @returns {ColumnState}
+     */
+    getStateForColumn(colId) {
+        return find(this.columnState, {colId});
     }
 
     buildColumn(c) {
         return c.children ? new ColumnGroup(c, this) : new Column(c, this);
     }
 
-    getStateForColumn(id) {
-        return this.columnState.find(it => it.colId === id);
-    }
 
     //-----------------------
     // Implementation

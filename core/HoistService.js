@@ -6,7 +6,7 @@
  */
 import {defaultMethods, markClass} from '@xh/hoist/utils/js';
 
-import {EventSupport, ReactiveSupport, XhIdSupport} from './mixins';
+import {EventSupport, ReactiveSupport, XhIdSupport, ManagedSupport} from './mixins';
 
 /**
  * Core decorator for Services in Hoist.
@@ -18,6 +18,7 @@ export function HoistService(C) {
 
     markClass(C, 'isHoistService');
 
+    C = ManagedSupport(C);
     C = EventSupport(C);
     C = ReactiveSupport(C);
     C = XhIdSupport(C);
