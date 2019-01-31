@@ -1,0 +1,9 @@
+.xh-switch-input.xh-input-invalid {
+  .bp3-control-indicator {
+    border: var(--xh-form-field-invalid-border);
+
+    &::before {
+      margin: 1px;
+    }
+  }
+}
