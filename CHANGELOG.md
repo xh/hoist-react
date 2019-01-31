@@ -1,5 +1,16 @@
 # Changelog
 
+## v18.1.2 - 2019-01-30
+
+### 🐞 Bug Fixes
+
+* GRID integrations relying on column visibility (namely export, storeFilterField) now correctly
+  consult updated column state from GridModel. #935
+* Ensure `FieldModel.initialValue` is observable to ensure that computed dirty state (and any other
+  derivations) are updated if it changes. #934
+* Fixes to ensure Admin console log viewer more cleanly handles exceptions (e.g. attempting to
+  auto-refresh on a log file that has been deleted).
+
 ## v18.1.1 - 2019-01-29
 
 * Grid cell padding can be controlled via a new set of CSS vars and is reduced by default for grids
