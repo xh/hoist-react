@@ -97,8 +97,13 @@ export class GridExportService {
     //-----------------------
     getExportableColumns(gridModel, includeHiddenColumns) {
         return gridModel
-            .getLeafColumns({excludeHidden: !includeHiddenColumns})
-            .filter(col => !col.excludeFromExport);
+            .getLeafColumns()
+            .filter(col => {
+                return (
+                    !col.excludeFromExport &&
+                    (includeHiddenColumns || gridModel.isColumnVisible(col.colId))
+                );
+            });
     }
 
     getColumnMetadata(columns) {

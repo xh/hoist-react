@@ -416,21 +416,24 @@ export class GridModel {
 
     /**
      * Return all leaf-level columns - i.e. excluding column groups.
-     * @param {Object} [opts]
-     * @param {boolean} [opts.excludeHidden] - true to return currently-visible leaves only.
      * @returns {Column[]}
      */
-    getLeafColumns({excludeHidden = false} = {}) {
-        let ret = this.gatherLeaves(this.columns);
+    getLeafColumns() {
+        return this.gatherLeaves(this.columns);
+    }
 
-        if (excludeHidden) {
-            ret = ret.filter(col => {
-                const state = this.getStateForColumn(col.colId);
-                return !state || !state.hidden;
-            });
-        }
-
-        return ret;
+    /**
+     * Determine whether or not a given leaf-level column is currently visible.
+     *
+     * Call this method instead of inspecting the `hidden` property on the Column itself, as that
+     * property is not updated with state changes.
+     *
+     * @param {String} colId
+     * @returns {boolean}
+     */
+    isColumnVisible(colId) {
+        const state = this.getStateForColumn(colId);
+        return state ? !state.hidden : false;
     }
 
     /**

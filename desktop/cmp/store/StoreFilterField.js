@@ -194,7 +194,9 @@ export class StoreFilterField extends Component {
 
         if (gridModel) {
             const groupBy = gridModel.groupBy,
-                visibleCols = gridModel.getLeafColumns({excludeHidden: true});
+                visibleCols = gridModel
+                    .getLeafColumns()
+                    .filter(col => gridModel.isColumnVisible(col.colId));
 
             ret = ret.filter(f => {
                 return (
