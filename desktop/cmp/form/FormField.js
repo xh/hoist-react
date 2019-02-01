@@ -27,7 +27,11 @@ import './FormField.scss';
  * within that Form's backing `FormModel`. FormField will setup the binding between its child
  * HoistInput and the FieldModel instance and can display validation messages, switch between
  * read-only and disabled variants of its child, and source default props via the parent Form's
- * `fieldDefaults` prop,
+ * `fieldDefaults` prop.
+ *
+ * FormFields can be sized and otherwise customized via standard @LayoutSupport props. They will
+ * adjust their child Inputs to fill their available space (if appropriate given the input type),
+ * so the recommended approach is to specify any sizing on the FormField (as opposed to the Input).
  */
 @HoistComponent
 @LayoutSupport
@@ -39,7 +43,10 @@ export class FormField extends Component {
         /** Property name on bound FormModel from which to read/write data. */
         field: PT.string,
 
-        /** Label for form field. Defaults to Field displayName. Set to null to hide. */
+        /**
+         * Label for form field. Defaults to Field displayName. Set to null to hide.
+         * Can be defaulted from contained Form (specifically, to null to hide all labels).
+         */
         label: PT.string,
 
         /** Additional description or info to be displayed alongside the input control. */
@@ -173,10 +180,16 @@ export class FormField extends Component {
         return formModel && field ? formModel.fields[field] : null;
     }
 
+    // Label can be provided via props, defaulted from form fieldDefaults ("null" being the expected
+    // use case to hide all labels), or sourced from fieldModel displayName.
     get label() {
-        const {fieldModel} = this,
-            {label} = this.props;
-        return isUndefined(label) ? (fieldModel ? fieldModel.displayName : null) : label;
+        const {fieldModel, form} = this;
+
+        return withDefault(
+            this.props.label,
+            form ? form.fieldDefaults.label : undefined,
+            fieldModel ? fieldModel.displayName : null
+        );
     }
 
     getDefaultedProp(name, defaultVal) {
