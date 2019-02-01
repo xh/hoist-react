@@ -21,11 +21,7 @@ export class AppModel {
         route: 'default',
         tabs: this.createTabs()
     });
-
-    requestRefresh() {
-        this.tabModel.requestRefresh();
-    }
-
+    
     getRoutes() {
         return [
             {

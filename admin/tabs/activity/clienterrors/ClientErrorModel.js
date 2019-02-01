@@ -5,8 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import moment from 'moment';
-import {XH, HoistModel} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {action, observable, comparer} from '@xh/hoist/mobx';
 import {LocalStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {fmtDate, fmtSpan} from '@xh/hoist/format';
@@ -24,9 +24,10 @@ export class ClientErrorModel {
 
     @observable detailRecord = null;
 
+    @managed
     loadModel = new PendingTaskModel();
 
-
+    @managed
     gridModel = new GridModel({
         stateModel: 'xhClientErrorGrid',
         enableColChooser: true,
@@ -51,6 +52,14 @@ export class ClientErrorModel {
         ]
     });
 
+    constructor() {
+        this.addReaction({
+            track: () => this.getParams(),
+            run: this.loadAsync,
+            equals: comparer.structural
+        });
+    }
+
     async loadAsync() {
         return XH.fetchJson({
             url: 'clientErrorAdmin',
@@ -73,7 +82,7 @@ export class ClientErrorModel {
             newEnd = end[dir](incr, 'days');
 
         if (newEnd.diff(today, 'days') > 0 || toToday) {
-            newStart = today.clone().subtract(diff, 'days');
+            newStart = today.clone().subtract(Math.abs(diff), 'days');
             newEnd = today;
         }
 
@@ -128,9 +137,5 @@ export class ClientErrorModel {
 
     isValidDate(date) {
         return date && date.toString() !== 'Invalid Date';
-    }
-
-    destroy() {
-        XH.safeDestroy(this.gridModel);
     }
 }

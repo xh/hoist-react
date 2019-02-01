@@ -5,11 +5,12 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {HoistComponent} from '@xh/hoist/core';
+import {HoistComponent, LoadSupport} from '@xh/hoist/core';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 import {boolCheckCol} from '@xh/hoist/cmp/grid';
 
 @HoistComponent
+@LoadSupport
 export class PreferencePanel extends Component {
 
     model = new RestGridModel({
@@ -93,9 +94,5 @@ export class PreferencePanel extends Component {
 
     render() {
         return restGrid({model: this.model});
-    }
-
-    async loadAsync() {
-        return this.model.loadAsync();
     }
 }

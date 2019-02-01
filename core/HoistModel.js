@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {EventSupport, ReactiveSupport, ManagedSupport, XhIdSupport} from './mixins';
-import {markClass} from '@xh/hoist/utils/js';
+import {defaultMethods, markClass} from '@xh/hoist/utils/js';
 
 
 /**
@@ -21,6 +21,35 @@ export function HoistModel(C) {
     C = EventSupport(C);
     C = ReactiveSupport(C);
     C = XhIdSupport(C);
+
+    defaultMethods(C, {
+
+        /**
+         * Load or compute new / updated data for this model.
+         *
+         * @param {Object} [opts]
+         * @param {boolean} [opts.isRefresh] - true if this load was triggered by a refresh.
+         * @param {boolean} [opts.isAutoRefresh] - true if this load was triggered by a programmatic
+         *      refresh process, rather than a user action.
+         */
+        loadAsync({isRefresh = false, isAutoRefresh = false} = {}) {
+
+        },
+
+        /**
+         * Refresh this model.
+         *
+         * This method delegates to loadAsync() and should not typically be overridden/implemented.
+         * Instances of HoistModel should implement loadAsync() instead.
+         *
+         * @param {Object} [opts]
+         * @param {boolean} [opts.isAutoRefresh] - true if this load was triggered by a programmatic
+         *      refresh process, rather than a user action.
+         */
+        refreshAsync({isAutoRefresh = false} = {}) {
+            return this.loadAsync({isAutoRefresh, isRefresh: true});
+        }
+    });
 
     return C;
 }

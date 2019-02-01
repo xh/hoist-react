@@ -4,74 +4,66 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
-import {find, isPlainObject, uniqBy} from 'lodash';
+import {TabRefreshMode, TabRenderMode} from '@xh/hoist/enums';
+import {find, uniqBy} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
-import {TabModel} from '@xh/hoist/desktop/cmp/tab';
+import {TabModel} from './TabModel';
 
 /**
  * Model for a TabContainer, representing its layout/contents and the currently displayed Tab.
  *
- * This object provides support for routing based navigation, managed mounting/unmounting of
- * inactive tabs, and lazy refreshing of its active Tab.
+ * This object provides support for routing based navigation, customizable (lazy) mounting and
+ * unmounting of inactive tabs, and customizable refreshing of tabs via a built-in RefreshContext.
  */
 @HoistModel
 export class TabContainerModel {
 
-    /**
-     * TabModels included in this tab container.
-     * @member {TabModel[]}
-     */
-    tabs = [];
+    /** @member {TabModel[]} */
+    @managed tabs = [];
 
-    /** Base route for this container. */
-    route = null;
+    /** @member {?string} */
+    route;
 
-    /** ID of the Tab to be active by default. */
-    defaultTabId = null;
+    /** @member {string} */
+    @observable activeTabId;
 
-    /** ID of the currently active Tab. */
-    @observable activeTabId = null;
+    /** @member {TabRenderMode} */
+    renderMode;
 
-    /** How should this container render hidden tabs? */
-    tabRenderMode = null;
+    /** @member {TabRefreshMode} */
+    refreshMode;
 
     /**
      * @param {Object} c - TabContainerModel configuration.
-     * @param {Object[]} c.tabs - configs for TabModels (or TabModel instances) to be displayed
-     *      by this container.
+     * @param {Object[]} c.tabs - configs for TabModels to be displayed.
      * @param {?string} [c.defaultTabId] - ID of Tab to be shown initially if routing does not
      *      specify otherwise. If not set, will default to first tab in the provided collection.
      * @param {?string} [c.route] - base route name for this container. If set, this container will
      *      be route-enabled, with the route for each tab being "[route]/[tab.id]".
-     * @param {?string} [c.tabRenderMode] - how to render hidden tabs - [lazy|always|unmountOnHide].
+     * @param {TabRenderMode} [c.renderMode] - strategy for rendering child tabs. Can be set
+     *      per-tab via `TabModel.renderMode`. See enum for description of supported modes.
+     * @param {TabRefreshMode} [c.refreshMode] - strategy for refreshing child tabs. Can be set
+     *      per-tab via `TabModel.refreshMode`. See enum for description of supported modes.
      */
     constructor({
         tabs,
         defaultTabId = null,
         route = null,
-        tabRenderMode = 'lazy'
+        renderMode = TabRenderMode.LAZY,
+        refreshMode = TabRefreshMode.ON_SHOW_LAZY
     }) {
-        this.tabRenderMode = tabRenderMode;
-
-        // 1) Validate and wire tabs, instantiate if needed.
-        const childIds = uniqBy(tabs, 'id');
-        throwIf(tabs.length == 0, 'TabContainerModel needs at least one child tab.');
-        throwIf(tabs.length != childIds.length, 'One or more Tabs in TabContainer has a non-unique ID.');
 
         tabs = tabs.filter(p => !p.omit);
-        tabs = tabs.map(p => isPlainObject(p) ? new TabModel(p) : p);
-        tabs.forEach(p => p.containerModel = this);
-        this.tabs = tabs;
+        throwIf(tabs.length == 0, 'TabContainerModel needs at least one child.');
+        throwIf(tabs.length != uniqBy(tabs, 'id').length, 'One or more tabs in TabContainerModel has a non-unique id.');
 
-        // 2) Setup and activate default tab
-        if (defaultTabId == null) {
-            defaultTabId = tabs[0].id;
-        }
-        this.activeTabId = this.defaultTabId = defaultTabId;
-
-        // 3) Setup routes
+        this.renderMode = renderMode;
+        this.refreshMode = refreshMode;
+        this.activeTabId = find(tabs, {id: defaultTabId}) ? defaultTabId : tabs[0].id;
+        this.tabs = tabs.map(p => new TabModel({...p, containerModel: this}));
+        
         this.route = route;
         if (route) {
             this.addReaction(this.routerReaction());
@@ -95,7 +87,7 @@ export class TabContainerModel {
     activateTab(id) {
         if (this.activeTabId === id) return;
 
-        const tab = this.getTabById(id);
+        const tab = find(this.tabs, {id});
         if (tab.disabled) return;
 
         const {route} = this;
@@ -106,33 +98,17 @@ export class TabContainerModel {
         }
     }
 
-    /**
-     * Immediately refresh active tab and require a refresh of all other tabs when next shown.
-     */
-    requestRefresh() {
-        this.tabs.forEach(it => it.requestRefresh());
-    }
-
-    /**
-     * @param {string} id - unique ID of the Tab to retrieve
-     * @returns {TabModel} - the tab, or null if not found
-     */
-    getTabById(id) {
-        return find(this.tabs, {id});
-    }
-
     //-------------------------
     // Implementation
     //-------------------------
     @action
     setActiveTabId(id) {
-        const tab = this.getTabById(id);
+        const tab = find(this.tabs, {id});
 
         throwIf(!tab, `Unknown Tab ${id} in TabContainer.`);
         throwIf(tab.disabled, `Cannot activate Tab ${id} because it is disabled!`);
 
         this.activeTabId = id;
-        if (tab.reloadOnShow) tab.requestRefresh();
     }
 
     routerReaction() {
@@ -156,7 +132,4 @@ export class TabContainerModel {
         };
     }
 
-    destroy() {
-        XH.safeDestroy(this.tabs);
-    }
 }

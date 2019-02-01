@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from '@xh/hoist/core';
+import {XH, HoistModel, RefreshContextModel} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 
@@ -34,6 +34,7 @@ export class AppContainerModel {
     messageSourceModel = new MessageSourceModel();
     toastSourceModel = new ToastSourceModel();
     themeModel = new ThemeModel();
+    refreshContextModel = new RefreshContextModel();
 
     /**
      * Tracks globally loading promises.
@@ -51,7 +52,8 @@ export class AppContainerModel {
             this.messageSourceModel,
             this.toastSourceModel,
             this.themeModel,
-            this.appLoadModel
+            this.appLoadModel,
+            this.refreshContextModel
         ];
         this.models.forEach(it => {
             if (it.init) it.init();

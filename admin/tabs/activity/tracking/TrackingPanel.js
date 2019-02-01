@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {XH, HoistComponent} from '@xh/hoist/core';
+import {HoistComponent, managed} from '@xh/hoist/core';
 import {vframe} from '@xh/hoist/cmp/layout';
 
 import {activityGrid} from './ActivityGrid';
@@ -16,7 +16,10 @@ import {VisitsChartModel} from './VisitsChartModel';
 @HoistComponent
 export class TrackingPanel extends Component {
 
+    @managed
     activityGridModel = new ActivityGridModel();
+
+    @managed
     visitsChartModel = new VisitsChartModel();
 
     render() {
@@ -24,13 +27,5 @@ export class TrackingPanel extends Component {
             activityGrid({model: this.activityGridModel}),
             visitsChart({model: this.visitsChartModel})
         );
-    }
-    
-    async loadAsync() {
-        return Promise.all([this.visitsChartModel.loadAsync(), this.activityGridModel.loadAsync()]);
-    }
-
-    destroy() {
-        XH.safeDestroy(this.activityGridModel, this.visitsChartModel);
     }
 }
