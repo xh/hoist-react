@@ -74,23 +74,20 @@ export class OptionsDialogModel {
         await this.formModel.validateAsync();
         if (!this.formModel.isValid) return;
 
-        if (this.requiresRefresh) {
-            XH.confirm({
-                title: 'Reload Required',
-                message: 'App requires reload for your changes to take effect',
-                confirmText: 'Reload now',
-                onConfirm: () => {
-                    this.doSaveAsync().then(() => {
-                        this.hide();
-                        XH.reloadApp();
-                    }).linkTo(this.loadModel);
-                }
-            });
-        } else {
-            this.doSaveAsync().then(() => {
-                this.hide();
-            }).linkTo(this.loadModel);
+        const refresh = this.requiresRefresh;
+
+        if (refresh) {
+            this.loadModel.setMessage('Reloading app to apply changes...');
         }
+
+        this.doSaveAsync()
+            .wait(refresh ? 1500 : 1)
+            .then(() => {
+                this.hide();
+                if (refresh) XH.reloadApp();
+            })
+            .linkTo(this.loadModel)
+            .catchDefault();
     }
 
     async doSaveAsync() {

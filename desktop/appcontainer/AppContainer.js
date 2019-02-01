@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {observable, runInAction} from '@xh/hoist/mobx';
-import {HoistComponent, elemFactory, elem, AppState, XH} from '@xh/hoist/core';
+import {HoistComponent, elemFactory, elem, AppState, refreshContextView, XH} from '@xh/hoist/core';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 
@@ -92,7 +92,10 @@ export class AppContainer extends Component {
                     vframe(
                         impersonationBar({model: model.impersonationBarModel}),
                         updateBar({model}),
-                        frame(elem(XH.appSpec.componentClass, {model: XH.appModel})),
+                        refreshContextView({
+                            model: model.refreshContextModel,
+                            item: frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))
+                        }),
                         versionBar({model})
                     ),
                     mask({model: model.appLoadModel, spinner: true}),

@@ -80,18 +80,13 @@ export class AppBar extends Component {
                     align: 'right',
                     items: [
                         ...rightItems || [],
-                        refreshButton({
-                            omit: hideRefreshButton,
-                            onClick: () => XH.appModel.requestRefresh(true)
-                        }),
-                        appMenuButton({
-                            omit: hideAppMenuButton,
-                            ...appMenuButtonOptions
-                        })
+                        refreshButton({omit: hideRefreshButton}),
+                        appMenuButton({omit: hideAppMenuButton, ...appMenuOptions})
                     ]
                 })
             ]
         });
     }
 }
+
 export const appBar = elemFactory(AppBar);

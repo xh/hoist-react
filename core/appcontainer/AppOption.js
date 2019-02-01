@@ -31,8 +31,8 @@ export class AppOption {
 
     /**
      * @param {Object} c - AppOption configuration.
-     * @param {Object} c.name - name for the option
-     * @param {Object} [c.prefName] - prefName to bind to the option to.
+     * @param {string} c.name - name for the option
+     * @param {string} [c.prefName] - prefName to bind to the option to.
      * @param {Object} c.formField - config for FormField for the option.
      * @param {Object} [c.fieldModel] - Config for FieldModel for the option.
      * @param {Object} [c.fieldModel] - config for FieldModel for the option.

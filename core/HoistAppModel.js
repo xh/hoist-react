@@ -37,20 +37,16 @@ export function HoistAppModel(C) {
         },
 
         /**
-         * Provide a list of app options to be displayed in the app's Options Dialog.
+         * Provide a list of app-wide options to be displayed in the app's Options Dialog,
+         * accessible from the default AppBar menu when this method returns non-empty.
+         *
+         * @returns {Object[]} - AppOption configs
+         * @see AppOption
          */
         getAppOptions() {
             return [];
-        },
+        }
 
-        /**
-         * App can implement this method to customize global App refresh behavior.
-         * This is called by the default refresh button in the AppBar component.
-         *
-         * @param {boolean} userInitiated - true if the refresh was triggered by user action,
-         *      false if triggered programmatically. Referenced to determine e.g. masking, tracking.
-         */
-        requestRefresh(userInitiated) { }
     });
 
     return C;

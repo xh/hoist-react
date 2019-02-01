@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {tabContainer, TabContainerModel} from '@xh/hoist/desktop/cmp/tab';
+import {tabContainer} from '@xh/hoist/desktop/cmp/tab';
 
 import {AboutPanel} from './about/AboutPanel';
 import {ConfigPanel} from './configs/ConfigPanel';
@@ -17,22 +17,19 @@ import {UserPanel} from './users/UserPanel';
 @HoistComponent
 export class GeneralTab extends Component {
 
-    model = new TabContainerModel({
-        route: 'default.general',
-        tabs: [
-            {id: 'about', content: AboutPanel},
-            {id: 'config', content: ConfigPanel},
-            {id: 'services', content: ServicePanel},
-            {id: 'ehCache', title: 'Caches', content: EhCachePanel},
-            {id: 'users', content: UserPanel}
-        ]
-    });
-
-    async loadAsync() {
-        this.model.requestRefresh();
-    }
-
     render() {
-        return tabContainer({model: this.model, switcherPosition: 'left'});
+        return tabContainer({
+            model: {
+                route: 'default.general',
+                tabs: [
+                    {id: 'about', content: AboutPanel},
+                    {id: 'config', content: ConfigPanel},
+                    {id: 'services', content: ServicePanel},
+                    {id: 'ehCache', title: 'Caches', content: EhCachePanel},
+                    {id: 'users', content: UserPanel}
+                ]
+            },
+            switcherPosition: 'left'
+        });
     }
 }

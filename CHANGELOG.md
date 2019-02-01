@@ -1,10 +1,48 @@
 # Changelog
 
+## v19.0.0-SNAPSHOT (unreleased / under development)
+
+### 🎁 New Features
+
+* Added a new architecture for signaling the need to load / refresh new data across either the
+  entire app or a section of the component hierarchy. This new system relies on React context to
+  minimizes the need for explicit application wiring, and improves support for auto-refresh. See
+  newly added decorator `@LoadSupport` and classes/components `RefreshContext`,
+  `RefreshContextModel`, and `RefreshContextView` for more info.
+* `TabContainerModel` and `TabModel` now support `refreshMode` and `renderMode` configs to allow
+  better control over how inactive tabs are mounted/unmounted and how tabs handle refresh requests
+  when hidden or (re)activated.
+* Apps can implement `getAppOptions()` in their `AppModel` class to specify a set of app-wide
+  options that should be editable via a new built-in Options dialog. This system includes built-in
+  support for reading/writing options to preferences, or getting/setting their values via custom
+  handlers. The toolkit handles the rendering of the dialog.
+* Standard top-level app buttons - for actions such as launching the new Options dialog, switching
+  themes, launching the admin client, and logging out - have been moved into a new menu accessible
+  from the top-right corner of the app, leaving more space for app-specific controls in the AppBar.
+
+
+### 💥 Breaking Changes
+
+* `HoistAppModel.requestRefresh` and `TabContainerModel.requestRefresh` have been removed.
+  Applications should use the new Refresh architecture described above instead.
+
+* `tabRefreshMode` on TabContainer has been renamed `renderMode`.
+
+* `TabModel.reloadOnShow` has been removed. Set the `refreshMode` property on TabContainerModel or
+  TabModel to `TabRefreshMode.ON_SHOW_ALWAYS` instead.
+
+* The mobile APIs for `TabContainerModel`, `TabModel`, and `RefreshButton` have been rewritten to
+  more closely mirror the desktop API.
+
+### 🐞 Bug Fixes
+
+* SwitchInput and RadioInput now properly highlight validation errors in `minimal` mode.
+
 ## v18.1.2 - 2019-01-30
 
 ### 🐞 Bug Fixes
 
-* GRID integrations relying on column visibility (namely export, storeFilterField) now correctly
+* Grid integrations relying on column visibility (namely export, storeFilterField) now correctly
   consult updated column state from GridModel. #935
 * Ensure `FieldModel.initialValue` is observable to ensure that computed dirty state (and any other
   derivations) are updated if it changes. #934
@@ -51,7 +89,6 @@
 * mobx `5.8 -> 5.9`
 * react-select `2.2 -> 2.3`
 * Other patch updates
-
 
 ## v18.0.0 - 2019-01-15
 

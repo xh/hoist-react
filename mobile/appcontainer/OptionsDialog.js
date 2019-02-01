@@ -30,7 +30,7 @@ export class OptionsDialog extends Component {
 
         return dialog({
             title: 'Options',
-            icon: Icon.gear(),
+            icon: Icon.options(),
             className: 'xh-options-dialog',
             isOpen: true,
             onCancel: () => model.hide(),

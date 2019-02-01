@@ -39,7 +39,7 @@ export class AppMenuModel extends MenuModel {
     } = {}) {
         const standardItems = [
             {
-                icon: Icon.gear(),
+                icon: Icon.options(),
                 text: 'Options',
                 action: () => XH.showOptionsDialog(),
                 prepareFn: (item) => item.hidden = hideOptionsItem || !XH.acm.optionsDialogModel.hasOptions
@@ -54,7 +54,7 @@ export class AppMenuModel extends MenuModel {
                 action: () => XH.toggleTheme(),
                 prepareFn: (item) => {
                     item.hidden = hideThemeItem;
-                    item.text = XH.darkTheme ? 'Light theme' : 'Dark theme';
+                    item.text = XH.darkTheme ? 'Light Theme' : 'Dark Theme';
                     item.icon = XH.darkTheme ? Icon.sun() : Icon.moon();
                 }
             },

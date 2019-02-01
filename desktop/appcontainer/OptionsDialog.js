@@ -5,34 +5,54 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {dialog, dialogBody, HotkeysTarget, hotkeys, hotkey} from '@xh/hoist/kit/blueprint';
+import {HoistComponent, elemFactory, XH} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
-import {filler} from '@xh/hoist/cmp/layout';
+import {filler, span} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {form} from '@xh/hoist/cmp/form';
 import {formField} from '@xh/hoist/desktop/cmp/form';
+import {OptionsDialogModel} from '@xh/hoist/core/appcontainer/OptionsDialogModel';
+import './OptionsDialog.scss';
 
 /**
- * A dialog component to manage user preferences from directly within the application.
+ * Dialog to provide a built-in editor for app-wide user preferences, as specified by
+ * the `HoistAppModel.getAppOptions()` template method.
  *
  * @private
  */
 @HoistComponent
+@HotkeysTarget
 export class OptionsDialog extends Component {
+
+    static modelClass = OptionsDialogModel;
+
+    baseClassName = 'xh-options-dialog';
+
+    renderHotkeys() {
+        return hotkeys(
+            hotkey({
+                global: true,
+                combo: 'shift + o',
+                label: 'Open Options Dialog',
+                onKeyDown: this.onHotKey
+            })
+        );
+    }
 
     render() {
         const {model} = this,
             {isOpen, loadModel, formModel, requiresRefresh} = model;
 
-        if (!isOpen) return null;
+        if (!model.hasOptions) return null;
+        if (!isOpen) return span();  // *Not* null, so hotkeys get rendered.
 
         return dialog({
-            title: 'Options',
-            icon: Icon.gear(),
-            style: {width: 400},
+            title: `${XH.clientAppName} Options`,
+            icon: Icon.options(),
+            className: this.getClassName(),
             isOpen: true,
             onClose: () => model.hide(),
             canOutsideClickClose: false,
@@ -70,6 +90,10 @@ export class OptionsDialog extends Component {
                 })
             ]
         });
+    }
+
+    onHotKey = () => {
+        this.model.show();
     }
 }
 
