@@ -86,7 +86,8 @@ export class OptionsDialogModel {
                 this.hide();
                 if (refresh) XH.reloadApp();
             })
-            .linkTo(this.loadModel);
+            .linkTo(this.loadModel)
+            .catchDefault();
     }
 
     async doSaveAsync() {
