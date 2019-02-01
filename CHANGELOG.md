@@ -7,11 +7,12 @@
 * Added a new architecture for signaling the need to load / refresh new data across either the
   entire app or a section of the component hierarchy. This new system relies on React context to
   minimizes the need for explicit application wiring, and improves support for auto-refresh. See
-  newly added decorator `@LoadSupport` and classes/componetns `RefreshContext`,
+  newly added decorator `@LoadSupport` and classes/components `RefreshContext`,
   `RefreshContextModel`, and `RefreshContextView` for more info.
 
 * `TabContainerModel` and `TabModel` now support `refreshMode` and `renderMode` configs to allow
-  fine-grained handling of the refreshing and mounting/unmounting of hidden tabs.
+  better control over how inactive tabs are mounted/unmounted and how tabs handle refresh requests
+  when hidden or (re)activated.
 
 ### 💥 Breaking Changes
 
