@@ -5,11 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH, HoistModel} from '@xh/hoist/core';
+import {XH, HoistModel, managed} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {action, observable, computed} from '@xh/hoist/mobx';
 import {min} from 'lodash';
-import {Timer} from '@xh/hoist/utils/async';
+import {PendingTaskModel, Timer} from '@xh/hoist/utils/async';
 
 @HoistModel
 export class MonitorResultsModel {
@@ -17,6 +17,9 @@ export class MonitorResultsModel {
     @observable lastRun = null;
     timer = null;
     view = null;
+
+    @managed
+    loadModel = new PendingTaskModel();
 
     @computed
     get passed() {
@@ -52,7 +55,9 @@ export class MonitorResultsModel {
             }).catch(e => {
                 this.completeLoad(false, e);
                 XH.handleException(e);
-            });
+            }).linkTo(
+                this.loadModel
+            );
     }
 
     @action

@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {HoistComponent} from '@xh/hoist/core';
+import {HoistComponent, LoadSupport} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -16,6 +16,7 @@ import {Icon} from '@xh/hoist/icon';
 import {ServiceModel} from './ServiceModel';
 
 @HoistComponent
+@LoadSupport
 export class ServicePanel extends Component {
 
     model = new ServiceModel();
