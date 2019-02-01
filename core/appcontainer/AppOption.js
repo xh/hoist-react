@@ -6,7 +6,7 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {throwIf, warnIf} from '@xh/hoist/utils/js';
+import {warnIf} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
 
 
@@ -49,6 +49,7 @@ export class AppOption {
         valueSetter,
         refreshRequired = false
     }) {
+        
         warnIf(
             !(prefName && XH.prefService.hasKey(prefName)) && !(valueGetter && valueSetter),
             'Must specify either a valid prefName or provide a valueGetter and valueSetter.'
