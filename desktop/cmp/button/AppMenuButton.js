@@ -8,31 +8,26 @@
 import {Component} from 'react';
 import PT from 'prop-types';
 import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
-import {menu, menuItem, popover} from '@xh/hoist/kit/blueprint';
+import {menu, menuItem, menuDivider, popover} from '@xh/hoist/kit/blueprint';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
 @HoistComponent
 export class AppMenuButton extends Component {
     static propTypes = {
-        /** True to hide the Options button. */
-        hideOptionsButton: PT.bool,
+        /** True to hide the Launch Admin button. Always hidden for users w/o HOIST_ADMIN role. */
+        hideAdminButton: PT.bool,
 
         /** True to hide the Feedback button. */
         hideFeedbackButton: PT.bool,
 
+        /** True to hide the Options button. */
+        hideOptionsButton: PT.bool,
+
         /** True to hide the Theme Toggle button. */
         hideThemeButton: PT.bool,
 
-        /**
-         * True to hide the Launch Admin button. Will be automatically hidden for users
-         * without the HOIST_ADMIN role.
-         */
-        hideAdminButton: PT.bool,
-
-        /**
-         * True to hide the Logout button (always hidden for SSO applications).
-         */
+        /** True to hide the Logout button. Always hidden when `appSpec.isSSO == true`. */
         hideLogoutButton: PT.bool
     };
 
@@ -47,6 +42,9 @@ export class AppMenuButton extends Component {
             hideLogoutButton
         } = this.props;
 
+        const hideAdmin = hideAdminButton || !XH.getUser().isHoistAdmin,
+            hideLogout = hideLogoutButton || XH.appSpec.isSSO;
+
         return popover({
             position: 'bottom-right',
             minimal: true,
@@ -57,7 +55,7 @@ export class AppMenuButton extends Component {
                 menuItem({
                     omit: hideOptionsButton || !XH.acm.optionsDialogModel.hasOptions,
                     text: 'Options',
-                    icon: Icon.gear(),
+                    icon: Icon.options(),
                     onClick: () => XH.showOptionsDialog()
                 }),
                 menuItem({
@@ -68,18 +66,20 @@ export class AppMenuButton extends Component {
                 }),
                 menuItem({
                     omit: hideThemeButton,
-                    text: XH.darkTheme ? 'Switch to light theme' : 'Switch to dark theme',
+                    text: XH.darkTheme ? 'Light Theme' : 'Dark Theme',
                     icon: XH.darkTheme ? Icon.sun({prefix: 'fas'}) : Icon.moon(),
                     onClick: () => XH.toggleTheme()
                 }),
+                menuDivider({omit: hideAdmin}),
                 menuItem({
-                    omit: hideAdminButton || !XH.getUser().isHoistAdmin,
+                    omit: hideAdmin,
                     text: 'Admin',
                     icon: Icon.wrench(),
                     onClick: () => window.open('/admin')
                 }),
+                menuDivider({omit: hideLogout}),
                 menuItem({
-                    omit: hideLogoutButton || XH.appSpec.isSSO,
+                    omit: hideLogout,
                     text: 'Logout',
                     icon: Icon.logout(),
                     intent: 'danger',
