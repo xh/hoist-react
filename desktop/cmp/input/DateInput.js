@@ -83,10 +83,6 @@ export class DateInput extends HoistInput {
         timePrecision: PT.oneOf(['second', 'minute'])
     };
 
-    static defaultProps = {
-        width: 150
-    };
-
     bpRef = new Ref();
     popoverRef = new Ref();
 
@@ -97,7 +93,8 @@ export class DateInput extends HoistInput {
     }
 
     render() {
-        const props = this.getNonLayoutProps();
+        const props = this.getNonLayoutProps(),
+            {width, ...layoutProps} = this.getLayoutProps();
 
         return bpDateInput({
             value: this.renderValue,
@@ -116,7 +113,8 @@ export class DateInput extends HoistInput {
 
                 style: {
                     ...props.style,
-                    ...this.getLayoutProps(),
+                    ...layoutProps,
+                    width: withDefault(width, 150),
                     textAlign: withDefault(props.textAlign, 'left')
                 },
 

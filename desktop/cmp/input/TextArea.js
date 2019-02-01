@@ -43,11 +43,6 @@ export class TextArea extends HoistInput {
         placeholder: PT.string
     };
 
-    static defaultProps = {
-        width: 300,
-        height: 100
-    };
-
     baseClassName = 'xh-text-area';
 
     get commitOnChange() {
@@ -55,7 +50,8 @@ export class TextArea extends HoistInput {
     }
     
     render() {
-        const props = this.getNonLayoutProps();
+        const props = this.getNonLayoutProps(),
+            {width, height, ...layoutProps} = this.getLayoutProps();
 
         return bpTextarea({
             value: this.renderValue || '',
@@ -71,7 +67,9 @@ export class TextArea extends HoistInput {
             className: this.getClassName(),
             style: {
                 ...props.style,
-                ...this.getLayoutProps()
+                ...layoutProps,
+                width: withDefault(width, 300),
+                height: withDefault(height, 100)
             },
 
             onBlur: this.onBlur,

@@ -118,10 +118,6 @@ export class Select extends HoistInput {
         valueField: PT.string
     };
 
-    static defaultProps = {
-        width: 200
-    };
-
     static MENU_PORTAL_ID = 'xh-select-input-portal';
 
     baseClassName = 'xh-select';
@@ -151,9 +147,10 @@ export class Select extends HoistInput {
     reactSelectRef = React.createRef();
 
     render() {
-        const {props, renderValue} = this,
+        const props = this.getNonLayoutProps(),
+            {width, ...layoutProps} = this.getLayoutProps(),
             rsProps = {
-                value: renderValue,
+                value: this.renderValue,
 
                 autoFocus: props.autoFocus,
                 formatOptionLabel: this.formatOptionLabel,
@@ -211,7 +208,8 @@ export class Select extends HoistInput {
                     e.stopPropagation();
                 }
             },
-            ...this.getLayoutProps()
+            ...layoutProps,
+            width: withDefault(width, 200)
         });
     }
 

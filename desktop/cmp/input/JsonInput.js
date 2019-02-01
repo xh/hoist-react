@@ -50,11 +50,6 @@ export class JsonInput extends HoistInput {
         editorProps: PT.object
     };
 
-    static defaultProps = {
-        width: 300,
-        height: 100
-    };
-
     get commitOnChange() {
         withDefault(this.props.commitOnChange, false);
     }
@@ -86,6 +81,8 @@ export class JsonInput extends HoistInput {
     baseClassName = 'xh-json-input';
 
     render() {
+        const {width, height, ...layoutProps} = this.getLayoutProps();
+
         return box({
             item: textArea({
                 value: this.renderValue || '',
@@ -94,9 +91,11 @@ export class JsonInput extends HoistInput {
             }),
 
             className: this.getClassName(),
-            flex: 1,
             flexDirection: 'column',
-            ...this.getLayoutProps(),
+
+            ...layoutProps,
+            width: withDefault(width, 300),
+            height: withDefault(height, 100),
 
             onBlur: this.onBlur,
             onFocus:  this.onFocus

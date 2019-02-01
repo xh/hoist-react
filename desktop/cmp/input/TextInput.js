@@ -73,10 +73,6 @@ export class TextInput extends HoistInput {
         type: PT.oneOf(['text', 'password'])
     };
 
-    static defaultProps = {
-        width: 200
-    };
-
     baseClassName = 'xh-text-input';
 
     get commitOnChange() {
@@ -84,7 +80,8 @@ export class TextInput extends HoistInput {
     }
 
     render() {
-        const props = this.getNonLayoutProps();
+        const props = this.getNonLayoutProps(),
+            {width, ...layoutProps} = this.getLayoutProps();
 
         return div({
             item: inputGroup({
@@ -105,7 +102,8 @@ export class TextInput extends HoistInput {
                 className: this.getClassName(),
                 style: {
                     ...props.style,
-                    ...this.getLayoutProps(),
+                    ...layoutProps,
+                    width: withDefault(width, 200),
                     textAlign: withDefault(props.textAlign, 'left')
                 },
 

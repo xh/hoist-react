@@ -198,12 +198,20 @@ export class FormField extends Component {
             model: fieldModel,
             bind: 'value',
             disabled: fieldModel && fieldModel.disabled,
-            id: idAttr,
-            width: null,
-            flex: 1
+            id: idAttr
         };
 
-        if (layoutProps.height) overrides.height = null;
+        // Item should fill the available size of the FormField, unless dimensions are specified.
+        // Note: We explicitly set width / height to null to override defaults.
+        if (!item.props.width && !item.props.flex) {
+            overrides.width = null;
+            overrides.flex = 1;
+        }
+
+        // Only unset height if FormField has a specified height - otherwise, use defaults.
+        if (!item.props.height && layoutProps.height) {
+            overrides.height = null;
+        }
         
         if (displayNotValid && propTypes.leftIcon && leftErrorIcon) {
             overrides.leftIcon = Icon.warningCircle();

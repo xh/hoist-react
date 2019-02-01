@@ -89,10 +89,6 @@ export class NumberInput extends HoistInput {
         zeroPad: PT.bool
     };
 
-    static defaultProps = {
-        width: 200
-    };
-
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/i;
 
     baseClassName = 'xh-number-input';
@@ -102,7 +98,8 @@ export class NumberInput extends HoistInput {
     }
 
     render() {
-        const props = this.getNonLayoutProps();
+        const props = this.getNonLayoutProps(),
+            {width, ...layoutProps} = this.getLayoutProps();
 
         return numericInput({
             value: this.formatRenderValue(this.renderValue),
@@ -124,7 +121,8 @@ export class NumberInput extends HoistInput {
             className: this.getClassName(),
             style: {
                 ...props.style,
-                ...this.getLayoutProps(),
+                ...layoutProps,
+                width: withDefault(width, 200),
                 textAlign: withDefault(props.textAlign, 'right')
             },
             onBlur: this.onBlur,
