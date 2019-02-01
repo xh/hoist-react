@@ -39,13 +39,14 @@ export class AppMenuButton extends Component {
     baseClassName = 'xh-app-menu';
 
     render() {
-        let {hideOptions, hideFeedback, hideTheme, hideAdmin, hideLogout, extraItems} = this.props;
+        let {hideOptionsItem, hideFeedbackItem, hideThemeItem, hideAdminItem, hideLogoutItem, extraItems} = this.props;
         extraItems = extraItems ?
             [...extraItems.map(m => menuItem(m)), menuDivider()]  :
             [];
 
-        const hideAdmin = hideAdminItem || !XH.getUser().isHoistAdmin,
-            hideLogout = hideLogoutItem || XH.appSpec.isSSO;
+        hideAdminItem = hideAdminItem || !XH.getUser().isHoistAdmin,
+        hideLogoutItem = hideLogoutItem || XH.appSpec.isSSO;
+        hideOptionsItem = hideOptionsItem || !XH.acm.optionsDialogModel.hasOptions;
 
         // TODO:  Need logic from context menu to remove duplicate seperators!
         return popover({
@@ -57,7 +58,7 @@ export class AppMenuButton extends Component {
             content: menu(
                 ...extraItems,
                 menuItem({
-                    omit: hideOptionsItem || !XH.acm.optionsDialogModel.hasOptions,
+                    omit: hideOptionsItem,
                     text: 'Options',
                     icon: Icon.options(),
                     onClick: () => XH.showOptionsDialog()
@@ -74,16 +75,16 @@ export class AppMenuButton extends Component {
                     icon: XH.darkTheme ? Icon.sun({prefix: 'fas'}) : Icon.moon(),
                     onClick: () => XH.toggleTheme()
                 }),
-                menuDivider({omit: hideAdmin}),
+                menuDivider({omit: hideAdminItem}),
                 menuItem({
-                    omit: hideAdmin,
+                    omit: hideAdminItem,
                     text: 'Admin',
                     icon: Icon.wrench(),
                     onClick: () => window.open('/admin')
                 }),
-                menuDivider({omit: hideLogout}),
+                menuDivider({omit: hideLogoutItem}),
                 menuItem({
-                    omit: hideLogout,
+                    omit: hideLogoutItem,
                     text: 'Logout',
                     icon: Icon.logout(),
                     intent: 'danger',

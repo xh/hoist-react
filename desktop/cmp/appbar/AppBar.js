@@ -81,7 +81,7 @@ export class AppBar extends Component {
                     items: [
                         ...rightItems || [],
                         refreshButton({omit: hideRefreshButton}),
-                        appMenuButton({omit: hideAppMenuButton, ...appMenuOptions})
+                        appMenuButton({omit: hideAppMenuButton, ...appMenuButtonOptions})
                     ]
                 })
             ]
