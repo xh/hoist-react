@@ -130,21 +130,24 @@ export class FormField extends Component {
                     items: [label, requiredStr],
                     htmlFor: clickableLabel ? idAttr : null
                 }),
-                div(
-                    control,
-                    div({
-                        omit: !info,
-                        className: 'xh-form-field-info',
-                        item: info
-                    }),
-                    tooltip({
-                        omit: minimal || !displayNotValid,
-                        openOnTargetFocus: false,
-                        className: 'xh-form-field-error-msg',
-                        item: errors ? errors[0] : null,
-                        content: this.getErrorTooltipContent(errors)
-                    })
-                )
+                div({
+                    className: control.type.hasLayoutSupport ? 'xh-form-field-fill' : '',
+                    items: [
+                        control,
+                        div({
+                            omit: !info,
+                            className: 'xh-form-field-info',
+                            item: info
+                        }),
+                        tooltip({
+                            omit: minimal || !displayNotValid,
+                            openOnTargetFocus: false,
+                            className: 'xh-form-field-error-msg',
+                            item: errors ? errors[0] : null,
+                            content: this.getErrorTooltipContent(errors)
+                        })
+                    ]
+                })
             ],
             className: this.getClassName(classes),
             ...this.getLayoutProps()
@@ -187,6 +190,7 @@ export class FormField extends Component {
 
     prepareChild({displayNotValid, leftErrorIcon, idAttr, errors, minimal, readonly}) {
         const {fieldModel} = this,
+            layoutProps = this.getLayoutProps(),
             item = this.props.children,
             {propTypes} = item.type;
 
@@ -194,8 +198,13 @@ export class FormField extends Component {
             model: fieldModel,
             bind: 'value',
             disabled: fieldModel && fieldModel.disabled,
-            id: idAttr
+            id: idAttr,
+            width: null,
+            flex: 1
         };
+
+        if (layoutProps.height) overrides.height = null;
+        
         if (displayNotValid && propTypes.leftIcon && leftErrorIcon) {
             overrides.leftIcon = Icon.warningCircle();
         }

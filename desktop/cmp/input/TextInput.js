@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {div} from '@xh/hoist/cmp/layout';
 import {HoistInput} from '@xh/hoist/cmp/input';
@@ -18,6 +18,7 @@ import {withDefault} from '@xh/hoist/utils/js';
  * A single-line text input with additional support for embedded icons/elements.
  */
 @HoistComponent
+@LayoutSupport
 export class TextInput extends HoistInput {
 
     static propTypes = {
@@ -69,10 +70,11 @@ export class TextInput extends HoistInput {
         spellCheck: PT.bool,
 
         /** Underlying HTML <input> element type. */
-        type: PT.oneOf(['text', 'password']),
+        type: PT.oneOf(['text', 'password'])
+    };
 
-        /** Width of the control in pixels. */
-        width: PT.number
+    static defaultProps = {
+        width: 200
     };
 
     baseClassName = 'xh-text-input';
@@ -82,7 +84,7 @@ export class TextInput extends HoistInput {
     }
 
     render() {
-        const {props} = this;
+        const props = this.getNonLayoutProps();
 
         return div({
             item: inputGroup({
@@ -102,9 +104,9 @@ export class TextInput extends HoistInput {
                 id: props.id,
                 className: this.getClassName(),
                 style: {
-                    textAlign: withDefault(props.textAlign, 'left'),
-                    width: props.width,
-                    ...props.style
+                    ...props.style,
+                    ...this.getLayoutProps(),
+                    textAlign: withDefault(props.textAlign, 'left')
                 },
 
                 onChange: this.onChange,

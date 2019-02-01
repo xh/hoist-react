@@ -47,13 +47,12 @@ export class JsonInput extends HoistInput {
          * Configuration object with any properties supported by the CodeMirror API.
          * @see {@link https://codemirror.net/doc/manual.html#api_configuration|CodeMirror Docs}
          */
-        editorProps: PT.object,
+        editorProps: PT.object
+    };
 
-        /** Height of the embedded editor in pixels. */
-        height: PT.number,
-
-        /** Width of the embedded editor in pixels. */
-        width: PT.number
+    static defaultProps = {
+        width: 300,
+        height: 100
     };
 
     get commitOnChange() {

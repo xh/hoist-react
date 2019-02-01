@@ -53,6 +53,10 @@ export class Slider extends HoistInput {
         vertical: PT.bool
     };
 
+    static defaultProps = {
+        width: 200
+    };
+
     baseClassName = 'xh-slider';
 
     render() {

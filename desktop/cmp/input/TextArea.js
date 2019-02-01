@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {HoistComponent, LayoutSupport, elemFactory} from '@xh/hoist/core';
 import {textArea as bpTextarea} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/input';
@@ -17,6 +17,7 @@ import './TextArea.scss';
  * A multi-line text input.
  */
 @HoistComponent
+@LayoutSupport
 export class TextArea extends HoistInput {
 
     static propTypes = {
@@ -32,9 +33,6 @@ export class TextArea extends HoistInput {
         /** True to take up the full width of container. */
         fill: PT.bool,
 
-        /** Height of the control in pixels. */
-        height: PT.number,
-
         /** True to select contents when control receives focus. */
         selectOnFocus: PT.bool,
 
@@ -42,10 +40,12 @@ export class TextArea extends HoistInput {
         spellCheck: PT.bool,
 
         /** Text to display when control is empty. */
-        placeholder: PT.string,
+        placeholder: PT.string
+    };
 
-        /** Width of the control in pixels. */
-        width: PT.number
+    static defaultProps = {
+        width: 300,
+        height: 100
     };
 
     baseClassName = 'xh-text-area';
@@ -55,7 +55,7 @@ export class TextArea extends HoistInput {
     }
     
     render() {
-        const {props} = this;
+        const props = this.getNonLayoutProps();
 
         return bpTextarea({
             value: this.renderValue || '',
@@ -70,9 +70,8 @@ export class TextArea extends HoistInput {
             id: props.id,
             className: this.getClassName(),
             style: {
-                height: props.height,
-                width: props.width,
-                ...props.style
+                ...props.style,
+                ...this.getLayoutProps()
             },
 
             onBlur: this.onBlur,

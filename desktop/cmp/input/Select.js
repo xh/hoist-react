@@ -116,7 +116,10 @@ export class Select extends HoistInput {
 
         /** Field on provided options for sourcing each option's value (default `value`). */
         valueField: PT.string
+    };
 
+    static defaultProps = {
+        width: 200
     };
 
     static MENU_PORTAL_ID = 'xh-select-input-portal';
@@ -200,7 +203,6 @@ export class Select extends HoistInput {
         return box({
             item: factory(rsProps),
             className: this.getClassName(),
-            width: props.width,
             onKeyDown: (e) => {
                 // Esc. and Enter can be listened for by parents -- stop the keypress event
                 // propagation only if react-select already likely to have used for menu management.

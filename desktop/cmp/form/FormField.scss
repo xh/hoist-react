@@ -8,6 +8,21 @@
     padding: 0 0 3px;
   }
 
+  .xh-form-field-fill {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    .xh-input {
+      & > .bp3-input-group {
+        width: 100%;
+      }
+      span.bp3-popover-target {
+        display: block;
+      }
+    }
+  }
+
   .xh-form-field-info,
   .xh-form-field-error-msg {
     font-size: var(--xh-font-size-small-px);
