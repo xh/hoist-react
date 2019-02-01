@@ -66,7 +66,7 @@ export class ActivityGridModel {
     async loadAsync() {
         return XH.fetchJson({
             url: 'trackLogAdmin',
-            params: this.params
+            params: this.getParams()
         }).then(data => {
             this.gridModel.loadData(data);
         }).linkTo(
