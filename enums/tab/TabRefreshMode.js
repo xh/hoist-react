@@ -6,24 +6,25 @@
  */
 
 /**
- * Options for how Tabs should be refreshed via their built-in RefreshContextView when hidden
- * and activated / reactivated by a parent TabContainer.
+ * Options for how Tabs should be refreshed via their built-in RefreshContextView when they receive
+ * a refresh request while inactive/hidden or are (re)activated by their parent TabContainer.
+ *
  * @enum {TabRefreshMode}
  * @see {TabContainerModel.refreshMode}
  * @see {TabModel.refreshMode}
  */
 export const TabRefreshMode = Object.freeze({
 
-    /** Always refresh when requested, even if tab is hidden. */
+    /** Always refresh a tab when requested, even if it is inactive (hidden). */
     ALWAYS: 'always',
 
-    /** Note a refresh request for a hidden tab and run refresh if/when tab is next activated. */
+    /** Note a refresh request for an inactive tab and run refresh if/when tab is next activated. */
     ON_SHOW_LAZY: 'onShowLazy',
 
     /** Always refresh when tab is activated, regardless of whether or not refresh was requested. */
     ON_SHOW_ALWAYS: 'onShowAlways',
 
-    /** Drop refresh requests for hidden tabs completely. */
+    /** Ignore refresh requests entirely when tab is inactive. Do not auto-refresh when reactivated. */
     SKIP_HIDDEN: 'skipHidden'
 
 });

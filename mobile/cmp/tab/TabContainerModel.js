@@ -4,8 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from '@xh/hoist/core';
-import {TabRefreshMode} from '@xh/hoist/enums/tab';
+import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {TabRefreshMode} from '@xh/hoist/enums';
 import {action, computed, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {uniqBy, find} from 'lodash';
@@ -17,14 +17,11 @@ import {TabModel} from './TabModel';
 @HoistModel
 export class TabContainerModel {
 
-    /**
-     * TabModels included in this tab container.
-     * @member {TabModel[]}
-     */
-    tabs = [];
+    /** @member {TabModel[]} */
+    @managed tabs = [];
 
-    /** ID of the currently active Tab. */
-    @observable activeTabId = null;
+    /** @member {string} */
+    @observable activeTabId;
 
     @computed
     get activeTabIndex() {
@@ -33,18 +30,20 @@ export class TabContainerModel {
         return tab ? tabs.indexOf(tab) : 0;
     }
 
+    /** @member {TabRefreshMode} */
+    refreshMode;
+
     /**
      * @param {Object} c - TabContainerModel configuration.
      * @param {Object[]} c.tabs - configs for TabModels to be displayed.
-     * @param {string} [c.defaultTabId] - ID of Tab to be shown initially.
+     * @param {?string} [c.defaultTabId] - ID of Tab to be shown initially.
      *      If not set, will default to first tab in the provided collection.
-     * @param {?TabRefreshMode} [c.refreshMode] - strategy for refreshing a tab when hidden /
-     *      activated via its built-in RefreshContextView. Can be overridden at the per-tab
-     *      level via the corresponding `TabModel.refreshMode` config.
+     * @param {TabRefreshMode} [c.refreshMode] - strategy for refreshing child tabs. Can be set
+     *      per-tab via `TabModel.refreshMode`. See enum for description of supported modes.
      */
     constructor({
         tabs,
-        defaultTabId,
+        defaultTabId = null,
         refreshMode = TabRefreshMode.ON_SHOW_LAZY
     }) {
         tabs = tabs.filter(p => !p.omit);
@@ -69,10 +68,4 @@ export class TabContainerModel {
         this.activeTabId = id;
     }
 
-    //-------------------------
-    // Implementation
-    //-------------------------
-    destroy() {
-        XH.safeDestroy(this.tabs);
-    }
 }

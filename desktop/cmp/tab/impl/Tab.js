@@ -4,6 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+import {TabRenderMode} from '@xh/hoist/enums';
 import {Component} from 'react';
 import {elem, elemFactory, refreshContextView, HoistComponent} from '@xh/hoist/core';
 import {frame} from '@xh/hoist/cmp/layout';
@@ -14,6 +15,7 @@ import {TabModel} from '../TabModel';
  *
  * Wrapper for contents to be shown within a TabContainer. This Component is used by TabContainer's
  * internal implementation to:
+ *
  *   - Mount/unmount its contents according to `TabModel.renderMode`.
  *   - Track and trigger refreshes according to `TabModel.refreshMode`.
  *   - Stretch its contents using a flex layout.
@@ -31,7 +33,13 @@ export class Tab extends Component {
 
         this.wasActivated = this.wasActivated || isActive;
 
-        if (!isActive && (renderMode == 'unmountOnHide' || !this.wasActivated && renderMode == 'lazy')) {
+        if (
+            !isActive &&
+            (
+                (renderMode == TabRenderMode.UNMOUNT_ON_HIDE) ||
+                (renderMode == TabRenderMode.LAZY && !this.wasActivated)
+            )
+        ) {
             return null;
         }
 

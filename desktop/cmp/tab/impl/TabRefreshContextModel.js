@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {RefreshContextModel} from '@xh/hoist/core';
-import {TabRefreshMode} from '@xh/hoist/enums/tab';
+import {TabRefreshMode} from '@xh/hoist/enums';
 
 /**
  * @private
@@ -23,7 +23,7 @@ export class TabRefreshContextModel extends RefreshContextModel {
         });
     }
 
-    async refreshAsync({isAutoRefresh = false}) {
+    async refreshAsync({isAutoRefresh = false} = {}) {
         const {tabModel} = this,
             mode = tabModel.refreshMode;
 
@@ -41,7 +41,7 @@ export class TabRefreshContextModel extends RefreshContextModel {
             const mode = this.tabModel.refreshMode;
             if (mode == TabRefreshMode.ON_SHOW_ALWAYS) {
                 super.refreshAsync();
-            } else if (TabRefreshMode.ON_SHOW_LAZY && this.refreshPending) {
+            } else if (mode == TabRefreshMode.ON_SHOW_LAZY && this.refreshPending) {
                 this.refreshPending = false;
                 super.refreshAsync();
             }

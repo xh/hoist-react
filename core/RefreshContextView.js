@@ -13,8 +13,8 @@ const refreshContextProvider = elemFactory(RefreshContext.Provider);
 /**
  * Establishes an area of the application with an independent RefreshContext and RefreshContextModel.
  *
- * The model established by this view will be refreshed by its parent context, but also may be refreshed
- * independently.
+ * The model established by this view will be refreshed by its parent context (as this component is
+ * marked with `@LoadSupport`) but may also be refreshed independently.
  *
  * @see RefreshContext
  * @see RefreshContextModel
@@ -25,7 +25,7 @@ export class RefreshView extends Component {
 
     static propTypes = {
         model: PT.instanceOf(RefreshContextModel).isRequired
-    }
+    };
 
     static modelClass = RefreshContextModel;
    

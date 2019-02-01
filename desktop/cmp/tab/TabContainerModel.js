@@ -4,9 +4,9 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
-import {TabRefreshMode} from '@xh/hoist/enums/tab';
+import {TabRefreshMode, TabRenderMode} from '@xh/hoist/enums';
 import {find, uniqBy} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
 import {TabModel} from './TabModel';
@@ -14,29 +14,26 @@ import {TabModel} from './TabModel';
 /**
  * Model for a TabContainer, representing its layout/contents and the currently displayed Tab.
  *
- * This object provides support for routing based navigation, customizable mounting/unmounting of
- * inactive tabs, and customizable, managed refreshing of tabs via a built-in RefreshContext.
+ * This object provides support for routing based navigation, customizable (lazy) mounting and
+ * unmounting of inactive tabs, and customizable refreshing of tabs via a built-in RefreshContext.
  */
 @HoistModel
 export class TabContainerModel {
 
-    /**
-     * TabModels included in this tab container.
-     * @member {TabModel[]}
-     */
-    tabs = [];
+    /** @member {TabModel[]} */
+    @managed tabs = [];
 
-    /** Base route for this container. */
-    route = null;
+    /** @member {?string} */
+    route;
 
-    /** ID of the currently active Tab. */
-    @observable activeTabId = null;
+    /** @member {string} */
+    @observable activeTabId;
 
-    /** How should this container render hidden tabs? */
-    tabRenderMode = null;
+    /** @member {TabRenderMode} */
+    renderMode;
 
-    /** @member {?TabRefreshMode} - How should this container refresh hidden tabs? */
-    tabRefreshMode = null;
+    /** @member {TabRefreshMode} */
+    refreshMode;
 
     /**
      * @param {Object} c - TabContainerModel configuration.
@@ -45,16 +42,16 @@ export class TabContainerModel {
      *      specify otherwise. If not set, will default to first tab in the provided collection.
      * @param {?string} [c.route] - base route name for this container. If set, this container will
      *      be route-enabled, with the route for each tab being "[route]/[tab.id]".
-     * @param {?string} [c.renderMode] - how to render hidden tabs - [always|lazy|unmountOnHide].
-     * @param {?TabRefreshMode} [c.refreshMode] - strategy for refreshing a tab when hidden /
-     *      activated via its built-in RefreshContextView. Can be overridden at the per-tab
-     *      level via the corresponding `TabModel.refreshMode` config.
+     * @param {TabRenderMode} [c.renderMode] - strategy for rendering child tabs. Can be set
+     *      per-tab via `TabModel.renderMode`. See enum for description of supported modes.
+     * @param {TabRefreshMode} [c.refreshMode] - strategy for refreshing child tabs. Can be set
+     *      per-tab via `TabModel.refreshMode`. See enum for description of supported modes.
      */
     constructor({
         tabs,
         defaultTabId = null,
         route = null,
-        renderMode = 'lazy',
+        renderMode = TabRenderMode.LAZY,
         refreshMode = TabRefreshMode.ON_SHOW_LAZY
     }) {
 
@@ -135,7 +132,4 @@ export class TabContainerModel {
         };
     }
 
-    destroy() {
-        XH.safeDestroy(this.tabs);
-    }
 }
