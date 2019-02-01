@@ -4,17 +4,17 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from '@xh/hoist/core';
+import {XH, HoistModel, managed} from '@xh/hoist/core';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {observable, computed, action} from '@xh/hoist/mobx';
 import {allSettled} from '@xh/hoist/promise';
-import {isFunction, values} from 'lodash';
+import {assign} from 'lodash';
 
 import {AppOption} from './AppOption';
 
 /**
- * Manages built-in setting of user preferences.
+ * Manages built-in setting of options.
  * @private
  */
 @HoistModel
@@ -23,50 +23,29 @@ export class OptionsDialogModel {
     @observable isOpen = false;
     @observable.ref options = [];
 
+    @managed
     loadModel = new PendingTaskModel();
+
+    @managed
     formModel = null;
 
     //-------------------
     // Setting options
     //-------------------
-    @action
     setOptions(options) {
-        // Ensure each is valid AppOption
-        this.options = options.map(it => it instanceof AppOption ? it : new AppOption(it));
-
-        // Create FormModel with FieldModels from AppOptions
-        this.formModel = new FormModel({fields: this.options.map(it => it.fieldModel)});
+        this.options = options.map(o => new AppOption(o));
+        const fields = this.options.map(o => assign({name: o.name}, o.fieldModel));
+        this.formModel = new FormModel({fields});
     }
 
-    @computed
     get hasOptions() {
         return !!this.options.length;
     }
 
     @computed
     get requiresRefresh() {
-        return this.options.some(it => it.fieldModel.isDirty && it.refreshRequired);
-    }
-
-    //-------------------
-    // Value management
-    //-------------------
-    getOption(name) {
-        return this.options.find(it => it.fieldModel.name === name);
-    }
-
-    async getExternalValueAsync(name) {
-        const {valueGetter} = this.getOption(name);
-        return await (isFunction(valueGetter) ? valueGetter() : XH.prefService.get(name));
-    }
-
-    async setExternalValueAsync(name, value) {
-        const {valueSetter} = this.getOption(name);
-        if (isFunction(valueSetter)) {
-            await valueSetter(value);
-        } else {
-            XH.prefService.set(name, value);
-        }
+        const {formModel} = this;
+        return formModel && this.options.some(o => formModel.fields[o.name].isDirty && o.refreshRequired);
     }
 
     //-------------------
@@ -84,8 +63,9 @@ export class OptionsDialogModel {
     }
 
     async initAsync() {
-        const promises = values(this.formModel.fields).map(it => {
-            return this.getExternalValueAsync(it.name).then(v => it.init(v));
+        const {formModel} = this;
+        const promises = this.options.map(option => {
+            return option.getValueAsync().then(v => formModel.fields[option.name].init(v));
         });
         await allSettled(promises).linkTo(this.loadModel);
     }
@@ -114,12 +94,11 @@ export class OptionsDialogModel {
     }
 
     async doSaveAsync() {
-        const promises = values(this.formModel.fields).map(it => {
-            const {name, value} = it;
-            return this.setExternalValueAsync(name, value);
+        const {formModel} = this;
+        const promises = this.options.map(option => {
+            return option.setValueAsync(option.name, formModel.values[option.name]);
         });
         await allSettled(promises);
         return XH.prefService.pushPendingAsync();
     }
-
 }

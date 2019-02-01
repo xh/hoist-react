@@ -6,67 +6,84 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {FieldModel} from '@xh/hoist/cmp/form';
-import {HoistInput} from '@xh/hoist/cmp/input';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
+import {isFunction} from 'lodash';
+
 
 /**
- * Combines a HoistInput, a FieldModel and additional properties for display within the XH Options Dialog.
+ * Options specification for global options dialog.
  *
- * By default, expects `name` (from FieldModel) to match an existing preference key. The options
- * dialog will automatically bind the control to that preference when opening and saving.
- *
- * Alternatively, you can provide valueGetter and valueSetter functions if you don't want to
- * bind the control directly to a preference, or need to do pre-processing. Note that both
- * valueGetter and valueSetter are required when not bound to a preference.
+ * Option can automatically be bound to a preference.  Alternatively, you can provide valueGetter and
+ * valueSetter functions if you don't want to bind the control directly to a preference, or need to do
+ * pre-processing.
  *
  * Applications will typically specify AppOption configurations in HoistAppModel.getAppOptions()
  */
 export class AppOption {
 
+    name;
+    prefName;
     fieldModel;
-    control;
+    formField;
     valueGetter;
     valueSetter;
     refreshRequired;
 
     /**
      * @param {Object} c - AppOption configuration.
-     * @param {FieldModel|Object} c.fieldModel - FieldModel for the option.
-     * @param {Object} c.control - HoistInput component used to manage the option.
+     * @param {Object} c.name - name for the option
+     * @param {Object} [c.prefName] - prefName to bind to the option to.
+     * @param {Object} c.formField - config for FormField for the option.
+     * @param {Object} [c.fieldModel] - Config for FieldModel for the option.
+     * @param {Object} [c.fieldModel] - config for FieldModel for the option.
      * @param {function} [c.valueGetter] - async function which returns the external value.
      * @param {function} [c.valueSetter] - async function which sets the external value. Receives (value).
-     * @param {boolean} [c.refreshRequired] - true to refresh the app after changing this option.
+     * @param {boolean}  [c.refreshRequired] - true to refresh the app after changing this option.
      */
     constructor({
+        name,
+        prefName,
+        formField,
         fieldModel,
-        control,
         valueGetter,
         valueSetter,
         refreshRequired = false
     }) {
-        // Ensure field model is present and instantiated
-        throwIf(!fieldModel, 'AppOption requires a FieldModel');
-        fieldModel = fieldModel instanceof FieldModel ? fieldModel : new FieldModel(fieldModel);
-        const {name} = fieldModel;
 
-        // Ensure control is present and a HoistInput
-        const extendsHoistInput = control && control.type.prototype instanceof HoistInput;
-        throwIf(!extendsHoistInput, `AppOption "${name}"'s control must be a component that extends HoistInput.`);
+        throwIf(
+            !(prefName && XH.prefService.hasKey(prefName)) && !(valueGetter && valueSetter),
+            'Must specify either a valid prefName or provide a valueGetter and valueSetter.'
+        );
 
-        // Ensure is either bound to a preference OR has valueGetter and valueSetter
-        if (!XH.prefService.hasKey(name)) {
-            throwIf(!valueGetter || !valueSetter, `AppOption "${name}" is not a recognized preference. Please update or provide a valueGetter and valueSetter.`);
-        }
+        warnIf(
+            fieldModel && fieldModel.initialValue,
+            `AppOption "${name}" should not set an initialValue - this will be ignored.`
+        );
 
-        // Initial value will be ignored, instead read from preference or valueGetter
-        warnIf(fieldModel.initialValue, `AppOption "${name}" should not set an initialValue - this will be ignored.`);
-
+        this.name = name;
+        this.prefName = prefName;
         this.fieldModel = fieldModel;
-        this.control = control;
+        this.formField = formField;
         this.valueGetter = valueGetter;
         this.valueSetter = valueSetter;
         this.refreshRequired = refreshRequired;
     }
 
+    async getValueAsync(name) {
+        const {valueGetter, prefName} = this;
+        if (isFunction(valueGetter)) {
+            return await valueGetter();
+        } else {
+            return XH.prefService.get(prefName);
+        }
+    }
+
+    async setValueAsync(name, value) {
+        const {valueSetter, prefName} = this;
+        if (isFunction(valueSetter)) {
+            await valueSetter(value);
+        } else {
+            XH.prefService.set(prefName, value);
+        }
+    }
 }

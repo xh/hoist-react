@@ -6,10 +6,10 @@
  */
 
 import {Component} from 'react';
-import {PropTypes as PT} from 'prop-types';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {button, Button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
+import {withDefault} from '@xh/hoist/utils/js';
 
 /**
  * Convenience Button preconfigured for use as a trigger for opening the XH options dialog.
@@ -20,28 +20,17 @@ import {Icon} from '@xh/hoist/icon';
 export class OptionsButton extends Component {
 
     static propTypes = {
-        icon: PT.element,
-        title: PT.string,
-        onClick: PT.func
+        ...Button.propTypes
     };
 
     render() {
-        if (!XH.acm.optionsDialogModel.hasOptions) return null;
-        const {icon, onClick, ...rest} = this.props;
+        const {icon, title, onClick, ...rest} = this.props;
         return button({
-            icon: icon || Icon.gear(),
-            title: this.title || 'Options',
-            onClick: onClick || this.onOptionsClick,
+            icon: withDefault(icon, Icon.gear()),
+            title: withDefault(title, 'Options'),
+            onClick: withDefault(onClick, () => XH.showOptionsDialog()),
             ...rest
         });
     }
-
-    //---------------------------
-    // Implementation
-    //---------------------------
-    onOptionsClick = () => {
-        XH.showOptionsDialog();
-    }
-
 }
 export const optionsButton = elemFactory(OptionsButton);

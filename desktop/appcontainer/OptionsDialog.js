@@ -34,7 +34,7 @@ export class OptionsDialog extends Component {
             icon: Icon.gear(),
             style: {width: 400},
             isOpen: true,
-            onClose: this.onCloseClick,
+            onClose: () => model.hide(),
             canOutsideClickClose: false,
             item: [
                 panel({
@@ -43,49 +43,34 @@ export class OptionsDialog extends Component {
                         form({
                             model: formModel,
                             fieldDefaults: {minimal: true, inline: true},
-                            items: model.options.map(it => this.renderControl(it))
+                            items: model.options.map(option => {
+                                return formField({field: option.name, ...option.formField});
+                            })
                         })
                     ),
                     bbar: toolbar(
                         button({
                             disabled: !formModel.isDirty,
                             text: 'Reset',
-                            onClick: this.onResetClick
+                            onClick: () => formModel.reset()
                         }),
                         filler(),
                         button({
                             text: 'Cancel',
-                            onClick: this.onCloseClick
+                            onClick: () => model.hide()
                         }),
                         button({
                             disabled: !formModel.isDirty,
                             text: requiresRefresh ? 'Save & Reload' : 'Save',
                             icon: requiresRefresh ? Icon.refresh() : Icon.check(),
                             intent: 'success',
-                            onClick: this.onSaveClick
+                            onClick: () => model.saveAsync()
                         })
                     )
                 })
             ]
         });
     }
-
-    renderControl(cfg) {
-        const {fieldModel, control} = cfg;
-        return formField({field: fieldModel.name, item: control});
-    }
-
-    onResetClick = () => {
-        this.model.formModel.reset();
-    };
-
-    onSaveClick = () => {
-        this.model.saveAsync();
-    };
-
-    onCloseClick = () => {
-        this.model.hide();
-    };
 }
 
 export const optionsDialog = elemFactory(OptionsDialog);

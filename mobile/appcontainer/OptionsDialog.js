@@ -33,12 +33,16 @@ export class OptionsDialog extends Component {
             icon: Icon.gear(),
             className: 'xh-options-dialog',
             isOpen: true,
-            onCancel: this.onCloseClick,
+            onCancel: () => model.hide(),
             content: [
                 mask({model: loadModel, spinner: true}),
                 form({
                     model: formModel,
-                    item: vframe(...model.options.map(it => this.renderControl(it)))
+                    item: vframe(
+                        ...model.options.map(option => {
+                            return formField({field: option.name, ...option.formField});
+                        })
+                    )
                 })
             ],
             buttons: [
@@ -46,40 +50,22 @@ export class OptionsDialog extends Component {
                     disabled: !formModel.isDirty,
                     text: 'Reset',
                     modifier: 'quiet',
-                    onClick: this.onResetClick
+                    onClick: () => formModel.reset()
                 }),
                 filler(),
                 button({
                     text: 'Cancel',
                     modifier: 'quiet',
-                    onClick: this.onCloseClick
+                    onClick: () => model.hide()
                 }),
                 button({
                     disabled: !formModel.isDirty,
                     text: 'Save',
                     icon: requiresRefresh ? Icon.refresh() : Icon.check(),
-                    onClick: this.onSaveClick
+                    onClick: () => model.saveAsync()
                 })
             ]
         });
     }
-
-    renderControl(cfg) {
-        const {fieldModel, control} = cfg;
-        return formField({field: fieldModel.name, item: control});
-    }
-
-    onResetClick = () => {
-        this.model.formModel.reset();
-    }
-
-    onSaveClick = () => {
-        this.model.saveAsync();
-    }
-
-    onCloseClick = () => {
-        this.model.hide();
-    }
 }
-
 export const optionsDialog = elemFactory(OptionsDialog);
