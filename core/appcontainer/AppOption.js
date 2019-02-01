@@ -49,8 +49,7 @@ export class AppOption {
         valueSetter,
         refreshRequired = false
     }) {
-
-        throwIf(
+        warnIf(
             !(prefName && XH.prefService.hasKey(prefName)) && !(valueGetter && valueSetter),
             'Must specify either a valid prefName or provide a valueGetter and valueSetter.'
         );
