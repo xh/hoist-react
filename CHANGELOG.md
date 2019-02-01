@@ -1,5 +1,53 @@
 # Changelog
 
+## v19.0.0-SNAPSHOT (unreleased / under development)
+
+### 🎁 New Features
+
+* Added a new architecture for signaling the need to load / refresh new data across either the
+  entire app or a section of the component hierarchy. This new system relies on React context to
+  minimizes the need for explicit application wiring, and improves support for auto-refresh. See
+  newly added decorator `@LoadSupport` and classes/components `RefreshContext`,
+  `RefreshContextModel`, and `RefreshContextView` for more info.
+
+* `TabContainerModel` and `TabModel` now support `refreshMode` and `renderMode` configs to allow
+  better control over how inactive tabs are mounted/unmounted and how tabs handle refresh requests
+  when hidden or (re)activated.
+
+### 💥 Breaking Changes
+
+* `HoistAppModel.requestRefresh` and `TabContainerModel.requestRefresh` have been removed.
+  Applications should use the new Refresh architecture described above instead.
+
+* `tabRefreshMode` on TabContainer has been renamed `renderMode`.
+
+* `TabModel.reloadOnShow` has been removed. Set the `refreshMode` property on TabContainerModel or
+  TabModel to `TabRefreshMode.ON_SHOW_ALWAYS` instead.
+
+* The mobile APIs for `TabContainerModel`, `TabModel`, and `RefreshButton` have been rewritten to
+  more closely mirror the desktop API.
+
+### 🐞 Bug Fixes
+
+* SwitchInput and RadioInput now properly highlight validation errors in `minimal` mode.
+
+## v18.1.2 - 2019-01-30
+
+### 🐞 Bug Fixes
+
+* Grid integrations relying on column visibility (namely export, storeFilterField) now correctly
+  consult updated column state from GridModel. #935
+* Ensure `FieldModel.initialValue` is observable to ensure that computed dirty state (and any other
+  derivations) are updated if it changes. #934
+* Fixes to ensure Admin console log viewer more cleanly handles exceptions (e.g. attempting to
+  auto-refresh on a log file that has been deleted).
+
+## v18.1.1 - 2019-01-29
+
+* Grid cell padding can be controlled via a new set of CSS vars and is reduced by default for grids
+  in compact mode.
+* The `addRecordAsync()` and `saveRecordAsync()` methods on `RestStore` return the updated record.
+
 ## v18.1.0 - 2019-01-28
 
 ### 🎁 New Features
@@ -34,30 +82,6 @@
 * mobx `5.8 -> 5.9`
 * react-select `2.2 -> 2.3`
 * Other patch updates
-
-
-
-### 🎁 New Features
-* A new architecture for application loading/refreshing has been added.  The new architectures relies on
- React context to minimizes the need for explicit application wiring, and improves support for 
- auto-refresh. See `LoadSupport`, `RefreshContext`, `RefreshContextModel`, and `RefreshContextView` for more info.
-
-* `TabContainerModel` and `TabModel` now support `refreshMode` and `renderMode` preperties to allow
-fine-grained handling of the refreshing and mounting/unmounting of hidden tabs.
-
-
-### 💥 Breaking Changes
-* `HoistAppModel.requestRefresh` and `TabContainerModel.requestRefresh` have been removed.  
-Applications should use the new Refresh architecture described above instead.
-
-* `tabRefreshMode` on TabContainer has been renamed `renderMode`.
-
-* `TabModel.reloadOnShow` has been removed.  Set the `refreshMode` property on 
-TabContainerModel/TabModel to 'onShowAlways' instead.
-
-* The mobile APIs for `TabContainerModel`, `TabModel`,  and `RefreshButton` have been rewritten
-to more closely mirror the desktop API.
-
 
 ## v18.0.0 - 2019-01-15
 

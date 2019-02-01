@@ -26,9 +26,10 @@ export class VisitsChartModel {
     chartModel = new ChartModel({
         config: {
             chart: {type: 'column'},
-            legend: {
-                enabled: false
+            plotOptions: {
+                column: {animation: false}
             },
+            legend: {enabled: false},
             title: {text: null},
             xAxis: {
                 type: 'datetime',

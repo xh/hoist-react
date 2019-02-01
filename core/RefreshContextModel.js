@@ -15,8 +15,8 @@ import {pull} from 'lodash';
  * actions to load and display updated data. Calling `refreshAsync()` on this model will cause it to
  * trigger a refresh on all linked models within the graphical hierarchy it contains.
  *
- * A global instance of this class is provided by the framework as `XH.refreshContextModel`. Apps can
- * create additional sub-contexts using a RefreshContextView.
+ * A global instance of this class is provided by the framework as `XH.refreshContextModel`. Apps
+ * can create additional sub-contexts using a RefreshContextView.
  *
  * Note that TabContainer automatically establishes separate refresh contexts for its tabs and uses
  * these to implement efficient refresh handling of inactive and not-yet-rendered tabs. See the

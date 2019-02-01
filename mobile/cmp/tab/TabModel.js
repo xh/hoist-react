@@ -19,20 +19,20 @@ export class TabModel {
     label = null;
     icon = null;
 
-    containerModel = null;
-
-    @managed
-    refreshContextModel = null;
+    containerModel;
+    @managed refreshContextModel;
 
     /**
      * @param {Object} c - TabModel configuration.
      * @param {string} c.id - unique ID within its container.
-     * @param {TabContainerModel} c.containerModel - owner TabContainerModel.
+     * @param {TabContainerModel} c.containerModel - parent TabContainerModel. Provided by the
+     *      container when constructing these models - no need to specify manually.
      * @param {function} c.pageFactory - element factory for page component.
      * @param {Object} [c.pageProps] - props to passed to page upon creation
      * @param {String} c.label - text to be displayed in the Tabbar.
      * @param {Icon} [c.icon] - icon to be displayed in the Tabbar.
-     * @param {string} [c.tabRefreshMode] - how to refresh hidden tabs - [always|skipHidden|onShowLazy|onShowAlways].
+     * @param {TabRefreshMode} [c.refreshMode] - strategy for refreshing this tab. If null, will
+     *      default to its container's mode. See the enum for a description of the supported modes.
      */
     constructor({
         id,
@@ -53,7 +53,9 @@ export class TabModel {
         this.refreshContextModel = new TabRefreshContextModel(this);
     }
 
-    get refreshMode()    {return this._refreshMode || this.containerModel.refreshMode}
+    get refreshMode() {
+        return this._refreshMode || this.containerModel.refreshMode;
+    }
 
     get isActive() {
         return this.containerModel.activeTabId === this.id;

@@ -75,7 +75,7 @@ export class TabContainer extends Component {
                     }
 
                     return div({
-                        className: 'xh-tab-panel',
+                        className: 'xh-tab-wrapper',
                         style,
                         item: tab({model: tabModel})
                     });
