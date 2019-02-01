@@ -40,7 +40,7 @@ export class TabModel {
      * @param {Object} c.content - content to be rendered by this Tab. Component class or a custom
      *      element factory of the form returned by elemFactory.
      * @param {?string} [c.renderMode] - how to render hidden tabs - [always|lazy|unmountOnHide].
-     * @param {?string} [c.refreshMode] - how to refresh hidden tabs - [always|skipHidden|onShowLazy|onShowAlways].
+     * @param {?TabRefreshMode} [c.refreshMode] - how to refresh hidden tabs - [always|skipHidden|onShowLazy|onShowAlways].
      */
     constructor({
         id,

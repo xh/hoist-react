@@ -27,9 +27,9 @@ export function HoistModel(C) {
         /**
          * Load or compute new / updated data for this model.
          *
-         * @param {Object} [c]
-         * @param {boolean} [c.isRefresh] - true if this load was triggered by a refresh.
-         * @param {boolean} [c.isAutoRefresh] - true if this load was triggered by a programmatic
+         * @param {Object} [opts]
+         * @param {boolean} [opts.isRefresh] - true if this load was triggered by a refresh.
+         * @param {boolean} [opts.isAutoRefresh] - true if this load was triggered by a programmatic
          *      refresh process, rather than a user action.
          */
         loadAsync({isRefresh = false, isAutoRefresh = false} = {}) {
@@ -42,8 +42,8 @@ export function HoistModel(C) {
          * This method delegates to loadAsync() and should not typically be overridden/implemented.
          * Instances of HoistModel should implement loadAsync() instead.
          *
-         * @param {Object} [c]
-         * @param {boolean} [c.isAutoRefresh] - true if this load was triggered by a programmatic
+         * @param {Object} [opts]
+         * @param {boolean} [opts.isAutoRefresh] - true if this load was triggered by a programmatic
          *      refresh process, rather than a user action.
          */
         refreshAsync({isAutoRefresh = false} = {}) {

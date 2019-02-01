@@ -10,8 +10,6 @@ import {HoistComponent, elemFactory, LoadSupport, RefreshContextModel, RefreshCo
 
 const refreshContextProvider = elemFactory(RefreshContext.Provider);
 
-@HoistComponent
-@LoadSupport
 /**
  * Establishes an area of the application with an independent RefreshContext and RefreshContextModel.
  *
@@ -21,6 +19,8 @@ const refreshContextProvider = elemFactory(RefreshContext.Provider);
  * @see RefreshContext
  * @see RefreshContextModel
  */
+@HoistComponent
+@LoadSupport
 export class RefreshView extends Component {
 
     static propTypes = {

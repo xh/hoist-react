@@ -6,6 +6,7 @@
  */
 import {HoistModel, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
+import {TabRefreshMode} from '@xh/hoist/enums/tab';
 import {find, uniqBy} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
 import {TabModel} from './TabModel';
@@ -13,8 +14,8 @@ import {TabModel} from './TabModel';
 /**
  * Model for a TabContainer, representing its layout/contents and the currently displayed Tab.
  *
- * This object provides support for routing based navigation, managed mounting/unmounting of
- * inactive tabs, and lazy refreshing of its active Tab.
+ * This object provides support for routing based navigation, customizable mounting/unmounting of
+ * inactive tabs, and customizable, managed refreshing of tabs via a built-in RefreshContext.
  */
 @HoistModel
 export class TabContainerModel {
@@ -34,7 +35,7 @@ export class TabContainerModel {
     /** How should this container render hidden tabs? */
     tabRenderMode = null;
 
-    /** How should this container refresh hidden tabs? */
+    /** @member {?TabRefreshMode} - How should this container refresh hidden tabs? */
     tabRefreshMode = null;
 
     /**
@@ -45,14 +46,16 @@ export class TabContainerModel {
      * @param {?string} [c.route] - base route name for this container. If set, this container will
      *      be route-enabled, with the route for each tab being "[route]/[tab.id]".
      * @param {?string} [c.renderMode] - how to render hidden tabs - [always|lazy|unmountOnHide].
-     * @param {?string} [c.refreshMode] - how to refresh hidden tabs - [always|skipHidden|onShowLazy|onShowAlways].
+     * @param {?TabRefreshMode} [c.refreshMode] - strategy for refreshing a tab when hidden /
+     *      activated via its built-in RefreshContextView. Can be overridden at the per-tab
+     *      level via the corresponding `TabModel.refreshMode` config.
      */
     constructor({
         tabs,
         defaultTabId = null,
         route = null,
         renderMode = 'lazy',
-        refreshMode = 'onShowLazy'
+        refreshMode = TabRefreshMode.ON_SHOW_LAZY
     }) {
 
         tabs = tabs.filter(p => !p.omit);

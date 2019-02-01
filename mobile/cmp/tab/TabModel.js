@@ -32,7 +32,7 @@ export class TabModel {
      * @param {Object} [c.pageProps] - props to passed to page upon creation
      * @param {String} c.label - text to be displayed in the Tabbar.
      * @param {Icon} [c.icon] - icon to be displayed in the Tabbar.
-     * @param {string} [c.tabRefreshMode] - how to refresh hidden tabs - [always|skipHidden|onShowLazy|onShowAlways].
+     * @param {string} [c.refreshMode] - how to refresh hidden tabs - [always|skipHidden|onShowLazy|onShowAlways].
      */
     constructor({
         id,

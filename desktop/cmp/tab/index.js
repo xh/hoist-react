@@ -8,3 +8,4 @@ export * from './TabContainer';
 export * from './TabModel';
 export * from './TabContainerModel';
 export * from './TabSwitcher';
+export * from '../../../enums/tab';

@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
+import {TabRefreshMode} from '@xh/hoist/enums/tab';
 import {action, computed, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {uniqBy, find} from 'lodash';
@@ -37,12 +38,14 @@ export class TabContainerModel {
      * @param {Object[]} c.tabs - configs for TabModels to be displayed.
      * @param {string} [c.defaultTabId] - ID of Tab to be shown initially.
      *      If not set, will default to first tab in the provided collection.
-     * @param {string} [c.refreshMode] - how to refresh hidden tabs - [always|skipHidden|onShowLazy|onShowAlways].
+     * @param {?TabRefreshMode} [c.refreshMode] - strategy for refreshing a tab when hidden /
+     *      activated via its built-in RefreshContextView. Can be overridden at the per-tab
+     *      level via the corresponding `TabModel.refreshMode` config.
      */
     constructor({
         tabs,
         defaultTabId,
-        refreshMode = 'onShowLazy'
+        refreshMode = TabRefreshMode.ON_SHOW_LAZY
     }) {
         tabs = tabs.filter(p => !p.omit);
         throwIf(tabs.length == 0, 'TabContainerModel needs at least one child.');

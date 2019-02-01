@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {RefreshContextModel} from '@xh/hoist/core';
+import {TabRefreshMode} from '@xh/hoist/enums/tab';
 
 /**
  * @private
@@ -26,11 +27,11 @@ export class TabRefreshContextModel extends RefreshContextModel {
         const {tabModel} = this,
             mode = tabModel.refreshMode;
 
-        if (tabModel.isActive || mode == 'always') {
+        if (tabModel.isActive || mode == TabRefreshMode.ALWAYS) {
             return super.refreshAsync({isAutoRefresh});
         }
 
-        if (mode == 'onShowLazy') {
+        if (mode == TabRefreshMode.ON_SHOW_LAZY) {
             this.refreshPending = true;
         }
     }
@@ -38,9 +39,9 @@ export class TabRefreshContextModel extends RefreshContextModel {
     noteActiveChanged(isActive) {
         if (isActive) {
             const mode = this.tabModel.refreshMode;
-            if (mode == 'onShowAlways') {
+            if (mode == TabRefreshMode.ON_SHOW_ALWAYS) {
                 super.refreshAsync();
-            } else if (mode == 'onShowLazy' && this.refreshPending) {
+            } else if (TabRefreshMode.ON_SHOW_LAZY && this.refreshPending) {
                 this.refreshPending = false;
                 super.refreshAsync();
             }
