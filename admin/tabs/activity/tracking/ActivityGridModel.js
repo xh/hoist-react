@@ -93,7 +93,7 @@ export class ActivityGridModel {
             newEnd = end[dir](incr, 'days');
 
         if (newEnd.diff(today, 'days') > 0 || toToday) {
-            newStart = today.clone().subtract(diff, 'days');
+            newStart = today.clone().subtract(Math.abs(diff), 'days');
             newEnd = today;
         }
 
