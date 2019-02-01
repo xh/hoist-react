@@ -47,8 +47,8 @@ export class AppBar extends Component {
         /** True to hide the AppMenuButton. */
         hideAppMenuButton: PT.bool,
 
-        /** Props to pass to the AppMenuButton. */
-        appMenuProps: PT.object
+        /** Options to pass to the AppMenuButton. */
+        appMenuButtonOptions: PT.object
     };
 
     baseClassName = 'xh-appbar';
@@ -61,7 +61,7 @@ export class AppBar extends Component {
             rightItems,
             hideRefreshButton,
             hideAppMenuButton,
-            appMenuProps = {}
+            appMenuButtonOptions = {}
         } = this.props;
 
         return navbar({
@@ -86,7 +86,7 @@ export class AppBar extends Component {
                         }),
                         appMenuButton({
                             omit: hideAppMenuButton,
-                            ...appMenuProps
+                            ...appMenuButtonOptions
                         })
                     ]
                 })
@@ -94,5 +94,4 @@ export class AppBar extends Component {
         });
     }
 }
-
 export const appBar = elemFactory(AppBar);
