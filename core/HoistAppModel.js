@@ -34,7 +34,19 @@ export function HoistAppModel(C) {
          */
         getRoutes() {
             return [];
+        },
+
+        /**
+         * Provide a list of app-wide options to be displayed in the app's Options Dialog,
+         * accessible from the default AppBar menu when this method returns non-empty.
+         *
+         * @returns {Object[]} - AppOption configs
+         * @see AppOption
+         */
+        getAppOptions() {
+            return [];
         }
+
     });
 
     return C;
