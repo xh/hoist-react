@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {HoistModel, managed} from '@xh/hoist/core';
 import {TabRefreshMode} from '@xh/hoist/enums';
 import {action, computed, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
