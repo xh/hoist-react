@@ -66,7 +66,13 @@ export class TabContainerModel {
         
         this.route = route;
         if (route) {
-            this.addReaction(this.routerReaction());
+            this.addReaction({
+                track: () => XH.routerState,
+                run: this.syncWithRouter
+            });
+            // Need to do call below seperately instead of w/fireImmediately to avoid react warning (!?)
+            // (Occurs when routing immediately on load to secondary tab in nested tab set)
+            this.syncWithRouter();
         }
     }
 
@@ -111,25 +117,19 @@ export class TabContainerModel {
         this.activeTabId = id;
     }
 
-    routerReaction() {
-        return {
-            track: () => XH.routerState,
-            run: () => {
-                const {tabs, route} = this,
-                    {router} = XH;
+    syncWithRouter() {
+        const {tabs, route} = this,
+            {router} = XH;
 
-                if (router.isActive(route)) {
-                    const activateTab = tabs.find(tab => {
-                        return router.isActive(route + '.' + tab.id) && !tab.isActive && !tab.disabled;
-                    });
+        if (router.isActive(route)) {
+            const activateTab = tabs.find(tab => {
+                return router.isActive(route + '.' + tab.id) && !tab.isActive && !tab.disabled;
+            });
 
-                    if (activateTab) {
-                        this.setActiveTabId(activateTab.id);
-                    }
-                }
-            },
-            fireImmediately: true
-        };
+            if (activateTab) {
+                this.setActiveTabId(activateTab.id);
+            }
+        }
     }
 
 }
