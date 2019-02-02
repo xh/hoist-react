@@ -1,3 +1,11 @@
 .xh-radio-input.bp3-control.bp3-inline {
-  margin-right: var(--xh-pad-double-px);
+    margin-right: var(--xh-pad-double-px);
+}
+
+.xh-input-invalid .xh-radio-input .bp3-control-indicator {
+  border: var(--xh-form-field-invalid-border);
+
+  &::before {
+    margin: -1px;
+  }
 }

@@ -4,6 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+export * from './AppMenuButton';
 export * from './Button';
 export * from './ButtonGroup';
 export * from './ColChooserButton';
@@ -11,6 +12,7 @@ export * from './ExportButton';
 export * from './FeedbackButton';
 export * from './LaunchAdminButton';
 export * from './LogoutButton';
+export * from './OptionsButton';
 export * from './RefreshButton';
 export * from './RestoreDefaultsButton';
 export * from './ThemeToggleButton';
