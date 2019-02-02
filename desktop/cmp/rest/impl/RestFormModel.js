@@ -27,6 +27,8 @@ export class RestFormModel {
     @managed
     @observable formModel = null;
 
+    @observable types = {};
+
     get actionWarning()     {return this.parent.actionWarning}
     get actions()           {return this.parent.formActions}
     get editors()           {return this.parent.editors}
@@ -93,10 +95,27 @@ export class RestFormModel {
         this.isAdd = !rec;
         this.isOpen = true;
         const fields = this.editors.map(editor => this.fieldModelConfig(editor));
-        this.formModel = new FormModel({
+        const formModel = this.formModel = new FormModel({
             fields,
             initialValues: rec,
             readonly: this.parent.readonly || this.readonly
+        });
+
+        // Compute types. Then monitor form for changes to dynamic types
+        this.editors.forEach(e => this.calcType(e.field));
+        const dynamicTypeFields = this.store.fields.filter(it => it.typeField);
+        dynamicTypeFields.forEach(f => {
+            const source = formModel.fields[f.typeField],
+                target = formModel.fields[f.name];
+            if (source && target) {
+                formModel.addReaction({
+                    track: () => source.value,
+                    run: () => {
+                        target.setValue(null);
+                        this.calcType(target.name);
+                    }
+                });
+            }
         });
     }
 
@@ -123,27 +142,26 @@ export class RestFormModel {
             readonly: restField.editable === false || (restField.editable === 'onAdd' && !this.isAdd),
             initialValue: restField.defaultValue
         }, editor.fieldModel);
-
     }
 
     //-------------------------
     // Helpers
     //-------------------------
-    getType(name) {
-        const restField = this.store.getField(name);
-        return restField.typeField ? this.getDynamicType(restField.typeField) : restField.type;
+    calcType(fieldName) {
+        const restField = this.store.getField(fieldName);
+        this.types[fieldName] = restField.typeField ? this.getDynamicType(restField.typeField) : restField.type;
     }
 
     getDynamicType(typeField) {
         // Favor (observable) value in form itself, if present!
-        const {record, store} = this.parent,
+        const {currentRecord, store} = this,
             field = store.getField(typeField),
             formField = this.formModel.fields[typeField];
         let rawType = null;
         if (formField) {
             rawType = formField.value;
-        } else if (record && field) {
-            rawType = record[field.name];
+        } else if (currentRecord && field) {
+            rawType = currentRecord[field.name];
         }
 
         switch (rawType) {

@@ -44,10 +44,10 @@ export class RestFormField extends Component {
     renderDefaultInput() {
         const {model} = this,
             name = this.props.editor.field,
-            type = model.getType(name),
+            type = model.types[name],
             storeField = model.store.getField(name),
             fieldModel = model.formModel.fields[name];
-
+        
         if (storeField.lookup) {
             return this.renderSelect({
                 options: [...storeField.lookup],

@@ -8,6 +8,7 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import {boolCheckCol} from '@xh/hoist/cmp/grid';
 import {RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 import {ConfigDifferModel} from './differ/ConfigDifferModel';
+import {textArea} from '@xh/hoist/desktop/cmp/input';
 
 @HoistModel
 export class ConfigModel {
@@ -86,7 +87,7 @@ export class ConfigModel {
             {field: 'valueType'},
             {field: 'value'},
             {field: 'clientVisible'},
-            {field: 'note', type: 'textarea'},
+            {field: 'note', formField: {item: textArea({width: 300})}},
             {field: 'lastUpdated'},
             {field: 'lastUpdatedBy'}
         ]
