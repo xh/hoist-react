@@ -98,10 +98,7 @@ export class RestGridModel {
      * @param {string} [unit] - name that describes records in this grid.
      * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
      * @param {function} [enhanceToolbar] - a function used to mutate RestGridToolbar items
-     * @param {Object[]} editors - FieldModel configs representing Fields to be edited in the editor form, enhanced with
-     *      an optional 'fieldModel' and 'formField' properties.  The additional properties can be used to
-     *      supply custom configuration for the model and display of the editor to be used. These configs will be
-     *      layered on top of the default config used by this object to render its editors.
+     * @param {RestGridEditor[]} editors - specifications for fields to be displayed in editor form.
      * @param {*} ...rest - arguments for GridModel.
      */
     constructor({
@@ -220,3 +217,13 @@ export class RestGridModel {
         return this.gridModel.exportAsync(...args);
     }
 }
+
+/**
+ * @typedef {Object} RestGridEditor
+ * @property {String} field - name of field to appear in the editor form.  Should correspond to member in
+ *      the store's Fields collection.
+ * @property {Object} formField - partial config for FormField to be used to display this field.  Used to specify
+ *      control to be used for this Field.
+ * @property {Object} [fieldModel] - partial config for underlying FieldModel to be used for form display.
+ *      May be used for to specify additional validation requirements.
+ */
