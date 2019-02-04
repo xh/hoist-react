@@ -79,7 +79,7 @@ export class RestForm extends Component {
             }),
             filler(),
             button({
-                text: formModel.readonly ? 'Cancel' : 'Close',
+                text: formModel.readonly ? 'Close' : 'Cancel',
                 onClick: () => model.close()
             }),
             button({
