@@ -9,10 +9,18 @@
   minimizes the need for explicit application wiring, and improves support for auto-refresh. See
   newly added decorator `@LoadSupport` and classes/components `RefreshContext`,
   `RefreshContextModel`, and `RefreshContextView` for more info.
-
 * `TabContainerModel` and `TabModel` now support `refreshMode` and `renderMode` configs to allow
   better control over how inactive tabs are mounted/unmounted and how tabs handle refresh requests
   when hidden or (re)activated.
+* Apps can implement `getAppOptions()` in their `AppModel` class to specify a set of app-wide
+  options that should be editable via a new built-in Options dialog. This system includes built-in
+  support for reading/writing options to preferences, or getting/setting their values via custom
+  handlers. The toolkit handles the rendering of the dialog.
+* Standard top-level app buttons - for actions such as launching the new Options dialog, switching
+  themes, launching the admin client, and logging out - have been moved into a new menu accessible
+  from the top-right corner of the app, leaving more space for app-specific controls in the AppBar.
+* `RecordGridModel` now supports an enhanced `editors` configuration that exposes the full set of
+    validation and display support from the Forms package.
 
 ### 💥 Breaking Changes
 
@@ -26,6 +34,9 @@
 
 * The mobile APIs for `TabContainerModel`, `TabModel`, and `RefreshButton` have been rewritten to
   more closely mirror the desktop API.
+
+* The API for `RecordGridModel` editors has changed -- `type` is no longer supported.  Use `fieldModel`
+and `formField` intead. 
 
 ### 🐞 Bug Fixes
 

@@ -26,20 +26,15 @@ export class ConfigPanel extends Component {
         return fragment(
             restGrid({
                 model: model.gridModel,
-                extraToolbarItems: this.extraToolbarItems
+                extraToolbarItems: () => {
+                    return button({
+                        icon: Icon.diff(),
+                        text: 'Compare w/ Remote',
+                        onClick: () => model.differModel.open()
+                    });
+                }
             }),
             configDiffer({model: model.differModel})
         );
-    }
-
-    //-------------------------
-    // Implementation
-    //-------------------------
-    extraToolbarItems() {
-        return button({
-            icon: Icon.diff(),
-            text: 'Compare w/ Remote',
-            onClick: () => this.differModel.open()
-        });
     }
 }

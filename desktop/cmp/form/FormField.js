@@ -54,7 +54,7 @@ export class FormField extends Component {
 
         /**
          * Optional function for use in readonly mode. Called with the Field's current value
-         * and should return a string suitable for presentation to the end-user.
+         * and should return an element suitable for presentation to the end-user.
          */
         readonlyRenderer: PT.func,
 
@@ -87,7 +87,17 @@ export class FormField extends Component {
          * Focus or toggle input when label is clicked.
          * Defaulted from containing Form, or true.
          */
-        clickableLabel: PT.bool
+        clickableLabel: PT.bool,
+
+        /**
+         * Alignment of label text, default 'left'.
+         */
+        labelAlign: PT.oneOf(['left', 'right']),
+
+        /**
+         * Width of the label in pixels
+         */
+        labelWidth: PT.number
     };
 
     baseClassName = 'xh-form-field';
@@ -117,7 +127,9 @@ export class FormField extends Component {
         const inline = this.getDefaultedProp('inline', false),
             minimal = this.getDefaultedProp('minimal', false),
             leftErrorIcon = this.getDefaultedProp('leftErrorIcon', false),
-            clickableLabel = this.getDefaultedProp('clickableLabel', true);
+            clickableLabel = this.getDefaultedProp('clickableLabel', true),
+            labelAlign = this.getDefaultedProp('labelAlign', 'left'),
+            labelWidth = this.getDefaultedProp('labelWidth', null);
 
         // Styles
         const classes = [];
@@ -135,7 +147,11 @@ export class FormField extends Component {
                     omit: !label,
                     className: 'xh-form-field-label',
                     items: [label, requiredStr],
-                    htmlFor: clickableLabel ? idAttr : null
+                    htmlFor: clickableLabel ? idAttr : null,
+                    style: {
+                        textAlign: labelAlign,
+                        width: labelWidth
+                    }
                 }),
                 div({
                     className: this.childIsSizeable ? 'xh-form-field-fill' : '',
@@ -266,7 +282,7 @@ export class FormField extends Component {
             value = fieldModel ? fieldModel['value'] : null,
             renderer = withDefault(this.props.readonlyRenderer, this.defaultReadonlyRenderer);
 
-        return span({
+        return div({
             className: 'xh-form-field-readonly-display',
             item: renderer(value)
         });
@@ -276,7 +292,7 @@ export class FormField extends Component {
         if (isDate(value)) return fmtDate(value);
         if (isFinite(value)) return fmtNumber(value);
         if (isBoolean(value)) return value.toString();
-        return value;
+        return span(value);
     }
 
     getErrorTooltipContent(errors) {

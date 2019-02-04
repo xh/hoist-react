@@ -6,18 +6,18 @@
  */
 
 import {Component} from 'react';
-import PT from 'prop-types';
+import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
 import {toolbarButton} from '@xh/hoist/kit/onsen';
 import {Icon} from '@xh/hoist/icon';
 
 /**
- * Convenience Button preconfigured for use as a trigger for the XH feedback dialog.
+ * Convenience Button preconfigured for use as a trigger for opening the XH options dialog.
  *
  * Can be provided an onClick handler, otherwise will use default action provided by framework.
  */
 @HoistComponent
-export class FeedbackButton extends Component {
+export class OptionsButton extends Component {
 
     static propTypes = {
         icon: PT.element,
@@ -25,10 +25,11 @@ export class FeedbackButton extends Component {
     };
 
     render() {
+        if (!XH.acm.optionsDialogModel.hasOptions) return null;
         const {icon, onClick, ...rest} = this.props;
         return toolbarButton({
-            item: icon || Icon.comment({className: 'fa-flip-horizontal'}),
-            onClick: onClick || this.onFeedbackClick,
+            item: icon || Icon.gear(),
+            onClick: onClick || this.onOptionsClick,
             ...rest
         });
     }
@@ -36,9 +37,9 @@ export class FeedbackButton extends Component {
     //---------------------------
     // Implementation
     //---------------------------
-    onFeedbackClick = () => {
-        XH.showFeedbackDialog();
+    onOptionsClick = () => {
+        XH.showOptionsDialog();
     }
 
 }
-export const feedbackButton = elemFactory(FeedbackButton);
+export const optionsButton = elemFactory(OptionsButton);

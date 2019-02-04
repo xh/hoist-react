@@ -13,6 +13,7 @@ import {div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 
 import {aboutDialog} from './AboutDialog';
 import {feedbackDialog} from './FeedbackDialog';
+import {optionsDialog} from './OptionsDialog';
 import {exceptionDialog} from './ExceptionDialog';
 import {impersonationBar} from './ImpersonationBar';
 import {loginPanel} from './LoginPanel';
@@ -99,6 +100,7 @@ export class AppContainer extends Component {
                     ),
                     mask({model: model.appLoadModel, spinner: true}),
                     messageSource({model: model.messageSourceModel}),
+                    optionsDialog({model: model.optionsDialogModel}),
                     feedbackDialog({model: model.feedbackDialogModel}),
                     aboutDialog({model: model.aboutDialogModel}),
                     this.renderIdleDialog()
