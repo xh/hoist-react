@@ -27,7 +27,11 @@ import './FormField.scss';
  * within that Form's backing `FormModel`. FormField will setup the binding between its child
  * HoistInput and the FieldModel instance and can display validation messages, switch between
  * read-only and disabled variants of its child, and source default props via the parent Form's
- * `fieldDefaults` prop,
+ * `fieldDefaults` prop.
+ *
+ * FormFields can be sized and otherwise customized via standard @LayoutSupport props. They will
+ * adjust their child Inputs to fill their available space (if appropriate given the input type),
+ * so the recommended approach is to specify any sizing on the FormField (as opposed to the Input).
  */
 @HoistComponent
 @LayoutSupport
@@ -39,7 +43,10 @@ export class FormField extends Component {
         /** Property name on bound FormModel from which to read/write data. */
         field: PT.string,
 
-        /** Label for form field. Defaults to Field displayName. Set to null to hide. */
+        /**
+         * Label for form field. Defaults to Field displayName. Set to null to hide.
+         * Can be defaulted from contained Form (specifically, to null to hide all labels).
+         */
         label: PT.string,
 
         /** Additional description or info to be displayed alongside the input control. */
@@ -146,21 +153,24 @@ export class FormField extends Component {
                         width: labelWidth
                     }
                 }),
-                div(
-                    control,
-                    div({
-                        omit: !info,
-                        className: 'xh-form-field-info',
-                        item: info
-                    }),
-                    tooltip({
-                        omit: minimal || !displayNotValid,
-                        openOnTargetFocus: false,
-                        className: 'xh-form-field-error-msg',
-                        item: errors ? errors[0] : null,
-                        content: this.getErrorTooltipContent(errors)
-                    })
-                )
+                div({
+                    className: this.childIsSizeable ? 'xh-form-field-fill' : '',
+                    items: [
+                        control,
+                        div({
+                            omit: !info,
+                            className: 'xh-form-field-info',
+                            item: info
+                        }),
+                        tooltip({
+                            omit: minimal || !displayNotValid,
+                            openOnTargetFocus: false,
+                            className: 'xh-form-field-error-msg',
+                            item: errors ? errors[0] : null,
+                            content: this.getErrorTooltipContent(errors)
+                        })
+                    ]
+                })
             ],
             className: this.getClassName(classes),
             ...this.getLayoutProps()
@@ -186,10 +196,26 @@ export class FormField extends Component {
         return formModel && field ? formModel.fields[field] : null;
     }
 
+    // Label can be provided via props, defaulted from form fieldDefaults ("null" being the expected
+    // use case to hide all labels), or sourced from fieldModel displayName.
     get label() {
-        const {fieldModel} = this,
-            {label} = this.props;
-        return isUndefined(label) ? (fieldModel ? fieldModel.displayName : null) : label;
+        const {fieldModel, form} = this;
+
+        return withDefault(
+            this.props.label,
+            form ? form.fieldDefaults.label : undefined,
+            fieldModel ? fieldModel.displayName : null
+        );
+    }
+
+    get hasSize() {
+        const {width, height, flex} = this.getLayoutProps();
+        return width || height || flex;
+    }
+
+    get childIsSizeable() {
+        const child = this.props.children;
+        return child && child.type.hasLayoutSupport;
     }
 
     getDefaultedProp(name, defaultVal) {
@@ -203,6 +229,7 @@ export class FormField extends Component {
 
     prepareChild({displayNotValid, leftErrorIcon, idAttr, errors, minimal, readonly}) {
         const {fieldModel} = this,
+            layoutProps = this.getLayoutProps(),
             item = this.props.children,
             {propTypes} = item.type;
 
@@ -212,6 +239,21 @@ export class FormField extends Component {
             disabled: fieldModel && fieldModel.disabled,
             id: idAttr
         };
+
+        // If FormField is sized and item doesn't specify its own dimensions,
+        // the item should fill the available size of the FormField.
+        // Note: We explicitly set width / height to null to override defaults.
+        if (this.hasSize && this.childIsSizeable) {
+            if (isUndefined(item.props.width) && isUndefined(item.props.flex)) {
+                overrides.width = null;
+                overrides.flex = 1;
+            }
+
+            if (isUndefined(item.props.height) && layoutProps.height) {
+                overrides.height = null;
+            }
+        }
+        
         if (displayNotValid && propTypes.leftIcon && leftErrorIcon) {
             overrides.leftIcon = Icon.warningCircle();
         }

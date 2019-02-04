@@ -32,7 +32,7 @@ export class RestFormField extends Component {
 
         if (this.isBlankMetaData(name)) return null;
 
-        let config = assign({field: name}, editor.formField);
+        let config = assign({field: name, flex: 1}, editor.formField);
 
         if (!config.item && !config.items) {
             config = {item: this.renderDefaultInput(name), ...config};
@@ -60,13 +60,13 @@ export class RestFormField extends Component {
             case 'bool':
                 return this.renderBoolean(fieldModel);
             case 'number':
-                return numberInput({width: 300});
+                return numberInput();
             case 'json':
-                return jsonInput({width: 300, height: 150});
+                return jsonInput();
             case 'date':
-                return dateInput({width: 300});
+                return dateInput();
             default:
-                return textInput({width: 300});
+                return textInput();
         }
     }
 
@@ -81,7 +81,7 @@ export class RestFormField extends Component {
     }
 
     renderSelect(args) {
-        return select({...args, width: 300});
+        return select({...args});
     }
 
     isBlankMetaData(name) {
