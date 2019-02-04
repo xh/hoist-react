@@ -81,7 +81,7 @@ export class TextInput extends HoistInput {
 
     render() {
         const props = this.getNonLayoutProps(),
-            {width, ...layoutProps} = this.getLayoutProps();
+            {width, flex, ...layoutProps} = this.getLayoutProps();
 
         return div({
             item: inputGroup({
@@ -103,13 +103,17 @@ export class TextInput extends HoistInput {
                 style: {
                     ...props.style,
                     ...layoutProps,
-                    width: withDefault(width, 200),
                     textAlign: withDefault(props.textAlign, 'left')
                 },
 
                 onChange: this.onChange,
                 onKeyPress: this.onKeyPress
             }),
+
+            style: {
+                width: withDefault(width, 200),
+                flex: withDefault(flex, null)
+            },
 
             onBlur: this.onBlur,
             onFocus: this.onFocus

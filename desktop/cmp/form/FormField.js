@@ -138,7 +138,7 @@ export class FormField extends Component {
                     htmlFor: clickableLabel ? idAttr : null
                 }),
                 div({
-                    className: control.type.hasLayoutSupport ? 'xh-form-field-fill' : '',
+                    className: this.childIsSizeable ? 'xh-form-field-fill' : '',
                     items: [
                         control,
                         div({
@@ -192,6 +192,16 @@ export class FormField extends Component {
         );
     }
 
+    get hasSize() {
+        const {width, height, flex} = this.getLayoutProps();
+        return width || height || flex;
+    }
+
+    get childIsSizeable() {
+        const child = this.props.children;
+        return child && child.type.hasLayoutSupport;
+    }
+
     getDefaultedProp(name, defaultVal) {
         const {form} = this;
         return withDefault(
@@ -214,16 +224,18 @@ export class FormField extends Component {
             id: idAttr
         };
 
-        // Item should fill the available size of the FormField, unless dimensions are specified.
+        // If FormField is sized and item doesn't specify its own dimensions,
+        // the item should fill the available size of the FormField.
         // Note: We explicitly set width / height to null to override defaults.
-        if (!item.props.width && !item.props.flex) {
-            overrides.width = null;
-            overrides.flex = 1;
-        }
+        if (this.hasSize && this.childIsSizeable) {
+            if (!item.props.width && !item.props.flex) {
+                overrides.width = null;
+                overrides.flex = 1;
+            }
 
-        // Only unset height if FormField has a specified height - otherwise, use defaults.
-        if (!item.props.height && layoutProps.height) {
-            overrides.height = null;
+            if (!item.props.height && layoutProps.height) {
+                overrides.height = null;
+            }
         }
         
         if (displayNotValid && propTypes.leftIcon && leftErrorIcon) {
