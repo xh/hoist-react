@@ -94,7 +94,7 @@ export class MonitorEditorPanel extends Component {
             {field: 'failThreshold'},
             {field: 'metricUnit'},
             {field: 'params'},
-            {field: 'notes', formField: {item: textArea({width: 300})}},
+            {field: 'notes', formField: {item: textArea()}},
             {field: 'active'},
             {field: 'sortOrder'},
             {field: 'lastUpdated'},

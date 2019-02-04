@@ -68,7 +68,7 @@ export class FeedbackPanel extends Component {
         ],
         editors: [
             {field: 'username'},
-            {field: 'msg', formField: {item: textArea({width: 300})}},
+            {field: 'msg', formField: {item: textArea()}},
             {field: 'browser'},
             {field: 'device'},
             {field: 'appVersion'},
