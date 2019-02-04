@@ -244,12 +244,12 @@ export class FormField extends Component {
         // the item should fill the available size of the FormField.
         // Note: We explicitly set width / height to null to override defaults.
         if (this.hasSize && this.childIsSizeable) {
-            if (!item.props.width && !item.props.flex) {
+            if (isUndefined(item.props.width) && isUndefined(item.props.flex)) {
                 overrides.width = null;
                 overrides.flex = 1;
             }
 
-            if (!item.props.height && layoutProps.height) {
+            if (isUndefined(item.props.height) && layoutProps.height) {
                 overrides.height = null;
             }
         }
