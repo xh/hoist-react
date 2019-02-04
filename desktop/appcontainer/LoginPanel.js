@@ -53,7 +53,8 @@ export class LoginPanel extends Component {
                             autoFocus: true,
                             commitOnChange: true,
                             onKeyPress: this.onKeyPress,
-                            autoComplete: 'on'
+                            autoComplete: 'on',
+                            width: null
                         }),
                         textInput({
                             model,
@@ -62,7 +63,8 @@ export class LoginPanel extends Component {
                             type: 'password',
                             commitOnChange: true,
                             onKeyPress: this.onKeyPress,
-                            autoComplete: 'on'
+                            autoComplete: 'on',
+                            width: null
                         }),
                         text({
                             omit: !model.warning,

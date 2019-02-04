@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {filler} from '@xh/hoist/cmp/layout';
+import {frame, filler} from '@xh/hoist/cmp/layout';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -36,13 +36,17 @@ export class FeedbackDialog extends Component {
             onClose: () => this.model.hide(),
             canOutsideClickClose: false,
             items: [
-                textArea({
-                    placeholder: 'Please enter your comments...',
-                    style: {height: 250, marginBottom: 2},
-                    commitOnChange: true,
-                    model,
-                    bind: 'message'
-                }),
+                frame(
+                    textArea({
+                        placeholder: 'Please enter your comments...',
+                        flex: 1,
+                        height: 250,
+                        style: {marginBottom: 2},
+                        commitOnChange: true,
+                        model,
+                        bind: 'message'
+                    })
+                ),
                 toolbar(
                     filler(),
                     button({
