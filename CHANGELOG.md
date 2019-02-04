@@ -21,6 +21,13 @@
   from the top-right corner of the app, leaving more space for app-specific controls in the AppBar.
 * `RecordGridModel` now supports an enhanced `editors` configuration that exposes the full set of
     validation and display support from the Forms package.
+* `HoistInput` sizing is now consistently implemented using `LayoutSupport`. All sizable `HoistInputs`
+  now have default `width` to ensure a standard display out of the box. `JsonInput` and `TextArea` also
+  have default `height`. These defaults can be overridden by declaring explicit `width` and `height`
+  values, or unset by setting the prop to `null`.
+* `HoistInputs` within `FormFields` will be automatically sized to fill the available space in the
+  `FormField`. In these cases, it is advised to either give the `FormField` an explicit size or render it
+  in a flex layout.
 
 ### 💥 Breaking Changes
 
