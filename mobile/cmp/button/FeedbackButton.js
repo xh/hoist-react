@@ -12,8 +12,7 @@ import {toolbarButton} from '@xh/hoist/kit/onsen';
 import {Icon} from '@xh/hoist/icon';
 
 /**
- * Convenience Button preconfigured for use as a trigger for the XH feedback dialog
- * Accepts props documented below as well as any supported by Blueprint's Button.
+ * Convenience Button preconfigured for use as a trigger for the XH feedback dialog.
  *
  * Can be provided an onClick handler, otherwise will use default action provided by framework.
  */

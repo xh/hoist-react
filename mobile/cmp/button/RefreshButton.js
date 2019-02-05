@@ -7,39 +7,59 @@
 
 import {Component} from 'react';
 import PT from 'prop-types';
-import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, RefreshContext} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {toolbarButton} from '@xh/hoist/kit/onsen';
+import {warnIf} from '@xh/hoist/utils/js';
 
 /**
  * Convenience Button preconfigured for use as a trigger for a refresh operation.
  *
- * Can be provided an onClick handler, otherwise will use default action provided by framework.
+ * If a model is provided it will be directly refreshed.  Alternatively an onClick handler
+ * may be provided.  If neither of these props are provided, the contextual RefreshContextModel
+ * for this button will be used.
  */
 @HoistComponent
 export class RefreshButton extends Component {
 
+    static contextType = RefreshContext;
+    
     static propTypes = {
         icon: PT.element,
-        onClick: PT.func
+
+        /** Function to call when the button is clicked. */
+        onClick: PT.func,
+
+        /** HoistModel to refresh. */
+        model: PT.object
     };
 
     render() {
-        const {icon, onClick, ...rest} = this.props;
+        warnIf(
+            this.props.model && this.props.onClick,
+            'RefreshButton may be provided either a model or an onClick handler to call (but not both).'
+        );
+
+        const {
+            icon = Icon.sync(),
+            onClick = this.defaultOnClick,
+            model,
+            ...rest
+        } = this.props;
+
         return toolbarButton({
-            item: icon || Icon.sync(),
-            onClick: onClick || this.onRefreshClick,
+            item: icon,
+            onClick,
             ...rest
         });
     }
 
-    //-------------------------
+    //---------------------------
     // Implementation
     //---------------------------
-    onRefreshClick = () => {
-        XH.appModel.requestRefresh(true);
-    }
-
+    defaultOnClick = () => {
+        const target = this.model || this.context;
+        if (target) target.refreshAsync();
+    };
 }
-
 export const refreshButton = elemFactory(RefreshButton);

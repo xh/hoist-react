@@ -11,6 +11,7 @@ import {box} from '@xh/hoist/cmp/layout';
 import {slider as bpSlider, rangeSlider as bpRangeSlider} from '@xh/hoist/kit/blueprint';
 import {isArray} from 'lodash';
 import {toJS} from '@xh/hoist/mobx';
+import {withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/input';
 
 /**
@@ -56,11 +57,11 @@ export class Slider extends HoistInput {
     baseClassName = 'xh-slider';
 
     render() {
-        const {props} = this,
+        const props = this.getNonLayoutProps(),
+            {width, ...layoutProps} = this.getLayoutProps(),
             sliderType = isArray(toJS(this.renderValue)) ? bpRangeSlider : bpSlider;
 
         // Set default left / right padding
-        const layoutProps = this.getLayoutProps();
         if (!layoutProps.padding && !layoutProps.paddingLeft) layoutProps.paddingLeft = 20;
         if (!layoutProps.padding && !layoutProps.paddingRight) layoutProps.paddingRight = 20;
 
@@ -82,6 +83,7 @@ export class Slider extends HoistInput {
             }),
 
             ...layoutProps,
+            width: withDefault(width, 200),
             className: this.getClassName(),
 
             onBlur: this.onBlur,

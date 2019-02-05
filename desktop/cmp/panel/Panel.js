@@ -93,8 +93,14 @@ export class Panel extends Component {
             resizable = false,
             collapsible = false,
             collapsed = false,
-            collapsedRenderMode = null
+            collapsedRenderMode = null,
+            vertical = false
         } = model || {};
+
+        if (collapsed) {
+            delete layoutProps[`min${vertical ? 'Height' : 'Width'}`];
+            delete layoutProps[vertical ? 'height' : 'width'];
+        }
 
         let coreContents = null;
         if (!collapsed || collapsedRenderMode == 'always' || (collapsedRenderMode == 'lazy' && this.wasDisplayed)) {

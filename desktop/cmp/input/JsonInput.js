@@ -47,13 +47,7 @@ export class JsonInput extends HoistInput {
          * Configuration object with any properties supported by the CodeMirror API.
          * @see {@link https://codemirror.net/doc/manual.html#api_configuration|CodeMirror Docs}
          */
-        editorProps: PT.object,
-
-        /** Height of the embedded editor in pixels. */
-        height: PT.number,
-
-        /** Width of the embedded editor in pixels. */
-        width: PT.number
+        editorProps: PT.object
     };
 
     get commitOnChange() {
@@ -87,6 +81,8 @@ export class JsonInput extends HoistInput {
     baseClassName = 'xh-json-input';
 
     render() {
+        const {width, height, ...layoutProps} = this.getLayoutProps();
+
         return box({
             item: textArea({
                 value: this.renderValue || '',
@@ -95,9 +91,11 @@ export class JsonInput extends HoistInput {
             }),
 
             className: this.getClassName(),
-            flex: 1,
             flexDirection: 'column',
-            ...this.getLayoutProps(),
+
+            ...layoutProps,
+            width: withDefault(width, 300),
+            height: withDefault(height, 100),
 
             onBlur: this.onBlur,
             onFocus:  this.onFocus

@@ -113,7 +113,7 @@ class XHClass {
     //-------------------------------
     appContainerModel = new AppContainerModel();
     routerModel = new RouterModel();
-
+    
     //-----------------------------
     // Other State
     //-----------------------------
@@ -202,6 +202,10 @@ class XHClass {
      */
     get appLoadModel() {
         return this.acm.appLoadModel;
+    }
+
+    get refreshContextModel() {
+        return this.acm.refreshContextModel;
     }
 
     //------------------------
@@ -327,6 +331,11 @@ class XHClass {
     //---------------------------
     // Miscellaneous
     //---------------------------
+    /** Show a dialog for users to set app options. */
+    showOptionsDialog() {
+        return this.acm.optionsDialogModel.show();
+    }
+
     /** Show a dialog to elicit feedback text from users. */
     showFeedbackDialog() {
         return this.acm.feedbackDialogModel.show();
@@ -459,6 +468,7 @@ class XHClass {
             this.appModel = new this.appSpec.modelClass();
             await this.appModel.initAsync();
             this.startRouter();
+            this.startOptionsDialog();
             this.setAppState(S.RUNNING);
         } catch (e) {
             this.setAppState(S.LOAD_FAILED);
@@ -502,6 +512,10 @@ class XHClass {
     startRouter() {
         this.routerModel.addRoutes(this.appModel.getRoutes());
         this.router.start();
+    }
+
+    startOptionsDialog() {
+        this.acm.optionsDialogModel.setOptions(this.appModel.getAppOptions());
     }
 
     get acm() {return this.appContainerModel}

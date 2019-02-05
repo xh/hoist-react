@@ -5,11 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {HoistComponent} from '@xh/hoist/core';
+import {HoistComponent, LoadSupport} from '@xh/hoist/core';
 import {boolCheckCol, numberCol} from '@xh/hoist/cmp/grid';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
+import {textArea} from '@xh/hoist/desktop/cmp/input';
 
 @HoistComponent
+@LoadSupport
 export class MonitorEditorPanel extends Component {
 
     model = new RestGridModel({
@@ -92,7 +94,7 @@ export class MonitorEditorPanel extends Component {
             {field: 'failThreshold'},
             {field: 'metricUnit'},
             {field: 'params'},
-            {field: 'notes', type: 'textarea'},
+            {field: 'notes', formField: {item: textArea()}},
             {field: 'active'},
             {field: 'sortOrder'},
             {field: 'lastUpdated'},
@@ -102,9 +104,5 @@ export class MonitorEditorPanel extends Component {
 
     render() {
         return restGrid({model: this.model});
-    }
-
-    async loadAsync() {
-        return this.model.loadAsync();
     }
 }

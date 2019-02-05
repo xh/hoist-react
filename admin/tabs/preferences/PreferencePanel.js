@@ -5,11 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {HoistComponent} from '@xh/hoist/core';
+import {HoistComponent, LoadSupport} from '@xh/hoist/core';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 import {boolCheckCol} from '@xh/hoist/cmp/grid';
+import {textArea} from '@xh/hoist/desktop/cmp/input';
 
 @HoistComponent
+@LoadSupport
 export class PreferencePanel extends Component {
 
     model = new RestGridModel({
@@ -85,7 +87,7 @@ export class PreferencePanel extends Component {
             {field: 'type'},
             {field: 'defaultValue'},
             {field: 'local'},
-            {field: 'notes', type: 'textarea'},
+            {field: 'notes', formField: {item: textArea()}},
             {field: 'lastUpdated'},
             {field: 'lastUpdatedBy'}
         ]
@@ -93,9 +95,5 @@ export class PreferencePanel extends Component {
 
     render() {
         return restGrid({model: this.model});
-    }
-
-    async loadAsync() {
-        return this.model.loadAsync();
     }
 }

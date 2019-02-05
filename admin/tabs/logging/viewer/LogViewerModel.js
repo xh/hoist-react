@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from '@xh/hoist/core';
+import {XH, HoistModel, managed} from '@xh/hoist/core';
 import {find} from 'lodash';
 import {action, observable} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
@@ -27,8 +27,10 @@ export class LogViewerModel {
     @observable file = null;
     @observable.ref rows = [];
 
+    @managed
     loadModel = new PendingTaskModel();
 
+    @managed
     filesGridModel = new GridModel({
         enableExport: true,
         store: new UrlStore({
@@ -44,7 +46,8 @@ export class LogViewerModel {
 
     constructor() {
         this.addReaction(this.syncSelectionReaction());
-        this.addReaction(this.toggleTail());
+        this.addReaction(this.toggleTailReaction());
+        this.addReaction(this.reloadReaction());
     }
     
     @action
@@ -60,13 +63,17 @@ export class LogViewerModel {
         this.loadLines();
     }
 
-    @action
     loadLines() {
         if (!this.file) {
-            this.rows = [];
+            this.setRows([]);
         } else {
-            this.fetchFile();
+            this.fetchFileAsync();
         }
+    }
+
+    @action
+    setRows(rows) {
+        this.rows = rows;
     }
 
     @action
@@ -92,7 +99,9 @@ export class LogViewerModel {
     //---------------------------------
     // Implementation
     //---------------------------------
-    fetchFile({isAutoRefresh = false} = {}) {
+    fetchFileAsync({isAutoRefresh = false} = {}) {
+        if (!this.file) return;
+
         return XH
             .fetchJson({
                 url: 'logViewerAdmin/getFile',
@@ -103,9 +112,17 @@ export class LogViewerModel {
                     pattern: this.pattern
                 }
             })
-            .thenAction(rows => this.rows = this.startLine ? rows.content : rows.content.reverse())
+            .then(response => {
+                if (!response.success) throw new Error(response.exception);
+                this.setRows(this.startLine ? response.content : response.content.reverse());
+            })
             .linkTo(isAutoRefresh ? null : this.loadModel)
-            .catchDefault();
+            .catch(e => {
+                // Show errors inline in the viewer vs. a modal alert or catchDefault().
+                const msg = e.message || 'An unknown error occurred';
+                this.setRows([[0, `Error: ${msg}`]]);
+                console.error(e);
+            });
     }
 
     syncSelectionReaction() {
@@ -119,17 +136,20 @@ export class LogViewerModel {
         };
     }
 
-    toggleTail() {
+    reloadReaction() {
+        return {
+            track: () => [this.pattern, this.maxLines, this.startLine],
+            run: this.loadLines
+        };
+    }
+
+    toggleTailReaction() {
         return {
             track: () => this.tail,
             run: (checked) => {
                 this.setStartLine(checked ? null : 1);
-                this.fetchFile();
+                this.fetchFileAsync();
             }
         };
-    }
-    
-    destroy() {
-        XH.safeDestroy(this.loadModel, this.filesGridModel);
     }
 }
