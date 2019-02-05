@@ -31,6 +31,12 @@
 
 ### 💥 Breaking Changes
 
+* ag-Grid has been updated to v20.0.0. Most apps shouldn't require any changes - however, if you are using
+  `agOptions` to set sorting, filtering or resizing properties, these may need to change:
+  
+  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and `agOptions.enableFilter` have been removed. You can replicate their effects by using `agOptions.defaultColDef`.
+  For `Columns`, `suppressFilter` has been removed, an should be replaced with `filter: false`.
+
 * `HoistAppModel.requestRefresh` and `TabContainerModel.requestRefresh` have been removed.
   Applications should use the new Refresh architecture described above instead.
 
@@ -48,6 +54,10 @@ and `formField` intead.
 ### 🐞 Bug Fixes
 
 * SwitchInput and RadioInput now properly highlight validation errors in `minimal` mode.
+
+### 📚 Libraries
+
+* ag-Grid `~19.1.4 -> ~20.0.0`
 
 ## v18.1.2 - 2019-01-30
 
