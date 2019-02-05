@@ -159,11 +159,14 @@ export class Grid extends Component {
         const {model, props} = this;
 
         let ret = {
-            enableSorting: true,
-            enableColResize: true,
             deltaRowDataMode: true,
             getRowNodeId: (data) => data.id,
-            defaultColDef: {suppressMenu: true, menuTabs: ['filterMenuTab']},
+            defaultColDef: {
+                sortable: true,
+                resizable: true,
+                suppressMenu: true,
+                menuTabs: ['filterMenuTab']
+            },
             popupParent: document.querySelector('body'),
             defaultGroupSortComparator: this.sortByGroup,
             headerHeight: props.hideHeaders ? 0 : undefined,
