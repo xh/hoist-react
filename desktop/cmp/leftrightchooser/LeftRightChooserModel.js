@@ -104,17 +104,20 @@ export class LeftRightChooserModel {
                 field: 'text',
                 flex: true,
                 headerName: leftTitle,
+                resizable: false,
                 renderer: this.getTextColRenderer('left')
             },
             rightTextCol = {
                 field: 'text',
                 flex: true,
                 headerName: rightTitle,
+                resizable: false,
                 renderer: this.getTextColRenderer('right')
             },
             groupCol = {
                 field: 'group',
                 headerName: 'Group',
+                resizable: false,
                 hidden: true
             };
 

@@ -40,10 +40,7 @@ export class LeftRightChooser extends Component {
         const {model} = this,
             {leftModel, rightModel, leftGroupingExpanded, rightGroupingExpanded} = model,
             gridOptions = {
-                onRowDoubleClicked: (e) => model.moveRows([e.data]),
-                agOptions: {
-                    enableColResize: false
-                }
+                onRowDoubleClicked: (e) => model.moveRows([e.data])
             },
             leftGridOptions = cloneDeep(gridOptions),
             rightGridOptions = cloneDeep(gridOptions);
