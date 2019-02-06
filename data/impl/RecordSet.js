@@ -36,7 +36,8 @@ export class RecordSet {
             'Store records cannot contain non-unique IDs.'
         );
 
-        this.list = (rootRecords.length == map.size ? rootRecords : list);  // Avoid holding two copies of same list.
+        // If all records are roots (not a tree structure), avoid holding two copies of what will be an identical list.
+        this.list = (rootRecords.length == map.size ? rootRecords : list);
         this.map = map;
     }
 
