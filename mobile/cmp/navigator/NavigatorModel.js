@@ -12,7 +12,7 @@ import {uniqBy, keys, find, merge} from 'lodash';
 import {NavigatorPageModel} from './NavigatorPageModel';
 
 /**
- * Model for handling navigation between Onsen pages.
+ * Model for handling stack-based navigation between Onsen pages.
  * Provides support for routing based navigation.
  */
 @HoistModel

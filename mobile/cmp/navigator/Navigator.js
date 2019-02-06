@@ -10,7 +10,9 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {navigator as onsenNavigator} from '@xh/hoist/kit/onsen';
 import {NavigatorModel} from './NavigatorModel';
 
-// Todo: Comment
+/**
+ * Component responsible for rendering pages and managing transitions between pages.
+ */
 @HoistComponent
 export class Navigator extends Component {
 
