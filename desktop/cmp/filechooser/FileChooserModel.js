@@ -25,7 +25,8 @@ export class FileChooserModel {
 
     gridModel = new GridModel({
         store: new LocalStore({
-            fields: ['name', 'extension', 'size']
+            fields: ['name', 'extension', 'size'],
+            idSpec: 'name'
         }),
         columns: [
             {
@@ -53,7 +54,7 @@ export class FileChooserModel {
             }
         ],
         emptyText: 'No files selected'
-    })
+    });
 
     constructor() {
         this.addReaction({
