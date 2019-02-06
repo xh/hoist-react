@@ -25,7 +25,8 @@ export class EhCacheModel {
         enableExport: true,
         store: new UrlStore({
             url: 'ehCacheAdmin/listCaches',
-            fields: ['name', 'heapSize', 'entries', 'status']
+            fields: ['name', 'heapSize', 'entries', 'status'],
+            idSpec: 'name'
         }),
         sortBy: 'name',
         columns: [

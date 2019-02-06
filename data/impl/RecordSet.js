@@ -23,18 +23,18 @@ export class RecordSet {
     map;          // map of all records, by id
 
     /**
-     * @param {Record[]} rootRecords -  ordered list of root records to be included.
-     * This array will be used and modified by this object and should not be re-used.
+     * @param {Record[]} rootRecords -  ordered list of root records to be included. This array
+     *      will be used and modified by this object and should not be re-used.
      */
     constructor(rootRecords) {
         this.roots = rootRecords;
 
         const {list, map} = this.gatherAllRecords(rootRecords);
-        this.list = (list.size == map.size ? rootRecords : list);  // Avoid holding two copies of same list.
+        this.list = (list.length == map.size ? rootRecords : list);  // Avoid holding two copies of same list.
         this.map = map;
 
         throwIf(
-            list.length > map.length,
+            list.length > map.size,
             'Store records cannot contain non-unique IDs.'
         );
     }
@@ -47,9 +47,7 @@ export class RecordSet {
     /**
      * Return a filtered version of this recordset.
      *
-     * @param {function} filter. If null, this method will return
-     *      the recordset itself.
-     *
+     * @param {function} filter. If null, this method will return the recordset itself.
      * @return {RecordSet}
      */
     applyFilter(filter) {
@@ -62,8 +60,7 @@ export class RecordSet {
      * Return a version of this recordset with a child removed.
      *
      * @param {Record} record to be removed.
-     *
-     * @return {Record}
+     * @return {RecordSet}
      */
     removeRecord(record) {
         return this.applyFilter(r => r.id !== record.id);
@@ -71,10 +68,10 @@ export class RecordSet {
 
     /**
      * Return a version of this recordset with a child added.
+     * NOTE: Currently adding a record at the root is the only supported operation.
      *
-     * NOTE:  Currently only adding a record at the root is the supported
-     *
-     * @param {Record} record
+     * @param {Record} record to be added.
+     * @return {RecordSet}
      */
     addRecord(record) {
         return new RecordSet([...this.roots, record]);
@@ -82,10 +79,11 @@ export class RecordSet {
 
     /**
      * Return a version of this recordset with a record replaced.
+     * NOTE: Currently replacing a record at the root is the only supported operation.
      *
-     * NOTE:  Currently only replacing a record at the root is supported
-     *
-     * @param {Record} record
+     * @param {Record} oldRecord
+     * @param {Record} newRecord
+     * @return {RecordSet}
      */
     updateRecord(oldRecord, newRecord) {
         const newRoots = clone(this.roots),
