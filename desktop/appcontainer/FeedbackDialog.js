@@ -38,7 +38,9 @@ export class FeedbackDialog extends Component {
             items: [
                 textArea({
                     placeholder: 'Please enter your comments...',
-                    style: {height: 250, marginBottom: 2},
+                    width: null,
+                    height: 250,
+                    style: {marginBottom: 2},
                     commitOnChange: true,
                     model,
                     bind: 'message'

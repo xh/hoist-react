@@ -67,7 +67,15 @@ export class FormModel {
      *      for all data fields managed by this FormModel.
      * @param {Object} [c.initialValues] - Map of initial values for fields in this model.
      */
-    constructor({fields = [], initialValues = {}} = {}) {
+    constructor(
+        {
+            fields = [],
+            initialValues = {},
+            disabled = false,
+            readonly = false
+        } = {}) {
+        this.disabled = disabled;
+        this.readonly = readonly;
         const models = {};
         fields.forEach(f => {
             const model = f instanceof FieldModel ? f : (f.subforms ? new SubformsFieldModel(f) : new FieldModel(f));

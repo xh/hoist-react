@@ -5,9 +5,6 @@
 }
 
 .xh-select {
-  // Default width of wrapping box.
-  width: 200px;
-
   // Outer div of the actual react-select control, causing it to fill its box.
   > div {
     flex: 1;

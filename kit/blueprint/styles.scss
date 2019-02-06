@@ -103,7 +103,7 @@
   }
 
   .bp3-dialog-body {
-    word-break: break-all;
+    word-break: break-word;
   }
 }
 
@@ -111,8 +111,18 @@
   background-color: var(--xh-mask-bg);
 }
 
+
+//------------------------
+// Menus
+//------------------------
 .bp3-dark .bp3-menu, .bp3-menu {
   background-color: var(--xh-bg-alt);
+}
+
+// Default of flex-start leaves Hoist icons shifted up - could target
+// more specifically if this is a problem in any other contexts.
+.bp3-menu-item {
+  align-items: center;
 }
 
 
@@ -179,7 +189,7 @@
   }
 
   .bp3-toast-message {
-    word-break: break-all;
+    word-break: break-word;
   }
 }
 

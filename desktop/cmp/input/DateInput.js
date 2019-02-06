@@ -11,7 +11,7 @@ import moment from 'moment';
 import {assign, clone} from 'lodash';
 
 import {fmtDate} from '@xh/hoist/format';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {dateInput as bpDateInput} from '@xh/hoist/kit/blueprint';
 import {Ref} from '@xh/hoist/utils/react';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -24,6 +24,7 @@ import {HoistInput} from '@xh/hoist/cmp/input';
  * can be customized via the timePrecision prop to support editing of a date and time together.
  */
 @HoistComponent
+@LayoutSupport
 export class DateInput extends HoistInput {
 
     static propTypes = {
@@ -79,10 +80,7 @@ export class DateInput extends HoistInput {
          * The precision of time selection that accompanies the calendar.
          * If undefined, control will not show time.
          */
-        timePrecision: PT.oneOf(['second', 'minute']),
-
-        /** Width of the control in pixels. */
-        width: PT.number
+        timePrecision: PT.oneOf(['second', 'minute'])
     };
 
     bpRef = new Ref();
@@ -95,7 +93,8 @@ export class DateInput extends HoistInput {
     }
 
     render() {
-        const {props} = this;
+        const props = this.getNonLayoutProps(),
+            {width, ...layoutProps} = this.getLayoutProps();
 
         return bpDateInput({
             value: this.renderValue,
@@ -114,8 +113,9 @@ export class DateInput extends HoistInput {
 
                 style: {
                     ...props.style,
-                    textAlign: withDefault(props.textAlign, 'left'),
-                    width: props.width
+                    ...layoutProps,
+                    width: withDefault(width, 150),
+                    textAlign: withDefault(props.textAlign, 'left')
                 },
 
                 onBlur: this.onBlur,

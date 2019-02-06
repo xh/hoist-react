@@ -11,6 +11,8 @@ import {switchControl} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/input';
 
+import './SwitchInput.scss';
+
 /**
  * Switch (toggle) control for non-nullable boolean values.
  */

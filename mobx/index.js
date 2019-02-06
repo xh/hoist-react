@@ -17,7 +17,8 @@ export {
     toJS,
     trace,
     untracked,
-    when
+    when,
+    comparer
 } from 'mobx';
 
 export {observer} from 'mobx-react';

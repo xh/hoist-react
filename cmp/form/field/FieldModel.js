@@ -29,7 +29,7 @@ export class FieldModel {
     _formModel;
 
     /** @member {*} */
-    initialValue;
+    @observable.ref initialValue;
     /** @member {*} */
     @observable.ref value;
 

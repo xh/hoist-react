@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import PT from 'prop-types';
 import {castArray, clone, merge} from 'lodash';
 import Highcharts from 'highcharts/highstock';
 import highchartsExporting from 'highcharts/modules/exporting';
@@ -36,6 +37,11 @@ installZoomoutGesture(Highcharts);
 export class Chart extends Component {
 
     static modelClass = ChartModel;
+
+    static propTypes = {
+        /** Primary component model instance. */
+        model: PT.oneOfType([PT.instanceOf(ChartModel), PT.object]).isRequired
+    };
 
     baseClassName = 'xh-chart';
 

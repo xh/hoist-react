@@ -7,7 +7,8 @@
 import {Component} from 'react';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {button, Button} from '@xh/hoist/desktop/cmp/button';
+import {withDefault} from '@xh/hoist/utils/js';
 
 /**
  * Convenience Button preconfigured for use as a trigger for light/dark theme toggling.
@@ -15,16 +16,26 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 @HoistComponent
 export class ThemeToggleButton extends Component {
 
+    static propTypes = {
+        ...Button.propTypes
+    }
+
     render() {
+        const {icon, title, onClick, ...rest} = this.props;
         return button({
-            icon: XH.darkTheme ? Icon.sun({prefix: 'fas'}) : Icon.moon(),
-            title: XH.darkTheme ? 'Switch to light theme' : 'Switch to dark theme',
-            onClick: this.onThemeToggleClick
+            icon: withDefault(icon, XH.darkTheme ? Icon.sun({prefix: 'fas'}) : Icon.moon()),
+            title: withDefault(title, XH.darkTheme ? 'Switch to light theme' : 'Switch to dark theme'),
+            onClick: withDefault(onClick, this.toggleTheme),
+            ...rest
         });
     }
 
-    onThemeToggleClick = () => {
+    //------------------------
+    // Implementation
+    //------------------------
+    toggleTheme = () => {
         XH.toggleTheme();
     }
+
 }
 export const themeToggleButton = elemFactory(ThemeToggleButton);
