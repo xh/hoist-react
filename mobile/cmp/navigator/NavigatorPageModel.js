@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
+import {withDefault} from '@xh/hoist/utils/js';
 import {uniqueId, snakeCase} from 'lodash';
 
 /**
@@ -12,26 +13,31 @@ import {uniqueId, snakeCase} from 'lodash';
  */
 @HoistModel
 export class NavigatorPageModel {
-    key = null;
     pageFactory = null;
     pageProps = null;
     title = null;
+    routeId = null;
+
+    key = null;
 
     /**
      * @param {function} pageFactory - element factory for page component.
      * @param {Object} [pageProps] - props to be passed to page upon creation
      * @param {string} [title] - title for page. Displayed in AppBar header.
+     * @param {string} [routeId] - id for mapped route.
      */
     constructor({
         pageFactory,
         pageProps,
-        title
+        title,
+        routeId
     }) {
         this.pageFactory = pageFactory;
         this.pageProps = pageProps;
         this.title = title;
+        this.routeId = routeId;
 
-        const key = title ? snakeCase(title) : 'page';
-        this.key = uniqueId(`${key}_`);
+        const key = withDefault(routeId, title, 'page');
+        this.key = uniqueId(`${snakeCase(key)}_`);
     }
 }

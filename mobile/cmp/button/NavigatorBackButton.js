@@ -18,7 +18,7 @@ export class NavigatorBackButton extends Component {
         if (model.pages.length < 2) return null;
         return toolbarButton({
             item: Icon.chevronLeft(),
-            onClick: () => model.popPage(callback)
+            onClick: () => model.back(callback)
         });
     }
 
