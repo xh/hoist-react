@@ -9,7 +9,7 @@ import {XH} from '@xh/hoist/core';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {throwIf} from '@xh/hoist/utils/js';
 import {observable, action} from '@xh/hoist/mobx';
-import {isString, isUndefined} from 'lodash';
+import {isString, isNil} from 'lodash';
 
 import {RecordSet} from './impl/RecordSet';
 import {Record} from './Record';
@@ -151,7 +151,7 @@ export class LocalStore extends BaseStore {
 
             raw.id = idGen(raw);
             throwIf(
-                isUndefined(raw.id),
+                isNil(raw.id),
                 'Cannot load record without a unique id.  Provide a unique id on each raw record using the ' +
                 '`idSpec` property of this store.'
             );

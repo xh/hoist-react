@@ -30,11 +30,11 @@ export class RecordSet {
         this.roots = rootRecords;
 
         const {list, map} = this.gatherAllRecords(rootRecords);
-        this.list = (list.size == map.size ? rootRecords : list);  // Avoid holding two copies of same list.
+        this.list = (list.length == map.size ? rootRecords : list);  // Avoid holding two copies of same list.
         this.map = map;
 
         throwIf(
-            list.length > map.length,
+            list.length > map.size,
             'Store records cannot contain non-unique IDs.'
         );
     }
