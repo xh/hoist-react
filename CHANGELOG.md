@@ -1,6 +1,9 @@
 # Changelog
 
-## v19.0.0-SNAPSHOT (unreleased / under development)
+## v20.0.0-SNAPSHOT (unreleased / under development)
+
+
+## v19.0.0-rc1 - 2019-01-30
 
 ### 🎁 New Features
 
@@ -50,6 +53,10 @@
 
 * The API for `RecordGridModel` editors has changed -- `type` is no longer supported.  Use `fieldModel`
 and `formField` intead. 
+
+* `LocalStore.loadRawData` requires that all records presented to store have unique id's specified.  
+See `LocalStore.idSpec` for more information.
+
 
 ### 🐞 Bug Fixes
 
