@@ -9,35 +9,41 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {uniqueId, snakeCase} from 'lodash';
 
 /**
- * Model for a navigator page
+ * Model for a NavigatorPage within a Navigator. Specifies the actual content (i.e. page)
+ * to be rendered for a given route.
+ *
+ * This model is not typically created directly within applications. Instead, specify a
+ * configuration for it via the `NavigatorModel.routes` constructor config.
  */
 @HoistModel
 export class NavigatorPageModel {
-    pageFactory = null;
-    pageProps = null;
+
+    route = null;
+    content = null;
+    props = null;
     title = null;
-    routeId = null;
 
     key = null;
 
     /**
-     * @param {function} pageFactory - element factory for page component.
-     * @param {Object} [pageProps] - props to be passed to page upon creation
+     * @param {string} route - mapped route, which must correspond to a configured Router5 route name.
+     * @param {Object} content - content to be rendered by this route. Component class or a custom
+     *      element factory of the form returned by elemFactory.
+     * @param {Object} [props] - props to be passed to page upon creation.
      * @param {string} [title] - title for page. Displayed in AppBar header.
-     * @param {string} [routeId] - id for mapped route.
      */
     constructor({
-        pageFactory,
-        pageProps,
-        title,
-        routeId
+        route,
+        content,
+        props,
+        title
     }) {
-        this.pageFactory = pageFactory;
-        this.pageProps = pageProps;
+        this.route = route;
+        this.content = content;
+        this.props = props;
         this.title = title;
-        this.routeId = routeId;
 
-        const key = withDefault(routeId, title, 'page');
+        const key = withDefault(route, title, 'page');
         this.key = uniqueId(`${snakeCase(key)}_`);
     }
 }
