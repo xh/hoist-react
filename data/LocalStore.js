@@ -7,8 +7,9 @@
 
 import {XH} from '@xh/hoist/core';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {throwIf} from '@xh/hoist/utils/js';
 import {observable, action} from '@xh/hoist/mobx';
-import {isNil} from 'lodash';
+import {isString, isUndefined} from 'lodash';
 
 import {RecordSet} from './impl/RecordSet';
 import {Record} from './Record';
@@ -19,7 +20,8 @@ import {BaseStore} from './BaseStore';
  */
 export class LocalStore extends BaseStore {
 
-    processRawData = null;
+    processRawData;
+    idSpec;
 
     @observable.ref _dataLastUpdated;
     @observable.ref _all = new RecordSet([]);
@@ -33,12 +35,25 @@ export class LocalStore extends BaseStore {
      * @param {Object} c - LocalStore configuration.
      * @param {function} [c.processRawData] - Function to run on data
      *      presented to loadData() before creating records.
+     * @param {[function|string]} [c.idSpec] - specification of how to identify an immutable unique
+     *      id for each record.  May be either a property (default is 'id') or a function to create the unique id
+     *      from the record.  If you cannot identify a unique id, you may set this argument to `XH.genId`
+     *      to have a unique id  generated on the fly for each record.  Note that in this case, grids and other
+     *      components bound to this store will not be able to maintain state for records across data reloading.
      * @param {function} [c.filter] - Filter function to be run.
      * @param {...*} [c.baseStoreArgs] - Additional properties to pass to BaseStore.
      */
-    constructor({processRawData = null, filter = null, ...baseStoreArgs}) {
+    constructor(
+        {
+            processRawData = null,
+            filter = null,
+            idSpec = 'id',
+            ...baseStoreArgs
+
+        }) {
         super(baseStoreArgs);
         this.setFilter(filter);
+        this.idSpec = idSpec;
         this.processRawData = processRawData;
         this._dataLastUpdated = new Date();
     }
@@ -128,11 +143,18 @@ export class LocalStore extends BaseStore {
     // Private Implementation
     //------------------------
     createRecords(rawData, parent = null) {
+        const {idSpec} = this;
+        const idGen = isString(idSpec) ? r => r[idSpec] : idSpec;
+
         return rawData.map(raw => {
             if (this.processRawData) this.processRawData(raw);
 
-            // All records must have a unique, non-null ID - install a generated one if required.
-            if (isNil(raw.id)) raw.id = XH.genId();
+            raw.id = idGen(raw);
+            throwIf(
+                isUndefined(raw.id),
+                'Cannot load record without a unique id.  Provide a unique id on each raw record using the ' +
+                '`idSpec` property of this store.'
+            );
 
             const rec = new Record({raw, parent, fields: this.fields});
             rec.children = raw.children ? this.createRecords(raw.children, rec) : [];

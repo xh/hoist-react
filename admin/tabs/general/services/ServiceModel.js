@@ -20,7 +20,8 @@ export class ServiceModel {
         store: new UrlStore({
             url: 'serviceAdmin/listServices',
             processRawData: this.processRawData,
-            fields: ['provider', 'name', 'displayName']
+            fields: ['provider', 'name', 'displayName'],
+            idSpec: XH.genId
         }),
         selModel: 'multiple',
         sortBy: 'displayName',
