@@ -30,13 +30,14 @@ export class RecordSet {
         this.roots = rootRecords;
 
         const {list, map} = this.gatherAllRecords(rootRecords);
-        this.list = (list.length == map.size ? rootRecords : list);  // Avoid holding two copies of same list.
-        this.map = map;
 
         throwIf(
-            list.length > map.size,
+            list.length != map.size,
             'Store records cannot contain non-unique IDs.'
         );
+
+        this.list = (rootRecords.length == map.size ? rootRecords : list);  // Avoid holding two copies of same list.
+        this.map = map;
     }
 
     /** Number of records contained in this recordset */
