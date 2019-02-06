@@ -35,11 +35,11 @@ export class LocalStore extends BaseStore {
      * @param {Object} c - LocalStore configuration.
      * @param {function} [c.processRawData] - Function to run on data
      *      presented to loadData() before creating records.
-     * @param {[function|string]} [c.idSpec] - specification of how to identify an immutable unique
-     *      id for each record.  May be either a property (default is 'id') or a function to create the unique id
-     *      from the record.  If you cannot identify a unique id, you may set this argument to `XH.genId`
-     *      to have a unique id  generated on the fly for each record.  Note that in this case, grids and other
-     *      components bound to this store will not be able to maintain state for records across data reloading.
+     * @param {(function|string)} [c.idSpec] - specification for selecting or producing an immutable
+     *      unique id for each record. May be either a property (default is 'id') or a function to
+     *      create an id from a record. If there is no natural id to select/generate, you can use
+     *      `XH.genId` to generate a unique id on the fly. NOTE that in this case, grids and other
+     *      components bound to this store will not be able to maintain record state across reloads.
      * @param {function} [c.filter] - Filter function to be run.
      * @param {...*} [c.baseStoreArgs] - Additional properties to pass to BaseStore.
      */
@@ -49,7 +49,6 @@ export class LocalStore extends BaseStore {
             filter = null,
             idSpec = 'id',
             ...baseStoreArgs
-
         }) {
         super(baseStoreArgs);
         this.setFilter(filter);
@@ -152,8 +151,7 @@ export class LocalStore extends BaseStore {
             raw.id = idGen(raw);
             throwIf(
                 isNil(raw.id),
-                'Cannot load record without a unique id.  Provide a unique id on each raw record using the ' +
-                '`idSpec` property of this store.'
+                "Cannot load record with a null/undefined ID. Use the 'LocalStore.idSpec' config to resolve a unique ID for each record."
             );
 
             const rec = new Record({raw, parent, fields: this.fields});
