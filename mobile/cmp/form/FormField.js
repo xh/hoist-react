@@ -19,12 +19,18 @@ import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import './FormField.scss';
 
 /**
- * Standardised wrapper around a HoistInput Component.  FormField provides
- * consistent layout, labelling, and optional validation display for the input.
+ * Standardised wrapper around a HoistInput Component. FormField provides consistent layout,
+ * labelling, and optional display of validation messages for the input component.
  *
- * FormField is often used within a Form component, and bound to a particular Field within
- * the related FormModel. In this case, FormField will display validation information for its
- * bound field, and may receive behavioral and visual defaults from its contained Field.
+ * This component is typically used within a `Form` component and bound by name to a 'FieldModel'
+ * within that Form's backing `FormModel`. FormField will setup the binding between its child
+ * HoistInput and the FieldModel instance and can display validation messages, switch between
+ * read-only and disabled variants of its child, and source default props via the parent Form's
+ * `fieldDefaults` prop.
+ *
+ * FormFields can be sized and otherwise customized via standard @LayoutSupport props. They will
+ * adjust their child Inputs to fill their available space (if appropriate given the input type),
+ * so the recommended approach is to specify any sizing on the FormField (as opposed to the Input).
  */
 @HoistComponent
 @LayoutSupport
@@ -32,26 +38,23 @@ export class FormField extends Component {
 
     static propTypes = {
 
+        /**
+         * CommitOnChange property for underlying HoistInput (for inputs that support).
+         * Defaulted from containing Form.
+         */
+        commitOnChange: PT.bool,
+
         /** Property name on bound FormModel from which to read/write data. */
         field: PT.string,
 
-        /**
-         * Label for form field.
-         *
-         * Defaults to Field displayName. Set to null to hide label.
-         */
-        label: PT.string,
-
-        /**
-         * Additional metadata or description to be displayed with control
-         */
+        /** Additional description or info to be displayed alongside the input control. */
         info: PT.node,
 
         /**
-         * Optional function for use in readonly mode.
-         * Receives (value), and should return a human-readable string.
+         * Label for form field. Defaults to Field displayName. Set to null to hide.
+         * Can be defaulted from contained Form (specifically, to null to hide all labels).
          */
-        readonlyRenderer: PT.func,
+        label: PT.string,
 
         /**
          * Apply minimal styling - validation errors are only displayed with a red outline.
@@ -60,10 +63,11 @@ export class FormField extends Component {
         minimal: PT.bool,
 
         /**
-         * CommitOnChange property for underlying HoistInput (for inputs that support).
-         * Defaulted from containing Form.
+         * Optional function for use in readonly mode. Called with the Field's current value
+         * and should return an element suitable for presentation to the end-user.
          */
-        commitOnChange: PT.bool
+        readonlyRenderer: PT.func
+
     };
 
     baseClassName = 'xh-form-field';
@@ -235,7 +239,7 @@ export class FormField extends Component {
     ensureConditions() {
         const child = this.props.children;
         throwIf(!child || isArray(child) || !(child.type.prototype instanceof HoistInput), 'FormField child must be a single component that extends HoistInput.');
-        throwIf(child.props.field || child.props.model, 'HoistInputs should not specify "field" or "model" when used with FormField');
+        throwIf(child.props.bind || child.props.model, 'HoistInputs should not specify "bind" or "model" when used with FormField');
     }
 
 }
