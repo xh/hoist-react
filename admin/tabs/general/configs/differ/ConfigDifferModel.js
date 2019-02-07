@@ -56,6 +56,7 @@ export class ConfigDifferModel  {
                 fields: [
                     'name', 'status', 'localValue', 'remoteValue'
                 ],
+                idSpec: 'name',
                 name: 'differ',
                 filter: (it) => it.status !== 'Identical'
             }),

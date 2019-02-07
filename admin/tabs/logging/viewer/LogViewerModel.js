@@ -35,6 +35,7 @@ export class LogViewerModel {
         enableExport: true,
         store: new UrlStore({
             url: 'logViewerAdmin/listFiles',
+            idSpec: 'filename',
             dataRoot: 'files',
             fields: ['filename']
         }),
