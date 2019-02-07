@@ -6,10 +6,10 @@
  */
 import React, {Component} from 'react';
 import PT from 'prop-types';
-import {isArray, isDate, isFinite, isBoolean} from 'lodash';
+import {isArray, isDate, isFinite, isBoolean, isUndefined} from 'lodash';
 
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
-import {div, span} from '@xh/hoist/cmp/layout';
+import {box, div, span} from '@xh/hoist/cmp/layout';
 import {FormContext} from '@xh/hoist/cmp/form';
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {label as labelCmp} from '@xh/hoist/mobile/cmp/input';
@@ -53,22 +53,17 @@ export class FormField extends Component {
          */
         readonlyRenderer: PT.func,
 
-        //----------------------
-        // -- Default from Form
-        //----------------------
         /**
          * Apply minimal styling - validation errors are only displayed with a red outline.
-         *
          * Defaulted from containing Form, or false.
          */
         minimal: PT.bool,
 
         /**
-         * Render the bound value as a string rather than the HoistInput
-         *
-         * Defaulted from containing Form, or false.
+         * CommitOnChange property for underlying HoistInput (for inputs that support).
+         * Defaulted from containing Form.
          */
-        readonly: PT.bool
+        commitOnChange: PT.bool
     };
 
     baseClassName = 'xh-form-field';
@@ -78,10 +73,10 @@ export class FormField extends Component {
     render() {
         this.ensureConditions();
 
-        const {label, info} = this.props;
+        const {info} = this.props;
 
         // Model related props
-        const {fieldModel} = this,
+        const {fieldModel, label} = this,
             isRequired = fieldModel && fieldModel.isRequired,
             isPending = fieldModel && fieldModel.isValidationPending,
             readonly = fieldModel && fieldModel.readonly,
@@ -89,7 +84,6 @@ export class FormField extends Component {
             notValid = fieldModel && fieldModel.isNotValid,
             displayNotValid = validationDisplayed && notValid,
             errors = fieldModel ? fieldModel.errors : [],
-            labelStr = withDefault(label, (fieldModel ? fieldModel.displayName : null)),
             requiredStr = isRequired ? span(' *') : null;
 
         // Display related props
@@ -104,31 +98,36 @@ export class FormField extends Component {
 
         const control = this.prepareChild({readonly});
 
-        return div({
-            className: this.getClassName(classes),
+        return box({
             items: [
                 labelCmp({
-                    omit: !labelStr,
+                    omit: !label,
                     className: 'xh-form-field-label',
-                    items: [labelStr, requiredStr]}
-                ),
-                control,
-                div({
-                    omit: !info,
-                    className: 'xh-form-field-info',
-                    item: info
+                    items: [label, requiredStr]
                 }),
                 div({
-                    omit: minimal || !isPending || !validationDisplayed,
-                    className: 'xh-form-field-pending-msg',
-                    item: 'Validating...'
-                }),
-                div({
-                    omit: minimal || !displayNotValid,
-                    className: 'xh-form-field-error-msg',
-                    items: notValid ? errors[0] : null
+                    className: this.childIsSizeable ? 'xh-form-field-fill' : '',
+                    items: [
+                        control,
+                        div({
+                            omit: !info,
+                            className: 'xh-form-field-info',
+                            item: info
+                        }),
+                        div({
+                            omit: minimal || !isPending || !validationDisplayed,
+                            className: 'xh-form-field-pending-msg',
+                            item: 'Validating...'
+                        }),
+                        div({
+                            omit: minimal || !displayNotValid,
+                            className: 'xh-form-field-error-msg',
+                            items: notValid ? errors[0] : null
+                        })
+                    ]
                 })
             ],
+            className: this.getClassName(classes),
             ...this.getLayoutProps()
         });
     }
@@ -150,6 +149,28 @@ export class FormField extends Component {
         return formModel ? formModel.fields[this.props.field] : null;
     }
 
+    // Label can be provided via props, defaulted from form fieldDefaults ("null" being the expected
+    // use case to hide all labels), or sourced from fieldModel displayName.
+    get label() {
+        const {fieldModel, form} = this;
+
+        return withDefault(
+            this.props.label,
+            form ? form.fieldDefaults.label : undefined,
+            fieldModel ? fieldModel.displayName : null
+        );
+    }
+
+    get hasSize() {
+        const {width, height, flex} = this.getLayoutProps();
+        return width || height || flex;
+    }
+
+    get childIsSizeable() {
+        const child = this.props.children;
+        return child && child.type.hasLayoutSupport;
+    }
+
     getDefaultedProp(name, defaultVal) {
         const {form} = this;
         return withDefault(
@@ -161,13 +182,34 @@ export class FormField extends Component {
 
     prepareChild({readonly}) {
         const {fieldModel} = this,
-            item = this.props.children;
+            layoutProps = this.getLayoutProps(),
+            item = this.props.children,
+            {propTypes} = item.type;
 
         const overrides = {
             model: fieldModel,
             bind: 'value',
             disabled: fieldModel && fieldModel.disabled
         };
+
+        // If FormField is sized and item doesn't specify its own dimensions,
+        // the item should fill the available size of the FormField.
+        // Note: We explicitly set width / height to null to override defaults.
+        if (this.hasSize && this.childIsSizeable) {
+            if (isUndefined(item.props.width) && isUndefined(item.props.flex)) {
+                overrides.width = null;
+            }
+
+            if (isUndefined(item.props.height) && layoutProps.height) {
+                overrides.height = null;
+                overrides.flex = 1;
+            }
+        }
+
+        const commitOnChange = this.getDefaultedProp('commitOnChange');
+        if (propTypes.commitOnChange && !isUndefined(commitOnChange)) {
+            overrides.commitOnChange = commitOnChange;
+        }
 
         return readonly ? this.renderReadonly() : React.cloneElement(item, overrides);
     }
