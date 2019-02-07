@@ -44,7 +44,7 @@ export class AboutDialogModel {
                 row('Hoist Core', svc.get('hoistCoreVersion')),
                 row('Hoist React', svc.get('hoistReactVersion')),
                 row('Build', svc.get('clientBuild')),
-                row('User Agent', navigator.userAgent),
+                row('User Agent', window.navigator.userAgent),
                 ...configRows
             )
         });

@@ -6,6 +6,7 @@
  */
 
 import {Component} from 'react';
+import PT from 'prop-types';
 import {XH, HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {grid, GridModel} from '@xh/hoist/cmp/grid';
 import {omit} from 'lodash';
@@ -20,6 +21,11 @@ import {DataViewModel} from './DataViewModel';
 export class DataView extends Component {
 
     static modelClass = DataViewModel;
+
+    static propTypes = {
+        /** Primary component model instance. */
+        model: PT.oneOfType([PT.instanceOf(DataViewModel), PT.object]).isRequired
+    };
 
     baseClassName = 'xh-data-view';
 
@@ -62,7 +68,7 @@ export class DataView extends Component {
     valueGetter = (params) => {
         const realData = omit(params.data.raw, 'id');
         return Object.values(realData).join('\r');
-    }
+    };
 
     destroy() {
         XH.safeDestroy(this._gridModel);

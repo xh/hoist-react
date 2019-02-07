@@ -54,12 +54,14 @@
   }
 
   &.xh-textarea {
+    display: flex;
+    align-items: stretch;
     background-color: var(--xh-bg);
 
     textarea {
+      flex: 1;
       padding: var(--xh-pad-px);
       box-sizing: border-box;
-      width: 100%;
       background-color: transparent;
       color: var(--xh-text-color);
       resize: none;
@@ -135,7 +137,7 @@
   height: 28px;
 }
 
-.xh-button-group .xh-button {
+body.xh-app .xh-button-group .xh-button {
   &:not(:first-child) {
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
@@ -147,6 +149,25 @@
     &:not(.button--light):not(.button--outline) {
       margin-right: 1px;
     }
+  }
+
+  &:not(.button--outline):not(.button--quiet):not(.button--light) {
+    background-color: var(--xh-border-color);
+    &.xh-button-active {
+      background-color: var(--xh-btn-color);
+      opacity: 1;
+    }
+  }
+  &.button--outline.xh-button-active {
+    background-color: var(--xh-btn-color);
+    color: white;
+  }
+  &.button--light.xh-button-active {
+    background-color: var(--xh-bg-alt);
+    color: var(--xh-text-color);
+  }
+  &.button--quiet.xh-button-active {
+    background-color: var(--xh-bg-alt);
   }
 }
 

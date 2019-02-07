@@ -22,42 +22,35 @@ export class LogViewerToolbar extends Component {
                 label('Start line:'),
                 numberInput({
                     model,
-                    field: 'startLine',
+                    bind: 'startLine',
                     min: 0,
                     width: 80,
                     disabled: model.tail,
-                    displayWithCommas: true,
-                    onCommit: this.onCommit
+                    displayWithCommas: true
                 }),
                 label('Max lines:'),
                 numberInput({
                     model,
-                    field: 'maxLines',
+                    bind: 'maxLines',
                     min: 1,
                     width: 80,
-                    displayWithCommas: true,
-                    onCommit: this.onCommit
+                    displayWithCommas: true
                 }),
                 toolbarSep(),
                 textInput({
                     model,
-                    field: 'pattern',
+                    bind: 'pattern',
                     placeholder: 'Search...',
-                    width: 150,
-                    onCommit: this.onCommit
+                    width: 150
                 }),
                 toolbarSep(),
                 switchInput({
                     model,
-                    field: 'tail',
+                    bind: 'tail',
                     label: 'Tail mode'
                 })
             ]
         });
-    }
-
-    onCommit = () => {
-        this.model.loadLines();
     }
 }
 export const logViewerToolbar = elemFactory(LogViewerToolbar);

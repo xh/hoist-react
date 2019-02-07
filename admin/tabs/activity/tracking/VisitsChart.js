@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {HoistComponent, LoadSupport, elemFactory} from '@xh/hoist/core';
 import {dateInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -15,6 +15,7 @@ import {chart} from '@xh/hoist/desktop/cmp/chart';
 import {Icon} from '@xh/hoist/icon';
 
 @HoistComponent
+@LoadSupport
 export class VisitsChart extends Component {
     
     render() {
@@ -37,16 +38,15 @@ export class VisitsChart extends Component {
     // Implementation
     //-----------------------------
     renderToolbar() {
-        const model = this.model;
+        const {model} = this;
         return toolbar(
-            this.dateInput({field: 'startDate'}),
+            this.dateInput({bind: 'startDate'}),
             Icon.angleRight(),
-            this.dateInput({field: 'endDate'}),
+            this.dateInput({bind: 'endDate'}),
             textInput({
                 model,
-                field: 'username',
+                bind: 'username',
                 placeholder: 'Username',
-                onCommit: this.onCommit,
                 width: 120
             }),
             refreshButton({model})
@@ -56,17 +56,11 @@ export class VisitsChart extends Component {
     dateInput(args) {
         return dateInput({
             model: this.model,
-            onCommit: this.onCommit,
             popoverPosition: 'top-left',
             commitOnChange: true,
             width: 100,
             ...args
         });
     }
-
-    onCommit = () => {
-        this.model.loadAsync();
-    }
 }
-
 export const visitsChart = elemFactory(VisitsChart);

@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {flatten, isEmpty, startCase, partition, isFunction} from 'lodash';
+import {flatten, isEmpty, startCase, partition, isFunction, isUndefined} from 'lodash';
 import {HoistModel} from '@xh/hoist/core';
 import {observable, action, computed} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
@@ -14,53 +14,58 @@ import {ValidationState} from '../validation/ValidationState';
 import {Rule} from '../validation/Rule';
 
 /**
+ * Model for a data field within a Form. Specifies the field's name, user-facing label, validation
+ * rules, and other properties. Holds the field's value as initialized by a parent FormModel or
+ * updated by a user interacting with a bound FormField component.
  *
- * A data field in a Form.
+ * These models are typically created by passing configuration objects to the constructor or
+ * `addField()` method of a parent FormModel. The parent Form/FormModel and the FormField component
+ * work together to bind to this model by name.
  */
 @HoistModel
 export class FieldModel {
 
-    /** @member {FormModel} owning field */
+    /** @member {FormModel} */
     _formModel;
 
-
-    /** @member {string} name of property within model containing this field. */
-    name;
-    /** @member {*} initial value of this field. */
-    initialValue;
-    /** @member {*} value of this field. */
+    /** @member {*} */
+    @observable.ref initialValue;
+    /** @member {*} */
     @observable.ref value;
-    /** @member {string} user visible name for a field.  For use in validation messages and form labelling. */
+
+    /** @member {string} */
+    name;
+    /** @member {string} */
     @observable displayName;
-    /** @member {boolean}.  True to disable input on this field.*/
-    @observable disabled;
-    /** @member {boolean}.  True to make this field read-only.*/
-    @observable readonly;
-    /** @member {Rule[]} list of validation rules to apply to this field. */
+
+    /** @member {Rule[]} */
     @observable.ref rules = [];
-    /** @member {String[]} list of validation errors.  Null if the validity state not computed. */
+    /** @member {String[]} - validation errors, or null if validation has not been run. */
     @observable.ref errors = null;
 
     /**
-     * @member {boolean}
-     * Should the GUI currently display this validation? False when a validation is "passive",
-     * because, e.g. the field has not yet been visited or edited since the last reset.
+     * @member {boolean} - true to trigger the display of any validation error messages by this
+     *      model's bound FormField component. False to hide any such messages - even if the value
+     *      is not in fact valid. This is often preferable when the user has yet to interact with
+     *      this field since init/reset and eagerly showing validation errors would be confusing.
      */
     @observable validationDisplayed = false;
 
+    @observable _disabled;
+    @observable _readonly;
     _validationTask = new PendingTaskModel();
     _validationRunId = 0;
 
     /**
-     * @param {Object} cfg
-     * @param {string} cfg.name
-     * @param {string} [cfg.displayName]
-     * @param {string} [cfg.initialValue]
-     * @param {boolean} [cfg.disabled]
-     * @param {boolean} [cfg.readonly]
-     * @param {(Rule|Object|Function)} [cfg.rules] -
-     *      Rules, rule configurations, or validation functions to create rules.
-     *      (All validation functions supplied will be combined in to a single rule)
+     * @param {Object} c - FieldModel configuration.
+     * @param {string} c.name - unique name for this field within its parent FormModel.
+     * @param {string} [c.displayName] - user-facing name for labels and validation messages.
+     * @param {*} [c.initialValue] - initial value of this field.
+     * @param {boolean} [c.disabled] - true to disable the input control for this field.
+     * @param {boolean} [c.readonly] - true to render a read-only value (vs. an input control).
+     * @param {(Rule[]|Object[]|Function[])} [c.rules] - Rules, rule configs, or validation
+     *      functions to apply to this field. (All validation functions supplied will be combined
+     *      to create a single Rule.)
      */
     constructor({
         name,
@@ -74,22 +79,19 @@ export class FieldModel {
         this.displayName = displayName;
         this.value = initialValue;
         this.initialValue = initialValue;
-        this.disabled = disabled;
-        this.readonly = readonly;
+        this._disabled = disabled;
+        this._readonly = readonly;
         this.rules = this.processRuleSpecs(rules);
     }
 
     //-----------------------------
     // Accessors and lifecycle
     //-----------------------------
-    /**
-     * Owning FormModel for this Field.
-     *
-     * Not set directly by applications.  See FormModel.addField().
-     */
+    /** Parent FormModel - set via FormModel ctor/addField(). */
     get formModel() {
         return this._formModel;
     }
+
     set formModel(formModel) {
         this._formModel = formModel;
         this.addAutorun(() => {
@@ -105,11 +107,31 @@ export class FieldModel {
         return this.value;
     }
 
-    /**
-     * The current data in this field, fully enumerated.  Used for gather and submitting form data to a server.
-     */
+    /** Current data in this field, fully enumerated. */
     getData() {
         return this.value;
+    }
+
+    /** @member {boolean} */
+    get disabled() {
+        const {formModel} = this;
+        return !!(this._disabled || (formModel && formModel.disabled));
+    }
+
+    @action
+    setDisabled(disabled) {
+        this._disabled = disabled;
+    }
+
+    /** @member {boolean} */
+    get readonly() {
+        const {formModel} = this;
+        return !!(this._readonly || (formModel && formModel.readonly));
+    }
+
+    @action
+    setReadonly(readonly) {
+        this._readonly = readonly;
     }
 
     @action
@@ -117,59 +139,46 @@ export class FieldModel {
         this.value = v;
     }
 
-    /**
-     * List of all validation errors for this field and its sub-forms.
-     */
+    /** @member {String[]} - all validation errors for this field and its sub-forms. */
     get allErrors() {
         return this.errors || [];
     }
 
-
     /**
-     * Set the initial value of the field, reset
-     * to that value, and reset validation state.
+     * Set the initial value of the field, reset to that value, and reset validation state.
+     * @param {*} initialValue
      */
     @action
-    init(initialValue = null) {
-        this.initialValue = initialValue;
+    init(initialValue) {
+        if (!isUndefined(initialValue)) {
+            this.initialValue = initialValue;
+        }
         this.reset();
     }
 
     /** Reset to the initial value and reset validation state. */
     @action
     reset() {
-        this.setValue(this.initialValue);
+        this.value = this.initialValue;
         this.errors = null;
         this.validationDisplayed = false;
-        this.computeValidationAsync();
     }
 
-    //----------------------
-    // Disabled/readonly
-    //----------------------
-    @action
-    setDisabled(disabled) {
-        this.setDisabled = disabled;
+    /** @member {boolean} - true if value has been changed since last reset/init. */
+    get isDirty() {
+        return this.value !== this.initialValue;
     }
 
-    @action
-    setReadonly(readonly) {
-        this.setReadonly = readonly;
-    }
-
-
-    //------------------------------------
+    //------------------------
     // Validation
-    //------------------------------------
+    //------------------------
     /**
-     * Set the validationDisplayed property to true.
+     * Trigger the display of any validation messages by the bound FormField component. Called
+     * when validation is requested on the parent FormModel, when the field is dirtied, or when a
+     * HoistInput bound to the field is blurred.
      *
      * @param {boolean} [includeSubforms] - true to include all subforms of this field.
-     *
-     * Typically called when containing form is validated, when the field is dirtied or
-     * a HoistInput bound to the field is blurred.  May also be called manually,
-     * e.g. when the user requests to move to next page, validate buttons, etc.
-     **/
+     */
     @action
     displayValidation(includeSubforms = true) {
         this.validationDisplayed = true;
@@ -184,43 +193,40 @@ export class FieldModel {
             isEmpty(errors) ? VS.Valid : VS.NotValid;
     }
 
-    /** True if this field is confirmed to be Valid. **/
+    /** @member {boolean} - true if this field is confirmed to be Valid. */
     get isValid() {
         return this.validationState == ValidationState.Valid;
     }
 
-    /** True if this field is confirmed to be NotValid. **/
+    /** @member {boolean} - true if this field is confirmed to be NotValid. */
     get isNotValid() {
         return this.validationState == ValidationState.NotValid;
     }
 
     /**
-     * Is the validation of the field currently pending?
-     *
-     * Return true if this validator is awaiting completion of a re-evaluation.
-     * If true, the current state is out of date and should be considered provisional.
+     * @member {boolean} - true if validation of this field is currently pending, in which case
+     *      the current state is out of date and should be considered provisional.
      */
     get isValidationPending() {
         return this._validationTask.isPending;
     }
 
     /**
-     * Is a non-nullish (null or undefined) value for this field required?
-     * This getter will return true if there is an active rule with the 'required' constraint.
+     * @member {boolean} - true if this field requires a non-nullish (null or undefined) value,
+     *      i.e. if there is an active rule with the 'required' constraint.
      */
     @computed
     get isRequired() {
         return this.rules.some(r => r.requiresValue(this));
     }
-    
+
     /**
      * Recompute all validations and return true if the field is valid.
      *
      * @param {Object} [c]
-     * @param {boolean] [c.display] - true to activate validation display
-     *      for the field after validation has been peformed.
-     *
-     * @returns {Promise<boolean>} - the validation state of the object.
+     * @param {boolean} [c.display] - true to trigger the display of validation errors (if any)
+     *      by the bound FormField component after validation is complete.
+     * @returns {Promise<boolean>}
      */
     @action
     async validateAsync({display = true} = {}) {
@@ -229,17 +235,10 @@ export class FieldModel {
         return this.isValid;
     }
 
-    //------------------------------
-    // Dirty State
-    //------------------------------
-    /** Does the field have changes from its initial state? */
-    get isDirty() {
-        return this.value !== this.initialValue;
-    }
 
-    //--------------------------
+    //------------------------
     // Implementation
-    //-------------------------
+    //------------------------
     processRuleSpecs(ruleSpecs) {
         // Peel off raw validations into a single rule spec
         const [constraints, rules] = partition(ruleSpecs, isFunction);
@@ -249,7 +248,6 @@ export class FieldModel {
         return rules.map(r => r instanceof Rule ? r : new Rule(r));
     }
 
-    
     async computeValidationAsync() {
         const runId = ++this._validationRunId;
         return this

@@ -61,12 +61,14 @@ export class LogViewerDisplay extends Component {
 
     timedRefreshLines() {
         const {model} = this;
+
         if (model.tail && this.isDisplayed) {
             const {lastRow} = this,
                 rect = lastRow.value && lastRow.value.getBoundingClientRect(),
                 inView = rect && rect.bottom <= window.innerHeight;
+
             if (inView) {
-                model.fetchFile({isAutoRefresh: true});
+                model.fetchFileAsync({isAutoRefresh: true});
             }
         }
     }

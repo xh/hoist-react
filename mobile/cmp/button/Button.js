@@ -53,7 +53,7 @@ export class Button extends Component {
             },
 
             ...rest,
-            className: this.getClassName('xh-button', active ? 'xh-button-active' : '')
+            className: this.getClassName(active ? 'xh-button-active' : null)
         });
     }
 

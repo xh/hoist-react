@@ -22,8 +22,8 @@ import './Panel.scss';
  * A Panel container builds on the lower-level layout components to offer a header element
  * w/standardized styling, title, and Icon as well as support for top and bottom toolbars.
  *
- * Panels also support resizing and collapsing their contents via its `model` prop. Pass a
- * `PanelModel` configuration object as a prop to enable and customize these features.
+ * Panels also support resizing and collapsing their contents via its `model` prop. Provide an
+ * optional `PanelModel` config as a prop to enable and customize these features.
  *
  * @see PanelModel
  */
@@ -38,20 +38,14 @@ export class Panel extends Component {
     static propTypes = {
         ...layoutSupportProps,
 
-        /** A title text added to the panel's header. */
-        title: PT.oneOfType([PT.string, PT.node]),
-
-        /** An icon placed at the left-side of the panel's header. */
-        icon: PT.element,
+        /** A toolbar to be docked at the bottom of the panel. */
+        bbar: PT.element,
 
         /** Items to be added to the right-side of the panel's header. */
         headerItems: PT.node,
 
-        /** A toolbar to be docked at the top of the panel. */
-        tbar: PT.element,
-
-        /** A toolbar to be docked at the bottom of the panel. */
-        bbar: PT.element,
+        /** An icon placed at the left-side of the panel's header. */
+        icon: PT.element,
 
         /**
          * Mask to render on this panel. Set to:
@@ -59,7 +53,16 @@ export class Panel extends Component {
          *   + a PendingTaskModel for a default loading mask w/spinner bound to that model - or -
          *   + true for a simple default mask.
          */
-        mask: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool])
+        mask: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool]),
+
+        /** Primary component model instance. */
+        model: PT.oneOfType([PT.instanceOf(PanelModel), PT.object]),
+
+        /** A toolbar to be docked at the top of the panel. */
+        tbar: PT.element,
+
+        /** Title text added to the panel's header. */
+        title: PT.oneOfType([PT.string, PT.node])
     };
 
     baseClassName = 'xh-panel';
@@ -92,8 +95,14 @@ export class Panel extends Component {
             resizable = false,
             collapsible = false,
             collapsed = false,
-            collapsedRenderMode = null
+            collapsedRenderMode = null,
+            vertical = false
         } = model || {};
+
+        if (collapsed) {
+            delete layoutProps[`min${vertical ? 'Height' : 'Width'}`];
+            delete layoutProps[vertical ? 'height' : 'width'];
+        }
 
         let coreContents = null;
         if (!collapsed || collapsedRenderMode == 'always' || (collapsedRenderMode == 'lazy' && this.wasDisplayed)) {

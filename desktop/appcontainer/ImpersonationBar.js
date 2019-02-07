@@ -56,7 +56,7 @@ export class ImpersonationBar extends Component {
                 filler(),
                 select({
                     model: this,
-                    field: 'pendingTarget',
+                    bind: 'pendingTarget',
                     options: targets,
                     enableCreate: true,
                     placeholder: 'Select User...',
@@ -82,7 +82,7 @@ export class ImpersonationBar extends Component {
     //---------------------
     onHotKey = () => {
         this.model.toggleVisibility();
-    }
+    };
 
     onCommit = () => {
         if (this.pendingTarget) {
@@ -93,7 +93,7 @@ export class ImpersonationBar extends Component {
                 XH.handleException(e, {logOnServer: false});  // likely to be an unknown user
             });
         }
-    }
+    };
 
     onExitClick = () => {
         const {model} = this;
@@ -102,7 +102,7 @@ export class ImpersonationBar extends Component {
         } else {
             model.hide();
         }
-    }
+    };
 
     @action
     setPendingTarget(pendingTarget) {

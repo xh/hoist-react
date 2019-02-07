@@ -47,6 +47,9 @@ export class Grid extends Component {
         /** True to suppress display of the grid's header row. */
         hideHeaders: PT.bool,
 
+        /** Primary component model instance. */
+        model: PT.oneOfType([PT.instanceOf(GridModel), PT.object]).isRequired,
+
         /**
          * Callback to call when a key down event is detected on this component.
          * Function will receive an event with the standard 'target' element.
@@ -156,11 +159,14 @@ export class Grid extends Component {
         const {model, props} = this;
 
         let ret = {
-            enableSorting: true,
-            enableColResize: true,
             deltaRowDataMode: true,
             getRowNodeId: (data) => data.id,
-            defaultColDef: {suppressMenu: true, menuTabs: ['filterMenuTab']},
+            defaultColDef: {
+                sortable: true,
+                resizable: true,
+                suppressMenu: true,
+                menuTabs: ['filterMenuTab']
+            },
             popupParent: document.querySelector('body'),
             defaultGroupSortComparator: this.sortByGroup,
             headerHeight: props.hideHeaders ? 0 : undefined,

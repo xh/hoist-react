@@ -118,6 +118,7 @@ import {
     faSignIn,
     faSignOut,
     faSkull,
+    faSlidersHSquare,
     faStar,
     faStop,
     faStopCircle,
@@ -253,6 +254,7 @@ import {
     faSignIn as faSignInLight,
     faSignOut as faSignOutLight,
     faSkull as faSkullLight,
+    faSlidersHSquare as faSlidersHSquareLight,
     faStar as faStarLight,
     faStop as faStopLight,
     faStopCircle as faStopCircleLight,
@@ -388,6 +390,7 @@ import {
     faSignIn as faSignInSolid,
     faSignOut as faSignOutSolid,
     faSkull as faSkullSolid,
+    faSlidersHSquare as faSlidersHSquareSolid,
     faStar as faStarSolid,
     faStop as faStopSolid,
     faStopCircle as faStopCircleSolid,
@@ -525,6 +528,7 @@ library.add(
     faSignIn, faSignInLight, faSignInSolid,
     faSignOut, faSignOutLight, faSignOutSolid,
     faSkull, faSkullLight, faSkullSolid,
+    faSlidersHSquare, faSlidersHSquareLight, faSlidersHSquareSolid,
     faStar, faStarLight, faStarSolid,
     faStop, faStopLight, faStopSolid,
     faStopCircle, faStopCircleLight, faStopCircleSolid,
@@ -666,6 +670,7 @@ export const Icon = {
     moon(p)             {return fa(p, 'moon')},
     office(p)           {return fa(p, 'building')},
     openExternal(p)     {return fa(p, 'external-link')},
+    options(p)          {return fa(p, 'sliders-h-square')},
     pause(p)            {return fa(p, 'pause')},
     pauseCircle(p)      {return fa(p, 'pause-circle')},
     play(p)             {return fa(p, 'play')},
@@ -679,6 +684,7 @@ export const Icon = {
     rocket(p)           {return fa(p, 'rocket')},
     save(p)             {return fa(p, 'save')},
     search(p)           {return fa(p, 'search')},
+    settings(p)         {return fa(p, 'sliders-h-square')},
     skull(p)            {return fa(p, 'skull')},
     stop(p)             {return fa(p, 'stop')},
     stopCircle(p)       {return fa(p, 'stop-circle')},
@@ -737,7 +743,7 @@ export const fileIcon = function(extension) {
         case 'doc':
         case 'docx':
             return Icon.fileWord();
-        case 'xlx':
+        case 'xls':
         case 'xlsx':
             return Icon.fileExcel();
         case 'ppt':

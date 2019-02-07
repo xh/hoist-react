@@ -25,7 +25,9 @@ export class Button extends Component {
         icon: PT.element,
         minimal: PT.bool,
         onClick: PT.func,
-        text: PT.string
+        style: PT.object,
+        text: PT.string,
+        title: PT.string
     };
 
     baseClassName = 'xh-button';

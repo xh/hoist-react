@@ -48,21 +48,23 @@ export class LoginPanel extends Component {
                         vspacer(10),
                         textInput({
                             model,
-                            field: 'username',
+                            bind: 'username',
                             placeholder: 'Username...',
                             autoFocus: true,
                             commitOnChange: true,
                             onKeyPress: this.onKeyPress,
-                            autoComplete: 'on'
+                            autoComplete: 'on',
+                            width: null
                         }),
                         textInput({
                             model,
-                            field: 'password',
+                            bind: 'password',
                             placeholder: 'Password...',
                             type: 'password',
                             commitOnChange: true,
                             onKeyPress: this.onKeyPress,
-                            autoComplete: 'on'
+                            autoComplete: 'on',
+                            width: null
                         }),
                         text({
                             omit: !model.warning,

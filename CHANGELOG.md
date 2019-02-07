@@ -1,12 +1,124 @@
 # Changelog
 
-## v19.0.0-SNAPSHOT (in development / unreleased)
+## v20.0.0-SNAPSHOT (unreleased / under development)
+
+
+## v19.0.0-rc1 - 2019-01-30
 
 ### 🎁 New Features
 
-* `Grid` components take `onCellClicked` and `onCellDoubleClicked` event handlers
+* Added a new architecture for signaling the need to load / refresh new data across either the
+  entire app or a section of the component hierarchy. This new system relies on React context to
+  minimizes the need for explicit application wiring, and improves support for auto-refresh. See
+  newly added decorator `@LoadSupport` and classes/components `RefreshContext`,
+  `RefreshContextModel`, and `RefreshContextView` for more info.
+* `TabContainerModel` and `TabModel` now support `refreshMode` and `renderMode` configs to allow
+  better control over how inactive tabs are mounted/unmounted and how tabs handle refresh requests
+  when hidden or (re)activated.
+* Apps can implement `getAppOptions()` in their `AppModel` class to specify a set of app-wide
+  options that should be editable via a new built-in Options dialog. This system includes built-in
+  support for reading/writing options to preferences, or getting/setting their values via custom
+  handlers. The toolkit handles the rendering of the dialog.
+* Standard top-level app buttons - for actions such as launching the new Options dialog, switching
+  themes, launching the admin client, and logging out - have been moved into a new menu accessible
+  from the top-right corner of the app, leaving more space for app-specific controls in the AppBar.
+* `RecordGridModel` now supports an enhanced `editors` configuration that exposes the full set of
+    validation and display support from the Forms package.
+* `HoistInput` sizing is now consistently implemented using `LayoutSupport`. All sizable `HoistInputs`
+  now have default `width` to ensure a standard display out of the box. `JsonInput` and `TextArea` also
+  have default `height`. These defaults can be overridden by declaring explicit `width` and `height`
+  values, or unset by setting the prop to `null`.
+* `HoistInputs` within `FormFields` will be automatically sized to fill the available space in the
+  `FormField`. In these cases, it is advised to either give the `FormField` an explicit size or render it
+  in a flex layout.
 
-## v18.0.0-rcx (release candidate)
+### 💥 Breaking Changes
+
+* ag-Grid has been updated to v20.0.0. Most apps shouldn't require any changes - however, if you are using
+  `agOptions` to set sorting, filtering or resizing properties, these may need to change:
+  
+  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and `agOptions.enableFilter` have been removed. You can replicate their effects by using `agOptions.defaultColDef`.
+  For `Columns`, `suppressFilter` has been removed, an should be replaced with `filter: false`.
+
+* `HoistAppModel.requestRefresh` and `TabContainerModel.requestRefresh` have been removed.
+  Applications should use the new Refresh architecture described above instead.
+
+* `tabRefreshMode` on TabContainer has been renamed `renderMode`.
+
+* `TabModel.reloadOnShow` has been removed. Set the `refreshMode` property on TabContainerModel or
+  TabModel to `TabRefreshMode.ON_SHOW_ALWAYS` instead.
+
+* The mobile APIs for `TabContainerModel`, `TabModel`, and `RefreshButton` have been rewritten to
+  more closely mirror the desktop API.
+
+* The API for `RecordGridModel` editors has changed -- `type` is no longer supported.  Use `fieldModel`
+and `formField` intead. 
+
+* `LocalStore.loadRawData` requires that all records presented to store have unique id's specified.  
+See `LocalStore.idSpec` for more information.
+
+
+### 🐞 Bug Fixes
+
+* SwitchInput and RadioInput now properly highlight validation errors in `minimal` mode.
+
+### 📚 Libraries
+
+* ag-Grid `~19.1.4 -> ~20.0.0`
+
+## v18.1.2 - 2019-01-30
+
+### 🐞 Bug Fixes
+
+* Grid integrations relying on column visibility (namely export, storeFilterField) now correctly
+  consult updated column state from GridModel. #935
+* Ensure `FieldModel.initialValue` is observable to ensure that computed dirty state (and any other
+  derivations) are updated if it changes. #934
+* Fixes to ensure Admin console log viewer more cleanly handles exceptions (e.g. attempting to
+  auto-refresh on a log file that has been deleted).
+
+## v18.1.1 - 2019-01-29
+
+* Grid cell padding can be controlled via a new set of CSS vars and is reduced by default for grids
+  in compact mode.
+* The `addRecordAsync()` and `saveRecordAsync()` methods on `RestStore` return the updated record.
+
+## v18.1.0 - 2019-01-28
+
+### 🎁 New Features
+
+* New `@managed` class field decorator can be used to mark a property as fully created/owned by its
+  containing class (provided that class has installed the matching `@ManagedSupport` decorator).
+  * The framework will automatically pass any `@managed` class members to `XH.safeDestroy()` on
+    destroy/unmount to ensure their own `destroy()` lifecycle methods are called and any related
+    resources are disposed of properly, notably MobX observables and reactions.
+  * In practice, this should be used to decorate any properties on `HoistModel`, `HoistService`, or
+    `HoistComponent` classes that hold a reference to a `HoistModel` created by that class. All of
+    those core artifacts support the new decorator, `HoistModel` already provides a built-in
+    `destroy()` method, and calling that method when an app is done with a Model is an important
+    best practice that can now happen more reliably / easily.
+* `FormModel.getData()` accepts a new single parameter `dirtyOnly` - pass true to get back only
+  fields which have been modified.
+* The mobile `Select` component indicates the current value with a ✅ in the drop-down list.
+* Excel exports from tree grids now include the matching expand/collapse tree controls baked into
+  generated Excel file.
+
+### 🐞 Bug Fixes
+
+* The `JsonInput` component now properly respects / indicates disabled state.
+
+### 📚 Libraries
+
+* Hoist-dev-utils `3.4.1 -> 3.5.0` - updated webpack and other build tool dependencies, as well as
+  an improved eslint configuration.
+* @blueprintjs/core `3.10 -> 3.12`
+* @blueprintjs/datetime `3.5 -> 3.7`
+* fontawesome `5.6 -> 5.7`
+* mobx `5.8 -> 5.9`
+* react-select `2.2 -> 2.3`
+* Other patch updates
+
+## v18.0.0 - 2019-01-15
 
 ### 🎁 New Features
 
@@ -22,20 +134,32 @@
     property settings from its containing `Form`.
   * `HoistInput` has been moved into the `input` package to clarify that these are lower level
     controls and independent of the Forms package.
-  * `RestGrid` now supports a `mask` prop. RestGrid loading is now masked by default.
-  * `Chart` component now supports a built-in zoom out gesture: click and drag from right-to-left on
-    charts with x-axis zooming.
-  * `Select` now supports an `enableClear` prop to control the presence of a clear button. Defaults
-    to false.
+
+* `RestGrid` now supports a `mask` prop. RestGrid loading is now masked by default.
+* `Chart` component now supports a built-in zoom out gesture: click and drag from right-to-left on
+  charts with x-axis zooming.
+* `Select` now supports an `enableClear` prop to control the presence of an optional inline clear
+  button.
+* `Grid` components take `onCellClicked` and `onCellDoubleClicked` event handlers.
+* A new desktop `FileChooser` wraps a preconfigured react-dropzone component to allow users to
+  easily select files for upload or other client-side processing.
 
 ### 💥 Breaking Changes
 
 * Major changes to Form (see above). `HoistInput` imports will also need to be adjusted to move from
   `form` to `input`.
+* The name of the HoistInput `field` prop has been changed to `bind`. This change distinguishes the
+  lower-level input package more clearly from the higher-level form package which uses it. It also
+  more clearly relates the property to the associated `@bindable` annotation for models.
 * A `Select` input with `enableMulti = true` will by default no longer show an inline x to clear the
   input value. Use the `enableClear` prop to re-enable.
-* Column definitions are exported from the `grid` package. To ensure backwards compatibility, 
-  replace imports from '@xh/hoist/desktop/columns' with '@xh/hoist/desktop/cmp/grid'
+* Column definitions are exported from the `grid` package. To ensure backwards compatibility,
+  replace imports from `@xh/hoist/desktop/columns` with `@xh/hoist/desktop/cmp/grid`.
+
+### 📚 Libraries
+
+* React `~16.6.0 -> ~16.7.0`
+* Patch version updates to multiple other dependencies.
 
 
 ## v17.0.0 - 2018-12-21
@@ -263,11 +387,11 @@ list. Note, this component is being replaced in Hoist v16 by the react-select li
 
 ### 📚 Libraries
 
-* Blueprint Core 3.6.1 -> 3.7.0
-* Blueprint Datetime 3.2.0 -> 3.3.0
-* Fontawesome 5.3.x -> 5.4.x
-* MobX 5.1.2 -> 5.5.0
-* Router5 6.5.0 -> 6.6.0
+* Blueprint Core `3.6.1 -> 3.7.0`
+* Blueprint Datetime `3.2.0 -> 3.3.0`
+* Fontawesome `5.3.x -> 5.4.x`
+* MobX `5.1.2 -> 5.5.0`
+* Router5 `6.5.0 -> 6.6.0`
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v14.1.3...v14.2.0)
 
@@ -374,8 +498,8 @@ list. Note, this component is being replaced in Hoist v16 by the react-select li
 
 ### 📚 Libraries
 
-* React 16.5.1 -> 16.5.2
-* router5 6.4.2 -> 6.5.0
+* React `16.5.1 -> 16.5.2`
+* router5 `6.4.2 -> 6.5.0`
 * CodeMirror, Highcharts, and MobX patch updates
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v13.0.0...v14.0.0)
@@ -723,9 +847,9 @@ and ag-Grid upgrade, and more. 🚀
   * `Panel` and `Resizable` components have moved to their own packages in
     `@xh/hoist/desktop/cmp/panel` and `@xh/hoist/desktop/cmp/resizable`.
 * **Multiple changes and improvements made to tab-related APIs and components.**
-  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes`
-    -> `route` (to specify a starting route as a string) and `switcherPosition` has moved from a
-    model config to a prop on the `TabContainer` component.
+  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes` ->
+    `route` (to specify a starting route as a string) and `switcherPosition` has moved from a model
+    config to a prop on the `TabContainer` component.
   * `TabPane` and `TabPaneModel` have been renamed `Tab` and `TabModel`, respectively, with several
     related renames.
 * **Application entry-point classes decorated with `@HoistApp` must implement the new getter method
