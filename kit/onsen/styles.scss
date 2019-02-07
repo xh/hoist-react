@@ -54,12 +54,14 @@
   }
 
   &.xh-textarea {
+    display: flex;
+    align-items: stretch;
     background-color: var(--xh-bg);
 
     textarea {
+      flex: 1;
       padding: var(--xh-pad-px);
       box-sizing: border-box;
-      width: 100%;
       background-color: transparent;
       color: var(--xh-text-color);
       resize: none;

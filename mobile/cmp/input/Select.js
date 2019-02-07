@@ -98,10 +98,11 @@ export class Select extends HoistInput {
     }
 
     render() {
-        const {props, renderValue} = this,
+        const props = this.getNonLayoutProps(),
+            {width, ...layoutProps} = this.getLayoutProps(),
             rsProps = {
                 options: this.internalOptions,
-                value: renderValue,
+                value: this.renderValue,
 
                 formatOptionLabel: this.formatOptionLabel,
                 isSearchable: false,
@@ -129,8 +130,8 @@ export class Select extends HoistInput {
         return box({
             item: reactSelect(rsProps),
             className: this.getClassName(),
-            width: props.width,
-            ...this.getLayoutProps()
+            ...layoutProps,
+            width: withDefault(width, null)
         });
     }
 
