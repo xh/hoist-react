@@ -9,6 +9,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {LocalStore} from '@xh/hoist/data';
 import {computed} from '@xh/hoist/mobx';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
+import {isNil} from 'lodash';
 
 /**
  * A Model for managing the state of a LeftRightChooser.
@@ -172,10 +173,10 @@ export class LeftRightChooserModel {
     preprocessData(data) {
         return data
             .filter(rec => !rec.exclude)
-            .map((raw, idx) => {
+            .map(raw => {
                 raw.group = raw.group || this._ungroupedName;
                 raw.side = raw.side || 'left';
-                raw.id = raw.id != null ? raw.id : idx;
+                raw.id = isNil(raw.id) ? XH.genId() : raw.id;
                 return raw;
             });
     }

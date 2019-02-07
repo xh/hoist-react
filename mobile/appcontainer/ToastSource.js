@@ -33,7 +33,7 @@ export class ToastSource extends Component {
         if (!next.dismissFn) {
             next.dismissFn = wait(next.timeout).then(() => next.dismiss());
         }
-        return toast({model: next});
+        return toast({model: next, key: next.xhId});
     }
 }
 export const toastSource = elemFactory(ToastSource);

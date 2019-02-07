@@ -60,7 +60,7 @@ export class FileChooser extends Component {
 
         /** Intro/help text to display within the dropzone target. */
         targetText: PT.node
-    }
+    };
 
     static modelClass = FileChooserModel;
 
