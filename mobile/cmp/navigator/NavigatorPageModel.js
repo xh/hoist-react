@@ -22,6 +22,7 @@ export class NavigatorPageModel {
     content = null;
     props = null;
     title = null;
+    preventLink = null;
 
     key = null;
 
@@ -31,17 +32,21 @@ export class NavigatorPageModel {
      *      element factory of the form returned by elemFactory.
      * @param {Object} [props] - props to be passed to page upon creation.
      * @param {string} [title] - title for page. Displayed in AppBar header.
+     * @param {boolean} [preventLink] - Don't allow the route can be arrived at in a new browser session.
+     *      Non-linkable routes are unwound to a safe starting point at the start of a new session.
      */
     constructor({
         route,
         content,
         props,
-        title
+        title,
+        preventLink
     }) {
         this.route = route;
         this.content = content;
         this.props = props;
         this.title = title;
+        this.preventLink = preventLink;
 
         const key = withDefault(route, title, 'page');
         this.key = uniqueId(`${snakeCase(key)}_`);

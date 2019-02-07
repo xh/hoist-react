@@ -107,7 +107,7 @@ export class NavigatorModel {
         this._prevPageCount = pages.length;
     }
 
-    onRouteChange() {
+    onRouteChange(init) {
         const {pages, routes} = this,
             {routerState} = XH;
 
@@ -134,11 +134,23 @@ export class NavigatorModel {
         // At each part, check to see if the page already exists at the expected position within the stack.
         const newPages = [];
 
-        routeParts.forEach((part, idx) => {
-            const route = find(routes, {route: part.route}),
-                page = pages[idx];
+        for (let i = 0; i < routeParts.length; i++) {
+            const part = routeParts[i],
+                page = pages[i],
+                route = find(routes, {route: part.route});
 
             throwIf(!route, `Route ${part.route} is not configured in the NavigatorModel`);
+
+            // If, on the initial pass, we encounter a route that prevents linking,
+            // we drop the rest of the route and redirect to the route so far
+            if (init && route.preventLink) {
+                const completedRouteParts = routeParts.slice(0, i),
+                    newRouteName = completedRouteParts.map(it => it.route).join('.'),
+                    newRouteParams = merge({}, ...completedRouteParts.map(it => it.props));
+
+                XH.navigate(newRouteName, newRouteParams, {replace: true});
+                return;
+            }
 
             if (!page || page.route !== route.route) {
                 // Add new page
@@ -147,7 +159,7 @@ export class NavigatorModel {
                 // Keep same page
                 newPages.push(page);
             }
-        });
+        }
 
         this.setPages(newPages);
     }
@@ -159,7 +171,7 @@ export class NavigatorModel {
             // navigator and to read the initial route.
             if (!this._navigator) {
                 this._navigator = navigator;
-                this.onRouteChange();
+                this.onRouteChange(init);
             }
             return null;
         } else {
