@@ -121,15 +121,15 @@
       margin-left: 20px;
     }
 
-    // As of agGrid 20, the group row always reserve space for a grouping checkbox.
-    // We remove this to tighten up the spacing.
-    .ag-group-checkbox.ag-invisible {
-      display: none;
-    }
-
     .ag-group-contracted + .ag-group-value:not(:empty) {
       margin-left: 0;
     }
+  }
+
+  // As of agGrid 20, the group row always reserve space for a grouping checkbox.
+  // We remove this to tighten up the spacing.
+  .ag-group-checkbox.ag-invisible {
+    display: none;
   }
 
   .ag-ltr .ag-row-group-leaf-indent {
