@@ -50,7 +50,11 @@ export class DateInputNew extends HoistInput {
         textAlign: PT.oneOf(['left', 'right']),
 
         /** Width of the control in pixels. */
-        width: PT.number
+        width: PT.number,
+
+        /** Upward opening direction of the DateTimePicker popup */
+        dropUp: PT.bool
+
     };
 
     baseClassName = 'xh-date-input';
@@ -66,6 +70,7 @@ export class DateInputNew extends HoistInput {
             value: this.renderValue,
 
             disabled: props.disabled,
+            dropUp: props.dropUp,
             inputProps: {
                 autoComplete: 'nope',
                 tabIndex: props.tabIndex,

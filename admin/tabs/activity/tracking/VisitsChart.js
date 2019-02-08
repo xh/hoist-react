@@ -57,7 +57,7 @@ export class VisitsChart extends Component {
         return dateInputNew({
             model: this.model,
             onCommit: this.onCommit,
-            popoverPosition: 'top-left',
+            dropUp: true,
             commitOnChange: true,
             width: 100,
             ...args
