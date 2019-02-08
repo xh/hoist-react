@@ -85,7 +85,6 @@ export class RestFormModel {
             if (!confirmed) return;
         }
 
-        // getting here no matter what
         return this.saveRecordAsync();
     }
 
