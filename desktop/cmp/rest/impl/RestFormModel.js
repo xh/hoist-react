@@ -77,11 +77,12 @@ export class RestFormModel {
         }
 
         if (warning) {
-            await XH.confirm({
+            const confirmed = await XH.confirm({
                 message: warning,
                 title: 'Warning',
                 icon: Icon.warning({size: 'lg'})
             });
+            if (!confirmed) return;
         }
 
         return this.saveRecordAsync();
