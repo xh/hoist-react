@@ -8,7 +8,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import createRouter from 'router5';
-import browserPlugin from 'router5/plugins/browser';
+import browserPlugin from 'router5-plugin-browser';
 
 /**
  * Top-level model for managing application routing in Hoist.
@@ -71,8 +71,8 @@ export class RouterModel {
     createRouter() {
         const ret = createRouter([], {defaultRoute: 'default'});
 
-        ret.usePlugin(browserPlugin())
-            .subscribe(ev => this.setCurrentState(ev.route));
+        ret.usePlugin(browserPlugin());
+        ret.subscribe(ev => this.setCurrentState(ev.route));
 
         return ret;
     }
