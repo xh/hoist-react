@@ -10,7 +10,7 @@ import {grid} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 import {ServiceModel} from './ServiceModel';
@@ -49,7 +49,8 @@ export class ServicePanel extends Component {
             }),
             filler(),
             storeCountLabel({gridModel, unit: 'service'}),
-            storeFilterField({gridModel})
+            storeFilterField({gridModel}),
+            exportButton({gridModel})
         );
     }
 
