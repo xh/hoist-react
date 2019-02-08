@@ -11,8 +11,8 @@
     "lint": "yarn run eslint ."
   },
   "dependencies": {
-    "@blueprintjs/core": "~3.12.0",
-    "@blueprintjs/datetime": "~3.7.0",
+    "@blueprintjs/core": "~3.13.0",
+    "@blueprintjs/datetime": "~3.7.1",
     "@fortawesome/fontawesome-pro": "~5.7.0",
     "@fortawesome/fontawesome-svg-core": "~1.2.13",
     "@fortawesome/pro-light-svg-icons": "~5.7.0",
@@ -27,7 +27,7 @@
     "codemirror": "~5.43.0",
     "downloadjs": "~1.4.7",
     "filesize": "~4.0.0",
-    "highcharts": "~7.0.2",
+    "highcharts": "~7.0.3",
     "lodash-inflection": "~1.5.0",
     "mobx": "~5.9.0",
     "mobx-react": "~5.4.3",
@@ -36,7 +36,7 @@
     "onsenui": "~2.10.6",
     "prop-types": "~15.6.2",
     "qs": "~6.6.0",
-    "react-dropzone": "~8.0.3",
+    "react-dropzone": "~8.0.4",
     "react-onsenui": "~1.11.2",
     "react-select": "~2.3.0",
     "react-transition-group": "~2.5.3",
