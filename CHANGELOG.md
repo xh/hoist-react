@@ -2,8 +2,9 @@
 
 ## v20.0.0-SNAPSHOT (unreleased / under development)
 
+* TBD
 
-## v19.0.0-rc1 - 2019-01-30
+## v19.0.0 - 2019-02-08
 
 ### 🎁 New Features
 
@@ -23,22 +24,24 @@
   themes, launching the admin client, and logging out - have been moved into a new menu accessible
   from the top-right corner of the app, leaving more space for app-specific controls in the AppBar.
 * `RecordGridModel` now supports an enhanced `editors` configuration that exposes the full set of
-    validation and display support from the Forms package.
-* `HoistInput` sizing is now consistently implemented using `LayoutSupport`. All sizable `HoistInputs`
-  now have default `width` to ensure a standard display out of the box. `JsonInput` and `TextArea` also
-  have default `height`. These defaults can be overridden by declaring explicit `width` and `height`
-  values, or unset by setting the prop to `null`.
+  validation and display support from the Forms package.
+* `HoistInput` sizing is now consistently implemented using `LayoutSupport`. All sizable
+  `HoistInputs` now have default `width` to ensure a standard display out of the box. `JsonInput`
+  and `TextArea` also have default `height`. These defaults can be overridden by declaring explicit
+  `width` and `height` values, or unset by setting the prop to `null`.
 * `HoistInputs` within `FormFields` will be automatically sized to fill the available space in the
-  `FormField`. In these cases, it is advised to either give the `FormField` an explicit size or render it
-  in a flex layout.
+  `FormField`. In these cases, it is advised to either give the `FormField` an explicit size or
+  render it in a flex layout.
 
 ### 💥 Breaking Changes
 
-* ag-Grid has been updated to v20.0.0. Most apps shouldn't require any changes - however, if you are using
-  `agOptions` to set sorting, filtering or resizing properties, these may need to change:
-  
-  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and `agOptions.enableFilter` have been removed. You can replicate their effects by using `agOptions.defaultColDef`.
-  For `Columns`, `suppressFilter` has been removed, an should be replaced with `filter: false`.
+* ag-Grid has been updated to v20.0.0. Most apps shouldn't require any changes - however, if you are
+  using `agOptions` to set sorting, filtering or resizing properties, these may need to change:
+
+  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and
+  `agOptions.enableFilter` have been removed. You can replicate their effects by using
+  `agOptions.defaultColDef`. For `Columns`, `suppressFilter` has been removed, an should be replaced
+  with `filter: false`.
 
 * `HoistAppModel.requestRefresh` and `TabContainerModel.requestRefresh` have been removed.
   Applications should use the new Refresh architecture described above instead.
@@ -51,11 +54,11 @@
 * The mobile APIs for `TabContainerModel`, `TabModel`, and `RefreshButton` have been rewritten to
   more closely mirror the desktop API.
 
-* The API for `RecordGridModel` editors has changed -- `type` is no longer supported.  Use `fieldModel`
-and `formField` intead. 
+* The API for `RecordGridModel` editors has changed -- `type` is no longer supported. Use
+  `fieldModel` and `formField` intead.
 
-* `LocalStore.loadRawData` requires that all records presented to store have unique id's specified.  
-See `LocalStore.idSpec` for more information.
+* `LocalStore.loadRawData` requires that all records presented to store have unique IDs specified.
+  See `LocalStore.idSpec` for more information.
 
 
 ### 🐞 Bug Fixes
@@ -64,6 +67,7 @@ See `LocalStore.idSpec` for more information.
 
 ### 📚 Libraries
 
+* @blueprintjs/core `3.12 -> 3.13`
 * ag-Grid `~19.1.4 -> ~20.0.0`
 
 ## v18.1.2 - 2019-01-30
@@ -847,9 +851,9 @@ and ag-Grid upgrade, and more. 🚀
   * `Panel` and `Resizable` components have moved to their own packages in
     `@xh/hoist/desktop/cmp/panel` and `@xh/hoist/desktop/cmp/resizable`.
 * **Multiple changes and improvements made to tab-related APIs and components.**
-  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes` ->
-    `route` (to specify a starting route as a string) and `switcherPosition` has moved from a model
-    config to a prop on the `TabContainer` component.
+  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes`
+    -> `route` (to specify a starting route as a string) and `switcherPosition` has moved from a
+    model config to a prop on the `TabContainer` component.
   * `TabPane` and `TabPaneModel` have been renamed `Tab` and `TabModel`, respectively, with several
     related renames.
 * **Application entry-point classes decorated with `@HoistApp` must implement the new getter method
