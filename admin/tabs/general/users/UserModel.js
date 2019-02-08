@@ -27,7 +27,8 @@ export class UserModel {
         enableColChooser: true,
         enableExport: true,
         store: new LocalStore({
-            fields: ['username', 'email', 'displayName', 'active', 'roles']
+            fields: ['username', 'email', 'displayName', 'active', 'roles'],
+            idSpec: 'username'
         }),
         sortBy: 'username',
         columns: [

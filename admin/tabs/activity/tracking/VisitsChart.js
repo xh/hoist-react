@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {HoistComponent, LoadSupport, elemFactory} from '@xh/hoist/core';
 import {dateInputNew, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -15,6 +15,7 @@ import {chart} from '@xh/hoist/desktop/cmp/chart';
 import {Icon} from '@xh/hoist/icon';
 
 @HoistComponent
+@LoadSupport
 export class VisitsChart extends Component {
     
     render() {
@@ -37,7 +38,7 @@ export class VisitsChart extends Component {
     // Implementation
     //-----------------------------
     renderToolbar() {
-        const model = this.model;
+        const {model} = this;
         return toolbar(
             this.dateInput({bind: 'startDate'}),
             Icon.angleRight(),
@@ -46,7 +47,6 @@ export class VisitsChart extends Component {
                 model,
                 bind: 'username',
                 placeholder: 'Username',
-                onCommit: this.onCommit,
                 width: 120
             }),
             refreshButton({model})
@@ -64,9 +64,10 @@ export class VisitsChart extends Component {
         });
     }
 
+    // this was removed in the latest version of Hoist
+    // However is utilized in the dateInputNew, investigate
     onCommit = () => {
         this.model.loadAsync();
     }
 }
-
 export const visitsChart = elemFactory(VisitsChart);
