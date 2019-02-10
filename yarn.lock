@@ -785,12 +785,12 @@
     lodash "^4.17.10"
     to-fast-properties "^2.0.0"
 
-"@blueprintjs/core@^3.12.0", "@blueprintjs/core@~3.12.0":
-  version "3.12.0"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.12.0.tgz#98709ba9d0d0813c8e974eb49f1b5abd6c8e271b"
-  integrity sha512-nZGVzgel8YjFye14MU39iMLHTx7iBxG/vPrl432q6pJ7PDuk0M2vJK/eH/0pWISzhTK+/t78mpt3WhUelsvkQg==
+"@blueprintjs/core@^3.13.0", "@blueprintjs/core@~3.13.0":
+  version "3.13.0"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.13.0.tgz#2f767d7c8ae06e94380460e1ba43987671e86e67"
+  integrity sha512-4+DqwflyOLbdHCLXA67UWKP8Efq7bKphIEkHfMdzxWkyXvqYm82YzTTh6T4wt8IKGsjdKQq9gE1lt8peJH8J6w==
   dependencies:
-    "@blueprintjs/icons" "^3.5.1"
+    "@blueprintjs/icons" "^3.6.0"
     "@types/dom4" "^2.0.0"
     classnames "^2.2"
     dom4 "^2.0.1"
@@ -801,20 +801,20 @@
     resize-observer-polyfill "^1.5.0"
     tslib "^1.9.0"
 
-"@blueprintjs/datetime@~3.7.0":
-  version "3.7.0"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/datetime/-/datetime-3.7.0.tgz#7788200597451226e2f396de173db53dcb7ecea8"
-  integrity sha512-eB1DgZpXZGhv7fgVZkd6/dmegGzNRB9/c3SA2OpTVao3lXSMWbH1S6FDoiy7a3L7uc84GtZrwZG1HLYm/KLWsQ==
+"@blueprintjs/datetime@~3.7.1":
+  version "3.7.1"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/datetime/-/datetime-3.7.1.tgz#6741f68df94bbe6221a41feaaafc4d4539c42241"
+  integrity sha512-XV0fvq7uWrSlT8PDZ7oM+Rb6bF74I0k6/uw9XLJZ9hGrEPgsyd1K6QjVLFxc1Pnn5++1lDMtGlZC6x9nqCw1JA==
   dependencies:
-    "@blueprintjs/core" "^3.12.0"
+    "@blueprintjs/core" "^3.13.0"
     classnames "^2.2"
     react-day-picker "^7.1.10"
     tslib "^1.9.0"
 
-"@blueprintjs/icons@^3.5.1":
-  version "3.5.1"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/icons/-/icons-3.5.1.tgz#29dabfa2edb3efeefdc472b19e71736fadf5666b"
-  integrity sha512-sognhg9kAViMCrd2sZJ9KAo0vSm7Co/cBHGLSxblPodV4cI7xyzFi1cavPx+d1D3Q72ATOM46T0N7dggVac/Tw==
+"@blueprintjs/icons@^3.6.0":
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/icons/-/icons-3.6.0.tgz#af1d2de091d67927ed61671e6967c43620cb416d"
+  integrity sha512-sgB6rJtMjc2mS4aCS+65gK5DCr8fiWgOYi0buc0ODvGD2fwOtOFZuE4Duuj6/GZnCYj4s7E8NZgYK9Krd7G73Q==
   dependencies:
     classnames "^2.2"
     tslib "^1.9.0"
@@ -4187,10 +4187,10 @@ he@1.2.x:
   resolved "https://registry.yarnpkg.com/he/-/he-1.2.0.tgz#84ae65fa7eafb165fddb61566ae14baf05664f0f"
   integrity sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==
 
-highcharts@~7.0.2:
-  version "7.0.2"
-  resolved "https://registry.yarnpkg.com/highcharts/-/highcharts-7.0.2.tgz#18a59814d3ca61efa593e3141941147327e9eafb"
-  integrity sha512-0PnX/pzhpoZiLkQ3uN1FgXFM4Y5DFfN58mtTxh1me6sJ3eX+b0/asDgF17yOe4BfQat4xnE9TvgsJwYESTB3XA==
+highcharts@~7.0.3:
+  version "7.0.3"
+  resolved "https://registry.yarnpkg.com/highcharts/-/highcharts-7.0.3.tgz#0c8edb578bae28774b9f0d49cf1ae4887b126305"
+  integrity sha512-ubfHLDqKZkGLfDGWYPaa9txLwiJDSWphMZ15xdC0RKKKxZ2ZBc13+MjDfz5ARpYGQvCHmytGOGFUgRWEvkOhNA==
 
 hmac-drbg@^1.0.0:
   version "1.0.1"
@@ -6859,7 +6859,7 @@ react-dom@~16.7.0:
     prop-types "^15.6.2"
     scheduler "^0.12.0"
 
-react-dropzone@~8.0.3:
+react-dropzone@~8.0.4:
   version "8.0.4"
   resolved "https://registry.yarnpkg.com/react-dropzone/-/react-dropzone-8.0.4.tgz#c461ec6074425a8b636bfde12800ec43edc35d86"
   integrity sha512-RL9lCPbAbVifUShqpH009BhGPiyx6T+STpr3Ig+WnArOtJBFRfLjzB4mghUGFzDorZ++Mhc3FD12d7Oxd/SWSg==

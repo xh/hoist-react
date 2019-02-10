@@ -109,7 +109,7 @@
   //------------------------
   &.xh-grid-hierarchical {
     // Generate indentations for tree grids with hierarchical data.
-    // Based upon https://github.com/ag-grid/ag-grid/blob/master/packages/ag-grid-community/src/styles/ag-grid.scss#L1018
+    // Based upon https://github.com/ag-grid/ag-grid/blob/master/packages/ag-grid-community/src/styles/ag-grid.scss#L1084
     $xh-tree-indent: 10px !default;
     @for $i from 0 to 50 {
       .ag-ltr .ag-row-group-indent-#{$i} {
@@ -120,6 +120,16 @@
     .ag-ltr .ag-row-group-leaf-indent {
       margin-left: 20px;
     }
+
+    .ag-group-contracted + .ag-group-value:not(:empty) {
+      margin-left: 0;
+    }
+  }
+
+  // As of agGrid 20, the group row always reserve space for a grouping checkbox.
+  // We remove this to tighten up the spacing.
+  .ag-group-checkbox.ag-invisible {
+    display: none;
   }
 
   .ag-ltr .ag-row-group-leaf-indent {

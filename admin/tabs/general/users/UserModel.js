@@ -19,6 +19,7 @@ import {PendingTaskModel} from '@xh/hoist/utils/async';
 export class UserModel {
 
     @bindable activeOnly = true;
+    @bindable withRolesOnly = false;
 
     loadModel = new PendingTaskModel();
 
@@ -42,7 +43,7 @@ export class UserModel {
 
     constructor() {
         this.addReaction({
-            track: () => [this.activeOnly],
+            track: () => [this.activeOnly, this.withRolesOnly],
             run: () => this.loadAsync()
         });
     }
@@ -57,7 +58,7 @@ export class UserModel {
         return allSettled([
             userLoad, rolesLoad
         ]).then(results => {
-            const users = results[0].value,
+            let users = results[0].value,
                 byUsername = keyBy(users, 'username'),
                 roleMappings = results[1].value;
 
@@ -72,6 +73,10 @@ export class UserModel {
                     if (user) user.roles.push(role);
                 });
             });
+
+            if (this.withRolesOnly) {
+                users = users.filter(it => it.roles.length != 0);
+            }
 
             this.gridModel.loadData(users);
         }).linkTo(
