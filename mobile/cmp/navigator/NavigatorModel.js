@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel, elem} from '@xh/hoist/core';
-import {observable, action} from '@xh/hoist/mobx';
+import {bindable, observable, action} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {uniqBy, keys, find, merge, isEqual} from 'lodash';
 
@@ -18,7 +18,7 @@ import {NavigatorPageModel} from './NavigatorPageModel';
 @HoistModel
 export class NavigatorModel {
     /** @member {string} */
-    @observable title;
+    @bindable title;
 
     /** @member {NavigatorPageModel[]} */
     @observable.ref pages = [];
