@@ -5,13 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
+import {XH, managed, HoistModel} from '@xh/hoist/core';
 import {isArray, flatMap, partition, clone, without, defaults, isUndefined} from 'lodash';
 import {action, computed} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
 import {FormModel} from '../FormModel';
-import {FieldModel} from './FieldModel';
+import {BaseFieldModel} from './BaseFieldModel';
 import {ValidationState} from '../validation/ValidationState';
 
 /**
@@ -28,8 +28,10 @@ import {ValidationState} from '../validation/ValidationState';
  * validations on the subforms will also bubble up to this field, affecting its overall
  * validation state.
  */
-export class SubformsFieldModel extends FieldModel {
+@HoistModel
+export class SubformsFieldModel extends BaseFieldModel {
 
+    @managed
     _createdModels = []; // Any subform models created by this model.  Hold on to for cleanup.
     _modelConfig = null;
 
@@ -37,7 +39,7 @@ export class SubformsFieldModel extends FieldModel {
      *
      * @param {Object} subforms - config for FormModel representing a subform.
      * @param {Object[]} [cfg.initialValue]
-     * @param {...} rest - arguments for FieldModel
+     * @param {...} rest - arguments for BaseFieldModel
      */
     constructor({subforms, initialValue = [],  ...rest}) {
         super({...rest});
@@ -186,9 +188,5 @@ export class SubformsFieldModel extends FieldModel {
             [keep, destroy] = partition(_createdModels, m => initialValue.includes(m) || value.includes(m));
         this._createdModels = keep;
         XH.safeDestroy(destroy);
-    }
-
-    destroy() {
-        XH.safeDestroy(this._createdModels);
     }
 }

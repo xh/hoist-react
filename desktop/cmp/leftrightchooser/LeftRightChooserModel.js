@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel, XH, managed} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {LocalStore} from '@xh/hoist/data';
 import {computed} from '@xh/hoist/mobx';
@@ -20,12 +20,14 @@ export class LeftRightChooserModel {
      * Grid Model for the left-hand side.
      * @type GridModel
      */
+    @managed
     leftModel = null;
 
     /**
      * Grid Model for the right-hand side.
      * @type GridModel
      */
+    @managed
     rightModel = null;
 
     hasDescription = false;
@@ -217,10 +219,6 @@ export class LeftRightChooserModel {
 
         leftModel.store.loadData(data.filter(it => it.side === 'left'));
         rightModel.store.loadData(data.filter(it => it.side === 'right'));
-    }
-
-    destroy() {
-        XH.safeDestroy(this.leftModel, this.rightModel);
     }
 }
 
