@@ -6,7 +6,7 @@
  */
 
 import ReactDOM from 'react-dom';
-import {camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
+import {camelCase, flatten, isBoolean, isString, uniqueId, merge} from 'lodash';
 
 import {elem, AppState, AppSpec, EventSupport, ReactiveSupport} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
@@ -243,6 +243,20 @@ class XHClass {
     /** Route the app - shortcut to this.router.navigate. */
     navigate(...args) {
         return this.router.navigate(...args);
+    }
+
+    /** Add a routeName to the current route, preserving params */
+    appendRoute(route, newParams = {}) {
+        const {name, params} = this.routerState;
+        return this.navigate(`${name}.${route}`, merge({}, params, newParams));
+    }
+
+    /** Remove last routeName from the current route, preserving params */
+    popRoute() {
+        const {name, params} = this.routerState,
+            match = name.match(/.*(?=\.)/);
+        if (!match) return;
+        return this.navigate(match[0], params);
     }
 
     //------------------------------

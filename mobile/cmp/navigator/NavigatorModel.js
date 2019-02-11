@@ -7,7 +7,7 @@
 import {XH, HoistModel, elem} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {uniqBy, keys, find, merge} from 'lodash';
+import {uniqBy, keys, find, merge, isEqual} from 'lodash';
 
 import {NavigatorPageModel} from './NavigatorPageModel';
 
@@ -17,166 +17,132 @@ import {NavigatorPageModel} from './NavigatorPageModel';
  */
 @HoistModel
 export class NavigatorModel {
+    /** @member {string} */
     @observable title;
-    @observable.ref routes = [];
+
+    /** @member {NavigatorPageModel[]} */
     @observable.ref pages = [];
+
+    /** @member {Object[]} */
+    routes = [];
 
     _navigator = null;
     _callback = null;
-    _prevPageCount = -1;
 
     /**
      * {Object[]} routes - configs for NavigatorPageModels.
      */
     constructor({routes}) {
         throwIf(routes.length === 0, 'NavigatorModel needs at least one route.');
-        throwIf(routes.length !== uniqBy(routes, 'route').length, 'One or more routes in NavigatorModel has a non-unique route id.');
+        throwIf(routes.length !== uniqBy(routes, 'id').length, 'One or more routes in NavigatorModel has a non-unique id.');
         this.routes = routes;
 
         this.addReaction({
-            track: () => [this.pages, this._navigator],
-            run: () => this.onPagesChange()
+            track: () => XH.routerState,
+            run: () => this.onRouteChange()
         });
 
         this.addReaction({
-            track: () => [XH.routerState, this.routes],
-            run: () => this.onRouteChange()
+            track: () => this.pages,
+            run: () => this.onPagesChange()
         });
     }
 
     /**
-     * Add a route to the current route
-     *
-     * @param {String} route - route to append to current url
-     * @param {Object} [params] - route parameters to use with route
-     * @param {function} [callback] - function to execute after the page transition
+     * @param {function} callback - function to execute after the page transition
      */
-    appendRoute(route, params, callback) {
-        const {name} = XH.routerState;
-        this.navigate(`${name}.${route}`, params, callback);
-    }
-
-    /**
-     * Go back one nested route level (i.e. pop a page from the stack).
-     *
-     * @param {function} [callback] - function to execute after the page transition
-     */
-    back(callback) {
-        const {name} = XH.routerState,
-            match = name.match(/.*(?=\.)/);
-        if (match) this.navigate(match[0], null, callback);
-    }
-
-    /**
-     * Change the current route
-     *
-     * @param {String} route - route to append to current url
-     * @param {Object} [params] - route parameters to use with route
-     * @param {function} [callback] - function to execute after the page transition
-     */
-    navigate(route, params, callback) {
-        XH.navigate(route, params);
+    setCallback(callback) {
         this._callback = callback;
     }
 
-    @action
-    setRoutes(routes) {
-        this.routes = routes;
-    }
-
+    /**
+     * @param {NavigatorPageModel[]} pages
+     */
     @action
     setPages(pages) {
-        this.pages = pages.map(page => {
-            return page instanceof NavigatorPageModel ? page : new NavigatorPageModel(page);
-        });
+        this.pages = pages;
     }
 
     //--------------------
     // Implementation
     //--------------------
-    onPagesChange() {
-        if (!this._navigator) return;
-        const {pages} = this;
-
-        if (pages.length === this._prevPageCount - 1) {
-            this._navigator.popPage();
-        } else {
-            this._navigator.resetPageStack(pages);
-        }
-
-        this._prevPageCount = pages.length;
-    }
-
     onRouteChange(init) {
-        const {pages, routes} = this,
-            {routerState} = XH;
+        if (!this._navigator || !XH.routerState) return;
 
-        if (!this._navigator || !routerState) return;
-
-        // Break the route into parts, and collect any params for each part.
+        // Break the current route name into parts, and collect any params for each part.
         // Use meta.params to determine which params are associated with each route part.
         // Save these params to use as props for the page.
-        const {meta, name, params} = routerState,
+        const {meta, name, params} = XH.routerState,
             parts = name.split('.');
 
-        const routeParts = parts.map((part, idx) => {
+        const routeParts = parts.map((id, idx) => {
             const metaKey = parts.slice(0, idx + 1).join('.'),
-                ret = {};
+                props = {};
 
+            // Extract props for this part
             keys(meta.params[metaKey]).forEach(it => {
-                ret[it] = params[it];
+                props[it] = params[it];
             });
 
-            return {route: part, props: ret};
+            return {id, props};
         });
 
         // Loop through the route parts, rebuilding the page stack to match.
-        // At each part, check to see if the page already exists at the expected position within the stack.
-        const newPages = [];
+        const pages = [];
 
         for (let i = 0; i < routeParts.length; i++) {
             const part = routeParts[i],
-                page = pages[i],
-                route = find(routes, {route: part.route});
+                route = find(this.routes, {id: part.id});
 
-            throwIf(!route, `Route ${part.route} is not configured in the NavigatorModel`);
+            // Ensure route exists
+            throwIf(!route, `Route ${part.id} is not configured in the NavigatorModel`);
 
             // If, on the initial pass, we encounter a route that prevents linking,
             // we drop the rest of the route and redirect to the route so far
             if (init && route.preventLink) {
                 const completedRouteParts = routeParts.slice(0, i),
-                    newRouteName = completedRouteParts.map(it => it.route).join('.'),
+                    newRouteName = completedRouteParts.map(it => it.id).join('.'),
                     newRouteParams = merge({}, ...completedRouteParts.map(it => it.props));
 
                 XH.navigate(newRouteName, newRouteParams, {replace: true});
                 return;
             }
 
-            if (!page || page.route !== route.route) {
-                // Add new page
-                newPages.push(merge({}, route, part));
-            } else {
-                // Keep same page
-                newPages.push(page);
-            }
+            const page = new NavigatorPageModel(merge({}, route, part));
+            pages.push(page);
         }
 
-        this.setPages(newPages);
+        this.setPages(pages);
+    }
+
+    onPagesChange() {
+        const {pages} = this,
+            keyStack = pages.map(it => it.key),
+            prevKeyStack = this._prevKeyStack || [];
+
+        // If we have gone back one page in the same stack, we can safely pop() the page
+        if (isEqual(keyStack, prevKeyStack.slice(0, -1))) {
+            this._navigator.popPage();
+        } else {
+            this._navigator.resetPageStack(pages);
+        }
+
+        this._prevKeyStack = keyStack;
     }
 
     renderPage(pageModel, navigator) {
         const {init, key, content, props} = pageModel;
+
+        // Note: We use the special "init" object to obtain a reference to the
+        // navigator and to read the initial route.
         if (init) {
-            // Note: We use the special "init" route to obtain a reference to the
-            // navigator and to read the initial route.
             if (!this._navigator) {
                 this._navigator = navigator;
-                this.onRouteChange(init);
+                this.onRouteChange(true);
             }
             return null;
-        } else {
-            return content.prototype.render ? elem(content, {key, ...props}) : content({key, ...props});
         }
+        return content.prototype.render ? elem(content, {key, ...props}) : content({key, ...props});
     }
 
     onPageChange() {
