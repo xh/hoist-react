@@ -16,7 +16,7 @@ import {Rule} from '../validation/Rule';
  * Abstract Base class for FieldModels.
  *
  * @see FieldModel
- * @see SubformFieldModel
+ * @see SubformsFieldModel
  */
 export class BaseFieldModel {
 

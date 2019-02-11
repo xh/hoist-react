@@ -31,15 +31,15 @@ import {ValidationState} from '../validation/ValidationState';
 @HoistModel
 export class SubformsFieldModel extends BaseFieldModel {
 
-    @managed
-    _createdModels = []; // Any subform models created by this model.  Hold on to for cleanup.
+    // (Sub)FormModels created by this model, tracked to support cleanup.
+    @managed _createdModels = [];
     _modelConfig = null;
 
     /**
-     *
-     * @param {Object} subforms - config for FormModel representing a subform.
-     * @param {Object[]} [cfg.initialValue]
-     * @param {...} rest - arguments for BaseFieldModel
+     * @param {Object} c - FieldModel configuration.
+     * @param {Object} c.subforms - config for FormModel representing a subform.
+     * @param {Object[]} [c.initialValue]
+     * @param {...} c.rest - arguments for BaseFieldModel
      */
     constructor({subforms, initialValue = [],  ...rest}) {
         super({...rest});
@@ -173,9 +173,9 @@ export class SubformsFieldModel extends BaseFieldModel {
 
         const {_modelConfig, _createdModels} = this;
         return externalVal.map(v => {
-
             const initialValues = defaults({}, v, _modelConfig.initialValues),
                 ret = new FormModel({..._modelConfig, initialValues});
+
             ret.parent = this.formModel;
             _createdModels.push(ret);
             return ret;
