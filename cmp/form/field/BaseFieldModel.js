@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {managed} from '@xh/hoist/core';
 import {flatten, isEmpty, startCase, partition, isFunction, isUndefined} from 'lodash';
 import {observable, action, computed} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
@@ -48,6 +49,8 @@ export class BaseFieldModel {
 
     @observable _disabled;
     @observable _readonly;
+
+    @managed
     _validationTask = new PendingTaskModel();
     _validationRunId = 0;
 
