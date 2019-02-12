@@ -195,7 +195,7 @@ class XHClass {
      * This method will reload the entire application document in the browser.
      *
      * To simply trigger a refresh of the loadable content within the application
-     * see XH.refreshAsync() instead.
+     * see XH.refreshAppAsync() instead.
      **/
     @action
     reloadApp() {
