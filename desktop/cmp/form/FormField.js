@@ -204,11 +204,6 @@ export class FormField extends Component {
         );
     }
 
-    get hasSize() {
-        const {width, height, flex} = this.getLayoutProps();
-        return width || height || flex;
-    }
-
     get childIsSizeable() {
         const child = this.props.children;
         return child && child.type.hasLayoutSupport;
@@ -225,7 +220,6 @@ export class FormField extends Component {
 
     prepareChild({displayNotValid, leftErrorIcon, idAttr, errors, minimal, readonly}) {
         const {fieldModel} = this,
-            layoutProps = this.getLayoutProps(),
             item = this.props.children,
             {propTypes} = item.type;
 
@@ -236,16 +230,16 @@ export class FormField extends Component {
             id: idAttr
         };
 
-        // If FormField is sized and item doesn't specify its own dimensions,
-        // the item should fill the available size of the FormField.
+        // If a sizeable child input doesn't specify its own dimensions,
+        // the input should fill the available size of the FormField.
         // Note: We explicitly set width / height to null to override defaults.
-        if (this.hasSize && this.childIsSizeable) {
+        if (this.childIsSizeable) {
             if (isUndefined(item.props.width) && isUndefined(item.props.flex)) {
                 overrides.width = null;
                 overrides.flex = 1;
             }
 
-            if (isUndefined(item.props.height) && layoutProps.height) {
+            if (isUndefined(item.props.height)) {
                 overrides.height = null;
             }
         }

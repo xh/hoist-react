@@ -4,6 +4,12 @@
 
 * TBD
 
+## v19.0.1 - 2019-02-12
+
+### 🐞 Bug Fixes
+* Additional updates and simplifications to `FormField` sizing of child `HoistInput` elements, for
+  more reliable sizing and spacing filling behavior.
+
 ## v19.0.0 - 2019-02-08
 
 ### 🎁 New Features
