@@ -189,7 +189,14 @@ class XHClass {
         }
     }
 
-    /** Trigger a full reload of the app. */
+    /**
+     * Trigger a full reload of the current application.
+     *
+     * This method will reload the entire application document in the browser.
+     *
+     * To simply trigger a refresh of the loadable content within the application
+     * see XH.refreshAsync() instead.
+     **/
     @action
     reloadApp() {
         this.appLoadModel.link(never());
@@ -197,16 +204,35 @@ class XHClass {
     }
 
     /**
+     * Refresh the current application.
+     *
+     * This method will do an "in-place" refresh of the loadable content as definined by the application.
+     * It is a short-cut to XH.refreshContextModel.refreshAsync().
+     *
+     * To trigger a full reload of the application document in the browser (including code)
+     * see XH.reloadApp() instead.
+     */
+    refreshAppAsync() {
+        return this.refreshContextModel.refreshAsync();
+    }
+
+
+    /**
      * Tracks globally loading promises.
-     * Link any async operations that should mask the entire application to this model.
+     *
+     * Applications should link any async operations that should mask the entire viewport to this model.
      */
     get appLoadModel() {
         return this.acm.appLoadModel;
     }
 
+    /**
+     * The global RefreshContextModel for this application.
+     */
     get refreshContextModel() {
         return this.acm.refreshContextModel;
     }
+
 
     //------------------------
     // Theme Support
