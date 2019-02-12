@@ -15,7 +15,7 @@
     align-items: stretch;
 
     .xh-input {
-      & > .bp3-input-group {
+      .bp3-input-group {
         width: 100%;
       }
       &.bp3-popover-target, .bp3-popover-target {
@@ -23,12 +23,13 @@
       }
     }
 
-    & > .bp3-popover-wrapper {
+    & > .bp3-popover-wrapper:not(.xh-form-field-error-msg) {
+      display: flex;
       flex: 1;
 
       & > .bp3-popover-target {
-        flex: 1;
         display: flex;
+        flex: 1;
       }
     }
   }
