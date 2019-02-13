@@ -40,7 +40,8 @@
     "react-onsenui": "~1.11.2",
     "react-select": "~2.3.0",
     "react-transition-group": "~2.5.3",
-    "router5": "~6.6.3",
+    "router5": "~7.0.1",
+    "router5-plugin-browser": "~7.0.1",
     "rsvp": "~4.8.4",
     "store2": "~2.7.0"
   },

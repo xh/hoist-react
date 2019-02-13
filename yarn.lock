@@ -7331,18 +7331,23 @@ route-node@3.4.2:
     path-parser "4.2.0"
     search-params "2.1.3"
 
-router5-transition-path@5.4.0:
-  version "5.4.0"
-  resolved "https://registry.yarnpkg.com/router5-transition-path/-/router5-transition-path-5.4.0.tgz#8913c88a623a951a61c4e6eb32762a7218e5c7b1"
-  integrity sha512-ZWLvmDIVrKUY0CgUpLY9fw4t4nQQ+r6lNLWPAXwvUZrCctorg/yW9kd80+cOKkXZBJr+7Qu56KCkGjDOa4nOOw==
+router5-plugin-browser@~7.0.1:
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/router5-plugin-browser/-/router5-plugin-browser-7.0.1.tgz#2c59cf6299f9edf25e83d0629eece589cf0b1985"
+  integrity sha512-3zKCyQlr4OKBOK8/9usJ8kcTMmqkSw8cYGt2T0+A2ktU5rAkDoLeZ7xJBjlcpJmEcT7lDx2K18gc6Epq6Zd6Ng==
 
-router5@~6.6.3:
-  version "6.6.3"
-  resolved "https://registry.yarnpkg.com/router5/-/router5-6.6.3.tgz#943a9d2fd23aaa4fbea3a6795f0acc40a0267328"
-  integrity sha512-tOyWFzg2FmIV2S/wcFFYvTau1jXXhZeVKYpE24WJAQ2vnA6PojyyNy2RTTKiPZz1w6XGf8taByBukQuImJhjBQ==
+router5-transition-path@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/router5-transition-path/-/router5-transition-path-7.0.0.tgz#de95233c63757a37afd76e2e99cfb12896f16fd2"
+  integrity sha512-hZoRaEIc/Cx7RZhv9AV8PX3H0zlhG19Bjio4tMfCnYBVstJqd1wfJY/KQWfxtIzj2Lr0M9xICKgjAp+KRxQYbA==
+
+router5@~7.0.1:
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/router5/-/router5-7.0.1.tgz#5590e7eee04625278d502d496dde0bc55d1758c3"
+  integrity sha512-FaAUSm/+0g3m3j+R4mmx5Hns0YHiWK4Oi0eIAt1KgoMQ9NWcJBVw04RAfHEpoa9m39cswVYG83ovh/QjCTbicA==
   dependencies:
     route-node "3.4.2"
-    router5-transition-path "5.4.0"
+    router5-transition-path "^7.0.0"
     symbol-observable "1.2.0"
 
 rst-selector-parser@^2.2.3:
