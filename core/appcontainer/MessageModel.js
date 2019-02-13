@@ -44,6 +44,8 @@ export class MessageModel {
         this.onCancel = config.onCancel;
         this.result = new Promise(resolve => this._resolver = resolve);
 
+        // Message modals are automatically dismissed on app route changes to avoid navigating the
+        // app underneath the dialog in an unsettling way.
         this.addReaction({
             track: () => XH.routerState,
             run: () => this.close()
