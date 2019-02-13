@@ -20,6 +20,9 @@ export class NavigatorModel {
     /** @member {string} */
     @bindable title;
 
+    /** @member {boolean} */
+    @bindable disableAppRefreshButton;
+
     /** @member {NavigatorPageModel[]} */
     @observable.ref pages = [];
 
@@ -97,9 +100,9 @@ export class NavigatorModel {
             // Ensure route exists
             throwIf(!route, `Route ${part.id} is not configured in the NavigatorModel`);
 
-            // If, on the initial pass, we encounter a route that prevents linking,
+            // If, on the initial pass, we encounter a route that prevents direct linking,
             // we drop the rest of the route and redirect to the route so far
-            if (init && route.preventLink) {
+            if (init && route.disableDirectLink) {
                 const completedRouteParts = routeParts.slice(0, i),
                     newRouteName = completedRouteParts.map(it => it.id).join('.'),
                     newRouteParams = merge({}, ...completedRouteParts.map(it => it.props));
@@ -145,15 +148,14 @@ export class NavigatorModel {
         return content.prototype.render ? elem(content, {key, ...props}) : content({key, ...props});
     }
 
-    onPageChange() {
-        this.updateTitle();
-        this.doCallback();
-    }
-
     @action
-    updateTitle() {
-        const {title} = this.getCurrentPageModel();
+    onPageChange() {
+        const {title, disableAppRefreshButton} = this.getCurrentPageModel();
+
         if (title) this.title = title;
+        this.disableAppRefreshButton = disableAppRefreshButton;
+
+        this.doCallback();
     }
 
     getCurrentPageModel() {

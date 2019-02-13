@@ -21,7 +21,8 @@ export class NavigatorPageModel {
     content = null;
     props = null;
     title = null;
-    preventLink = null;
+    disableDirectLink = null;
+    disableAppRefreshButton = null;
 
     /**
      * A generated key which combines the id and sorted props to identify the page in the stack.
@@ -39,20 +40,23 @@ export class NavigatorPageModel {
      *      element factory of the form returned by elemFactory.
      * @param {Object} [props] - props to be passed to page upon creation.
      * @param {string} [title] - title for page. Displayed in AppBar header.
-     * @param {boolean} [preventLink] - Don't allow the route can be arrived at in a new browser session.
+     * @param {boolean} [disableDirectLink] - Don't allow the route can be arrived at in a new browser session.
      *      Non-linkable routes are unwound to a safe starting point at the start of a new session.
+     * @param {boolean} [disableAppRefreshButton] - Hide any visible app refresh button when at this page.
      */
     constructor({
         id,
         content,
         props,
         title,
-        preventLink
+        disableDirectLink,
+        disableAppRefreshButton
     }) {
         this.id = id;
         this.content = content;
         this.props = props;
         this.title = title;
-        this.preventLink = preventLink;
+        this.disableDirectLink = disableDirectLink;
+        this.disableAppRefreshButton = disableAppRefreshButton;
     }
 }
