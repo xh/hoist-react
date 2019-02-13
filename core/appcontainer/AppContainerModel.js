@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, RefreshContextModel} from '@xh/hoist/core';
+import {HoistModel, RefreshContextModel, managed} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 
@@ -27,25 +27,26 @@ export class AppContainerModel {
     //------------
     // Sub-models
     //------------
-    aboutDialogModel = new AboutDialogModel();
-    exceptionDialogModel = new ExceptionDialogModel();
-    optionsDialogModel = new OptionsDialogModel();
-    feedbackDialogModel = new FeedbackDialogModel();
-    impersonationBarModel = new ImpersonationBarModel();
-    loginPanelModel = new LoginPanelModel();
-    messageSourceModel = new MessageSourceModel();
-    toastSourceModel = new ToastSourceModel();
-    themeModel = new ThemeModel();
-    refreshContextModel = new RefreshContextModel();
+    @managed aboutDialogModel = new AboutDialogModel();
+    @managed exceptionDialogModel = new ExceptionDialogModel();
+    @managed optionsDialogModel = new OptionsDialogModel();
+    @managed feedbackDialogModel = new FeedbackDialogModel();
+    @managed impersonationBarModel = new ImpersonationBarModel();
+    @managed loginPanelModel = new LoginPanelModel();
+    @managed messageSourceModel = new MessageSourceModel();
+    @managed toastSourceModel = new ToastSourceModel();
+    @managed themeModel = new ThemeModel();
+    @managed refreshContextModel = new RefreshContextModel();
 
     /**
      * Tracks globally loading promises.
      * Link any async operations that should mask the entire application to this model.
      */
+    @managed
     appLoadModel = new PendingTaskModel({mode: 'all'});
 
     init() {
-        this.models = [
+        const models = [
             this.aboutDialogModel,
             this.exceptionDialogModel,
             this.optionsDialogModel,
@@ -58,7 +59,7 @@ export class AppContainerModel {
             this.appLoadModel,
             this.refreshContextModel
         ];
-        this.models.forEach(it => {
+        models.forEach(it => {
             if (it.init) it.init();
         });
     }
@@ -88,9 +89,5 @@ export class AppContainerModel {
     @action
     showAccessDenied(msg) {
         this.accessDeniedMessage = msg;
-    }
-
-    destroy() {
-        XH.safeDestroy(this.models);
     }
 }

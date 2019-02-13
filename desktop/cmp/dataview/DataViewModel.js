@@ -5,9 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {isPlainObject, defaults, isString} from 'lodash';
-import {HoistModel} from '@xh/hoist/core';
+import {isPlainObject, defaults, isString, omit} from 'lodash';
+import {HoistModel, managed} from '@xh/hoist/core';
 import {StoreSelectionModel} from '@xh/hoist/data';
+import {GridModel} from '@xh/hoist/cmp/grid';
 
 /**
  * DataViewModel is a wrapper around GridModel, which shows sorted data in a single column,
@@ -23,6 +24,9 @@ export class DataViewModel {
     store = null;
     selModel = null;
     contextMenuFn = null;
+
+    @managed
+    gridModel;
 
     /**
      * @param {Object} c - DataViewModel configuration.
@@ -40,11 +44,32 @@ export class DataViewModel {
         emptyText,
         contextMenuFn = null
     }) {
+
+        selModel = this.parseSelModel(selModel, store);
+
         this.itemRenderer = itemRenderer;
         this.store = store;
-        this.selModel = this.parseSelModel(selModel, store);
+        this.selModel = selModel;
         this.emptyText = emptyText;
         this.contextMenuFn = contextMenuFn;
+
+        this.gridModel = new GridModel({
+            store,
+            selModel,
+            contextMenuFn,
+            emptyText,
+            columns: [
+                {
+                    colId: 'data',
+                    flex: true,
+                    elementRenderer: itemRenderer,
+                    agOptions: {
+                        valueGetter: this.valueGetter
+                    }
+                }
+            ]
+        });
+
     }
 
     /**
@@ -110,4 +135,10 @@ export class DataViewModel {
 
         return new StoreSelectionModel({mode, store});
     }
+
+
+    valueGetter = (params) => {
+        const realData = omit(params.data.raw, 'id');
+        return Object.values(realData).join('\r');
+    };
 }
