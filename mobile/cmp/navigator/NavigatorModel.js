@@ -39,12 +39,12 @@ export class NavigatorModel {
 
         this.addReaction({
             track: () => XH.routerState,
-            run: () => this.onRouteChange()
+            run: this.onRouteChange
         });
 
         this.addReaction({
             track: () => this.pages,
-            run: () => this.onPagesChange()
+            run: this.onPagesChange
         });
     }
 
@@ -66,7 +66,7 @@ export class NavigatorModel {
     //--------------------
     // Implementation
     //--------------------
-    onRouteChange(init) {
+    onRouteChange({init}) {
         if (!this._navigator || !XH.routerState) return;
 
         // Break the current route name into parts, and collect any params for each part.
@@ -138,7 +138,7 @@ export class NavigatorModel {
         if (init) {
             if (!this._navigator) {
                 this._navigator = navigator;
-                this.onRouteChange(true);
+                this.onRouteChange({init});
             }
             return null;
         }
