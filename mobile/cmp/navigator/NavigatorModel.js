@@ -33,7 +33,8 @@ export class NavigatorModel {
     _callback = null;
 
     /**
-     * {Object[]} routes - configs for NavigatorPageModels.
+     * {Object[]} routes - configs for NavigatorPageModels, representing all supported top-level
+     *      pages within this Navigator/App.
      */
     constructor({routes}) {
         throwIf(routes.length === 0, 'NavigatorModel needs at least one route.');
@@ -52,7 +53,7 @@ export class NavigatorModel {
     }
 
     /**
-     * @param {function} callback - function to execute after the page transition
+     * @param {function} callback - function to execute (once) after the next page transition.
      */
     setCallback(callback) {
         this._callback = callback;

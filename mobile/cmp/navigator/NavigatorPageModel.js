@@ -5,6 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
+import {withDefault} from '@xh/hoist/utils/js';
 import {stringify} from 'qs';
 
 /**
@@ -17,12 +18,12 @@ import {stringify} from 'qs';
 @HoistModel
 export class NavigatorPageModel {
 
-    id = null;
-    content = null;
-    props = null;
-    title = null;
-    disableDirectLink = null;
-    disableAppRefreshButton = null;
+    id;
+    content;
+    props;
+    title;
+    disableDirectLink;
+    disableAppRefreshButton;
 
     /**
      * A generated key which combines the id and sorted props to identify the page in the stack.
@@ -54,9 +55,9 @@ export class NavigatorPageModel {
     }) {
         this.id = id;
         this.content = content;
-        this.props = props;
-        this.title = title;
-        this.disableDirectLink = disableDirectLink;
-        this.disableAppRefreshButton = disableAppRefreshButton;
+        this.props = withDefault(props, {});
+        this.title = withDefault(title, null);
+        this.disableDirectLink = withDefault(disableDirectLink, false);
+        this.disableAppRefreshButton = withDefault(disableAppRefreshButton, false);
     }
 }

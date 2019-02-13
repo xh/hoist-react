@@ -11,7 +11,8 @@ import {navigator as onsenNavigator} from '@xh/hoist/kit/onsen';
 import {NavigatorModel} from './NavigatorModel';
 
 /**
- * Component responsible for rendering pages and managing transitions between pages.
+ * Top-level Component within an application, responsible for rendering pages and managing
+ * transitions between pages.
  */
 @HoistComponent
 export class Navigator extends Component {
