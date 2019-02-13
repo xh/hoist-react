@@ -31,6 +31,8 @@ export class TabModel {
      * @param {Object} [c.pageProps] - props to passed to page upon creation
      * @param {String} c.label - text to be displayed in the Tabbar.
      * @param {Icon} [c.icon] - icon to be displayed in the Tabbar.
+     * @param {TabRenderMode} [c.renderMode] - strategy for rendering this tab. If null, will
+     *      default to its container's mode. See enum for description of supported modes.
      * @param {TabRefreshMode} [c.refreshMode] - strategy for refreshing this tab. If null, will
      *      default to its container's mode. See the enum for a description of the supported modes.
      */
@@ -41,6 +43,7 @@ export class TabModel {
         pageProps,
         label,
         icon,
+        renderMode,
         refreshMode
     }) {
         this.id = id;
@@ -49,8 +52,15 @@ export class TabModel {
         this.pageProps = pageProps;
         this.label = label;
         this.icon = icon;
+
+        this._renderMode = renderMode;
         this._refreshMode = refreshMode;
+
         this.refreshContextModel = new TabRefreshContextModel(this);
+    }
+
+    get renderMode() {
+        return this._renderMode || this.containerModel.renderMode;
     }
 
     get refreshMode() {
