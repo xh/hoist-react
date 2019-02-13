@@ -99,6 +99,7 @@ export class DimensionChooser extends Component {
         const target = button({
             item: value.map(it => dimensions[it].label).join(' \u203a '),
             width: this.buttonWidth,
+            className: 'xh-dim-button',
             onClick: () => this.model.showMenu()
         });
 

@@ -1,13 +1,13 @@
-.xh-dim-popover {
-  .xh-button {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    display: inline;
-    border: var(--xh-border-solid);
-    padding-left: var(--xh-pad-px);
-    padding-right: var(--xh-pad-px);
-  }
+// Launcher button - targeted w/high specificity to ensure styles apply on dark and light themes.
+.xh-dim-popover .xh-dim-button.xh-button {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline;
+  border: var(--xh-border-solid);
+  padding-left: var(--xh-pad-px);
+  padding-right: var(--xh-pad-px);
+  background-color: var(--xh-input-bg);
 }
 
 .xh-dim-popover-title {
