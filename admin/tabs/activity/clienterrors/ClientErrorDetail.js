@@ -53,6 +53,7 @@ export class ClientErrorDetail extends Component {
                 value: rec.error,
                 disabled: true,
                 height: 450,
+                width: '100%',
                 editorProps: {lineWrapping: true}
             }),
             toolbar(
