@@ -39,8 +39,9 @@ export class Chart extends Component {
 
     static propTypes = {
         /**
-         * If aspectRatio is defined and greater than 0, the chart size respects the aspectRatio, within available space.
-         * If aspectRatio is falsy, the chart takes up all available space.
+         * Ratio of width-to-height of displayed chart.  If defined and greater than 0, the chart will
+         * respect this ratio within the available space.  Otherwise, the chart will stretch on both
+         * dimensions to take up all available space.
          */
         aspectRatio: PT.number
     };
@@ -84,10 +85,6 @@ export class Chart extends Component {
     //-------------------
     // Implementation
     //-------------------
-    componentWillUnmount() {
-        this.destroyHighChart();
-    }
-
     renderHighChart() {
         this.destroyHighChart();
         const chartElem = this._chartElem.value;
@@ -95,25 +92,25 @@ export class Chart extends Component {
             const config = this.getMergedConfig(),
                 parentEl = chartElem.parentElement;
 
-            assign(config.chart, this.getDims({
+            assign(config.chart, this.getChartDims({
                 width: parentEl.offsetWidth,
                 height: parentEl.offsetHeight
             }));
-         
+
             config.chart.renderTo = chartElem;
             this._chart = Highcharts.chart(config);
         }
     }
 
     resizeChart(e) {
-        const {width, height} = this.getDims(e[0].contentRect);
+        const {width, height} = this.getChartDims(e[0].contentRect);
         this._chart.setSize(width, height, false);
     }
 
-    getDims({width, height}) {
+    getChartDims({width, height}) {
         const {aspectRatio} = this.props;
 
-        if (!aspectRatio) return {width, height};
+        if (!aspectRatio || aspectRatio <= 0) return {width, height};
 
         return this.applyAspectRatio(width, height, aspectRatio);
     }
@@ -141,11 +138,13 @@ export class Chart extends Component {
         return {width, height};
     }
 
+    destroy() {
+        this.destroyHighChart();
+    }
+    
     destroyHighChart() {
-        if (this._chart) {
-            this._chart.destroy();
-            this._chart = null;
-        }
+        XH.safeDestroy(this._chart);
+        this._chart = null;
     }
 
     //----------------------
