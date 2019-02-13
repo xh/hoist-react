@@ -43,15 +43,13 @@ export class Chart extends Component {
          * respect this ratio within the available space.  Otherwise, the chart will stretch on both
          * dimensions to take up all available space.
          */
-        aspectRatio: PT.number
-    };
+        aspectRatio: PT.number,
 
-    static modelClass = ChartModel;
-
-    static propTypes = {
         /** Primary component model instance. */
         model: PT.oneOfType([PT.instanceOf(ChartModel), PT.object]).isRequired
     };
+    
+    static modelClass = ChartModel;
 
     baseClassName = 'xh-chart';
 
