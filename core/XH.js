@@ -25,7 +25,7 @@ import {
     LocalStorageService,
     PrefService,
     TrackService
-} from '@xh/hoist/svc';
+} from '@xh/hoist/svc-central';
 
 import {AppContainerModel} from './appcontainer/AppContainerModel';
 import {RouterModel} from './RouterModel';
