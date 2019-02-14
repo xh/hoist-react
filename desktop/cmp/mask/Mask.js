@@ -32,6 +32,9 @@ export class Mask extends Component {
         /** True to display mask. */
         isDisplayed: PT.bool,
 
+        /** True to use css transition animations when showing mask. */
+        isAnimated: PT.bool,
+
         /** Optional text to be displayed. */
         message: PT.string,
 
@@ -50,7 +53,8 @@ export class Mask extends Component {
     render() {
         const {props} = this,
             {model} = props,
-            isDisplayed = withDefault(props.isDisplayed, model && model.isPending, false);
+            isDisplayed = withDefault(props.isDisplayed, model && model.isPending, false),
+            isAnimated = withDefault(props.isAnimated, false);
 
         if (!isDisplayed) return null;
 
@@ -66,6 +70,7 @@ export class Mask extends Component {
             canEscapeKeyClose: false,
             usePortal: !inline,
             enforceFocus: !inline,
+            transitionName: isAnimated ? undefined : 'none',
             item: vbox({
                 className: 'xh-mask-body',
                 onClick,
