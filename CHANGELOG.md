@@ -2,7 +2,18 @@
 
 ## v20.0.0-SNAPSHOT (unreleased / under development)
 
-* TBD
+### New Features
+
+* Added `Panel` to the mobile toolkit, which offers a header element with standardized styling,
+  title, and icon, as well as support for top and bottom toolbars.
+
+* The mobile `AppBar` has been updated to more closely match the desktop `AppBar`, adding `icon`,
+  `leftItems`, `hideAppMenuButton` and `appMenuButtonProps` props.
+  
+### 💥 Breaking Changes
+
+* The mobile `AppBar` title is static and defaults to the app name. If you want to display page
+  titles, it is recommended to use a `Panel` on your page.
 
 ## v19.0.1 - 2019-02-12
 
