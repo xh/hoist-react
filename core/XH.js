@@ -206,7 +206,7 @@ class XHClass {
     /**
      * Refresh the current application.
      *
-     * This method will do an "in-place" refresh of the loadable content as definined by the application.
+     * This method will do an "in-place" refresh of the loadable content as defined by the app.
      * It is a short-cut to XH.refreshContextModel.refreshAsync().
      *
      * To trigger a full reload of the application document in the browser (including code)

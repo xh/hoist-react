@@ -16,10 +16,8 @@ export function RefreshSupport(C) {
 
     defaultMethods(C, {
         /**
-         * Refresh this object.
-         *
-         * Implement this method to describe how this object should refresh itself from underlying data sources
-         * or services.
+         * Refresh this object. Implement this method to describe how this object should refresh
+         * itself from underlying data sources or services.
          *
          * @param {boolean} [isAutoRefresh] - true if this load was triggered by an automatic
          *      refresh process, rather than a user action.
@@ -33,7 +31,7 @@ export function RefreshSupport(C) {
 /**
  * Refresh a collection of objects with RefreshSupport in 'parallel'.
  *
- * @param {Object[]} config - list of objects to be refreshed.
+ * @param {Object[]} objs - list of objects to be refreshed.
  * @param {boolean} [isAutoRefresh] - true if this load was triggered by an automatic
  *      refresh process, rather than a user action.
  *
@@ -46,5 +44,6 @@ export async function refreshAllAsync(objs, isAutoRefresh = false) {
 
     ret.filter(it => it.state === 'rejected')
         .forEach(err => console.error('Failed to Refresh Object', err.reason));
+
     return ret;
 }

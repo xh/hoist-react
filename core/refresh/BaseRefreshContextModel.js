@@ -34,13 +34,13 @@ export class BaseRefreshContextModel {
     /**
      * Register a target with this model for refreshing.
      *
-     * For models backing HoistComponents, consider applying the `@RefreshContextSupport` decorator to
+     * For models backing HoistComponents, consider applying the `@LoadSupport` decorator to
      * the component to have this method called automatically when the component is mounted.
      *
      * @param {HoistModel} target
      */
     register(target) {
-        throwIf(!target.hasRefreshSupport, 'Cannot register object without RefreshSupport with RefreshContextModel.');
+        throwIf(!target.hasRefreshSupport, 'HoistModels must apply the @RefreshSupport decorator to be registered with a RefreshContextModel.');
         const {targets} = this;
         if (!targets.includes(target)) targets.push(target);
     }

@@ -8,15 +8,15 @@ import {markClass, chainMethods, throwIf} from '@xh/hoist/utils/js';
 import {RefreshContext} from '../refresh/RefreshContext';
 
 /**
- * Mixin to indicate that a component has a model that implements data loading.
+ * Mixin to indicate that a Component's primary backing model implements data loading.
  *
- * This mixin will cause the loadAsync() method to be called on any owned model when this component is
- * first mounted.  This mixin will also cause the component's model to be registered/unregistered with
- * the appropriate RefreshContextModel when the component is mounted/unmounted.
+ * This mixin will register the component's primary model with the appropriate RefreshContextModel
+ * and call the model's loadAsync() method when the component is first mounted. It will also
+ * unregister the model from the same RefreshContextModel when the component is unmounted.
  *
  * Implementation Note:
  * The use of this mixin is required for technical reasons, due to limitations of the pre-hooks
- * context API.   Expect this behavior to be built in to all HoistComponents in future versions of hoist.
+ * context API. Expect this to be built in to all HoistComponents in future versions of Hoist.
  */
 export function LoadSupport(C) {
 
