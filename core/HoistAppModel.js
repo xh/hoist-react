@@ -24,10 +24,22 @@ export function HoistAppModel(C) {
     defaultMethods(C, {
 
         /**
-         * Hoist will call this method once Hoist services have initialized and the application
+         * Hoist will call this method after Hoist services have initialized and the application
          * has mounted. Use to trigger initialization of the app and any app-specific services.
+         *
+         * Applications will typically use this method to install and initialize app-specific services
+         * using one or more phased calls to XH.installServicesAsync().
          */
         async initAsync() {},
+
+        /**
+         * Hoist will call this method during the global refresh process.
+         *
+         * This will be called after all core Hoist services have been refreshed and before the global
+         * refreshContextModel has been refreshed.  Apps should implement this method to refresh all
+         * app-specific services using one or more phased calls to refreshAllsync().
+         */
+        async refreshAsync(isAutoRefresh) {},
 
         /**
          * Provide the initial set of Router5 Routes to be used by this application.

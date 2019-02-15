@@ -47,6 +47,9 @@ export function HoistComponent(C) {
          * created internally by the Component, either in the class definition or via a config
          * object prop.
          *
+         * Models that are created internally by the component may be considered "owned" models.
+         * They will be destroyed when the component is unmounted (via destroy()).
+         *
          * When concrete instances are provided via props they are assumed to be owned and managed
          * by a parent Component. Otherwise models are considered to be "locally owned" by the
          * Component itself and will be destroyed when the Component is unmounted and destroyed.
@@ -61,11 +64,11 @@ export function HoistComponent(C) {
         model: {
             get() {
 
-                const {_model, _modelWasProvided, props} = this;
+                const {_model, _modelIsOwned, props} = this;
 
                 // Return any model instance that has already been processed / set on the Component.
                 if (_model) {
-                    if (_modelWasProvided && props.model !== _model) this.throwModelChangeException();
+                    if (!_modelIsOwned && props.model !== _model) this.throwModelChangeException();
                     return _model;
                 }
 
@@ -77,10 +80,11 @@ export function HoistComponent(C) {
                     if (isPlainObject(propsModel)) {
                         if (!modelClass) this.throwNoModelClassProvided();
                         this._model = new modelClass(propsModel);
+                        this._modelIsOwned = true;
                     } else {
                         if (modelClass && !(propsModel instanceof modelClass)) this.throwWrongModelClass();
-                        this._modelWasProvided = true;
                         this._model = propsModel;
+                        this._modelIsOwned = false;
                     }
                     return this._model;
                 }
@@ -92,6 +96,7 @@ export function HoistComponent(C) {
             set(value) {
                 if (this._model) this.throwModelChangeException();
                 this._model = value;
+                this._modelIsOwned = true;
             }
         },
 
@@ -157,7 +162,7 @@ export function HoistComponent(C) {
         },
 
         destroy() {
-            if (!this._modelWasProvided) {
+            if (this._modelIsOwned) {
                 XH.safeDestroy(this._model);
             }
         }

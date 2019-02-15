@@ -6,28 +6,32 @@
  */
 import {Component} from 'react';
 import PT from 'prop-types';
-import {HoistComponent, elemFactory, LoadSupport, RefreshContextModel, RefreshContext} from '@xh/hoist/core';
+import {HoistComponent, elemFactory, LoadSupport} from '@xh/hoist/core';
+
+import {BaseRefreshContextModel} from './BaseRefreshContextModel';
+import {RefreshContext} from './RefreshContext';
+
 
 const refreshContextProvider = elemFactory(RefreshContext.Provider);
 
 /**
  * Establishes an area of the application with an independent RefreshContext and RefreshContextModel.
  *
- * The model established by this view will be refreshed by its parent context (as this component is
- * marked with `@LoadSupport`) but may also be refreshed independently.
+ * The model established by this view will be refreshed by its parent context but may also be refreshed
+ * independently.
  *
  * @see RefreshContext
  * @see RefreshContextModel
  */
 @HoistComponent
 @LoadSupport
-export class RefreshView extends Component {
+export class RefreshContextView extends Component {
 
     static propTypes = {
-        model: PT.instanceOf(RefreshContextModel).isRequired
+        model: PT.instanceOf(BaseRefreshContextModel).isRequired
     };
 
-    static modelClass = RefreshContextModel;
+    static modelClass = BaseRefreshContextModel;
    
     render() {
         return refreshContextProvider({
@@ -36,4 +40,4 @@ export class RefreshView extends Component {
         });
     }
 }
-export const refreshContextView = elemFactory(RefreshView);
+export const refreshContextView = elemFactory(RefreshContextView);

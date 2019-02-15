@@ -4,8 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {EventSupport, ReactiveSupport, ManagedSupport, XhIdSupport} from './mixins';
-import {defaultMethods, markClass} from '@xh/hoist/utils/js';
+import {EventSupport, ReactiveSupport, RefreshSupport, ManagedSupport, XhIdSupport} from './mixins';
+import {markClass, defaultMethods} from '@xh/hoist/utils/js';
 
 
 /**
@@ -27,29 +27,36 @@ export function HoistModel(C) {
         /**
          * Load or compute new / updated data for this model.
          *
-         * @param {Object} [opts]
-         * @param {boolean} [opts.isRefresh] - true if this load was triggered by a refresh.
-         * @param {boolean} [opts.isAutoRefresh] - true if this load was triggered by a programmatic
-         *      refresh process, rather than a user action.
+         * @param {LoadContext}
          */
-        loadAsync({isRefresh = false, isAutoRefresh = false} = {}) {
+        loadAsync(loadContext = {}) {
 
         },
 
         /**
          * Refresh this model.
          *
-         * This method delegates to loadAsync() and should not typically be overridden/implemented.
-         * Instances of HoistModel should implement loadAsync() instead.
+         * This method should *not* typically need to be implemented on HoistModel.  This provided method delegates to
+         * loadAsync() and most components should typically implement loadAsync() instead.
          *
-         * @param {Object} [opts]
-         * @param {boolean} [opts.isAutoRefresh] - true if this load was triggered by a programmatic
+         * @param {boolean} [isAutoRefresh] - true if this load was triggered by a programmatic
          *      refresh process, rather than a user action.
          */
-        refreshAsync({isAutoRefresh = false} = {}) {
-            return this.loadAsync({isAutoRefresh, isRefresh: true});
+        refreshAsync(isAutoRefresh) {
+            return this.loadAsync({isRefresh: true, isAutoRefresh});
         }
     });
 
+    // Needs to be last to allow refreshAsync impl above to override.
+    C = RefreshSupport(C);
+
     return C;
 }
+
+/**
+ * @typedef {Object} LoadContext
+ * @property {boolean} [isRefresh] - true if this load was triggered by a refresh.
+ * @property {boolean} [isAutoRefresh] - true if this load was triggered by a programmatic
+ *      refresh process, rather than a user action.
+ */
+

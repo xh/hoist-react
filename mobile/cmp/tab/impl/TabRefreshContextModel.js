@@ -4,13 +4,14 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {RefreshContextModel} from '@xh/hoist/core';
+import {HoistModel, BaseRefreshContextModel} from '@xh/hoist/core';
 import {TabRefreshMode} from '@xh/hoist/enums';
 
 /**
  * @private
  */
-export class TabRefreshContextModel extends RefreshContextModel {
+@HoistModel
+export class TabRefreshContextModel extends BaseRefreshContextModel {
 
     tabModel;
 
