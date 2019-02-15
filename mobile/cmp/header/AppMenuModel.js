@@ -31,7 +31,7 @@ export class AppMenuModel extends MenuModel {
     constructor({
         itemModels = [],
         xPos = 10,
-        yPos = 40,
+        yPos = 38,
         hideOptionsItem,
         hideFeedbackItem,
         hideThemeItem,

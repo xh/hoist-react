@@ -1,0 +1,19 @@
+.xh-appbar {
+  display: flex;
+  background-color: var(--xh-title-bg);
+  color: var(--xh-title-text-color);
+
+  .xh-appbar-title {
+    font-size: 17px;
+    flex: 1;
+  }
+
+  .xh-appbar-left,
+  .xh-appbar-right {
+    display: flex;
+  }
+
+  .xh-button {
+    background: transparent !important;
+  }
+}
