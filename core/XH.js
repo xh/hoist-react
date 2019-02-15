@@ -16,6 +16,7 @@ import {throwIf} from '@xh/hoist/utils/js';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 
 import {
+    AuthService,
     ConfigService,
     EnvironmentService,
     FetchService,
@@ -75,6 +76,8 @@ class XHClass {
     //---------------------------
     // Hoist Services
     //---------------------------
+    /** @member {AuthService} */
+    authService;
     /** @member {ConfigService} */
     configService;
     /** @member {EnvironmentService} */
@@ -87,6 +90,8 @@ class XHClass {
     identityService;
     /** @member {IdleService} */
     idleService;
+    /** @member {LocalStorageService} */
+    localStorageService;
     /** @member {PrefService} */
     prefService;
     /** @member {TrackService} */
@@ -98,6 +103,7 @@ class XHClass {
     track(opts)                 {return this.trackService.track(opts)}
     fetch(opts)                 {return this.fetchService.fetch(opts)}
     fetchJson(opts)             {return this.fetchService.fetchJson(opts)}
+    postJson(opts)              {return this.fetchService.postJson(opts)}
     getConf(key, defaultVal)    {return this.configService.get(key, defaultVal)}
     getPref(key, defaultVal)    {return this.prefService.get(key, defaultVal)}
     setPref(key, val)           {return this.prefService.set(key, val)}
@@ -435,6 +441,7 @@ class XHClass {
 
         try {
             await this.installServicesAsync(FetchService, LocalStorageService);
+            await this.installServicesAsync(AuthService);
             await this.installServicesAsync(TrackService, IdleService, GridExportService);
 
             // Special handling for EnvironmentService, which makes the first fetch back to the Grails layer.
@@ -511,7 +518,7 @@ class XHClass {
             {checkAccess} = this.appSpec;
 
         if (isString(checkAccess)) {
-            return user.hasRole(checkAccess) ?
+            return XH.hasRole(checkAccess) ?
                 {hasAccess: true} :
                 {hasAccess: false, message: `User needs the role "${checkAccess}" to access this application.`};
         } else {
@@ -521,20 +528,40 @@ class XHClass {
     }
 
     async getAuthStatusFromServerAsync() {
-        return await this.fetchService
-            .fetchJson({url: 'http://localhost:8099/auth/sso'})
-            .then(tokenGrant => {
-                const svc = XH.localStorageService;
-                tokenGrant.expires = (new Date()).getTime() + tokenGrant.expiresInMillis - 10 * SECONDS;
-                svc.set('tokenGrant', tokenGrant);
-                return true;
-            }).catch(e => {
-                // 401s normal / expected for non-SSO apps when user not yet logged in.
-                if (e.httpStatus == 401) return false;
-                // Other exceptions indicate e.g. connectivity issue, server down - raise to user.
-                throw e;
-            });
+        if (!await this.authService.getAccessTokenAsync()) {
+            return await this.fetchService
+                .fetchJson({url: XH.baseUrl + 'auth/sso', skipAuth: true})
+                .then(tokenGrant => {
+                    return XH.authService.saveTokenGrant(tokenGrant)
+                }).catch(e => {
+                    // 401s normal / expected for non-SSO apps when user not yet logged in.
+                    if (e.httpStatus == 401) return false;
+                    // Other exceptions indicate e.g. connectivity issue, server down - raise to user.
+                    throw e;
+                });
+        }
+        return true;
     }
+
+    /////
+    // Authenticated info
+    /////
+    get username() {
+        return XH.authService.username;
+    }
+
+    get apparentUsername() {
+        return XH.authService.apparentUsername;
+    }
+
+    get roles() {
+        return XH.authService.roles;
+    }
+
+    hasRole(role) {
+        return XH.roles.includes(role)
+    }
+
 
     initModels() {
         this.acm.init();

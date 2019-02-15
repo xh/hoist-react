@@ -36,7 +36,8 @@ export class TrackService {
 
         const params = {
             msg: stripTags(msg),
-            clientUsername: username
+            clientUsername: username,
+            scope: XH.clientAppName
         };
 
         try {
@@ -52,10 +53,10 @@ export class TrackService {
 
             console.log(consoleMsg);
 
-            // XH.fetchJson({
-            //     url: 'xh/track',
-            //     params: params
-            // });
+            XH.postJson({
+                url: 'tracks',
+                params: params
+            });
         } catch (e) {
             console.error('Failure tracking message: ' + params.msg);
         }

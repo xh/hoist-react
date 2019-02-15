@@ -4,6 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+export * from './AuthService';
 export * from './ConfigService';
 export * from './EnvironmentService';
 export * from './FetchService';

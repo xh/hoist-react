@@ -28,7 +28,7 @@ export class ConfigService {
     _data = {};
 
     async initAsync() {
-        this._data = {};
+        this._data = await XH.fetchJson({url: 'configs/portfolios'});
         deepFreeze(this._data);
     }
 

@@ -17,30 +17,22 @@ import {deepFreeze} from '@xh/hoist/utils/js';
 @HoistService
 export class IdentityService {
 
-    _authUser = null;
+    _user = null;
     _apparentUser = null;
     
     async initAsync() {
-        const data = {
-            roles: ["APP_READER"],
-            user: {
-                email: "lee@xh.io",
-                displayName: "Lee Wexler",
-                active: true,
-                id: 2,
-                lastName: "Demo",
-                password: "**********",
-                username: "lwexler"
-            }
-        };
 
-        if (data.user) {
-            this._apparentUser = this._authUser = this.createUser(data.user, data.roles);
-        } else {
-            this._apparentUser = this.createUser(data.apparentUser, data.apparentUserRoles);
-            this._authUser = this.createUser(data.authUser, data.authUserRoles);
+        const data = await XH.fetchJson({url: 'identities/' + XH.username});
+        if (data.username) {
+            this._apparentUser = this._user = this.createUser(data);
+        }
+
+        if (XH.username != XH.apparentUsername) {
+            const data2 = await XH.fetchJson({url: 'identities/' + XH.apparentUsername});
+            this._apparentUser = this.createUser(data2);
         }
     }
+
 
     /**
      * The current acting user (see authUser below for notes on impersonation). This is a JS
@@ -66,6 +58,11 @@ export class IdentityService {
         return this.username;
     }
 
+    /** The current acting user's display name - method form for aliasing by XH. */
+    getDisplayName() {
+        return this._apparentUser.firstName + ' ' + this._apparentUser.lastName;
+    }
+
     /**
      * The actual user who authenticated to the web application. This will be the same as the user
      * except when an administrator is impersonation another user for troubleshooting or testing.
@@ -73,11 +70,11 @@ export class IdentityService {
      * return the user they are impersonating.
      */
     get authUser() {
-        return this._authUser;
+        return this._user;
     }
 
     get authUsername() {
-        return this._authUser ? this._authUser.username : null;
+        return this._user ? this._user.username : null;
     }
 
     /**
@@ -85,10 +82,7 @@ export class IdentityService {
      * and refreshes the application to present a login panel.
      */
     async logoutAsync() {
-        return XH
-            .fetchJson({url: 'xh/logout'})
-            .then(() => XH.reloadApp())
-            .catchDefault();
+        return XH.authService.logoutAsync();
     }
 
     //------------------------
@@ -96,17 +90,15 @@ export class IdentityService {
     //------------------------
     /** Is an impersonation session currently active? */
     get isImpersonating() {
-        return this._authUser !== this._apparentUser;
+        return this._user !== this._apparentUser;
     }
 
     //------------------------
     // Implementation
     //------------------------
-    createUser(user, roles) {
+    createUser(user) {
         if (!user) return null;
-        user.roles = roles;
-        user.hasRole = (role) => user.roles.includes(role);
-        user.isHoistAdmin = user.hasRole('HOIST_ADMIN');
+        user.isHoistAdmin = XH.hasRole('HOIST_ADMIN');
         user.hasGate = (gate) => this.hasGate(gate, user);
         return deepFreeze(user);
     }
@@ -125,5 +117,4 @@ export class IdentityService {
         }
         return false;
     }
-
 }

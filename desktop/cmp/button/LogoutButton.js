@@ -41,7 +41,7 @@ export class LogoutButton extends Component {
     // Implementation
     //---------------------------
     logout = () => {
-        XH.identityService.logoutAsync();
+        XH.authService.logoutAsync();
     }
 
 }
