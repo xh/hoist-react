@@ -7,10 +7,11 @@
 
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {tab as onsenTab, tabbar} from '@xh/hoist/kit/onsen';
-import {tab} from './impl/Tab';
-import {TabContainerModel} from './TabContainerModel';
 import {div} from '@xh/hoist/cmp/layout';
+import {tab as onsenTab, tabbar} from '@xh/hoist/kit/onsen';
+import {TabContainerModel} from '@xh/hoist/cmp/tab';
+
+import {tab} from './impl/Tab';
 
 @HoistComponent
 export class TabContainer extends Component {
@@ -29,7 +30,7 @@ export class TabContainer extends Component {
     }
 
     renderTab(tabModel) {
-        const {id, label, icon} = tabModel;
+        const {id, title, icon} = tabModel;
 
         return {
             content: tab({key: id, model: tabModel}),
@@ -38,7 +39,7 @@ export class TabContainer extends Component {
                 className: 'xh-tab',
                 items: [
                     div({className: 'xh-tab-icon', item: icon, omit: !icon}),
-                    div({className: 'xh-tab-label', item: label})
+                    div({className: 'xh-tab-label', item: title})
                 ]
             })
         };

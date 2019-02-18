@@ -4,11 +4,11 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {TabRenderMode} from '@xh/hoist/enums';
 import {Component} from 'react';
 import {elem, elemFactory, refreshContextView, HoistComponent} from '@xh/hoist/core';
 import {frame} from '@xh/hoist/cmp/layout';
-import {TabModel} from '../TabModel';
+import {TabRenderMode} from '@xh/hoist/enums';
+import {TabModel} from '@xh/hoist/cmp/tab';
 
 /**
  * @private

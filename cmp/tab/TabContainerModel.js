@@ -81,6 +81,11 @@ export class TabContainerModel {
         return find(this.tabs, {id: this.activeTabId});
     }
 
+    get activeTabIndex() {
+        const {activeTab} = this;
+        return activeTab ? this.tabs.indexOf(activeTab) : 0;
+    }
+
     /**
      * Set the currently active Tab.
      *
@@ -115,6 +120,11 @@ export class TabContainerModel {
         throwIf(tab.disabled, `Cannot activate Tab ${id} because it is disabled!`);
 
         this.activeTabId = id;
+    }
+
+    @action
+    setActiveTabIndex(idx) {
+        this.setActiveTabId(this.tabs[idx].id);
     }
 
     syncWithRouter() {

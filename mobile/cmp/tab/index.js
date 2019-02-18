@@ -6,5 +6,3 @@
  */
 
 export * from './TabContainer';
-export * from './TabContainerModel';
-export * from './TabModel';

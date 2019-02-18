@@ -8,10 +8,10 @@ import {Component} from 'react';
 import PT from 'prop-types';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
+import {TabContainerModel} from '@xh/hoist/cmp/tab';
 
-import {TabContainerModel} from './TabContainerModel';
-import {tabSwitcher} from './TabSwitcher';
 import {tab} from './impl/Tab';
+import {tabSwitcher} from './TabSwitcher';
 import './Tabs.scss';
 
 /**
