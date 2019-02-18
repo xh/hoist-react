@@ -20,12 +20,12 @@ export class TabContainer extends Component {
 
     render() {
         const {model} = this,
-            {activeTabIndex} = model;
+            {tabs, activeTabIndex} = model;
 
         return tabbar({
             index: activeTabIndex,
-            renderTabs: () => model.tabs.map(tabModel => this.renderTab(tabModel)),
-            onPreChange: (event) => model.setActiveTabIndex(event.index)
+            renderTabs: () => tabs.map(tabModel => this.renderTab(tabModel)),
+            onPreChange: (e) => model.activateTab(tabs[e.index].id)
         });
     }
 

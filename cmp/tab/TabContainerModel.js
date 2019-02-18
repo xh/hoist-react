@@ -16,6 +16,8 @@ import {TabModel} from './TabModel';
  *
  * This object provides support for routing based navigation, customizable (lazy) mounting and
  * unmounting of inactive tabs, and customizable refreshing of tabs via a built-in RefreshContext.
+ *
+ * Note: Routing is currently enabled for desktop applications only.
  */
 @HoistModel
 export class TabContainerModel {
@@ -63,14 +65,20 @@ export class TabContainerModel {
         this.refreshMode = refreshMode;
         this.activeTabId = find(tabs, {id: defaultTabId}) ? defaultTabId : tabs[0].id;
         this.tabs = tabs.map(p => new TabModel({...p, containerModel: this}));
-        
-        this.route = route;
+
         if (route) {
+            if (XH.isMobile) {
+                console.warn('Tab container routing is not supported for mobile applications.');
+                return;
+            }
+
+            this.route = route;
             this.addReaction({
                 track: () => XH.routerState,
                 run: this.syncWithRouter
             });
-            // Need to do call below seperately instead of w/fireImmediately to avoid react warning (!?)
+
+            // Need to do call below separately instead of w/fireImmediately to avoid react warning (!?)
             // (Occurs when routing immediately on load to secondary tab in nested tab set)
             this.syncWithRouter();
         }
@@ -120,11 +128,6 @@ export class TabContainerModel {
         throwIf(tab.disabled, `Cannot activate Tab ${id} because it is disabled!`);
 
         this.activeTabId = id;
-    }
-
-    @action
-    setActiveTabIndex(idx) {
-        this.setActiveTabId(this.tabs[idx].id);
     }
 
     syncWithRouter() {
