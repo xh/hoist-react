@@ -46,11 +46,12 @@ export class AuthService {
     async retrieveAccessTokenAsync() {
         let tokenGrant = XH.localStorageService.get('tokenGrant');
         if (tokenGrant) {
+            let refreshToken = tokenGrant.refreshToken;
             try {
                 tokenGrant = await XH.fetchService.postJson({
                     url: XH.baseUrl + 'auth/refresh',
                     params: {
-                        refreshToken: tokenGrant.refreshToken
+                        refreshToken: refreshToken
                     },
                     service: 'hoist-central',
                     skipAuth: true
@@ -59,6 +60,7 @@ export class AuthService {
                 tokenGrant = null;
             }
             if (tokenGrant) {
+                tokenGrant.refreshToken = refreshToken;
                 this.saveTokenGrant(tokenGrant);
             }
         }
@@ -72,7 +74,6 @@ export class AuthService {
     // called from login when there is a new grant
     saveTokenGrant(tokenGrant) {
         tokenGrant.expires = (new Date()).getTime() + tokenGrant.expiresInMillis - 10 * SECONDS;
-        XH.localStorageService.set('tokenGrant', tokenGrant);
         this.setLocal(tokenGrant);
         this.accessTokenPromise = (async () => {return tokenGrant.accessToken;})();
         return true;
@@ -80,14 +81,13 @@ export class AuthService {
 
     // called from logout
     clearTokenGrant() {
-        const svc = XH.localStorageService;
-        svc.set('tokenGrant', null);
         this.setLocal(null);
         this.accessTokenPromise = (async () => {return null;})();
         return true;
     }
 
     setLocal(tokenGrant) {
+        XH.localStorageService.set('tokenGrant', tokenGrant);
         if (tokenGrant) {
             this.accessToken = tokenGrant.accessToken;
             this.expires = tokenGrant.expires;
@@ -103,7 +103,7 @@ export class AuthService {
         }
     }
 
-    async loginSso() {
+    async loginSsoAsync() {
         return XH
             .fetchJson({
                 url: XH.baseUrl + 'auth/sso',

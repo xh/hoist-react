@@ -529,7 +529,7 @@ class XHClass {
 
     async getAuthStatusFromServerAsync() {
         if (!await this.authService.getAccessTokenAsync()) {
-            return await this.authService.loginSso();
+            return await this.authService.loginSsoAsync();
         }
         return true;
     }
