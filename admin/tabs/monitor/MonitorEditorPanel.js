@@ -9,6 +9,7 @@ import {HoistComponent, LoadSupport} from '@xh/hoist/core';
 import {boolCheckCol, numberCol} from '@xh/hoist/cmp/grid';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
+import {fmtDateTime} from '@xh/hoist/format';
 
 @HoistComponent
 @LoadSupport
@@ -97,7 +98,7 @@ export class MonitorEditorPanel extends Component {
             {field: 'notes', formField: {item: textArea()}},
             {field: 'active'},
             {field: 'sortOrder'},
-            {field: 'lastUpdated'},
+            {field: 'lastUpdated', formField: {readonlyRenderer: v => fmtDateTime(v)}},
             {field: 'lastUpdatedBy'}
         ]
     });

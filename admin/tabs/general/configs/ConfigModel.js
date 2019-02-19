@@ -6,6 +6,7 @@
  */
 import {HoistModel, managed} from '@xh/hoist/core';
 import {boolCheckCol} from '@xh/hoist/cmp/grid';
+import {fmtDateTime} from '@xh/hoist/format';
 import {RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 import {ConfigDifferModel} from './differ/ConfigDifferModel';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
@@ -88,7 +89,7 @@ export class ConfigModel {
             {field: 'value'},
             {field: 'clientVisible'},
             {field: 'note', formField: {item: textArea()}},
-            {field: 'lastUpdated'},
+            {field: 'lastUpdated', formField: {readonlyRenderer: v => fmtDateTime(v)}},
             {field: 'lastUpdatedBy'}
         ]
     });

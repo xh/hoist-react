@@ -9,6 +9,7 @@ import {HoistComponent, LoadSupport} from '@xh/hoist/core';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 import {boolCheckCol} from '@xh/hoist/cmp/grid';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
+import {fmtDateTime} from '@xh/hoist/format';
 
 @HoistComponent
 @LoadSupport
@@ -88,7 +89,7 @@ export class PreferencePanel extends Component {
             {field: 'defaultValue'},
             {field: 'local'},
             {field: 'notes', formField: {item: textArea()}},
-            {field: 'lastUpdated'},
+            {field: 'lastUpdated', formField: {readonlyRenderer: v => fmtDateTime(v)}},
             {field: 'lastUpdatedBy'}
         ]
     });

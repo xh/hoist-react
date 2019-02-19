@@ -8,6 +8,7 @@ import {Component} from 'react';
 import {HoistComponent, LoadSupport} from '@xh/hoist/core';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 import {usernameCol} from '@xh/hoist/admin/columns';
+import {fmtDateTime} from '@xh/hoist/format';
 
 @HoistComponent
 @LoadSupport
@@ -74,7 +75,7 @@ export class UserPreferencePanel extends Component {
             {field: 'name'},
             {field: 'username'},
             {field: 'userValue'},
-            {field: 'lastUpdated'},
+            {field: 'lastUpdated', formField: {readonlyRenderer: v => fmtDateTime(v)}},
             {field: 'lastUpdatedBy'}
         ]
     });
