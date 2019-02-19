@@ -28,20 +28,17 @@ export class AuthService {
             let tokenGrant = XH.localStorageService.get('tokenGrant');
             if (tokenGrant) {
                 this.setLocal(tokenGrant);
-                this.accessTokenPromise = (async () => {return tokenGrant.accessToken;})();
             }
         }
-        if (!this.accessTokenPromise) {
-            this.accessTokenPromise = this.retrieveAccessTokenAsync()
-        } else {
-            if (this.accessToken) {
-                const currTime = (new Date()).getTime();
-                if (this.expires < currTime) {
-                    this.accessTokenPromise = this.retrieveAccessTokenAsync()
-                }
-            } else {
+        if (this.accessToken) {
+            const currTime = (new Date()).getTime();
+            if (!this.expires || this.expires < currTime) {
                 this.accessTokenPromise = this.retrieveAccessTokenAsync()
+            } else if (this.accessTokenPromise == null) {
+                this.accessTokenPromise = (async () => {return this.accessToken;})();
             }
+        } else {
+            this.accessTokenPromise = this.retrieveAccessTokenAsync()
         }
         return this.accessTokenPromise
     }
@@ -61,8 +58,9 @@ export class AuthService {
             } catch (e) {
                 tokenGrant = null;
             }
-            XH.localStorageService.set('tokenGrant', tokenGrant);
-            this.setLocal(tokenGrant);
+            if (tokenGrant) {
+                this.saveTokenGrant(tokenGrant);
+            }
         }
         if (!tokenGrant) {
             this.accessToken = null;
@@ -73,9 +71,8 @@ export class AuthService {
 
     // called from login when there is a new grant
     saveTokenGrant(tokenGrant) {
-        const svc = XH.localStorageService;
         tokenGrant.expires = (new Date()).getTime() + tokenGrant.expiresInMillis - 10 * SECONDS;
-        svc.set('tokenGrant', tokenGrant);
+        XH.localStorageService.set('tokenGrant', tokenGrant);
         this.setLocal(tokenGrant);
         this.accessTokenPromise = (async () => {return tokenGrant.accessToken;})();
         return true;
@@ -106,11 +103,29 @@ export class AuthService {
         }
     }
 
+    async loginSso() {
+        return XH
+            .fetchJson({
+                url: XH.baseUrl + 'auth/sso',
+                service: 'hoist-central',
+                skipAuth: true
+            })
+            .then(tokenGrant => {
+                return this.saveTokenGrant(tokenGrant)
+            }).catch(e => {
+                // 401s normal / expected for non-SSO apps when user not yet logged in.
+                if (e.httpStatus == 401) return false;
+                // Other exceptions indicate e.g. connectivity issue, server down - raise to user.
+                throw e;
+            });
+    }
+
     async loginAsync(username, password) {
         return XH
             .postJson({
                 url: 'auth/login',
                 params: {username, password},
+                service: 'hoist-central',
                 skipAuth: true
             })
             .thenAction(r => {
@@ -131,7 +146,10 @@ export class AuthService {
      */
     async logoutAsync() {
         return XH
-            .fetchJson({url: 'auth/logout'})
+            .fetchJson({
+                url: 'auth/logout',
+                service: 'hoist-central'
+            })
             .then(() => {
                 this.clearTokenGrant();
                 XH.reloadApp()

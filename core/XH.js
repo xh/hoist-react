@@ -529,16 +529,7 @@ class XHClass {
 
     async getAuthStatusFromServerAsync() {
         if (!await this.authService.getAccessTokenAsync()) {
-            return await this.fetchService
-                .fetchJson({url: XH.baseUrl + 'auth/sso', skipAuth: true})
-                .then(tokenGrant => {
-                    return XH.authService.saveTokenGrant(tokenGrant)
-                }).catch(e => {
-                    // 401s normal / expected for non-SSO apps when user not yet logged in.
-                    if (e.httpStatus == 401) return false;
-                    // Other exceptions indicate e.g. connectivity issue, server down - raise to user.
-                    throw e;
-                });
+            return await this.authService.loginSso();
         }
         return true;
     }
