@@ -4,13 +4,14 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed} from '@xh/hoist/core';
+import {HoistModel, managed, LoadSupport} from '@xh/hoist/core';
 import {boolCheckCol} from '@xh/hoist/cmp/grid';
 import {RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 import {ConfigDifferModel} from './differ/ConfigDifferModel';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 
 @HoistModel
+@LoadSupport
 export class ConfigModel {
 
     @managed
@@ -96,8 +97,8 @@ export class ConfigModel {
     @managed
     differModel = new ConfigDifferModel(this.gridModel);
 
-    async loadAsync() {
-        return this.gridModel.loadAsync();
+    async doLoadAsync(loadSpec) {
+        return this.gridModel.loadAsync(loadSpec);
     }
 
     maskIfPwd(value, {record}) {

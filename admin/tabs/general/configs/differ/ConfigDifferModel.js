@@ -103,15 +103,17 @@ export class ConfigDifferModel  {
         });
     }
 
-    async loadAsync() {
+    async doLoadAsync(loadSpec) {
+        if (loadSpec.isAutoRefresh) return;
+
         const remoteHost = trimEnd(this.remoteHost, '/'),
             apiAffix = XH.baseUrl[0] == '/' ? XH.baseUrl : '/',
             remoteBaseUrl = remoteHost + apiAffix;
 
         try {
             const resp = await Promise.all([
-                XH.fetchJson({url: XH.baseUrl + 'configDiffAdmin/configs'}),
-                XH.fetchJson({url: remoteBaseUrl + 'configDiffAdmin/configs'})
+                XH.fetchJson({url: XH.baseUrl + 'configDiffAdmin/configs', loadSpec}),
+                XH.fetchJson({url: remoteBaseUrl + 'configDiffAdmin/configs', loadSpec})
             ]).linkTo(XH.appLoadModel);
             this.processResponse(resp);
         } catch (e) {

@@ -6,6 +6,7 @@
  */
 import {defaultMethods, markClass} from '@xh/hoist/utils/js';
 import {HoistModel} from './HoistModel';
+import {LoadSupport} from './mixins/LoadSupport';
 
 /**
  * Mixin for defining a Hoist Application. An instance of this class will be initialized by Hoist
@@ -20,6 +21,7 @@ export function HoistAppModel(C) {
     markClass(C, 'isHoistAppModel');
 
     C = HoistModel(C);
+    C = LoadSupport(C);
 
     defaultMethods(C, {
 
@@ -36,10 +38,12 @@ export function HoistAppModel(C) {
          * Hoist will call this method during the global refresh process.
          *
          * This will be called after all core Hoist services have been refreshed and before the
-         * global refreshContextModel has been refreshed. Apps should implement this method to
-         * refresh all app-specific services using one or more phased calls to refreshAllAsync().
+         * application's global XH.refreshContextModel has been refreshed.
+         *
+         * Apps should implement this method to refresh all app-specific services, respecting any
+         * ordering and phasing requirements that may exist.
          */
-        async refreshAsync(isAutoRefresh) {},
+        async doLoadAsync(loadSpec) {},
 
         /**
          * Provide the initial set of Router5 Routes to be used by this application.
@@ -58,7 +62,6 @@ export function HoistAppModel(C) {
         getAppOptions() {
             return [];
         }
-
     });
 
     return C;

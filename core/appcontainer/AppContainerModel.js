@@ -4,7 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {HoistModel, RootRefreshContextModel, managed} from '@xh/hoist/core';
+import {HoistModel, managed} from '@xh/hoist/core';
+import {RootRefreshContextModel} from '@xh/hoist/core/refresh';
 import {observable, action} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 

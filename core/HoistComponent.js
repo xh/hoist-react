@@ -8,10 +8,12 @@ import ReactDom from 'react-dom';
 import {XH} from '@xh/hoist/core';
 import {observer} from '@xh/hoist/mobx';
 import {isPlainObject} from 'lodash';
-import {defaultMethods, chainMethods, markClass} from '@xh/hoist/utils/js';
+import {defaultMethods, chainMethods, markClass, overrideMethods} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 
 import {ReactiveSupport, XhIdSupport, ManagedSupport} from './mixins';
+
+import {loadSupportLinker}  from './impl/LoadSupportLinker';
 
 /**
  * Core decorator for Components in Hoist.
@@ -78,19 +80,21 @@ export function HoistComponent(C) {
 
                 if (propsModel) {
                     if (isPlainObject(propsModel)) {
-                        if (!modelClass) this.throwNoModelClassProvided();
-                        this._model = new modelClass(propsModel);
-                        this._modelIsOwned = true;
+                        if (modelClass) {
+                            this._model = new modelClass(propsModel);
+                            this._modelIsOwned = true;
+                        } else {
+                            this.warnNoModelClassProvided();
+                        }
                     } else {
                         if (modelClass && !(propsModel instanceof modelClass)) this.throwWrongModelClass();
                         this._model = propsModel;
                         this._modelIsOwned = false;
                     }
-                    return this._model;
                 }
 
-                // ...or return null if no model is available.
-                return null;
+                // ...and return whatever was (or not) created
+                return this._model;
             },
 
             set(value) {
@@ -99,6 +103,14 @@ export function HoistComponent(C) {
                 this._modelIsOwned = true;
             }
         },
+
+        ownedModel: {
+            get() {
+                const {model, _modelIsOwned} = this;
+                return model && _modelIsOwned ? model : null;
+            }
+        },
+
 
         /**
          * Is this component in the DOM and not within a hidden sub-tree (e.g. hidden tab)?
@@ -168,6 +180,22 @@ export function HoistComponent(C) {
         }
     });
 
+    overrideMethods(C, {
+        render: (sup) => {
+            return function() {
+                const {ownedModel} = this;
+                const renderFn = sup.bind(this);
+
+                if (ownedModel && ownedModel.hasLoadSupport) {
+                    return loadSupportLinker({renderFn, model: ownedModel});
+                } else {
+                    return renderFn();
+                }
+            };
+        }
+    });
+
+
     defaultMethods(C, {
         throwModelChangeException() {
             throw XH.exception(`
@@ -182,8 +210,8 @@ export function HoistComponent(C) {
             `);
         },
 
-        throwNoModelClassProvided() {
-            throw XH.exception(`
+        warnNoModelClassProvided() {
+            console.warn(`
                 Component class definition must specify a modelClass to support creating models from prop objects.
             `);
         }

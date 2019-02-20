@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import PT from 'prop-types';
-import {HoistComponent, elemFactory, LoadSupport} from '@xh/hoist/core';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
 
 import {BaseRefreshContextModel} from './BaseRefreshContextModel';
 import {RefreshContext} from './RefreshContext';
@@ -24,7 +24,6 @@ const refreshContextProvider = elemFactory(RefreshContext.Provider);
  * @see RefreshContextModel
  */
 @HoistComponent
-@LoadSupport
 export class RefreshContextView extends Component {
 
     static propTypes = {
@@ -32,12 +31,24 @@ export class RefreshContextView extends Component {
     };
 
     static modelClass = BaseRefreshContextModel;
-   
+
+    static contextType = RefreshContext;
+
     render() {
         return refreshContextProvider({
             value: this.model,
             items: this.props.children
         });
+    }
+
+    componentDidMount() {
+        const {context, model} = this;
+        if (context && model) context.register(model);
+    }
+
+    componentWillUnmount() {
+        const {context, model} = this;
+        if (context && model) context.unregister(model);
     }
 }
 export const refreshContextView = elemFactory(RefreshContextView);

@@ -4,40 +4,133 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {markClass, chainMethods, throwIf} from '@xh/hoist/utils/js';
-import {RefreshContext} from '../refresh/RefreshContext';
+import {XH} from '@xh/hoist/core';
+import {defaultMethods, markClass, provideMethods, chainMethods} from '@xh/hoist/utils/js';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {allSettled} from '@xh/hoist/promise';
 
 /**
- * Mixin to indicate that a Component's primary backing model implements data loading.
+ * Mixin to indicate that an object has a load and refresh lifecycle for loading
+ * data from backend sources and setting up resources.
  *
- * This mixin will register the component's primary model with the appropriate RefreshContextModel
- * and call the model's loadAsync() method when the component is first mounted. It will also
- * unregister the model from the same RefreshContextModel when the component is unmounted.
+ * This decorator is designed to be applied to implementations of HoistModel and HoistService.
+ * By default, all loading operations will be
  *
- * Implementation Note:
- * The use of this mixin is required for technical reasons, due to limitations of the pre-hooks
- * context API. Expect this to be built in to all HoistComponents in future versions of Hoist.
+ * It is also implemented by standard classes such as UrlStore, RestStore, RestGridModel.
+ *
+ * @see HoistModel
+ * @see UrlStore
+ * @see RestStore
+ * @see RestGridModel
  */
 export function LoadSupport(C) {
 
     markClass(C, 'hasLoadSupport');
 
-    throwIf(C.contextType,  'Cannot decorate a class with LoadSupport if it already uses context type.');
-    C.contextType = RefreshContext;
+    //--------------------------------------
+    // Methods for Implementation
+    //--------------------------------------
+    defaultMethods(C, {
 
-    chainMethods(C, {
-        componentDidMount() {
-            const {context, model} = this;
-            if (context && model) context.register(model);
+        /**
+         * Load this object. Implement this method to describe how this object should load
+         * itself from underlying data sources or services.
+         *
+         * For implementation only.  Callers should call loadAsync() or refreshAsync() instead.
+         *
+         * @param {LoadSpec} loadSpec - Metadata about the underlying request
+         */
+        async doLoadAsync(loadSpec) {}
+    });
 
-            model.loadAsync({isRefresh: false, isAutoRefresh: false});
+
+    provideMethods(C, {
+
+        /**
+         * Load this object from underlying data sources or services.
+         *
+         * Not for implementation.  Implement doLoadAsync() instead.
+         *
+         * @param {LoadSpec} [loadSpec] - Metadata about the underlying request
+         */
+        async loadAsync(loadSpec = {isRefresh: false, isAutoRefresh: false}) {
+            this.lastLoadRequested = new Date();
+            return this
+                .doLoadAsync(loadSpec)
+                .linkTo(this.loadModel)
+                .finally(() => {
+                    this.lastLoadCompleted = new Date();
+                });
         },
 
-        componentWillUnmount() {
-            const {context, model} = this;
-            if (context && model) context.unregister(model);
+        /**
+         * Refresh this object from underlying data sources or services.
+         *
+         * Not for implementation.  Implement doLoadAsync() instead.
+         *
+         * @param {LoadSpec} [loadSpec] - Metadata about the underlying request
+         */
+        async refreshAsync(loadSpec = {isRefresh: true, isAutoRefresh: false}) {
+            return this.loadAsync(loadSpec);
+        },
+
+        /**
+         * Auto-refresh this object from underlying data sources or services.
+         *
+         * Not for implementation.  Implement doLoadAsync() instead.
+         *
+         *  @param {LoadSpec} [loadSpec] - Metadata about the underlying request
+         */
+        async autoRefreshAsync(loadSpec = {isRefresh: true, isAutoRefresh: true}) {
+            return this.loadAsync(loadSpec);
+        },
+
+        loadModel: {
+            get() {
+                if (!this._loadModel) this._loadModel = new PendingTaskModel();
+                return this._loadModel;
+            },
+
+            set(loadModel) {
+                this._loadModel = loadModel;
+            }
         }
     });
 
+
+    chainMethods(C, {
+        destroy() {
+            XH.safeDestroy(this._loadModel);
+        }
+    });
+
+
     return C;
 }
+
+/**
+ * Load a collection of objects with LoadSupport concurrently.
+ *
+ * @param {Object[]} objs - list of objects to be loaded
+ * @param {LoadSpec} loadSpec - metadata related to this request.
+ *
+ * Note that this method uses 'allSettled' in its implementation in order to
+ * to avoid a failure of any single call from causing the method to throw.
+ */
+export async function loadAllAsync(objs, loadSpec) {
+    const promises = objs.map(it => it.loadAsync(loadSpec)),
+        ret = await allSettled(promises);
+
+    ret.filter(it => it.state === 'rejected')
+        .forEach(err => console.error('Failed to Load Object', err.reason));
+
+    return ret;
+}
+
+
+/**
+ * @typedef {Object} LoadSpec
+ * @property {boolean} [isRefresh] - true if this load was triggered by a refresh request.
+ * @property {boolean} [isAutoRefresh] - true if this load was triggered by a programmatic
+ *       refresh process, rather than a user action.
+ */

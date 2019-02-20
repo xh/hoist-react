@@ -6,7 +6,8 @@
  */
 import {TabRenderMode} from '@xh/hoist/enums';
 import {Component} from 'react';
-import {elem, elemFactory, refreshContextView, HoistComponent} from '@xh/hoist/core';
+import {elem, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {refreshContextView} from '@xh/hoist/core/refresh';
 import {frame} from '@xh/hoist/cmp/layout';
 import {TabModel} from '../TabModel';
 

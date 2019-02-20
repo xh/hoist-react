@@ -8,7 +8,6 @@
 import {forOwn, isPlainObject} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
 
-
 /**
  * Mark a class and its instances with a boolean property set to true.
  *
@@ -27,6 +26,24 @@ export function markClass(C, flag) {
 
 
 /**
+ * Define methods on the prototype of a class.
+ *
+ * @param {Object} C - class to be enhanced.
+ * @param {Object} methods - name-value pairs of methods to be added.
+ *      Getters and Setters may be provided via an object appropriate for
+ *      Object.defineProperty().
+ *
+ * This method will replace any existing method definitions for the same name.  To provide an
+ * implementation that refers to the pre-existing implementation, see overrideMethods().
+ */
+export function defineMethods(C, methods) {
+    const proto = C.prototype;
+    forOwn(methods, (method, name) => {
+        installMethod(proto, name, method);
+    });
+}
+
+/**
  * Provide default methods on the prototype of a class.
  *
  * @param {Object} C - class to be enhanced.
@@ -39,13 +56,7 @@ export function markClass(C, flag) {
 export function defaultMethods(C, methods) {
     const proto = C.prototype;
     forOwn(methods, (method, name) => {
-        if (!proto[name]) {
-            if (isPlainObject(method)) {
-                Object.defineProperty(proto, name, method);
-            } else {
-                proto[name] = method;
-            }
-        }
+        if (!proto[name]) installMethod(proto, name, method);
     });
 }
 
@@ -62,13 +73,8 @@ export function defaultMethods(C, methods) {
 export function provideMethods(C, methods) {
     const proto = C.prototype;
     forOwn(methods, (method, name) => {
-        throwIf(proto[name], `Symbol ${name} already exists on Class.`);
-
-        if (isPlainObject(method)) {
-            Object.defineProperty(proto, name, method);
-        } else {
-            proto[name] = method;
-        }
+        throwIf(proto[name], `Symbol '${name}' already exists on Class : '${C.name}'`);
+        installMethod(proto, name, method);
     });
 }
 
@@ -120,4 +126,16 @@ export function overrideMethods(C, methods) {
         const existing = proto[name];
         proto[name] = methodGen(existing);
     });
+}
+
+
+//--------------------------------------
+// Implementation
+//--------------------------------------
+function installMethod(proto, name, method) {
+    if (isPlainObject(method)) {
+        Object.defineProperty(proto, name, method);
+    } else {
+        proto[name] = method;
+    }
 }

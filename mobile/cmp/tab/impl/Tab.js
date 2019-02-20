@@ -5,7 +5,8 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, HoistComponent, refreshContextView} from '@xh/hoist/core';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {refreshContextView} from '@xh/hoist/core/refresh';
 import {div} from '@xh/hoist/cmp/layout';
 import {TabRenderMode} from '@xh/hoist/enums';
 import {TabModel} from '../TabModel';

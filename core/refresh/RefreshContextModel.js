@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {HoistModel}  from '@xh/hoist/core';
+import {HoistModel, LoadSupport}  from '@xh/hoist/core';
 import {BaseRefreshContextModel} from './BaseRefreshContextModel';
 
 /**
@@ -25,6 +25,7 @@ import {BaseRefreshContextModel} from './BaseRefreshContextModel';
  * @see RootRefreshContextModel
  */
 @HoistModel
+@LoadSupport
 export class RefreshContextModel extends BaseRefreshContextModel {
 
 }

@@ -4,9 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {managed, refreshAllAsync}  from '@xh/hoist/core';
-import {start} from '@xh/hoist/promise';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {loadAllAsync}  from '../';
 import {throwIf} from '@xh/hoist/utils/js';
 import {pull} from 'lodash';
 
@@ -14,33 +12,23 @@ export class BaseRefreshContextModel {
 
     targets = [];
 
-    @managed
-    loadModel = new PendingTaskModel();
-
-    lastRefreshRequested = null;
-    lastRefreshCompleted = null;
-
-    refreshAsync(isAutoRefresh) {
-        this.lastRefreshRequested = new Date();
-        return start(() => {
-            return refreshAllAsync(this.targets, isAutoRefresh);
-        }).finally(() => {
-            this.lastRefreshCompleted = new Date();
-        }).linkTo(
-            this.loadModel
-        );
+    doLoadAsync(loadSpec) {
+        return loadAllAsync(this.targets, loadSpec);
     }
 
     /**
      * Register a target with this model for refreshing.
      *
-     * For models backing HoistComponents, consider applying the `@LoadSupport` decorator to
-     * the component to have this method called automatically when the component is mounted.
+     * Not typically called directly by applications.  Hoist will automatically register
+     * HoistModels marked with LoadSupport when their owning Component is first mounted.
      *
-     * @param {HoistModel} target
+     * @param {Object} target
      */
     register(target) {
-        throwIf(!target.hasRefreshSupport, 'HoistModels must apply the @RefreshSupport decorator to be registered with a RefreshContextModel.');
+        throwIf(
+            !target.hasLoadSupport,
+            'Object must apply the LoadSupport decorator to be registered with a RefreshContextModel.'
+        );
         const {targets} = this;
         if (!targets.includes(target)) targets.push(target);
     }
@@ -48,7 +36,7 @@ export class BaseRefreshContextModel {
     /**
      * Unregister a target from this model.
      *
-     * @param {HoistModel} target
+     * @param {Object} target
      */
     unregister(target) {
         pull(this.targets, target);
