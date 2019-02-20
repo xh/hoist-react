@@ -33,7 +33,7 @@ export class AuthService {
     async loginSsoAsync() {
         return XH
             .fetchJson({
-                url: XH.baseUrl + 'auth/sso',
+                url: 'auth/sso',
                 service: 'hoist-central',
                 skipAuth: true
             })
@@ -123,7 +123,7 @@ export class AuthService {
             let refreshToken = tokenGrant.refreshToken;
             try {
                 tokenGrant = await XH.fetchService.postJson({
-                    url: XH.baseUrl + 'auth/refresh',
+                    url: 'auth/refresh',
                     params: {
                         refreshToken: refreshToken
                     },
