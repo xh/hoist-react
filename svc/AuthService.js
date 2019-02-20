@@ -18,6 +18,26 @@ export class AuthService {
     // Public access
     ///////////////////////
 
+    _username = null;
+
+    get username() {
+        return this._username;
+    }
+
+    get apparentUsername() {
+        if (XH.identityService) {
+            return XH.identityService.username;
+        }
+        return this._username;
+    }
+
+    get roles() {
+        if (XH.identityService && XH.identityService.getUser()) {
+            return XH.identityService.getUser().roles;
+        }
+        return [];
+    }
+
     async isAuthenticatedAsync() {
         return await XH
             .fetchJson({url: 'xh/authStatus'})
@@ -28,7 +48,6 @@ export class AuthService {
                 // Other exceptions indicate e.g. connectivity issue, server down - raise to user.
                 throw e;
             });
-
     }
 
     async loginAsync(username, password) {
@@ -37,9 +56,11 @@ export class AuthService {
             .postJson({
                 url: 'xh/login',
                 params: {username, password},
-                skipAuth: true
             })
             .thenAction(r => {
+                if (r.success) {
+                    this._username = username;
+                }
                 return r.success;
             })
             .catchDefault();
@@ -50,6 +71,7 @@ export class AuthService {
      * and refreshes the application to present a login panel.
      */
     async logoutAsync() {
+        this._username = null;
         return await XH
             .fetchJson({url: 'xh/logout'})
             .then(() => {

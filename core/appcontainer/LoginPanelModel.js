@@ -38,15 +38,15 @@ export class LoginPanelModel {
         if (!this.isValid) return;
 
         const {username, password} = this;
-        let ok = XH.authService.loginAsync(username, password);
-        if (ok) {
-            this.warning = '';
-            XH.completeInitAsync();
-        } else {
-            this.warning = 'Login Incorrect';
-            {
+        XH.authService.loginAsync(username, password)
+            .thenAction(success => {
+                this.warning = success ? '' : 'Login Incorrect';
+                if (success) {
+                    XH.completeInitAsync();
+                }
+            })
+            .catchDefault({
                 hideParams: ['password']
-            }
-        }
+            });
     }
 }
