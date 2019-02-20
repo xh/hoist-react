@@ -53,7 +53,7 @@ export function LoadSupport(C) {
          *
          * @param {LoadSpec} [loadSpec] - Metadata about the underlying request
          */
-        async loadAsync(loadSpec = {isRefresh: false, isAutoRefresh: false}) {
+        async loadAsync(loadSpec = {}) {
             this.lastLoadRequested = new Date();
             return this
                 .doLoadAsync(loadSpec)
@@ -67,22 +67,18 @@ export function LoadSupport(C) {
          * Refresh this object from underlying data sources or services.
          *
          * Not for implementation.  Implement doLoadAsync() instead.
-         *
-         * @param {LoadSpec} [loadSpec] - Metadata about the underlying request
          */
-        async refreshAsync(loadSpec = {isRefresh: true, isAutoRefresh: false}) {
-            return this.loadAsync(loadSpec);
+        async refreshAsync() {
+            return this.loadAsync({isRefresh: true, isAutoRefresh: false});
         },
 
         /**
          * Auto-refresh this object from underlying data sources or services.
          *
          * Not for implementation.  Implement doLoadAsync() instead.
-         *
-         *  @param {LoadSpec} [loadSpec] - Metadata about the underlying request
          */
-        async autoRefreshAsync(loadSpec = {isRefresh: true, isAutoRefresh: true}) {
-            return this.loadAsync(loadSpec);
+        async autoRefreshAsync() {
+            return this.loadAsync({isRefresh: true, isAutoRefresh: true});
         },
 
         loadModel: {
@@ -130,6 +126,7 @@ export async function loadAllAsync(objs, loadSpec) {
 
 /**
  * @typedef {Object} LoadSpec
+ * @property {...rest} rest - object specific arguments for data loading
  * @property {boolean} [isRefresh] - true if this load was triggered by a refresh request.
  * @property {boolean} [isAutoRefresh] - true if this load was triggered by a programmatic
  *       refresh process, rather than a user action.

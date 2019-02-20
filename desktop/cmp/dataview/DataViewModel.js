@@ -9,7 +9,7 @@ import {isPlainObject, defaults, isString, omit} from 'lodash';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {throwIf} from "@xh/hoist/utils/js";
+import {throwIf} from '@xh/hoist/utils/js';
 
 /**
  * DataViewModel is a wrapper around GridModel, which shows sorted data in a single column,

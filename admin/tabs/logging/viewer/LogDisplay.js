@@ -8,7 +8,6 @@ import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {frame, table, tbody, td, tr} from '@xh/hoist/cmp/layout';
 import {clipboardMenuItem} from '@xh/hoist/desktop/cmp/clipboard';
 import {ContextMenuSupport} from '@xh/hoist/desktop/cmp/contextmenu';
