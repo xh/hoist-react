@@ -1,6 +1,10 @@
 .xh-panel {
   background-color: var(--xh-panel-bg);
 
+  &.xh-panel-scrollable > .xh-vframe {
+    overflow-y: auto !important;
+  }
+
   .xh-panel-header {
     align-items: center;
     padding: var(--xh-title-pad-px);

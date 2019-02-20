@@ -42,6 +42,9 @@ export class Panel extends Component {
          */
         mask: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool]),
 
+        /** Allow the panel to scroll vertically */
+        scrollable: PT.bool,
+
         /** A toolbar to be docked at the top of the panel. */
         tbar: PT.element,
 
@@ -59,6 +62,7 @@ export class Panel extends Component {
             icon,
             headerItems,
             mask: maskProp,
+            scrollable,
             children,
             ...rest
         } = this.getNonLayoutProps();
@@ -87,16 +91,14 @@ export class Panel extends Component {
         return vbox({
             items: [
                 panelHeader({title, icon, headerItems}),
-                vframe(
-                    tbar || null,
-                    ...(castArray(children)),
-                    bbar || null
-                ),
+                tbar || null,
+                vframe(castArray(children)),
+                bbar || null,
                 maskElem
             ],
             ...rest,
             ...layoutProps,
-            className: this.getClassName()
+            className: this.getClassName(scrollable ? 'xh-panel-scrollable' : null)
         });
     }
 }
