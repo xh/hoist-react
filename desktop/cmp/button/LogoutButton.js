@@ -25,7 +25,7 @@ export class LogoutButton extends Component {
     };
 
     render() {
-        if (XH.appSpec.isSSO) return null;
+        if (!XH.appSpec.authLogin) return null;
 
         const {icon, title, intent, onClick, ...rest} = this.props;
         return button({

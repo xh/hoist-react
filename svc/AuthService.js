@@ -38,8 +38,8 @@ export class AuthService {
         return [];
     }
 
-    async isAuthenticatedAsync() {
-        return await XH
+    async isAuthenticatedAsync(authSSO) {
+        return XH
             .fetchJson({url: 'xh/authStatus'})
             .then(r => r.authenticated)
             .catch(e => {
@@ -51,8 +51,7 @@ export class AuthService {
     }
 
     async loginAsync(username, password) {
-
-        return await XH
+        return XH
             .postJson({
                 url: 'xh/login',
                 params: {username, password},
@@ -72,7 +71,7 @@ export class AuthService {
      */
     async logoutAsync() {
         this._username = null;
-        return await XH
+        return XH
             .fetchJson({url: 'xh/logout'})
             .then(() => {
                 XH.reloadApp()

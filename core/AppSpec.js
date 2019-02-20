@@ -26,7 +26,9 @@ export class AppSpec {
      *      This class is platform specific, and should be typically either
      *      `@xh/hoist/desktop/AppContainer` or `@xh/hoist/mobile/AppContainer`.
      * @param {boolean} c.isMobile - true if the app is designed to be run on mobile devices.
-     * @param {boolean} c.isSSO - true if SSO auth is enabled, as opposed to a login prompt.
+     * @param {boolean} c.isSSO - true if SSO auth is enabled (deprecated).
+     * @param {boolean} c.authSSO - true if SSO auth is enabled.
+     * @param {boolean} c.authLogin - true if form based username/password auth is enabled.
      * @param {(string|CheckAccessCb)} c.checkAccess - If a string, will be interpreted as the role
      *      required for basic UI access. Otherwise, function to determine if the passed user should
      *      be able to access the UI.
@@ -46,6 +48,8 @@ export class AppSpec {
         containerClass,
         isMobile,
         isSSO,
+        authSSO = true,
+        authLogin = true,
         isHoistCentral = false,
         checkAccess,
         trackAppLoad = true,
@@ -59,7 +63,11 @@ export class AppSpec {
         throwIf(!modelClass, 'A Hoist App must define a modelClass.');
         throwIf(!containerClass, 'A Hoist App must define a containerClass');
         throwIf(isNil(isMobile), 'A Hoist App must define isMobile');
-        throwIf(isNil(isSSO), 'A Hoist App must define isSSO');
+
+        if (!isNil(isSSO)) {
+            authSSO = isSSO;
+            authLogin = !isSSO;
+        }
 
         throwIf(
             !isString(checkAccess) && !isFunction(checkAccess),
@@ -73,7 +81,8 @@ export class AppSpec {
         this.modelClass = modelClass;
         this.containerClass = containerClass;
         this.isMobile = isMobile;
-        this.isSSO = isSSO;
+        this.authSSO = authSSO;
+        this.authLogin = authLogin;
         this.isHoistCentral = isHoistCentral;
         this.checkAccess = checkAccess;
         this.trackAppLoad = trackAppLoad;

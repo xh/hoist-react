@@ -26,7 +26,7 @@ export class LogoutButton extends Component {
     };
 
     render() {
-        if (XH.appSpec.isSSO) return null;
+        if (!XH.appSpec.authLogin) return null;
 
         const {icon, onClick, ...rest} = this.props;
         return toolbarButton({

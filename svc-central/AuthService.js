@@ -23,15 +23,19 @@ export class AuthService {
     apparentUsername = null;
     roles = [];
 
-    async isAuthenticatedAsync() {
+    async isAuthenticatedAsync(authSSO) {
         if (!await this.getAccessTokenAsync()) {
-            return await this.loginSsoAsync();
+            if (authSSO) {
+                return await this.loginSsoAsync();
+            } else {
+                return false;
+            }
         }
         return true;
     }
 
     async loginSsoAsync() {
-        return await XH
+        return XH
             .fetchJson({
                 url: 'auth/sso',
                 service: 'hoist-central',
@@ -48,7 +52,7 @@ export class AuthService {
     }
 
     async loginAsync(username, password) {
-        return await XH
+        return XH
             .postJson({
                 url: 'auth/login',
                 params: {username, password},

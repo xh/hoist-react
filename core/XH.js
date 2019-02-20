@@ -492,11 +492,11 @@ class XHClass {
             this.setAppState(S.PRE_AUTH);
 
             // Check if user has already been authenticated (prior login, SSO)...
-            const userIsAuthenticated = await this.getAuthStatusFromServerAsync();
+            const userIsAuthenticated = await this.getAuthStatusFromServerAsync(appSpec.authSSO);
             
-            // ...if not, throw in SSO mode (unexpected error case) or trigger a login prompt.
+            // ...if not, throw unexpected error case or trigger a login prompt.
             if (!userIsAuthenticated) {
-                throwIf(appSpec.isSSO, 'Failed to authenticate user via SSO.');
+                throwIf(!appSpec.authLogin, 'Failed to authenticate' + (appSpec.authSSO ? " user via SSO." : "."));
                 this.setAppState(S.LOGIN_REQUIRED);
                 return;
             }
@@ -565,8 +565,8 @@ class XHClass {
         }
     }
 
-    async getAuthStatusFromServerAsync() {
-        return await this.authService.isAuthenticatedAsync();
+    async getAuthStatusFromServerAsync(authSSO) {
+        return this.authService.isAuthenticatedAsync(authSSO);
     }
 
     /////
