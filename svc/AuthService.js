@@ -7,7 +7,6 @@
 import {XH, HoistService} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {throwIf} from '@xh/hoist/utils/js';
-import {SECONDS} from '@xh/hoist/utils/datetime';
 
 /**
  * Manage authorization using tokens.
@@ -15,9 +14,26 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
 @HoistService
 export class AuthService {
 
+    ///////////////////////
+    // Public access
+    ///////////////////////
+
+    async isAuthenticatedAsync() {
+        return await XH
+            .fetchJson({url: 'xh/authStatus'})
+            .then(r => r.authenticated)
+            .catch(e => {
+                // 401s normal / expected for non-SSO apps when user not yet logged in.
+                if (e.httpStatus == 401) return false;
+                // Other exceptions indicate e.g. connectivity issue, server down - raise to user.
+                throw e;
+            });
+
+    }
+
     async loginAsync(username, password) {
 
-        return XH
+        return await XH
             .postJson({
                 url: 'xh/login',
                 params: {username, password},
@@ -34,7 +50,7 @@ export class AuthService {
      * and refreshes the application to present a login panel.
      */
     async logoutAsync() {
-        return XH
+        return await XH
             .fetchJson({url: 'xh/logout'})
             .then(() => {
                 XH.reloadApp()

@@ -46,6 +46,7 @@ export class AppSpec {
         containerClass,
         isMobile,
         isSSO,
+        isHoistCentral = false,
         checkAccess,
         trackAppLoad = true,
         idleDetectionEnabled = false,
@@ -73,6 +74,7 @@ export class AppSpec {
         this.containerClass = containerClass;
         this.isMobile = isMobile;
         this.isSSO = isSSO;
+        this.isHoistCentral = isHoistCentral;
         this.checkAccess = checkAccess;
         this.trackAppLoad = trackAppLoad;
 

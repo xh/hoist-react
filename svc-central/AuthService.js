@@ -15,92 +15,19 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
 @HoistService
 export class AuthService {
 
-    accessTokenPromise = null;
+    ///////////////////////
+    // Public access
+    ///////////////////////
 
-    accessToken = null;
-    expires = 0;
     username = null;
     apparentUsername = null;
     roles = [];
 
-    async getAccessTokenAsync() {
-        if (!this.accessToken) {
-            let tokenGrant = XH.localStorageService.get('tokenGrant');
-            if (tokenGrant) {
-                this.setLocal(tokenGrant);
-            }
+    async isAuthenticatedAsync() {
+        if (!await this.getAccessTokenAsync()) {
+            return await this.loginSsoAsync();
         }
-        if (this.accessToken) {
-            const currTime = (new Date()).getTime();
-            if (!this.expires || this.expires < currTime) {
-                this.accessTokenPromise = this.retrieveAccessTokenAsync()
-            } else if (this.accessTokenPromise == null) {
-                this.accessTokenPromise = (async () => {return this.accessToken;})();
-            }
-        } else {
-            this.accessTokenPromise = this.retrieveAccessTokenAsync()
-        }
-        return this.accessTokenPromise
-    }
-
-    async retrieveAccessTokenAsync() {
-        let tokenGrant = XH.localStorageService.get('tokenGrant');
-        if (tokenGrant) {
-            let refreshToken = tokenGrant.refreshToken;
-            try {
-                tokenGrant = await XH.fetchService.postJson({
-                    url: XH.baseUrl + 'auth/refresh',
-                    params: {
-                        refreshToken: refreshToken
-                    },
-                    service: 'hoist-central',
-                    skipAuth: true
-                });
-            } catch (e) {
-                tokenGrant = null;
-            }
-            if (tokenGrant) {
-                tokenGrant.refreshToken = refreshToken;
-                this.saveTokenGrant(tokenGrant);
-            }
-        }
-        if (!tokenGrant) {
-            this.accessToken = null;
-            this.expires = 0;
-        }
-        return (tokenGrant) ? tokenGrant.accessToken : null;
-    }
-
-    // called from login when there is a new grant
-    saveTokenGrant(tokenGrant) {
-        tokenGrant.expires = (new Date()).getTime() + tokenGrant.expiresInMillis - 10 * SECONDS;
-        this.setLocal(tokenGrant);
-        this.accessTokenPromise = (async () => {return tokenGrant.accessToken;})();
         return true;
-    }
-
-    // called from logout
-    clearTokenGrant() {
-        this.setLocal(null);
-        this.accessTokenPromise = (async () => {return null;})();
-        return true;
-    }
-
-    setLocal(tokenGrant) {
-        XH.localStorageService.set('tokenGrant', tokenGrant);
-        if (tokenGrant) {
-            this.accessToken = tokenGrant.accessToken;
-            this.expires = tokenGrant.expires;
-            this.username = tokenGrant.username;
-            this.apparentUsername = tokenGrant.apparentUsername;
-            this.roles = tokenGrant.roles;
-        } else {
-            this.accessToken = null;
-            this.expires = 0;
-            this.username = null;
-            this.apparentUsername = null;
-            this.roles = [];
-        }
     }
 
     async loginSsoAsync() {
@@ -158,5 +85,98 @@ export class AuthService {
                 this.clearTokenGrant();
                 XH.reloadApp()
             });
+    }
+
+    ///////////////////////
+    // Local access
+    ///////////////////////
+
+    accessTokenPromise = null;
+
+    accessToken = null;
+    expires = 0;
+
+
+    async getAccessTokenAsync() {
+        if (!this.accessToken) {
+            let tokenGrant = XH.localStorageService.get('tokenGrant');
+            if (tokenGrant) {
+                this.setLocal(tokenGrant);
+            }
+        }
+        if (this.accessToken) {
+            const currTime = (new Date()).getTime();
+            if (!this.expires || this.expires < currTime) {
+                this.accessTokenPromise = this.retrieveAccessTokenAsync()
+            } else if (this.accessTokenPromise == null) {
+                this.accessTokenPromise = (async () => {return this.accessToken;})();
+            }
+        } else {
+            this.accessTokenPromise = this.retrieveAccessTokenAsync()
+        }
+        return this.accessTokenPromise
+    }
+
+    async retrieveAccessTokenAsync() {
+        let tokenGrant = XH.localStorageService.get('tokenGrant');
+        if (tokenGrant) {
+            let refreshToken = tokenGrant.refreshToken;
+            try {
+                tokenGrant = await XH.fetchService.postJson({
+                    url: XH.baseUrl + 'auth/refresh',
+                    params: {
+                        refreshToken: refreshToken
+                    },
+                    service: 'hoist-central',
+                    skipAuth: true
+                });
+            } catch (e) {
+                tokenGrant = null;
+            }
+            if (tokenGrant) {
+                tokenGrant.refreshToken = refreshToken;
+                this.saveTokenGrant(tokenGrant);
+            }
+        }
+        if (!tokenGrant) {
+            this.accessToken = null;
+            this.expires = 0;
+        }
+        return (tokenGrant) ? tokenGrant.accessToken : null;
+    }
+
+    // called from login when there is a new grant
+    saveTokenGrant(tokenGrant) {
+        if (!tokenGrant.refreshToken) {
+            console.error('TokenGrant has no refresh token!');
+        }
+        tokenGrant.expires = (new Date()).getTime() + tokenGrant.expiresInMillis - 10 * SECONDS;
+        this.setLocal(tokenGrant);
+        this.accessTokenPromise = (async () => {return tokenGrant.accessToken;})();
+        return true;
+    }
+
+    // called from logout
+    clearTokenGrant() {
+        this.setLocal(null);
+        this.accessTokenPromise = (async () => {return null;})();
+        return true;
+    }
+
+    setLocal(tokenGrant) {
+        XH.localStorageService.set('tokenGrant', tokenGrant);
+        if (tokenGrant) {
+            this.accessToken = tokenGrant.accessToken;
+            this.expires = tokenGrant.expires;
+            this.username = tokenGrant.username;
+            this.apparentUsername = tokenGrant.apparentUsername;
+            this.roles = tokenGrant.roles;
+        } else {
+            this.accessToken = null;
+            this.expires = 0;
+            this.username = null;
+            this.apparentUsername = null;
+            this.roles = [];
+        }
     }
 }

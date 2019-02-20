@@ -13,7 +13,6 @@ import {Exception} from '@xh/hoist/exception';
 import {observable, action} from '@xh/hoist/mobx';
 import {never, wait, allSettled} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
-import {SECONDS} from '@xh/hoist/utils/datetime';
 
 import {
     AuthService,
@@ -26,6 +25,19 @@ import {
     LocalStorageService,
     PrefService,
     TrackService
+} from '@xh/hoist/svc';
+
+import {
+    AuthService as HcAuthService,
+    ConfigService as HcConfigService,
+    EnvironmentService as HcEnvironmentService,
+    FetchService as HcFetchService,
+    GridExportService as HcGridExportService,
+    IdentityService as HcIdentityService,
+    IdleService as HcIdleService,
+    LocalStorageService as HcLocalStorageService,
+    PrefService as HcPrefService,
+    TrackService as HcTrackService
 } from '@xh/hoist/svc-central';
 
 import {AppContainerModel} from './appcontainer/AppContainerModel';
@@ -147,6 +159,9 @@ class XHClass {
      */
     appSpec = null;
 
+    /** Mode specific core services. */
+    xhServices = {};
+
     /**
      * Main entry point. Initialize and render application code.
      *
@@ -156,6 +171,19 @@ class XHClass {
     renderApp(appSpec) {
         this.appSpec = appSpec instanceof AppSpec ? appSpec : new AppSpec(appSpec);
         const rootView = elem(appSpec.containerClass, {model: this.appContainerModel});
+        const isHc = appSpec.isHoistCentral;
+        this.xhServices = {
+            AuthService: isHc ? HcAuthService : AuthService,
+            ConfigService: isHc ? HcConfigService : ConfigService,
+            EnvironmentService: isHc ? HcEnvironmentService : EnvironmentService,
+            FetchService: isHc ? HcFetchService : FetchService,
+            GridExportService: isHc ? HcGridExportService : GridExportService,
+            IdentityService: isHc ? HcIdentityService : IdentityService,
+            IdleService: isHc ? HcIdleService : IdleService,
+            LocalStorageService: isHc ? HcLocalStorageService : LocalStorageService,
+            PrefService: isHc ? HcPrefService : PrefService,
+            TrackService: isHc ? HcTrackService : TrackService
+        };
         ReactDOM.render(rootView, document.getElementById('xh-root'));
     }
 
@@ -450,13 +478,13 @@ class XHClass {
         document.body.classList.add('xh-app');
 
         try {
-            await this.installServicesAsync(FetchService, LocalStorageService);
-            await this.installServicesAsync(AuthService);
-            await this.installServicesAsync(TrackService, IdleService, GridExportService);
+            await this.installServicesAsync(this.xhServices.FetchService, this.xhServices.LocalStorageService);
+            await this.installServicesAsync(this.xhServices.AuthService);
+            await this.installServicesAsync(this.xhServices.TrackService, this.xhServices.IdleService, this.xhServices.GridExportService);
 
             // Special handling for EnvironmentService, which makes the first fetch back to the Grails layer.
             try {
-                await this.installServicesAsync(EnvironmentService);
+                await this.installServicesAsync(this.xhServices.EnvironmentService);
             } catch (e) {
                 throw `Unable to load environment info - is the server running and reachable? (${e.message})`;
             }
@@ -495,8 +523,8 @@ class XHClass {
 
         this.setAppState(S.INITIALIZING);
         try {
-            await this.installServicesAsync(IdentityService);
-            await this.installServicesAsync(PrefService, ConfigService);
+            await this.installServicesAsync(this.xhServices.IdentityService);
+            await this.installServicesAsync(this.xhServices.PrefService, this.xhServices.ConfigService);
             this.initModels();
 
             // Delay to workaround hot-reload styling issues in dev.
@@ -538,10 +566,7 @@ class XHClass {
     }
 
     async getAuthStatusFromServerAsync() {
-        if (!await this.authService.getAccessTokenAsync()) {
-            return await this.authService.loginSsoAsync();
-        }
-        return true;
+        return await this.authService.isAuthenticatedAsync();
     }
 
     /////
