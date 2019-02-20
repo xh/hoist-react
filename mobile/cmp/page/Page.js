@@ -8,42 +8,69 @@
 import PT from 'prop-types';
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {fragment} from '@xh/hoist/cmp/layout';
 import {page as onsenPage} from '@xh/hoist/kit/onsen';
+import {panel, Panel} from '@xh/hoist/mobile/cmp/panel';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {isReactElement} from '@xh/hoist/utils/react';
 import {castArray} from 'lodash';
 
+import './Page.scss';
 
 /**
- * Wrapper around Onsen's Page component.
+ * Wraps a Panel in an Onsen Page, suitable for inclusion in the navigator.
  */
 @HoistComponent
 export class Page extends Component {
 
     static propTypes = {
+        ...Panel.propTypes,
 
-        // TODO:  This should should probably be the mask itself, mirroring the Panel API.
+        /** Custom classes that will be applied to this page */
+        className: PT.string,
 
-        /** If provided, will be bound to a mask that can be used to prevent scrolling.  */
-        loadModel: PT.instanceOf(PendingTaskModel)
+        /**
+         * Mask to render on this page. Set to:
+         *   + a ReactElement specifying a Mask instance - or -
+         *   + a PendingTaskModel for a default loading mask w/spinner bound to that model - or -
+         *   + true for a simple default mask.
+         */
+        mask: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool])
     };
 
+    baseClassName = 'xh-page';
 
     render() {
-        const {loadModel, className, children, ...rest} = this.props,
-            noscrollCls = loadModel && loadModel.isPending ? 'xh-page-no-scroll' : null;
+        const {
+            className,
+            mask: maskProp,
+            children,
+            ...rest
+        } = this.props;
 
-        return fragment(
-            onsenPage({
-                className: ['xh-page', className, noscrollCls].filter(Boolean).join(' '),
-                items: [
-                    ...castArray(children),
-                    loadModel ? mask({model: loadModel, spinner: true}) : null
-                ],
-                ...rest
-            })
-        );
+        // The page itself takes the mask and className.
+        // All other props are passed to the Panel.
+        let maskElem = null;
+        if (maskProp === true) {
+            maskElem = mask({isDisplayed: true});
+        } else if (maskProp instanceof PendingTaskModel) {
+            maskElem = mask({model: maskProp, spinner: true});
+        } else if (isReactElement(maskProp)) {
+            maskElem = maskProp;
+        }
+
+        return onsenPage({
+            items: [
+                panel({
+                    items: castArray(children),
+                    ...rest
+                }),
+                maskElem
+            ],
+            ...rest,
+            className: this.getClassName(className)
+        });
     }
 }
+
 export const page = elemFactory(Page);

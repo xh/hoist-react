@@ -17,9 +17,6 @@ import {NavigatorPageModel} from './NavigatorPageModel';
  */
 @HoistModel
 export class NavigatorModel {
-    /** @member {string} */
-    @bindable title;
-
     /** @member {boolean} */
     @bindable disableAppRefreshButton;
 
@@ -151,11 +148,8 @@ export class NavigatorModel {
 
     @action
     onPageChange() {
-        const {title, disableAppRefreshButton} = this.getCurrentPageModel();
-
-        if (title) this.title = title;
+        const {disableAppRefreshButton} = this.getCurrentPageModel();
         this.disableAppRefreshButton = disableAppRefreshButton;
-
         this.doCallback();
     }
 

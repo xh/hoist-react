@@ -38,7 +38,7 @@ export class AppBar extends Component {
         /** Items to be added to the right side of the AppBar, before the refresh button. */
         rightItems: PT.node,
 
-        /** NavigatorModel. Bound to back button and title. */
+        /** NavigatorModel. Bound to back button. */
         navigatorModel: PT.object,
 
         /** AppMenuModel. Used to populate main menu. */
