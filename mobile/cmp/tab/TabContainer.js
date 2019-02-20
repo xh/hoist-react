@@ -12,6 +12,8 @@ import {tab} from './impl/Tab';
 import {TabContainerModel} from './TabContainerModel';
 import {div} from '@xh/hoist/cmp/layout';
 
+import './Tabs.scss';
+
 @HoistComponent
 export class TabContainer extends Component {
 
