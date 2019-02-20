@@ -31,7 +31,7 @@ export class AuthService {
     }
 
     async loginSsoAsync() {
-        return XH
+        return await XH
             .fetchJson({
                 url: 'auth/sso',
                 service: 'hoist-central',
@@ -48,7 +48,7 @@ export class AuthService {
     }
 
     async loginAsync(username, password) {
-        return XH
+        return await XH
             .postJson({
                 url: 'auth/login',
                 params: {username, password},
@@ -59,7 +59,6 @@ export class AuthService {
                 this.warning = r.accessToken ? '' : 'Login Incorrect';
                 if (r.accessToken) {
                     this.saveTokenGrant(r);
-                    XH.completeInitAsync();
                 }
                 return r.accessToken;
             })
@@ -72,7 +71,7 @@ export class AuthService {
      * and refreshes the application to present a login panel.
      */
     async logoutAsync() {
-        return XH
+        return await XH
             .fetchJson({
                 url: 'auth/logout',
                 service: 'hoist-central'

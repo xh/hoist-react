@@ -82,7 +82,7 @@ export class IdentityService {
      * and refreshes the application to present a login panel.
      */
     async logoutAsync() {
-        return XH.authService.logoutAsync();
+        return await XH.authService.logoutAsync();
     }
 
     //------------------------
