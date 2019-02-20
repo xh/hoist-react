@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {TabRefreshMode} from '@xh/hoist/enums';
+import {TabRenderMode, TabRefreshMode} from '@xh/hoist/enums';
 import {action, computed, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {uniqBy, find} from 'lodash';
@@ -30,6 +30,9 @@ export class TabContainerModel {
         return tab ? tabs.indexOf(tab) : 0;
     }
 
+    /** @member {TabRenderMode} */
+    renderMode;
+
     /** @member {TabRefreshMode} */
     refreshMode;
 
@@ -38,18 +41,22 @@ export class TabContainerModel {
      * @param {Object[]} c.tabs - configs for TabModels to be displayed.
      * @param {?string} [c.defaultTabId] - ID of Tab to be shown initially.
      *      If not set, will default to first tab in the provided collection.
+     * @param {TabRenderMode} [c.renderMode] - strategy for rendering child tabs. Can be set
+     *      per-tab via `TabModel.renderMode`. See enum for description of supported modes.
      * @param {TabRefreshMode} [c.refreshMode] - strategy for refreshing child tabs. Can be set
      *      per-tab via `TabModel.refreshMode`. See enum for description of supported modes.
      */
     constructor({
         tabs,
         defaultTabId = null,
+        renderMode = TabRenderMode.LAZY,
         refreshMode = TabRefreshMode.ON_SHOW_LAZY
     }) {
         tabs = tabs.filter(p => !p.omit);
         throwIf(tabs.length == 0, 'TabContainerModel needs at least one child.');
         throwIf(tabs.length != uniqBy(tabs, 'id').length, 'One or more tabs in TabContainerModel has a non-unique id.');
 
+        this.renderMode = renderMode;
         this.refreshMode = refreshMode;
         this.activeTabId = find(tabs, {id: defaultTabId}) ? defaultTabId : tabs[0].id;
         this.tabs = tabs.map(p => new TabModel({...p, containerModel: this}));

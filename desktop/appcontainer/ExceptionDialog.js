@@ -16,6 +16,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {ExceptionDialogModel} from '@xh/hoist/core/appcontainer/ExceptionDialogModel';
 
 import {exceptionDialogDetails} from './ExceptionDialogDetails';
+import './ExceptionDialog.scss';
 
 /**
  * Dialog for display of exceptions, with support for viewing a detailed stacktrace
@@ -70,11 +71,11 @@ export class ExceptionDialog extends Component {
 
     onShowDetailsClick = () => {
         this.model.openDetails();
-    }
+    };
     
     onCloseClick = () => {
         this.model.close();
-    }
+    };
 }
 export const exceptionDialog = elemFactory(ExceptionDialog);
 
@@ -100,11 +101,11 @@ class DismissButton extends Component {
 
     onCloseClick = () => {
         this.model.close();
-    }
+    };
 
     onReloadClick = () => {
         XH.reloadApp();
-    }
+    };
 
     sessionExpired() {
         const e = this.model.exception;

@@ -7,7 +7,7 @@
 
 import {defaults} from 'lodash';
 import {observable, action} from '@xh/hoist/mobx';
-import {XH, HoistModel} from '@xh/hoist/core';
+import {HoistModel, managed} from '@xh/hoist/core';
 
 import {MessageModel} from './MessageModel';
 
@@ -19,7 +19,9 @@ import {MessageModel} from './MessageModel';
 @HoistModel
 export class MessageSourceModel {
 
-    @observable.ref msgModels = [];
+    @managed
+    @observable.ref
+    msgModels = [];
 
     message(config) {
         const ret = new MessageModel(config);
@@ -54,9 +56,5 @@ export class MessageSourceModel {
 
         this.msgModels = keepModels;
         cullModels.forEach(it => it.destroy());
-    }
-
-    destroy() {
-        XH.safeDestroy(this.msgModels);
     }
 }

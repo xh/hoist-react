@@ -40,23 +40,23 @@ export class FormField extends Component {
 
     static propTypes = {
 
+        /**
+         * Focus or toggle input when label is clicked.
+         * Defaulted from containing Form, or true.
+         */
+        clickableLabel: PT.bool,
+
+        /**
+         * CommitOnChange property for underlying HoistInput (for inputs that support).
+         * Defaulted from containing Form.
+         */
+        commitOnChange: PT.bool,
+
         /** Property name on bound FormModel from which to read/write data. */
         field: PT.string,
 
-        /**
-         * Label for form field. Defaults to Field displayName. Set to null to hide.
-         * Can be defaulted from contained Form (specifically, to null to hide all labels).
-         */
-        label: PT.string,
-
         /** Additional description or info to be displayed alongside the input control. */
         info: PT.node,
-
-        /**
-         * Optional function for use in readonly mode. Called with the Field's current value
-         * and should return an element suitable for presentation to the end-user.
-         */
-        readonlyRenderer: PT.func,
 
         /**
          * Layout field inline with label to the left.
@@ -65,16 +65,16 @@ export class FormField extends Component {
         inline: PT.bool,
 
         /**
-         * Display validation messages in a tooltip, as opposed to inline within the component.
-         * Defaulted from containing Form, or false.
+         * Label for form field. Defaults to Field displayName. Set to null to hide.
+         * Can be defaulted from contained Form (specifically, to null to hide all labels).
          */
-        minimal: PT.bool,
-        
-        /**
-         * CommitOnChange property for underlying HoistInput (for inputs that support).
-         * Defaulted from containing Form.
-         */
-        commitOnChange: PT.bool,
+        label: PT.string,
+
+        /** Alignment of label text, default 'left'. */
+        labelAlign: PT.oneOf(['left', 'right']),
+
+        /** Width of the label in pixels. */
+        labelWidth: PT.number,
 
         /**
          * Signal a validation error by inserting a warning glyph in the far left side of the
@@ -84,20 +84,16 @@ export class FormField extends Component {
         leftErrorIcon: PT.bool,
 
         /**
-         * Focus or toggle input when label is clicked.
-         * Defaulted from containing Form, or true.
+         * Display validation messages in a tooltip, as opposed to inline within the component.
+         * Defaulted from containing Form, or false.
          */
-        clickableLabel: PT.bool,
+        minimal: PT.bool,
 
         /**
-         * Alignment of label text, default 'left'.
+         * Optional function for use in readonly mode. Called with the Field's current value
+         * and should return an element suitable for presentation to the end-user.
          */
-        labelAlign: PT.oneOf(['left', 'right']),
-
-        /**
-         * Width of the label in pixels
-         */
-        labelWidth: PT.number
+        readonlyRenderer: PT.func
     };
 
     baseClassName = 'xh-form-field';
@@ -208,11 +204,6 @@ export class FormField extends Component {
         );
     }
 
-    get hasSize() {
-        const {width, height, flex} = this.getLayoutProps();
-        return width || height || flex;
-    }
-
     get childIsSizeable() {
         const child = this.props.children;
         return child && child.type.hasLayoutSupport;
@@ -229,7 +220,6 @@ export class FormField extends Component {
 
     prepareChild({displayNotValid, leftErrorIcon, idAttr, errors, minimal, readonly}) {
         const {fieldModel} = this,
-            layoutProps = this.getLayoutProps(),
             item = this.props.children,
             {propTypes} = item.type;
 
@@ -240,16 +230,16 @@ export class FormField extends Component {
             id: idAttr
         };
 
-        // If FormField is sized and item doesn't specify its own dimensions,
-        // the item should fill the available size of the FormField.
+        // If a sizeable child input doesn't specify its own dimensions,
+        // the input should fill the available size of the FormField.
         // Note: We explicitly set width / height to null to override defaults.
-        if (this.hasSize && this.childIsSizeable) {
+        if (this.childIsSizeable) {
             if (isUndefined(item.props.width) && isUndefined(item.props.flex)) {
                 overrides.width = null;
                 overrides.flex = 1;
             }
 
-            if (isUndefined(item.props.height) && layoutProps.height) {
+            if (isUndefined(item.props.height)) {
                 overrides.height = null;
             }
         }

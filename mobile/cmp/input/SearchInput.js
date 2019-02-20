@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {HoistComponent, LayoutSupport, elemFactory} from '@xh/hoist/core';
 import {searchInput as onsenSearchInput} from '@xh/hoist/kit/onsen';
 import {withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/input';
@@ -15,6 +15,7 @@ import {HoistInput} from '@xh/hoist/cmp/input';
  * A Search Input
  */
 @HoistComponent
+@LayoutSupport
 export class SearchInput extends HoistInput {
 
     static propTypes = {
@@ -40,10 +41,7 @@ export class SearchInput extends HoistInput {
         spellCheck: PT.bool,
 
         /** Alignment of entry text within control, default 'left'. */
-        textAlign: PT.oneOf(['left', 'right']),
-
-        /** Width of the control in pixels. */
-        width: PT.number
+        textAlign: PT.oneOf(['left', 'right'])
     };
 
     baseClassName = 'xh-search-input';
@@ -53,7 +51,8 @@ export class SearchInput extends HoistInput {
     }
 
     render() {
-        const {props} = this;
+        const props = this.getNonLayoutProps(),
+            {width, ...layoutProps} = this.getLayoutProps();
 
         return onsenSearchInput({
             value: this.renderValue || '',
@@ -66,9 +65,10 @@ export class SearchInput extends HoistInput {
 
             className: this.getClassName(),
             style: {
-                textAlign: withDefault(props.textAlign, 'left'),
-                width: props.width,
-                ...props.style
+                ...props.style,
+                ...layoutProps,
+                width: withDefault(width, null),
+                textAlign: withDefault(props.textAlign, 'left')
             },
 
             onChange: this.onChange,

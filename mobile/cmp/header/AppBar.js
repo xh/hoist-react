@@ -36,6 +36,9 @@ export class AppBar extends Component {
         /** Items to be added to the right side of the AppBar, before the refresh buttons. */
         rightItems: PT.node,
 
+        /** Set to true to hide the Back button. */
+        hideBackButton: PT.bool,
+
         /** Set to true to hide the Refresh button. */
         hideRefreshButton: PT.bool,
 
@@ -47,7 +50,7 @@ export class AppBar extends Component {
     };
 
     render() {
-        const {navigatorModel, appMenuModel, title, rightItems, hideRefreshButton, backButtonProps, refreshButtonProps = {}} = this.props;
+        const {navigatorModel, appMenuModel, title, rightItems, hideBackButton, hideRefreshButton, backButtonProps, refreshButtonProps = {}} = this.props;
 
         return toolbar({
             className: 'xh-appbar',
@@ -56,6 +59,7 @@ export class AppBar extends Component {
                     className: 'left',
                     items: [
                         navigatorBackButton({
+                            omit: hideBackButton,
                             model: navigatorModel,
                             ...backButtonProps
                         }),
@@ -75,6 +79,7 @@ export class AppBar extends Component {
                         ...rightItems || [],
                         refreshButton({
                             omit: hideRefreshButton,
+                            disabled: navigatorModel.disableAppRefreshButton,
                             ...refreshButtonProps
                         })
                     ]

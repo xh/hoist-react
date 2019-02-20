@@ -5,12 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {dialog, dialogBody, textArea} from '@xh/hoist/kit/blueprint';
+import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
 import {pre, table, tbody, td, th, tr, filler} from '@xh/hoist/cmp/layout';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {stringifyErrorSafely} from '@xh/hoist/exception';
 
@@ -55,24 +56,17 @@ export class ExceptionDialogDetails extends Component {
             style: {height: 600, width: 800},
             items: [
                 dialogBody({
+                    className: 'xh-exception-dialog-details',
                     items: [
                         header,
-                        pre({
-                            style: {
-                                border: '1px solid',
-                                overflow: 'scroll',
-                                height: 230,
-                                fontSize: '.75em'
-                            },
-                            item: this.errorStr
-                        }),
+                        pre(this.errorStr),
                         textArea({
-                            style: {
-                                height: 125, width: '100%'
-                            },
+                            model,
+                            bind: 'userMessage',
+                            commitOnChange: true,
                             placeholder: 'Add message here...',
-                            value: model.userMessage,
-                            onChange: this.onMessageChange,
+                            width: '100%',
+                            height: 120,
                             omit: !clientUserKnown
                         })]
                 }),
@@ -99,16 +93,12 @@ export class ExceptionDialogDetails extends Component {
     //------------------------
     // Implementation
     //------------------------
-    onMessageChange = (evt) => {
-        this.model.setUserMessage(evt.target.value);
-    }
-
     onSendClick = () => {
         this.model.sendReportAsync();
-    }
+    };
 
     onCloseClick = () => {
         this.model.close();
-    }
+    };
 }
 export const exceptionDialogDetails = elemFactory(ExceptionDialogDetails);

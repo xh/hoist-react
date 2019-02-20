@@ -7,8 +7,9 @@
 
 import {HoistModel} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
+import {merge} from 'lodash';
 import createRouter from 'router5';
-import browserPlugin from 'router5/plugins/browser';
+import browserPlugin from 'router5-plugin-browser';
 
 /**
  * Top-level model for managing application routing in Hoist.
@@ -45,6 +46,26 @@ export class RouterModel {
         this.router.add(this.preprocessRoutes(routes));
     }
 
+    /**
+     * Add a routeName to the current route, preserving params
+     * @param {String} routeName - the routeName to append
+     * @param {Object} newParams - additional params for this routeName to be merged with existing params.
+     */
+    appendRoute(routeName, newParams = {}) {
+        const {name, params} = this.currentState;
+        return this.router.navigate(`${name}.${routeName}`, merge({}, params, newParams));
+    }
+
+    /**
+     * Remove last routeName from the current route, preserving params
+     */
+    popRoute() {
+        const {name, params} = this.currentState,
+            match = name.match(/.*(?=\.)/);
+        if (!match) return;
+        return this.router.navigate(match[0], params);
+    }
+
 
     //-------------------------
     // Implementation
@@ -71,8 +92,8 @@ export class RouterModel {
     createRouter() {
         const ret = createRouter([], {defaultRoute: 'default'});
 
-        ret.usePlugin(browserPlugin())
-            .subscribe(ev => this.setCurrentState(ev.route));
+        ret.usePlugin(browserPlugin());
+        ret.subscribe(ev => this.setCurrentState(ev.route));
 
         return ret;
     }

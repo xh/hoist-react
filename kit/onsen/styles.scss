@@ -54,12 +54,14 @@
   }
 
   &.xh-textarea {
+    display: flex;
+    align-items: stretch;
     background-color: var(--xh-bg);
 
     textarea {
+      flex: 1;
       padding: var(--xh-pad-px);
       box-sizing: border-box;
-      width: 100%;
       background-color: transparent;
       color: var(--xh-text-color);
       resize: none;
@@ -174,6 +176,7 @@ body.xh-app .xh-button-group .xh-button {
     display: flex;
     align-items: stretch;
     flex-direction: column;
+    transform: translateX(0);
   }
 
   .xh-page-no-scroll .page__content {

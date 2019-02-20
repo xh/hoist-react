@@ -785,12 +785,12 @@
     lodash "^4.17.10"
     to-fast-properties "^2.0.0"
 
-"@blueprintjs/core@^3.12.0", "@blueprintjs/core@~3.12.0":
-  version "3.12.0"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.12.0.tgz#98709ba9d0d0813c8e974eb49f1b5abd6c8e271b"
-  integrity sha512-nZGVzgel8YjFye14MU39iMLHTx7iBxG/vPrl432q6pJ7PDuk0M2vJK/eH/0pWISzhTK+/t78mpt3WhUelsvkQg==
+"@blueprintjs/core@^3.13.0", "@blueprintjs/core@~3.13.0":
+  version "3.13.0"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.13.0.tgz#2f767d7c8ae06e94380460e1ba43987671e86e67"
+  integrity sha512-4+DqwflyOLbdHCLXA67UWKP8Efq7bKphIEkHfMdzxWkyXvqYm82YzTTh6T4wt8IKGsjdKQq9gE1lt8peJH8J6w==
   dependencies:
-    "@blueprintjs/icons" "^3.5.1"
+    "@blueprintjs/icons" "^3.6.0"
     "@types/dom4" "^2.0.0"
     classnames "^2.2"
     dom4 "^2.0.1"
@@ -801,20 +801,20 @@
     resize-observer-polyfill "^1.5.0"
     tslib "^1.9.0"
 
-"@blueprintjs/datetime@~3.7.0":
-  version "3.7.0"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/datetime/-/datetime-3.7.0.tgz#7788200597451226e2f396de173db53dcb7ecea8"
-  integrity sha512-eB1DgZpXZGhv7fgVZkd6/dmegGzNRB9/c3SA2OpTVao3lXSMWbH1S6FDoiy7a3L7uc84GtZrwZG1HLYm/KLWsQ==
+"@blueprintjs/datetime@~3.7.1":
+  version "3.7.1"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/datetime/-/datetime-3.7.1.tgz#6741f68df94bbe6221a41feaaafc4d4539c42241"
+  integrity sha512-XV0fvq7uWrSlT8PDZ7oM+Rb6bF74I0k6/uw9XLJZ9hGrEPgsyd1K6QjVLFxc1Pnn5++1lDMtGlZC6x9nqCw1JA==
   dependencies:
-    "@blueprintjs/core" "^3.12.0"
+    "@blueprintjs/core" "^3.13.0"
     classnames "^2.2"
     react-day-picker "^7.1.10"
     tslib "^1.9.0"
 
-"@blueprintjs/icons@^3.5.1":
-  version "3.5.1"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/icons/-/icons-3.5.1.tgz#29dabfa2edb3efeefdc472b19e71736fadf5666b"
-  integrity sha512-sognhg9kAViMCrd2sZJ9KAo0vSm7Co/cBHGLSxblPodV4cI7xyzFi1cavPx+d1D3Q72ATOM46T0N7dggVac/Tw==
+"@blueprintjs/icons@^3.6.0":
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/icons/-/icons-3.6.0.tgz#af1d2de091d67927ed61671e6967c43620cb416d"
+  integrity sha512-sgB6rJtMjc2mS4aCS+65gK5DCr8fiWgOYi0buc0ODvGD2fwOtOFZuE4Duuj6/GZnCYj4s7E8NZgYK9Krd7G73Q==
   dependencies:
     classnames "^2.2"
     tslib "^1.9.0"
@@ -866,43 +866,43 @@
   resolved "https://registry.yarnpkg.com/@emotion/utils/-/utils-0.8.2.tgz#576ff7fb1230185b619a75d258cbc98f0867a8dc"
   integrity sha512-rLu3wcBWH4P5q1CGoSSH/i9hrXs7SlbRLkoq9IGuoPYNGQvDJ3pt/wmOM+XgYjIDRMVIdkUWt0RsfzF50JfnCw==
 
-"@fortawesome/fontawesome-common-types@^0.2.14":
-  version "0.2.14"
-  resolved "https://npm.fontawesome.com/@fortawesome/fontawesome-common-types/-/fontawesome-common-types-0.2.14.tgz#0eb86a77ac88e8c12c48591735283f0bf0ea5606"
-  integrity sha512-LOcvERCI96KioXSIfOYN4IATv2ROJOyf72dYnpoWfOIkuyLp45oMej1kL03kYdzvktLCzYhykgHwiu6nkg9Xbw==
+"@fortawesome/fontawesome-common-types@^0.2.15":
+  version "0.2.15"
+  resolved "https://npm.fontawesome.com/@fortawesome/fontawesome-common-types/-/fontawesome-common-types-0.2.15.tgz#16af950653083d1e3064061de9f8e5e3b579f688"
+  integrity sha512-ATBRyKJw1d2ko+0DWN9+BXau0EK3I/Q6pPzPv3LhJD7r052YFAkAdfb1Bd7ZqhBsJrdse/S7jKxWUOZ61qBD4g==
 
-"@fortawesome/fontawesome-pro@~5.7.0":
-  version "5.7.1"
-  resolved "https://npm.fontawesome.com/@fortawesome/fontawesome-pro/-/fontawesome-pro-5.7.1.tgz#0c23f79c387892112f5414549e55ea4b3577bfaa"
-  integrity sha512-DuN3IpOAkoTy/XHfXDqhvQ9yCH08zIkZYCUdcCinxB833jxnBjwGAJE3Q2LFJuitl+yB29LnKycsSUtqQQXG3w==
+"@fortawesome/fontawesome-pro@~5.7.2":
+  version "5.7.2"
+  resolved "https://npm.fontawesome.com/@fortawesome/fontawesome-pro/-/fontawesome-pro-5.7.2.tgz#7455ec09f58d09ab4a638af57a7561d2a1d88da8"
+  integrity sha512-l9D5FTI18ixNC+WNY7d7hOQxt4aumSHJCGbFhbhG7mZpsvtY2Zm3hluoZgSyHLlG4yRRJRR3YriEwboChj6hFA==
 
-"@fortawesome/fontawesome-svg-core@~1.2.13":
-  version "1.2.14"
-  resolved "https://npm.fontawesome.com/@fortawesome/fontawesome-svg-core/-/fontawesome-svg-core-1.2.14.tgz#48fde5fbfa223cffd5fac9c0402cfbe87605a7d0"
-  integrity sha512-T1qCqkwm9PuvK53J64D1ovfrOTa1kG+SrHNj5cFst/rrskhCnbxpRdbqFIdc/thmXC0ebBX8nOUyja2/mrxe4g==
+"@fortawesome/fontawesome-svg-core@~1.2.15":
+  version "1.2.15"
+  resolved "https://npm.fontawesome.com/@fortawesome/fontawesome-svg-core/-/fontawesome-svg-core-1.2.15.tgz#368f9fc7e8e8d8636495dc7483f97510f920ba97"
+  integrity sha512-M/sHyl4g2VBtKYkay1Z+XImMyTVcaBPmehYtPw4HKD9zg2E7eovB7Yx98aUfZjPbroGqa+IL4/+KhWBMOGlHIQ==
   dependencies:
-    "@fortawesome/fontawesome-common-types" "^0.2.14"
+    "@fortawesome/fontawesome-common-types" "^0.2.15"
 
-"@fortawesome/pro-light-svg-icons@~5.7.0":
-  version "5.7.1"
-  resolved "https://npm.fontawesome.com/@fortawesome/pro-light-svg-icons/-/pro-light-svg-icons-5.7.1.tgz#77cfc50fce11c892ccbbf19f728ea8dbf72724bd"
-  integrity sha512-tvzJ9UjJMhStl2N9bWaIP657pyvLgPK+s/8jjSvq+bbidhDE4xzBBbxJ2vzeAtKpesFTeQOlxStZyI+eBRF8vw==
+"@fortawesome/pro-light-svg-icons@~5.7.2":
+  version "5.7.2"
+  resolved "https://npm.fontawesome.com/@fortawesome/pro-light-svg-icons/-/pro-light-svg-icons-5.7.2.tgz#e2832b2e495e291741b058f29651092818334969"
+  integrity sha512-TXqtvPm+EUFJG9SEyyZzbwzi3HqUPL0tBMODBFy/7bh8OdUu/qBsoI9rol8XKxA8GCcLtH1JfoI8UbI/8GyTKw==
   dependencies:
-    "@fortawesome/fontawesome-common-types" "^0.2.14"
+    "@fortawesome/fontawesome-common-types" "^0.2.15"
 
-"@fortawesome/pro-regular-svg-icons@~5.7.0":
-  version "5.7.1"
-  resolved "https://npm.fontawesome.com/@fortawesome/pro-regular-svg-icons/-/pro-regular-svg-icons-5.7.1.tgz#66e4ab0ec3b5389a4629dd17a743532f7224e997"
-  integrity sha512-Utu+l6J/c5ODnBXA5N9DfAnj4ZEgOf2Nn6UenxRP9DAaNsxA4fhxARexenISCltBAUVWk8GJh7vjU9A5/+eIAA==
+"@fortawesome/pro-regular-svg-icons@~5.7.2":
+  version "5.7.2"
+  resolved "https://npm.fontawesome.com/@fortawesome/pro-regular-svg-icons/-/pro-regular-svg-icons-5.7.2.tgz#fecab6b7e0313fa52ab4ff54b0d58940f6a83894"
+  integrity sha512-hA17yFquMIy6nyamBUCjy9R5hU6VeD2xRmjCDrmiNs0Wn3dIXr3wL6M6/GBoAVkh7AiakAA8B41MjiMYUQ+KPg==
   dependencies:
-    "@fortawesome/fontawesome-common-types" "^0.2.14"
+    "@fortawesome/fontawesome-common-types" "^0.2.15"
 
-"@fortawesome/pro-solid-svg-icons@~5.7.0":
-  version "5.7.1"
-  resolved "https://npm.fontawesome.com/@fortawesome/pro-solid-svg-icons/-/pro-solid-svg-icons-5.7.1.tgz#6ee4630f8267e383193a4e199f4cb7f4debfe98f"
-  integrity sha512-wlKXnGR4LXdVnj1McATt4W0FQMmnZBgkOApHdKN1ot8cg4fsv6emIjbt9Ew78IXt7n6dWRB3f3GIeiwyOBcaUA==
+"@fortawesome/pro-solid-svg-icons@~5.7.2":
+  version "5.7.2"
+  resolved "https://npm.fontawesome.com/@fortawesome/pro-solid-svg-icons/-/pro-solid-svg-icons-5.7.2.tgz#2cc91dc47647aa449f4f1ee45230b0f8e5c28a01"
+  integrity sha512-EfohjjzeYQtscDwculCLEZVZRg/bwIfzynBiVXRPkM1VCHZPn6bUwHv53GgtyUavsx9Sc9luJtzR3tVrCEeGwA==
   dependencies:
-    "@fortawesome/fontawesome-common-types" "^0.2.14"
+    "@fortawesome/fontawesome-common-types" "^0.2.15"
 
 "@fortawesome/react-fontawesome@~0.1.4":
   version "0.1.4"
@@ -3658,10 +3658,10 @@ filesize@^3.6.1:
   resolved "https://registry.yarnpkg.com/filesize/-/filesize-3.6.1.tgz#090bb3ee01b6f801a8a8be99d31710b3422bb317"
   integrity sha512-7KjR1vv6qnicaPMi1iiTcI85CyYwRO/PSFCu6SvqL8jN2Wjt/NIYQTFtFs7fSDCYOstUkEWIQGFUg5YZQfjlcg==
 
-filesize@~4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/filesize/-/filesize-4.0.0.tgz#edd45b16247c815ac3bc7265c34cf3dab6b41234"
-  integrity sha512-IGrOTisl83FmbpiL5KCpfF7+6CRcmndNaWxwYWcnSqXtoNUhVO+1l8rKK4GVE7A8f4fEDkSocS9X6+eXHkEhGA==
+filesize@~4.1.1:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/filesize/-/filesize-4.1.1.tgz#03d7f25e7e2998e3098c5965137ded3a20220689"
+  integrity sha512-wzYPdbKgAhpt7RH7A2eAK59sxEQQQfktupSDDNXzHRHn7FzZIlEHzORfvfVeSsl48rBqzXVlZML9b7h6EpP/9A==
 
 fill-range@^4.0.0:
   version "4.0.0"
@@ -4187,10 +4187,10 @@ he@1.2.x:
   resolved "https://registry.yarnpkg.com/he/-/he-1.2.0.tgz#84ae65fa7eafb165fddb61566ae14baf05664f0f"
   integrity sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==
 
-highcharts@~7.0.2:
-  version "7.0.2"
-  resolved "https://registry.yarnpkg.com/highcharts/-/highcharts-7.0.2.tgz#18a59814d3ca61efa593e3141941147327e9eafb"
-  integrity sha512-0PnX/pzhpoZiLkQ3uN1FgXFM4Y5DFfN58mtTxh1me6sJ3eX+b0/asDgF17yOe4BfQat4xnE9TvgsJwYESTB3XA==
+highcharts@~7.0.3:
+  version "7.0.3"
+  resolved "https://registry.yarnpkg.com/highcharts/-/highcharts-7.0.3.tgz#0c8edb578bae28774b9f0d49cf1ae4887b126305"
+  integrity sha512-ubfHLDqKZkGLfDGWYPaa9txLwiJDSWphMZ15xdC0RKKKxZ2ZBc13+MjDfz5ARpYGQvCHmytGOGFUgRWEvkOhNA==
 
 hmac-drbg@^1.0.0:
   version "1.0.1"
@@ -6638,13 +6638,22 @@ promise@^7.1.1:
   dependencies:
     asap "~2.0.3"
 
-prop-types@^15.5.10, prop-types@^15.5.8, prop-types@^15.6.0, prop-types@^15.6.1, prop-types@^15.6.2, prop-types@~15.6.2:
+prop-types@^15.5.10, prop-types@^15.5.8, prop-types@^15.6.0, prop-types@^15.6.1, prop-types@^15.6.2:
   version "15.6.2"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.6.2.tgz#05d5ca77b4453e985d60fc7ff8c859094a497102"
   integrity sha512-3pboPvLiWD7dkI3qf3KbUe6hKFKa52w+AE0VCqECtf+QHAKgOL37tTaNCnuX1nAAQ4ZhyP+kYVKf8rLmJ/feDQ==
   dependencies:
     loose-envify "^1.3.1"
     object-assign "^4.1.1"
+
+prop-types@~15.7.2:
+  version "15.7.2"
+  resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.7.2.tgz#52c41e75b8c87e72b9d9360e0206b99dcbffa6c5"
+  integrity sha512-8QQikdH7//R2vurIJSutZ1smHYTcLpRWEOlHnzcWHmBYrOGUysKwSsrC89BCiFj3CbrfJ/nXFdJepOVrY1GCHQ==
+  dependencies:
+    loose-envify "^1.4.0"
+    object-assign "^4.1.1"
+    react-is "^16.8.1"
 
 protractor@^5:
   version "5.4.2"
@@ -6859,10 +6868,10 @@ react-dom@~16.7.0:
     prop-types "^15.6.2"
     scheduler "^0.12.0"
 
-react-dropzone@~8.0.3:
-  version "8.0.4"
-  resolved "https://registry.yarnpkg.com/react-dropzone/-/react-dropzone-8.0.4.tgz#c461ec6074425a8b636bfde12800ec43edc35d86"
-  integrity sha512-RL9lCPbAbVifUShqpH009BhGPiyx6T+STpr3Ig+WnArOtJBFRfLjzB4mghUGFzDorZ++Mhc3FD12d7Oxd/SWSg==
+react-dropzone@~8.1.0:
+  version "8.1.0"
+  resolved "https://registry.yarnpkg.com/react-dropzone/-/react-dropzone-8.1.0.tgz#be97dfbbe7ca57cf69becd07d321f61c52d7787b"
+  integrity sha512-engzi+Ov/3PC/Pzbi7k0LA5/agN6fdibb7quX7Hx7fWExoEnvpXi1EyQNCZZnEdkPiKNx5PYjWATlpn6PqTjXA==
   dependencies:
     attr-accept "^1.1.3"
     prop-types "^15.6.2"
@@ -6878,6 +6887,11 @@ react-is@^16.7.0:
   version "16.7.0"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.7.0.tgz#c1bd21c64f1f1364c6f70695ec02d69392f41bfa"
   integrity sha512-Z0VRQdF4NPDoI0tsXVMLkJLiwEBa+RP66g0xDHxgxysxSoCUccSten4RTF/UFvZF1dZvZ9Zu1sx+MDXwcOR34g==
+
+react-is@^16.8.1:
+  version "16.8.1"
+  resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.8.1.tgz#a80141e246eb894824fb4f2901c0c50ef31d4cdb"
+  integrity sha512-ioMCzVDWvCvKD8eeT+iukyWrBGrA3DiFYkXfBsVYIRdaREZuBjENG+KjrikavCLasozqRWTwFUagU/O4vPpRMA==
 
 react-lifecycles-compat@^3.0.2, react-lifecycles-compat@^3.0.4:
   version "3.0.4"
@@ -7331,18 +7345,23 @@ route-node@3.4.2:
     path-parser "4.2.0"
     search-params "2.1.3"
 
-router5-transition-path@5.4.0:
-  version "5.4.0"
-  resolved "https://registry.yarnpkg.com/router5-transition-path/-/router5-transition-path-5.4.0.tgz#8913c88a623a951a61c4e6eb32762a7218e5c7b1"
-  integrity sha512-ZWLvmDIVrKUY0CgUpLY9fw4t4nQQ+r6lNLWPAXwvUZrCctorg/yW9kd80+cOKkXZBJr+7Qu56KCkGjDOa4nOOw==
+router5-plugin-browser@~7.0.1:
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/router5-plugin-browser/-/router5-plugin-browser-7.0.1.tgz#2c59cf6299f9edf25e83d0629eece589cf0b1985"
+  integrity sha512-3zKCyQlr4OKBOK8/9usJ8kcTMmqkSw8cYGt2T0+A2ktU5rAkDoLeZ7xJBjlcpJmEcT7lDx2K18gc6Epq6Zd6Ng==
 
-router5@~6.6.3:
-  version "6.6.3"
-  resolved "https://registry.yarnpkg.com/router5/-/router5-6.6.3.tgz#943a9d2fd23aaa4fbea3a6795f0acc40a0267328"
-  integrity sha512-tOyWFzg2FmIV2S/wcFFYvTau1jXXhZeVKYpE24WJAQ2vnA6PojyyNy2RTTKiPZz1w6XGf8taByBukQuImJhjBQ==
+router5-transition-path@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/router5-transition-path/-/router5-transition-path-7.0.0.tgz#de95233c63757a37afd76e2e99cfb12896f16fd2"
+  integrity sha512-hZoRaEIc/Cx7RZhv9AV8PX3H0zlhG19Bjio4tMfCnYBVstJqd1wfJY/KQWfxtIzj2Lr0M9xICKgjAp+KRxQYbA==
+
+router5@~7.0.1:
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/router5/-/router5-7.0.1.tgz#5590e7eee04625278d502d496dde0bc55d1758c3"
+  integrity sha512-FaAUSm/+0g3m3j+R4mmx5Hns0YHiWK4Oi0eIAt1KgoMQ9NWcJBVw04RAfHEpoa9m39cswVYG83ovh/QjCTbicA==
   dependencies:
     route-node "3.4.2"
-    router5-transition-path "5.4.0"
+    router5-transition-path "^7.0.0"
     symbol-observable "1.2.0"
 
 rst-selector-parser@^2.2.3:
