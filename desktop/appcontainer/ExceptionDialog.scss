@@ -1,0 +1,16 @@
+.xh-exception-dialog-details {
+  pre {
+    border: var(--xh-border-solid);
+    overflow: auto;
+    height: 280px;
+    font-size: var(--xh-font-size-small-px);
+    background-color: var(--xh-bg);
+  }
+
+  th {
+    text-align: left;
+    font-weight: bold;
+    width: 100px;
+  }
+
+}

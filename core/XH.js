@@ -278,6 +278,16 @@ class XHClass {
         return this.router.navigate(...args);
     }
 
+    /** Add a routeName to the current route, preserving params */
+    appendRoute(...args) {
+        return this.routerModel.appendRoute(...args);
+    }
+
+    /** Remove last routeName from the current route, preserving params */
+    popRoute() {
+        return this.routerModel.popRoute();
+    }
+
     //------------------------------
     // Message Support
     //------------------------------
