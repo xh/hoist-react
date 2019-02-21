@@ -4,8 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, LoadSupport}  from '@xh/hoist/core';
-import {BaseRefreshContextModel} from './BaseRefreshContextModel';
+import {XH, loadAllAsync}  from '@xh/hoist/core';
+import {RefreshContextModel} from './RefreshContextModel';
 
 /**
  * Top-level refresh context model.
@@ -15,9 +15,8 @@ import {BaseRefreshContextModel} from './BaseRefreshContextModel';
  *
  * An instance of this object is provided by the framework as `XH.refreshContextModel`.
  */
-@HoistModel
-@LoadSupport
-export class RootRefreshContextModel extends BaseRefreshContextModel {
+@RefreshContextModel
+export class RootRefreshContextModel {
 
     async doLoadAsync(loadSpec) {
 
@@ -25,7 +24,6 @@ export class RootRefreshContextModel extends BaseRefreshContextModel {
         // await loadAllAsync([XH.configService, XH.prefService], loadSpec);
 
         await XH.appModel.loadAsync(loadSpec);
-
-        return super.doLoadAsync(loadSpec);
+        await loadAllAsync(this.refreshTargets, loadSpec);
     }
 }

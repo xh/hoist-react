@@ -5,10 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import PT from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-
-import {BaseRefreshContextModel} from './BaseRefreshContextModel';
 import {RefreshContext} from './RefreshContext';
 
 
@@ -25,12 +22,6 @@ const refreshContextProvider = elemFactory(RefreshContext.Provider);
  */
 @HoistComponent
 export class RefreshContextView extends Component {
-
-    static propTypes = {
-        model: PT.instanceOf(BaseRefreshContextModel).isRequired
-    };
-
-    static modelClass = BaseRefreshContextModel;
 
     static contextType = RefreshContext;
 
