@@ -52,8 +52,8 @@ export class AuthService {
     }
 
     async loginAsync(username, password) {
-        return XH
-            .postJson({
+        return XH.fetchService
+            .sendJsonForm({
                 url: 'auth/login',
                 params: {username, password},
                 service: 'hoist-central',
@@ -70,6 +70,7 @@ export class AuthService {
                 hideParams: ['password']
             });
     }
+
     /**
      * For applications that support a logout operation (i.e. not SSO), logs the current user out
      * and refreshes the application to present a login panel.

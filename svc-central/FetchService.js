@@ -53,7 +53,7 @@ export class FetchService {
      * @returns {Promise<Response>} - Promise which resolves to a Fetch Response.
      */
     async fetch(opts) {
-        let {params, method, contentType, url, autoAbortKey, service, skipAuth} = opts;
+        let {params, method, contentType, url, autoAbortKey, service, skipAuth, bodyType} = opts;
         throwIf(!url, 'No url specified in call to fetchService.');
 
         // 1) Compute / install defaults
@@ -95,7 +95,9 @@ export class FetchService {
         // 3) Preprocess and apply params
         if (params) {
             const qsOpts = {arrayFormat: 'repeat', allowDots: true, ...opts.qsOpts},
-                paramsString = (contentType == 'application/json') ? JSON.stringify(params) : stringify(params, qsOpts);
+                paramsString = (contentType == 'application/json' && bodyType != 'application/x-www-form-urlencoded')
+                    ? JSON.stringify(params)
+                    : stringify(params, qsOpts);
 
             if (['POST', 'PUT'].includes(method)) {
                 fetchOpts.body = paramsString;
@@ -147,18 +149,6 @@ export class FetchService {
     }
 
     /**
-     * Send an HTTP request to a URL, and decode the response as JSON.
-     *
-     * This method delegates to @see {fetch} and accepts the same options.
-     *
-     * @returns the decoded JSON object, or null if the response had no content.
-     */
-    fetchJsonSync(opts) {
-        const ret = this.fetchSync({acceptJson: true, ...opts});
-        return ret.status === 204 ? null : ret.json();
-    }
-
-    /**
      * Send a GET HTTP request to a URL, and decode the response as JSON.
      *
      * This method delegates to @see {fetch} and accepts the same options.
@@ -180,18 +170,6 @@ export class FetchService {
     async postJson(opts) {
         opts.method = 'POST';
         return this.sendJson(opts);
-    }
-
-    /**
-     * Send a POST HTTP request to a URL with a JSON body, and decode the response as JSON.
-     *
-     * This method delegates to @see {fetch} and accepts the same options.
-     *
-     * @returns the decoded JSON object, or null if the response had no content.
-     */
-    postJsonSync(opts) {
-        opts.method = 'POST';
-        return this.sendJsonSync(opts);
     }
 
     /**
@@ -239,13 +217,13 @@ export class FetchService {
         return this.fetchJson(opts);
     }
 
-    sendJsonSync(opts) {
+    async sendJsonForm(opts) {
         opts = {
             ...opts,
-            body: JSON.stringify(opts.body),
-            contentType: 'application/json'
+            contentType: 'application/json',
+            bodyType: 'application/x-www-form-urlencoded'
         };
-        return this.fetchJsonSync(opts);
+        return this.fetchJson(opts);
     }
 
     async safeResponseTextAsync(response) {
