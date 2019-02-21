@@ -18,7 +18,7 @@ import {ContextMenuTarget} from '@xh/hoist/kit/blueprint';
  */
 export function ContextMenuSupport(C) {
     return applyMixin(C, {
-        markWith: 'hasContextMenuSupport',
+        name: 'ContextMenuSupport',
         includes: [ContextMenuTarget],
 
         defaults: {

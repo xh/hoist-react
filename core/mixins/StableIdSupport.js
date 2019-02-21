@@ -14,7 +14,7 @@ import {withDefault, applyMixin} from '@xh/hoist/utils/js';
  */
 export function StableIdSupport(C) {
     return applyMixin(C, {
-        markWith: 'hasStableIdSupport',
+        name: 'StableIdSupport',
 
         overrides: {
             render(existing) {

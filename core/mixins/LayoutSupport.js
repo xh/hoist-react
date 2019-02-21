@@ -28,7 +28,7 @@ import {pick, isNumber, isString, forOwn, omit} from 'lodash';
  */
 export function LayoutSupport(C) {
     return applyMixin(C, {
-        markWith: 'hasLayoutSupport',
+        name: 'LayoutSupport',
 
         provides: {
 

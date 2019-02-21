@@ -15,7 +15,7 @@ import {EventSupport, ReactiveSupport, XhIdSupport, ManagedSupport} from './mixi
  */
 export function HoistService(C) {
     return applyMixin(C, {
-        markWith: 'isHoistService',
+        name: 'HoistService',
         includes: [ManagedSupport, EventSupport, ReactiveSupport, XhIdSupport],
 
         defaults: {

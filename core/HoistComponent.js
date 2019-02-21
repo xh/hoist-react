@@ -26,7 +26,7 @@ import {loadSupportLinker}  from './impl/LoadSupportLinker';
  */
 export function HoistComponent(C) {
     return applyMixin(C, {
-        markWith: 'isHoistComponent',
+        name: 'HoistComponent',
         includes: [observer, ManagedSupport, ReactiveSupport, XhIdSupport],
 
         defaults: {
@@ -178,7 +178,7 @@ export function HoistComponent(C) {
                     const {ownedModel} = this;
                     const renderFn = sup.bind(this);
 
-                    if (ownedModel && ownedModel.hasLoadSupport) {
+                    if (ownedModel && ownedModel.isLoadSupport) {
                         return loadSupportLinker({renderFn, model: ownedModel});
                     } else {
                         return renderFn();

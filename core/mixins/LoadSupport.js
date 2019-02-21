@@ -24,7 +24,7 @@ import {allSettled} from '@xh/hoist/promise';
  */
 export function LoadSupport(C) {
     return applyMixin(C, {
-        markWith: 'hasLoadSupport',
+        name: 'LoadSupport',
 
         defaults: {
 

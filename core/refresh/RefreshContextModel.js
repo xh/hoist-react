@@ -29,7 +29,7 @@ import {HoistModel, LoadSupport}  from '@xh/hoist/core';
  */
 export function RefreshContextModel(C) {
     return applyMixin(C, {
-        markWith: 'RefreshContextModel',
+        name: 'RefreshContextModel',
         includes: [HoistModel, LoadSupport],
 
         defaults: {
