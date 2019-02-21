@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {EventSupport, ReactiveSupport, ManagedSupport, XhIdSupport} from './mixins';
-import {markClass} from '@xh/hoist/utils/js';
+import {applyMixin} from '@xh/hoist/utils/js';
 
 
 /**
@@ -25,14 +25,10 @@ import {markClass} from '@xh/hoist/utils/js';
  * @see LoadSupport
  */
 export function HoistModel(C) {
-    markClass(C, 'isHoistModel');
-
-    C = ManagedSupport(C);
-    C = EventSupport(C);
-    C = ReactiveSupport(C);
-    C = XhIdSupport(C);
-
-    return C;
+    return applyMixin(C, {
+        markWith: 'isHoistModel',
+        includes: [ManagedSupport, EventSupport, ReactiveSupport, XhIdSupport]
+    });
 }
 
 

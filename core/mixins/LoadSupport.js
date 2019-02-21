@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
-import {defaultMethods, markClass, provideMethods, chainMethods} from '@xh/hoist/utils/js';
+import {applyMixin} from '@xh/hoist/utils/js';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {allSettled} from '@xh/hoist/promise';
 
@@ -14,7 +14,6 @@ import {allSettled} from '@xh/hoist/promise';
  * data from backend sources and setting up resources.
  *
  * This decorator is designed to be applied to implementations of HoistModel and HoistService.
- * By default, all loading operations will be
  *
  * It is also implemented by standard classes such as UrlStore, RestStore, RestGridModel.
  *
@@ -24,84 +23,78 @@ import {allSettled} from '@xh/hoist/promise';
  * @see RestGridModel
  */
 export function LoadSupport(C) {
+    return applyMixin(C, {
+        markWith: 'hasLoadSupport',
 
-    markClass(C, 'hasLoadSupport');
+        defaults: {
 
-    //--------------------------------------
-    // Methods for Implementation
-    //--------------------------------------
-    defaultMethods(C, {
-
-        /**
-         * Load this object. Implement this method to describe how this object should load
-         * itself from underlying data sources or services.
-         *
-         * For implementation only.  Callers should call loadAsync() or refreshAsync() instead.
-         *
-         * @param {LoadSpec} loadSpec - Metadata about the underlying request
-         */
-        async doLoadAsync(loadSpec) {}
-    });
-
-
-    provideMethods(C, {
-
-        /**
-         * Load this object from underlying data sources or services.
-         *
-         * Not for implementation.  Implement doLoadAsync() instead.
-         *
-         * @param {LoadSpec} [loadSpec] - Metadata about the underlying request
-         */
-        async loadAsync(loadSpec = {}) {
-            this.lastLoadRequested = new Date();
-            return this
-                .doLoadAsync(loadSpec)
-                .linkTo(this.loadModel)
-                .finally(() => {
-                    this.lastLoadCompleted = new Date();
-                });
+            /**
+             * Load this object. Implement this method to describe how this object should load
+             * itself from underlying data sources or services.
+             *
+             * For implementation only.  Callers should call loadAsync() or refreshAsync() instead.
+             *
+             * @param {LoadSpec} loadSpec - Metadata about the underlying request
+             */
+            async doLoadAsync(loadSpec) {}
         },
 
-        /**
-         * Refresh this object from underlying data sources or services.
-         *
-         * Not for implementation.  Implement doLoadAsync() instead.
-         */
-        async refreshAsync() {
-            return this.loadAsync({isRefresh: true, isAutoRefresh: false});
-        },
 
-        /**
-         * Auto-refresh this object from underlying data sources or services.
-         *
-         * Not for implementation.  Implement doLoadAsync() instead.
-         */
-        async autoRefreshAsync() {
-            return this.loadAsync({isRefresh: true, isAutoRefresh: true});
-        },
+        provides: {
 
-        loadModel: {
-            get() {
-                if (!this._loadModel) this._loadModel = new PendingTaskModel();
-                return this._loadModel;
+            /**
+             * Load this object from underlying data sources or services.
+             *
+             * Not for implementation.  Implement doLoadAsync() instead.
+             *
+             * @param {LoadSpec} [loadSpec] - Metadata about the underlying request
+             */
+            async loadAsync(loadSpec = {}) {
+                this.lastLoadRequested = new Date();
+                return this
+                    .doLoadAsync(loadSpec)
+                    .linkTo(this.loadModel)
+                    .finally(() => {
+                        this.lastLoadCompleted = new Date();
+                    });
             },
 
-            set(loadModel) {
-                this._loadModel = loadModel;
+            /**
+             * Refresh this object from underlying data sources or services.
+             *
+             * Not for implementation.  Implement doLoadAsync() instead.
+             */
+            async refreshAsync() {
+                return this.loadAsync({isRefresh: true, isAutoRefresh: false});
+            },
+
+            /**
+             * Auto-refresh this object from underlying data sources or services.
+             *
+             * Not for implementation.  Implement doLoadAsync() instead.
+             */
+            async autoRefreshAsync() {
+                return this.loadAsync({isRefresh: true, isAutoRefresh: true});
+            },
+
+            loadModel: {
+                get() {
+                    if (!this._loadModel) this._loadModel = new PendingTaskModel();
+                    return this._loadModel;
+                },
+
+                set(loadModel) {
+                    this._loadModel = loadModel;
+                }
+            }
+        },
+
+        chains: {
+            destroy() {
+                XH.safeDestroy(this._loadModel);
             }
         }
     });
-
-
-    chainMethods(C, {
-        destroy() {
-            XH.safeDestroy(this._loadModel);
-        }
-    });
-
-
-    return C;
 }
 
 /**

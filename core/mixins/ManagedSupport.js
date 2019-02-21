@@ -6,7 +6,7 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {chainMethods, markClass} from '@xh/hoist/utils/js';
+import {applyMixin} from '@xh/hoist/utils/js';
 
 /**
  * Mixin to support "managed" properties.  Managed properties are assumed to hold objects that
@@ -15,16 +15,16 @@ import {chainMethods, markClass} from '@xh/hoist/utils/js';
  * See @managed.
  */
 export function ManagedSupport(C) {
-    markClass(C, 'hasManagedSupport');
+    return applyMixin(C, {
+        markWith: 'hasManagedSupport',
 
-    chainMethods(C, {
-        destroy() {
-            const managed = this._xhManaged;
-            if (managed) managed.forEach(f => XH.safeDestroy(this[f]));
+        chains: {
+            destroy() {
+                const managed = this._xhManaged;
+                if (managed) managed.forEach(f => XH.safeDestroy(this[f]));
+            }
         }
     });
-
-    return C;
 }
 
 /**
