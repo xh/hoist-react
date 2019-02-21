@@ -16,7 +16,7 @@ import {applyMixin} from '@xh/hoist/utils/js';
  */
 export function ManagedSupport(C) {
     return applyMixin(C, {
-        markWith: 'hasManagedSupport',
+        name: 'ManagedSupport',
 
         chains: {
             destroy() {

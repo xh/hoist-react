@@ -26,7 +26,7 @@ import {applyMixin} from '@xh/hoist/utils/js';
  */
 export function HoistModel(C) {
     return applyMixin(C, {
-        markWith: 'isHoistModel',
+        name: 'HoistModel',
         includes: [ManagedSupport, EventSupport, ReactiveSupport, XhIdSupport]
     });
 }

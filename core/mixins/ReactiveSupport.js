@@ -20,7 +20,7 @@ import {throwIf, applyMixin} from '@xh/hoist/utils/js';
  */
 export function ReactiveSupport(C) {
     return applyMixin(C, {
-        markWith: 'hasReactiveSupport',
+        name: 'ReactiveSupport',
 
         provides: {
 

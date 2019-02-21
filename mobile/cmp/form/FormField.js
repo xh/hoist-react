@@ -172,7 +172,7 @@ export class FormField extends Component {
 
     get childIsSizeable() {
         const child = this.props.children;
-        return child && child.type.hasLayoutSupport;
+        return child && child.type.isLayoutSupport;
     }
 
     getDefaultedProp(name, defaultVal) {

@@ -19,7 +19,7 @@ import {LoadSupport} from './mixins/LoadSupport';
  */
 export function HoistAppModel(C) {
     return applyMixin(C, {
-        markWith: 'isHoistAppModel',
+        name: 'HoistAppModel',
         includes: [HoistModel, LoadSupport],
 
         defaults: {

@@ -320,7 +320,7 @@ export class GridModel {
 
     /** Load the underlying store. */
     async doLoadAsync(loadSpec) {
-        throwIf(!this.store.hasLoadSupport, 'Underlying store does not define support for loading.');
+        throwIf(!this.store.isLoadSupport, 'Underlying store does not define support for loading.');
         return this.store.loadAsync(loadSpec);
     }
 

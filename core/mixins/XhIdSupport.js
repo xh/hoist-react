@@ -14,7 +14,7 @@ import {applyMixin} from '@xh/hoist/utils/js';
  */
 export function XhIdSupport(C) {
     return applyMixin(C, {
-        markWith: 'hasXhIdSupport',
+        name: 'XhIdSupport',
 
         provides: {
             xhId: {

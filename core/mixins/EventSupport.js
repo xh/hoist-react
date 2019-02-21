@@ -14,7 +14,7 @@ import {applyMixin} from '@xh/hoist/utils/js';
  */
 export function EventSupport(C) {
     return applyMixin(C, {
-        markWith: 'hasEventSupport',
+        name: 'EventSupport',
 
         provides: {
             /**

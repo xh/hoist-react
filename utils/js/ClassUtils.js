@@ -29,12 +29,17 @@ import {throwIf} from '@xh/hoist/utils/js';
  * @returns {Function} - decorator for a JS class.
  */
 export function applyMixin(C, config) {
-    const {markWith, includes, defines, defaults, provides, overrides, chains, ...rest} = config;
+    const {name, includes, defines, defaults, provides, overrides, chains, ...rest} = config;
     forOwn(rest, (v, k) => {
         throw Exception.create(`Unknown key '${k}' provided to applyMixin.`);
     });
 
-    if (markWith) markClass(C, markWith);
+    if (name) {
+        markClass(C, 'is' + name);
+
+        // For backward compatibility.  Remove/deprecate?
+        if (name.endsWith('Support')) markClass(C, 'has' + name);
+    }
 
     if (defines) defineMethods(C, defines);
     if (defaults) defaultMethods(C, defaults);
@@ -55,14 +60,15 @@ export function applyMixin(C, config) {
 /**
  * Mark a class and its instances with a boolean property set to true.
  *
- * Useful for providing an identifying flag for marking objects.  Frequently used
- * in mixins to add 'isXXX' or 'hasXXXX' identifiers.
- *
- * For an example, see HoistComponent and the 'isHoistComponent' property.
- *
+ * Useful for providing an identifying flag for marking objects.
+ * 
  * @param {String} flag
  */
 function markClass(C, flag) {
+
+    throwIfNameCollision(C, flag,  C);
+    throwIfNameCollision(C.prototype, flag,  C);
+
     const def = {value: true, writable: false};
     Object.defineProperty(C, flag, def);
     Object.defineProperty(C.prototype, flag, def);
@@ -117,7 +123,7 @@ function defaultMethods(C, methods) {
 function provideMethods(C, methods) {
     const proto = C.prototype;
     forOwn(methods, (method, name) => {
-        throwIf(proto[name], `Symbol '${name}' already exists on Class : '${C.name}'`);
+        throwIfNameCollision(proto, name,  C);
         installMethod(proto, name, method);
     });
 }
@@ -178,4 +184,8 @@ function installMethod(proto, name, method) {
     } else {
         proto[name] = method;
     }
+}
+
+function throwIfNameCollision(obj, name, C) {
+    throwIf(obj[name], `Symbol '${name}' already exists on Class : '${C.name}'`);
 }
