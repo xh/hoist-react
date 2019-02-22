@@ -76,17 +76,16 @@ export class AuthService {
      * and refreshes the application to present a login panel.
      */
     async logoutAsync() {
+        this.clearTokenGrant();
         return await XH
             .fetchJson({
                 url: 'auth/logout',
                 service: 'hoist-central'
             })
             .then(() => {
-                this.clearTokenGrant();
                 XH.reloadApp()
             })
             .catchDefault(() => {
-                this.clearTokenGrant();
                 XH.reloadApp()
             });
     }

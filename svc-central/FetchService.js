@@ -53,7 +53,7 @@ export class FetchService {
      * @returns {Promise<Response>} - Promise which resolves to a Fetch Response.
      */
     async fetch(opts) {
-        let {params, method, contentType, url, autoAbortKey, service, skipAuth, bodyType} = opts;
+        let {params, method, contentType, url, autoAbortKey, service, skipAuth} = opts;
         throwIf(!url, 'No url specified in call to fetchService.');
 
         // 1) Compute / install defaults
@@ -95,7 +95,7 @@ export class FetchService {
         // 3) Preprocess and apply params
         if (params) {
             const qsOpts = {arrayFormat: 'repeat', allowDots: true, ...opts.qsOpts},
-                paramsString = (contentType == 'application/json' && bodyType != 'application/x-www-form-urlencoded')
+                paramsString = (contentType == 'application/json')
                     ? JSON.stringify(params)
                     : stringify(params, qsOpts);
 
@@ -220,8 +220,7 @@ export class FetchService {
     async sendJsonForm(opts) {
         opts = {
             ...opts,
-            contentType: 'application/json',
-            bodyType: 'application/x-www-form-urlencoded'
+            contentType: 'application/x-www-form-urlencoded'
         };
         return this.fetchJson(opts);
     }
