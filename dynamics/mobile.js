@@ -16,7 +16,8 @@
  * See the platform specific AppContainer where these implementations
  * are actually provided.
  */
-
+export let ColChooserModel = null;
+export let colChooser = null;
 
 /**
  * Provide implementations of functions and classes exported in this file.
@@ -24,5 +25,6 @@
  * Not for Application use.
  */
 export function installMobileImpls(impls) {
-
+    ColChooserModel = impls.ColChooserModel;
+    colChooser = impls.colChooser;
 }

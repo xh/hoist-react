@@ -24,9 +24,15 @@ import {lockoutPanel} from './LockoutPanel';
 import {toastSource} from './ToastSource';
 import {messageSource} from './MessageSource';
 
-import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
 import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
-installMobileImpls({});
+
+import {colChooser, ColChooserModel} from '@xh/hoist/mobile/cmp/grid';
+import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
+
+installMobileImpls({
+    colChooser,
+    ColChooserModel
+});
 
 /**
  * Top-level wrapper for Mobile applications.

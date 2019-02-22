@@ -27,7 +27,8 @@ import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';
 
-import {StoreContextMenu, ColChooserModel} from '@xh/hoist/dynamics/desktop';
+import {ColChooserModel as DesktopColChooserModel, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
+import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -160,8 +161,12 @@ export class GridModel {
 
         this.setColumns(columns);
 
-        if (enableColChooser && !XH.isMobile) {
-            this.colChooserModel = new ColChooserModel(this);
+        if (enableColChooser) {
+            if (XH.isMobile) {
+                this.colChooserModel = new MobileColChooserModel(this);
+            } else {
+                this.colChooserModel = new DesktopColChooserModel(this);
+            }
         }
 
         this.setGroupBy(groupBy);
