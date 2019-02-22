@@ -45,10 +45,8 @@ export const cloneAction = {
     actionFn: ({record, gridModel}) => {
         const clone = cloneDeep(record);
         const sourceRecord = cloneDeep(record);
-        console.log('start', 'clone', clone, 'sourceRecord', sourceRecord);
         cloneAction.transformFn({sourceRecord, clone});
         clone.id = null;
-        console.log('end', 'clone', clone, 'sourceRecord', sourceRecord);
         gridModel.restGridModel.editRecord(clone);
     }
 };
