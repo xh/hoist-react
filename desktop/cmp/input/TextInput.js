@@ -13,7 +13,6 @@ import {HoistInput} from '@xh/hoist/cmp/input';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {withDefault} from '@xh/hoist/utils/js';
-import {isString} from 'lodash';
 
 /**
  * A single-line text input with additional support for embedded icons/elements.
@@ -84,6 +83,8 @@ export class TextInput extends HoistInput {
         const props = this.getNonLayoutProps(),
             {width, flex, ...layoutProps} = this.getLayoutProps();
 
+        const isClearable = (this.internalValue !== null);
+
         return div({
             item: inputGroup({
                 value: this.renderValue || '',
@@ -93,7 +94,7 @@ export class TextInput extends HoistInput {
                 disabled: props.disabled,
                 leftIcon: props.leftIcon,
                 placeholder: props.placeholder,
-                rightElement: props.rightElement || (props.enableClear && isString(this.internalValue) ? this.renderClearIcon() : null),
+                rightElement: props.rightElement || (props.enableClear && isClearable ? this.renderClearButton() : null),
                 round: withDefault(props.round, false),
                 spellCheck: withDefault(props.spellCheck, false),
                 tabIndex: props.tabIndex,
@@ -121,7 +122,7 @@ export class TextInput extends HoistInput {
         });
     }
 
-    renderClearIcon() {
+    renderClearButton() {
         return button({
             icon: Icon.cross(),
             minimal: true,
@@ -130,10 +131,6 @@ export class TextInput extends HoistInput {
                 this.doCommit();
             }
         });
-    }
-
-    toExternal(val) {
-        return val === '' ? null : val;
     }
 
     onChange = (ev) => {
