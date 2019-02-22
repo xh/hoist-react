@@ -1,0 +1,44 @@
+.xh-col-chooser {
+  background-color: var(--xh-bg-alt);
+
+  .xh-col-chooser-row {
+    padding: 2px 0;
+    display: flex;
+    align-items: center;
+    border-bottom: var(--xh-border-solid);
+    background-color: var(--xh-grid-bg);
+
+    &:nth-child(odd) {
+      background-color: var(--xh-grid-bg-odd);
+    }
+
+    .xh-col-chooser-row-grabber {
+      width: 40px;
+      text-align: center;
+      color: var(--xh-text-color-muted);
+    }
+
+    .xh-col-chooser-row-text {
+      flex: 1;
+    }
+
+    .xh-button {
+      width: 50px;
+    }
+  }
+}
+
+// Todo: Temporary - remove and use Panel title
+.xh-col-chooser-title {
+  display: flex;
+  align-items: center;
+  padding: var(--xh-title-pad-px);
+  color: var(--xh-title-text-color);
+  border-bottom: var(--xh-border-solid);
+  background-color: var(--xh-title-bg);
+  font-size: 14px;
+
+  & > .svg-inline--fa {
+    margin-right: var(--xh-pad-px);
+  }
+}

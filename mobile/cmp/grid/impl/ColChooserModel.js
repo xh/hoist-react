@@ -4,8 +4,9 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from '@xh/hoist/core';
+import {XH, HoistModel} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
+import {clone, find} from 'lodash';
 
 /**
  * State management for the ColChooser component.
@@ -18,6 +19,7 @@ export class ColChooserModel {
 
     gridModel = null;
 
+    @observable.ref data = [];
     @observable isOpen = false;
 
     /**
@@ -25,6 +27,10 @@ export class ColChooserModel {
      */
     constructor(gridModel) {
         this.gridModel = gridModel;
+        this.addReaction({
+            track: () => XH.routerState,
+            run: () => this.close()
+        });
     }
 
     @action
@@ -38,18 +44,46 @@ export class ColChooserModel {
         this.isOpen = false;
     }
 
-    commit() {
-        const {gridModel} = this,
-            colChanges = [];
+    setHidden(colId, hidden) {
+        const data = clone(this.data),
+            col = find(data, {colId});
 
-        // Todo: Push local state to grid
-        gridModel.applyColumnStateChanges(colChanges);
+        if (!col || col.locked || col.exclude) return;
+
+        col.hidden = hidden;
+        this.setData(data);
+    }
+
+    commit() {
+        const colChanges = this.data.map(it => {
+            const {colId, hidden} = it;
+            return {colId, hidden};
+        });
+        this.gridModel.applyColumnStateChanges(colChanges);
     }
 
     //------------------------
     // Implementation
     //------------------------
     syncChooserData() {
-        // Todo: Overwrite local state with grid state
+        const {gridModel} = this;
+
+        const data = gridModel.getLeafColumns().map(it => {
+            const visible = gridModel.isColumnVisible(it.colId);
+            return {
+                colId: it.colId,
+                text: it.chooserName,
+                hidden: !visible,
+                exclude: it.excludeFromChooser,
+                locked: visible && !it.hideable
+            };
+        });
+
+        this.setData(data);
+    }
+
+    @action
+    setData(data) {
+        this.data = data;
     }
 }
