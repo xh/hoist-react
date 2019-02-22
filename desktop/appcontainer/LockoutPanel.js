@@ -53,7 +53,7 @@ export class LockoutPanel extends Component {
             }),
             logoutButton({
                 text: 'Logout',
-                omit: !appSpec.authLogin
+                omit: !appSpec.authLoginEnabled
             })
         );
     }

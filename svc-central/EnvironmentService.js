@@ -18,6 +18,7 @@ export class EnvironmentService {
     _data = {};
     
     async initAsync() {
+        // TODO pull server environment from server
         const serverEnv = {
             "appCode":"portfolio",
             "appName":"Portfolio",

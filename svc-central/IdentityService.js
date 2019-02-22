@@ -85,9 +85,6 @@ export class IdentityService {
         return await XH.authService.logoutAsync();
     }
 
-    //------------------------
-    // Impersonation
-    //------------------------
     /** Is an impersonation session currently active? */
     get isImpersonating() {
         return this._user !== this._apparentUser;

@@ -38,7 +38,7 @@ export class AuthService {
         return [];
     }
 
-    async isAuthenticatedAsync(authSSO) {
+    async isAuthenticatedAsync() {
         return XH
             .fetchJson({url: 'xh/authStatus'})
             .then(r => r.authenticated)

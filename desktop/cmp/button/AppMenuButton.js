@@ -27,7 +27,7 @@ export class AppMenuButton extends Component {
         /** True to hide the Theme Toggle button. */
         hideThemeItem: PT.bool,
 
-        /** True to hide the Logout button. Always hidden when `appSpec.authLogin == false`. */
+        /** True to hide the Logout button. Always hidden when `appSpec.authLoginEnabled == false`. */
         hideLogoutItem: PT.bool,
 
         /**
@@ -45,7 +45,7 @@ export class AppMenuButton extends Component {
             [];
 
         hideAdminItem = hideAdminItem || !XH.getUser().isHoistAdmin,
-        hideLogoutItem = hideLogoutItem || !XH.appSpec.authLogin;
+        hideLogoutItem = hideLogoutItem || !XH.appSpec.authLoginEnabled;
         hideOptionsItem = hideOptionsItem || !XH.acm.optionsDialogModel.hasOptions;
 
         // TODO:  Need logic from context menu to remove duplicate seperators!

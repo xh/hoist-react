@@ -79,7 +79,7 @@ class XHClass {
     /** Git commit hash (or equivalent) of the client build. */
     appBuild = xhAppBuild;
 
-    /** Root URL context/path - prepended to all relative fetch requests. */
+    /** Root URL context/path of Hoist Central - prepended to all relative fetch requests that don't specify service. */
     baseUrl = xhBaseUrl;
 
     /** Whether build is for local development */
@@ -534,7 +534,7 @@ class XHClass {
     // Implementation
     //------------------------
     getServiceImpls() {
-        const isHc = this.appSpec.isHoistCentral;
+        const isHc = this.appSpec.useHoistCentral;
         return {
             AuthService: isHc ? HcAuthService : AuthService,
             ConfigService: isHc ? HcConfigService : ConfigService,
@@ -564,7 +564,7 @@ class XHClass {
     }
 
     async getAuthStatusFromServerAsync() {
-        return (this.appSpec.authSSO);
+        return (this.appSpec.authSSOEnabled);
     }
 
     /////

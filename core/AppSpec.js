@@ -27,8 +27,9 @@ export class AppSpec {
      *      `@xh/hoist/desktop/AppContainer` or `@xh/hoist/mobile/AppContainer`.
      * @param {boolean} c.isMobile - true if the app is designed to be run on mobile devices.
      * @param {boolean} c.isSSO - true if SSO auth is enabled (deprecated).
-     * @param {boolean} c.authSSO - true if SSO auth is enabled.
-     * @param {boolean} c.authLogin - true if form based username/password auth is enabled.
+     * @param {boolean} c.authSSOEnabled - true if SSO auth is enabled.
+     * @param {boolean} c.authLoginEnabled - true if form based username/password auth is enabled.
+     * @param {boolean} c.useHoistCentral - true if using Hoist Central instead of dedicated server facilities.
      * @param {(string|CheckAccessCb)} c.checkAccess - If a string, will be interpreted as the role
      *      required for basic UI access. Otherwise, function to determine if the passed user should
      *      be able to access the UI.
@@ -48,9 +49,9 @@ export class AppSpec {
         containerClass,
         isMobile,
         isSSO,
-        authSSO = true,
-        authLogin = true,
-        isHoistCentral = false,
+        authSSOEnabled = true,
+        authLoginEnabled = true,
+        useHoistCentral = false,
         checkAccess,
         trackAppLoad = true,
         idleDetectionEnabled = false,
@@ -65,8 +66,8 @@ export class AppSpec {
         throwIf(isNil(isMobile), 'A Hoist App must define isMobile');
 
         if (!isNil(isSSO)) {
-            authSSO = isSSO;
-            authLogin = !isSSO;
+            authSSOEnabled = isSSO;
+            authLoginEnabled = !isSSO;
         }
 
         throwIf(
@@ -81,9 +82,9 @@ export class AppSpec {
         this.modelClass = modelClass;
         this.containerClass = containerClass;
         this.isMobile = isMobile;
-        this.authSSO = authSSO;
-        this.authLogin = authLogin;
-        this.isHoistCentral = isHoistCentral;
+        this.authSSOEnabled = authSSOEnabled;
+        this.authLoginEnabled = authLoginEnabled;
+        this.useHoistCentral = useHoistCentral;
         this.checkAccess = checkAccess;
         this.trackAppLoad = trackAppLoad;
 

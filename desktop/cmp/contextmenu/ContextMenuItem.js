@@ -70,7 +70,7 @@ export class ContextMenuItem {
         return assign({
             text: 'Logout',
             icon: Icon.logout(),
-            hidden: !XH.appSpec.authLogin,
+            hidden: !XH.appSpec.authLoginEnabled,
             actionFn: () => XH.identityService.logoutAsync()
         }, defs);
     }

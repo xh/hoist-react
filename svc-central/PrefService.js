@@ -9,6 +9,8 @@ import {XH, HoistService} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf, deepFreeze} from '@xh/hoist/utils/js';
 
+// TODO update to support Hoist Central
+
 /**
  * Service to read and set user-specific preference values.
  *
@@ -45,7 +47,7 @@ export class PrefService {
     }
 
     /**
-     * Check to see if a given preference has been *defined*.
+     * Return true if a given preference has been *defined*.
      * @param key
      */
     hasKey(key) {

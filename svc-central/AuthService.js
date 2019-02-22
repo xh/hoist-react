@@ -19,20 +19,25 @@ export class AuthService {
     apparentUsername = null;
     roles = [];
 
+    /** Return true if authenticated and throws exception otherwise. */
     async isAuthenticatedAsync() {
         const {appSpec} = XH;
 
         if (!await this.getAccessTokenAsync()) {
-            if (appSpec.authSSO) {
+            if (appSpec.authSSOEnabled) {
                 return this.loginSsoAsync();
             } else {
-                throwIf(!appSpec.authLogin, 'Failed SSO Login, no alternative form of login available.');
+                throwIf(!appSpec.authLoginEnabled, 'Failed SSO Login, no alternative form of login available.');
                 return false;
             }
         }
         return true;
     }
 
+    /**
+     * Attempt SSO authentication and return true if authenticated and throw exception otherwise.
+     * Save auth token info into local storage if authenticated.
+     */
     async loginSsoAsync() {
         return XH
             .fetchJson({
@@ -51,9 +56,13 @@ export class AuthService {
             });
     }
 
+    /**
+     * Attempt form based authentication and return access token if authenticated and throw exception otherwise
+     * Save auth token info into local storage if authenticated.
+     */
     async loginAsync(username, password) {
         return XH.fetchService
-            .sendJsonForm({
+            .postJsonForm({
                 url: 'auth/login',
                 params: {username, password},
                 service: 'hoist-central',

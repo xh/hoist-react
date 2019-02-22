@@ -161,7 +161,7 @@ export class FetchService {
     }
 
     /**
-     * Send a POST HTTP request to a URL with a JSON body, and decode the response as JSON.
+     * Send an HTTP POST request to a URL with a JSON body, and decode the response as JSON.
      *
      * This method delegates to @see {fetch} and accepts the same options.
      *
@@ -170,6 +170,22 @@ export class FetchService {
     async postJson(opts) {
         opts.method = 'POST';
         return this.sendJson(opts);
+    }
+
+    /**
+     * Send an HTTP POST request to a URL with a form body, and decode the response as JSON.
+     *
+     * This method delegates to @see {fetch} and accepts the same options.
+     *
+     * @returns {Promise} the decoded JSON object, or null if the response had no content.
+     */
+    async postJsonForm(opts) {
+        opts = {
+            ...opts,
+            method: 'POST',
+            contentType: 'application/x-www-form-urlencoded'
+        };
+        return this.fetchJson(opts);
     }
 
     /**
@@ -196,7 +212,6 @@ export class FetchService {
         return this.sendJson(opts);
     }
 
-
     //-----------------------
     // Implementation
     //-----------------------
@@ -213,14 +228,6 @@ export class FetchService {
             ...opts,
             body: JSON.stringify(opts.body),
             contentType: 'application/json'
-        };
-        return this.fetchJson(opts);
-    }
-
-    async sendJsonForm(opts) {
-        opts = {
-            ...opts,
-            contentType: 'application/x-www-form-urlencoded'
         };
         return this.fetchJson(opts);
     }
