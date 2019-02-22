@@ -10,11 +10,10 @@ import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {allSettled} from '@xh/hoist/promise';
 
 /**
- * Mixin to indicate that an object has a load and refresh lifecycle for loading
- * data from backend sources and setting up resources.
+ * Mixin to indicate that an object has a load and refresh lifecycle for loading data from backend
+ * sources and setting up resources.
  *
  * This decorator is designed to be applied to implementations of HoistModel and HoistService.
- *
  * It is also implemented by standard classes such as UrlStore, RestStore, RestGridModel.
  *
  * @see HoistModel
@@ -44,8 +43,7 @@ export function LoadSupport(C) {
 
             /**
              * Load this object from underlying data sources or services.
-             *
-             * Not for implementation.  Implement doLoadAsync() instead.
+             * NOT for implementation.  Implement doLoadAsync() instead.
              *
              * @param {LoadSpec} [loadSpec] - Metadata about the underlying request
              */
@@ -61,8 +59,7 @@ export function LoadSupport(C) {
 
             /**
              * Refresh this object from underlying data sources or services.
-             *
-             * Not for implementation.  Implement doLoadAsync() instead.
+             * NOT for implementation.  Implement doLoadAsync() instead.
              */
             async refreshAsync() {
                 return this.loadAsync({isRefresh: true, isAutoRefresh: false});
@@ -70,8 +67,7 @@ export function LoadSupport(C) {
 
             /**
              * Auto-refresh this object from underlying data sources or services.
-             *
-             * Not for implementation.  Implement doLoadAsync() instead.
+             * NOT for implementation.  Implement doLoadAsync() instead.
              */
             async autoRefreshAsync() {
                 return this.loadAsync({isRefresh: true, isAutoRefresh: true});
