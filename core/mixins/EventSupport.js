@@ -35,7 +35,7 @@ export function EventSupport(C) {
              * Add a listener.
              * @param {string} eventName
              * @param {function} fn
-             * @return {{eventName: string, fn: function}} - object representing the listener which was added.
+             * @return {{eventName: string, fn: function}} - object representing the new listener.
              */
             addListener(eventName, fn) {
                 const listeners = this.getListeners(eventName),
