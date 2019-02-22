@@ -10,6 +10,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon/Icon';
+import {cloneDeep} from 'lodash';
 
 import {RestFormModel} from './impl/RestFormModel';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
@@ -34,6 +35,22 @@ export const viewAction = {
     icon: Icon.search(),
     recordsRequired: 1,
     actionFn: ({record, gridModel}) => gridModel.restGridModel.viewRecord(record)
+};
+
+export const cloneAction = {
+    text: 'Clone',
+    icon: Icon.copy(),
+    recordsRequired: 1,
+    transformFn: () => {},
+    actionFn: ({record, gridModel}) => {
+        const clone = cloneDeep(record);
+        const sourceRecord = cloneDeep(record);
+        console.log('start', 'clone', clone, 'sourceRecord', sourceRecord);
+        cloneAction.transformFn({sourceRecord, clone});
+        clone.id = null;
+        console.log('end', 'clone', clone, 'sourceRecord', sourceRecord);
+        gridModel.restGridModel.editRecord(clone);
+    }
 };
 
 export const deleteAction = {

@@ -60,6 +60,14 @@ export class RestFormModel {
         this.initForm(rec);
     }
 
+    // Todo FILL IN!! Pass record-to-be-cloned id
+    @action
+    openClone(rec)  {
+        this.readonly = false;
+        this.initForm(...rec);
+    }
+
+
     @action
     openView(rec) {
         this.readonly = true;
@@ -93,7 +101,8 @@ export class RestFormModel {
     //---------------------
     initForm(rec) {
         this.currentRecord = rec ? rec : {id: null};
-        this.isAdd = !rec;
+
+        this.isAdd = !rec || !rec.id;
         this.isOpen = true;
         const fields = this.editors.map(editor => this.fieldModelConfig(editor));
         const formModel = this.formModel = new FormModel({
