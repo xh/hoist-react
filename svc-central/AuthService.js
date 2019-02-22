@@ -15,19 +15,18 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
 @HoistService
 export class AuthService {
 
-    ///////////////////////
-    // Public access
-    ///////////////////////
-
     username = null;
     apparentUsername = null;
     roles = [];
 
-    async isAuthenticatedAsync(authSSO) {
+    async isAuthenticatedAsync() {
+        const {appSpec} = XH;
+
         if (!await this.getAccessTokenAsync()) {
-            if (authSSO) {
-                return await this.loginSsoAsync();
+            if (appSpec.authSSO) {
+                return this.loginSsoAsync();
             } else {
+                throwIf(!appSpec.authLogin, 'Failed SSO Login, no alternative form of login available.');
                 return false;
             }
         }
@@ -42,7 +41,8 @@ export class AuthService {
                 skipAuth: true
             })
             .then(tokenGrant => {
-                return this.saveTokenGrant(tokenGrant)
+                this.saveTokenGrant(tokenGrant);
+                return true;
             }).catch(e => {
                 // 401s normal / expected for non-SSO apps when user not yet logged in.
                 if (e.httpStatus == 401) return false;
@@ -90,9 +90,9 @@ export class AuthService {
             });
     }
 
-    ///////////////////////
-    // Local access
-    ///////////////////////
+    //---------------------
+    // Implementation
+    //---------------------
 
     accessTokenPromise = null;
 

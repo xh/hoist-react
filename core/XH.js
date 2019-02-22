@@ -159,9 +159,6 @@ class XHClass {
      */
     appSpec = null;
 
-    /** Mode specific core services. */
-    xhServices = {};
-
     /**
      * Main entry point. Initialize and render application code.
      *
@@ -171,19 +168,6 @@ class XHClass {
     renderApp(appSpec) {
         this.appSpec = appSpec instanceof AppSpec ? appSpec : new AppSpec(appSpec);
         const rootView = elem(appSpec.containerClass, {model: this.appContainerModel});
-        const isHc = appSpec.isHoistCentral;
-        this.xhServices = {
-            AuthService: isHc ? HcAuthService : AuthService,
-            ConfigService: isHc ? HcConfigService : ConfigService,
-            EnvironmentService: isHc ? HcEnvironmentService : EnvironmentService,
-            FetchService: isHc ? HcFetchService : FetchService,
-            GridExportService: isHc ? HcGridExportService : GridExportService,
-            IdentityService: isHc ? HcIdentityService : IdentityService,
-            IdleService: isHc ? HcIdleService : IdleService,
-            LocalStorageService: isHc ? HcLocalStorageService : LocalStorageService,
-            PrefService: isHc ? HcPrefService : PrefService,
-            TrackService: isHc ? HcTrackService : TrackService
-        };
         ReactDOM.render(rootView, document.getElementById('xh-root'));
     }
 
@@ -477,14 +461,15 @@ class XHClass {
         // Add xh-app class to body element to power Hoist CSS selectors
         document.body.classList.add('xh-app');
 
+        const svcs = this.getServiceImpls();
         try {
-            await this.installServicesAsync(this.xhServices.FetchService, this.xhServices.LocalStorageService);
-            await this.installServicesAsync(this.xhServices.AuthService);
-            await this.installServicesAsync(this.xhServices.TrackService, this.xhServices.IdleService, this.xhServices.GridExportService);
+            await this.installServicesAsync(svcs.FetchService, svcs.LocalStorageService);
+            await this.installServicesAsync(svcs.AuthService);
+            await this.installServicesAsync(svcs.TrackService, svcs.IdleService, svcs.GridExportService);
 
             // Special handling for EnvironmentService, which makes the first fetch back to the Grails layer.
             try {
-                await this.installServicesAsync(this.xhServices.EnvironmentService);
+                await this.installServicesAsync(svcs.EnvironmentService);
             } catch (e) {
                 throw `Unable to load environment info - is the server running and reachable? (${e.message})`;
             }
@@ -492,11 +477,7 @@ class XHClass {
             this.setAppState(S.PRE_AUTH);
 
             // Check if user has already been authenticated (prior login, SSO)...
-            const userIsAuthenticated = await this.getAuthStatusFromServerAsync(appSpec.authSSO);
-            
-            // ...if not, throw unexpected error case or trigger a login prompt.
-            if (!userIsAuthenticated) {
-                throwIf(!appSpec.authLogin, 'Failed to authenticate' + (appSpec.authSSO ? " user via SSO." : "."));
+            if (!await this.authService.isAuthenticatedAsync()) {
                 this.setAppState(S.LOGIN_REQUIRED);
                 return;
             }
@@ -519,12 +500,13 @@ class XHClass {
      */
     @action
     async completeInitAsync() {
-        const S = AppState;
+        const S = AppState,
+            svcs = this.getServiceImpls();
 
         this.setAppState(S.INITIALIZING);
         try {
-            await this.installServicesAsync(this.xhServices.IdentityService);
-            await this.installServicesAsync(this.xhServices.PrefService, this.xhServices.ConfigService);
+            await this.installServicesAsync(svcs.IdentityService);
+            await this.installServicesAsync(svcs.PrefService, svcs.ConfigService);
             this.initModels();
 
             // Delay to workaround hot-reload styling issues in dev.
@@ -551,6 +533,22 @@ class XHClass {
     //------------------------
     // Implementation
     //------------------------
+    getServiceImpls() {
+        const isHc = this.appSpec.isHoistCentral;
+        return {
+            AuthService: isHc ? HcAuthService : AuthService,
+            ConfigService: isHc ? HcConfigService : ConfigService,
+            EnvironmentService: isHc ? HcEnvironmentService : EnvironmentService,
+            FetchService: isHc ? HcFetchService : FetchService,
+            GridExportService: isHc ? HcGridExportService : GridExportService,
+            IdentityService: isHc ? HcIdentityService : IdentityService,
+            IdleService: isHc ? HcIdleService : IdleService,
+            LocalStorageService: isHc ? HcLocalStorageService : LocalStorageService,
+            PrefService: isHc ? HcPrefService : PrefService,
+            TrackService: isHc ? HcTrackService : TrackService
+        };
+    }
+
     checkAccess() {
         const user = XH.getUser(),
             {checkAccess} = this.appSpec;
@@ -565,8 +563,8 @@ class XHClass {
         }
     }
 
-    async getAuthStatusFromServerAsync(authSSO) {
-        return this.authService.isAuthenticatedAsync(authSSO);
+    async getAuthStatusFromServerAsync() {
+        return (this.appSpec.authSSO);
     }
 
     /////
