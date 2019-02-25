@@ -27,6 +27,7 @@ export class Column {
      * @param {string} [c.colId] - unique identifier for the Column within its grid.
      *      Defaults to field name - one of these two properties must be specified.
      * @param {string} [c.headerName] - display text for grid header.
+     * @param {string} [c.headerTooltip] - tooltip text for grid header.
      * @param {(string|string[])} [c.headerClass] - additional css classes to add to the column header.
      * @param {(string|string[])} [c.cellClass] - additional css classes to add to each cell in the column.
      * @param {boolean} [c.isTreeColumn] - true if this column should show the tree affordances for a
@@ -86,6 +87,7 @@ export class Column {
         colId,
         isTreeColumn,
         headerName,
+        headerTooltip,
         headerClass,
         cellClass,
         hidden,
@@ -123,6 +125,7 @@ export class Column {
         throwIf(!this.colId, 'Must specify colId or field for a Column.');
 
         this.headerName = withDefault(headerName, startCase(this.colId));
+        this.headerTooltip = headerTooltip;
         this.headerClass = castArray(headerClass);
         this.cellClass = castArray(cellClass);
         this.hidden = withDefault(hidden, false);
@@ -180,6 +183,7 @@ export class Column {
                 field,
                 colId: this.colId,
                 headerName: this.headerName,
+                headerTooltip: this.headerTooltip,
                 headerClass: this.headerClass,
                 cellClass: this.cellClass,
                 hide: this.hidden,

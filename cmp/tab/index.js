@@ -4,7 +4,6 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
+export * from './TabModel';
 export * from './TabContainer';
 export * from './TabContainerModel';
-export * from './TabModel';

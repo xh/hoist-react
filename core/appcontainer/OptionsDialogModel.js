@@ -29,6 +29,13 @@ export class OptionsDialogModel {
     @managed
     formModel = null;
 
+    init() {
+        this.addReaction({
+            track: () => XH.routerState,
+            run: () => this.hide()
+        });
+    }
+
     //-------------------
     // Setting options
     //-------------------

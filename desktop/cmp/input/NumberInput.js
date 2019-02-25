@@ -143,6 +143,7 @@ export class NumberInput extends HoistInput {
 
     onKeyPress = (ev) => {
         if (ev.key === 'Enter') this.doCommit();
+        if (this.props.onKeyPress) this.props.onKeyPress(ev);
     }
 
     formatRenderValue(value) {

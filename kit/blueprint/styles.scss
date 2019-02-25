@@ -76,6 +76,9 @@
   padding-left: var(--xh-pad-px);
 }
 
+.bp3-tab > svg:first-child {
+  margin-right: var(--xh-pad-half-px);
+}
 
 //------------------------
 // Dialog + Masking
