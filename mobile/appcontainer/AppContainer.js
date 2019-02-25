@@ -26,7 +26,7 @@ import {messageSource} from './MessageSource';
 
 import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
 
-import {tabContainer} from '@xh/hoist/mobile/cmp/tab';
+import {tabContainer} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
 import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
 
 installMobileImpls({

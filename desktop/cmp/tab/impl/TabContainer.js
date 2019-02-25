@@ -9,22 +9,14 @@ import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 
-import {tab} from './impl/Tab';
-import {tabSwitcher} from './TabSwitcher';
-import './Tabs.scss';
+import {tab} from './Tab';
+import {tabSwitcher} from '../TabSwitcher';
+import '../Tabs.scss';
 
 /**
- * Display a set of child Tabs and (optionally) a switcher control.
+ * Desktop implementation of TabContainer.
  *
- * By default this TabContainer will install a TabSwitcher above the Tabs to control the currently
- * displayed Tab. The 'TabContainerModel.switcherPosition' property can be adjusted to place
- * the switcher control on alternative edges of the container.
- *
- * If the switcherPosition is set to 'none' then no TabSwitcher will be installed.  This latter case
- * is useful for applications that wish to place an associated TabSwitcher elsewhere in the graphical
- * hierarchy (e.g. a shared menu bar), or control the visible Tab directly via other means.
- *
- * @see TabContainerModel
+ * @private
  */
 @HoistComponent
 @LayoutSupport

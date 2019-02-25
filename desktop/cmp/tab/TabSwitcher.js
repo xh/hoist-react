@@ -19,6 +19,7 @@ import {omit} from 'lodash';
  * For 'left' or 'right' orientations this switcher will be rendered in vertical mode.
  *
  * @see TabContainer
+ * @see TabContainerModel
  */
 @HoistComponent
 export class TabSwitcher extends Component {

@@ -10,21 +10,26 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import {tab as onsenTab, tabbar} from '@xh/hoist/kit/onsen';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
-
-import {tab} from './impl/Tab';
+import {throwIf} from '@xh/hoist/utils/js';
+import {tab} from './Tab';
 
 /**
- * Display a set of child Tabs.
+ * Mobile Implementation of TabContainer.
  *
- * This TabContainer will install a row of tabs along the bottom of the page.
- * Note that 'TabContainerModel.switcherPosition' is ignored by this component.
- *
- * @see TabContainerModel
+ * @private
  */
 @HoistComponent
 export class TabContainer extends Component {
 
     static modelClass = TabContainerModel;
+
+    constructor(props) {
+        super(props);
+        throwIf(
+            this.model.switcherPosition != 'bottom',
+            'Mobile TabContainer only supports a bottom tab switcher at this time.'
+        );
+    }
 
     render() {
         const {model} = this,
