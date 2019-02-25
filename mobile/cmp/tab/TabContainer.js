@@ -13,6 +13,14 @@ import {TabContainerModel} from '@xh/hoist/cmp/tab';
 
 import {tab} from './impl/Tab';
 
+/**
+ * Display a set of child Tabs.
+ *
+ * This TabContainer will install a row of tabs along the bottom of the page.
+ * Note that 'TabContainerModel.switcherPosition' is ignored by this component.
+ *
+ * @see TabContainerModel
+ */
 @HoistComponent
 export class TabContainer extends Component {
 

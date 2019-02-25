@@ -19,6 +19,7 @@ export class AppModel {
     @managed
     tabModel = new TabContainerModel({
         route: 'default',
+        switcherPosition: 'none',
         tabs: this.createTabs()
     });
     

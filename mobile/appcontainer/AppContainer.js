@@ -24,9 +24,14 @@ import {lockoutPanel} from './LockoutPanel';
 import {toastSource} from './ToastSource';
 import {messageSource} from './MessageSource';
 
-import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
 import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
-installMobileImpls({});
+
+import {tabContainer} from '@xh/hoist/mobile/cmp/tab';
+import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
+
+installMobileImpls({
+    tabContainer
+});
 
 /**
  * Top-level wrapper for Mobile applications.

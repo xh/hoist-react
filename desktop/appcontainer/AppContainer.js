@@ -26,11 +26,13 @@ import {ToastSource} from './ToastSource';
 
 import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
 
+import {tabContainer} from '@xh/hoist/desktop/cmp/tab';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {colChooser, ColChooserModel} from '@xh/hoist/desktop/cmp/grid';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 
 installDesktopImpls({
+    tabContainer,
     colChooser,
     ColChooserModel,
     StoreContextMenu
