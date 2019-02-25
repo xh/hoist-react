@@ -2,7 +2,13 @@
 
 ## v20.0.0-SNAPSHOT (unreleased / under development)
 
-* TBD
+### 💥 Breaking Changes
+
+* `TabContainer` and `TabContainerModel` are now cross-platform. Apps should update their code
+  to import both from `@xh/hoist/cmp/tab`.
+* `TabContainer.switcherPosition` has been moved to `TabContainerModel`. Please note that changes
+  to `switcherPosition` are not supported on mobile, where the switcher will always appear
+  beneath the container.
 
 ## v19.0.1 - 2019-02-12
 
