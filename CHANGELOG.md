@@ -3,7 +3,16 @@
 ## v20.0.0-SNAPSHOT (unreleased / under development)
 
 ### 💥 Breaking Changes
-* Deleted desktop/cmp/input/Label component.  Should be easy to replace with 'label' in cmp/layout/Tags.js
+* The `Label` component from `@xh/hoist/desktop/cmp/input` has been removed.  Applications should 
+   consider using the basic html `label` element instead. 
+* `TabContainer` and `TabContainerModel` are now cross-platform. Apps should update their code
+  to import both from `@xh/hoist/cmp/tab`.
+* `TabContainer.switcherPosition` has been moved to `TabContainerModel`. Please note that changes
+  to `switcherPosition` are not supported on mobile, where the switcher will always appear
+  beneath the container.
+
+### 🎁 New Features
+*  Tabs in `TabContainerModel` now support an `icon` property on the desktop.  
 
 ## v19.0.1 - 2019-02-12
 
