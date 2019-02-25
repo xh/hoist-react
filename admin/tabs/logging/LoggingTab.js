@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {tabContainer} from '@xh/hoist/desktop/cmp/tab';
+import {tabContainer} from '@xh/hoist/cmp/tab';
 
 import {LogLevelPanel} from './LogLevelPanel';
 import {LogViewer} from './viewer/LogViewer';
@@ -18,12 +18,12 @@ export class LoggingTab extends Component {
         return tabContainer({
             model: {
                 route: 'default.logging',
+                switcherPosition: 'left',
                 tabs: [
                     {id: 'viewer', content: LogViewer},
                     {id: 'levels', content: LogLevelPanel}
                 ]
-            },
-            switcherPosition: 'left'
+            }
         });
     }
 }
