@@ -97,11 +97,6 @@ export class TabContainerModel {
         return find(this.tabs, {id: this.activeTabId});
     }
 
-    get activeTabIndex() {
-        const {activeTab} = this;
-        return activeTab ? this.tabs.indexOf(activeTab) : 0;
-    }
-
     /**
      * Set the currently active Tab.
      *

@@ -28,10 +28,11 @@ export class TabContainer extends Component {
 
     render() {
         const {model} = this,
-            {tabs, activeTabIndex} = model;
+            {activeTab} = model,
+            tabs = model.tabs.filter(it => !it.excludeFromSwitcher);
 
         return tabbar({
-            index: activeTabIndex,
+            index: activeTab ? tabs.indexOf(activeTab) : 0,
             renderTabs: () => tabs.map(tabModel => this.renderTab(tabModel)),
             onPreChange: (e) => model.activateTab(tabs[e.index].id)
         });
