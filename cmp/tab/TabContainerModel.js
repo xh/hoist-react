@@ -58,7 +58,7 @@ export class TabContainerModel {
         tabs,
         defaultTabId = null,
         route = null,
-        switcherPosition = 'top',
+        switcherPosition = XH.isMobile ? 'bottom' : 'top',
         renderMode = TabRenderMode.LAZY,
         refreshMode = TabRefreshMode.ON_SHOW_LAZY
     }) {
