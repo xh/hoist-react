@@ -2,7 +2,8 @@
 
 ## v20.0.0-SNAPSHOT (unreleased / under development)
 
-* TBD
+### 💥 Breaking Changes
+* Deleted desktop/cmp/input/Label component.  Should be easy to replace with 'label' in cmp/layout/Tags.js
 
 ## v19.0.1 - 2019-02-12
 
