@@ -10,6 +10,9 @@
   to `switcherPosition` are not supported on mobile, where the switcher will always appear
   beneath the container.
 
+### 🎁 New Features
+*  Tabs in `TabContainerModel` now support an `icon` property on the desktop.  
+
 ## v19.0.1 - 2019-02-12
 
 ### 🐞 Bug Fixes
