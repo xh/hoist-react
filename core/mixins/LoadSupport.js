@@ -8,6 +8,7 @@ import {XH} from '@xh/hoist/core';
 import {applyMixin} from '@xh/hoist/utils/js';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {allSettled} from '@xh/hoist/promise';
+import {olderThan} from '@xh/hoist/utils/datetime';
 
 /**
  * Mixin to indicate that an object has a load and refresh lifecycle for loading data from backend
@@ -33,7 +34,9 @@ export function LoadSupport(C) {
              *
              * For implementation only.  Callers should call loadAsync() or refreshAsync() instead.
              *
-             * @param {LoadSpec} loadSpec - Metadata about the underlying request
+             * @param {LoadSpec} loadSpec - Metadata about the underlying request. Implementations should
+             *      take care to pass this parameter to any delegates (e.g. other LoadSupport instances)
+             *      that accept it.
              */
             async doLoadAsync(loadSpec) {}
         },
@@ -48,10 +51,18 @@ export function LoadSupport(C) {
              * @param {LoadSpec} [loadSpec] - Metadata about the underlying request
              */
             async loadAsync(loadSpec = {}) {
+
+                if (loadSpec.skipLoadDelta && !olderThan(this.lastLoadCompleted, loadSpec.skipLoadDelta)) {
+                    return;
+                }
+
                 this.lastLoadRequested = new Date();
+                const loadModel = this.loadModel,
+                    omitAutoRefreshLoadModel = !loadSpec.isAutoRefresh ? this.omitAutoRefeshLoadModel : null;
                 return this
                     .doLoadAsync(loadSpec)
-                    .linkTo(this.loadModel)
+                    .linkTo(loadModel)
+                    .linkTo(omitAutoRefreshLoadModel)
                     .finally(() => {
                         this.lastLoadCompleted = new Date();
                     });
@@ -60,34 +71,50 @@ export function LoadSupport(C) {
             /**
              * Refresh this object from underlying data sources or services.
              * NOT for implementation.  Implement doLoadAsync() instead.
+             *
+             * @parm {Object}  config
+             * @param {number} [config.skipLoadDelta] - skip refresh if there was a load within this interval.
              */
-            async refreshAsync() {
-                return this.loadAsync({isRefresh: true, isAutoRefresh: false});
+            async refreshAsync({skipLoadDelta}) {
+                return this.loadAsync({isRefresh: true, isAutoRefresh: false, skipLoadDelta});
             },
 
             /**
              * Auto-refresh this object from underlying data sources or services.
              * NOT for implementation.  Implement doLoadAsync() instead.
+             *
+             * @parm {Object}  config
+             * @param {number} [skipLoadDelta] - skip refresh if there was a recent load within this interval.
              */
-            async autoRefreshAsync() {
-                return this.loadAsync({isRefresh: true, isAutoRefresh: true});
+            async autoRefreshAsync({skipLoadDelta}) {
+                return this.loadAsync({isRefresh: true, isAutoRefresh: true, skipLoadDelta});
             },
 
+
+            /**
+             * PendingTaskModel tracking any loading of this object
+             */
             loadModel: {
                 get() {
                     if (!this._loadModel) this._loadModel = new PendingTaskModel();
                     return this._loadModel;
-                },
+                }
+            },
 
-                set(loadModel) {
-                    this._loadModel = loadModel;
+            /**
+             * PendingTaskModel tracking any loading of this object *excluding* auto-refresh.
+             */
+            omitAutoRefeshLoadModel: {
+                get() {
+                    if (!this._omitAutoRefreshLoadModel) this._omitAutoRefreshLoadModel = new PendingTaskModel();
+                    return this._omitAutoRefreshLoadModel;
                 }
             }
         },
 
         chains: {
             destroy() {
-                XH.safeDestroy(this._loadModel);
+                XH.safeDestroy(this._loadModel, this._omitAutoRefreshLoadModel);
             }
         }
     });
@@ -115,8 +142,10 @@ export async function loadAllAsync(objs, loadSpec) {
 
 /**
  * @typedef {Object} LoadSpec
- * @property {...rest} rest - object specific arguments for data loading
+ * 
  * @property {boolean} [isRefresh] - true if this load was triggered by a refresh request.
  * @property {boolean} [isAutoRefresh] - true if this load was triggered by a programmatic
  *       refresh process, rather than a user action.
+ * @property {number} [skipLoadDelta] - skip load if there was recently a load within this
+ *      number of milliseconds.  Typically used to skip extraneous autoRefreshes.
  */
