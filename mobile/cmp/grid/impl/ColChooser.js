@@ -6,12 +6,15 @@
  */
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {vframe, div} from '@xh/hoist/cmp/layout';
+import {div} from '@xh/hoist/cmp/layout';
 import {dialogPage} from '@xh/hoist/mobile/cmp/page';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {filler} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
+import classNames from 'classnames';
+
+import {dragDropContext, droppable, draggable} from '@xh/hoist/kit/react-beautiful-dnd';
 
 import './ColChooser.scss';
 import {ColChooserModel} from './ColChooserModel';
@@ -24,11 +27,11 @@ import {ColChooserModel} from './ColChooserModel';
  * identified by a checkmark icon to the right of the column name. Users can toggle column
  * visibility within its associated grid by tapping this icon.
  *
+ * User can drag and drop the columns in the list to reorder them in the grid.
+ *
  * It derives its configuration primary from the Grid's Column definitions.
  *
  * It is not necessary to manually create instances of this component within an application.
- *
- * Todo: Implement DnD reordering, see example here: https://codesandbox.io/s/k260nyxq9v
  */
 @HoistComponent
 export class ColChooser extends Component {
@@ -36,7 +39,7 @@ export class ColChooser extends Component {
     static modelClass = ColChooserModel;
 
     render() {
-        const {isOpen, gridModel} = this.model;
+        const {isOpen, data, gridModel} = this.model;
 
         return dialogPage({
             isOpen,
@@ -50,7 +53,13 @@ export class ColChooser extends Component {
                     ]
                 }),
 
-                this.renderColumnList(),
+                dragDropContext({
+                    onDragEnd: this.onDragEnd.bind(this),
+                    item: droppable({
+                        droppableId: 'column-list',
+                        item: (dndProps) => this.renderColumnList(dndProps, data)
+                    })
+                }),
 
                 // Todo: toolbar > panel.bbar once https://github.com/exhi/hoist-react/pull/979 merged
                 toolbar(
@@ -98,45 +107,77 @@ export class ColChooser extends Component {
     //------------------------
     // Implementation
     //------------------------
-    renderColumnList() {
-        const {data} = this.model;
+    renderColumnList(dndProps, data) {
+        const rows = data.map((col, idx) => {
+            return this.renderColumnRow(col, idx);
+        });
 
-        return vframe({
+        return div({
+            ref: dndProps.innerRef,
             className: 'xh-col-chooser',
-            items: data.map(it => this.renderColumnRow(it))
+            items: [
+                ...rows,
+                dndProps.placeholder
+            ]
         });
     }
 
-    renderColumnRow({colId, text, hidden, locked, exclude}) {
+    renderColumnRow(col, idx) {
+        const {colId, text, pinned, hidden, locked, exclude} = col;
         if (exclude) return;
 
-        const getRowIcon = (locked, hidden) => {
+        const getHandleIcon = (pinned) => {
+            if (pinned) return Icon.lock();
+            return Icon.arrowsUpDown();
+        };
+
+        const getButtonIcon = (locked, hidden) => {
             if (locked) return Icon.lock();
             if (hidden) return Icon.cross();
             return Icon.check({className: 'xh-green'});
         };
 
-        return div({
-            className: 'xh-col-chooser-row',
-            items: [
-                div({
-                    className: 'xh-col-chooser-row-grabber',
-                    item: Icon.arrowsUpDown()
-                }),
-                div({
-                    className: 'xh-col-chooser-row-text',
-                    item: text
-                }),
-                button({
-                    icon: getRowIcon(locked, hidden),
-                    disabled: locked,
-                    modifier: 'quiet',
-                    onClick: () => {
-                        this.model.setHidden(colId, !hidden);
-                    }
-                })
-            ]
+        return draggable({
+            key: colId,
+            draggableId: colId,
+            index: idx,
+            isDragDisabled: locked,
+            item: (dndProps, dndState) => {
+                const {isDragging} = dndState;
+
+                return div({
+                    ref: dndProps.innerRef,
+                    className: classNames(
+                        'xh-col-chooser-row',
+                        isDragging ? 'xh-col-chooser-row-dragging' : null
+                    ),
+                    items: [
+                        div({
+                            className: 'xh-col-chooser-row-grabber',
+                            item: getHandleIcon(pinned),
+                            ...dndProps.dragHandleProps
+                        }),
+                        div({
+                            className: 'xh-col-chooser-row-text',
+                            item: text
+                        }),
+                        button({
+                            icon: getButtonIcon(locked, hidden),
+                            disabled: locked,
+                            modifier: 'quiet',
+                            onClick: () => this.model.setHidden(colId, !hidden)
+                        })
+                    ],
+                    ...dndProps.draggableProps
+                });
+            }
         });
+    }
+
+    onDragEnd(result) {
+        const {draggableId, destination} = result;
+        if (!result.destination) return; // dropped outside the list
+        this.model.moveToIndex(draggableId, destination.index);
     }
 
 }

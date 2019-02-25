@@ -1,18 +1,22 @@
 .xh-col-chooser {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   background-color: var(--xh-bg-alt);
+  overflow: hidden;
 
   .xh-col-chooser-row {
     padding: 2px 0;
     display: flex;
     align-items: center;
     border-bottom: var(--xh-border-solid);
-    background-color: var(--xh-grid-bg);
-
-    &:nth-child(odd) {
-      background-color: var(--xh-grid-bg-odd);
-    }
+    background-color: var(--xh-bg);
 
     .xh-col-chooser-row-grabber {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 30px;
       width: 40px;
       text-align: center;
       color: var(--xh-text-color-muted);
@@ -24,6 +28,16 @@
 
     .xh-button {
       width: 50px;
+    }
+
+    &.xh-col-chooser-row-dragging {
+      border: var(--xh-border-solid);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+
+      .xh-col-chooser-row-grabber,
+      .xh-col-chooser-row-text {
+        color: var(--xh-accent-color);
+      }
     }
   }
 }

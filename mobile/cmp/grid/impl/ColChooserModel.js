@@ -54,6 +54,21 @@ export class ColChooserModel {
         this.setData(data);
     }
 
+    moveToIndex(colId, toIdx) {
+        const data = clone(this.data),
+            col = find(data, {colId});
+
+        if (!col || col.locked || col.exclude) return;
+
+        // We don't allow moving to before pinned columns
+        const pinnedCount = data.filter(it => it.pinned).length;
+        if (toIdx < pinnedCount) return;
+
+        const fromIdx = data.indexOf(col);
+        data.splice(toIdx, 0, data.splice(fromIdx, 1)[0]);
+        this.setData(data);
+    }
+
     commit() {
         const colChanges = this.data.map(it => {
             const {colId, hidden} = it;
@@ -66,16 +81,20 @@ export class ColChooserModel {
     // Implementation
     //------------------------
     syncChooserData() {
-        const {gridModel} = this;
+        const {gridModel} = this,
+            cols = gridModel.getLeafColumns();
 
-        const data = gridModel.getLeafColumns().map(it => {
-            const visible = gridModel.isColumnVisible(it.colId);
+        const data = gridModel.columnState.map(({colId}) => {
+            const col = gridModel.findColumn(cols, colId),
+                visible = gridModel.isColumnVisible(colId);
+
             return {
-                colId: it.colId,
-                text: it.chooserName,
+                colId: col.colId,
+                text: col.chooserName,
                 hidden: !visible,
-                exclude: it.excludeFromChooser,
-                locked: visible && !it.hideable
+                exclude: col.excludeFromChooser,
+                locked: visible && !col.hideable,
+                pinned: col.pinned
             };
         });
 

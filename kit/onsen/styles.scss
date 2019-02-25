@@ -177,6 +177,7 @@ body.xh-app .xh-button-group .xh-button {
     align-items: stretch;
     flex-direction: column;
     transform: translateX(0);
+    overflow-x: hidden;
   }
 
   .xh-page-no-scroll .page__content {
