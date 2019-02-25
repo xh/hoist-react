@@ -13,7 +13,7 @@
 ### 💥 Breaking Changes
 
 * Mobile `Page` has changed - `Pages` are now wrappers around `Panels` that are designed to be used
-  with a `NavigationModel` or `TabContainer`. `Pages` accepts the same props as `Panel`, meaning
+  with a `NavigationModel` or `TabContainer`. `Page` accepts the same props as `Panel`, meaning
   uses of `loadModel` should be replaced with `mask`.
   
 * The mobile `AppBar` title is static and defaults to the app name. If you want to display page
