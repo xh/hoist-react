@@ -10,7 +10,6 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon/Icon';
-import {cloneDeep} from 'lodash';
 
 import {RestFormModel} from './impl/RestFormModel';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
@@ -41,13 +40,8 @@ export const cloneAction = {
     text: 'Clone',
     icon: Icon.copy(),
     recordsRequired: 1,
-    transformFn: () => {},
     actionFn: ({record, gridModel}) => {
-        const clone = cloneDeep(record);
-        const sourceRecord = cloneDeep(record);
-        cloneAction.transformFn({sourceRecord, clone});
-        clone.id = null;
-        gridModel.restGridModel.editRecord(clone);
+        gridModel.restGridModel.cloneRecord(record);
     }
 };
 
@@ -84,6 +78,8 @@ export class RestGridModel {
         del: 'Are you sure you want to delete the selected record?'
     };
 
+    prepareCloneFn;
+
     unit = null;
     filterFields = null;
 
@@ -110,6 +106,7 @@ export class RestGridModel {
      * @param {Object[]|RecordAction[]} [menuActions] - actions to display in the grid context menu. Defaults to add, edit, delete.
      * @param {Object[]|RecordAction[]} [formActions] - actions to display in the form toolbar. Defaults to delete.
      * @param {Object} [actionWarning] - map of action (e.g. 'add'/'edit'/'delete') to string.  See default prop.
+     * @param {function} [prepareCloneFn] - a function used by the clone action to prepare a clone of a record.
      * @param {string} [unit] - name that describes records in this grid.
      * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
      * @param {function} [enhanceToolbar] - a function used to mutate RestGridToolbar items
@@ -122,6 +119,7 @@ export class RestGridModel {
         menuActions = !readonly ? [addAction, editAction, deleteAction] : [viewAction],
         formActions = !readonly ? [deleteAction] : [],
         actionWarning,
+        prepareCloneFn,
         unit = 'record',
         filterFields,
         enhanceToolbar,
@@ -135,6 +133,8 @@ export class RestGridModel {
         this.formActions = formActions;
 
         this.actionWarning = Object.assign(this.actionWarning, actionWarning);
+
+        this.prepareCloneFn = prepareCloneFn;
 
         this.unit = unit;
         this.filterFields = filterFields;
@@ -166,6 +166,16 @@ export class RestGridModel {
     @action
     addRecord() {
         this.formModel.openAdd();
+    }
+
+    @action
+    cloneRecord(record) {
+        const clone = record.getData(),
+            {prepareCloneFn} = this;
+
+        if (prepareCloneFn) prepareCloneFn({record, clone});
+
+        this.formModel.openClone(clone);
     }
 
     @action

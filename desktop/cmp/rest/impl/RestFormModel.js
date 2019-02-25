@@ -60,11 +60,10 @@ export class RestFormModel {
         this.initForm(rec);
     }
 
-    // Todo FILL IN!! Pass record-to-be-cloned id
     @action
     openClone(rec)  {
         this.readonly = false;
-        this.initForm(...rec);
+        this.initForm(rec);
     }
 
 

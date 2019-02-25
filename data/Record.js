@@ -6,7 +6,7 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {clone} from 'lodash';
+import {clone, pick} from 'lodash';
 
 /**
  * Core data for Store.
@@ -65,6 +65,14 @@ export class Record {
             }
             this[name] = val;
         });
+    }
+
+    /**
+     * Return an object containing the current values of all fields in this record.
+     * @returns {Object}
+     */
+    getData() {
+        return pick(this, this.fields.map(it => it.name));
     }
 
     /**
