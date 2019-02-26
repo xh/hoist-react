@@ -13,9 +13,8 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {button} from '@xh/hoist/mobile/cmp/button';
 
 /**
- * A convenience button to trigger the display of a ColChooser for user selection and discovery of
- * available Grid columns. For use by applications when a button is desired in addition to the
- * context menu item built into the Grid component directly.
+ * A convenience button to trigger the display of a ColChooser for user selection,
+ * discovery and reordering of available Grid columns.
  *
  * Requires the `GridModel.enableColChooser` config option to be true.
  */
