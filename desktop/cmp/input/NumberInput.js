@@ -76,6 +76,9 @@ export class NumberInput extends HoistInput {
         /** Max decimal precision of the value, defaults to 4. */
         precision: PT.number,
 
+        /** Element to display inline on the right side of the input. */
+        rightElement: PT.element,
+
         /** True to select contents when control receives focus. */
         selectOnFocus: PT.bool,
 
@@ -114,6 +117,7 @@ export class NumberInput extends HoistInput {
             min: props.min,
             minorStepSize: props.minorStepSize,
             placeholder: props.placeholder,
+            rightElement: props.rightElement,
             stepSize: props.stepSize,
             tabIndex: props.tabIndex,
 

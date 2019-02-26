@@ -5,5 +5,5 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-export * from './Page';
-export * from './DialogPage';
+export * from './impl/ColChooser';
+export * from './impl/ColChooserModel';
