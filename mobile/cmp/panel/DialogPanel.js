@@ -11,24 +11,22 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/kit/onsen';
 import {castArray} from 'lodash';
 
-import './DialogPage.scss';
-import {page, Page} from './Page';
+import './DialogPanel.scss';
+import {panel, Panel} from './Panel';
 
 /**
- * Wraps a Page in a fullscreen Dialog.
+ * Wraps a Panel in a fullscreen Dialog.
  *
- * These pages do not participate in navigation or routing, and are used for showing fullscreen
+ * These views do not participate in navigation or routing, and are used for showing fullscreen
  * views outside of the Navigator / TabContainer context.
- *
- * Todo: Replace with DialogPanel once Panel is merged?
  */
 @HoistComponent
-export class DialogPage extends Component {
+export class DialogPanel extends Component {
 
     static propTypes = {
-        ...Page.propTypes,
+        ...Panel.propTypes,
 
-        /** Is the dialog page shown.  */
+        /** Is the dialog panel shown.  */
         isOpen: PT.bool
     };
 
@@ -40,8 +38,8 @@ export class DialogPage extends Component {
         return dialog({
             isOpen: true,
             isCancelable: false,
-            className: 'xh-dialog xh-dialog-page',
-            items: page({
+            className: 'xh-dialog xh-dialog-panel',
+            items: panel({
                 items: castArray(children),
                 ...rest
             })
@@ -49,4 +47,4 @@ export class DialogPage extends Component {
     }
 }
 
-export const dialogPage = elemFactory(DialogPage);
+export const dialogPanel = elemFactory(DialogPanel);

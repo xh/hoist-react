@@ -29,13 +29,13 @@
   tapping a list of available columns. Users can also reorder the columns in the list via a drag and
   drop interface. Pair `GridModel.enableColChooser` with a mobile `colChooserButton` to allow use.
 
-* Added `DialogPage` to the mobile toolkit. These floating pages do not participate in navigation
-  or routing, and are used for showing fullscreen views outside of the Navigator / TabContainer context.
-
 * Add new method `markManaged` on `ManagedSupport`.
 
 * Added `Panel` to the mobile toolkit, which offers a header element with standardized styling,
   title, and icon, as well as support for top and bottom toolbars.
+
+* Added `DialogPanel` to the mobile toolkit. These floating views do not participate in navigation
+  or routing, and are used for showing fullscreen views outside of the Navigator / TabContainer context.
 
 * The mobile `AppBar` has been updated to more closely match the desktop `AppBar`, adding `icon`,
   `leftItems`, `hideAppMenuButton` and `appMenuButtonProps` props.
