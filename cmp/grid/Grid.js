@@ -13,8 +13,10 @@ import {box, fragment} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import './ag-grid';
 import {agGridReact, navigateSelection, ColumnHeader} from './ag-grid';
-import {colChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {GridModel} from './GridModel';
+
+import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
+import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -122,7 +124,7 @@ export class Grid extends Component {
     }
 
     render() {
-        const {colChooserModel, compact, treeMode} = this.model,
+        const {compact, treeMode} = this.model,
             {agOptions, showHover, onKeyDown} = this.props,
             {isMobile} = XH,
             layoutProps = this.getLayoutProps();
@@ -148,8 +150,14 @@ export class Grid extends Component {
                 ),
                 onKeyDown: !isMobile ? onKeyDown : null
             }),
-            colChooserModel ? colChooser({model: colChooserModel}) : null
+            this.renderColChooser()
         );
+    }
+
+    renderColChooser() {
+        const {colChooserModel} = this.model,
+            cmp = XH.isMobile ? mobileColChooser : desktopColChooser;
+        return colChooserModel ? cmp({model: colChooserModel}) : null;
     }
 
     //------------------------

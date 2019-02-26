@@ -27,10 +27,13 @@ import {messageSource} from './MessageSource';
 import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
 
 import {tabContainer} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
+import {colChooser, ColChooserModel} from '@xh/hoist/mobile/cmp/grid';
 import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
 
 installMobileImpls({
-    tabContainer
+    tabContainer,
+    colChooser,
+    ColChooserModel
 });
 
 /**
