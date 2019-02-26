@@ -46,7 +46,8 @@ export class ColChooser extends Component {
      * + Replace the toolbar with page bbar
      */
     render() {
-        const {isOpen, gridModel, pinnedColumns, unpinnedColumns} = this.model;
+        const {model} = this,
+            {isOpen, gridModel, pinnedColumns, unpinnedColumns} = model;
 
         return dialogPage({
             isOpen,
@@ -65,7 +66,7 @@ export class ColChooser extends Component {
 
                     // 2) Render orderable columns in draggable is list
                     dragDropContext({
-                        onDragEnd: this.onDragEnd.bind(this),
+                        onDragEnd: this.onDragEnd,
                         item: droppable({
                             droppableId: 'column-list',
                             item: (dndProps) => this.renderColumnList(unpinnedColumns, {isDraggable: true, ref: dndProps.innerRef})
@@ -78,13 +79,13 @@ export class ColChooser extends Component {
                         icon: Icon.undo(),
                         modifier: 'quiet',
                         omit: !gridModel.stateModel,
-                        onClick: this.restoreDefaults
+                        onClick: () => model.restoreDefaults()
                     }),
                     filler(),
                     button({
                         text: 'Cancel',
                         modifier: 'quiet',
-                        onClick: this.onClose
+                        onClick: () => model.close()
                     }),
                     button({
                         text: 'Save',
@@ -96,23 +97,20 @@ export class ColChooser extends Component {
         });
     }
 
-    onClose = () => {
+    onOK = () => {
+        this.model.commit();
         this.model.close();
     };
 
-    onOK = () => {
-        this.model.commit();
-        this.onClose();
-    };
+    onDragEnd = (result) => {
+        const {pinnedColumns} = this.model,
+            {draggableId, destination} = result;
 
-    restoreDefaults = () => {
-        const {model} = this,
-            {stateModel} = model.gridModel;
+        if (!destination) return; // dropped outside the list
 
-        stateModel.resetStateAsync().then(() => {
-            model.syncChooserData();
-        });
-    };
+        const toIdx = destination.index + pinnedColumns.length; // Account for pinned columns
+        this.model.moveToIndex(draggableId, toIdx);
+    }
 
     //------------------------
     // Implementation
@@ -186,17 +184,6 @@ export class ColChooser extends Component {
             ...rest
         });
     }
-
-    onDragEnd(result) {
-        const {pinnedColumns} = this.model,
-            {draggableId, destination} = result;
-
-        if (!destination) return; // dropped outside the list
-
-        const toIdx = destination.index + pinnedColumns.length; // Account for pinned columns
-        this.model.moveToIndex(draggableId, toIdx);
-    }
-
 }
 
 export const colChooser = elemFactory(ColChooser);

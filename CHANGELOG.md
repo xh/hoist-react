@@ -13,11 +13,13 @@
 
 ### 🎁 New Features
 * Tabs in `TabContainerModel` now support an `icon` property on the desktop.
-* Added column chooser support to mobile `Grids`. This allows users to toggle column visibility by
+* Added column chooser support to mobile Grids. This allows users to toggle column visibility by
   tapping a list of available columns. Users can also reorder the columns in the list via a drag and
   drop interface. Pair `GridModel.enableColChooser` with a mobile `colChooserButton` to allow use.
 * Added `DialogPage` to the mobile toolkit. These floating pages do not participate in navigation
   or routing, and are used for showing fullscreen views outside of the Navigator / TabContainer context.
+* Add new method `markManaged` on `ManagedSupport`.
+
 
 ## v19.0.1 - 2019-02-12
 

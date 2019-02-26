@@ -155,10 +155,9 @@ export class Grid extends Component {
     }
 
     renderColChooser() {
-        const {colChooserModel} = this.model;
-        if (!colChooserModel) return null;
-        if (XH.isMobile) return mobileColChooser({model: colChooserModel});
-        return desktopColChooser({model: colChooserModel});
+        const {colChooserModel} = this.model,
+            cmp = XH.isMobile ? mobileColChooser : desktopColChooser;
+        return colChooserModel ? cmp({model: colChooserModel}) : null;
     }
 
     //------------------------

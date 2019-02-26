@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {observable, computed, action} from '@xh/hoist/mobx';
+import {observable, settable, computed, action} from '@xh/hoist/mobx';
 import {clone, find} from 'lodash';
 
 /**
@@ -19,7 +19,7 @@ export class ColChooserModel {
 
     gridModel = null;
 
-    @observable.ref columns = [];
+    @settable @observable.ref columns = [];
     @observable isOpen = false;
 
     @computed
@@ -39,7 +39,13 @@ export class ColChooserModel {
         this.gridModel = gridModel;
         this.addReaction({
             track: () => XH.routerState,
-            run: () => this.close()
+            run: this.close
+        });
+    }
+
+    restoreDefaults() {
+        this.gridModel.stateModel.resetStateAsync().then(() => {
+            this.syncChooserData();
         });
     }
 
@@ -105,10 +111,5 @@ export class ColChooserModel {
         });
 
         this.setColumns(columns);
-    }
-
-    @action
-    setColumns(columns) {
-        this.columns = columns;
     }
 }

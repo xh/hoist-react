@@ -26,6 +26,8 @@ export class ColChooserButton extends Component {
         model: PT.instanceOf(GridModel).isRequired
     };
 
+    static modelClass = GridModel;
+
     render() {
         const {icon, onClick, model, ...rest} = this.props;
 
@@ -37,7 +39,7 @@ export class ColChooserButton extends Component {
     }
 
     showChooser = () => {
-        this.props.model.showColChooser();
+        this.model.showColChooser();
     }
 
 }
