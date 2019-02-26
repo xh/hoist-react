@@ -40,7 +40,7 @@ export class DialogPage extends Component {
         return dialog({
             isOpen: true,
             isCancelable: false,
-            className: 'xh-dialog-page',
+            className: 'xh-dialog xh-dialog-page',
             items: page({
                 items: castArray(children),
                 ...rest
