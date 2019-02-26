@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {tabContainer} from '@xh/hoist/desktop/cmp/tab';
+import {tabContainer} from '@xh/hoist/cmp/tab';
 
 import {TrackingPanel} from './tracking/TrackingPanel';
 import {ClientErrorPanel} from './clienterrors/ClientErrorPanel';
@@ -19,13 +19,13 @@ export class ActivityTab extends Component {
         return tabContainer({
             model: {
                 route: 'default.activity',
+                switcherPosition: 'left',
                 tabs: [
                     {id: 'tracking', content: TrackingPanel},
                     {id: 'clientErrors', content: ClientErrorPanel},
                     {id: 'feedback', content: FeedbackPanel}
                 ]
-            },
-            switcherPosition: 'left'
+            }
         });
     }
 }

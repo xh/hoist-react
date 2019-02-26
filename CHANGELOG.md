@@ -2,22 +2,34 @@
 
 ## v20.0.0-SNAPSHOT (unreleased / under development)
 
-### New Features
+### 💥 Breaking Changes
+
+* The `Label` component from `@xh/hoist/desktop/cmp/input` has been removed.  Applications should 
+   consider using the basic html `label` element instead.
+   
+* `TabContainer` and `TabContainerModel` are now cross-platform. Apps should update their code
+  to import both from `@xh/hoist/cmp/tab`.
+  
+* `TabContainer.switcherPosition` has been moved to `TabContainerModel`. Please note that changes
+  to `switcherPosition` are not supported on mobile, where the switcher will always appear
+  beneath the container.
+  
+* Mobile `Page` has changed - `Pages` are now wrappers around `Panels` that are designed to be used
+  with a `NavigationModel` or `TabContainer`. `Page` accepts the same props as `Panel`, meaning
+  uses of `loadModel` should be replaced with `mask`.
+
+* The mobile `AppBar` title is static and defaults to the app name. If you want to display page
+  titles, it is recommended to use the `title` prop on the `Page`.
+
+### 🎁 New Features
+
+* Tabs in `TabContainerModel` now support an `icon` property on the desktop.
 
 * Added `Panel` to the mobile toolkit, which offers a header element with standardized styling,
   title, and icon, as well as support for top and bottom toolbars.
 
 * The mobile `AppBar` has been updated to more closely match the desktop `AppBar`, adding `icon`,
   `leftItems`, `hideAppMenuButton` and `appMenuButtonProps` props.
-  
-### 💥 Breaking Changes
-
-* Mobile `Page` has changed - `Pages` are now wrappers around `Panels` that are designed to be used
-  with a `NavigationModel` or `TabContainer`. `Page` accepts the same props as `Panel`, meaning
-  uses of `loadModel` should be replaced with `mask`.
-  
-* The mobile `AppBar` title is static and defaults to the app name. If you want to display page
-  titles, it is recommended to use the `title` prop on the `Page`.
 
 ## v19.0.1 - 2019-02-12
 
