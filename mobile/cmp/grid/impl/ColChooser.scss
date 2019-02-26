@@ -1,0 +1,62 @@
+.xh-col-chooser {
+  .xh-col-chooser-list {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--xh-bg-alt);
+
+    &:last-child {
+      flex: 1;
+    }
+  }
+
+  .xh-col-chooser-row {
+    padding: 2px 0;
+    display: flex;
+    align-items: center;
+    border-bottom: var(--xh-border-solid);
+    background-color: var(--xh-bg);
+
+    .xh-col-chooser-row-grabber {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 30px;
+      width: 40px;
+      text-align: center;
+      color: var(--xh-text-color-muted);
+    }
+
+    .xh-col-chooser-row-text {
+      flex: 1;
+    }
+
+    .xh-button {
+      width: 50px;
+    }
+
+    &.xh-col-chooser-row-dragging {
+      border: var(--xh-border-solid);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+
+      .xh-col-chooser-row-grabber,
+      .xh-col-chooser-row-text {
+        color: var(--xh-accent-color);
+      }
+    }
+  }
+}
+
+// Todo: Temporary - remove and use Panel title
+.xh-col-chooser-title {
+  display: flex;
+  align-items: center;
+  padding: var(--xh-title-pad-px);
+  color: var(--xh-title-text-color);
+  border-bottom: var(--xh-border-solid);
+  background-color: var(--xh-title-bg);
+  font-size: 14px;
+
+  & > .svg-inline--fa {
+    margin-right: var(--xh-pad-px);
+  }
+}
