@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {div} from '@xh/hoist/cmp/layout';
+import {vframe, div} from '@xh/hoist/cmp/layout';
 import {dialogPage} from '@xh/hoist/mobile/cmp/page';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import {button} from '@xh/hoist/mobile/cmp/button';
@@ -38,13 +38,20 @@ export class ColChooser extends Component {
 
     static modelClass = ColChooserModel;
 
+    /**
+     * Todo: Refactor this render method once https://github.com/exhi/hoist-react/pull/979 merged:
+     *
+     * + Replace the 'xh-col-chooser-title' div with page title & icon
+     * + Remove the vframe wrapper around the contents
+     * + Replace the toolbar with page bbar
+     */
     render() {
-        const {isOpen, data, gridModel} = this.model;
+        const {isOpen, gridModel, pinnedColumns, unpinnedColumns} = this.model;
 
         return dialogPage({
             isOpen,
+            className: 'xh-col-chooser',
             items: [
-                // Todo: Remove this once https://github.com/exhi/hoist-react/pull/979 merged
                 div({
                     className: 'xh-col-chooser-title',
                     items: [
@@ -52,16 +59,19 @@ export class ColChooser extends Component {
                         'Choose Columns'
                     ]
                 }),
+                vframe(
+                    // 1) Render pinned columns in a static list
+                    this.renderColumnList(pinnedColumns),
 
-                dragDropContext({
-                    onDragEnd: this.onDragEnd.bind(this),
-                    item: droppable({
-                        droppableId: 'column-list',
-                        item: (dndProps) => this.renderColumnList(dndProps, data)
+                    // 2) Render orderable columns in draggable is list
+                    dragDropContext({
+                        onDragEnd: this.onDragEnd.bind(this),
+                        item: droppable({
+                            droppableId: 'column-list',
+                            item: (dndProps) => this.renderColumnList(unpinnedColumns, {isDraggable: true, ref: dndProps.innerRef})
+                        })
                     })
-                }),
-
-                // Todo: toolbar > panel.bbar once https://github.com/exhi/hoist-react/pull/979 merged
+                ),
                 toolbar(
                     button({
                         text: 'Reset',
@@ -107,29 +117,44 @@ export class ColChooser extends Component {
     //------------------------
     // Implementation
     //------------------------
-    renderColumnList(dndProps, data) {
-        const rows = data.map((col, idx) => {
-            return this.renderColumnRow(col, idx);
-        });
+    renderColumnList(columns, props = {}) {
+        const {isDraggable, ...rest} = props;
 
         return div({
-            ref: dndProps.innerRef,
-            className: 'xh-col-chooser',
-            items: [
-                ...rows,
-                dndProps.placeholder
-            ]
+            className: 'xh-col-chooser-list',
+            items: columns.map((col, idx) => {
+                return isDraggable ? this.renderDraggableRow(col, idx) : this.renderRow(col);
+            }),
+            ...rest
         });
     }
 
-    renderColumnRow(col, idx) {
-        const {colId, text, pinned, hidden, locked, exclude} = col;
+    renderDraggableRow(col, idx) {
+        const {colId, exclude} = col;
+
         if (exclude) return;
 
-        const getHandleIcon = (pinned) => {
-            if (pinned) return Icon.lock();
-            return Icon.arrowsUpDown();
-        };
+        return draggable({
+            key: colId,
+            draggableId: colId,
+            index: idx,
+            item: (dndProps, dndState) => {
+                return this.renderRow(col, {
+                    isDraggable: true,
+                    isDragging: dndState.isDragging,
+                    ref: dndProps.innerRef,
+                    ...dndProps.dragHandleProps,
+                    ...dndProps.draggableProps
+                });
+            }
+        });
+    }
+
+    renderRow(col, props = {}) {
+        const {colId, text, hidden, locked, exclude} = col,
+            {isDraggable, isDragging, ...rest} = props;
+
+        if (exclude) return;
 
         const getButtonIcon = (locked, hidden) => {
             if (locked) return Icon.lock();
@@ -137,47 +162,39 @@ export class ColChooser extends Component {
             return Icon.check({className: 'xh-green'});
         };
 
-        return draggable({
-            key: colId,
-            draggableId: colId,
-            index: idx,
-            isDragDisabled: locked,
-            item: (dndProps, dndState) => {
-                const {isDragging} = dndState;
-
-                return div({
-                    ref: dndProps.innerRef,
-                    className: classNames(
-                        'xh-col-chooser-row',
-                        isDragging ? 'xh-col-chooser-row-dragging' : null
-                    ),
-                    items: [
-                        div({
-                            className: 'xh-col-chooser-row-grabber',
-                            item: getHandleIcon(pinned),
-                            ...dndProps.dragHandleProps
-                        }),
-                        div({
-                            className: 'xh-col-chooser-row-text',
-                            item: text
-                        }),
-                        button({
-                            icon: getButtonIcon(locked, hidden),
-                            disabled: locked,
-                            modifier: 'quiet',
-                            onClick: () => this.model.setHidden(colId, !hidden)
-                        })
-                    ],
-                    ...dndProps.draggableProps
-                });
-            }
+        return div({
+            className: classNames(
+                'xh-col-chooser-row',
+                isDragging ? 'xh-col-chooser-row-dragging' : null
+            ),
+            items: [
+                div({
+                    className: 'xh-col-chooser-row-grabber',
+                    item: isDraggable ? Icon.arrowsUpDown() : Icon.lock()
+                }),
+                div({
+                    className: 'xh-col-chooser-row-text',
+                    item: text
+                }),
+                button({
+                    icon: getButtonIcon(locked, hidden),
+                    disabled: locked,
+                    modifier: 'quiet',
+                    onClick: () => this.model.setHidden(colId, !hidden)
+                })
+            ],
+            ...rest
         });
     }
 
     onDragEnd(result) {
-        const {draggableId, destination} = result;
-        if (!result.destination) return; // dropped outside the list
-        this.model.moveToIndex(draggableId, destination.index);
+        const {pinnedColumns} = this.model,
+            {draggableId, destination} = result;
+
+        if (!destination) return; // dropped outside the list
+
+        const toIdx = destination.index + pinnedColumns.length; // Account for pinned columns
+        this.model.moveToIndex(draggableId, toIdx);
     }
 
 }

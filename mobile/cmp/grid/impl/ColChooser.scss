@@ -1,9 +1,13 @@
 .xh-col-chooser {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  background-color: var(--xh-bg-alt);
-  overflow: hidden;
+  .xh-col-chooser-list {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--xh-bg-alt);
+
+    &:last-child {
+      flex: 1;
+    }
+  }
 
   .xh-col-chooser-row {
     padding: 2px 0;

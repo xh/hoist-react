@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {observable, computed, action} from '@xh/hoist/mobx';
 import {clone, find} from 'lodash';
 
 /**
@@ -19,8 +19,18 @@ export class ColChooserModel {
 
     gridModel = null;
 
-    @observable.ref data = [];
+    @observable.ref columns = [];
     @observable isOpen = false;
+
+    @computed
+    get pinnedColumns() {
+        return this.columns.filter(it => it.pinned);
+    }
+
+    @computed
+    get unpinnedColumns() {
+        return this.columns.filter(it => !it.pinned);
+    }
 
     /**
      * @param {GridModel} gridModel - model for the grid to be managed.
@@ -45,32 +55,28 @@ export class ColChooserModel {
     }
 
     setHidden(colId, hidden) {
-        const data = clone(this.data),
-            col = find(data, {colId});
+        const columns = clone(this.columns),
+            col = find(columns, {colId});
 
         if (!col || col.locked || col.exclude) return;
 
         col.hidden = hidden;
-        this.setData(data);
+        this.setColumns(columns);
     }
 
     moveToIndex(colId, toIdx) {
-        const data = clone(this.data),
-            col = find(data, {colId});
+        const columns = clone(this.columns),
+            col = find(columns, {colId});
 
         if (!col || col.locked || col.exclude) return;
 
-        // We don't allow moving to before pinned columns
-        const pinnedCount = data.filter(it => it.pinned).length;
-        if (toIdx < pinnedCount) return;
-
-        const fromIdx = data.indexOf(col);
-        data.splice(toIdx, 0, data.splice(fromIdx, 1)[0]);
-        this.setData(data);
+        const fromIdx = columns.indexOf(col);
+        columns.splice(toIdx, 0, columns.splice(fromIdx, 1)[0]);
+        this.setColumns(columns);
     }
 
     commit() {
-        const colChanges = this.data.map(it => {
+        const colChanges = this.columns.map(it => {
             const {colId, hidden} = it;
             return {colId, hidden};
         });
@@ -84,7 +90,7 @@ export class ColChooserModel {
         const {gridModel} = this,
             cols = gridModel.getLeafColumns();
 
-        const data = gridModel.columnState.map(({colId}) => {
+        const columns = gridModel.columnState.map(({colId}) => {
             const col = gridModel.findColumn(cols, colId),
                 visible = gridModel.isColumnVisible(colId);
 
@@ -98,11 +104,11 @@ export class ColChooserModel {
             };
         });
 
-        this.setData(data);
+        this.setColumns(columns);
     }
 
     @action
-    setData(data) {
-        this.data = data;
+    setColumns(columns) {
+        this.columns = columns;
     }
 }
