@@ -3,6 +3,10 @@
 ## v20.0.0-SNAPSHOT (unreleased / under development)
 
 ### 💥 Breaking Changes
+* The `@LoadSupport` decorator has been substantially reworked and enhanced from its initial release in v19.  It is no 
+    longer needed on the HoistComponent, but rather should be put directly on the owned HoistModel implementing the 
+    loading. IMPORTANT NOTE: all models should implement `doLoadAsync` rather than `loadAsync`.  
+    Please see `LoadSupport` for more information on this important change.       
 * The `Label` component from `@xh/hoist/desktop/cmp/input` has been removed.  Applications should 
    consider using the basic html `label` element instead. 
 * `TabContainer` and `TabContainerModel` are now cross-platform. Apps should update their code
