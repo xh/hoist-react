@@ -11,6 +11,8 @@ import {input} from '@xh/hoist/kit/onsen';
 import {withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/input';
 
+import './TextInput.scss';
+
 /**
  * A Text Input
  */

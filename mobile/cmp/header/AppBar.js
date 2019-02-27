@@ -7,10 +7,12 @@
 
 import {Component} from 'react';
 import PT from 'prop-types';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
-import {toolbar} from '@xh/hoist/kit/onsen';
+import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import {navigatorBackButton, menuButton, refreshButton} from '@xh/hoist/mobile/cmp/button';
+
+import './AppBar.scss';
 
 /**
  * A standard application navigation bar which displays the current page title and a standard set of
@@ -24,23 +26,35 @@ import {navigatorBackButton, menuButton, refreshButton} from '@xh/hoist/mobile/c
 export class AppBar extends Component {
 
     static propTypes = {
-        /** NavigatorModel. Bound to back button and title. */
+        /** Icon to display as the app menu icon, displayed to the left of the title. */
+        icon: PT.element,
+
+        /** Title to display to the center the AppBar. Defaults to XH.clientAppName. */
+        title: PT.string,
+
+        /** Items to be added to the left side of the AppBar, before the title buttons. */
+        leftItems: PT.node,
+
+        /** Items to be added to the right side of the AppBar, before the refresh button. */
+        rightItems: PT.node,
+
+        /** NavigatorModel. Bound to back button. */
         navigatorModel: PT.object,
 
         /** AppMenuModel. Used to populate main menu. */
         appMenuModel: PT.object,
 
-        /** Title to display to the center the AppBar. Defaults to the current page title if not provided. */
-        title: PT.string,
-
-        /** Items to be added to the right side of the AppBar, before the refresh buttons. */
-        rightItems: PT.node,
+        /** True to hide the AppMenuButton. */
+        hideAppMenuButton: PT.bool,
 
         /** Set to true to hide the Back button. */
         hideBackButton: PT.bool,
 
         /** Set to true to hide the Refresh button. */
         hideRefreshButton: PT.bool,
+
+        /** Allows overriding the default properties of the App Menu button. @see MenuButton */
+        appMenuButtonProps: PT.object,
 
         /** Allows overriding the default properties of the Back button. @see NavigatorBackButton */
         backButtonProps: PT.object,
@@ -49,32 +63,50 @@ export class AppBar extends Component {
         refreshButtonProps: PT.object
     };
 
+    baseClassName = 'xh-appbar';
+
     render() {
-        const {navigatorModel, appMenuModel, title, rightItems, hideBackButton, hideRefreshButton, backButtonProps, refreshButtonProps = {}} = this.props;
+        const {
+            icon,
+            title,
+            leftItems,
+            rightItems,
+            navigatorModel,
+            appMenuModel,
+            hideAppMenuButton,
+            hideBackButton,
+            hideRefreshButton,
+            appMenuButtonProps = {},
+            backButtonProps = {},
+            refreshButtonProps = {}
+        } = this.props;
 
         return toolbar({
-            className: 'xh-appbar',
+            className: this.getClassName(),
             items: [
                 div({
-                    className: 'left',
+                    className: 'xh-appbar-left',
                     items: [
                         navigatorBackButton({
-                            omit: hideBackButton,
+                            omit: hideBackButton || !navigatorModel,
                             model: navigatorModel,
                             ...backButtonProps
                         }),
                         menuButton({
-                            omit: !appMenuModel,
-                            model: appMenuModel
-                        })
+                            icon: icon,
+                            omit: hideAppMenuButton || !appMenuModel,
+                            model: appMenuModel,
+                            ...appMenuButtonProps
+                        }),
+                        ...leftItems || []
                     ]
                 }),
                 div({
-                    className: 'center',
-                    item: title || navigatorModel.title
+                    className: 'xh-appbar-title',
+                    item: title || XH.clientAppName
                 }),
                 div({
-                    className: 'right',
+                    className: 'xh-appbar-right',
                     items: [
                         ...rightItems || [],
                         refreshButton({

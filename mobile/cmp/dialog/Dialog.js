@@ -17,9 +17,10 @@ import './Dialog.scss';
 @HoistComponent
 export class Dialog extends Component {
 
+    baseClassName = 'xh-dialog';
+
     render() {
-        const {isOpen, onCancel, icon, title, content, className, buttons = []} = this.props,
-            baseClassName = 'xh-dialog';
+        const {isOpen, onCancel, icon, title, content, buttons = []} = this.props;
 
         if (!isOpen) return null;
 
@@ -27,18 +28,18 @@ export class Dialog extends Component {
             isOpen: true,
             isCancelable: true,
             onCancel: onCancel,
-            className: className ? `${baseClassName} ${className}` : baseClassName,
+            className: this.getClassName(),
             items: [
                 div({
-                    className: `${baseClassName}__title`,
+                    className: 'xh-dialog__title',
                     items: [icon, title]
                 }),
                 div({
-                    className: `${baseClassName}__inner`,
+                    className: 'xh-dialog__inner',
                     item: content
                 }),
                 div({
-                    className: `${baseClassName}__toolbar`,
+                    className: 'xh-dialog__toolbar',
                     omit: !buttons.length,
                     items: [
                         ...buttons

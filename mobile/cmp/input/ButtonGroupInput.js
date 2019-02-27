@@ -12,6 +12,8 @@ import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {castArray} from 'lodash';
 
+import './ButtonGroupInput.scss';
+
 /**
  * A segmented group of buttons, one of which is depressed to indicate the input's current value.
  *

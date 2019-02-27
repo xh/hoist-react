@@ -6,8 +6,8 @@
  */
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {vframe, div} from '@xh/hoist/cmp/layout';
-import {dialogPage} from '@xh/hoist/mobile/cmp/page';
+import {div} from '@xh/hoist/cmp/layout';
+import {dialogPanel} from '@xh/hoist/mobile/cmp/panel';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {filler} from '@xh/hoist/cmp/layout';
@@ -38,62 +38,49 @@ export class ColChooser extends Component {
 
     static modelClass = ColChooserModel;
 
-    /**
-     * Todo: Refactor this render method once https://github.com/exhi/hoist-react/pull/979 merged:
-     *
-     * + Replace the 'xh-col-chooser-title' div with page title & icon
-     * + Remove the vframe wrapper around the contents
-     * + Replace the toolbar with page bbar
-     */
     render() {
         const {model} = this,
             {isOpen, gridModel, pinnedColumns, unpinnedColumns} = model;
 
-        return dialogPage({
+        return dialogPanel({
             isOpen,
+            title: 'Choose Columns',
+            icon: Icon.gridPanel(),
             className: 'xh-col-chooser',
+            scrollable: true,
             items: [
-                div({
-                    className: 'xh-col-chooser-title',
-                    items: [
-                        Icon.gridPanel(),
-                        'Choose Columns'
-                    ]
-                }),
-                vframe(
-                    // 1) Render pinned columns in a static list
-                    this.renderColumnList(pinnedColumns),
+                // 1) Render pinned columns in a static list
+                this.renderColumnList(pinnedColumns),
 
-                    // 2) Render orderable columns in draggable is list
-                    dragDropContext({
-                        onDragEnd: this.onDragEnd,
-                        item: droppable({
-                            droppableId: 'column-list',
-                            item: (dndProps) => this.renderColumnList(unpinnedColumns, {isDraggable: true, ref: dndProps.innerRef})
-                        })
+                // 2) Render orderable columns in draggable is list
+                dragDropContext({
+                    onDragEnd: this.onDragEnd,
+                    item: droppable({
+                        droppableId: 'column-list',
+                        item: (dndProps) => this.renderColumnList(unpinnedColumns, {isDraggable: true, ref: dndProps.innerRef})
                     })
-                ),
-                toolbar(
-                    button({
-                        text: 'Reset',
-                        icon: Icon.undo(),
-                        modifier: 'quiet',
-                        omit: !gridModel.stateModel,
-                        onClick: () => model.restoreDefaults()
-                    }),
-                    filler(),
-                    button({
-                        text: 'Cancel',
-                        modifier: 'quiet',
-                        onClick: () => model.close()
-                    }),
-                    button({
-                        text: 'Save',
-                        icon: Icon.check(),
-                        onClick: this.onOK
-                    })
-                )
-            ]
+                })
+            ],
+            bbar: toolbar(
+                button({
+                    text: 'Reset',
+                    icon: Icon.undo(),
+                    modifier: 'quiet',
+                    omit: !gridModel.stateModel,
+                    onClick: () => model.restoreDefaults()
+                }),
+                filler(),
+                button({
+                    text: 'Cancel',
+                    modifier: 'quiet',
+                    onClick: () => model.close()
+                }),
+                button({
+                    text: 'Save',
+                    icon: Icon.check(),
+                    onClick: this.onOK
+                })
+            )
         });
     }
 
