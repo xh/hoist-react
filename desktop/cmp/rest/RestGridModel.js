@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
@@ -51,6 +51,7 @@ export const deleteAction = {
  * Core Model for a RestGrid.
  */
 @HoistModel
+@LoadSupport
 export class RestGridModel {
 
     //----------------
@@ -136,8 +137,8 @@ export class RestGridModel {
     }
 
     /** Load the underlying store. */
-    loadAsync(...args) {
-        return this.store.loadAsync(...args).linkTo(this.loadModel);
+    doLoadAsync(loadSpec) {
+        return this.store.loadAsync(loadSpec);
     }
 
     /** Load the underlying store. */

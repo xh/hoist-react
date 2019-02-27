@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {isObject} from 'lodash';
+import {isObject, debounce} from 'lodash';
 
 /**
  * Log an error if a parameterized decorator is applied without being called first.
@@ -26,4 +26,30 @@ export function ensureParameterizedDecoratorPreCalled(decoratorName, ...params) 
             `Ensure it is called as @${decoratorName}(), even if you are not providing it with any arguments.`
         );
     }
+}
+
+
+/**
+ * Decorates a class method so that it is debounced by the specified duration.
+ * Based on https://github.com/bvaughn/debounce-decorator.
+ *
+ *  @param {name} duration - milliseconds to debounce.
+ */
+export function debounced(duration) {
+    return function(target, key, descriptor) {
+        return {
+            configurable: true,
+            enumerable: descriptor.enumerable,
+            get: function() {
+                // Attach this function to the instance (not the class)
+                Object.defineProperty(this, key, {
+                    configurable: true,
+                    enumerable: descriptor.enumerable,
+                    value: debounce(descriptor.value, duration)
+                });
+
+                return this[key];
+            }
+        };
+    };
 }

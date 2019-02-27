@@ -30,10 +30,7 @@ export class BaseStore {
     getField(name) {
         return this.fields.find(it => it.name === name);
     }
-
-    /** Current loading state. */
-    get loadModel() {}
-
+    
     /** Current records. These represent the post-filtered records. */
     get records() {}
 

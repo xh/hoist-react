@@ -3,6 +3,10 @@
 ## v20.0.0-SNAPSHOT (unreleased / under development)
 
 ### 💥 Breaking Changes
+* The `@LoadSupport` decorator has been substantially reworked and enhanced from its initial release in v19.  It is no 
+    longer needed on the HoistComponent, but rather should be put directly on the owned HoistModel implementing the 
+    loading. IMPORTANT NOTE: all models should implement `doLoadAsync` rather than `loadAsync`.  
+    Please see `LoadSupport` for more information on this important change.       
 * The `Label` component from `@xh/hoist/desktop/cmp/input` has been removed.  Applications should 
    consider using the basic html `label` element instead. 
 * `TabContainer` and `TabContainerModel` are now cross-platform. Apps should update their code
@@ -18,8 +22,9 @@
   drop interface. Pair `GridModel.enableColChooser` with a mobile `colChooserButton` to allow use.
 * Added `DialogPage` to the mobile toolkit. These floating pages do not participate in navigation
   or routing, and are used for showing fullscreen views outside of the Navigator / TabContainer context.
-* Add new method `markManaged` on `ManagedSupport`.
-
+* Added new method `markManaged` on `ManagedSupport`.
+* Added new function decorator `debounced`.
+* Added new function `applyMixin` providing support for structured creation of class decorators (mixins). 
 
 ## v19.0.1 - 2019-02-12
 

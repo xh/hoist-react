@@ -9,6 +9,7 @@ import {isPlainObject, defaults, isString, omit} from 'lodash';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {throwIf} from '@xh/hoist/utils/js';
 
 /**
  * DataViewModel is a wrapper around GridModel, which shows sorted data in a single column,
@@ -103,8 +104,9 @@ export class DataViewModel {
     }
 
     /** Load the underlying store. */
-    loadAsync(...args) {
-        return this.store.loadAsync(...args);
+    doLoadAsync(loadSpec) {
+        throwIf(!this.store.isLoadSupport, 'Underlying store does not define support for loading.');
+        return this.store.loadAsync(loadSpec);
     }
 
     /** Load the underlying store. */

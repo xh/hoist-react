@@ -5,14 +5,14 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {HoistComponent, LoadSupport} from '@xh/hoist/core';
+import {HoistComponent} from '@xh/hoist/core';
 import {filler, hframe} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {grid} from '@xh/hoist/cmp/grid';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {storeFilterField} from '@xh/hoist/desktop/cmp/store';
 
-import {logViewerDisplay} from './LogViewerDisplay';
+import {logDisplay} from './LogDisplay';
 import {LogViewerModel} from './LogViewerModel';
 import {logViewerToolbar} from './LogViewerToolbar';
 import './LogViewer.scss';
@@ -21,14 +21,13 @@ import './LogViewer.scss';
  * @private
  */
 @HoistComponent
-@LoadSupport
 export class LogViewer extends Component {
 
-    model = new LogViewerModel();
+    model = new LogViewerModel(this);
 
     render() {
         const {model} = this,
-            {filesGridModel, loadModel} = model;
+            {filesGridModel, logDisplayModel, loadModel} = model;
 
         return hframe({
             className: 'xh-log-viewer',
@@ -47,7 +46,7 @@ export class LogViewer extends Component {
                 }),
                 panel({
                     tbar: logViewerToolbar({model}),
-                    item: logViewerDisplay({model}),
+                    item: logDisplay({model: logDisplayModel}),
                     mask: loadModel
                 })
             ]

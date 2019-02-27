@@ -6,7 +6,7 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {chainMethods, defaultMethods, markClass} from '@xh/hoist/utils/js';
+import {applyMixin} from '@xh/hoist/utils/js';
 
 /**
  * Mixin to support "managed" instances and propeties
@@ -19,33 +19,32 @@ import {chainMethods, defaultMethods, markClass} from '@xh/hoist/utils/js';
  * See @managed.
  */
 export function ManagedSupport(C) {
-    markClass(C, 'hasManagedSupport');
+    return applyMixin(C, {
+        name: 'ManagedSupport',
 
-    defaultMethods(C, {
-        /**
-         * Mark an object for destruction when this object is destroyed.
-         * @param {object} obj - object to be destroyed
-         * @returns object passed.
-         */
-        markManaged(obj) {
-            this._xhManagedInstances = this._xhManagedInstances || [];
-            this._xhManagedInstances.push(obj);
-            return obj;
+        defaults: {
+            /**
+             * Mark an object for destruction when this object is destroyed.
+             * @param {object} obj - object to be destroyed
+             * @returns object passed.
+             */
+            markManaged(obj) {
+                this._xhManagedInstances = this._xhManagedInstances || [];
+                this._xhManagedInstances.push(obj);
+                return obj;
+            }
+        },
+
+        chains: {
+            destroy() {
+                const props = this._xhManagedProperties;
+                if (props) props.forEach(p => XH.safeDestroy(this[p]));
+
+                const instances = this._xhManagedInstances;
+                if (instances) instances.forEach(o => XH.safeDestroy(o));
+            }
         }
     });
-
-
-    chainMethods(C, {
-        destroy() {
-            const props = this._xhManagedProperties;
-            if (props) props.forEach(p => XH.safeDestroy(this[p]));
-
-            const instances = this._xhManagedInstances;
-            if (instances) instances.forEach(o => XH.safeDestroy(o));
-        }
-    });
-
-    return C;
 }
 
 /**

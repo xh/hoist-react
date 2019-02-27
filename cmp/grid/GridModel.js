@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel, XH, LoadSupport} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {
@@ -44,6 +44,7 @@ import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobil
  *
  */
 @HoistModel
+@LoadSupport
 export class GridModel {
 
     //------------------------
@@ -315,8 +316,9 @@ export class GridModel {
     }
 
     /** Load the underlying store. */
-    loadAsync(...args) {
-        return this.store.loadAsync(...args);
+    async doLoadAsync(loadSpec) {
+        throwIf(!this.store.isLoadSupport, 'Underlying store does not define support for loading.');
+        return this.store.loadAsync(loadSpec);
     }
 
     /** Load the underlying store. */
