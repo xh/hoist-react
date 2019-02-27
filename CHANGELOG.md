@@ -19,6 +19,8 @@
   uses of `loadModel` should be replaced with `mask`.
 * The mobile `AppBar` title is static and defaults to the app name. If you want to display page
   titles, it is recommended to use the `title` prop on the `Page`.
+* The `LeftRightChooserModel` constructor no longer accepts a `leftSortBy` and `rightSortBy` property.  
+   The implementation of these properties was generally broken.  Use `leftSorted` and `rightSorted` instead.    
 
 ### 🎁 New Features
 * Tabs in `TabContainerModel` now support an `icon` property on the desktop.
