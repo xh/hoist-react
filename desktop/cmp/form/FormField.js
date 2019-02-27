@@ -14,7 +14,7 @@ import {FormContext} from '@xh/hoist/cmp/form';
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {box, div, span, label as labelEl} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
-import {fmtDate, fmtNumber} from '@xh/hoist/format';
+import {fmtDateTime, fmtNumber} from '@xh/hoist/format';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 
 import './FormField.scss';
@@ -279,7 +279,7 @@ export class FormField extends Component {
     }
 
     defaultReadonlyRenderer(value) {
-        if (isDate(value)) return fmtDate(value);
+        if (isDate(value)) return fmtDateTime(value);
         if (isFinite(value)) return fmtNumber(value);
         if (isBoolean(value)) return value.toString();
         return span(value);
