@@ -1,0 +1,16 @@
+.xh-tab {
+  .xh-tab-icon {
+    height: 28px;
+    line-height: 26px;
+    font-size: 24px;
+  }
+
+  .xh-tab-label:first-child {
+    font-size: 16px;
+  }
+
+  .xh-tab-icon + .xh-tab-label {
+    font-size: 10px;
+    line-height: 1;
+  }
+}

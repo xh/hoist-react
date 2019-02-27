@@ -13,6 +13,8 @@ import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {throwIf} from '@xh/hoist/utils/js';
 import {tab} from './Tab';
 
+import './Tabs.scss';
+
 /**
  * Mobile Implementation of TabContainer.
  *

@@ -10,6 +10,8 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {switchControl} from '@xh/hoist/kit/onsen';
 import {HoistInput} from '@xh/hoist/cmp/input';
 
+import './SwitchInput.scss';
+
 /**
  * Switch (toggle) control for non-nullable boolean values.
  */

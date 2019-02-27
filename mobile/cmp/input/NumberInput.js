@@ -12,6 +12,7 @@ import {fmtNumber} from '@xh/hoist/format';
 import {withDefault} from '@xh/hoist/utils/js';
 import {wait} from '@xh/hoist/promise';
 
+import './NumberInput.scss';
 import {HoistInput} from '@xh/hoist/cmp/input';
 
 /**

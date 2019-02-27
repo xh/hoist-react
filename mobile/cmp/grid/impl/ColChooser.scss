@@ -2,11 +2,7 @@
   .xh-col-chooser-list {
     display: flex;
     flex-direction: column;
-    background-color: var(--xh-bg-alt);
-
-    &:last-child {
-      flex: 1;
-    }
+    flex: none;
   }
 
   .xh-col-chooser-row {
@@ -43,20 +39,5 @@
         color: var(--xh-accent-color);
       }
     }
-  }
-}
-
-// Todo: Temporary - remove and use Panel title
-.xh-col-chooser-title {
-  display: flex;
-  align-items: center;
-  padding: var(--xh-title-pad-px);
-  color: var(--xh-title-text-color);
-  border-bottom: var(--xh-border-solid);
-  background-color: var(--xh-title-bg);
-  font-size: 14px;
-
-  & > .svg-inline--fa {
-    margin-right: var(--xh-pad-px);
   }
 }

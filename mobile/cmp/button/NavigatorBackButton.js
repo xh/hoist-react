@@ -8,16 +8,17 @@
 import {Component} from 'react';
 import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {toolbarButton} from '@xh/hoist/kit/onsen';
+import {button} from '@xh/hoist/mobile/cmp/button';
 
 @HoistComponent
 export class NavigatorBackButton extends Component {
 
     render() {
         if (this.model.pages.length < 2) return null;
-        return toolbarButton({
-            item: Icon.chevronLeft(),
-            onClick: () => XH.popRoute()
+        return button({
+            icon: Icon.chevronLeft(),
+            onClick: () => XH.popRoute(),
+            ...this.props
         });
     }
 

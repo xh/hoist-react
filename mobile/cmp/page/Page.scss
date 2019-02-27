@@ -1,0 +1,12 @@
+.xh-page {
+  .page__content {
+    display: flex;
+    align-items: stretch;
+    flex-direction: column;
+    transform: translateX(0);
+  }
+
+  .xh-page-no-scroll .page__content {
+    overflow: hidden;
+  }
+}

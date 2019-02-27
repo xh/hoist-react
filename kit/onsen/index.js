@@ -15,15 +15,11 @@ ons.disableAutoStyling();
 
 import {elemFactory} from '@xh/hoist/core';
 import {
-    BackButton,
     BottomToolbar,
     Button,
-    Card,
     Checkbox,
     Dialog,
     Input,
-    List,
-    ListHeader,
     ListItem,
     Navigator,
     Page,
@@ -34,20 +30,15 @@ import {
     Tab,
     Tabbar,
     Toast,
-    Toolbar,
-    ToolbarButton
+    Toolbar
 } from 'react-onsenui';
 
 export {
-    BackButton,
     BottomToolbar,
     Button,
-    Card,
     Checkbox,
     Dialog,
     Input,
-    List,
-    ListHeader,
     ListItem,
     Navigator,
     Page,
@@ -58,21 +49,16 @@ export {
     Tab,
     Tabbar,
     Toast,
-    Toolbar,
-    ToolbarButton
+    Toolbar
 };
 
 
 export const
-    backButton = elemFactory(BackButton),
     bottomToolbar = elemFactory(BottomToolbar),
     button = elemFactory(Button),
-    card = elemFactory(Card),
     checkbox = elemFactory(Checkbox),
     dialog = elemFactory(Dialog),
     input = elemFactory(Input),
-    list = elemFactory(List),
-    listHeader = elemFactory(ListHeader),
     listItem = elemFactory(ListItem),
     navigator = elemFactory(Navigator),
     page = elemFactory(Page),
@@ -83,5 +69,4 @@ export const
     tab = elemFactory(Tab),
     tabbar = elemFactory(Tabbar),
     toast = elemFactory(Toast),
-    toolbar = elemFactory(Toolbar),
-    toolbarButton = elemFactory(ToolbarButton);
+    toolbar = elemFactory(Toolbar);

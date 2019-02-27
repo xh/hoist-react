@@ -5,4 +5,5 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-export * from './Page';
+export * from './Panel';
+export * from './DialogPanel';

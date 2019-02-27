@@ -1,0 +1,37 @@
+.xh-panel {
+  background-color: var(--xh-panel-bg);
+
+  &.xh-panel-scrollable > .xh-vframe {
+    overflow-y: auto !important;
+  }
+
+  .xh-panel-header {
+    align-items: center;
+    padding: var(--xh-title-pad-px);
+    color: var(--xh-title-text-color);
+    background-color: var(--xh-title-bg);
+    border-bottom: var(--xh-border-solid);
+    flex: none;
+    user-select: none;
+
+    .xh-panel-header-title {
+      flex: 1;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      font-size: var(--xh-title-font-size-px);
+      line-height: var(--xh-title-font-size-px);
+    }
+
+    // Header glyph.
+    & > .svg-inline--fa {
+      margin: 0 5px 0 0;
+    }
+
+    // Header "tool" buttons.
+    .button--quiet,
+    .button--quiet:active {
+      color: var(--xh-title-text-color) !important;
+    }
+  }
+}
