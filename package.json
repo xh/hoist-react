@@ -28,6 +28,7 @@
     "downloadjs": "~1.4.7",
     "filesize": "~4.1.1",
     "highcharts": "~7.0.3",
+    "lodash": "~4.7.11",
     "lodash-inflection": "~1.5.0",
     "mobx": "~5.9.0",
     "mobx-react": "~5.4.3",
