@@ -37,9 +37,9 @@ export class RestStore extends UrlStore {
         return RestField;
     }
 
-    async doLoadAsync(refreshSpec) {
+    async doLoadAsync(loadSpec) {
         await this.ensureLookupsLoadedAsync();
-        return super.doLoadAsync(refreshSpec);
+        return super.doLoadAsync(loadSpec);
     }
 
     async deleteRecordAsync(rec) {

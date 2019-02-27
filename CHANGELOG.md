@@ -22,8 +22,9 @@
   drop interface. Pair `GridModel.enableColChooser` with a mobile `colChooserButton` to allow use.
 * Added `DialogPage` to the mobile toolkit. These floating pages do not participate in navigation
   or routing, and are used for showing fullscreen views outside of the Navigator / TabContainer context.
-* Add new method `markManaged` on `ManagedSupport`.
-
+* Added new method `markManaged` on `ManagedSupport`.
+* Added new function decorator `debounced`.
+* Added new function `applyMixin` providing support for structured creation of class decorators (mixins). 
 
 ## v19.0.1 - 2019-02-12
 

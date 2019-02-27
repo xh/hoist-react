@@ -137,8 +137,8 @@ export class RestGridModel {
     }
 
     /** Load the underlying store. */
-    doLoadAsync(refreshSpec) {
-        return this.store.loadAsync(refreshSpec);
+    doLoadAsync(loadSpec) {
+        return this.store.loadAsync(loadSpec);
     }
 
     /** Load the underlying store. */
