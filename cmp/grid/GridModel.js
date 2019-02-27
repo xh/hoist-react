@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel, XH, LoadSupport} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {
@@ -27,7 +27,8 @@ import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';
 
-import {StoreContextMenu, ColChooserModel} from '@xh/hoist/dynamics/desktop';
+import {ColChooserModel as DesktopColChooserModel, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
+import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -43,6 +44,7 @@ import {StoreContextMenu, ColChooserModel} from '@xh/hoist/dynamics/desktop';
  *
  */
 @HoistModel
+@LoadSupport
 export class GridModel {
 
     //------------------------
@@ -160,17 +162,13 @@ export class GridModel {
 
         this.setColumns(columns);
 
-        if (enableColChooser && !XH.isMobile) {
-            this.colChooserModel = new ColChooserModel(this);
-        }
-
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
         this.setCompact(compact);
 
-        selModel = withDefault(selModel, XH.isMobile ? 'disabled' : 'single');
-        this.selModel = this.initSelModel(selModel, store);
-        this.stateModel = this.initStateModel(stateModel);
+        this.colChooserModel = enableColChooser ? this.createChooserModel() : null;
+        this.selModel = this.parseSelModel(selModel);
+        this.stateModel = this.parseStateModel(stateModel);
     }
 
     /**
@@ -318,8 +316,9 @@ export class GridModel {
     }
 
     /** Load the underlying store. */
-    loadAsync(...args) {
-        return this.store.loadAsync(...args);
+    async doLoadAsync(loadSpec) {
+        throwIf(!this.store.isLoadSupport, 'Underlying store does not define support for loading.');
+        return this.store.loadAsync(loadSpec);
     }
 
     /** Load the underlying store. */
@@ -545,15 +544,16 @@ export class GridModel {
         }
     }
 
-    initSelModel(selModel, store) {
+    parseSelModel(selModel) {
+        selModel = withDefault(selModel, XH.isMobile ? 'disabled' : 'single');
+
         if (selModel instanceof StoreSelectionModel) {
             return selModel;
         }
 
         if (isPlainObject(selModel)) {
-            return new StoreSelectionModel(defaults(selModel, {store}));
+            return this.markManaged(new StoreSelectionModel(defaults(selModel, {store: this.store})));
         }
-
         // Assume its just the mode...
         let mode = 'single';
         if (isString(selModel)) {
@@ -561,24 +561,26 @@ export class GridModel {
         } else if (selModel === null) {
             mode = 'disabled';
         }
-
-        return new StoreSelectionModel({mode, store});
+        return this.markManaged(new StoreSelectionModel({mode, store: this.store}));
     }
 
-    initStateModel(stateModel) {
+    parseStateModel(stateModel) {
         let ret = null;
         if (isPlainObject(stateModel)) {
             ret = new GridStateModel(stateModel);
         } else if (isString(stateModel)) {
             ret = new GridStateModel({gridId: stateModel});
         }
-        if (ret) ret.init(this);
-
+        if (ret) {
+            ret.init(this);
+            this.markManaged(ret);
+        }
         return ret;
     }
 
-    destroy() {
-        XH.safeDestroy(this.colChooserModel, this.stateModel);
+    createChooserModel() {
+        const Model = XH.isMobile ? MobileColChooserModel : DesktopColChooserModel;
+        return this.markManaged(new Model(this));
     }
 }
 

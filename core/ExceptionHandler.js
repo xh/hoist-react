@@ -127,7 +127,8 @@ export class ExceptionHandler {
 
     parseOptions(exception, options) {
         const ret = Object.assign({}, options),
-            isAutoRefresh = exception.fetchOptions && exception.fetchOptions.isAutoRefresh;
+            {fetchOptions} = exception,
+            isAutoRefresh = fetchOptions && fetchOptions.loadSpec && fetchOptions.loadSpec.isAutoRefresh;
 
         ret.requireReload = !!ret.requireReload;
 

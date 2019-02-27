@@ -7,7 +7,8 @@
 
 import {Component} from 'react';
 import {observable, runInAction} from '@xh/hoist/mobx';
-import {HoistComponent, elemFactory, elem, AppState, refreshContextView, XH} from '@xh/hoist/core';
+import {HoistComponent, elemFactory, elem, AppState, XH} from '@xh/hoist/core';
+import {refreshContextView} from '@xh/hoist/core/refresh';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 

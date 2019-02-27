@@ -17,6 +17,8 @@
  * are actually provided.
  */
 export let tabContainer = null;
+export let ColChooserModel = null;
+export let colChooser = null;
 
 /**
  * Provide implementations of functions and classes exported in this file.
@@ -25,4 +27,6 @@ export let tabContainer = null;
  */
 export function installMobileImpls(impls) {
     tabContainer = impls.tabContainer;
+    ColChooserModel = impls.ColChooserModel;
+    colChooser = impls.colChooser;
 }

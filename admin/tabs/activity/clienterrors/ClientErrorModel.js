@@ -5,16 +5,16 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import moment from 'moment';
-import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
 import {action, observable, comparer} from '@xh/hoist/mobx';
 import {LocalStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {fmtDate, fmtSpan} from '@xh/hoist/format';
 import {boolCheckCol, compactDateCol} from '@xh/hoist/cmp/grid';
 import {usernameCol} from '@xh/hoist/admin/columns';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 @HoistModel
+@LoadSupport
 export class ClientErrorModel {
 
     @observable startDate = moment().subtract(7, 'days').toDate();
@@ -23,10 +23,7 @@ export class ClientErrorModel {
     @observable error = '';
 
     @observable detailRecord = null;
-
-    @managed
-    loadModel = new PendingTaskModel();
-
+    
     @managed
     gridModel = new GridModel({
         stateModel: 'xhClientErrorGrid',
@@ -60,15 +57,14 @@ export class ClientErrorModel {
         });
     }
 
-    async loadAsync() {
+    async doLoadAsync(loadSpec) {
         return XH.fetchJson({
             url: 'clientErrorAdmin',
-            params: this.getParams()
+            params: this.getParams(),
+            loadSpec
         }).then(data => {
             this.gridModel.loadData(data);
-        }).linkTo(
-            this.loadModel
-        ).catchDefault();
+        }).catchDefault();
     }
 
     adjustDates(dir, toToday = false) {

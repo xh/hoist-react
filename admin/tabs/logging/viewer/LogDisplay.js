@@ -7,50 +7,35 @@
 import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {Ref} from '@xh/hoist/utils/react';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {frame, table, tbody, td, tr} from '@xh/hoist/cmp/layout';
 import {clipboardMenuItem} from '@xh/hoist/desktop/cmp/clipboard';
 import {ContextMenuSupport} from '@xh/hoist/desktop/cmp/contextmenu';
-import {SECONDS} from '@xh/hoist/utils/datetime';
-import {Timer} from '@xh/hoist/utils/async';
 
 /**
  * @private
  */
 @HoistComponent
 @ContextMenuSupport
-export class LogViewerDisplay extends Component {
-
-    firstRow = new Ref();
-    lastRow = new Ref();
-    timer = null;
-
-    constructor(props) {
-        super(props);
-        this.addAutorun(this.syncTail);
-        this.timer = Timer.create({
-            runFn: () => this.timedRefreshLines(),
-            delay: 5 * SECONDS,
-            interval: 5 * SECONDS
-        });
-    }
+export class LogDisplay extends Component {
 
     render() {
-        const {rows} = this.model;
-        return frame({
-            className: 'xh-log-display',
-            overflow: 'scroll',
-            item: table(
-                tbody(...this.getTableRows(rows))
-            )
+        const {rows, loadModel} = this.model;
+        return panel({
+            mask: loadModel,
+            item: frame({
+                className: 'xh-log-display',
+                overflow: 'scroll',
+                items: table(tbody(...this.renderTableRows(rows)))
+            })
         });
     }
 
-    getTableRows(rows) {
+    renderTableRows(rows) {
         return rows.map((row, idx) => {
             return tr({
                 className: 'xh-log-display__row',
-                ref: this.getRowRef(idx, rows.length),
+                ref: this.model.getRowRef(idx, rows.length),
                 items: [
                     td({key: `row-number-${idx}`, datakey: idx, className: 'xh-log-display__row-number', item: row[0].toString()}),
                     td({key: `row-content-${idx}`, datakey: idx, className: 'xh-log-display__row-content', item: row[1]})
@@ -59,22 +44,8 @@ export class LogViewerDisplay extends Component {
         });
     }
 
-    timedRefreshLines() {
-        const {model} = this;
-
-        if (model.tail && this.isDisplayed) {
-            const {lastRow} = this,
-                rect = lastRow.value && lastRow.value.getBoundingClientRect(),
-                inView = rect && rect.bottom <= window.innerHeight;
-
-            if (inView) {
-                model.fetchFileAsync({isAutoRefresh: true});
-            }
-        }
-    }
-
     getContextMenuItems(e) {
-        const rows = this.model.rows,
+        const {rows} = this.model,
             currentRow = e.target.getAttribute('datakey');
 
         return [
@@ -92,22 +63,5 @@ export class LogViewerDisplay extends Component {
             })
         ];
     }
-
-    getRowRef(idx, total) {
-        if (idx === total - 1) {
-            return this.lastRow.ref;
-        } else if (idx === 0) {
-            return this.firstRow.ref;
-        }
-
-        return undefined;
-    }
-
-    syncTail() {
-        const {tail} = this.model,
-            rowElem = this[tail ? 'lastRow' : 'firstRow'].value;
-
-        if (rowElem) rowElem.scrollIntoView();
-    }
 }
-export const logViewerDisplay = elemFactory(LogViewerDisplay);
+export const logDisplay = elemFactory(LogDisplay);

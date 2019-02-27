@@ -6,3 +6,4 @@
  */
 
 export * from './Page';
+export * from './DialogPage';

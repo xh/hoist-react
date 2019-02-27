@@ -7,7 +7,8 @@
 
 import {Component} from 'react';
 import {observable, runInAction} from '@xh/hoist/mobx';
-import {HoistComponent, elem, elemFactory, refreshContextView, AppState, XH} from '@xh/hoist/core';
+import {HoistComponent, elem, elemFactory, AppState, XH} from '@xh/hoist/core';
+import {refreshContextView} from '@xh/hoist/core/refresh';
 import {div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {menu} from '@xh/hoist/mobile/cmp/menu';
@@ -27,10 +28,13 @@ import {messageSource} from './MessageSource';
 import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
 
 import {tabContainer} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
+import {colChooser, ColChooserModel} from '@xh/hoist/mobile/cmp/grid';
 import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
 
 installMobileImpls({
-    tabContainer
+    tabContainer,
+    colChooser,
+    ColChooserModel
 });
 
 /**

@@ -5,18 +5,14 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {UrlStore} from '@xh/hoist/data';
 import {emptyFlexCol, numberCol} from '@xh/hoist/cmp/grid';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
-
 
 @HoistModel
+@LoadSupport
 export class EhCacheModel {
-
-    @managed
-    loadModel = new PendingTaskModel();
 
     @managed
     gridModel = new GridModel({
@@ -47,8 +43,8 @@ export class EhCacheModel {
         }).catchDefault();
     }
     
-    async loadAsync() {
-        return this.gridModel.loadAsync().linkTo(this.loadModel);
+    async doLoadAsync(loadSpec) {
+        return this.gridModel.loadAsync(loadSpec);
     }
 }
 
