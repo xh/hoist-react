@@ -104,6 +104,7 @@ export class RestFormModel {
         this.isAdd = !rec || !rec.id;
         this.isOpen = true;
         const fields = this.editors.map(editor => this.fieldModelConfig(editor));
+        XH.safeDestroy(this.formModel);
         const formModel = this.formModel = new FormModel({
             fields,
             initialValues: rec,
