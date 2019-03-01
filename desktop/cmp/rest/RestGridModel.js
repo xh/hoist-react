@@ -79,7 +79,7 @@ export class RestGridModel {
         del: 'Are you sure you want to delete the selected record?'
     };
 
-    prepareCloneFn;
+    prepareCloneCb;
 
     unit = null;
     filterFields = null;
@@ -107,20 +107,26 @@ export class RestGridModel {
      * @param {Object[]|RecordAction[]} [menuActions] - actions to display in the grid context menu. Defaults to add, edit, delete.
      * @param {Object[]|RecordAction[]} [formActions] - actions to display in the form toolbar. Defaults to delete.
      * @param {Object} [actionWarning] - map of action (e.g. 'add'/'edit'/'delete') to string.  See default prop.
-     * @param {function} [prepareCloneFn] - a function used by the clone action to prepare a clone of a record.
      * @param {string} [unit] - name that describes records in this grid.
      * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
      * @param {function} [enhanceToolbar] - a function used to mutate RestGridToolbar items
      * @param {RestGridEditor[]} editors - specifications for fields to be displayed in editor form.
      * @param {*} ...rest - arguments for GridModel.
      */
+
+    /**
+     * @callback prepareCloneCb
+     * @param {record} original record
+     * @param {clone} record to be cloned
+     */
+
     constructor({
         readonly = false,
         toolbarActions = !readonly ? [addAction, editAction, deleteAction] : [viewAction],
         menuActions = !readonly ? [addAction, editAction, deleteAction] : [viewAction],
         formActions = !readonly ? [deleteAction] : [],
         actionWarning,
-        prepareCloneFn,
+        prepareCloneCb,
         unit = 'record',
         filterFields,
         enhanceToolbar,
@@ -135,7 +141,7 @@ export class RestGridModel {
 
         this.actionWarning = Object.assign(this.actionWarning, actionWarning);
 
-        this.prepareCloneFn = prepareCloneFn;
+        this.prepareCloneCb = prepareCloneCb;
 
         this.unit = unit;
         this.filterFields = filterFields;
@@ -173,8 +179,8 @@ export class RestGridModel {
     cloneRecord(record) {
         const editableFields = filter(record.fields, 'editable').map(it => it.name),
             clone = pickBy(record, (v, k) => editableFields.includes(k));
-        const {prepareCloneFn} = this;
-        if (prepareCloneFn) prepareCloneFn({record, clone});
+        const {prepareCloneCb} = this;
+        if (prepareCloneCb) prepareCloneCb({record, clone});
         this.formModel.openClone(clone);
     }
 
