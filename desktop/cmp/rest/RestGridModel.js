@@ -10,6 +10,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon/Icon';
+import {pickBy, filter} from 'lodash';
 
 import {RestFormModel} from './impl/RestFormModel';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
@@ -170,11 +171,10 @@ export class RestGridModel {
 
     @action
     cloneRecord(record) {
-        const clone = record.getData(),
-            {prepareCloneFn} = this;
-
+        const editableFields = filter(record.fields, 'editable').map(it => it.name),
+            clone = pickBy(record, (v, k) => editableFields.includes(k));
+        const {prepareCloneFn} = this;
         if (prepareCloneFn) prepareCloneFn({record, clone});
-
         this.formModel.openClone(clone);
     }
 
