@@ -7,78 +7,74 @@
 
 import {pull} from 'lodash';
 import {wait} from '@xh/hoist/promise';
-import {provideMethods, chainMethods, markClass} from '@xh/hoist/utils/js';
+import {applyMixin} from '@xh/hoist/utils/js';
 
 /**
  * Provide support for adding and removing listeners and firing events on itself.
  */
 export function EventSupport(C) {
-    
-    markClass(C, 'hasEventSupport');
-    provideMethods(C, {
+    return applyMixin(C, {
+        name: 'EventSupport',
 
-        /**
-         * Map of current listeners on this target, by listener name.
-         * @param {string} eventName - name of event.
-         * @return Array
-         */
-        getListeners(eventName) {
-            const all = this._listeners = (this._listeners || {});
-            let ret = all[eventName];
-            if (!ret) {
-                ret = all[eventName] = [];
+        provides: {
+            /**
+             * Map of current listeners on this target, by listener name.
+             * @param {string} eventName - name of event.
+             * @return Array
+             */
+            getListeners(eventName) {
+                const all = this._listeners = (this._listeners || {});
+                let ret = all[eventName];
+                if (!ret) {
+                    ret = all[eventName] = [];
+                }
+                return ret;
+            },
+
+            /**
+             * Add a listener.
+             * @param {string} eventName
+             * @param {function} fn
+             * @return {{eventName: string, fn: function}} - object representing the new listener.
+             */
+            addListener(eventName, fn) {
+                const listeners = this.getListeners(eventName),
+                    ret = {eventName, fn};
+
+                listeners.push(ret);
+                return ret;
+            },
+
+            /**
+             * Remove a listener.
+             * @param {Object} listener - listener object returned by addListener().
+             */
+            removeListener(listener) {
+                const listeners = this.getListeners(listener.eventName);
+                if (listeners) {
+                    pull(listeners, listener);
+                }
+            },
+
+            /**
+             * Fire an event.
+             * @param {string} eventName - event to be fired.
+             * @param {Object} ev - object representing data to be passed to the event handlers.
+             */
+            fireEvent(eventName, ev = {}) {
+                const listeners = this.getListeners(eventName);
+                if (!listeners) return;
+
+                wait(1)
+                    .then(() => listeners.forEach(it => it.fn(ev, this)))
+                    .catchDefault({showAlert: false});
             }
-            return ret;
         },
 
-        /**
-         * Add a listener.
-         * @param {string} eventName
-         * @param {function} fn
-         * @return {{eventName: string, fn: function}} - object representing the listener which was added.
-         */
-        addListener(eventName, fn) {
-            const listeners = this.getListeners(eventName),
-                ret = {eventName, fn};
-
-            listeners.push(ret);
-            return ret;
-        },
-
-        /**
-         * Remove a listener.
-         * @param {Object} listener - listener object returned by addListener().
-         */
-        removeListener(listener) {
-            const listeners = this.getListeners(listener.eventName);
-            if (listeners) {
-                pull(listeners, listener);
+        chains: {
+            destroy() {
+                this._listeners = null;
             }
-        },
-
-        /**
-         * Fire an event.
-         * @param {string} eventName - event to be fired.
-         * @param {Object} ev - object representing data to be passed to the event handlers.
-         */
-        fireEvent(eventName, ev = {}) {
-            const listeners = this.getListeners(eventName);
-            if (!listeners) return;
-
-            wait(1)
-                .then(() => listeners.forEach(it => it.fn(ev, this)))
-                .catchDefault({showAlert: false});
         }
     });
-
-    chainMethods(C, {
-        /**
-         * Destroy this object, cleaning up all listeners.
-         */
-        destroy() {
-            this._listeners = null;
-        }
-    });
-
-    return C;
 }

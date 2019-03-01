@@ -76,6 +76,9 @@
   padding-left: var(--xh-pad-px);
 }
 
+.bp3-tab > svg:first-child {
+  margin-right: var(--xh-pad-half-px);
+}
 
 //------------------------
 // Dialog + Masking
@@ -101,14 +104,28 @@
       margin-right: var(--xh-pad-px);
     }
   }
+
+  .bp3-dialog-body {
+    word-break: break-word;
+  }
 }
 
 .bp3-dialog-container {
   background-color: var(--xh-mask-bg);
 }
 
+
+//------------------------
+// Menus
+//------------------------
 .bp3-dark .bp3-menu, .bp3-menu {
   background-color: var(--xh-bg-alt);
+}
+
+// Default of flex-start leaves Hoist icons shifted up - could target
+// more specifically if this is a problem in any other contexts.
+.bp3-menu-item {
+  align-items: center;
 }
 
 
@@ -172,6 +189,10 @@
   }
   &.bp3-intent-warning {
     background-color: var(--xh-intent-warning);
+  }
+
+  .bp3-toast-message {
+    word-break: break-word;
   }
 }
 

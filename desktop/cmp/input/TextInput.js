@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {div} from '@xh/hoist/cmp/layout';
 import {HoistInput} from '@xh/hoist/cmp/input';
@@ -18,6 +18,7 @@ import {withDefault} from '@xh/hoist/utils/js';
  * A single-line text input with additional support for embedded icons/elements.
  */
 @HoistComponent
+@LayoutSupport
 export class TextInput extends HoistInput {
 
     static propTypes = {
@@ -33,7 +34,7 @@ export class TextInput extends HoistInput {
          *
          *  See https://developer.mozilla.org/en-US/docs/Web/Security/Securing_your_site/Turning_off_form_autocompletion
          */
-        autoComplete: PT.oneOf(['on', 'off', 'new-password', 'nope']),
+        autoComplete: PT.oneOf(['on', 'new-password', 'nope']),
 
         /** True to focus the control on render. */
         autoFocus: PT.bool,
@@ -69,10 +70,7 @@ export class TextInput extends HoistInput {
         spellCheck: PT.bool,
 
         /** Underlying HTML <input> element type. */
-        type: PT.oneOf(['text', 'password']),
-
-        /** Width of the control in pixels. */
-        width: PT.number
+        type: PT.oneOf(['text', 'password'])
     };
 
     baseClassName = 'xh-text-input';
@@ -82,18 +80,21 @@ export class TextInput extends HoistInput {
     }
 
     render() {
-        const {props} = this;
+        const props = this.getNonLayoutProps(),
+            {width, flex, ...layoutProps} = this.getLayoutProps();
+
+        const isClearable = (this.internalValue !== null);
 
         return div({
             item: inputGroup({
                 value: this.renderValue || '',
 
-                autoComplete: withDefault(props.autoComplete, props.type == 'password' ? 'new-password' : 'off'),
+                autoComplete: withDefault(props.autoComplete, props.type == 'password' ? 'new-password' : 'nope'),
                 autoFocus: props.autoFocus,
                 disabled: props.disabled,
                 leftIcon: props.leftIcon,
                 placeholder: props.placeholder,
-                rightElement: props.rightElement || (props.enableClear ? this.renderClearIcon() : null),
+                rightElement: props.rightElement || (props.enableClear && isClearable ? this.renderClearButton() : null),
                 round: withDefault(props.round, false),
                 spellCheck: withDefault(props.spellCheck, false),
                 tabIndex: props.tabIndex,
@@ -102,21 +103,26 @@ export class TextInput extends HoistInput {
                 id: props.id,
                 className: this.getClassName(),
                 style: {
-                    textAlign: withDefault(props.textAlign, 'left'),
-                    width: props.width,
-                    ...props.style
+                    ...props.style,
+                    ...layoutProps,
+                    textAlign: withDefault(props.textAlign, 'left')
                 },
 
                 onChange: this.onChange,
                 onKeyPress: this.onKeyPress
             }),
 
+            style: {
+                width: withDefault(width, 200),
+                flex: withDefault(flex, null)
+            },
+
             onBlur: this.onBlur,
             onFocus: this.onFocus
         });
     }
 
-    renderClearIcon() {
+    renderClearButton() {
         return button({
             icon: Icon.cross(),
             minimal: true,

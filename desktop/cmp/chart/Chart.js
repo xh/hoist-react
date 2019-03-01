@@ -5,25 +5,28 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {castArray, clone, merge} from 'lodash';
+import PT from 'prop-types';
+import {assign, castArray, clone, merge} from 'lodash';
 import Highcharts from 'highcharts/highstock';
 import highchartsExporting from 'highcharts/modules/exporting';
 import highchartsOfflineExporting from 'highcharts/modules/offline-exporting';
 import highchartsExportData from 'highcharts/modules/export-data';
 
-import {XH, elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
-import {div, box} from '@xh/hoist/cmp/layout';
-import {Ref} from '@xh/hoist/utils/react';
+import { XH, elemFactory, HoistComponent, LayoutSupport } from '@xh/hoist/core';
+import { div, box } from '@xh/hoist/cmp/layout';
+import { Ref } from '@xh/hoist/utils/react';
+import { resizeSensor } from '@xh/hoist/kit/blueprint';
 
 import {LightTheme} from './theme/Light';
 import {DarkTheme} from './theme/Dark';
 
 import {ChartModel} from './ChartModel';
+import {installZoomoutGesture} from './impl/zoomout';
 
 highchartsExporting(Highcharts);
 highchartsOfflineExporting(Highcharts);
 highchartsExportData(Highcharts);
-
+installZoomoutGesture(Highcharts);
 
 /**
  * Wrapper Component for a Highcharts chart. Provides basic rendering / lifecycle management
@@ -34,6 +37,18 @@ highchartsExportData(Highcharts);
 @LayoutSupport
 export class Chart extends Component {
 
+    static propTypes = {
+        /**
+         * Ratio of width-to-height of displayed chart.  If defined and greater than 0, the chart will
+         * respect this ratio within the available space.  Otherwise, the chart will stretch on both
+         * dimensions to take up all available space.
+         */
+        aspectRatio: PT.number,
+
+        /** Primary component model instance. */
+        model: PT.oneOfType([PT.instanceOf(ChartModel), PT.object]).isRequired
+    };
+    
     static modelClass = ChartModel;
 
     baseClassName = 'xh-chart';
@@ -44,6 +59,7 @@ export class Chart extends Component {
     render() {
         // Default flex = 1 (flex: 1 1 0) if no dimensions / flex specified, i.e. do not consult child for dimensions;
         const layoutProps = this.getLayoutProps();
+
         if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
             layoutProps.flex = 1;
         }
@@ -51,39 +67,84 @@ export class Chart extends Component {
         this.renderHighChart();
 
         // Inner div required to be the ref for the chart element
-        return box({
-            ...layoutProps,
-            className: this.getClassName(),
-            item: div({
-                style: {flex: 'auto'},
-                ref: this._chartElem.ref
+        return resizeSensor({
+            onResize: (e) => this.resizeChart(e),
+            item: box({
+                ...layoutProps,
+                className: this.getClassName(),
+                item: div({
+                    style: {margin: 'auto'},
+                    ref: this._chartElem.ref
+                })
             })
         });
     }
 
-
     //-------------------
     // Implementation
     //-------------------
-    componentWillUnmount() {
-        this.destroyHighChart();
-    }
-
     renderHighChart() {
         this.destroyHighChart();
         const chartElem = this._chartElem.value;
         if (chartElem) {
-            const config = this.getMergedConfig();
+            const config = this.getMergedConfig(),
+                parentEl = chartElem.parentElement;
+
+            assign(config.chart, this.getChartDims({
+                width: parentEl.offsetWidth,
+                height: parentEl.offsetHeight
+            }));
+
             config.chart.renderTo = chartElem;
             this._chart = Highcharts.chart(config);
         }
     }
 
-    destroyHighChart() {
-        if (this._chart) {
-            this._chart.destroy();
-        }
+    resizeChart(e) {
+        const {width, height} = this.getChartDims(e[0].contentRect);
+        this._chart.setSize(width, height, false);
     }
+
+    getChartDims({width, height}) {
+        const {aspectRatio} = this.props;
+
+        if (!aspectRatio || aspectRatio <= 0) return {width, height};
+
+        return this.applyAspectRatio(width, height, aspectRatio);
+    }
+
+    applyAspectRatio(width, height, aspectRatio) {
+        const adjWidth = height * aspectRatio,
+            adjHeight = width / aspectRatio;
+
+        if (aspectRatio >= 1) {
+            // landscape
+            if (width >= height && adjWidth <= width) {
+                width = adjWidth;
+            } else {
+                height = adjHeight;
+            }
+        } else {
+            // portrait
+            if (height >= width && adjHeight <= height) {
+                height = adjHeight;
+            } else {
+                width = adjWidth;
+            }
+        }
+
+        return {width, height};
+    }
+
+    destroy() {
+        this.destroyHighChart();
+    }
+    
+    destroyHighChart() {
+        XH.safeDestroy(this._chart);
+        this._chart = null;
+    }
+
     //----------------------
     // Highcharts Config
     //----------------------

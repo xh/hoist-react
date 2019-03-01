@@ -6,27 +6,23 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {tabContainer, TabContainerModel} from '@xh/hoist/desktop/cmp/tab';
+import {tabContainer} from '@xh/hoist/cmp/tab';
 
 import {MonitorResultsPanel} from './MonitorResultsPanel';
 import {MonitorEditorPanel} from './MonitorEditorPanel';
 
 @HoistComponent
 export class MonitorTab extends Component {
-
-    model = new TabContainerModel({
-        route: 'default.monitor',
-        tabs: [
-            {id: 'status', content: MonitorResultsPanel},
-            {id: 'editMonitors', content: MonitorEditorPanel}
-        ]
-    });
-
-    async loadAsync() {
-        this.model.requestRefresh();
-    }
-    
     render() {
-        return tabContainer({model: this.model, switcherPosition: 'left'});
+        return tabContainer({
+            model: {
+                route: 'default.monitor',
+                switcherPosition: 'left',
+                tabs: [
+                    {id: 'status', content: MonitorResultsPanel},
+                    {id: 'editMonitors', content: MonitorEditorPanel}
+                ]
+            }
+        });
     }
 }

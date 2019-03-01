@@ -6,18 +6,20 @@
  */
 
 import PT from 'prop-types';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {HoistComponent, LayoutSupport, elemFactory} from '@xh/hoist/core';
 import {input} from '@xh/hoist/kit/onsen';
 import {fmtNumber} from '@xh/hoist/format';
 import {withDefault} from '@xh/hoist/utils/js';
 import {wait} from '@xh/hoist/promise';
 
+import './NumberInput.scss';
 import {HoistInput} from '@xh/hoist/cmp/input';
 
 /**
  * Number Input, with optional support for formatted of display value,
  */
 @HoistComponent
+@LayoutSupport
 export class NumberInput extends HoistInput {
 
     static propTypes = {
@@ -71,7 +73,9 @@ export class NumberInput extends HoistInput {
     }
 
     render() {
-        const {props, hasFocus, renderValue} = this,
+        const props = this.getNonLayoutProps(),
+            {width, ...layoutProps} = this.getLayoutProps(),
+            {hasFocus, renderValue} = this,
             displayValue = hasFocus ? this.displayValue(renderValue) : this.formatValue(renderValue);
 
         return input({
@@ -88,8 +92,9 @@ export class NumberInput extends HoistInput {
             className: this.getClassName(),
             style: {
                 ...props.style,
-                textAlign: withDefault(props.textAlign, 'right'),
-                width: props.width
+                ...layoutProps,
+                width: withDefault(width, null),
+                textAlign: withDefault(props.textAlign, 'right')
             },
             spellCheck: false,
 

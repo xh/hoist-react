@@ -78,6 +78,14 @@ import {
     faEye,
     faEyeSlash,
     faFile,
+    faFileAlt,
+    faFileArchive,
+    faFileCsv,
+    faFileExcel,
+    faFileImage,
+    faFilePdf,
+    faFilePowerpoint,
+    faFileWord,
     faFilter,
     faFolder,
     faGift,
@@ -110,6 +118,7 @@ import {
     faSignIn,
     faSignOut,
     faSkull,
+    faSlidersHSquare,
     faStar,
     faStop,
     faStopCircle,
@@ -205,6 +214,14 @@ import {
     faEye as faEyeLight,
     faEyeSlash as faEyeSlashLight,
     faFile as faFileLight,
+    faFileAlt as faFileAltLight,
+    faFileArchive as faFileArchiveLight,
+    faFileCsv as faFileCsvLight,
+    faFileExcel as faFileExcelLight,
+    faFileImage as faFileImageLight,
+    faFilePdf as faFilePdfLight,
+    faFilePowerpoint as faFilePowerpointLight,
+    faFileWord as faFileWordLight,
     faFilter as faFilterLight,
     faFolder as faFolderLight,
     faGift as faGiftLight,
@@ -237,6 +254,7 @@ import {
     faSignIn as faSignInLight,
     faSignOut as faSignOutLight,
     faSkull as faSkullLight,
+    faSlidersHSquare as faSlidersHSquareLight,
     faStar as faStarLight,
     faStop as faStopLight,
     faStopCircle as faStopCircleLight,
@@ -332,6 +350,14 @@ import {
     faEye as faEyeSolid,
     faEyeSlash as faEyeSlashSolid,
     faFile as faFileSolid,
+    faFileAlt as faFileAltSolid,
+    faFileArchive as faFileArchiveSolid,
+    faFileCsv as faFileCsvSolid,
+    faFileExcel as faFileExcelSolid,
+    faFileImage as faFileImageSolid,
+    faFilePdf as faFilePdfSolid,
+    faFilePowerpoint as faFilePowerpointSolid,
+    faFileWord as faFileWordSolid,
     faFilter as faFilterSolid,
     faFolder as faFolderSolid,
     faGift as faGiftSolid,
@@ -364,6 +390,7 @@ import {
     faSignIn as faSignInSolid,
     faSignOut as faSignOutSolid,
     faSkull as faSkullSolid,
+    faSlidersHSquare as faSlidersHSquareSolid,
     faStar as faStarSolid,
     faStop as faStopSolid,
     faStopCircle as faStopCircleSolid,
@@ -461,6 +488,14 @@ library.add(
     faEye, faEyeLight, faEyeSolid,
     faEyeSlash, faEyeSlashLight, faEyeSlashSolid,
     faFile, faFileLight, faFileSolid,
+    faFileAlt, faFileAltLight, faFileAltSolid,
+    faFileArchive, faFileArchiveLight, faFileArchiveSolid,
+    faFileCsv, faFileCsvLight, faFileCsvSolid,
+    faFileExcel, faFileExcelLight, faFileExcelSolid,
+    faFileImage, faFileImageLight, faFileImageSolid,
+    faFilePdf, faFilePdfLight, faFilePdfSolid,
+    faFilePowerpoint, faFilePowerpointLight, faFilePowerpointSolid,
+    faFileWord, faFileWordLight, faFileWordSolid,
     faFilter, faFilterLight, faFilterSolid,
     faFolder, faFolderLight, faFolderSolid,
     faGift, faGiftLight, faGiftSolid,
@@ -493,6 +528,7 @@ library.add(
     faSignIn, faSignInLight, faSignInSolid,
     faSignOut, faSignOutLight, faSignOutSolid,
     faSkull, faSkullLight, faSkullSolid,
+    faSlidersHSquare, faSlidersHSquareLight, faSlidersHSquareSolid,
     faStar, faStarLight, faStarSolid,
     faStop, faStopLight, faStopSolid,
     faStopCircle, faStopCircleLight, faStopCircleSolid,
@@ -598,6 +634,14 @@ export const Icon = {
     factory(p)          {return fa(p, 'industry-alt')},
     favorite(p)         {return fa(p, 'star')},
     file(p)             {return fa(p, 'file')},
+    fileArchive(p)      {return fa(p, 'file-archive')},
+    fileCsv(p)          {return fa(p, 'file-csv')},
+    fileExcel(p)        {return fa(p, 'file-excel')},
+    fileImage(p)        {return fa(p, 'file-image')},
+    filePdf(p)          {return fa(p, 'file-pdf')},
+    filePowerpoint(p)   {return fa(p, 'file-powerpoint')},
+    fileText(p)         {return fa(p, 'file-alt')},
+    fileWord(p)         {return fa(p, 'file-word')},
     filter(p)           {return fa(p, 'filter')},
     folder(p)           {return fa(p, 'folder')},
     fund(p)             {return fa(p, 'university')},
@@ -626,6 +670,7 @@ export const Icon = {
     moon(p)             {return fa(p, 'moon')},
     office(p)           {return fa(p, 'building')},
     openExternal(p)     {return fa(p, 'external-link')},
+    options(p)          {return fa(p, 'sliders-h-square')},
     pause(p)            {return fa(p, 'pause')},
     pauseCircle(p)      {return fa(p, 'pause-circle')},
     play(p)             {return fa(p, 'play')},
@@ -639,6 +684,7 @@ export const Icon = {
     rocket(p)           {return fa(p, 'rocket')},
     save(p)             {return fa(p, 'save')},
     search(p)           {return fa(p, 'search')},
+    settings(p)         {return fa(p, 'sliders-h-square')},
     skull(p)            {return fa(p, 'skull')},
     stop(p)             {return fa(p, 'stop')},
     stopCircle(p)       {return fa(p, 'stop-circle')},
@@ -680,6 +726,37 @@ export const convertIconToSvg = function(iconElem, opts) {
         iconName: iconElem.props.icon[1]
     });
     return icon(iconDef, opts).html[0];
+};
+
+/**
+ * Return an Icon element for a given file extension, or a generic file icon if null or unmapped.
+ * @param {String} extension
+ * @return {Element}
+ */
+export const fileIcon = function(extension) {
+    switch (extension) {
+        case 'png':
+        case 'gif':
+        case 'jpg':
+        case 'jpeg':
+            return Icon.fileImage();
+        case 'doc':
+        case 'docx':
+            return Icon.fileWord();
+        case 'xls':
+        case 'xlsx':
+            return Icon.fileExcel();
+        case 'ppt':
+        case 'pptx':
+            return Icon.filePowerpoint();
+        case 'pdf':
+            return Icon.filePdf();
+        case 'txt':
+            return Icon.fileText();
+        case 'zip':
+            return Icon.fileArchive();
+    }
+    return Icon.file();
 };
 
 //-----------------------------

@@ -5,7 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import React from 'react';
-
 import PT from 'prop-types';
 import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {castArray, isEmpty, isPlainObject, keyBy, find, assign} from 'lodash';
@@ -80,6 +79,9 @@ export class Select extends HoistInput {
         /** True to auto-open the dropdown menu on input focus. */
         openMenuOnFocus: PT.bool,
 
+        /** True to show a "clear" button at the right of the control.  Defaults to false. */
+        enableClear: PT.bool,
+
         /**
          * Preset list of options for selection. Objects must contain a `value` property; a `label`
          * property will be used for the default display of each option. Other types will be taken
@@ -113,7 +115,6 @@ export class Select extends HoistInput {
 
         /** Field on provided options for sourcing each option's value (default `value`). */
         valueField: PT.string
-
     };
 
     static MENU_PORTAL_ID = 'xh-select-input-portal';
@@ -145,14 +146,17 @@ export class Select extends HoistInput {
     reactSelectRef = React.createRef();
 
     render() {
-        const {props, renderValue} = this,
+        const props = this.getNonLayoutProps(),
+            {width, ...layoutProps} = this.getLayoutProps(),
             rsProps = {
-                value: renderValue,
+                value: this.renderValue,
 
                 autoFocus: props.autoFocus,
                 formatOptionLabel: this.formatOptionLabel,
                 isDisabled: props.disabled,
                 isMulti: props.enableMulti,
+                // Explicit false ensures consistent default for single and multi-value instances.
+                isClearable: withDefault(props.enableClear, false),
                 menuPlacement: withDefault(props.menuPlacement, 'auto'),
                 noOptionsMessage: this.noOptionsMessageFn,
                 openMenuOnFocus: props.openMenuOnFocus,
@@ -195,16 +199,16 @@ export class Select extends HoistInput {
         return box({
             item: factory(rsProps),
             className: this.getClassName(),
-            width: props.width,
             onKeyDown: (e) => {
                 // Esc. and Enter can be listened for by parents -- stop the keypress event
                 // propagation only if react-select already likely to have used for menu management.
-                const {menuIsOpen} = this.reactSelectRef.current.state;
+                const {menuIsOpen} = this.reactSelectRef.current ? this.reactSelectRef.current.state : {};
                 if (menuIsOpen && (e.key == 'Escape' || e.key == 'Enter')) {
                     e.stopPropagation();
                 }
             },
-            ...this.getLayoutProps()
+            ...layoutProps,
+            width: withDefault(width, 200)
         });
     }
 

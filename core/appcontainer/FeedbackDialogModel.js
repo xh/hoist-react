@@ -18,6 +18,13 @@ export class FeedbackDialogModel {
     @observable isOpen = false;
     @observable message = null;
 
+    init() {
+        this.addReaction({
+            track: () => XH.routerState,
+            run: () => this.hide()
+        });
+    }
+
     @action
     show() {
         this.message = null;

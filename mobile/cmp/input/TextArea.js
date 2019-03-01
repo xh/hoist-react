@@ -6,15 +6,18 @@
  */
 
 import PT from 'prop-types';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {HoistComponent, LayoutSupport, elemFactory} from '@xh/hoist/core';
 import {textarea as textareaTag, div} from '@xh/hoist/cmp/layout';
 import {withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/input';
+
+import './TextArea.scss';
 
 /**
  * A multi-line text input.
  */
 @HoistComponent
+@LayoutSupport
 export class TextArea extends HoistInput {
 
     static propTypes = {
@@ -37,10 +40,7 @@ export class TextArea extends HoistInput {
         selectOnFocus: PT.bool,
 
         /** Whether to allow browser spell check, defaults to true */
-        spellCheck: PT.bool,
-
-        /** Width of the control in pixels. */
-        width: PT.number
+        spellCheck: PT.bool
     };
 
     baseClassName = 'xh-textarea';
@@ -50,10 +50,10 @@ export class TextArea extends HoistInput {
     }
 
     render() {
-        const {props} = this;
+        const props = this.getNonLayoutProps(),
+            {width, height, ...layoutProps} = this.getLayoutProps();
 
         return div({
-            className: this.getClassName(),
             item: textareaTag({
                 value: this.renderValue || '',
 
@@ -62,17 +62,18 @@ export class TextArea extends HoistInput {
                 spellCheck: withDefault(props.spellCheck, false),
                 tabIndex: props.tabIndex,
 
-                style: {
-                    height: props.height,
-                    width: props.width,
-                    ...props.style
-                },
-
                 onChange: this.onChange,
                 onKeyPress: this.onKeyPress,
                 onBlur: this.onBlur,
                 onFocus: this.onFocus
-            })
+            }),
+            className: this.getClassName(),
+            style: {
+                ...props.style,
+                ...layoutProps,
+                width: withDefault(width, null),
+                height: withDefault(height, 100)
+            }
         });
     }
 

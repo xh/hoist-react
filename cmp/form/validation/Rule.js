@@ -10,11 +10,6 @@ import {required} from './constraints';
 
 /**
  * Immutable object representing a validation rule.
- *
- * This object not typically created directly by applications.
- *
- * Applications will typically specify rule configurations to the field
- * via the field decorator or FieldModel.addRule();
  */
 export class Rule {
 
@@ -59,12 +54,13 @@ export class Rule {
     // Implementation
     //------------------------------
     isActive(field) {
+        if (!field.formModel) return false;
         const {when} = this;
-        return !when || when(field, field.formModel.dataProxy);
+        return !when || when(field, field.formModel.values);
     }
 
     async evalConstraintAsync(constraint, field) {
-        return await constraint(field, field.formModel.dataProxy);
+        return await constraint(field, field.formModel.values);
     }
 }
 

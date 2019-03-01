@@ -1,0 +1,33 @@
+body.xh-app .xh-button-group .xh-button {
+  &:not(:first-child) {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+  &:not(:last-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+
+    &:not(.button--light):not(.button--outline) {
+      margin-right: 1px;
+    }
+  }
+
+  &:not(.button--outline):not(.button--quiet):not(.button--light) {
+    background-color: var(--xh-border-color);
+    &.xh-button-active {
+      background-color: var(--xh-btn-color);
+      opacity: 1;
+    }
+  }
+  &.button--outline.xh-button-active {
+    background-color: var(--xh-btn-color);
+    color: white;
+  }
+  &.button--light.xh-button-active {
+    background-color: var(--xh-bg-alt);
+    color: var(--xh-text-color);
+  }
+  &.button--quiet.xh-button-active {
+    background-color: var(--xh-bg-alt);
+  }
+}

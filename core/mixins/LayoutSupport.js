@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {provideMethods, markClass} from '@xh/hoist/utils/js';
+import {applyMixin} from '@xh/hoist/utils/js';
 import {pick, isNumber, isString, forOwn, omit} from 'lodash';
 
 /**
@@ -27,52 +27,51 @@ import {pick, isNumber, isString, forOwn, omit} from 'lodash';
  * and will handle this by outputting a div with appropriate styles.
  */
 export function LayoutSupport(C) {
+    return applyMixin(C, {
+        name: 'LayoutSupport',
 
-    markClass(C, 'hasLayoutSupport');
+        provides: {
 
-    // Instance methods
-    provideMethods(C, {
+            /**
+             * Return all layout related props found in props.
+             *
+             * This method implements some minor translations, to allow a more user friendly
+             * specification than that afforded by the underlying flexbox styles.
+             *
+             * In particular, it accepts flex and sizing props as raw numbers rather than strings.
+             */
+            getLayoutProps() {
 
-        /**
-         * Return all layout related props found in props.
-         *
-         * This method implements some minor translations, to allow a more user friendly
-         * specification than that afforded by the underlying flexbox styles.
-         *
-         * In particular, it accepts flex and sizing props as raw numbers rather than strings.
-         */
-        getLayoutProps() {
+                // Harvest all keys of interest
+                const ret = pick(this.props, allKeys);
 
-            // Harvest all keys of interest
-            const ret = pick(this.props, allKeys);
+                // flexXXX: convert raw number to string
+                const flexConfig = pick(ret, flexKeys);
+                forOwn(flexConfig, (v, k) => {
+                    if (isNumber(v)) ret[k] = v.toString();
+                });
 
-            // flexXXX: convert raw number to string
-            const flexConfig = pick(ret, flexKeys);
-            forOwn(flexConfig, (v, k) => {
-                if (isNumber(v)) ret[k] = v.toString();
-            });
+                // Dimensions: translate numbers / bare strings into pixels.
+                const dimConfig = pick(ret, dimKeys);
+                forOwn(dimConfig, (v, k) => {ret[k] = toPx(v)});
 
-            // Dimensions: translate numbers / bare strings into pixels.
-            const dimConfig = pick(ret, dimKeys);
-            forOwn(dimConfig, (v, k) => {ret[k] = toPx(v)});
+                // Extra handling for margin and padding to support TLBR multi-value strings.
+                if (ret.margin) ret.margin = toTlbrPx(ret.margin);
+                if (ret.padding) ret.padding = toTlbrPx(ret.padding);
 
-            // Extra handling for margin and padding to support TLBR multi-value strings.
-            if (ret.margin) ret.margin = toTlbrPx(ret.margin);
-            if (ret.padding) ret.padding = toTlbrPx(ret.padding);
-
-            return ret;
-        },
+                return ret;
+            },
 
 
-        /**
-         * Return all non-layout related props found in props.
-         */
-        getNonLayoutProps() {
-            return omit(this.props, allKeys);
+            /**
+             * Return all non-layout related props found in props.
+             */
+            getNonLayoutProps() {
+                return omit(this.props, allKeys);
+            }
+
         }
-        
     });
-    return C;
 }
 
 

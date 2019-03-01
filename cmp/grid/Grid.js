@@ -13,8 +13,10 @@ import {box, fragment} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import './ag-grid';
 import {agGridReact, navigateSelection, ColumnHeader} from './ag-grid';
-import {colChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {GridModel} from './GridModel';
+
+import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
+import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -47,6 +49,9 @@ export class Grid extends Component {
         /** True to suppress display of the grid's header row. */
         hideHeaders: PT.bool,
 
+        /** Primary component model instance. */
+        model: PT.oneOfType([PT.instanceOf(GridModel), PT.object]).isRequired,
+
         /**
          * Callback to call when a key down event is detected on this component.
          * Function will receive an event with the standard 'target' element.
@@ -57,7 +62,7 @@ export class Grid extends Component {
         onKeyDown: PT.func,
 
         /**
-         * Callback to call when a row is double clicked. Function will receive an event
+         * Callback to call when a row is clicked. Function will receive an event
          * with a data node containing the row's data.
          */
         onRowClicked: PT.func,
@@ -67,6 +72,18 @@ export class Grid extends Component {
          * with a data node containing the row's data.
          */
         onRowDoubleClicked: PT.func,
+
+        /**
+         * Callback to call when a cell is clicked. Function will receive an event
+         * with a data node, cell value, and column.
+         */
+        onCellClicked: PT.func,
+
+        /**
+         * Callback to call when a cell is double clicked. Function will receive an event
+         * with a data node, cell value, and column.
+         */
+        onCellDoubleClicked: PT.func,
 
         /**
          * Show a colored row background on hover. Defaults to false.
@@ -107,7 +124,7 @@ export class Grid extends Component {
     }
 
     render() {
-        const {colChooserModel, compact, treeMode} = this.model,
+        const {compact, treeMode} = this.model,
             {agOptions, showHover, onKeyDown} = this.props,
             {isMobile} = XH,
             layoutProps = this.getLayoutProps();
@@ -133,8 +150,14 @@ export class Grid extends Component {
                 ),
                 onKeyDown: !isMobile ? onKeyDown : null
             }),
-            colChooserModel ? colChooser({model: colChooserModel}) : null
+            this.renderColChooser()
         );
+    }
+
+    renderColChooser() {
+        const {colChooserModel} = this.model,
+            cmp = XH.isMobile ? mobileColChooser : desktopColChooser;
+        return colChooserModel ? cmp({model: colChooserModel}) : null;
     }
 
     //------------------------
@@ -144,11 +167,14 @@ export class Grid extends Component {
         const {model, props} = this;
 
         let ret = {
-            enableSorting: true,
-            enableColResize: true,
             deltaRowDataMode: true,
             getRowNodeId: (data) => data.id,
-            defaultColDef: {suppressMenu: true, menuTabs: ['filterMenuTab']},
+            defaultColDef: {
+                sortable: true,
+                resizable: true,
+                suppressMenu: true,
+                menuTabs: ['filterMenuTab']
+            },
             popupParent: document.querySelector('body'),
             defaultGroupSortComparator: this.sortByGroup,
             headerHeight: props.hideHeaders ? 0 : undefined,
@@ -170,6 +196,9 @@ export class Grid extends Component {
             overlayNoRowsTemplate: model.emptyText || '<span></span>',
             onRowClicked: props.onRowClicked,
             onRowDoubleClicked: props.onRowDoubleClicked,
+            onCellClicked: props.onCellClicked,
+            onCellDoubleClicked: props.onCellDoubleClicked,
+            onRowGroupOpened: this.onRowGroupOpened,
             onGridReady: this.onGridReady,
             onSelectionChanged: this.onSelectionChanged,
             onGridSizeChanged: this.onGridSizeChanged,
@@ -488,6 +517,10 @@ export class Grid extends Component {
         if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
             this.model.setGroupBy(ev.columnApi.getRowGroupColumns().map(it => it.colId));
         }
+    };
+
+    onRowGroupOpened = () => {
+        this.model.agApi.sizeColumnsToFit();
     };
 
     // Catches column visibility changes triggered from ag-grid ui components

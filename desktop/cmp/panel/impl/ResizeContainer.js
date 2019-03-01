@@ -38,10 +38,13 @@ export class ResizeContainer extends Component {
             items.push(dragger({model}));
         }
 
-        const cmp = vertical ? vbox : hbox;
+        const cmp = vertical ? vbox : hbox,
+            maxDim = vertical ? 'maxHeight' : 'maxWidth';
+
         return cmp({
             className: this.getClassName(),
             flex: 'none',
+            [maxDim]: '100%',
             items
         });
     }

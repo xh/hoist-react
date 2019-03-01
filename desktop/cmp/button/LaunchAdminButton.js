@@ -5,10 +5,10 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import PT from 'prop-types';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {button, Button} from '@xh/hoist/desktop/cmp/button';
+import {withDefault} from '@xh/hoist/utils/js';
 
 /**
  * Convenience Button to open the admin client.
@@ -18,9 +18,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 export class LaunchAdminButton extends Component {
 
     static propTypes = {
-        icon: PT.element,
-        title: PT.string,
-        onClick: PT.func
+        ...Button.propTypes
     };
 
     render() {
@@ -28,9 +26,9 @@ export class LaunchAdminButton extends Component {
 
         const {icon, title, onClick, ...rest} = this.props;
         return button({
-            icon: icon || Icon.wrench(),
-            title: title || 'Launch admin client...',
-            onClick: onClick || this.onClick,
+            icon: withDefault(icon, Icon.wrench()),
+            title: withDefault(title, 'Launch admin client...'),
+            onClick: withDefault(onClick, this.launchAdminClient),
             ...rest
         });
     }
@@ -38,7 +36,7 @@ export class LaunchAdminButton extends Component {
     //---------------------------
     // Implementation
     //---------------------------
-    onClick = () => {
+    launchAdminClient = () => {
         window.open('/admin');
     }
 

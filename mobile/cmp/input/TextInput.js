@@ -6,15 +6,18 @@
  */
 
 import PT from 'prop-types';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {HoistComponent, LayoutSupport, elemFactory} from '@xh/hoist/core';
 import {input} from '@xh/hoist/kit/onsen';
 import {withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/input';
+
+import './TextInput.scss';
 
 /**
  * A Text Input
  */
 @HoistComponent
+@LayoutSupport
 export class TextInput extends HoistInput {
 
     static propTypes = {
@@ -54,10 +57,7 @@ export class TextInput extends HoistInput {
         textAlign: PT.oneOf(['left', 'right']),
 
         /** Underlying HTML <input> element type. */
-        type: PT.oneOf(['text', 'password']),
-
-        /** Width of the control in pixels. */
-        width: PT.number
+        type: PT.oneOf(['text', 'password'])
     };
 
     baseClassName = 'xh-text-input';
@@ -67,7 +67,8 @@ export class TextInput extends HoistInput {
     }
 
     render() {
-        const {props} = this;
+        const props = this.getNonLayoutProps(),
+            {width, ...layoutProps} = this.getLayoutProps();
 
         return input({
             value: this.renderValue || '',
@@ -82,9 +83,10 @@ export class TextInput extends HoistInput {
 
             className: this.getClassName(),
             style: {
-                textAlign: withDefault(props.textAlign, 'left'),
-                width: props.width,
-                ...props.style
+                ...props.style,
+                ...layoutProps,
+                width: withDefault(width, null),
+                textAlign: withDefault(props.textAlign, 'left')
             },
 
             onChange: this.onChange,

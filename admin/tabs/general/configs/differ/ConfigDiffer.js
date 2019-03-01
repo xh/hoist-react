@@ -43,9 +43,9 @@ export class ConfigDiffer extends Component {
     // Implementation
     //------------------------
     getContents() {
-        const model = this.model,
-            gridModel = model.gridModel,
-            store = gridModel.store;
+        const {model} = this,
+            {gridModel} = model,
+            {store} = gridModel;
 
         return panel({
             tbar: toolbar(
@@ -54,7 +54,7 @@ export class ConfigDiffer extends Component {
                 box('Compare with:'),
                 select({
                     model,
-                    field: 'remoteHost',
+                    bind: 'remoteHost',
                     placeholder: 'https://remote-host/',
                     enableCreate: true,
                     createMessageFn: identity,
@@ -65,7 +65,7 @@ export class ConfigDiffer extends Component {
                     text: 'Load Diff',
                     intent: 'primary',
                     disabled: !model.remoteHost,
-                    onClick: this.onLoadDiffClick
+                    onClick: () => model.loadAsync()
                 })
             ),
             item: panel({
@@ -75,7 +75,7 @@ export class ConfigDiffer extends Component {
                 }),
                 item: grid({
                     model: gridModel,
-                    onRowDoubleClicked: this.onRowDoubleClicked,
+                    onRowDoubleClicked: (e) => model.detailModel.open(e.data),
                     agOptions: {
                         popupParent: null
                     }
@@ -85,22 +85,10 @@ export class ConfigDiffer extends Component {
                 filler(),
                 button({
                     text: 'Close',
-                    onClick: this.onCloseClick
+                    onClick: () => model.close()
                 })
             )
         });
-    }
-
-    onLoadDiffClick = () => {
-        this.model.loadAsync();
-    }
-
-    onCloseClick = () => {
-        this.model.close();
-    }
-
-    onRowDoubleClicked = (e) => {
-        this.model.detailModel.open(e.data);
     }
 }
 export const configDiffer = elemFactory(ConfigDiffer);

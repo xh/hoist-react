@@ -5,9 +5,6 @@
 }
 
 .xh-select {
-  // Default width of wrapping box.
-  width: 200px;
-
   // Outer div of the actual react-select control, causing it to fill its box.
   > div {
     flex: 1;
@@ -34,6 +31,10 @@
       &--is-focused {
         box-shadow: var(--xh-form-field-focused-box-shadow);
       }
+    }
+
+    &__placeholder {
+      color: var(--xh-input-placeholder-text-color);
     }
 
     &__single-value,

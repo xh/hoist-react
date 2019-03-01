@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {tabContainer, TabContainerModel} from '@xh/hoist/desktop/cmp/tab';
+import {tabContainer} from '@xh/hoist/cmp/tab';
 
 import {TrackingPanel} from './tracking/TrackingPanel';
 import {ClientErrorPanel} from './clienterrors/ClientErrorPanel';
@@ -15,20 +15,17 @@ import {FeedbackPanel} from './feedback/FeedbackPanel';
 @HoistComponent
 export class ActivityTab extends Component {
 
-    model = new TabContainerModel({
-        route: 'default.activity',
-        tabs: [
-            {id: 'tracking', content: TrackingPanel},
-            {id: 'clientErrors', content: ClientErrorPanel},
-            {id: 'feedback', content: FeedbackPanel}
-        ]
-    });
-
-    async loadAsync() {
-        this.model.requestRefresh();
-    }
-    
     render() {
-        return tabContainer({model: this.model, switcherPosition: 'left'});
+        return tabContainer({
+            model: {
+                route: 'default.activity',
+                switcherPosition: 'left',
+                tabs: [
+                    {id: 'tracking', content: TrackingPanel},
+                    {id: 'clientErrors', content: ClientErrorPanel},
+                    {id: 'feedback', content: FeedbackPanel}
+                ]
+            }
+        });
     }
 }

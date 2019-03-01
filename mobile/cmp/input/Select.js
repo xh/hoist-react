@@ -9,7 +9,8 @@ import PT from 'prop-types';
 import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {isEmpty, isPlainObject, find, assign} from 'lodash';
 import {observable, action} from '@xh/hoist/mobx';
-import {box} from '@xh/hoist/cmp/layout';
+import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
+import {Icon} from '@xh/hoist/icon';
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {withDefault, throwIf} from '@xh/hoist/utils/js';
 import {reactSelect} from '@xh/hoist/kit/react-select';
@@ -58,6 +59,9 @@ export class Select extends HoistInput {
          */
         optionRenderer: PT.func,
 
+        /** True to suppress the default check icon rendered for the currently selected option. */
+        hideSelectedOptionCheck: PT.bool,
+
         /** Text to display when control is empty. */
         placeholder: PT.string,
 
@@ -94,10 +98,11 @@ export class Select extends HoistInput {
     }
 
     render() {
-        const {props, renderValue} = this,
+        const props = this.getNonLayoutProps(),
+            {width, ...layoutProps} = this.getLayoutProps(),
             rsProps = {
                 options: this.internalOptions,
-                value: renderValue,
+                value: this.renderValue,
 
                 formatOptionLabel: this.formatOptionLabel,
                 isSearchable: false,
@@ -125,8 +130,8 @@ export class Select extends HoistInput {
         return box({
             item: reactSelect(rsProps),
             className: this.getClassName(),
-            width: props.width,
-            ...this.getLayoutProps()
+            ...layoutProps,
+            width: withDefault(width, null)
         });
     }
 
@@ -180,6 +185,44 @@ export class Select extends HoistInput {
             {label: src != null ? src.toString() : '-null-', value: src};
     }
 
+    //----------------------
+    // Option Rendering
+    //----------------------
+
+    formatOptionLabel = (opt, params) => {
+        // Always display the standard label string in the value container (context == 'value').
+        // If we need to expose customization here, we could consider a dedicated prop.
+        if (params.context != 'menu') {
+            return opt.label;
+        }
+
+        // For rendering dropdown menu items, use an optionRenderer if provided - or use the
+        // implementation here to render a checkmark next to the active selection.
+        const optionRenderer = this.props.optionRenderer || this.optionRenderer;
+        return optionRenderer(opt);
+    }
+
+    optionRenderer = (opt) => {
+        if (this.suppressCheck) {
+            return div({item: opt.label, style: {paddingLeft: 8}});
+        }
+
+        return this.externalValue === opt.value ?
+            hbox(
+                div({
+                    style: {minWidth: 25, textAlign: 'center'},
+                    item: Icon.check({size: 'sm'})
+                }),
+                span(opt.label)
+            ) :
+            div({item: opt.label, style: {paddingLeft: 25}});
+    }
+
+    get suppressCheck() {
+        const {props} = this;
+        return withDefault(props.hideSelectedOptionCheck, false);
+    }
+
     //------------------------
     // Other Implementation
     //------------------------
@@ -192,14 +235,6 @@ export class Select extends HoistInput {
             };
         };
     }
-
-    formatOptionLabel = (opt, params) => {
-        const {optionRenderer} = this.props;
-
-        // Always display the standard label string in the value container (context == 'value').
-        // If we need to expose customization here, we could consider a dedicated prop.
-        return (optionRenderer && params.context == 'menu') ? optionRenderer(opt) : opt.label;
-    };
 
     noOptionsMessageFn = () => {
         const {noOptionsMessageFn} = this.props;

@@ -12,7 +12,7 @@ import {Record, RecordAction, StoreSelectionModel} from '@xh/hoist/data';
 import {buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {throwIf} from '@xh/hoist/utils/js';
-import {Column} from '@xh/hoist/cmp/grid/columns';
+import {Column} from '@xh/hoist/cmp/grid';
 import {isEmpty} from 'lodash';
 
 import {recordActionButton} from './impl/RecordActionButton';

@@ -24,6 +24,9 @@ export class ButtonGroup extends Component {
         /** True to render each button with minimal surrounding chrome (default false). */
         minimal: PT.bool,
 
+        /** Style block. */
+        style: PT.object,
+
         /** True to render in a vertical orientation. */
         vertical: PT.bool
     };

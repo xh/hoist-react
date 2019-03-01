@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from '@xh/hoist/core';
+import {HoistModel,  managed} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {LeftRightChooserModel} from '@xh/hoist/desktop/cmp/leftrightchooser';
 
@@ -18,6 +18,8 @@ import {LeftRightChooserModel} from '@xh/hoist/desktop/cmp/leftrightchooser';
 export class ColChooserModel {
 
     gridModel = null;
+
+    @managed
     lrModel = null;
 
     @observable isOpen = false;
@@ -30,7 +32,7 @@ export class ColChooserModel {
         this.lrModel = new LeftRightChooserModel({
             leftTitle: 'Available Columns',
             rightTitle: 'Displayed Columns',
-            leftSortBy: 'text',
+            leftSorted: true,
             rightGroupingEnabled: false
         });
     }
@@ -70,22 +72,18 @@ export class ColChooserModel {
         const {gridModel, lrModel} = this;
 
         const data = gridModel.getLeafColumns().map(it => {
-            const state = gridModel.getStateForColumn(it.colId);
+            const visible = gridModel.isColumnVisible(it.colId);
             return {
                 value: it.colId,
                 text: it.chooserName,
                 description: it.chooserDescription,
                 group: it.chooserGroup,
                 exclude: it.excludeFromChooser,
-                locked: !state.hidden && !it.hideable,
-                side: state.hidden ? 'left' : 'right'
+                locked: visible && !it.hideable,
+                side: visible ? 'right' : 'left'
             };
         });
 
         lrModel.setData(data);
-    }
-
-    destroy() {
-        XH.safeDestroy(this.lrModel);
     }
 }

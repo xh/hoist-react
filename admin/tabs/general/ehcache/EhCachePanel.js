@@ -10,7 +10,7 @@ import {grid} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 
@@ -38,19 +38,12 @@ export class EhCachePanel extends Component {
             button({
                 icon: Icon.sync(),
                 text: 'Clear All',
-                onClick: this.onClearAllClick
+                onClick: () => model.clearAll()
             }),
             filler(),
             storeCountLabel({gridModel, unit: 'cache'}),
-            storeFilterField({gridModel})
+            storeFilterField({gridModel}),
+            exportButton({gridModel})
         );
-    }
-
-    onClearAllClick = () => {
-        this.model.clearAll();
-    }
-
-    async loadAsync() {
-        return this.model.loadAsync();
     }
 }

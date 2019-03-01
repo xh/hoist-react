@@ -76,6 +76,8 @@ body {
   --xh-grid-bg-odd: var(--grid-bg-odd, #{mc('grey', '100')});
   --xh-grid-border-color: var(--grid-border-color, var(--xh-border-color));
   --xh-grid-cell-focus-border-color: var(--grid-cell-focus-border-color, transparent);
+  --xh-grid-cell-lr-pad: var(--grid-cell-lr-pad, 11);
+  --xh-grid-cell-lr-pad-px: calc(var(--xh-grid-cell-lr-pad) * 1px);
   --xh-grid-empty-text-color: var(--grid-empty-text-color, var(--xh-text-color-muted));
   --xh-grid-font-family: var(--grid-font-family, var(--xh-font-family));
   --xh-grid-font-size: var(--grid-font-size, var(--xh-font-size));
@@ -89,6 +91,8 @@ body {
   --xh-grid-header-icon-color: var(--grid-header-icon-color, var(--xh-text-color-muted));
 
   // Compact Grid
+  --xh-grid-compact-cell-lr-pad: var(--grid-compact-cell-lr-pad, 4);
+  --xh-grid-compact-cell-lr-pad-px: calc(var(--xh-grid-compact-cell-lr-pad) * 1px);
   --xh-grid-compact-font-size: var(--grid-compact-font-size, 12);
   --xh-grid-compact-font-size-px: calc(var(--xh-grid-compact-font-size) * 1px);
   --xh-grid-compact-line-height: var(--grid-compact-line-height, 22);
@@ -124,6 +128,7 @@ body {
   --xh-input-disabled-bg: var(--form-field-disabled-bg, rgba(206, 217, 224, 0.5));  // This and below currently matched from Blueprint defaults
   --xh-input-disabled-text-color: var(--form-field-disabled-text-color, rgba(92, 112, 128, 0.5));
   --xh-input-text-color: var(--input-text-color, var(--xh-text-color));
+  --xh-input-placeholder-text-color: var(--input-placeholder-color, rgb(175, 183, 191));
 
   // Form fields
   --xh-form-field-box-shadow-color-top: var(--form-field-box-shadow-color-top, #{mc-trans('blue-grey', '100', 0.15)});

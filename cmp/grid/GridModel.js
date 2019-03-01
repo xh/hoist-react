@@ -4,12 +4,13 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel, XH, LoadSupport} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {StoreSelectionModel} from '@xh/hoist/data';
 import {
     castArray,
     defaults,
+    find,
     findLast,
     isEmpty,
     isPlainObject,
@@ -21,12 +22,13 @@ import {
     isNil,
     cloneDeep
 } from 'lodash';
-import {Column, ColumnGroup} from '@xh/hoist/cmp/grid/columns';
+import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
 import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';
 
-import {StoreContextMenu, ColChooserModel} from '@xh/hoist/dynamics/desktop';
+import {ColChooserModel as DesktopColChooserModel, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
+import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -42,6 +44,7 @@ import {StoreContextMenu, ColChooserModel} from '@xh/hoist/dynamics/desktop';
  *
  */
 @HoistModel
+@LoadSupport
 export class GridModel {
 
     //------------------------
@@ -108,7 +111,7 @@ export class GridModel {
      * @param {Object} c - GridModel configuration.
      * @param {BaseStore} c.store - store containing the data for the grid.
      * @param {Object[]} c.columns - {@link Column} or {@link ColumnGroup} configs
-     * @param {(boolean)} [c.treeMode] - true if grid is a tree grid (default false).
+     * @param {boolean} [c.treeMode] - true if grid is a tree grid (default false).
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
      * @param {(Object|string)} [c.stateModel] - config or string `gridId` for a GridStateModel.
@@ -159,17 +162,13 @@ export class GridModel {
 
         this.setColumns(columns);
 
-        if (enableColChooser && !XH.isMobile) {
-            this.colChooserModel = new ColChooserModel(this);
-        }
-
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
         this.setCompact(compact);
 
-        selModel = withDefault(selModel, XH.isMobile ? 'disabled' : 'single');
-        this.selModel = this.initSelModel(selModel, store);
-        this.stateModel = this.initStateModel(stateModel);
+        this.colChooserModel = enableColChooser ? this.createChooserModel() : null;
+        this.selModel = this.parseSelModel(selModel);
+        this.stateModel = this.parseStateModel(stateModel);
     }
 
     /**
@@ -271,6 +270,7 @@ export class GridModel {
         const {agApi} = this;
         if (agApi) {
             agApi.expandAll();
+            agApi.sizeColumnsToFit();
         }
     }
 
@@ -279,6 +279,7 @@ export class GridModel {
         const {agApi} = this;
         if (agApi) {
             agApi.collapseAll();
+            agApi.sizeColumnsToFit();
         }
     }
 
@@ -315,8 +316,9 @@ export class GridModel {
     }
 
     /** Load the underlying store. */
-    loadAsync(...args) {
-        return this.store.loadAsync(...args);
+    async doLoadAsync(loadSpec) {
+        throwIf(!this.store.isLoadSupport, 'Underlying store does not define support for loading.');
+        return this.store.loadAsync(loadSpec);
     }
 
     /** Load the underlying store. */
@@ -411,29 +413,62 @@ export class GridModel {
         this.columnState = columnState;
     }
 
+    /**
+     * Return all leaf-level columns - i.e. excluding column groups.
+     * @returns {Column[]}
+     */
     getLeafColumns() {
         return this.gatherLeaves(this.columns);
     }
 
-    findColumn(cols, id) {
+    /**
+     * Determine whether or not a given leaf-level column is currently visible.
+     *
+     * Call this method instead of inspecting the `hidden` property on the Column itself, as that
+     * property is not updated with state changes.
+     *
+     * @param {String} colId
+     * @returns {boolean}
+     */
+    isColumnVisible(colId) {
+        const state = this.getStateForColumn(colId);
+        return state ? !state.hidden : false;
+    }
+
+    /**
+     * Return matching leaf-level Column or ColumnState object from the provided collection for the
+     * given colId, if any. Used as a utility function to find both types of objects.
+     */
+    findColumn(cols, colId) {
         for (let col of cols) {
             if (col.children) {
-                const ret = this.findColumn(col.children, id);
+                const ret = this.findColumn(col.children, colId);
                 if (ret) return ret;
             } else {
-                if (col.colId == id) return col;
+                if (col.colId == colId) return col;
             }
         }
         return null;
+    }
+
+    /**
+     * Return the current state object representation for the given colId.
+     *
+     * Note that column state updates do not write changes back to the original Column object (as
+     * held in this model's `columns` collection), so this method should be called whenever the
+     * current value of any state-tracked property is required.
+     *
+     * @param {string} colId
+     * @returns {ColumnState}
+     */
+    getStateForColumn(colId) {
+        return find(this.columnState, {colId});
     }
 
     buildColumn(c) {
         return c.children ? new ColumnGroup(c, this) : new Column(c, this);
     }
 
-    getStateForColumn(id) {
-        return this.columnState.find(it => it.colId === id);
-    }
 
     //-----------------------
     // Implementation
@@ -509,15 +544,16 @@ export class GridModel {
         }
     }
 
-    initSelModel(selModel, store) {
+    parseSelModel(selModel) {
+        selModel = withDefault(selModel, XH.isMobile ? 'disabled' : 'single');
+
         if (selModel instanceof StoreSelectionModel) {
             return selModel;
         }
 
         if (isPlainObject(selModel)) {
-            return new StoreSelectionModel(defaults(selModel, {store}));
+            return this.markManaged(new StoreSelectionModel(defaults(selModel, {store: this.store})));
         }
-
         // Assume its just the mode...
         let mode = 'single';
         if (isString(selModel)) {
@@ -525,24 +561,26 @@ export class GridModel {
         } else if (selModel === null) {
             mode = 'disabled';
         }
-
-        return new StoreSelectionModel({mode, store});
+        return this.markManaged(new StoreSelectionModel({mode, store: this.store}));
     }
 
-    initStateModel(stateModel) {
+    parseStateModel(stateModel) {
         let ret = null;
         if (isPlainObject(stateModel)) {
             ret = new GridStateModel(stateModel);
         } else if (isString(stateModel)) {
             ret = new GridStateModel({gridId: stateModel});
         }
-        if (ret) ret.init(this);
-
+        if (ret) {
+            ret.init(this);
+            this.markManaged(ret);
+        }
         return ret;
     }
 
-    destroy() {
-        XH.safeDestroy(this.colChooserModel, this.stateModel);
+    createChooserModel() {
+        const Model = XH.isMobile ? MobileColChooserModel : DesktopColChooserModel;
+        return this.markManaged(new Model(this));
     }
 }
 

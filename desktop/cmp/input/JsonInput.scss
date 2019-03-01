@@ -9,11 +9,15 @@
       border: var(--xh-form-field-invalid-border);
     }
   }
+  &.xh-input-disabled {
+    .CodeMirror {
+      background-color: var(--xh-input-disabled-bg);
+      color: var(--xh-input-disabled-text-color);
+    }
+  }
 
-  // TODO - understanding sizing spec / requirements for component vs. generated CodeMirror.
-  // See also layout props on the component itself.
-  // https://github.com/exhi/hoist-react/issues/327
   .CodeMirror {
+    height: 100px;
     flex: 1;
     display: flex;
     flex-direction: column;
