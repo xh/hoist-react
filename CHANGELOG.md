@@ -5,7 +5,7 @@
 ### 🎁 New Features
 
 * `cloneAction` is now available as a new action through the RestGridModel. The action calls
- `prepareCloneCb`, if available on the RestGridModel, to perform any transform
+ `prepareCloneFn`, if available on the RestGridModel, to perform any transform
  operations before rendering the form. 
 
 ## v19.0.1 - 2019-02-12

@@ -87,7 +87,7 @@ export class ConfigModel {
             cloneAction,
             deleteAction
         ],
-        prepareCloneCb: ({clone}) => clone.name = `${clone.name}_CLONE`,
+        prepareCloneFn: ({clone}) => clone.name = `${clone.name}_CLONE`,
         unit: 'config',
         filterFields: ['name', 'value', 'groupName', 'note'],
 
