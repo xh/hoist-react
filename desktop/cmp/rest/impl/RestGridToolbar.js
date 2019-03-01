@@ -29,19 +29,24 @@ export class RestGridToolbar extends Component {
     renderToolbarItems() {
         const {model, props} = this,
             {unit, toolbarActions: actions, gridModel} = model,
-            {extraToolbarItems} = props,
-            extraItems = isFunction(extraToolbarItems) ?
+            {extraToolbarItems, rightToolbarItems} = props,
+            leftItems = isFunction(extraToolbarItems) ?
                 castArray(extraToolbarItems()) :
-                withDefault(extraToolbarItems, []);
+                withDefault(extraToolbarItems, []),
+            rightItems = withDefault(rightToolbarItems,
+                [
+                    storeCountLabel({gridModel, unit}),
+                    storeFilterField({gridModel, includeFields: model.filterFields}),
+                    exportButton({gridModel})
+                ]
+            );
 
         return [
             recordActionBar({actions, gridModel, selModel: gridModel.selModel}),
-            toolbarSep({omit: isEmpty(extraItems)}),
-            ...extraItems,
+            toolbarSep({omit: isEmpty(leftItems)}),
+            ...leftItems,
             filler(),
-            storeCountLabel({gridModel, unit}),
-            storeFilterField({gridModel, includeFields: model.filterFields}),
-            exportButton({gridModel})
+            ...rightItems
         ];
     }
 }

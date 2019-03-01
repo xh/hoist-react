@@ -36,6 +36,10 @@ export class RestGrid extends Component {
         /** Optional components rendered adjacent to the top toolbar's action buttons */
         extraToolbarItems: PT.oneOfType([PT.func, PT.array]),
 
+        /** Optional components right-aligned in the top toolbar.
+         * Defaults to StoreCountLabel, StoreFilterField, ExportButton.  */
+        rightToolbarItems: PT.array,
+
         /**
          * Mask to render on this Component. Defaults to true, which renders a standard
          * Hoist mask. Also can be set to false for no mask, or passed an element
