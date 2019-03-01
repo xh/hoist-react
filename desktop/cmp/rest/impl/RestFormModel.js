@@ -10,7 +10,7 @@ import {action, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {FormModel, required} from '@xh/hoist/cmp/form';
 import {Icon} from '@xh/hoist/icon';
-import {merge} from 'lodash';
+import {merge, isNil} from 'lodash';
 
 @HoistModel
 export class RestFormModel {
@@ -99,9 +99,8 @@ export class RestFormModel {
     // Implementation
     //---------------------
     initForm(rec) {
-        this.currentRecord = rec ? rec : {id: null};
-
-        this.isAdd = !rec || !rec.id;
+        this.currentRecord = !isNil(rec) ? rec : {id: null};
+        this.isAdd = isNil(rec) || isNil(rec.id);
         this.isOpen = true;
         const fields = this.editors.map(editor => this.fieldModelConfig(editor));
         XH.safeDestroy(this.formModel);
