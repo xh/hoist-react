@@ -148,8 +148,6 @@ export class Select extends HoistInput {
             },
             fireImmediately: true
         });
-        // this.inputValue = props.model.initialValue ?
-        //     this.findOption(props.model.initialValue).label : '';
         this.controlShouldRenderValue = true;
     }
 
@@ -245,6 +243,7 @@ export class Select extends HoistInput {
     }
 
     onInputChange = (input, {action}) => {
+        console.log(input, action)
         switch (action) {
             case 'input-change':
                 this.setInputValue(input);
