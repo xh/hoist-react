@@ -6,7 +6,7 @@
  */
 import React, {Component} from 'react';
 import PT from 'prop-types';
-import {isArray, isUndefined, isDate, isFinite, isBoolean} from 'lodash';
+import {isArray, isUndefined, isDate, isFinite, isBoolean, kebabCase} from 'lodash';
 
 import {elemFactory, HoistComponent, LayoutSupport, StableIdSupport} from '@xh/hoist/core';
 import {tooltip} from '@xh/hoist/kit/blueprint';
@@ -128,7 +128,7 @@ export class FormField extends Component {
             labelWidth = this.getDefaultedProp('labelWidth', null);
 
         // Styles
-        const classes = [];
+        const classes = [this.childCssName];
         if (isRequired) classes.push('xh-form-field-required');
         if (inline) classes.push('xh-form-field-inline');
         if (minimal) classes.push('xh-form-field-minimal');
@@ -207,6 +207,11 @@ export class FormField extends Component {
     get childIsSizeable() {
         const child = this.props.children;
         return child && child.type.hasLayoutSupport;
+    }
+
+    get childCssName() {
+        const child = this.props.children;
+        return child ? `xh-form-field-${kebabCase(child.type.name)}` : null;
     }
 
     getDefaultedProp(name, defaultVal) {
