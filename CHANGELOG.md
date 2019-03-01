@@ -37,6 +37,10 @@
 * The mobile `AppBar` has been updated to more closely match the desktop `AppBar`, adding `icon`,
   `leftItems`, `hideAppMenuButton` and `appMenuButtonProps` props.
 
+### 🐞 Bug Fixes
+* `RestGrid`'s `extraToolbarItems` prop can take either a function or a string. Handles a console warning.
+
+
 ## v19.0.1 - 2019-02-12
 
 ### 🐞 Bug Fixes
