@@ -5,10 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {throwIf} from '@xh/hoist/utils/js';
 import {observable, action} from '@xh/hoist/mobx';
-import {isNil} from 'lodash';
+import {isString, isNil} from 'lodash';
 
 import {RecordSet} from './impl/RecordSet';
 import {Record} from './Record';
@@ -19,13 +18,12 @@ import {BaseStore} from './BaseStore';
  */
 export class LocalStore extends BaseStore {
 
-    processRawData = null;
+    processRawData;
+    idSpec;
 
     @observable.ref _dataLastUpdated;
     @observable.ref _all = new RecordSet([]);
     @observable.ref _filtered = this._all;
-
-    _loadModel = new PendingTaskModel();
 
     _filter = null;
 
@@ -33,12 +31,24 @@ export class LocalStore extends BaseStore {
      * @param {Object} c - LocalStore configuration.
      * @param {function} [c.processRawData] - Function to run on data
      *      presented to loadData() before creating records.
+     * @param {(function|string)} [c.idSpec] - specification for selecting or producing an immutable
+     *      unique id for each record. May be either a property (default is 'id') or a function to
+     *      create an id from a record. If there is no natural id to select/generate, you can use
+     *      `XH.genId` to generate a unique id on the fly. NOTE that in this case, grids and other
+     *      components bound to this store will not be able to maintain record state across reloads.
      * @param {function} [c.filter] - Filter function to be run.
      * @param {...*} [c.baseStoreArgs] - Additional properties to pass to BaseStore.
      */
-    constructor({processRawData = null, filter = null, ...baseStoreArgs}) {
+    constructor(
+        {
+            processRawData = null,
+            filter = null,
+            idSpec = 'id',
+            ...baseStoreArgs
+        }) {
         super(baseStoreArgs);
         this.setFilter(filter);
+        this.idSpec = idSpec;
         this.processRawData = processRawData;
         this._dataLastUpdated = new Date();
     }
@@ -83,7 +93,6 @@ export class LocalStore extends BaseStore {
     get rootRecords()       {return this._filtered.roots}
     get allRootRecords()    {return this._all.roots}
 
-    get loadModel()     {return this._loadModel}
     get filter()        {return this._filter}
     setFilter(filterFn) {
         this._filter = filterFn;
@@ -128,11 +137,17 @@ export class LocalStore extends BaseStore {
     // Private Implementation
     //------------------------
     createRecords(rawData, parent = null) {
+        const {idSpec} = this;
+        const idGen = isString(idSpec) ? r => r[idSpec] : idSpec;
+
         return rawData.map(raw => {
             if (this.processRawData) this.processRawData(raw);
 
-            // All records must have a unique, non-null ID - install a generated one if required.
-            if (isNil(raw.id)) raw.id = XH.genId();
+            raw.id = idGen(raw);
+            throwIf(
+                isNil(raw.id),
+                "Cannot load record with a null/undefined ID. Use the 'LocalStore.idSpec' config to resolve a unique ID for each record."
+            );
 
             const rec = new Record({raw, parent, fields: this.fields});
             rec.children = raw.children ? this.createRecords(raw.children, rec) : [];
@@ -143,9 +158,5 @@ export class LocalStore extends BaseStore {
     @action
     rebuildFiltered() {
         this._filtered = this._all.applyFilter(this.filter);
-    }
-
-    destroy() {
-        XH.safeDestroy(this._loadModel);
     }
 }

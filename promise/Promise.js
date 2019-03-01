@@ -7,7 +7,7 @@
 import {XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {action} from '@xh/hoist/mobx';
-import {isFunction, isNumber, castArray} from 'lodash';
+import {isFunction, isNumber, isPlainObject, castArray} from 'lodash';
 import RSVP from 'rsvp';
 
 /**
@@ -209,12 +209,18 @@ Object.assign(Promise.prototype, {
      * PendingTaskModels provide and how they can be used to coordinate masking and progress
      * messages on one or more async operations.
      *
-     * @param {PendingTaskModel} model
-     * @param {?string} [message]
+     * @param {Object|PendingTaskModel} cfg -- Configuration object, or PendingTaskModel
+     * @param {PendingTaskModel} cfg.model - PendingTaskModel to link to.
+     * @param {String} [cfg.message] - Optional custom message for use by PendingTaskModel.
+     * @param {boolean} [cfg.omit] - optional flag to indicate linkage should be skipped
+     *      If true, this method is no-op.  Provided as convenience for conditional masking.
      */
-    linkTo(model, message) {
-        if (model) {
-            model.link(this, message);
+    linkTo(cfg) {
+        if (!isPlainObject(cfg)) {
+            cfg = {model: cfg};
+        }
+        if (cfg.model && !cfg.omit) {
+            cfg.model.link(this, cfg.message);
         }
         return this;
     },

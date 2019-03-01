@@ -8,12 +8,14 @@
 import {Component} from 'react';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {HoistComponent, elem, elemFactory, AppState, XH} from '@xh/hoist/core';
+import {refreshContextView} from '@xh/hoist/core/refresh';
 import {div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {menu} from '@xh/hoist/mobile/cmp/menu';
 
 import {aboutDialog} from './AboutDialog';
 import {feedbackDialog} from './FeedbackDialog';
+import {optionsDialog} from './OptionsDialog';
 import {exceptionDialog} from './ExceptionDialog';
 import {impersonationBar} from './ImpersonationBar';
 import {loginPanel} from './LoginPanel';
@@ -23,9 +25,17 @@ import {lockoutPanel} from './LockoutPanel';
 import {toastSource} from './ToastSource';
 import {messageSource} from './MessageSource';
 
-import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
 import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
-installMobileImpls({});
+
+import {tabContainer} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
+import {colChooser, ColChooserModel} from '@xh/hoist/mobile/cmp/grid';
+import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
+
+installMobileImpls({
+    tabContainer,
+    colChooser,
+    ColChooserModel
+});
 
 /**
  * Top-level wrapper for Mobile applications.
@@ -80,7 +90,10 @@ export class AppContainer extends Component {
                     vframe(
                         impersonationBar({model: model.impersonationBarModel}),
                         updateBar({model}),
-                        frame(elem(XH.appSpec.componentClass, {model: XH.appModel})),
+                        refreshContextView({
+                            model: model.refreshContextModel,
+                            item: frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))
+                        }),
                         versionBar({model}),
                         this.renderAppMenu()
                     ),
@@ -88,6 +101,7 @@ export class AppContainer extends Component {
                     messageSource({model: model.messageSourceModel}),
                     toastSource({model: model.toastSourceModel}),
                     feedbackDialog({model: model.feedbackDialogModel}),
+                    optionsDialog({model: model.optionsDialogModel}),
                     aboutDialog({model: model.aboutDialogModel})
                 );
             default:

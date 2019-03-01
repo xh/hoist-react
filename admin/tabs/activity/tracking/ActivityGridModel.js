@@ -5,16 +5,16 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import moment from 'moment';
-import {XH, HoistModel} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
+import {action, observable, comparer} from '@xh/hoist/mobx';
 import {LocalStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
 import {dateTimeCol} from '@xh/hoist/cmp/grid';
 import {usernameCol} from '@xh/hoist/admin/columns';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 @HoistModel
+@LoadSupport
 export class ActivityGridModel {
 
     @observable startDate = moment().subtract(7, 'days').toDate();
@@ -27,8 +27,7 @@ export class ActivityGridModel {
 
     @observable detailRecord = null;
 
-    loadModel = new PendingTaskModel();
-
+    @managed
     gridModel = new GridModel({
         stateModel: 'xhActivityGrid',
         enableColChooser: true,
@@ -61,15 +60,22 @@ export class ActivityGridModel {
         ]
     });
 
-    async loadAsync() {
+    async doLoadAsync(loadSpec) {
         return XH.fetchJson({
             url: 'trackLogAdmin',
-            params: this.getParams()
+            params: this.getParams(),
+            loadSpec
         }).then(data => {
             this.gridModel.loadData(data);
-        }).linkTo(
-            this.loadModel
-        ).catchDefault();
+        }).catchDefault();
+    }
+
+    constructor() {
+        this.addReaction({
+            track: () => this.getParams(),
+            run: this.loadAsync,
+            equals: comparer.structural
+        });
     }
 
     adjustDates(dir, toToday = false) {
@@ -83,7 +89,7 @@ export class ActivityGridModel {
             newEnd = end[dir](incr, 'days');
 
         if (newEnd.diff(today, 'days') > 0 || toToday) {
-            newStart = today.clone().subtract(diff, 'days');
+            newStart = today.clone().subtract(Math.abs(diff), 'days');
             newEnd = today;
         }
 
@@ -156,9 +162,5 @@ export class ActivityGridModel {
 
     isValidDate(date) {
         return date && date.toString() !== 'Invalid Date';
-    }
-
-    destroy() {
-        XH.safeDestroy(this.gridModel);
     }
 }

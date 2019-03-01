@@ -68,6 +68,7 @@ export class Timer {
         pull(Timer._timers, this);
     }
 
+
     //----------------------
     // Implementation
     //----------------------
@@ -87,5 +88,9 @@ export class Timer {
             .catch(e => console.error('Error executing timer:', e))
             .wait(interval)
             .finally(doRun);
+    }
+
+    destroy() {
+        this.cancel();
     }
 }

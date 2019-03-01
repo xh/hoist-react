@@ -10,6 +10,8 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {checkbox as onsenCheckbox} from '@xh/hoist/kit/onsen';
 import {HoistInput} from '@xh/hoist/cmp/input';
 
+import './Checkbox.scss';
+
 /**
  * Checkbox control for boolean values.
  */

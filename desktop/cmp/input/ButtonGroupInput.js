@@ -36,7 +36,7 @@ export class ButtonGroupInput extends HoistInput {
                 const {value} = button.props;
 
                 throwIf(button.type.name !== 'Button', 'ButtonGroupInput child must be a Button.');
-                throwIf(!value, 'ButtonGroupInput child must declare a value');
+                throwIf(value == null, 'ButtonGroupInput child must declare a value');
 
                 return React.cloneElement(button, {
                     active: this.renderValue == value,

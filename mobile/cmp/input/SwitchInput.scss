@@ -1,0 +1,26 @@
+.xh-input.xh-switch-input {
+  border: none;
+  height: 22px;
+
+  .switch__toggle {
+    width: 40px;
+    background-color: var(--xh-border-color);
+    box-shadow: inset 0 0 0 2px var(--xh-border-color);
+
+    .switch__handle {
+      height: 18px;
+      width: 18px;
+      box-shadow: none;
+      left: 2px;
+    }
+  }
+
+  :checked + .switch__toggle {
+    background-color: var(--xh-accent-color);
+    box-shadow: inset 0 0 0 2px var(--xh-accent-color);
+
+    .switch__handle {
+      left: 21px;
+    }
+  }
+}

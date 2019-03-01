@@ -53,6 +53,7 @@ export class ActivityDetail extends Component {
                 value: rec.data,
                 disabled: true,
                 height: 100,
+                width: '100%',
                 editorProps: {lineWrapping: true}
             }),
             toolbar(

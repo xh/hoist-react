@@ -7,7 +7,7 @@
 
 import PT from 'prop-types';
 import {isNumber, isNaN} from 'lodash';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {fmtNumber} from '@xh/hoist/format';
 import {HoistInput} from '@xh/hoist/cmp/input';
@@ -30,6 +30,7 @@ import {wait} from '@xh/hoist/promise';
  * Set the corresponding stepSize prop(s) to null to disable this feature.
  */
 @HoistComponent
+@LayoutSupport
 export class NumberInput extends HoistInput {
 
     static propTypes = {
@@ -75,6 +76,9 @@ export class NumberInput extends HoistInput {
         /** Max decimal precision of the value, defaults to 4. */
         precision: PT.number,
 
+        /** Element to display inline on the right side of the input. */
+        rightElement: PT.element,
+
         /** True to select contents when control receives focus. */
         selectOnFocus: PT.bool,
 
@@ -83,9 +87,6 @@ export class NumberInput extends HoistInput {
 
         /** Alignment of entry text within control, default 'right'. */
         textAlign: PT.oneOf(['left', 'right']),
-
-        /** Width of the control in pixels. */
-        width: PT.number,
 
         /** True to pad with trailing zeros out to precision, default false. */
         zeroPad: PT.bool
@@ -100,10 +101,11 @@ export class NumberInput extends HoistInput {
     }
 
     render() {
-        const {props, renderValue} = this;
+        const props = this.getNonLayoutProps(),
+            {width, ...layoutProps} = this.getLayoutProps();
 
         return numericInput({
-            value: this.formatRenderValue(renderValue),
+            value: this.formatRenderValue(this.renderValue),
 
             allowNumericCharactersOnly: !props.enableShorthandUnits,
             buttonPosition: 'none',
@@ -115,6 +117,7 @@ export class NumberInput extends HoistInput {
             min: props.min,
             minorStepSize: props.minorStepSize,
             placeholder: props.placeholder,
+            rightElement: props.rightElement,
             stepSize: props.stepSize,
             tabIndex: props.tabIndex,
 
@@ -122,8 +125,9 @@ export class NumberInput extends HoistInput {
             className: this.getClassName(),
             style: {
                 ...props.style,
-                textAlign: withDefault(props.textAlign, 'right'),
-                width: props.width
+                ...layoutProps,
+                width: withDefault(width, 200),
+                textAlign: withDefault(props.textAlign, 'right')
             },
             onBlur: this.onBlur,
             onFocus: this.onFocus,
@@ -143,6 +147,7 @@ export class NumberInput extends HoistInput {
 
     onKeyPress = (ev) => {
         if (ev.key === 'Enter') this.doCommit();
+        if (this.props.onKeyPress) this.props.onKeyPress(ev);
     }
 
     formatRenderValue(value) {

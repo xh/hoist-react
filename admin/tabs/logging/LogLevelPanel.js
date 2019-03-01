@@ -11,7 +11,7 @@ import {emptyFlexCol} from '@xh/hoist/cmp/grid';
 
 @HoistComponent
 export class LogLevelPanel extends Component {
-
+    
     model = new RestGridModel({
         stateModel: 'xhLogLevelGrid',
         enableColChooser: true,
@@ -58,9 +58,5 @@ export class LogLevelPanel extends Component {
     
     render() {
         return restGrid({model: this.model});
-    }
-
-    async loadAsync() {
-        return this.model.loadAsync();
     }
 }

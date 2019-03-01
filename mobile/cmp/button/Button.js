@@ -11,6 +11,8 @@ import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {button as onsenButton} from '@xh/hoist/kit/onsen';
 import {hspacer} from '@xh/hoist/cmp/layout';
 
+import './Button.scss';
+
 /**
  * Wrapper around Onsen's Button component. Adds LayoutSupport for top-level sizing and margin/padding props.
  * Relays all other props supported by Onsen's Button.
@@ -52,7 +54,7 @@ export class Button extends Component {
             },
 
             ...rest,
-            className: this.getClassName('xh-button', active ? 'xh-button-active' : '')
+            className: this.getClassName(active ? 'xh-button-active' : null)
         });
     }
 

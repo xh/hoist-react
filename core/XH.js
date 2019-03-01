@@ -113,7 +113,7 @@ class XHClass {
     //-------------------------------
     appContainerModel = new AppContainerModel();
     routerModel = new RouterModel();
-
+    
     //-----------------------------
     // Other State
     //-----------------------------
@@ -189,7 +189,14 @@ class XHClass {
         }
     }
 
-    /** Trigger a full reload of the app. */
+    /**
+     * Trigger a full reload of the current application.
+     *
+     * This method will reload the entire application document in the browser.
+     *
+     * To simply trigger a refresh of the loadable content within the application
+     * see XH.refreshAppAsync() instead.
+     **/
     @action
     reloadApp() {
         this.appLoadModel.link(never());
@@ -197,12 +204,35 @@ class XHClass {
     }
 
     /**
+     * Refresh the current application.
+     *
+     * This method will do an "in-place" refresh of the loadable content as defined by the app.
+     * It is a short-cut to XH.refreshContextModel.refreshAsync().
+     *
+     * To trigger a full reload of the application document in the browser (including code)
+     * see XH.reloadApp() instead.
+     */
+    refreshAppAsync() {
+        return this.refreshContextModel.refreshAsync();
+    }
+
+
+    /**
      * Tracks globally loading promises.
-     * Link any async operations that should mask the entire application to this model.
+     *
+     * Applications should link any async operations that should mask the entire viewport to this model.
      */
     get appLoadModel() {
         return this.acm.appLoadModel;
     }
+
+    /**
+     * The global RefreshContextModel for this application.
+     */
+    get refreshContextModel() {
+        return this.acm.refreshContextModel;
+    }
+
 
     //------------------------
     // Theme Support
@@ -239,6 +269,16 @@ class XHClass {
     /** Route the app - shortcut to this.router.navigate. */
     navigate(...args) {
         return this.router.navigate(...args);
+    }
+
+    /** Add a routeName to the current route, preserving params */
+    appendRoute(...args) {
+        return this.routerModel.appendRoute(...args);
+    }
+
+    /** Remove last routeName from the current route, preserving params */
+    popRoute() {
+        return this.routerModel.popRoute();
     }
 
     //------------------------------
@@ -327,6 +367,11 @@ class XHClass {
     //---------------------------
     // Miscellaneous
     //---------------------------
+    /** Show a dialog for users to set app options. */
+    showOptionsDialog() {
+        return this.acm.optionsDialogModel.show();
+    }
+
     /** Show a dialog to elicit feedback text from users. */
     showFeedbackDialog() {
         return this.acm.feedbackDialogModel.show();
@@ -459,6 +504,7 @@ class XHClass {
             this.appModel = new this.appSpec.modelClass();
             await this.appModel.initAsync();
             this.startRouter();
+            this.startOptionsDialog();
             this.setAppState(S.RUNNING);
         } catch (e) {
             this.setAppState(S.LOAD_FAILED);
@@ -502,6 +548,10 @@ class XHClass {
     startRouter() {
         this.routerModel.addRoutes(this.appModel.getRoutes());
         this.router.start();
+    }
+
+    startOptionsDialog() {
+        this.acm.optionsDialogModel.setOptions(this.appModel.getAppOptions());
     }
 
     get acm() {return this.appContainerModel}

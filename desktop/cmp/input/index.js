@@ -16,4 +16,3 @@ export * from './Slider';
 export * from './SwitchInput';
 export * from './TextArea';
 export * from './TextInput';
-export * from './Label';

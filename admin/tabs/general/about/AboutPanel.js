@@ -7,6 +7,7 @@
 
 import React, {Component} from 'react';
 import {XH, HoistComponent} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
 import {div, h1, h2, table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
 import {fmtDateTime} from '@xh/hoist/format';
 
@@ -19,7 +20,7 @@ export class AboutPanel extends Component {
         return div({
             className: 'xh-admin-about-panel',
             items: [
-                h1('About This Application'),
+                h1(Icon.info(), 'About This Application'),
                 ...this.renderTables(),
                 this.renderBlurb()
             ]
@@ -51,7 +52,7 @@ export class AboutPanel extends Component {
                     row('DB Create Mode', svc.get('databaseCreateMode'))
                 )
             }),
-            h2('Framework Versions'),
+            h2(Icon.books(), 'Framework Versions'),
             table({
                 item: tbody(
                     row('Hoist Core', svc.get('hoistCoreVersion')),

@@ -13,9 +13,12 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {chart} from '@xh/hoist/desktop/cmp/chart';
 import {Icon} from '@xh/hoist/icon';
+import {VisitsChartModel} from './VisitsChartModel';
 
 @HoistComponent
 export class VisitsChart extends Component {
+    
+    model = new VisitsChartModel();
     
     render() {
         const {model} = this;
@@ -37,7 +40,7 @@ export class VisitsChart extends Component {
     // Implementation
     //-----------------------------
     renderToolbar() {
-        const model = this.model;
+        const {model} = this;
         return toolbar(
             this.dateInput({bind: 'startDate'}),
             Icon.angleRight(),
@@ -46,7 +49,6 @@ export class VisitsChart extends Component {
                 model,
                 bind: 'username',
                 placeholder: 'Username',
-                onCommit: this.onCommit,
                 width: 120
             }),
             refreshButton({model})
@@ -56,17 +58,11 @@ export class VisitsChart extends Component {
     dateInput(args) {
         return dateInput({
             model: this.model,
-            onCommit: this.onCommit,
             popoverPosition: 'top-left',
             commitOnChange: true,
             width: 100,
             ...args
         });
     }
-
-    onCommit = () => {
-        this.model.loadAsync();
-    }
 }
-
 export const visitsChart = elemFactory(VisitsChart);

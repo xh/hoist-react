@@ -9,7 +9,7 @@ import React from 'react';
 import {action, observable} from '@xh/hoist/mobx';
 import {cloneDeep, isEqual, remove, trimEnd} from 'lodash';
 import {pluralize} from '@xh/hoist/utils/js';
-import {XH, HoistModel} from '@xh/hoist/core';
+import {XH, HoistModel, managed} from '@xh/hoist/core';
 import {LocalStore} from '@xh/hoist/data';
 import {p} from '@xh/hoist/cmp/layout';
 import {GridModel} from '@xh/hoist/cmp/grid';
@@ -25,7 +25,13 @@ import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
 @HoistModel
 export class ConfigDifferModel  {
 
+    configModel;
+
+    @managed
     detailModel = new ConfigDifferDetailModel({parent: this});
+
+    @managed
+    gridModel;
 
     @observable isOpen = false;
     @observable remoteHost = null;
@@ -41,8 +47,8 @@ export class ConfigDifferModel  {
         recordsRequired: true
     };
 
-    constructor(configGrid) {
-        this.configGrid = configGrid;
+    constructor(configModel) {
+        this.configModel = configModel;
 
         this.gridModel = new GridModel({
             enableExport: true,
@@ -50,6 +56,7 @@ export class ConfigDifferModel  {
                 fields: [
                     'name', 'status', 'localValue', 'remoteValue'
                 ],
+                idSpec: 'name',
                 name: 'differ',
                 filter: (it) => it.status !== 'Identical'
             }),
@@ -96,15 +103,17 @@ export class ConfigDifferModel  {
         });
     }
 
-    async loadAsync() {
+    async doLoadAsync(loadSpec) {
+        if (loadSpec.isAutoRefresh) return;
+
         const remoteHost = trimEnd(this.remoteHost, '/'),
             apiAffix = XH.baseUrl[0] == '/' ? XH.baseUrl : '/',
             remoteBaseUrl = remoteHost + apiAffix;
 
         try {
             const resp = await Promise.all([
-                XH.fetchJson({url: XH.baseUrl + 'configDiffAdmin/configs'}),
-                XH.fetchJson({url: remoteBaseUrl + 'configDiffAdmin/configs'})
+                XH.fetchJson({url: XH.baseUrl + 'configDiffAdmin/configs', loadSpec}),
+                XH.fetchJson({url: remoteBaseUrl + 'configDiffAdmin/configs', loadSpec})
             ]).linkTo(XH.appLoadModel);
             this.processResponse(resp);
         } catch (e) {
@@ -224,7 +233,7 @@ export class ConfigDifferModel  {
             params: {records: JSON.stringify(records)}
         }).finally(() => {
             this.loadAsync();
-            this.configGrid.loadAsync();
+            this.configModel.loadAsync();
             this.detailModel.close();
         }).linkTo(
             XH.appLoadModel
@@ -278,9 +287,5 @@ export class ConfigDifferModel  {
         this.isOpen = false;
         this.gridModel.loadData([]);
         this.setRemoteHost(null);
-    }
-
-    destroy() {
-        XH.safeDestroy(this.detailModel, this.gridModel);
     }
 }

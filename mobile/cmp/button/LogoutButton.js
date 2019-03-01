@@ -9,7 +9,7 @@ import {Component} from 'react';
 import PT from 'prop-types';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {toolbarButton} from '@xh/hoist/kit/onsen';
+import {button} from '@xh/hoist/mobile/cmp/button';
 
 /**
  * Convenience Button preconfigured for use as a trigger for a logout operation.
@@ -29,8 +29,8 @@ export class LogoutButton extends Component {
         if (XH.appSpec.isSSO) return null;
 
         const {icon, onClick, ...rest} = this.props;
-        return toolbarButton({
-            item: icon || Icon.logout(),
+        return button({
+            icon: icon || Icon.logout(),
             onClick: onClick || this.onClick,
             ...rest
         });

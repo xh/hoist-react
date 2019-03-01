@@ -5,16 +5,16 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import moment from 'moment';
-import {XH, HoistModel} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
+import {action, observable, comparer} from '@xh/hoist/mobx';
 import {LocalStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {fmtDate, fmtSpan} from '@xh/hoist/format';
 import {boolCheckCol, compactDateCol} from '@xh/hoist/cmp/grid';
 import {usernameCol} from '@xh/hoist/admin/columns';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 @HoistModel
+@LoadSupport
 export class ClientErrorModel {
 
     @observable startDate = moment().subtract(7, 'days').toDate();
@@ -23,10 +23,8 @@ export class ClientErrorModel {
     @observable error = '';
 
     @observable detailRecord = null;
-
-    loadModel = new PendingTaskModel();
-
-
+    
+    @managed
     gridModel = new GridModel({
         stateModel: 'xhClientErrorGrid',
         enableColChooser: true,
@@ -51,15 +49,22 @@ export class ClientErrorModel {
         ]
     });
 
-    async loadAsync() {
+    constructor() {
+        this.addReaction({
+            track: () => this.getParams(),
+            run: this.loadAsync,
+            equals: comparer.structural
+        });
+    }
+
+    async doLoadAsync(loadSpec) {
         return XH.fetchJson({
             url: 'clientErrorAdmin',
-            params: this.getParams()
+            params: this.getParams(),
+            loadSpec
         }).then(data => {
             this.gridModel.loadData(data);
-        }).linkTo(
-            this.loadModel
-        ).catchDefault();
+        }).catchDefault();
     }
 
     adjustDates(dir, toToday = false) {
@@ -73,7 +78,7 @@ export class ClientErrorModel {
             newEnd = end[dir](incr, 'days');
 
         if (newEnd.diff(today, 'days') > 0 || toToday) {
-            newStart = today.clone().subtract(diff, 'days');
+            newStart = today.clone().subtract(Math.abs(diff), 'days');
             newEnd = today;
         }
 
@@ -128,9 +133,5 @@ export class ClientErrorModel {
 
     isValidDate(date) {
         return date && date.toString() !== 'Invalid Date';
-    }
-
-    destroy() {
-        XH.safeDestroy(this.gridModel);
     }
 }

@@ -15,10 +15,13 @@ import {button, buttonGroup, exportButton, refreshButton} from '@xh/hoist/deskto
 import {storeCountLabel} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 
+import {ActivityGridModel} from './ActivityGridModel';
 import {activityDetail} from './ActivityDetail';
 
 @HoistComponent
 export class ActivityGrid extends Component {
+
+    model = new ActivityGridModel();
 
     render() {
         const {model} = this;
@@ -28,7 +31,7 @@ export class ActivityGrid extends Component {
             items: [
                 grid({
                     model: model.gridModel,
-                    onRowDoubleClicked: this.onRowDoubleClicked
+                    onRowDoubleClicked: (e) => model.openDetail(e.data)
                 }),
                 activityDetail({model})
             ]
@@ -36,7 +39,7 @@ export class ActivityGrid extends Component {
     }
 
     renderToolbar() {
-        const model = this.model;
+        const {model} = this;
         return toolbar(
             this.dateInput({bind: 'startDate'}),
             Icon.angleRight(),
@@ -44,15 +47,15 @@ export class ActivityGrid extends Component {
             buttonGroup(
                 button({
                     icon: Icon.caretLeft(),
-                    onClick: this.onDateGoBackClick
+                    onClick: () => model.adjustDates('subtract')
                 }),
                 button({
                     icon: Icon.caretRight(),
-                    onClick: this.onDateGoForwardClick
+                    onClick: () => model.adjustDates('add')
                 }),
                 button({
                     icon: Icon.arrowToRight(),
-                    onClick: this.onGoToCurrentDateClick
+                    onClick: () => model.adjustDates('subtract', true)
                 })
             ),
             toolbarSep(),
@@ -76,7 +79,6 @@ export class ActivityGrid extends Component {
             model: this.model,
             popoverPosition: 'bottom',
             width: 100,
-            onCommit: this.onCommit,
             commitOnChange: true,
             ...args
         });
@@ -86,29 +88,8 @@ export class ActivityGrid extends Component {
         return textInput({
             model: this.model,
             width: 140,
-            onCommit: this.onCommit,
             ...args
         });
-    }
-
-    onCommit = () => {
-        this.model.loadAsync();
-    }
-
-    onDateGoBackClick = () => {
-        this.model.adjustDates('subtract');
-    }
-
-    onDateGoForwardClick = () => {
-        this.model.adjustDates('add');
-    }
-
-    onGoToCurrentDateClick = () => {
-        this.model.adjustDates('subtract', true);
-    }
-
-    onRowDoubleClicked = (e) => {
-        this.model.openDetail(e.data);
     }
 }
 export const activityGrid = elemFactory(ActivityGrid);

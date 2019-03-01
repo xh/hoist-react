@@ -6,7 +6,8 @@
  */
 import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {label, numberInput, textInput, switchInput} from '@xh/hoist/desktop/cmp/input';
+import {label} from '@xh/hoist/cmp/layout';
+import {numberInput, textInput, switchInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 
 /**
@@ -26,8 +27,7 @@ export class LogViewerToolbar extends Component {
                     min: 0,
                     width: 80,
                     disabled: model.tail,
-                    displayWithCommas: true,
-                    onCommit: this.onCommit
+                    displayWithCommas: true
                 }),
                 label('Max lines:'),
                 numberInput({
@@ -35,16 +35,14 @@ export class LogViewerToolbar extends Component {
                     bind: 'maxLines',
                     min: 1,
                     width: 80,
-                    displayWithCommas: true,
-                    onCommit: this.onCommit
+                    displayWithCommas: true
                 }),
                 toolbarSep(),
                 textInput({
                     model,
                     bind: 'pattern',
                     placeholder: 'Search...',
-                    width: 150,
-                    onCommit: this.onCommit
+                    width: 150
                 }),
                 toolbarSep(),
                 switchInput({
@@ -54,10 +52,6 @@ export class LogViewerToolbar extends Component {
                 })
             ]
         });
-    }
-
-    onCommit = () => {
-        this.model.loadLines();
     }
 }
 export const logViewerToolbar = elemFactory(LogViewerToolbar);

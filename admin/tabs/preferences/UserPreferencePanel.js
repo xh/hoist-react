@@ -81,8 +81,4 @@ export class UserPreferencePanel extends Component {
     render() {
         return restGrid({model: this.model});
     }
-
-    async loadAsync() {
-        return this.model.loadAsync();
-    }
 }

@@ -6,7 +6,7 @@
  */
 import React, {Component} from 'react';
 import PT from 'prop-types';
-import {isArray, isUndefined, isDate, isFinite, isBoolean} from 'lodash';
+import {isArray, isUndefined, isDate, isFinite, isBoolean, kebabCase} from 'lodash';
 
 import {elemFactory, HoistComponent, LayoutSupport, StableIdSupport} from '@xh/hoist/core';
 import {tooltip} from '@xh/hoist/kit/blueprint';
@@ -14,7 +14,7 @@ import {FormContext} from '@xh/hoist/cmp/form';
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {box, div, span, label as labelEl} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
-import {fmtDate, fmtNumber} from '@xh/hoist/format';
+import {fmtDateTime, fmtNumber} from '@xh/hoist/format';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 
 import './FormField.scss';
@@ -27,7 +27,11 @@ import './FormField.scss';
  * within that Form's backing `FormModel`. FormField will setup the binding between its child
  * HoistInput and the FieldModel instance and can display validation messages, switch between
  * read-only and disabled variants of its child, and source default props via the parent Form's
- * `fieldDefaults` prop,
+ * `fieldDefaults` prop.
+ *
+ * FormFields can be sized and otherwise customized via standard @LayoutSupport props. They will
+ * adjust their child Inputs to fill their available space (if appropriate given the input type),
+ * so the recommended approach is to specify any sizing on the FormField (as opposed to the Input).
  */
 @HoistComponent
 @LayoutSupport
@@ -36,20 +40,23 @@ export class FormField extends Component {
 
     static propTypes = {
 
+        /**
+         * Focus or toggle input when label is clicked.
+         * Defaulted from containing Form, or true.
+         */
+        clickableLabel: PT.bool,
+
+        /**
+         * CommitOnChange property for underlying HoistInput (for inputs that support).
+         * Defaulted from containing Form.
+         */
+        commitOnChange: PT.bool,
+
         /** Property name on bound FormModel from which to read/write data. */
         field: PT.string,
 
-        /** Label for form field. Defaults to Field displayName. Set to null to hide. */
-        label: PT.string,
-
         /** Additional description or info to be displayed alongside the input control. */
         info: PT.node,
-
-        /**
-         * Optional function for use in readonly mode. Called with the Field's current value
-         * and should return a string suitable for presentation to the end-user.
-         */
-        readonlyRenderer: PT.func,
 
         /**
          * Layout field inline with label to the left.
@@ -58,16 +65,16 @@ export class FormField extends Component {
         inline: PT.bool,
 
         /**
-         * Display validation messages in a tooltip, as opposed to inline within the component.
-         * Defaulted from containing Form, or false.
+         * Label for form field. Defaults to Field displayName. Set to null to hide.
+         * Can be defaulted from contained Form (specifically, to null to hide all labels).
          */
-        minimal: PT.bool,
-        
-        /**
-         * CommitOnChange property for underlying HoistInput (for inputs that support).
-         * Defaulted from containing Form.
-         */
-        commitOnChange: PT.bool,
+        label: PT.string,
+
+        /** Alignment of label text, default 'left'. */
+        labelAlign: PT.oneOf(['left', 'right']),
+
+        /** Width of the label in pixels. */
+        labelWidth: PT.number,
 
         /**
          * Signal a validation error by inserting a warning glyph in the far left side of the
@@ -77,10 +84,16 @@ export class FormField extends Component {
         leftErrorIcon: PT.bool,
 
         /**
-         * Focus or toggle input when label is clicked.
-         * Defaulted from containing Form, or true.
+         * Display validation messages in a tooltip, as opposed to inline within the component.
+         * Defaulted from containing Form, or false.
          */
-        clickableLabel: PT.bool
+        minimal: PT.bool,
+
+        /**
+         * Optional function for use in readonly mode. Called with the Field's current value
+         * and should return an element suitable for presentation to the end-user.
+         */
+        readonlyRenderer: PT.func
     };
 
     baseClassName = 'xh-form-field';
@@ -110,10 +123,12 @@ export class FormField extends Component {
         const inline = this.getDefaultedProp('inline', false),
             minimal = this.getDefaultedProp('minimal', false),
             leftErrorIcon = this.getDefaultedProp('leftErrorIcon', false),
-            clickableLabel = this.getDefaultedProp('clickableLabel', true);
+            clickableLabel = this.getDefaultedProp('clickableLabel', true),
+            labelAlign = this.getDefaultedProp('labelAlign', 'left'),
+            labelWidth = this.getDefaultedProp('labelWidth', null);
 
         // Styles
-        const classes = [];
+        const classes = [this.childCssName];
         if (isRequired) classes.push('xh-form-field-required');
         if (inline) classes.push('xh-form-field-inline');
         if (minimal) classes.push('xh-form-field-minimal');
@@ -128,23 +143,30 @@ export class FormField extends Component {
                     omit: !label,
                     className: 'xh-form-field-label',
                     items: [label, requiredStr],
-                    htmlFor: clickableLabel ? idAttr : null
+                    htmlFor: clickableLabel ? idAttr : null,
+                    style: {
+                        textAlign: labelAlign,
+                        width: labelWidth
+                    }
                 }),
-                div(
-                    control,
-                    div({
-                        omit: !info,
-                        className: 'xh-form-field-info',
-                        item: info
-                    }),
-                    tooltip({
-                        omit: minimal || !displayNotValid,
-                        openOnTargetFocus: false,
-                        className: 'xh-form-field-error-msg',
-                        item: errors ? errors[0] : null,
-                        content: this.getErrorTooltipContent(errors)
-                    })
-                )
+                div({
+                    className: this.childIsSizeable ? 'xh-form-field-fill' : '',
+                    items: [
+                        control,
+                        div({
+                            omit: !info,
+                            className: 'xh-form-field-info',
+                            item: info
+                        }),
+                        tooltip({
+                            omit: minimal || !displayNotValid,
+                            openOnTargetFocus: false,
+                            className: 'xh-form-field-error-msg',
+                            item: errors ? errors[0] : null,
+                            content: this.getErrorTooltipContent(errors)
+                        })
+                    ]
+                })
             ],
             className: this.getClassName(classes),
             ...this.getLayoutProps()
@@ -170,10 +192,26 @@ export class FormField extends Component {
         return formModel && field ? formModel.fields[field] : null;
     }
 
+    // Label can be provided via props, defaulted from form fieldDefaults ("null" being the expected
+    // use case to hide all labels), or sourced from fieldModel displayName.
     get label() {
-        const {fieldModel} = this,
-            {label} = this.props;
-        return isUndefined(label) ? (fieldModel ? fieldModel.displayName : null) : label;
+        const {fieldModel, form} = this;
+
+        return withDefault(
+            this.props.label,
+            form ? form.fieldDefaults.label : undefined,
+            fieldModel ? fieldModel.displayName : null
+        );
+    }
+
+    get childIsSizeable() {
+        const child = this.props.children;
+        return child && child.type.hasLayoutSupport;
+    }
+
+    get childCssName() {
+        const child = this.props.children;
+        return child ? `xh-form-field-${kebabCase(child.type.name)}` : null;
     }
 
     getDefaultedProp(name, defaultVal) {
@@ -196,6 +234,21 @@ export class FormField extends Component {
             disabled: fieldModel && fieldModel.disabled,
             id: idAttr
         };
+
+        // If a sizeable child input doesn't specify its own dimensions,
+        // the input should fill the available size of the FormField.
+        // Note: We explicitly set width / height to null to override defaults.
+        if (this.childIsSizeable) {
+            if (isUndefined(item.props.width) && isUndefined(item.props.flex)) {
+                overrides.width = null;
+                overrides.flex = 1;
+            }
+
+            if (isUndefined(item.props.height)) {
+                overrides.height = null;
+            }
+        }
+        
         if (displayNotValid && propTypes.leftIcon && leftErrorIcon) {
             overrides.leftIcon = Icon.warningCircle();
         }
@@ -224,17 +277,17 @@ export class FormField extends Component {
             value = fieldModel ? fieldModel['value'] : null,
             renderer = withDefault(this.props.readonlyRenderer, this.defaultReadonlyRenderer);
 
-        return span({
+        return div({
             className: 'xh-form-field-readonly-display',
             item: renderer(value)
         });
     }
 
     defaultReadonlyRenderer(value) {
-        if (isDate(value)) return fmtDate(value);
+        if (isDate(value)) return fmtDateTime(value);
         if (isFinite(value)) return fmtNumber(value);
         if (isBoolean(value)) return value.toString();
-        return value;
+        return span(value);
     }
 
     getErrorTooltipContent(errors) {

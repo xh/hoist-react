@@ -31,7 +31,7 @@ export class ClientErrorPanel extends Component {
             items: [
                 grid({
                     model: model.gridModel,
-                    onRowDoubleClicked: this.onRowDoubleClicked
+                    onRowDoubleClicked: (e) => model.openDetail(e.data)
                 }),
                 clientErrorDetail({model})
             ]
@@ -39,7 +39,7 @@ export class ClientErrorPanel extends Component {
     }
 
     renderToolbar() {
-        const model = this.model;
+        const {model} = this;
         return toolbar(
             this.dateInput({bind: 'startDate'}),
             Icon.angleRight(),
@@ -47,15 +47,15 @@ export class ClientErrorPanel extends Component {
             buttonGroup(
                 button({
                     icon: Icon.caretLeft(),
-                    onClick: this.onDateGoBackClick
+                    onClick: () => model.adjustDates('subtract')
                 }),
                 button({
                     icon: Icon.caretRight(),
-                    onClick: this.onDateGoForwardClick
+                    onClick: () => model.adjustDates('add')
                 }),
                 button({
                     icon: Icon.arrowToRight(),
-                    onClick: this.onGoToCurrentDateClick
+                    onClick: () => model.adjustDates('subtract', true)
                 })
             ),
             toolbarSep(),
@@ -74,8 +74,6 @@ export class ClientErrorPanel extends Component {
     dateInput(args) {
         return dateInput({
             model: this.model,
-            onCommit: this.onCommit,
-            commitOnChange: true,
             popoverPosition: 'bottom',
             width: 100,
             ...args
@@ -85,33 +83,8 @@ export class ClientErrorPanel extends Component {
     textInput(args) {
         return textInput({
             model: this.model,
-            onCommit: this.onCommit,
             width: 150,
             ...args
         });
-    }
-
-    onDateGoBackClick = () => {
-        this.model.adjustDates('subtract');
-    }
-
-    onDateGoForwardClick = () => {
-        this.model.adjustDates('add');
-    }
-
-    onGoToCurrentDateClick = () => {
-        this.model.adjustDates('subtract', true);
-    }
-
-    onCommit = () => {
-        this.loadAsync();
-    }
-
-    onRowDoubleClicked = (e) => {
-        this.model.openDetail(e.data);
-    }
-
-    async loadAsync() {
-        return this.model.loadAsync();
     }
 }
