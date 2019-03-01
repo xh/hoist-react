@@ -94,10 +94,12 @@ export class DimensionChooser extends Component {
     // Rendering top-level menus
     //---------------------------
     renderDimensionMenu() {
-        const {value, dimensions, isMenuOpen, activeMode} = this.model;
+        const {value, dimensions, isMenuOpen, activeMode} = this.model,
+            labels = value.map(it => dimensions[it].label);
 
         const target = button({
-            item: value.map(it => dimensions[it].label).join(' \u203a '),
+            item: labels.join(' \u203a '),
+            title: ` ${labels.map((it, i) => ' '.repeat(i) + '\u203a '.repeat(i ? 1 : 0) + it).join('\n')}`,
             width: this.buttonWidth,
             className: 'xh-dim-button',
             onClick: () => this.model.showMenu()
