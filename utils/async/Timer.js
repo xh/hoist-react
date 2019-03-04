@@ -6,7 +6,7 @@
  */
 import {MINUTES} from '@xh/hoist/utils/datetime';
 import {start, wait} from '@xh/hoist/promise';
-import {pull} from 'lodash';
+import {pull, isString} from 'lodash';
 
 /**
  *
@@ -26,10 +26,11 @@ export class Timer {
     static _timers = [];
 
     runFn = null;
-    interval = null;
-    delay = null;
-    timeout = null;
     cancelled = false;
+
+    intervalMs = null;
+    delayMs = null;
+    timeoutMs = null;
 
     /**
      * Create a new Timer.
@@ -38,12 +39,16 @@ export class Timer {
      *
      * @param {function} runFn
      * @param {number} interval - interval between runs, in milliseconds, if <=0 job will not run.
+     * @param {number} [intervalUnits] - value to multiply interval by to get millis [default 1]
      * @param {number} [delay] - initial delay, in milliseconds
+     * @param {number} [delayUnits] - value to multiply delay by to get millis [default 1]
      * @param {number} [timeout] - timeout for action in milliseconds, null for no timeout.
+     * @param {number} [timeoutUnits] - value to multiply timeout by to get millis [default 1]
+
      * @param {Object} [scope] - scope to run callback in
      */
-    static create({runFn, interval, delay=0, timeout=3*MINUTES, scope=this}) {
-        const ret = new Timer({runFn, interval, delay, timeout, scope});
+    static create({runFn, interval, intervalUnits = 1, delay=0, delayUnits = 1, timeout=3*MINUTES, timeoutUnits = 1, scope=this}) {
+        const ret = new Timer({runFn, interval, intervalUnits, delay, delayUnits, timeout, timeoutUnits, scope});
         this._timers.push(ret);
         return ret;
     }
@@ -74,20 +79,34 @@ export class Timer {
     //----------------------
     constructor(args) {
         args.runFn = args.runFn.bind(args.scope);
+
+        args.interval = this.processConfigString(args.interval);
+        args.timeout = this.processConfigString(args.timeout);
+        args.delay = this.processConfigString(args.delay);
+
+        this.intervalMs = args.interval * args.intervalUnits;
+        this.timeoutMs = args.timeout * args.timeoutUnits;
+        this.delayMs = args.delay * args.delayMs;
+
         Object.assign(this, args);
-        wait(this.delay).then(this.doRun);
+        wait(this.delayMs).then(this.doRun);
     }
 
     doRun = () => {
-        const {cancelled, runFn, timeout, interval, doRun}  = this;
+        const {cancelled, runFn, timeoutMs, intervalMs, doRun}  = this;
 
-        if (cancelled || interval <= 0) return;
+        if (cancelled || intervalMs <= 0) return;
 
         start(runFn)
-            .timeout(timeout)
+            .timeout(timeoutMs)
             .catch(e => console.error('Error executing timer:', e))
-            .wait(interval)
+            .wait(intervalMs)
             .finally(doRun);
+    }
+
+    processConfigString(arg) {
+        return isString(arg) ? XH.getConf(arg) : arg;
+
     }
 
     destroy() {
