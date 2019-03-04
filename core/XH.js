@@ -441,6 +441,8 @@ class XHClass {
 
         // Add xh-app class to body element to power Hoist CSS selectors
         document.body.classList.add('xh-app');
+        document.addEventListener('contextmenu', this.handleContextMenuRightClick);
+
 
         try {
             await this.installServicesAsync(FetchService, LocalStorageService);
@@ -601,6 +603,11 @@ class XHClass {
                 }
             }
         });
+    }
+
+    handleContextMenuRightClick = (ev) => {
+        if (ev.path.find(it => it.className && isString(it.className) &&
+            it.className.includes('ag-menu-list'))) ev.preventDefault()
     }
 }
 export const XH = window.XH = new XHClass();
