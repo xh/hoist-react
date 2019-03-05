@@ -10,6 +10,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon/Icon';
+import {pickBy, filter} from 'lodash';
 
 import {RestFormModel} from './impl/RestFormModel';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
@@ -34,6 +35,15 @@ export const viewAction = {
     icon: Icon.search(),
     recordsRequired: 1,
     actionFn: ({record, gridModel}) => gridModel.restGridModel.viewRecord(record)
+};
+
+export const cloneAction = {
+    text: 'Clone',
+    icon: Icon.copy(),
+    recordsRequired: 1,
+    actionFn: ({record, gridModel}) => {
+        gridModel.restGridModel.cloneRecord(record);
+    }
 };
 
 export const deleteAction = {
@@ -70,6 +80,8 @@ export class RestGridModel {
         del: 'Are you sure you want to delete the selected record?'
     };
 
+    prepareCloneFn;
+
     unit = null;
     filterFields = null;
 
@@ -98,16 +110,19 @@ export class RestGridModel {
      * @param {Object} [actionWarning] - map of action (e.g. 'add'/'edit'/'delete') to string.  See default prop.
      * @param {string} [unit] - name that describes records in this grid.
      * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
+     * @param {PrepareCloneFn} [prepareCloneFn] - called prior to passing the original record and cloned record to the editor form
      * @param {function} [enhanceToolbar] - a function used to mutate RestGridToolbar items
      * @param {RestGridEditor[]} editors - specifications for fields to be displayed in editor form.
      * @param {*} ...rest - arguments for GridModel.
      */
+
     constructor({
         readonly = false,
         toolbarActions = !readonly ? [addAction, editAction, deleteAction] : [viewAction],
         menuActions = !readonly ? [addAction, editAction, deleteAction] : [viewAction],
         formActions = !readonly ? [deleteAction] : [],
         actionWarning,
+        prepareCloneFn,
         unit = 'record',
         filterFields,
         enhanceToolbar,
@@ -121,6 +136,8 @@ export class RestGridModel {
         this.formActions = formActions;
 
         this.actionWarning = Object.assign(this.actionWarning, actionWarning);
+
+        this.prepareCloneFn = prepareCloneFn;
 
         this.unit = unit;
         this.filterFields = filterFields;
@@ -152,6 +169,15 @@ export class RestGridModel {
     @action
     addRecord() {
         this.formModel.openAdd();
+    }
+
+    @action
+    cloneRecord(record) {
+        const editableFields = filter(record.fields, 'editable').map(it => it.name),
+            clone = pickBy(record, (v, k) => editableFields.includes(k));
+        const {prepareCloneFn} = this;
+        if (prepareCloneFn) prepareCloneFn({record, clone});
+        this.formModel.openClone(clone);
     }
 
     @action
@@ -228,3 +254,11 @@ export class RestGridModel {
  * @property {Object} [fieldModel] - partial config for underlying FieldModel to be used for form display.
  *      May be used for to specify additional validation requirements.
  */
+
+/**
+ * @callback PrepareCloneFn
+ * @param {Object} input
+ * @param {input.record} original record from the REST grid
+ * @param {input.clone} cloned record that is used to populate the editor form
+ */
+

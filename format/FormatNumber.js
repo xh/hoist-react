@@ -182,6 +182,23 @@ export function fmtPercent(v, opts = {}) {
     return fmtNumber(v, opts);
 }
 
+/**
+ * Render a minimally formatted, full precision number, suitable for use in tooltips.
+ * Only ledger opt is supported.
+ *
+ * @param {number} v - value to format.
+ * @param {Object} [opts]
+ * @param {boolean} [opts.ledger] - true to use ledger format.
+ */
+export function fmtNumberTooltip(v, {ledger = false} = {}) {
+    return fmtNumber(v, {
+        ledger,
+        forceLedgerAlign: false,
+        precision: MAX_NUMERIC_PRECISION,
+        zeroPad: false
+    });
+}
+
 //---------------
 // Implementation
 //---------------
@@ -313,12 +330,7 @@ function isInvalidInput(v) {
 
 function processToolTip(tooltip, opts) {
     if (tooltip === true) {
-        return fmtNumber(opts.originalValue, {
-            ledger: opts.ledger,
-            forceLedgerAlign: false,
-            precision: MAX_NUMERIC_PRECISION,
-            zeroPad: false
-        });
+        return fmtNumberTooltip(opts.originalValue, opts);
     } else if (isFunction(tooltip)) {
         return tooltip(opts.originalValue);
     } else {
