@@ -77,11 +77,12 @@ export class RestFormModel {
         }
 
         if (warning) {
-            await XH.confirm({
+            const confirmed = await XH.confirm({
                 message: warning,
                 title: 'Warning',
                 icon: Icon.warning({size: 'lg'})
             });
+            if (!confirmed) return;
         }
 
         return this.saveRecordAsync();
@@ -122,8 +123,10 @@ export class RestFormModel {
     @action
     saveRecordAsync() {
         const {isAdd, store, formModel, currentRecord} = this,
-            record = {...currentRecord, ...formModel.getData(true)},
+            dirtyOnly = !isAdd,
+            record = {...currentRecord, ...formModel.getData(dirtyOnly)},
             saveFn = () => isAdd ? store.addRecordAsync(record) : store.saveRecordAsync(record);
+
         return saveFn()
             .then(() => this.close())
             .linkTo(this.loadModel)

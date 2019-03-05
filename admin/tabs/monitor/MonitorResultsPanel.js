@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {HoistComponent, LoadSupport} from '@xh/hoist/core';
+import {HoistComponent} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 
 import {monitorResultsToolbar} from './MonitorResultsToolbar';
@@ -16,7 +16,6 @@ import './MonitorResultsPanel.scss';
 
 
 @HoistComponent
-@LoadSupport
 export class MonitorResultsPanel extends Component {
 
     model = new MonitorResultsModel({view: this});

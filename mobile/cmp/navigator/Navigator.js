@@ -10,16 +10,25 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {navigator as onsenNavigator} from '@xh/hoist/kit/onsen';
 import {NavigatorModel} from './NavigatorModel';
 
+import './Navigator.scss';
+
+/**
+ * Top-level Component within an application, responsible for rendering pages and managing
+ * transitions between pages.
+ */
 @HoistComponent
 export class Navigator extends Component {
 
     static modelClass = NavigatorModel;
+
+    baseClassName = 'xh-navigator';
     
     render() {
-        const {model} = this,
-            {initPageModel} = model;
+        const {model} = this;
+
         return onsenNavigator({
-            initialRoute: initPageModel,
+            className: this.getClassName(),
+            initialRoute: {init: true},
             animationOptions: {duration: 0.2, delay: 0, timing: 'ease-in'},
             renderPage: (pageModel, navigator) => model.renderPage(pageModel, navigator),
             onPostPush: () => model.onPageChange(),

@@ -4,18 +4,19 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {RefreshContextModel} from '@xh/hoist/core';
+import {RefreshContextModel} from '@xh/hoist/core/refresh';
 import {TabRefreshMode} from '@xh/hoist/enums';
+import {loadAllAsync} from '@xh/hoist/core';
 
 /**
  * @private
  */
-export class TabRefreshContextModel extends RefreshContextModel {
+@RefreshContextModel
+export class TabRefreshContextModel {
 
     tabModel;
 
     constructor(tabModel)  {
-        super();
         this.tabModel = tabModel;
         this.addReaction({
             track: () => tabModel.isActive,
@@ -23,12 +24,12 @@ export class TabRefreshContextModel extends RefreshContextModel {
         });
     }
 
-    async refreshAsync({isAutoRefresh = false} = {}) {
+    async doLoadAsync(loadSpec) {
         const {tabModel} = this,
             mode = tabModel.refreshMode;
 
         if (tabModel.isActive || mode == TabRefreshMode.ALWAYS) {
-            return super.refreshAsync({isAutoRefresh});
+            return await loadAllAsync(this.refreshTargets, loadSpec);
         }
 
         if (mode == TabRefreshMode.ON_SHOW_LAZY) {
@@ -40,10 +41,10 @@ export class TabRefreshContextModel extends RefreshContextModel {
         if (isActive) {
             const mode = this.tabModel.refreshMode;
             if (mode == TabRefreshMode.ON_SHOW_ALWAYS) {
-                super.refreshAsync();
+                this.refreshAsync();
             } else if (mode == TabRefreshMode.ON_SHOW_LAZY && this.refreshPending) {
                 this.refreshPending = false;
-                super.refreshAsync();
+                this.refreshAsync();
             }
         }
     }

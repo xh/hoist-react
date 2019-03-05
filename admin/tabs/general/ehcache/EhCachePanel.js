@@ -5,19 +5,18 @@
 * Copyright © 2018 Extremely Heavy Industries Inc.
 */
 import {Component} from 'react';
-import {HoistComponent, LoadSupport} from '@xh/hoist/core';
+import {HoistComponent} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 
 import {EhCacheModel} from './EhCacheModel';
 
 @HoistComponent
-@LoadSupport
 export class EhCachePanel extends Component {
 
     model = new EhCacheModel();
@@ -43,7 +42,8 @@ export class EhCachePanel extends Component {
             }),
             filler(),
             storeCountLabel({gridModel, unit: 'cache'}),
-            storeFilterField({gridModel})
+            storeFilterField({gridModel}),
+            exportButton({gridModel})
         );
     }
 }

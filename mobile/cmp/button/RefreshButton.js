@@ -7,9 +7,10 @@
 
 import {Component} from 'react';
 import PT from 'prop-types';
-import {elemFactory, HoistComponent, RefreshContext} from '@xh/hoist/core';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {RefreshContext} from '@xh/hoist/core/refresh';
 import {Icon} from '@xh/hoist/icon';
-import {toolbarButton} from '@xh/hoist/kit/onsen';
+import {button} from '@xh/hoist/mobile/cmp/button';
 import {warnIf} from '@xh/hoist/utils/js';
 
 /**
@@ -47,8 +48,8 @@ export class RefreshButton extends Component {
             ...rest
         } = this.props;
 
-        return toolbarButton({
-            item: icon,
+        return button({
+            icon: icon,
             onClick,
             ...rest
         });

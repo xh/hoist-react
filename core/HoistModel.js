@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {EventSupport, ReactiveSupport, ManagedSupport, XhIdSupport} from './mixins';
-import {defaultMethods, markClass} from '@xh/hoist/utils/js';
+import {applyMixin} from '@xh/hoist/utils/js';
 
 
 /**
@@ -13,43 +13,22 @@ import {defaultMethods, markClass} from '@xh/hoist/utils/js';
  *
  * All State models in Hoist applications should typically be decorated with this function.
  * Adds support for managed events and mobx reactivity.
+ *
+ * A common use of HoistModel is to serve as a backing store for a HoistComponent.  Furthermore, if
+ * a model is *created* by a HoistComponent it is considered to be 'owned' (or "hosted") by that
+ * component.  An owned model will be automatically destroyed when its component is unmounted.
+ *
+ * For HoistModels that need to load/refresh data consider implementing LoadSupport.
+ * This decorator will load data into the model when its component is first mounted, and will
+ * register the model with the nearest ResfreshContextModel for subsequent refreshes.
+ *
+ * @see LoadSupport
  */
 export function HoistModel(C) {
-    markClass(C, 'isHoistModel');
-
-    C = ManagedSupport(C);
-    C = EventSupport(C);
-    C = ReactiveSupport(C);
-    C = XhIdSupport(C);
-
-    defaultMethods(C, {
-
-        /**
-         * Load or compute new / updated data for this model.
-         *
-         * @param {Object} [opts]
-         * @param {boolean} [opts.isRefresh] - true if this load was triggered by a refresh.
-         * @param {boolean} [opts.isAutoRefresh] - true if this load was triggered by a programmatic
-         *      refresh process, rather than a user action.
-         */
-        loadAsync({isRefresh = false, isAutoRefresh = false} = {}) {
-
-        },
-
-        /**
-         * Refresh this model.
-         *
-         * This method delegates to loadAsync() and should not typically be overridden/implemented.
-         * Instances of HoistModel should implement loadAsync() instead.
-         *
-         * @param {Object} [opts]
-         * @param {boolean} [opts.isAutoRefresh] - true if this load was triggered by a programmatic
-         *      refresh process, rather than a user action.
-         */
-        refreshAsync({isAutoRefresh = false} = {}) {
-            return this.loadAsync({isAutoRefresh, isRefresh: true});
-        }
+    return applyMixin(C, {
+        name: 'HoistModel',
+        includes: [ManagedSupport, EventSupport, ReactiveSupport, XhIdSupport]
     });
-
-    return C;
 }
+
+

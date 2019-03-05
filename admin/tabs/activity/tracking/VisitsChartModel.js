@@ -6,22 +6,19 @@
  */
 import moment from 'moment';
 import {forOwn} from 'lodash';
-import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {XH, HoistModel, LoadSupport, managed} from '@xh/hoist/core';
 import {observable, action, comparer} from '@xh/hoist/mobx';
 import {ChartModel} from '@xh/hoist/desktop/cmp/chart';
 import {fmtDate} from '@xh/hoist/format';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 @HoistModel
+@LoadSupport
 export class VisitsChartModel {
 
     @observable startDate = moment().subtract(3, 'months').toDate();
     @observable endDate = new Date();
     @observable username = '';
-
-    @managed
-    loadModel = new PendingTaskModel();
-
+    
     @managed
     chartModel = new ChartModel({
         config: {
@@ -54,18 +51,17 @@ export class VisitsChartModel {
         });
     }
 
-    async loadAsync() {
+    async doLoadAsync(loadSpec) {
         const params = this.getParams();
         if (!params.startDate || !params.endDate) return;
 
         return XH.fetchJson({
             url: 'trackLogAdmin/dailyVisitors',
-            params
+            params,
+            loadSpec
         }).then(data => {
             this.chartModel.setSeries(this.getSeriesData(data));
-        }).linkTo(
-            this.loadModel
-        ).catchDefault();
+        }).catchDefault();
     }
 
     @action

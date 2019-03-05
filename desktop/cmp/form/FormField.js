@@ -6,7 +6,7 @@
  */
 import React, {Component} from 'react';
 import PT from 'prop-types';
-import {isArray, isUndefined, isDate, isFinite, isBoolean} from 'lodash';
+import {isArray, isUndefined, isDate, isFinite, isBoolean, kebabCase} from 'lodash';
 
 import {elemFactory, HoistComponent, LayoutSupport, StableIdSupport} from '@xh/hoist/core';
 import {tooltip} from '@xh/hoist/kit/blueprint';
@@ -14,7 +14,7 @@ import {FormContext} from '@xh/hoist/cmp/form';
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {box, div, span, label as labelEl} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
-import {fmtDate, fmtNumber} from '@xh/hoist/format';
+import {fmtDateTime, fmtNumber} from '@xh/hoist/format';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 
 import './FormField.scss';
@@ -128,7 +128,7 @@ export class FormField extends Component {
             labelWidth = this.getDefaultedProp('labelWidth', null);
 
         // Styles
-        const classes = [];
+        const classes = [this.childCssName];
         if (isRequired) classes.push('xh-form-field-required');
         if (inline) classes.push('xh-form-field-inline');
         if (minimal) classes.push('xh-form-field-minimal');
@@ -204,14 +204,14 @@ export class FormField extends Component {
         );
     }
 
-    get hasSize() {
-        const {width, height, flex} = this.getLayoutProps();
-        return width || height || flex;
-    }
-
     get childIsSizeable() {
         const child = this.props.children;
         return child && child.type.hasLayoutSupport;
+    }
+
+    get childCssName() {
+        const child = this.props.children;
+        return child ? `xh-form-field-${kebabCase(child.type.name)}` : null;
     }
 
     getDefaultedProp(name, defaultVal) {
@@ -225,7 +225,6 @@ export class FormField extends Component {
 
     prepareChild({displayNotValid, leftErrorIcon, idAttr, errors, minimal, readonly}) {
         const {fieldModel} = this,
-            layoutProps = this.getLayoutProps(),
             item = this.props.children,
             {propTypes} = item.type;
 
@@ -236,16 +235,16 @@ export class FormField extends Component {
             id: idAttr
         };
 
-        // If FormField is sized and item doesn't specify its own dimensions,
-        // the item should fill the available size of the FormField.
+        // If a sizeable child input doesn't specify its own dimensions,
+        // the input should fill the available size of the FormField.
         // Note: We explicitly set width / height to null to override defaults.
-        if (this.hasSize && this.childIsSizeable) {
+        if (this.childIsSizeable) {
             if (isUndefined(item.props.width) && isUndefined(item.props.flex)) {
                 overrides.width = null;
                 overrides.flex = 1;
             }
 
-            if (isUndefined(item.props.height) && layoutProps.height) {
+            if (isUndefined(item.props.height)) {
                 overrides.height = null;
             }
         }
@@ -285,7 +284,7 @@ export class FormField extends Component {
     }
 
     defaultReadonlyRenderer(value) {
-        if (isDate(value)) return fmtDate(value);
+        if (isDate(value)) return fmtDateTime(value);
         if (isFinite(value)) return fmtNumber(value);
         if (isBoolean(value)) return value.toString();
         return span(value);

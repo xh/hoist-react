@@ -5,20 +5,19 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {HoistComponent, LoadSupport} from '@xh/hoist/core';
+import {HoistComponent} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 import {ServiceModel} from './ServiceModel';
 
 @HoistComponent
-@LoadSupport
 export class ServicePanel extends Component {
-
+    
     model = new ServiceModel();
 
     render() {
@@ -31,7 +30,7 @@ export class ServicePanel extends Component {
                 model: model.gridModel,
                 hideHeaders: true,
                 agOptions: {
-                    groupRowInnerRenderer: this.groupRowInnerRenderer
+                    groupRowInnerRenderer: (params) => params.value + ' Services'
                 }
             })
         });
@@ -44,24 +43,13 @@ export class ServicePanel extends Component {
             button({
                 icon: Icon.sync(),
                 text: 'Clear Caches',
-                onClick: this.onClearCachesClick,
+                onClick: () => model.clearCaches(),
                 disabled: gridModel.selModel.isEmpty
             }),
             filler(),
             storeCountLabel({gridModel, unit: 'service'}),
-            storeFilterField({gridModel})
+            storeFilterField({gridModel}),
+            exportButton({gridModel})
         );
-    }
-
-    groupRowInnerRenderer(params) {
-        return params.value + ' Services';
-    }
-
-    onClearCachesClick = () => {
-        this.model.clearCaches();
-    }
-
-    async loadAsync() {
-        return this.model.loadAsync();
     }
 }

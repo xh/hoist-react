@@ -76,6 +76,7 @@ export class Panel extends Component {
             headerItems,
             mask: maskProp,
             children,
+            model: modelProp,
             ...rest
         } = this.getNonLayoutProps();
 

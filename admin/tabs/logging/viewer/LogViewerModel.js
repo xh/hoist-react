@@ -4,31 +4,38 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
 import {find} from 'lodash';
-import {action, observable} from '@xh/hoist/mobx';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {action, observable, bindable} from '@xh/hoist/mobx';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {UrlStore} from '@xh/hoist/data';
+import {SECONDS, olderThan} from '@xh/hoist/utils/datetime';
+import {Timer} from '@xh/hoist/utils/async';
+import {debounced} from '@xh/hoist/utils/js';
+
+import {LogDisplayModel} from './LogDisplayModel';
 
 /**
  * @private
  */
 @HoistModel
+@LoadSupport
 export class LogViewerModel {
 
     // Form State/Display options
-    @observable tail = true;
-    @observable startLine = null;
-    @observable maxLines = 1000;
-    @observable pattern = '';
+    @bindable tail = true;
+    @bindable startLine = null;
+    @bindable maxLines = 1000;
+    @bindable pattern = '';
 
     // Overall State
     @observable file = null;
-    @observable.ref rows = [];
 
     @managed
-    loadModel = new PendingTaskModel();
+    timer = null;
+
+    @managed
+    logDisplayModel = new LogDisplayModel(this);
 
     @managed
     filesGridModel = new GridModel({
@@ -45,93 +52,41 @@ export class LogViewerModel {
         ]
     });
 
-    constructor() {
+    constructor(cmp) {
+        this.component = cmp;
         this.addReaction(this.syncSelectionReaction());
         this.addReaction(this.toggleTailReaction());
         this.addReaction(this.reloadReaction());
+
+        this.timer = Timer.create({
+            runFn: () => this.autoRefreshLines(),
+            delay: 5 * SECONDS,
+            interval: 5 * SECONDS
+        });
     }
-    
+
     @action
-    async loadAsync() {
+    async doLoadAsync(loadSpec) {
         const {store, selModel} = this.filesGridModel;
-        await store.loadAsync();
+        await store.loadAsync(loadSpec);
         if (selModel.isEmpty) {
             const latestAppLog = find(store.records, ['filename', `${XH.appCode}.log`]);
             if (latestAppLog) {
                 selModel.select(latestAppLog);
             }
         }
-        this.loadLines();
     }
 
-    loadLines() {
-        if (!this.file) {
-            this.setRows([]);
-        } else {
-            this.fetchFileAsync();
-        }
-    }
-
-    @action
-    setRows(rows) {
-        this.rows = rows;
-    }
-
-    @action
-    setTail(tail) {
-        this.tail = tail;
-    }
-
-    @action
-    setStartLine(startLine) {
-        this.startLine = startLine;
-    }
-
-    @action
-    setMaxLines(maxLines) {
-        this.maxLines = maxLines;
-    }
-
-    @action
-    setPattern(pattern) {
-        this.pattern = pattern;
-    }
 
     //---------------------------------
     // Implementation
     //---------------------------------
-    fetchFileAsync({isAutoRefresh = false} = {}) {
-        if (!this.file) return;
-
-        return XH
-            .fetchJson({
-                url: 'logViewerAdmin/getFile',
-                params: {
-                    filename: this.file,
-                    startLine: this.startLine,
-                    maxLines: this.maxLines,
-                    pattern: this.pattern
-                }
-            })
-            .then(response => {
-                if (!response.success) throw new Error(response.exception);
-                this.setRows(this.startLine ? response.content : response.content.reverse());
-            })
-            .linkTo(isAutoRefresh ? null : this.loadModel)
-            .catch(e => {
-                // Show errors inline in the viewer vs. a modal alert or catchDefault().
-                const msg = e.message || 'An unknown error occurred';
-                this.setRows([[0, `Error: ${msg}`]]);
-                console.error(e);
-            });
-    }
-
     syncSelectionReaction() {
         return {
             track: () => this.filesGridModel.selectedRecord,
             run: (rec) => {
                 this.file = rec ? rec.filename : null;
-                this.loadLines();
+                this.loadLog();
             },
             delay: 300
         };
@@ -140,17 +95,34 @@ export class LogViewerModel {
     reloadReaction() {
         return {
             track: () => [this.pattern, this.maxLines, this.startLine],
-            run: this.loadLines
+            run: () => this.loadLog()
         };
     }
 
     toggleTailReaction() {
         return {
             track: () => this.tail,
-            run: (checked) => {
-                this.setStartLine(checked ? null : 1);
-                this.fetchFileAsync();
+            run: (tail) => {
+                this.setStartLine(tail ? null : 1);
+                this.loadLog();
             }
         };
+    }
+
+    autoRefreshLines() {
+        const {logDisplayModel, component, tail} = this;
+
+        if (tail &&
+            logDisplayModel.tailIsDisplayed &&
+            olderThan(logDisplayModel.lastLoadCompleted, 5 * SECONDS) &&
+            component.isDisplayed
+        ) {
+            logDisplayModel.refreshAsync();
+        }
+    }
+
+    @debounced(300)
+    loadLog() {
+        this.logDisplayModel.loadAsync();
     }
 }

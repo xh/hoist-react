@@ -1,0 +1,30 @@
+.xh-tab {
+  .xh-tab-icon {
+    height: 28px;
+    line-height: 26px;
+    font-size: 24px;
+  }
+
+  .xh-tab-label:first-child {
+    font-size: 16px;
+  }
+
+  .xh-tab-icon + .xh-tab-label {
+    font-size: 10px;
+    line-height: 1;
+  }
+}
+
+.xh-tabbar {
+  &.xh-tabbar-top .tabbar {
+    border-bottom: var(--xh-border-solid);
+  }
+  &.xh-tabbar-bottom .tabbar {
+    border-top: var(--xh-border-solid);
+  }
+
+  // Tab visibility is managed via TabContainerModel.renderMode, rather than Onsen's internal state.
+  .ons-swiper-target.active:not(.swiping) > .xh-page:not([shown]) {
+    visibility: initial;
+  }
+}

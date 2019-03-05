@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel, XH, LoadSupport, managed} from '@xh/hoist/core';
 import {LocalStore} from '@xh/hoist/data';
 import {allSettled} from '@xh/hoist/promise';
 import {GridModel} from '@xh/hoist/cmp/grid';
@@ -13,15 +13,15 @@ import {boolCheckCol} from '@xh/hoist/cmp/grid';
 import {usernameCol} from '@xh/hoist/admin/columns';
 import {bindable, action} from '@xh/hoist/mobx/index';
 import {keyBy, keys} from 'lodash';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 @HoistModel
+@LoadSupport
 export class UserModel {
 
     @bindable activeOnly = true;
+    @bindable withRolesOnly = false;
 
-    loadModel = new PendingTaskModel();
-
+    @managed
     gridModel = new GridModel({
         stateModel: 'xhUserGrid',
         enableColChooser: true,
@@ -42,22 +42,29 @@ export class UserModel {
 
     constructor() {
         this.addReaction({
-            track: () => [this.activeOnly],
-            run: () => this.loadAsync()
+            track: () => [this.activeOnly, this.withRolesOnly],
+            run: this.loadAsync
         });
     }
 
     @action
-    async loadAsync() {
+    async doLoadAsync(loadSpec) {
         // Knit users and roles back together again here on the admin client.
         // We could make this something the server can produce on its own...
-        const userLoad = XH.fetchJson({url: 'userAdmin/users', params: {activeOnly: this.activeOnly}}),
-            rolesLoad = XH.fetchJson({url: 'userAdmin/roles'});
+        const userLoad = XH.fetchJson({
+            url: 'userAdmin/users',
+            params: {activeOnly: this.activeOnly},
+            loadSpec
+        });
+        const rolesLoad = XH.fetchJson({
+            url: 'userAdmin/roles',
+            loadSpec
+        });
 
         return allSettled([
             userLoad, rolesLoad
         ]).then(results => {
-            const users = results[0].value,
+            let users = results[0].value,
                 byUsername = keyBy(users, 'username'),
                 roleMappings = results[1].value;
 
@@ -73,10 +80,12 @@ export class UserModel {
                 });
             });
 
+            if (this.withRolesOnly) {
+                users = users.filter(it => it.roles.length != 0);
+            }
+
             this.gridModel.loadData(users);
-        }).linkTo(
-            this.loadModel
-        ).catchDefault();
+        }).catchDefault();
     }
 }
 

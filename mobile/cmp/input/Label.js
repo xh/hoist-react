@@ -9,6 +9,7 @@ import PT from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 
+import './Label.scss';
 import {HoistInput} from '@xh/hoist/cmp/input/HoistInput';
 
 /**

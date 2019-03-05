@@ -17,6 +17,13 @@ export class AboutDialogModel {
 
     @observable isOpen = false;
 
+    init() {
+        this.addReaction({
+            track: () => XH.routerState,
+            run: () => this.hide()
+        });
+    }
+
     @action
     show() {
         this.isOpen = true;
