@@ -36,6 +36,10 @@
   title, and icon, as well as support for top and bottom toolbars.
 * The mobile `AppBar` has been updated to more closely match the desktop `AppBar`, adding `icon`,
   `leftItems`, `hideAppMenuButton` and `appMenuButtonProps` props.
+* `cloneAction` is now available as a new action through the RestGridModel. The action calls
+`prepareCloneFn`, if available on the RestGridModel, to perform any transform
+operations before rendering the form. 
+
 
 ## v19.0.1 - 2019-02-12
 
