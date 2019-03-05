@@ -66,7 +66,7 @@ export class Record {
             this[name] = val;
         });
     }
-
+    
     /**
      * Return a filtered version of this record.
      *
