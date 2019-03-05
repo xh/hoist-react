@@ -7,17 +7,17 @@
 
 import {Component} from 'react';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-import {HoistComponent, elemFactory, XH} from '@xh/hoist/core';
+import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {filler, vframe} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {form} from '@xh/hoist/cmp/form';
 import {Icon} from '@xh/hoist/icon';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 
-import {restControl} from './RestControl';
-
 import './RestForm.scss';
+import {restFormField} from './RestFormField';
 
 @HoistComponent
 export class RestForm extends Component {
@@ -25,84 +25,72 @@ export class RestForm extends Component {
     baseClassName = 'xh-rest-form';
 
     render() {
-        const {record, isAdd, isWritable} = this.model;
-        if (!record) return null;
+        const {model} = this,
+            {isAdd, readonly, isOpen} = this.model;
+        if (!isOpen) return null;
 
         return dialog({
-            title: isAdd ? 'Add Record' : (isWritable ? 'Edit Record' : 'View Record'),
+            title: isAdd ? 'Add Record' : (!readonly ? 'Edit Record' : 'View Record'),
             icon: isAdd ? Icon.add() : Icon.edit(),
             className: this.getClassName(),
             isOpen: true,
             isCloseButtonShown: false,
-            items: this.getDialogItems()
+            items: [
+                this.renderForm(),
+                this.renderToolbar(),
+                mask({model: model.loadModel, spinner: true})
+            ],
+            transitionName: 'none'
         });
     }
 
     //------------------------
     // Implementation
     //------------------------
-    getDialogItems() {
-        const model = this.model;
-        return [
-            dialogBody(this.getForm()),
-            toolbar(this.getButtons()),
-            mask({model: model.loadModel, spinner: true})
-        ];
-    }
+    renderForm() {
+        const {model} = this,
+            formFields = model.editors.map(editor => {
+                return restFormField({editor, model});
+            });
 
-    getForm() {
-        const {isWritable} = this.model;
-        return vframe(
-            this.model.controlModels.map((model,
-                idx) => restControl({model, disabled: !isWritable, autoFocus: idx === 0}))
+        return dialogBody(
+            form({
+                model: model.formModel,
+                fieldDefaults: {
+                    commitOnChange: true,
+                    minimal: true,
+                    inline: true,
+                    labelWidth: 120,
+                    labelAlign: 'right'
+                },
+                item: vframe(formFields)
+            })
         );
     }
 
-    getButtons() {
-        const {isValid, isWritable, isDirty, record, actions, parent} = this.model;
-
-        return [
+    renderToolbar() {
+        const {model} = this,
+            {formModel} = model;
+        return toolbar(
             recordActionBar({
-                actions,
-                record,
-                gridModel: parent.gridModel
+                actions: model.actions,
+                record: model.currentRecord,
+                gridModel: model.parent.gridModel
             }),
             filler(),
             button({
-                text: isWritable ? 'Cancel' : 'Close',
-                onClick: this.onCloseClick
+                text: formModel.readonly ? 'Close' : 'Cancel',
+                onClick: () => model.close()
             }),
             button({
                 text: 'Save',
                 icon: Icon.check(),
                 intent: 'success',
-                disabled: !isValid || !isDirty,
-                onClick: this.onSaveClick,
-                omit: !isWritable
+                disabled: !formModel.isDirty,
+                onClick: () => model.validateAndSaveAsync(),
+                omit: formModel.readonly
             })
-        ];
+        );
     }
-
-    onCloseClick = () => {
-        this.model.close();
-    };
-
-    onSaveClick = () => {
-        const model = this.model,
-            isAdd = model.isAdd,
-            warning = model.actionWarning[isAdd ? 'add' : 'edit'];
-
-        if (warning) {
-            XH.confirm({
-                message: warning,
-                title: 'Warning',
-                icon: Icon.warning({size: 'lg'}),
-                onConfirm: () => model.saveRecord()
-            });
-        } else {
-            model.saveRecord();
-        }
-    };
 }
-
 export const restForm = elemFactory(RestForm);

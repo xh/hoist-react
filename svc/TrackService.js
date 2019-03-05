@@ -24,16 +24,23 @@ export class TrackService {
      * @param {number} [options.elapsed] - time in milliseconds the activity took.
      * @param {string} [options.severity] - importance flag, such as: OK|WARN|EMERGENCY
      *      (errors should be tracked by the ErrorTrackingService, not sent in this TrackService).
+     * @param {LoadSpec} [options.loadSpec] - optional LoadSpec associated with this track.
+     *      If load is an auto-refresh (loadSpec.autoRefresh = true), this tracking will be skipped.
      */
     track(options) {
+        if (options.loadSpec && options.loadSpec.isAutoRefresh) return;
+
         let msg = options;
         if (typeof msg !== 'string') {
             msg = options.msg !== undefined ? options.msg : options.message;
         }
+        
+        const username = XH.getUsername();
+        if (!username) return;
 
         const params = {
             msg: stripTags(msg),
-            clientUsername: XH.getUsername()
+            clientUsername: username
         };
 
         try {

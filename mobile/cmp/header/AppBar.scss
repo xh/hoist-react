@@ -1,0 +1,22 @@
+.xh-appbar {
+  display: flex;
+  background-color: var(--xh-navbar-bg);
+  color: var(--xh-navbar-title-color);
+
+  .xh-appbar-title {
+    font-size: var(--xh-navbar-title-font-size-px);
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .xh-appbar-left,
+  .xh-appbar-right {
+    display: flex;
+  }
+
+  .xh-button {
+    background: transparent !important;
+  }
+}

@@ -6,28 +6,24 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {tabContainer, TabContainerModel} from '@xh/hoist/desktop/cmp/tab';
+import {tabContainer} from '@xh/hoist/cmp/tab';
 
 import {PreferencePanel} from './PreferencePanel';
 import {UserPreferencePanel} from './UserPreferencePanel';
 
-
 @HoistComponent
 export class PreferencesTab extends Component {
 
-    localModel = new TabContainerModel({
-        route: 'default.preferences',
-        tabs: [
-            {id: 'prefs', content: PreferencePanel},
-            {id: 'userPrefs', content: UserPreferencePanel, reloadOnShow: true}
-        ]
-    });
-
-    async loadAsync() {
-        this.model.requestRefresh();
-    }
-    
     render() {
-        return tabContainer({model: this.model, switcherPosition: 'left'});
+        return tabContainer({
+            model: {
+                route: 'default.preferences',
+                switcherPosition: 'left',
+                tabs: [
+                    {id: 'prefs', content: PreferencePanel},
+                    {id: 'userPrefs', content: UserPreferencePanel, reloadOnShow: true}
+                ]
+            }
+        });
     }
 }

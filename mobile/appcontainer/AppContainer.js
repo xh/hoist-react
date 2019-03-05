@@ -5,15 +5,17 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {Children, Component} from 'react';
+import {Component} from 'react';
 import {observable, runInAction} from '@xh/hoist/mobx';
-import {HoistComponent, elemFactory, AppState, XH} from '@xh/hoist/core';
+import {HoistComponent, elem, elemFactory, AppState, XH} from '@xh/hoist/core';
+import {refreshContextView} from '@xh/hoist/core/refresh';
 import {div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {menu} from '@xh/hoist/mobile/cmp/menu';
 
 import {aboutDialog} from './AboutDialog';
 import {feedbackDialog} from './FeedbackDialog';
+import {optionsDialog} from './OptionsDialog';
 import {exceptionDialog} from './ExceptionDialog';
 import {impersonationBar} from './ImpersonationBar';
 import {loginPanel} from './LoginPanel';
@@ -23,6 +25,18 @@ import {lockoutPanel} from './LockoutPanel';
 import {toastSource} from './ToastSource';
 import {messageSource} from './MessageSource';
 
+import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
+
+import {tabContainer} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
+import {colChooser, ColChooserModel} from '@xh/hoist/mobile/cmp/grid';
+import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
+
+installMobileImpls({
+    tabContainer,
+    colChooser,
+    ColChooserModel
+});
+
 /**
  * Top-level wrapper for Mobile applications.
  *
@@ -31,10 +45,12 @@ import {messageSource} from './MessageSource';
  * impersonation bar header, version bar footer, an app-wide load mask, a base context menu,
  * popup message support, and exception rendering.
  *
- * @see HoistApp.containerClass
+ * @see AppSpec.containerClass
  */
 @HoistComponent
 export class AppContainer extends Component {
+
+    static modelClass = AppContainerModel;
 
     @observable.ref caughtException = null;
 
@@ -74,7 +90,10 @@ export class AppContainer extends Component {
                     vframe(
                         impersonationBar({model: model.impersonationBarModel}),
                         updateBar({model}),
-                        frame(Children.only(this.props.children)),
+                        refreshContextView({
+                            model: model.refreshContextModel,
+                            item: frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))
+                        }),
                         versionBar({model}),
                         this.renderAppMenu()
                     ),
@@ -82,6 +101,7 @@ export class AppContainer extends Component {
                     messageSource({model: model.messageSourceModel}),
                     toastSource({model: model.toastSourceModel}),
                     feedbackDialog({model: model.feedbackDialogModel}),
+                    optionsDialog({model: model.optionsDialogModel}),
                     aboutDialog({model: model.aboutDialogModel})
                 );
             default:
@@ -98,7 +118,7 @@ export class AppContainer extends Component {
     // Implementation
     //------------------------
     renderAppMenu() {
-        const model = XH.app.appMenuModel;
+        const model = XH.appModel.appMenuModel;
         if (!model) return null;
         return menu({
             model: model,

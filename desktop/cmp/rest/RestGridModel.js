@@ -4,14 +4,15 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from '@xh/hoist/core';
+import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
-import {GridModel} from '@xh/hoist/desktop/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {pluralize} from '@xh/hoist/utils/js';
+import {pluralize, throwIf} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon/Icon';
 
 import {RestFormModel} from './impl/RestFormModel';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 export const addAction = {
     text: 'Add',
@@ -50,11 +51,15 @@ export const deleteAction = {
  * Core Model for a RestGrid.
  */
 @HoistModel
+@LoadSupport
 export class RestGridModel {
 
     //----------------
     // Properties
     //----------------
+    readonly;
+
+    editors;
     toolbarActions;
     menuActions;
     formActions;
@@ -68,8 +73,14 @@ export class RestGridModel {
     unit = null;
     filterFields = null;
 
+    @managed
     gridModel = null;
+
+    @managed
     formModel = null;
+
+    @managed
+    loadModel = new PendingTaskModel();
 
     get store() {return this.gridModel.store}
 
@@ -80,6 +91,7 @@ export class RestGridModel {
     get selectedRecord() {return this.gridModel.selectedRecord}
 
     /**
+     * @param {boolean} [readonly] - Prevent users from creating, updating, or destroying a record. Defaults to false.
      * @param {Object[]|RecordAction[]} [toolbarActions] - actions to display in the toolbar. Defaults to add, edit, delete.
      * @param {Object[]|RecordAction[]} [menuActions] - actions to display in the grid context menu. Defaults to add, edit, delete.
      * @param {Object[]|RecordAction[]} [formActions] - actions to display in the form toolbar. Defaults to delete.
@@ -87,13 +99,14 @@ export class RestGridModel {
      * @param {string} [unit] - name that describes records in this grid.
      * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
      * @param {function} [enhanceToolbar] - a function used to mutate RestGridToolbar items
-     * @param {Object[]} editors - array of editors
+     * @param {RestGridEditor[]} editors - specifications for fields to be displayed in editor form.
      * @param {*} ...rest - arguments for GridModel.
      */
     constructor({
-        toolbarActions = [addAction, editAction, deleteAction],
-        menuActions = [addAction, editAction, deleteAction],
-        formActions = [deleteAction],
+        readonly = false,
+        toolbarActions = !readonly ? [addAction, editAction, deleteAction] : [viewAction],
+        menuActions = !readonly ? [addAction, editAction, deleteAction] : [viewAction],
+        formActions = !readonly ? [deleteAction] : [],
         actionWarning,
         unit = 'record',
         filterFields,
@@ -101,6 +114,8 @@ export class RestGridModel {
         editors = [],
         ...rest
     }) {
+        this.readonly = readonly;
+        this.editors = editors;
         this.toolbarActions = toolbarActions;
         this.menuActions = menuActions;
         this.formActions = formActions;
@@ -113,21 +128,17 @@ export class RestGridModel {
 
         this.gridModel = new GridModel({
             contextMenuFn: this.contextMenuFn,
-            exportFilename: pluralize(unit),
+            exportOptions: {filename: pluralize(unit)},
             restGridModel: this,
             ...rest
         });
 
-        this.formModel = new RestFormModel({
-            parent: this,
-            editors,
-            actions: formActions
-        });
+        this.formModel = new RestFormModel(this);
     }
 
     /** Load the underlying store. */
-    loadAsync(...args) {
-        return this.store.loadAsync(...args);
+    doLoadAsync(loadSpec) {
+        return this.store.loadAsync(loadSpec);
     }
 
     /** Load the underlying store. */
@@ -138,7 +149,6 @@ export class RestGridModel {
     //-----------------
     // Actions
     //------------------
-
     @action
     addRecord() {
         this.formModel.openAdd();
@@ -152,6 +162,7 @@ export class RestGridModel {
 
     @action
     deleteRecord(record) {
+        throwIf(this.readonly, 'Record not deleted: this grid is read-only');
         this.store.deleteRecordAsync(record)
             .then(() => this.formModel.close())
             .catchDefault();
@@ -203,11 +214,17 @@ export class RestGridModel {
         }
     }
 
-    export(...args) {
-        this.gridModel.export(...args);
-    }
-
-    destroy() {
-        XH.safeDestroy(this.gridModel, this.formModel);
+    async exportAsync(...args) {
+        return this.gridModel.exportAsync(...args);
     }
 }
+
+/**
+ * @typedef {Object} RestGridEditor
+ * @property {String} field - name of field to appear in the editor form.  Should correspond to member in
+ *      the store's Fields collection.
+ * @property {Object} formField - partial config for FormField to be used to display this field.  Used to specify
+ *      control to be used for this Field.
+ * @property {Object} [fieldModel] - partial config for underlying FieldModel to be used for form display.
+ *      May be used for to specify additional validation requirements.
+ */

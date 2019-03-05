@@ -1,5 +1,12 @@
 .xh-rest-form {
-  &__control {
-    margin-bottom: var(--xh-pad-px);
+  width: 470px;
+
+  .xh-form-field {
+    margin-bottom: var(--xh-pad-half-px);
+  }
+
+  .xh-form-field-label {
+    margin-right: var(--xh-pad-half-px);
+    font-weight: bold;
   }
 }

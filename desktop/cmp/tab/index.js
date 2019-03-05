@@ -4,8 +4,4 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-export * from './container/TabContainer';
-export * from './container/TabContainerModel';
-export * from './pane/Tab';
-export * from './pane/TabModel';
-export * from './switcher/TabSwitcher';
+export * from './TabSwitcher';

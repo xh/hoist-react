@@ -8,9 +8,11 @@ import {Component} from 'react';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
-import {textArea} from '@xh/hoist/desktop/cmp/form';
+import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
+
+import {FeedbackDialogModel} from '@xh/hoist/core/appcontainer/FeedbackDialogModel';
 
 /**
  * A simple dialog component to collect user feedback from directly within the application.
@@ -21,6 +23,8 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 @HoistComponent
 export class FeedbackDialog extends Component {
 
+    static modelClass = FeedbackDialogModel;
+
     render() {
         const {model} = this;
         if (!model.isOpen) return null;
@@ -29,37 +33,33 @@ export class FeedbackDialog extends Component {
             title: 'Submit Feedback',
             style: {width: 450},
             isOpen: true,
-            onClose: this.onCloseClick,
+            onClose: () => this.model.hide(),
             canOutsideClickClose: false,
             items: [
                 textArea({
                     placeholder: 'Please enter your comments...',
-                    style: {height: 250, marginBottom: 2},
+                    width: null,
+                    height: 250,
+                    style: {marginBottom: 2},
+                    commitOnChange: true,
                     model,
-                    field: 'message'
+                    bind: 'message'
                 }),
                 toolbar(
                     filler(),
                     button({
                         text: 'Cancel',
-                        onClick: this.onCloseClick
+                        onClick: () => this.model.hide()
                     }),
                     button({
                         text: 'Send',
                         intent: 'success',
-                        onClick: this.onSendClick
+                        disabled: !model.message,
+                        onClick: () => this.model.submitAsync()
                     })
                 )
             ]
         });
-    }
-
-    onSendClick = () => {
-        this.model.submitAsync();
-    }
-
-    onCloseClick = () => {
-        this.model.hide();
     }
 }
 export const feedbackDialog = elemFactory(FeedbackDialog);

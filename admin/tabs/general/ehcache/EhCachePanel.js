@@ -6,11 +6,11 @@
 */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {grid} from '@xh/hoist/desktop/cmp/grid';
+import {grid} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
-import {button, refreshButton} from '@xh/hoist/desktop/cmp/button';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 
@@ -19,43 +19,31 @@ import {EhCacheModel} from './EhCacheModel';
 @HoistComponent
 export class EhCachePanel extends Component {
 
-    localModel = new EhCacheModel();
+    model = new EhCacheModel();
 
     render() {
+        const {model} = this;
+
         return panel({
+            mask: model.loadModel,
             tbar: this.renderToolbar(),
-            item: grid({model: this.model.gridModel})
+            item: grid({model: model.gridModel})
         });
     }
 
     renderToolbar() {
-        const model = this.model,
-            {store} = model.gridModel;
+        const {model} = this,
+            {gridModel} = model;
         return toolbar(
             button({
                 icon: Icon.sync(),
                 text: 'Clear All',
-                onClick: this.onClearAllClick
+                onClick: () => model.clearAll()
             }),
-            toolbarSep(),
-            refreshButton({model}),
             filler(),
-            storeCountLabel({
-                store,
-                unit: 'cache'
-            }),
-            storeFilterField({
-                store,
-                fields: ['name', 'status']
-            })
+            storeCountLabel({gridModel, unit: 'cache'}),
+            storeFilterField({gridModel}),
+            exportButton({gridModel})
         );
-    }
-
-    onClearAllClick = () => {
-        this.model.clearAll();
-    }
-
-    async loadAsync() {
-        return this.model.loadAsync();
     }
 }

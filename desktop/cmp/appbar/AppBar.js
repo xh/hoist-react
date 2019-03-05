@@ -6,10 +6,10 @@
  */
 
 import {Component} from 'react';
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
 import {navbar, navbarGroup} from '@xh/hoist/kit/blueprint';
-import {feedbackButton, launchAdminButton, logoutButton, refreshButton, themeToggleButton} from '@xh/hoist/desktop/cmp/button';
+import {appMenuButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {span} from '@xh/hoist/cmp/layout';
 import {appBarSeparator} from '@xh/hoist/desktop/cmp/appbar';
 import {isEmpty} from 'lodash';
@@ -26,33 +26,29 @@ import './AppBar.scss';
 @HoistComponent
 export class AppBar extends Component {
     static propTypes = {
-        /** Icon to display before the title. */
+
+        /** Icon to display to the left of the title. */
         icon: PT.element,
+
         /**
-         * Title to display to the left side of the AppBar. Defaults to the application name if not
-         * provided.
+         * Title to display to the left side of the AppBar. Defaults to XH.clientAppName.
          */
         title: PT.string,
+
         /** Items to be added to the left side of the AppBar, immediately after the title (or . */
         leftItems: PT.node,
+
         /** Items to be added to the right side of the AppBar, before the standard buttons. */
         rightItems: PT.node,
-        /**
-         * Set to true to hide the Launch Admin button. Will be automatically hidden for users
-         * without the HOIST_ADMIN role.
-         */
-        hideAdminButton: PT.bool,
-        /** Set to true to hide the Feedback button. */
-        hideFeedbackButton: PT.bool,
-        /** Set to true to hide the Theme Toggle button. */
-        hideThemeButton: PT.bool,
-        /**
-         * Set to true to hide the Logout button. Will be automatically hidden for applications with
-         * logout disabled.
-         */
-        hideLogoutButton: PT.bool,
-        /** Set to true to hide the Refresh button. */
-        hideRefreshButton: PT.bool
+
+        /** True to hide the Refresh button. */
+        hideRefreshButton: PT.bool,
+
+        /** True to hide the AppMenuButton. */
+        hideAppMenuButton: PT.bool,
+
+        /** Options to pass to the AppMenuButton. */
+        appMenuButtonOptions: PT.object
     };
 
     baseClassName = 'xh-appbar';
@@ -63,11 +59,9 @@ export class AppBar extends Component {
             title,
             leftItems,
             rightItems,
-            hideAdminButton,
-            hideFeedbackButton,
-            hideThemeButton,
-            hideLogoutButton,
-            hideRefreshButton
+            hideRefreshButton,
+            hideAppMenuButton,
+            appMenuButtonOptions = {}
         } = this.props;
 
         return navbar({
@@ -77,7 +71,7 @@ export class AppBar extends Component {
                     align: 'left',
                     items: [
                         icon,
-                        span({className: 'xh-appbar-title', item: title || XH.appName}),
+                        span({className: 'xh-appbar-title', item: title || XH.clientAppName}),
                         appBarSeparator({omit: isEmpty(leftItems)}),
                         ...leftItems || []
                     ]
@@ -86,15 +80,8 @@ export class AppBar extends Component {
                     align: 'right',
                     items: [
                         ...rightItems || [],
-                        feedbackButton({omit: hideFeedbackButton}),
-                        themeToggleButton({omit: hideThemeButton}),
-                        launchAdminButton({omit: hideAdminButton}),
-                        logoutButton({omit: hideLogoutButton}),
-                        refreshButton({
-                            omit: hideRefreshButton,
-                            intent: 'success',
-                            onClick: () => XH.app.requestRefresh(true)
-                        })
+                        refreshButton({omit: hideRefreshButton}),
+                        appMenuButton({omit: hideAppMenuButton, ...appMenuButtonOptions})
                     ]
                 })
             ]

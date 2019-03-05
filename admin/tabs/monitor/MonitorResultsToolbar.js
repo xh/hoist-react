@@ -8,17 +8,21 @@
 import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {hbox, filler} from '@xh/hoist/cmp/layout';
-import {label} from '@xh/hoist/desktop/cmp/form';
+import {label} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {Icon} from '@xh/hoist/icon';
+import {MonitorResultsModel} from './MonitorResultsModel';
 
 /**
  * @private
  */
 @HoistComponent
 export class MonitorResultsToolbar extends Component {
+
+    modelClass = MonitorResultsModel;
+
     render() {
         const {passed, warned, failed, forceRunAllMonitors, lastRun} = this.model;
 

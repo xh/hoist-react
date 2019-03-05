@@ -11,12 +11,15 @@ import {box} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import './VersionBar.scss';
+import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
 
 /**
  * @private
  */
 @HoistComponent
 export class VersionBar extends Component {
+
+    static modelClass = AppContainerModel;
 
     render() {
         const env = XH.getEnv('appEnvironment'),

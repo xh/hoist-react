@@ -5,10 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import PT from 'prop-types';
 import {cloneDeep} from 'lodash';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {vbox, hframe} from '@xh/hoist/cmp/layout';
-import {grid} from '@xh/hoist/desktop/cmp/grid';
+import {grid} from '@xh/hoist/cmp/grid';
+
+import {LeftRightChooserModel} from './LeftRightChooserModel';
 
 import {description} from './impl/Description';
 import {chooserToolbar} from './impl/ChooserToolbar';
@@ -24,6 +27,13 @@ import './LeftRightChooser.scss';
 @LayoutSupport
 export class LeftRightChooser extends Component {
 
+    static modelClass = LeftRightChooserModel;
+
+    static propTypes = {
+        /** Primary component model instance. */
+        model: PT.oneOfType([PT.instanceOf(LeftRightChooserModel), PT.object]).isRequired
+    };
+
     baseClassName = 'xh-lr-chooser';
 
     render() {
@@ -32,7 +42,9 @@ export class LeftRightChooser extends Component {
             gridOptions = {
                 onRowDoubleClicked: (e) => model.moveRows([e.data]),
                 agOptions: {
-                    enableColResize: false
+                    defaultColDef: {
+                        resizable: false
+                    }
                 }
             },
             leftGridOptions = cloneDeep(gridOptions),
@@ -42,8 +54,6 @@ export class LeftRightChooser extends Component {
         if (!rightGroupingExpanded) rightGridOptions.agOptions.groupDefaultExpanded = 0;
 
         return vbox({
-            ...this.getLayoutProps(),
-            className: this.getClassName(),
             items: [
                 hframe({
                     className: 'xh-lr-chooser__grid-frame',
@@ -54,7 +64,9 @@ export class LeftRightChooser extends Component {
                     ]
                 }),
                 description({model})
-            ]
+            ],
+            className: this.getClassName(),
+            ...this.getLayoutProps()
         });
     }
 }

@@ -10,23 +10,8 @@
     margin-right: 10px;
   }
 
-  .select {
+  .xh-select {
     flex: 1;
-    padding: 4px 10px;
-    display: flex;
-    align-items: center;
-    height: 20px;
-    background-color: var(--xh-btn-color);
-    border-radius: 3px;
-
-    select {
-      font-size: 14px;
-      line-height: 20px;
-      color: white;
-      // Change arrow icon to white
-      background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2aWV3Qm94PSI0Ni4wNzEgMTUzLjM2OCA1NDkuODU4IDMzNS4yNjMiPiAgPGRlZnM+ICAgIDxwYXRoIGlkPSJhIiBkPSJNNTUuODYgMjMzLjkyQzQ0LjE0IDIyMi4yIDQ0LjE0IDIwMy4yIDU1Ljg2IDE5MS40OUM1OC42OSAxODguNjYgODEuMzYgMTY1Ljk5IDg0LjE5IDE2My4xNkM5NS44OSAxNTEuNDYgMTE0Ljg0IDE1MS40NCAxMjYuNTcgMTYzLjExQzEzOS40NiAxNzUuOTQgMjAzLjk0IDI0MC4xMiAzMjAgMzU1LjYzQzQzNi4wNiAyNDAuMTIgNTAwLjU0IDE3NS45NCA1MTMuNDMgMTYzLjExQzUyNS4xNiAxNTEuNDQgNTQ0LjExIDE1MS40NiA1NTUuODEgMTYzLjE2QzU1OC42NCAxNjUuOTkgNTgxLjMxIDE4OC42NiA1ODQuMTQgMTkxLjQ5QzU5NS44NiAyMDMuMjEgNTk1Ljg2IDIyMi4yIDU4NC4xNCAyMzMuOTJDNTU5Ljg1IDI1OC4yMSAzNjUuNTEgNDUyLjU1IDM0MS4yMSA0NzYuODVDMzI5LjUgNDg4LjU2IDMxMC41IDQ4OC41NiAyOTguNzkgNDc2Ljg1QzI1MC4yIDQyOC4yNiA4MC4xNSAyNTguMjEgNTUuODYgMjMzLjkyWiIvPiAgPC9kZWZzPiAgPHVzZSBmaWxsPSIjZmZmIiB4bGluazpocmVmPSIjYSIvPiAgPHVzZSBmaWxsLW9wYWNpdHk9IjAiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLW9wYWNpdHk9IjAiIHhsaW5rOmhyZWY9IiNhIi8+PC9zdmc+);
-      background-size: 10px;
-    }
   }
 
   .xh-button {

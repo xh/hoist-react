@@ -6,10 +6,12 @@
  */
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {filler} from '@xh/hoist/cmp/layout';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {button} from '@xh/hoist/mobile/cmp/button';
-import {textArea} from '@xh/hoist/mobile/cmp/form';
+import {textArea} from '@xh/hoist/mobile/cmp/input';
 
+import {FeedbackDialogModel} from '@xh/hoist/core/appcontainer/FeedbackDialogModel';
 import './FeedbackDialog.scss';
 
 /**
@@ -19,6 +21,8 @@ import './FeedbackDialog.scss';
  */
 @HoistComponent
 export class FeedbackDialog extends Component {
+
+    static modelClass = FeedbackDialogModel;
 
     render() {
         const {model} = this;
@@ -32,9 +36,10 @@ export class FeedbackDialog extends Component {
             content: textArea({
                 placeholder: 'Please enter your comments...',
                 model,
-                field: 'message'
+                bind: 'message'
             }),
             buttons: [
+                filler(),
                 button({
                     text: 'Cancel',
                     modifier: 'quiet',

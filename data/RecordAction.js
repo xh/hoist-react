@@ -15,8 +15,8 @@ import {isBoolean, isNumber, isNil, isEmpty} from 'lodash';
  * and call their `actionFn` when clicked, passing it a data object sourced from the selected row(s)
  * or node(s) on the underlying grid or data view.
  *
- * The `displayFn` callback provides a means by which applications can customize any display
- * properties of the action prior to each render.
+ * The `displayFn` callback allows apps to customize any display properties of the action prior to
+ * each render by returning an object with keys/values to override (e.g. `{hidden: true}`).
  *
  * @see RecordActionBar
  * @see StoreContextMenu
@@ -88,16 +88,19 @@ export class RecordAction {
      * @param {*} [p...rest] - additional data provided by the context where this action presides
      */
     getDisplaySpec({record, selectedRecords, gridModel, column, ...rest}) {
-        const recordCount = record && isEmpty(selectedRecords) ? 1 : selectedRecords.length,
-            defaultDisplay = {
-                icon: this.icon,
-                text: this.text,
-                intent: this.intent,
-                tooltip: this.tooltip,
-                items: this.items,
-                hidden: this.hidden,
-                disabled: this.disabled || !this.meetsRecordRequirement(recordCount)
-            };
+        const recordCount = record && isEmpty(selectedRecords) ?
+            1 :
+            selectedRecords ? selectedRecords.length : 0;
+
+        const defaultDisplay = {
+            icon: this.icon,
+            text: this.text,
+            intent: this.intent,
+            tooltip: this.tooltip,
+            items: this.items,
+            hidden: this.hidden,
+            disabled: this.disabled || !this.meetsRecordRequirement(recordCount)
+        };
 
         if (this.displayFn) {
             return {
@@ -127,6 +130,7 @@ export class RecordAction {
      * @param {*} [p...rest] - additional data provided by the context where this action presides
      */
     call({record, selectedRecords, gridModel, column, ...rest}) {
+        if (!this.actionFn) return;
         this.actionFn({action: this, record, selectedRecords, gridModel, column, ...rest});
     }
 
@@ -157,4 +161,5 @@ export class RecordAction {
  * @param {Object} [p.record] - row data object (entire row, if any).
  * @param {Object[]} [p.selection] - all currently selected records (if any).
  * @param {*} [p...rest] - additional data provided by the context where this action presides
+ * @returns {Object} - display configs to override for this render of the action.
  */

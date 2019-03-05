@@ -7,13 +7,14 @@
 
 import {Component} from 'react';
 import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
-import {fragment} from '@xh/hoist/cmp/layout';
+import {fragment, filler} from '@xh/hoist/cmp/layout';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
 import './ExceptionDialog.scss';
 import {exceptionDialogDetails} from './ExceptionDialogDetails';
+import {ExceptionDialogModel} from '@xh/hoist/core/appcontainer/ExceptionDialogModel';
 
 /**
  * Dialog for display of exceptions, with support for viewing a detailed stacktrace
@@ -23,6 +24,8 @@ import {exceptionDialogDetails} from './ExceptionDialogDetails';
  */
 @HoistComponent
 export class ExceptionDialog extends Component {
+
+    static modelClass = ExceptionDialogModel;
 
     render() {
         const {model} = this,
@@ -45,6 +48,7 @@ export class ExceptionDialog extends Component {
                         onClick: this.onShowDetailsClick,
                         omit: !model.options.showAsError
                     }),
+                    filler(),
                     dismissButton({model})
                 ]
             }),
@@ -78,7 +82,6 @@ class DismissButton extends Component {
             }) :
             button({
                 text: 'Close',
-                modifier: 'outline',
                 onClick: this.onCloseClick
             });
     }

@@ -18,7 +18,7 @@ import {message} from './Message';
 export class MessageSource extends Component {
     render() {
         const models = this.model.msgModels,
-            children = models.map(model => message({model}));
+            children = models.map(model => message({model, key: model.xhId}));
         return children.length ? fragment(...children) : null;
     }
 }

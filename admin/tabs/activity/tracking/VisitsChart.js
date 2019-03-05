@@ -7,24 +7,32 @@
 
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {dateInput, textInput} from '@xh/hoist/desktop/cmp/form';
+import {dateInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {chart} from '@xh/hoist/desktop/cmp/chart';
 import {Icon} from '@xh/hoist/icon';
+import {VisitsChartModel} from './VisitsChartModel';
 
 @HoistComponent
 export class VisitsChart extends Component {
     
+    model = new VisitsChartModel();
+    
     render() {
-        const {sizingModel, chartModel} = this.model;
+        const {model} = this;
         return panel({
+            mask: model.loadModel,
             icon: Icon.users(),
             title: 'Unique Daily Visitors',
-            item: chart({model: chartModel}),
+            item: chart({model: model.chartModel}),
             bbar: this.renderToolbar(),
-            sizingModel
+            model: {
+                defaultSize: 500,
+                side: 'bottom',
+                prefName: 'xhAdminActivityChartSize'
+            }
         });
     }
 
@@ -32,16 +40,15 @@ export class VisitsChart extends Component {
     // Implementation
     //-----------------------------
     renderToolbar() {
-        const model = this.model;
+        const {model} = this;
         return toolbar(
-            this.dateInput({field: 'startDate'}),
+            this.dateInput({bind: 'startDate'}),
             Icon.angleRight(),
-            this.dateInput({field: 'endDate'}),
+            this.dateInput({bind: 'endDate'}),
             textInput({
                 model,
-                field: 'username',
+                bind: 'username',
                 placeholder: 'Username',
-                onCommit: this.onCommit,
                 width: 120
             }),
             refreshButton({model})
@@ -51,17 +58,11 @@ export class VisitsChart extends Component {
     dateInput(args) {
         return dateInput({
             model: this.model,
-            onCommit: this.onCommit,
             popoverPosition: 'top-left',
             commitOnChange: true,
             width: 100,
             ...args
         });
     }
-
-    onCommit = () => {
-        this.model.loadAsync();
-    }
 }
-
 export const visitsChart = elemFactory(VisitsChart);

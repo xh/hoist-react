@@ -6,51 +6,52 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {grid} from '@xh/hoist/desktop/cmp/grid';
+import {grid} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
-import {switchInput} from '@xh/hoist/desktop/cmp/form';
+import {switchInput} from '@xh/hoist/desktop/cmp/input';
+import {exportButton} from '@xh/hoist/desktop/cmp/button';
+
 
 import {UserModel} from './UserModel';
 
 @HoistComponent
 export class UserPanel extends Component {
 
-    localModel = new UserModel();
+    model = new UserModel();
 
     render() {
+        const {model} = this;
         return panel({
+            mask: model.loadModel,
             tbar: this.renderToolbar(),
             item: grid({
-                model: this.model.gridModel
+                model: model.gridModel
             })
         });
     }
 
     renderToolbar() {
-        const model = this.model,
-            {store} = model.gridModel;
+        const {model} = this,
+            {gridModel} = model;
         return toolbar(
             switchInput({
                 model,
-                field: 'activeOnly',
+                bind: 'activeOnly',
                 label: 'Active only'
             }),
-            filler(),
-            storeCountLabel({
-                store,
-                unit: 'user'
+            toolbarSep(),
+            switchInput({
+                model,
+                bind: 'withRolesOnly',
+                label: 'With roles only'
             }),
-            storeFilterField({
-                store,
-                fields: ['username', 'email', 'displayName', 'roles']
-            })
+            filler(),
+            storeCountLabel({gridModel, unit: 'user'}),
+            storeFilterField({gridModel}),
+            exportButton({gridModel})
         );
-    }
-
-    async loadAsync() {
-        return this.model.loadAsync();
     }
 }

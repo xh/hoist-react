@@ -6,31 +6,28 @@
  */
 
 import {Component} from 'react';
-import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
-import {button} from '@xh/hoist/kit/blueprint';
+import {button, Button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
+import {withDefault} from '@xh/hoist/utils/js';
 
 /**
  * Convenience Button preconfigured for use as a trigger for the XH feedback dialog.
- *
  * Can be provided an onClick handler, otherwise will call default framework handler.
  */
 @HoistComponent
 export class FeedbackButton extends Component {
 
     static propTypes = {
-        icon: PT.element,
-        title: PT.string,
-        onClick: PT.func
+        ...Button.propTypes
     };
 
     render() {
         const {icon, title, onClick, ...rest} = this.props;
         return button({
-            icon: icon || Icon.comment(),
-            title: title || 'Feedback',
-            onClick: onClick || this.onFeedbackClick,
+            icon: withDefault(icon, Icon.comment({className: 'fa-flip-horizontal'})),
+            title: withDefault(title, 'Feedback'),
+            onClick: withDefault(onClick, this.showFeedbackDialog),
             ...rest
         });
     }
@@ -38,7 +35,7 @@ export class FeedbackButton extends Component {
     //---------------------------
     // Implementation
     //---------------------------
-    onFeedbackClick = () => {
+    showFeedbackDialog = () => {
         XH.showFeedbackDialog();
     }
 

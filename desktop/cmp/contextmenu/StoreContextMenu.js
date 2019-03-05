@@ -5,10 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {isEmpty, isString, flatten, isPlainObject} from 'lodash';
+import {isEmpty, isString, flatten} from 'lodash';
 import {RecordAction} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
-import {throwIf} from '@xh/hoist/utils/js';
 
 /**
  * Model for ContextMenus interacting with data provided by Hoist data stores, typically via a Grid.
@@ -23,7 +22,7 @@ export class StoreContextMenu {
 
     /**
      * @param {Object} c - StoreContextMenu configuration.
-     * @param {Object[]} c.items - RecordAction configs or token strings to create.
+     * @param {Object[]} c.items - RecordActions, configs or token strings to create.
      *
      *      If a String, value can be '-' for a separator, a Hoist token (below),
      *      or a token supported by ag-Grid for its native menu items.
@@ -48,9 +47,7 @@ export class StoreContextMenu {
     buildRecordAction(item) {
         if (isString(item)) return this.parseToken(item);
 
-        throwIf(!isPlainObject(item), 'Only strings and RecordAction config objects are supported as context menu items!');
-
-        const ret = new RecordAction(item);
+        const ret = (item instanceof RecordAction) ? item : new RecordAction(item);
         if (!isEmpty(ret.items)) {
             ret.items = ret.items.map(it => this.buildRecordAction(it));
         }
@@ -74,7 +71,7 @@ export class StoreContextMenu {
                     icon: Icon.download(),
                     hidden: !gridModel || !gridModel.enableExport,
                     disabled: !gridModel || !gridModel.store.count,
-                    actionFn: () => gridModel.export({type: 'excelTable'})
+                    actionFn: () => gridModel.exportAsync({type: 'excelTable'})
                 });
             case 'exportCsv':
                 return new RecordAction({
@@ -82,7 +79,7 @@ export class StoreContextMenu {
                     icon: Icon.download(),
                     hidden: !gridModel || !gridModel.enableExport,
                     disabled: !gridModel || !gridModel.store.count,
-                    actionFn: () => gridModel.export({type: 'csv'})
+                    actionFn: () => gridModel.exportAsync({type: 'csv'})
                 });
             case 'copyCell':
                 return new RecordAction({

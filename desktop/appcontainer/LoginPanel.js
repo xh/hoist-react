@@ -10,10 +10,12 @@ import {text} from '@xh/hoist/kit/blueprint';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {vspacer, box, filler, viewport} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {textInput} from '@xh/hoist/desktop/cmp/form';
+import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
+
+import {LoginPanelModel} from '@xh/hoist/core/appcontainer/LoginPanelModel';
 
 import './LoginPanel.scss';
 
@@ -26,8 +28,10 @@ import './LoginPanel.scss';
 @HoistComponent
 export class LoginPanel extends Component {
 
+    static modelClass = LoginPanelModel;
+
     render() {
-        const {loginMessage} = XH.app;
+        const {loginMessage} = XH.appSpec;
         const {model} = this;
 
         return viewport({
@@ -36,28 +40,31 @@ export class LoginPanel extends Component {
             flexDirection: 'column',
             items: [
                 panel({
+                    title: XH.clientAppName,
+                    icon: Icon.login(),
                     className: 'xh-login',
                     width: 300,
-                    title: `Welcome to ${XH.appName}`,
                     items: [
                         vspacer(10),
                         textInput({
                             model,
-                            field: 'username',
+                            bind: 'username',
                             placeholder: 'Username...',
                             autoFocus: true,
                             commitOnChange: true,
                             onKeyPress: this.onKeyPress,
-                            autoComplete: 'on'
+                            autoComplete: 'on',
+                            width: null
                         }),
                         textInput({
                             model,
-                            field: 'password',
+                            bind: 'password',
                             placeholder: 'Password...',
                             type: 'password',
                             commitOnChange: true,
                             onKeyPress: this.onKeyPress,
-                            autoComplete: 'on'
+                            autoComplete: 'on',
+                            width: null
                         }),
                         text({
                             omit: !model.warning,

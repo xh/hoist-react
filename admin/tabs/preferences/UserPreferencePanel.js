@@ -12,7 +12,7 @@ import {usernameCol} from '@xh/hoist/admin/columns';
 @HoistComponent
 export class UserPreferencePanel extends Component {
 
-    localModel = new RestGridModel({
+    model = new RestGridModel({
         stateModel: 'xhUserPreferenceGrid',
         enableColChooser: true,
         enableExport: true,
@@ -24,7 +24,6 @@ export class UserPreferencePanel extends Component {
                     name: 'name',
                     label: 'Pref',
                     lookupName: 'names',
-                    lookupStrict: true,
                     editable: 'onAdd',
                     required: true
                 },
@@ -32,7 +31,7 @@ export class UserPreferencePanel extends Component {
                     name: 'groupName',
                     label: 'Group',
                     lookupName: 'groupNames',
-                    required: true
+                    editable: false
                 },
                 {
                     name: 'type',
@@ -67,13 +66,13 @@ export class UserPreferencePanel extends Component {
             {field: 'name', width: 200},
             {field: 'type', width: 100},
             {field: 'username', ...usernameCol},
-            {field: 'groupName', headerName: 'Group', width: 100},
+            {field: 'groupName', hidden: true},
             {field: 'userValue', minWidth: 200, flex: true}
         ],
         editors: [
             {field: 'name'},
             {field: 'username'},
-            {field: 'userValue', type: 'boolSelect'},
+            {field: 'userValue'},
             {field: 'lastUpdated'},
             {field: 'lastUpdatedBy'}
         ]
@@ -81,9 +80,5 @@ export class UserPreferencePanel extends Component {
 
     render() {
         return restGrid({model: this.model});
-    }
-
-    async loadAsync() {
-        return this.model.loadAsync();
     }
 }

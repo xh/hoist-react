@@ -11,12 +11,15 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import './UpdateBar.scss';
+import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
 
 /**
  * @private
  */
 @HoistComponent
 export class UpdateBar extends Component {
+
+    static modelClass = AppContainerModel;
 
     render() {
         const {updateVersion} = this.model,
@@ -28,11 +31,13 @@ export class UpdateBar extends Component {
             className,
             items: [
                 Icon.rocket({size: 'lg'}),
-                div('An application update is available!'),
+                div(`A new version of ${XH.clientAppName} is available!`),
                 button({
                     icon: Icon.refresh(),
                     intent: 'primary',
+                    minimal: false,
                     small: true,
+                    marginLeft: 10,
                     text: `Update to ${updateVersion}`,
                     onClick: this.reloadApp
                 })

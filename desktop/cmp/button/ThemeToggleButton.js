@@ -4,44 +4,38 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
 import {Component} from 'react';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {button, HotkeysTarget, hotkeys, hotkey} from '@xh/hoist/kit/blueprint';
+import {button, Button} from '@xh/hoist/desktop/cmp/button';
+import {withDefault} from '@xh/hoist/utils/js';
 
 /**
  * Convenience Button preconfigured for use as a trigger for light/dark theme toggling.
- * Theme can also be toggled via a global Shift+t keyboard shortcut.
  */
 @HoistComponent
-@HotkeysTarget
 export class ThemeToggleButton extends Component {
 
-    renderHotkeys() {
-        return hotkeys(
-            hotkey({
-                global: true,
-                combo: 'shift + t',
-                label: 'Toggle Theme',
-                onKeyDown: this.onThemeToggleClick
-            })
-        );
+    static propTypes = {
+        ...Button.propTypes
     }
 
     render() {
+        const {icon, title, onClick, ...rest} = this.props;
         return button({
-            icon: XH.darkTheme ? Icon.sun() : Icon.moon(),
-            title: XH.darkTheme ? 'Switch to light theme' : 'Switch to dark theme',
-            onClick: this.onThemeToggleClick
+            icon: withDefault(icon, XH.darkTheme ? Icon.sun({prefix: 'fas'}) : Icon.moon()),
+            title: withDefault(title, XH.darkTheme ? 'Switch to light theme' : 'Switch to dark theme'),
+            onClick: withDefault(onClick, this.toggleTheme),
+            ...rest
         });
     }
 
-    //---------------------------
+    //------------------------
     // Implementation
-    //---------------------------
-    onThemeToggleClick = () => {
+    //------------------------
+    toggleTheme = () => {
         XH.toggleTheme();
     }
+
 }
 export const themeToggleButton = elemFactory(ThemeToggleButton);

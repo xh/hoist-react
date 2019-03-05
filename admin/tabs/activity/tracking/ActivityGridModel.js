@@ -5,19 +5,20 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import moment from 'moment';
-import {XH, HoistModel} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
+import {action, observable, comparer} from '@xh/hoist/mobx';
 import {LocalStore} from '@xh/hoist/data';
-import {GridModel} from '@xh/hoist/desktop/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
-import {dateTimeCol} from '@xh/hoist/columns';
+import {dateTimeCol} from '@xh/hoist/cmp/grid';
 import {usernameCol} from '@xh/hoist/admin/columns';
 
 @HoistModel
+@LoadSupport
 export class ActivityGridModel {
 
-    @observable startDate = moment().toDate();
-    @observable endDate = moment().toDate();
+    @observable startDate = moment().subtract(7, 'days').toDate();
+    @observable endDate = moment().add(1, 'days').toDate();  // https://github.com/exhi/hoist-react/issues/400
     @observable username = '';
     @observable msg = '';
     @observable category = '';
@@ -26,11 +27,12 @@ export class ActivityGridModel {
 
     @observable detailRecord = null;
 
+    @managed
     gridModel = new GridModel({
         stateModel: 'xhActivityGrid',
         enableColChooser: true,
         enableExport: true,
-        exportFilename: () => `Activity ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`,
+        exportOptions: {filename: () => `Activity ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`},
         store: new LocalStore({
             fields: [
                 'severity', 'dateCreated', 'username', 'msg', 'category',
@@ -58,13 +60,22 @@ export class ActivityGridModel {
         ]
     });
 
-    async loadAsync() {
+    async doLoadAsync(loadSpec) {
         return XH.fetchJson({
             url: 'trackLogAdmin',
-            params: this.getParams()
+            params: this.getParams(),
+            loadSpec
         }).then(data => {
             this.gridModel.loadData(data);
         }).catchDefault();
+    }
+
+    constructor() {
+        this.addReaction({
+            track: () => this.getParams(),
+            run: this.loadAsync,
+            equals: comparer.structural
+        });
     }
 
     adjustDates(dir, toToday = false) {
@@ -78,7 +89,7 @@ export class ActivityGridModel {
             newEnd = end[dir](incr, 'days');
 
         if (newEnd.diff(today, 'days') > 0 || toToday) {
-            newStart = today.clone().subtract(diff, 'days');
+            newStart = today.clone().subtract(Math.abs(diff), 'days');
             newEnd = today;
         }
 
@@ -151,9 +162,5 @@ export class ActivityGridModel {
 
     isValidDate(date) {
         return date && date.toString() !== 'Invalid Date';
-    }
-
-    destroy() {
-        XH.safeDestroy(this.gridModel);
     }
 }

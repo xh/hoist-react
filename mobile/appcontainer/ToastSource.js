@@ -9,6 +9,7 @@ import {head} from 'lodash';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';
 import {toast} from './Toast';
+import {ToastSourceModel} from '@xh/hoist/core/appcontainer/ToastSourceModel';
 
 /**
  *  Support for popping global Toasts into the DOM.
@@ -21,6 +22,8 @@ import {toast} from './Toast';
 @HoistComponent
 export class ToastSource extends Component {
 
+    static modelClass = ToastSourceModel;
+
     render() {
         const pending = this.model.toastModels.filter(it => it.isOpen),
             next = head(pending);
@@ -30,7 +33,7 @@ export class ToastSource extends Component {
         if (!next.dismissFn) {
             next.dismissFn = wait(next.timeout).then(() => next.dismiss());
         }
-        return toast({model: next});
+        return toast({model: next, key: next.xhId});
     }
 }
 export const toastSource = elemFactory(ToastSource);

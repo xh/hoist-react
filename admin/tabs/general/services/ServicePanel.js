@@ -6,27 +6,31 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {grid} from '@xh/hoist/desktop/cmp/grid';
+import {grid} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
-import {refreshButton, button} from '@xh/hoist/desktop/cmp/button';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 import {ServiceModel} from './ServiceModel';
 
 @HoistComponent
 export class ServicePanel extends Component {
-
-    localModel = new ServiceModel();
+    
+    model = new ServiceModel();
 
     render() {
+        const {model} = this;
+
         return panel({
+            mask: model.loadModel,
             tbar: this.renderToolbar(),
             item: grid({
-                model: this.model.gridModel,
+                model: model.gridModel,
+                hideHeaders: true,
                 agOptions: {
-                    groupRowInnerRenderer: this.groupRowInnerRenderer
+                    groupRowInnerRenderer: (params) => params.value + ' Services'
                 }
             })
         });
@@ -34,37 +38,18 @@ export class ServicePanel extends Component {
 
     renderToolbar() {
         const {model} = this,
-            {store, selModel} = model.gridModel;
+            {gridModel} = model;
         return toolbar(
             button({
                 icon: Icon.sync(),
                 text: 'Clear Caches',
-                onClick: this.onClearCachesClick,
-                disabled: selModel.isEmpty
+                onClick: () => model.clearCaches(),
+                disabled: gridModel.selModel.isEmpty
             }),
-            toolbarSep(),
-            refreshButton({model}),
             filler(),
-            storeCountLabel({
-                store,
-                unit: 'service'
-            }),
-            storeFilterField({
-                store,
-                fields: ['name']
-            })
+            storeCountLabel({gridModel, unit: 'service'}),
+            storeFilterField({gridModel}),
+            exportButton({gridModel})
         );
-    }
-
-    groupRowInnerRenderer(params) {
-        return params.value + ' Services';
-    }
-
-    onClearCachesClick = () => {
-        this.model.clearCaches();
-    }
-
-    async loadAsync() {
-        return this.model.loadAsync();
     }
 }

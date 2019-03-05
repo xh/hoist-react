@@ -5,13 +5,13 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {escapeRegExp, isEqual} from 'lodash';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {textInput} from '@xh/hoist/desktop/cmp/form';
+import {textInput} from '@xh/hoist/desktop/cmp/input';
 
 /**
  * A Component that can bind to a LeftRightChooser and filter both lists
@@ -21,11 +21,14 @@ import {textInput} from '@xh/hoist/desktop/cmp/form';
 export class LeftRightChooserFilter extends Component {
 
     static propTypes = {
-        /** Names of fields in chooser to filter by */
+
+        /** Names of fields in chooser on which to filter. */
         fields: PT.arrayOf(PT.string).isRequired,
-        /** True to prevent regex start line anchor from being added */
+
+        /** True to prevent regex start line anchor from being added. */
         anyMatch: PT.bool,
-        /** A LeftRightChooserModel to bind to */
+
+        /** A LeftRightChooserModel to bind to. */
         model: PT.object.isRequired
     };
 

@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {elemFactory} from '@xh/hoist/core';
 import {start} from '@xh/hoist/promise';
 import {menuDivider, menuItem, menu} from '@xh/hoist/kit/blueprint';

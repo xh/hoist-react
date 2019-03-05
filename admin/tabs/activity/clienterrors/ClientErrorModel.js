@@ -4,17 +4,17 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-
 import moment from 'moment';
-import {XH, HoistModel} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
+import {action, observable, comparer} from '@xh/hoist/mobx';
 import {LocalStore} from '@xh/hoist/data';
-import {GridModel} from '@xh/hoist/desktop/cmp/grid';
-import {fmtDate} from '@xh/hoist/format';
-import {boolCheckCol, compactDateCol} from '@xh/hoist/columns';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {fmtDate, fmtSpan} from '@xh/hoist/format';
+import {boolCheckCol, compactDateCol} from '@xh/hoist/cmp/grid';
 import {usernameCol} from '@xh/hoist/admin/columns';
 
 @HoistModel
+@LoadSupport
 export class ClientErrorModel {
 
     @observable startDate = moment().subtract(7, 'days').toDate();
@@ -23,12 +23,13 @@ export class ClientErrorModel {
     @observable error = '';
 
     @observable detailRecord = null;
-
+    
+    @managed
     gridModel = new GridModel({
         stateModel: 'xhClientErrorGrid',
         enableColChooser: true,
         enableExport: true,
-        exportFilename: () => `Client Errors ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`,
+        exportOptions: {filename: () => `Client Errors ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`},
         store: new LocalStore({
             fields: [
                 'username', 'error', 'msg', 'userAlerted', 'browser', 'device',
@@ -37,21 +38,30 @@ export class ClientErrorModel {
         }),
         sortBy: {colId: 'dateCreated', sort: 'desc'},
         columns: [
-            {field: 'dateCreated', ...compactDateCol, width: 100},
+            {field: 'dateCreated', ...compactDateCol, width: 140},
             {field: 'username', ...usernameCol},
             {field: 'userAlerted', ...boolCheckCol, headerName: 'Alerted', width: 90},
             {field: 'browser', width: 100},
             {field: 'device', width: 100},
             {field: 'appVersion', width: 130},
             {field: 'appEnvironment', headerName: 'Environment', width: 130},
-            {field: 'error', flex: true, minWidth: 150}
+            {field: 'error', flex: true, minWidth: 150, renderer: (e) => fmtSpan(e)}
         ]
     });
 
-    async loadAsync() {
+    constructor() {
+        this.addReaction({
+            track: () => this.getParams(),
+            run: this.loadAsync,
+            equals: comparer.structural
+        });
+    }
+
+    async doLoadAsync(loadSpec) {
         return XH.fetchJson({
             url: 'clientErrorAdmin',
-            params: this.getParams()
+            params: this.getParams(),
+            loadSpec
         }).then(data => {
             this.gridModel.loadData(data);
         }).catchDefault();
@@ -68,7 +78,7 @@ export class ClientErrorModel {
             newEnd = end[dir](incr, 'days');
 
         if (newEnd.diff(today, 'days') > 0 || toToday) {
-            newStart = today.clone().subtract(diff, 'days');
+            newStart = today.clone().subtract(Math.abs(diff), 'days');
             newEnd = today;
         }
 
@@ -123,9 +133,5 @@ export class ClientErrorModel {
 
     isValidDate(date) {
         return date && date.toString() !== 'Invalid Date';
-    }
-
-    destroy() {
-        XH.safeDestroy(this.gridModel);
     }
 }

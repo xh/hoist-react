@@ -7,12 +7,13 @@
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
-import {boolCheckCol} from '@xh/hoist/columns';
+import {boolCheckCol} from '@xh/hoist/cmp/grid';
+import {textArea} from '@xh/hoist/desktop/cmp/input';
 
 @HoistComponent
 export class PreferencePanel extends Component {
 
-    localModel = new RestGridModel({
+    model = new RestGridModel({
         stateModel: 'xhPreferenceGrid',
         enableColChooser: true,
         enableExport: true,
@@ -28,13 +29,13 @@ export class PreferencePanel extends Component {
                     name: 'groupName',
                     label: 'Group',
                     lookupName: 'groupNames',
-                    required: true
+                    required: true,
+                    enableCreate: true
                 },
                 {
                     name: 'type',
                     defaultValue: 'string',
                     lookupName: 'types',
-                    lookupStrict: true,
                     editable: 'onAdd',
                     required: true
                 },
@@ -76,16 +77,16 @@ export class PreferencePanel extends Component {
             {field: 'name', width: 200},
             {field: 'type', width: 100},
             {field: 'defaultValue', width: 200},
-            {field: 'groupName', headerName: 'Group', width: 100},
+            {field: 'groupName', hidden: true},
             {field: 'notes', minWidth: 200, flex: true}
         ],
         editors: [
             {field: 'name'},
             {field: 'groupName'},
             {field: 'type'},
-            {field: 'defaultValue', type: 'boolSelect'},
+            {field: 'defaultValue'},
             {field: 'local'},
-            {field: 'notes', type: 'textarea'},
+            {field: 'notes', formField: {item: textArea()}},
             {field: 'lastUpdated'},
             {field: 'lastUpdatedBy'}
         ]
@@ -93,9 +94,5 @@ export class PreferencePanel extends Component {
 
     render() {
         return restGrid({model: this.model});
-    }
-
-    async loadAsync() {
-        return this.model.loadAsync();
     }
 }

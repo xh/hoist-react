@@ -5,10 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {isPlainObject, defaults, isString} from 'lodash';
-import {HoistModel} from '@xh/hoist/core';
+import {isPlainObject, defaults, isString, omit} from 'lodash';
+import {HoistModel, managed} from '@xh/hoist/core';
 import {StoreSelectionModel} from '@xh/hoist/data';
-import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {throwIf} from '@xh/hoist/utils/js';
 
 /**
  * DataViewModel is a wrapper around GridModel, which shows sorted data in a single column,
@@ -25,15 +26,8 @@ export class DataViewModel {
     selModel = null;
     contextMenuFn = null;
 
-    static defaultContextMenu = () => {
-        return new StoreContextMenu({
-            items: [
-                'copy',
-                '-',
-                'export'
-            ]
-        });
-    };
+    @managed
+    gridModel;
 
     /**
      * @param {Object} c - DataViewModel configuration.
@@ -49,13 +43,34 @@ export class DataViewModel {
         store,
         selModel,
         emptyText,
-        contextMenuFn = DataViewModel.defaultContextMenu
+        contextMenuFn = null
     }) {
+
+        selModel = this.parseSelModel(selModel, store);
+
         this.itemRenderer = itemRenderer;
         this.store = store;
-        this.selModel = this.parseSelModel(selModel, store);
+        this.selModel = selModel;
         this.emptyText = emptyText;
         this.contextMenuFn = contextMenuFn;
+
+        this.gridModel = new GridModel({
+            store,
+            selModel,
+            contextMenuFn,
+            emptyText,
+            columns: [
+                {
+                    colId: 'data',
+                    flex: true,
+                    elementRenderer: itemRenderer,
+                    agOptions: {
+                        valueGetter: this.valueGetter
+                    }
+                }
+            ]
+        });
+
     }
 
     /**
@@ -89,8 +104,9 @@ export class DataViewModel {
     }
 
     /** Load the underlying store. */
-    loadAsync(...args) {
-        return this.store.loadAsync(...args);
+    doLoadAsync(loadSpec) {
+        throwIf(!this.store.isLoadSupport, 'Underlying store does not define support for loading.');
+        return this.store.loadAsync(loadSpec);
     }
 
     /** Load the underlying store. */
@@ -121,4 +137,10 @@ export class DataViewModel {
 
         return new StoreSelectionModel({mode, store});
     }
+
+
+    valueGetter = (params) => {
+        const realData = omit(params.data.raw, 'id');
+        return Object.values(realData).join('\r');
+    };
 }

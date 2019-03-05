@@ -10,10 +10,11 @@ import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {page, toolbar} from '@xh/hoist/kit/onsen';
 import {div, vframe, vbox} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/mobile/cmp/button';
-import {textInput} from '@xh/hoist/mobile/cmp/form';
+import {textInput} from '@xh/hoist/mobile/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 
 import './LoginPanel.scss';
+import {LoginPanelModel} from '@xh/hoist/core/appcontainer/LoginPanelModel';
 
 /**
  *
@@ -24,15 +25,17 @@ import './LoginPanel.scss';
 @HoistComponent
 export class LoginPanel extends Component {
 
+    static modelClass = LoginPanelModel;
+
     render() {
-        const {loginMessage} = XH.app,
+        const {loginMessage} = XH.appSpec,
             {model} = this;
 
         return page({
             renderToolbar: () => toolbar(
                 div({
                     className: 'center',
-                    item: `Welcome to ${XH.appName}`
+                    item: XH.clientAppName
                 })
             ),
             items: [
@@ -44,13 +47,13 @@ export class LoginPanel extends Component {
                             items: [
                                 textInput({
                                     model,
-                                    field: 'username',
+                                    bind: 'username',
                                     placeholder: 'Username...',
                                     commitOnChange: true
                                 }),
                                 textInput({
                                     model,
-                                    field: 'password',
+                                    bind: 'password',
                                     placeholder: 'Password...',
                                     type: 'password',
                                     commitOnChange: true

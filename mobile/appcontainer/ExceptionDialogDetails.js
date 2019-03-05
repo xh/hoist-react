@@ -6,10 +6,10 @@
  */
 import {Component} from 'react';
 import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
-import {fragment, pre, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
+import {fragment, filler, pre, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {button} from '@xh/hoist/mobile/cmp/button';
-import {textArea} from '@xh/hoist/mobile/cmp/form';
+import {textArea} from '@xh/hoist/mobile/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {stringifyErrorSafely} from '@xh/hoist/exception';
 
@@ -54,7 +54,7 @@ export class ExceptionDialogDetails extends Component {
                 textArea({
                     placeholder: 'Add message here...',
                     model: model,
-                    field: 'userMessage'
+                    bind: 'userMessage'
                 })
             ),
             buttons: [
@@ -64,6 +64,7 @@ export class ExceptionDialogDetails extends Component {
                     disabled: !model.userMessage,
                     onClick: this.onSendClick
                 }),
+                filler(),
                 dismissButton({model})
             ]
         });

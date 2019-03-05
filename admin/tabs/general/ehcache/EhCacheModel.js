@@ -5,22 +5,24 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH, HoistModel} from '@xh/hoist/core';
-import {GridModel} from '@xh/hoist/desktop/cmp/grid';
+import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {UrlStore} from '@xh/hoist/data';
-import {emptyFlexCol, numberCol} from '@xh/hoist/columns';
-
+import {emptyFlexCol, numberCol} from '@xh/hoist/cmp/grid';
 
 @HoistModel
+@LoadSupport
 export class EhCacheModel {
 
+    @managed
     gridModel = new GridModel({
         stateModel: 'xhEhCacheGrid',
         enableColChooser: true,
         enableExport: true,
         store: new UrlStore({
             url: 'ehCacheAdmin/listCaches',
-            fields: ['name', 'heapSize', 'entries', 'status']
+            fields: ['name', 'heapSize', 'entries', 'status'],
+            idSpec: 'name'
         }),
         sortBy: 'name',
         columns: [
@@ -35,22 +37,14 @@ export class EhCacheModel {
     clearAll() {
         XH.fetchJson({
             url: 'ehCacheAdmin/clearAllCaches'
-        }).then(
-            this.onClearCacheSuccess()
-        ).catchDefault();
+        }).then(() => {
+            this.loadAsync();
+            XH.toast({message: 'Caches Cleared'});
+        }).catchDefault();
     }
-
-    onClearCacheSuccess = () => {
-        this.loadAsync();
-        XH.toast({message: 'Caches Cleared'});
-    }
-
-    async loadAsync() {
-        return this.gridModel.loadAsync();
-    }
-
-    destroy() {
-        XH.safeDestroy(this.gridModel);
+    
+    async doLoadAsync(loadSpec) {
+        return this.gridModel.loadAsync(loadSpec);
     }
 }
 

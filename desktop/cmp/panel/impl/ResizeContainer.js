@@ -10,34 +10,41 @@ import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
 
 import {dragger} from './Dragger';
 import {collapser} from './Collapser';
+import {PanelModel} from '../PanelModel';
 
 /**
- * A Resizable/Collapsible Container used by Panel to implement SizableSupport.
+ * A Resizable/Collapsible Container used by Panel.
  *
  * @private
  */
 @HoistComponent
 export class ResizeContainer extends Component {
-    
+
+    static modelClass = PanelModel;
+
     baseClassName = 'xh-resizable';
 
     render() {
         let {model} = this,
-            {collapsible, resizable, collapsed, vertical, contentFirst} = model,
+            {collapsible, resizable, collapsed, vertical, contentFirst, showSplitter} = model,
             items = [this.renderChild()];
         
-        if (collapsible) {
+        if (collapsible && showSplitter) {
             const collapserCmp = collapser({model});
             items = (contentFirst ? [...items, collapserCmp] : [collapserCmp, ...items]);
         }
+
         if (!collapsed && resizable) {
             items.push(dragger({model}));
         }
 
-        const cmp = vertical ? vbox : hbox;
+        const cmp = vertical ? vbox : hbox,
+            maxDim = vertical ? 'maxHeight' : 'maxWidth';
+
         return cmp({
             className: this.getClassName(),
             flex: 'none',
+            [maxDim]: '100%',
             items
         });
     }

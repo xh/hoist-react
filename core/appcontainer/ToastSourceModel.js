@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {observable, action} from '@xh/hoist/mobx';
-import {XH, HoistModel} from '@xh/hoist/core';
+import {HoistModel, managed} from '@xh/hoist/core';
 import {ToastModel} from './ToastModel';
 
 /**
@@ -16,7 +16,9 @@ import {ToastModel} from './ToastModel';
 @HoistModel
 export class ToastSourceModel {
 
-    @observable.ref toastModels = [];
+    @managed
+    @observable.ref
+    toastModels = [];
 
     show(config) {
         const ret = new ToastModel(config);
@@ -41,9 +43,5 @@ export class ToastSourceModel {
 
         this.toastModels = keepModels;
         cullModels.forEach(it => it.destroy());
-    }
-
-    destroy() {
-        XH.safeDestroy(this.toastModels);
     }
 }

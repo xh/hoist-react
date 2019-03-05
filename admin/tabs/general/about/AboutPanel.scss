@@ -7,6 +7,10 @@
 .xh-admin-about-panel {
   padding: 0 0 0 var(--xh-pad-double-px);
 
+  .svg-inline--fa {
+    margin-right: 6px;
+  }
+
   h1, h2 {
     font-weight: 400;
   }
@@ -15,6 +19,7 @@
     margin: var(--xh-pad-px);
     border-spacing: 0;
     border-collapse: collapse;
+    min-width: 500px;
   }
 
   tr {
@@ -25,13 +30,12 @@
     padding: var(--xh-pad-half-px);
     background-color: var(--xh-bg-alt);
     width: 140px;
-    text-align: left;
+    text-align: right;
+    vertical-align: top;
   }
 
   td {
     padding: var(--xh-pad-half-px);
-    width: 250px;
-    text-align: right;
   }
 
   &__blurb {

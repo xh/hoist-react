@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {PropTypes as PT} from 'prop-types';
+import PT from 'prop-types';
 import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {box, vbox, vspacer} from '@xh/hoist/cmp/layout';
@@ -25,19 +25,24 @@ import './Mask.scss';
 @HoistComponent
 export class Mask extends Component {
 
+    static modelClass = PendingTaskModel;
+
     static propTypes = {
+
         /** True to display mask. */
         isDisplayed: PT.bool,
+
         /** Optional text to be displayed. */
         message: PT.string,
+
         /** True to display a spinning image.  Default false. */
         spinner: PT.bool,
-        /** If true (default) mask should be contained within its parent, if set to false it will fill the viewport. */
+
+        /** True (default) to contain mask within its parent, false to fill the viewport. */
         inline: PT.bool,
+
         /** Click handler **/
-        onClick: PT.func,
-        /** Model to govern behavior of mask.  Use as an alternative to setting isDisplayed and message props. */
-        model: PT.instanceOf(PendingTaskModel)
+        onClick: PT.func
     };
 
     baseClassName = 'xh-mask';

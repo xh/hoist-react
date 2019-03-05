@@ -6,8 +6,10 @@
  */
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {filler} from '@xh/hoist/cmp/layout';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {button} from '@xh/hoist/mobile/cmp/button';
+import {MessageModel} from '@xh/hoist/core/appcontainer/MessageModel';
 
 /**
  * Render a modal dialog
@@ -16,6 +18,8 @@ import {button} from '@xh/hoist/mobile/cmp/button';
  */
 @HoistComponent
 class Message extends Component {
+
+    static modelClass = MessageModel;
 
     render() {
         const model = this.model,
@@ -38,6 +42,10 @@ class Message extends Component {
                 text: confirmText,
                 onClick: this.onConfirm
             }));
+        }
+
+        if (buttons.length) {
+            buttons.unshift(filler());
         }
 
         return dialog({

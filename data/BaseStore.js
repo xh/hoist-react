@@ -30,15 +30,18 @@ export class BaseStore {
     getField(name) {
         return this.fields.find(it => it.name === name);
     }
-
-    /** Current loading state. */
-    get loadModel() {}
-
+    
     /** Current records. These represent the post-filtered records. */
     get records() {}
 
     /** All records.  These are the pre-filtered records. */
     get allRecords() {}
+
+    /** Current records.  These represent the post-filtered root records. */
+    get rootRecords() {}
+
+    /** All records.  These are the pre-filtered root records. */
+    get allRootRecords() {}
 
     /** Filter.  Filter function to be applied. */
     get filter() {}

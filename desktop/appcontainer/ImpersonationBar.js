@@ -10,10 +10,12 @@ import {HotkeysTarget, hotkeys, hotkey} from '@xh/hoist/kit/blueprint';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {filler, span} from '@xh/hoist/cmp/layout';
-import {comboBox} from '@xh/hoist/desktop/cmp/form';
+import {select} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
+
+import {ImpersonationBarModel} from '@xh/hoist/core/appcontainer/ImpersonationBarModel';
 
 /**
  * An admin-only toolbar that provides a UI for impersonating application users, as well as ending
@@ -25,6 +27,8 @@ import {Icon} from '@xh/hoist/icon';
 @HotkeysTarget
 export class ImpersonationBar extends Component {
 
+    static modelClass = ImpersonationBarModel;
+    
     @observable pendingTarget = null;
 
     renderHotkeys() {
@@ -50,13 +54,13 @@ export class ImpersonationBar extends Component {
                 Icon.user(),
                 span(`${isImpersonating ? 'Impersonating' : ''} ${XH.getUsername()}`),
                 filler(),
-                // Note we deliberately do not requireSelection, as some apps will be able to
-                // create unknown users on the fly.
-                comboBox({
+                select({
                     model: this,
-                    field: 'pendingTarget',
+                    bind: 'pendingTarget',
                     options: targets,
+                    enableCreate: true,
                     placeholder: 'Select User...',
+                    width: 200,
                     onCommit: this.onCommit
                 }),
                 this.exitButton()
@@ -68,6 +72,7 @@ export class ImpersonationBar extends Component {
         const text = XH.identityService.isImpersonating ? 'Exit Impersonation' : 'Cancel';
         return button({
             text,
+            style: {color: 'white'},
             onClick: this.onExitClick
         });
     }
@@ -77,7 +82,7 @@ export class ImpersonationBar extends Component {
     //---------------------
     onHotKey = () => {
         this.model.toggleVisibility();
-    }
+    };
 
     onCommit = () => {
         if (this.pendingTarget) {
@@ -88,7 +93,7 @@ export class ImpersonationBar extends Component {
                 XH.handleException(e, {logOnServer: false});  // likely to be an unknown user
             });
         }
-    }
+    };
 
     onExitClick = () => {
         const {model} = this;
@@ -97,7 +102,7 @@ export class ImpersonationBar extends Component {
         } else {
             model.hide();
         }
-    }
+    };
 
     @action
     setPendingTarget(pendingTarget) {

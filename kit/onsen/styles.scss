@@ -1,118 +1,35 @@
 //--------------------
 // XH Components
 //--------------------
-.list.xh-grid {
-  .list-header {
-    padding-right: 20px;
-    position: absolute;
-    width: 100%;
-    z-index: 1;
-    background-image: none;
-    border-bottom: var(--xh-border-solid);
-  }
-
-  &:not(.xh-grid-header-hidden) ons-list-item:first-of-type {
-    margin-top: 26px;
-  }
-
-  .list-item {
-    transition: none;
-  }
-}
-
-.xh-menu {
-  position: fixed !important;
-  z-index: 21;
-  background-color: var(--xh-bg);
-  border: var(--xh-border-solid);
-
-  .list-item {
-    background-color: var(--xh-grid-bg) !important;
-  }
-}
-
-.xh-input-label {
-  font-size: 10px;
-  text-transform: uppercase;
-  color: var(--xh-text-color-muted);
-}
-
 .xh-input {
-  input, textarea, select {
+  input, textarea {
     font-size: 14px;
     border: none !important;
+    outline: none !important;
+    text-align: inherit;
+
+    &::placeholder {
+      color: var(--xh-input-placeholder-text-color);
+    }
   }
 
   &:not(.xh-input-label) {
     font-size: 14px;
     border: var(--xh-border-solid);
     border-radius: var(--xh-border-radius-px);
+
+    &:not(.xh-input-invalid):focus-within {
+      border-color: var(--xh-focus-outline-color);
+    }
   }
 
   &.xh-input-invalid {
     border: var(--xh-form-field-invalid-border);
   }
-
-  &.xh-text-input,
-  &.xh-number-input {
-    .text-input,
-    .text-input__label {
-      padding: 0 var(--xh-pad-px);
-    }
-  }
-
-  &.xh-number-input .text-input {
-    text-align: right;
-  }
-
-  &.xh-select select {
-    padding: 0 var(--xh-pad-px);
-    background-position: calc(100% - 10px) center;
-  }
-
-  &.xh-textarea {
-    padding: var(--xh-pad-px);
-    background-color: var(--xh-bg);
-    color: var(--xh-text-color);
-    outline: none;
-    resize: none;
-  }
-
-  &.xh-input-label {
-    font-size: var(--xh-font-size-small-px);
-  }
 }
 
-.xh-tab {
-  .xh-tab-icon {
-    height: 28px;
-    line-height: 26px;
-    font-size: 24px;
-  }
-
-  .xh-tab-label:first-child {
-    font-size: 16px;
-  }
-
-  .xh-tab-icon + .xh-tab-label {
-    font-size: 10px;
-    line-height: 1;
-  }
-}
-
-.xh-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  line-height: 20px;
-  height: 28px;
-}
-
-.xh-page {
-  .xh-page-no-scroll .page__content {
-    overflow: hidden;
-  }
+.xh-grid .ag-body-viewport::-webkit-scrollbar {
+  display: none;
 }
 
 //--------------------

@@ -4,25 +4,30 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from '@xh/hoist/core';
+import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
-import {GridModel} from '@xh/hoist/desktop/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {lowerFirst} from 'lodash';
 
 @HoistModel
+@LoadSupport
 export class ServiceModel {
 
+    @managed
     gridModel = new GridModel({
         enableExport: true,
         store: new UrlStore({
             url: 'serviceAdmin/listServices',
             processRawData: this.processRawData,
-            fields: ['provider', 'name']
+            fields: ['provider', 'name', 'displayName'],
+            idSpec: XH.genId
         }),
         selModel: 'multiple',
-        sortBy: 'name',
+        sortBy: 'displayName',
+        groupBy: 'provider',
         columns: [
-            {field: 'provider', width: 100},
-            {field: 'name', minWidth: 300, flex: true}
+            {field: 'provider', hidden: true},
+            {field: 'displayName', minWidth: 300, flex: true}
         ]
     });
 
@@ -44,15 +49,12 @@ export class ServiceModel {
         XH.toast({message: 'Caches Cleared'});
     }
 
-    async loadAsync() {
-        return this.gridModel.loadAsync();
+    async doLoadAsync(loadSpec) {
+        return this.gridModel.loadAsync(loadSpec);
     }
 
     processRawData(r) {
-        r.provider = r.name && r.name.indexOf('hoist') === 0 ? 'Hoist' : 'App';
-    }
-
-    destroy() {
-        XH.safeDestroy(this.gridModel);
+        r.provider = r.name && r.name.startsWith('hoistCore') ? 'Hoist' : 'App';
+        r.displayName = lowerFirst(r.name.replace('hoistCore', ''));
     }
 }

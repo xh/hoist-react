@@ -15,9 +15,13 @@ import {clone} from 'lodash';
  */
 export class Record {
 
-    /** @member {string} - unique id. */
+    static RESERVED_FIELD_NAMES = ['raw', 'fields', 'children', 'parent']
+
+    /** @member {string} - unique ID. */
     id
-    /** @member {Fields[]} - fields for this record. */
+    /** @member {Object} - unconverted source data. */
+    raw
+    /** @member {Field[]} - fields for this record. */
     fields
     /** @member {Record[]} - Children of this record. */
     children

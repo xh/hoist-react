@@ -10,6 +10,7 @@ import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {version as hoistReactVersion} from '@xh/hoist/package.json';
 import {defaults} from 'lodash';
+import {deepFreeze} from '@xh/hoist/utils/js';
 
 @HoistService
 export class EnvironmentService {
@@ -30,7 +31,14 @@ export class EnvironmentService {
             reactVersion: React.version
         }, serverEnv);
 
-        this.startVersionChecking();
+        deepFreeze(this._data);
+
+        this.adjustDocTitleForNonProdEnv();
+
+        this.addReaction({
+            when: () => XH.appIsRunning,
+            run: this.startVersionChecking
+        });
     }
 
     get(key) {
@@ -44,11 +52,17 @@ export class EnvironmentService {
     //------------------------------
     // Implementation
     //------------------------------
+    adjustDocTitleForNonProdEnv() {
+        const env = this.get('appEnvironment');
+        if (env != 'Production') {
+            document.title += ` (${env})`;
+        }
+    }
+
     startVersionChecking() {
         const interval = XH.getConf('xhAppVersionCheckSecs');
         Timer.create({
             runFn: this.checkAppVersionAsync,
-            delay: 15 * SECONDS,
             interval: interval * SECONDS
         });
     }
