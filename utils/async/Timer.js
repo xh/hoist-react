@@ -84,17 +84,17 @@ export class Timer {
         args.runFn = args.runFn.bind(args.scope);
         Object.assign(this, args);
 
-        this.interval = this.toClosure(args.interval);
-        this.timeout = this.toClosure(args.timeout);
-        this.delay = this.toClosure(args.delay);
+        this.interval = args.interval;
+        this.timeout = args.timeout;
+        this.delay = args.delay;
 
         wait(this.delay).then(this.doRun);
     }
 
     doRun = () => {
-        const {cancelled, intervalMs, doRun}  = this;
+        const {cancelled, doRun} = this;
 
-        if (cancelled || intervalMs <= 0) return;
+        if (cancelled) return;
 
         start(this.onCoreTimer)
             .wait(this.CORE_INTERVAL)
@@ -102,12 +102,12 @@ export class Timer {
     }
 
     onCoreTimer = () => {
-        const {isRunning, intervalElapsed, timeout, runFn} = this;
+        const {isRunning, intervalElapsed, timeoutVal, runFn} = this;
 
         if (!isRunning && intervalElapsed) {
             this.isRunning = true;
             start(runFn)
-                .timeout(timeout())
+                .timeout(timeoutVal)
                 .catch(e => console.error('Error executing timer:', e))
                 .finally(() => {
                     this.isRunning = false;
@@ -117,15 +117,23 @@ export class Timer {
     }
 
     get intervalElapsed() {
-        const {lastRun, interval} = this,
+        const {lastRun, intervalVal} = this,
             now = new Date();
 
-        return interval() > 0 &&
-            !lastRun || now.getTime() > lastRun.getTime() + interval();
+        return intervalVal >= 0 &&
+            (!lastRun || now.getTime() > lastRun.getTime() + intervalVal);
     }
 
-    toClosure(arg) {
-        return isFunction(arg) ? arg : () => arg;
+    get intervalVal() {
+        return this.getVal(this.interval);
+    }
+
+    get timeoutVal() {
+        return this.getVal(this.timeout);
+    }
+
+    getVal(arg) {
+        return isFunction(arg) ? arg() : arg;
     }
 
     destroy() {
